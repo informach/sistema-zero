@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from 'bun:test'
+import { createStudioProRevision, type StudioProBuilderJob } from '@sistemazero/core/studio'
 
 mock.module('server-only', () => ({}))
 process.env.JWT_HS256_SECRET ??= 'builder-route-test-secret-with-32-characters'
@@ -23,10 +24,47 @@ describe('service-only Studio builder executor', () => {
     parentOrigin: 'https://kids.test',
     actor: { accountId: crypto.randomUUID(), userId: crypto.randomUUID(), privileged: false },
   }
-  function fixture() {
+  async function fixture() {
     const inputs: unknown[] = []
+    const base = await createStudioProRevision({
+      projectId: payload.projectId,
+      templateId: 'vanilla-vite',
+      devScript: 'dev',
+      files: { 'index.html': '<main>Game</main>' },
+      directories: [],
+      assets: '{}',
+      assetFiles: {},
+    })
+    const job: StudioProBuilderJob = {
+      id: payload.id,
+      projectId: payload.projectId,
+      base,
+      objective: 'Editar jogo',
+      model: 'qa/model',
+      phase: 'queued',
+      version: 0,
+      modelCalls: 0,
+      validationCalls: 0,
+      createdAt: new Date().toISOString(),
+      deadlineAt: new Date(Date.now() + 300000).toISOString(),
+      expiresAt: new Date(Date.now() + 600000).toISOString(),
+      leaseUntil: null,
+      result: null,
+      error: null,
+      cost: null,
+      notes: [],
+    }
+    const commands: string[] = []
     const handler = createStudioBuilderExecutorRoutes({
-      members: {} as never,
+      members: {
+        async studioBuilder(_actor, command) {
+          commands.push(command.operation)
+          return { status: 200, body: { state: { job, token: null } } }
+        },
+        async studioAiUsage() {
+          throw new Error('Unexpected ledger mutation')
+        },
+      },
       advance: async (input) => {
         inputs.push(input)
         return null
@@ -34,6 +72,8 @@ describe('service-only Studio builder executor', () => {
     }).studioBuilderExecutor.POST
     return {
       inputs,
+      job,
+      commands,
       post: (body: unknown = payload, authorization = `Bearer ${secret}`) =>
         handler(
           new Request('https://kids.test/api/internal/studio-builder/execute', {
@@ -45,13 +85,13 @@ describe('service-only Studio builder executor', () => {
     }
   }
   test('cookies and a wrong or missing service secret never authorize dispatch', async () => {
-    const f = fixture()
+    const f = await fixture()
     for (const auth of ['', 'Bearer wrong', `Bearer ${secret.slice(0, -1)}X`])
       expect((await f.post(payload, auth)).status).toBe(401)
     expect(f.inputs).toHaveLength(0)
   })
   test('valid delivery preserves persisted context and returns no private job data', async () => {
-    const f = fixture(),
+    const f = await fixture(),
       response = await f.post()
     expect(response.status).toBe(200)
     expect(response.headers.get('cache-control')).toBe('no-store')
@@ -61,7 +101,7 @@ describe('service-only Studio builder executor', () => {
     ])
   })
   test('rejects excess fields, non-origin URLs and oversized payloads before execution', async () => {
-    const f = fixture()
+    const f = await fixture()
     for (const body of [
       { ...payload, objective: 'client supplied' },
       { ...payload, parentOrigin: 'https://kids.test/path' },
@@ -76,8 +116,61 @@ describe('service-only Studio builder executor', () => {
       ...env.getEnv(),
       STUDIO_BUILDER_EXECUTOR_SECRET: undefined,
     })
-    const f = fixture()
+    const f = await fixture()
     expect((await f.post()).status).toBe(503)
     expect(f.inputs).toHaveLength(0)
+  })
+  test('a missing provider leaves the queued language job untouched before lease claim', async () => {
+    const f = await fixture()
+    spyOn(env, 'getEnv').mockReturnValue({ ...env.getEnv(), STUDIO_PRO_RUNTIME_TOKEN: undefined })
+    expect((await f.post()).status).toBe(503)
+    expect(f.inputs).toHaveLength(0)
+    expect(f.commands).toEqual(['get'])
+    expect(f.job.phase).toBe('queued')
+    expect(f.job.version).toBe(0)
+  })
+  test('Python uses its own services when the JavaScript runtime is absent', async () => {
+    const f = await fixture()
+    f.job.base = await createStudioProRevision({
+      version: 2,
+      projectId: payload.projectId,
+      templateId: 'python-blank',
+      files: { 'main.py': 'print(1)' },
+      directories: [],
+      assets: '{}',
+      assetFiles: {},
+      configuration: {
+        programmingLanguage: 'python',
+        runtime: { profileId: 'python-test', releaseId: 'test-1', manifestSha256: 'a'.repeat(64) },
+        extensions: [],
+        python: {
+          entrypoint: 'main.py',
+          dependencyLock: {
+            lockVersion: 1,
+            target: 'browser',
+            pythonVersion: '3.14.2',
+            runtimeManifestSha256: 'a'.repeat(64),
+            requirementsSha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+            packages: [],
+          },
+        },
+      },
+    })
+    spyOn(env, 'getEnv').mockReturnValue({
+      ...env.getEnv(),
+      STUDIO_PRO_RUNTIME_URL: undefined,
+      STUDIO_PRO_RUNTIME_TOKEN: undefined,
+      STUDIO_PYTHON_RUNTIME_URL: 'https://python.test',
+      STUDIO_PYTHON_RUNTIME_TOKEN: 'private-python-token-with-32-characters',
+      STUDIO_PYTHON_LANGUAGE_URL: 'https://language.test',
+      STUDIO_PYTHON_LANGUAGE_TOKEN: 'private-language-token-with-32-characters',
+    })
+    expect((await f.post()).status).toBe(200)
+    expect(f.inputs).toMatchObject([
+      {
+        pythonRuntime: { runtimeUrl: 'https://python.test', languageUrl: 'https://language.test' },
+      },
+    ])
+    expect(f.commands).toEqual(['get'])
   })
 })

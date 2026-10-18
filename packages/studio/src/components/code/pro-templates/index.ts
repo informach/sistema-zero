@@ -3,7 +3,7 @@ import {
   type StudioProTemplateId,
   type StudioProTemplateMetadata,
 } from '@sistemazero/core/studio/pro-templates'
-import { buildProProject, type Project, type ProjectAsset, type ProjectTree } from '#core'
+import type { Project, ProjectAsset, ProjectTree } from '#core'
 
 /** Metadata only. Game sources are separate chunks loaded on creation. */
 export type ProTemplate = StudioProTemplateMetadata
@@ -41,6 +41,7 @@ export async function createProProject(
   templateId: string,
 ): Promise<Project> {
   const template = await loadProTemplate(templateId)
+  const { buildProProject } = await import('../../../core/proProject')
   return {
     ...buildProProject(id, name, template.tree, template.devScript, template.id),
     assets: template.assets,

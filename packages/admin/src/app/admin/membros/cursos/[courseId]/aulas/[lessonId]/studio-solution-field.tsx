@@ -1,18 +1,28 @@
 'use client'
 
-import type { Project, StudioHandle } from '@sistemazero/studio'
+import { STUDIO_PROJECT_NAME_MAX_LENGTH } from '@sistemazero/core/studio/project-document'
+import type { EditableStudioProject, StudioHandle } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
 import { type RefObject, useState } from 'react'
 import { StudioEmbed } from '@/components/studio/studio-embed'
+import type { StudioAuthoringRuntimeScope } from '@/components/studio/use-studio-authoring-runtime'
+import type { PreparedStudioAuthoringOptions } from '@/lib/studio-authoring-options'
 
 /**
  * O gabarito nasce como CÓPIA do projeto inicial, com id próprio: os dois editores do formulário
  * não podem dividir o mesmo projeto (o Estúdio guarda o estado por id).
  */
-export function solutionFrom(initial: Project): Project {
+export function solutionFrom<T extends EditableStudioProject>(initial: T): T {
   const nome = initial.name?.trim() || 'Projeto da aula'
-  return { ...initial, id: crypto.randomUUID(), name: `${nome} (gabarito)` }
+  const suffix = ' (gabarito)'
+  const limit = STUDIO_PROJECT_NAME_MAX_LENGTH - suffix.length
+  let base = ''
+  for (const character of nome) {
+    if (base.length + character.length > limit) break
+    base += character
+  }
+  return { ...initial, id: crypto.randomUUID(), name: `${base}${suffix}` }
 }
 
 /**
@@ -23,12 +33,16 @@ export function solutionFrom(initial: Project): Project {
  */
 export function StudioSolutionField({
   solution,
+  runtimeScope,
+  authoringOptions,
   handleRef,
   onCreate,
   onRemove,
   onChange,
 }: {
-  solution: Project | null
+  solution: EditableStudioProject | null
+  runtimeScope?: StudioAuthoringRuntimeScope
+  authoringOptions?: PreparedStudioAuthoringOptions | null
   handleRef: RefObject<StudioHandle | null>
   onCreate: () => void
   onRemove: () => void
@@ -41,13 +55,17 @@ export function StudioSolutionField({
       <p className="text-xs text-muted-foreground">
         Monte aqui o projeto pronto, como fica quando a criança cumpre tudo. Ele nunca chega à
         criança. Com ele, o "Testar agora" dos objetivos da parte confere se cada objetivo pode ser
-        cumprido, e a publicação recusa um objetivo obrigatório que nem o gabarito cumpre.
+        cumprido. A publicação confere os objetivos de estrutura; para os que rodam o jogo, confira
+        o resultado em "Testar agora" antes de publicar.
       </p>
       {solution ? (
         <>
           <StudioEmbed
             key={`solution:${solution.id}`}
             initialProject={solution}
+            runtimeScope={runtimeScope}
+            authoringOptions={authoringOptions}
+            professionalAuthoring
             defaultName="Gabarito"
             handleRef={handleRef}
             onChange={onChange}

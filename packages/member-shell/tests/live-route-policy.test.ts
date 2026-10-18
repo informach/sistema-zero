@@ -3,6 +3,15 @@ import { liveUpstreamPath } from '../src/lib/live-route-policy'
 
 const id = 'da43dd41-73c1-4aeb-9a0c-557b11213687'
 describe('live BFF allowlist', () => {
+  test('runtime is a workspace operation for learners and teachers, never parents or configuration', () => {
+    for (const scope of ['learner', 'teacher'] as const)
+      expect(liveUpstreamPath(scope, 'POST', ['workspaces', id, 'runtime'])).toBe(
+        `/members/live/workspaces/${id}/runtime`,
+      )
+    for (const scope of ['parent', 'admin'] as const)
+      expect(liveUpstreamPath(scope, 'POST', ['workspaces', id, 'runtime'])).toBeNull()
+    expect(liveUpstreamPath('learner', 'GET', ['workspaces', id, 'runtime'])).toBeNull()
+  })
   test('separates learner, teacher, parent and configuration', () => {
     expect(liveUpstreamPath('learner', 'POST', ['sessions', id, 'control'])).toBeNull()
     expect(liveUpstreamPath('teacher', 'POST', ['sessions', id, 'control'])).toBe(

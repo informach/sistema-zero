@@ -1,5 +1,8 @@
 import { type ParserPlugin, parse } from '@babel/parser'
-import type { SectionStructureRule } from '@sistemazero/core/learning'
+import {
+  ProjectStructureAnalysisLimitError,
+  type SectionStructureRule,
+} from '@sistemazero/core/learning'
 
 /**
  * As IDEIAS de programação lidas do CÓDIGO (18/10/2026, etapa 2 dos objetivos do Estúdio). Os
@@ -20,7 +23,7 @@ export interface CodeIdeas {
   calls: ReadonlyMap<string, number>
 }
 
-/** Teto de código lido por projeto: o resto é ignorado (um objetivo nunca trava o servidor).
+/** Teto de código lido por projeto: exceder torna a análise inconclusiva, sem contagens parciais.
  * Medido: 1,4 MB de TypeScript custa ~700 ms de análise; 500 mil caracteres ficam em ~250 ms. */
 export const CODE_IDEAS_MAX_CHARS = 500_000
 const MAX_NODES = 200_000
@@ -84,11 +87,13 @@ function parseCode(file: { name: string; code: string }): unknown {
   })
   try {
     return parse(file.code, options(pluginsFor(file.name)))
-  } catch {
+  } catch (error) {
+    if (!(error instanceof SyntaxError)) throw new ProjectStructureAnalysisLimitError()
     // JSX num .ts ou tipos num .js: um erro sem recuperação jogaria fora o arquivo inteiro.
     try {
       return parse(file.code, options(['typescript', 'jsx']))
-    } catch {
+    } catch (error) {
+      if (!(error instanceof SyntaxError)) throw new ProjectStructureAnalysisLimitError()
       return null
     }
   }
@@ -131,7 +136,7 @@ function collectPatternNames(pattern: unknown, into: Set<string>) {
   }
 }
 
-/** Lê as ideias de uma lista de arquivos de código. Arquivo que não analisa é pulado. */
+/** Lê arquivos completos. Sintaxe inválida não fornece ideias; limites nunca significam ausência. */
 export function collectCodeIdeas(files: readonly { name: string; code: string }[]): CodeIdeas {
   const variables = new Map<string, number>()
   const functions = new Map<string, number>()
@@ -140,19 +145,19 @@ export function collectCodeIdeas(files: readonly { name: string; code: string }[
   let budget = CODE_IDEAS_MAX_CHARS
   let nodes = 0
   for (const file of files) {
-    if (budget <= 0 || nodes >= MAX_NODES) break
-    if (file.code.length > budget) continue
+    if (file.code.length > budget) throw new ProjectStructureAnalysisLimitError()
     budget -= file.code.length
     const ast = parseCode(file)
     if (!ast) continue
     const stack: unknown[] = [ast]
-    while (stack.length && nodes < MAX_NODES) {
+    while (stack.length) {
       const node = stack.pop()
       if (Array.isArray(node)) {
         for (const child of node) stack.push(child)
         continue
       }
       if (!record(node) || typeof node.type !== 'string') continue
+      if (nodes >= MAX_NODES) throw new ProjectStructureAnalysisLimitError()
       nodes++
       const type = node.type
       if (LOOPS.has(type)) loops++
@@ -255,7 +260,8 @@ function rawCodeOfIR(ir: unknown): string[] {
   const out: string[] = []
   const stack = [ir]
   let visited = 0
-  while (stack.length && visited < MAX_NODES) {
+  while (stack.length) {
+    if (visited >= MAX_NODES) throw new ProjectStructureAnalysisLimitError()
     const node = stack.pop()
     visited++
     if (Array.isArray(node)) {

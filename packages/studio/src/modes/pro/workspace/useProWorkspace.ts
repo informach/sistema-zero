@@ -9,9 +9,13 @@ import {
 } from './model'
 
 /** The mode is keyed by project. Async restoration cannot replace the learner's first action. */
-export function useProWorkspace(projectId: string | undefined, tree: ProjectTree) {
+export function useProWorkspace(
+  projectId: string | undefined,
+  tree: ProjectTree,
+  entrypoint?: string,
+) {
   const adapter = useContext(StudioStoresContext)?.workspacePreferences
-  const [state, setState] = useState(() => initialWorkspace(tree))
+  const [state, setState] = useState(() => initialWorkspace(tree, entrypoint))
   const currentTree = useRef(tree)
   currentTree.current = tree
   const touched = useRef(false)

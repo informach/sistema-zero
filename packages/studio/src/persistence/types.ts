@@ -1,4 +1,4 @@
-import type { Project } from '#core'
+import type { EditableStudioProject as Project } from '../core/editableProject'
 import type { ProjectSummary } from '../state/persistence'
 import type { ProjectStorageScope } from '../state/projectStorageRuntime'
 

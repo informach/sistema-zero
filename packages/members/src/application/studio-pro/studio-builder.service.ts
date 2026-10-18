@@ -1,6 +1,8 @@
 import type { StudioAiActor } from '@sistemazero/core/ai-credits'
 import { ValidationError } from '@sistemazero/core/errors'
+import { awaitWithSignal } from '@sistemazero/core/http'
 import {
+  applyStudioProChange,
   createStudioProRevision,
   isStudioProArtifact,
   isStudioProAssistanceRequest,
@@ -8,20 +10,76 @@ import {
   STUDIO_PRO_BUILDER_LIMITS as limits,
   parseStudioProAssistanceRequest,
   type StudioProAssistanceRequest,
+  type StudioProBuilderClaim,
   type StudioProBuilderCommand,
   type StudioProBuilderRepository,
+  type StudioProRevisionV2,
 } from '@sistemazero/core/studio'
+import { StudioProRevisionConfigurationSchema } from '@sistemazero/core/studio/pro-revision-configuration'
+import { StudioPythonBuilderPreviewSchema } from '@sistemazero/core/studio/python-builder-preview'
+import type { StudioPythonExecutionMetadata } from '@sistemazero/core/studio/python-execution-content'
+import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python-pro-execution'
 import { z } from 'zod'
 
 const id = z.string().uuid(),
   projectId = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/),
   hash = z.string().regex(/^[a-f0-9]{64}$/)
 const boundedText = z.string().max(2000)
+function builderAuthorizationIsFresh(
+  state: StudioProBuilderClaim | null,
+  command: Extract<
+    StudioProBuilderCommand,
+    { operation: 'authorize-validation' | 'authorize-proposal' }
+  >,
+  now: number,
+) {
+  const job = state?.job
+  if (
+    !job ||
+    job.id !== command.id ||
+    job.projectId !== command.projectId ||
+    job.version !== command.version ||
+    job.result?.revisionHash !== command.revisionHash ||
+    !['validating', 'review'].includes(job.phase) ||
+    job.assistance?.disposition === 'discarded'
+  )
+    return false
+  const leaseUntil = Date.parse(job.leaseUntil ?? ''),
+    expiresAt = Date.parse(job.expiresAt),
+    deadlineAt = Date.parse(job.deadlineAt)
+  if (command.operation === 'authorize-proposal') {
+    if (
+      job.phase !== 'review' ||
+      !Number.isFinite(now) ||
+      !Number.isFinite(expiresAt) ||
+      expiresAt <= now
+    )
+      return false
+    if (command.purpose === 'apply') return true
+    const preview = job.result?.preview
+    return (
+      preview?.kind === 'python' &&
+      preview.reference.id === command.preview?.id &&
+      preview.reference.sha256 === command.preview.sha256 &&
+      preview.reference.expiresAt > now
+    )
+  }
+  return (
+    Number.isFinite(now) &&
+    Number.isFinite(leaseUntil) &&
+    Number.isFinite(expiresAt) &&
+    Number.isFinite(deadlineAt) &&
+    leaseUntil > now &&
+    expiresAt > now &&
+    (job.phase === 'review' || deadlineAt > now)
+  )
+}
 const assistanceRequest = z
   .custom<StudioProAssistanceRequest>(isStudioProAssistanceRequest)
   .transform(parseStudioProAssistanceRequest)
-const preview = z
+const javascriptPreview = z
   .object({
+    kind: z.literal('javascript').optional(),
     artifact: z.custom<import('@sistemazero/core/studio').StudioProArtifact>(isStudioProArtifact),
     revisionHash: hash,
     validation: z.custom<import('@sistemazero/core/studio').StudioProValidationIdentity>(
@@ -29,6 +87,7 @@ const preview = z
     ),
   })
   .strict()
+const preview = z.union([javascriptPreview, StudioPythonBuilderPreviewSchema])
 const evidence = z
   .array(
     z
@@ -41,19 +100,23 @@ const evidence = z
       .strict(),
   )
   .max(12)
-const revision = z
-  .object({
-    version: z.literal(1),
-    projectId,
-    templateId: z.string().max(80),
-    devScript: z.string().max(80),
-    hash,
-    files: z.record(z.string().max(240), z.string().max(256000)),
-    directories: z.array(z.string().max(240)).max(160),
-    assets: z.string().max(80000),
-    assetFiles: z.record(z.string().max(240), hash),
-  })
-  .strict()
+const revisionContent = {
+  projectId,
+  templateId: z.string().max(80),
+  hash,
+  files: z.record(z.string().max(240), z.string().max(256000)),
+  directories: z.array(z.string().max(240)).max(160),
+  assets: z.string().max(80000),
+  assetFiles: z.record(z.string().max(240), hash),
+}
+const revision = z.discriminatedUnion('version', [
+  z.strictObject({ ...revisionContent, version: z.literal(1), devScript: z.string().max(80) }),
+  z.strictObject({
+    ...revisionContent,
+    version: z.literal(2),
+    configuration: StudioProRevisionConfigurationSchema,
+  }),
+])
 const result = z
   .object({
     change: z
@@ -100,6 +163,20 @@ const cost = z
   .strict()
   .nullable()
 const commandSchema = z.discriminatedUnion('operation', [
+  z
+    .object({
+      operation: z.literal('authorize-proposal'),
+      id,
+      projectId,
+      version: z.number().int().min(0),
+      revisionHash: hash,
+      purpose: z.enum(['apply', 'preview']),
+      preview: z.strictObject({ id: hash, sha256: hash }).optional(),
+    })
+    .strict()
+    .refine((value) =>
+      value.purpose === 'preview' ? Boolean(value.preview) : value.preview === undefined,
+    ),
   z
     .object({
       operation: z.literal('create'),
@@ -166,6 +243,17 @@ const commandSchema = z.discriminatedUnion('operation', [
     .strict(),
   z
     .object({
+      operation: z.literal('authorize-validation'),
+      id,
+      projectId,
+      token: id,
+      version: z.number().int().min(0),
+      revisionHash: hash,
+      runtimeOperation: z.enum(['analyze', 'execute']),
+    })
+    .strict(),
+  z
+    .object({
       operation: z.literal('checkpoint'),
       id,
       projectId,
@@ -186,6 +274,13 @@ export class StudioBuilderService {
     private readonly clock = () => new Date(),
     readonly executionAvailable = false,
     readonly adultExecutionAvailable = false,
+    private readonly authorizePythonRevision?: (
+      actor: StudioAiActor,
+      revision: StudioProRevisionV2,
+      execution: StudioPythonExecutionMetadata,
+      operation: 'analyze' | 'execute',
+      signal: AbortSignal,
+    ) => Promise<void>,
   ) {}
   purgeExpired() {
     return this.repository.purgeExpired(this.clock())
@@ -198,7 +293,8 @@ export class StudioBuilderService {
     if (!parsed.success) throw new ValidationError('Consulta de propostas inválida.')
     return this.repository.list(actor, parsed.data, this.clock())
   }
-  async execute(actor: StudioAiActor, input: unknown) {
+  async execute(actor: StudioAiActor, input: unknown, callerSignal?: AbortSignal) {
+    callerSignal?.throwIfAborted()
     if (new TextEncoder().encode(JSON.stringify(input)).byteLength > limits.maxPayloadBytes)
       throw new ValidationError('Revisão grande demais.')
     const parsed = commandSchema.safeParse(input)
@@ -209,8 +305,14 @@ export class StudioBuilderService {
         throw new ValidationError(
           'A execução automática está indisponível. Seu pedido continua no editor.',
         )
+      let execution: StudioPythonExecutionMetadata | undefined
       try {
-        const base = await createStudioProRevision(command.base)
+        const prepared =
+          command.base.version === 2 && command.base.configuration.programmingLanguage === 'python'
+            ? await prepareStudioPythonProExecution(command.base, command.binaries)
+            : undefined
+        const base = prepared?.base ?? (await createStudioProRevision(command.base))
+        execution = prepared?.metadata
         if (base.hash !== command.base.hash) throw new Error('hash')
         const selected = command.request?.selection
         const baseline = command.request?.baseline
@@ -234,26 +336,165 @@ export class StudioBuilderService {
           )
             throw new Error('source revision')
         }
-        if (Object.keys(command.binaries).length > 258) throw new Error('assets')
-        if (Object.keys(command.binaries).length !== Object.keys(base.assetFiles).length)
-          throw new Error('asset count')
-        for (const [path, binary] of Object.entries(command.binaries)) {
-          if (base.assetFiles[path] !== binary.sha256) throw new Error('asset revision')
-          if (
-            !/^public\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*$/.test(
-              path,
-            ) ||
-            path.split('/').some((part) => ['node_modules', 'dist'].includes(part))
-          )
-            throw new Error('asset path')
-          const digest = await crypto.subtle.digest('SHA-256', Buffer.from(binary.base64, 'base64'))
-          if (Buffer.from(digest).toString('hex') !== binary.sha256) throw new Error('asset digest')
+        if (!prepared) {
+          if (Object.keys(command.binaries).length > 258) throw new Error('assets')
+          if (Object.keys(command.binaries).length !== Object.keys(base.assetFiles).length)
+            throw new Error('asset count')
+          for (const [path, binary] of Object.entries(command.binaries)) {
+            if (base.assetFiles[path] !== binary.sha256) throw new Error('asset revision')
+            if (
+              !/^public\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*$/.test(
+                path,
+              ) ||
+              path.split('/').some((part) => ['node_modules', 'dist'].includes(part))
+            )
+              throw new Error('asset path')
+            const digest = await crypto.subtle.digest(
+              'SHA-256',
+              Buffer.from(binary.base64, 'base64'),
+            )
+            if (Buffer.from(digest).toString('hex') !== binary.sha256)
+              throw new Error('asset digest')
+          }
         }
         command.base = base
       } catch {
         throw new ValidationError('A revisão-base é inválida.')
       }
+      if (
+        command.base.version === 2 &&
+        command.base.configuration.programmingLanguage === 'python'
+      ) {
+        const authorizeRevision = this.authorizePythonRevision
+        const base = command.base
+        const metadata = execution
+        if (!authorizeRevision || !metadata)
+          throw new ValidationError(
+            'O construtor Python ainda não está disponível neste ambiente. Seu projeto foi preservado.',
+          )
+        const signal = AbortSignal.any([
+          ...(callerSignal ? [callerSignal] : []),
+          AbortSignal.timeout(45000),
+        ])
+        await awaitWithSignal(
+          () => authorizeRevision(actor, base, metadata, 'execute', signal),
+          signal,
+        )
+      }
     }
-    return this.repository.execute(actor, command, this.clock())
+    if (
+      command.operation === 'authorize-validation' ||
+      command.operation === 'authorize-proposal'
+    ) {
+      if (!this.authorizePythonRevision || !this.executionAvailable)
+        throw new ValidationError('A validação Python está indisponível neste ambiente.')
+      const signal = AbortSignal.any([
+        ...(callerSignal ? [callerSignal] : []),
+        AbortSignal.timeout(45000),
+      ])
+      const authorizeRevision = this.authorizePythonRevision
+      const current = await awaitWithSignal(
+        () => this.repository.execute(actor, command, this.clock(), signal),
+        signal,
+      )
+      signal.throwIfAborted()
+      const currentScope =
+        command.operation === 'authorize-validation'
+          ? current?.validationLease
+          : current?.proposalScope
+      if (
+        !current?.job.result ||
+        !current.binaries ||
+        !currentScope ||
+        !builderAuthorizationIsFresh(current, command, this.clock().getTime())
+      )
+        throw new ValidationError('A autorização desta proposta não está mais disponível.')
+      const candidate = await applyStudioProChange(current.job.base, current.job.result.change)
+      const prepared = await prepareStudioPythonProExecution(
+        candidate.revision,
+        current.binaries,
+        signal,
+      )
+      const base = prepared.base
+      if (
+        base.version !== 2 ||
+        base.configuration.programmingLanguage !== 'python' ||
+        base.hash !== command.revisionHash
+      )
+        throw new ValidationError('A revisão não corresponde à proposta Python autorizada.')
+      await awaitWithSignal(
+        () =>
+          authorizeRevision(
+            actor,
+            structuredClone(base),
+            structuredClone(prepared.metadata),
+            command.operation === 'authorize-validation' ? command.runtimeOperation : 'execute',
+            signal,
+          ),
+        signal,
+      )
+      // Policy reads can yield. Recheck the same durable lease after them, without
+      // claiming a successor or extending the lease of this validation attempt.
+      const fresh = await awaitWithSignal(
+        () => this.repository.execute(actor, command, this.clock(), signal),
+        signal,
+      )
+      signal.throwIfAborted()
+      const freshScope =
+        command.operation === 'authorize-validation' ? fresh?.validationLease : fresh?.proposalScope
+      if (
+        !fresh ||
+        !freshScope ||
+        freshScope.revisionHash !== command.revisionHash ||
+        !builderAuthorizationIsFresh(fresh, command, this.clock().getTime())
+      )
+        throw new ValidationError('A autorização desta proposta foi retirada.')
+      signal.throwIfAborted()
+      return {
+        job: fresh.job,
+        token: null,
+        authorization: {
+          revisionHash: prepared.base.hash,
+          executionRevision: prepared.metadata.revision,
+          parentOrigin: freshScope.parentOrigin,
+        },
+      }
+    }
+    const pythonPreview =
+      command.operation === 'preview-checkpoint' && command.preview.kind === 'python'
+        ? command.preview
+        : command.operation === 'checkpoint' &&
+            command.phase === 'review' &&
+            command.result?.preview?.kind === 'python'
+          ? command.result.preview
+          : undefined
+    if (
+      pythonPreview &&
+      (command.operation === 'checkpoint' || command.operation === 'preview-checkpoint')
+    ) {
+      // Reauthorization is owned by this backend; executor-reported success cannot freeze grants.
+      await this.execute(
+        actor,
+        {
+          operation: 'authorize-validation',
+          id: command.id,
+          projectId: command.projectId,
+          token: command.token,
+          version: command.version,
+          revisionHash: pythonPreview.revisionHash,
+          runtimeOperation: 'execute',
+        },
+        callerSignal,
+      )
+    }
+    callerSignal?.throwIfAborted()
+    const accepted = callerSignal
+      ? await awaitWithSignal(
+          () => this.repository.execute(actor, command, this.clock(), callerSignal),
+          callerSignal,
+        )
+      : await this.repository.execute(actor, command, this.clock())
+    callerSignal?.throwIfAborted()
+    return accepted
   }
 }

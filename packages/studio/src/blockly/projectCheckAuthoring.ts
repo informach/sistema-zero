@@ -11,6 +11,7 @@ import {
   type LessonSection,
   PROJECT_CHECK_AREAS,
   type SectionExecutionRule,
+  type SectionJavaScriptProjectCheck,
   type SectionObjectiveRule,
   type SectionStructureRule,
   sectionCompletionIssues,
@@ -599,9 +600,11 @@ export function studioSectionCompletionIssues(
       if (!workspace || !checks.length) return []
       const authoring = projectCheckAuthoring(workspace.content)
       const ruleIssues = checks.flatMap((check) =>
-        authoring
-          .issues(check.rule)
-          .map((message) => ({ sectionId: section.id, message: `${check.label}: ${message}` })),
+        check.programmingLanguage === 'python'
+          ? []
+          : authoring
+              .issues(check.rule)
+              .map((message) => ({ sectionId: section.id, message: `${check.label}: ${message}` })),
       )
       if (ruleIssues.length) return ruleIssues
       const budget = executionProjectChecks(checks).reduce(
@@ -629,7 +632,10 @@ export function studioSectionCompletionIssues(
         ]
       const nameOf = (id: string) => checks.find((check) => check.id === id)?.label ?? id
       // Inicial e gabarito são conferidos aqui só na ESTRUTURA; a execução é do "Testar agora".
-      const structural = checks.filter((check) => !isExecutionRule(check.rule))
+      const structural = checks.filter(
+        (check): check is SectionJavaScriptProjectCheck =>
+          check.programmingLanguage !== 'python' && !isExecutionRule(check.rule),
+      )
       // Um obrigatório que o projeto inicial já cumpre deixa a criança passar sem fazer nada.
       const free =
         initial === undefined

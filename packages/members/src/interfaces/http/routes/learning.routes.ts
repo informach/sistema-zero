@@ -1,11 +1,13 @@
 import { ValidationError } from '@sistemazero/core/errors'
 import { isSectionCompletion } from '@sistemazero/core/learning'
 import { PALETTES, readPalette } from '@sistemazero/core/palette'
+import { StudioAuthoringRuntimeRequestSchema } from '@sistemazero/core/studio/runtime-authorization'
 import { Elysia, t } from 'elysia'
 import type { GalleryDeliveryService } from '../../../application/learning/gallery-delivery.service'
 import type { LearningService } from '../../../application/learning/learning.service'
 import type { LearningImportService } from '../../../application/learning/learning-import.service'
 import type { ProfilePreferencesService } from '../../../application/profile-preferences/profile-preferences.service'
+import type { AuthorizeAuthoringRuntimeService } from '../../../application/studio/authorize-authoring-runtime.service'
 import type { LessonDraftRepository } from '../../../domain/ports/lesson-draft-repository.port'
 import {
   assertInternalCaller,
@@ -44,6 +46,7 @@ export interface LearningRoutesDeps {
   preferences: ProfilePreferencesService
   imports: LearningImportService
   drafts: LessonDraftRepository
+  authorizeStudioRuntime: AuthorizeAuthoringRuntimeService
   internalToken?: string
   requireAdminEnabled: boolean
 }
@@ -115,19 +118,31 @@ export function learningRoutes(deps: LearningRoutesDeps) {
       )
       .post(
         '/lessons/:lessonId/sections/:sectionId/project-check',
-        ({ headers, params, body }) =>
+        ({ headers, params, body, request }) =>
           deps.learning.checkProject(
             actor(headers),
             params.lessonId,
             params.sectionId,
             body.revision,
             body.project,
+            { signal: request.signal, liveContext: body.liveContext },
           ),
         { params: SectionProjectParams, body: SectionProjectBody },
       )
       .group('/admin', (app) =>
         app
           .onBeforeHandle(({ headers }) => requireAdmin(headers, deps.requireAdminEnabled))
+          .post(
+            '/studio/authoring-runtime',
+            ({ headers, body, set }) => {
+              set.headers['cache-control'] = 'private, no-store'
+              return deps.authorizeStudioRuntime.execute(
+                { ...actor(headers), readOnly: Boolean(headers['x-auth-impersonator-id']?.trim()) },
+                body,
+              )
+            },
+            { body: StudioAuthoringRuntimeRequestSchema },
+          )
           .get('/lessons/:id/draft', ({ params }) => deps.drafts.read(params.id), {
             params: IdParams,
           })

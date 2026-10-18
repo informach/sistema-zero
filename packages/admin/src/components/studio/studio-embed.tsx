@@ -1,27 +1,53 @@
 'use client'
 
 import '@sistemazero/studio/styles.css'
-import type { Project, StudioFeatures, StudioHandle } from '@sistemazero/studio'
+import type { EditableStudioProject, StudioFeatures, StudioHandle } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  type PreparedStudioAuthoringOptions,
+  studioAuthoringChoiceKey,
+  studioAuthoringChoices,
+  studioAuthoringTemplate,
+} from '../../lib/studio-authoring-options'
+import {
+  createStudioAuthoringProject,
+  resolveStudioAuthoringSelection,
+} from '../../lib/studio-authoring-project'
 import { createAdminProRuntimeAdapter } from '../../lib/studio-pro-authoring'
 import { loadStudioEmbedModule } from './studio-embed-loader'
+import {
+  type StudioAuthoringRuntimeScope,
+  useStudioAuthoringRuntime,
+} from './use-studio-authoring-runtime'
 
 type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
 type StudioModule = typeof import('@sistemazero/studio')
 type ProjectKindChoice = 'classic' | 'pro'
+type Replacement = { kind: ProjectKindChoice; environmentKey: string; templateId: string }
+const legacyOptions: PreparedStudioAuthoringOptions = {
+  options: { legacyJavaScript: true, catalog: null },
+  catalog: null,
+}
 
 interface Props {
+  editingAccess?: import('@sistemazero/studio').StudioLessonProps['editingAccess']
+  runtimeScope?: StudioAuthoringRuntimeScope
   lessonConfig?: Pick<
     import('@sistemazero/studio').StudioLessonProps,
-    'level' | 'allowedModes' | 'allowBlocks' | 'allowCategories' | 'allowLevelReveal'
+    | 'level'
+    | 'pythonLevel'
+    | 'allowedModes'
+    | 'allowBlocks'
+    | 'allowCategories'
+    | 'allowLevelReveal'
   >
-  onChange?: (project: Project) => void
+  onChange?: (project: EditableStudioProject) => void
   /** Projeto inicial; ausente → cria um vazio (autoria de bloco novo). */
-  initialProject?: Project | null
+  initialProject?: EditableStudioProject | null
   /** Nome do projeto vazio criado quando não há `initialProject`. */
   defaultName?: string
   /** Handle imperativo: o pai lê `getProject()` ao salvar / chama `replaceProject()`. */
@@ -29,6 +55,11 @@ interface Props {
   features?: StudioFeatures
   /** Exibe os controles para o autor criar e trocar projetos Pro. */
   professionalAuthoring?: boolean
+  authoringOptions?: PreparedStudioAuthoringOptions | null
+  authoringError?: string | null
+  onReloadAuthoringOptions?: () => void
+  /** Only an explicit confirmed replacement resets the parent curation. */
+  onProjectReset?: (project: EditableStudioProject) => void
   /** Altura do container (o Studio preenche 100%). */
   className?: string
   /**
@@ -52,11 +83,17 @@ interface Props {
  * dentro de um effect. `persistence="none"` — o pai captura via `handleRef.getProject()`.
  */
 export function StudioEmbed({
+  editingAccess,
+  runtimeScope,
   initialProject,
   defaultName = 'Projeto da aula',
   handleRef,
   features,
   professionalAuthoring = false,
+  authoringOptions,
+  authoringError,
+  onReloadAuthoringOptions,
+  onProjectReset,
   className = 'h-[32rem]',
   hideKindChooser = false,
   requestedKind,
@@ -67,11 +104,17 @@ export function StudioEmbed({
   const [studioModule, setStudioModule] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [loadAttempt, setLoadAttempt] = useState(0)
-  const [seed, setSeed] = useState<Project | null>(initialProject ?? null)
+  const [seed, setSeed] = useState<EditableStudioProject | null>(initialProject ?? null)
+  // Editor imports update the controls without feeding source edits back into hydration.
+  const [observed, setObserved] = useState<EditableStudioProject | null>(null)
+  const activeProject = observed ?? seed
+  const runtime = useStudioAuthoringRuntime(activeProject, runtimeScope)
   const [templateId, setTemplateId] = useState(initialProject?.proMeta?.templateId ?? 'vanilla-js')
-  const [pendingKind, setPendingKind] = useState<ProjectKindChoice | null>(null)
+  const [pending, setPending] = useState<Replacement | null>(null)
   const [replacementError, setReplacementError] = useState<string | null>(null)
   const replacement = useRef(0)
+  const latestAuthoringOptions = useRef(authoringOptions)
+  latestAuthoringOptions.current = authoringOptions
   useEffect(
     () => () => {
       replacement.current++
@@ -80,24 +123,50 @@ export function StudioEmbed({
   )
   const proRuntime = useMemo(() => createAdminProRuntimeAdapter(), [])
   const StudioLesson: StudioComponent | null = studioModule?.StudioLesson ?? null
-  const seedKind: 'blocks' | 'pro' = seed?.kind === 'pro' ? 'pro' : 'blocks'
+  const seedKind: 'blocks' | 'pro' = activeProject?.kind === 'pro' ? 'pro' : 'blocks'
+  const environmentKey = studioAuthoringChoiceKey(activeProject)
+  const choices = studioAuthoringChoices(
+    authoringOptions ?? legacyOptions,
+    seedKind === 'pro' ? 'pro' : 'classic',
+  )
+  const currentChoice = choices.find((choice) => choice.key === environmentKey)
+  const templates =
+    currentChoice?.language === 'python'
+      ? [{ id: 'python-blank', name: 'Python — projeto vazio' }]
+      : (studioModule?.listProTemplates() ?? []).filter(
+          (template) =>
+            !currentChoice?.policy || currentChoice.policy.proTemplateIds.includes(template.id),
+        )
   // Callback em ref: notificar não deve re-rodar os effects de sincronização.
   const onKindResolvedRef = useRef(onKindResolved)
   onKindResolvedRef.current = onKindResolved
 
   // Informa o kind REAL ao form (carga inicial / troca confirmada).
   useEffect(() => {
-    if (seed) onKindResolvedRef.current?.(seed.kind === 'pro' ? 'pro' : 'blocks')
-  }, [seed])
+    if (seed) onKindResolvedRef.current?.(seedKind)
+  }, [seed, seedKind])
 
   // Controle EXTERNO do tipo (form): pedido difere do atual → abre o confirm da troca.
   useEffect(() => {
     if (!requestedKind || !seed) return
-    const current = seed.kind === 'pro' ? 'pro' : 'blocks'
+    const current = seedKind
     if (requestedKind !== current) {
-      setPendingKind(requestedKind === 'pro' ? 'pro' : 'classic')
+      const kind = requestedKind === 'pro' ? 'pro' : 'classic'
+      const choice = studioAuthoringChoices(authoringOptions ?? legacyOptions, kind).find(
+        (item) => item.key === environmentKey,
+      )
+      if (!choice) {
+        setReplacementError('Este ambiente não oferece o tipo de projeto escolhido.')
+        onKindResolvedRef.current?.(current)
+        return
+      }
+      setPending({
+        kind,
+        environmentKey,
+        templateId: studioAuthoringTemplate(choice, templateId),
+      })
     }
-  }, [requestedKind, seed])
+  }, [requestedKind, seed, seedKind, authoringOptions, environmentKey, templateId])
 
   useEffect(() => {
     let active = true
@@ -114,7 +183,10 @@ export function StudioEmbed({
       const mod = result.module
       setStudioModule(mod)
       setTemplateId((current) =>
-        mod.listProTemplates().some((template) => template.id === current) ? current : 'vanilla-js',
+        current === 'python-blank' ||
+        mod.listProTemplates().some((template) => template.id === current)
+          ? current
+          : 'vanilla-js',
       )
       setSeed(
         (prev) =>
@@ -126,22 +198,42 @@ export function StudioEmbed({
     }
   }, [initialProject, defaultName, loadAttempt])
 
-  async function replaceProject(kind: ProjectKindChoice) {
+  async function replaceProject(selection: Replacement) {
     if (!studioModule || !seed) return
     const request = ++replacement.current
     setReplacementError(null)
     try {
-      const next =
-        kind === 'pro'
-          ? await studioModule.createProProject(seed.id, seed.name, templateId)
-          : studioModule.createEmptyProject(seed.id, seed.name)
+      const current = handleRef.current?.getProject() ?? seed
+      const choice = studioAuthoringChoices(authoringOptions ?? legacyOptions, selection.kind).find(
+        (item) => item.key === selection.environmentKey,
+      )
+      const nextTemplateId =
+        choice && selection.kind !== (current.kind ?? 'classic')
+          ? studioAuthoringTemplate(choice, selection.templateId)
+          : selection.templateId
+      const next = await createStudioAuthoringProject(
+        { ...selection, templateId: nextTemplateId, id: current.id, name: current.name },
+        authoringOptions ?? null,
+      )
       if (request !== replacement.current) return
+      resolveStudioAuthoringSelection(
+        { ...selection, templateId: nextTemplateId },
+        latestAuthoringOptions.current ?? null,
+      )
       setSeed(next)
+      setObserved(next)
       handleRef.current?.replaceProject(next)
-      setPendingKind(null)
-    } catch {
+      setTemplateId(nextTemplateId)
+      onProjectReset?.(next)
+      onChange?.(next)
+      setPending(null)
+    } catch (error) {
       if (request === replacement.current)
-        setReplacementError('Não foi possível carregar o modelo. Tente novamente.')
+        setReplacementError(
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível carregar o projeto. Tente novamente.',
+        )
     }
   }
 
@@ -177,60 +269,145 @@ export function StudioEmbed({
     <div
       className={`${className} flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-muted`}
     >
-      {/* Com o chooser externo (form), a barra só aparece no Pro (seletor de modelo). */}
-      {professionalAuthoring && studioModule && (!hideKindChooser || seed.kind === 'pro') ? (
+      {professionalAuthoring && studioModule ? (
         <div className="flex flex-wrap items-end gap-3 border-border border-b bg-background p-3">
           {!hideKindChooser ? (
             <div className="flex gap-2">
               <Button
                 type="button"
                 size="sm"
-                variant={seed.kind !== 'pro' ? 'default' : 'outline'}
-                onClick={() => seed.kind === 'pro' && setPendingKind('classic')}
+                variant={seedKind !== 'pro' ? 'default' : 'outline'}
+                onClick={() =>
+                  seedKind === 'pro' && setPending({ kind: 'classic', environmentKey, templateId })
+                }
               >
                 Projeto em blocos
               </Button>
               <Button
                 type="button"
                 size="sm"
-                variant={seed.kind === 'pro' ? 'default' : 'outline'}
-                onClick={() => seed.kind !== 'pro' && setPendingKind('pro')}
+                variant={seedKind === 'pro' ? 'default' : 'outline'}
+                onClick={() =>
+                  seedKind !== 'pro' && setPending({ kind: 'pro', environmentKey, templateId })
+                }
               >
                 Projeto Pro
               </Button>
             </div>
           ) : null}
-          <label className="flex min-w-64 flex-1 flex-col gap-1 font-medium text-xs">
-            Modelo Pro
-            <Select value={templateId} onChange={(event) => setTemplateId(event.target.value)}>
-              {studioModule.listProTemplates().map((template) => (
-                <option key={template.id} value={template.id}>
-                  {template.name}
+          <label className="flex min-w-0 flex-1 flex-col gap-1 font-medium text-xs">
+            Ambiente do projeto
+            <Select
+              value={environmentKey}
+              onChange={(event) => {
+                const choice = choices.find((item) => item.key === event.target.value)
+                if (choice && choice.key !== environmentKey)
+                  setPending({
+                    kind: seedKind === 'pro' ? 'pro' : 'classic',
+                    environmentKey: choice.key,
+                    templateId:
+                      choice.language === 'python'
+                        ? 'python-blank'
+                        : (choice.policy?.proTemplateIds.find((id) =>
+                            studioModule.listProTemplates().some((template) => template.id === id),
+                          ) ?? 'vanilla-js'),
+                  })
+              }}
+            >
+              {!currentChoice ? (
+                <option value={environmentKey} disabled>
+                  Ambiente salvo — indisponível para novos projetos
+                </option>
+              ) : null}
+              {choices.map((choice) => (
+                <option key={choice.key} value={choice.key}>
+                  {choice.label}
                 </option>
               ))}
             </Select>
           </label>
-          {seed.kind === 'pro' && seed.proMeta?.templateId !== templateId ? (
-            <Button type="button" size="sm" variant="outline" onClick={() => setPendingKind('pro')}>
+          {seedKind === 'pro' ? (
+            <label className="flex min-w-0 flex-1 flex-col gap-1 font-medium text-xs">
+              Modelo Pro
+              <Select
+                disabled={!currentChoice}
+                value={templateId}
+                onChange={(event) => setTemplateId(event.target.value)}
+              >
+                {!templates.some((template) => template.id === templateId) ? (
+                  <option value={templateId} disabled>
+                    Modelo salvo — indisponível
+                  </option>
+                ) : null}
+                {templates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.name}
+                  </option>
+                ))}
+              </Select>
+            </label>
+          ) : null}
+          {seedKind === 'pro' &&
+          currentChoice &&
+          activeProject?.proMeta?.templateId !== templateId ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setPending({ kind: 'pro', environmentKey, templateId })}
+            >
               Aplicar este modelo
             </Button>
           ) : null}
-          <p className="w-full text-muted-foreground text-xs">
-            O preview Pro é compilado no ambiente seguro da plataforma, igual ao que a criança usa
-            na aula.
-          </p>
+          {seedKind === 'pro' && activeProject?.programmingLanguage !== 'python' ? (
+            <p className="w-full text-muted-foreground text-xs">
+              O preview Pro é compilado no ambiente seguro da plataforma, igual ao que a criança usa
+              na aula.
+            </p>
+          ) : null}
+          {authoringError ? (
+            <p role="alert" className="w-full text-sm text-destructive">
+              {authoringError}{' '}
+              <Button type="button" size="sm" variant="outline" onClick={onReloadAuthoringOptions}>
+                Tentar novamente
+              </Button>
+            </p>
+          ) : !authoringOptions ? (
+            <p role="status" className="w-full text-xs text-muted-foreground">
+              Consultando os ambientes disponíveis…
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+      {runtime.loading || runtime.error ? (
+        <div
+          role={runtime.error ? 'alert' : 'status'}
+          className="flex items-center gap-3 border-b border-border px-3 py-2 text-sm"
+        >
+          <p>{runtime.error ?? 'Preparando Python…'}</p>
+          {runtime.error ? (
+            <Button type="button" size="sm" variant="outline" onClick={runtime.retry}>
+              Tentar novamente
+            </Button>
+          ) : null}
         </div>
       ) : null}
       <div className="min-h-0 flex-1">
         <StudioLesson
           {...lessonConfig}
+          pythonLevel={lessonConfig?.pythonLevel ?? (professionalAuthoring ? 3 : undefined)}
           ref={handleRef}
           initialProject={seed}
+          runtimeEnvironment={runtime.environment}
+          editingAccess={editingAccess}
           persistence="none"
-          onChange={onChange}
+          onChange={(project) => {
+            setObserved(project)
+            onChange?.(project)
+          }}
           features={{
             ...features,
-            ...(seed.kind === 'pro' ? { professional: true, terminal: false } : {}),
+            ...(seedKind === 'pro' ? { professional: true, terminal: false } : {}),
           }}
           // SEMPRE presente: o StudioCore trava o adapter no MOUNT (useState latch) —
           // condicionar ao kind deixava o preview Pro sem runtime remoto quando o
@@ -241,21 +418,27 @@ export function StudioEmbed({
         />
       </div>
       <ConfirmDialog
-        open={pendingKind !== null}
+        open={pending !== null}
         onClose={() => {
           replacement.current++
-          setPendingKind(null)
+          setPending(null)
           // Cancelou a troca pedida pelo form → devolve o kind REAL (desfaz o seletor).
           onKindResolvedRef.current?.(seedKind)
         }}
-        title="Trocar o tipo do projeto?"
-        message="O projeto inicial atual será substituído por um projeto novo. Esta troca não pode ser desfeita depois que o bloco for salvo."
+        title="Criar outro projeto inicial?"
+        message="O código, os materiais, as extensões e a seleção de blocos atuais serão substituídos por um projeto novo no ambiente escolhido. Esta troca não pode ser desfeita depois que o bloco for salvo."
         confirmText="Trocar projeto"
         onConfirm={() => {
-          if (pendingKind) return replaceProject(pendingKind)
+          if (pending) return replaceProject(pending)
         }}
-      />
-      {replacementError && (
+      >
+        {replacementError ? (
+          <p role="alert" className="text-destructive">
+            {replacementError}
+          </p>
+        ) : null}
+      </ConfirmDialog>
+      {replacementError && !pending && (
         <p role="alert" className="px-3 py-2 text-sm text-destructive">
           {replacementError}
         </p>

@@ -1,4 +1,8 @@
-import { isExecutionRule, type SectionProjectCheck } from '@sistemazero/core/learning'
+import {
+  isExecutionRule,
+  ProjectStructureAnalysisLimitError,
+  type SectionJavaScriptProjectCheck,
+} from '@sistemazero/core/learning'
 import { evaluateStudioSectionObjectives } from '@sistemazero/studio/server-project-checks'
 
 /**
@@ -54,15 +58,15 @@ export class ExecutionTestRejectedError extends Error {}
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-const nameOf = (check: SectionProjectCheck, index: number) =>
+const nameOf = (check: SectionJavaScriptProjectCheck, index: number) =>
   check.label.trim() || `Objetivo ${index + 1}`
 
-export function executionChecksOf(checks: readonly SectionProjectCheck[]) {
+export function executionChecksOf(checks: readonly SectionJavaScriptProjectCheck[]) {
   return checks.filter((check) => isExecutionRule(check.rule))
 }
 
 export function testSectionObjectives(
-  checks: readonly SectionProjectCheck[],
+  checks: readonly SectionJavaScriptProjectCheck[],
   workspace: unknown,
   executed: ExecutedProjects = {},
 ): ObjectivesTestReport {
@@ -70,22 +74,29 @@ export function testSectionObjectives(
   const initial = content.initialProject
   const solution = content.solutionProject
   // No código só conta o que mudou em relação ao projeto inicial (o mesmo critério do servidor).
-  const passedBy = (project: unknown) =>
-    project === undefined || project === null
-      ? null
-      : new Map(
-          evaluateStudioSectionObjectives(checks, project, initial ?? undefined).results.map(
-            (r) => [r.checkId, r.passed],
-          ),
-        )
+  const passedBy = (project: unknown): Map<string, boolean> | null | 'error' => {
+    if (project === undefined || project === null) return null
+    try {
+      return new Map(
+        evaluateStudioSectionObjectives(checks, project, initial ?? undefined).results.map((r) => [
+          r.checkId,
+          r.passed,
+        ]),
+      )
+    } catch (error) {
+      if (error instanceof ProjectStructureAnalysisLimitError) return 'error'
+      throw error
+    }
+  }
   const byInitial = passedBy(initial)
   const bySolution = passedBy(solution)
   const verdict = (
-    check: SectionProjectCheck,
-    structural: Map<string, boolean> | null,
+    check: SectionJavaScriptProjectCheck,
+    structural: Map<string, boolean> | null | 'error',
     run: ExecutedProjects['initial'],
   ): ObjectiveVerdict => {
     if (!structural) return null
+    if (structural === 'error') return 'error'
     if (!isExecutionRule(check.rule)) return structural.get(check.id) ?? false
     if (run === undefined || run === 'pending') return 'pending'
     if (run === 'error' || 'rejected' in run) return 'error'
@@ -113,11 +124,11 @@ export function testSectionObjectives(
   for (const row of rows) {
     if (!row.optional && row.solution === false)
       problems.push(
-        `O gabarito não cumpre "${row.label}". A publicação recusa: ajuste o gabarito ou o objetivo.`,
+        `O gabarito não cumpre "${row.label}". Ajuste o gabarito ou o objetivo antes de publicar.`,
       )
     if (!row.optional && row.initial === true)
       problems.push(
-        `O projeto inicial já cumpre "${row.label}": a criança passa sem fazer nada. A publicação recusa: mude o objetivo ou o projeto inicial.`,
+        `O projeto inicial já cumpre "${row.label}": a criança passa sem fazer nada. Mude o objetivo ou o projeto inicial antes de publicar.`,
       )
     if (row.optional && row.solution === false)
       notes.push(`O gabarito não cumpre o desafio extra "${row.label}".`)
@@ -132,6 +143,10 @@ export function testSectionObjectives(
     if (typeof run === 'object' && 'rejected' in run) problems.push(`${label}: ${run.rejected}`)
   }
   const unavailable = (run: ExecutedProjects['initial']) => run === 'error'
+  if (byInitial === 'error' || bySolution === 'error')
+    notes.push(
+      'Não consegui conferir todo o código dentro dos limites do teste. A análise ficou inconclusiva; peça ajuda à equipe.',
+    )
   if (unavailable(executed.initial) || unavailable(executed.solution))
     notes.push(
       'Não consegui rodar o jogo agora para conferir os objetivos que o testam. Tente de novo.',
@@ -152,7 +167,7 @@ export function testSectionObjectives(
 /** Roda no executor os objetivos que testam o jogo, contra um projeto. */
 export async function runExecutionTest(
   project: unknown,
-  checks: readonly SectionProjectCheck[],
+  checks: readonly SectionJavaScriptProjectCheck[],
   fetchImpl: typeof fetch = fetch,
   /** O projeto inicial do bloco: o servidor confere que o gabarito é do mesmo tipo e modelo. */
   initialProject?: unknown,

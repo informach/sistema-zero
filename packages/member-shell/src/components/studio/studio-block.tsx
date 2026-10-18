@@ -1,12 +1,15 @@
 'use client'
 
+import { compareContentFingerprints } from '@sistemazero/core/creations'
 import { isStudioProArtifact } from '@sistemazero/core/studio'
+import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
 import { sessionFetch as fetch } from '../../lib/session-fetch'
 import { createStudioPublicationAdapter } from '../../lib/studio-publication-adapter'
+import { useLessonRuntime } from './use-lesson-runtime'
 
 import '@sistemazero/studio/styles.css'
 import type {
-  Project,
+  EditableStudioProject as Project,
   StudioHandle,
   StudioPersistence,
   StudioProRuntimeAdapter,
@@ -36,7 +39,21 @@ import { dataUrlBase64ToBlob } from '../../lib/data-url'
 import { useReportActivityExpanded } from '../../lib/lesson-activity-expansion'
 import type { LessonDraftConflictOutcome, LessonDraftRemote } from '../../lib/lesson-draft-cloud'
 import { requestPersistentStorage } from '../../lib/persistent-storage'
-import { resolveStudioLessonSeed } from '../../lib/studio-lesson-seed'
+import {
+  confirmStudioLessonContext,
+  lessonContextScope,
+  resolveStudioLessonContext,
+  StudioLessonAdmissionError,
+  type StudioLessonContext,
+  studioLessonContextCache,
+} from '../../lib/studio-lesson-context'
+import {
+  assertStudioLessonSeedCompatibility,
+  completeLibraryAssets,
+  resolveStudioLessonSeed,
+  StudioLessonMaterialError,
+  StudioLessonSeedCompatibilityError,
+} from '../../lib/studio-lesson-seed'
 import { lessonStudioBackupProjectId, lessonStudioProjectId } from '../../lib/studio-project-id'
 import { isInitialTemplateProject } from '../../lib/studio-template'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
@@ -143,10 +160,11 @@ export function StudioBlockView(props: Props) {
   const player = useLessonPlayer()
   const { estudio } = useLessonCopy()
   // Estável entre renders: o projeto ao vivo é memorizado e só re-renderiza quando a curadoria muda.
-  const { level, allowBlocks, allowCategories, allowedModes, allowLevelReveal } = props.content
+  const { level, pythonLevel, allowBlocks, allowCategories, allowedModes, allowLevelReveal } =
+    props.content
   const curation = useMemo(
-    () => ({ level, allowBlocks, allowCategories, allowedModes, allowLevelReveal }),
-    [level, allowBlocks, allowCategories, allowedModes, allowLevelReveal],
+    () => ({ level, pythonLevel, allowBlocks, allowCategories, allowedModes, allowLevelReveal }),
+    [level, pythonLevel, allowBlocks, allowCategories, allowedModes, allowLevelReveal],
   )
   // ⭐ Aula de curso AO VIVO na sala (14/10/2026): o bloco é o PROJETO AO VIVO da criança (um
   // projeto só, com a ajuda da professora), sem rascunho local nem "Enviar para a equipe". A
@@ -161,7 +179,132 @@ export function StudioBlockView(props: Props) {
         curation={curation}
       />
     )
-  return <LessonStudioBlockView {...props} />
+  return <BoundLessonStudioBlockView {...props} />
+}
+
+/** Resolve the server's original authoring configuration before touching any local/cloud work. */
+function BoundLessonStudioBlockView(props: Props) {
+  const player = useLessonPlayer()
+  const lessonId = player?.lessonId ?? ''
+  const [attempt, setAttempt] = useState(0)
+  const scope = `${player?.viewerId ?? ''}:${lessonId}:${props.blockId}:${attempt}`
+  const cacheKey = player?.viewerId
+    ? lessonContextScope(player.viewerId, lessonId, props.blockId)
+    : null
+  const localId = lessonStudioProjectId(props.blockId, player?.viewerId)
+  const currentContent = useRef(props.content)
+  currentContent.current = props.content
+  const [state, setState] = useState<{
+    scope: string
+    configuration?: Partial<StudioBlock> & Pick<StudioBlock, 'initialProject'>
+    offline?: boolean
+    context?: StudioLessonContext
+    error?: string
+  } | null>(null)
+  useEffect(() => {
+    if (!lessonId) return
+    let active = true
+    const controller = new AbortController()
+    void resolveStudioLessonContext({
+      key: cacheKey,
+      lessonId,
+      blockId: props.blockId,
+      cache: studioLessonContextCache,
+      fetchCurrent: () =>
+        apiSend<StudioLessonContext>(
+          `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(props.blockId)}/studio-context`,
+          'POST',
+          undefined,
+          undefined,
+          { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]) },
+        ),
+      readLocal: async () => {
+        const mod = await import('@sistemazero/studio')
+        return mod.loadProjectSnapshotForCloud(localId, { namespace: '' })
+      },
+    })
+      .then(async ({ context, offline }) => {
+        const original = context.configuration.initialProject
+        const latest = currentContent.current.initialProject
+        // Course-library additions remain available to existing projects in the same
+        // environment. Never replace the original seed or import another runtime's files.
+        const initialProject =
+          studioProjectContinuityIssue(original, latest) === null
+            ? await completeLibraryAssets(original, latest)
+            : original
+        const {
+          level,
+          pythonLevel,
+          allowBlocks,
+          allowCategories,
+          allowedModes,
+          allowLevelReveal,
+          chain,
+        } = context.configuration
+        // Undefined is meaningful: an original default must not inherit a newly published
+        // chain or curation field when configuration is overlaid on the current lesson.
+        if (active)
+          setState({
+            scope,
+            offline,
+            context,
+            configuration: {
+              initialProject,
+              level,
+              allowBlocks,
+              allowCategories,
+              allowedModes,
+              allowLevelReveal,
+              pythonLevel,
+              chain,
+            },
+          })
+      })
+      .catch((error: unknown) => {
+        if (active)
+          setState({
+            scope,
+            error:
+              (error as { message?: string })?.message ?? 'Não foi possível abrir este projeto.',
+          })
+      })
+    return () => {
+      active = false
+      controller.abort()
+    }
+  }, [scope, lessonId, props.blockId, cacheKey, localId])
+  // Standalone authoring previews have no learner/lesson binding.
+  if (!lessonId) return <LessonStudioBlockView {...props} />
+  if (state?.scope === scope && state.configuration)
+    return (
+      <LessonStudioBlockView
+        {...props}
+        resumeOffline={state.offline}
+        admission={state.context}
+        onAdmissionRetry={() => setAttempt((value) => value + 1)}
+        content={{ ...props.content, ...state.configuration }}
+      />
+    )
+  if (state?.scope === scope && state.error)
+    return (
+      <div role="alert" className="flex flex-col items-center gap-3 p-6">
+        <p>{state.error}</p>
+        <Button
+          onClick={() => {
+            setState(null)
+            setAttempt((value) => value + 1)
+          }}
+        >
+          Tentar novamente
+        </Button>
+      </div>
+    )
+  return (
+    <div role="status" className="flex items-center justify-center gap-2 p-6">
+      <Spinner />
+      Abrindo seu projeto…
+    </div>
+  )
 }
 
 function LessonStudioBlockView({
@@ -171,7 +314,14 @@ function LessonStudioBlockView({
   enableShare,
   onShared,
   fillHeight,
-}: Props) {
+  resumeOffline = false,
+  admission,
+  onAdmissionRetry,
+}: Props & {
+  resumeOffline?: boolean
+  admission?: StudioLessonContext
+  onAdmissionRetry?: () => void
+}) {
   const player = useLessonPlayer()
   const { estudio, rascunho } = useLessonCopy()
   const lessonId = player?.lessonId ?? ''
@@ -206,7 +356,11 @@ function LessonStudioBlockView({
   const [currentFingerprint, setCurrentFingerprint] = useState<string | null>(null)
   // A preparação (qual versão abre) roda UMA vez por rascunho, e quem chega depois ESPERA a mesma:
   // um `router.refresh()` no meio dela reexecuta o efeito, e pular a espera abriria o disco antigo.
-  const preparing = useRef<{ projectId: string; promise: Promise<{ other: boolean }> } | null>(null)
+  const preparing = useRef<{
+    projectId: string
+    attempt: number
+    promise: Promise<{ other: boolean; enqueue?: () => void }>
+  } | null>(null)
   // O último envio (hora e impressão) entra na decisão de qual versão abrir. Num ref: a decisão
   // roda uma vez por rascunho, e um reenvio não deve recarregar o editor.
   const envioRef = useRef<{ at: number; fingerprint: string | null } | null>(null)
@@ -233,9 +387,19 @@ function LessonStudioBlockView({
     submitted: studioState?.submitted ?? false,
   }
   const [seed, setSeed] = useState<Project | null>(null)
+  const lessonRuntime = useLessonRuntime({
+    project: seed,
+    userId: player?.viewerId,
+    lessonId,
+    blockId,
+    baselineId: admission?.id,
+    offline: resumeOffline,
+  })
   const [seedLoadFailure, setSeedLoadFailure] = useState<{
     projectId: string
     attempt: number
+    message?: string
+    recovery?: unknown
   } | null>(null)
   const [seedLoadAttempt, setSeedLoadAttempt] = useState(0)
   const seedLoadFailed =
@@ -336,8 +500,17 @@ function LessonStudioBlockView({
 
   const draftDeps = useMemo<StudioDraftDeps | null>(
     () =>
-      studioMod && channel ? { studio: studioMod, channel, blockId, projectId, backupId } : null,
-    [studioMod, channel, blockId, projectId, backupId],
+      studioMod && channel
+        ? {
+            studio: studioMod,
+            channel,
+            blockId,
+            projectId,
+            backupId,
+            initialProject: content.initialProject,
+          }
+        : null,
+    [studioMod, channel, blockId, projectId, backupId, content.initialProject],
   )
   // Reabre o editor com o que está no disco (depois de trocar as versões de lugar).
   const reabrirDoDisco = useCallback(async () => {
@@ -418,6 +591,7 @@ function LessonStudioBlockView({
   useEffect(() => {
     let active = true
     setSeedLoadFailure(null)
+    const admissionController = new AbortController()
     // O rascunho vive no IndexedDB: pede persistência p/ o navegador não despejá-lo
     // (Safari ~7 dias sem visita; pressão de disco). Best-effort, 1× por sessão.
     requestPersistentStorage()
@@ -435,56 +609,129 @@ function LessonStudioBlockView({
         )
         return result?.project ? { ...(result.project as Project), id: projectId } : null
       }
+      let enqueuePrepared: (() => void) | undefined
       // A versão da CONTA entra antes de o editor montar (uma vez por rascunho): depois disto a
       // ordem de sempre, com o local primeiro, já abre a versão mais nova.
       if (channel) {
-        if (preparing.current?.projectId !== projectId) {
-          const deps = { studio: mod, channel, blockId, projectId, backupId }
+        if (
+          preparing.current?.projectId !== projectId ||
+          preparing.current.attempt !== seedLoadAttempt
+        ) {
+          const deps = {
+            studio: mod,
+            channel,
+            blockId,
+            projectId,
+            backupId,
+            initialProject: sementeRef.current.initialProject,
+          }
           preparing.current = {
             projectId,
+            attempt: seedLoadAttempt,
             promise: prepareStudioLessonDraft({
               ...deps,
+              offline: resumeOffline,
+              requireRemoteCheck: Boolean(admission && !admission.bound && !admission.readOnly),
               submission: envioRef.current,
               readSubmission: () => readSavedProject('studio-submission'),
             }).then((preparo) => {
-              if (preparo.upload)
-                channel.enqueue(
-                  blockId,
-                  studioDraftProducer(deps, setCurrentFingerprint),
-                  aoConflitar(deps),
-                )
-              return preparo
+              const enqueue = preparo.upload
+                ? () =>
+                    channel.enqueue(
+                      blockId,
+                      studioDraftProducer(deps, setCurrentFingerprint),
+                      aoConflitar(deps),
+                    )
+                : undefined
+              return { ...preparo, enqueue }
             }),
           }
         }
         try {
           const preparo = await preparing.current.promise
           if (!active) return
+          enqueuePrepared = preparo.enqueue
           setHasOther(preparo.other)
           setCurrentFingerprint(await diskFingerprint(mod, projectId))
         } catch (error) {
+          if (
+            error instanceof StudioLessonSeedCompatibilityError ||
+            (admission && !admission.bound && !admission.readOnly)
+          )
+            throw error
           console.warn('[rascunho-da-fase] não deu para trazer a versão da conta', error)
         }
       }
       const semente = sementeRef.current
       const project = await resolveStudioLessonSeed({
-        local: () => mod.createLocalPersistenceAdapter().load(projectId),
+        local: async () => {
+          const saved = await mod.createLocalPersistenceAdapter().load(projectId)
+          if (resumeOffline && !saved)
+            throw new Error('O projeto não está mais neste aparelho. Conecte-se para recuperá-lo.')
+          return saved
+        },
         submitted:
           lessonId && semente.submitted ? () => readSavedProject('studio-submission') : undefined,
         carryover:
           semente.chain && lessonId ? () => readSavedProject('studio-carryover') : undefined,
         initial: { ...(semente.initialProject as Project), id: projectId },
       })
-      if (active) setSeed(project)
-    })().catch(() => {
+      if (!active) return
+      if (admission && !resumeOffline)
+        await confirmStudioLessonContext({
+          context: admission,
+          accountAvailable: !draftChannel || Boolean(channel),
+          project,
+          key: player?.viewerId ? lessonContextScope(player.viewerId, lessonId, blockId) : null,
+          cache: studioLessonContextCache,
+          send: (confirm) =>
+            apiSend<StudioLessonContext>(
+              `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-context`,
+              'POST',
+              { confirm },
+              undefined,
+              {
+                signal: AbortSignal.any([admissionController.signal, AbortSignal.timeout(15_000)]),
+              },
+            ),
+        })
+      if (active) {
+        enqueuePrepared?.()
+        setSeed(project)
+      }
+    })().catch((cause: unknown) => {
       if (!active) return
       setSeed(null)
-      setSeedLoadFailure({ projectId, attempt: seedLoadAttempt })
+      setSeedLoadFailure({
+        projectId,
+        attempt: seedLoadAttempt,
+        recovery:
+          cause instanceof StudioLessonSeedCompatibilityError ? cause.savedProject : undefined,
+        message:
+          cause instanceof StudioLessonSeedCompatibilityError ||
+          cause instanceof StudioLessonMaterialError ||
+          cause instanceof StudioLessonAdmissionError
+            ? cause.message
+            : undefined,
+      })
     })
     return () => {
       active = false
+      admissionController.abort()
     }
-  }, [projectId, lessonId, blockId, seedLoadAttempt, channel, backupId, aoConflitar])
+  }, [
+    projectId,
+    lessonId,
+    blockId,
+    seedLoadAttempt,
+    channel,
+    draftChannel,
+    backupId,
+    aoConflitar,
+    resumeOffline,
+    admission,
+    player?.viewerId,
+  ])
 
   // "Expandir" é uma SOBREPOSIÇÃO em tela cheia por CSS (não a Fullscreen API nativa): a
   // API restringe a pintura à subárvore do elemento, então menus/diálogos PORTALADOS no
@@ -593,6 +840,7 @@ function LessonStudioBlockView({
         `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-submission`,
       )
       if (res?.project) {
+        assertStudioLessonSeedCompatibility(res.project, content.initialProject, 'submitted')
         // Re-chaveia o id p/ a chave LOCAL deste bloco/perfil → o autosave grava
         // por cima do rascunho antigo (não volta a defasar no próximo open).
         handleRef.current?.replaceProject({ ...(res.project as Project), id: projectId })
@@ -600,12 +848,16 @@ function LessonStudioBlockView({
       } else {
         setSyncNote(estudio.semEnvio)
       }
-    } catch {
-      setSyncNote('Não consegui sincronizar agora. Tente de novo.')
+    } catch (cause) {
+      setSyncNote(
+        cause instanceof StudioLessonSeedCompatibilityError
+          ? cause.message
+          : 'Não consegui sincronizar agora. Tente de novo.',
+      )
     } finally {
       setSyncing(false)
     }
-  }, [lessonId, blockId, projectId, estudio.semEnvio])
+  }, [lessonId, blockId, projectId, estudio.semEnvio, content.initialProject])
 
   const doRestart = useCallback(async () => {
     const handle = handleRef.current
@@ -756,12 +1008,16 @@ function LessonStudioBlockView({
       matchesSubmission: async ({ saved }) => {
         if (!submitted || !sentFingerprint) return true
         if (!saved || !studioMod) return false
-        return (await diskFingerprint(studioMod, projectId)) === sentFingerprint
+        const savedFingerprint = await diskFingerprint(studioMod, projectId)
+        return Boolean(
+          savedFingerprint &&
+            compareContentFingerprints(savedFingerprint, sentFingerprint) !== 'different',
+        )
       },
     },
   )
   const mudouDepoisDoEnvio = Boolean(
-    submitted && sentFingerprint && currentFingerprint && sentFingerprint !== currentFingerprint,
+    submitted && compareContentFingerprints(sentFingerprint, currentFingerprint) === 'different',
   )
 
   return (
@@ -859,6 +1115,19 @@ function LessonStudioBlockView({
         </div>
       </div>
 
+      {lessonRuntime.loading || lessonRuntime.error ? (
+        <div
+          role="status"
+          className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground"
+        >
+          <span>{lessonRuntime.error ?? 'Preparando o ambiente Python…'}</span>
+          {lessonRuntime.error ? (
+            <Button type="button" variant="outline" size="sm" onClick={lessonRuntime.retry}>
+              Tentar novamente
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
       <div
         className={cn(
           // Área generosa p/ programar (a página de aula já é largura total; aqui damos
@@ -888,8 +1157,10 @@ function LessonStudioBlockView({
             allowedModes={content.allowedModes}
             allowLevelReveal={content.allowLevelReveal}
             onChange={notifyProjectChange}
+            pythonLevel={content.pythonLevel}
             features={{ extensions: false, professional: isProLesson, terminal: false }}
             proRuntime={proRuntime}
+            runtimeEnvironment={lessonRuntime.environment}
             share={share}
             // O "Compartilhar" da aula: (1) só habilita DEPOIS de enviar ao professor
             // (publicar exige a entrega; o members também barra com SHOWCASE_NOT_ELIGIBLE);
@@ -913,11 +1184,34 @@ function LessonStudioBlockView({
         ) : seedLoadFailed ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
             <p role="alert" className="text-sm text-muted-foreground">
-              {estudio.erroAoAbrir}
+              {seedLoadFailure?.message ?? estudio.erroAoAbrir}
             </p>
-            <Button variant="outline" onClick={() => setSeedLoadAttempt((attempt) => attempt + 1)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (admission && !admission.bound && onAdmissionRetry) onAdmissionRetry()
+                else setSeedLoadAttempt((attempt) => attempt + 1)
+              }}
+            >
               Tentar novamente
             </Button>
+            {seedLoadFailure?.recovery && studioMod ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  void studioMod
+                    .validateCloudProjectSnapshot(seedLoadFailure.recovery)
+                    .then(({ project }) => studioMod.downloadProjectAsJSON(project))
+                    .catch(() =>
+                      setError(
+                        'Não foi possível baixar o projeto salvo. O original continua guardado.',
+                      ),
+                    )
+                }}
+              >
+                Baixar projeto salvo
+              </Button>
+            ) : null}
           </div>
         ) : (
           <div className="flex h-full items-center justify-center gap-2 text-sm text-muted-foreground">

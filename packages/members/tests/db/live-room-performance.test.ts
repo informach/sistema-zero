@@ -30,7 +30,9 @@ const ms = (value: number) => Math.round(value * 10) / 10
 
 describe.skipIf(!databaseUrl)('desempenho da sala com 9 participantes (PostgreSQL real)', () => {
   let connection: DbConnection
-  const courses = new InMemoryLiveCourses((course) => persistLiveCourse(connection, course))
+  const courses = new InMemoryLiveCourses((course, blocks) =>
+    persistLiveCourse(connection, course, blocks),
+  )
   const results: Record<string, unknown>[] = []
   beforeAll(() => {
     connection = createDbConnection(databaseUrl as string)

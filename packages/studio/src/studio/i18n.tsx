@@ -1,5 +1,5 @@
 import { createContext, type JSX, type ReactNode, useContext, useMemo } from 'react'
-import { createTranslator, type Locale, type Translator } from '#core'
+import { createTranslator, type Locale, type Translator } from '../core/i18n'
 
 const defaultTranslator = createTranslator('pt-BR')
 const StudioI18nContext = createContext<Translator>(defaultTranslator)

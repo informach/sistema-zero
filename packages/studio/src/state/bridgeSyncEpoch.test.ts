@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { createEmptyProject } from '#core'
+import { javaScriptProject } from '../core/editableProject'
 import { sanitizeProjectForHost, useProjectStore } from './projectStore'
 
 // Épocas da sincronização código⇄blocos da Ponte (`bridgeCodeEditEpoch` ×
@@ -34,7 +35,7 @@ describe('épocas da sincronização código⇄blocos (Ponte)', () => {
 
     // Em Blocos, files só mudam por REGENERAÇÃO (blocos são a fonte) — a época
     // de edição de código não anda.
-    const current = useProjectStore.getState().project
+    const current = javaScriptProject(useProjectStore.getState().project)
     if (!current) throw new Error('projeto sumiu')
     useProjectStore.setState({ project: { ...current, mode: 'blocks' } })
     useProjectStore.getState().setFile('script.js', 'c();\n')

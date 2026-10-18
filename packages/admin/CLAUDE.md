@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Autoria do Estúdio em duas linguagens (18/10/2026)
+
+O projeto inicial e o gabarito usam `EditableStudioProject`; JavaScript permanece o padrão. A escolha de ambiente, extensões e tipo vem das opções autorizadas, com troca explícita que preserva o projeto quando cancelada ou recusada. Python tem nível e paleta próprios; não traduzir a curadoria JavaScript por nome.
+
+O gabarito possui id e handle próprios, recebe o contexto de autoria vigente (autor/aula/revisão/bloco), opções de ambiente e nível Python 3 de autoria. Seu runtime Python é independente do inicial e perde autorização quando o contexto muda. Um campo `runtime` no documento sozinho não habilita execução. Objetivos ficam na seção; modelos, colagem e testes de execução JavaScript não aceitam regras Python. O editor Python usa sua inspeção autorizada.
+
+Rascunhos podem guardar critérios incompletos; publicação os valida. "Testar agora" só mostra sucesso geral com resultados conclusivos: espera, falha do executor ou limite de análise não são aprovação. A publicação confere estrutura e exige gabarito para execução, mas ainda não exige uma evidência persistida de teste de execução aprovado.
+
 ## Gabarito e "Testar agora" dos objetivos (18/10/2026)
 
 [`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). No bloco Estúdio a "Atividade (auto-correção)" (`activity-builder.tsx`) SAIU; no lugar,

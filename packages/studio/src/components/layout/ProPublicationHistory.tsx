@@ -1,4 +1,4 @@
-import type { StudioProPublication } from '@sistemazero/core/studio/pro-publication'
+import type { StudioPublication } from '@sistemazero/core/studio/python-publication'
 import { useEffect, useRef, useState } from 'react'
 import { flushProjectOperations } from '../../state/projectOperations'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
@@ -15,7 +15,7 @@ export function ProPublicationHistory({
   projectId: string
 }) {
   const store = useProjectStoreApi()
-  const [state, setState] = useState<StudioProPublication | null>(null)
+  const [state, setState] = useState<StudioPublication | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [reload, setReload] = useState(0)

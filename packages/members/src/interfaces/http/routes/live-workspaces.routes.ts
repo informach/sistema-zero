@@ -1,6 +1,9 @@
 import { ValidationError } from '@sistemazero/core/errors'
+import { StudioLiveRuntimeRequestSchema } from '@sistemazero/core/studio/runtime-authorization'
 import { Elysia, t } from 'elysia'
 import type { LiveWorkspaceService } from '../../../application/live/live-workspace.service'
+import type { AuthorizeLiveRuntimeService } from '../../../application/studio/authorize-live-runtime.service'
+import { AccessDeniedError } from '../../../domain/entitlement/entitlement.errors'
 import {
   assertInternalCaller,
   assertNoLiveSupportWrite,
@@ -30,6 +33,7 @@ const actor = (headers: Record<string, string | undefined>) => ({
 
 export function liveWorkspaceRoutes(deps: {
   workspace: LiveWorkspaceService
+  runtime?: AuthorizeLiveRuntimeService
   internalToken?: string
   requireAdminEnabled: boolean
 }) {
@@ -59,6 +63,21 @@ export function liveWorkspaceRoutes(deps: {
   const student = new Elysia({ prefix: '/members/live' })
     .onBeforeHandle(guard)
     .onBeforeHandle(support)
+    .post(
+      '/workspaces/:id/runtime',
+      ({ params, body, headers, request }) => {
+        const sessionId = new URL(request.url).searchParams.get('sessionId')
+        if (
+          params.id !== body.context.workspaceId ||
+          (sessionId !== null && sessionId !== body.context.sessionId)
+        )
+          throw new ValidationError('O contexto da execução não corresponde ao projeto aberto.')
+        if (!deps.runtime)
+          throw new AccessDeniedError('O ambiente de execução ainda não está disponível.')
+        return deps.runtime.execute(actor(headers), body)
+      },
+      { params: Params, body: StudioLiveRuntimeRequestSchema },
+    )
     // Without `blockId`: the child's own projects (library). With `sessionId` + `blockId`: open
     // or create the project of that Studio block of the encounter's PUBLISHED lesson (a teacher
     // of the cohort passes the child's `learnerId`).
@@ -84,7 +103,7 @@ export function liveWorkspaceRoutes(deps: {
     )
     .get(
       '/workspaces/:id',
-      ({ request, headers, params, query }) =>
+      async ({ request, headers, params, query }) =>
         query.revision === undefined
           ? workspace(request).get(actor(headers), params.id)
           : workspace(request).poll(actor(headers), params.id, query.revision),
@@ -121,7 +140,9 @@ export function liveWorkspaceRoutes(deps: {
       '/workspaces/:id/accept',
       ({ request, headers, params, body }) =>
         workspace(request).acceptAssistance(actor(headers), params.id, body.requestId, body),
-      { params: Params, body: t.Intersect([Commit, t.Object({ requestId: uuid() })]) },
+      // An intersection reuses Commit's closed object after /commits is compiled,
+      // so it rejects requestId. Accept has one complete, independent object schema.
+      { params: Params, body: t.Object({ ...Commit.properties, requestId: uuid() }) },
     )
     .post(
       '/workspaces/:id/revoke',
@@ -181,6 +202,17 @@ export function liveWorkspaceRoutes(deps: {
                 kind: t.Union([t.Literal('control'), t.Literal('block')]),
                 id: t.String({ minLength: 1, maxLength: 128 }),
               }),
+              t.Object(
+                {
+                  kind: t.Literal('code'),
+                  id: t.String({ minLength: 1, maxLength: 512 }),
+                  start: t.Integer({ minimum: 0 }),
+                  end: t.Integer({ minimum: 0 }),
+                  modelVersion: t.Integer({ minimum: 1 }),
+                  sourceSha256: t.String({ pattern: '^[a-f0-9]{64}$' }),
+                },
+                { additionalProperties: false },
+              ),
             ]),
           ),
         }),

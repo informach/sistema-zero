@@ -38,18 +38,33 @@ test('event retention is bounded without resetting sequence numbers or changing 
   expect(journal.disposition).toBe('pending')
 })
 
-test('accepts the canonical tutor source hash for selection and observed baseline', () => {
+test.each([
+  'typescript',
+  'pyright',
+] as const)('accepts the canonical tutor source hash for selection and observed %s baseline', (source) => {
   const sourceHash = `sha256-${Buffer.from('a'.repeat(64), 'hex').toString('base64')}`
   const input = {
     version: 1,
     intent: 'change',
     scope: 'selection',
     criteria: [],
-    selection: { path: 'main.ts', startLine: 1, endLine: 2, sourceHash },
+    selection: {
+      path: source === 'pyright' ? 'main.py' : 'main.ts',
+      startLine: 1,
+      endLine: 2,
+      sourceHash,
+    },
     baseline: {
       revisionHash: 'b'.repeat(64),
-      source: 'typescript',
-      diagnostics: [{ path: 'main.ts', line: 2, message: 'Tipo incompatível', sourceHash }],
+      source,
+      diagnostics: [
+        {
+          path: source === 'pyright' ? 'main.py' : 'main.ts',
+          line: 2,
+          message: 'Tipo incompatível',
+          sourceHash,
+        },
+      ],
     },
   } satisfies StudioProAssistanceRequest
   expect(parseStudioProAssistanceRequest(input)).toEqual(input)

@@ -40,7 +40,7 @@ export function galleryDeliveryRoutes(deps: {
     )
     .post(
       '/lessons/:lessonId/blocks/:blockId/gallery-prepare',
-      ({ headers, params, body }) =>
+      ({ headers, params, body, request }) =>
         deps.gallery.prepare(
           {
             userId: resolveUserId(headers),
@@ -50,22 +50,30 @@ export function galleryDeliveryRoutes(deps: {
           params.lessonId,
           params.blockId,
           body,
+          { signal: request.signal },
         ),
       { params: Params, body: Input },
     )
     .post(
       '/internal/lessons/:lessonId/blocks/:blockId/gallery-commit',
-      ({ headers, params, body }) => {
+      ({ headers, params, body, request }) => {
         assertMemberShellConsumer(headers['x-consumer-id'])
-        return deps.gallery.commit(body.actor, params.lessonId, params.blockId, body.input)
+        return deps.gallery.commit(
+          body.actor,
+          params.lessonId,
+          params.blockId,
+          body.input,
+          body.projectForChecks,
+          { signal: request.signal, copyGeneration: body.copyGeneration },
+        )
       },
       {
         params: Params,
         body: t.Object({
           actor: t.Object({ userId: Id, accountId: Id, privileged: t.Boolean() }),
           input: Input,
-          /** Legado: o member-shell anterior mandava o projeto para a auto-correção (saiu). */
-          projectForChecks: t.Optional(t.Unknown()),
+          projectForChecks: t.Unknown(),
+          copyGeneration: Id,
         }),
       },
     )

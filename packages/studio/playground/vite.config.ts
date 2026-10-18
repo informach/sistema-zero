@@ -1,4 +1,6 @@
-import { resolve } from 'node:path'
+import { realpathSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { dirname, resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
@@ -8,6 +10,14 @@ import { defineConfig } from 'vite'
 // worker es e os headers de cross-origin isolation que o WebContainer exige.
 // Bundler e CSP de produção pertencem ao app consumidor (ver docs/embedding.md).
 const here = import.meta.dirname
+// Resolve from the original Core package, not Vite's temporary bundled config or a store layout.
+const coreRequire = createRequire(resolve(here, '../../core/package.json'))
+const coreZodDirectory = realpathSync(dirname(coreRequire.resolve('zod/package.json')))
+const coreZodPathPattern = coreZodDirectory
+  .split(/[\\/]/)
+  .map((segment) => segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  .join('[\\\\/]')
+const coreZodModules = new RegExp(`^${coreZodPathPattern}[\\\\/]`)
 // Forward slashes: paths com backslash (Windows) não casam no glob de
 // optimizeDeps.entries — o crawl silenciosamente não acha nada e o Vite
 // re-otimiza (com full reload) na primeira navegação ao editor.
@@ -118,10 +128,33 @@ export default defineConfig({
           includeDependenciesRecursively: false,
           groups: [
             {
-              // Only leaf utilities, UI primitives and React-only contexts belong here. Stores
-              // depend on application modules and must retain automatic splitting.
+              // Editor models, material/factory leaves, UI contexts and canonical runtime/preview
+              // metadata share this boundary. Stores, validators and migrations keep their own
+              // splitting; initial format/JSON/guard contracts must never be selected here.
+              // Turtle contributes only its import-free extension descriptor, never a Python VM,
+              // report producer or deployment client. Core's resolved Zod package was already
+              // shared by every editor mode and absent from the project list; its separate
+              // Studio/IR counterpart retains automatic splitting. Resolve the package rather
+              // than depending on an installer store layout or repeating Core's version.
               name: 'studio-editor-contracts',
-              test: /[\\/]src[\\/](?:preview[\\/](?:limits|scriptIntegrity)|studio[\\/](?:observation|pro-runtime)|components[\\/](?:layout[\\/]TabStrip|preview[\\/]playerOriginAdapter|assets[\\/]has3DConsumer))\.tsx?$/,
+              test: new RegExp(
+                [
+                  /(?:[\\/]src[\\/](?:monaco[\\/]modelPaths|core[\\/](?:assetBinary|project|blankProject|projectAssets|proPaths|proAssetPaths|proProject)|creations[\\/]content-fingerprint|preview[\\/](?:limits|scriptIntegrity|types)|studio[\\/](?:observation|code-observation|pro-runtime|pro-revision|runtime-environment|layoutContext|portable-path|python-learning|python-source-positions|python-material-policy)|state[\\/]pythonProjectLayout|runtime[\\/]types|hooks[\\/](?:useMeasuredWidth|useDebounced)|components[\\/](?:layout[\\/](?:TabStrip|layoutBreakpoints)|preview[\\/]playerOriginAdapter|assets[\\/]has3DConsumer))\.tsx?$|[\\/]core[\\/]src[\\/]studio[\\/](?:project-identity|project-environment|runtime-catalog|python-preview-input|python-preview-reference|pro-artifact)\.ts$|[\\/]studio[\\/]src[\\/]runtime[\\/]python[\\/]turtle[\\/]contract\.ts$|[\\/]zustand[\\/]esm[\\/](?:vanilla|react)[\\/]shallow\.mjs$)/
+                    .source,
+                  coreZodModules.source,
+                ].join('|'),
+              ),
+            },
+            {
+              // Both validators run at the same document boundary. Keep the dispatch and
+              // legacy validator together; Python's refinement remains a dynamic import.
+              name: 'studio-document-validation',
+              test: /[\\/](?:studio[\\/]src[\\/](?:state[\\/](?:editableProjectValidation|projectValidation|proTree)|preview[\\/](?:permissionGuard|csp)|core[\\/]proAssistance)|core[\\/]src[\\/]studio[\\/](?:pro-assistance|project-pro-metadata))\.ts$/,
+            },
+            {
+              // Blockly-only presentation remains absent from source-only modes.
+              name: 'studio-blockly-presentation',
+              test: /(?:[\\/]studio[\\/]src[\\/](?:blockly[\\/](?:theme|themeColors|blocks[\\/]mutatorEvents)|components[\\/]blocks[\\/]blocklyHistory)\.ts$|[\\/]blockly[\\/]msg[\\/]pt-br\.m?js$)/,
             },
           ],
         },

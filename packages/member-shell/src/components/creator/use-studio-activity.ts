@@ -1,7 +1,7 @@
 'use client'
 
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
-import type { Project, StudioTaskSession } from '@sistemazero/studio'
+import type { EditableStudioProject, StudioTaskSession } from '@sistemazero/studio'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef } from 'react'
 import { reportClientError } from '../../lib/report-error'
@@ -22,7 +22,7 @@ export function useStudioActivity(
   const mountedRef = useRef(true)
 
   const handleActivity = useCallback(
-    (_project: Project, ctx?: { reason: 'autosave' | 'flush' }) => {
+    (_project: EditableStudioProject, ctx?: { reason: 'autosave' | 'flush' }) => {
       if (ctx?.reason !== 'autosave') return
 
       if (activityBeaconedRef.current) return

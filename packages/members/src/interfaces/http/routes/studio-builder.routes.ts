@@ -68,7 +68,7 @@ export function studioBuilderRoutes(deps: {
     )
     .post(
       '/builder',
-      async ({ body, set }) => {
+      async ({ body, set, request }) => {
         set.headers['Cache-Control'] = 'no-store'
         if (!deps.service) throw new StudioAiUnavailableError()
         const removingProject =
@@ -88,7 +88,7 @@ export function studioBuilderRoutes(deps: {
         }
         return {
           ...(body.actor.audience === 'adult' ? { audience: 'adult' as const } : {}),
-          state: await deps.service.execute(body.actor, body.command),
+          state: await deps.service.execute(body.actor, body.command, request.signal),
         }
       },
       {

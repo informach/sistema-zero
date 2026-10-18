@@ -3,6 +3,7 @@ import type * as monacoNs from 'monaco-editor'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useMeasuredWidth } from '../hooks/useMeasuredWidth'
+import { useStudioCodeObservation } from '../studio/code-observation'
 import { inferLanguage } from './languages'
 import {
   buildMonacoModelPath,
@@ -12,6 +13,7 @@ import {
   isMonacoModelSynchronizing,
   reserveMonacoModelUri,
   resolveModelPathPrefix,
+  synchronizeMonacoModel,
 } from './modelPaths'
 import { proLanguage } from './pro/languages'
 import type {
@@ -108,6 +110,7 @@ const FORMATTABLE_LANGUAGES: ReadonlySet<string> = new Set([
   'sz-pro-typescript',
   'sz-pro-javascript',
   'json',
+  'python',
 ])
 
 /**
@@ -138,7 +141,10 @@ export interface MonacoTabsProps {
   onProLanguageReady?: (session: ProLanguageSession | null) => void
   files: MonacoTabsFile[]
   activeFile?: string
-  onChange: (fileName: string, value: string) => void
+  /** Return the accepted source when a synchronous document policy rejects this edit. */
+  onChange:
+    | ((fileName: string, value: string) => void)
+    | ((fileName: string, value: string) => { rejectedValue: string } | undefined)
   onActiveFileChange?: (fileName: string) => void
   onCursorChange?: (pos: MonacoCursorPosition) => void
   /** Faixa de linhas para destacar e rolar até o topo no arquivo indicado. */
@@ -146,6 +152,8 @@ export interface MonacoTabsProps {
   theme?: 'vs-dark' | 'light'
   /** Tamanho da fonte (px). Reativo: muda imediatamente quando o pai atualiza. */
   fontSize?: number
+  readOnly?: boolean
+  indentSize?: 2 | 4
   className?: string
   /** Conteúdo extra renderizado à direita da fila de abas. */
   tabsRightSlot?: JSX.Element
@@ -193,7 +201,10 @@ export interface MonacoTabsProps {
    * de desfazer do código aos botões da barra (`useCodeHistory`) sem este pacote conhecer o
    * estado do Studio.
    */
-  onEditorReady?: (editor: monacoNs.editor.IStandaloneCodeEditor | null) => void
+  onEditorReady?: (
+    editor: monacoNs.editor.IStandaloneCodeEditor | null,
+    scope?: { modelPathPrefix: string },
+  ) => void
 }
 
 /** Ícone "formatar" (linhas alinhadas) — usado no botão compacto, sem dep externa. */
@@ -295,6 +306,8 @@ export function MonacoTabs({
   highlight,
   theme = 'vs-dark',
   fontSize = 13,
+  readOnly = false,
+  indentSize = 2,
   className,
   tabsRightSlot,
   hiddenAreas,
@@ -384,7 +397,13 @@ export function MonacoTabs({
   const [languageIssue, setLanguageIssue] = useState<string | null>(null)
   const [languageLoadFailed, setLanguageLoadFailed] = useState(false)
   const [languageAttempt, setLanguageAttempt] = useState(0)
-  useEffect(() => (proMode ? undefined : scheduleLanguageServicesLoad()), [proMode])
+  const hasJavaScriptFiles = files.some((item) =>
+    ['javascript', 'typescript'].includes(inferLanguage(item.name)),
+  )
+  useEffect(
+    () => (proMode || !hasJavaScriptFiles ? undefined : scheduleLanguageServicesLoad()),
+    [proMode, hasJavaScriptFiles],
+  )
   // biome-ignore lint/correctness/useExhaustiveDependencies: retry creates a fresh worker and resends the complete project.
   useEffect(() => {
     if (!proMode || !mountedEditor) return
@@ -506,8 +525,15 @@ export function MonacoTabs({
     const model = mountedEditor?.getModel()
     if (!model || !file) return
     if (getMonacoModelPath(model) !== buildMonacoModelPath(saltedPrefix, file.name)) return
-    if (model.getValue() === file.value) return
-    model.setValue(file.value)
+    const value = model.getValue()
+    if (
+      value === file.value ||
+      value.replace(/\r\n|\r/g, '\n') === file.value.replace(/\r\n|\r/g, '\n')
+    )
+      return
+    // Loading external source is not a learner edit. Monaco normalizes mixed
+    // EOLs in setValue and emits synchronously; do not echo that into storage.
+    synchronizeMonacoModel(model, () => model.setValue(file.value))
   }, [file, mountedEditor, saltedPrefix])
 
   const clearHighlightDecorations = useCallback(() => {
@@ -533,11 +559,38 @@ export function MonacoTabs({
   useEffect(() => {
     activeFileNameRef.current = file?.name
   }, [file?.name])
-  const handleChange = useCallback<OnChange>((value) => {
-    const model = editorRef.current?.getModel()
+  const reconcilingRejectedEdit = useRef(false)
+  const handleChange = useCallback<OnChange>((value, event) => {
+    if (reconcilingRejectedEdit.current) return
+    const editor = editorRef.current
+    const model = editor?.getModel()
     if (model && isMonacoModelSynchronizing(model)) return
     const name = activeFileNameRef.current
-    if (name !== undefined) onChangeRef.current(name, value ?? '')
+    if (name === undefined) return
+    const result = onChangeRef.current(name, value ?? '')
+    if (
+      !result ||
+      typeof result !== 'object' ||
+      !('rejectedValue' in result) ||
+      typeof result.rejectedValue !== 'string' ||
+      !model ||
+      !editor ||
+      model.getValue() === result.rejectedValue
+    )
+      return
+    // A refusal is part of the same edit transaction. Append its compensation to
+    // that undo group, so Undo/Redo cannot resurrect the rejected buffer. Unlike
+    // setValue(), this preserves earlier accepted edits and their undo history.
+    reconcilingRejectedEdit.current = true
+    try {
+      if (!event.isUndoing && !event.isRedoing && !event.isFlush) model.popStackElement()
+      editor.executeEdits('studio.rejected-edit', [
+        { range: model.getFullModelRange(), text: result.rejectedValue },
+      ])
+      editor.pushUndoStop()
+    } finally {
+      reconcilingRejectedEdit.current = false
+    }
   }, [])
 
   // Busy do Formatar: desabilita o botão enquanto roda (feedback visível — sem
@@ -560,7 +613,8 @@ export function MonacoTabs({
       // As contribuições de linguagem são estáticas (ver ./workers); o aguardo
       // fica como cinto de segurança barato e ponto de injeção dos testes.
       try {
-        if (!editor.getModel()?.getLanguageId().startsWith('sz-pro-')) await loadLanguageServices()
+        const language = editor.getModel()?.getLanguageId()
+        if (language !== 'python' && !language?.startsWith('sz-pro-')) await loadLanguageServices()
       } catch (err) {
         console.warn('[studio] Formatar: serviços de linguagem não carregaram', err)
         onFormatIssueRef.current?.('services-failed')
@@ -628,14 +682,30 @@ export function MonacoTabs({
   // Entrega o editor montado a quem pediu (e `null` na saída). Pelo ref: o efeito roda uma vez
   // por editor, mesmo que o pai passe um callback novo a cada render.
   const onEditorReadyRef = useRef(onEditorReady)
+  const codeObservation = useStudioCodeObservation()
+  const observedFiles = useRef(files)
+  useLayoutEffect(() => {
+    observedFiles.current = files
+    codeObservation?.invalidate()
+  }, [codeObservation, files])
+  useEffect(() => {
+    if (!mountedEditor || !codeObservation) return
+    const prefix = `${saltedPrefix}/`
+    return codeObservation.register(mountedEditor, (model) => {
+      const logical = getMonacoModelPath(model)
+      const path = logical.startsWith(prefix) ? logical.slice(prefix.length) : null
+      const source = observedFiles.current.find((candidate) => candidate.name === path)?.value
+      return path && source !== undefined ? { path, source } : null
+    })
+  }, [mountedEditor, codeObservation, saltedPrefix])
   useEffect(() => {
     onEditorReadyRef.current = onEditorReady
   }, [onEditorReady])
   useEffect(() => {
     if (!mountedEditor) return
-    onEditorReadyRef.current?.(mountedEditor)
+    onEditorReadyRef.current?.(mountedEditor, { modelPathPrefix: saltedPrefix })
     return () => onEditorReadyRef.current?.(null)
-  }, [mountedEditor])
+  }, [mountedEditor, saltedPrefix])
 
   // Salva o view state da aba que está SAINDO. É layout effect de propósito: a
   // troca de model do <Editor> acontece num efeito PASSIVO do
@@ -682,8 +752,9 @@ export function MonacoTabs({
       scrollBeyondLastLine: false,
       wordWrap: 'on',
       fontSize,
+      readOnly,
       fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, monospace",
-      tabSize: 2,
+      tabSize: indentSize,
       // Mantido `true` DE PROPÓSITO. Sim, ele adiciona um observador de tamanho por
       // editor que em parte se sobrepõe ao nosso `useMeasuredWidth` (ResizeObserver da
       // seção). Mas trocar por `false` + `editor.layout()` manual exigiria um sinal
@@ -708,7 +779,7 @@ export function MonacoTabs({
       autoIndent: 'full',
       autoClosingBrackets: 'languageDefined',
     }),
-    [fontSize],
+    [fontSize, readOnly, indentSize],
   )
 
   const applyHighlightToCurrentModel = useCallback(

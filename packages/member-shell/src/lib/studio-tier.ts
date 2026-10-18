@@ -1,4 +1,8 @@
 import { creatorJourneyLevel, type JourneyLevelSlug } from '@sistemazero/core/journey'
+import {
+  type StudioRuntimeSelection,
+  StudioRuntimeSelectionSchema,
+} from '@sistemazero/core/studio/project-environment'
 import type { BlockLevel, IDEMode } from '@sistemazero/studio'
 
 /** Capacidades do Estúdio Completo já conquistadas pelo aluno. */
@@ -78,6 +82,8 @@ const STAFF_EXTENSIONS: readonly string[] = [
 export interface StudioRemixRequirement {
   pro: boolean
   extensions: readonly string[]
+  programmingLanguage?: 'javascript' | 'python'
+  runtime?: StudioRuntimeSelection
 }
 
 /**
@@ -88,6 +94,11 @@ export interface StudioRemixRequirement {
 export interface StudioRemixCapability {
   pro: boolean
   allowedExtensions: readonly string[]
+  python?: readonly {
+    kind: 'classic' | 'pro'
+    runtime: StudioRuntimeSelection
+    allowedExtensions: readonly string[]
+  }[]
 }
 
 /** A capacidade cobre as ferramentas do jogo? (modo Código + extensões.) */
@@ -96,6 +107,20 @@ export function studioRemixCovered(
   req: StudioRemixRequirement,
 ): boolean {
   if (req.pro && !cap.pro) return false
+  if (req.programmingLanguage === 'python') {
+    const runtime = req.runtime
+    if (!runtime) return false
+    return (
+      cap.python?.some(
+        (environment) =>
+          environment.kind === (req.pro ? 'pro' : 'classic') &&
+          environment.runtime.profileId === runtime.profileId &&
+          environment.runtime.releaseId === runtime.releaseId &&
+          environment.runtime.manifestSha256 === runtime.manifestSha256 &&
+          req.extensions.every((id) => environment.allowedExtensions.includes(id)),
+      ) === true
+    )
+  }
   return req.extensions.every((id) => cap.allowedExtensions.includes(id))
 }
 
@@ -118,7 +143,16 @@ export function remixRequirementFromSnapshot(snapshot: unknown): StudioRemixRequ
         .map((ext) => (ext && typeof ext === 'object' ? (ext as { id?: unknown }).id : null))
         .filter((id): id is string => typeof id === 'string' && id.length > 0)
     : []
-  return { pro: snap.kind === 'pro', extensions }
+  return {
+    pro: snap.kind === 'pro',
+    extensions,
+    ...(snap.programmingLanguage === 'python'
+      ? {
+          programmingLanguage: 'python' as const,
+          runtime: StudioRuntimeSelectionSchema.safeParse(snap.runtime).data,
+        }
+      : {}),
+  }
 }
 
 /**

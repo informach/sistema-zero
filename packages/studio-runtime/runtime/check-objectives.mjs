@@ -5,6 +5,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { chromium } from 'playwright-core'
+import { createExecutionObservationCodec } from './execution-observation.generated.mjs'
 
 const root = process.cwd()
 const options = JSON.parse(await fs.readFile(path.join(root, 'check-options.json'), 'utf8'))
@@ -140,10 +141,15 @@ async function runObjective(objective, index) {
       })
     })
     const page = await context.newPage()
-    const lines = []
+    const lines = { values: [], incomplete: false }
     const errors = []
     page.on('console', (message) => {
-      if (lines.length < MAX_CONSOLE_LINES) lines.push(message.text().slice(0, MAX_LINE_CHARS))
+      const text = message.text()
+      if (lines.values.length >= MAX_CONSOLE_LINES || text.length > MAX_LINE_CHARS) {
+        lines.incomplete = true
+        return
+      }
+      lines.values.push(text)
     })
     page.on('pageerror', (error) => {
       if (errors.length < 5) errors.push(String(error.message).slice(0, 300))
@@ -261,7 +267,11 @@ async function openProbe(page) {
   }
   return {
     /** No mundo da página (onde estão as variáveis e o kit), sem `eval` nem `then` dela. */
-    main: (fn, arg) => run(`(${fn.toString()})(${JSON.stringify(arg)})`, false),
+    main: (fn, arg) =>
+      run(
+        `(${fn.toString()})(${JSON.stringify(arg)}, (${createExecutionObservationCodec.toString()})())`,
+        false,
+      ),
     /** No mundo isolado: o documento, sem os globais do jogo. */
     isolated: (expression, timeout) => run(expression, true, timeout),
   }
@@ -274,28 +284,18 @@ async function openProbe(page) {
 // `texto` é o texto da página (lido no mundo isolado; `null` quando passa de 50 mil letras, porque
 // texto cortado não prova ausência) e `console` é a LISTA das linhas escritas. Só `true` passa.
 async function runScriptRule(probe, code, lines) {
+  if (lines.incomplete) throw new Error('O console excedeu os limites de observação.')
   const snapshot = await probe.main(snapshotForScript, { scope, maxChars: MAX_VALUE_CHARS })
+  // Console callbacks may arrive while the page snapshot is being read.
+  if (lines.incomplete) throw new Error('O console excedeu os limites de observação.')
   const expression = `(async () => {
-    const revive = (value) => {
-      if (Array.isArray(value)) return value.map(revive)
-      if (value && typeof value === 'object') {
-        const keys = Object.keys(value)
-        if (keys.length === 1 && typeof value.$sz === 'string') {
-          if (value.$sz === 'undefined') return undefined
-          if (value.$sz === 'NaN' || value.$sz === 'Infinity' || value.$sz === '-Infinity') return Number(value.$sz)
-          if (value.$sz === 'function') return '[função]'
-          return value
-        }
-        const out = {}
-        for (const key of keys) out[key] = revive(value[key])
-        return out
-      }
-      return value
-    }
-    const jogo = revive(${JSON.stringify(snapshot ?? {})})
+    let jogo
+    try { jogo = (${createExecutionObservationCodec.toString()})().decode(${JSON.stringify(snapshot)}, true) }
+    catch { return { observationError: 'O estado do jogo não pôde ser lido inteiro.' } }
     const corpo = document.body ? document.body.innerText : ''
-    const texto = corpo.length > 50000 ? null : corpo
-    const console = ${JSON.stringify(lines.slice(0, MAX_CONSOLE_LINES))}
+    if (corpo.length > 50000) return { observationError: 'O texto excedeu os limites de observação.' }
+    const texto = corpo
+    const console = ${JSON.stringify(lines.values)}
     try {
       const v = await (async () => {
 ${code}
@@ -328,6 +328,8 @@ ${code}
     }),
   ])
   clearTimeout(timer)
+  if (outcome && typeof outcome.observationError === 'string')
+    throw new Error(outcome.observationError)
   if (outcome && typeof outcome.scriptError === 'string')
     return { verdict: false, scriptError: outcome.scriptError }
   const returned = outcome && typeof outcome.returned === 'string' ? outcome.returned : 'nada'
@@ -349,154 +351,84 @@ async function runSteps(page, steps) {
 }
 
 async function readTarget(probe, target, lines) {
-  if (target.kind === 'console') return { found: true, value: lines.join('\n') }
+  if (target.kind === 'console') {
+    if (lines.incomplete) throw new Error('O console excedeu os limites de observação.')
+    return { found: true, value: lines.values.join('\n') }
+  }
   // O texto é lido no mundo isolado: o jogo não troca o `innerText` de lá.
   if (target.kind === 'text')
     return probe.isolated(
-      `(() => { const t = document.body ? document.body.innerText : ''; return { found: true, value: t.length > 50000 ? { $sz: 'large' } : t } })()`,
+      `(() => { const t = document.body ? document.body.innerText : ''; if (t.length > 50000) throw new Error('O texto excedeu os limites de observação.'); return { found: true, value: t } })()`,
     )
   return probe.main(readTargetInPage, { scope, target, maxChars: MAX_VALUE_CHARS })
 }
 
 // ---- Rodam DENTRO da página (sem acesso a nada daqui de fora). ----
 
-function readTargetInPage({ scope, target, maxChars }) {
-  const toJson = (value, depth) => {
-    if (value === undefined) return { $sz: 'undefined' }
-    if (value === null || typeof value === 'boolean' || typeof value === 'string') return value
-    if (typeof value === 'number') return Number.isFinite(value) ? value : { $sz: String(value) }
-    if (typeof value === 'function') return { $sz: 'function' }
-    if (depth > 6) return { $sz: 'deep' }
-    if (Array.isArray(value)) return value.slice(0, 200).map((item) => toJson(item, depth + 1))
-    if (typeof value === 'object') {
-      const out = {}
-      for (const key of Object.keys(value).slice(0, 200)) {
-        try {
-          out[key] = toJson(value[key], depth + 1)
-        } catch {
-          out[key] = { $sz: 'error' }
-        }
-      }
-      return out
-    }
-    return { $sz: typeof value }
+function readTargetInPage({ scope, target, maxChars }, codec) {
+  if (target.kind === 'game') {
+    const game = window.__studioGame
+    if (!game || typeof game.inspect !== 'function') return { found: false }
+    return { found: true, value: codec.encode(game.inspect()[target.field], maxChars) }
   }
-  const fit = (value) => {
-    const json = toJson(value, 0)
-    return JSON.stringify(json).length > maxChars ? { $sz: 'large' } : json
+  const [first, ...rest] = target.path.split('.')
+  const reader = globalThis[scope]
+  const entry = reader && typeof reader.get === 'function' ? reader.get(first) : null
+  if (!entry) return { found: false }
+  let current = entry.v
+  for (const key of rest) {
+    if (current === null || (typeof current !== 'object' && typeof current !== 'function'))
+      return { found: false }
+    current = current[key]
   }
-  try {
-    if (target.kind === 'text') {
-      // Texto cortado não prova que a palavra NÃO está lá: grande demais vira inconclusivo.
-      const text = document.body?.innerText ?? ''
-      return { found: true, value: text.length > 50_000 ? { $sz: 'large' } : text }
-    }
-    if (target.kind === 'game') {
-      const game = window.__studioGame
-      if (!game || typeof game.inspect !== 'function') return { found: false }
-      return { found: true, value: fit(game.inspect()[target.field]) }
-    }
-    const [first, ...rest] = target.path.split('.')
-    const reader = globalThis[scope]
-    const entry = reader && typeof reader.get === 'function' ? reader.get(first) : null
-    if (!entry) return { found: false }
-    let current = entry.v
-    for (const key of rest) {
-      if (current === null || (typeof current !== 'object' && typeof current !== 'function'))
-        return { found: false }
-      current = current[key]
-    }
-    return { found: true, value: fit(current) }
-  } catch (error) {
-    return { found: false, error: String(error?.message ?? error).slice(0, 200) }
-  }
+  return { found: true, value: codec.encode(current, maxChars) }
 }
 
-function snapshotForScript({ scope, maxChars }) {
-  const toJson = (value, depth) => {
-    if (value === undefined) return { $sz: 'undefined' }
-    if (value === null || typeof value === 'boolean' || typeof value === 'string') return value
-    if (typeof value === 'number') return Number.isFinite(value) ? value : { $sz: String(value) }
-    if (typeof value === 'function') return { $sz: 'function' }
-    if (depth > 6) return { $sz: 'deep' }
-    if (Array.isArray(value)) return value.slice(0, 200).map((item) => toJson(item, depth + 1))
-    if (typeof value === 'object') {
-      const out = {}
-      for (const key of Object.keys(value).slice(0, 200)) {
-        try {
-          out[key] = toJson(value[key], depth + 1)
-        } catch {
-          out[key] = { $sz: 'error' }
-        }
-      }
-      return out
-    }
-    return { $sz: typeof value }
-  }
-  const fit = (value) => {
-    const json = toJson(value, 0)
-    return JSON.stringify(json).length > maxChars ? { $sz: 'large' } : json
-  }
+function snapshotForScript({ scope, maxChars }, codec) {
   const reader = globalThis[scope]
   if (reader && typeof reader.names === 'function') {
     const out = {}
-    for (const name of reader.names().slice(0, 300)) {
-      try {
-        const entry = reader.get(name)
-        if (entry) out[name] = fit(entry.v)
-      } catch {
-        out[name] = { $sz: 'error' }
-      }
+    const names = reader.names()
+    if (!Array.isArray(names) || names.length > 10_000)
+      throw new Error('O estado excedeu os limites de observação.')
+    for (const name of names) {
+      const entry = reader.get(name)
+      if (entry) Object.defineProperty(out, name, { value: entry.v, enumerable: true })
     }
-    return out
+    return codec.encode(out, maxChars)
   }
-  try {
-    const game = window.__studioGame
-    return game && typeof game.inspect === 'function' ? fit(game.inspect()) : {}
-  } catch {
-    return {}
-  }
+  const game = window.__studioGame
+  return codec.encode(game && typeof game.inspect === 'function' ? game.inspect() : {}, maxChars)
 }
 
-async function callFunctionCases({ scope, name, module, cases, timeoutMs, maxChars }) {
-  const toJson = (value, depth) => {
-    if (value === undefined) return { $sz: 'undefined' }
-    if (value === null || typeof value === 'boolean' || typeof value === 'string') return value
-    if (typeof value === 'number') return Number.isFinite(value) ? value : { $sz: String(value) }
-    if (typeof value === 'function') return { $sz: 'function' }
-    if (depth > 6) return { $sz: 'deep' }
-    if (Array.isArray(value)) return value.slice(0, 200).map((item) => toJson(item, depth + 1))
-    if (typeof value === 'object') {
-      const out = {}
-      for (const key of Object.keys(value).slice(0, 200)) out[key] = toJson(value[key], depth + 1)
-      return out
-    }
-    return { $sz: typeof value }
-  }
+async function callFunctionCases({ scope, name, module, cases, timeoutMs, maxChars }, codec) {
   const reader = globalThis[scope]
-  let fn
-  if (module) fn = reader?.modules?.[module]?.[name]
-  else fn = reader && typeof reader.get === 'function' ? reader.get(name)?.v : undefined
+  const fn = module
+    ? reader?.modules?.[module]?.[name]
+    : reader && typeof reader.get === 'function'
+      ? reader.get(name)?.v
+      : undefined
   if (typeof fn !== 'function') return { missing: true }
   const outcomes = []
   for (const item of cases) {
+    let value, timer
     try {
       const args = JSON.parse(JSON.stringify(item))
-      const value = await Promise.race([
+      value = await Promise.race([
         Promise.resolve().then(() => fn(...args)),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('demorou demais')), timeoutMs),
-        ),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error('demorou demais')), timeoutMs)
+        }),
       ])
-      const json = toJson(value, 0)
-      outcomes.push(
-        JSON.stringify(json).length > maxChars
-          ? { ok: false, error: 'resposta grande demais' }
-          : { ok: true, value: json },
-      )
     } catch (error) {
       outcomes.push({ ok: false, error: String(error?.message ?? error).slice(0, 200) })
+      continue
+    } finally {
+      clearTimeout(timer)
     }
+    // A function exception is a student result. An incomplete observation is an
+    // executor error for the whole objective, never a failed test case.
+    outcomes.push({ ok: true, value: codec.encode(value, maxChars) })
   }
   return { cases: outcomes }
 }

@@ -20,6 +20,8 @@
  * - Entrada nula/torta → false: sem certeza, sem aviso (aviso errado ensina a ignorar avisos).
  */
 
+import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
+
 const CANONICAL_FILES = ['index.html', 'style.css', 'script.js'] as const
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -79,6 +81,21 @@ function jsonValueEqual(
 
 export function isInitialTemplateProject(project: unknown, template: unknown): boolean {
   if (!isRecord(project) || !isRecord(template)) return false
+  if (project.programmingLanguage === 'python' || template.programmingLanguage === 'python') {
+    if (studioProjectContinuityIssue(project, template)) return false
+    const source = project.kind === 'pro' ? 'tree' : 'files'
+    if (!isRecord(project[source]) || !isRecord(template[source])) return false
+    const own = projectAssets(project)
+    const original = projectAssets(template)
+    return Boolean(
+      own &&
+        original &&
+        jsonValueEqual(own, original) &&
+        jsonValueEqual(project[source], template[source]) &&
+        jsonValueEqual(project.python, template.python) &&
+        jsonValueEqual(project.installedExtensions, template.installedExtensions),
+    )
+  }
   if (project.kind === 'pro' || template.kind === 'pro') return false
   const projectFiles = project.files
   const templateFiles = template.files

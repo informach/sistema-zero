@@ -1,0 +1,11 @@
+{
+  "recipe": "stdlib-wasm-checked-bytecode-with-sources-v2",
+  "recipeSha256": "6de6a73a55bffcbf939d455b8f0e27e2011cbfbd844978a89420dcc6faf3316e",
+  "pyodideVersion": "314.0.7",
+  "pythonVersion": "3.14.2",
+  "magic": "2b0e0d0a",
+  "sourceSha256": "fa1957e5777068fc4f7437f96d860ae2fbe9c19732ba06c84e004ec16dd7dd7a",
+  "compiledModules": 559,
+  "bytes": 7066273,
+  "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a"
+}

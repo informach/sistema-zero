@@ -14,10 +14,12 @@ import type {
   ZappyRepository,
   ZappyStoredResponse,
 } from '../../../domain/ports/zappy-repository.port'
+import { ZappyQuestionContextConflictError } from '../../../domain/zappy/zappy.errors'
 import type { Database } from './db'
 import { zappyConversations, zappyMessages } from './schema'
 
 interface StoredResponseJson extends Record<string, unknown> {
+  programmingLanguage?: 'javascript' | 'python'
   intent?: ZappyStoredResponse['intent']
   kind?: 'classic' | 'pro'
   fileReferences?: ZappyStoredResponse['fileReferences']
@@ -38,6 +40,7 @@ export function serializeZappyResponse(
   rejection?: string,
 ): StoredResponseJson {
   return {
+    ...(response.programmingLanguage ? { programmingLanguage: response.programmingLanguage } : {}),
     ...(response.kind ? { kind: response.kind } : {}),
     ...(response.kind === 'pro' &&
     (response.intent === 'explain' || response.intent === 'investigate')
@@ -68,6 +71,7 @@ export function toResponse(row: {
   id: string
   response: unknown
   createdAt: Date
+  programmingLanguage?: 'javascript' | 'python'
 }): ZappyStoredResponse | undefined {
   if (!row.response || typeof row.response !== 'object' || Array.isArray(row.response))
     return undefined
@@ -75,6 +79,10 @@ export function toResponse(row: {
   if (typeof value.text !== 'string' || typeof value.scope !== 'string') return undefined
   return {
     id: row.id,
+    ...((row.programmingLanguage ?? value.programmingLanguage) === 'javascript' ||
+    (row.programmingLanguage ?? value.programmingLanguage) === 'python'
+      ? { programmingLanguage: row.programmingLanguage ?? value.programmingLanguage }
+      : {}),
     ...(value.kind === 'classic' || value.kind === 'pro' ? { kind: value.kind } : {}),
     ...(value.kind === 'pro' && (value.intent === 'explain' || value.intent === 'investigate')
       ? { intent: value.intent }
@@ -161,6 +169,7 @@ export class DrizzleZappyRepository implements ZappyRepository {
         .select({
           id: zappyMessages.id,
           role: zappyMessages.role,
+          programmingLanguage: zappyMessages.programmingLanguage,
           content: zappyMessages.content,
           response: zappyMessages.response,
           createdAt: zappyMessages.createdAt,
@@ -245,7 +254,11 @@ export class DrizzleZappyRepository implements ZappyRepository {
       if (!conversation) throw new Error('Falha ao criar conversa do Zappy')
 
       const [existing] = await tx
-        .select({ id: zappyMessages.id, processingUntil: zappyMessages.processingUntil })
+        .select({
+          id: zappyMessages.id,
+          processingUntil: zappyMessages.processingUntil,
+          programmingLanguage: zappyMessages.programmingLanguage,
+        })
         .from(zappyMessages)
         .where(
           and(
@@ -255,10 +268,13 @@ export class DrizzleZappyRepository implements ZappyRepository {
         )
         .limit(1)
       if (existing) {
+        if (existing.programmingLanguage !== (input.programmingLanguage ?? 'javascript'))
+          throw new ZappyQuestionContextConflictError()
         const [answer] = await tx
           .select({
             id: zappyMessages.id,
             response: zappyMessages.response,
+            programmingLanguage: zappyMessages.programmingLanguage,
             createdAt: zappyMessages.createdAt,
           })
           .from(zappyMessages)
@@ -302,6 +318,7 @@ export class DrizzleZappyRepository implements ZappyRepository {
       const recentRows = await tx
         .select({
           role: zappyMessages.role,
+          programmingLanguage: zappyMessages.programmingLanguage,
           content: zappyMessages.content,
           response: zappyMessages.response,
         })
@@ -315,6 +332,7 @@ export class DrizzleZappyRepository implements ZappyRepository {
         return {
           role: row.role as 'user' | 'assistant',
           text: row.content,
+          programmingLanguage: row.programmingLanguage,
           ...(kind === 'pro' || kind === 'classic' ? { kind } : {}),
         }
       })
@@ -324,6 +342,7 @@ export class DrizzleZappyRepository implements ZappyRepository {
         id: questionId,
         conversationId: conversation.id,
         role: 'user',
+        programmingLanguage: input.programmingLanguage ?? 'javascript',
         content: input.question,
         clientMessageId: input.clientMessageId,
         processingUntil: input.processingUntil,
@@ -340,7 +359,11 @@ export class DrizzleZappyRepository implements ZappyRepository {
   async completeQuestion(input: CompleteZappyQuestionInput): Promise<ZappyStoredResponse> {
     return this.db.transaction(async (tx) => {
       const [question] = await tx
-        .select({ id: zappyMessages.id, conversationId: zappyMessages.conversationId })
+        .select({
+          id: zappyMessages.id,
+          conversationId: zappyMessages.conversationId,
+          programmingLanguage: zappyMessages.programmingLanguage,
+        })
         .from(zappyMessages)
         .innerJoin(zappyConversations, eq(zappyConversations.id, zappyMessages.conversationId))
         .where(
@@ -352,10 +375,16 @@ export class DrizzleZappyRepository implements ZappyRepository {
         )
         .limit(1)
       if (!question) throw new Error('Pergunta do Zappy não encontrada')
+      if (
+        input.response.programmingLanguage &&
+        input.response.programmingLanguage !== question.programmingLanguage
+      )
+        throw new ZappyQuestionContextConflictError()
       const [existing] = await tx
         .select({
           id: zappyMessages.id,
           response: zappyMessages.response,
+          programmingLanguage: zappyMessages.programmingLanguage,
           createdAt: zappyMessages.createdAt,
         })
         .from(zappyMessages)
@@ -370,7 +399,10 @@ export class DrizzleZappyRepository implements ZappyRepository {
       }
 
       const id = input.response.id || randomUUID()
-      const responseJson = serializeZappyResponse(input.response, input.rejection)
+      const responseJson = serializeZappyResponse(
+        { ...input.response, programmingLanguage: question.programmingLanguage },
+        input.rejection,
+      )
       const [answer] = await tx
         .insert(zappyMessages)
         .values({
@@ -378,6 +410,7 @@ export class DrizzleZappyRepository implements ZappyRepository {
           conversationId: question.conversationId,
           replyToId: question.id,
           role: 'assistant',
+          programmingLanguage: question.programmingLanguage,
           content: input.response.text,
           response: responseJson,
           scope: input.response.scope,
@@ -388,6 +421,7 @@ export class DrizzleZappyRepository implements ZappyRepository {
         .returning({
           id: zappyMessages.id,
           response: zappyMessages.response,
+          programmingLanguage: zappyMessages.programmingLanguage,
           createdAt: zappyMessages.createdAt,
         })
       await tx

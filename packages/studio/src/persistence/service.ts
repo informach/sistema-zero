@@ -1,9 +1,10 @@
-import type { Project } from '#core'
 // Import do MÓDULO PURO (não do barrel #blockly): o service vive no chunk do
 // núcleo e não pode arrastar Blockly (workspaceState → buildIR → blockly/core).
 import { isBlocksStateEmpty } from '../blockly/blocksStateShape'
+import { isPythonProject, type EditableStudioProject as Project } from '../core/editableProject'
 import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
 import { flushProjectOperations, registerProjectPersistence } from '../state/projectOperations'
+import { installLocalRevision, readLocalRevision } from '../state/projectStorageRevision'
 import type { BlocksHydrationStatus, ProjectStoreApi } from '../state/projectStore'
 import type { StudioPersistenceAdapter } from './types'
 
@@ -235,6 +236,7 @@ export function createPersistenceService(
   // 'pending'/'failed', os saves desta instância NÃO gravam a partição de blocos
   // — ver `snapshotForSave`.
   const blocksHydrationById = new Map<string, BlocksHydrationStatus>()
+  let blocksHydrationGeneration = 0
 
   function setHydrationStatus(projectId: string, status: BlocksHydrationStatus): void {
     blocksHydrationById.set(projectId, status)
@@ -258,6 +260,11 @@ export function createPersistenceService(
    * clear deliberado do aluno continua sendo persistido.
    */
   function snapshotForSave(project: Project): Project {
+    // A fresh local document may need a detached source-authoritative snapshot.
+    // Give the live document its lineage first, so that snapshot and subsequent
+    // edits keep one writer/CAS base. External adapters never gain a local stamp.
+    if (adapter?.localScope && !readLocalRevision(project))
+      installLocalRevision(project, adapter.localScope.identity)
     const currentAuthority = snapshotProjectWithCurrentAuthority(project)
     if (currentAuthority.blocksState == null) return currentAuthority
     if (!shouldStripBlocks(project.id)) return currentAuthority
@@ -348,6 +355,9 @@ export function createPersistenceService(
   }
 
   function hydrateAfterLoad(project: Project): void {
+    // A retry/new opening retires callbacks from the previous read, including
+    // its timeout and rejection. Adapters need not support physical cancellation.
+    const generation = ++blocksHydrationGeneration
     // Mantém no Map só o projeto vivo desta instância: status de projetos já
     // fechados não interessam mais (um save enfileirado deles carrega blocksState
     // null em memória, que o guard do persistProject já pula sozinho).
@@ -357,8 +367,10 @@ export function createPersistenceService(
     // Elegibilidade (status fica 'idle' — nada é trancado): sem partição a
     // restaurar (adapter sem loadBlocksState), projeto pro (blocos não se
     // aplicam) ou o host já entregou o projeto COMPLETO.
-    if (!adapter?.loadBlocksState) return
-    if (project.kind === 'pro') return
+    if (!adapter?.loadBlocksState || project.kind === 'pro' || project.blocksState != null) {
+      setHydrationStatus(project.id, 'idle')
+      return
+    }
     // A partição existente pertence aos blocos antigos: o texto da Ponte foi
     // editado depois. Não a restaura por cima do código novo; o reverse-parse
     // produzirá uma partição coerente e então retirará esta marca.
@@ -366,12 +378,12 @@ export function createPersistenceService(
       setHydrationStatus(project.id, 'discarded')
       return
     }
-    if (project.blocksState != null) return
     setHydrationStatus(project.id, 'pending')
     // O timeout NÃO abandona a leitura: só troca 'pending'→'failed' para a UI
     // destravar (a tranca continua protegendo a partição). Se a leitura resolver
     // depois, o `.then` abaixo ainda restaura normalmente.
     const timeout = setTimeout(() => {
+      if (generation !== blocksHydrationGeneration) return
       if (blocksHydrationById.get(project.id) !== 'pending') return
       console.warn(
         '[sz] a restauração dos blocos salvos está demorando — a partição fica protegida até resolver.',
@@ -382,6 +394,7 @@ export function createPersistenceService(
       .loadBlocksState(project)
       .then((blocksState) => {
         clearTimeout(timeout)
+        if (generation !== blocksHydrationGeneration) return
         const current = store.getState()
         if (current.project?.id !== project.id) {
           blocksHydrationById.delete(project.id)
@@ -404,7 +417,11 @@ export function createPersistenceService(
         // restauração tardia clobraria os blocos vivos "salvos". Um canvas vivo
         // vazio, por outro lado, não codifica trabalho nenhum (edições de
         // arquivo são preservadas — o patch só troca o blocksState).
-        if (!isBlocksStateEmpty(current.project.blocksState)) {
+        if (
+          isPythonProject(current.project)
+            ? current.project.blocksState != null
+            : !isBlocksStateEmpty(current.project.blocksState)
+        ) {
           setHydrationStatus(project.id, 'discarded')
           return
         }
@@ -413,6 +430,7 @@ export function createPersistenceService(
       })
       .catch((err) => {
         clearTimeout(timeout)
+        if (generation !== blocksHydrationGeneration) return
         console.warn(
           '[sz] não foi possível restaurar o layout salvo dos blocos:',
           err instanceof Error ? err.message : err,

@@ -1,5 +1,6 @@
 import 'server-only'
 import type { StudioAiActor, StudioAiRunRequest } from '@sistemazero/core/ai-credits'
+import { awaitWithSignal } from '@sistemazero/core/http'
 import {
   applyStudioProChange,
   isStudioProTemplateId,
@@ -13,19 +14,27 @@ import { z } from 'zod'
 import type { MembersClient } from './clients'
 import { completePensaJson, PensaLlmError } from './pensa-llm'
 import { createStudioAiTransport } from './studio-ai-transport'
+import type { StudioBuilderRuntimeOptions } from './studio-builder-runtime'
 import {
   inspectStudioBuilder,
   prepareStudioBuilderContext,
   proposeStudioBuilder,
-  STUDIO_BUILDER_SYSTEM,
   studioBuilderAnswerSchema,
+  studioBuilderSystem,
 } from './studio-builder-tools'
 import {
   prepareStudioProDependencies,
   requestStudioProBuild,
   StudioProRuntimeUpstreamError,
 } from './studio-pro-runtime'
+import { runStudioPythonBuilderValidation } from './studio-python-builder'
 import { redactZappySensitiveText } from './zappy-safety'
+
+function javaScriptRuntime(input: StudioBuilderRuntimeOptions) {
+  if (!input.runtimeUrl || !input.runtimeToken)
+    throw new Error('O serviço JavaScript está indisponível neste ambiente.')
+  return { runtimeUrl: input.runtimeUrl, runtimeToken: input.runtimeToken }
+}
 
 export function studioBuilderBudget(job: StudioProBuilderJob): StudioAiRunRequest {
   return {
@@ -40,18 +49,25 @@ export function studioBuilderBudget(job: StudioProBuilderJob): StudioAiRunReques
 }
 
 /** One durable lease does exactly one model call OR one validation. Replaying never redispatches. */
-export async function advanceStudioBuilder(input: {
-  members: Pick<MembersClient, 'studioAiUsage' | 'studioBuilder'>
-  actor: StudioAiActor
-  id: string
-  projectId: string
-  parentOrigin: string
-  runtimeUrl: string
-  runtimeToken: string
-  signal?: AbortSignal
-}): Promise<StudioProBuilderJob | null> {
-  const call = async (command: StudioProBuilderCommand) => {
-    const response = await input.members.studioBuilder(input.actor, command)
+export async function advanceStudioBuilder(
+  input: {
+    members: Pick<MembersClient, 'studioAiUsage' | 'studioBuilder'>
+    actor: StudioAiActor
+    id: string
+    projectId: string
+    parentOrigin: string
+    signal?: AbortSignal
+  } & StudioBuilderRuntimeOptions,
+): Promise<StudioProBuilderJob | null> {
+  const call = async (command: StudioProBuilderCommand, operationSignal = input.signal) => {
+    operationSignal?.throwIfAborted()
+    const response = operationSignal
+      ? await awaitWithSignal(
+          () => input.members.studioBuilder(input.actor, command, operationSignal),
+          operationSignal,
+        )
+      : await input.members.studioBuilder(input.actor, command)
+    operationSignal?.throwIfAborted()
     if (response.status !== 200 || !response.body)
       throw new Error(
         'A execução persistida mudou ou está indisponível. Consulte seu estado antes de continuar.',
@@ -61,6 +77,7 @@ export async function advanceStudioBuilder(input: {
   const claimed = await call({ operation: 'claim', id: input.id, projectId: input.projectId })
   if (!claimed) return null
   const { job, token } = claimed
+  const python = job.base.version === 2 && job.base.configuration.programmingLanguage === 'python'
   const finish = async () => {
     try {
       const response = await input.members.studioAiUsage(input.actor, {
@@ -89,18 +106,21 @@ export async function advanceStudioBuilder(input: {
     error: string | null,
     notes = job.notes,
   ) => {
-    const state = await call({
-      operation: 'checkpoint',
-      id: job.id,
-      projectId: job.projectId,
-      token,
-      version: job.version,
-      phase,
-      result,
-      error,
-      cost: job.cost,
-      notes: notes.slice(-6),
-    })
+    const state = await call(
+      {
+        operation: 'checkpoint',
+        id: job.id,
+        projectId: job.projectId,
+        token,
+        version: job.version,
+        phase,
+        result,
+        error,
+        cost: job.cost,
+        notes: notes.slice(-6),
+      },
+      signal,
+    )
     if (phase === 'review' || phase === 'failed') await finish()
     return state?.job ?? null
   }
@@ -116,6 +136,12 @@ export async function advanceStudioBuilder(input: {
       `Verificação do sistema: ${safe}`.slice(0, 16000),
     ])
   }
+  if ((python && !input.pythonRuntime) || (!python && (!input.runtimeUrl || !input.runtimeToken)))
+    return checkpoint(
+      'failed',
+      job.result,
+      'O serviço desta linguagem está indisponível. Seu projeto foi preservado.',
+    )
   if (job.phase === 'generating') {
     const request = studioBuilderBudget(job)
     let responseReceived = false
@@ -143,7 +169,7 @@ export async function advanceStudioBuilder(input: {
       })
       const context = await prepareStudioBuilderContext(job)
       const answer = await completePensaJson({
-        system: STUDIO_BUILDER_SYSTEM,
+        system: studioBuilderSystem(job.base),
         user: JSON.stringify(context),
         schema: studioBuilderAnswerSchema,
         jsonSchema: z.toJSONSchema(studioBuilderAnswerSchema),
@@ -170,14 +196,18 @@ export async function advanceStudioBuilder(input: {
         const note = await inspectStudioBuilder(job, answer)
         return checkpoint('queued', job.result, null, [...job.notes, note])
       }
-      const result = await proposeStudioBuilder(job, answer, (packageJson) =>
-        prepareStudioProDependencies({
-          packageJson,
-          executionId: `builder-${job.id.replaceAll('-', '')}`,
-          runtimeUrl: input.runtimeUrl,
-          runtimeToken: input.runtimeToken,
-          signal,
-        }),
+      const result = await proposeStudioBuilder(
+        job,
+        answer,
+        python
+          ? undefined
+          : (packageJson) =>
+              prepareStudioProDependencies({
+                packageJson,
+                executionId: `builder-${job.id.replaceAll('-', '')}`,
+                ...javaScriptRuntime(input),
+                signal,
+              }),
       )
       const scopeIssue = studioProChangeScopeIssue(
         job.assistance?.request,
@@ -199,19 +229,50 @@ export async function advanceStudioBuilder(input: {
     job.phase !== 'validating' ||
     !job.result ||
     !claimed.binaries ||
-    !isStudioProTemplateId(job.base.templateId)
+    (!python && !isStudioProTemplateId(job.base.templateId))
   )
     return checkpoint('failed', job.result, 'A revisão atual está incompleta.')
   try {
     const { revision } = await applyStudioProChange(job.base, job.result.change)
+    if (python) {
+      if (!input.pythonRuntime) throw new Error('O serviço Python não está disponível.')
+      const result = job.result
+      const validated = await runStudioPythonBuilderValidation({
+        members: input.members,
+        actor: input.actor,
+        job,
+        token,
+        revision,
+        binaries: claimed.binaries,
+        parentOrigin: input.parentOrigin,
+        runtime: input.pythonRuntime,
+        signal,
+        accept: (outcome) =>
+          checkpoint(
+            'review',
+            {
+              ...result,
+              preview: outcome.preview,
+              evidence: outcome.evidence,
+            },
+            null,
+          ),
+      })
+      if (validated.status === 'checkpointed') return validated.job
+      return repairOrFail(
+        validated.outcome.detail,
+        { ...result, evidence: validated.outcome.evidence },
+        validated.outcome.status === 'failed',
+      )
+    }
+    if (!isStudioProTemplateId(job.base.templateId)) throw new Error('Modelo JavaScript inválido.')
     const built = await requestStudioProBuild({
       files: revision.files,
       binaries: claimed.binaries,
       templateId: job.base.templateId,
       executionId: `builder-${job.id.replaceAll('-', '')}`,
       parentOrigin: input.parentOrigin,
-      runtimeUrl: input.runtimeUrl,
-      runtimeToken: input.runtimeToken,
+      ...javaScriptRuntime(input),
       validate: true,
       signal,
     })
@@ -258,18 +319,25 @@ export async function advanceStudioBuilder(input: {
 }
 
 /** Rebuilds retained candidate sources with fresh evidence. It never calls the model or its ledger. */
-export async function refreshStudioBuilderPreview(input: {
-  members: Pick<MembersClient, 'studioBuilder'>
-  actor: StudioAiActor
-  id: string
-  projectId: string
-  parentOrigin: string
-  runtimeUrl: string
-  runtimeToken: string
-  signal?: AbortSignal
-}): Promise<StudioProBuilderJob | null> {
-  const call = async (command: StudioProBuilderCommand) => {
-    const response = await input.members.studioBuilder(input.actor, command)
+export async function refreshStudioBuilderPreview(
+  input: {
+    members: Pick<MembersClient, 'studioBuilder'>
+    actor: StudioAiActor
+    id: string
+    projectId: string
+    parentOrigin: string
+    signal?: AbortSignal
+  } & StudioBuilderRuntimeOptions,
+): Promise<StudioProBuilderJob | null> {
+  const call = async (command: StudioProBuilderCommand, operationSignal = input.signal) => {
+    operationSignal?.throwIfAborted()
+    const response = operationSignal
+      ? await awaitWithSignal(
+          () => input.members.studioBuilder(input.actor, command, operationSignal),
+          operationSignal,
+        )
+      : await input.members.studioBuilder(input.actor, command)
+    operationSignal?.throwIfAborted()
     if (response.status !== 200 || !response.body)
       throw new Error(
         'Não foi possível recuperar a proposta. Consulte o estado antes de tentar novamente.',
@@ -284,20 +352,56 @@ export async function refreshStudioBuilderPreview(input: {
   if (!claimed) return null
   if (!claimed.token) return claimed.job
   const { job, token, binaries } = claimed
+  const signal = AbortSignal.any([
+    ...(input.signal ? [input.signal] : []),
+    AbortSignal.timeout(Math.max(1, Date.parse(job.leaseUntil ?? '') - Date.now() - 1000)),
+  ])
   try {
-    if (!job.result || !binaries || !isStudioProTemplateId(job.base.templateId))
+    const python = job.base.version === 2 && job.base.configuration.programmingLanguage === 'python'
+    if (!job.result || !binaries || (!python && !isStudioProTemplateId(job.base.templateId)))
       throw new Error('As fontes ou materiais desta proposta não estão mais disponíveis.')
     const { revision } = await applyStudioProChange(job.base, job.result.change)
+    if (python) {
+      if (!input.pythonRuntime) throw new Error('O serviço Python não está disponível.')
+      const validated = await runStudioPythonBuilderValidation({
+        members: input.members,
+        actor: input.actor,
+        job,
+        token,
+        revision,
+        binaries,
+        parentOrigin: input.parentOrigin,
+        runtime: input.pythonRuntime,
+        signal,
+        accept: async (outcome) =>
+          (
+            await call(
+              {
+                operation: 'preview-checkpoint',
+                id: job.id,
+                projectId: job.projectId,
+                token,
+                version: job.version,
+                preview: outcome.preview,
+                evidence: outcome.evidence,
+              },
+              signal,
+            )
+          )?.job ?? null,
+      })
+      if (validated.status === 'checkpointed') return validated.job
+      throw new Error(validated.outcome.detail)
+    }
+    if (!isStudioProTemplateId(job.base.templateId)) throw new Error('Modelo JavaScript inválido.')
     const built = await requestStudioProBuild({
       files: revision.files,
       binaries,
       templateId: job.base.templateId,
       executionId: `preview-${job.id.replaceAll('-', '')}-${job.assistance?.previewRefreshes ?? 0}`,
       parentOrigin: input.parentOrigin,
-      runtimeUrl: input.runtimeUrl,
-      runtimeToken: input.runtimeToken,
+      ...javaScriptRuntime(input),
       validate: true,
-      signal: input.signal,
+      signal,
     })
     if (!built.evidence || !built.validation)
       throw new Error('A nova prévia não devolveu evidências identificadas.')

@@ -8,10 +8,8 @@ export type ContentStatus = 'pending' | 'visible' | 'hidden' | 'deleted' | 'reje
  * de abertura do próprio Estúdio. Vem do BFF (corpo da rota interna, alcançável
  * na borda) — por isso NUNCA vira fronteira de segurança.
  */
-export interface ThreadStudioMeta {
-  pro: boolean
-  extensions: string[]
-}
+export type ThreadStudioMeta =
+  import('@sistemazero/core/studio/public-metadata').StudioPublicProjectMetadata
 
 /** Tópico (postagem) de um canal. `body` é Markdown. */
 export interface Thread {

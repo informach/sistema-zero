@@ -98,7 +98,7 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
     ]) {
       await conn.sql.unsafe(`alter table members.lesson_blocks add column if not exists ${col}`)
     }
-    await conn.sql.unsafe('truncate table members.lesson_blocks')
+    await conn.sql.unsafe('truncate table members.lesson_blocks cascade')
     await conn.sql.unsafe(
       'create unique index if not exists lesson_blocks_lesson_sort_order_uq on members.lesson_blocks (lesson_id, sort_order)',
     )
@@ -111,9 +111,9 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
   })
 
   beforeEach(async () => {
-    await conn.sql.unsafe('truncate table members.lesson_blocks')
-    await conn.sql.unsafe('truncate table members.lessons')
-    await conn.sql.unsafe('truncate table members.modules')
+    await conn.sql.unsafe(
+      'truncate table members.lesson_blocks, members.lessons, members.modules cascade',
+    )
     await conn.sql.unsafe(
       'insert into members.modules (id, course_id, title, sort_order) values ($1, $2, $3, 0)',
       [moduleId, courseId, 'Módulo 1'],

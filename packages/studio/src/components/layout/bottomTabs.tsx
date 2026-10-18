@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Suspense, useMemo } from 'react'
 import { ErrorBoundary } from '#ui'
+import { isPythonProject } from '../../core/editableProject'
 import { useProjectStore } from '../../state/projectStore'
 import { type BottomTab, resolveConsoleVisibility, useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
@@ -71,6 +72,7 @@ export function useVisibleBottomTabs(): TabItem[] {
   const t = useT()
   const config = useStudioConfig()
   const mode = useProjectStore((s) => s.project?.mode)
+  const python = useProjectStore((state) => !!state.project && isPythonProject(state.project))
   const consoleVisibilityOverride = useUIStore((s) => s.consoleVisibilityOverride)
   const showTerminal = useUIStore((s) => s.showTerminal)
 
@@ -79,8 +81,8 @@ export function useVisibleBottomTabs(): TabItem[] {
     const showConsole = resolveConsoleVisibility(mode, consoleVisibilityOverride)
     return BOTTOM_TAB_ORDER.filter((id) => {
       if (id === 'console') return config.console && showConsole
-      if (id === 'terminal') return config.terminal && showTerminal && isCode
+      if (id === 'terminal') return config.terminal && showTerminal && isCode && !python
       return false
     }).map((id) => ({ id, label: t(BOTTOM_TAB_LABELS[id]) }))
-  }, [config.console, config.terminal, mode, consoleVisibilityOverride, showTerminal, t])
+  }, [config.console, config.terminal, mode, python, consoleVisibilityOverride, showTerminal, t])
 }

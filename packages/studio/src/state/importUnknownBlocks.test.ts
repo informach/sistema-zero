@@ -1,78 +1,8 @@
-import { afterEach, describe, expect, it, mock } from 'bun:test'
-import type { InstalledExtension } from '#core'
-import { fakeUseStore } from '../testing/fakeIdbStore'
+import { test } from 'bun:test'
+import { ISOLATED_STUDIO_CASE_TIMEOUT_MS, runIsolatedStudioCases } from '../__tests__/isolatedCases'
 
-// idb-keyval é mockado (IndexedDB não existe no happy-dom) — mesmo no-op padrão
-// de persistence.test.ts / extensionImportConsent.test.ts.
-mock.module('idb-keyval', () => ({
-  createStore: mock((dbName: string) => fakeUseStore(dbName)),
-  del: mock(async () => undefined),
-  delMany: mock(async () => undefined),
-  get: mock(async (): Promise<unknown> => undefined),
-  getMany: mock(async (): Promise<unknown[]> => []),
-  keys: mock(async (): Promise<unknown[]> => []),
-  set: mock(async () => undefined),
-  setMany: mock(async () => undefined),
-  update: mock(async () => undefined),
-}))
-
-const { collectUnknownBlockTypes, useProjectStore } = await import('./projectStore')
-
-const baseFiles = { 'index.html': '<h1>ok</h1>', 'style.css': '', 'script.js': '' }
-
-const state = (blocks: unknown[]) => ({ blocks: { languageVersion: 0, blocks } })
-
-describe('collectUnknownBlockTypes', () => {
-  it('coleta tipos fora da allowlist, inclusive aninhados/na cadeia next, ordenados e sem repetição', () => {
-    const raw = state([
-      {
-        type: 'sz_frame_start',
-        inputs: {
-          CHILDREN: {
-            block: {
-              type: 'g2d:bloco_do_futuro',
-              next: { block: { type: 'zz_outro_desconhecido' } },
-            },
-          },
-        },
-      },
-      { type: 'g2d:bloco_do_futuro' },
-    ])
-    expect(collectUnknownBlockTypes(raw, [])).toEqual([
-      'g2d:bloco_do_futuro',
-      'zz_outro_desconhecido',
-    ])
-  })
-
-  it('extensão instalada libera os blocos dela (não são "desconhecidos")', () => {
-    const raw = state([{ type: 'sz_g2d_create_sprite' }])
-    expect(collectUnknownBlockTypes(raw, [])).toEqual(['sz_g2d_create_sprite'])
-    const g2d = [{ id: 'game-2d', version: '1.0.0' }] as InstalledExtension[]
-    expect(collectUnknownBlockTypes(raw, g2d)).toEqual([])
-  })
-
-  it('forma inválida devolve lista vazia (o describe* cobre esses casos)', () => {
-    expect(collectUnknownBlockTypes(null, [])).toEqual([])
-    expect(collectUnknownBlockTypes({ blocks: 'nope' }, [])).toEqual([])
-  })
-})
-
-describe('import: aviso nomeia os blocos desconhecidos', () => {
-  afterEach(() => {
-    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
-  })
-
-  it('recusa o projeto inteiro e informa o tipo desconhecido', async () => {
-    const before = useProjectStore.getState().project
-    const source = {
-      name: 'Do futuro',
-      files: baseFiles,
-      blocksState: state([{ type: 'sz_bloco_inexistente' }]),
-    }
-    await expect(useProjectStore.getState().importProjectFromJSON(source)).rejects.toThrow(
-      'sz_bloco_inexistente',
-    )
-    expect(source.blocksState.blocks.blocks).toHaveLength(1)
-    expect(useProjectStore.getState().project).toBe(before)
-  })
-})
+test(
+  'importUnknownBlocks.test.ts mock cases own an isolated module realm',
+  () => runIsolatedStudioCases('./src/state/__tests__/importUnknownBlocks.cases.ts'),
+  ISOLATED_STUDIO_CASE_TIMEOUT_MS,
+)

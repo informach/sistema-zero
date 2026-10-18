@@ -81,7 +81,7 @@ describe.skipIf(!testDatabaseUrl)('retrato do marco × etiqueta viva do curso (S
 
   /** O estado de PRODUÇÃO na véspera: curso-base no Iniciante 2D, marcos congelados nele. */
   beforeEach(async () => {
-    await conn.sql.unsafe('truncate table members.courses, members.xp_events')
+    await conn.sql.unsafe('truncate table members.courses, members.xp_events cascade')
     await conn.sql`
       insert into members.courses (id, slug, audience, level, track, career_slot)
       values (${courseId}, 'curso-base', 'kids', 'iniciante', '2d', 1)`
@@ -89,9 +89,9 @@ describe.skipIf(!testDatabaseUrl)('retrato do marco × etiqueta viva do curso (S
       await conn.sql`
         insert into members.xp_events
           (id, user_id, audience, source_type, source_id, amount,
-           source_level, source_track, source_career_slot)
+           source_level, source_track, source_career_slot, created_at)
         values (${randomUUID()}, ${userId}, 'kids', ${sourceType}, ${courseId}, 0,
-                'iniciante', '2d', 1)`
+                'iniciante', '2d', 1, now())`
     }
   })
 
@@ -279,9 +279,9 @@ describe.skipIf(!testDatabaseUrl)('retrato do marco × etiqueta viva do curso (S
       await conn.sql`
         insert into members.xp_events
           (id, user_id, audience, source_type, source_id, amount,
-           source_level, source_track, source_career_slot)
+           source_level, source_track, source_career_slot, created_at)
         values (${randomUUID()}, ${userId}, 'kids', ${sourceType}, ${outro}, 0,
-                'iniciante', '3d', 2)`
+                'iniciante', '3d', 2, now())`
     }
     await conn.sql`
       update members.xp_events

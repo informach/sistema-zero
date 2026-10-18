@@ -13,6 +13,7 @@ export function cursorAnchor(root: HTMLElement, element: Element | null) {
 
 /** Resolve the actual control/block on this screen, never another viewport's coordinates. */
 export function cursorPosition(root: HTMLElement, target: LiveCursorTarget, x: number, y: number) {
+  if (target.kind === 'code') return null // Code positions come from this Studio's Monaco instance.
   const attribute = target.kind === 'control' ? 'data-live-target' : 'data-id'
   const selector =
     target.kind === 'control' ? '[data-live-target]' : '.blocklyBlockCanvas g[data-id]'

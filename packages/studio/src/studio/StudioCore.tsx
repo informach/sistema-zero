@@ -1,23 +1,28 @@
 import type { JSX } from 'react'
 import { useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { modesForKind, type Project } from '#core'
+import { type IDEMode, modesForKind } from '#core'
 import { ErrorBoundary } from '#ui'
 import { RootErrorFallback } from '../components/layout/ErrorViews'
 import { Shell } from '../components/layout/Shell'
+import { isPythonProject, type EditableStudioProject as Project } from '../core/editableProject'
 import { captureAndStoreProjectThumb } from '../cover/thumbCapture'
+import { createCodeObservationRegistry } from '../monaco/codeObservation'
 import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
+import { prepareEditableStudioProject } from '../state/editableProjectValidation'
 import { flushProjectOperations } from '../state/projectOperations'
-import { prepareProjectForHost, useProjectStore, useProjectStoreApi } from '../state/projectStore'
+import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
 import { StudioStoresContext } from '../state/storesContext'
 import {
   createStudioStores,
   usePendingEditorEdits,
   useStudioPersistence,
+  useStudioRuntimeCapture,
 } from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
 import { StudioCloudSyncProvider } from './cloud-sync'
+import { StudioCodeObservationProvider, useStudioCodeObservation } from './code-observation'
 import {
   type ResolvedStudioConfig,
   resolveLearning,
@@ -36,6 +41,7 @@ import { ProBuilderDeletionReconciler } from './pro-builder-deletion'
 import { StudioProCandidatePreviewProvider } from './pro-candidate-preview'
 import { StudioProRuntimeProvider } from './pro-runtime'
 import { disallowedProjectExtensions } from './project-access'
+import { StudioRuntimeEnvironmentProvider } from './runtime-environment'
 import { StudioShareDisabledProvider, StudioShareProvider } from './share'
 import { TaskGuidePanel } from './TaskGuidePanel'
 import { withSaveBeforeTaskActions } from './taskSessionSave'
@@ -43,6 +49,25 @@ import { StudioTeamLibraryProvider } from './team-library'
 import { StudioThemeProvider } from './theme'
 import { StudioTutorProvider } from './tutor'
 import type { StudioCoreProps, StudioHandle } from './types'
+
+/** Host curation applies both on opening and on every observed document. */
+function projectInAllowedMode(
+  project: Project,
+  allowedModes: readonly IDEMode[],
+  initialMode?: IDEMode,
+): Project {
+  const kindModes = modesForKind(project.kind)
+  const allowed =
+    project.kind === 'pro' ? kindModes : kindModes.filter((mode) => allowedModes.includes(mode))
+  let mode = initialMode ?? project.mode
+  if (!allowed.includes(mode)) mode = allowed[0] ?? project.mode
+  if (mode === project.mode) return project
+  if (isPythonProject(project)) {
+    if (project.kind === 'pro') return project
+    return { ...project, mode: mode === 'bridge' ? 'bridge' : 'blocks' }
+  }
+  return { ...project, mode }
+}
 
 /**
  * Motor compartilhado do Sistema Zero Studio (modos Blocos/Ponte/Código) — base
@@ -67,6 +92,7 @@ import type { StudioCoreProps, StudioHandle } from './types'
  * no Astro.
  */
 export function StudioCore(props: StudioCoreProps): JSX.Element {
+  const [codeObservation] = useState(createCodeObservationRegistry)
   // 1x por instância; StrictMode-safe (re-render descarta a duplicata).
   // `persistence` e `limits` são estáticos por instância (lidos só aqui).
   const [stores] = useState(() =>
@@ -81,7 +107,11 @@ export function StudioCore(props: StudioCoreProps): JSX.Element {
   return (
     <StudioI18nProvider locale={props.locale}>
       <StudioStoresContext.Provider value={stores}>
-        <StudioCoreBody {...props} />
+        <StudioRuntimeEnvironmentProvider value={props.runtimeEnvironment ?? null}>
+          <StudioCodeObservationProvider value={codeObservation}>
+            <StudioCoreBody {...props} />
+          </StudioCodeObservationProvider>
+        </StudioRuntimeEnvironmentProvider>
       </StudioStoresContext.Provider>
     </StudioI18nProvider>
   )
@@ -91,6 +121,7 @@ export function StudioCore(props: StudioCoreProps): JSX.Element {
 function StudioCoreBody({
   initialProject,
   editingAccess = 'author',
+  writerEpoch,
   onRevisionApplied,
   autoRun = true,
   previewOriginAdapter,
@@ -101,6 +132,7 @@ function StudioCoreBody({
   initialMode,
   limits,
   level,
+  pythonLevel,
   allowBlocks,
   allowExtensions,
   allowCategories,
@@ -130,6 +162,8 @@ function StudioCoreBody({
   style,
   ref,
 }: StudioCoreProps): JSX.Element {
+  const codeObservation = useStudioCodeObservation()
+  const runtimeCapture = useStudioRuntimeCapture()
   // Somente o StudioEditor oferece tutor. Adapter estático por instância, como share.
   const [tutorValue] = useState(() => tutor ?? null)
 
@@ -189,7 +223,14 @@ function StudioCoreBody({
   const [previewSecurity] = useState(() => resolvePreviewSecurity(limits))
   // Perfil de aprendizado também é estático por instância (fixado pelo professor).
   const [learning] = useState(() =>
-    resolveLearning({ level, allowBlocks, allowExtensions, allowCategories, allowLevelReveal }),
+    resolveLearning({
+      level,
+      pythonLevel,
+      allowBlocks,
+      allowExtensions,
+      allowCategories,
+      allowLevelReveal,
+    }),
   )
   // `previewSecurity`/`learning` saem de fora do BaseStudioConfig de propósito
   // (ver config.ts) e são anexados SÓ aqui — a anotação ResolvedStudioConfig
@@ -219,7 +260,7 @@ function StudioCoreBody({
   } | null>(null)
   useEffect(() => {
     let active = true
-    void prepareProjectForHost(sourceProject, { proBuildLimits: preparationLimits }).then(
+    void prepareEditableStudioProject(sourceProject, { proBuildLimits: preparationLimits }).then(
       (project) => {
         if (active)
           setPrepared({
@@ -259,16 +300,8 @@ function StudioCoreBody({
   const sanitized = useMemo(() => {
     const project = preparedProject
     if (!project) return null
-    // Coerção de modo (D2): os modos dependem do TIPO do projeto (modesForKind)
-    // intersectados com a allowlist do host — pro = só Código; básico = Blocos/
-    // Ponte. initialMode sobrepõe o salvo; fora dos permitidos cai no primeiro.
-    // Não marca sujo (é abertura, não edição).
-    const kindModes = modesForKind(project.kind)
-    const allowed =
-      project.kind === 'pro' ? kindModes : kindModes.filter((m) => config.allowedModes.includes(m))
-    let mode = initialMode ?? project.mode
-    if (!allowed.includes(mode)) mode = allowed[0] ?? project.mode
-    return mode === project.mode ? project : { ...project, mode }
+    // Abertura não é edição: a curadoria não marca o projeto como sujo.
+    return projectInAllowedMode(project, config.allowedModes, initialMode)
   }, [preparedProject, initialMode, resolvedModesKey])
   const disallowedExtensions = useMemo(
     () => (sanitized ? disallowedProjectExtensions(sanitized, learning.allowExtensions) : []),
@@ -310,11 +343,20 @@ function StudioCoreBody({
   useImperativeHandle(
     ref,
     (): StudioHandle => ({
+      getCodeCursorAnchor: (x, y) => codeObservation?.anchorAt(x, y) ?? Promise.resolve(null),
+      getCodeCursorPosition: (anchor) =>
+        codeObservation?.positionOf(anchor) ?? Promise.resolve(null),
+      onCodeCursorChange: (listener) => codeObservation?.subscribe(listener) ?? (() => {}),
       getProject: () => {
         pendingEditorEdits?.flush()
         const project = projectStoreApi.getState().project
         return project ? snapshotProjectWithCurrentAuthority(project) : null
       },
+      onProjectChange: (listener) =>
+        projectStoreApi.subscribe((next, previous) => {
+          if (next.project !== previous.project || next.editingAccess !== previous.editingAccess)
+            listener()
+        }),
       save: () => persistence.save(),
       replaceProject: (project) => setReplacedProject(project),
       prepareHandoff: async () => {
@@ -338,7 +380,9 @@ function StudioCoreBody({
         if (projectStoreApi.getState().editingAccess !== 'observer')
           throw new Error('Pause a autoria antes de observar uma revisão.')
         const generation = ++observationGeneration.current
-        const prepared = await prepareProjectForHost(project, { proBuildLimits: preparationLimits })
+        const prepared = await prepareEditableStudioProject(project, {
+          proBuildLimits: preparationLimits,
+        })
         if (!prepared) throw new Error('O projeto recebido não pôde ser aberto.')
         if (generation !== observationGeneration.current)
           throw new Error('Revisão substituída por uma mais recente.')
@@ -348,7 +392,9 @@ function StudioCoreBody({
         // before acknowledging a remotely-authored document. A new canvas loads the
         // saved layout instead of preserving positions from the preceding writer.
         flushSync(() => {
-          projectStoreApi.getState().hydrateProject(prepared)
+          projectStoreApi
+            .getState()
+            .hydrateProject(projectInAllowedMode(prepared, config.allowedModes))
           setObservationViewVersion(generation)
         })
         observedRevision.current = revision
@@ -368,6 +414,7 @@ function StudioCoreBody({
       isDirty: () => projectStoreApi.getState().isDirty,
     }),
     [
+      codeObservation,
       projectStoreApi,
       persistence,
       pendingEditorEdits,
@@ -375,6 +422,7 @@ function StudioCoreBody({
       preparationLimits,
       onRevisionApplied,
       editingAccess,
+      config.allowedModes,
     ],
   )
 
@@ -486,9 +534,9 @@ function StudioCoreBody({
       if (!persistence.hasAdapter) return
       if (requireIsolatedPreview || projectStoreApi.getState().editingAccess === 'observer') return
       const project = lastProjectRef.current
-      if (project) void captureAndStoreProjectThumb(project)
+      if (project) void captureAndStoreProjectThumb(project, runtimeCapture)
     }
-  }, [persistence, projectStoreApi, requireIsolatedPreview])
+  }, [persistence, projectStoreApi, requireIsolatedPreview, runtimeCapture])
 
   useEffect(() => {
     if (!blockUnloadWhenDirty || !isDirty) return
@@ -522,6 +570,7 @@ function StudioCoreBody({
                                   originAdapter: previewOriginAdapter,
                                   requireIsolatedPreview,
                                   muted: projectMuted,
+                                  writerEpoch,
                                 }}
                               >
                                 <StudioProCandidatePreviewProvider>

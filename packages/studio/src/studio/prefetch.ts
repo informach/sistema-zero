@@ -6,6 +6,9 @@ import { prefetchMode } from '../modes/lazyModes'
  * Hosts podem chamar no hover do link que abre o Studio — a navegação não
  * espera o download. Idempotente e best-effort.
  */
-export function prefetchStudioModes(modes: readonly IDEMode[] = IDE_MODES): void {
-  for (const mode of modes) prefetchMode(mode)
+export function prefetchStudioModes(
+  modes: readonly IDEMode[] = IDE_MODES,
+  language: 'javascript' | 'python' = 'javascript',
+): void {
+  for (const mode of modes) prefetchMode(mode, language)
 }

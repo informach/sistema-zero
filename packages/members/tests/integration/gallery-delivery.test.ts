@@ -1,11 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
-import {
-  defaultLessonSection,
-  type GalleryDeliveryPlan,
-  type GallerySubmission,
-} from '@sistemazero/core/learning'
+import { defaultLessonSection, type GalleryDeliveryPlan } from '@sistemazero/core/learning'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 function setup(tool: 'studio' | 'pinta' = 'pinta') {
@@ -155,11 +151,12 @@ describe('gallery submission as a section criterion', () => {
       actor: ctx.owner,
       input,
       projectForChecks: null,
+      copyGeneration: plan.copyGeneration,
     })
     expect(unsigned.status).toBe(401)
     const received = await ctx.request(
       `/internal${ctx.path}/gallery-commit`,
-      { actor: ctx.owner, input, projectForChecks: null },
+      { actor: ctx.owner, input, projectForChecks: null, copyGeneration: plan.copyGeneration },
       { 'x-consumer-id': 'member-shell' },
     )
     expect(received.status).toBe(200)
@@ -184,9 +181,11 @@ describe('gallery submission as a section criterion', () => {
     const deliver = async (input: Record<string, unknown>) => {
       const prepared = await ctx.request(`${ctx.path}/gallery-prepare`, input)
       expect(prepared.status).toBe(200)
+      const plan = (await prepared.json()) as GalleryDeliveryPlan
+      if (plan.completed) throw new Error('Unexpected completion')
       const committed = await ctx.request(
         `/internal${ctx.path}/gallery-commit`,
-        { actor: ctx.owner, input, projectForChecks: null },
+        { actor: ctx.owner, input, projectForChecks: null, copyGeneration: plan.copyGeneration },
         { 'x-consumer-id': 'member-shell' },
       )
       expect(committed.status).toBe(200)
@@ -217,10 +216,10 @@ describe('gallery submission as a section criterion', () => {
   test('recado acima de 1000 caracteres: 400 no preparo e no commit, sem entrega e sem turno espelhado', async () => {
     const ctx = setup(),
       items = [await ctx.seed('dino'), await ctx.seed('cacto')]
-    const commit = (input: Record<string, unknown>) =>
+    const commit = (input: Record<string, unknown>, copyGeneration: string = randomUUID()) =>
       ctx.request(
         `/internal${ctx.path}/gallery-commit`,
-        { actor: ctx.owner, input, projectForChecks: null },
+        { actor: ctx.owner, input, projectForChecks: null, copyGeneration },
         { 'x-consumer-id': 'member-shell' },
       )
     // A coluna é varchar(1000): antes a galeria aceitava 2000 e o upsert estourava 500 DEPOIS
@@ -241,8 +240,11 @@ describe('gallery submission as a section criterion', () => {
 
     // No limite exato a entrega passa e o recado chega inteiro.
     const atLimit = { ...tooLong, requestId: randomUUID(), message: 'b'.repeat(1000) }
-    expect((await ctx.request(`${ctx.path}/gallery-prepare`, atLimit)).status).toBe(200)
-    expect((await commit(atLimit)).status).toBe(200)
+    const atLimitResponse = await ctx.request(`${ctx.path}/gallery-prepare`, atLimit)
+    expect(atLimitResponse.status).toBe(200)
+    const atLimitPlan = (await atLimitResponse.json()) as GalleryDeliveryPlan
+    if (atLimitPlan.completed) throw new Error('Unexpected completion')
+    expect((await commit(atLimit, atLimitPlan.copyGeneration)).status).toBe(200)
     expect(
       (await ctx.studioSubmissions.getOne(ctx.owner.userId, ctx.blockId))?.message,
     ).toHaveLength(1000)
@@ -285,9 +287,9 @@ describe('gallery submission as a section criterion', () => {
     ).toBe(409)
     const second = await ctx.seed('outro'),
       input = { ...base, items: [mine, second] }
-    const plan = (await (await ctx.request(`${ctx.path}/gallery-prepare`, input)).json()) as {
-      snapshot: GallerySubmission
-    }
+    const plan = (await (
+      await ctx.request(`${ctx.path}/gallery-prepare`, input)
+    ).json()) as Exclude<GalleryDeliveryPlan, { completed: true }>
     expect(
       (await ctx.request(`${ctx.path}/pinta-submission`, { asset: plan.snapshot })).status,
     ).not.toBe(200)
@@ -295,7 +297,7 @@ describe('gallery submission as a section criterion', () => {
       (
         await ctx.request(
           `/internal${ctx.path}/gallery-commit`,
-          { actor: ctx.owner, input, projectForChecks: null },
+          { actor: ctx.owner, input, projectForChecks: null, copyGeneration: plan.copyGeneration },
           { 'x-consumer-id': 'member-shell' },
         )
       ).status,

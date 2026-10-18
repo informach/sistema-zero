@@ -1,8 +1,19 @@
 import { envelope } from '@sistemazero/core/http'
 
-export type UpstreamErrorKind = 'no_target' | 'open_circuit' | 'timeout' | 'connect' | 'bad_gateway'
+export type UpstreamErrorKind =
+  | 'no_target'
+  | 'open_circuit'
+  | 'timeout'
+  | 'connect'
+  | 'bad_gateway'
+  | 'client_closed'
 
 const MAP: Record<UpstreamErrorKind, { status: number; code: string; message: string }> = {
+  client_closed: {
+    status: 499,
+    code: 'REQUEST_CANCELLED',
+    message: 'A requisição foi cancelada pelo cliente.',
+  },
   no_target: {
     status: 503,
     code: 'NO_UPSTREAM_AVAILABLE',

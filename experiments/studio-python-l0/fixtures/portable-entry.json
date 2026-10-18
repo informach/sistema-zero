@@ -1,0 +1,19 @@
+{
+  "entrypoint": "app/main.py",
+  "files": {
+    "app/main.py": "from pathlib import Path\nfrom helper import calculate\nimport sys\nprint(__name__)\nprint(Path(__file__).relative_to(Path.cwd()).as_posix())\nprint(sys.argv[0])\nprint(Path(sys.path[0]).name)\nprint(__package__ is None, __spec__ is None)\nprint(__loader__.__class__.__name__)\nprint(calculate(14))\nprint(Path('assets/message.txt').read_text(encoding='utf-8'))\n",
+    "app/helper.py": "from library import factor\ndef calculate(value):\n    return value * factor\n",
+    "app/library/__init__.py": "factor = 3\n",
+    "assets/message.txt": "Olá, criador!"
+  },
+  "expected": [
+    "__main__",
+    "app/main.py",
+    "app/main.py",
+    "app",
+    "True True",
+    "SourceFileLoader",
+    "42",
+    "Olá, criador!"
+  ]
+}

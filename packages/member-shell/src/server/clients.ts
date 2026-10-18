@@ -3,6 +3,14 @@ import { creatorCommunityAccessRef } from '@sistemazero/core/creations'
 import type { AdultProfilePreferences } from '@sistemazero/core/profiles'
 import 'server-only'
 import type { StudioAiAccountView, StudioAiPolicyInput } from '@sistemazero/core/ai-credits'
+import type { StudioPublicProjectMetadata } from '@sistemazero/core/studio/public-metadata'
+import type { StudioPythonAnalysisAuthorization } from '@sistemazero/core/studio/python-language-authorization'
+import type {
+  StudioFreeRuntimeRequest,
+  StudioLessonRuntimeRequest,
+  StudioLivePublicationRuntimeRequest,
+  StudioPublicRuntimeRequest,
+} from '@sistemazero/core/studio/runtime-authorization'
 import { cache } from 'react'
 import { getEnv } from '../lib/env'
 import type {
@@ -960,6 +968,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     async studioBuilder(
       actor: import('@sistemazero/core/ai-credits').StudioAiActor,
       command: import('@sistemazero/core/studio').StudioProBuilderCommand,
+      signal?: AbortSignal,
     ): Promise<
       GatewayResponse<{ state: import('@sistemazero/core/studio').StudioProBuilderClaim | null }>
     > {
@@ -968,6 +977,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
           gw.gatewayFetchHmac('/members/internal/studio-ai/builder/availability?audience=adult', {
             method: 'POST',
             body: {},
+            signal,
           }),
         )
         if (protocol.status !== 200) return { status: protocol.status, body: { state: null } }
@@ -976,6 +986,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         gw.gatewayFetchHmac('/members/internal/studio-ai/builder', {
           method: 'POST',
           body: { actor: audience === 'adult' ? { ...actor, audience: 'adult' } : actor, command },
+          signal,
         }),
       )
     },
@@ -1034,6 +1045,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       })
     },
     zappyReserveQuestion(body: {
+      programmingLanguage?: 'javascript' | 'python'
       actor: { userId: string; accountId: string; privileged: boolean }
       projectId: string
       clientMessageId: string
@@ -1046,6 +1058,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         rateLimited?: boolean
         /** Últimos turnos da conversa (≤6, cronológico) — memória do tutor. */
         recentMessages?: Array<{
+          programmingLanguage?: 'javascript' | 'python'
           role: 'user' | 'assistant'
           text: string
           kind?: 'classic' | 'pro'
@@ -1192,10 +1205,12 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       fingerprint?: string,
       /** O recado veio da fala transcrita (o Admin mostra o chip "falado"). */
       messageSpoken?: boolean,
+      signal?: AbortSignal,
     ): Promise<GatewayResponse<StudioSubmissionResultView>> {
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-submission`,
         {
+          signal,
           method: 'POST',
           body: {
             project,
@@ -1220,6 +1235,66 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-carryover`,
         { method: 'GET' },
       )
+    },
+
+    openLessonStudio(
+      lessonId: string,
+      blockId: string,
+      input?: {
+        confirm?: { baselineId: string; environment: unknown }
+      },
+    ): Promise<GatewayResponse<unknown>> {
+      return gw.gatewayFetch(
+        `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-context?audience=${audience}`,
+        { method: 'POST', ...(input ? { body: input } : {}) },
+      )
+    },
+
+    authorizeLessonRuntime(
+      lessonId: string,
+      blockId: string,
+      input: StudioLessonRuntimeRequest,
+    ): Promise<GatewayResponse<unknown>> {
+      return gw.gatewayFetch(
+        `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-runtime?audience=${audience}`,
+        { method: 'POST', body: input },
+      )
+    },
+
+    studioFreeOptions(options?: { signal?: AbortSignal }): Promise<GatewayResponse<unknown>> {
+      return gw.gatewayFetch(`/members/studio/free-options?audience=${audience}`, {
+        method: 'GET',
+        signal: options?.signal,
+      })
+    },
+    studioFreeOptionsReadonly(): Promise<GatewayResponse<unknown>> {
+      return gw.gatewayFetchReadonly(`/members/studio/free-options?audience=${audience}`, {
+        method: 'GET',
+      })
+    },
+    authorizeFreeRuntime(
+      input: StudioFreeRuntimeRequest,
+      options?: { signal?: AbortSignal },
+    ): Promise<GatewayResponse<unknown>> {
+      return gw.gatewayFetch(`/members/studio/free-runtime?audience=${audience}`, {
+        method: 'POST',
+        body: input,
+        signal: options?.signal,
+      })
+    },
+    authorizePythonAnalysis(
+      input: StudioPythonAnalysisAuthorization,
+    ): Promise<GatewayResponse<unknown>> {
+      return gw.gatewayFetch(`/members/studio/python-analysis?audience=${audience}`, {
+        method: 'POST',
+        body: input,
+      })
+    },
+    authorizePublicRuntime(input: StudioPublicRuntimeRequest): Promise<GatewayResponse<unknown>> {
+      return gw.gatewayFetchHmac('/members/internal/studio/public-runtime', {
+        method: 'POST',
+        body: input,
+      })
     },
 
     /** Projeto que o aluno ENVIOU NESTE bloco (save na nuvem). `null` se nunca enviou. */
@@ -1456,6 +1531,15 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         { method: 'GET' },
       )
     },
+    authorizeLivePublicationRuntime(
+      workspaceId: string,
+      input: StudioLivePublicationRuntimeRequest,
+    ): Promise<GatewayResponse<unknown>> {
+      return gw.gatewayFetch(`/members/live/workspaces/${enc(workspaceId)}/publication-runtime`, {
+        method: 'POST',
+        body: input,
+      })
+    },
 
     // ── Certificado de conclusão ─────────────────────────────────────────────
     /** Estado do bloco certificado (elegível p/ emitir? já emitido?). */
@@ -1649,7 +1733,7 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       playId: string
       clientIdempotencyKey: string
       /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix no card (cosmético). */
-      studioMeta?: { pro: boolean; extensions: string[] } | null
+      studioMeta?: StudioPublicProjectMetadata | null
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
       return gw.gatewayFetch('/hub/internal/showcase-thread-studio', { method: 'POST', body })
     },
@@ -1670,7 +1754,7 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       /** Tag do Desafio do mês — o hub valida (posse + mês) com drop silencioso. */
       challengeKey?: string | null
       /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix no card (cosmético). */
-      studioMeta?: { pro: boolean; extensions: string[] } | null
+      studioMeta?: StudioPublicProjectMetadata | null
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
       return gw.gatewayFetch('/hub/internal/showcase-thread-studio-standalone', {
         method: 'POST',

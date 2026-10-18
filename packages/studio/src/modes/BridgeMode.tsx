@@ -14,6 +14,7 @@ import { EditorSkeleton } from '../components/layout/LoadingViews'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
 import { PreviewIframe } from '../components/preview/LazyPreviewIframe'
+import { javaScriptProject } from '../core/editableProject'
 import { useCrossHighlight } from '../hooks/useCrossHighlight'
 import { useDebounced } from '../hooks/useDebounced'
 import { extractInlineAssets } from '../parsers/html'
@@ -83,13 +84,14 @@ export function BridgeMode(): JSX.Element {
     bridgeCodeEditEpoch,
   } = useProjectStore(
     useShallow((s) => ({
-      hasProject: Boolean(s.project),
-      projectId: s.project?.id,
-      projectName: s.project?.name ?? 'Projeto',
-      files: s.project?.files,
-      ir: s.project?.ir ?? null,
-      blocksState: s.project?.blocksState ?? null,
-      installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+      hasProject: Boolean(javaScriptProject(s.project)),
+      projectId: javaScriptProject(s.project)?.id,
+      projectName: javaScriptProject(s.project)?.name ?? 'Projeto',
+      files: javaScriptProject(s.project)?.files,
+      ir: javaScriptProject(s.project)?.ir ?? null,
+      blocksState: javaScriptProject(s.project)?.blocksState ?? null,
+      installedExtensions:
+        javaScriptProject(s.project)?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
       bridgeCodeEditEpoch: s.bridgeCodeEditEpoch,
     })),
   )
@@ -304,9 +306,9 @@ export function BridgeMode(): JSX.Element {
   // código) NÃO mexe nessas chaves, então não conta — só mudanças que os blocos
   // representam invalidam um reparse em voo.
   useEffect(() => {
-    let prev = projectStoreApi.getState().project
+    let prev = javaScriptProject(projectStoreApi.getState().project)
     const unsubscribe = projectStoreApi.subscribe((state) => {
-      const next = state.project
+      const next = javaScriptProject(state.project)
       if (next?.ir !== prev?.ir || next?.blocksState !== prev?.blocksState) {
         stateEpoch.current += 1
       }
@@ -388,7 +390,7 @@ export function BridgeMode(): JSX.Element {
       }
       // Lê o `ir`/`blocksState` FRESCOS do store (closure obsoleta dropava o
       // resultado quando uma edição de bloco mudava o `ir` durante o parse).
-      const currentProject = projectStoreApi.getState().project
+      const currentProject = javaScriptProject(projectStoreApi.getState().project)
       const currentIR = currentProject?.ir ?? null
       if (deepEqualIR(result.ir, currentIR)) {
         markSynced()
@@ -581,7 +583,7 @@ export function BridgeMode(): JSX.Element {
       htmlShell: assets.htmlShell,
       cssSource: assets.cssSource,
       jsSource: assets.jsSource,
-      ir: projectStoreApi.getState().project?.ir ?? null,
+      ir: javaScriptProject(projectStoreApi.getState().project)?.ir ?? null,
       projectName,
       installedExtensionIds: installedExtensions.map((extension) => extension.id),
     })

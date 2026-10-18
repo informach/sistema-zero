@@ -2,6 +2,29 @@ import { describe, expect, it } from 'bun:test'
 import { studioTutorContextHint, studioTutorModeViolation, studioTutorPolicy } from './tutorMode'
 
 describe('contrato pedagógico do tutor', () => {
+  it('Python keeps textual instructions in Pro and ordinary Portuguese labels in Classic', () => {
+    for (const text of [
+      'print(42)',
+      'import turtle',
+      'from turtle import Turtle',
+      'for passo in range(4):',
+      'pontos = 0',
+      'python -m pip install pacote',
+    ]) {
+      expect(studioTutorModeViolation(text, 'classic', 'python')).toBe('code-in-blocks')
+      expect(studioTutorModeViolation(text, 'pro', 'python')).toBeNull()
+    }
+    expect(
+      studioTutorModeViolation(
+        'Use o bloco Repetir para desenhar quatro lados.',
+        'classic',
+        'python',
+      ),
+    ).toBeNull()
+    expect(
+      studioTutorModeViolation('A função print mostra um valor.', 'classic', 'python'),
+    ).toBeNull()
+  })
   it('autoriza código somente no Pro, independentemente da visualização clássica', () => {
     expect(studioTutorPolicy('classic')).toMatchObject({ blocks: true, code: false })
     expect(studioTutorPolicy('pro')).toMatchObject({ blocks: false, code: true })

@@ -5,7 +5,7 @@ import { OFFICIAL_CATALOG } from '#official-extensions'
 import { useProjectStore } from '../../state/projectStore'
 import { resolveLearning, STANDALONE_CONFIG, StudioConfigProvider } from '../../studio/config'
 import { StudioExamplesVisibleProvider } from '../../studio/examples-visibility'
-import { ExtensionsPanel } from './ExtensionsPanel'
+import { JavaScriptExtensionsPanel as ExtensionsPanel } from './JavaScriptExtensionsPanel'
 
 // Exemplos prontos (CORE_EXAMPLES + os das extensões) são material de TESTE do
 // admin — podem estar desatualizados/com erro. Só aparecem quando o host libera

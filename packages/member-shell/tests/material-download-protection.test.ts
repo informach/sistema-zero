@@ -18,6 +18,7 @@ function routes(
   record?: () => Promise<{ status: number; body: unknown }>,
 ) {
   return createShellRoutes({
+    session: { audience: 'kids' },
     media: { requireUploadSession: async () => user },
     members: {
       resolveAttachment: async () => ({

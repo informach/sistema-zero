@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, mock, test } from 'bun:test'
+import { awaitWithSignal } from '@sistemazero/core/http'
 import { canonicalHmacMessage, verifyHmacSignature } from '@sistemazero/core/security'
 
 mock.module('server-only', () => ({}))
@@ -11,6 +12,28 @@ afterAll(() => {
 })
 
 describe('gatewayFetchHmac', () => {
+  test('propagates caller withdrawal to the signed transport', async () => {
+    const entered = Promise.withResolvers<AbortSignal>()
+    globalThis.fetch = Object.assign(
+      async (_input: RequestInfo | URL, init?: RequestInit) => {
+        const signal = init?.signal
+        if (!signal) throw new Error('Missing transport lifetime')
+        entered.resolve(signal)
+        return awaitWithSignal(() => new Promise<Response>(() => {}), signal)
+      },
+      { preconnect: realFetch.preconnect },
+    )
+    const gateway = createGatewayModule({} as never)
+    const controller = new AbortController()
+    const pending = gateway.gatewayFetchHmac('/members/internal/test', {
+      method: 'POST',
+      signal: controller.signal,
+    })
+    const forwarded = await entered.promise
+    controller.abort()
+    expect((await pending).status).toBe(503)
+    expect(forwarded.aborted).toBe(true)
+  })
   test('assina método, path e corpo exato como o consumer member-shell', async () => {
     let captured: { url: string; init: RequestInit } | null = null
     globalThis.fetch = (async (input, init) => {

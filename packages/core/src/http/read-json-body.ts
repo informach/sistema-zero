@@ -19,7 +19,9 @@ export class InvalidJsonBodyError extends Error {
 export async function readJsonBodyWithLimit(
   request: Pick<Request, 'headers' | 'body'>,
   maxBytes: number,
+  signal?: AbortSignal,
 ): Promise<unknown> {
+  signal?.throwIfAborted()
   const declaredLength = Number(request.headers.get('content-length'))
   if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
     throw new RequestBodyTooLargeError(maxBytes)
@@ -27,20 +29,36 @@ export async function readJsonBodyWithLimit(
   if (!request.body) throw new InvalidJsonBodyError()
 
   const reader = request.body.getReader()
+  let rejectAbort!: (reason: unknown) => void
+  const aborted = new Promise<never>((_resolve, reject) => {
+    rejectAbort = reject
+  })
+  void aborted.catch(() => {})
+  const abort = () => {
+    rejectAbort(signal?.reason)
+    void reader.cancel(signal?.reason).catch(() => {})
+  }
+  signal?.addEventListener('abort', abort, { once: true })
+  if (signal?.aborted) abort()
   const chunks: Uint8Array[] = []
   let receivedBytes = 0
   try {
     while (true) {
-      const { done, value } = await reader.read()
+      const { done, value } = await (signal
+        ? Promise.race([reader.read(), aborted])
+        : reader.read())
+      signal?.throwIfAborted()
       if (done) break
       receivedBytes += value.byteLength
       if (receivedBytes > maxBytes) {
-        await reader.cancel()
+        if (signal) void reader.cancel().catch(() => {})
+        else await reader.cancel()
         throw new RequestBodyTooLargeError(maxBytes)
       }
       chunks.push(value)
     }
   } finally {
+    signal?.removeEventListener('abort', abort)
     reader.releaseLock()
   }
 

@@ -1,6 +1,8 @@
+import type { StudioCodeAnchor } from '@sistemazero/core/studio/code-anchor'
 import type { CSSProperties, Ref } from 'react'
-import type { AnyBlockLevel, IDEMode, Locale, Project } from '#core'
+import type { AnyBlockLevel, IDEMode, Locale } from '#core'
 import type { StudioPlayerOriginAdapter } from '../components/preview/playerOriginAdapter'
+import type { EditableStudioProject as Project } from '../core/editableProject'
 import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
 import type { StudioFeatures } from './config'
@@ -20,6 +22,12 @@ export type StudioTaskSession = import('@sistemazero/ui/pensa-mission-session').
 export interface StudioHandle {
   /** Snapshot atual do projeto (síncrono). */
   getProject(): Project | null
+  /** Invalidates host feedback when the project or its editing authority changes. */
+  onProjectChange?(listener: () => void): () => void
+  /** Code pointers are local to this editor instance; coordinates use the viewport. */
+  getCodeCursorAnchor(clientX: number, clientY: number): Promise<StudioCodeAnchor | null>
+  getCodeCursorPosition(anchor: StudioCodeAnchor): Promise<{ left: number; top: number } | null>
+  onCodeCursorChange(listener: () => void): () => void
   /** Força flush: persiste via adapter (se houver) e emite onChange/onSave. */
   save(): Promise<void>
   /** Substitui o projeto inteiro (ex.: host recarregou do servidor). Remonta os editores. */
@@ -49,6 +57,8 @@ export interface StudioCommonProps {
    */
   initialProject: Project
   editingAccess?: 'author' | 'observer'
+  /** Host-confirmed live-room writer generation; a change stops the preceding Python run. */
+  writerEpoch?: number | null
   onRevisionApplied?: (revision: number) => void
   /** Defaults to true for existing editors. Observers never auto-run. */
   autoRun?: boolean
@@ -137,6 +147,8 @@ export interface StudioCommonProps {
    * modo Pro usa o WebContainer local do Estúdio Completo.
    */
   proRuntime?: StudioProRuntimeAdapter
+  /** Approved language catalog and providers, shared by editor and public player. */
+  runtimeEnvironment?: import('../runtime/environment').StudioRuntimeEnvironment
   /**
    * Registra beforeunload enquanto houver mudanças não salvas (default true).
    * Hosts SPA com navegação própria podem desligar e usar handle.isDirty().
@@ -231,6 +243,8 @@ export interface StudioCommonProps {
  * avançado" ligado), em vez dos ~500 blocos de uma vez.
  */
 export interface StudioLearningProps {
+  /** Python has its own three levels; JavaScript keeps its existing level scale. */
+  pythonLevel?: import('../python/learning').PythonLearningLevel
   /**
    * Degrau de aprendizado: cura a paleta de blocos por dificuldade × eixo 2D/3D
    * (escada de 6). Default: 'avancado-3d' (mostra tudo). Aceita também a escala

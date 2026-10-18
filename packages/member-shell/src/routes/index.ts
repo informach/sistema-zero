@@ -1,7 +1,10 @@
 import { createHash } from 'node:crypto'
+import { isContentFingerprint } from '@sistemazero/core/creations'
 import { createGalleryDeliveryRoutes } from './gallery-delivery'
 import { createLearningRoutes } from './learning'
 import { createProfilePreferencesRoutes } from './profile-preferences'
+import { createStudioFreeRuntimeRoutes } from './studio-free-runtime'
+import { createStudioLessonRuntimeRoutes } from './studio-lesson-runtime'
 import 'server-only'
 import { redirect } from 'next/navigation'
 import { NextResponse } from 'next/server'
@@ -290,7 +293,7 @@ const invalidInput = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } 
  */
 function readFingerprint(raw: unknown): string | undefined {
   const value = (raw as { fingerprint?: unknown } | null)?.fingerprint
-  return typeof value === 'string' && /^v1:[a-f0-9]{64}$/.test(value) ? value : undefined
+  return isContentFingerprint(value) ? value : undefined
 }
 
 /** Valida ids de path (perfil etc.) ANTES de tocar gateway/R2 — fail-fast e não
@@ -1423,6 +1426,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         message,
         readFingerprint(raw),
         readMessageSpoken(raw),
+        req.signal,
       )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
@@ -1434,6 +1438,27 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const { lessonId, blockId } = await ctx.params
       const { status, body } = await members.getStudioCarryover(lessonId, blockId)
       return NextResponse.json(body ?? { project: null }, { status })
+    },
+  }
+
+  const studioContext = {
+    POST: async (req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const { lessonId, blockId } = await ctx.params
+      const input = req.body ? await req.json().catch(() => null) : {}
+      const parsed = z
+        .object({
+          confirm: z
+            .object({
+              baselineId: z.string().regex(/^[a-f0-9]{64}$/),
+              environment: z.unknown(),
+            })
+            .optional(),
+        })
+        .safeParse(input)
+      if (!parsed.success)
+        return NextResponse.json({ error: { message: 'Contexto inválido.' } }, { status: 400 })
+      const { status, body } = await members.openLessonStudio(lessonId, blockId, parsed.data)
+      return NextResponse.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } })
     },
   }
 
@@ -1808,6 +1833,9 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     learningHelp,
     studioSubmit,
     studioCarryover,
+    studioContext,
+    studioRuntime: createStudioLessonRuntimeRoutes(members),
+    studioFree: createStudioFreeRuntimeRoutes(members, session.audience),
     studioSubmissionGet,
     pintaSubmit,
     pintaSubmissionGet,

@@ -6,6 +6,10 @@ import { z } from 'zod'
 import { getEnv } from '../lib/env'
 import type { MembersClient } from '../server/clients'
 import { advanceStudioBuilder } from '../server/studio-builder'
+import {
+  studioBuilderRuntimeAvailable,
+  studioBuilderRuntimeOptions,
+} from '../server/studio-builder-runtime'
 
 const delivery = z
   .object({
@@ -32,7 +36,7 @@ const delivery = z
 
 /** Service-only bounded step. Cookies and browser claims never authorize this endpoint. */
 export function createStudioBuilderExecutorRoutes(deps: {
-  members: MembersClient
+  members: Pick<MembersClient, 'studioBuilder' | 'studioAiUsage'>
   audience?: 'kids' | 'adult'
   advance?: typeof advanceStudioBuilder
 }) {
@@ -43,12 +47,7 @@ export function createStudioBuilderExecutorRoutes(deps: {
           headers = { 'Cache-Control': 'no-store' }
         const reply = (status: number) =>
           NextResponse.json({ ok: status === 200 }, { status, headers })
-        if (
-          !env.STUDIO_BUILDER_EXECUTOR_SECRET ||
-          !env.STUDIO_PRO_RUNTIME_URL ||
-          !env.STUDIO_PRO_RUNTIME_TOKEN
-        )
-          return reply(503)
+        if (!env.STUDIO_BUILDER_EXECUTOR_SECRET) return reply(503)
         const expected = Buffer.from(`Bearer ${env.STUDIO_BUILDER_EXECUTOR_SECRET}`),
           supplied = Buffer.from(request.headers.get('authorization') ?? '')
         if (expected.length !== supplied.length || !timingSafeEqual(expected, supplied))
@@ -61,11 +60,27 @@ export function createStudioBuilderExecutorRoutes(deps: {
           return reply(400)
         }
         try {
+          const runtime = studioBuilderRuntimeOptions(env)
+          const saved = await deps.members.studioBuilder(
+            input.actor,
+            {
+              operation: 'get',
+              id: input.id,
+              projectId: input.projectId,
+            },
+            request.signal,
+          )
+          if (saved.status !== 200 || !saved.body) return reply(503)
+          const base = saved.body.state?.job.base
+          if (!base) return reply(200)
+          const language =
+            base.version === 2 ? base.configuration.programmingLanguage : 'javascript'
+          // Configuration failure leaves the queued job untouched; it must not claim a lease.
+          if (!studioBuilderRuntimeAvailable(runtime, language)) return reply(503)
           await (deps.advance ?? advanceStudioBuilder)({
             ...input,
             members: deps.members,
-            runtimeUrl: env.STUDIO_PRO_RUNTIME_URL,
-            runtimeToken: env.STUDIO_PRO_RUNTIME_TOKEN,
+            ...runtime,
             signal: request.signal,
           })
           return reply(200)

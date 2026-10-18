@@ -87,6 +87,8 @@ export interface CourseRepository {
     lessonId: string,
     chain: string,
     kind: 'studio' | 'pinta',
+    /** Studio continuity uses this learner's already-bound chain before current authoring. */
+    owner?: { userId: string; accountId: string },
   ): Promise<{ blockId: string; lessonId: string } | null>
   /** Total de aulas por curso, em lote (admin). courseId → total. */
   countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>>

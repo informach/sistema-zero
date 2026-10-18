@@ -100,19 +100,7 @@ export class StoreCircuitBreaker implements CircuitBreaker {
 
     try {
       if (token) {
-        // Resultado de uma tentativa de half-open: só age se for a tentativa ATUAL
-        // (token confere) — um resultado atrasado de tentativa antiga é ignorado.
-        const st = await this.readState(key)
-        if (st?.state !== 'half-open' || st.trialToken !== token) return
-        if (ok) {
-          await this.store.reset(key)
-          await this.store.reset(this.countsKey(serviceId, upstreamId))
-          await this.store.reset(this.trialKey(serviceId, upstreamId))
-          this.cache.delete(key)
-        } else {
-          await this.open(key, cfg)
-          await this.store.reset(this.trialKey(serviceId, upstreamId))
-        }
+        await this.settleTrial(serviceId, upstreamId, token, ok ? 'success' : 'failure', cfg)
         return
       }
 
@@ -128,6 +116,43 @@ export class StoreCircuitBreaker implements CircuitBreaker {
       }
     } catch {
       // best-effort: um soluço do store não pode quebrar o caminho da requisição.
+    }
+  }
+
+  async onCancelled(serviceId: string, upstreamId: string, token?: string): Promise<void> {
+    const cfg = this.getConfig(serviceId)
+    if (!cfg?.enabled || !token) return
+    try {
+      // Keep the original elapsed cooldown: the next request may retry the
+      // trial. A disconnected client is not evidence that the service failed.
+      await this.settleTrial(serviceId, upstreamId, token, 'cancel', cfg)
+    } catch {
+      // Best effort like onResult. Store TTL still bounds an abandoned trial.
+    }
+  }
+
+  private async settleTrial(
+    serviceId: string,
+    upstreamId: string,
+    token: string,
+    outcome: 'success' | 'failure' | 'cancel',
+    cfg: CircuitBreakerConfig,
+  ): Promise<void> {
+    const state = this.stateKey(serviceId, upstreamId)
+    try {
+      await this.store.settleCircuitTrial(
+        {
+          state,
+          gate: this.trialKey(serviceId, upstreamId),
+          counts: this.countsKey(serviceId, upstreamId),
+        },
+        token,
+        outcome,
+        this.now(),
+        cfg.cooldownMs * 2,
+      )
+    } finally {
+      this.cache.delete(state)
     }
   }
 

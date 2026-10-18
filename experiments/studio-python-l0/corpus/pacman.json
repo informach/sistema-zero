@@ -1,0 +1,111 @@
+{
+  "repository": "https://github.com/TheWannabeCoder92/pacman-turtle-python",
+  "commit": "2a4eb7f5963f905b1b80ebf4f3c8eaa50da50103",
+  "license": "MIT",
+  "entrypoint": "episodes/episode09/main.py",
+  "source": "original",
+  "originalBrowserStatus": "not-compatible-with-system-audio",
+  "portableVariant": {
+    "status": "pending",
+    "permittedChanges": [
+      "Replace four explicit os.system(aplay) calls and its import with an explicit portable audio module. Preserve every game feature and record the exact diff."
+    ]
+  },
+  "files": [
+    {
+      "path": "LICENSE",
+      "bytes": 1072,
+      "sha256": "6bd0be088917f9237b68ba1855d9dff9411f6cf93618b6d1a8c1405bdd02d7c6"
+    },
+    {
+      "path": "episodes/episode09/README.md",
+      "bytes": 1634,
+      "sha256": "97470faff85d4e601f78f04467731d85586abe2a18a4e15053d52aae642185c9"
+    },
+    {
+      "path": "episodes/episode09/actors.py",
+      "bytes": 10976,
+      "sha256": "5dda0c1e514c4329da2db8bbf0b30914519b2d1e5019846a9f51cb97a838034c"
+    },
+    {
+      "path": "episodes/episode09/constants.py",
+      "bytes": 1238,
+      "sha256": "0d1c2875840d63c8a64ffc7712902917344d05a2b6899ca403d94bf46a7d8681"
+    },
+    {
+      "path": "episodes/episode09/death.wav",
+      "bytes": 90190,
+      "sha256": "d72ecc5c7a1103da7c5b6e4413a66a90ec6bab686efec1f0bc4d0b1d7d96f391"
+    },
+    {
+      "path": "episodes/episode09/down.gif",
+      "bytes": 933,
+      "sha256": "1275e03c8644b3c41481260fe6506d348e91242ead968ea5a89d000777f59446"
+    },
+    {
+      "path": "episodes/episode09/eat.wav",
+      "bytes": 86094,
+      "sha256": "d13a6b07bf113f6acdbdae3daab7440243f053f32c6662c7630446c96c5db558"
+    },
+    {
+      "path": "episodes/episode09/green_enemy.gif",
+      "bytes": 1298,
+      "sha256": "62b905b5cfa749c8a1543d9b24e73c7fcc20c1f70c944003e47a40a1344e1b10"
+    },
+    {
+      "path": "episodes/episode09/left.gif",
+      "bytes": 918,
+      "sha256": "2de45f8eb8f19078cdbf9ddd70b6026442222d9a8ef184d181fe550a6d43cba6"
+    },
+    {
+      "path": "episodes/episode09/main.py",
+      "bytes": 6250,
+      "sha256": "370a1d00fa87c771c26c44e4d141377475b32bdaf0e833f1e5b0ee8db74bd5be"
+    },
+    {
+      "path": "episodes/episode09/mazes.py",
+      "bytes": 3125,
+      "sha256": "865c3e8d951af9997a95e57d93203dc0e447d49a151ae709cf6d1ff3603e5e17"
+    },
+    {
+      "path": "episodes/episode09/pac.gif",
+      "bytes": 1045,
+      "sha256": "98cc1674b61a742f50a2f03ee51c89d714cb15c0fa52b59e1b278ac670e8eae4"
+    },
+    {
+      "path": "episodes/episode09/pink_enemy.gif",
+      "bytes": 760,
+      "sha256": "1ae8e98ed101bd0980a4f773d9fea1d295167c875fd9f48aedb07300b7437502"
+    },
+    {
+      "path": "episodes/episode09/red_enemy.gif",
+      "bytes": 1303,
+      "sha256": "5fe13d9098d707f900ef61bf0c41d2d3972e3a49ae0a8efefcb32eea0ba5ddbb"
+    },
+    {
+      "path": "episodes/episode09/renderer.py",
+      "bytes": 3832,
+      "sha256": "b633f07fcee3d6a3d16dbe22149e74a6f27ced2e6ed9592412b3e016018514d9"
+    },
+    {
+      "path": "episodes/episode09/right.gif",
+      "bytes": 930,
+      "sha256": "7838a188b8f3574fc8b29bcb964d6f4df8296596b6aa6359310958e08c0ac831"
+    },
+    {
+      "path": "episodes/episode09/start_up.wav",
+      "bytes": 352334,
+      "sha256": "e925d0a24f82dc8d6912ade44f97555e401985257813b8093919595959d548bc"
+    },
+    {
+      "path": "episodes/episode09/up.gif",
+      "bytes": 959,
+      "sha256": "d6ac8b4ee6452c6f4aede13ee9972e14b35400b87c7aaa0483cf0e18e999efeb"
+    },
+    {
+      "path": "episodes/episode09/wall.gif",
+      "bytes": 1201,
+      "sha256": "dbd3d110ceed9f72335629c84c520694bf792e863df5fc0f28450dedcb5c9916"
+    }
+  ]
+}

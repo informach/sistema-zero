@@ -1,15 +1,26 @@
 import { readJsonBodyWithLimit } from '@sistemazero/core/http'
 import {
+  isStudioProjectId,
   isStudioProPublication,
   isStudioProValidationIdentity,
+  isStudioPublication,
   isStudioPublicationHash,
   isStudioPublicationId,
+  isStudioPythonPublication,
   parseStudioArtifactManifest,
   STUDIO_PRO_PUBLICATION_LIMITS,
-  type StudioProPublication,
+  StudioProjectDocumentSchema,
   type StudioProPublishedRevision,
+  type StudioPublication,
+  type StudioPublishedRevision,
+  type StudioPythonPublication,
+  StudioPythonPublicationApprovalSchema,
+  StudioPythonPublicationManifestSchema,
+  StudioPythonPublicationSchema,
+  type StudioPythonPublishedRevision,
   validStudioArtifactPath,
 } from '@sistemazero/core/studio'
+import { pythonExternalDependenciesIssue } from '@sistemazero/core/studio/python-dependency-policy'
 import {
   type ArtifactBucket,
   artifactPrefix,
@@ -35,10 +46,16 @@ export interface PublicationBucket extends ArtifactBucket {
   ): Promise<{ etag: string } | null>
 }
 
-interface Revision extends StudioProPublishedRevision {
-  requestId: string
-}
-interface StoredPublication extends StudioProPublication {
+type Revision = StudioPublishedRevision & { requestId: string }
+interface StoredPublication {
+  playId: string
+  version: number
+  activeRevision: string
+  disabled: boolean
+  python?: Pick<
+    StudioPythonPublication,
+    'publicationVersion' | 'programmingLanguage' | 'kind' | 'runtime'
+  >
   owner: string
   parentOrigin: string
   projectId: string
@@ -84,11 +101,16 @@ async function readState(bucket: PublicationBucket, playId: string) {
   // before moderation cannot recreate a removed publication with If-None-Match.
   if (value.deleted === true && value.playId === playId) return null
   if (
-    !isStudioProPublication(raw) ||
+    !isStudioPublication(raw) ||
     raw.playId !== playId ||
     !isStudioPublicationHash(value.owner) ||
-    typeof value.projectId !== 'string' ||
-    !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(value.projectId)
+    !(
+      isStudioProjectId(value.projectId) ||
+      // Older JS publication admission allowed dots/colons; retain those records.
+      (!isStudioPythonPublication(raw) &&
+        typeof value.projectId === 'string' &&
+        /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(value.projectId))
+    )
   )
     throw new PublicationError(409, 'Registro de publicação inválido.')
   const parentOrigin = origin(value.parentOrigin)
@@ -105,7 +127,20 @@ async function readState(bucket: PublicationBucket, playId: string) {
   )
     throw new PublicationError(409, 'Operação inválida.')
   const state: StoredPublication = {
-    ...raw,
+    playId: raw.playId,
+    version: raw.version,
+    activeRevision: raw.activeRevision,
+    disabled: raw.disabled,
+    ...(isStudioPythonPublication(raw)
+      ? {
+          python: {
+            publicationVersion: raw.publicationVersion,
+            programmingLanguage: raw.programmingLanguage,
+            kind: raw.kind,
+            runtime: raw.runtime,
+          },
+        }
+      : {}),
     owner: value.owner,
     projectId: value.projectId,
     parentOrigin,
@@ -114,15 +149,30 @@ async function readState(bucket: PublicationBucket, playId: string) {
   }
   return { state, etag: stored.etag }
 }
-const view = (state: StoredPublication): StudioProPublication => ({
-  playId: state.playId,
-  version: state.version,
-  activeRevision: state.activeRevision,
-  disabled: state.disabled,
-  revisions: state.revisions.map(({ requestId: _requestId, ...revision }) => revision),
-})
+function view(state: StoredPublication): StudioPublication {
+  const result = {
+    playId: state.playId,
+    version: state.version,
+    activeRevision: state.activeRevision,
+    disabled: state.disabled,
+    revisions: state.revisions.map(({ requestId: _requestId, ...revision }) => revision),
+  }
+  if (state.python) return StudioPythonPublicationSchema.parse({ ...result, ...state.python })
+  if (!isStudioProPublication(result))
+    throw new PublicationError(409, 'Histórico JavaScript inválido.')
+  return result
+}
 async function commit(bucket: PublicationBucket, state: StoredPublication, etag?: string) {
-  const written = await bucket.put(publicationKey(state.playId), JSON.stringify(state), {
+  const value = view(state)
+  const stored = {
+    ...value,
+    owner: state.owner,
+    projectId: state.projectId,
+    parentOrigin: state.parentOrigin,
+    revisions: state.revisions,
+    lastOperation: state.lastOperation,
+  }
+  const written = await bucket.put(publicationKey(state.playId), JSON.stringify(stored), {
     onlyIf: new Headers(etag ? { 'If-Match': etag } : { 'If-None-Match': '*' }),
   })
   if (!written)
@@ -130,7 +180,95 @@ async function commit(bucket: PublicationBucket, state: StoredPublication, etag?
       409,
       'A publicação mudou. Atualize o histórico antes de tentar novamente.',
     )
-  return view(state)
+  return value
+}
+
+/** Files and source precede the CAS pointer; ambiguous pointer writes retain their immutable data. */
+async function retainPublicationRevision(
+  bucket: PublicationBucket,
+  input: {
+    playId: string
+    owner: string
+    projectId: string
+    parentOrigin: string
+    requestId: string
+    sourceBytes: Uint8Array<ArrayBuffer>
+    sourceHash: string
+    artifactHash: string
+    manifest: unknown
+    proof:
+      | Pick<StudioProPublishedRevision, 'validation'>
+      | Pick<StudioPythonPublishedRevision, 'approval'>
+    python?: StoredPublication['python']
+    saved: Awaited<ReturnType<typeof readState>>
+    files?: {
+      path: string
+      bytes: number
+      sha256: string
+      read(): Promise<Uint8Array<ArrayBuffer>>
+    }[]
+  },
+  now: number,
+) {
+  const id = crypto.randomUUID().replaceAll('-', '') + crypto.randomUUID().replaceAll('-', '')
+  const prefix = publishedRevisionPrefix(input.playId, id)
+  const written: string[] = []
+  try {
+    for (const file of input.files ?? []) {
+      const bytes = await file.read()
+      if (bytes.length !== file.bytes || (await sha256(bytes)) !== file.sha256)
+        throw new PublicationError(409, 'Arquivo da publicação incompleto ou alterado.')
+      const key = `${prefix}files/${file.path}`
+      written.push(key)
+      await bucket.put(key, bytes, { sha256: file.sha256 })
+    }
+    written.push(`${prefix}source.json`, `${prefix}manifest.json`)
+    await bucket.put(`${prefix}source.json`, input.sourceBytes, { sha256: input.sourceHash })
+    await bucket.put(`${prefix}manifest.json`, JSON.stringify(input.manifest))
+  } catch (error) {
+    await bucket.delete(written).catch(() =>
+      console.error('[studio-publication] partial revision cleanup pending', {
+        playId: input.playId,
+        id,
+      }),
+    )
+    throw error
+  }
+  const revision: Revision = {
+    id,
+    requestId: input.requestId,
+    sourceHash: input.sourceHash,
+    artifactHash: input.artifactHash,
+    createdAt: now,
+    ...input.proof,
+  }
+  try {
+    return await commit(
+      bucket,
+      {
+        playId: input.playId,
+        owner: input.owner,
+        projectId: input.projectId,
+        parentOrigin: input.parentOrigin,
+        version: (input.saved?.state.version ?? 0) + 1,
+        activeRevision: id,
+        disabled: false,
+        ...(input.python ? { python: input.python } : {}),
+        revisions: [...(input.saved?.state.revisions ?? []), revision],
+        lastOperation: { id: input.requestId, revision: id, disabled: false },
+      },
+      input.saved?.etag,
+    )
+  } catch (error) {
+    if (error instanceof PublicationError && error.status === 409)
+      await bucket.delete(written).catch(() =>
+        console.error('[studio-publication] conflicting revision cleanup pending', {
+          playId: input.playId,
+          id,
+        }),
+      )
+    throw error
+  }
 }
 
 /** Called only behind the runtime's private bearer boundary. Owner is derived by the BFF. */
@@ -139,10 +277,7 @@ export async function publicationCommand(
   raw: unknown,
   now = Date.now(),
 ): Promise<
-  | StudioProPublication
-  | { source: string; publication: StudioProPublication }
-  | { png: string }
-  | null
+  StudioPublication | { source: string; publication: StudioPublication } | { png: string } | null
 > {
   const input = object(raw)
   if (!isStudioPublicationId(input.playId) || !isStudioPublicationHash(input.owner))
@@ -155,6 +290,8 @@ export async function publicationCommand(
   if (input.operation === 'get') return saved ? view(saved.state) : null
   if (input.operation === 'cover') {
     if (!saved) throw new PublicationError(404, 'Publicação não encontrada.')
+    if (saved.state.python)
+      throw new PublicationError(404, 'A capa deste jogo é fornecida pelo autor.')
     const prefix = publishedRevisionPrefix(playId, saved.state.activeRevision)
     const stored = await bucket.get(`${prefix}manifest.json`)
     if (!stored || stored.size > 100_000) throw new PublicationError(404, 'Captura não encontrada.')
@@ -233,15 +370,21 @@ export async function publicationCommand(
       saved.etag,
     )
   }
+  if (input.operation === 'promote-python')
+    return promotePythonPublication(bucket, input, saved, now)
   if (
     input.operation !== 'promote' ||
     typeof input.source !== 'string' ||
     !isStudioPublicationHash(input.artifactId) ||
     !isStudioPublicationHash(input.artifactHash) ||
-    typeof input.projectId !== 'string' ||
-    !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(input.projectId)
+    !isStudioProjectId(input.projectId)
   )
     throw new PublicationError(400, 'Revisão de publicação inválida.')
+  if (saved?.state.python)
+    throw new PublicationError(
+      409,
+      'A publicação Python não pode receber uma compilação JavaScript.',
+    )
   const parentOrigin = origin(input.parentOrigin)
   const sourceBytes = new TextEncoder().encode(input.source)
   if (sourceBytes.length > STUDIO_PRO_PUBLICATION_LIMITS.maxSourceBytes)
@@ -281,67 +424,153 @@ export async function publicationCommand(
       409,
       'A compilação precisa de uma nova verificação antes de publicar.',
     )
-  const id = crypto.randomUUID().replaceAll('-', '') + crypto.randomUUID().replaceAll('-', '')
-  const prefix = publishedRevisionPrefix(playId, id)
-  const written: string[] = []
-  try {
-    for (const file of manifest.files) {
-      const content = await bucket.get(`${artifactPrefix(input.artifactId)}files/${file.path}`)
-      if (!content || content.size !== file.bytes)
-        throw new PublicationError(409, 'Arquivo compilado incompleto.')
-      const bytes = new Uint8Array(await new Response(content.body).arrayBuffer())
-      if ((await sha256(bytes)) !== file.sha256)
-        throw new PublicationError(409, 'Arquivo compilado alterado.')
-      const key = `${prefix}files/${file.path}`
-      written.push(key)
-      await bucket.put(key, bytes, { sha256: file.sha256 })
-    }
-    written.push(`${prefix}source.json`, `${prefix}manifest.json`)
-    await bucket.put(`${prefix}source.json`, sourceBytes, { sha256: sourceHash })
-    await bucket.put(`${prefix}manifest.json`, JSON.stringify(manifest))
-  } catch (error) {
-    await bucket
-      .delete(written)
-      .catch(() =>
-        console.error('[studio-publication] partial revision cleanup pending', { playId, id }),
-      )
-    throw error
-  }
-  const revision: Revision = {
-    id,
-    requestId: input.requestId,
-    sourceHash,
-    artifactHash: input.artifactHash,
-    createdAt: now,
-    validation: metadata.validation,
-  }
-  // Do not delete on an ambiguous commit failure: R2 may have accepted the pointer.
-  try {
-    return await commit(
-      bucket,
-      {
-        playId,
-        owner,
-        projectId: input.projectId,
-        parentOrigin,
-        version: (saved?.state.version ?? 0) + 1,
-        activeRevision: id,
-        disabled: false,
-        revisions: [...(saved?.state.revisions ?? []), revision],
-        lastOperation: { id: input.requestId, revision: id, disabled: false },
-      },
-      saved?.etag,
+  const artifactId = input.artifactId
+  return retainPublicationRevision(
+    bucket,
+    {
+      playId,
+      owner,
+      projectId: input.projectId,
+      parentOrigin,
+      requestId: input.requestId,
+      sourceBytes,
+      sourceHash,
+      artifactHash: input.artifactHash,
+      manifest,
+      proof: { validation: metadata.validation },
+      saved,
+      files: manifest.files.map((file) => ({
+        ...file,
+        async read() {
+          const content = await bucket.get(`${artifactPrefix(artifactId)}files/${file.path}`)
+          if (!content || content.size !== file.bytes)
+            throw new PublicationError(409, 'Arquivo compilado incompleto.')
+          return new Uint8Array(await new Response(content.body).arrayBuffer())
+        },
+      })),
+    },
+    now,
+  )
+}
+
+/** Private BFF refines media/IR, checks the catalog and computes the actual execution snapshot.
+ * This boundary independently binds the retained bytes, language, project, runtime and lock.
+ */
+async function promotePythonPublication(
+  bucket: PublicationBucket,
+  input: Record<string, unknown>,
+  saved: Awaited<ReturnType<typeof readState>>,
+  now: number,
+) {
+  if (
+    !isStudioPublicationId(input.playId) ||
+    !isStudioPublicationHash(input.owner) ||
+    !isStudioPublicationId(input.requestId) ||
+    typeof input.source !== 'string'
+  )
+    throw new PublicationError(400, 'Pacote Python inválido.')
+  const sourceBytes = new TextEncoder().encode(input.source)
+  if (sourceBytes.length > STUDIO_PRO_PUBLICATION_LIMITS.maxSourceBytes)
+    throw new PublicationError(413, 'Fonte grande demais.')
+  const approvalResult = StudioPythonPublicationApprovalSchema.safeParse(input.approval)
+  if (!approvalResult.success) throw new PublicationError(400, 'Aprovação Python inválida.')
+  const approval = approvalResult.data
+  const project = await validatePythonPublicationSource(input.source, approval.runtime)
+  if (project.id !== input.projectId)
+    throw new PublicationError(409, 'O pacote pertence a outro projeto.')
+  const parentOrigin = origin(input.parentOrigin)
+  const sourceHash = await sha256(sourceBytes)
+  const manifest = { version: 1 as const, sourceHash, approval }
+  const artifactHash = await sha256(new TextEncoder().encode(JSON.stringify(manifest)))
+  if (saved) {
+    if (
+      !saved.state.python ||
+      saved.state.python.kind !== project.kind ||
+      !sameRuntime(saved.state.python.runtime, project.runtime) ||
+      saved.state.projectId !== project.id ||
+      saved.state.parentOrigin !== parentOrigin
     )
-  } catch (error) {
-    if (error instanceof PublicationError && error.status === 409)
-      await bucket.delete(written).catch(() =>
-        console.error('[studio-publication] conflicting revision cleanup pending', {
-          playId,
-          id,
-        }),
-      )
-    throw error
+      throw new PublicationError(409, 'A publicação pertence a outro projeto ou ambiente.')
+    const previous = saved.state.revisions.find(
+      (revision) => revision.requestId === input.requestId,
+    )
+    if (previous) {
+      if (previous.sourceHash !== sourceHash || previous.artifactHash !== artifactHash)
+        throw new PublicationError(409, 'Esta operação já foi usada com outro conteúdo.')
+      return view(saved.state)
+    }
   }
+  if ((saved?.state.version ?? 0) !== input.expectedVersion)
+    throw new PublicationError(409, 'A publicação mudou. Atualize o histórico.')
+  if ((saved?.state.revisions.length ?? 0) >= STUDIO_PRO_PUBLICATION_LIMITS.maxRevisions)
+    throw new PublicationError(
+      409,
+      'O histórico atingiu 20 versões. Crie uma nova publicação para continuar.',
+    )
+  return retainPublicationRevision(
+    bucket,
+    {
+      playId: input.playId,
+      owner: input.owner,
+      requestId: input.requestId,
+      projectId: project.id,
+      parentOrigin,
+      sourceBytes,
+      sourceHash,
+      artifactHash,
+      manifest,
+      proof: { approval },
+      python: {
+        publicationVersion: 2,
+        programmingLanguage: 'python',
+        kind: project.kind,
+        runtime: project.runtime,
+      },
+      saved,
+    },
+    now,
+  )
+}
+
+function sameRuntime(a: StudioPythonPublication['runtime'], b: StudioPythonPublication['runtime']) {
+  return (
+    a.profileId === b.profileId &&
+    a.releaseId === b.releaseId &&
+    a.manifestSha256 === b.manifestSha256
+  )
+}
+
+async function validatePythonPublicationSource(
+  source: string,
+  runtime: StudioPythonPublication['runtime'],
+) {
+  let raw: unknown
+  try {
+    raw = JSON.parse(source)
+  } catch {
+    throw new PublicationError(400, 'Documento Python inválido.')
+  }
+  const parsed = StudioProjectDocumentSchema.safeParse(raw)
+  if (!parsed.success || parsed.data.programmingLanguage !== 'python')
+    throw new PublicationError(400, 'Documento Python inválido.')
+  const project = parsed.data
+  if (!sameRuntime(project.runtime, runtime))
+    throw new PublicationError(409, 'O pacote não corresponde ao ambiente aprovado.')
+  const requirementNode = project.kind === 'pro' ? project.tree['requirements.txt'] : null
+  const requirements =
+    project.kind === 'classic'
+      ? (project.files['requirements.txt'] ?? '')
+      : requirementNode?.kind === 'file'
+        ? requirementNode.content
+        : ''
+  const issue = pythonExternalDependenciesIssue(requirements, project.python.dependencyLock)
+  if (issue) throw new PublicationError(409, issue)
+  if (
+    (await sha256(new TextEncoder().encode(requirements))) !==
+    project.python.dependencyLock.requirementsSha256
+  )
+    throw new PublicationError(409, 'O lock não corresponde ao requirements.txt.')
+  return project
 }
 
 /** Private moderation operation; no author data is retained in the tombstone. */
@@ -409,7 +638,7 @@ export async function collectPublicationGarbage(bucket: PublicationBucket, now =
 async function readSource(
   bucket: PublicationBucket,
   playId: string,
-  revision: StudioProPublishedRevision,
+  revision: StudioPublishedRevision,
 ): Promise<string> {
   const content = await bucket.get(`${publishedRevisionPrefix(playId, revision.id)}source.json`)
   if (!content || content.size > STUDIO_PRO_PUBLICATION_LIMITS.maxSourceBytes)
@@ -417,6 +646,27 @@ async function readSource(
   const source = await content.text()
   if ((await sha256(new TextEncoder().encode(source))) !== revision.sourceHash)
     throw new PublicationError(409, 'Fonte inválida.')
+  if ('approval' in revision) {
+    const stored = await bucket.get(`${publishedRevisionPrefix(playId, revision.id)}manifest.json`)
+    if (!stored || stored.size > 4096) throw new PublicationError(409, 'Pacote Python incompleto.')
+    const manifestText = await stored.text()
+    let raw: unknown
+    try {
+      raw = JSON.parse(manifestText)
+    } catch {
+      throw new PublicationError(409, 'Receita Python inválida.')
+    }
+    const parsed = StudioPythonPublicationManifestSchema.safeParse(raw)
+    if (
+      !parsed.success ||
+      (await sha256(new TextEncoder().encode(manifestText))) !== revision.artifactHash ||
+      parsed.data.sourceHash !== revision.sourceHash ||
+      parsed.data.approval.snapshotSha256 !== revision.approval.snapshotSha256 ||
+      !sameRuntime(parsed.data.approval.runtime, revision.approval.runtime)
+    )
+      throw new PublicationError(409, 'Receita Python inválida.')
+    await validatePythonPublicationSource(source, revision.approval.runtime)
+  }
   return source
 }
 
@@ -426,6 +676,12 @@ export async function currentPublishedSource(bucket: PublicationBucket, playId: 
   const revision = saved.state.revisions.find((r) => r.id === saved.state.activeRevision)
   if (!revision) return null
   return { source: await readSource(bucket, playId, revision), publication: view(saved.state) }
+}
+
+/** Private lightweight fence after authorization: no second copy of the source/media bundle. */
+export async function currentPublishedPublication(bucket: PublicationBucket, playId: string) {
+  const saved = await readState(bucket, playId)
+  return saved && !saved.state.disabled ? view(saved.state) : null
 }
 
 /** Every request is gated; conditional 304 responses cannot bypass moderation or rollback. */
@@ -448,6 +704,7 @@ export async function servePublishedArtifact(
   const saved = await readState(bucket, playId)
   if (
     !saved ||
+    saved.state.python ||
     saved.state.disabled ||
     saved.state.activeRevision !== revisionId ||
     !(await authorize(playId))

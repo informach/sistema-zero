@@ -1,13 +1,26 @@
 import 'server-only'
 import { createHash } from 'node:crypto'
+import { canonicalJson } from '@sistemazero/core/creations'
 import { readJsonBodyWithLimit } from '@sistemazero/core/http'
 import {
   isStudioProPublication,
+  isStudioPublication,
   isStudioPublicationId,
+  isStudioPythonPublication,
   STUDIO_PRO_PUBLICATION_LIMITS,
   type StudioProPublication,
+  type StudioPublication,
+  type StudioPythonPublication,
 } from '@sistemazero/core/studio'
-import type { Project } from '@sistemazero/studio'
+import type {
+  StudioPublicationRuntimeDecision,
+  StudioRuntimeCandidate,
+} from '@sistemazero/core/studio/runtime-authorization'
+import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
+import type { EditableStudioProject, Project, PythonProjectDocument } from '@sistemazero/studio'
+import { prepareEditableStudioProject } from '@sistemazero/studio/editable-project-validation'
+import { withoutProjectPublication } from '@sistemazero/studio/project-publication'
+import { preparePythonExecutionSnapshot } from '@sistemazero/studio/python-snapshot'
 import { getEnv } from '../lib/env'
 import {
   buildStudioProProject,
@@ -26,14 +39,22 @@ export class StudioPublicationError extends Error {
 }
 
 /** Publish game content, never private tutoring notes or links to the author's workspace. */
-export function studioPublicProject(project: Project): Project {
-  if (project.kind !== 'pro' || !project.proMeta) return project
+export function studioPublicProject(project: Project): Project
+export function studioPublicProject(project: PythonProjectDocument): PythonProjectDocument
+export function studioPublicProject(project: EditableStudioProject): EditableStudioProject
+export function studioPublicProject(project: EditableStudioProject): EditableStudioProject {
+  const assets = project.assets?.map(
+    ({ libId: _libId, libOrigin: _origin, libRevision: _revision, ...asset }) => asset,
+  )
+  if (project.programmingLanguage === 'python') {
+    if (project.kind === 'classic') return { ...withoutProjectPublication(project), assets }
+    return { ...project, assets, proMeta: { templateId: project.proMeta.templateId } }
+  }
+  if (project.kind !== 'pro' || !project.proMeta) return { ...project, assets }
   return {
     ...project,
     proMeta: { templateId: project.proMeta.templateId, devScript: project.proMeta.devScript },
-    assets: project.assets?.map(
-      ({ libId: _libId, libOrigin: _origin, libRevision: _revision, ...asset }) => asset,
-    ),
+    assets,
   }
 }
 
@@ -52,8 +73,8 @@ export function studioPublicationPlayId(owner: string, context: string, requestI
 }
 
 type PublicationResponse =
-  | StudioProPublication
-  | { source: string; publication: StudioProPublication }
+  | StudioPublication
+  | { source: string; publication: StudioPublication }
   | { png: string }
   | { deleted: true }
   | null
@@ -63,10 +84,7 @@ export async function callStudioPublication(
 ): Promise<PublicationResponse> {
   const env = getEnv()
   if (!env.STUDIO_PRO_RUNTIME_URL || !env.STUDIO_PRO_RUNTIME_TOKEN)
-    throw new StudioPublicationError(
-      503,
-      'A publicação Pro ainda não está disponível neste ambiente.',
-    )
+    throw new StudioPublicationError(503, 'A publicação ainda não está disponível neste ambiente.')
   const serialized = JSON.stringify(body)
   if (Buffer.byteLength(serialized) > STUDIO_PRO_PUBLICATION_LIMITS.maxRequestBytes)
     throw new StudioPublicationError(413, 'O projeto ficou grande demais para publicar.')
@@ -105,7 +123,7 @@ export async function callStudioPublication(
     )
   }
   if (value === null) return value
-  if (isStudioProPublication(value) && value.playId === body.playId) return value
+  if (isStudioPublication(value) && value.playId === body.playId) return value
   if (
     body.operation === 'purge' &&
     value &&
@@ -129,7 +147,7 @@ export async function callStudioPublication(
     'source' in value &&
     typeof value.source === 'string' &&
     'publication' in value &&
-    isStudioProPublication(value.publication) &&
+    isStudioPublication(value.publication) &&
     value.publication.playId === body.playId
   )
     return { source: value.source, publication: value.publication }
@@ -213,5 +231,74 @@ export async function publishStudioProRevision(options: {
   )
   if (!isStudioProPublication(result))
     throw new StudioPublicationError(502, 'Não foi possível confirmar a revisão publicada.')
+  return result
+}
+
+/** Approval is obtained server-side for this exact sanitized immutable snapshot.
+ * A client cannot supply a catalog, URL, capability list or revision to grant publication.
+ */
+export async function publishStudioPythonRevision(options: {
+  project: PythonProjectDocument
+  playId: string
+  owner: string
+  requestId: string
+  expectedVersion: number
+  parentOrigin: string
+  authorize: (candidate: StudioRuntimeCandidate) => Promise<StudioPublicationRuntimeDecision>
+  signal?: AbortSignal
+}): Promise<StudioPythonPublication> {
+  options.signal?.throwIfAborted()
+  const project = await prepareEditableStudioProject(studioPublicProject(options.project))
+  if (project?.programmingLanguage !== 'python')
+    throw new StudioPublicationError(400, 'Projeto Python inválido.')
+  const snapshot = await preparePythonExecutionSnapshot(project)
+  const source = JSON.stringify(project)
+  const subject = studioRuntimeSubject(project)
+  const subjectSha256 = createHash('sha256').update(canonicalJson(subject)).digest('hex')
+  const decision = await options.authorize({
+    operation: 'execute',
+    subject,
+    revision: snapshot.revision,
+  })
+  if (
+    studioPublicationOwner(decision.actor.userId, decision.actor.accountId) !== options.owner ||
+    decision.operation !== 'execute' ||
+    decision.projectId !== project.id ||
+    decision.revision !== snapshot.revision ||
+    decision.subjectSha256 !== subjectSha256 ||
+    decision.runtime.profileId !== project.runtime.profileId ||
+    decision.runtime.releaseId !== project.runtime.releaseId ||
+    decision.runtime.manifestSha256 !== project.runtime.manifestSha256 ||
+    !decision.capabilities.includes('execute') ||
+    decision.expiresAt <= Date.now() ||
+    decision.expiresAt - decision.issuedAt <= 0 ||
+    decision.expiresAt - decision.issuedAt > 30_000 ||
+    decision.releaseStatus === 'revoked' ||
+    options.signal?.aborted
+  )
+    throw new StudioPublicationError(
+      403,
+      'A publicação precisa de uma autorização atual para este projeto.',
+    )
+  const result = await callStudioPublication(
+    {
+      operation: 'promote-python',
+      playId: options.playId,
+      owner: options.owner,
+      requestId: options.requestId,
+      expectedVersion: options.expectedVersion,
+      projectId: project.id,
+      parentOrigin: options.parentOrigin,
+      source,
+      approval: {
+        kind: 'python-browser',
+        runtime: project.runtime,
+        snapshotSha256: snapshot.revision,
+      },
+    },
+    options.signal,
+  )
+  if (!isStudioPythonPublication(result))
+    throw new StudioPublicationError(502, 'Não foi possível confirmar a revisão Python publicada.')
   return result
 }

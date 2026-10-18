@@ -29,6 +29,7 @@ export interface LiveMaterial {
  * `allowBlocks` non-empty is RESTRICTIVE (only those blocks); empty/absent = curation by level.
  */
 export interface LiveStudioConfig {
+  pythonLevel?: 1 | 2 | 3
   level?: string
   allowBlocks?: string[]
   allowCategories?: string[]

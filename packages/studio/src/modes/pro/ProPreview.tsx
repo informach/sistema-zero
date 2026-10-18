@@ -3,6 +3,7 @@ import type { WebContainerProcess } from '@webcontainer/api'
 import { type JSX, type ReactNode, useEffect, useRef, useState } from 'react'
 import { Button } from '#ui'
 import { canBootWebContainer } from '../../components/terminal/webContainerClient'
+import { javaScriptProject } from '../../core/editableProject'
 import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
@@ -46,7 +47,8 @@ function capLogString(value: string): string {
  */
 export function ProPreview(): JSX.Element {
   const remoteRuntime = useStudioProRuntime()
-  const { candidate, mode, select, close, report } = useProCandidatePreview()
+  const { candidate: selection, mode, select, close, report } = useProCandidatePreview()
+  const candidate = selection?.kind === 'python' ? null : selection
   const candidateActive = candidate !== null && mode === 'candidate'
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -115,9 +117,11 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
   mountStateRef.current = mountState
   const mountErrorRef = useRef(mountError)
   mountErrorRef.current = mountError
-  const projectId = useProjectStore((s) => s.project?.id ?? null)
-  const projectName = useProjectStore((s) => s.project?.name ?? '')
-  const devScript = useProjectStore((s) => s.project?.proMeta?.devScript ?? 'dev')
+  const projectId = useProjectStore((s) => javaScriptProject(s.project)?.id ?? null)
+  const projectName = useProjectStore((s) => javaScriptProject(s.project)?.name ?? '')
+  const devScript = useProjectStore(
+    (s) => javaScriptProject(s.project)?.proMeta?.devScript ?? 'dev',
+  )
   const pushLog = useLogsStore((s) => s.push)
   const installTimeoutMs = useStudioConfig().previewSecurity.terminalProcessTimeoutMs
 
@@ -132,7 +136,9 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
   // lá dentro; trocar a `key` remonta o iframe e o navegador refaz a navegação.
   const [reloadNonce, setReloadNonce] = useState(0)
   const iframeRef = useRef<HTMLIFrameElement>(null)
-  const storageRevision = useProjectStore((state) => state.project?.updatedAt ?? 0)
+  const storageRevision = useProjectStore(
+    (state) => javaScriptProject(state.project)?.updatedAt ?? 0,
+  )
   const storageName = useProGameStorage({
     frame: iframeRef,
     projectId,

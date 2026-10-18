@@ -10,6 +10,7 @@ import {
   restoreFromPublished,
   validateLessonSections,
 } from '@sistemazero/core/learning'
+import { studioProjectContinuityReference } from '@sistemazero/core/studio/project-continuity'
 import { studioSectionCompletionIssues } from '@sistemazero/studio/server-project-checks'
 import {
   assertBlockCoherent,
@@ -27,6 +28,8 @@ import {
 import { LessonDraftConflictError } from '../../src/domain/learning/lesson-draft.errors'
 import type { LessonDraftRepository } from '../../src/domain/ports/lesson-draft-repository.port'
 import { stableJson } from '../../src/domain/shared/stable-json'
+import type { StudioAuthoringPolicy } from '../../src/domain/studio/authoring-policy'
+import { studioChainCandidate } from '../../src/domain/studio/chain-environment'
 import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
 import type { InMemoryCourseRepository } from './in-memory'
 import type { InMemoryLearningRepository } from './learning-in-memory'
@@ -39,7 +42,38 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
   constructor(
     private readonly courses: InMemoryCourseRepository,
     private readonly learning: InMemoryLearningRepository,
+    private readonly studioPolicy?: StudioAuthoringPolicy,
   ) {}
+  async readStudioRuntimeContext(lessonId: string, blockId: string | null) {
+    const draft = this.drafts.get(lessonId)
+    if (!draft) return null
+    const content = draft.document.blocks.find((item) => item.id === blockId)?.content
+    const curation =
+      content?.kind === 'studio'
+        ? {
+            level: content.level,
+            pythonLevel: content.pythonLevel,
+            allowedModes: content.allowedModes,
+            allowBlocks: content.allowBlocks,
+            allowCategories: content.allowCategories,
+            allowLevelReveal: content.allowLevelReveal,
+          }
+        : {}
+    return {
+      revision: draft.revision,
+      block: content
+        ? {
+            kind: content.kind,
+            environment:
+              content.kind === 'studio'
+                ? studioProjectContinuityReference(content.initialProject)
+                : null,
+            curation,
+          }
+        : null,
+    }
+  }
+
   async read(lessonId: string) {
     const saved = this.drafts.get(lessonId)
     if (saved) return structuredClone(saved)
@@ -178,7 +212,7 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
     if (invalid) issues.push({ message: invalid })
     for (const block of draft.document.blocks) {
       try {
-        assertBlockCoherent(parsePublishedLessonBlock(block.content))
+        assertBlockCoherent(parsePublishedLessonBlock(block.content), this.studioPolicy)
       } catch (error) {
         issues.push({
           blockId: block.id,
@@ -202,6 +236,20 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
     operationId: string,
     readyVideoIds: string[],
   ) {
+    const lesson = this.courses.lessons.find((item) => item.id === lessonId)
+    if (!lesson) throw new LessonNotFoundError()
+    return this.courses.withStudioAuthoringLock(lesson.courseId, () =>
+      this.publishInTransaction(lessonId, authorId, expectedRevision, operationId, readyVideoIds),
+    )
+  }
+
+  private async publishInTransaction(
+    lessonId: string,
+    authorId: string,
+    expectedRevision: string,
+    operationId: string,
+    readyVideoIds: string[],
+  ) {
     const issues = await this.validate(lessonId, expectedRevision, readyVideoIds)
     if (issues.length) throw new ValidationError(issues.map((i) => i.message).join('\n'))
     const draft = await this.read(lessonId)
@@ -211,7 +259,10 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
     const hadShowcase =
       (await this.courses.listCourseIdsWithShowcaseBlock([lesson.courseId])).length > 0
     const blocks = draft.document.blocks.map((b, sortOrder) => {
-      const content = canonicalizeBlockContent(parsePublishedLessonBlock(b.content))
+      const content = canonicalizeBlockContent(
+        parsePublishedLessonBlock(b.content),
+        this.studioPolicy,
+      )
       const old = previous.find((p) => p.id === b.id)
       return {
         id: b.id,
@@ -225,6 +276,13 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
             : randomUUID().replaceAll('-', ''),
       }
     })
+    await this.courses.claimStudioChains(
+      lesson.courseId,
+      blocks.flatMap((block) => studioChainCandidate(block.content)),
+      previous
+        .filter((block) => block.lessonId === lessonId)
+        .flatMap((block) => studioChainCandidate(block.content)),
+    )
     this.courses.blocks = [...previous.filter((b) => b.lessonId !== lessonId), ...blocks]
     try {
       if ((await this.courses.countCertificateBlocks(lesson.courseId)) > 1)

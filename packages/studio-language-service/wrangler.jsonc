@@ -1,0 +1,67 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "sistemazero-studio-language",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "containers": [
+    {
+      "class_name": "PythonLanguageSandbox",
+      "image": "./Dockerfile",
+      "instance_type": "standard-2",
+      "max_instances": 64
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "class_name": "PythonLanguageSandbox", "name": "PythonLanguageSandbox" },
+      { "class_name": "PythonLanguageOwner", "name": "PythonLanguageOwner" }
+    ]
+  },
+  "migrations": [
+    { "new_sqlite_classes": ["PythonLanguageSandbox", "PythonLanguageOwner"], "tag": "v1" }
+  ],
+  "ratelimits": [
+    {
+      "name": "LANGUAGE_OPEN_LIMIT",
+      "namespace_id": "27011",
+      "simple": { "limit": 10, "period": 60 }
+    },
+    {
+      "name": "LANGUAGE_COMMAND_LIMIT",
+      "namespace_id": "27012",
+      "simple": { "limit": 600, "period": 60 }
+    }
+  ],
+  "env": {
+    "staging": {
+      "name": "sistemazero-studio-language-staging",
+      "containers": [
+        {
+          "class_name": "PythonLanguageSandbox",
+          "image": "./Dockerfile",
+          "instance_type": "standard-2",
+          "max_instances": 64
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          { "class_name": "PythonLanguageSandbox", "name": "PythonLanguageSandbox" },
+          { "class_name": "PythonLanguageOwner", "name": "PythonLanguageOwner" }
+        ]
+      },
+      "ratelimits": [
+        {
+          "name": "LANGUAGE_OPEN_LIMIT",
+          "namespace_id": "27013",
+          "simple": { "limit": 10, "period": 60 }
+        },
+        {
+          "name": "LANGUAGE_COMMAND_LIMIT",
+          "namespace_id": "27014",
+          "simple": { "limit": 600, "period": 60 }
+        }
+      ]
+    }
+  }
+}

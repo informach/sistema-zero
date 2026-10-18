@@ -639,6 +639,71 @@ export const studioSubmissions = members.table(
   ],
 )
 
+/** Immutable authoring snapshots are shared; a seed with large images is stored once per revision. */
+/** Immutable environment per named course chain; null retires ambiguous legacy history. */
+export const studioCourseChains = members.table(
+  'studio_course_chains',
+  {
+    courseId: uuid('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    chain: text('chain').notNull(),
+    environment:
+      jsonb('environment').$type<
+        import('../../../domain/studio/chain-environment').StudioChainEnvironment
+      >(),
+  },
+  (t) => [primaryKey({ columns: [t.courseId, t.chain] })],
+)
+
+export const studioLessonBaselines = members.table(
+  'studio_lesson_baselines',
+  {
+    id: varchar('id', { length: 64 }).primaryKey(),
+    blockId: uuid('block_id')
+      .notNull()
+      .references(() => lessonBlocks.id, { onDelete: 'cascade' }),
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    courseId: uuid('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    configuration: jsonb('configuration')
+      .$type<
+        import('../../../domain/studio/lesson-baseline').StudioLessonBaseline['configuration']
+      >()
+      .notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('studio_lesson_baselines_block_idx').on(t.blockId),
+    index('studio_lesson_baselines_course_idx').on(t.courseId),
+  ],
+)
+
+/** Per actual block and learner, independent of the currently published template or chain name. */
+export const studioLessonBindings = members.table(
+  'studio_lesson_bindings',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    blockId: uuid('block_id')
+      .notNull()
+      .references(() => lessonBlocks.id, { onDelete: 'cascade' }),
+    baselineId: varchar('baseline_id', { length: 64 })
+      .notNull()
+      .references(() => studioLessonBaselines.id, { onDelete: 'cascade' }),
+    workspaceId: uuid('workspace_id').references(() => liveWorkspaces.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.blockId] }),
+    index('studio_lesson_bindings_account_idx').on(t.accountId),
+    index('studio_lesson_bindings_workspace_idx').on(t.workspaceId),
+  ],
+)
+
 // ── Classificação do curso pelo aluno (1 linha por aluno+curso, upsert) ─────
 // `rating_half` = nota×2 (inteiro 2..10 → 1.0..5.0 em passos de 0.5) — evita
 // float/numeric-string. Cada passo do fluxo da UI persiste o estado acumulado.
@@ -1585,6 +1650,12 @@ export const zappyMessages = members.table(
     }),
     clientMessageId: uuid('client_message_id'),
     role: varchar('role', { length: 16 }).notNull(),
+    programmingLanguage: varchar('programming_language', {
+      length: 16,
+      enum: ['javascript', 'python'],
+    })
+      .notNull()
+      .default('javascript'),
     content: text('content').notNull(),
     response: jsonb('response').$type<Record<string, unknown> | null>(),
     scope: varchar('scope', { length: 40 }),
@@ -1602,6 +1673,7 @@ export const zappyMessages = members.table(
       .where(sql`${t.clientMessageId} is not null`),
     uniqueIndex('zappy_messages_reply_uq').on(t.replyToId).where(sql`${t.replyToId} is not null`),
     check('zappy_messages_role_ck', sql`${t.role} in ('user', 'assistant')`),
+    check('zappy_messages_language_ck', sql`${t.programmingLanguage} in ('javascript', 'python')`),
   ],
 )
 
@@ -1997,6 +2069,34 @@ export const accountDeletionFences = members.table('account_deletion_fences', {
 })
 
 /** Limpeza final pós-TTL dos objetos R2, com lease distribuído e retry durável. */
+export const galleryCopyAttempts = members.table(
+  'gallery_copy_attempts',
+  {
+    generation: uuid('generation').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    userId: uuid('user_id').notNull(),
+    blockId: uuid('block_id').notNull(),
+    snapshot: jsonb('snapshot')
+      .$type<import('@sistemazero/core/learning').GallerySubmission>()
+      .notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    notBefore: timestamp('not_before', { withTimezone: true }).notNull(),
+    retainedAt: timestamp('retained_at', { withTimezone: true }),
+    retiredAt: timestamp('retired_at', { withTimezone: true }),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    attempts: integer('attempts').notNull().default(0),
+    lastError: text('last_error'),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('gallery_copy_attempts_owner_idx').on(t.userId, t.expiresAt),
+    index('gallery_copy_attempts_due_idx')
+      .on(t.notBefore, t.lockedAt)
+      .where(sql`${t.retainedAt} is null and ${t.completedAt} is null`),
+  ],
+)
+
 export const creationCleanupJobs = members.table(
   'creation_cleanup_jobs',
   {
@@ -2722,6 +2822,9 @@ export const schema = {
   lessonProgress,
   quizAttempts,
   studioSubmissions,
+  studioLessonBaselines,
+  studioLessonBindings,
+  studioCourseChains,
   courseRatings,
   gamificationProfiles,
   xpEvents,
@@ -2763,6 +2866,7 @@ export const schema = {
   creations,
   accountDeletionFences,
   creationCleanupJobs,
+  galleryCopyAttempts,
   pensaDeletionJobs,
   pensaProviderUsage,
   processedWebhooks,

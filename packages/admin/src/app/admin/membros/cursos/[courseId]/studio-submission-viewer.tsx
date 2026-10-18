@@ -9,7 +9,7 @@ import { type GallerySubmission, isGallerySubmission } from '@sistemazero/core/l
  */
 import { isPintaAssetLike } from '@sistemazero/pinta/assets'
 import type { PintaHandle } from '@sistemazero/pinta/lesson'
-import type { Project, StudioHandle } from '@sistemazero/studio'
+import type { EditableStudioProject, StudioHandle } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -54,7 +54,7 @@ function downloadPintaJson(asset: unknown): void {
   URL.revokeObjectURL(url)
 }
 
-function downloadProjectJson(project: Project): void {
+function downloadProjectJson(project: EditableStudioProject): void {
   const name = (project as { name?: string }).name ?? 'projeto'
   const safe = name.replace(/[^\w.-]+/g, '-').slice(0, 60) || 'projeto'
   const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' })

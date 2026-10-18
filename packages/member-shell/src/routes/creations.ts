@@ -1,5 +1,9 @@
 import 'server-only'
-import { creationPartStorageKey, creationStorageKey } from '@sistemazero/core/creations'
+import {
+  CONTENT_FINGERPRINT_PATTERN,
+  creationPartStorageKey,
+  creationStorageKey,
+} from '@sistemazero/core/creations'
 import { isDocumentRecord, ProjectDocumentError } from '@sistemazero/studio/project-document'
 import { validateStudioCreationSnapshot } from '@sistemazero/studio/project-validation'
 import { after, NextResponse } from 'next/server'
@@ -101,13 +105,10 @@ const UploadBody = z.strictObject({
     .max(MAX_PARTS)
     .optional(),
   /**
-   * Impressão digital do conteúdo (`v1:<sha256>`, régua de `@sistemazero/core/creations`). Vai
+   * Impressão digital versionada do conteúdo (régua de `@sistemazero/core/creations`). Vai
    * opaca ao members: é o que o "envio em dia" compara entre o rascunho guardado e o envio.
    */
-  fingerprint: z
-    .string()
-    .regex(/^v1:[a-f0-9]{64}$/)
-    .optional(),
+  fingerprint: z.string().regex(CONTENT_FINGERPRINT_PATTERN).optional(),
 })
 /**
  * Só a revisão: bytes e metadados são os da RESERVA (o que foi conferido e assinado).

@@ -1,5 +1,9 @@
 import { isStudioProArtifact, type StudioProArtifact } from '@sistemazero/core/studio/pro-artifact'
 import {
+  type StudioPythonPreviewReference,
+  StudioPythonPreviewReferenceSchema,
+} from '@sistemazero/core/studio/python-preview-reference'
+import {
   createContext,
   type ReactNode,
   useCallback,
@@ -16,15 +20,25 @@ import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from './config'
 
-export interface ProCandidatePreviewInput {
+interface CandidateIdentity {
   projectId: string
   jobId: string
-  artifact: StudioProArtifact
   revisionHash: string
 }
-export interface ProCandidatePreview extends ProCandidatePreviewInput {
+export type ProCandidatePreviewInput = CandidateIdentity &
+  (
+    | { kind?: 'javascript'; artifact: StudioProArtifact; version?: number }
+    | { kind: 'python'; reference: StudioPythonPreviewReference; version: number }
+  )
+export type ProCandidatePreview = ProCandidatePreviewInput & {
   status: 'loading' | 'ready' | 'expired' | 'unavailable'
 }
+export const candidatePreviewId = (candidate: ProCandidatePreviewInput) =>
+  candidate.kind === 'python' ? candidate.reference.id : candidate.artifact.id
+const candidateExpiresAt = (candidate: ProCandidatePreviewInput) =>
+  candidate.kind === 'python' ? candidate.reference.expiresAt : candidate.artifact.expiresAt
+const candidateLanguage = (candidate: ProCandidatePreviewInput) =>
+  candidate.kind === 'python' ? 'python' : 'javascript'
 type Mode = 'current' | 'candidate'
 interface CandidatePreviewContext {
   candidate: ProCandidatePreview | null
@@ -62,6 +76,7 @@ export function StudioProCandidatePreviewProvider({ children }: { children: Reac
   const matches =
     project?.kind === 'pro' &&
     selection?.candidate.projectId === project.id &&
+    candidateLanguage(selection.candidate) === (project.programmingLanguage ?? 'javascript') &&
     selection.scope === scope
   const candidate = matches ? selection.candidate : null
   const mode = matches ? selection.mode : 'current'
@@ -71,7 +86,8 @@ export function StudioProCandidatePreviewProvider({ children }: { children: Reac
         // Observe every transition, including A -> B -> A in one React batch.
         if (
           state.project?.id !== previous.project?.id ||
-          state.project?.kind !== previous.project?.kind
+          state.project?.kind !== previous.project?.kind ||
+          state.project?.programmingLanguage !== previous.project?.programmingLanguage
         )
           setSelection(null)
       }),
@@ -82,11 +98,12 @@ export function StudioProCandidatePreviewProvider({ children }: { children: Reac
       previous &&
       project?.kind === 'pro' &&
       previous.candidate.projectId === project.id &&
+      candidateLanguage(previous.candidate) === (project.programmingLanguage ?? 'javascript') &&
       previous.scope === scope
         ? previous
         : null,
     )
-  }, [project?.id, project?.kind, scope])
+  }, [project?.id, project?.kind, project?.programmingLanguage, scope])
   const close = useCallback(() => setSelection(null), [])
   const show = useCallback(
     (input: ProCandidatePreviewInput) => {
@@ -96,22 +113,43 @@ export function StudioProCandidatePreviewProvider({ children }: { children: Reac
         current?.kind !== 'pro' ||
         current.id !== input.projectId ||
         scope !== captureProjectStorageScope() ||
-        !isStudioProArtifact(input.artifact) ||
+        candidateLanguage(input) !== (current.programmingLanguage ?? 'javascript') ||
+        (input.kind === 'python'
+          ? !StudioPythonPreviewReferenceSchema.safeParse(input.reference).success ||
+            input.reference.projectId !== input.projectId ||
+            !Number.isSafeInteger(input.version) ||
+            input.version < 0
+          : !isStudioProArtifact(input.artifact)) ||
         !/^[a-f0-9]{64}$/.test(input.revisionHash)
       )
         return false
+      const identity = {
+        projectId: input.projectId,
+        jobId: input.jobId,
+        revisionHash: input.revisionHash,
+        version: input.version,
+      }
+      const captured: ProCandidatePreviewInput =
+        input.kind === 'python'
+          ? {
+              ...identity,
+              kind: 'python',
+              version: input.version,
+              reference: { ...input.reference },
+            }
+          : { ...identity, kind: input.kind, artifact: { ...input.artifact } }
       setSelection((previous) => ({
         candidate: {
-          ...input,
-          artifact: { ...input.artifact },
+          ...captured,
           status:
-            input.artifact.expiresAt <= Date.now()
+            candidateExpiresAt(input) <= Date.now()
               ? 'expired'
               : previous?.scope === scope &&
                   previous.mode === 'candidate' &&
                   previous.candidate.jobId === input.jobId &&
                   previous.candidate.revisionHash === input.revisionHash &&
-                  previous.candidate.artifact.id === input.artifact.id
+                  candidatePreviewId(previous.candidate) === candidatePreviewId(input) &&
+                  previous.candidate.version === input.version
                 ? previous.candidate.status
                 : 'loading',
         },
@@ -143,7 +181,7 @@ export function StudioProCandidatePreviewProvider({ children }: { children: Reac
         previous &&
         previous.scope === captureProjectStorageScope() &&
         previous.candidate.projectId === store.getState().project?.id &&
-        previous.candidate.artifact.id === artifactId &&
+        candidatePreviewId(previous.candidate) === artifactId &&
         previous.candidate.status !== status
           ? { ...previous, candidate: { ...previous.candidate, status } }
           : previous,

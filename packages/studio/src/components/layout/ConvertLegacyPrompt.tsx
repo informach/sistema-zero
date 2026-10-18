@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { useState } from 'react'
-import type { Project } from '#core'
 import { ConfirmDialog } from '#ui'
+import type { EditableStudioProject as Project } from '../../core/editableProject'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioPersistence } from '../../state/studioStores'
 import { useStudioConfig } from '../../studio/config'

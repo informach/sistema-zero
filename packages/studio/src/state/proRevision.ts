@@ -6,9 +6,15 @@ import {
   type StudioProChange,
   type StudioProRevision,
 } from '@sistemazero/core/studio/pro-revision'
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
+import { encodeAssetBase64 } from '../core/assetBinary'
+import {
+  isPythonProject,
+  type EditableStudioProject as Project,
+  type PythonProProjectDocument,
+} from '../core/editableProject'
 import { buildProAssetBundle } from '../core/proAssets'
 import { digestProAssistance, getProAssistance } from '../core/proAssistance'
-import type { Project } from '../core/project'
 import type { ProjectTree } from '../core/proProject'
 import { flushProjectOperations, projectPersistence } from './projectOperations'
 import { listProApplications, PRO_APPLICATION_LIMITS } from './projectStorageCoordinator'
@@ -30,6 +36,15 @@ export async function captureProRevisionPayload(project: Project) {
 }
 
 async function captureRevision(project: Project, includeBinaries: boolean) {
+  if (isPythonProject(project)) {
+    const captured = copyStudioProjectJson(project)
+    const { capturePythonProRevision, capturePythonProRevisionPayload } = await import(
+      './pythonProRevision'
+    )
+    return includeBinaries
+      ? capturePythonProRevisionPayload(captured)
+      : { base: await capturePythonProRevision(captured), binaries: {} }
+  }
   if (project.kind !== 'pro' || !project.tree || !project.proMeta)
     throw new Error('Abra um projeto profissional para construir com Zappy.')
   const { manifest, files: assetFiles } = await buildProAssetBundle(project.assets, project.tree, {
@@ -43,10 +58,7 @@ async function captureRevision(project: Project, includeBinaries: boolean) {
       byte.toString(16).padStart(2, '0'),
     ).join('')
     if (includeBinaries) {
-      let binary = ''
-      for (let offset = 0; offset < bytes.length; offset += 8192)
-        binary += String.fromCharCode(...bytes.subarray(offset, offset + 8192))
-      binaries[path] = { base64: btoa(binary), sha256: assetHashes[path]! }
+      binaries[path] = { base64: encodeAssetBase64(bytes), sha256: assetHashes[path]! }
     }
   }
   const base = await createStudioProRevision({
@@ -111,7 +123,12 @@ async function applyRevision(
     | { assets: NonNullable<Project['assets']>; coverAssetName: string | null }
     | undefined
   if (assetEdit) {
-    if (base.hash !== change.baseHash || change.patches.length || change.directories)
+    if (
+      base.hash !== change.baseHash ||
+      change.patches.length ||
+      change.directories ||
+      change.configuration
+    )
       throw new Error('Os materiais mudaram. Confira a operação novamente.')
     if (
       !Number.isSafeInteger(assetEdit.index) ||
@@ -169,7 +186,43 @@ async function applyRevision(
       ([path, content]) => [path, { kind: 'file' as const, content }] as const,
     ),
   ])
-  await buildProAssetBundle(materials?.assets ?? project.assets, tree)
+  let pythonConfiguration:
+    | Pick<PythonProProjectDocument, 'runtime' | 'python' | 'installedExtensions'>
+    | undefined
+  if (isPythonProject(project)) {
+    if (
+      project.kind !== 'pro' ||
+      revision.version !== 2 ||
+      revision.configuration.programmingLanguage !== 'python'
+    )
+      throw new Error('A revisão não pertence a este ambiente Python.')
+    const configuration = revision.configuration
+    const { refinePythonProProjectDocument } = await import('./pythonProProjectValidation')
+    const { buildPythonAssetBundle } = await import('../core/pythonAssets')
+    await buildPythonAssetBundle(materials?.assets ?? project.assets, {
+      files: Object.keys(revision.files),
+      directories: revision.directories,
+    })
+    const next = await refinePythonProProjectDocument({
+      ...project,
+      tree,
+      assets: materials?.assets ?? project.assets,
+      runtime: configuration.runtime,
+      python: configuration.python,
+      installedExtensions: configuration.extensions.map((extension) => ({
+        ...extension,
+        installedAt:
+          project.installedExtensions.find(
+            (current) => current.id === extension.id && current.version === extension.version,
+          )?.installedAt ?? Date.now(),
+      })),
+    })
+    pythonConfiguration = {
+      runtime: next.runtime,
+      python: next.python,
+      installedExtensions: next.installedExtensions,
+    }
+  } else await buildProAssetBundle(materials?.assets ?? project.assets, tree)
   // Includes edits to assets/metadata while digesting, even when the source tree is unchanged.
   if (
     captureProjectStorageScope() !== scope ||
@@ -185,6 +238,7 @@ async function applyRevision(
       tree,
       beforePublish ? (next) => beforePublish(inverse, next, assetInverse) : undefined,
       materials,
+      pythonConfiguration,
     )
   if (error) throw new Error(error)
   afterPublish?.()
@@ -272,8 +326,9 @@ export async function applyProEditorChange(
     'source' | 'jobId' | 'decisionsHash' | 'requestId' | 'request'
   >,
   onPublish?: (tree: ProjectTree) => void,
+  beforeCommit?: () => void,
 ): Promise<ProApplicationReceipt> {
-  return applyProDocument(store, projectId, { ...input, source: 'editor' }, onPublish)
+  return applyProDocument(store, projectId, { ...input, source: 'editor' }, onPublish, beforeCommit)
 }
 
 async function applyProDocument(
@@ -281,6 +336,7 @@ async function applyProDocument(
   projectId: string,
   input: ProDocumentApplication,
   onPublish?: (tree: ProjectTree) => void,
+  beforeCommit?: () => void,
 ): Promise<ProApplicationReceipt> {
   const entryScope = captureProjectStorageScope()
   const entryProject = store.getState().project
@@ -358,6 +414,7 @@ async function applyProDocument(
       PRO_APPLICATION_LIMITS.profileBytes - profilePending,
     ),
     (inverse, project, assetInverse) => {
+      beforeCommit?.()
       const record: ProApplicationRecord = {
         version: 1,
         operationId: input.operationId,

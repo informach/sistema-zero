@@ -1,7 +1,8 @@
 import { describe, expect, mock, test } from 'bun:test'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import type { GalleryDeliveryPlan } from '@sistemazero/core/learning'
 import { assetToJson, createLessonAsset } from '@sistemazero/pinta/assets'
+import { authoringFixture } from '../../members/tests/fakes/studio-authoring-policy'
 import type { SessionUser } from '../src/lib/types'
 import type { CallOpts } from '../src/server/gateway'
 
@@ -29,9 +30,13 @@ const req = (body: unknown = input, viewer = user.id) =>
     headers: { 'content-type': 'application/json', 'x-sz-viewer': viewer },
     body: JSON.stringify(body),
   })
-function setup(current: SessionUser | null = user) {
+function setup(
+  current: SessionUser | null = user,
+  storageGate: { read?: () => Promise<void>; copy?: () => Promise<void> } = {},
+) {
   let plan: GalleryDeliveryPlan = {
     completed: false,
+    copyGeneration: randomUUID(),
     snapshot: {
       kind: 'gallery-delivery',
       version: 1,
@@ -66,8 +71,12 @@ function setup(current: SessionUser | null = user) {
       },
     },
     {
-      read: async () => (invalidFile ? {} : JSON.parse(assetToJson(asset))),
+      read: async () => {
+        await storageGate.read?.()
+        return invalidFile ? {} : JSON.parse(assetToJson(asset))
+      },
       copy: async (source, destination) => {
+        await storageGate.copy?.()
         if (failCopy) throw new Error('Falha na cópia')
         copied.push(`${source}:${destination}`)
       },
@@ -88,7 +97,187 @@ function setup(current: SessionUser | null = user) {
     },
   }
 }
+
+test.each([
+  'classic',
+  'pro',
+] as const)('Python %s gallery delivery sends a small server-owned reference after copies, retaining large assets in storage', async (kind) => {
+  for (const split of [false, true]) {
+    const { project } = await authoringFixture('python', kind)
+    const audio = Buffer.alloc(1_400_044)
+    audio.write('RIFF')
+    audio.writeUInt32LE(audio.length - 8, 4)
+    audio.write('WAVEfmt ', 8)
+    audio.writeUInt32LE(16, 16)
+    audio.writeUInt16LE(1, 20)
+    audio.writeUInt16LE(1, 22)
+    audio.writeUInt32LE(8000, 24)
+    audio.writeUInt32LE(8000, 28)
+    audio.writeUInt16LE(1, 32)
+    audio.writeUInt16LE(8, 34)
+    audio.write('data', 36)
+    audio.writeUInt32LE(audio.length - 44, 40)
+    project.assets = [
+      {
+        id: 'sound',
+        name: 'sound',
+        kind: 'audio',
+        source: 'upload',
+        dataUrl: `data:audio/wav;base64,${audio.toString('base64')}`,
+      },
+    ]
+    expect(JSON.stringify(project).length).toBeGreaterThan(1_500_000)
+    const hash = createHash('sha256').update(JSON.stringify(project.assets[0])).digest('hex')
+    const { assets: _assets, ...program } = project
+    const item = {
+      itemId: project.id,
+      revision: 1,
+      name: project.name,
+      kind: 'program',
+      storageKey: 'copies/project.gz',
+      parts: split ? [{ hash, storageKey: `copies/parts/${hash}.gz` }] : [],
+    }
+    const body = { ...input, items: [{ itemId: project.id, revision: 1 }] }
+    const plan: GalleryDeliveryPlan = {
+      completed: false,
+      copyGeneration: randomUUID(),
+      snapshot: { kind: 'gallery-delivery', version: 1, requestId, tool: 'studio', items: [item] },
+      copies: [
+        { source: 'original/project.gz', destination: item.storageKey },
+        ...item.parts.map((part) => ({
+          source: `original/${part.hash}.gz`,
+          destination: part.storageKey,
+        })),
+      ],
+    }
+    let copied = 0
+    let committed: CallOpts | undefined
+    const signed: string[] = []
+    const route = createGalleryDeliveryRoutes(
+      { getSession: async () => user },
+      {
+        gatewayFetch: async () => ({ status: 200, body: plan }),
+        gatewayFetchHmac: async (_path, opts) => {
+          committed = opts
+          return { status: 200, body: { submittedAt: 'now' } }
+        },
+      },
+      {
+        read: async () =>
+          split ? { format: 'sz-studio-parts', version: 1, program, assets: [hash] } : project,
+        copy: async () => {
+          copied++
+        },
+        sign: async (key) => {
+          expect(copied).toBe(plan.copies.length)
+          signed.push(key)
+          return `https://storage.test/${key}?temporary=private`
+        },
+      },
+    )
+    expect((await route.POST(req(body), ctx)).status).toBe(200)
+    expect(signed).toEqual([item.storageKey, ...item.parts.map((part) => part.storageKey)])
+    expect(JSON.stringify(committed?.body).length).toBeLessThan(2000)
+    expect(committed?.body).toMatchObject({
+      projectForChecks: {
+        format: 'sz-studio-gallery-source',
+        version: 1,
+        itemId: project.id,
+        revision: 1,
+        source: { storageKey: item.storageKey },
+        parts: item.parts,
+      },
+    })
+    expect(project.assets[0]).toMatchObject({ id: 'sound' })
+  }
+})
+
+test('JavaScript Pro gallery deliveries retain tree and existing inline checks without large assets', async () => {
+  const { project } = await authoringFixture('javascript', 'pro')
+  const item = {
+    itemId: project.id,
+    revision: 1,
+    name: project.name,
+    kind: 'program',
+    storageKey: 'copies/project.gz',
+    parts: [],
+  }
+  let committed: CallOpts | undefined
+  const route = createGalleryDeliveryRoutes(
+    { getSession: async () => user },
+    {
+      gatewayFetch: async () => ({
+        status: 200,
+        body: {
+          completed: false,
+          copyGeneration: randomUUID(),
+          snapshot: {
+            kind: 'gallery-delivery',
+            version: 1,
+            requestId,
+            tool: 'studio',
+            items: [item],
+          },
+          copies: [{ source: 'original', destination: item.storageKey }],
+        },
+      }),
+      gatewayFetchHmac: async (_path, opts) => {
+        committed = opts
+        return { status: 200, body: {} }
+      },
+    },
+    { read: async () => project, copy: async () => {} },
+  )
+  expect(
+    (await route.POST(req({ ...input, items: [{ itemId: project.id, revision: 1 }] }), ctx)).status,
+  ).toBe(200)
+  expect(committed?.body).toMatchObject({
+    projectForChecks: { kind: 'pro', tree: 'tree' in project ? project.tree : undefined },
+  })
+})
 describe('gallery delivery BFF confirmation', () => {
+  test.each([
+    'read',
+    'copy',
+  ] as const)('withdrawal during a noncooperative %s cannot reach commit', async (stage) => {
+    const entered = Promise.withResolvers<void>()
+    const release = Promise.withResolvers<void>()
+    const controller = new AbortController()
+    const env = setup(user, {
+      [stage]: async () => {
+        entered.resolve()
+        await release.promise
+      },
+    })
+    const request = new Request(req(), { signal: controller.signal })
+    const pending = env.route.POST(request, ctx)
+    try {
+      await entered.promise
+      controller.abort()
+      expect((await pending).status).toBe(499)
+      expect(env.calls).toHaveLength(1)
+      expect(env.calls[0]?.opts.signal?.aborted).toBe(true)
+      release.resolve()
+      await new Promise((resolve) => setTimeout(resolve, 20))
+      expect(env.calls).toHaveLength(1)
+      // Validation reads the isolated destination after copying, so withdrawal here
+      // preserves that completed copy but must never admit the signed commit.
+      if (stage === 'read') expect(env.copied).toHaveLength(1)
+    } finally {
+      release.resolve()
+      controller.abort()
+    }
+  })
+  test('a pre-aborted gallery delivery does not prepare or copy', async () => {
+    const env = setup()
+    const controller = new AbortController()
+    controller.abort()
+    expect(
+      (await env.route.POST(new Request(req(), { signal: controller.signal }), ctx)).status,
+    ).toBe(499)
+    expect(env.calls).toHaveLength(0)
+    expect(env.copied).toHaveLength(0)
+  })
   test('server-owned copies precede signed commit; account comes from the active profile', async () => {
     const env = setup()
     expect((await env.route.POST(req(), ctx)).status).toBe(200)
@@ -100,6 +289,7 @@ describe('gallery delivery BFF confirmation', () => {
     expect(env.calls[1]?.path).toBe(
       `/members/internal/lessons/${lessonId}/blocks/${blockId}/gallery-commit`,
     )
+    expect(env.calls[1]?.opts.signal).toBeInstanceOf(AbortSignal)
   })
   test('failed copy or invalid cloud file never reaches confirmation', async () => {
     for (const kind of ['copy', 'invalid']) {
@@ -121,6 +311,9 @@ describe('gallery delivery BFF confirmation', () => {
     const env = setup()
     expect((await env.route.POST(req(input, randomUUID()), ctx)).status).toBe(409)
     expect((await env.route.POST(req({ ...input, accountId: user.id }), ctx)).status).toBe(400)
+    expect(
+      (await env.route.POST(req({ ...input, copyGeneration: randomUUID() }), ctx)).status,
+    ).toBe(400)
     expect(
       (
         await env.route.POST(

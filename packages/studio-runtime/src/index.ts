@@ -16,6 +16,12 @@ import {
   STUDIO_PRO_REMOTE_CAPABILITIES,
   type StudioProBuilderEvidence,
 } from '@sistemazero/core/studio'
+import { studioPythonInspectionJobId } from '@sistemazero/core/studio/python-inspection-job'
+import { STUDIO_PYTHON_VALIDATION_LIMITS } from '@sistemazero/core/studio/python-validation'
+import {
+  StudioPythonInspectionRequestSchema,
+  StudioPythonValidationRequestSchema,
+} from '@sistemazero/core/studio/python-validation-input'
 import validationProfile from '../runtime/validation-profile.json' with { type: 'json' }
 import { serveArtifact, storeArtifact, unavailableArtifact } from './artifacts'
 import {
@@ -42,6 +48,7 @@ import { prepareRuntimeDependencyLock } from './dependency-lock'
 import {
   collectPublicationGarbage,
   createPublicationAuthorizer,
+  currentPublishedPublication,
   currentPublishedSource,
   type PublicationBucket,
   PublicationError,
@@ -49,6 +56,20 @@ import {
   purgePublication,
   servePublishedArtifact,
 } from './publications'
+import { createConfiguredPythonRuntime } from './python-configuration'
+import type { PythonDistributionRegistry, PythonDistributionServer } from './python-distributions'
+import type { PythonInputGcBucket } from './python-input-gc'
+import { collectStoredPythonInputGarbage } from './python-input-maintenance'
+import { type PythonInputBucket, PythonInputError } from './python-inputs'
+import type { PythonInspectionJobResponse } from './python-inspection-job'
+import { collectStoredPythonPreviewGarbage } from './python-preview-maintenance'
+import { servePythonPreview } from './python-previews'
+import { createPythonR2InputStorage } from './python-r2-inputs'
+import {
+  handlePythonInputRemoval,
+  handlePythonRequest,
+  isPythonInternalPath,
+} from './python-requests'
 
 export class ProBuildSandbox extends Sandbox {
   enableInternet = false
@@ -58,6 +79,17 @@ interface RateLimitBinding {
   limit(options: { key: string }): Promise<{ success: boolean }>
 }
 
+/** Only authenticated admission/retirement operations are available to ingress. */
+export interface PythonInspectionJobNamespace {
+  getByName(name: string): {
+    inspect(raw: unknown): Promise<PythonInspectionJobResponse>
+    validate?(raw: unknown): Promise<PythonInspectionJobResponse>
+    previewAvailable?(raw: unknown): Promise<boolean>
+    discardPreview?(raw: unknown): Promise<{ retired: boolean; cleanupConfirmed: boolean }>
+    cancel(raw: unknown): Promise<{ retired: boolean; cleanupConfirmed: boolean }>
+  }
+}
+
 export interface Env {
   ProBuildSandbox: DurableObjectNamespace<ProBuildSandbox>
   BUILD_RATE_LIMITER: RateLimitBinding
@@ -65,6 +97,16 @@ export interface Env {
   PRO_ARTIFACTS: PublicationBucket
   PUBLICATION_AUTHORIZATION_URL?: string
   PUBLICATION_CLEANUP_URL?: string
+  /** Trusted deployment JSON. Missing leaves Python unavailable and preserves JavaScript. */
+  STUDIO_PYTHON_DISTRIBUTIONS_JSON?: string
+  /** Private temporary input bucket; absence keeps new S2S Python operations unavailable. */
+  PYTHON_INPUTS?: PythonInputBucket & Pick<PythonInputGcBucket, 'list'>
+  PYTHON_UPLOAD_RATE_LIMITER?: RateLimitBinding
+  /** Separate coordinator; its persistent cancellation/alarm never overrides Sandbox lifecycle. */
+  PythonInspectionJobs?: PythonInspectionJobNamespace
+  /** Trusted fixed launcher is served from an origin distinct from every embedding application. */
+  STUDIO_PYTHON_PREVIEW_ORIGIN?: string
+  PYTHON_PREVIEWS?: PythonInputBucket & Pick<PythonInputGcBucket, 'list'>
 }
 
 const BUILD_ROOT = '/workspace/builds'
@@ -72,12 +114,33 @@ const BUILD_TIMEOUT_MS = 45_000
 
 export function createStudioRuntimeHandler(
   sandboxFactory: typeof getSandbox = getSandbox,
+  pythonDistributions?: PythonDistributionServer,
 ): ExportedHandler<Env> {
+  let configuredPython:
+    | { configuration: string; registry: Promise<PythonDistributionRegistry> }
+    | undefined
+  const pythonRegistry = (configuration: string) => {
+    if (configuredPython?.configuration !== configuration)
+      configuredPython = { configuration, registry: createConfiguredPythonRuntime(configuration) }
+    return configuredPython.registry
+  }
   let authorization:
     | { endpoint: string | undefined; token: string; check: (playId: string) => Promise<boolean> }
     | undefined
   return {
     async scheduled(_event, env, ctx) {
+      if (env.PYTHON_PREVIEWS)
+        ctx.waitUntil(
+          collectStoredPythonPreviewGarbage(env.PYTHON_PREVIEWS).then((result) => {
+            console.info('[studio-python] preview collection', result)
+          }),
+        )
+      if (env.PYTHON_INPUTS)
+        ctx.waitUntil(
+          collectStoredPythonInputGarbage(env.PYTHON_INPUTS).then((result) => {
+            console.info('[studio-python] input collection', result)
+          }),
+        )
       if (env.PUBLICATION_CLEANUP_URL && env.INTERNAL_TOKEN)
         ctx.waitUntil(
           fetch(env.PUBLICATION_CLEANUP_URL, {
@@ -98,6 +161,224 @@ export function createStudioRuntimeHandler(
     },
     async fetch(request: Request, env: Env): Promise<Response> {
       const url = new URL(request.url)
+      if (url.pathname.startsWith('/v1/python-previews/')) {
+        const configuration = env.STUDIO_PYTHON_DISTRIBUTIONS_JSON
+        const bucket = env.PYTHON_PREVIEWS
+        const origin = env.STUDIO_PYTHON_PREVIEW_ORIGIN
+        const runtimeBucket = env.PRO_ARTIFACTS
+        const jobs = env.PythonInspectionJobs
+        if (!configuration || !bucket || !origin || !jobs || url.origin !== origin)
+          return unavailableArtifact()
+        const assertCurrent = () => {
+          if (
+            env.STUDIO_PYTHON_DISTRIBUTIONS_JSON !== configuration ||
+            env.PYTHON_PREVIEWS !== bucket ||
+            env.STUDIO_PYTHON_PREVIEW_ORIGIN !== origin ||
+            env.PRO_ARTIFACTS !== runtimeBucket ||
+            env.PythonInspectionJobs !== jobs
+          )
+            throw new Error('A configuração do preview Python mudou.')
+        }
+        try {
+          const registry = await pythonRegistry(configuration)
+          assertCurrent()
+          return await servePythonPreview(request, {
+            bucket,
+            runtimeBucket,
+            registry,
+            serviceOrigin: origin,
+            assertCurrent,
+            async authorize(manifest) {
+              assertCurrent()
+              const stub = jobs.getByName(manifest.jobId)
+              if (!stub.previewAvailable) return false
+              const allowed = await stub.previewAvailable({
+                jobId: manifest.jobId,
+                projectId: manifest.projectId,
+                revision: manifest.revision,
+                parentOrigin: manifest.parentOrigin,
+                expiresAt: manifest.expiresAt,
+              })
+              assertCurrent()
+              return allowed
+            },
+          })
+        } catch {
+          return unavailableArtifact()
+        }
+      }
+      if (
+        url.pathname.startsWith('/v1/runtimes/') ||
+        url.pathname.startsWith('/v1/runtime-deployments/')
+      ) {
+        if (pythonDistributions) return pythonDistributions(request, env.PRO_ARTIFACTS)
+        const configuration = env.STUDIO_PYTHON_DISTRIBUTIONS_JSON
+        if (!configuration) return unavailableArtifact()
+        try {
+          const { serve: server } = await pythonRegistry(configuration)
+          if (env.STUDIO_PYTHON_DISTRIBUTIONS_JSON !== configuration) return unavailableArtifact()
+          const response = await server(request, env.PRO_ARTIFACTS)
+          if (env.STUDIO_PYTHON_DISTRIBUTIONS_JSON !== configuration) {
+            await response.body?.cancel()
+            return unavailableArtifact()
+          }
+          return response
+        } catch {
+          return unavailableArtifact()
+        }
+      }
+      if (isPythonInternalPath(url.pathname)) {
+        // Authentication precedes reading either JSON metadata or learner binary streams.
+        if (!isAuthorized(request, env.INTERNAL_TOKEN))
+          return json({ ok: false, code: 'INVALID_REQUEST', message: 'Não autorizado.' }, 401)
+        const configuration = env.STUDIO_PYTHON_DISTRIBUTIONS_JSON
+        const bucket = env.PYTHON_INPUTS
+        const uploadLimiter = env.PYTHON_UPLOAD_RATE_LIMITER
+        const jobs = env.PythonInspectionJobs
+        if (
+          ['/v1/python/inputs/remove', '/v1/python/previews/remove'].includes(url.pathname) &&
+          uploadLimiter &&
+          jobs
+        ) {
+          const previewOnly = url.pathname === '/v1/python/previews/remove'
+          const token = env.INTERNAL_TOKEN
+          const assertCurrent = () => {
+            if (
+              env.INTERNAL_TOKEN !== token ||
+              env.PYTHON_INPUTS !== bucket ||
+              env.PYTHON_UPLOAD_RATE_LIMITER !== uploadLimiter ||
+              env.PythonInspectionJobs !== jobs
+            )
+              throw new PythonInputError(409, 'O proprietário da limpeza Python mudou.')
+          }
+          return handlePythonInputRemoval(request, {
+            ...(previewOnly ? { kind: 'preview' as const } : {}),
+            bucket: bucket ? createPythonR2InputStorage(bucket) : undefined,
+            assertCurrent,
+            async limit(owner) {
+              return (await uploadLimiter.limit({ key: `python-transfer-${owner}` })).success
+            },
+            async cancel(reference) {
+              const jobId = await studioPythonInspectionJobId(reference)
+              assertCurrent()
+              const stub = jobs.getByName(jobId)
+              if (!previewOnly) return stub.cancel(reference)
+              if (!stub.discardPreview) return { retired: false, cleanupConfirmed: false }
+              return stub.discardPreview(reference)
+            },
+          })
+        }
+        if (!configuration || !bucket || !uploadLimiter || !jobs)
+          return Response.json(
+            { ok: false, code: 'PYTHON_UNAVAILABLE' },
+            { status: 503, headers: { 'Cache-Control': 'no-store' } },
+          )
+        const token = env.INTERNAL_TOKEN
+        const runtimeBucket = env.PRO_ARTIFACTS
+        const jobLimiter = env.BUILD_RATE_LIMITER
+        const namespace = env.ProBuildSandbox
+        const previewBucket = env.PYTHON_PREVIEWS
+        const previewOrigin = env.STUDIO_PYTHON_PREVIEW_ORIGIN
+        const assertCurrent = () => {
+          if (
+            env.STUDIO_PYTHON_DISTRIBUTIONS_JSON !== configuration ||
+            env.INTERNAL_TOKEN !== token ||
+            env.PYTHON_INPUTS !== bucket ||
+            env.PRO_ARTIFACTS !== runtimeBucket ||
+            env.PYTHON_UPLOAD_RATE_LIMITER !== uploadLimiter ||
+            env.BUILD_RATE_LIMITER !== jobLimiter ||
+            env.ProBuildSandbox !== namespace ||
+            env.PythonInspectionJobs !== jobs ||
+            env.PYTHON_PREVIEWS !== previewBucket ||
+            env.STUDIO_PYTHON_PREVIEW_ORIGIN !== previewOrigin
+          )
+            throw new PythonInputError(409, 'A configuração Python mudou. Tente novamente.')
+        }
+        try {
+          const registry = await pythonRegistry(configuration)
+          assertCurrent()
+          const invokeJob = async (raw: unknown, mode: 'inspect' | 'validate') => {
+            const input =
+              mode === 'validate'
+                ? StudioPythonValidationRequestSchema.parse(raw).input
+                : StudioPythonInspectionRequestSchema.parse(raw).input
+            const jobId = await studioPythonInspectionJobId(input)
+            assertCurrent()
+            const stub = jobs.getByName(jobId)
+            if (mode === 'validate' && !stub.validate)
+              return { status: 503, body: { ok: false, code: 'PYTHON_VALIDATION_UNAVAILABLE' } }
+            const result =
+              mode === 'validate' && stub.validate
+                ? await stub.validate(raw)
+                : await stub.inspect(raw)
+            assertCurrent()
+            const maximum =
+              mode === 'validate' ? STUDIO_PYTHON_VALIDATION_LIMITS.responseBytes : 2 * 1024 * 1024
+            if (new TextEncoder().encode(result.bodyJson).byteLength > maximum)
+              throw new Error('O relatório do job Python excede o limite.')
+            const body: unknown = JSON.parse(result.bodyJson)
+            return { status: result.status, body }
+          }
+          return await handlePythonRequest(request, {
+            bucket: createPythonR2InputStorage(bucket),
+            runtimeBucket,
+            registry,
+            assertCurrent,
+            ...(previewBucket && previewOrigin
+              ? {
+                  preview: {
+                    bucket: createPythonR2InputStorage(previewBucket),
+                    serviceOrigin: previewOrigin,
+                    validation: {
+                      profileVersion: 1 as const,
+                      runtimeFingerprint: validationProfile.runtimeFingerprint,
+                    },
+                  },
+                }
+              : {}),
+            async limit(owner, operation) {
+              const binding = operation === 'job' ? jobLimiter : uploadLimiter
+              return (await binding.limit({ key: `python-${operation}-${owner}` })).success
+            },
+            jobs: {
+              async inspect(raw) {
+                return invokeJob(raw, 'inspect')
+              },
+              async validate(raw) {
+                return invokeJob(raw, 'validate')
+              },
+              async discardPreview(input) {
+                const jobId = await studioPythonInspectionJobId(input)
+                if (env.INTERNAL_TOKEN !== token || env.PythonInspectionJobs !== jobs)
+                  throw new Error('O proprietário do descarte Python mudou.')
+                const stub = jobs.getByName(jobId)
+                if (!stub.discardPreview) return { retired: false, cleanupConfirmed: false }
+                return stub.discardPreview(input)
+              },
+              async cancel(input) {
+                const jobId = await studioPythonInspectionJobId(input)
+                assertCurrent()
+                return jobs.getByName(jobId).cancel(input)
+              },
+            },
+            createSandbox: () =>
+              sandboxFactory(
+                namespace,
+                `python-inspect-${crypto.randomUUID().replaceAll('-', '')}`,
+                {
+                  enableDefaultSession: false,
+                  transport: 'rpc',
+                },
+              ),
+          })
+        } catch {
+          if (request.body && !request.bodyUsed) void request.body.cancel().catch(() => {})
+          return Response.json(
+            { ok: false, code: 'PYTHON_UNAVAILABLE' },
+            { status: 503, headers: { 'Cache-Control': 'no-store' } },
+          )
+        }
+      }
       if (url.pathname.startsWith('/v1/published/')) {
         if (
           !authorization ||
@@ -160,7 +441,7 @@ export function createStudioRuntimeHandler(
             body &&
             typeof body === 'object' &&
             'operation' in body &&
-            ['promote', 'activate'].includes(String(body.operation)) &&
+            ['promote', 'promote-python', 'activate'].includes(String(body.operation)) &&
             'owner' in body &&
             isStudioPublicationHash(body.owner)
           ) {
@@ -178,13 +459,18 @@ export function createStudioRuntimeHandler(
             body &&
             typeof body === 'object' &&
             'operation' in body &&
-            body.operation === 'resolve' &&
+            ['resolve', 'resolve-metadata'].includes(String(body.operation)) &&
             'playId' in body &&
             isStudioPublicationId(body.playId)
           ) {
-            return Response.json(await currentPublishedSource(env.PRO_ARTIFACTS, body.playId), {
-              headers: { 'Cache-Control': 'no-store' },
-            })
+            return Response.json(
+              await (body.operation === 'resolve'
+                ? currentPublishedSource(env.PRO_ARTIFACTS, body.playId)
+                : currentPublishedPublication(env.PRO_ARTIFACTS, body.playId)),
+              {
+                headers: { 'Cache-Control': 'no-store' },
+              },
+            )
           }
           return Response.json(await publicationCommand(env.PRO_ARTIFACTS, body), {
             headers: { 'Cache-Control': 'no-store' },

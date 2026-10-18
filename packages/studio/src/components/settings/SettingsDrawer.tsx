@@ -2,6 +2,9 @@ import type { JSX } from 'react'
 import { useEffect } from 'react'
 import { MAX_BLOCK_LEVEL } from '#core'
 import { Button, Modal } from '#ui'
+import { isPythonProject } from '../../core/editableProject'
+import { resolvePythonLearningLevel } from '../../python/learning'
+import { useProjectStore } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioTutor } from '../../studio/tutor'
@@ -24,8 +27,12 @@ export function SettingsDrawer({
   const setRevealAdvanced = useSettingsStore((state) => state.setRevealAdvanced)
   const config = useStudioConfig()
   const tutor = useStudioTutor()
+  const python = useProjectStore((state) => !!state.project && isPythonProject(state.project))
   const showRevealToggle =
-    config.learning.allowLevelReveal && config.learning.level !== MAX_BLOCK_LEVEL
+    config.learning.allowLevelReveal &&
+    (python
+      ? resolvePythonLearningLevel(config.learning.pythonLevel) !== 3
+      : config.learning.level !== MAX_BLOCK_LEVEL)
   useEffect(() => {
     if (!open || initialSection !== 'ai' || !tutor.config) return
     onClose()

@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "ES2023"],
+    "types": ["bun"],
+    "incremental": true,
+    "tsBuildInfoFile": "../../../.cache/studio-python-l0/gallery-cross-host-qa.tsbuildinfo"
+  },
+  "include": [
+    "python-gallery-races.fixture.ts",
+    "python-builder-ack.fixture.ts",
+    "python-builder-sdk-host.ts"
+  ],
+  "exclude": ["node_modules"]
+}

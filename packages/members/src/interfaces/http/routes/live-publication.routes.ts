@@ -1,5 +1,9 @@
+import { ValidationError } from '@sistemazero/core/errors'
+import { StudioLivePublicationRuntimeRequestSchema } from '@sistemazero/core/studio/runtime-authorization'
 import { Elysia, t } from 'elysia'
 import type { LivePublicationService } from '../../../application/live/live-publication.service'
+import type { AuthorizeLivePublicationRuntimeService } from '../../../application/studio/authorize-live-publication-runtime.service'
+import { AccessDeniedError } from '../../../domain/entitlement/entitlement.errors'
 import type { LiveBenefitsPort } from '../../../domain/ports/live-benefits.port'
 import { assertInternalCaller, assertNoLiveSupportWrite } from '../auth'
 import { resolveLiveActor } from './live.routes'
@@ -9,6 +13,7 @@ export function livePublicationRoutes(deps: {
   publication: LivePublicationService
   internalToken?: string
   benefits?: LiveBenefitsPort
+  runtime?: AuthorizeLivePublicationRuntimeService
 }) {
   return new Elysia({ name: 'live-publication' })
     .onBeforeHandle(({ headers, set }) => {
@@ -36,6 +41,18 @@ export function livePublicationRoutes(deps: {
           clientIdempotencyKey: uuid(),
         }),
       },
+    )
+    .post(
+      '/members/live/workspaces/:id/publication-runtime',
+      async ({ headers, params, body }) => {
+        assertNoLiveSupportWrite(headers, 'POST')
+        if (params.id !== body.context.workspaceId)
+          throw new ValidationError('Projeto da oficina inválido.')
+        if (!deps.runtime)
+          throw new AccessDeniedError('O ambiente deste projeto não está disponível.')
+        return deps.runtime.execute(resolveLiveActor(headers), body)
+      },
+      { params: t.Object({ id: uuid() }), body: StudioLivePublicationRuntimeRequestSchema },
     )
     .post(
       '/members/internal/live/mural-access',

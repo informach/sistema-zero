@@ -1,4 +1,7 @@
+import { isStudioPythonAssetPath } from '@sistemazero/core/studio/portable-path'
 import { isStudioPublicationId } from '@sistemazero/core/studio/project-format'
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
+import { STUDIO_PYTHON_MATERIAL_DATA_LIMITS } from '@sistemazero/core/studio/python-material-policy'
 import { useContext } from 'react'
 import { ulid } from 'ulid'
 import { useStore } from 'zustand'
@@ -13,15 +16,16 @@ import {
   inferExtraLanguage,
   isReservedProjectFileName,
   isValidAssetDataUrl,
+  type Project as JavaScriptProject,
   modesForKind,
   normalizeAssetName,
   normalizeExtraFileName,
   PROJECT_ASSET_LIMITS,
-  type Project,
   type ProjectAsset,
   type ProjectFiles,
   type ProjectTree,
   type StudioProBuildLimits,
+  sanitizeProjectAssetLicense,
   sanitizeProjectAssets,
   sanitizeSpriteMeta,
   sanitizeTilemapMeta,
@@ -33,6 +37,13 @@ import type { SZIRInput } from '#ir'
 import { findExtension } from '#official-extensions'
 import { reconcileDrawingsFromRestoredProject } from '../asset-library/personalSync'
 import { createProProject as createProProjectFromTemplate } from '../components/code/pro-templates'
+import { projectAssetFileExtension } from '../core/assetBinary'
+import {
+  isPythonProject,
+  type EditableStudioProject as Project,
+  type PythonProjectDocument,
+  type PythonProProjectDocument,
+} from '../core/editableProject'
 import { parseProAssistance } from '../core/proAssistance'
 import {
   assertProjectContentPreserved,
@@ -40,9 +51,15 @@ import {
   prepareProjectDocument,
   projectFormatVersion,
   retainProjectTools,
+  SUPPORTED_PROJECT_FORMAT_VERSION,
 } from '../core/projectDocument'
+import type { StudioProjectFactoryContext } from '../core/projectFactory'
+import { withoutProjectPublication } from '../core/projectPublication'
 import type { ProAssistanceMeta } from '../core/proProject'
 import type { StudioPersistenceAdapter } from '../persistence/types'
+import { preservePythonWorkspaceDraft } from '../python/blocks/workspaceDraft'
+import { prepareEditableCloudProject } from './editableCloudProject'
+import { prepareEditableStudioProject } from './editableProjectValidation'
 import {
   deleteProject as deleteProjectFromDB,
   isProjectOpenAnywhere,
@@ -75,7 +92,6 @@ import {
   projectFilesLimitError,
   type ResolvedLimits,
   type StudioLimits,
-  sanitizeCloudProjectSnapshot,
   sanitizeImportedExtensions,
   sanitizeImportedProjectSnapshot,
   sanitizeProjectName,
@@ -90,6 +106,12 @@ import {
   sanitizeProTree,
   setProFileContent,
 } from './proTree'
+import {
+  addPythonProjectNode,
+  removePythonProjectNode,
+  renamePythonProjectNode,
+} from './pythonProjectEdits'
+import { pythonProjectLayoutError } from './pythonProjectLayout'
 import { StudioStoresContext } from './storesContext'
 
 /**
@@ -143,6 +165,12 @@ interface ProjectStore {
   hydrateProjectState: (patch: ProjectStatePatch) => void
   unloadProject: () => void
   createProject: (name: string, initialExtensionIds?: readonly string[]) => Promise<Project>
+  createPythonProject: (
+    name: string,
+    kind: 'classic' | 'pro',
+    context: StudioProjectFactoryContext,
+    options: { isCurrent: () => boolean },
+  ) => Promise<Project>
   /** Cria e persiste um projeto PROFISSIONAL a partir de um template. */
   createProProject: (
     name: string,
@@ -157,6 +185,7 @@ interface ProjectStore {
     options?: {
       storageScope?: ProjectStorageScope
       silent?: boolean
+      isCurrent?: () => boolean
       /** A miniatura gravada junto com o projeto novo (na mesma transação dos `put`). */
       thumb?: string | null
     },
@@ -178,6 +207,7 @@ interface ProjectStore {
   ) => Promise<{ project: Project; warnings: string[] }>
   setProject: (p: Project) => void
   setProPublication: (playId: string) => string | null
+  setPublication: (playId: string) => string | null
   setProAssistance: (assistance: ProAssistanceMeta) => string | null
   setMode: (mode: IDEMode) => void
   /** Gradua um projeto básico para profissional (Vite). One-way. */
@@ -185,10 +215,23 @@ interface ProjectStore {
   reconcileProAssets: (projectId: string, expected: ProjectAsset[], next: ProjectAsset[]) => void
   setFiles: (files: Partial<ProjectFiles>) => void
   setFile: (name: FileName, value: string) => void
+  /** Python source stays authoritative in Classic and Pro, including syntax errors. */
+  setPythonFile: (path: string, content: string) => string | null
+  /** A completed visual transaction can commit only against its captured document. */
+  applyPythonSourceFiles: (
+    expected: PythonProjectDocument,
+    files: Record<string, string>,
+    blocksState: unknown,
+  ) => string | null
   setIR: (ir: SZIRInput | null) => void
   setBlocksState: (state: unknown | null) => void
   applyProjectState: (patch: ProjectStatePatch) => void
   installExtension: (id: string, version: string) => void
+  applyPythonExtensions: (
+    expected: PythonProjectDocument,
+    extensions: InstalledExtension[],
+    beforeCommit?: () => void,
+  ) => Promise<string | null>
   removeExtension: (id: string) => void
   rename: (name: string) => void
   markSaved: () => void
@@ -237,6 +280,10 @@ interface ProjectStore {
     tree: ProjectTree,
     beforePublish?: (project: Project) => void,
     materials?: { assets: ProjectAsset[]; coverAssetName: string | null },
+    pythonConfiguration?: Pick<
+      PythonProProjectDocument,
+      'runtime' | 'python' | 'installedExtensions'
+    >,
   ) => string | null
   /** Renomeia/move nó da árvore pro. Devolve mensagem de erro ou null se ok. */
   renameProNode: (from: string, to: string) => string | null
@@ -270,6 +317,8 @@ export interface NewAssetInput {
   libRevision?: number
   /** Origem da criação quando `libId` é `personal:<id>` (ver `ProjectAsset.libOrigin`). */
   libOrigin?: 'pinta' | 'molda'
+  /** Attribution travels with the bytes through native/web export and publication. */
+  license?: ProjectAsset['license']
   /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
   sprite?: unknown
   tileset?: unknown
@@ -318,8 +367,9 @@ export async function loadSanitizedProjectById(
 ): Promise<Project | null> {
   const raw = await loadProjectById(id, storageScope, { recoverDraft })
   if (!raw) return null
-  const sanitized = sanitizeStoredProject(await prepareProjectDocument(raw), id)
-  return sanitized ? copyLocalRevision(raw, sanitized) : null
+  const sanitized = await prepareEditableStudioProject(raw)
+  if (sanitized && sanitized.id !== id) throw new Error('O projeto salvo tem outra identidade.')
+  return sanitized
 }
 
 export async function loadSanitizedProjectShellById(
@@ -329,6 +379,12 @@ export async function loadSanitizedProjectShellById(
   const shell = await loadProjectShellById(id, storageScope)
   if (!shell) return null
   // A migração precisa do documento inteiro antes de separar suas partições.
+  if (projectFormatVersion(shell) === SUPPORTED_PROJECT_FORMAT_VERSION) {
+    // Python source is authoritative; its derived visual partition stays opaque.
+    const prepared = await prepareEditableStudioProject(shell)
+    if (prepared && prepared.id !== id) throw new Error('O projeto salvo tem outra identidade.')
+    return prepared
+  }
   if (projectFormatVersion(shell) !== CURRENT_PROJECT_FORMAT_VERSION)
     return loadSanitizedProjectById(id, storageScope)
   const sanitized = sanitizeStoredProject(shell, id)
@@ -399,6 +455,13 @@ export function createProjectStore(
 ): StoreApi<ProjectStore> {
   const limits: ResolvedLimits = { ...PROJECT_FILE_LIMITS, ...options.limits }
   const proBuildLimits = options.proBuildLimits
+  const pythonEditLimits = {
+    maxFileChars: Math.min(limits.maxFileChars, proBuildLimits?.maxFileChars ?? Infinity),
+    maxTotalChars: Math.min(limits.maxTotalChars, proBuildLimits?.maxTotalChars ?? Infinity),
+    maxExtraFiles: limits.maxExtraFiles,
+    maxFiles: proBuildLimits?.maxFiles,
+    maxRequestBytes: proBuildLimits?.maxRequestBytes,
+  }
   const proTreeLimitError = (tree: ProjectTree): string | null => {
     if (!proBuildLimits) return null
     const files = Object.fromEntries(
@@ -443,6 +506,13 @@ export function createProjectStore(
             : advanceLocalRevision(get().project, patch.project)
       }
       rawSet(patch)
+    }
+    const commitPython = (project: PythonProjectDocument): string | null => {
+      if (get().editingAccess !== 'author') return 'Este projeto está em observação.'
+      const error = pythonProjectLayoutError(project, pythonEditLimits)
+      if (error) return error
+      set({ project: bump(project), isDirty: true, saveError: null })
+      return null
     }
     return {
       editingAccess: 'author',
@@ -514,6 +584,23 @@ export function createProjectStore(
       hydrateProjectState: (patch) => {
         const p = get().project
         if (!p) return
+        if (isPythonProject(p)) {
+          if (
+            p.kind === 'classic' &&
+            !patch.files &&
+            !('ir' in patch) &&
+            !patch.installedExtensions &&
+            'blocksState' in patch
+          )
+            set({
+              project: {
+                ...p,
+                blocksState: copyStudioProjectJson(patch.blocksState ?? null) ?? null,
+              },
+              saveError: null,
+            })
+          return
+        }
         const nextFiles = patch.files ? { ...p.files, ...patch.files } : p.files
         const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [], limits)
         if (limitError) {
@@ -557,6 +644,25 @@ export function createProjectStore(
         assertProjectCreationScope(scope)
         return p
       },
+      createPythonProject: async (name, kind, context, options) => {
+        const scope = captureProjectStorageScope()
+        const assertCurrent = () => {
+          assertProjectCreationScope(scope)
+          if (!options.isCurrent())
+            throw new Error('A criação foi cancelada ou este ambiente não está mais disponível.')
+        }
+        assertCurrent()
+        const { createEditableStudioProject } = await import('../core/projectFactory')
+        assertCurrent()
+        const project = await createEditableStudioProject(
+          { id: ulid(), name: sanitizeProjectName(name), programmingLanguage: 'python', kind },
+          context,
+        )
+        assertCurrent()
+        await persistProject(project, {}, scope)
+        assertCurrent()
+        return project
+      },
       createProProject: async (name, templateId, options) => {
         const scope = captureProjectStorageScope()
         const assertCurrent = () => {
@@ -573,17 +679,19 @@ export function createProjectStore(
         return p
       },
       duplicateProject: async (id) => {
-        const source = await loadSanitizedProjectById(id)
+        const scope = captureProjectStorageScope()
+        const source = await loadSanitizedProjectById(id, scope)
         if (!source) return null
         const now = Date.now()
         const copy: Project = {
-          ...source,
+          ...withoutProjectPublication(source),
           id: ulid(),
-          name: `${source.name} (cópia)`,
+          name: `${source.name.slice(0, 192)} (cópia)`,
           createdAt: now,
           updatedAt: now,
         }
-        await persistProject(copy)
+        await persistProject(copy, {}, scope)
+        assertProjectCreationScope(scope)
         return copy
       },
       deleteProject: async (id) => {
@@ -610,14 +718,28 @@ export function createProjectStore(
         }
       },
       importProjectFromJSON: async (raw, options = {}) => {
-        const { project, warnings } = sanitizeImportedProjectSnapshot(
-          await prepareProjectDocument(raw),
-        )
-        await persistProject(
-          project,
-          { silent: options.silent, thumb: options.thumb },
-          options.storageScope,
-        )
+        const scope = options.storageScope ?? captureProjectStorageScope()
+        const assertCurrent = () => {
+          if (options.isCurrent && !options.isCurrent())
+            throw new Error('A importação foi cancelada.')
+        }
+        assertCurrent()
+        const result =
+          projectFormatVersion(raw) === SUPPORTED_PROJECT_FORMAT_VERSION
+            ? { project: await prepareEditableStudioProject(raw), warnings: [] as string[] }
+            : sanitizeImportedProjectSnapshot(await prepareProjectDocument(raw))
+        if (!result.project) throw new Error('Documento de projeto inválido.')
+        assertCurrent()
+        const { warnings } = result
+        const now = Date.now()
+        const project = {
+          ...withoutProjectPublication(result.project),
+          id: ulid(),
+          createdAt: now,
+          updatedAt: now,
+        }
+        await persistProject(project, { silent: options.silent, thumb: options.thumb }, scope)
+        assertCurrent()
         return { project, warnings }
       },
       restoreProjectSnapshot: async (raw, options = {}) => {
@@ -627,7 +749,8 @@ export function createProjectStore(
         // espelho e re-subir o que acabou de descer. Id conferido e saneamento ESTRITO
         // (nada é gravado com id inventado nem com blocos/programa descartados) ANTES de
         // tocar no disco — `sanitizeCloudProjectSnapshot`.
-        const { project, warnings } = await sanitizeCloudProjectSnapshot(raw, {
+        const scope = options.storageScope ?? captureProjectStorageScope()
+        const { project, warnings } = await prepareEditableCloudProject(raw, {
           expectedId: options.expectedId,
         })
         // Projeto ABERTO em algum editor desta página (qualquer store, não só esta): a
@@ -637,21 +760,18 @@ export function createProjectStore(
         if (get().project?.id === project.id || isProjectOpenAnywhere(project.id)) {
           throw new Error('Snapshot recusado: o projeto está aberto no editor.')
         }
-        await bindProjectToDurableHead(
-          project,
-          options.storageScope ?? captureProjectStorageScope(),
-        )
+        await bindProjectToDurableHead(project, scope)
         // Antes de persistir, converge desenhos por revisão. Se só um lado é mais novo,
         // ele vence; legado divergente preserva ambos e religa o projeto à cópia remota.
         const drawings = await reconcileDrawingsFromRestoredProject(project, {
-          namespace: options.storageScope?.namespace,
+          namespace: scope.namespace,
         })
         // `replace`: o snapshot é a verdade completa — blocos/capa antigos não sobrevivem
         // (a partição de blocos só cai quando a ORIGEM não tem blocos: o estrito garante).
         await persistProject(
           project,
           { silent: !drawings.projectChanged, replace: true, thumb: options.thumb },
-          options.storageScope,
+          scope,
         )
         return { project, warnings }
       },
@@ -663,7 +783,9 @@ export function createProjectStore(
         try {
           const parsed = parseProAssistance(assistance)
           set({
-            project: bump({ ...project, proMeta: { ...project.proMeta, assistance: parsed } }),
+            project: isPythonProject(project)
+              ? bump({ ...project, proMeta: { ...project.proMeta, assistance: parsed } })
+              : bump({ ...project, proMeta: { ...project.proMeta, assistance: parsed } }),
             isDirty: true,
             saveError: null,
           })
@@ -672,14 +794,26 @@ export function createProjectStore(
           return error instanceof Error ? error.message : 'Decisões inválidas.'
         }
       },
-      setProPublication: (playId) => {
+      setProPublication: (playId) => get().setPublication(playId),
+      setPublication: (playId) => {
         const project = get().project
         if (get().editingAccess !== 'author')
           return 'Este projeto está aberto somente para leitura.'
-        if (project?.kind !== 'pro' || !project.proMeta) return 'Abra um projeto profissional.'
         if (!isStudioPublicationId(playId)) return 'Publicação inválida.'
+        if (project && isPythonProject(project) && project.kind === 'classic') {
+          set({
+            project: bump({ ...project, publication: { playId } }),
+            isDirty: true,
+            saveError: null,
+          })
+          return null
+        }
+        if (project?.kind !== 'pro' || !project.proMeta)
+          return 'Abra um projeto com histórico de publicação.'
         set({
-          project: bump({ ...project, proMeta: { ...project.proMeta, publication: { playId } } }),
+          project: isPythonProject(project)
+            ? bump({ ...project, proMeta: { ...project.proMeta, publication: { playId } } })
+            : bump({ ...project, proMeta: { ...project.proMeta, publication: { playId } } }),
           isDirty: true,
           saveError: null,
         })
@@ -702,6 +836,11 @@ export function createProjectStore(
         const allowed = modesForKind(p.kind)
         const next: IDEMode = allowed.includes(mode) ? mode : (allowed[0] ?? 'blocks')
         if (p.mode === next) return
+        if (isPythonProject(p)) {
+          if (p.kind === 'classic' && (next === 'blocks' || next === 'bridge'))
+            set({ project: bump({ ...p, mode: next }), isDirty: true, saveError: null })
+          return
+        }
         set({ project: bump({ ...p, mode: next }), isDirty: true, saveError: null })
       },
       reconcileProAssets: (projectId, expected, next) => {
@@ -712,13 +851,44 @@ export function createProjectStore(
           (project.assets !== expected && !(project.assets === undefined && expected.length === 0))
         )
           throw new Error('Os materiais mudaram durante a sincronização. Tente salvar novamente.')
-        const sanitized = sanitizeProjectAssets(next)
+        const sanitized = sanitizeProjectAssets(
+          next,
+          isPythonProject(project)
+            ? {
+                materialPath: isStudioPythonAssetPath,
+                dataLimits: STUDIO_PYTHON_MATERIAL_DATA_LIMITS,
+              }
+            : undefined,
+        )
         assertProjectContentPreserved({ assets: next }, { ...project, assets: sanitized })
+        if (isPythonProject(project)) {
+          const error = commitPython({ ...project, assets: sanitized })
+          if (error) throw new Error(error)
+          return
+        }
         set({ project: bump({ ...project, assets: next }), isDirty: true, saveError: null })
       },
       convertToPro: async (preserveOriginal) => {
         const initial = get().project
         if (!initial || initial.kind === 'pro') return
+        if (get().editingAccess !== 'author') throw new Error('Este projeto está em observação.')
+        if (isPythonProject(initial)) {
+          const { preparePythonPromotion } = await import('./pythonPromotion')
+          const source = get().project
+          if (source !== initial || !isPythonProject(source))
+            throw new Error('O projeto mudou durante a conversão. Tente novamente.')
+          const { original, converted } = await preparePythonPromotion(source, {
+            originalId: ulid(),
+            now: Date.now(),
+          })
+          if (get().project !== source || get().editingAccess !== 'author')
+            throw new Error('O projeto mudou durante a conversão. Tente novamente.')
+          await preserveOriginal(original)
+          if (get().project !== source || get().editingAccess !== 'author')
+            throw new Error('O projeto mudou enquanto a cópia original era salva. Tente novamente.')
+          set({ project: bump(converted), isDirty: true, saveError: null })
+          return
+        }
         // Import dinâmico PRIMEIRO: o build de conversão (com sucrase via
         // export/fileMap) só entra no bundle quando o aluno gradua o projeto, não no
         // boot do editor. Fazê-lo antes de ler o snapshot evita converter um estado
@@ -730,7 +900,7 @@ export function createProjectStore(
         // edições feitas durante o await — a tree ficava com o conteúdo antigo e o
         // novo se perdia ao zerar os arquivos.
         const source = get().project
-        if (!source || source.kind === 'pro') return
+        if (!source || source.kind === 'pro' || isPythonProject(source)) return
         const tree = await convertClassicToProTree(source)
         // Re-confirma após o await da conversão: o projeto pode ter sido
         // trocado/apagado/graduado nesse meio-tempo. Só commita se ainda for o
@@ -740,7 +910,7 @@ export function createProjectStore(
           throw new Error(
             'O projeto mudou durante a conversão. O original foi mantido; tente novamente.',
           )
-        const original: Project = {
+        const original: JavaScriptProject = {
           ...source,
           id: ulid(),
           name: `${source.name.slice(0, 191)} (Blocos)`,
@@ -753,7 +923,7 @@ export function createProjectStore(
         // `fresh` aqui voltaria a divergir tree×conteúdo (a tree teria o conteúdo de
         // `source` enquanto o resto viria de `fresh`). `name`/`updatedAt` de `source`
         // são preservados; o `bump` atualiza `updatedAt` no commit.
-        const converted: Project = {
+        const converted: JavaScriptProject = {
           ...source,
           kind: 'pro',
           mode: 'code',
@@ -779,7 +949,7 @@ export function createProjectStore(
       },
       setFiles: (files) => {
         const p = get().project
-        if (!p) return
+        if (!p || isPythonProject(p)) return
         const nextFiles = { ...p.files, ...files }
         const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [], limits)
         if (limitError) {
@@ -801,7 +971,7 @@ export function createProjectStore(
       },
       setFile: (name, value) => {
         const p = get().project
-        if (!p) return
+        if (!p || isPythonProject(p)) return
         if (p.files[name] === value) return
         const nextFiles = { ...p.files, [name]: value }
         const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [], limits)
@@ -820,14 +990,44 @@ export function createProjectStore(
           ...(p.mode === 'bridge' ? { bridgeCodeEditEpoch: s.bridgeCodeEditEpoch + 1 } : {}),
         }))
       },
+      setPythonFile: (path, content) => {
+        const project = get().project
+        if (!project || !isPythonProject(project)) return 'Abra um projeto Python.'
+        if (project.kind === 'pro') {
+          const tree = setProFileContent(project.tree, path, content)
+          return tree === project.tree ? null : commitPython({ ...project, tree })
+        }
+        if (!Object.hasOwn(project.files, path)) return 'Arquivo Python não encontrado.'
+        if (project.files[path] === content) return null
+        const files = { ...project.files, [path]: content }
+        return commitPython({
+          ...project,
+          files,
+          ir: null,
+          blocksState: preservePythonWorkspaceDraft(project, files),
+          bridgeCodeAhead: true,
+        })
+      },
+      applyPythonSourceFiles: (expected, files, blocksState) => {
+        const project = get().project
+        if (project !== expected || !isPythonProject(project) || project.kind !== 'classic')
+          return 'O projeto mudou durante a edição dos blocos. Tente novamente.'
+        const { bridgeCodeAhead: _ahead, ...current } = project
+        return commitPython({
+          ...current,
+          files: { ...files },
+          ir: null,
+          blocksState: copyStudioProjectJson(blocksState ?? null) ?? null,
+        })
+      },
       setIR: (ir) => {
         const p = get().project
-        if (!p) return
+        if (!p || isPythonProject(p)) return
         set({ project: bump({ ...p, ir }), isDirty: true, saveError: null })
       },
       setBlocksState: (state) => {
         const p = get().project
-        if (!p) return
+        if (!p || isPythonProject(p)) return
         set({
           project: bump({
             ...p,
@@ -840,7 +1040,7 @@ export function createProjectStore(
       },
       applyProjectState: (patch) => {
         const p = get().project
-        if (!p) return
+        if (!p || isPythonProject(p)) return
         const nextFiles = patch.files ? { ...p.files, ...patch.files } : p.files
         const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [], limits)
         if (limitError) {
@@ -860,9 +1060,28 @@ export function createProjectStore(
           saveError: null,
         })
       },
+      applyPythonExtensions: async (expected, extensions, beforeCommit) => {
+        if (get().project !== expected) return 'O projeto mudou. Tente novamente.'
+        if (get().editingAccess !== 'author') return 'Este projeto está em observação.'
+        const { refinePythonProjectDocument } = await import('./pythonProjectValidation')
+        const project = await refinePythonProjectDocument({
+          ...expected,
+          installedExtensions: extensions,
+          ...(expected.kind === 'classic'
+            ? {
+                ir: null,
+                blocksState: preservePythonWorkspaceDraft(expected, expected.files),
+                bridgeCodeAhead: true,
+              }
+            : {}),
+        })
+        if (get().project !== expected) return 'O projeto mudou. Tente novamente.'
+        beforeCommit?.()
+        return commitPython(project)
+      },
       installExtension: (id, version) => {
         const p = get().project
-        if (!p) return
+        if (!p || isPythonProject(p)) return
         if (p.installedExtensions.some((e) => e.id === id)) return
         const entry: InstalledExtension = { id, version, installedAt: Date.now() }
         const ir = p.ir
@@ -881,7 +1100,7 @@ export function createProjectStore(
       },
       removeExtension: (id) => {
         const p = get().project
-        if (!p) return
+        if (!p || isPythonProject(p)) return
         set({
           project: bump({
             ...p,
@@ -908,6 +1127,10 @@ export function createProjectStore(
       markSaveFailed: (message) => set({ isDirty: true, saveError: message }),
       addExtraFile: (name) => {
         const p = get().project
+        if (p && isPythonProject(p)) {
+          const result = addPythonProjectNode(p, name, 'file')
+          return result.project ? commitPython(result.project) : result.error
+        }
         if (!p) return 'Nenhum projeto carregado.'
         const normalized = normalizeExtraFileName(name)
         if (!normalized) return 'Use um nome seguro com .html, .css, .js, .mjs, .ts ou .tsx.'
@@ -937,6 +1160,11 @@ export function createProjectStore(
       },
       setExtraFile: (name, content) => {
         const p = get().project
+        if (p && isPythonProject(p)) {
+          const error = get().setPythonFile(name, content)
+          if (error) set({ saveError: error })
+          return
+        }
         if (!p?.extraFiles) return
         const current = p.extraFiles.find((f) => f.name === name)
         if (!current || current.content === content) return
@@ -950,6 +1178,10 @@ export function createProjectStore(
       },
       renameExtraFile: (oldName, newName) => {
         const p = get().project
+        if (p && isPythonProject(p)) {
+          const result = renamePythonProjectNode(p, oldName, newName)
+          return result.project ? commitPython(result.project) : result.error
+        }
         if (!p?.extraFiles) return 'Sem arquivos extras.'
         const normalized = normalizeExtraFileName(newName)
         if (!normalized) return 'Use um nome seguro com .html, .css, .js, .mjs, .ts ou .tsx.'
@@ -970,6 +1202,10 @@ export function createProjectStore(
       },
       removeExtraFile: (name) => {
         const p = get().project
+        if (p && isPythonProject(p)) {
+          const result = removePythonProjectNode(p, name)
+          return result.project ? commitPython(result.project) : result.error
+        }
         if (!p?.extraFiles) return
         set({
           project: bump({ ...p, extraFiles: p.extraFiles.filter((f) => f.name !== name) }),
@@ -980,12 +1216,19 @@ export function createProjectStore(
       addAsset: (input) => {
         const p = get().project
         if (!p) return 'Nenhum projeto carregado.'
+        const license = sanitizeProjectAssetLicense(input.license)
+        if (input.license !== undefined && !license) return 'A licença deste material é inválida.'
+        const dataLimits = isPythonProject(p)
+          ? STUDIO_PYTHON_MATERIAL_DATA_LIMITS
+          : PROJECT_ASSET_LIMITS
         const kind: ProjectAsset['kind'] =
           input.kind === 'audio' || input.kind === 'model3d' || input.kind === 'environment3d'
             ? input.kind
             : 'image'
         const isImage = kind === 'image'
         const is3D = kind === 'model3d' || kind === 'environment3d'
+        if (isPythonProject(p) && is3D)
+          return 'Este ambiente Python aceita imagens e sons. Os recursos 3D ainda não estão disponíveis.'
         const noun =
           kind === 'audio'
             ? 'som'
@@ -1001,7 +1244,7 @@ export function createProjectStore(
         // binária) — sem ele, ou com bytes que não batem, recusa na porta.
         const fileName3D =
           is3D && typeof input.originalFileName === 'string' ? input.originalFileName : undefined
-        if (!isValidAssetDataUrl(input.dataUrl, kind, fileName3D)) {
+        if (!isValidAssetDataUrl(input.dataUrl, kind, fileName3D, dataLimits)) {
           return `${noun} inválido ou grande demais.`
         }
         const assets = p.assets ?? []
@@ -1011,7 +1254,7 @@ export function createProjectStore(
         if (assets.some((a) => a.name === name)) return `Já existe um asset com o nome "${name}".`
         const totalChars =
           assets.reduce((sum, a) => sum + a.dataUrl.length, 0) + input.dataUrl.length
-        if (totalChars > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
+        if (totalChars > dataLimits.maxAssetsTotalChars) {
           return 'Os assets do projeto excedem o tamanho total permitido.'
         }
         // Metadados do Pinta (e dimensões) só valem p/ IMAGEM; som e 3D nunca os têm.
@@ -1024,6 +1267,7 @@ export function createProjectStore(
           kind,
           dataUrl: input.dataUrl,
           source: input.source === 'library' ? 'library' : 'upload',
+          ...(license ? { license } : {}),
           ...(isImage && typeof input.width === 'number' && input.width > 0
             ? { width: input.width }
             : {}),
@@ -1047,6 +1291,17 @@ export function createProjectStore(
           ...(sprite ? { sprite } : {}),
           ...(tileset ? { tileset } : {}),
           ...(tilemap ? { tilemap } : {}),
+        }
+        if (isPythonProject(p)) {
+          const mime = input.dataUrl.slice(5).split(/[;,]/, 1)[0]!.toLowerCase()
+          const extension =
+            mime === 'audio/flac' || mime === 'audio/x-flac'
+              ? 'flac'
+              : projectAssetFileExtension(mime, kind)
+          asset.proPath = `assets/${name}.${extension}`
+          if (!isStudioPythonAssetPath(asset.proPath))
+            return 'Este formato de imagem ou som ainda não é compatível com o projeto Python.'
+          return commitPython({ ...p, assets: [...assets, asset] })
         }
         set({ project: bump({ ...p, assets: [...assets, asset] }), isDirty: true, saveError: null })
         return null
@@ -1092,6 +1347,9 @@ export function createProjectStore(
       updateAssetImage: (id, image) => {
         const p = get().project
         if (!p?.assets) return 'Sem imagens no projeto.'
+        const dataLimits = isPythonProject(p)
+          ? STUDIO_PYTHON_MATERIAL_DATA_LIMITS
+          : PROJECT_ASSET_LIMITS
         const target = p.assets.find((a) => a.id === id)
         if (!target) return 'Imagem não encontrada.'
         if (target.kind === 'audio') return 'Esse arquivo não é uma imagem.'
@@ -1121,7 +1379,7 @@ export function createProjectStore(
           if (!isValidAssetDataUrl(image.dataUrl, target.kind, originalFileName)) {
             return 'Esse arquivo 3D não é válido ou é grande demais.'
           }
-        } else if (!isValidAssetDataUrl(image.dataUrl, 'image')) {
+        } else if (!isValidAssetDataUrl(image.dataUrl, 'image', undefined, dataLimits)) {
           return 'Imagem inválida ou grande demais.'
         }
         // Orçamento do projeto contando o asset NOVO no lugar do velho (o
@@ -1131,7 +1389,7 @@ export function createProjectStore(
           (sum, a) => (a.id === id ? sum : sum + a.dataUrl.length),
           0,
         )
-        if (othersChars + image.dataUrl.length > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
+        if (othersChars + image.dataUrl.length > dataLimits.maxAssetsTotalChars) {
           return `${is3D ? 'A criação' : 'O desenho'} "${target.name}" cresceu e não cabe mais neste jogo.`
         }
 
@@ -1235,6 +1493,12 @@ export function createProjectStore(
       },
       addProFile: (path) => {
         const p = get().project
+        if (p && isPythonProject(p)) {
+          const result = addPythonProjectNode(p, path, 'file')
+          const error = result.project ? commitPython(result.project) : result.error
+          if (error) set({ saveError: error })
+          return error ?? null
+        }
         if (!p?.tree) return 'Nenhum projeto profissional carregado.'
         const result = addProFile(p.tree, path)
         if (!result.tree) return result.error ?? 'Falha ao criar arquivo.'
@@ -1245,6 +1509,12 @@ export function createProjectStore(
       },
       addProDir: (path) => {
         const p = get().project
+        if (p && isPythonProject(p)) {
+          const result = addPythonProjectNode(p, path, 'dir')
+          const error = result.project ? commitPython(result.project) : result.error
+          if (error) set({ saveError: error })
+          return error ?? null
+        }
         if (!p?.tree) return 'Nenhum projeto profissional carregado.'
         const result = addProDir(p.tree, path)
         if (!result.tree) return result.error ?? 'Falha ao criar pasta.'
@@ -1253,6 +1523,11 @@ export function createProjectStore(
       },
       setProFileContent: (path, content) => {
         const p = get().project
+        if (p && isPythonProject(p)) {
+          const error = get().setPythonFile(path, content)
+          if (error) set({ saveError: error })
+          return
+        }
         if (!p?.tree) return
         const next = setProFileContent(p.tree, path, content)
         if (next === p.tree) return
@@ -1263,11 +1538,47 @@ export function createProjectStore(
         }
         set({ project: bump({ ...p, tree: next }), isDirty: true, saveError: null })
       },
-      reconcileProFiles: (projectId, expected, tree, beforePublish, materials) => {
+      reconcileProFiles: (
+        projectId,
+        expected,
+        tree,
+        beforePublish,
+        materials,
+        pythonConfiguration,
+      ) => {
         const p = get().project
         if (get().editingAccess === 'observer') return 'Este projeto está em observação.'
         if (p?.id !== projectId || p.kind !== 'pro' || p.tree !== expected)
           return 'O projeto mudou durante a sincronização.'
+        if (isPythonProject(p)) {
+          const assets = materials
+            ? sanitizeProjectAssets(materials.assets, {
+                materialPath: isStudioPythonAssetPath,
+                dataLimits: STUDIO_PYTHON_MATERIAL_DATA_LIMITS,
+              })
+            : p.assets
+          if (materials)
+            assertProjectContentPreserved({ assets: materials.assets }, { ...p, assets })
+          const document = { ...p, ...pythonConfiguration, tree, assets }
+          if (materials) {
+            if (materials.coverAssetName) {
+              if (
+                !assets?.some(
+                  (asset) => asset.kind === 'image' && asset.name === materials.coverAssetName,
+                )
+              )
+                return 'A imagem de capa não está nos materiais.'
+              document.coverAssetName = materials.coverAssetName
+            } else delete document.coverAssetName
+          }
+          const error = pythonProjectLayoutError(document, pythonEditLimits)
+          if (error) return error
+          const next = advanceLocalRevision(p, bump(document))
+          beforePublish?.(next)
+          rawSet({ project: next, isDirty: true, saveError: null })
+          return null
+        }
+        if (pythonConfiguration) return 'A configuração Python não pertence a este projeto.'
         const sanitized = sanitizeProTree(tree)
         if (!sanitized)
           return 'A árvore do terminal não é válida ou ultrapassou os limites do projeto.'
@@ -1315,6 +1626,12 @@ export function createProjectStore(
       },
       renameProNode: (from, to) => {
         const p = get().project
+        if (p && isPythonProject(p)) {
+          const result = renamePythonProjectNode(p, from, to)
+          const error = result.project ? commitPython(result.project) : result.error
+          if (error) set({ saveError: error })
+          return error ?? null
+        }
         if (!p?.tree) return 'Nenhum projeto profissional carregado.'
         const result = renameProNode(p.tree, from, to)
         if (!result.tree) return result.error ?? 'Falha ao renomear.'
@@ -1323,6 +1640,12 @@ export function createProjectStore(
       },
       removeProNode: (path) => {
         const p = get().project
+        if (p && isPythonProject(p)) {
+          const result = removePythonProjectNode(p, path)
+          const error = result.project ? commitPython(result.project) : result.error
+          if (error) set({ saveError: error })
+          return error ?? null
+        }
         if (!p?.tree) return
         const next = removeProNode(p.tree, path)
         if (next === p.tree) return
@@ -1410,8 +1733,20 @@ export function createLocalPersistenceAdapter(
     load: (id) => loadSanitizedProjectShellById(id, scope),
     // Restore em segundo plano da partição pesada de blocos (chamado por
     // hydrateAfterLoad). Os dados históricos já foram convertidos na abertura.
-    loadBlocksState: (project) =>
-      loadSanitizedProjectBlocksStateById(project.id, project.installedExtensions, scope),
+    loadBlocksState: async (project) => {
+      if (isPythonProject(project)) {
+        const raw = await loadProjectBlocksById(project.id, scope)
+        if (
+          !raw ||
+          typeof raw !== 'object' ||
+          !('blocksState' in raw) ||
+          ('id' in raw && raw.id !== project.id)
+        )
+          return null
+        return copyStudioProjectJson(raw.blocksState ?? null)
+      }
+      return loadSanitizedProjectBlocksStateById(project.id, project.installedExtensions, scope)
+    },
     save: (project) => persistProject(project, {}, scope),
     flushOnExit: (project, options) =>
       persistProject(project, { exit: true, incompleteBlocks: options?.incompleteBlocks }, scope),

@@ -1,0 +1,125 @@
+import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
+import { studioPortableFileConflict } from '@sistemazero/core/studio/project-environment'
+import type { PythonAssetBundle } from '../core/pythonAssets'
+import type { PythonProjectDocument } from '../core/pythonProject'
+import type { ExportFileMap } from './fileMap'
+
+/** This describes a preserved snapshot, not a native execution or dependency certificate. */
+export async function buildPythonSourceMetadata(input: {
+  project: PythonProjectDocument
+  sourceFiles: Record<string, string>
+  directories: string[]
+  assets: PythonAssetBundle['manifest']
+  occupiedFiles: string[]
+}): Promise<{ files: ExportFileMap; warnings: string[] }> {
+  const { project, sourceFiles, assets } = input
+  const directories = [...input.directories].sort()
+  const occupied = [...input.occupiedFiles]
+  const files: ExportFileMap = {}
+  const warnings: string[] = []
+  const available = (path: string) => !studioPortableFileConflict([...occupied, path], directories)
+  const allocate = (candidate: (index: number) => string) => {
+    for (let index = 1; ; index++) {
+      const path = candidate(index)
+      if (!available(path)) continue
+      occupied.push(path)
+      return path
+    }
+  }
+  const instructionsPath = allocate(
+    (index) => `LEIA-ME-Sistema-Zero${index === 1 ? '' : `-${index}`}.txt`,
+  )
+  const manifestPath = allocate(
+    (index) => `.sistemazero${index === 1 ? '' : `-${index}`}/export-manifest.json`,
+  )
+  const version = project.python.dependencyLock.pythonVersion
+  const [major, minor] = version.split('.').map(Number)
+  const requirementsPath = Object.keys(sourceFiles).find(
+    (path) => path.toLowerCase() === 'requirements.txt',
+  )
+  const requirements = requirementsPath ? sourceFiles[requirementsPath]! : ''
+  const requirementsMatch =
+    (await sha256Hex(requirements)) === project.python.dependencyLock.requirementsSha256
+  const hasNativeDependencyReview =
+    requirements.trim() !== '' ||
+    !requirementsMatch ||
+    project.python.dependencyLock.packages.length !== 0
+  if (!available('pyproject.toml')) {
+    warnings.push(
+      'A configuração pyproject.toml do projeto foi preservada e não foi validada para o computador. Nenhum arquivo ou pasta existente foi sobrescrito.',
+    )
+  }
+  if (hasNativeDependencyReview) {
+    warnings.push(
+      'Confira as dependências nativas antes de executar no computador. Os requisitos autorais foram preservados; o lock do navegador não resolve pacotes nativos e nenhuma configuração de instalação foi inventada.',
+    )
+  } else if (available('pyproject.toml')) {
+    files['pyproject.toml'] = `[project]
+name = "sistema-zero-project"
+version = "0.0.0"
+requires-python = ">=${version},<${major}.${minor! + 1}"
+dependencies = []
+`
+    occupied.push('pyproject.toml')
+  }
+  const sourceEntries = []
+  for (const path of Object.keys(sourceFiles).sort()) {
+    const content = sourceFiles[path]!
+    sourceEntries.push({
+      path,
+      bytes: new TextEncoder().encode(content).byteLength,
+      sha256: await sha256Hex(content),
+    })
+  }
+  const source = { files: sourceEntries, directories }
+  const sourceSha256 = await sha256Hex(canonicalJson(source))
+  const manifest = {
+    formatVersion: 1,
+    language: 'python',
+    kind: project.kind,
+    entrypoint: project.python.entrypoint,
+    pythonReferenceVersion: version,
+    runtime: project.runtime,
+    installedExtensions: project.installedExtensions,
+    browserDependencyLock: project.python.dependencyLock,
+    source,
+    sourceSha256,
+    assets,
+    desktopExecution: 'not-observed',
+    portabilityAnalysis: 'not-performed',
+    knownLimits: [
+      'O runtime e o lock identificam o navegador; não são uma instalação ou resolução de pacotes nativos.',
+      'A exportação preserva a fonte, mas não analisa todos os imports, caminhos, código dinâmico ou configurações autorais.',
+      'Turtle nativo usa a biblioteca padrão e exige suporte gráfico Tk instalado no computador.',
+    ],
+    generatedFiles: [instructionsPath, manifestPath, ...Object.keys(files)].sort(),
+    warnings,
+  }
+  files[manifestPath] = `${JSON.stringify(manifest, null, 2)}\n`
+  files[instructionsPath] = `Seu projeto Python do Sistema Zero
+
+1. Instale o Python ${version} e o VS Code no computador.
+2. Abra esta pasta no VS Code. No terminal, mantenha esta pasta como diretório atual.
+3. Crie um ambiente: python -m venv .venv
+4. No Windows, use .venv\\Scripts\\python.exe nos comandos seguintes.
+   No macOS ou Linux, use .venv/bin/python.
+5. Se o projeto usa pacotes externos, confira as dependências nativas e os requisitos preservados antes de instalar:
+   python -m pip install -r ${requirementsPath ?? 'requirements.txt'}
+6. Execute: python ${project.python.entrypoint}
+
+Nos passos 5 e 6, substitua python pelo caminho do ambiente do passo 4.
+
+Turtle faz parte da biblioteca padrão do Python. Não instale um pacote chamado turtle pelo pip.
+Para projetos Turtle, teste o suporte gráfico com: python -m tkinter
+Esse comando precisa abrir uma janela. Algumas instalações de Python no Linux exigem instalar o suporte a Tk separadamente.
+
+Seus arquivos e materiais foram preservados. O programa usa Python nativo no computador.
+O adaptador gráfico do navegador e os arquivos internos do Estúdio não fazem parte deste pacote.
+Versões de pacotes feitas para o navegador não são instaladas no computador: o pip seleciona as distribuições nativas compatíveis.
+Se um pacote não oferecer suporte ao seu computador, consulte sua documentação antes de mudar o projeto.
+
+Esta exportação não executou seu projeto no computador nem certifica sua portabilidade.
+O manifesto ${manifestPath} identifica fontes, materiais, licenças, versões e limites deste pacote.
+${warnings.length ? `\nAvisos para revisar:\n${warnings.map((warning) => `- ${warning}`).join('\n')}\n` : ''}`
+  return { files, warnings }
+}

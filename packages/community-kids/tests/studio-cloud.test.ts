@@ -5,6 +5,9 @@
  * só depois de a descida validar, e sobe o que só existe aqui.
  */
 import { describe, expect, spyOn, test } from 'bun:test'
+import { studioContentFingerprint } from '@sistemazero/core/creations'
+import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-document'
+import { documentFixture } from '../../studio/src/state/fixtures/projectDocuments'
 import {
   type CloudCreationSummary,
   CloudListTimeoutError,
@@ -21,6 +24,7 @@ import {
   buildStudioCloudSnapshot,
   createStudioCloudSync,
   isStudioPartsManifest,
+  resolveStudioCloudDocument,
   type StudioCloudModule,
   type StudioProjectLike,
 } from '../src/lib/studio-cloud'
@@ -211,6 +215,31 @@ async function remotePartsOf(project: StudioProjectLike) {
 }
 
 const asset = (id: string, dataUrl: string) => ({ id, name: id, kind: 'image', dataUrl })
+
+describe('version 3 document transport uses the existing cloud parts format', () => {
+  for (const language of ['javascript', 'python'] as const)
+    for (const kind of ['classic', 'pro'] as const)
+      test(`${language}/${kind}: source, environment and assets survive upload/download and JSON export`, async () => {
+        const project = documentFixture(language, kind)
+        const fingerprint = await studioContentFingerprint(project)
+        const remote = await remotePartsOf(project)
+        const { cloud, fetchedParts } = fakeCloud(new Map([[project.id, remote]]))
+        const download = await cloud.download(project.id)
+        if (!download) throw new Error('Fixture missing')
+        const raw = await resolveStudioCloudDocument(download, [])
+        expect(StudioProjectDocumentSchema.parse(raw)).toEqual(project)
+        expect(await studioContentFingerprint(raw)).toBe(fingerprint)
+        expect(fetchedParts).toEqual([...remote.parts.keys()])
+        expect(StudioProjectDocumentSchema.parse(JSON.parse(JSON.stringify(raw)))).toEqual(project)
+        fetchedParts.length = 0
+        expect(await resolveStudioCloudDocument(download, project.assets ?? [])).toEqual(project)
+        expect(fetchedParts).toEqual([])
+        if (language === 'python' && kind === 'pro') {
+          expect(raw).not.toHaveProperty('files')
+          expect(raw).not.toHaveProperty('extraFiles')
+        }
+      })
+})
 
 test('upload antigo do Pensa não substitui a versão restaurada; a descida preserva o rascunho como cópia', async () => {
   const id = `pensa-${'a'.repeat(32)}`

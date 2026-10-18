@@ -90,8 +90,9 @@ O members chama o `studio-runtime` (Cloudflare, contêiner sem internet com Chro
 
 `content.solutionProject` no bloco Estúdio (nunca sai para a criança). "Testar agora" roda os
 objetivos contra o projeto inicial (deve falhar; passando, a autoria avisa) e contra o gabarito
-(deve passar; não passando, a publicação recusa). Com objetivos de execução, o gabarito é
-obrigatório para publicar.
+(deve passar). A publicação recusa falhas estruturais do gabarito e exige sua presença quando há
+objetivos de execução. Ela não roda o executor nem exige comprovante de "Testar agora": conferir
+o resultado de execução antes de publicar ainda é responsabilidade da autoria.
 
 ## XP
 

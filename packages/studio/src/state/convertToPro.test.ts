@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { createEmptyProject, type Project } from '#core'
+import { javaScriptProject } from '../core/editableProject'
 import { buildProFileMap } from '../export/fileMap'
 import { convertClassicToProTree } from './convertToPro'
 import { sanitizeProjectForHost, useProjectStore } from './projectStore'
@@ -165,9 +166,9 @@ describe('store: setMode + convertToPro', () => {
     let original: Project | undefined
     await useProjectStore.getState().convertToPro(async (copy) => {
       expect(useProjectStore.getState().project).toBe(source)
-      original = copy
+      original = javaScriptProject(copy) ?? undefined
     })
-    const pro = useProjectStore.getState().project!
+    const pro = javaScriptProject(useProjectStore.getState().project)!
     expect(original?.id).not.toBe(source.id)
     expect(original?.assets).toEqual(source.assets)
     expect(original?.files).toEqual(source.files)
@@ -198,7 +199,7 @@ describe('store: setMode + convertToPro', () => {
       }),
     ).rejects.toThrow('mudou')
     expect(useProjectStore.getState().project?.kind).not.toBe('pro')
-    expect(useProjectStore.getState().project?.files['script.js']).toContain('newer')
+    expect(useProjectStore.getState().project?.files?.['script.js']).toContain('newer')
   })
 
   it("pro não volta para 'blocks' (setMode preso em Código)", async () => {
@@ -225,6 +226,6 @@ describe('store: setMode + convertToPro', () => {
     expect((p?.tree?.['public/script.js'] as { content: string }).content).toBe(
       'console.log("edição no meio")',
     )
-    expect(p?.files['script.js']).toBe('')
+    expect(p?.files?.['script.js']).toBe('')
   })
 })

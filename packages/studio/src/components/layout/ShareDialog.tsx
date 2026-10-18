@@ -2,10 +2,13 @@ import { aiQuotaScopeOf, isAiQuotaError } from '@sistemazero/core/ai-credits'
 import type { ChangeEvent, JSX } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button, IconCheckCircle, IconLink, Modal } from '#ui'
+import { isPythonProject } from '../../core/editableProject'
+import { projectPublicationId } from '../../core/projectPublication'
 import { captureCoverFromProject } from '../../cover/coverCapture'
 import { flushProjectOperations } from '../../state/projectOperations'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useStudioPersistence, useStudioRuntimeCapture } from '../../state/studioStores'
 import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
 import type { StudioShareAdapter, StudioShareResult } from '../../studio/share'
@@ -44,6 +47,8 @@ type Cover = { kind: 'image'; dataUrl: string } | { kind: 'preset' } | { kind: '
 export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.Element | null {
   const t = useT()
   const execution = useStudioExecution()
+  const runtimeCapture = useStudioRuntimeCapture()
+  const persistence = useStudioPersistence()
   const store = useProjectStoreApi()
   const lifecycle = useRef({
     generation: 0,
@@ -51,7 +56,12 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     open: false,
     projectId: undefined as string | undefined,
   })
-  const pendingPublish = useRef<{ identity: string; requestId: string } | null>(null)
+  const pendingPublish = useRef<{
+    identity: string
+    requestId: string
+    result?: StudioShareResult
+    lifetime: typeof lifecycle.current
+  } | null>(null)
   const publishingRef = useRef(false)
   // Projeto da store POR INSTÂNCIA (hook com seletor) — não a estática.
   const project = useProjectStore((s) => s.project)
@@ -100,7 +110,9 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     setAiUses(0)
     setAiExhausted(null)
     setCover(
-      store.getState().project?.kind === 'pro' && adapter?.proVerifiedCover
+      store.getState().project?.kind === 'pro' &&
+        store.getState().project?.programmingLanguage !== 'python' &&
+        adapter?.proVerifiedCover
         ? { kind: 'verified' }
         : null,
     )
@@ -111,6 +123,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     setErrorMsg('')
     setCopied(false)
     setJoinChallenge(false)
+    pendingPublish.current = null
     describeStartedRef.current = false
     publishingRef.current = false
     return () => {
@@ -189,7 +202,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
   // curso (admin); se não houver, pede o upload da criança.
   const generateCover = async () => {
     if (capturing) return
-    if (project.kind === 'pro') {
+    if (project.kind === 'pro' && !isPythonProject(project)) {
       if (adapter.proVerifiedCover) {
         setCover({ kind: 'verified' })
         setCoverNote('A capa será criada a partir do jogo verificado ao publicar.')
@@ -203,6 +216,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
       const url = await captureCoverFromProject(project, {
         originAdapter: execution.originAdapter,
         requireIsolatedPreview: execution.requireIsolatedPreview,
+        runtimeCapture,
       })
       if (!current()) return
       if (url) {
@@ -265,13 +279,25 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         ...(adapter.challenge && joinChallenge ? { challengeKey: adapter.challenge.key } : {}),
       }
       const identity = JSON.stringify(input)
-      if (pendingPublish.current?.identity !== identity)
-        pendingPublish.current = { identity, requestId: crypto.randomUUID() }
-      const res = await adapter.publish({ ...input, requestId: pendingPublish.current.requestId })
+      if (pendingPublish.current?.lifetime !== lifecycle.current) pendingPublish.current = null
+      if (!pendingPublish.current?.result && pendingPublish.current?.identity !== identity)
+        pendingPublish.current = {
+          identity,
+          requestId: crypto.randomUUID(),
+          lifetime: lifecycle.current,
+        }
+      const operation = pendingPublish.current!
+      const res =
+        operation.result ?? (await adapter.publish({ ...input, requestId: operation.requestId }))
       if (!current()) return
-      if (res.publicationId && latest.kind === 'pro') {
-        const problem = store.getState().setProPublication(res.publicationId)
+      // Once the server commits, retry only the local link save. A disk failure
+      // must not turn the same published revision into a second publication.
+      operation.result = res
+      if (res.publicationId && (latest.kind === 'pro' || isPythonProject(latest))) {
+        const problem = store.getState().setPublication(res.publicationId)
         if (problem) throw new Error(problem)
+        await persistence.save()
+        if (!current()) return
       }
       pendingPublish.current = null
       if (adapter.onPublished) {
@@ -309,6 +335,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         : null
   const titleReady = titleEditable ? title.trim().length > 0 : true
   const ready = titleReady && description.trim().length > 0 && cover !== null
+  const publicationId = projectPublicationId(project)
 
   // Rodapé: sucesso → Fechar; senão → Cancelar + Publicar (gated).
   const footer = result ? (
@@ -346,10 +373,10 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
       title={t('share.title')}
       footer={footer}
     >
-      {project.kind === 'pro' && project.proMeta?.publication && adapter.publication && (
+      {publicationId && adapter.publication && (
         <ProPublicationHistory
           adapter={adapter.publication}
-          playId={project.proMeta.publication.playId}
+          playId={publicationId}
           projectId={project.id}
         />
       )}
@@ -571,7 +598,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
             role="alert"
             className="rounded-md border border-sz-warn/40 bg-sz-warn/10 px-3 py-2 text-sz-warn text-xs"
           >
-            {project.kind === 'pro' && adapter.publication
+            {(project.kind === 'pro' || isPythonProject(project)) && adapter.publication
               ? 'O texto e a capa do post ficam como você publicou. Para atualizar o jogo desse link depois, use o histórico de versões.'
               : t('share.step.confirm.irreversible')}
           </p>

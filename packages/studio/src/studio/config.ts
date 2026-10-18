@@ -10,6 +10,7 @@ import {
 import type { AIProvider } from '../ai/contracts'
 import { sanitizeFetchOrigins } from '../preview/csp'
 import { DEFAULT_HEARTBEAT_TIMEOUT_MS, DEFAULT_LOOP_BUDGET_MS } from '../preview/limits'
+import { type PythonLearningLevel, resolvePythonLearningLevel } from '../python/learning'
 import type { StudioLimits } from '../state/projectStore'
 
 /** @deprecated Compatibility only; configure StudioTutorConfig for the Studio assistant UI. */
@@ -85,6 +86,8 @@ const DEFAULT_PREVIEW_SECURITY: PreviewSecurityPolicy = resolvePreviewSecurity()
 
 /** Perfil de aprendizado fixado pelo host (divulgação progressiva). */
 export interface LearningConfig {
+  /** Python progression; omitted by older hosts means first steps. */
+  pythonLevel?: PythonLearningLevel
   /** Nível fixado pelo professor. */
   level: BlockLevel
   /** Tipos de bloco sempre visíveis (allowlist da aula). */
@@ -98,6 +101,7 @@ export interface LearningConfig {
 }
 
 export interface LearningConfigInput {
+  pythonLevel?: PythonLearningLevel
   /** Aceita a escala LEGADA de 3 níveis (jsonb de aulas antigas, embutidores antigos). */
   level?: AnyBlockLevel
   allowBlocks?: readonly string[]
@@ -114,6 +118,7 @@ export interface LearningConfigInput {
  */
 export function resolveLearning(input?: LearningConfigInput): LearningConfig {
   return {
+    pythonLevel: resolvePythonLearningLevel(input?.pythonLevel),
     level: normalizeBlockLevel(input?.level) ?? DEFAULT_LEARNING_LEVEL,
     allowBlocks: input?.allowBlocks,
     allowExtensions: input?.allowExtensions,

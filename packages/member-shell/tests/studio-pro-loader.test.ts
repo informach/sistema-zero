@@ -33,7 +33,7 @@ describe('loadStudioProModule', () => {
           }
         },
       },
-      viewerId: 'kid-one',
+      namespace: 'kid-one',
       projectId: 'pro-one',
       active: () => true,
       prepare: async () => {
@@ -56,7 +56,7 @@ describe('loadStudioProModule', () => {
           save: async () => {},
         }),
       },
-      viewerId: 'kid-one',
+      namespace: 'kid-one',
       projectId: 'pro-one',
       active: () => active,
       prepare: async () => {
@@ -73,7 +73,7 @@ describe('loadStudioProModule', () => {
           setStudioStorageNamespace: () => {},
           createLocalPersistenceAdapter: () => ({ load: async () => null, save: async () => {} }),
         },
-        viewerId: 'kid-one',
+        namespace: 'kid-one',
         projectId: 'pro-one',
         active: () => true,
         prepare: async () => {

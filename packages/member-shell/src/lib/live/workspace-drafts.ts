@@ -1,4 +1,4 @@
-import type { Project } from '@sistemazero/studio'
+import type { EditableStudioProject as Project } from '@sistemazero/studio'
 
 export interface LiveDraft {
   id: string

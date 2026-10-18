@@ -66,6 +66,7 @@ function renderEditor(libraries: {
     <StudioFullEditor
       mod={mod}
       projectId="p1"
+      viewerId="viewer-test"
       onExit={() => {}}
       share={{} as StudioShareAdapter}
       tutor={undefined}
@@ -217,6 +218,7 @@ function StudioPresenceHarness() {
         <StudioFullEditor
           mod={mod}
           projectId="p1"
+          viewerId="viewer-test"
           onExit={() => setEditorOpen(false)}
           share={{} as StudioShareAdapter}
           tutor={undefined}

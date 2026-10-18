@@ -1,6 +1,6 @@
 import { type JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { PROJECT_ASSET_LIMITS, type Project, type ProjectAsset } from '#core'
+import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { Button, ConfirmDialog, Modal } from '#ui'
 import type { LibraryAsset } from '../../asset-library/catalog'
 import {
@@ -16,6 +16,7 @@ import {
   syncDrawingsIntoProjects,
   takeDrawingSyncFailures,
 } from '../../asset-library/personalSync'
+import type { EditableStudioProject as Project } from '../../core/editableProject'
 import { captureAndStoreProjectThumb } from '../../cover/thumbCapture'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { retryProApplication } from '../../state/proRevision'
@@ -24,6 +25,7 @@ import {
   type ProWorkspaceOperation,
   prepareProWorkspaceOperation,
 } from '../../state/proWorkspaceOperations'
+import { useStudioRuntimeCapture } from '../../state/studioStores'
 import type { AssetsTab } from '../../state/uiStore'
 import { useStudioEditCreation } from '../../studio/edit-creation'
 import { useStudioEditDrawing } from '../../studio/edit-drawing'
@@ -104,8 +106,9 @@ export function AssetsPanel({
   allowUpload = true,
   tab = 'images',
   onTabChange = () => {},
-  captureThumb = captureAndStoreProjectThumb,
+  captureThumb,
 }: AssetsPanelProps): JSX.Element {
+  const runtimeCapture = useStudioRuntimeCapture()
   const t = useT()
   const isPro = useProjectStore((s) => s.project?.kind === 'pro')
   const { hasProject, assets, has3DExtension, has3DMaterials, coverAssetName } = useProjectStore(
@@ -628,7 +631,9 @@ export function AssetsPanel({
     setError(null)
     const project = storeApi.getState().project
     if (!project) return
-    void captureThumb(project).then((stored) => {
+    void (
+      captureThumb ? captureThumb(project) : captureAndStoreProjectThumb(project, runtimeCapture)
+    ).then((stored) => {
       if (stored || !asset) return
       // Só desfaz a escolha que ainda é a vigente (a criança pode ter escolhido outra no meio).
       const current = storeApi.getState().project

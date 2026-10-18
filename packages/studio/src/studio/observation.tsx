@@ -7,6 +7,8 @@ export interface StudioExecutionPolicy {
   originAdapter?: StudioPlayerOriginAdapter
   requireIsolatedPreview: boolean
   muted: boolean
+  /** Host-confirmed live-room writer generation. Never supplied by learner source. */
+  writerEpoch?: number | null
 }
 
 const executionContext = createContext<StudioExecutionPolicy>({

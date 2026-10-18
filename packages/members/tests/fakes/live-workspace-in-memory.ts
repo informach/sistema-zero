@@ -1,16 +1,93 @@
+import {
+  studioProjectContinuityIssue,
+  studioProjectContinuityReference,
+} from '@sistemazero/core/studio/project-continuity'
+import { LiveConflictError } from '../../src/domain/live/live.errors'
 import type {
   LiveWorkspaceRecord,
   LiveWorkspaceRepository,
   LiveWorkspaceRevision,
   LiveWorkspaceTransaction,
 } from '../../src/domain/ports/live-workspace-repository.port'
+import type {
+  StudioLessonBinding,
+  StudioLessonOwner,
+} from '../../src/domain/ports/studio-lesson-binding-repository.port'
+import type { StudioLessonBaseline } from '../../src/domain/studio/lesson-baseline'
 import type { InMemoryLiveRepository } from './live-in-memory'
 
 /** Live projects in memory, with the cohort read through the live repository fake. */
 export class InMemoryLiveWorkspaceRepository implements LiveWorkspaceRepository {
   readonly records = new Map<string, LiveWorkspaceRecord>()
   readonly revisions = new Map<string, LiveWorkspaceRevision>()
+  readonly bindings = new Map<string, StudioLessonBinding & { accountId: string }>()
   constructor(private readonly live: InMemoryLiveRepository) {}
+  async readRuntimeContext(id: string, sessionId: string | null, blockId: string | null) {
+    const record = this.records.get(id)
+    if (!record) return null
+    const { project, ...workspace } = structuredClone(record)
+    const anchor = await this.live.sessionRef(workspace.sessionId)
+    const selected = sessionId ? await this.live.sessionRef(sessionId) : anchor
+    const cohort =
+      anchor && selected?.cohortId === anchor.cohortId
+        ? await this.live.findCohort(anchor.cohortId)
+        : null
+    const found = blockId
+      ? await this.findBinding(
+          { userId: workspace.learnerId, accountId: workspace.accountId },
+          blockId,
+        )
+      : null
+    const baseline = found?.workspaceId === id ? found.baseline : null
+    const { initialProject, chain: _chain, ...curation } = baseline?.configuration ?? {}
+    return {
+      workspace,
+      environment: studioProjectContinuityReference(project),
+      cohort,
+      binding: baseline
+        ? {
+            baselineId: baseline.id,
+            lessonId: baseline.lessonId,
+            courseId: baseline.courseId,
+            environment: studioProjectContinuityReference(initialProject),
+            curation,
+          }
+        : null,
+    }
+  }
+  async findBinding(owner: StudioLessonOwner, blockId: string) {
+    const found = this.bindings.get(`${owner.userId}:${blockId}`)
+    return found?.accountId === owner.accountId ? structuredClone(found) : null
+  }
+  async openBound(
+    candidate: LiveWorkspaceRecord & { projectKey: string },
+    baseline: StudioLessonBaseline,
+    sessionId: string,
+  ) {
+    const owner = { userId: candidate.learnerId, accountId: candidate.accountId }
+    const bound = await this.findBinding(owner, baseline.blockId)
+    const existing = bound?.workspaceId
+      ? await this.find(bound.workspaceId)
+      : await this.findByKey(candidate.learnerId, candidate.projectKey)
+    const original = bound?.baseline ?? baseline
+    if (
+      studioProjectContinuityIssue(
+        (existing ?? candidate).project,
+        original.configuration.initialProject,
+      )
+    )
+      throw new LiveConflictError('ambientes diferentes')
+    const workspace = existing ?? (await this.ensureByKey(candidate))
+    this.bindings.set(`${owner.userId}:${baseline.blockId}`, {
+      baseline: structuredClone(original),
+      workspaceId: workspace.id,
+      accountId: owner.accountId,
+    })
+    return {
+      workspace: await this.linkLesson(workspace.id, { lessonId: original.lessonId, sessionId }),
+      baseline: original,
+    }
+  }
   async find(id: string) {
     return structuredClone(this.records.get(id) ?? null)
   }

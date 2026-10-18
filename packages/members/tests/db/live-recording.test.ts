@@ -27,7 +27,9 @@ const token = 'private-recorder-test-token-at-least-32-characters'
 describe.skipIf(!databaseUrl)('Coordenação do gravador no PostgreSQL', () => {
   let connection: DbConnection
   /** The live course is read through the port; its SQL adapter has its own test. */
-  const liveCourses = new InMemoryLiveCourses((course) => persistLiveCourse(connection, course))
+  const liveCourses = new InMemoryLiveCourses((course, blocks) =>
+    persistLiveCourse(connection, course, blocks),
+  )
   beforeAll(() => {
     connection = createDbConnection(databaseUrl!)
   })

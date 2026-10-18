@@ -12,6 +12,7 @@ import type {
   Module,
 } from '../course/course'
 import type { LessonBlockContent, LessonBlockKind } from '../course/lesson-block'
+import type { StudioChainCandidate } from '../studio/chain-environment'
 
 // ── Inputs de autoria ───────────────────────────────────────────────────────
 
@@ -225,6 +226,20 @@ export interface ContentAdminRepository {
     chain: string,
     operation: (repository: ContentAdminRepository) => Promise<T>,
   ): Promise<T>
+
+  /** Same course row lock/order used by draft publication; callback stays in its transaction. */
+  withStudioAuthoringLock<T>(
+    courseId: string,
+    operation: (repository: ContentAdminRepository) => Promise<T>,
+  ): Promise<T>
+  /** Under the course lock, BEFORE replacing content. Retired chains keep their contract. */
+  claimStudioChains(
+    courseId: string,
+    candidates: StudioChainCandidate[],
+    retiring?: StudioChainCandidate[],
+  ): Promise<void>
+  /** Current block's chain, to preserve its contract when clearing/renaming/removing it. */
+  findStudioBlockChain(blockId: string): Promise<StudioChainCandidate[]>
 
   // ── Anexos ──
   createAttachment(lessonId: string, fields: AttachmentFields): Promise<LessonAttachment>

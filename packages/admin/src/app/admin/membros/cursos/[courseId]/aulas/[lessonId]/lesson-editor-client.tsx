@@ -25,6 +25,11 @@ import {
   type ZappySpeechOverride,
 } from '@sistemazero/core/learning/scene'
 import {
+  PYTHON_LEARNING_LEVELS,
+  type PythonLearningLevel,
+  resolvePythonLearningLevel,
+} from '@sistemazero/core/studio/python-learning'
+import {
   createLessonAsset,
   PINTA_LESSON_ASSET_OPTIONS,
   PINTA_TOOL_PRESETS,
@@ -37,11 +42,10 @@ import type { PintaHandle } from '@sistemazero/pinta/lesson'
 import {
   BLOCK_LEVEL_OPTIONS,
   type BlockLevel,
-  CORE_CATEGORY_OPTIONS,
   createEmptyProject,
+  type EditableStudioProject,
   type IDEMode,
   normalizeBlockLevel,
-  type Project,
   type StudioHandle,
 } from '@sistemazero/studio'
 import { Badge } from '@sistemazero/ui/badge'
@@ -89,6 +93,9 @@ import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
 import { StudioConfigClipboard } from '@/components/studio/studio-config-clipboard'
 import { StudioEmbed } from '@/components/studio/studio-embed'
+import { useStudioAuthoringOptions } from '@/components/studio/use-studio-authoring-options'
+import { useStudioAuthoringPalette } from '@/components/studio/use-studio-authoring-palette'
+import type { StudioAuthoringRuntimeScope } from '@/components/studio/use-studio-authoring-runtime'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { studentLessonLink } from '@/lib/course-modality'
 import {
@@ -96,6 +103,7 @@ import {
   newAuthoringSection,
   type SectionStarterOptions,
 } from '@/lib/lesson-authoring'
+import { studioAuthoringChoiceKey } from '@/lib/studio-authoring-options'
 import {
   type AttachmentView,
   type BlockView,
@@ -178,6 +186,7 @@ export interface BlockForm {
   title: string
   /** Estúdio: nível fixado (paleta por dificuldade). */
   studioLevel: BlockLevel
+  studioPythonLevel: PythonLearningLevel
   /** Estúdio: categorias de blocos sempre visíveis. */
   studioCategories: string[]
   /** Estúdio: modos liberados ao aluno (vazio = todos os do tipo de projeto). */
@@ -191,10 +200,10 @@ export interface BlockForm {
   studioAllowBlocks: string[]
   /**
    * Estúdio: o GABARITO da professora (a versão pronta do projeto). Nunca chega à criança: serve
-   * para o "Testar agora" dos objetivos da parte e para a publicação conferir que cada objetivo
-   * obrigatório pode ser cumprido. É a SEMENTE do editor do gabarito; o valor vivo sai do handle.
+   * para o "Testar agora" dos objetivos da parte. A publicação confere os objetivos
+   * de estrutura; os de execução precisam ser conferidos pela equipe. É a SEMENTE do editor do gabarito; o valor vivo sai do handle.
    */
-  studioSolution: Project | null
+  studioSolution: EditableStudioProject | null
   /** Estúdio: nome do projeto contínuo (cadeia). Vazio = aula independente. */
   studioChain: string
   /** Estúdio: vitrine (Mural) — auto-publicar o projeto ao concluir esta aula. */
@@ -254,6 +263,7 @@ export const EMPTY_BLOCK: BlockForm = {
   ebookAttachmentId: '',
   title: '',
   studioLevel: 'iniciante-2d',
+  studioPythonLevel: 1,
   studioCategories: [],
   // Default NOVO (24/07): o aluno vê SÓ Blocos; Ponte é opt-in do autor; Código é
   // automático do Pro (não é mais checkbox — bloco legado com 'code' preserva).
@@ -315,10 +325,10 @@ const opt = (s: string): string | undefined => (s.trim() ? s.trim() : undefined)
 /** Monta o conteúdo do bloco a partir do form. `studioProject` = snapshot do editor embutido. */
 export function buildContent(
   f: BlockForm,
-  studioProject?: Project,
+  studioProject?: EditableStudioProject,
   previousContent?: LessonBlockContent,
   pintaAsset?: unknown,
-  solutionProject?: Project | null,
+  solutionProject?: EditableStudioProject | null,
 ): LessonBlockContent {
   const dur = num(f.durationSeconds)
   switch (f.kind) {
@@ -335,12 +345,14 @@ export function buildContent(
       // `studioProject` é garantido não-nulo no saveBlock (validação antes de chamar).
       // Projeto PRO: o modo Código é automático do kind — `allowedModes` é omitido
       // (redesenho 24/07; a curadoria de modos só vale no projeto de blocos).
-      const isPro = (studioProject as Project & { kind?: string }).kind === 'pro'
+      const isPro = studioProject?.kind === 'pro'
       return {
         kind: 'studio',
         purpose: f.toolPurpose,
-        initialProject: studioProject as Project,
-        level: f.studioLevel,
+        initialProject: studioProject as EditableStudioProject,
+        ...(studioProject?.programmingLanguage === 'python'
+          ? { pythonLevel: f.studioPythonLevel }
+          : { level: f.studioLevel }),
         ...(f.studioCategories.length > 0 ? { allowCategories: f.studioCategories } : {}),
         ...(f.studioAllowBlocks.length > 0 ? { allowBlocks: f.studioAllowBlocks } : {}),
         ...(!isPro && f.studioModes.length > 0 && f.studioModes.length < STUDIO_MODES.length
@@ -653,9 +665,38 @@ function LessonEditorSession({
 
   const [blockOpen, setBlockOpen] = useState(false)
   const [editingBlock, setEditingBlock] = useState<BlockView | null>(null)
+  const studioRuntimeScope: StudioAuthoringRuntimeScope | undefined =
+    draft && canWrite
+      ? {
+          userId: authorId,
+          context: {
+            kind: 'authoring',
+            lessonId,
+            draftRevision: draft.revision,
+            blockId: editingBlock?.id ?? null,
+            purpose: 'authoring',
+          },
+        }
+      : undefined
   const [blockForm, setBlockForm] = useState<BlockForm>(EMPTY_BLOCK)
-  const currentBlockEditor = useRef({ id: blockId, open: blockOpen })
-  currentBlockEditor.current = { id: blockId, open: blockOpen }
+  const [studioAuthoringProject, setStudioAuthoringProject] =
+    useState<EditableStudioProject | null>(null)
+  const isPythonAuthoring = studioAuthoringProject?.programmingLanguage === 'python'
+  const studioAuthoring = useStudioAuthoringOptions(
+    blockOpen && blockForm.kind === 'studio' && !blockForm.galleryEnabled,
+  )
+  const studioPalette = useStudioAuthoringPalette(
+    blockOpen && blockForm.kind === 'studio' && !blockForm.galleryEnabled,
+    studioAuthoringProject,
+    studioAuthoring.prepared,
+  )
+  const currentBlockEditor = useRef({ id: blockId, open: blockOpen, lessonId })
+  if (
+    currentBlockEditor.current.id !== blockId ||
+    currentBlockEditor.current.open !== blockOpen ||
+    currentBlockEditor.current.lessonId !== lessonId
+  )
+    currentBlockEditor.current = { id: blockId, open: blockOpen, lessonId }
   useEffect(() => {
     if (blockOpen) blockHeadingRef.current?.focus()
   }, [blockOpen])
@@ -821,6 +862,7 @@ function LessonEditorSession({
     setCatalogOpen(true)
   }
   function createBlock(kind: LessonBlockKind) {
+    setStudioAuthoringProject(null)
     setBlockId(crypto.randomUUID())
     setEditingBlock(null)
     setBlockForm({
@@ -848,6 +890,7 @@ function LessonEditorSession({
     )
     setEditingBlock(b)
     const c = b.content
+    setStudioAuthoringProject(c.kind === 'studio' ? c.initialProject : null)
     setBlockForm({
       ...EMPTY_BLOCK,
       kind: c.kind,
@@ -890,9 +933,9 @@ function LessonEditorSession({
       studioModes:
         c.kind === 'studio' ? (c.allowedModes ?? ['blocks', 'bridge', 'code']) : ['blocks'],
       studioAllowReveal: c.kind === 'studio' ? (c.allowLevelReveal ?? true) : true,
+      studioPythonLevel: c.kind === 'studio' ? resolvePythonLearningLevel(c.pythonLevel) : 1,
       studioAllowBlocks: c.kind === 'studio' ? (c.allowBlocks ?? []) : [],
-      studioSolution:
-        c.kind === 'studio' && c.solutionProject ? (c.solutionProject as Project) : null,
+      studioSolution: c.kind === 'studio' && c.solutionProject ? c.solutionProject : null,
       studioChain: c.kind === 'studio' ? (c.chain ?? '') : '',
       studioShowcaseEnabled: c.kind === 'studio' ? (c.showcase?.enabled ?? false) : false,
       studioShowcaseTitle: c.kind === 'studio' ? (c.showcase?.title ?? '') : '',
@@ -1043,16 +1086,55 @@ function LessonEditorSession({
       galleryStudioSeed,
     ],
   )
+  const currentCapture = useRef({
+    lessonId,
+    blockId,
+    open: blockOpen,
+    form: blockForm,
+    capture: captureBlock,
+    editorOwner: currentBlockEditor.current,
+    environment: studioAuthoringChoiceKey(studioAuthoringProject),
+  })
+  currentCapture.current = {
+    lessonId,
+    blockId,
+    open: blockOpen,
+    form: blockForm,
+    capture: captureBlock,
+    editorOwner: currentBlockEditor.current,
+    environment: studioAuthoringChoiceKey(studioAuthoringProject),
+  }
   useEffect(() => {
     void editorVersion
     captureBlock()
   }, [captureBlock, editorVersion])
 
   async function captureEditors() {
+    const owner = currentCapture.current
+    const assertCurrent = () => {
+      const current = currentCapture.current
+      if (
+        currentBlockEditor.current !== owner.editorOwner ||
+        current.editorOwner !== owner.editorOwner ||
+        current.lessonId !== owner.lessonId ||
+        current.blockId !== owner.blockId ||
+        current.open !== owner.open ||
+        current.form.kind !== owner.form.kind ||
+        current.form.galleryEnabled !== owner.form.galleryEnabled ||
+        current.environment !== owner.environment
+      )
+        throw new Error(
+          'A configuração do bloco mudou durante a gravação. Revise o bloco antes de continuar.',
+        )
+      return current
+    }
+    assertCurrent()
     if (blockOpen && blockForm.kind === 'studio' && !blockForm.galleryEnabled) {
       await studioHandleRef.current?.save()
+      assertCurrent()
       if (blockForm.studioSolution) await solutionHandleRef.current?.save()
     }
+    assertCurrent()
     if (
       blockOpen &&
       blockForm.kind === 'pinta' &&
@@ -1061,7 +1143,7 @@ function LessonEditorSession({
       !(await pintaHandleRef.current.save())
     )
       throw new Error('Não foi possível capturar os últimos traços do Pinta.')
-    captureBlock(true)
+    assertCurrent().capture(true)
   }
   async function changeGalleryMode(galleryEnabled: boolean) {
     if (galleryEnabled === blockForm.galleryEnabled) return
@@ -1111,6 +1193,7 @@ function LessonEditorSession({
   async function closeBlock() {
     try {
       await captureEditors()
+      currentBlockEditor.current = { id: blockId, open: false, lessonId }
       setBlockOpen(false)
       requestAnimationFrame(() => {
         blockReturnFocus.current?.focus({ preventScroll: true })
@@ -1126,7 +1209,7 @@ function LessonEditorSession({
    * cima (a mesma limpeza do aviso de conflito).
    */
   function fecharTrabalhoLocal() {
-    currentBlockEditor.current = { id: '', open: false }
+    currentBlockEditor.current = { id: '', open: false, lessonId }
     uploads.clear()
     setBlockOpen(false)
     setEditingBlock(null)
@@ -1678,10 +1761,9 @@ function LessonEditorSession({
             inteira, não de uma parte), menos dentro do editor de um bloco. */}
         {draft && live && !blockOpen ? <LiveBroadcastCard /> : null}
         {draft && (
-          <div
+          <fieldset
             hidden={blockOpen}
             className="flex flex-wrap gap-2 border-b border-border pb-3"
-            role="group"
             aria-label="Áreas de edição da aula"
           >
             {(
@@ -1703,7 +1785,7 @@ function LessonEditorSession({
                 {item.label}
               </Button>
             ))}
-          </div>
+          </fieldset>
         )}
         {draft && (
           <section
@@ -1796,6 +1878,7 @@ function LessonEditorSession({
               <div hidden={area === 'data' || blockOpen}>
                 <LessonStructureEditor
                   authorId={authorId}
+                  draftRevision={draft.revision}
                   live={live}
                   // A prévia e o ensaio montam a aula no layout do app de destino: os
                   // dois divergem desde 13/09/2026 (o kids não tem a barra do topo e
@@ -2613,13 +2696,32 @@ function LessonEditorSession({
                     >
                       <StudioEmbed
                         key={editingBlock?.id ?? 'new-studio'}
+                        runtimeScope={studioRuntimeScope}
                         initialProject={
                           editingBlock && editingBlock.content.kind === 'studio'
-                            ? (editingBlock.content.initialProject as Project)
+                            ? editingBlock.content.initialProject
                             : null
                         }
                         handleRef={studioHandleRef}
-                        onChange={() => setEditorVersion((v) => v + 1)}
+                        onChange={(project) => {
+                          setStudioAuthoringProject(project)
+                          setEditorVersion((v) => v + 1)
+                        }}
+                        authoringOptions={studioAuthoring.prepared}
+                        authoringError={studioAuthoring.error}
+                        onReloadAuthoringOptions={studioAuthoring.retry}
+                        onProjectReset={(project) => {
+                          setStudioAuthoringProject(project)
+                          setBlockForm((form) => ({
+                            ...form,
+                            studioAllowBlocks: [],
+                            studioCategories: [],
+                            studioModes: ['blocks'],
+                            studioLevel: EMPTY_BLOCK.studioLevel,
+                            studioPythonLevel: 1,
+                            studioAllowReveal: EMPTY_BLOCK.studioAllowReveal,
+                          }))
+                        }}
                         professionalAuthoring
                         hideKindChooser
                         requestedKind={studioKind}
@@ -2632,6 +2734,8 @@ function LessonEditorSession({
                     </Field>
                     <StudioSolutionField
                       solution={blockForm.studioSolution}
+                      runtimeScope={studioRuntimeScope}
+                      authoringOptions={studioAuthoring.prepared}
                       handleRef={solutionHandleRef}
                       onCreate={() => {
                         const base = studioHandleRef.current?.getProject()
@@ -2647,6 +2751,8 @@ function LessonEditorSession({
                         hint="Vazio = a paleta curada pelo nível (em Configurações avançadas). Preenchido = o aluno vê SÓ estes blocos (+ as Áreas do projeto). Bom para aulas bem guiadas."
                       >
                         <StudioBlocksPicker
+                          catalog={studioPalette.palette?.blocks ?? null}
+                          error={studioPalette.error}
                           value={blockForm.studioAllowBlocks}
                           onChange={(studioAllowBlocks) =>
                             setBlockForm((f) => ({ ...f, studioAllowBlocks }))
@@ -2706,7 +2812,11 @@ function LessonEditorSession({
                             <>
                               <StudioConfigClipboard
                                 current={{
+                                  environmentKey: studioAuthoringChoiceKey(studioAuthoringProject),
                                   level: blockForm.studioLevel,
+                                  ...(isPythonAuthoring
+                                    ? { pythonLevel: blockForm.studioPythonLevel }
+                                    : {}),
                                   modes: blockForm.studioModes,
                                   categories: blockForm.studioCategories,
                                   allowReveal: blockForm.studioAllowReveal,
@@ -2716,6 +2826,7 @@ function LessonEditorSession({
                                   setBlockForm((f) => ({
                                     ...f,
                                     studioLevel: snap.level,
+                                    studioPythonLevel: resolvePythonLearningLevel(snap.pythonLevel),
                                     studioModes: snap.modes,
                                     studioCategories: snap.categories,
                                     studioAllowReveal: snap.allowReveal,
@@ -2731,15 +2842,28 @@ function LessonEditorSession({
                                 >
                                   <Select
                                     id="slevel"
-                                    value={blockForm.studioLevel}
+                                    value={
+                                      isPythonAuthoring
+                                        ? blockForm.studioPythonLevel
+                                        : blockForm.studioLevel
+                                    }
                                     onChange={(e) =>
                                       setBlockForm((f) => ({
                                         ...f,
-                                        studioLevel: e.target.value as BlockLevel,
+                                        ...(isPythonAuthoring
+                                          ? {
+                                              studioPythonLevel: resolvePythonLearningLevel(
+                                                Number(e.target.value),
+                                              ),
+                                            }
+                                          : { studioLevel: e.target.value as BlockLevel }),
                                       }))
                                     }
                                   >
-                                    {STUDIO_LEVELS.map((l) => (
+                                    {(isPythonAuthoring
+                                      ? PYTHON_LEARNING_LEVELS
+                                      : STUDIO_LEVELS
+                                    ).map((l) => (
                                       <option key={l.value} value={l.value}>
                                         {l.label}
                                       </option>
@@ -2805,7 +2929,7 @@ function LessonEditorSession({
                                 hint="Categorias liberadas independente do nível (opcional)."
                               >
                                 <div className="flex flex-wrap gap-3 pt-1.5">
-                                  {CORE_CATEGORY_OPTIONS.map((cat) => (
+                                  {(studioPalette.palette?.categories ?? []).map((cat) => (
                                     <label
                                       key={cat.value}
                                       className="flex items-center gap-1.5 text-sm"

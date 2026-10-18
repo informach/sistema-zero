@@ -27,8 +27,8 @@ describe.skipIf(!db)('interrupted assistance recovery on PostgreSQL', () => {
     'active',
     'returning',
   ] as const)('teacher ends abandoned %s help, fences old writes and resumes recording', async (state) => {
-    const f = await liveFixture(new DrizzleLiveRepository(db!.db), {}, (course) =>
-      persistLiveCourse(db!, course),
+    const f = await liveFixture(new DrizzleLiveRepository(db!.db), {}, (course, blocks) =>
+      persistLiveCourse(db!, course, blocks),
     )
     await f.start()
     const commands: { desiredState: string }[] = []

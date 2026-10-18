@@ -38,9 +38,9 @@ describe.skipIf(!testDatabaseUrl)('marcos de curso por curso (SQL real)', () => 
   ) {
     await conn.sql`
       insert into members.xp_events
-        (id, user_id, audience, source_type, source_id, amount)
+        (id, user_id, audience, source_type, source_id, amount, created_at)
       values
-        (${randomUUID()}, ${profileId}, ${audience}, ${sourceType}, ${courseId}, 0)`
+        (${randomUUID()}, ${profileId}, ${audience}, ${sourceType}, ${courseId}, 0, now())`
   }
 
   async function marcos(profileId: string, audience: 'kids' | 'adult' = 'kids') {

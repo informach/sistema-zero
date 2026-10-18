@@ -1,6 +1,6 @@
-import type { StudioProPublication } from '@sistemazero/core/studio/pro-publication'
+import type { StudioPublication } from '@sistemazero/core/studio/python-publication'
 import { createContext, useContext } from 'react'
-import type { Project } from '#core'
+import type { EditableStudioProject as Project } from '../core/editableProject'
 
 /**
  * COMPARTILHAR — publicar o projeto no "Mural dos Criadores".
@@ -71,11 +71,11 @@ export interface StudioShareAdapter {
   /** The host captures the verified compiled game as cover when no image is supplied. */
   proVerifiedCover?: boolean
   publication?: {
-    get(playId: string, signal?: AbortSignal): Promise<StudioProPublication | null>
+    get(playId: string, signal?: AbortSignal): Promise<StudioPublication | null>
     update(
       input: { playId: string; requestId: string; expectedVersion: number; project: Project },
       signal?: AbortSignal,
-    ): Promise<StudioProPublication>
+    ): Promise<StudioPublication>
     activate(
       input: {
         playId: string
@@ -85,7 +85,7 @@ export interface StudioShareAdapter {
         disabled: boolean
       },
       signal?: AbortSignal,
-    ): Promise<StudioProPublication>
+    ): Promise<StudioPublication>
   }
   /**
    * DESAFIO do mês (game jam): presente → o ShareDialog mostra o checkbox

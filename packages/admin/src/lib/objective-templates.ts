@@ -1,4 +1,4 @@
-import type { SectionProjectCheck } from '@sistemazero/core/learning'
+import type { SectionJavaScriptProjectCheck } from '@sistemazero/core/learning'
 import { kitStateFields } from '@sistemazero/studio/server-project-checks'
 
 /**
@@ -19,7 +19,7 @@ export interface ObjectiveTemplate {
   /** O que a professora precisa ajustar depois de escolher. */
   adjust: string
   where: readonly TemplatePlace[]
-  check: Omit<SectionProjectCheck, 'id'>
+  check: Omit<SectionJavaScriptProjectCheck, 'id'>
 }
 
 const CLASSIC: readonly TemplatePlace[] = ['blocks', 'bridge']

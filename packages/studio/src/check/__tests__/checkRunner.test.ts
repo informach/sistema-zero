@@ -32,8 +32,16 @@ async function check(project: unknown, objectives: ExecutionObjectiveRequest[]) 
   const playwright = dirname(
     dirname(fileURLToPath(import.meta.resolve('playwright-core/package.json'))),
   )
-  symlinkSync(playwright, join(runtime, 'node_modules'))
+  symlinkSync(
+    playwright,
+    join(runtime, 'node_modules'),
+    process.platform === 'win32' ? 'junction' : 'dir',
+  )
   writeFileSync(join(runtime, 'check-objectives.mjs'), readFileSync(RUNNER))
+  writeFileSync(
+    join(runtime, 'execution-observation.generated.mjs'),
+    readFileSync(join(dirname(RUNNER), 'execution-observation.generated.mjs')),
+  )
   const scope = createCheckScope()
   writeFileSync(join(dir, 'game.html'), await prepareClassicCheckDocument(project, scope))
   writeFileSync(

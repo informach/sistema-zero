@@ -58,7 +58,9 @@ function recorder(handlers: {
 describe.skipIf(!databaseUrl)('Gravação com estados finais no PostgreSQL', () => {
   let connection: DbConnection
   /** The live course is read through the port; its SQL adapter has its own test. */
-  const liveCourses = new InMemoryLiveCourses((course) => persistLiveCourse(connection, course))
+  const liveCourses = new InMemoryLiveCourses((course, blocks) =>
+    persistLiveCourse(connection, course, blocks),
+  )
   beforeAll(() => {
     connection = createDbConnection(databaseUrl!)
   })

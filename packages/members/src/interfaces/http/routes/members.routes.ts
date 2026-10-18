@@ -1,4 +1,8 @@
 import { creativeToolAccessRef } from '@sistemazero/core/creations'
+import {
+  StudioFreeRuntimeRequestSchema,
+  StudioLessonRuntimeRequestSchema,
+} from '@sistemazero/core/studio/runtime-authorization'
 import { Elysia, t } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
 import { assertAdultCreativeAccess } from '../../../application/adult-journey/adult-creative-access'
@@ -47,6 +51,9 @@ import type { GetRoomService } from '../../../application/room/get-room.service'
 import type { SaveRoomService } from '../../../application/room/save-room.service'
 import type { SaveCourseRatingService } from '../../../application/save-course-rating/save-course-rating.service'
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
+import type { AuthorizeFreeRuntimeService } from '../../../application/studio/authorize-free-runtime.service'
+import type { AuthorizeLessonRuntimeService } from '../../../application/studio/authorize-lesson-runtime.service'
+import type { OpenLessonStudioService } from '../../../application/studio/open-lesson-studio.service'
 import type { StudioBuilderService } from '../../../application/studio-pro/studio-builder.service'
 import type { GetStudioUnlocksService } from '../../../application/studio-unlocks/get-studio-unlocks.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
@@ -64,6 +71,7 @@ import {
   resolveAccountId,
   resolveAdultLearnerId,
   resolveStudentName,
+  resolveStudioFreeActor,
   resolveUserId,
 } from '../auth'
 import {
@@ -98,6 +106,7 @@ import {
   SlugLessonParams,
   SlugParams,
   StudioCarryoverParams,
+  StudioLessonContextBody,
   StudioRemixBody,
   StudioSubmissionBody,
   StudioSubmissionParams,
@@ -138,6 +147,9 @@ export interface MembersRoutesDeps {
   submitQuiz: SubmitQuizAttemptService
   submitStudio: SubmitStudioProjectService
   getStudioCarryover: GetStudioCarryoverService
+  openLessonStudio?: OpenLessonStudioService
+  authorizeLessonRuntime?: AuthorizeLessonRuntimeService
+  authorizeFreeRuntime?: AuthorizeFreeRuntimeService
   getOwnStudioSubmission: GetOwnStudioSubmissionService
   teacherThreads: TeacherThreadsService
   getShowcasePayload: GetShowcasePayloadService
@@ -418,6 +430,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             projectId: body.projectId,
             clientMessageId: body.clientMessageId,
             question: body.question.trim(),
+            programmingLanguage: body.programmingLanguage,
           })
         },
         { body: ZappyInternalQuestionBody },
@@ -506,6 +519,31 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         async ({ headers, query }) =>
           deps.getStudioUnlocks.execute(resolveUserId(headers), query.audience ?? 'kids'),
         { query: AudienceQuery },
+      )
+      .get(
+        '/studio/free-options',
+        async ({ headers, query, set }) => {
+          set.headers['cache-control'] = 'private, no-store'
+          if (!deps.authorizeFreeRuntime)
+            throw new AccessDeniedError('O ambiente ainda não está disponível.')
+          return deps.authorizeFreeRuntime.options(
+            resolveStudioFreeActor(headers, query.audience ?? 'kids'),
+          )
+        },
+        { query: AudienceQuery },
+      )
+      .post(
+        '/studio/free-runtime',
+        async ({ headers, body, query, set }) => {
+          set.headers['cache-control'] = 'private, no-store'
+          if (!deps.authorizeFreeRuntime)
+            throw new AccessDeniedError('O ambiente ainda não está disponível.')
+          return deps.authorizeFreeRuntime.execute(
+            resolveStudioFreeActor(headers, query.audience ?? 'kids'),
+            body,
+          )
+        },
+        { body: StudioFreeRuntimeRequestSchema, query: AudienceQuery },
       )
       // Desafio do MÊS (game jam): tema determinístico global + `entered` do perfil.
       // A posse (Clube+Estúdio) gateia só a UI (via /members/access); o gate REAL do
@@ -997,7 +1035,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       // aluno+bloco; destrava a conclusão da aula (gate em mark-lesson-complete).
       .post(
         '/lessons/:lessonId/blocks/:blockId/studio-submission',
-        async ({ headers, params, body }) => {
+        async ({ headers, params, body, request }) => {
           const userId = resolveUserId(headers)
           return deps.submitStudio.execute(userId, params.lessonId, params.blockId, body.project, {
             message: body.message ?? null,
@@ -1007,6 +1045,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             authorName: resolveStudentName(headers) || null,
             kind: 'studio',
             fingerprint: body.fingerprint ?? null,
+            signal: request.signal,
           })
         },
         { body: StudioSubmissionBody, params: StudioSubmissionParams },
@@ -1081,6 +1120,51 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           )
         },
         { params: StudioCarryoverParams },
+      )
+      .post(
+        '/lessons/:lessonId/blocks/:blockId/studio-context',
+        async ({ headers, params, body, query }) => {
+          if (!deps.openLessonStudio) throw new Error('Contexto do Estúdio não configurado')
+          return deps.openLessonStudio.execute({
+            audience: query.audience ?? 'kids',
+            userId:
+              query.audience === 'adult' ? resolveAdultLearnerId(headers) : resolveUserId(headers),
+            accountId: resolveAccountId(headers),
+            privileged: isPrivilegedActor(headers),
+            lessonId: params.lessonId,
+            blockId: params.blockId,
+            readOnly: Boolean(headers['x-auth-impersonator-id']),
+            confirm: body?.confirm,
+          })
+        },
+        { params: StudioCarryoverParams, body: StudioLessonContextBody, query: AudienceQuery },
+      )
+      .post(
+        '/lessons/:lessonId/blocks/:blockId/studio-runtime',
+        ({ headers, params, body, query, set }) => {
+          set.headers['cache-control'] = 'private, no-store'
+          if (!deps.authorizeLessonRuntime)
+            throw new AccessDeniedError('O ambiente de execução ainda não está disponível.')
+          return deps.authorizeLessonRuntime.execute(
+            {
+              audience: query.audience ?? 'kids',
+              userId:
+                query.audience === 'adult'
+                  ? resolveAdultLearnerId(headers)
+                  : resolveUserId(headers),
+              accountId: resolveAccountId(headers),
+              privileged: isPrivilegedActor(headers),
+              readOnly: Boolean(headers['x-auth-impersonator-id']),
+            },
+            params,
+            body,
+          )
+        },
+        {
+          params: StudioCarryoverParams,
+          body: StudioLessonRuntimeRequestSchema,
+          query: AudienceQuery,
+        },
       )
       // O mesmo carryover, para o bloco de DESENHO. Cadeia de Pinta e cadeia de Estúdio são
       // independentes mesmo com o mesmo nome — o kind entra na busca.

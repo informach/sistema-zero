@@ -2,10 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test'
 import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { type JSX, useEffect } from 'react'
 import { createEmptyProject } from '#core'
+import { documentFixture } from '../../state/fixtures/projectDocuments'
 import { useHighlightStore } from '../../state/highlightStore'
 import { useLogsStore } from '../../state/logsStore'
 import { registerProjectOperation } from '../../state/projectOperations'
-import { setProjectStorageNamespace } from '../../state/projectStorageRuntime'
+import {
+  captureProjectStorageScope,
+  setProjectStorageNamespace,
+} from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import type { StudioLayout } from '../../studio/layoutContext'
 import { StudioLayoutProvider } from '../../studio/layoutContext'
@@ -97,6 +101,48 @@ beforeEach(() => {
 afterEach(() => cleanup())
 
 describe('ZappyPanel', () => {
+  it('clears the previous profile conversation while the next Python runtime is unavailable', async () => {
+    const previousNamespace = captureProjectStorageScope().namespace
+    setProjectStorageNamespace('zappy-profile-a')
+    let loads = 0
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => {
+        loads++
+        return {
+          messages: [
+            {
+              id: 'private-a',
+              role: 'assistant',
+              text: 'PRIVATE PROFILE A CONVERSATION',
+              createdAt: new Date().toISOString(),
+            },
+          ],
+          nextCursor: null,
+        }
+      },
+      deleteHistory: async () => {},
+      feedback: async () => {},
+      ask: async () => answer(),
+    }
+    try {
+      const view = render(renderPanel(adapter))
+      await view.findByText('PRIVATE PROFILE A CONVERSATION')
+      const document = documentFixture('python', 'classic')
+      if (document.programmingLanguage !== 'python') throw new Error('Python fixture required')
+      await act(async () => {
+        setProjectStorageNamespace('zappy-profile-b')
+        useProjectStore.setState({ project: { ...document, assets: [] } })
+      })
+      view.rerender(renderPanel({ ...adapter }))
+      await waitFor(() => expect(view.queryByText('PRIVATE PROFILE A CONVERSATION')).toBeNull())
+      expect(loads).toBe(1)
+      expect((view.getByRole('button', { name: 'Perguntar' }) as HTMLButtonElement).disabled).toBe(
+        true,
+      )
+    } finally {
+      setProjectStorageNamespace(previousNamespace)
+    }
+  })
   it('explains excessive project notes without sending a request or blaming the service', async () => {
     useProjectStore.getState().setProject({
       ...createEmptyProject('pro-notes-limit', 'Pro'),

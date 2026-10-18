@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/members
 
+## Contratos conciliados do Estúdio JS/Python (18/10/2026)
+
+`SectionProjectCheck` distingue objetivos JavaScript e Python. Python usa inspeção estrutural autorizada pelo servidor, vinculada ao perfil de runtime do inicial, ao vínculo durável da aula e, ao vivo, ao bloco/workspace/geração de escrita. A lista canônica da seção decide obrigatórios, extras e progressão; a simulação de autoria não registra conclusão ou XP. Entregar projeto/recado não recupera a antiga nota do bloco.
+
+A audiência vem da autenticação e do host. Adulto usa sua política de jornada e identidade real; Kids preserva seus portões. Descoberta de ambientes não substitui autorização na operação. Aulas e salas usam seus próprios vínculos; o inicial admitido permanece estável após mudanças na autoria. Leituras e persistência revalidam acesso/revisão, sem transformar análise incompleta em reprovação.
+
+As adições Python estão na migration gerada `0135_freezing_madripoor`: baselines/vínculos, cadeias, tentativas de cópia da galeria e linguagem do histórico Zappy. Não reutilizar números do histórico remoto nem editar SQL/snapshots gerados à mão. Fixtures SQL devem fornecer timestamps obrigatórios e respeitar os novos FKs. As provas opt-in precisam de bancos descartáveis explícitos; um skip não qualifica SQL.
+
 ## Objetivos da parte: o sistema único do Estúdio (18/10/2026)
 
 Decisão da dona ([`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md)): a "Atividade (auto-correção)" do bloco Estúdio SAIU e os objetivos da
@@ -25,8 +33,10 @@ parte viraram o único jeito de conferir o projeto, sempre no servidor.
   `STUDIO_PROJECT_SYNCING`; as ideias de programação contam só o que mudou desde o
   `initialProject` do bloco (baseline).
 - **Gabarito**: `content.solutionProject` do bloco Estúdio (validado no create/update como o
-  `initialProject`), retirado da aula do aluno. A publicação recusa objetivo obrigatório que o
-  gabarito não cumpre (`studioSectionCompletionIssues` do studio).
+  `initialProject`), retirado da aula do aluno. A publicação exige gabarito para objetivos de
+  execução e confere objetivos de estrutura (`studioSectionCompletionIssues` do studio).
+  Ainda não exige evidência persistida de execução aprovada; a equipe deve conferir o resultado
+  de "Testar agora" antes de publicar.
 - **Objetivos que RODAM o jogo** (etapa 3, `behavior`/`functionReturns`): a porta
   `ProjectExecutionChecker` (`domain/ports/project-execution-checker.port.ts`) e o adaptador
   `createStudioRuntimeChecker` (`infrastructure/gateways/studio-runtime-checker.ts`): monta o pedido

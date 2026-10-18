@@ -40,6 +40,7 @@ export function ProNavigator({
   const assets = useProjectStore((state) => state.project?.assets)
   const templateId = useProjectStore((state) => state.project?.proMeta?.templateId)
   const converted = useProjectStore((state) => Boolean(state.project?.proMeta?.origin))
+  const python = useProjectStore((state) => state.project?.programmingLanguage === 'python')
   const hasConvertedModules =
     view === 'guides' && Object.keys(tree).some((path) => path.startsWith('src/converted/'))
   const guides = useMemo(
@@ -115,8 +116,9 @@ export function ProNavigator({
             Abrir biblioteca de materiais
           </button>
           <p className="mb-2 text-xs">
-            Importe imagens, sons e modelos pela biblioteca. Depois confira um exemplo para o
-            arquivo aberto.
+            {python
+              ? 'Importe imagens e sons pela biblioteca. Use os caminhos dos materiais no arquivo Python aberto.'
+              : 'Importe imagens, sons e modelos pela biblioteca. Depois confira um exemplo para o arquivo aberto.'}
           </p>
           <Suspense fallback={<p role="status">Carregando materiais…</p>}>
             <ProAssetPaths
@@ -150,9 +152,11 @@ export function ProNavigator({
           {converted && (
             <p className="my-2">
               Este projeto veio dos blocos.{' '}
-              {hasConvertedModules
-                ? 'Os módulos convertidos estão em src/converted. '
-                : 'A conversão mantém os scripts globais em public/. '}
+              {python
+                ? 'Os arquivos Python mantêm o código da versão em blocos. '
+                : hasConvertedModules
+                  ? 'Os módulos convertidos estão em src/converted. '
+                  : 'A conversão mantém os scripts globais em public/. '}
               A cópia original em blocos continua separada; editar código aqui não altera essa
               cópia.
             </p>

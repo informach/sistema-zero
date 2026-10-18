@@ -12,9 +12,11 @@ import {
   type StudioPlayerOriginAdapter,
   validateIsolatedPreviewUrl,
 } from '../components/preview/playerOriginAdapter'
+import { type EditableStudioProject, isPythonProject } from '../core/editableProject'
 import { loadGameUiFont } from '../official-extensions/gameUiFont'
 import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import { buildDomRasterizerRuntime } from '../preview/domRasterizerRuntime'
+import type { StudioRuntimeCapture } from '../runtime/capture'
 
 /**
  * Captura uma CAPA (print PNG) do projeto RODANDO, para a vitrine "Mural dos
@@ -45,6 +47,7 @@ export interface CaptureCoverOptions {
   /** Live classrooms must isolate every execution, including cover capture. */
   originAdapter?: StudioPlayerOriginAdapter
   requireIsolatedPreview?: boolean
+  runtimeCapture?: StudioRuntimeCapture | null
 }
 
 const DEFAULT_WARMUP_MS = 1_500
@@ -198,10 +201,17 @@ async function runCapture(
 }
 
 export async function captureCoverFromProject(
-  project: Project,
+  project: EditableStudioProject,
   opts: CaptureCoverOptions = {},
 ): Promise<string | null> {
   if (typeof window === 'undefined' || typeof document === 'undefined') return null
+  if (isPythonProject(project)) {
+    try {
+      return (await opts.runtimeCapture?.capture(project)) ?? null
+    } catch {
+      return null
+    }
+  }
 
   const parentOrigin = window.location.origin
   const warmupMs = opts.warmupMs ?? DEFAULT_WARMUP_MS

@@ -1,16 +1,16 @@
 import type * as Monaco from 'monaco-editor'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, Modal } from '#ui'
-import { proCodeExamples } from '../../../core/proExamples'
+import { type ProExample, proCodeExamples } from '../../../core/proExamples'
 import type { ProjectTree } from '../../../core/proProject'
 import { getMonacoModelPath } from '../../../monaco/modelPaths'
 import type { ProSymbol } from '../../../monaco/pro/languageService'
-import type { ProLanguageSession } from '../../../monaco/pro/session'
 import { useProjectStore } from '../../../state/projectStore'
 import type { ProWorkspaceIntent } from '../../../state/proWorkspaceOperations'
 import { useUIStore } from '../../../state/uiStore'
 import { useT } from '../../../studio/i18n'
 import { findProCommands, type ProCommand, runProCommand } from './commands'
+import type { ProWorkspaceLanguage } from './language'
 import { proSourcePosition } from './search'
 import { useProCommands } from './useProCommands'
 
@@ -32,10 +32,11 @@ export function ProCodeTools({
   searchProject = search,
   format,
   help,
+  examples = proCodeExamples,
 }: {
   path: string
   tree: ProjectTree
-  language: ProLanguageSession | null
+  language: ProWorkspaceLanguage | null
   editor: RefObject<Monaco.editor.IStandaloneCodeEditor | null>
   readyEditor?: Monaco.editor.IStandaloneCodeEditor | null
   navigate: (path: string, line: number, column?: number) => void
@@ -48,6 +49,7 @@ export function ProCodeTools({
   searchProject?: () => void
   format: () => void
   help?: (intent: 'explain' | 'investigate' | 'change') => void
+  examples?: (path: string) => ProExample[]
 }) {
   const t = useT()
   const [toolsOpen, setToolsOpen] = useState(false)
@@ -56,14 +58,14 @@ export function ProCodeTools({
   const showAssets = useUIStore((state) => state.setShowAssets)
   const [open, setOpen] = useState(false)
   const [symbolResult, setSymbols] = useState<{
-    session: ProLanguageSession
+    session: ProWorkspaceLanguage
     content: string
     path: string
     items: ProSymbol[]
     error: string | null
   } | null>(null)
   const [referenceResult, setReferences] = useState<{
-    session: ProLanguageSession
+    session: ProWorkspaceLanguage
     tree: ProjectTree
     items: Array<{ path: string; line: number; column: number }>
   } | null>(null)
@@ -98,7 +100,7 @@ export function ProCodeTools({
   const current = useRef(scope)
   current.current = scope
   const symbolSource = useMemo(
-    () => (open && /\.[cm]?[jt]sx?$/.test(path) ? { path, content } : null),
+    () => (open && /\.(?:[cm]?[jt]sx?|pyi?)$/.test(path) ? { path, content } : null),
     [open, path, content],
   )
   // A new document is pending until its response arrives. Derive that state:
@@ -113,12 +115,18 @@ export function ProCodeTools({
       .request('symbols', path)
       .then((items) => {
         const node = current.current.tree[path]
+        const model = editor.current?.getModel()
+        const matches =
+          model &&
+          (model.getValue() === content ||
+            (language.documentOffset?.(content, model.getValue(), { lineNumber: 1, column: 1 }) ??
+              null) !== null)
         if (
           active &&
           current.current.path === path &&
           node?.kind === 'file' &&
           node.content === content &&
-          editor.current?.getModel()?.getValue() === content
+          matches
         )
           setSymbols({ session: language, content, path, items, error: null })
       })
@@ -140,11 +148,19 @@ export function ProCodeTools({
     const model = editor.current?.getModel(),
       cursor = editor.current?.getPosition()
     const modelPath = model ? getMonacoModelPath(model) : ''
+    const offset =
+      model && cursor
+        ? language?.documentOffset
+          ? language.documentOffset(content, model.getValue(), cursor)
+          : model.getValue() === content
+            ? model.getOffsetAt(cursor)
+            : null
+        : null
     if (
       !model ||
       !cursor ||
       modelPath.slice(modelPath.indexOf('/') + 1) !== path ||
-      model.getValue() !== content
+      offset === null
     ) {
       setError('Clique no nome dentro do código antes de usar esta ação.')
       return null
@@ -152,7 +168,7 @@ export function ProCodeTools({
     return {
       path,
       content,
-      offset: model.getOffsetAt(cursor),
+      offset,
       name: model.getWordAtPosition(cursor)?.word ?? '',
     }
   }
@@ -259,7 +275,7 @@ export function ProCodeTools({
       enabled: author && !busy,
       run: recover,
     },
-    ...proCodeExamples(path).map(
+    ...examples(path).map(
       (example): ProCommand => ({
         id: `example:${example.id}`,
         label: `Inserir exemplo: ${example.label}`,

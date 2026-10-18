@@ -89,7 +89,7 @@ describe('a autoria dos objetivos que rodam o jogo', () => {
       screenshot: 'anBn',
     })
     expect(depois.problems).toContain(
-      'O gabarito não cumpre "O herói anda". A publicação recusa: ajuste o gabarito ou o objetivo.',
+      'O gabarito não cumpre "O herói anda". Ajuste o gabarito ou o objetivo antes de publicar.',
     )
     const falhou = testSectionObjectives([anda], workspace, { initial: 'error', solution: 'error' })
     expect(falhou.notes[0]).toContain('Não consegui rodar o jogo agora')
@@ -158,13 +158,17 @@ test('a professora monta "o jogo faz algo" no editor e testa contra o gabarito',
   const calls: unknown[] = []
   const realFetch = globalThis.fetch
   globalThis.fetch = (async (_url: string, init: RequestInit) => {
-    calls.push(JSON.parse(String(init.body)))
+    const body = JSON.parse(String(init.body))
+    calls.push(body)
     return Response.json({
-      results: [{ id: 'c1', passed: true }],
+      results: [{ id: 'c1', passed: body.project.name === 'solution' }],
       screenshots: { c1: 'anBn' },
     })
   }) as unknown as typeof fetch
-  const workspace = { initialProject: { files: {} }, solutionProject: { files: {} } }
+  const workspace = {
+    initialProject: { name: 'initial', files: {} },
+    solutionProject: { name: 'solution', files: {} },
+  }
   const render = () =>
     root.render(
       <SectionCompletionEditor
@@ -216,6 +220,28 @@ test('a professora monta "o jogo faz algo" no editor e testa contra o gabarito',
     expect(calls).toHaveLength(2)
     expect(container.textContent).toContain('gabarito cumpre')
     expect(container.querySelector('img[alt^="Tela do gabarito"]')).not.toBeNull()
+    expect(container.textContent).toContain('Nenhum problema nos objetivos.')
+    const unavailable = Promise.withResolvers<void>()
+    globalThis.fetch = Object.assign(
+      async () => {
+        await unavailable.promise
+        return new Response('', { status: 503 })
+      },
+      { preconnect: realFetch.preconnect },
+    )
+    await act(async () =>
+      [...container.querySelectorAll('button')]
+        .find((button) => button.textContent === 'Testar agora')!
+        .click(),
+    )
+    expect(container.textContent).toContain('testando…')
+    expect(container.textContent).not.toContain('Nenhum problema nos objetivos.')
+    await act(async () => {
+      unavailable.resolve()
+      await new Promise((resolve) => setTimeout(resolve, 10))
+    })
+    expect(container.textContent).toContain('não deu para testar')
+    expect(container.textContent).not.toContain('Nenhum problema nos objetivos.')
   } finally {
     globalThis.fetch = realFetch
     await act(async () => root.unmount())

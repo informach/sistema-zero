@@ -31,10 +31,41 @@ código/testes atuais prevalecem.
   em `packages/studio-runtime`.
 - Acessibilidade automatizada: `bun run e2e:a11y`.
 
-## Pro: documento, terminal e linguagem
+## Linguagem do projeto e carregamento
+
+JavaScript continua sendo o padrão dos projetos existentes. Python é uma
+linguagem explícita do documento, independente de o projeto ser Clássico ou Pro.
+A configuração da aula e o catálogo de extensões usam essa identidade; não se
+deve inferir a linguagem pelo nome do arquivo ou pela extensão instalada.
+
+Os módulos de `src/python/` mantêm o modelo de blocos, a conversão de fonte e
+a análise de Python. `src/runtime/python/` coordena execução em frames isolados,
+com a distribuição e a origem admitidas pelo host. Turtle é uma extensão;
+recursos comuns de programação pertencem à linguagem. O adaptador de navegador
+preserva a API Python da extensão; a exportação de fontes usa o caminho Python
+de `src/export/pythonSource.ts`.
+
+Os modos e os serviços de linguagem e execução carregam sob demanda. Identidade,
+catálogo e referência de preview são contratos puros do Core. O cliente que só
+confere uma referência importa `python-preview-reference`, sem carregar os
+produtores de build, inspeção ou playtest. Conferir esses metadados não concede
+acesso: a autorização continua nas bordas do servidor.
+
+No laboratório Vite, `studio-editor-contracts` agrupa modelos e contratos
+pequenos usados pelo editor, incluindo a instância de Zod resolvida pelo pacote
+Core. O grupo não contém o interpretador Python nem os serviços de execução.
+Seus limites são medidos junto dos limites de cada modo; o host Next tem um
+bundler próprio e exige sua própria verificação.
+
+Os testes Bun que substituem globalmente IndexedDB executam suas fixtures em
+processos separados, via `src/__tests__/isolatedCases.ts`. Os consumidores que
+verificam armazenamento real continuam no processo principal. O helper exige
+saída bem-sucedida e casos executados, e registra os totais dos processos filhos.
+
+## Pro JavaScript: documento, terminal e linguagem
 
 `modes/pro/useWebContainerSync.ts` é o único dono da montagem e da reconciliação
-bidirecional. O watcher sinaliza mudanças; `proFsSync.ts` serializa leituras e
+bidirecional do WebContainer JavaScript. O watcher sinaliza mudanças; `proFsSync.ts` serializa leituras e
 escritas e `reconcileProTree.ts` compara base/editor/disco, preservando conflitos.
 `state/projectOperations.ts` drena a fila antes de salvar/exportar/capturar um
 handoff. Os pedidos/sinais de montagem do terminal são isolados por store, além
@@ -71,8 +102,11 @@ O runtime remoto entrega arquivos compilados imutáveis no R2 privado, acessíve
 por token aleatório temporário. O manifesto é o último write; cada arquivo tem
 hash e tamanho verificados. CSP/CORS/COEP são cabeçalhos da origem, sem interceptar
 as APIs de recursos. O iframe permanece opaco e preserva o último build válido
-quando uma compilação posterior falha. O player permanente ainda é outro marco
-do plano; expiração de preview não é política de publicação.
+quando uma compilação posterior falha. O player público usa a revisão publicada
+e seus próprios contratos. Expiração de
+preview não é política de publicação. No host compartilhado, o player público
+seleciona o executor pela linguagem e pelo perfil publicado; JavaScript Pro
+também exige a referência compilada correspondente.
 
 Limites atuais: binários arbitrários fora de `public/` ainda não são materiais
 persistíveis; devem ser movidos ou importados antes de salvar. Escrita interrompida

@@ -49,6 +49,48 @@ interface SensitiveBinding {
   valueStart: number
 }
 
+/** Python/TypeScript annotations may precede the assignment. Never inspect beyond
+ * this value's line or cross a sibling object property to find an equals sign. */
+function annotatedValueStart(text: string, from: number): number | undefined {
+  let depth = 0
+  let quote: string | undefined
+  for (let index = from; index < text.length; index++) {
+    const character = text[index]!
+    if ((character === '\r' || character === '\n') && depth === 0 && !quote) return
+    if (quote) {
+      if (character === '\\') index++
+      else if (text.startsWith(quote, index)) {
+        index += quote.length - 1
+        quote = undefined
+      }
+      continue
+    }
+    if (character === '"' || character === "'" || character === '`') {
+      quote =
+        character !== '`' && text.startsWith(character.repeat(3), index)
+          ? character.repeat(3)
+          : character
+      index += quote.length - 1
+      continue
+    }
+    if ('([{'.includes(character)) {
+      depth++
+      continue
+    }
+    if (')]}'.includes(character)) {
+      if (depth === 0) return
+      depth--
+      continue
+    }
+    if (depth === 0 && (character === ',' || character === ';')) return
+    if (depth === 0 && character === '=' && text[index + 1] !== '>' && text[index + 1] !== '=') {
+      let start = index + 1
+      while (text[start] === ' ' || text[start] === '\t') start++
+      return start
+    }
+  }
+}
+
 function nextSensitiveBinding(line: string, from: number): SensitiveBinding | null {
   let assignment: SensitiveBinding | null = null
   ASSIGNMENT_PREFIX_RE.lastIndex = from
@@ -67,7 +109,11 @@ function nextSensitiveBinding(line: string, from: number): SensitiveBinding | nu
   PROPERTY_PREFIX_RE.lastIndex = from
   for (let match = PROPERTY_PREFIX_RE.exec(line); match; match = PROPERTY_PREFIX_RE.exec(line)) {
     if (isSensitiveKeyName(match[2] ?? '')) {
-      property = { index: match.index, valueStart: PROPERTY_PREFIX_RE.lastIndex }
+      property = {
+        index: match.index,
+        valueStart:
+          annotatedValueStart(line, PROPERTY_PREFIX_RE.lastIndex) ?? PROPERTY_PREFIX_RE.lastIndex,
+      }
       break
     }
   }
@@ -79,7 +125,7 @@ function nextSensitiveBinding(line: string, from: number): SensitiveBinding | nu
 
 function closingQuoteAt(line: string, quote: string, from: number): number {
   for (let index = from; index < line.length; index += 1) {
-    if (line[index] !== quote) continue
+    if (!line.startsWith(quote, index)) continue
     let slashCount = 0
     for (let previous = index - 1; previous >= 0 && line[previous] === '\\'; previous -= 1) {
       slashCount += 1
@@ -90,7 +136,7 @@ function closingQuoteAt(line: string, quote: string, from: number): number {
 }
 
 function redactedQuotedContent(content: string): string {
-  const firstLineBreak = content.search(/\r?\n/)
+  const firstLineBreak = content.search(/\r\n|\r|\n/)
   if (firstLineBreak < 0) return '[segredo removido]'
   return `[segredo removido]${content.slice(firstLineBreak).replace(/[^\r\n]/g, ' ')}`
 }
@@ -101,13 +147,19 @@ function redactKeyedSecrets(value: string, markSecret: () => void): string {
   while (cursor < text.length) {
     const binding = nextSensitiveBinding(text, cursor)
     if (!binding) break
-    const quote = text[binding.valueStart]
-    if (quote === '"' || quote === "'" || quote === '`') {
-      const closing = closingQuoteAt(text, quote, binding.valueStart + 1)
+    const prefix = text.slice(binding.valueStart).match(/^[rRuUbBfFtT]{1,2}(?=["'])/)?.[0] ?? ''
+    const quoteStart = binding.valueStart + prefix.length
+    const firstQuote = text[quoteStart]
+    const quote =
+      firstQuote && firstQuote !== '`' && text.startsWith(firstQuote.repeat(3), quoteStart)
+        ? firstQuote.repeat(3)
+        : firstQuote
+    if (quote && (quote[0] === '"' || quote[0] === "'" || quote === '`')) {
+      const closing = closingQuoteAt(text, quote, quoteStart + quote.length)
       const contentEnd = closing >= 0 ? closing : text.length
-      const redacted = redactedQuotedContent(text.slice(binding.valueStart + 1, contentEnd))
-      text = `${text.slice(0, binding.valueStart)}${quote}${redacted}${closing >= 0 ? quote : ''}${closing >= 0 ? text.slice(closing + 1) : ''}`
-      cursor = binding.valueStart + quote.length + redacted.length + (closing >= 0 ? 1 : 0)
+      const redacted = redactedQuotedContent(text.slice(quoteStart + quote.length, contentEnd))
+      text = `${text.slice(0, quoteStart)}${quote}${redacted}${closing >= 0 ? quote : ''}${closing >= 0 ? text.slice(closing + quote.length) : ''}`
+      cursor = quoteStart + quote.length + redacted.length + (closing >= 0 ? quote.length : 0)
     } else {
       const delimiter = text.slice(binding.valueStart).search(/[\s,;}]/)
       const valueEnd = delimiter < 0 ? text.length : binding.valueStart + delimiter

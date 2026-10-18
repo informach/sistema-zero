@@ -2,7 +2,7 @@
 
 import '@sistemazero/studio/styles.css'
 import type {
-  Project,
+  EditableStudioProject as Project,
   StudioEditorProps,
   StudioMoldaLibraryAdapter,
   StudioPintaLibraryAdapter,
@@ -19,10 +19,14 @@ import {
   loadStudioProModule,
   type StudioProModule,
 } from './studio-pro-loader'
+import { useFreeStudioRuntime } from './use-free-runtime'
 
 interface Props {
-  /** Perfil (kids) ou conta (adulto) — namespeia o IndexedDB local do Studio. */
+  audience?: 'kids' | 'adult'
+  /** Identidade real do perfil/conta, usada nas autorizações de execução. */
   viewerId: string | null
+  /** Chave local do host; adulto usa adult:<id>, separada da identidade autenticada. */
+  storageNamespace?: string
   /** Id do projeto PRO a abrir (persistido local no namespace do viewer). */
   projectId: string
   /** Tema fixado pelo app (segue a comunidade). */
@@ -41,6 +45,10 @@ interface Props {
   teamLibrary?: StudioTeamLibraryAdapter
   onEditDrawing?: (id: string) => void
   onEditCreation?: (id: string) => void
+  runtimeEnvironment?: StudioEditorProps['runtimeEnvironment']
+  proRuntime?: StudioEditorProps['proRuntime']
+  /** Kids Complete Studio. Contextual lesson/live hosts supply their own authority. */
+  freeRuntime?: boolean
 }
 
 type Loaded =
@@ -65,12 +73,22 @@ export function StudioProEditor(props: Props) {
   // A profile switch must unmount the previous document before any effect can
   // change its namespace; waiting for useEffect leaves one render of old data.
   return (
-    <StudioProEditorSession key={JSON.stringify([props.viewerId, props.projectId])} {...props} />
+    <StudioProEditorSession
+      key={JSON.stringify([
+        props.viewerId,
+        props.audience ?? 'kids',
+        props.storageNamespace ?? props.viewerId,
+        props.projectId,
+      ])}
+      {...props}
+    />
   )
 }
 
 function StudioProEditorSession({
   viewerId,
+  audience = 'kids',
+  storageNamespace = viewerId ?? '',
   projectId,
   theme,
   onExit,
@@ -85,10 +103,19 @@ function StudioProEditorSession({
   teamLibrary,
   onEditDrawing,
   onEditCreation,
+  runtimeEnvironment,
+  proRuntime,
+  freeRuntime = false,
 }: Props) {
   const [mod, setMod] = useState<StudioProModule | null>(null)
   const [state, setState] = useState<Loaded>({ kind: 'loading' })
   const [loadAttempt, setLoadAttempt] = useState(0)
+  const free = useFreeStudioRuntime({
+    project: state.kind === 'ready' ? state.project : null,
+    viewerId,
+    audience,
+    enabled: freeRuntime && !runtimeEnvironment && !taskSession,
+  })
 
   useEffect(() => {
     let active = true
@@ -104,15 +131,11 @@ function StudioProEditorSession({
       }
       const m = result.module
       setMod(m)
-      if (!m.canRunProMode()) {
-        setState({ kind: 'unsupported' })
-        return
-      }
       // Mesmo namespace por viewer do Estúdio Completo clássico — o projeto PRO
       // foi criado lá e persistido no IndexedDB deste perfil/conta.
       const project = await loadPreparedStudioProProject({
         module: m,
-        viewerId,
+        namespace: storageNamespace,
         projectId,
         prepare: prepareProject,
         active: () => active,
@@ -124,6 +147,10 @@ function StudioProEditorSession({
         setState({ kind: 'invalid' })
         return
       }
+      if (project.programmingLanguage !== 'python' && !proRuntime && !m.canRunProMode()) {
+        setState({ kind: 'unsupported' })
+        return
+      }
       setState({ kind: 'ready', project })
     })().catch((error: unknown) => {
       if (!active) return
@@ -133,7 +160,7 @@ function StudioProEditorSession({
     return () => {
       active = false
     }
-  }, [viewerId, projectId, loadAttempt, prepareProject])
+  }, [storageNamespace, projectId, loadAttempt, prepareProject, proRuntime])
 
   if (state.kind === 'unsupported') {
     return (
@@ -188,22 +215,45 @@ function StudioProEditorSession({
 
   const StudioEditor = mod.StudioEditor
   return (
-    <StudioEditor
-      initialProject={state.project}
-      persistence="local"
-      theme={theme}
-      features={{ professional: true }}
-      tutor={tutor}
-      share={share}
-      onChange={onChange}
-      onError={onError}
-      pintaLibrary={pintaLibrary}
-      moldaLibrary={moldaLibrary}
-      taskSession={taskSession}
-      teamLibrary={teamLibrary}
-      onEditDrawing={onEditDrawing}
-      onEditCreation={onEditCreation}
-      onExit={onExit}
-    />
+    <div className="flex h-full min-h-0 flex-col">
+      {state.project.programmingLanguage === 'python' && (free.loading || free.error) && (
+        <div
+          role={free.error ? 'alert' : 'status'}
+          className="flex items-center gap-2 px-3 py-2 text-sm"
+        >
+          {free.error ?? 'Preparando Python…'}
+          {free.error && (
+            <button type="button" onClick={free.retry}>
+              Tentar novamente
+            </button>
+          )}
+        </div>
+      )}
+      <div className="min-h-0 flex-1">
+        <StudioEditor
+          initialProject={state.project}
+          persistence="local"
+          theme={theme}
+          features={{ professional: true }}
+          tutor={tutor}
+          share={share}
+          onChange={onChange}
+          onError={onError}
+          pintaLibrary={pintaLibrary}
+          moldaLibrary={moldaLibrary}
+          taskSession={taskSession}
+          teamLibrary={teamLibrary}
+          onEditDrawing={onEditDrawing}
+          onEditCreation={onEditCreation}
+          runtimeEnvironment={runtimeEnvironment ?? free.environment}
+          proRuntime={state.project.programmingLanguage === 'python' ? undefined : proRuntime}
+          pythonLevel={
+            state.project.programmingLanguage === 'python' && freeRuntime ? 3 : undefined
+          }
+          allowedModes={state.project.programmingLanguage === 'python' ? ['code'] : undefined}
+          onExit={onExit}
+        />
+      </div>
+    </div>
   )
 }

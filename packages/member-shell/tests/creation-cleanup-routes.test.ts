@@ -15,7 +15,10 @@ function request(secret = SECRET): Request {
 }
 
 describe('worker durável de limpeza das criações', () => {
-  test('limpeza de plano nunca chama finalização de exclusão da conta', async () => {
+  test.each([
+    'pensa',
+    'gallery',
+  ] as const)('limpeza de %s nunca chama finalização de exclusão da conta', async (scope) => {
     const paths: string[] = []
     const claimBodies: unknown[] = []
     let claimed = false
@@ -35,7 +38,7 @@ describe('worker durável de limpeza das criações', () => {
                 userIds: ['child'],
                 prefixes: ['creations/child/pensa/plan/'],
                 attempts: 1,
-                scope: 'pensa',
+                scope,
               },
             },
           }
@@ -52,7 +55,10 @@ describe('worker durável de limpeza das criações', () => {
     expect(paths).toContain('/members/internal/creation-cleanups/plan/complete')
     // Todo claim DECLARA que este worker entende a limpeza de plano: sem isso o members
     // nunca entrega job de plano (um worker antigo finalizaria a conta da família).
-    expect(claimBodies).toEqual([{ scopes: ['pensa'] }, { scopes: ['pensa'] }])
+    expect(claimBodies).toEqual([
+      { scopes: ['pensa', 'gallery'] },
+      { scopes: ['pensa', 'gallery'] },
+    ])
   })
   test('recusa chamada sem o bearer do scheduler', async () => {
     const gateway = {

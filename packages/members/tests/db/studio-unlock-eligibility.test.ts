@@ -86,9 +86,9 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
          'kids', 'iniciante', '2d', null, ${JSON.stringify({ studioUnlockBlocks: ['sz_bonus'] })}::jsonb)`
     await conn.sql`
       insert into members.xp_events
-        (id, user_id, audience, source_type, source_id, amount)
+        (id, user_id, audience, source_type, source_id, amount, created_at)
       values
-        (${randomUUID()}, ${userId}, 'kids', 'course_complete', ${bonusCourseId}, 0)`
+        (${randomUUID()}, ${userId}, 'kids', 'course_complete', ${bonusCourseId}, 0, now())`
 
     expect(await repo.listStudioUnlocksByCourse(userId, 'kids')).toEqual([
       { courseId: bonusCourseId, blocks: ['sz_bonus'] },
@@ -111,9 +111,9 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
          'adult', 'iniciante', '2d', null, ${JSON.stringify({ studioUnlockBlocks: ['sz_cross_audience'] })}::jsonb)`
     await conn.sql`
       insert into members.xp_events
-        (id, user_id, audience, source_type, source_id, amount)
+        (id, user_id, audience, source_type, source_id, amount, created_at)
       values
-        (${randomUUID()}, ${movedUserId}, 'kids', 'course_complete', ${movedCourseId}, 0)`
+        (${randomUUID()}, ${movedUserId}, 'kids', 'course_complete', ${movedCourseId}, 0, now())`
 
     expect(await repo.listStudioUnlocksByCourse(movedUserId, 'kids')).toEqual([])
     expect(await repo.getStudioUnlockRevision(movedUserId, 'kids')).toBe(studioUnlockRevision([]))

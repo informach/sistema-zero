@@ -10,13 +10,14 @@ import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react
 import { IDBFactory } from 'fake-indexeddb'
 import { buildProProject } from '../../core/proProject'
 import type { StudioPersistenceAdapter } from '../../persistence/types'
-import { loadProjectById, persistProject } from '../../state/persistence'
+import { persistProject } from '../../state/persistence'
 import { registerProjectPersistence } from '../../state/projectOperations'
 import { projectApplicationsKey } from '../../state/projectStorageKeys'
 import {
   type ProjectStorageScope,
   setProjectStorageNamespace,
 } from '../../state/projectStorageRuntime'
+import { loadSanitizedProjectById as loadProjectById } from '../../state/projectStore'
 import { captureProRevision, listProApplications } from '../../state/proRevision'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'

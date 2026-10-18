@@ -4,6 +4,7 @@ import type { ProjectSummary } from '../../state/persistence'
 import { ProjectCard } from './ProjectCard'
 
 const SUMMARY: ProjectSummary = {
+  programmingLanguage: 'javascript',
   id: 'p1',
   name: 'Meu Projeto',
   createdAt: 0,

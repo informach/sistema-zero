@@ -18,7 +18,7 @@ describe('Studio observation boundary', () => {
     expect(store.getState().isDirty).toBe(false)
     store.getState().setEditingAccess('author')
     store.getState().setFile('script.js', 'console.log("back")')
-    expect(store.getState().project?.files['script.js']).toBe('console.log("back")')
+    expect(store.getState().project?.files?.['script.js']).toBe('console.log("back")')
   })
   test('suspension cancels debounce and suppresses unmount writes', async () => {
     setAutosaveDelayForTests(10)
@@ -27,7 +27,7 @@ describe('Studio observation boundary', () => {
       const service = createPersistenceService(store, null)
       const changes: string[] = []
       service.handlers.onChange = (project) => {
-        changes.push(project.files['script.js'])
+        changes.push(project.files?.['script.js'] ?? '')
       }
       const detach = service.attach()
       store.getState().hydrateProject(createEmptyProject('01ARZ3NDEKTSV4RRFFQ69G5FAW', 'Teste'))

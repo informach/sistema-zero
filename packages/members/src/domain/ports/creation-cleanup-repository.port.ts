@@ -2,7 +2,7 @@
  * Tipos de job que um worker pode DECLARAR que entende, além da limpeza de conta (sempre
  * entendida). `pensa` = apagar só os arquivos de um plano, SEM finalizar exclusão de conta.
  */
-export const CREATION_CLEANUP_SCOPES = ['pensa'] as const
+export const CREATION_CLEANUP_SCOPES = ['pensa', 'gallery'] as const
 export type CreationCleanupScope = (typeof CREATION_CLEANUP_SCOPES)[number]
 
 export interface CreationCleanupJob {

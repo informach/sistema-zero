@@ -33,6 +33,7 @@ export function isStudioProPublication(value: unknown): value is StudioProPublic
   if (!value || typeof value !== 'object') return false
   const v = value as Record<string, unknown>
   if (
+    (v.programmingLanguage !== undefined && v.programmingLanguage !== 'javascript') ||
     !isStudioPublicationId(v.playId) ||
     !Number.isSafeInteger(v.version) ||
     Number(v.version) < 1 ||
@@ -54,6 +55,7 @@ export function isStudioProPublication(value: unknown): value is StudioProPublic
       !isStudioPublicationHash(r.artifactHash) ||
       !Number.isSafeInteger(r.createdAt) ||
       Number(r.createdAt) < 0 ||
+      r.approval !== undefined ||
       !isStudioProValidationIdentity(r.validation)
     )
       return false

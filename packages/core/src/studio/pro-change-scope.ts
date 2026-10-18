@@ -11,6 +11,7 @@ export function studioProChangeScopeIssue(
   const selection = request.selection
   const outside =
     'A proposta muda algo fora das linhas escolhidas. Faça um novo pedido com o tamanho Parte ou Jogo e revise a nova proposta.'
+  if (change.configuration) return outside
   if (!selection) return 'O pedido não tem um trecho válido.'
   const original = beforeFiles[selection.path]
   if (typeof original !== 'string') return 'O arquivo do trecho não está na revisão escolhida.'

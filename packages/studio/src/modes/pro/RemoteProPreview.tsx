@@ -1,6 +1,7 @@
 import { buildProRuntimeBridgeScript } from '@sistemazero/core/studio/pro-runtime-bridge'
 import { type JSX, type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '#ui'
+import { javaScriptProject } from '../../core/editableProject'
 import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { createGameStorageSession } from '../../state/gameStorage'
 import { useLogsStore } from '../../state/logsStore'
@@ -26,7 +27,7 @@ export function RemoteProPreview({
   useEffect(() => {
     if (active) setStarted(true)
   }, [active])
-  const project = useProjectStore((state) => state.project)
+  const project = useProjectStore((state) => javaScriptProject(state.project))
   const pushLog = useLogsStore((state) => state.push)
   const latestProjectRef = useRef(project)
   latestProjectRef.current = project

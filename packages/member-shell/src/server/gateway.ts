@@ -24,6 +24,7 @@ export interface GatewayResponse<T = unknown> {
 }
 
 export interface CallOpts {
+  signal?: AbortSignal
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   body?: unknown
   query?: Record<string, string | number | undefined | null>
@@ -78,7 +79,10 @@ async function rawFetch(path: string, opts: CallOpts, access: string | null): Pr
       headers: reqHeaders,
       body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
       cache: 'no-store',
-      signal: AbortSignal.timeout(opts.timeoutMs ?? GATEWAY_TIMEOUT_MS),
+      signal: AbortSignal.any([
+        AbortSignal.timeout(opts.timeoutMs ?? GATEWAY_TIMEOUT_MS),
+        ...(opts.signal ? [opts.signal] : []),
+      ]),
     })
   } catch {
     // Timeout / conexão recusada / falha de DNS: NÃO rejeita (rejeição não tratada).
@@ -326,7 +330,10 @@ export function createGatewayModule(session: SessionModule) {
         },
         body: opts.body === undefined ? undefined : rawBody,
         cache: 'no-store',
-        signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
+        signal: AbortSignal.any([
+          AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
+          ...(opts.signal ? [opts.signal] : []),
+        ]),
       })
       return { status: response.status, body: await readJson<T>(response) }
     } catch {

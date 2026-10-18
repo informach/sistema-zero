@@ -1,11 +1,17 @@
 import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from 'bun:test'
 import {
+  applyStudioProChange,
   createStudioProRevision,
   STUDIO_PRO_TEMPLATE_IDS,
+  type StudioProBuilderClaim,
   type StudioProBuilderCommand,
   type StudioProBuilderJob,
   studioProBuilderView,
+  studioProDigest,
 } from '@sistemazero/core/studio'
+import { StudioPythonBuilderPreviewSchema } from '@sistemazero/core/studio/python-builder-preview'
+import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python-pro-execution'
+import { controlledPythonBuilderReport } from '../../members/tests/fakes/python-builder-report'
 
 mock.module('server-only', () => ({}))
 process.env.JWT_HS256_SECRET ??= 'builder-route-test-secret-with-32-characters'
@@ -30,6 +36,15 @@ const user = {
   status: 'active',
   activeProfile: { accountId: crypto.randomUUID() },
 }
+function configurePython() {
+  spyOn(env, 'getEnv').mockReturnValue({
+    ...env.getEnv(),
+    STUDIO_PYTHON_RUNTIME_URL: 'https://python.test',
+    STUDIO_PYTHON_RUNTIME_TOKEN: 'private-python-token-with-32-characters',
+    STUDIO_PYTHON_LANGUAGE_URL: 'https://language.test',
+    STUDIO_PYTHON_LANGUAGE_TOKEN: 'private-language-token-with-32-characters',
+  })
+}
 async function fixture(
   options: {
     templateId?: string
@@ -39,6 +54,8 @@ async function fixture(
     finishFails?: boolean
     pensaStatus?: number
     preflightFails?: boolean
+    authorization?: StudioProBuilderClaim['authorization']
+    authorizationStatus?: number
   } = {},
 ) {
   const base = await createStudioProRevision({
@@ -83,11 +100,15 @@ async function fixture(
     studioBuilder: async (actor: unknown, command: StudioProBuilderCommand) => {
       commands.push({ actor, command })
       return {
-        status: 200,
+        status:
+          command.operation === 'authorize-proposal' ? (options.authorizationStatus ?? 200) : 200,
         body: {
           state: {
             job: { ...job, ...(command.operation === 'cancel' ? { phase: 'cancelled' } : {}) },
             token: null,
+            ...(command.operation === 'authorize-proposal'
+              ? { authorization: options.authorization }
+              : {}),
             binaries: { secret: 'PRIVATE BINARY' },
           },
         },
@@ -136,6 +157,165 @@ async function fixture(
   return { job, input, commands, post }
 }
 
+async function pythonProposal() {
+  const options: Parameters<typeof fixture>[0] = {},
+    f = await fixture(options)
+  configurePython()
+  const base = await createStudioProRevision({
+      version: 2,
+      projectId: f.job.projectId,
+      templateId: 'python-blank',
+      files: { 'main.py': 'print(1)\n' },
+      directories: [],
+      assets: '{}',
+      assetFiles: {},
+      configuration: {
+        programmingLanguage: 'python',
+        extensions: [],
+        runtime: { profileId: 'python-test', releaseId: 'test-1', manifestSha256: 'a'.repeat(64) },
+        python: {
+          entrypoint: 'main.py',
+          dependencyLock: {
+            lockVersion: 1,
+            target: 'browser',
+            pythonVersion: '3.14.2',
+            runtimeManifestSha256: 'a'.repeat(64),
+            requirementsSha256: await studioProDigest(''),
+            packages: [],
+          },
+        },
+      },
+    }),
+    change = {
+      baseHash: base.hash,
+      summary: 'Editar programa',
+      patches: [
+        {
+          path: 'main.py',
+          before: await studioProDigest(base.files['main.py']!),
+          content: 'print(2)\n',
+        },
+      ],
+    },
+    { revision } = await applyStudioProChange(base, change),
+    { metadata: snapshot } = await prepareStudioPythonProExecution(revision, {}),
+    preview = StudioPythonBuilderPreviewSchema.parse({
+      kind: 'python',
+      revisionHash: revision.hash,
+      reference: {
+        kind: 'python-preview',
+        version: 1,
+        id: 'c'.repeat(64),
+        sha256: 'd'.repeat(64),
+        projectId: base.projectId,
+        revision: snapshot.revision,
+        runtimeManifestSha256: snapshot.configuration.runtime.manifestSha256,
+        url: `https://python.test/v1/python-previews/${'c'.repeat(64)}/index.html`,
+        expiresAt: Date.now() + 60000,
+      },
+      validation: {
+        profileVersion: 1,
+        snapshot,
+        report: controlledPythonBuilderReport(snapshot),
+        types: {
+          version: 1,
+          revision: revision.hash,
+          executionRevision: snapshot.revision,
+          status: 'passed',
+          diagnostics: [],
+        },
+      },
+    })
+  f.job.base = base
+  f.job.phase = 'review'
+  f.job.version = 4
+  f.job.result = { change, revisionHash: revision.hash, preview, evidence: [], plan: ['Editar'] }
+  options.authorization = {
+    revisionHash: revision.hash,
+    executionRevision: snapshot.revision,
+    parentOrigin: 'https://kids.test',
+  }
+  const input = {
+    operation: 'authorize-python-preview',
+    id: f.job.id,
+    projectId: base.projectId,
+    version: f.job.version,
+    revisionHash: revision.hash,
+    preview: { id: preview.reference.id, sha256: preview.reference.sha256 },
+  }
+  return { ...f, options, preview, previewInput: input }
+}
+
+test('Python preview authorization returns only the canonical reference after a fresh private proposal policy check', async () => {
+  const f = await pythonProposal(),
+    response = await f.post(f.previewInput)
+  expect(response.status).toBe(200)
+  expect(response.headers.get('cache-control')).toBe('no-store')
+  const body = await response.text()
+  expect(JSON.parse(body)).toEqual({ reference: f.preview.reference })
+  expect(body).not.toContain('PRIVATE')
+  expect(body).not.toContain('main.py')
+  expect(body).not.toContain('private-python-token')
+  expect(f.commands.map((item) => item.command.operation)).toEqual(['authorize-proposal'])
+  expect(f.commands[0]?.command).toMatchObject({
+    purpose: 'preview',
+    version: 4,
+    preview: f.previewInput.preview,
+  })
+})
+
+test.each([
+  'version',
+  'id',
+  'sha',
+  'parent',
+  'origin',
+  'expiry',
+  'revoked',
+] as const)('Python preview refuses swapped or withdrawn %s without exposing a navigation reference', async (mode) => {
+  const f = await pythonProposal(),
+    input = structuredClone(f.previewInput)
+  if (mode === 'version') input.version++
+  else if (mode === 'id') input.preview.id = 'f'.repeat(64)
+  else if (mode === 'sha') input.preview.sha256 = 'f'.repeat(64)
+  else if (mode === 'parent' && f.options.authorization)
+    f.options.authorization.parentOrigin = 'https://other.test'
+  else if (mode === 'origin')
+    f.preview.reference.url = `https://attacker.test/v1/python-previews/${f.preview.reference.id}/index.html`
+  else if (mode === 'expiry') f.preview.reference.expiresAt = Date.now() - 1
+  else f.options.authorizationStatus = 403
+  const response = await f.post(input)
+  expect(response.status).toBeGreaterThanOrEqual(400)
+  const body = await response.text()
+  expect(body).not.toContain('"reference"')
+  expect(body).not.toContain('attacker.test')
+  expect(f.commands.map((item) => item.command.operation)).toEqual(['authorize-proposal'])
+})
+
+test('Python application rechecks current proposal policy independently from the old preview parent', async () => {
+  const f = await pythonProposal(),
+    input = { ...f.previewInput, operation: 'check-application' }
+  Reflect.deleteProperty(input, 'preview')
+  if (!f.options.authorization) throw new Error('Expected authorization')
+  f.options.authorization.parentOrigin = 'https://other-authorized-host.test'
+  expect(await (await f.post(input)).json()).toEqual({ allowed: true })
+  expect(f.commands.map((item) => item.command.operation)).toEqual(['get', 'authorize-proposal'])
+  expect(f.commands.at(-1)?.command).toMatchObject({ purpose: 'apply' })
+  f.options.authorizationStatus = 403
+  expect((await (await f.post(input)).json()).allowed).toBe(false)
+})
+
+test('a browser cannot supply a preview URL, executor token or private authorization command', async () => {
+  const f = await pythonProposal()
+  for (const input of [
+    { ...f.previewInput, url: 'https://attacker.test' },
+    { ...f.previewInput, token: crypto.randomUUID() },
+    { ...f.previewInput, operation: 'authorize-proposal', purpose: 'preview' },
+  ])
+    expect((await f.post(input)).status).toBe(400)
+  expect(f.commands).toHaveLength(0)
+})
+
 describe('Studio builder browser boundary', () => {
   test('availability is authorized, reports configuration without credentials and never creates work', async () => {
     const f = await fixture()
@@ -159,6 +339,64 @@ describe('Studio builder browser boundary', () => {
     expect(response.status).toBe(413)
     expect(f.commands).toHaveLength(0)
     expect(await response.text()).toContain('nenhum crédito')
+  })
+  test('uma revisão Python não chega ao compilador JavaScript enquanto falta o provider correspondente', async () => {
+    const f = await fixture({ preflightFails: true })
+    const base = await createStudioProRevision({
+      version: 2,
+      projectId: f.input.base.projectId,
+      templateId: 'python-empty',
+      files: { 'main.py': 'print(1)' },
+      directories: [],
+      assets: '{}',
+      assetFiles: {},
+      configuration: {
+        programmingLanguage: 'python',
+        extensions: [],
+        runtime: {
+          profileId: 'python-browser',
+          releaseId: 'python-1',
+          manifestSha256: 'a'.repeat(64),
+        },
+        python: {
+          entrypoint: 'main.py',
+          dependencyLock: {
+            lockVersion: 1,
+            target: 'browser',
+            pythonVersion: '3.14.2',
+            runtimeManifestSha256: 'a'.repeat(64),
+            requirementsSha256: await studioProDigest(''),
+            packages: [],
+          },
+        },
+      },
+    })
+    expect((await f.post({ ...f.input, base })).status).toBe(503)
+    expect(f.commands).toHaveLength(0)
+    spyOn(env, 'getEnv').mockReturnValue({
+      ...env.getEnv(),
+      STUDIO_PYTHON_RUNTIME_URL: 'https://python.test',
+      STUDIO_PYTHON_RUNTIME_TOKEN: 'private-python-token-with-32-characters',
+      STUDIO_PYTHON_LANGUAGE_URL: 'https://language.test',
+      STUDIO_PYTHON_LANGUAGE_TOKEN: 'private-language-token-with-32-characters',
+      STUDIO_PRO_RUNTIME_URL: undefined,
+      STUDIO_PRO_RUNTIME_TOKEN: undefined,
+    })
+    expect(
+      await (
+        await f.post({
+          operation: 'availability',
+          templateId: 'python-empty',
+          programmingLanguage: 'python',
+        })
+      ).json(),
+    ).toEqual({ available: true })
+    expect((await f.post({ ...f.input, base, pensaMissionId: crypto.randomUUID() })).status).toBe(
+      400,
+    )
+    expect(f.commands).toHaveLength(0)
+    expect((await f.post({ ...f.input, base })).status).toBe(200)
+    expect(f.commands.map((item) => item.command.operation)).toEqual(['create'])
   })
   test('session, active status, support, entitlement, level and origin are checked before creating work', async () => {
     for (const [options, status] of [

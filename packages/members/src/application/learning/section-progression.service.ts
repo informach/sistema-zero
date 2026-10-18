@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import { ValidationError } from '@sistemazero/core/errors'
+import { awaitWithSignal } from '@sistemazero/core/http'
 import {
   type ExecutionObjectiveRequest,
   executionProjectChecks,
@@ -18,11 +19,22 @@ import {
   type SectionPendingItem,
   type SectionProgressRecord,
   type SectionProgressView,
+  type SectionProjectLiveContext,
+  SectionProjectLiveContextSchema,
   sectionCompletionIssues,
   sectionProgressView,
+  sectionProjectChecksEnvironmentIssue,
+  sectionPythonProjectActivity,
   submissionFreshness,
   submissionUpToDateWorkspace,
+  summarizeSectionObjectives,
 } from '@sistemazero/core/learning'
+import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
+import { StudioProjectCurationSchema } from '@sistemazero/core/studio/project-capabilities'
+import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
+import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-document'
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
+import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import { evaluateStudioSectionObjectives } from '@sistemazero/studio/server-project-checks'
 import type { CourseAudience, LessonWithContent } from '../../domain/course/course'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
@@ -44,10 +56,14 @@ import type {
   ProjectExecutionCheckOutput,
 } from '../../domain/ports/project-execution-checker.port'
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
+import type { StudioLessonBindingRepository } from '../../domain/ports/studio-lesson-binding-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import { stableJson } from '../../domain/shared/stable-json'
+import { StudioPythonActivityUnavailableError } from '../../domain/studio/python-activity.errors'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
+import type { LiveWorkspaceService } from '../live/live-workspace.service'
 import type { GamificationDeltaView } from '../mappers/views'
+import type { PythonActivityInspectionService } from '../studio/python-activity-inspection.service'
 import type { PlatformActionService } from './platform-action.service'
 
 /**
@@ -87,6 +103,11 @@ export class SectionProgressionService {
      */
     private readonly executor?: ProjectExecutionChecker,
     private readonly courseAudience?: (courseId: string) => Promise<CourseAudience>,
+    private readonly python?: {
+      inspections: Pick<PythonActivityInspectionService, 'grade'>
+      bindings: Pick<StudioLessonBindingRepository, 'find'>
+      live?: Pick<LiveWorkspaceService, 'forSession'>
+    },
   ) {}
 
   /**
@@ -246,34 +267,45 @@ export class SectionProgressionService {
   async read(
     owner: LearningOwner,
     lesson: LessonWithContent,
-    options: { settle?: SectionSettle } = {},
+    options: { settle?: SectionSettle; signal?: AbortSignal } = {},
   ): Promise<SectionProgressView | undefined> {
+    const signal = options.signal
+    const owned = <Value>(operation: () => Promise<Value>) =>
+      signal ? awaitWithSignal(operation, signal) : operation()
+    signal?.throwIfAborted()
     if (hasComingSoonBlock(lesson.blocks)) return undefined
-    const structure = playbackLessonStructure(lesson, await this.repository.getStructure(lesson.id))
+    const structure = playbackLessonStructure(
+      lesson,
+      await owned(() => this.repository.getStructure(lesson.id)),
+    )
     if (!hasSectionProgression(structure.sections)) return undefined
-    const freeOrder = (await this.courseModality?.(lesson.courseId)) === 'live'
+    const freeOrder =
+      (await owned(() => this.courseModality?.(lesson.courseId) ?? Promise.resolve(undefined))) ===
+      'live'
     const hasCertificateCriterion = structure.sections.some((section) =>
       section.completion?.blockIds.some((id) =>
         lesson.blocks.some((block) => block.id === id && block.kind === 'certificate'),
       ),
     )
-    const [completedLessons, records, learning, quizzes, submissions, certificate] =
-      await Promise.all([
-        this.progress.listCompletedLessonIds(owner.userId, lesson.courseId),
-        this.repository.getSectionProgress(owner, lesson.id),
-        this.repository.getProgress(owner, lesson.id),
-        this.quizzes.summarizeByBlockIds(
-          owner.userId,
-          lesson.blocks.filter((b) => b.kind === 'quiz').map((b) => b.id),
-        ),
-        this.submissions.summarizeByBlockIds(
-          owner.userId,
-          lesson.blocks.filter((b) => b.kind === 'studio' || b.kind === 'pinta').map((b) => b.id),
-        ),
-        hasCertificateCriterion
-          ? this.certificates.findByUserAndCourse(owner.userId, lesson.courseId)
-          : Promise.resolve(null),
-      ])
+    const [completedLessons, records, learning, quizzes, submissions, certificate] = await owned(
+      () =>
+        Promise.all([
+          this.progress.listCompletedLessonIds(owner.userId, lesson.courseId),
+          this.repository.getSectionProgress(owner, lesson.id),
+          this.repository.getProgress(owner, lesson.id),
+          this.quizzes.summarizeByBlockIds(
+            owner.userId,
+            lesson.blocks.filter((b) => b.kind === 'quiz').map((b) => b.id),
+          ),
+          this.submissions.summarizeByBlockIds(
+            owner.userId,
+            lesson.blocks.filter((b) => b.kind === 'studio' || b.kind === 'pinta').map((b) => b.id),
+          ),
+          hasCertificateCriterion
+            ? this.certificates.findByUserAndCourse(owner.userId, lesson.courseId)
+            : Promise.resolve(null),
+        ]),
+    )
     const completed = new Set(
       structure.legacyLayout ? [] : records.filter((r) => r.completedAt).map((r) => r.sectionId),
     )
@@ -305,10 +337,12 @@ export class SectionProgressionService {
         return workspace ? [[section.id, workspace] as const] : []
       }),
     )
-    const drafts = await this.draftStates(
-      owner.userId,
-      [...upToDateWorkspaces.values()],
-      (await this.courseAudience?.(lesson.courseId)) ?? 'kids',
+    const drafts = await owned(async () =>
+      this.draftStates(
+        owner.userId,
+        [...upToDateWorkspaces.values()],
+        (await this.courseAudience?.(lesson.courseId)) ?? 'kids',
+      ),
     )
     const settle = options.settle
     const settleBefore =
@@ -441,12 +475,14 @@ export class SectionProgressionService {
     }
     // Persist validated evidence, never the current navigation position. CAS prevents stale publication writes.
     if (!structure.legacyLayout && newlyComplete.length)
-      await this.repository.saveSectionProgress(
-        owner,
-        lesson.id,
-        structure.revision,
-        newlyComplete,
-        this.blockRevisions(lesson),
+      await owned(() =>
+        this.repository.saveSectionProgress(
+          owner,
+          lesson.id,
+          structure.revision,
+          newlyComplete,
+          this.blockRevisions(lesson),
+        ),
       )
     return sectionProgressView(structure.revision, structure.sections, completed, pending, {
       freeOrder,
@@ -459,7 +495,7 @@ export class SectionProgressionService {
     lesson: LessonWithContent,
     sectionId: string,
     privileged = false,
-    options: { settle?: SectionSettle } = {},
+    options: { settle?: SectionSettle; signal?: AbortSignal } = {},
   ) {
     const state = await this.read(owner, lesson, options)
     if (!state || privileged) return state
@@ -469,8 +505,16 @@ export class SectionProgressionService {
     return state
   }
 
-  async accessibleBlockIds(lesson: LessonWithContent, state: SectionProgressView) {
-    const structure = playbackLessonStructure(lesson, await this.repository.getStructure(lesson.id))
+  async accessibleBlockIds(
+    lesson: LessonWithContent,
+    state: SectionProgressView,
+    signal?: AbortSignal,
+  ) {
+    const read = () => this.repository.getStructure(lesson.id)
+    const structure = playbackLessonStructure(
+      lesson,
+      await (signal ? awaitWithSignal(read, signal) : read()),
+    )
     if (structure.revision !== state.revision) throw new LearningConflictError()
     const ids = new Set<string>()
     for (const s of structure.sections) {
@@ -488,14 +532,19 @@ export class SectionProgressionService {
     blockId: string,
     privileged = false,
     submission = false,
+    options: { signal?: AbortSignal } = {},
   ) {
+    const signal = options.signal
+    const owned = <Value>(operation: () => Promise<Value>) =>
+      signal ? awaitWithSignal(operation, signal) : operation()
+    signal?.throwIfAborted()
     if (privileged) return
-    const state = await this.read(owner, lesson)
+    const state = await this.read(owner, lesson, { signal })
     if (!state) return
     if (submission) {
       const structure = playbackLessonStructure(
         lesson,
-        await this.repository.getStructure(lesson.id),
+        await owned(() => this.repository.getStructure(lesson.id)),
       )
       if (structure.revision !== state.revision) throw new LearningConflictError()
       const section = structure.sections.find((s) => s.blockIds.includes(blockId))
@@ -505,7 +554,7 @@ export class SectionProgressionService {
         state.sections.find((s) => s.id === section.id)?.status === 'locked'
       )
         throw new SectionLockedError()
-    } else if (!(await this.accessibleBlockIds(lesson, state)).has(blockId))
+    } else if (!(await this.accessibleBlockIds(lesson, state, signal)).has(blockId))
       throw new SectionLockedError()
   }
 
@@ -564,104 +613,289 @@ export class SectionProgressionService {
     sectionId: string,
     revision: string,
     project: unknown,
-    context: { audience: CourseAudience; privileged: boolean },
+    context: {
+      audience: CourseAudience
+      privileged: boolean
+      signal?: AbortSignal
+      liveContext?: SectionProjectLiveContext
+      authorizeLesson?(signal: AbortSignal): Promise<LessonWithContent>
+    },
   ): Promise<{
     results: ProjectObjectiveResult[]
     passed: boolean
     sectionProgress: SectionProgressView | undefined
     gamification: GamificationDeltaView | null
   }> {
-    await this.assertSection(owner, lesson, sectionId)
-    const structure = await this.repository.getStructure(lesson.id)
+    let capturedProject: ReturnType<typeof copyStudioProjectJson>
+    try {
+      capturedProject = copyStudioProjectJson(project)
+    } catch {
+      throw new ValidationError('Projeto inválido ou muito grande.')
+    }
+    const serializedProject = JSON.stringify(capturedProject)
+    if (
+      typeof serializedProject !== 'string' ||
+      serializedProject.length > MAX_STUDIO_PROJECT_CHARS
+    )
+      throw new ValidationError('Projeto inválido ou muito grande.')
+    const pythonProject =
+      typeof capturedProject === 'object' &&
+      capturedProject !== null &&
+      'programmingLanguage' in capturedProject &&
+      capturedProject.programmingLanguage === 'python'
+    // Python retains the 50s operation/45s inspection ceilings. Shared JavaScript
+    // execution is independently bounded; a retired caller cannot persist its result.
+    const signal = AbortSignal.any([
+      AbortSignal.timeout(pythonProject ? 50_000 : 155_000),
+      ...(context.signal ? [context.signal] : []),
+    ])
+    const owned = <Value>(operation: () => Promise<Value>) => awaitWithSignal(operation, signal)
+    await owned(() => this.assertSection(owner, lesson, sectionId, false, { signal }))
+    const structure = await owned(() => this.repository.getStructure(lesson.id))
     if (!structure || structure.revision !== revision) throw new LearningConflictError()
     const section = structure.sections.find((s) => s.id === sectionId)
     const checks = section?.completion?.projectChecks
+      ? structuredClone(section.completion.projectChecks)
+      : undefined
     if (!section || !checks?.length)
       throw new ValidationError('Esta seção não possui verificação de projeto.')
-    if (project === undefined || JSON.stringify(project).length > MAX_STUDIO_PROJECT_CHARS)
-      throw new ValidationError('Projeto inválido ou muito grande.')
-    // Conferir pelo tipo do projeto que a AULA montou: um Pro enviado a uma parte clássica (ou o
-    // contrário) seria avaliado por outra régua.
-    const workspace = lesson.blocks.find((b) => b.id === section.workspaceBlockId)
+    const initialWorkspace = lesson.blocks.find((block) => block.id === section.workspaceBlockId)
     const initialProject =
-      workspace?.content.kind === 'studio' ? workspace.content.initialProject : undefined
-    if (initialProject !== undefined && projectKind(initialProject) !== projectKind(project))
-      throw new ValidationError('Este projeto não é do tipo desta parte.')
-    // Código da Ponte mais novo que os blocos: os blocos ainda não refletem o que a criança
-    // digitou, e o código gerado traz laços do próprio motor. O cartão espera o Estúdio terminar.
+      initialWorkspace?.content.kind === 'studio'
+        ? initialWorkspace.content.initialProject
+        : undefined
     if (
-      typeof project === 'object' &&
-      project !== null &&
-      (project as { bridgeCodeAhead?: unknown }).bridgeCodeAhead
+      initialProject !== undefined &&
+      projectKind(initialProject) !== projectKind(capturedProject)
+    )
+      throw new ValidationError('Este projeto não é do tipo desta parte.')
+    if (
+      typeof capturedProject === 'object' &&
+      capturedProject !== null &&
+      (capturedProject as { bridgeCodeAhead?: unknown }).bridgeCodeAhead
     )
       throw new StudioProjectSyncingError()
-    // Os objetivos que RODAM o jogo vão ao executor; se ele não responder, nada é guardado.
-    const executed = await this.runExecution(checks, project, initialProject, owner.userId)
-    const evaluation = evaluateStudioSectionObjectives(
-      checks,
-      project,
-      initialProject,
-      executed ? new Map(executed.results.map((r) => [r.id, r.passed])) : undefined,
-    )
-    const results = evaluation.results.map((r) => ({ id: r.checkId, passed: r.passed }))
     const sectionRevision = this.revision(section, lesson)
-    await this.repository.saveSectionProgress(
-      owner,
-      lesson.id,
-      revision,
-      [
+    const blockRevisions = this.blockRevisions(lesson)
+    const workspaceId = section.workspaceBlockId
+    const issue = sectionProjectChecksEnvironmentIssue(checks, initialProject)
+    if (issue) throw new ValidationError(issue)
+    const pythonChecks = checks.filter((check) => check.programmingLanguage === 'python')
+    let reauthorizePython:
+      | ((
+          authorizationSignal?: AbortSignal,
+        ) => Promise<import('@sistemazero/core/studio/project-capabilities').StudioProjectCuration>)
+      | undefined
+    if (pythonChecks.length) {
+      const dependencies = this.python
+      const authorizeLesson = context.authorizeLesson
+      if (!dependencies || !authorizeLesson || !workspaceId)
+        throw new StudioPythonActivityUnavailableError()
+      const parsed = StudioProjectDocumentSchema.safeParse(capturedProject)
+      if (!parsed.success || parsed.data.programmingLanguage !== 'python')
+        throw new ValidationError('Envie um projeto Python válido para estes objetivos.')
+      const parsedProject = parsed.data
+      const liveContext = context.liveContext
+        ? SectionProjectLiveContextSchema.parse(context.liveContext)
+        : undefined
+      let baselineId: string | undefined
+      reauthorizePython = async (authorizationSignal = signal) => {
+        const authorizeOwned = <Value>(operation: () => Promise<Value>) =>
+          awaitWithSignal(operation, authorizationSignal)
+        const fresh = await authorizeOwned(() => authorizeLesson(authorizationSignal))
+        if (fresh.id !== lesson.id || fresh.courseId !== lesson.courseId || !fresh.isPublished)
+          throw new LearningConflictError()
+        const currentStructure = await authorizeOwned(() => this.repository.getStructure(fresh.id))
+        const currentSection = currentStructure?.sections.find((item) => item.id === sectionId)
+        const currentWorkspace = fresh.blocks.find((block) => block.id === workspaceId)
+        if (
+          currentStructure?.revision !== revision ||
+          !currentSection ||
+          currentSection.workspaceBlockId !== workspaceId ||
+          this.revision(currentSection, fresh) !== sectionRevision ||
+          stableJson(currentSection.completion?.projectChecks) !== stableJson(checks) ||
+          currentWorkspace?.content.kind !== 'studio' ||
+          currentWorkspace.content.gallery
+        )
+          throw new LearningConflictError()
+        await authorizeOwned(() =>
+          this.assertSection(owner, fresh, sectionId, false, { signal: authorizationSignal }),
+        )
+        let configuration: import('@sistemazero/core/studio/project-capabilities').StudioProjectCuration
+        let admittedBaseline: string
+        if (liveContext) {
+          if (!dependencies.live || liveContext.context.blockId !== workspaceId)
+            throw new LearningConflictError()
+          const live = await authorizeOwned(() =>
+            dependencies
+              .live!.forSession(liveContext.context.sessionId ?? undefined)
+              .runtimeContext(
+                { id: owner.userId, accountId: owner.accountId, staff: false, name: '' },
+                {
+                  ...liveContext,
+                  subject: studioRuntimeSubject(parsedProject),
+                  operation: 'analyze',
+                },
+              ),
+          )
+          if (
+            !live.author ||
+            !live.binding ||
+            live.binding.lessonId !== fresh.id ||
+            live.binding.courseId !== fresh.courseId ||
+            live.workspace.learnerId !== owner.userId ||
+            live.workspace.accountId !== owner.accountId
+          )
+            throw new LearningConflictError()
+          admittedBaseline = live.binding.baselineId
+          configuration = StudioProjectCurationSchema.parse(live.binding.curation)
+        } else {
+          const binding = await authorizeOwned(() => dependencies.bindings.find(owner, workspaceId))
+          if (
+            !binding ||
+            binding.workspaceId ||
+            binding.baseline.lessonId !== fresh.id ||
+            binding.baseline.courseId !== fresh.courseId ||
+            parsedProject.id !== lessonStudioProjectId(workspaceId, owner.userId) ||
+            studioProjectContinuityIssue(
+              parsedProject,
+              binding.baseline.configuration.initialProject,
+            )
+          )
+            throw new LearningConflictError()
+          admittedBaseline = binding.baseline.id
+          configuration = binding.baseline.configuration
+        }
+        if (baselineId !== undefined && baselineId !== admittedBaseline)
+          throw new LearningConflictError()
+        baselineId = admittedBaseline
+        const { level, pythonLevel, allowBlocks, allowCategories, allowedModes, allowLevelReveal } =
+          configuration
+        return StudioProjectCurationSchema.parse({
+          level,
+          pythonLevel,
+          allowBlocks,
+          allowCategories,
+          allowedModes,
+          allowLevelReveal,
+        })
+      }
+    }
+    const submittedIssue = sectionProjectChecksEnvironmentIssue(checks, capturedProject)
+    if (submittedIssue) throw new ValidationError(submittedIssue)
+    let evaluation: {
+      results: { checkId: string; passed: boolean; optional: boolean }[]
+      passed: boolean
+    }
+    if (pythonChecks.length) {
+      const result = await owned(() =>
+        this.python!.inspections.grade({
+          userId: owner.userId,
+          accountId: owner.accountId,
+          project: capturedProject,
+          activity: sectionPythonProjectActivity(pythonChecks, section.objective),
+          clientResults: [],
+          signal,
+          authorize: (authorizationSignal) => reauthorizePython!(authorizationSignal),
+        }),
+      )
+      const byId = new Map(result.results.map((item) => [item.checkId, item.passed]))
+      if (checks.some((check) => !byId.has(check.id)))
+        throw new StudioPythonActivityUnavailableError()
+      evaluation = summarizeSectionObjectives(
+        checks.map((check) => ({
+          checkId: check.id,
+          passed: byId.get(check.id) === true,
+          optional: Boolean(check.optional),
+        })),
+      )
+    } else {
+      const javascriptChecks = checks.filter((check) => check.programmingLanguage !== 'python')
+      const executed = await owned(() =>
+        this.runExecution(javascriptChecks, capturedProject, initialProject, owner.userId),
+      )
+      evaluation = evaluateStudioSectionObjectives(
+        javascriptChecks,
+        capturedProject,
+        initialProject,
+        executed ? new Map(executed.results.map((r) => [r.id, r.passed])) : undefined,
+      )
+    }
+    if (reauthorizePython) await owned(reauthorizePython)
+    else if (context.authorizeLesson) {
+      const fresh = await owned(() => context.authorizeLesson!(signal))
+      if (fresh.id !== lesson.id || fresh.courseId !== lesson.courseId || !fresh.isPublished)
+        throw new LearningConflictError()
+      const current = await owned(() => this.repository.getStructure(fresh.id))
+      const freshSection = current?.sections.find((item) => item.id === sectionId)
+      if (
+        current?.revision !== revision ||
+        !freshSection ||
+        this.revision(freshSection, fresh) !== sectionRevision
+      )
+        throw new LearningConflictError()
+      await owned(() => this.assertSection(owner, fresh, sectionId, false, { signal }))
+    }
+    const results = evaluation.results.map((r) => ({ id: r.checkId, passed: r.passed }))
+    await owned(() =>
+      this.repository.saveSectionProgress(
+        owner,
+        lesson.id,
+        revision,
+        [
+          {
+            sectionId,
+            revision: sectionRevision,
+            completedAt: null,
+            projectPassed: evaluation.passed,
+            objectiveResults: results,
+          },
+        ],
+        blockRevisions,
         {
+          id: randomUUID(),
+          kind: 'section_project',
+          blockId: workspaceId ?? null,
           sectionId,
           revision: sectionRevision,
-          completedAt: null,
-          projectPassed: evaluation.passed,
-          objectiveResults: results,
+          createdAt: this.clock().toISOString(),
+          payload: {
+            sectionTitle: section.title,
+            project: capturedProject,
+            checks,
+            results: evaluation.results,
+            passed: evaluation.passed,
+            structureRevision: revision,
+          },
         },
-      ],
-      this.blockRevisions(lesson),
-      {
-        id: randomUUID(),
-        kind: 'section_project',
-        blockId: section.workspaceBlockId ?? null,
-        sectionId,
-        revision: sectionRevision,
-        createdAt: this.clock().toISOString(),
-        payload: {
-          sectionTitle: section.title,
-          project,
-          checks,
-          results: evaluation.results,
-          passed: evaluation.passed,
-          structureRevision: revision,
-        },
-      },
+      ),
     )
-    // O prêmio pede TUDO o que passou agora e quem deduplica é o ledger (índice único por
-    // usuário, tipo e fonte). Filtrar aqui pelo resultado guardado perdia o XP para sempre quando
-    // o prêmio falhava uma vez: o progresso já registrava "passou" e a próxima verificação não
-    // pedia de novo.
+    // The ledger deduplicates retries, including a reward retry after progress
+    // was saved successfully but an earlier award attempt failed.
     const extraPassed = evaluation.results
       .filter((r) => r.optional && r.passed)
       .map((r) => r.checkId)
     const requiredPassed = evaluation.passed
     const gamification =
       this.rewards && (requiredPassed || extraPassed.length)
-        ? await this.rewards.awardSectionObjectives({
-            userId: owner.userId,
-            accountId: owner.accountId,
-            lessonId: lesson.id,
-            sectionId,
-            workspaceBlockId: section.workspaceBlockId ?? null,
-            requiredPassed,
-            extraPassed,
-            audience: context.audience,
-            privileged: context.privileged,
-          })
+        ? await owned(() =>
+            this.rewards!.awardSectionObjectives({
+              userId: owner.userId,
+              accountId: owner.accountId,
+              lessonId: lesson.id,
+              sectionId,
+              workspaceBlockId: workspaceId ?? null,
+              requiredPassed,
+              extraPassed,
+              audience: context.audience,
+              privileged: context.privileged,
+            }),
+          )
         : null
     return {
       results,
       passed: evaluation.passed,
-      sectionProgress: await this.read(owner, lesson),
+      sectionProgress: await owned(() => this.read(owner, lesson, { signal })),
       gamification,
     }
   }

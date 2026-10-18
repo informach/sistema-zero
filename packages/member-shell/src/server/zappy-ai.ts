@@ -10,6 +10,8 @@ import {
   type StudioTutorSelection,
   studioProGameGuide,
 } from '@sistemazero/core/studio'
+import type { StudioTutorEnvironment } from '@sistemazero/core/studio/tutor-environment'
+import type { PythonCatalogEntry } from '@sistemazero/studio/python-authoring'
 import {
   SERVER_BLOCK_CATALOG,
   type ServerBlockCatalogEntry,
@@ -42,6 +44,7 @@ import {
   buildProjectOutline,
   type OutlineCatalogInfo,
 } from './zappy-project-outline'
+import { buildPythonZappyPrompt } from './zappy-python'
 import {
   isSafeZappyAnswer,
   isUnsafeZappyText,
@@ -66,6 +69,10 @@ const FULL_CATALOG_INFO: ReadonlyMap<string, OutlineCatalogInfo> = new Map(
 )
 
 const PROFILE_MARKER = '{{NOME_DO_PERFIL}}'
+export type ZappyTutorCatalogEntry = Pick<
+  ServerBlockCatalogEntry,
+  'type' | 'label' | 'category' | 'subcategory' | 'palettePath'
+> & { area: string }
 const LEVEL_RANK: Record<string, number> = {
   'iniciante-2d': 0,
   'iniciante-3d': 1,
@@ -76,6 +83,12 @@ const LEVEL_RANK: Record<string, number> = {
 }
 
 export interface ZappyContextInput {
+  environment?: StudioTutorEnvironment
+  python?: {
+    activeFile: string
+    workspace: 'ready' | 'pending' | 'unavailable'
+    source: StudioTutorCodeFile[]
+  }
   /** Resolvido no servidor pelo projeto Pensa pertencente ao perfil, nunca pelo cliente. */
   pensaMission?: {
     title: string
@@ -277,6 +290,7 @@ function deterministic(
 export function deterministicZappyReply(
   question: string,
   kind: ZappyContextInput['kind'] = 'classic',
+  language: 'javascript' | 'python' = 'javascript',
 ): ZappyStoredResponseView | null {
   const q = question
     .normalize('NFD')
@@ -295,9 +309,15 @@ export function deterministicZappyReply(
     )
   }
   const asksForPensa = /\b(?:abra|abrir|abre|use|usar|no|na|pelo)\s+(?:o\s+)?pensa\b/.test(q)
+  if (asksForPensa && language === 'python')
+    return deterministic(
+      'As missões do Pensa usam JavaScript por enquanto. Posso ajudar a organizar uma mecânica deste projeto Python aqui no Estúdio.',
+      'unsupported',
+    )
   if (
     asksForPensa ||
-    (kind !== 'pro' &&
+    (language === 'javascript' &&
+      kind !== 'pro' &&
       /\b(pensa|planej(?:ar|amento|e)|roteiro|ideia do jogo|organizar o jogo)\b/.test(q))
   ) {
     return deterministic(
@@ -799,6 +819,7 @@ function relevantBlocks(context: ZappyContextInput, question: string) {
 
 /** Turno recente da conversa (memória do tutor). */
 export interface ZappyRecentTurn {
+  programmingLanguage?: 'javascript' | 'python'
   role: 'user' | 'assistant'
   text: string
   kind?: ZappyContextInput['kind']
@@ -813,7 +834,10 @@ function compatibleKnowledge(
 
 function compatibleTurns(turns: readonly ZappyRecentTurn[], kind: ZappyContextInput['kind']) {
   return turns.filter(
-    (turn) => (!turn.kind || turn.kind === kind) && !studioTutorModeViolation(turn.text, kind),
+    (turn) =>
+      turn.programmingLanguage !== 'python' &&
+      (!turn.kind || turn.kind === kind) &&
+      !studioTutorModeViolation(turn.text, kind),
   )
 }
 
@@ -1132,13 +1156,25 @@ export function buildStudioZappyPrompt(input: {
   tier: StudioTier
   knowledge?: readonly ZappyKnowledgeHitView[]
   recentTurns?: readonly ZappyRecentTurn[]
+  /** Server-curated Python catalog, never deserialized from the question. */
+  pythonCatalog?: readonly PythonCatalogEntry[]
 }): {
   system: string
   user: string
-  catalog: readonly ServerBlockCatalogEntry[]
-  allowed: readonly ServerBlockCatalogEntry[]
+  catalog: readonly ZappyTutorCatalogEntry[]
+  allowed: readonly ZappyTutorCatalogEntry[]
   context: ZappyContextInput
 } {
+  if (input.context.environment?.programmingLanguage === 'python') {
+    if (!input.pythonCatalog)
+      throw new Error('O catálogo Python não foi autorizado neste contexto.')
+    return buildPythonZappyPrompt(
+      input.context,
+      input.question,
+      input.pythonCatalog,
+      input.recentTurns,
+    )
+  }
   if (input.context.kind === 'pro') {
     const { context, user } = proProjectData(input)
     return {
@@ -1233,7 +1269,7 @@ const QUOTED_BLOCK_RE = /bloco\s+["“]([^"”]{1,120})["”]/gi
  */
 export function unknownBlockNamesInText(
   text: string,
-  byType: ReadonlyMap<string, ServerBlockCatalogEntry>,
+  byType: ReadonlyMap<string, ZappyTutorCatalogEntry>,
 ): string[] {
   const labels = new Set<string>()
   for (const entry of byType.values()) labels.add(entry.label.trim().toLowerCase())
@@ -1261,10 +1297,11 @@ export function invalidStudioZappyAnswerReason(
   raw: RawAnswerValue,
   mode: ZappyContextInput['mode'],
   kind: ZappyContextInput['kind'] = mode === 'code' ? 'pro' : 'classic',
+  language: 'javascript' | 'python' = 'javascript',
 ): StudioZappyAnswerRejection | null {
   if (!isSafeZappyAnswer(raw.text)) return 'unsafe-text'
   if (/https?:\/\/|\bwww\./i.test(raw.text)) return 'url'
-  return studioTutorModeViolation(raw.text, kind)
+  return studioTutorModeViolation(raw.text, kind, language)
 }
 
 function limitSteps(text: string, maxSteps = 6): string {
@@ -1283,13 +1320,14 @@ function limitSteps(text: string, maxSteps = 6): string {
 export function validatedStudioZappyResponse(
   raw: RawAnswerValue,
   profileName: string,
-  byType: ReadonlyMap<string, ServerBlockCatalogEntry>,
+  byType: ReadonlyMap<string, ZappyTutorCatalogEntry>,
   instances: ReadonlyMap<string, string>,
   _mode: ZappyContextInput['mode'],
   kind: ZappyContextInput['kind'],
   knowledge: readonly ZappyKnowledgeHitView[],
   files: readonly StudioTutorCodeFile[] = [],
   sourceRevision?: number,
+  language: 'javascript' | 'python' = 'javascript',
 ): ZappyStoredResponseView {
   const fileReferences =
     kind === 'pro'
@@ -1383,7 +1421,7 @@ export function validatedStudioZappyResponse(
         item.length > 0 &&
         item.length <= 60 &&
         isSafeZappyAnswer(item) &&
-        !studioTutorModeViolation(item, kind),
+        !studioTutorModeViolation(item, kind, language),
     )
     .slice(0, 3)
   return {
@@ -1401,6 +1439,7 @@ export function validatedStudioZappyResponse(
 
 export interface StudioZappyAnswerInput {
   audience?: 'adult' | 'kids'
+  pythonCatalog?: readonly PythonCatalogEntry[]
   question: string
   context: ZappyContextInput
   tier: StudioTier
@@ -1411,6 +1450,7 @@ export interface StudioZappyAnswerInput {
 }
 
 export interface PreparedStudioZappyAnswer {
+  programmingLanguage: 'javascript' | 'python'
   files?: readonly StudioTutorCodeFile[]
   sourceRevision?: number
   system: string
@@ -1420,7 +1460,7 @@ export interface PreparedStudioZappyAnswer {
   kind: ZappyContextInput['kind']
   profileName: string
   knowledge: readonly ZappyKnowledgeHitView[]
-  byType: ReadonlyMap<string, ServerBlockCatalogEntry>
+  byType: ReadonlyMap<string, ZappyTutorCatalogEntry>
   instances: ReadonlyMap<string, string>
   lessons: ReadonlySet<string>
 }
@@ -1432,9 +1472,11 @@ export function prepareStudioZappyAnswer(input: StudioZappyAnswerInput): Prepare
   // citar um bloco real fora do top-N não pode derrubar a referência.
   const byType = new Map(allowed.map((entry) => [entry.type, entry]))
   const instances = new Map(context.blocks.map((block) => [block.id, block.type]))
-  const knowledge = input.knowledge ?? []
+  const knowledge =
+    context.environment?.programmingLanguage === 'python' ? [] : (input.knowledge ?? [])
   const env = getEnv()
   return {
+    programmingLanguage: context.environment?.programmingLanguage ?? 'javascript',
     system,
     user,
     files: context.kind === 'pro' ? context.code : undefined,
@@ -1512,7 +1554,12 @@ export async function answerPreparedStudioZappy(
       signal: opts?.signal,
     })
   let raw = await ask(prepared.user, 2)
-  let rejection = invalidStudioZappyAnswerReason(raw, prepared.mode, prepared.kind)
+  let rejection = invalidStudioZappyAnswerReason(
+    raw,
+    prepared.mode,
+    prepared.kind,
+    prepared.programmingLanguage,
+  )
   if (rejection && Date.now() - startedAt < 50_000) {
     console.warn('[studio-zappy] resposta reprovada — pedindo reparo', {
       reason: rejection,
@@ -1523,7 +1570,12 @@ export async function answerPreparedStudioZappy(
       `${prepared.user}\n\nATENÇÃO: sua resposta anterior foi reprovada porque ${REJECTION_HINTS[rejection]}. Gere uma NOVA resposta para a MESMA dúvida corrigindo exatamente isso.`,
       1,
     )
-    rejection = invalidStudioZappyAnswerReason(raw, prepared.mode, prepared.kind)
+    rejection = invalidStudioZappyAnswerReason(
+      raw,
+      prepared.mode,
+      prepared.kind,
+      prepared.programmingLanguage,
+    )
   }
   if (rejection) {
     console.warn('[studio-zappy] resposta do modelo reprovada', {
@@ -1549,6 +1601,7 @@ export async function answerPreparedStudioZappy(
     prepared.knowledge,
     prepared.files,
     prepared.sourceRevision,
+    prepared.programmingLanguage,
   )
   const requestedRefs = prepared.kind === 'pro' ? 0 : raw.blockReferences.length
   if (requestedRefs > response.blockReferences.length) {
@@ -1570,7 +1623,11 @@ export async function answerPreparedStudioZappy(
 export async function answerStudioZappy(
   input: StudioZappyAnswerInput,
 ): Promise<ZappyStoredResponseView> {
-  const fixed = deterministicZappyReply(input.question, input.context.kind)
+  const fixed = deterministicZappyReply(
+    input.question,
+    input.context.kind,
+    input.context.environment?.programmingLanguage,
+  )
   if (fixed) return fixed
   const { response } = await answerPreparedStudioZappy(prepareStudioZappyAnswer(input))
   return response

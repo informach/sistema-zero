@@ -15,8 +15,8 @@ import { persistLiveCourse } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
 
 /** The live course is read through the port; its SQL adapter has its own test. */
-const liveCourses = new InMemoryLiveCourses((course) =>
-  connection ? persistLiveCourse(connection, course) : Promise.resolve(),
+const liveCourses = new InMemoryLiveCourses((course, blocks) =>
+  connection ? persistLiveCourse(connection, course, blocks) : Promise.resolve(),
 )
 
 const databaseUrl = await prepareTestDatabase('sistemazero_live_corrections_test')

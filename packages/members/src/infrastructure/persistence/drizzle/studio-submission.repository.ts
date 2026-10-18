@@ -1,7 +1,22 @@
 import { randomUUID } from 'node:crypto'
 import { isGallerySubmission } from '@sistemazero/core/learning'
-import { and, asc, count, desc, eq, gte, inArray, isNotNull, lt, or, sql } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  or,
+  sql,
+} from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
+import { gallerySubmissionReceipt } from '../../../domain/learning/gallery-receipt'
 import { LearningConflictError } from '../../../domain/learning/learning.errors'
 import type {
   RecentStudioSubmission,
@@ -13,11 +28,13 @@ import type {
   StudioSubmissionRepository,
   StudioSubmissionState,
   StudioSubmissionSummary,
+  StudioSubmissionWriteResult,
 } from '../../../domain/ports/studio-submission-repository.port'
 import type { Database } from './db'
 import { lockLearningOwner } from './learning-owner-lock'
 import {
   courses,
+  galleryCopyAttempts,
   lessonBlocks,
   lessonEvidence,
   lessons,
@@ -33,7 +50,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
   async upsert(
     submission: StudioSubmissionRecord & { accountId: string },
     options?: { revision?: string; galleryRequestId?: string },
-  ): Promise<void> {
+  ): Promise<StudioSubmissionWriteResult> {
     // Reenvio = último vence: atualiza projeto + data + recado, preservando a linha (e o id).
     // ⚠️ As colunas da antiga auto-correção (`score/results/checked_at/passed_at`) não são
     // escritas nem lidas desde 18/10/2026: ficam com o que já existia.
@@ -54,7 +71,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       previousSubmittedAt: sql`${studioSubmissions.submittedAt}`,
     }
 
-    await this.db.transaction(async (tx) => {
+    return this.db.transaction(async (tx) => {
       await lockLearningOwner(tx, submission)
       // serializa concorrência de submit por aluno+bloco.
       await tx.execute(
@@ -62,7 +79,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       )
 
       const rows = await tx
-        .select({ project: studioSubmissions.project })
+        .select({ project: studioSubmissions.project, submittedAt: studioSubmissions.submittedAt })
         .from(studioSubmissions)
         .where(
           and(
@@ -74,7 +91,8 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
 
       if (options?.galleryRequestId) {
         const current = rows[0]?.project
-        if (isGallerySubmission(current) && current.requestId === options.galleryRequestId) return
+        if (isGallerySubmission(current) && current.requestId === options.galleryRequestId)
+          return { duplicateGallery: true as const, receipt: gallerySubmissionReceipt(rows[0]!) }
         const [alreadySubmitted] = await tx
           .select({ id: lessonEvidence.id })
           .from(lessonEvidence)
@@ -87,6 +105,26 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
           )
           .limit(1)
         if (alreadySubmitted) throw new LearningConflictError()
+      }
+      // The same owner lock fences cleanup. Retain the exact registered generation
+      // in this transaction, so an uncertain response cannot lose its accepted files.
+      if (isGallerySubmission(submission.project) && submission.project.copyGeneration) {
+        const retained = await tx
+          .update(galleryCopyAttempts)
+          .set({ retainedAt: new Date() })
+          .where(
+            and(
+              eq(galleryCopyAttempts.generation, submission.project.copyGeneration),
+              eq(galleryCopyAttempts.userId, submission.userId),
+              eq(galleryCopyAttempts.accountId, submission.accountId),
+              eq(galleryCopyAttempts.blockId, submission.blockId),
+              sql`${galleryCopyAttempts.snapshot} = ${JSON.stringify(submission.project)}::jsonb`,
+              isNull(galleryCopyAttempts.retiredAt),
+              gt(galleryCopyAttempts.expiresAt, new Date()),
+            ),
+          )
+          .returning({ generation: galleryCopyAttempts.generation })
+        if (!retained.length) throw new LearningConflictError()
       }
       const [block] = await tx
         .select()

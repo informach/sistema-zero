@@ -29,6 +29,23 @@ if total == 1 then redis.call('PEXPIRE', KEYS[1], tonumber(ARGV[2])) end
 return {total, fail}
 `
 
+// Verify ownership and settle the state/gate/counts in the same Redis turn.
+const SETTLE_TRIAL_LUA = `
+local raw = redis.call('GET', KEYS[1])
+if not raw then return 0 end
+local valid, state = pcall(cjson.decode, raw)
+if not valid or type(state) ~= 'table' or state.state ~= 'half-open' or state.trialToken ~= ARGV[1] then return 0 end
+if ARGV[2] == 'success' then
+  redis.call('DEL', KEYS[1], KEYS[3])
+else
+  local openedAt = tonumber(ARGV[3])
+  if ARGV[2] == 'cancel' then openedAt = state.openedAt end
+  redis.call('SET', KEYS[1], cjson.encode({state='open', openedAt=openedAt}), 'PX', ARGV[4])
+end
+redis.call('DEL', KEYS[2])
+return 1
+`
+
 // Sliding-window-counter atômico: rola a janela (prev/curr), incrementa e devolve
 // a contagem ponderada (string p/ preservar fração) + fim da janela.
 const SLIDING_LUA = `
@@ -121,6 +138,21 @@ export function createRedisStore(url: string): GatewayStore {
         String(windowMs),
       ])) as Array<string | number>
       return { total: Number(res?.[0] ?? 0), fail: Number(res?.[1] ?? 0) }
+    },
+
+    async settleCircuitTrial(keys, token, outcome, now, ttlMs) {
+      const result = await client.send('EVAL', [
+        SETTLE_TRIAL_LUA,
+        '3',
+        keys.state,
+        keys.gate,
+        keys.counts,
+        token,
+        outcome,
+        String(now),
+        String(ttlMs),
+      ])
+      return Number(result) === 1
     },
 
     async reset(key) {

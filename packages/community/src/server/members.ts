@@ -8,6 +8,7 @@ export const {
   listCatalog,
   getMyCourse,
   getLesson,
+  openLessonStudio,
   resolveAttachment,
   resolveEbook,
   markLessonComplete,

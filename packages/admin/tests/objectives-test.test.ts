@@ -63,4 +63,17 @@ describe('Testar agora: os objetivos contra o projeto inicial e o gabarito', () 
     const report = testSectionObjectives([{ ...laco, label: '  ' }], { initialProject: vazio })
     expect(report.rows[0]?.label).toBe('Objetivo 1')
   })
+
+  test('uma análise limitada é inconclusiva na autoria, sem reprovação nem quebra da tela', () => {
+    const report = testSectionObjectives([laco], {
+      initialProject: { kind: 'pro', tree: {} },
+      solutionProject: {
+        kind: 'pro',
+        tree: { 'main.js': { kind: 'file', content: 'while (true) break;'.padEnd(500_001) } },
+      },
+    })
+    expect(report.rows[0]?.solution).toBe('error')
+    expect(report.problems).toEqual([])
+    expect(report.notes.join(' ')).toContain('inconclusiva')
+  })
 })

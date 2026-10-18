@@ -106,5 +106,19 @@ test('o Estúdio ao vivo verifica o projeto do editor e atualiza o progresso da 
   expect(Boolean(screen.queryByText(/Usar repetição/))).toBe(true)
   fireEvent.click(screen.getByRole('button', { name: 'Verificar esta etapa' }))
   await waitFor(() => expect(refreshed).toBe(true))
-  expect(checked).toEqual({ revision: 'revision', project: canonical.project })
+  expect(checked).toEqual({
+    revision: 'revision',
+    project: canonical.project,
+    liveContext: {
+      context: {
+        kind: 'live',
+        sessionId: session,
+        workspaceId: canonical.id,
+        blockId: block,
+        deviceId: device,
+        writerEpoch: canonical.writerEpoch,
+      },
+      expectedWorkspaceRevision: canonical.revision,
+    },
+  })
 })

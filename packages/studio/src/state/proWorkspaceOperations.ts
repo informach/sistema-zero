@@ -3,18 +3,21 @@ import {
   type StudioProChange,
   studioProDigest,
 } from '@sistemazero/core/studio/pro-revision'
+import { isPythonProject, type EditableStudioProject as Project } from '../core/editableProject'
 import { buildProAssetBundle } from '../core/proAssets'
 import type { ProExample } from '../core/proExamples'
-import type { Project } from '../core/project'
 import type { ProjectTree } from '../core/proProject'
-import type { ProTextEdit } from '../monaco/pro/languageService'
-import type { ProLanguageSession } from '../monaco/pro/session'
+import type { ProWorkspaceLanguage } from '../modes/pro/workspace/language'
 import { flushProjectOperations, projectPersistence } from './projectOperations'
 import type { ProAssetEdit } from './projectStorageRevision'
 import { captureProjectStorageScope } from './projectStorageRuntime'
 import type { ProjectStoreApi } from './projectStore'
 import { applyProEditorChange, captureProRevision } from './proRevision'
+import { applyProTextEdits } from './proTextEdits'
 import { removeProNode, renameProNode, sanitizeProTree } from './proTree'
+import { normalizePythonProjectPath, pythonProjectLayoutError } from './pythonProjectLayout'
+
+export { applyProTextEdits } from './proTextEdits'
 
 export type ProWorkspaceIntent =
   | { kind: 'rename'; from: string; to: string }
@@ -47,43 +50,11 @@ export interface ProWorkspaceOperation {
   }
 }
 
-/** All offsets address the captured text; edits are never applied by regex. */
-export function applyProTextEdits(tree: ProjectTree, edits: readonly ProTextEdit[]): ProjectTree {
-  const next = { ...tree }
-  const byFile = new Map<string, ProTextEdit[]>()
-  for (const edit of edits) {
-    if (tree[edit.path]?.kind !== 'file' || edit.path.startsWith('node_modules/'))
-      throw new Error('Esta mudança alcança um arquivo fora do projeto editável.')
-    const list = byFile.get(edit.path) ?? []
-    list.push(edit)
-    byFile.set(edit.path, list)
-  }
-  for (const [path, changes] of byFile) {
-    const node = tree[path]!
-    if (node.kind !== 'file') throw new Error('Arquivo não encontrado.')
-    let text = node.content
-    let end = text.length
-    for (const edit of changes.sort((a, b) => b.start - a.start)) {
-      if (
-        !Number.isSafeInteger(edit.start) ||
-        !Number.isSafeInteger(edit.length) ||
-        edit.start < 0 ||
-        edit.length < 0 ||
-        edit.start + edit.length > end
-      )
-        throw new Error('As posições desta mudança não correspondem ao arquivo.')
-      text = text.slice(0, edit.start) + edit.text + text.slice(edit.start + edit.length)
-      end = edit.start
-    }
-    next[path] = { kind: 'file', content: text }
-  }
-  return next
-}
-
 export async function describeProTreeChange(
   project: Project,
   next: ProjectTree,
   summary: string,
+  pythonEntrypoint?: string,
 ): Promise<StudioProChange> {
   const base = await captureProRevision(project)
   const patches: StudioProChange['patches'] = []
@@ -103,6 +74,20 @@ export async function describeProTreeChange(
     baseHash: base.hash,
     summary,
     patches,
+    ...(pythonEntrypoint !== undefined &&
+    base.version === 2 &&
+    base.configuration.programmingLanguage === 'python' &&
+    pythonEntrypoint !== base.configuration.python.entrypoint
+      ? {
+          configuration: {
+            before: base.configuration,
+            after: {
+              ...base.configuration,
+              python: { ...base.configuration.python, entrypoint: pythonEntrypoint },
+            },
+          },
+        }
+      : {}),
     directories: {
       before: base.directories,
       after: Object.keys(next)
@@ -112,10 +97,23 @@ export async function describeProTreeChange(
   }
 }
 
+async function materialReferences(project: Project) {
+  if (isPythonProject(project)) {
+    if (project.kind !== 'pro') throw new Error('Abra um projeto Pro.')
+    const { buildPythonAssetBundle } = await import('../core/pythonAssets')
+    const { manifest } = await buildPythonAssetBundle(project.assets, {
+      files: Object.keys(project.tree).filter((path) => project.tree[path]?.kind === 'file'),
+      directories: Object.keys(project.tree).filter((path) => project.tree[path]?.kind === 'dir'),
+    })
+    return manifest.assets.map((entry) => ({ ...entry, url: entry.path }))
+  }
+  return (await buildProAssetBundle(project.assets, project.tree!)).manifest.assets
+}
+
 export async function prepareProWorkspaceOperation(
   store: ProjectStoreApi,
   projectId: string,
-  language: Pick<ProLanguageSession, 'requestForTree'> | null,
+  language: Pick<ProWorkspaceLanguage, 'requestForTree' | 'referencesToFile'> | null,
   intent: ProWorkspaceIntent,
 ): Promise<ProWorkspaceOperation> {
   const scope = captureProjectStorageScope(),
@@ -129,12 +127,24 @@ export async function prepareProWorkspaceOperation(
   if (!project || project.id !== projectId || project.kind !== 'pro' || !project.tree)
     throw new Error('O projeto aberto mudou.')
   const tree = project.tree
+  const python = isPythonProject(project)
+  let pythonEntrypoint = python ? project.python.entrypoint : undefined
+  const assertCurrent = () => {
+    if (
+      store.getState().project !== project ||
+      captureProjectStorageScope() !== scope ||
+      projectPersistence(store) !== adapter
+    )
+      throw new Error(
+        'O projeto mudou. Revise a operação novamente; suas edições foram preservadas.',
+      )
+  }
   if (intent.kind === 'material-delete') {
     const index = project.assets?.findIndex((asset) => asset.id === intent.id) ?? -1
     const asset = project.assets?.[index]
     if (!asset) throw new Error('Material não encontrado.')
-    const bundle = await buildProAssetBundle(project.assets, tree)
-    const url = bundle.manifest.assets.find((entry) => entry.id === asset.id)?.url
+    const manifest = await materialReferences(project)
+    const url = manifest.find((entry) => entry.id === asset.id)?.url
     const references = Object.entries(tree).flatMap(([path, node]) =>
       node.kind === 'file' && [asset.id, url].some((value) => value && node.content.includes(value))
         ? [path]
@@ -142,6 +152,7 @@ export async function prepareProWorkspaceOperation(
     )
     const base = await captureProRevision(project)
     const cover = project.coverAssetName ?? null
+    assertCurrent()
     return {
       id: `editor:${crypto.randomUUID()}`,
       projectId,
@@ -170,21 +181,27 @@ export async function prepareProWorkspaceOperation(
   let summary: string
   const warnings: string[] = []
   if (intent.kind === 'rename') {
-    const result = renameProNode(tree, intent.from, intent.to)
+    const to = python ? normalizePythonProjectPath(intent.to) : intent.to
+    if (!to) throw new Error('O caminho de destino não é válido.')
+    const normalizer = python ? normalizePythonProjectPath : undefined
+    const result = renameProNode(tree, intent.from, to, normalizer)
     if (result.error || !result.tree)
       throw new Error(result.error ?? 'Não foi possível mover o item.')
     if (result.tree === tree) throw new Error('Escolha um caminho diferente.')
     for (const path of Object.keys(tree))
       if (path === intent.from || path.startsWith(`${intent.from}/`))
-        pathMap[path] = intent.to + path.slice(intent.from.length)
-    const edits = await language.requestForTree(tree, 'renameFile', intent.from, intent.to)
+        pathMap[path] = to + path.slice(intent.from.length)
+    const edits = await language.requestForTree(tree, 'renameFile', intent.from, to)
     const edited = applyProTextEdits(tree, edits)
-    const moved = renameProNode(edited, intent.from, intent.to)
+    const moved = renameProNode(edited, intent.from, to, normalizer)
     if (!moved.tree) throw new Error(moved.error)
     next = moved.tree
-    summary = `Mover ${intent.from} para ${intent.to}`
+    if (pythonEntrypoint && pathMap[pythonEntrypoint]) pythonEntrypoint = pathMap[pythonEntrypoint]
+    summary = `Mover ${intent.from} para ${to}`
     warnings.push(
-      'Imports JavaScript e TypeScript serão atualizados. Confira referências em HTML, CSS e caminhos montados pelo código antes de jogar.',
+      python
+        ? 'As referências reconhecidas pela análise Python serão atualizadas. Confira imports dinâmicos e caminhos montados pelo código antes de jogar.'
+        : 'Imports JavaScript e TypeScript serão atualizados. Confira referências em HTML, CSS e caminhos montados pelo código antes de jogar.',
     )
     if (
       Object.keys(pathMap).some((path) =>
@@ -198,13 +215,19 @@ export async function prepareProWorkspaceOperation(
       )
   } else if (intent.kind === 'delete') {
     if (!tree[intent.path]) throw new Error('Item não encontrado.')
-    const dependents = await language.requestForTree(
-      tree,
-      'renameFile',
-      intent.path,
-      `${intent.path}.removed`,
+    if (
+      pythonEntrypoint &&
+      (pythonEntrypoint === intent.path || pythonEntrypoint.startsWith(`${intent.path}/`))
     )
-    const paths = [...new Set(dependents.map((item) => item.path))].filter(
+      throw new Error('Escolha outro arquivo inicial antes de excluir este item.')
+    if (python && !language.referencesToFile)
+      throw new Error('A análise das dependências Python ainda não está disponível.')
+    const dependents = language.referencesToFile
+      ? await language.referencesToFile(tree, intent.path)
+      : (
+          await language.requestForTree(tree, 'renameFile', intent.path, `${intent.path}.removed`)
+        ).map((item) => item.path)
+    const paths = [...new Set(dependents)].filter(
       (path) => path !== intent.path && !path.startsWith(`${intent.path}/`),
     )
     if (paths.length)
@@ -212,15 +235,17 @@ export async function prepareProWorkspaceOperation(
         `Referências conhecidas em: ${paths.join(', ')}. Esses arquivos podem precisar de ajustes.`,
       )
     warnings.push(
-      'Referências em HTML, CSS e caminhos dinâmicos exigem conferência manual. A recuperação fica disponível no histórico local.',
+      python
+        ? 'Imports dinâmicos e caminhos montados pelo código exigem conferência manual. A recuperação fica disponível no histórico local.'
+        : 'Referências em HTML, CSS e caminhos dinâmicos exigem conferência manual. A recuperação fica disponível no histórico local.',
     )
     next = removeProNode(tree, intent.path)
     summary = `Excluir ${intent.path}`
   } else if (intent.kind === 'example') {
     if (intent.asset) {
-      const bundle = await buildProAssetBundle(project.assets, tree)
+      const manifest = await materialReferences(project)
       if (
-        !bundle.manifest.assets.some(
+        !manifest.some(
           (asset) =>
             asset.id === intent.asset!.id &&
             asset.url === intent.asset!.url &&
@@ -233,7 +258,7 @@ export async function prepareProWorkspaceOperation(
     if (
       file?.kind !== 'file' ||
       file.content !== intent.source ||
-      !/\.[cm]?[jt]sx?$/.test(intent.path)
+      !(python ? /\.py$/ : /\.[cm]?[jt]sx?$/).test(intent.path)
     )
       throw new Error('O arquivo escolhido mudou. Abra o exemplo novamente.')
     const symbols = await language.requestForTree(tree, 'symbols', intent.path)
@@ -255,19 +280,22 @@ export async function prepareProWorkspaceOperation(
     )
     summary = `Renomear símbolo para ${intent.name}`
   }
-  const valid = sanitizeProTree(next)
+  const valid = python ? next : sanitizeProTree(next)
   if (!valid) throw new Error('A mudança ultrapassa os limites ou cria caminhos incompatíveis.')
-  const change = await describeProTreeChange(project, valid, summary)
+  if (isPythonProject(project)) {
+    const issue = pythonProjectLayoutError({
+      ...project,
+      tree: valid,
+      python: { ...project.python, entrypoint: pythonEntrypoint! },
+    })
+    if (issue) throw new Error(issue)
+  }
+  const change = await describeProTreeChange(project, valid, summary, pythonEntrypoint)
   if (change.patches.length > STUDIO_PRO_REVISION_LIMITS.maxPatches)
     throw new Error(
       `Esta operação altera mais de ${STUDIO_PRO_REVISION_LIMITS.maxPatches} arquivos. Organize uma pasta menor por vez para manter a recuperação completa.`,
     )
-  if (
-    store.getState().project !== project ||
-    captureProjectStorageScope() !== scope ||
-    projectPersistence(store) !== adapter
-  )
-    throw new Error('O projeto mudou. Revise a operação novamente; suas edições foram preservadas.')
+  assertCurrent()
   if (
     !change.patches.length &&
     JSON.stringify(change.directories?.before) === JSON.stringify(change.directories?.after)

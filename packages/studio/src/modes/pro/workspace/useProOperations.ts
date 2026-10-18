@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ProjectTree } from '../../../core/proProject'
-import type { ProLanguageSession } from '../../../monaco/pro/session'
 import { projectPersistence } from '../../../state/projectOperations'
 import { useProjectStoreApi } from '../../../state/projectStore'
 import {
@@ -17,13 +16,14 @@ import {
   type ProWorkspaceOperation,
   prepareProWorkspaceOperation,
 } from '../../../state/proWorkspaceOperations'
+import type { ProWorkspaceLanguage } from './language'
 
 export function useProOperations(
   projectId: string | undefined,
   publish: (tree: ProjectTree, pathMap: Record<string, string>) => void,
 ) {
   const store = useProjectStoreApi()
-  const language = useRef<ProLanguageSession | null>(null)
+  const language = useRef<ProWorkspaceLanguage | null>(null)
   const onPublish = useRef(publish)
   onPublish.current = publish
   const [pending, setPending] = useState<ProWorkspaceOperation | null>(null)
@@ -106,7 +106,7 @@ export function useProOperations(
     },
     prepare: (intent: ProWorkspaceIntent) =>
       run(async () => {
-        if (!language.current)
+        if (!language.current && intent.kind !== 'material-delete')
           throw new Error(
             'A análise do código ainda não está pronta. Tente novamente quando ela terminar.',
           )

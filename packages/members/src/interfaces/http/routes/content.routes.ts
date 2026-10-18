@@ -15,6 +15,7 @@ import type {
   LessonFields,
   ModuleFields,
 } from '../../../domain/ports/content-admin-repository.port'
+import type { StudioAuthoringPolicy } from '../../../domain/studio/authoring-policy'
 import { assertInternalCaller, requireAdmin } from '../auth'
 import {
   AdminStudioSubmissionParams,
@@ -46,6 +47,7 @@ export interface ContentRoutesDeps {
   studioSubmissions: StudioSubmissionsAdminService
   zappyKnowledge?: ZappyKnowledgeService
   zappyHistory?: ZappyHistoryService
+  studioAuthoringPolicy?: StudioAuthoringPolicy
 }
 
 type CourseInput = typeof CourseBody.static
@@ -132,6 +134,14 @@ export function contentRoutes(deps: ContentRoutesDeps) {
       .onTransform(({ headers }) =>
         assertInternalCaller(headers['x-internal-token'], deps.internalToken),
       )
+      .get('/studio/authoring-options', ({ headers, set }) => {
+        guard(headers)
+        set.headers['cache-control'] = 'private, no-store'
+        return {
+          legacyJavaScript: true as const,
+          catalog: deps.studioAuthoringPolicy?.describe() ?? null,
+        }
+      })
       .get('/zappy/knowledge/report', ({ headers }) => {
         guard(headers)
         if (!deps.zappyKnowledge) throw new Error('Base de conhecimento do Zappy não configurada')

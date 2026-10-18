@@ -1,0 +1,18 @@
+{
+  "profile": "turtle-browser-1",
+  "requestBytes": 1048576,
+  "requestChars": 1048576,
+  "operations": 4096,
+  "turtles": 128,
+  "items": 100000,
+  "points": 100000,
+  "imageBytes": 16777216,
+  "imagePixels": 4194304,
+  "totalImagePixels": 16777216,
+  "images": 128,
+  "inputEvents": 128,
+  "textChars": 16000,
+  "canvasWidth": 1920,
+  "canvasHeight": 1080,
+  "backingPixels": 8388608
+}

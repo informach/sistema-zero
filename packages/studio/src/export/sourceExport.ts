@@ -1,4 +1,4 @@
-import type { Project } from '#core'
+import { isPythonProject, type EditableStudioProject as Project } from '../core/editableProject'
 import { buildClassicFileMap, buildProFileMap, type ExportFileMap } from './fileMap'
 import { identityMinifiers } from './minify'
 import { proSourceInstructions } from './proSourceInstructions'
@@ -68,6 +68,11 @@ Divirta-se programando! 🚀
  * railway.json (isso é coisa do pacote de deploy, não do "continuar editando").
  */
 export async function buildSourceFiles(project: Project): Promise<SourceFilesResult> {
+  if (isPythonProject(project)) {
+    const captured = copyStudioProjectJson(project)
+    const { buildPythonSourceFiles } = await import('./pythonSource')
+    return buildPythonSourceFiles(captured)
+  }
   const isPro = project.kind === 'pro' && !!project.tree
   const warnings: string[] = []
   const files: ExportFileMap = {}
@@ -107,6 +112,7 @@ export async function exportProjectSource(
   options: { signal?: AbortSignal } = {},
 ): Promise<SourceExportResult> {
   options.signal?.throwIfAborted()
+  const name = project.name
   const { files, warnings } = await buildSourceFiles(project)
   options.signal?.throwIfAborted()
   const bytes = await zipFiles(files, options)
@@ -115,5 +121,7 @@ export async function exportProjectSource(
   const blobBytes = new Uint8Array(bytes.byteLength)
   blobBytes.set(bytes)
   const blob = new Blob([blobBytes], { type: 'application/zip' })
-  return { blob, filename: `${sanitizeBaseFilename(project.name)}.zip`, warnings }
+  return { blob, filename: `${sanitizeBaseFilename(name)}.zip`, warnings }
 }
+
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'

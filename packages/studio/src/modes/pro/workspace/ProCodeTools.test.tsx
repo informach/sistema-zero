@@ -3,6 +3,8 @@ import { act, fireEvent, render } from '@testing-library/react'
 import type * as Monaco from 'monaco-editor'
 import type { ProjectTree } from '../../../core/proProject'
 import type { ProLanguageSession } from '../../../monaco/pro/session'
+import { pythonDocumentOffset } from '../../../python/language/editorCoordinates'
+import type { ProWorkspaceLanguage } from './language'
 import { ProCodeTools } from './ProCodeTools'
 
 function toolsFixture(language: ProLanguageSession | null) {
@@ -33,6 +35,48 @@ function toolsFixture(language: ProLanguageSession | null) {
     format: () => {},
   }
 }
+
+it('maps a normalized Python editor cursor to the unchanged saved source for references and symbols', async () => {
+  const source = '# a\r\n# b\nvalor = 1\nprint(valor)\n'
+  const buffer = source.replace(/\r\n/g, '\n')
+  const calls: unknown[][] = []
+  const language = {
+    documentOffset: pythonDocumentOffset,
+    request: async (method: string, ...args: unknown[]) => {
+      calls.push([method, ...args])
+      return method === 'symbols'
+        ? [{ name: 'valor', start: source.indexOf('valor'), depth: 0 }]
+        : []
+    },
+  } as unknown as ProWorkspaceLanguage
+  const props = toolsFixture(null)
+  const view = render(
+    <ProCodeTools
+      {...props}
+      path="main.py"
+      tree={{ 'main.py': { kind: 'file', content: source } }}
+      language={language}
+      editor={{
+        current: {
+          getModel: () => ({
+            uri: { path: '/test/main.py' },
+            getValue: () => buffer,
+            getWordAtPosition: () => ({ word: 'valor' }),
+          }),
+          getPosition: () => ({ lineNumber: 4, column: 7 }),
+        } as unknown as Monaco.editor.IStandaloneCodeEditor,
+      }}
+    />,
+  )
+  await act(async () => fireEvent.click(view.getByRole('button', { name: 'Símbolos do arquivo' })))
+  expect(view.queryByRole('button', { name: 'valor' })).not.toBeNull()
+  fireEvent.click(view.getByRole('button', { name: 'Comandos…' }))
+  await act(async () => {
+    fireEvent.click(view.getByRole('button', { name: /Localizar referências.*Shift/ }))
+  })
+  expect(calls).toContainEqual(['references', 'main.py', source.lastIndexOf('valor')])
+  expect(view.queryByText(/Clique no nome dentro do código/)).toBeNull()
+})
 
 it('loads an already open symbols panel when the language session becomes ready', async () => {
   const props = toolsFixture(null)

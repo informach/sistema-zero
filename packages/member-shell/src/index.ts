@@ -16,6 +16,7 @@ import { createStudioAiReconcileRoutes } from './routes/studio-ai-reconcile'
 import { createStudioBuilderRoutes } from './routes/studio-builder'
 import { createStudioBuilderExecutorRoutes } from './routes/studio-builder-executor'
 import { createStudioOpenRouterRoutes } from './routes/studio-openrouter'
+import { createStudioPythonLanguageRoutes } from './routes/studio-python-language'
 import { createStudioZappyRoutes } from './routes/studio-zappy'
 import { createStudyAccessRoutes } from './routes/study-access'
 import { createVoiceRoutes } from './routes/voice'
@@ -90,6 +91,7 @@ export function createShell(cfg: ShellConfig) {
     ...createHubRoutes({ hub, members, media, session, audience: cfg.audience }),
     ...createHelpdeskRoutes({ gateway, session, audience: cfg.audience }),
     ...createStudioRoutes({ hub, members, media, audience: cfg.audience }),
+    ...createStudioPythonLanguageRoutes(media, { members, audience: cfg.audience }),
     ...createStudioZappyRoutes({ members, session, audience: cfg.audience }),
     ...createStudioBuilderRoutes({ members, session, audience: cfg.audience }),
     ...createStudioBuilderExecutorRoutes({ members, audience: cfg.audience }),

@@ -1,10 +1,14 @@
+import { ValidationError } from '@sistemazero/core/errors'
 import {
   EXECUTION_COMPARES,
   EXECUTION_GAME_FIELDS,
   EXECUTION_KEYS,
   EXECUTION_LIMITS,
+  isExecutionJson,
   PLATFORM_ACTIONS,
   PROJECT_CHECK_HINT_MAX,
+  SectionProjectLiveContextSchema,
+  SectionPythonProjectCheckDraftSchema,
   TEACHER_NOTES_MAX,
 } from '@sistemazero/core/learning'
 import {
@@ -27,6 +31,14 @@ import { t } from 'elysia'
 import { fieldOptionsSchema, ProjectBlockRelationshipsSchema } from './project-pattern.schema'
 
 const Id = t.String({ format: 'uuid' })
+const ExecutionJsonValue = t
+  .Transform(t.Unknown())
+  .Decode((value) => {
+    if (!isExecutionJson(value))
+      throw new ValidationError('O caso de função precisa usar valores JSON dentro do limite.')
+    return value
+  })
+  .Encode((value) => value)
 const Label = t.String({ minLength: 1, maxLength: 2000 })
 const Choices = t.Array(t.Object({ id: t.String({ minLength: 1, maxLength: 80 }), label: Label }), {
   minItems: 2,
@@ -716,8 +728,8 @@ export const SectionRule = t.Union([
     module: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
     cases: t.Array(
       t.Object({
-        args: t.Array(t.Unknown(), { maxItems: EXECUTION_LIMITS.maxArgs }),
-        expected: t.Unknown(),
+        args: t.Array(ExecutionJsonValue, { maxItems: EXECUTION_LIMITS.maxArgs }),
+        expected: ExecutionJsonValue,
       }),
       { minItems: 1, maxItems: EXECUTION_LIMITS.maxCases },
     ),
@@ -745,15 +757,35 @@ export const SectionCompletionSchema = t.Object({
   submissionUpToDate: t.Optional(t.Literal(true)),
   projectChecks: t.Optional(
     t.Array(
-      t.Object({
-        id: t.String({ minLength: 1, maxLength: 200 }),
-        label: t.String({ maxLength: 200 }),
-        rule: SectionRule,
-        // Declarados de propósito (18/10/2026): o `normalize` do Elysia apagaria a dica e a marca
-        // de extra em silêncio, e o objetivo extra viraria obrigatório no rascunho.
-        hint: t.Optional(t.String({ maxLength: PROJECT_CHECK_HINT_MAX })),
-        optional: t.Optional(t.Literal(true)),
-      }),
+      t.Union([
+        t
+          .Transform(
+            t.Object(
+              {
+                id: t.String({ minLength: 1, maxLength: 128 }),
+                label: t.String({ maxLength: 200 }),
+                hint: t.Optional(t.String({ maxLength: PROJECT_CHECK_HINT_MAX })),
+                optional: t.Optional(t.Literal(true)),
+                programmingLanguage: t.Literal('python'),
+                profileId: t.String({ minLength: 1, maxLength: 128 }),
+                rule: t.Unknown(),
+              },
+              { additionalProperties: false },
+            ),
+          )
+          .Decode((value) => SectionPythonProjectCheckDraftSchema.parse(value))
+          .Encode((value) => value),
+        t.Object({
+          id: t.String({ minLength: 1, maxLength: 200 }),
+          label: t.String({ maxLength: 200 }),
+          programmingLanguage: t.Optional(t.Literal('javascript')),
+          rule: SectionRule,
+          // Declarados de propósito (18/10/2026): o `normalize` do Elysia apagaria a dica e a marca
+          // de extra em silêncio, e o objetivo extra viraria obrigatório no rascunho.
+          hint: t.Optional(t.String({ maxLength: PROJECT_CHECK_HINT_MAX })),
+          optional: t.Optional(t.Literal(true)),
+        }),
+      ]),
       { maxItems: 20 },
     ),
   ),
@@ -773,7 +805,16 @@ export const ProjectChecksTestBody = t.Object({
     { minItems: 1, maxItems: 20 },
   ),
 })
-export const SectionProjectBody = t.Object({ revision: Id, project: t.Unknown() })
+export const SectionProjectBody = t.Object({
+  revision: Id,
+  project: t.Unknown(),
+  liveContext: t.Optional(
+    t
+      .Transform(t.Unknown())
+      .Decode((value) => SectionProjectLiveContextSchema.parse(value))
+      .Encode((value) => value),
+  ),
+})
 export const LessonSectionSchema = t.Object({
   id: Id,
   title: t.String({ minLength: 1, maxLength: 200 }),

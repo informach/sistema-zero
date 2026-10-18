@@ -188,7 +188,12 @@ function StudioProClientSession({
       idleMs: 10_000,
       maxFormatVersion: STUDIO_PROJECT_FORMAT_VERSION,
     })
-    const sync = createStudioCloudSync({ studio: mod, cloud: created, viewerId: localNamespace })
+    const sync = createStudioCloudSync({
+      studio: mod,
+      cloud: created,
+      viewerId,
+      localNamespace,
+    })
     const detach = sync.attach()
     setPreparation({
       viewerId,
@@ -260,7 +265,10 @@ function StudioProClientSession({
               </div>
             )}
           <StudioProEditor
-            viewerId={localNamespace || null}
+            audience={audience}
+            freeRuntime
+            viewerId={viewerId}
+            storageNamespace={localNamespace}
             projectId={projectId}
             theme={theme}
             onExit={onExit}

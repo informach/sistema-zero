@@ -1,5 +1,13 @@
 import type { CourseAudience } from '../course/course'
 import type { SubmissionBlockKind } from '../course/lesson-block'
+import type { gallerySubmissionReceipt } from '../learning/gallery-receipt'
+
+export type StudioSubmissionWriteResult =
+  | undefined
+  | {
+      duplicateGallery: true
+      receipt: ReturnType<typeof gallerySubmissionReceipt>
+    }
 
 /** Entrega do projeto do Estúdio (1 linha por aluno+bloco, upsert — último vence). */
 export interface StudioSubmissionRecord {
@@ -163,7 +171,7 @@ export interface StudioSubmissionRepository {
       revision?: string
       galleryRequestId?: string
     },
-  ): Promise<void>
+  ): Promise<StudioSubmissionWriteResult>
   /**
    * Estado das entregas do aluno nos `blockIds` — usado pelo gate da conclusão
    * (submitted = tem entrada). Lote por aula.

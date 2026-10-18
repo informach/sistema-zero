@@ -23,7 +23,8 @@ export interface ProProjectLanguageInput {
 }
 export interface ProEditorDiagnostic {
   path: string
-  code: number
+  code: number | string
+  source?: 'typescript' | 'pyright'
   line: number
   message: string
   column?: number

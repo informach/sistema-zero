@@ -188,10 +188,14 @@ describe.skipIf(!databaseUrl)('cursos ao vivo no PostgreSQL real', () => {
         allowLevelReveal: false,
       },
     })
-    const plain = await block(live.lessons[1]!, { kind: 'studio', initialProject: seed })
+    const plain = await block(live.lessons[1]!, {
+      kind: 'studio',
+      initialProject: seed,
+      pythonLevel: 2,
+    })
     expect(await repository.studioBlock(live.lessons[1]!, plain)).toMatchObject({
       chain: null,
-      studio: {},
+      studio: { pythonLevel: 2 },
     })
     const text = await block(
       live.lessons[0]!,

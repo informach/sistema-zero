@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "sourceBytes": 1048576,
+  "nodes": 20000,
+  "tokens": 60000,
+  "depth": 80,
+  "responseBytes": 8388608,
+  "requestBytes": 8388608
+}

@@ -66,10 +66,18 @@ export {
  * entrada no editor pro sem montar o runtime pesado. Ver docs/embedding.md.
  */
 export { canBootWebContainer as canRunProMode } from './components/terminal/webContainerClient'
+export type {
+  EditableStudioProject,
+  PythonClassicProjectDocument,
+  PythonProjectDocument,
+  PythonProProjectDocument,
+} from './core/editableProject'
+export { isPythonProject } from './core/editableProject'
 export {
   type CaptureCoverOptions,
   captureCoverFromProject,
 } from './cover/coverCapture'
+export { downloadProjectAsJSON } from './export/download'
 export { replaceLocalProject } from './persistence/local'
 export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/types'
 export type { PreviewSecurityProfile } from './preview/csp'
@@ -99,6 +107,7 @@ export {
   buildTilemapGameProject,
   type TilemapGamePayload,
 } from './projects/tilemapGame'
+export type { StudioRuntimeEnvironment } from './runtime/environment'
 export {
   // "Guardado na sua conta": o host observa toda escrita/apagamento local (subir
   // para a nuvem) e relê o snapshot COMPLETO (com blocos) na hora de subir. A descida
@@ -174,8 +183,10 @@ export type {
   StudioTutorFeedbackInput,
   StudioTutorHelpReference,
   StudioTutorHistoryMessage,
+  StudioTutorHistoryPage,
   StudioTutorLessonReference,
   StudioTutorProjectContext,
+  StudioTutorRequestTransport,
   StudioTutorResponse,
   StudioTutorScope,
 } from './studio/tutor'

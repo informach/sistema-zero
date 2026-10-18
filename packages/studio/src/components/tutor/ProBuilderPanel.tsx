@@ -2,12 +2,14 @@ import {
   parseStudioProAssistanceRequest,
   type StudioProAssistanceRequest,
 } from '@sistemazero/core/studio/pro-assistance'
-import type {
-  StudioProBuilderAdapter,
-  StudioProBuilderView,
+import {
+  type StudioProBuilderAdapter,
+  type StudioProBuilderView,
+  studioProBuilderPreviewExpiresAt,
 } from '@sistemazero/core/studio/pro-builder'
 import { studioProChangeScopeIssue } from '@sistemazero/core/studio/pro-change-scope'
 import { studioProBuildEnvelopeIssue } from '@sistemazero/core/studio/pro-runtime-capabilities'
+import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python-pro-execution'
 import { lazy, Suspense, useEffect, useId, useRef, useState } from 'react'
 import {
   boundedProAssistanceSummary,
@@ -200,7 +202,11 @@ export default function ProBuilderPanel({
     setCheckingAvailability(Boolean(adapter.availability))
     if (adapter.availability)
       void adapter
-        .availability(store.getState().project?.proMeta?.templateId ?? '', controller.signal)
+        .availability(
+          store.getState().project?.proMeta?.templateId ?? '',
+          controller.signal,
+          store.getState().project?.programmingLanguage ?? 'javascript',
+        )
         .then((value) => {
           if (valid()) setAvailability(value)
         })
@@ -328,6 +334,8 @@ export default function ProBuilderPanel({
         if (project?.id !== projectId || project.kind !== 'pro')
           throw new Error('O projeto aberto mudou.')
         const payload = await captureProRevisionPayload(project)
+        const python =
+          payload.base.version === 2 && payload.base.configuration.programmingLanguage === 'python'
         const meta = getProAssistance(project)
         const summary = boundedProAssistanceSummary(meta)
         const editor = proCapture.current?.()
@@ -378,22 +386,31 @@ export default function ProBuilderPanel({
             .filter(Boolean),
           ...(selectedRequest ? { selection: selectedRequest } : {}),
           ...(diagnostics.length
-            ? { baseline: { revisionHash: payload.base.hash, source: 'typescript', diagnostics } }
+            ? {
+                baseline: {
+                  revisionHash: payload.base.hash,
+                  source: python ? 'pyright' : 'typescript',
+                  diagnostics,
+                },
+              }
             : {}),
           decisions: {
             hash: await digestProAssistance(meta),
             summary: summary || 'Sem decisões adicionais; preserve o projeto fora do pedido.',
           },
         })
-        const issue = studioProBuildEnvelopeIssue({
-          files: payload.base.files,
-          binaries: payload.binaries,
-          templateId: payload.base.templateId,
-          executionId: `builder-${'0'.repeat(32)}`,
-          parentOrigin: location.origin,
-          validate: true,
-        })
-        if (issue) throw new Error(issue)
+        if (python) await prepareStudioPythonProExecution(payload.base, payload.binaries)
+        else {
+          const issue = studioProBuildEnvelopeIssue({
+            files: payload.base.files,
+            binaries: payload.binaries,
+            templateId: payload.base.templateId,
+            executionId: `builder-${'0'.repeat(32)}`,
+            parentOrigin: location.origin,
+            validate: true,
+          })
+          if (issue) throw new Error(issue)
+        }
         if (
           captureProjectStorageScope() !== scope ||
           !current(version) ||
@@ -595,7 +612,12 @@ export default function ProBuilderPanel({
       if (!current(version)) return
       setJob(state)
       if (state?.result?.preview)
-        preview.show({ projectId, jobId: state.id, ...state.result.preview })
+        preview.show({
+          projectId,
+          jobId: state.id,
+          version: state.version,
+          ...state.result.preview,
+        })
     })
   const patches = job?.result?.change.patches ?? []
   const scopeIssue = job?.result
@@ -979,7 +1001,12 @@ export default function ProBuilderPanel({
                       onClick={() => {
                         if (
                           job.result?.preview &&
-                          !preview.show({ projectId, jobId: job.id, ...job.result.preview })
+                          !preview.show({
+                            projectId,
+                            jobId: job.id,
+                            version: job.version,
+                            ...job.result.preview,
+                          })
                         )
                           setError('A prévia não está disponível neste ambiente.')
                       }}
@@ -989,7 +1016,7 @@ export default function ProBuilderPanel({
                   )}
                   {adapter.refreshPreview &&
                     (!job.result.preview ||
-                      job.result.preview.artifact.expiresAt <= Date.now() ||
+                      studioProBuilderPreviewExpiresAt(job.result.preview) <= Date.now() ||
                       (preview.candidate?.jobId === job.id &&
                         ['expired', 'unavailable'].includes(preview.candidate.status))) && (
                       <button

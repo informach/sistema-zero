@@ -10,6 +10,9 @@ import {
   studioProBuilderView,
   studioProChangeScopeIssue,
 } from '@sistemazero/core/studio'
+import { isStudioDocumentTemplateId } from '@sistemazero/core/studio/project-format'
+import { verifyStudioPythonPreviewReference } from '@sistemazero/core/studio/python-preview'
+import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python-pro-execution'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
@@ -26,6 +29,10 @@ import {
 } from '../server/studio-assistance'
 import { refreshStudioBuilderPreview } from '../server/studio-builder'
 import {
+  studioBuilderRuntimeAvailable,
+  studioBuilderRuntimeOptions,
+} from '../server/studio-builder-runtime'
+import {
   preflightStudioProBuild,
   StudioProRuntimeInputError,
   StudioProRuntimeUpstreamError,
@@ -38,10 +45,22 @@ import { isUnsafeZappyText, redactZappySensitiveText } from '../server/zappy-saf
 const projectId = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/)
 const id = z.string().uuid()
 const bodySchema = z.discriminatedUnion('operation', [
+  z.strictObject({
+    operation: z.literal('authorize-python-preview'),
+    id,
+    projectId,
+    version: z.number().int().min(0),
+    revisionHash: z.string().regex(/^[a-f0-9]{64}$/),
+    preview: z.strictObject({
+      id: z.string().regex(/^[a-f0-9]{64}$/),
+      sha256: z.string().regex(/^[a-f0-9]{64}$/),
+    }),
+  }),
   z
     .object({
       operation: z.literal('availability'),
-      templateId: z.string().max(100).refine(isStudioProTemplateId),
+      templateId: z.string().max(100).refine(isStudioDocumentTemplateId),
+      programmingLanguage: z.enum(['javascript', 'python']).default('javascript'),
     })
     .strict(),
   z
@@ -153,6 +172,7 @@ export function createStudioBuilderRoutes(deps: {
           privileged: user.status === 'active' && isPrivilegedRole(user.role),
         }
         const env = getEnv()
+        const runtimeOptions = studioBuilderRuntimeOptions(env)
         const executionAvailable = async () => {
           if (!env.STUDIO_BUILDER_EXECUTOR_SECRET) return false
           try {
@@ -163,8 +183,13 @@ export function createStudioBuilderRoutes(deps: {
           }
         }
         if (input.operation === 'availability') {
+          if (
+            input.programmingLanguage === 'javascript' &&
+            !isStudioProTemplateId(input.templateId)
+          )
+            return error('Este modelo não é compatível com a construção remota.', 400)
           const available =
-            Boolean(env.STUDIO_PRO_RUNTIME_URL && env.STUDIO_PRO_RUNTIME_TOKEN) &&
+            studioBuilderRuntimeAvailable(runtimeOptions, input.programmingLanguage) &&
             (await executionAvailable())
           return NextResponse.json(
             {
@@ -179,12 +204,46 @@ export function createStudioBuilderRoutes(deps: {
             { headers: { 'Cache-Control': 'no-store' } },
           )
         }
-        if (
-          (input.operation === 'create' || input.operation === 'refresh-preview') &&
-          (!env.STUDIO_PRO_RUNTIME_URL || !env.STUDIO_PRO_RUNTIME_TOKEN)
-        )
-          return error('O ambiente de verificação ainda não está configurado.', 503)
         try {
+          if (input.operation === 'authorize-python-preview') {
+            if (!runtimeOptions.pythonRuntime)
+              return error('O serviço Python está indisponível.', 503)
+            const authorized = await deps.members.studioBuilder(
+              actor,
+              { ...input, operation: 'authorize-proposal', purpose: 'preview' },
+              request.signal,
+            )
+            request.signal.throwIfAborted()
+            const state = authorized.status === 200 ? authorized.body?.state : null,
+              preview = state?.job.result?.preview,
+              scope = state?.authorization,
+              parentOrigin = new URL(request.url).origin
+            if (
+              !scope ||
+              scope.parentOrigin !== parentOrigin ||
+              preview?.kind !== 'python' ||
+              state?.job.version !== input.version ||
+              state.job.id !== input.id ||
+              state.job.projectId !== input.projectId ||
+              scope.revisionHash !== input.revisionHash ||
+              preview.reference.id !== input.preview.id ||
+              preview.reference.sha256 !== input.preview.sha256
+            )
+              return error(
+                'A autorização desta prévia foi retirada. Consulte a proposta atual.',
+                409,
+              )
+            const reference = verifyStudioPythonPreviewReference(preview.reference, {
+              projectId: input.projectId,
+              revision: scope.executionRevision,
+              runtimeManifestSha256:
+                preview.validation.snapshot.configuration.runtime.manifestSha256,
+              serviceOrigin: new URL(runtimeOptions.pythonRuntime.runtimeUrl).origin,
+              parentOrigin,
+              now: Date.now(),
+            })
+            return NextResponse.json({ reference }, { headers: { 'Cache-Control': 'no-store' } })
+          }
           if (input.operation === 'list') {
             const response = await deps.members.studioBuilderHistory(actor, {
               projectId: input.projectId,
@@ -238,20 +297,60 @@ export function createStudioBuilderRoutes(deps: {
               if (mission?.snapshotHash !== job.assistance.request.mission.snapshotHash)
                 reason = 'O objetivo do Pensa mudou. Prepare uma nova proposta sobre o plano atual.'
             }
+            if (
+              !reason &&
+              job?.base.version === 2 &&
+              job.base.configuration.programmingLanguage === 'python'
+            ) {
+              const authorized = await deps.members.studioBuilder(
+                actor,
+                {
+                  operation: 'authorize-proposal',
+                  id: input.id,
+                  projectId: input.projectId,
+                  version: input.version,
+                  revisionHash: input.revisionHash,
+                  purpose: 'apply',
+                },
+                request.signal,
+              )
+              request.signal.throwIfAborted()
+              if (
+                authorized.status !== 200 ||
+                authorized.body?.state?.authorization?.revisionHash !== input.revisionHash
+              )
+                reason =
+                  'O acesso ao ambiente Python mudou. Prepare uma nova proposta antes de aplicar.'
+            }
             return NextResponse.json(
               { allowed: !reason, ...(reason ? { reason } : {}) },
               { headers: { 'Cache-Control': 'no-store' } },
             )
           }
           if (input.operation === 'refresh-preview') {
+            const saved = await deps.members.studioBuilder(
+              actor,
+              {
+                operation: 'get',
+                id: input.id,
+                projectId: input.projectId,
+              },
+              request.signal,
+            )
+            if (saved.status !== 200) return error('Não foi possível conferir esta proposta.', 503)
+            const base = saved.body?.state?.job.base
+            if (!base) return error('Esta proposta não está mais disponível.', 404)
+            const language =
+              base.version === 2 ? base.configuration.programmingLanguage : 'javascript'
+            if (!studioBuilderRuntimeAvailable(runtimeOptions, language))
+              return error('O ambiente de verificação ainda não está configurado.', 503)
             const job = await refreshStudioBuilderPreview({
               members: deps.members,
               actor,
               id: input.id,
               projectId: input.projectId,
               parentOrigin: new URL(request.url).origin,
-              runtimeUrl: env.STUDIO_PRO_RUNTIME_URL!,
-              runtimeToken: env.STUDIO_PRO_RUNTIME_TOKEN!,
+              ...runtimeOptions,
               signal: request.signal,
             })
             return NextResponse.json(
@@ -277,16 +376,21 @@ export function createStudioBuilderRoutes(deps: {
             } catch {
               return error('A revisão enviada é inválida. Abra novamente o projeto.', 400)
             }
-            if (!isStudioProTemplateId(base.templateId))
-              return error('Este modelo não é compatível com a construção remota.', 400)
+            const python = base.version === 2 && base.configuration.programmingLanguage === 'python'
+            if (!studioBuilderRuntimeAvailable(runtimeOptions, python ? 'python' : 'javascript'))
+              return error('O ambiente de verificação ainda não está configurado.', 503)
+            if (python && input.pensaMissionId)
+              return error('As missões do Pensa estão disponíveis em projetos JavaScript.', 400)
             let objective = redactZappySensitiveText(input.objective).text
             const assistance = sanitizeStudioAssistanceRequest(input.request)
-            const mission = await studioAssistanceMission(
-              deps.members,
-              user,
-              base.projectId,
-              input.pensaMissionId,
-            )
+            const mission = python
+              ? null
+              : await studioAssistanceMission(
+                  deps.members,
+                  user,
+                  base.projectId,
+                  input.pensaMissionId,
+                )
             if (mission) {
               assistance.mission = mission
               objective += `\nObjetivo do Pensa: ${mission.summary}`
@@ -296,17 +400,32 @@ export function createStudioBuilderRoutes(deps: {
                 'O contexto deste pedido, incluindo a missão, ficou grande demais. Resuma os critérios ou as decisões e tente novamente.',
                 400,
               )
-            await (deps.preflight ?? preflightStudioProBuild)({
-              files: base.files,
-              binaries: input.binaries,
-              templateId: base.templateId,
-              executionId: `builder-${input.id.replaceAll('-', '')}`,
-              parentOrigin: new URL(request.url).origin,
-              runtimeUrl: env.STUDIO_PRO_RUNTIME_URL!,
-              runtimeToken: env.STUDIO_PRO_RUNTIME_TOKEN!,
-              validate: true,
-              signal: request.signal,
-            })
+            if (python) {
+              // Admission checks canonical bytes and dependencies; it does not execute the
+              // initial program, which may be the very code the learner needs help fixing.
+              try {
+                await prepareStudioPythonProExecution(base, input.binaries, request.signal)
+              } catch {
+                return error('Os arquivos ou materiais Python enviados são inválidos.', 400)
+              }
+            } else {
+              if (!isStudioProTemplateId(base.templateId))
+                return error('Este modelo não é compatível com a construção remota.', 400)
+              const { runtimeUrl, runtimeToken } = runtimeOptions
+              if (!runtimeUrl || !runtimeToken)
+                return error('O ambiente de verificação ainda não está configurado.', 503)
+              await (deps.preflight ?? preflightStudioProBuild)({
+                files: base.files,
+                binaries: input.binaries,
+                templateId: base.templateId,
+                executionId: `builder-${input.id.replaceAll('-', '')}`,
+                parentOrigin: new URL(request.url).origin,
+                runtimeUrl,
+                runtimeToken,
+                validate: true,
+                signal: request.signal,
+              })
+            }
             command = {
               operation: 'create',
               id: input.id,
@@ -318,7 +437,7 @@ export function createStudioBuilderRoutes(deps: {
               parentOrigin: new URL(request.url).origin,
             }
           } else command = input
-          const response = await deps.members.studioBuilder(actor, command)
+          const response = await deps.members.studioBuilder(actor, command, request.signal)
           if (response.status !== 200 || !response.body)
             return error(
               'Não foi possível registrar a execução. Consulte o estado antes de tentar novamente.',

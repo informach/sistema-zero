@@ -84,8 +84,14 @@ function withParents(tree: ProjectTree, path: string): ProjectTree {
   return next
 }
 
-export function addProFile(tree: ProjectTree, path: string): ProTreeResult {
-  const norm = normalizeProPath(path, { expectFile: true })
+export type ProjectPathNormalizer = typeof normalizeProPath
+
+export function addProFile(
+  tree: ProjectTree,
+  path: string,
+  normalize: ProjectPathNormalizer = normalizeProPath,
+): ProTreeResult {
+  const norm = normalize(path, { expectFile: true })
   if (!norm) return { error: 'Nome de arquivo inválido (use .ts, .tsx, .css, .html…).' }
   if (tree[norm]) return { error: 'Já existe um arquivo ou pasta com esse caminho.' }
   const caseConflict = caseInsensitiveCollision(tree, norm)
@@ -99,8 +105,12 @@ export function addProFile(tree: ProjectTree, path: string): ProTreeResult {
   return { tree: next }
 }
 
-export function addProDir(tree: ProjectTree, path: string): ProTreeResult {
-  const norm = normalizeProPath(path)
+export function addProDir(
+  tree: ProjectTree,
+  path: string,
+  normalize: ProjectPathNormalizer = normalizeProPath,
+): ProTreeResult {
+  const norm = normalize(path)
   if (!norm) return { error: 'Nome de pasta inválido.' }
   if (tree[norm]) return { error: 'Já existe um arquivo ou pasta com esse caminho.' }
   const caseConflict = caseInsensitiveCollision(tree, norm)
@@ -121,11 +131,16 @@ export function setProFileContent(tree: ProjectTree, path: string, content: stri
   return { ...tree, [path]: { kind: 'file', content } }
 }
 
-export function renameProNode(tree: ProjectTree, from: string, to: string): ProTreeResult {
+export function renameProNode(
+  tree: ProjectTree,
+  from: string,
+  to: string,
+  normalize: ProjectPathNormalizer = normalizeProPath,
+): ProTreeResult {
   const node = tree[from]
   if (!node) return { error: 'Caminho não encontrado.' }
   const isFile = node.kind === 'file'
-  const norm = normalizeProPath(to, { expectFile: isFile })
+  const norm = normalize(to, { expectFile: isFile })
   if (!norm) return { error: 'Novo nome inválido.' }
   if (norm === from) return { tree }
   // Mover uma pasta para dentro dela mesma corromperia a árvore.

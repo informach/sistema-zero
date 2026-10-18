@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { createEmptyProject } from '@sistemazero/studio/project'
 import { ProjectDocumentError } from '@sistemazero/studio/project-document'
 import {
   keepRemoteAsOther,
@@ -21,6 +22,7 @@ function deps(recusa: unknown): StudioDraftDeps {
     blockId: 'bloco',
     projectId: 'projeto',
     backupId: 'projeto-outra',
+    initialProject: createEmptyProject('initial', 'Projeto inicial'),
   }
 }
 

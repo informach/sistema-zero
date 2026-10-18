@@ -1,5 +1,5 @@
 import { readJsonBodyWithLimit } from '@sistemazero/core/http'
-import { isStudioProPublication } from '@sistemazero/core/studio'
+import { isStudioPublication } from '@sistemazero/core/studio'
 import type { StudioShareAdapter } from '@sistemazero/studio'
 import { sessionFetch } from './session-fetch'
 
@@ -29,7 +29,7 @@ export function createStudioPublicationAdapter(): NonNullable<StudioShareAdapter
       throw new Error('Não foi possível consultar a publicação. Tente novamente.')
     }
     if (operation === 'get' && body === null) return null
-    if (!isStudioProPublication(body)) throw new Error('O histórico da publicação é inválido.')
+    if (!isStudioPublication(body)) throw new Error('O histórico da publicação é inválido.')
     return body
   }
   return {

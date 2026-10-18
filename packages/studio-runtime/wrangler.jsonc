@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "sistemazero-studio-runtime",
-  "main": "src/index.ts",
+  "main": "src/worker.ts",
   "compatibility_date": "2026-07-01",
   "compatibility_flags": ["nodejs_compat"],
   "triggers": {
@@ -10,6 +10,14 @@
   "r2_buckets": [
     {
       "binding": "PRO_ARTIFACTS",
+      "bucket_name": "sistemazero-studio-artifacts"
+    },
+    {
+      "binding": "PYTHON_INPUTS",
+      "bucket_name": "sistemazero-studio-artifacts"
+    },
+    {
+      "binding": "PYTHON_PREVIEWS",
       "bucket_name": "sistemazero-studio-artifacts"
     }
   ],
@@ -26,6 +34,10 @@
       {
         "class_name": "ProBuildSandbox",
         "name": "ProBuildSandbox"
+      },
+      {
+        "class_name": "PythonInspectionJob",
+        "name": "PythonInspectionJobs"
       }
     ]
   },
@@ -33,9 +45,18 @@
     {
       "new_sqlite_classes": ["ProBuildSandbox"],
       "tag": "v1"
+    },
+    {
+      "new_sqlite_classes": ["PythonInspectionJob"],
+      "tag": "v2-python-inspection-jobs"
     }
   ],
   "ratelimits": [
+    {
+      "name": "PYTHON_UPLOAD_RATE_LIMITER",
+      "namespace_id": "27003",
+      "simple": { "limit": 120, "period": 60 }
+    },
     {
       "name": "BUILD_RATE_LIMITER",
       "namespace_id": "27001",
@@ -60,6 +81,14 @@
         {
           "binding": "PRO_ARTIFACTS",
           "bucket_name": "sistemazero-studio-artifacts-staging"
+        },
+        {
+          "binding": "PYTHON_INPUTS",
+          "bucket_name": "sistemazero-studio-artifacts-staging"
+        },
+        {
+          "binding": "PYTHON_PREVIEWS",
+          "bucket_name": "sistemazero-studio-artifacts-staging"
         }
       ],
       "containers": [
@@ -75,10 +104,19 @@
           {
             "class_name": "ProBuildSandbox",
             "name": "ProBuildSandbox"
+          },
+          {
+            "class_name": "PythonInspectionJob",
+            "name": "PythonInspectionJobs"
           }
         ]
       },
       "ratelimits": [
+        {
+          "name": "PYTHON_UPLOAD_RATE_LIMITER",
+          "namespace_id": "27004",
+          "simple": { "limit": 120, "period": 60 }
+        },
         {
           "name": "BUILD_RATE_LIMITER",
           "namespace_id": "27002",

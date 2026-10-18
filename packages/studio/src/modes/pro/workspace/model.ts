@@ -23,11 +23,12 @@ export function emptyWorkspace(): ProWorkspacePreferences {
   }
 }
 
-export function initialWorkspace(tree: ProjectTree): ProWorkspacePreferences {
+export function initialWorkspace(tree: ProjectTree, entrypoint?: string): ProWorkspacePreferences {
   const paths = Object.keys(tree).filter((path) => tree[path]?.kind === 'file')
   const path =
-    ['src/main.tsx', 'src/main.ts', 'src/main.js', 'src/App.tsx', 'index.html'].find((candidate) =>
-      paths.includes(candidate),
+    [entrypoint, 'src/main.tsx', 'src/main.ts', 'src/main.js', 'src/App.tsx', 'index.html'].find(
+      (candidate): candidate is string =>
+        typeof candidate === 'string' && paths.includes(candidate),
     ) ?? paths[0]
   return path ? openWorkspaceFile(emptyWorkspace(), path) : emptyWorkspace()
 }

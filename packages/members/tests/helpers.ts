@@ -85,6 +85,12 @@ import { GetRoomService } from '../src/application/room/get-room.service'
 import { SaveRoomService } from '../src/application/room/save-room.service'
 import { SaveCourseRatingService } from '../src/application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from '../src/application/save-video-position/save-video-position.service'
+import { AuthorizeAuthoringRuntimeService } from '../src/application/studio/authorize-authoring-runtime.service'
+import { AuthorizeFreeRuntimeService } from '../src/application/studio/authorize-free-runtime.service'
+import { AuthorizeLessonRuntimeService } from '../src/application/studio/authorize-lesson-runtime.service'
+import { AuthorizePythonAnalysisService } from '../src/application/studio/authorize-python-analysis.service'
+import { FreeStudioAccessService } from '../src/application/studio/free-studio-access.service'
+import { OpenLessonStudioService } from '../src/application/studio/open-lesson-studio.service'
 import { StudioSubmissionsAdminService } from '../src/application/studio-submissions-admin/studio-submissions-admin.service'
 import { GetStudioUnlocksService } from '../src/application/studio-unlocks/get-studio-unlocks.service'
 import { SubmitQuizAttemptService } from '../src/application/submit-quiz-attempt/submit-quiz-attempt.service'
@@ -149,6 +155,7 @@ import {
 import { InMemoryLearningRepository } from './fakes/learning-in-memory'
 import { InMemoryLessonDraftRepository } from './fakes/lesson-draft-in-memory'
 import { InMemoryLiveLessonAccess } from './fakes/live-lesson-access-in-memory'
+import { InMemoryStudioLessonBindingRepository } from './fakes/studio-lesson-binding-in-memory'
 import { InMemoryToolUsageRepository } from './fakes/tool-usage-in-memory'
 
 export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
@@ -167,6 +174,20 @@ export function buildApp(
     deletedAccountIds?: string[]
     /** O executor dos objetivos que rodam o jogo (o studio-runtime); sem ele, 503. */
     projectExecutor?: import('../src/domain/ports/project-execution-checker.port').ProjectExecutionChecker
+    studioAuthoringPolicy?: import('../src/domain/studio/authoring-policy').StudioAuthoringPolicy
+    studioRuntimePolicy?: import('../src/domain/studio/runtime-policy').StudioRuntimePolicy
+    pythonActivities?: Pick<
+      import('../src/application/studio/python-activity-inspection.service').PythonActivityInspectionService,
+      'grade'
+    >
+    sectionPythonLive?: Pick<
+      import('../src/application/live/live-workspace.service').LiveWorkspaceService,
+      'forSession'
+    >
+    galleryStudioSource?: Pick<
+      import('../src/application/learning/studio-gallery-source.service').StudioGallerySourceService,
+      'load'
+    >
   } = {},
 ) {
   // Cache de posse das criações é por processo: cada app de teste começa limpo.
@@ -349,6 +370,7 @@ export function buildApp(
   } as unknown as Env
 
   const learningRepository = new InMemoryLearningRepository()
+  const studioBindings = new InMemoryStudioLessonBindingRepository()
   const preferencesRepository = new InMemoryProfilePreferencesRepository()
   const sectionProgression = new SectionProgressionService(
     learningRepository,
@@ -363,6 +385,13 @@ export function buildApp(
     awardGamification,
     opts.projectExecutor,
     async (courseId) => (await courses.findCourseById(courseId))?.audience ?? 'kids',
+    opts.pythonActivities
+      ? {
+          inspections: opts.pythonActivities,
+          bindings: studioBindings,
+          live: opts.sectionPythonLive,
+        }
+      : undefined,
   )
   const learning = new LearningService(
     learningRepository,
@@ -373,7 +402,18 @@ export function buildApp(
     teacherThreads,
     sectionProgression,
   )
-  const drafts = new InMemoryLessonDraftRepository(courses, learningRepository)
+  const drafts = new InMemoryLessonDraftRepository(
+    courses,
+    learningRepository,
+    opts.studioAuthoringPolicy,
+  )
+  const lessonDraftAccess = new LessonDraftAccessService(
+    courses,
+    checkAccess,
+    progress,
+    sectionProgression,
+    () => clock().getTime(),
+  )
   const submitStudio = new SubmitStudioProjectService(
     checkAccess,
     courses,
@@ -385,6 +425,35 @@ export function buildApp(
     () => randomUUID(),
     clock,
     sectionProgression,
+    studioBindings,
+  )
+  const authorizeAuthoringRuntime = new AuthorizeAuthoringRuntimeService(
+    drafts,
+    opts.studioRuntimePolicy,
+  )
+  const authorizeFreeRuntime = new AuthorizeFreeRuntimeService(
+    new FreeStudioAccessService(accessCheck, gamification, studioUnlocks, adultJourney),
+    opts.studioRuntimePolicy,
+    opts.studioAuthoringPolicy,
+    () => clock().getTime(),
+  )
+  const openLessonStudio = new OpenLessonStudioService(lessonDraftAccess, courses, studioBindings)
+  const authorizeLessonRuntime = new AuthorizeLessonRuntimeService(
+    openLessonStudio,
+    opts.studioRuntimePolicy,
+    () => clock().getTime(),
+  )
+  const galleryCopies = new InMemoryGalleryCopyRepository()
+  const gallery = new GalleryDeliveryService(
+    courses,
+    checkAccess,
+    progress,
+    sectionProgression,
+    creations,
+    studioSubmissions,
+    submitStudio,
+    galleryCopies,
+    opts.galleryStudioSource,
   )
   const getMissions = new GetMissionsService(
     gamification,
@@ -396,20 +465,18 @@ export function buildApp(
     hub,
   )
   const app = createServer({
+    pythonAnalysis: new AuthorizePythonAnalysisService({
+      authoring: authorizeAuthoringRuntime,
+      free: authorizeFreeRuntime,
+      lesson: authorizeLessonRuntime,
+    }),
     learning: {
-      gallery: new GalleryDeliveryService(
-        courses,
-        checkAccess,
-        progress,
-        sectionProgression,
-        creations,
-        studioSubmissions,
-        submitStudio,
-      ),
+      gallery,
       preferences: new ProfilePreferencesService(preferencesRepository, clock),
       learning,
       imports: new LearningImportService(drafts, courses),
       drafts,
+      authorizeStudioRuntime: authorizeAuthoringRuntime,
       internalToken: opts.internalToken,
       requireAdminEnabled: true,
     },
@@ -483,12 +550,16 @@ export function buildApp(
         sectionProgression,
       ),
       submitStudio,
+      authorizeFreeRuntime,
+      openLessonStudio,
+      authorizeLessonRuntime,
       getStudioCarryover: new GetStudioCarryoverService(
         checkAccess,
         courses,
         progress,
         studioSubmissions,
         sectionProgression,
+        studioBindings,
       ),
       getOwnStudioSubmission: new GetOwnStudioSubmissionService(
         checkAccess,
@@ -654,9 +725,7 @@ export function buildApp(
         creations,
         new AccessCheckService(entitlements, clock),
         clock,
-        new LessonDraftAccessService(courses, checkAccess, progress, sectionProgression, () =>
-          clock().getTime(),
-        ),
+        lessonDraftAccess,
       ),
       commitUpload: new CommitCreationUploadService(creations, clock),
       getDownload: new GetCreationDownloadService(creations),
@@ -734,6 +803,7 @@ export function buildApp(
     content: {
       requireAdminEnabled: opts.requireAdmin ?? false,
       internalToken: opts.internalToken,
+      studioAuthoringPolicy: opts.studioAuthoringPolicy,
       // O fake InMemoryCourseRepository implementa CourseRepository E ContentAdminRepository.
       courses: new CourseAdminService(courses, courses),
       modules: new ModuleAdminService(courses, courses),
@@ -784,6 +854,10 @@ export function buildApp(
     adultCommunityAvailability,
     adultHelp,
     learning,
+    gallery,
+    galleryCopies,
+    drafts,
+    studioBindings,
     learningRepository,
     liveLessonAccess,
     app,
@@ -1219,4 +1293,5 @@ export function signedWebhookHeaders(
 import { GalleryDeliveryService } from '../src/application/learning/gallery-delivery.service'
 import { PlatformActionService } from '../src/application/learning/platform-action.service'
 import { ProfilePreferencesService } from '../src/application/profile-preferences/profile-preferences.service'
+import { InMemoryGalleryCopyRepository } from './fakes/gallery-copy'
 import { InMemoryProfilePreferencesRepository } from './fakes/profile-preferences-in-memory'
