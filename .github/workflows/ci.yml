@@ -34,6 +34,7 @@ jobs:
         run: |
           fixture=tests/db/studio-ai-account.test.ts
           cp "$fixture" "$RUNNER_TEMP/fixed-account-fixture.ts"
+          git fetch --depth=1 origin 832e2d261f3f7cf085026ae4004ec7ce25327c80
           git show 832e2d261:"packages/members/$fixture" > "$fixture"
           bun test "$fixture"
           set +e
