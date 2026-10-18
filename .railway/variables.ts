@@ -404,7 +404,7 @@ const extra: Record<string, Record<string, string[]>> = {
     'evolution-api': [],
     community: [],
     funnel: [],
-    members: [],
+    members: ['STUDIO_PRO_RUNTIME_TOKEN', 'STUDIO_PRO_RUNTIME_URL'],
     'helpdesk-app': [],
     admin: [],
     'community-kids': ['NEXT_PUBLIC_KIDS_CHEST_RIVE_URL'],
