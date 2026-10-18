@@ -119,7 +119,6 @@ export function KidsSpaceViewClient({
   const [busy, setBusy] = useState(false)
 
   const [showNew, setShowNew] = useState(false)
-  console.log('COMPOSER_TRACE_RENDER', JSON.stringify({ showNew, channel: channel?.id, loading }))
   const [newTitle, setNewTitle] = useState('')
   const [newBody, setNewBody] = useState('')
   const [newAttachments, setNewAttachments] = useState<UploadedAttachment[]>([])
@@ -151,6 +150,14 @@ export function KidsSpaceViewClient({
   const commentRequestRef = useRef(0)
   threadRef.current = thread
   commentsRef.current = comments
+
+  // Limpa a conversa junto da escolha do canal. Um efeito passivo pode rodar
+  // depois que o botão já recebeu um clique e fechar o formulário recém-aberto.
+  const selectChannel = useCallback((next: HubChannelView | null) => {
+    setThread(null)
+    setShowNew(false)
+    setChannel(next)
+  }, [])
 
   // Rosto+aura+nome (clicável no post aberto) — o que aquece o Clube. Usado na
   // assinatura do tópico e em cada resposta.
@@ -241,7 +248,7 @@ export function KidsSpaceViewClient({
         )
         if (!alive) return
         setChannels(ch.items)
-        setChannel(pickInitialChannel(ch.items, mode))
+        selectChannel(pickInitialChannel(ch.items, mode))
       } catch (err) {
         if (!alive) return
         const e = err as ApiError
@@ -266,7 +273,7 @@ export function KidsSpaceViewClient({
     return () => {
       alive = false
     }
-  }, [slug, mode, reloadNonce])
+  }, [slug, mode, reloadNonce, selectChannel])
 
   // Retry da tela de indisponível: re-roda a carga (volta ao skeleton e refaz o
   // fetch). `router.refresh()` não serviria — preserva o estado deste client.
@@ -324,9 +331,6 @@ export function KidsSpaceViewClient({
 
   useEffect(() => {
     if (!channel) return
-    console.log('COMPOSER_TRACE_CHANNEL_RESET', channel.id)
-    setThread(null)
-    setShowNew(false)
     setChallengeThreads([])
     let alive = true
     void loadThreads(channel.id, () => alive)
@@ -537,7 +541,7 @@ export function KidsSpaceViewClient({
       spaceChannelIds,
       onOpenThreadById: openThreadById,
     },
-    navigation: { channels, channel, onSelectChannel: setChannel },
+    navigation: { channels, channel, onSelectChannel: selectChannel },
     discussion: {
       thread,
       comments,
@@ -566,10 +570,7 @@ export function KidsSpaceViewClient({
     composer: {
       canComposeInChannel,
       showNew,
-      onToggleNew: () => {
-        console.log('COMPOSER_TRACE_CLICK', JSON.stringify({ showNew, channel: channel?.id }))
-        setShowNew((visible) => !visible)
-      },
+      onToggleNew: () => setShowNew((visible) => !visible),
       onCancelNew: () => setShowNew(false),
       newTitle,
       onNewTitleChange: setNewTitle,

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import { fireEvent, render, screen } from '@testing-library/react'
+import { Profiler } from 'react'
 
 // Mantém o módulo completo: outros testes do mesmo processo usam exports adicionais.
 /**
@@ -174,6 +175,32 @@ const ESPERA_EDITOR = { timeout: 30_000 } as const
 
 describe('nomes acessíveis dos compositores da comunidade', () => {
   test(
+    'o primeiro clique não é desfeito pelo carregamento inicial do canal',
+    async () => {
+      let clicked = false
+      render(
+        <Profiler
+          id="initial-channel-composer"
+          onRender={() => {
+            const button = screen.queryByRole('button', { name: 'Começar conversa' })
+            if (!button || clicked) return
+            clicked = true
+            // Exercita o intervalo entre o botão entrar no DOM e os efeitos passivos
+            // da carga inicial: o reset atrasado não pode desfazer um clique novo.
+            button.click()
+          }}
+        >
+          <KidsSpaceViewClient slug="clube" viewerId="profile-1" />
+        </Profiler>,
+      )
+      const title = await screen.findByRole('textbox', { name: 'Título da conversa' }, ESPERA)
+      expect(clicked).toBe(true)
+      expect(document.activeElement).toBe(title)
+    },
+    TETO_DO_CASO_MS,
+  )
+
+  test(
     'o campo de resposta dos recados tem label persistente',
     async () => {
       render(<RecadoThreadClient threadId="thread-1" />)
@@ -218,14 +245,6 @@ describe('nomes acessíveis dos compositores da comunidade', () => {
         ESPERA,
       )
       fireEvent.click(pilula)
-      Bun.gc(true)
-      console.log('COMPOSER_STATE', JSON.stringify({
-        fields: [...document.querySelectorAll('input')].map((field) => ({ name: field.name, html: field.outerHTML })),
-        dialogs: [...document.querySelectorAll('[role="dialog"]')].map((dialog) => dialog.outerHTML),
-        title: document.querySelector('#new-thread-title')?.outerHTML,
-        active: document.activeElement?.outerHTML,
-        button: pilula.outerHTML,
-      }))
       // ⚠️ O prazo é o do EDITOR, não o `ESPERA`: o título nasce no mesmo diálogo que o editor, e
       // em 03/10/2026 o CI caiu aqui com o diálogo já aberto (o `body` travado) e o campo ainda
       // por chegar depois de 5 s. Passava 3 de 3 vezes no Windows.
