@@ -119,6 +119,7 @@ export function KidsSpaceViewClient({
   const [busy, setBusy] = useState(false)
 
   const [showNew, setShowNew] = useState(false)
+  console.log('COMPOSER_TRACE_RENDER', JSON.stringify({ showNew, channel: channel?.id, loading }))
   const [newTitle, setNewTitle] = useState('')
   const [newBody, setNewBody] = useState('')
   const [newAttachments, setNewAttachments] = useState<UploadedAttachment[]>([])
@@ -323,6 +324,7 @@ export function KidsSpaceViewClient({
 
   useEffect(() => {
     if (!channel) return
+    console.log('COMPOSER_TRACE_CHANNEL_RESET', channel.id)
     setThread(null)
     setShowNew(false)
     setChallengeThreads([])
@@ -564,7 +566,10 @@ export function KidsSpaceViewClient({
     composer: {
       canComposeInChannel,
       showNew,
-      onToggleNew: () => setShowNew((visible) => !visible),
+      onToggleNew: () => {
+        console.log('COMPOSER_TRACE_CLICK', JSON.stringify({ showNew, channel: channel?.id }))
+        setShowNew((visible) => !visible)
+      },
       onCancelNew: () => setShowNew(false),
       newTitle,
       onNewTitleChange: setNewTitle,

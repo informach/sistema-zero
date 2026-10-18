@@ -18,16 +18,18 @@ jobs:
         with:
           bun-version: '1.3.11'
       - run: bun install --frozen-lockfile
-      - name: Original package pair with full DOM diagnostics
-        run: bun run --filter @sistemazero/community --filter @sistemazero/community-kids test
       - name: Isolated composer repetitions
         if: always()
         working-directory: packages/community-kids
-        run: bun test tests/community-composers-a11y.test.tsx --rerun-each 30
+        run: bun test tests/community-composers-a11y.test.tsx --rerun-each 100
       - name: Install comparison runtime
         if: always()
         run: npm install --prefix "$RUNNER_TEMP/bun-comparison" --no-audit --no-fund bun@1.4.3
       - name: Same composer assertions with Bun 1.4.3
         if: always()
         working-directory: packages/community-kids
-        run: '"$RUNNER_TEMP/bun-comparison/node_modules/.bin/bun" test tests/community-composers-a11y.test.tsx --rerun-each 30'
+        run: '"$RUNNER_TEMP/bun-comparison/node_modules/.bin/bun" test tests/community-composers-a11y.test.tsx --rerun-each 100'
+      - name: Full Kids package with Bun 1.4.3
+        if: always()
+        working-directory: packages/community-kids
+        run: '"$RUNNER_TEMP/bun-comparison/node_modules/.bin/bun" test tests'
