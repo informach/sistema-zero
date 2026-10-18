@@ -2,9 +2,11 @@ import type { JSX } from 'react'
 import { Suspense } from 'react'
 import type { IDEMode } from '#core'
 import { ErrorBoundary } from '#ui'
+import { isPythonProject } from '../../core/editableProject'
 // Lazy imports por modo — Blockly não baixa até o aluno entrar em Blocos ou
 // Ponte; Monaco não baixa até entrar em Ponte ou Código.
-import { BlocksMode, BridgeMode, CodeMode } from '../../modes/lazyModes'
+import { BlocksMode, BridgeMode, CodeMode, PythonMode } from '../../modes/lazyModes'
+import { useProjectStore } from '../../state/projectStore'
 import { SectionErrorFallback } from './ErrorViews'
 import { EditorSkeleton } from './LoadingViews'
 
@@ -25,25 +27,26 @@ export interface ModeAreaProps {
  * `useStudioLayout`.
  */
 export function ModeArea({ projectMode, projectId }: ModeAreaProps): JSX.Element {
+  const python = useProjectStore((state) => !!state.project && isPythonProject(state.project))
   return (
     <ErrorBoundary
       label={`modo ${projectMode}`}
-      resetKeys={[projectMode, projectId]}
+      resetKeys={[projectMode, projectId, python]}
       fallback={(p) => <SectionErrorFallback {...p} title="Não foi possível carregar o editor" />}
     >
       {projectMode === 'blocks' && (
         <Suspense fallback={<ModeFallback name="Blocos" />}>
-          <BlocksMode />
+          {python ? <PythonMode mode="blocks" /> : <BlocksMode />}
         </Suspense>
       )}
       {projectMode === 'bridge' && (
         <Suspense fallback={<ModeFallback name="Ponte" />}>
-          <BridgeMode />
+          {python ? <PythonMode mode="bridge" /> : <BridgeMode />}
         </Suspense>
       )}
       {projectMode === 'code' && (
         <Suspense fallback={<ModeFallback name="Código" />}>
-          <CodeMode />
+          {python ? <PythonMode mode="code" /> : <CodeMode />}
         </Suspense>
       )}
     </ErrorBoundary>

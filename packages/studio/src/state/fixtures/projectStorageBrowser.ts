@@ -23,6 +23,7 @@ import { assembleProjectRecord, projectStorageEntries } from '../projectStorageR
 import { advanceLocalRevision, installLocalRevision, isLocalHead } from '../projectStorageRevision'
 import { createProjectStorageScope } from '../projectStorageRuntime'
 import type { ProjectStoreApi } from '../projectStore'
+import { prepareProjectForHost } from '../projectValidation'
 
 const id = new URLSearchParams(location.search).get('project') ?? 'reload'
 const scope = createProjectStorageScope('storage-browser')
@@ -38,7 +39,9 @@ const [meta, files, stateRecord, assets, blocks, head] = await readValues(scope.
 const loaded = assembleProjectRecord(id, meta, files, stateRecord, assets, blocks)
 let project: Project
 if (loaded) {
-  project = loaded
+  const validated = await prepareProjectForHost(loaded)
+  if (!validated) throw new Error('O projeto de teste persistido é inválido.')
+  project = validated
   installLocalRevision(project, scope.identity, isLocalHead(head) ? head : undefined)
 } else {
   project = {

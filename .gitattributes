@@ -9,3 +9,7 @@ bun.lock -text
 *.ico binary
 *.p12 binary
 *.pfx binary
+
+# Preservar bytes emitidos pelo gerador e do código vendorizado upstream.
+packages/studio-runtime/runtime/python-playtest.generated.mjs whitespace=-blank-at-eol
+packages/studio/scripts/turtle/vendor/xcolors.c whitespace=-space-before-tab

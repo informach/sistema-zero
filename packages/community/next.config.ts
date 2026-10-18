@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { studioPythonCspOrigins, withStudioPythonCsp } from '@sistemazero/core/studio/runtime-csp'
 import type { NextConfig } from 'next'
 
 // Raiz do MONOREPO: o file tracing do standalone precisa enxergar o workspace
@@ -7,6 +8,7 @@ import type { NextConfig } from 'next'
 const monorepoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 
 const isDev = process.env.NODE_ENV !== 'production'
+const pythonFrameOrigins = studioPythonCspOrigins(process.env.STUDIO_PYTHON_FRAME_ORIGINS, isDev)
 
 /**
  * CSP da área do aluno (defesa em profundidade — não há sink de HTML cru: o
@@ -23,31 +25,34 @@ const isDev = process.env.NODE_ENV !== 'production'
  * — iframe de vídeo nunca aponta p/ host arbitrário; srcdoc não passa por
  * frame-src). `worker-src blob:` é o pdf.js do livro 3D (worker do bundle).
  */
-const csp = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  // `blob:` p/ o preview/iframe do bloco `studio` (editor embarcável @sistemazero/studio).
-  "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com",
-  // Capas de curso são URLs externas arbitrárias da autoria + avatares do R2.
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data: https:",
-  // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
-  // `data:` pelo MESMO motivo do `script-src` abaixo: o som que o aluno envia ao
-  // Estúdio é embutido como `data:audio/…` e tocado dentro do iframe `srcdoc`,
-  // que herda esta CSP. Sem ele o som carrega e não toca, em silêncio.
-  "media-src 'self' blob: data: https:",
-  "style-src 'self' 'unsafe-inline' https:",
-  // `data:` p/ o preview do Estúdio (bloco `studio`): o script.js do aluno é injetado
-  // como `<script src="data:text/javascript;base64,…">` no iframe `srcdoc`, que HERDA
-  // esta CSP (só RESTRINGE, nunca relaxa) — sem `data:`, o preview não executa o código.
-  `script-src 'self' 'unsafe-inline' data: https:${isDev ? " 'unsafe-eval'" : ''}`,
-  "connect-src 'self' https:",
-  "worker-src 'self' blob:",
-  ...(isDev ? [] : ['upgrade-insecure-requests']),
-].join('; ')
+const csp = withStudioPythonCsp(
+  [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    // `blob:` p/ o preview/iframe do bloco `studio` (editor embarcável @sistemazero/studio).
+    "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com",
+    // Capas de curso são URLs externas arbitrárias da autoria + avatares do R2.
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data: https:",
+    // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
+    // `data:` pelo MESMO motivo do `script-src` abaixo: o som que o aluno envia ao
+    // Estúdio é embutido como `data:audio/…` e tocado dentro do iframe `srcdoc`,
+    // que herda esta CSP. Sem ele o som carrega e não toca, em silêncio.
+    "media-src 'self' blob: data: https:",
+    "style-src 'self' 'unsafe-inline' https:",
+    // `data:` p/ o preview do Estúdio (bloco `studio`): o script.js do aluno é injetado
+    // como `<script src="data:text/javascript;base64,…">` no iframe `srcdoc`, que HERDA
+    // esta CSP (só RESTRINGE, nunca relaxa) — sem `data:`, o preview não executa o código.
+    `script-src 'self' 'unsafe-inline' data: https:${isDev ? " 'unsafe-eval'" : ''}`,
+    "connect-src 'self' https:",
+    "worker-src 'self' blob:",
+    ...(isDev ? [] : ['upgrade-insecure-requests']),
+  ].join('; '),
+  pythonFrameOrigins,
+)
 
 const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },

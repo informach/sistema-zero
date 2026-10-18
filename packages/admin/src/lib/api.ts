@@ -40,12 +40,14 @@ export async function apiSend<T>(
   path: string,
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   body?: unknown,
+  options?: { signal?: AbortSignal },
 ): Promise<T> {
   return handle<T>(
     await fetch(path, {
       method,
       headers: { 'content-type': 'application/json' },
       body: body !== undefined ? JSON.stringify(body) : undefined,
+      ...(options?.signal ? { signal: options.signal } : {}),
     }),
   )
 }

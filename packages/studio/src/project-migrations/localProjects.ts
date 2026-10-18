@@ -8,6 +8,7 @@ import {
 } from '../state/projectStorageKeys'
 import { assembleProjectRecord, projectStorageEntries } from '../state/projectStorageRecords'
 import { gameStorageKey, type ProjectStorageScope } from '../state/projectStorageRuntime'
+import { type ProjectSummary, projectEnvironmentSummary } from '../state/projectSummary'
 import { prepareProjectForHost } from '../state/projectValidation'
 import { promoteLocalMigration } from './localTransaction'
 
@@ -189,24 +190,10 @@ export async function migrateLocalProjects(
   keys: readonly IDBValidKey[],
 ): Promise<{
   changed: string[]
-  pending: Array<{
-    id: string
-    name: string
-    updatedAt: number
-    createdAt: number
-    mode: 'blocks' | 'code' | 'bridge'
-    migrationPending: true
-  }>
+  pending: ProjectSummary[]
 }> {
   const changed: string[] = []
-  const pending: Array<{
-    id: string
-    name: string
-    updatedAt: number
-    createdAt: number
-    mode: 'blocks' | 'code' | 'bridge'
-    migrationPending: true
-  }> = []
+  const pending: ProjectSummary[] = []
   for (const id of historicalLocalIds(keys)) {
     try {
       const target = await migrateLocalProject(id, scope)
@@ -239,6 +226,7 @@ export async function migrateLocalProjects(
         createdAt: stamp(raw.createdAt),
         mode: raw.mode === 'code' || raw.mode === 'bridge' ? raw.mode : 'blocks',
         migrationPending: true,
+        ...projectEnvironmentSummary(raw),
       })
     }
   }

@@ -9,6 +9,7 @@ import { BlocksWorkspaceEditor } from '../components/blocks/BlocksWorkspaceEdito
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
 import { PreviewIframe } from '../components/preview/LazyPreviewIframe'
+import { javaScriptProject } from '../core/editableProject'
 import { getCanonicalSourceMap } from '../state/canonicalSourceMap'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSourcemapStore } from '../state/sourcemapStore'
@@ -21,11 +22,11 @@ export function BlocksMode(): JSX.Element {
   const t = useT()
   const { hasProject, blocksState, ir, projectName, js } = useProjectStore(
     useShallow((s) => ({
-      hasProject: Boolean(s.project),
-      blocksState: s.project?.blocksState ?? null,
-      ir: s.project?.ir ?? null,
-      projectName: s.project?.name ?? 'Projeto',
-      js: s.project?.files['script.js'] ?? '',
+      hasProject: Boolean(javaScriptProject(s.project)),
+      blocksState: javaScriptProject(s.project)?.blocksState ?? null,
+      ir: javaScriptProject(s.project)?.ir ?? null,
+      projectName: javaScriptProject(s.project)?.name ?? 'Projeto',
+      js: javaScriptProject(s.project)?.files['script.js'] ?? '',
     })),
   )
   const blocksHydration = useProjectStore((s) => s.blocksHydration)
@@ -33,7 +34,9 @@ export function BlocksMode(): JSX.Element {
   // Blocos DEFASADOS: o aluno editou código na Ponte e trocou p/ cá antes de o
   // reverse-parse assentar (o worker morre com a Ponte). Ver o recovery abaixo.
   const filesAheadOfBlocks = useProjectStore(
-    (s) => s.project?.bridgeCodeAhead === true || s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch,
+    (s) =>
+      javaScriptProject(s.project)?.bridgeCodeAhead === true ||
+      s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch,
   )
   const projectStoreApi = useProjectStoreApi()
   const studioConfig = useStudioConfig()
@@ -74,14 +77,14 @@ export function BlocksMode(): JSX.Element {
   // autoridade deles (mesma precedência de sempre).
   useEffect(() => {
     if (!hasProject || !filesAheadOfBlocks) return
-    const project = projectStoreApi.getState().project
+    const project = javaScriptProject(projectStoreApi.getState().project)
     if (!project) return
     let cancelled = false
     void import('#parsers')
       .then(({ hasBlockingParseDiagnostics, parseProjectFilesWithDiagnostics }) => {
         if (cancelled) return
         const state = projectStoreApi.getState()
-        const current = state.project
+        const current = javaScriptProject(state.project)
         if (!current || current.id !== project.id) return
         if (
           current.bridgeCodeAhead !== true &&
@@ -143,7 +146,7 @@ export function BlocksMode(): JSX.Element {
     if (blocksHydration !== 'empty' && blocksHydration !== 'failed' && blocksHydration !== 'idle') {
       return
     }
-    const project = projectStoreApi.getState().project
+    const project = javaScriptProject(projectStoreApi.getState().project)
     if (!project) return
     const files = project.files
     if (!files['index.html'].trim() && !files['style.css'].trim() && !files['script.js'].trim()) {
@@ -156,7 +159,7 @@ export function BlocksMode(): JSX.Element {
         // Re-checa com o estado FRESCO: a hidratação real pode ter chegado (ou o
         // projeto trocado) enquanto o chunk do parser carregava.
         const state = projectStoreApi.getState()
-        const current = state.project
+        const current = javaScriptProject(state.project)
         if (!current || current.id !== project.id) return
         if (current.ir || !isBlocksStateEmpty(current.blocksState)) return
         if (state.blocksHydration === 'pending' || state.blocksHydration === 'restored') return

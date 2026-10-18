@@ -9,10 +9,11 @@ import type {
 } from '@sistemazero/studio'
 import { createLocalPersistenceAdapter } from '@sistemazero/studio/local-persistence'
 import { savePersonalAsset, setPersonalAssetsNamespace } from '@sistemazero/studio/personal-assets'
-import { createEmptyProject, type Project } from '@sistemazero/studio/project'
+import { createEmptyProject } from '@sistemazero/studio/project'
 import { ProjectList } from '@sistemazero/studio/project-list'
 import type { JSX } from 'react'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import type { EditableStudioProject as Project } from '../src/core/editableProject'
 import { DemoHostChrome, HOST_DEMO } from './hostChromeDemo'
 import moldaDemoAssets from './moldaDemoAssets.json'
 

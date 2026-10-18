@@ -1,7 +1,11 @@
 import { describe, expect, mock, spyOn, test } from 'bun:test'
 import { createHash } from 'node:crypto'
+import { studioPythonExecutionRevision } from '@sistemazero/core/studio/python-execution-content'
+import { StudioPythonInputReferenceSchema } from '@sistemazero/core/studio/python-validation-input'
 import validation from '../runtime/validation-profile.json' with { type: 'json' }
 import { memoryArtifactBucket } from './artifact-bucket'
+import { pythonDistributionFixture } from './python-distribution-fixture'
+import { pythonInputFixture } from './python-input-fixture'
 
 mock.module('@cloudflare/sandbox', () => ({
   getSandbox: () => {
@@ -107,14 +111,15 @@ function setup(
     identities.push(identity)
     return sandbox
   }) as unknown as SandboxFactory
-  const env = {
+  const env: Env = {
     ProBuildSandbox: {} as Env['ProBuildSandbox'],
     BUILD_RATE_LIMITER: {
       limit: async () => ({ success: options.rateAllowed ?? true }),
     },
     INTERNAL_TOKEN: TOKEN,
     PRO_ARTIFACTS: memoryArtifactBucket().bucket,
-  } satisfies Env
+    STUDIO_PYTHON_DISTRIBUTIONS_JSON: undefined,
+  }
   return {
     handler: createStudioRuntimeHandler(factory),
     env,
@@ -124,6 +129,186 @@ function setup(
     identities,
   }
 }
+
+test('default handler wires only configured approved Python distributions and invalidates changed configuration', async () => {
+  const f = await pythonDistributionFixture()
+  await f.store()
+  const context = setup()
+  const originalBucket = context.env.PRO_ARTIFACTS
+  context.env.PRO_ARTIFACTS = {
+    ...originalBucket,
+    async get(key: string) {
+      const object = await f.bucket.get(key)
+      return object
+        ? {
+            ...object,
+            etag: 'fixture',
+            text: async () => new TextDecoder().decode(f.objects.get(key)!.bytes),
+          }
+        : null
+    },
+  }
+  const request = () => new Request(`${f.url}frame.html`)
+  expect((await execute(context, request())).status).toBe(404)
+  const configuration = (status: 'active' | 'retired' | 'revoked') =>
+    JSON.stringify({
+      version: 1,
+      parentOrigins: ['https://app.example'],
+      deployments: [{ status, deployment: f.deployment }],
+    })
+  for (const status of ['active', 'retired'] as const) {
+    context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = configuration(status)
+    const response = await execute(context, request())
+    expect(response.status).toBe(200)
+    expect(await response.text()).toBe(new TextDecoder().decode(f.contents.get('frame.html')))
+    expect(
+      response.headers
+        .get('Content-Security-Policy')
+        ?.split(';')
+        .map((directive) => directive.trim())
+        .find((directive) => directive.startsWith('frame-ancestors ')),
+    ).toBe("frame-ancestors 'self' https://app.example")
+  }
+  context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = configuration('revoked')
+  expect((await execute(context, request())).status).toBe(404)
+  context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = '{invalid'
+  expect((await execute(context, request())).status).toBe(404)
+  context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = configuration('active')
+  expect((await execute(context, request())).status).toBe(200)
+  expect(context.factoryCalls()).toBe(0)
+})
+
+test('Python internal routes authenticate before reading metadata or binary bodies', async () => {
+  const context = setup()
+  for (const path of ['inputs', `files/${'a'.repeat(64)}`, 'inspect', 'inputs/remove']) {
+    let reads = 0
+    const response = await execute(
+      context,
+      new Request(`https://runtime.test/v1/python/${path}`, {
+        method: 'POST',
+        body: new ReadableStream<Uint8Array>(
+          {
+            pull() {
+              reads++
+            },
+          },
+          { highWaterMark: 0 },
+        ),
+      }),
+    )
+    expect(response.status).toBe(401)
+    expect(reads).toBe(0)
+  }
+  expect(context.factoryCalls()).toBe(0)
+})
+
+test('default Python input handler uses approved config, private storage and stable owner quotas', async () => {
+  const context = setup()
+  const f = await pythonInputFixture()
+  const runtime = await pythonDistributionFixture()
+  await runtime.store()
+  context.env.PYTHON_INPUTS = {
+    ...f.bucket,
+    async list() {
+      return { objects: [], truncated: false }
+    },
+  }
+  const quotas: string[] = []
+  const cancelled: unknown[] = []
+  context.env.PythonInspectionJobs = {
+    getByName() {
+      return {
+        async inspect() {
+          throw new Error('Input-only test must not start an inspection')
+        },
+        async cancel(input) {
+          cancelled.push(input)
+          return { retired: true, cleanupConfirmed: true }
+        },
+      }
+    },
+  }
+  context.env.PYTHON_UPLOAD_RATE_LIMITER = {
+    async limit({ key }) {
+      quotas.push(key)
+      return { success: true }
+    },
+  }
+  context.env.BUILD_RATE_LIMITER = {
+    async limit({ key }) {
+      quotas.push(key)
+      return { success: true }
+    },
+  }
+  const previous = context.env.PRO_ARTIFACTS
+  context.env.PRO_ARTIFACTS = {
+    ...previous,
+    async get(key) {
+      const object = await runtime.bucket.get(key)
+      return object
+        ? {
+            ...object,
+            etag: 'fixture',
+            text: async () => new TextDecoder().decode(runtime.objects.get(key)!.bytes),
+          }
+        : null
+    },
+  }
+  context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = JSON.stringify({
+    version: 1,
+    parentOrigins: ['https://app.example'],
+    deployments: [{ status: 'active', deployment: runtime.deployment }],
+  })
+  const input = structuredClone(f.request)
+  input.snapshot.configuration.runtime = {
+    profileId: runtime.deployment.release.profileId,
+    releaseId: runtime.deployment.release.releaseId,
+    manifestSha256: runtime.deployment.release.manifestSha256,
+  }
+  input.snapshot.configuration.python.dependencyLock.runtimeManifestSha256 =
+    runtime.deployment.release.manifestSha256
+  input.snapshot.revision = await studioPythonExecutionRevision({
+    version: input.snapshot.version,
+    configuration: input.snapshot.configuration,
+    directories: input.snapshot.directories,
+    files: input.snapshot.files,
+  })
+  const response = await execute(
+    context,
+    new Request('https://runtime.test/v1/python/inputs', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${TOKEN}` },
+      body: JSON.stringify(input),
+    }),
+  )
+  expect(response.status).toBe(200)
+  const raw: unknown = await response.json()
+  if (!raw || typeof raw !== 'object' || !('input' in raw))
+    throw new Error('Input response missing')
+  const reference = StudioPythonInputReferenceSchema.parse(raw.input)
+  expect(reference.projectId).toBe(input.snapshot.projectId)
+  expect(reference.owner).toBe(input.owner)
+  expect(quotas).toEqual([`python-job-${input.owner}`])
+  expect(context.factoryCalls()).toBe(0)
+  const configured = context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON
+  for (const configuration of [undefined, '{malformed', configured]) {
+    context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = configuration
+    const removed = await execute(
+      context,
+      new Request('https://runtime.test/v1/python/inputs/remove', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${TOKEN}` },
+        body: JSON.stringify(reference),
+      }),
+    )
+    expect(removed.status).toBe(200)
+  }
+  expect(cancelled).toEqual([reference, reference, reference])
+  expect(quotas).toEqual([
+    `python-job-${input.owner}`,
+    ...Array.from({ length: 3 }, () => `python-transfer-${input.owner}`),
+  ])
+})
 
 function request(body: unknown, token = TOKEN): Request {
   return new Request('https://runtime.test/v1/build', {

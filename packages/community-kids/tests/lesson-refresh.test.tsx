@@ -103,11 +103,21 @@ describe('"Verificar esta parte"', () => {
   })
 
   async function verificar(passed: boolean) {
-    globalThis.fetch = mock(async () =>
-      Response.json({ passed, results: [{ id: 'revelar-ao-toque', passed }] }),
-    ) as unknown as typeof fetch
+    let saved = false
+    globalThis.fetch = mock(async () => {
+      expect(saved).toBe(true)
+      return Response.json({ passed, results: [{ id: 'revelar-ao-toque', passed }] })
+    }) as unknown as typeof fetch
     const refresh = mock(() => {})
-    const handleRef = { current: { getProject: () => ({ id: 'p' }) } as never }
+    const handleRef = {
+      current: {
+        getProject: () => ({ id: 'p' }),
+        save: async () => {
+          await Promise.resolve()
+          saved = true
+        },
+      } as never,
+    }
     render(comPlayer(refresh, <SectionProjectCheck blockId="projeto" handleRef={handleRef} />))
     await act(async () => {
       fireEvent.click(screen.getByRole('button'))

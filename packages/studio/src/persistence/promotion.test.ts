@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import { createEmptyProject, type Project } from '#core'
+import { createEmptyProject } from '#core'
+import type { EditableStudioProject as Project } from '../core/editableProject'
 import { createProjectStore } from '../state/projectStore'
 import { createPersistenceService } from './service'
 

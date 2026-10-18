@@ -9,15 +9,15 @@ export type StudioProModuleLoadResult =
 /** Reconcile before reading; never load into a profile whose opening was cancelled. */
 export async function loadPreparedStudioProProject(options: {
   module: Pick<StudioProModule, 'setStudioStorageNamespace' | 'createLocalPersistenceAdapter'>
-  viewerId: string | null
+  namespace: string
   projectId: string
   prepare?: () => Promise<void>
   active: () => boolean
 }) {
   if (!options.active()) return null
-  options.module.setStudioStorageNamespace(options.viewerId ?? '')
+  options.module.setStudioStorageNamespace(options.namespace)
   // The adapter captures its namespace before asynchronous reconciliation.
-  const persistence = options.module.createLocalPersistenceAdapter()
+  const persistence = options.module.createLocalPersistenceAdapter({ namespace: options.namespace })
   await options.prepare?.()
   if (!options.active()) return null
   const project = await persistence.load(options.projectId)

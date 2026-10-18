@@ -2,6 +2,11 @@ import { useContext } from 'react'
 import { createTranslator, type Locale, type StudioProBuildLimits } from '#core'
 import { createPersistenceService, type PersistenceService } from '../persistence/service'
 import { resolvePersistenceAdapter, type StudioPersistence } from '../persistence/types'
+import { createStudioRuntimeCapture, type StudioRuntimeCapture } from '../runtime/capture'
+import {
+  createPythonEditorConsole,
+  type PythonEditorConsole,
+} from '../runtime/python/editorConsole'
 import type { StudioWorkspacePreferencesAdapter } from '../studio/workspace'
 import { createDiagnosticsStore } from './diagnosticsStore'
 import { createEditorHistory, type EditorHistory } from './editorHistory'
@@ -37,6 +42,8 @@ export interface StudioStores {
   sourcemap: ReturnType<typeof createSourcemapStore>
   diagnostics: ReturnType<typeof createDiagnosticsStore>
   pendingEditorEdits: PendingEditorEdits
+  runtimeCapture: StudioRuntimeCapture
+  pythonConsole: PythonEditorConsole
   /** As pilhas de desfazer dos editores desta instância (os botões da barra). */
   editorHistory: EditorHistory
   persistence: PersistenceService
@@ -74,6 +81,8 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     sourcemap: createSourcemapStore(),
     diagnostics: createDiagnosticsStore(),
     pendingEditorEdits,
+    runtimeCapture: createStudioRuntimeCapture(),
+    pythonConsole: createPythonEditorConsole(),
     editorHistory: createEditorHistory(),
     workspacePreferences:
       options.workspacePreferences ??
@@ -102,6 +111,14 @@ export function useStudioPersistence(): PersistenceService {
 /** Buffers de edição que devem ser materializados antes de expor um snapshot. */
 export function usePendingEditorEdits(): PendingEditorEdits | null {
   return useContext(StudioStoresContext)?.pendingEditorEdits ?? null
+}
+
+export function useStudioRuntimeCapture(): StudioRuntimeCapture | null {
+  return useContext(StudioStoresContext)?.runtimeCapture ?? null
+}
+
+export function usePythonEditorConsole(): PythonEditorConsole | null {
+  return useContext(StudioStoresContext)?.pythonConsole ?? null
 }
 
 /**

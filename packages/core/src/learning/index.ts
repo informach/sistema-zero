@@ -1,18 +1,22 @@
 /** Shared learning contracts. No framework, persistence or editor dependency. */
 export * from './authoring'
 export * from './gallery-delivery'
+export * from './gallery-studio-source'
 export * from './legacy-layout'
 export * from './manifest-quiz'
 export * from './prediction-context'
 export * from './project-execution'
 export * from './project-structure'
+export * from './python-project-checks'
 export * from './quiz'
 export * from './requirements'
 export * from './section-progression'
 export * from './section-templates'
 export * from './video-watch'
 
+import { StudioProjectDocumentSchema } from '../studio/project-document'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '../studio/project-format'
+import { StudioPythonLearningLevelSchema } from '../studio/python-learning'
 import { type GalleryDeliveryConfig, isGalleryDeliveryConfig } from './gallery-delivery'
 import { isLearningPredictionContext, type LearningPredictionContext } from './prediction-context'
 import {
@@ -936,6 +940,7 @@ export interface LearningManifest {
               allowCategories?: string[]
               allowedModes?: Array<'blocks' | 'bridge' | 'code'>
               allowLevelReveal?: boolean
+              pythonLevel?: 1 | 2 | 3
               chain?: string
               showcase?: {
                 enabled: boolean
@@ -978,10 +983,15 @@ export interface LearningManifest {
 
 /** Um snapshot do Estúdio no formato atual (projeto inicial ou gabarito de um bloco do manifesto). */
 function isManifestStudioProject(project: unknown): boolean {
+  if (record(project) && project.formatVersion === 3)
+    return StudioProjectDocumentSchema.safeParse(project).success
   if (!record(project) || !record(project.files)) return false
   const files = project.files
   return (
     project.formatVersion === STUDIO_PROJECT_FORMAT_VERSION &&
+    (project.programmingLanguage === undefined || project.programmingLanguage === 'javascript') &&
+    project.runtime === undefined &&
+    project.python === undefined &&
     text(project.name, 200) &&
     ['index.html', 'style.css', 'script.js'].every((name) => typeof files[name] === 'string') &&
     Array.isArray(project.installedExtensions) &&
@@ -1007,6 +1017,11 @@ function isManifestContent(content: unknown): boolean {
           ['speaking', 'happy', 'thinking', 'celebrating'].includes(content.pose)))
     )
   if (content.kind === 'studio') {
+    if (
+      content.pythonLevel !== undefined &&
+      !StudioPythonLearningLevelSchema.safeParse(content.pythonLevel).success
+    )
+      return false
     // O gabarito da professora (`solutionProject`, objetivos do Estúdio de 18/10/2026) viaja no
     // manifesto com a mesma régua do projeto inicial; ele nunca chega ao aluno.
     return (

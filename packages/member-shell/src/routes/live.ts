@@ -1,4 +1,5 @@
 import 'server-only'
+import { StudioLiveRuntimeRequestSchema } from '@sistemazero/core/studio/runtime-authorization'
 import { NextResponse } from 'next/server'
 import { isReadonlyImpersonation, isSupportSession } from '../lib/act'
 import { type LiveRouteScope, liveUpstreamPath } from '../lib/live-route-policy'
@@ -31,6 +32,12 @@ export function createLiveRouteHandler(deps: {
       return error(403, 'IMPERSONATION_READONLY', 'A sessão de suporte é somente leitura.')
     let body: unknown
     if (request.method !== 'GET') {
+      if (
+        path.endsWith('/runtime') &&
+        (request.headers.get('content-encoding') ||
+          !request.headers.get('content-type')?.toLowerCase().startsWith('application/json'))
+      )
+        return error(415, 'UNSUPPORTED_MEDIA_TYPE', 'Envie os dados do projeto em JSON.')
       // Read with a bound even for chunked requests; Content-Length is not trusted.
       const reader = request.body?.getReader()
       if (!reader) return error(400, 'INVALID_INPUT', 'Envie os dados da ação.')
@@ -42,7 +49,7 @@ export function createLiveRouteHandler(deps: {
           if (chunk.done) break
           length += chunk.value.byteLength
           const limit =
-            /\/(?:commits|accept|return|templates)$/.test(path) ||
+            /\/(?:commits|accept|return|templates|runtime)$/.test(path) ||
             /\/admin\/live\/programs(?:\/[\da-f-]+)?$/.test(path)
               ? 2_000_000
               : 256_000
@@ -62,6 +69,15 @@ export function createLiveRouteHandler(deps: {
       } catch {
         return error(400, 'INVALID_INPUT', 'Confira os dados enviados.')
       }
+    }
+    if (path.endsWith('/runtime')) {
+      const parsed = StudioLiveRuntimeRequestSchema.safeParse(body)
+      if (
+        !parsed.success ||
+        !path.endsWith(`/workspaces/${parsed.data.context.workspaceId}/runtime`)
+      )
+        return error(400, 'INVALID_INPUT', 'Confira o contexto de execução do projeto.')
+      body = parsed.data
     }
     const url = new URL(request.url)
     const deviceId = url.searchParams.get('deviceId')

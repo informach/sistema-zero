@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ProjectAsset } from '#core'
-import { buildProAssetBundle, type ProAssetManifestEntry } from '../../core/proAssets'
+import { isPythonProject } from '../../core/editableProject'
+import type { ProAssetManifestEntry } from '../../core/proAssets'
 import { type ProExample, proAssetExample } from '../../core/proExamples'
+import { pythonProAssetExample } from '../../python/proExamples'
 import { useProjectStore } from '../../state/projectStore'
+import { editorAssetEntries } from './editorAssetEntries'
 
 /** Canonical paths and reviewed insertion; imports still belong to the existing Materials library. */
 export function ProAssetPaths({
@@ -18,6 +21,27 @@ export function ProAssetPaths({
   expanded?: boolean
   onFindUses?: (query: string) => void
 }) {
+  const projectId = useProjectStore((state) => state.project?.id)
+  const language = useProjectStore((state): 'python' | 'javascript' =>
+    state.project?.programmingLanguage === 'python' ? 'python' : 'javascript',
+  )
+  // Paths/kinds affect collisions; source edits must not decode all images again.
+  const layoutKey = useProjectStore((state) =>
+    language === 'python'
+      ? JSON.stringify({
+          files: Object.keys(state.project?.tree ?? {}).filter(
+            (path) => state.project?.tree?.[path]?.kind === 'file',
+          ),
+          directories: Object.keys(state.project?.tree ?? {}).filter(
+            (path) => state.project?.tree?.[path]?.kind === 'dir',
+          ),
+        })
+      : '',
+  )
+  const scope = useMemo(
+    () => ({ projectId, language, assets, layoutKey }),
+    [projectId, language, assets, layoutKey],
+  )
   const [open, setOpen] = useState(expanded)
   const [query, setQuery] = useState('')
   const [limit, setLimit] = useState(50)
@@ -26,7 +50,7 @@ export function ProAssetPaths({
   const [copyStatus, setCopyStatus] = useState('')
   const [state, setState] = useState<{
     entries: ProAssetManifestEntry[]
-    assets?: ProjectAsset[]
+    scope?: typeof scope
     error?: string
   }>({
     entries: [],
@@ -35,22 +59,23 @@ export function ProAssetPaths({
     if (!open) return
     let active = true
     setCopyStatus('')
-    void buildProAssetBundle(assets)
-      .then((bundle) => {
-        if (active) setState({ entries: bundle.manifest.assets, assets })
+    const layout = layoutKey ? JSON.parse(layoutKey) : { files: [], directories: [] }
+    void editorAssetEntries(scope.assets, scope.language, layout)
+      .then((entries) => {
+        if (active) setState({ entries, scope })
       })
       .catch((error: unknown) => {
         if (active)
           setState({
             entries: [],
-            assets,
+            scope,
             error: error instanceof Error ? error.message : String(error),
           })
       })
     return () => {
       active = false
     }
-  }, [assets, open])
+  }, [scope, layoutKey, open])
   async function copy(value: string, label: string) {
     try {
       await navigator.clipboard.writeText(value)
@@ -61,7 +86,7 @@ export function ProAssetPaths({
       )
     }
   }
-  const current = state.assets === assets
+  const current = state.scope === scope
   const entries = current
     ? state.entries.filter((asset) =>
         `${asset.name} ${asset.kind} ${asset.id}`
@@ -81,10 +106,16 @@ export function ProAssetPaths({
       {open && (
         <>
           <p className="my-2">
-            Os arquivos ficam em public/. O manifesto studio-assets/manifest.json contém IDs,
-            caminhos, animações e colisões. Use os caminhos abaixo para carregar os materiais no
-            código do jogo. Renomear um material mantém seu ID e caminho. O caminho carrega o
-            arquivo; o ID encontra seus metadados no manifesto.
+            {language === 'python' ? (
+              'Use os caminhos abaixo no código Python. Os mesmos arquivos e caminhos acompanham o projeto ao exportar para o computador. Renomear o material mantém seu ID e caminho.'
+            ) : (
+              <>
+                Os arquivos ficam em public/. O manifesto studio-assets/manifest.json contém IDs,
+                caminhos, animações e colisões. Use os caminhos abaixo para carregar os materiais no
+                código do jogo. Renomear um material mantém seu ID e caminho. O caminho carrega o
+                arquivo; o ID encontra seus metadados no manifesto.
+              </>
+            )}
           </p>
           <label className="block">
             Filtrar materiais
@@ -271,9 +302,14 @@ function ProAssetExampleDetails(props: AssetExampleProps) {
   )
 }
 function ProAssetExampleContent({ asset, path, onInsert, copy }: AssetExampleProps) {
-  const tree = useProjectStore((state) => state.project?.tree)
+  const project = useProjectStore((state) => state.project)
   const author = useProjectStore((state) => state.editingAccess !== 'observer')
-  const example = tree ? proAssetExample(asset, path || 'exemplo.js', tree) : null
+  const python = project && isPythonProject(project)
+  const example = python
+    ? pythonProAssetExample(asset, path || 'exemplo.py', project)
+    : project?.tree
+      ? proAssetExample(asset, path || 'exemplo.js', project.tree)
+      : null
   return (
     <>
       {example ? (
@@ -308,7 +344,7 @@ function ProAssetExampleContent({ asset, path, onInsert, copy }: AssetExamplePro
           {!onInsert && (
             <p className="mt-2">
               Para inserir com revisão, abra Materiais na lateral do código e escolha um arquivo
-              JavaScript ou TypeScript.
+              {python ? 'Python.' : 'JavaScript ou TypeScript.'}
             </p>
           )}
         </>

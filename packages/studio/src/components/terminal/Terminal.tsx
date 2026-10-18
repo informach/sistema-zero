@@ -3,6 +3,7 @@ import type { JSX } from 'react'
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import type { ExtraFile } from '#core'
 import { Button } from '#ui'
+import { javaScriptProject } from '../../core/editableProject'
 import '@xterm/xterm/css/xterm.css'
 import type { FitAddon } from '@xterm/addon-fit'
 import type { Terminal as XTerm } from '@xterm/xterm'
@@ -76,12 +77,12 @@ export function Terminal(): JSX.Element {
   const project = useProjectStore(
     useShallow(
       (s): TerminalProjectSnapshot => ({
-        id: s.project?.id ?? null,
-        name: s.project?.name ?? 'sz-project',
-        files: s.project?.files ?? null,
-        extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
-        kind: s.project?.kind === 'pro' ? 'pro' : undefined,
-        tree: s.project?.tree,
+        id: javaScriptProject(s.project)?.id ?? null,
+        name: javaScriptProject(s.project)?.name ?? 'sz-project',
+        files: javaScriptProject(s.project)?.files ?? null,
+        extraFiles: javaScriptProject(s.project)?.extraFiles ?? EMPTY_EXTRA_FILES,
+        kind: javaScriptProject(s.project)?.kind === 'pro' ? 'pro' : undefined,
+        tree: javaScriptProject(s.project)?.tree,
       }),
     ),
   )

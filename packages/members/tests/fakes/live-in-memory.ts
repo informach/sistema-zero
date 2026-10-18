@@ -244,13 +244,19 @@ export interface FakeLiveLesson {
 /** Live courses for the tests: published lessons, their parts and Studio blocks. */
 export class InMemoryLiveCourses implements LiveCoursePort {
   /**
-   * `persist`: tests on a real database write each course row on its first read (a cohort locks
-   * that row when it is created).
+   * SQL-backed tests persist the authoring parents as well as the course lock row, so real
+   * baseline foreign keys can be checked when a workspace binds to one of these blocks.
    */
-  constructor(private readonly persist?: (course: LiveCourseRecord) => Promise<void>) {}
+  constructor(
+    private readonly persist?: (
+      course: LiveCourseRecord,
+      blocks: readonly LiveStudioBlockRecord[],
+    ) => Promise<void>,
+  ) {}
   readonly courses = new Map<string, LiveCourseRecord>()
   readonly sections = new Map<string, LiveLessonSections>()
   readonly blocks = new Map<string, LiveStudioBlockRecord>()
+  private readonly persistedAuthoring = new Map<string, string>()
   /** Lesson lookups (the cache in the service must keep heartbeats from re-reading). */
   sectionReads = 0
 
@@ -313,7 +319,14 @@ export class InMemoryLiveCourses implements LiveCoursePort {
 
   async findCourse(courseId: string) {
     const course = this.courses.get(courseId)
-    if (course && this.persist) await this.persist(course)
+    if (course && this.persist) {
+      const blocks = [...this.blocks.values()].filter((block) => block.courseId === courseId)
+      const authoring = JSON.stringify({ course, blocks })
+      if (this.persistedAuthoring.get(courseId) !== authoring) {
+        await this.persist(course, blocks)
+        this.persistedAuthoring.set(courseId, authoring)
+      }
+    }
     return structuredClone(course ?? null)
   }
   async listLiveCourses(filter: { ids?: string[]; audience?: 'adult' | 'kids' }) {
@@ -332,6 +345,8 @@ export class InMemoryLiveCourses implements LiveCoursePort {
     return structuredClone(this.sections.get(lessonId) ?? null)
   }
   async studioBlock(lessonId: string, blockId: string) {
-    return structuredClone(this.blocks.get(`${lessonId}:${blockId}`) ?? null)
+    const block = this.blocks.get(`${lessonId}:${blockId}`)
+    if (block && this.persist) await this.findCourse(block.courseId)
+    return structuredClone(block ?? null)
   }
 }

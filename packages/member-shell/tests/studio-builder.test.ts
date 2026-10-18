@@ -224,7 +224,9 @@ describe('durable builder orchestration', () => {
     const result = await refreshStudioBuilderPreview(f.input)
     expect(result?.phase).toBe('review')
     expect(result?.result?.preview?.revisionHash).toBe(f.job().result?.revisionHash)
-    expect(result?.result?.preview?.validation.runtimeFingerprint).toBe('c'.repeat(64))
+    expect(result?.result?.preview).toMatchObject({
+      validation: { runtimeFingerprint: 'c'.repeat(64) },
+    })
     expect(modelCalls).toBe(1)
     expect(builds).toBe(2)
     expect(f.usage).toHaveLength(settled)
@@ -275,7 +277,9 @@ describe('durable builder orchestration', () => {
     expect((await f.advance())?.phase).toBe('validating')
     expect((await f.advance())?.phase).toBe('review')
     expect(f.job().result?.preview?.revisionHash).toBe(f.job().result?.revisionHash)
-    expect(f.job().result?.preview?.validation.runtimeFingerprint).toBe('c'.repeat(64))
+    expect(f.job().result?.preview).toMatchObject({
+      validation: { runtimeFingerprint: 'c'.repeat(64) },
+    })
     expect(
       f.usage.filter((action) => action.operation === 'dispatch').map((action) => action.attempt),
     ).toEqual([1, 2])

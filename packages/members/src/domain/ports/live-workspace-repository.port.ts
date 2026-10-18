@@ -1,5 +1,10 @@
 import type { LiveWorkspaceView } from '@sistemazero/core/live'
+import type { StudioLessonBaseline } from '../studio/lesson-baseline'
 import type { LiveCohortAggregate } from './live-repository.port'
+import type {
+  StudioLessonBinding,
+  StudioLessonOwner,
+} from './studio-lesson-binding-repository.port'
 
 export interface LiveWorkspaceRecord extends LiveWorkspaceView {
   accountId: string
@@ -19,6 +24,19 @@ export interface LiveWorkspaceRevision {
   mutationId: string
   createdAt: string
 }
+export type LiveWorkspaceMetadata = Omit<LiveWorkspaceRecord, 'project'>
+export interface LiveWorkspaceRuntimeContext {
+  workspace: LiveWorkspaceMetadata
+  environment: unknown
+  cohort: LiveCohortAggregate | null
+  binding: {
+    baselineId: string
+    lessonId: string
+    courseId: string
+    environment: unknown
+    curation: unknown
+  } | null
+}
 export interface LiveWorkspaceTransaction {
   workspace: LiveWorkspaceRecord
   findMutation(id: string): Promise<LiveWorkspaceRevision | null>
@@ -32,6 +50,19 @@ export interface LiveWorkspaceTransaction {
  * lock. It does NOT lock the cohort row: room heartbeats must not queue project saves.
  */
 export interface LiveWorkspaceRepository {
+  /** Read-only consistent snapshot; no source/media, locks, lease renewal or new binding. */
+  readRuntimeContext(
+    id: string,
+    sessionId: string | null,
+    blockId: string | null,
+  ): Promise<LiveWorkspaceRuntimeContext | null>
+  findBinding(owner: StudioLessonOwner, blockId: string): Promise<StudioLessonBinding | null>
+  /** Bind the exact block and link its encounter atomically under the account/workspace locks. */
+  openBound(
+    workspace: LiveWorkspaceRecord & { projectKey: string },
+    baseline: StudioLessonBaseline,
+    sessionId: string,
+  ): Promise<{ workspace: LiveWorkspaceRecord; baseline: StudioLessonBaseline }>
   find(id: string): Promise<LiveWorkspaceRecord | null>
   listOwned(accountId: string, learnerId: string): Promise<LiveWorkspaceRecord[]>
   findByKey(learnerId: string, projectKey: string): Promise<LiveWorkspaceRecord | null>

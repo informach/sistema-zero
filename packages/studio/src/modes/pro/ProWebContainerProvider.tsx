@@ -2,6 +2,7 @@ import { createContext, type JSX, type ReactNode, useContext } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import type { ExtraFile } from '#core'
 import type { TerminalProjectSnapshot } from '../../components/terminal/terminalProjectFiles'
+import { javaScriptProject } from '../../core/editableProject'
 import { useProjectStore } from '../../state/projectStore'
 import { type UseWebContainerSyncResult, useWebContainerSync } from './useWebContainerSync'
 
@@ -19,13 +20,13 @@ export function ProWebContainerProvider({ children }: { children: ReactNode }): 
   const snapshot = useProjectStore(
     useShallow(
       (s): TerminalProjectSnapshot => ({
-        id: s.project?.id ?? null,
-        name: s.project?.name ?? 'sz-project',
-        files: s.project?.files ?? null,
-        extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
-        kind: s.project?.kind === 'pro' ? 'pro' : undefined,
-        tree: s.project?.tree,
-        assets: s.project?.assets,
+        id: javaScriptProject(s.project)?.id ?? null,
+        name: javaScriptProject(s.project)?.name ?? 'sz-project',
+        files: javaScriptProject(s.project)?.files ?? null,
+        extraFiles: javaScriptProject(s.project)?.extraFiles ?? EMPTY_EXTRA_FILES,
+        kind: javaScriptProject(s.project)?.kind === 'pro' ? 'pro' : undefined,
+        tree: javaScriptProject(s.project)?.tree,
+        assets: javaScriptProject(s.project)?.assets,
       }),
     ),
   )

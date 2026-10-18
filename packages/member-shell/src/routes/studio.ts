@@ -1,18 +1,31 @@
 import 'server-only'
 import { randomUUID, timingSafeEqual } from 'node:crypto'
-import { CREATOR_SHOWCASE_SLUGS } from '@sistemazero/core/creations'
+import { CREATOR_SHOWCASE_SLUGS, canonicalJson } from '@sistemazero/core/creations'
 import {
   InvalidJsonBodyError,
   RequestBodyTooLargeError,
   readJsonBodyWithLimit,
 } from '@sistemazero/core/http'
-import { isStudioProPublication, studioProPublicationUrl } from '@sistemazero/core/studio'
-import type { Project } from '@sistemazero/studio'
-import { ProjectDocumentError } from '@sistemazero/studio/project-document'
 import {
-  prepareProjectForHost,
-  sanitizeProjectForHost,
-} from '@sistemazero/studio/project-validation'
+  isStudioProPublication,
+  isStudioPublication,
+  isStudioPythonPublication,
+  studioProPublicationUrl,
+} from '@sistemazero/core/studio'
+import { isStudioPortablePath } from '@sistemazero/core/studio/portable-path'
+import {
+  type StudioPublicProjectMetadata,
+  StudioPublicProjectMetadataSchema,
+} from '@sistemazero/core/studio/public-metadata'
+import {
+  StudioFreeRuntimeDecisionSchema,
+  StudioLessonRuntimeDecisionSchema,
+  StudioLivePublicationRuntimeDecisionSchema,
+  type StudioRuntimeCandidate,
+} from '@sistemazero/core/studio/runtime-authorization'
+import type { EditableStudioProject } from '@sistemazero/studio'
+import { prepareEditableStudioProject } from '@sistemazero/studio/editable-project-validation'
+import { ProjectDocumentError } from '@sistemazero/studio/project-document'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getEnv } from '../lib/env'
@@ -38,6 +51,7 @@ import {
 import {
   callStudioPublication,
   publishStudioProRevision,
+  publishStudioPythonRevision,
   StudioPublicationError,
   studioPublicationOwner,
   studioPublicationPlayId,
@@ -49,6 +63,7 @@ import {
   enqueueStudioPublicationCleanup,
   performStudioPublicationCleanup,
 } from '../server/studio-publication-cleanup'
+import { createStudioPublicRuntimeRoute } from './studio-public-runtime'
 
 export type StudioRoutes = ReturnType<typeof createStudioRoutes>
 
@@ -90,6 +105,24 @@ const PLAY_KEY = (id: string) => `studio/play/${id}.json`
 
 // Descrição: só os 3 arquivos canônicos (clampados) — NÃO o projeto com assets.
 const DescribeBody = z.union([
+  z.strictObject({
+    kind: z.literal('python'),
+    projectKind: z.enum(['classic', 'pro']),
+    projectId: z.string().regex(/^[A-Za-z0-9._:-]{1,128}$/),
+    sources: z
+      .array(
+        z.strictObject({
+          path: z
+            .string()
+            .max(240)
+            .refine(isStudioPortablePath)
+            .refine((path) => path.endsWith('.py')),
+          content: z.string().max(4000),
+        }),
+      )
+      .max(6),
+    title: z.string().max(200).optional(),
+  }),
   z
     .object({
       kind: z.literal('classic').optional(),
@@ -202,6 +235,112 @@ export function createStudioRoutes(deps: {
   const audience = deps.audience ?? 'kids'
   const muralSpaceSlug = CREATOR_SHOWCASE_SLUGS[audience]
 
+  type PublicationContext =
+    | { kind: 'free' }
+    | { kind: 'lesson'; lessonId: string; blockId: string; baselineId: string }
+    | { kind: 'live'; workspaceId: string; revision: number }
+  const retained = (project: EditableStudioProject | null) =>
+    project?.kind === 'pro' || project?.programmingLanguage === 'python'
+  const publicMetadata = (project: EditableStudioProject) =>
+    StudioPublicProjectMetadataSchema.parse({
+      programmingLanguage: project.programmingLanguage ?? 'javascript',
+      ...(project.runtime ? { runtime: project.runtime } : {}),
+      pro: project.kind === 'pro',
+      extensions: project.installedExtensions.map((extension) => extension.id).slice(0, 8),
+    })
+  function assertCanonicalPublication(project: EditableStudioProject, canonical: unknown) {
+    const python = project.programmingLanguage === 'python'
+    if (
+      python !== isStudioPythonPublication(canonical) ||
+      (python &&
+        isStudioPythonPublication(canonical) &&
+        (project.kind !== canonical.kind ||
+          project.runtime.profileId !== canonical.runtime.profileId ||
+          project.runtime.releaseId !== canonical.runtime.releaseId ||
+          project.runtime.manifestSha256 !== canonical.runtime.manifestSha256))
+    )
+      throw new StudioPublicationError(
+        409,
+        'Este post já possui outro tipo de projeto. Crie uma nova publicação.',
+      )
+  }
+  async function publishRevision(options: {
+    project: EditableStudioProject
+    source: string
+    playId: string
+    owner: string
+    requestId: string
+    expectedVersion: number
+    parentOrigin: string
+    signal: AbortSignal
+    context: PublicationContext
+  }) {
+    if (options.project.programmingLanguage !== 'python')
+      return publishStudioProRevision({ ...options, project: options.project })
+    return publishStudioPythonRevision({
+      ...options,
+      project: options.project,
+      authorize: async (candidate: StudioRuntimeCandidate) => {
+        const context = options.context
+        const response =
+          context.kind === 'free'
+            ? await members.authorizeFreeRuntime({
+                ...candidate,
+                context: { kind: 'free', audience: 'kids', projectId: options.project.id },
+              })
+            : context.kind === 'lesson'
+              ? await members.authorizeLessonRuntime(context.lessonId, context.blockId, {
+                  ...candidate,
+                  baselineId: context.baselineId,
+                })
+              : await members.authorizeLivePublicationRuntime(context.workspaceId, {
+                  ...candidate,
+                  operation: 'execute',
+                  context: {
+                    kind: 'live-publication',
+                    workspaceId: context.workspaceId,
+                    workspaceRevision: context.revision,
+                  },
+                })
+        if (response.status !== 200)
+          throw new StudioPublicationError(
+            response.status >= 500 ? 503 : 403,
+            'Este projeto não está autorizado para publicar agora.',
+          )
+        const schema =
+          context.kind === 'free'
+            ? StudioFreeRuntimeDecisionSchema
+            : context.kind === 'lesson'
+              ? StudioLessonRuntimeDecisionSchema
+              : StudioLivePublicationRuntimeDecisionSchema
+        const parsed = schema.safeParse(response.body)
+        if (!parsed.success)
+          throw new StudioPublicationError(502, 'A autorização da publicação está inválida.')
+        const expectedContext =
+          context.kind === 'free'
+            ? { kind: 'free', audience: 'kids', projectId: options.project.id }
+            : context.kind === 'lesson'
+              ? {
+                  kind: 'lesson',
+                  lessonId: context.lessonId,
+                  blockId: context.blockId,
+                  baselineId: context.baselineId,
+                }
+              : {
+                  kind: 'live-publication',
+                  workspaceId: context.workspaceId,
+                  workspaceRevision: context.revision,
+                }
+        if (canonicalJson(parsed.data.context) !== canonicalJson(expectedContext))
+          throw new StudioPublicationError(
+            502,
+            'A autorização pertence a outro contexto de publicação.',
+          )
+        return parsed.data
+      },
+    })
+  }
+
   async function proPublicationAccess(user: { role: string }): Promise<NextResponse | null> {
     if (isPrivilegedRole(user.role)) return null
     const progress = await members.getGamification()
@@ -279,28 +418,10 @@ export function createStudioRoutes(deps: {
         return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
       }
       let projectBytes: Buffer
-      let publicationProject: Project | null = null
+      let publicationProject: EditableStudioProject | null = null
       // Metadado do projeto p/ o selo de nível do remix no card do Mural (derivado
       // do projeto JÁ saneado — cosmético; o gate real do remix é no clique).
-      let studioMeta: { pro: boolean; extensions: string[] } | null = null
-      try {
-        const rawProject = JSON.parse(
-          Buffer.from(await projectPart.arrayBuffer()).toString('utf-8'),
-        )
-        const project = sanitizeProjectForHost(rawProject)
-        if (!project) return invalid()
-        publicationProject = studioPublicProject(project)
-        studioMeta = {
-          pro: project.kind === 'pro',
-          extensions: project.installedExtensions.map((ext) => ext.id),
-        }
-        projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf-8')
-        if (projectBytes.length > PROJECT_MAX_BYTES) {
-          return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
-        }
-      } catch {
-        return invalid()
-      }
+      let studioMeta: StudioPublicProjectMetadata | null = null
 
       // 1. Elegibilidade (UX antecipado — o hub re-valida de forma autoritativa).
       const payload = await members.getShowcasePayload(lessonId, blockId)
@@ -324,13 +445,48 @@ export function createStudioRoutes(deps: {
       }
 
       const owner = studioPublicationOwner(sess.id, sess.activeProfile?.accountId ?? sess.id)
-      const playId =
-        publicationProject?.kind === 'pro'
-          ? studioPublicationPlayId(owner, `lesson:${lessonId}:${blockId}`, clientIdempotencyKey)
-          : randomUUID()
-      if (publicationProject?.kind === 'pro') {
+      let publicationContext: PublicationContext = { kind: 'free' }
+      try {
+        const submitted = await members.getOwnStudioSubmission(lessonId, blockId)
+        if (submitted.status !== 200 || !submitted.body?.project)
+          throw new StudioPublicationError(
+            submitted.status >= 500 ? 503 : 409,
+            'Envie este projeto antes de publicar.',
+          )
+        const project = await prepareEditableStudioProject(submitted.body.project)
+        if (!project) return invalid()
+        publicationProject = studioPublicProject(project)
+        studioMeta = publicMetadata(project)
+        projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf8')
+        if (projectBytes.length > PROJECT_MAX_BYTES)
+          return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
+        if (project.programmingLanguage === 'python') {
+          const opened = await members.openLessonStudio(lessonId, blockId)
+          const baseline = z
+            .object({
+              id: z.string().regex(/^[a-f0-9]{64}$/),
+              lessonId: z.literal(lessonId),
+              blockId: z.literal(blockId),
+              bound: z.literal(true),
+              readOnly: z.literal(false).optional(),
+            })
+            .safeParse(opened.body)
+          if (opened.status !== 200 || !baseline.success)
+            throw new StudioPublicationError(
+              opened.status >= 500 ? 503 : 409,
+              'Reabra o ambiente para conferir o projeto enviado.',
+            )
+          publicationContext = { kind: 'lesson', lessonId, blockId, baselineId: baseline.data.id }
+        }
+      } catch (error) {
+        return publicationError(error)
+      }
+      const playId = retained(publicationProject)
+        ? studioPublicationPlayId(owner, `lesson:${lessonId}:${blockId}`, clientIdempotencyKey)
+        : randomUUID()
+      if (publicationProject && retained(publicationProject)) {
         try {
-          await publishStudioProRevision({
+          await publishRevision({
             project: publicationProject,
             source: projectBytes.toString('utf8'),
             playId,
@@ -339,6 +495,7 @@ export function createStudioRoutes(deps: {
             expectedVersion: 0,
             parentOrigin: new URL(req.url).origin,
             signal: req.signal,
+            context: publicationContext,
           })
         } catch (error) {
           return publicationError(error)
@@ -371,7 +528,11 @@ export function createStudioRoutes(deps: {
         coverImageUrl = payload.body.defaultCoverUrl ?? null
       }
 
-      if (publicationProject?.kind === 'pro' && !coverImageUrl) {
+      if (
+        publicationProject?.programmingLanguage !== 'python' &&
+        publicationProject?.kind === 'pro' &&
+        !coverImageUrl
+      ) {
         try {
           const capture = await callStudioPublication(
             { operation: 'cover', playId, owner },
@@ -425,7 +586,7 @@ export function createStudioRoutes(deps: {
       const threadId = r.body.thread.id
       // O playId real é o do post DEVOLVIDO (dedupe pode trazer um post anterior).
       const resolvedPlayId = r.body.thread.playId ?? playId
-      if (publicationProject?.kind === 'pro' && resolvedPlayId !== playId) {
+      if (publicationProject && retained(publicationProject) && resolvedPlayId !== playId) {
         try {
           const canonical = await callStudioPublication(
             { operation: 'get', playId: resolvedPlayId, owner },
@@ -433,8 +594,9 @@ export function createStudioRoutes(deps: {
           )
           // A legacy deduplicated post can predate compiled Pro publications.
           // Preserve an existing canonical revision; only migrate a missing one.
-          if (!isStudioProPublication(canonical))
-            await publishStudioProRevision({
+          assertCanonicalPublication(publicationProject, canonical)
+          if (!isStudioPublication(canonical))
+            await publishRevision({
               project: publicationProject,
               source: projectBytes.toString('utf8'),
               playId: resolvedPlayId,
@@ -443,6 +605,7 @@ export function createStudioRoutes(deps: {
               expectedVersion: 0,
               parentOrigin: new URL(req.url).origin,
               signal: req.signal,
+              context: publicationContext,
             })
           await r2PutObjectPrivate({
             key: PLAY_KEY(resolvedPlayId),
@@ -457,7 +620,7 @@ export function createStudioRoutes(deps: {
         {
           muralUrl: `/${muralSpaceSlug}?thread=${encodeURIComponent(threadId)}`,
           playUrl: `/jogar/${resolvedPlayId}`,
-          ...(publicationProject?.kind === 'pro' ? { publicationId: resolvedPlayId } : {}),
+          ...(retained(publicationProject) ? { publicationId: resolvedPlayId } : {}),
           deduped: r.body.deduped,
         },
         { status: 200 },
@@ -546,22 +709,19 @@ export function createStudioRoutes(deps: {
         return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
       }
       let projectBytes: Buffer
-      let publicationProject: Project | null = null
+      let publicationProject: EditableStudioProject | null = null
       // Metadado do projeto p/ o selo de nível do remix (cosmético; gate real no clique).
-      let studioMeta: { pro: boolean; extensions: string[] } | null = null
+      let studioMeta: StudioPublicProjectMetadata | null = null
       try {
         const rawProject =
           liveSnapshot?.project ??
           (projectPart instanceof File
             ? JSON.parse(Buffer.from(await projectPart.arrayBuffer()).toString('utf-8'))
             : null)
-        const project = sanitizeProjectForHost(rawProject)
+        const project = await prepareEditableStudioProject(rawProject)
         if (!project) return invalid()
         publicationProject = studioPublicProject(project)
-        studioMeta = {
-          pro: project.kind === 'pro',
-          extensions: project.installedExtensions.map((ext) => ext.id),
-        }
+        studioMeta = publicMetadata(project)
         projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf-8')
         if (projectBytes.length > PROJECT_MAX_BYTES) {
           return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
@@ -573,15 +733,15 @@ export function createStudioRoutes(deps: {
       const owner = studioPublicationOwner(sess.id, sess.activeProfile?.accountId ?? sess.id)
       const playId =
         liveSnapshot?.playId ??
-        (publicationProject?.kind === 'pro'
+        (retained(publicationProject)
           ? studioPublicationPlayId(
               owner,
               audience === 'adult' ? 'adult-standalone' : 'standalone',
               clientIdempotencyKey,
             )
           : randomUUID())
-      if (publicationProject?.kind === 'pro') {
-        if (!liveSnapshot) {
+      if (publicationProject && retained(publicationProject)) {
+        if (!liveSnapshot && publicationProject.kind === 'pro') {
           const denied = await proPublicationAccess(sess)
           if (denied) return denied
           const access = await members.checkStudioAccess()
@@ -592,7 +752,7 @@ export function createStudioRoutes(deps: {
             )
         }
         try {
-          await publishStudioProRevision({
+          await publishRevision({
             project: publicationProject,
             source: projectBytes.toString('utf8'),
             playId,
@@ -601,6 +761,9 @@ export function createStudioRoutes(deps: {
             expectedVersion: 0,
             parentOrigin: new URL(req.url).origin,
             signal: req.signal,
+            context: liveSnapshot
+              ? { kind: 'live', workspaceId: liveWorkspaceId, revision: liveRevision }
+              : { kind: 'free' },
           })
         } catch (error) {
           return publicationError(error)
@@ -629,7 +792,11 @@ export function createStudioRoutes(deps: {
         }
       }
 
-      if (publicationProject?.kind === 'pro' && !coverImageUrl) {
+      if (
+        publicationProject?.programmingLanguage !== 'python' &&
+        publicationProject?.kind === 'pro' &&
+        !coverImageUrl
+      ) {
         try {
           const capture = await callStudioPublication(
             { operation: 'cover', playId, owner },
@@ -693,7 +860,7 @@ export function createStudioRoutes(deps: {
       }
       const threadId = r.body.thread.id
       const resolvedPlayId = r.body.thread.playId ?? playId
-      if (publicationProject?.kind === 'pro' && resolvedPlayId !== playId) {
+      if (publicationProject && retained(publicationProject) && resolvedPlayId !== playId) {
         try {
           const canonical = await callStudioPublication(
             { operation: 'get', playId: resolvedPlayId, owner },
@@ -701,8 +868,9 @@ export function createStudioRoutes(deps: {
           )
           // A legacy deduplicated post can predate compiled Pro publications.
           // Preserve an existing canonical revision; only migrate a missing one.
-          if (!isStudioProPublication(canonical))
-            await publishStudioProRevision({
+          assertCanonicalPublication(publicationProject, canonical)
+          if (!isStudioPublication(canonical))
+            await publishRevision({
               project: publicationProject,
               source: projectBytes.toString('utf8'),
               playId: resolvedPlayId,
@@ -711,6 +879,9 @@ export function createStudioRoutes(deps: {
               expectedVersion: 0,
               parentOrigin: new URL(req.url).origin,
               signal: req.signal,
+              context: liveSnapshot
+                ? { kind: 'live', workspaceId: liveWorkspaceId, revision: liveRevision }
+                : { kind: 'free' },
             })
           await r2PutObjectPrivate({
             key: PLAY_KEY(resolvedPlayId),
@@ -721,7 +892,7 @@ export function createStudioRoutes(deps: {
           return publicationError(error)
         }
       }
-      if (liveSnapshot && publicationProject?.kind !== 'pro' && resolvedPlayId !== playId) {
+      if (liveSnapshot && !retained(publicationProject) && resolvedPlayId !== playId) {
         // Older attempts used random IDs. Hub identifies the canonical object
         // for this same author/workspace/revision/key: restore it before success.
         try {
@@ -739,7 +910,7 @@ export function createStudioRoutes(deps: {
         {
           muralUrl: `/${muralSpaceSlug}?thread=${encodeURIComponent(threadId)}`,
           playUrl: `/jogar/${resolvedPlayId}`,
-          ...(publicationProject?.kind === 'pro' ? { publicationId: resolvedPlayId } : {}),
+          ...(retained(publicationProject) ? { publicationId: resolvedPlayId } : {}),
           deduped: r.body.deduped,
         },
         { status: 200 },
@@ -775,25 +946,42 @@ export function createStudioRoutes(deps: {
       try {
         const obj = await r2GetObjectPrivate(PLAY_KEY(id))
         const bytes = await bufferFromStream(obj.body, PROJECT_MAX_BYTES)
-        let project = await prepareProjectForHost(JSON.parse(bytes.toString('utf-8')))
+        let project = await prepareEditableStudioProject(JSON.parse(bytes.toString('utf-8')))
         let compiledUrl: string | undefined
         let compiledRevision: string | undefined
-        if (project?.kind === 'pro') {
+        let pythonRevision: string | undefined
+        if (project?.programmingLanguage === 'python' || project?.kind === 'pro') {
           const published = await callStudioPublication(
             { operation: 'resolve', playId: id },
             req.signal,
           )
           if (!published || !('source' in published))
             return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
-          project = await prepareProjectForHost(JSON.parse(published.source))
-          if (project?.kind !== 'pro')
-            throw new ProjectDocumentError('invalid-document', 'Publicação Pro inválida.')
-          compiledRevision = published.publication.activeRevision
-          compiledUrl = studioProPublicationUrl(
-            new URL(getEnv().STUDIO_PRO_RUNTIME_URL!).origin,
-            id,
-            compiledRevision,
-          )
+          const wasPython = project.programmingLanguage === 'python'
+          project = await prepareEditableStudioProject(JSON.parse(published.source))
+          if (wasPython) {
+            if (
+              project?.programmingLanguage !== 'python' ||
+              !isStudioPythonPublication(published.publication) ||
+              project.kind !== published.publication.kind ||
+              project.runtime.manifestSha256 !== published.publication.runtime.manifestSha256
+            )
+              throw new ProjectDocumentError('invalid-document', 'Publicação Python inválida.')
+            pythonRevision = published.publication.activeRevision
+          } else {
+            if (
+              project?.programmingLanguage === 'python' ||
+              project?.kind !== 'pro' ||
+              !isStudioProPublication(published.publication)
+            )
+              throw new ProjectDocumentError('invalid-document', 'Publicação Pro inválida.')
+            compiledRevision = published.publication.activeRevision
+            compiledUrl = studioProPublicationUrl(
+              new URL(getEnv().STUDIO_PRO_RUNTIME_URL!).origin,
+              id,
+              compiledRevision,
+            )
+          }
         }
         if (!project) throw new ProjectDocumentError('invalid-document', 'Projeto inválido.')
         const headers: Record<string, string> = {
@@ -805,6 +993,7 @@ export function createStudioRoutes(deps: {
           headers['X-Studio-Pro-Url'] = compiledUrl
           headers['X-Studio-Pro-Revision'] = compiledRevision
         }
+        if (pythonRevision) headers['X-Studio-Python-Revision'] = pythonRevision
         // 1º nome do autor (snapshot do hub) p/ a página pública mostrar "feito por
         // {nome}". Header URI-encoded (só ASCII em header; acentos escapados) — a
         // MESMA ORIGEM (rota fora do matcher) deixa o browser lê-lo. Ausente = anônimo.
@@ -961,8 +1150,12 @@ export function createStudioRoutes(deps: {
         const input = parsed.data
         const owner = studioPublicationOwner(user.id, user.activeProfile?.accountId ?? user.id)
         if (input.operation === 'update') {
-          const denied = await proPublicationAccess(user)
-          if (denied) return denied
+          const project = await prepareEditableStudioProject(input.project)
+          if (!project || !retained(project)) return invalid()
+          if (project.kind === 'pro') {
+            const denied = await proPublicationAccess(user)
+            if (denied) return denied
+          }
           const access = await members.checkStudioAccess()
           if (access.status !== 200 || access.body?.access?.['estudio-completo'] !== true)
             return NextResponse.json({ error: { code: 'SHOWCASE_NOT_ELIGIBLE' } }, { status: 403 })
@@ -977,12 +1170,10 @@ export function createStudioRoutes(deps: {
             { operation: 'get', playId: input.playId, owner },
             request.signal,
           )
-          if (!isStudioProPublication(previous))
+          if (!isStudioPublication(previous))
             return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
-          const project = sanitizeProjectForHost(input.project)
-          if (project?.kind !== 'pro') return invalid()
           return NextResponse.json(
-            await publishStudioProRevision({
+            await publishRevision({
               project: studioPublicProject(project),
               source: JSON.stringify(studioPublicProject(project)),
               playId: input.playId,
@@ -991,6 +1182,7 @@ export function createStudioRoutes(deps: {
               expectedVersion: input.expectedVersion,
               parentOrigin: new URL(request.url).origin,
               signal: request.signal,
+              context: { kind: 'free' },
             }),
             { headers: { 'Cache-Control': 'no-store' } },
           )
@@ -1004,6 +1196,7 @@ export function createStudioRoutes(deps: {
     },
   }
   return {
+    studioPublicRuntime: createStudioPublicRuntimeRoute({ hub, members }),
     studioDescribe,
     studioPublish,
     studioPublishStandalone,

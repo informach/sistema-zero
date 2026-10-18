@@ -1,4 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
+import { documentFixture } from '../../studio/src/state/fixtures/projectDocuments'
 
 mock.module('server-only', () => ({}))
 const { createLiveRouteHandler } = await import('../src/routes/live')
@@ -6,6 +8,67 @@ const id = 'da43dd41-73c1-4aeb-9a0c-557b11213687'
 const context = (...path: string[]) => ({ params: Promise.resolve({ path }) })
 
 describe('live BFF security and delivery', () => {
+  test('Python runtime forwards a compact validated context and preserves denial without accepting forged grants', async () => {
+    const body = {
+      context: {
+        kind: 'live',
+        workspaceId: id,
+        sessionId: id,
+        blockId: id,
+        deviceId: id,
+        writerEpoch: 3,
+      },
+      expectedWorkspaceRevision: 7,
+      operation: 'execute',
+      revision: 'a'.repeat(64),
+      subject: studioRuntimeSubject({ ...documentFixture('python', 'pro'), id }),
+    }
+    for (const scope of ['learner', 'teacher'] as const) {
+      const calls: unknown[] = []
+      const handler = createLiveRouteHandler({
+        scope,
+        session: async () => ({ readonly: false }),
+        gatewayFetch: async (path, opts) => {
+          calls.push({ path, body: opts.body })
+          return {
+            status: 409,
+            body: { error: { code: 'LIVE_CONFLICT', message: 'A autoria mudou.' } },
+          }
+        },
+      })
+      const send = (payload = JSON.stringify(body), headers: Record<string, string> = {}) =>
+        handler(
+          new Request('https://sz.test/api/live', {
+            method: 'POST',
+            body: payload,
+            headers: { 'content-type': 'application/json', ...headers },
+          }),
+          context('workspaces', id, 'runtime'),
+        )
+      const response = await send()
+      expect(response.status).toBe(409)
+      expect(response.headers.get('cache-control')).toBe('private, no-store')
+      expect(await response.json()).toEqual({
+        error: { code: 'LIVE_CONFLICT', message: 'A autoria mudou.' },
+      })
+      expect(calls).toEqual([{ path: `/members/live/workspaces/${id}/runtime`, body }])
+      expect((await send(JSON.stringify({ ...body, capabilities: ['execute'] }))).status).toBe(400)
+      expect(
+        (
+          await send(
+            JSON.stringify({
+              ...body,
+              context: { ...body.context, workspaceId: crypto.randomUUID() },
+            }),
+          )
+        ).status,
+      ).toBe(400)
+      expect((await send('{')).status).toBe(400)
+      expect((await send('x'.repeat(2_000_001))).status).toBe(413)
+      expect((await send(JSON.stringify(body), { 'content-encoding': 'gzip' })).status).toBe(415)
+      expect(calls).toHaveLength(1)
+    }
+  })
   test('forwards numeric snapshot revisions without accepting arbitrary query metadata', async () => {
     const queries: unknown[] = []
     const handler = createLiveRouteHandler({

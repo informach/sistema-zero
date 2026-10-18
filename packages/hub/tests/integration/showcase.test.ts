@@ -647,6 +647,30 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(thread.studioMeta).toEqual({ pro: true, extensions: [] })
   })
 
+  test('standalone Python retains language/runtime metadata, deduplicates extensions and rejects missing runtime', async () => {
+    const accountId = randomUUID()
+    ownsStudio(accountId)
+    const metadata = {
+      pro: true,
+      programmingLanguage: 'python',
+      runtime: { profileId: 'python-browser', releaseId: '1.0.0', manifestSha256: 'a'.repeat(64) },
+      extensions: ['python-turtle', 'python-turtle'],
+    }
+    const request = (studioMeta: unknown) =>
+      ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+          headers: child(accountId),
+          body: standaloneBody({ studioMeta }),
+        }),
+      )
+    const response = await request(metadata)
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as { thread: { studioMeta: unknown } }
+    expect(body.thread.studioMeta).toEqual({ ...metadata, extensions: ['python-turtle'] })
+    expect((await request({ ...metadata, runtime: undefined })).status).toBe(400)
+    expect((await request({ ...metadata, programmingLanguage: 'ruby' })).status).toBe(400)
+  })
+
   test('standalone: SEM o produto → 403 (elegibilidade = posse, re-validada no hub)', async () => {
     const res = await ctx.app.handle(
       jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {

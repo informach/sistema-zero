@@ -96,6 +96,25 @@ describe('os modelos de objetivo', () => {
 })
 
 describe('copiar e colar objetivos', () => {
+  test('colar Python no editor JavaScript avisa sem trocar o ambiente ou perder os objetivos JS', () => {
+    const python: SectionProjectCheck = {
+      id: 'python-loop',
+      label: 'Repita em Python',
+      programmingLanguage: 'python',
+      profileId: 'python-turtle',
+      rule: { type: 'usesLoop' },
+    }
+    expect(valid(python)).toBe(true)
+    let id = 0
+    const result = parseObjectivesClipboard(
+      serializeObjectives([laco, python]),
+      [],
+      () => `novo-${++id}`,
+    )
+    expect(result.checks).toEqual([{ ...laco, id: 'novo-1' }])
+    expect(result.notes).toEqual(['Um objetivo Python ficou de fora: esta parte usa JavaScript.'])
+  })
+
   test('colar dá ids novos e mantém o resto', () => {
     let n = 0
     const pasted = parseObjectivesClipboard(serializeObjectives([laco]), [], () => `novo-${++n}`)

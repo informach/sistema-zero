@@ -14,6 +14,36 @@ function category(name: string, blockType: string): TutorToolboxItem {
 }
 
 describe('openTutorCategory', () => {
+  it('abre a folha real e expande ancestrais quando os conteúdos do pai incluem os blocos filhos', () => {
+    const text = category('Textos', 'sz_py_text')
+    const selected: TutorToolboxItem[] = []
+    const expanded: string[] = []
+    const parent: TutorToolboxItem = {
+      getName: () => 'Programação',
+      getContents: () => [
+        { kind: 'category', name: 'Textos', contents: [{ kind: 'block', type: 'sz_py_text' }] },
+      ],
+      getChildToolboxItems: () => [text],
+      setExpanded: (value) => {
+        if (value) expanded.push('Programação')
+      },
+    }
+    expect(
+      openTutorCategory(
+        {
+          getToolbox: () => ({
+            getToolboxItems: () => [parent],
+            setSelectedItem: (item: TutorToolboxItem) => selected.push(item),
+          }),
+        },
+        'sz_py_text',
+        'Programação',
+        'Textos',
+      ),
+    ).toBe(true)
+    expect(selected).toEqual([text])
+    expect(expanded).toEqual(['Programação'])
+  })
   it('usa o blockType para distinguir categorias homônimas de extensões', () => {
     const firstSound = category('Som', 'sz_audio_play')
     const secondSound = category('Som', 'sz_g2d_play_sound')

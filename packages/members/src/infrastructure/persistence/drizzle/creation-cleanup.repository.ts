@@ -5,6 +5,7 @@ import type {
   CreationCleanupScope,
 } from '../../../domain/ports/creation-cleanup-repository.port'
 import type { Database } from './db'
+import { DrizzleGalleryCopyRepository } from './gallery-copy.repository'
 import { creationCleanupJobs, pensaDeletionJobs } from './schema'
 
 export class DrizzleCreationCleanupRepository implements CreationCleanupRepository {
@@ -54,38 +55,43 @@ export class DrizzleCreationCleanupRepository implements CreationCleanupReposito
     if (accountJob) return accountJob
     // Limpeza de PLANO só para o worker que declarou `pensa`: o worker antigo (rollback do
     // Kids) ignora `scope` e finalizaria a exclusão da CONTA da família com o perfil do plano.
-    if (!scopes.includes('pensa')) return null
-    return this.db.transaction(async (tx) => {
-      const [job] = await tx
-        .select()
-        .from(pensaDeletionJobs)
-        .where(
-          and(
-            isNull(pensaDeletionJobs.completedAt),
-            lte(pensaDeletionJobs.notBefore, now),
-            or(
-              isNull(pensaDeletionJobs.lockedAt),
-              lt(pensaDeletionJobs.lockedAt, leaseExpiredBefore),
-            ),
-          ),
-        )
-        .orderBy(asc(pensaDeletionJobs.notBefore))
-        .limit(1)
-        .for('update', { skipLocked: true })
-      if (!job) return null
-      await tx
-        .update(pensaDeletionJobs)
-        .set({ lockedAt: now, attempts: job.attempts + 1, updatedAt: now })
-        .where(eq(pensaDeletionJobs.id, job.id))
-      return {
-        id: job.id,
-        accountId: job.accountId,
-        userIds: [job.profileId],
-        prefixes: job.prefixes,
-        attempts: job.attempts + 1,
-        scope: 'pensa' as const,
-      }
-    })
+    const planJob = scopes.includes('pensa')
+      ? await this.db.transaction(async (tx) => {
+          const [job] = await tx
+            .select()
+            .from(pensaDeletionJobs)
+            .where(
+              and(
+                isNull(pensaDeletionJobs.completedAt),
+                lte(pensaDeletionJobs.notBefore, now),
+                or(
+                  isNull(pensaDeletionJobs.lockedAt),
+                  lt(pensaDeletionJobs.lockedAt, leaseExpiredBefore),
+                ),
+              ),
+            )
+            .orderBy(asc(pensaDeletionJobs.notBefore))
+            .limit(1)
+            .for('update', { skipLocked: true })
+          if (!job) return null
+          await tx
+            .update(pensaDeletionJobs)
+            .set({ lockedAt: now, attempts: job.attempts + 1, updatedAt: now })
+            .where(eq(pensaDeletionJobs.id, job.id))
+          return {
+            id: job.id,
+            accountId: job.accountId,
+            userIds: [job.profileId],
+            prefixes: job.prefixes,
+            attempts: job.attempts + 1,
+            scope: 'pensa' as const,
+          }
+        })
+      : null
+    if (planJob) return planJob
+    return scopes.includes('gallery')
+      ? new DrizzleGalleryCopyRepository(this.db).claimDue(now, leaseExpiredBefore)
+      : null
   }
 
   async complete(id: string, now: Date): Promise<boolean> {
@@ -100,7 +106,7 @@ export class DrizzleCreationCleanupRepository implements CreationCleanupReposito
       .set({ completedAt: now, lockedAt: null, lastError: null, updatedAt: now })
       .where(and(eq(pensaDeletionJobs.id, id), isNull(pensaDeletionJobs.completedAt)))
       .returning({ id: pensaDeletionJobs.id })
-    return plans.length === 1
+    return plans.length === 1 || new DrizzleGalleryCopyRepository(this.db).complete(id, now)
   }
 
   async fail(id: string, error: string, now: Date, retryAt: Date): Promise<boolean> {
@@ -115,7 +121,9 @@ export class DrizzleCreationCleanupRepository implements CreationCleanupReposito
       .set({ lockedAt: null, lastError: error, notBefore: retryAt, updatedAt: now })
       .where(and(eq(pensaDeletionJobs.id, id), isNull(pensaDeletionJobs.completedAt)))
       .returning({ id: pensaDeletionJobs.id })
-    return plans.length === 1
+    return (
+      plans.length === 1 || new DrizzleGalleryCopyRepository(this.db).fail(id, error, now, retryAt)
+    )
   }
 }
 

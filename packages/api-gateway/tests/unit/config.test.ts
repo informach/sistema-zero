@@ -24,6 +24,74 @@ describe('loadGatewayConfig', () => {
         authorize: { statuses: ['active'], roles: ['superadmin', 'admin', 'staff'] },
       })
   })
+  test('live execution resolves its exact authenticated bounded route before generic room actions', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(
+      registry.resolve('POST', '/members/live/workspaces/project/runtime', 'v1')?.route,
+    ).toMatchObject({
+      id: 'members-live-runtime',
+      methods: ['POST'],
+      maxBodyBytes: 2_000_000,
+      auth: { required: true, strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+    })
+  })
+  test('Studio lesson admission and execution have exact authenticated POST routes', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    for (const suffix of ['context', 'runtime']) {
+      const path = `/members/lessons/lesson/blocks/block/studio-${suffix}`
+      expect(registry.resolve('POST', path, 'v1')?.route).toMatchObject({
+        id: `members-studio-lesson-${suffix}`,
+        service: 'members',
+        auth: { required: true, strategies: ['jwt'] },
+        authorize: { statuses: ['active'] },
+      })
+      for (const method of ['GET', 'PATCH', 'DELETE'])
+        expect(registry.resolve(method, path, 'v1')).toBeUndefined()
+      expect(registry.resolve('POST', `${path}/other`, 'v1')).toBeUndefined()
+    }
+  })
+  test('saved live publication has its own exact authenticated bounded route, independent of writer runtime', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    const path = '/members/live/workspaces/project/publication-runtime'
+    expect(registry.resolve('POST', path, 'v1')?.route).toMatchObject({
+      id: 'members-studio-live-publication-runtime',
+      maxBodyBytes: 2_000_000,
+      auth: { required: true, strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+    })
+    for (const method of ['GET', 'PATCH', 'DELETE'])
+      expect(registry.resolve(method, path, 'v1')?.route.id).not.toBe(
+        'members-studio-live-publication-runtime',
+      )
+  })
+  test('Studio authoring catalog is an exact staff GET route, never a public execution grant', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(
+      registry.resolve('GET', '/members/admin/studio/authoring-options', 'v1')?.route,
+    ).toMatchObject({
+      id: 'members-admin-studio-authoring-options',
+      service: 'members',
+      auth: { required: true, strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    })
+    for (const method of ['POST', 'PATCH', 'DELETE'] as const)
+      expect(
+        registry.resolve(method, '/members/admin/studio/authoring-options', 'v1'),
+      ).toBeUndefined()
+    expect(
+      registry.resolve('GET', '/members/admin/studio/authoring-options/execute', 'v1'),
+    ).toBeUndefined()
+  })
   test('Instagram publica apenas o webhook exato; inbox exige equipe e atribuição exige HMAC do marketing', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),
@@ -777,6 +845,67 @@ describe('gateway.config.ts (configuração real)', () => {
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       audit: {},
     })
+  })
+
+  test('runtime público é restrito ao BFF assinado, com cota por publicação e corpo limitado', () => {
+    expect(
+      realConfig.routes.find((route) => route.id === 'members-studio-public-runtime'),
+    ).toMatchObject({
+      methods: ['POST'],
+      pathPattern: '/members/internal/studio/public-runtime',
+      auth: { required: true, strategies: ['hmac'], allowedConsumers: ['member-shell'] },
+      maxBodyBytes: 2_000_000,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'json-field', field: 'context.playId' },
+    })
+  })
+
+  test('análise Python usa sessão ativa e cota independente da execução', () => {
+    const analysis = realConfig.routes.find(
+      (route) => route.id === 'members-studio-python-analysis',
+    )
+    const execution = realConfig.routes.find((route) => route.id === 'members-studio-free-runtime')
+    expect(analysis).toMatchObject({
+      methods: ['POST'],
+      pathPattern: '/members/studio/python-analysis',
+      auth: { required: true, strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      maxBodyBytes: 2_000_000,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    })
+    expect(analysis?.transforms).toEqual(execution?.transforms)
+    expect(execution?.rateLimit).toEqual({ max: 120, windowMs: 60_000, by: 'principal' })
+  })
+
+  test('runtime livre exige sessão ativa, transporte interno e candidato limitado sem wildcard', () => {
+    for (const [id, path, methods] of [
+      ['members-studio-free-options', '/members/studio/free-options', ['GET']],
+      ['members-studio-free-runtime', '/members/studio/free-runtime', ['POST']],
+    ] as const) {
+      const route = realConfig.routes.find((candidate) => candidate.id === id)
+      expect(route).toMatchObject({
+        pathPattern: path,
+        methods,
+        authorize: { statuses: ['active'] },
+      })
+      expect(route?.auth).not.toBe('public')
+      expect(route?.transforms).toBeDefined()
+      expect(route?.rateLimit).toBeDefined()
+      if (id === 'members-studio-free-runtime') expect(route?.maxBodyBytes).toBe(2_000_000)
+    }
+  })
+
+  test('autoria Python exige equipe ativa e transporte interno com candidato limitado', () => {
+    const route = realConfig.routes.find(
+      (candidate) => candidate.id === 'members-admin-studio-authoring-runtime',
+    )
+    expect(route).toMatchObject({
+      methods: ['POST'],
+      pathPattern: '/members/admin/studio/authoring-runtime',
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      maxBodyBytes: 2_000_000,
+    })
+    expect(route?.auth).not.toBe('public')
+    expect(route?.transforms).toBeDefined()
   })
 
   test('persistência gerada pelo BFF do Zappy exige HMAC; demais rotas preservam JWT', () => {

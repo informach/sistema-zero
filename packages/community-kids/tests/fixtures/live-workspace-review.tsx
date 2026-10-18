@@ -2,22 +2,29 @@
 import { afterEach, expect, mock, test } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { IDBFactory } from 'fake-indexeddb'
-import { createElement, forwardRef, useEffect, useImperativeHandle } from 'react'
+import { createElement, forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 
 let localProject: any
 let editorProps: any
 const observed: string[] = []
 const FakeStudio = forwardRef((props: any, ref: any) => {
+  const clean = useRef(structuredClone(localProject))
   editorProps = props
   useImperativeHandle(ref, () => ({
     prepareHandoff: async () => structuredClone(localProject),
     applyObservedRevision: async (project: any) => {
       localProject = structuredClone(project)
+      clean.current = structuredClone(project)
       observed.push(project.name)
     },
     resumeAuthorship: () => {},
     getProject: () => localProject,
-    save: async () => props.persistence.save(localProject),
+    isDirty: () => JSON.stringify(localProject) !== JSON.stringify(clean.current),
+    save: async () => {
+      const saved = structuredClone(localProject)
+      await props.persistence.save(saved)
+      clean.current = saved
+    },
   }))
   useEffect(() => {
     props.onReady()

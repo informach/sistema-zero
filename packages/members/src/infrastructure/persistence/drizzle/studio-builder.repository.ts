@@ -11,10 +11,13 @@ import {
   type StudioProBuilderCommand,
   type StudioProBuilderJob,
   type StudioProBuilderPage,
+  type StudioProBuilderPreview,
   type StudioProBuilderRepository,
+  type StudioProRevision,
   studioProBuilderView,
   studioProChangeScopeIssue,
 } from '@sistemazero/core/studio'
+import { verifyStudioPythonBuilderPreview } from '@sistemazero/core/studio/python-builder-preview'
 import { and, desc, eq, gt, inArray, lt, or, sql } from 'drizzle-orm'
 import { StudioBuilderConflictError } from '../../../domain/studio-pro/studio-builder.errors'
 import type { Database } from './db'
@@ -46,10 +49,15 @@ const requestIdentity = (
   )
 function verifiedEvidence(
   evidence: import('@sistemazero/core/studio').StudioProBuilderEvidence[],
+  preview?: StudioProBuilderPreview,
 ): boolean {
+  const required =
+    preview?.kind === 'python' && !preview.validation.report.execution?.capture
+      ? ['types', 'build', 'playtest']
+      : ['types', 'build', 'playtest', 'capture']
   return (
-    evidence.length === 4 &&
-    ['types', 'build', 'playtest', 'capture'].every(
+    evidence.length === required.length &&
+    required.every(
       (kind) =>
         evidence.filter((item) => item.kind === kind && item.status === 'passed').length === 1,
     )
@@ -111,7 +119,66 @@ async function view(tx: Transaction, row: Row): Promise<StudioProBuilderJob> {
 
 /** Account lock is acquired before any job/ledger access, matching deletion and quota lock order. */
 export class DrizzleStudioBuilderRepository implements StudioProBuilderRepository {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly db: Database,
+    private readonly pythonPreviewServiceOrigin?: string,
+    private readonly clock: () => Date = () => new Date(),
+  ) {}
+  private assertPythonAcceptanceLease(row: Row, preview?: StudioProBuilderPreview) {
+    if (row.base.version !== 2 || row.base.configuration.programmingLanguage !== 'python') return
+    const now = this.clock().getTime()
+    if (
+      !Number.isFinite(now) ||
+      !row.leaseUntil ||
+      row.leaseUntil.getTime() <= now ||
+      row.expiresAt.getTime() <= now ||
+      (row.phase === 'validating' && row.deadlineAt.getTime() <= now) ||
+      (preview?.kind === 'python' && preview.reference.expiresAt <= now)
+    )
+      throw new StudioBuilderConflictError(
+        'O prazo de validação Python terminou antes do aceite da proposta.',
+      )
+  }
+  private async verifyPreview(
+    row: Row,
+    candidate: StudioProRevision,
+    preview: StudioProBuilderPreview,
+    evidence: import('@sistemazero/core/studio').StudioProBuilderEvidence[],
+    now: Date,
+  ) {
+    const python =
+      candidate.version === 2 && candidate.configuration.programmingLanguage === 'python'
+    if ((preview.kind === 'python') !== python || preview.revisionHash !== candidate.hash)
+      throw new StudioBuilderConflictError(
+        'A prévia não pertence à revisão e à linguagem da proposta.',
+      )
+    if (preview.kind === 'python') {
+      if (!this.pythonPreviewServiceOrigin)
+        throw new StudioBuilderConflictError('O serviço de prévia Python não está configurado.')
+      await verifyStudioPythonBuilderPreview(preview, candidate, row.binaries, {
+        serviceOrigin: this.pythonPreviewServiceOrigin,
+        parentOrigin: row.execution.parentOrigin,
+        now: now.getTime(),
+      })
+      const capture = evidence.find((item) => item.kind === 'capture')
+      if (
+        (preview.validation.report.execution?.capture
+          ? capture?.artifactUrl !== new URL('python-playtest.png', preview.reference.url).href
+          : capture !== undefined) ||
+        evidence.some((item) => item.kind !== 'capture' && item.artifactUrl !== undefined)
+      )
+        throw new StudioBuilderConflictError(
+          'A captura não corresponde à execução Python da proposta.',
+        )
+    } else if (
+      preview.artifact.expiresAt <= now.getTime() ||
+      evidence.find((item) => item.kind === 'capture')?.artifactUrl !==
+        new URL('__studio-proof.png', preview.artifact.url).href
+    )
+      throw new StudioBuilderConflictError(
+        'A captura não pertence a uma prévia verificada disponível.',
+      )
+  }
   async pendingExecutions(now: Date, limit: number) {
     const count = Math.min(20, Math.max(1, limit))
     const columns = {
@@ -258,9 +325,12 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
     actor: StudioAiActor,
     command: StudioProBuilderCommand,
     now: Date,
+    signal?: AbortSignal,
   ): Promise<StudioProBuilderClaim | null> {
+    signal?.throwIfAborted()
     return this.db.transaction(async (tx) => {
-      await lockStudioAiAccount(tx, actor.accountId)
+      await lockStudioAiAccount(tx, actor.accountId, signal)
+      signal?.throwIfAborted()
       const deletions =
         actor.audience === 'adult' ? adultStudioBuilderProjectDeletions : kidsDeletions
       const projectId = command.operation === 'create' ? command.base.projectId : command.projectId
@@ -428,6 +498,7 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
       if (!found) return null
       let row = found
       const update = async (data: Partial<typeof jobs.$inferInsert>) => {
+        signal?.throwIfAborted()
         const currentJournal = data.assistance ?? journalFor(row)
         const assistance = data.phase
           ? appendStudioProAssistanceEvent(currentJournal, data.phase, now.toISOString())
@@ -460,6 +531,53 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
       }
       if (command.operation === 'get' || command.operation === 'latest')
         return { job: await view(tx, row), token: null }
+      if (
+        command.operation === 'authorize-validation' ||
+        command.operation === 'authorize-proposal'
+      ) {
+        const validation = command.operation === 'authorize-validation'
+        if (
+          !(validation ? ['validating', 'review'].includes(row.phase) : row.phase === 'review') ||
+          journalFor(row).disposition === 'discarded' ||
+          command.version !== row.version ||
+          (validation &&
+            (command.token !== row.leaseToken || !row.leaseUntil || row.leaseUntil <= now)) ||
+          !row.result
+        )
+          throw new StudioBuilderConflictError('A autorização desta validação foi retirada.')
+        const candidate = await applyStudioProChange(row.base, row.result.change)
+        if (
+          candidate.revision.hash !== command.revisionHash ||
+          candidate.revision.version !== 2 ||
+          candidate.revision.configuration.programmingLanguage !== 'python'
+        )
+          throw new StudioBuilderConflictError('A revisão não corresponde à validação Python.')
+        if (command.operation === 'authorize-proposal' && command.purpose === 'preview') {
+          const preview = row.result.preview
+          if (
+            preview?.kind !== 'python' ||
+            preview.reference.id !== command.preview?.id ||
+            preview.reference.sha256 !== command.preview.sha256
+          )
+            throw new StudioBuilderConflictError('A prévia desta proposta mudou.')
+          await this.verifyPreview(
+            row,
+            candidate.revision,
+            preview,
+            row.result.evidence,
+            this.clock(),
+          )
+        }
+        return {
+          job: await view(tx, row),
+          token: null,
+          binaries: row.binaries,
+          [validation ? 'validationLease' : 'proposalScope']: {
+            revisionHash: candidate.revision.hash,
+            parentOrigin: row.execution.parentOrigin,
+          },
+        }
+      }
       if (command.operation === 'discard') {
         if (!terminal.has(row.phase))
           throw new StudioBuilderConflictError(
@@ -512,17 +630,14 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
           !row.leaseUntil ||
           row.leaseUntil <= now ||
           command.preview.revisionHash !== row.result.revisionHash ||
-          command.preview.artifact.expiresAt <= now.getTime() ||
-          !verifiedEvidence(command.evidence)
+          !verifiedEvidence(command.evidence, command.preview)
         )
           throw new StudioBuilderConflictError(
             'A prévia não corresponde a uma revisão verificada disponível.',
           )
-        const capture = command.evidence.find((item) => item.kind === 'capture')
-        if (
-          capture?.artifactUrl !== new URL('__studio-proof.png', command.preview.artifact.url).href
-        )
-          throw new StudioBuilderConflictError('A captura não pertence à prévia verificada.')
+        const candidate = await applyStudioProChange(row.base, row.result.change)
+        await this.verifyPreview(row, candidate.revision, command.preview, command.evidence, now)
+        this.assertPythonAcceptanceLease(row, command.preview)
         await update({
           result: { ...row.result, preview: command.preview, evidence: command.evidence },
           assistance: appendStudioProAssistanceEvent(
@@ -620,32 +735,33 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
           )
         if (command.result.preview && command.result.preview.revisionHash !== applied.revision.hash)
           throw new StudioBuilderConflictError('A prévia não pertence à revisão candidata.')
-        if (
-          command.result.preview &&
-          (command.result.preview.artifact.expiresAt <= now.getTime() ||
-            command.result.evidence.find((item) => item.kind === 'capture')?.artifactUrl !==
-              new URL('__studio-proof.png', command.result.preview.artifact.url).href)
-        )
-          throw new StudioBuilderConflictError(
-            'A captura não pertence a uma prévia verificada disponível.',
+        if (command.result.preview)
+          await this.verifyPreview(
+            row,
+            applied.revision,
+            command.result.preview,
+            command.result.evidence,
+            now,
           )
       }
       if (command.phase === 'validating' && !command.result) throw new StudioBuilderConflictError()
       if (
         command.phase === 'review' &&
-        (command.result?.evidence.length !== 4 ||
-          ['types', 'build', 'playtest', 'capture'].some(
-            (kind) =>
-              command.result!.evidence.filter(
-                (item) => item.kind === kind && item.status === 'passed',
-              ).length !== 1,
-          ))
+        (!command.result ||
+          !verifiedEvidence(command.result.evidence, command.result.preview) ||
+          (row.base.version === 2 &&
+            row.base.configuration.programmingLanguage === 'python' &&
+            command.result.preview?.kind !== 'python'))
       )
         throw new StudioBuilderConflictError(
           'Ainda faltam verificações para revisar esta proposta.',
         )
       if (command.phase === 'queued' && row.modelCalls >= limits.maxModelCalls)
         throw new StudioBuilderConflictError('O limite de reparos terminou.')
+      this.assertPythonAcceptanceLease(
+        row,
+        command.phase === 'review' ? command.result?.preview : undefined,
+      )
       await update({
         phase: command.phase,
         result: command.result,

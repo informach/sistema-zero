@@ -9,6 +9,10 @@ import { Elysia } from 'elysia'
 import type { LiveMaterialsService } from '../../application/live/live-materials.service'
 import type { LivePublicationService } from '../../application/live/live-publication.service'
 import type { LiveWorkspaceService } from '../../application/live/live-workspace.service'
+import type { AuthorizeLivePublicationRuntimeService } from '../../application/studio/authorize-live-publication-runtime.service'
+import type { AuthorizeLiveRuntimeService } from '../../application/studio/authorize-live-runtime.service'
+import type { AuthorizePublicRuntimeService } from '../../application/studio/authorize-public-runtime.service'
+import type { AuthorizePythonAnalysisService } from '../../application/studio/authorize-python-analysis.service'
 import type { LiveBenefitsPort } from '../../domain/ports/live-benefits.port'
 import type { Env } from '../../infrastructure/config/env'
 import type { CloudflareSfuMediaProvider } from '../../infrastructure/live/cloudflare-sfu.provider'
@@ -37,6 +41,8 @@ import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
 import { studioAiAccountRoutes } from './routes/studio-ai-account.routes'
 import { studioAiUsageRoutes } from './routes/studio-ai-usage.routes'
 import { studioBuilderRoutes } from './routes/studio-builder.routes'
+import { studioPublicRuntimeRoutes } from './routes/studio-public-runtime.routes'
+import { studioPythonAnalysisRoutes } from './routes/studio-python-analysis.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
@@ -46,6 +52,10 @@ export interface HttpDeps {
   livePublication?: LivePublicationService
   liveBenefits?: LiveBenefitsPort
   liveWorkspace?: LiveWorkspaceService
+  liveRuntime?: AuthorizeLiveRuntimeService
+  livePublicationRuntime?: AuthorizeLivePublicationRuntimeService
+  publicRuntime?: AuthorizePublicRuntimeService
+  pythonAnalysis?: AuthorizePythonAnalysisService
   liveMedia?: CloudflareSfuMediaProvider
   liveRecording?: OwnRecordingProvider
   live?: LiveRoutesDeps
@@ -94,6 +104,13 @@ function bodyLimitForPath(pathname: string, env: Env): number {
   if (
     PINTA_SUBMISSION_PATH.test(pathname) ||
     STUDIO_SUBMISSION_PATH.test(pathname) ||
+    /^\/members\/lessons\/[^/]+\/blocks\/[^/]+\/studio-runtime$/.test(pathname) ||
+    pathname === '/members/admin/studio/authoring-runtime' ||
+    pathname === '/members/studio/free-runtime' ||
+    pathname === '/members/studio/python-analysis' ||
+    pathname === '/members/internal/studio/public-runtime' ||
+    /^\/members\/live\/workspaces\/[^/]+\/publication-runtime$/.test(pathname) ||
+    /^\/members\/live\/workspaces\/[^/]+\/runtime$/.test(pathname) ||
     ADMIN_BLOCK_CREATE_PATH.test(pathname) ||
     ADMIN_BLOCK_UPDATE_PATH.test(pathname) ||
     /^\/members\/admin\/lessons\/[^/]+\/draft$/.test(pathname) ||
@@ -212,6 +229,18 @@ export function createServer(deps: HttpDeps) {
     )
     .use(pensaRoutes(deps.pensa))
     .use(pensaRoutes(deps.pensa, 'adult'))
+    .use(
+      studioPythonAnalysisRoutes({
+        service: deps.pythonAnalysis,
+        internalToken: deps.env.INTERNAL_API_TOKEN,
+      }),
+    )
+    .use(
+      studioPublicRuntimeRoutes({
+        service: deps.publicRuntime,
+        internalToken: deps.env.INTERNAL_API_TOKEN,
+      }),
+    )
     .use(creationsRoutes(deps.creations))
     .use(deps.adultProfiles ? adultProfileRoutes(deps.adultProfiles) : new Elysia())
     .use(deps.adultJourney ? adultJourneyRoutes(deps.adultJourney) : new Elysia())
@@ -233,6 +262,7 @@ export function createServer(deps: HttpDeps) {
       deps.liveWorkspace
         ? liveWorkspaceRoutes({
             workspace: deps.liveWorkspace,
+            runtime: deps.liveRuntime,
             internalToken: deps.env.INTERNAL_API_TOKEN,
             requireAdminEnabled: deps.env.REQUIRE_ADMIN,
           })
@@ -242,6 +272,7 @@ export function createServer(deps: HttpDeps) {
       deps.livePublication
         ? livePublicationRoutes({
             publication: deps.livePublication,
+            runtime: deps.livePublicationRuntime,
             benefits: deps.liveBenefits,
             internalToken: deps.env.INTERNAL_API_TOKEN,
           })

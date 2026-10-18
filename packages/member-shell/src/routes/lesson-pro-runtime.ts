@@ -1,3 +1,4 @@
+import { awaitWithSignal } from '@sistemazero/core/http'
 import type { Project } from '@sistemazero/studio'
 import { learnerIdentity } from '../lib/learner-identity'
 import type { SessionUser } from '../lib/types'
@@ -31,10 +32,13 @@ interface BuildBody {
 export function createLessonProRuntimeBuild(deps: {
   audience: 'adult' | 'kids'
   getLesson: MembersClient['getLesson']
+  openLessonStudio: MembersClient['openLessonStudio']
   getSession: () => Promise<SessionUser | null>
 }) {
   return async function POST(request: Request): Promise<Response> {
-    const session = await deps.getSession()
+    const signal = AbortSignal.any([request.signal, AbortSignal.timeout(RUNTIME_TIMEOUT_MS)])
+    const owned = <Value>(operation: () => Promise<Value>) => awaitWithSignal(operation, signal)
+    const session = await owned(() => deps.getSession())
     if (!session?.id)
       return response({ error: { message: 'Entre novamente para continuar.' } }, 401)
 
@@ -57,7 +61,7 @@ export function createLessonProRuntimeBuild(deps: {
 
     let body: BuildBody | null = null
     try {
-      body = (await readJsonBodyWithLimit(request, MAX_REQUEST_BYTES)) as BuildBody
+      body = (await owned(() => readJsonBodyWithLimit(request, MAX_REQUEST_BYTES))) as BuildBody
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return response(
@@ -80,12 +84,32 @@ export function createLessonProRuntimeBuild(deps: {
     // A mesma consulta que abre a aula garante matrícula, trava sequencial e
     // vínculo do perfil. O cliente nunca consegue usar esta rota como compilador
     // livre antes de a jornada liberar o Estúdio Pro.
-    const lesson = await deps.getLesson(courseSlug, lessonId)
+    const lesson = await owned(() => deps.getLesson(courseSlug, lessonId))
     if (lesson.status !== 200 || !lesson.body) {
       return response({ error: { message: 'Esta fase não está liberada.' } }, 403)
     }
     const block = lesson.body.blocks.find((item) => item.id === blockId && item.kind === 'studio')
-    const initial = readInitialProject(block?.content)
+    if (!block) return response({ error: { message: 'Esta parte não está liberada.' } }, 403)
+    const context = await owned(() => deps.openLessonStudio(lessonId, blockId))
+    const baseline = context.body as {
+      blockId?: string
+      lessonId?: string
+      configuration?: unknown
+      bound?: boolean
+      readOnly?: boolean
+    } | null
+    if (
+      context.status !== 200 ||
+      baseline?.bound !== true ||
+      baseline.readOnly === true ||
+      baseline.blockId !== blockId ||
+      baseline.lessonId !== lessonId
+    )
+      return response(
+        { error: { message: 'Não foi possível conferir o ambiente desta fase.' } },
+        403,
+      )
+    const initial = readInitialProject(baseline.configuration)
     const templateId = initial ? proProjectTemplateId(initial) : null
     if (initial?.kind !== 'pro' || !templateId) {
       return response({ error: { message: 'Este bloco não é um projeto Pro.' } }, 403)
@@ -122,7 +146,7 @@ export function createLessonProRuntimeBuild(deps: {
         executionId,
         runtimeUrl,
         runtimeToken,
-        signal: AbortSignal.timeout(RUNTIME_TIMEOUT_MS),
+        signal,
       })
       return response(result)
     } catch (error) {
@@ -156,9 +180,7 @@ function text(value: unknown): string {
 function readInitialProject(content: unknown): Project | null {
   if (!content || typeof content !== 'object' || Array.isArray(content)) return null
   const initial = (content as { initialProject?: unknown }).initialProject
-  return initial && typeof initial === 'object' && !Array.isArray(initial)
-    ? (initial as Project)
-    : null
+  return isProStudioProject(initial) ? initial : null
 }
 
 function response(body: unknown, status = 200): Response {

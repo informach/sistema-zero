@@ -1,4 +1,4 @@
-import type { Project } from '../core/project'
+import type { EditableStudioProject } from '../core/editableProject'
 import {
   conditionalGeneration,
   conditionalWrite,
@@ -20,7 +20,11 @@ import {
   projectRecoveryKey,
   projectStateKey,
 } from './projectStorageKeys'
-import { assembleProjectRecord, projectStorageEntries } from './projectStorageRecords'
+import {
+  assembleProjectRecord,
+  projectStorageEntries,
+  type StoredProjectRecord,
+} from './projectStorageRecords'
 import {
   acceptsLocalHead,
   installLocalRevision,
@@ -32,6 +36,7 @@ import {
   readLocalRevision,
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
+import { toProjectSummary } from './projectSummary'
 
 export const PRO_APPLICATION_LIMITS = Object.freeze({
   operations: 20,
@@ -74,7 +79,7 @@ function latestRecoveries(values: readonly unknown[]): RecoveryWrite[] {
   )
 }
 type Budget = Record<string, number>
-const snapshotTokens = new WeakMap<Project, string>()
+const snapshotTokens = new WeakMap<{ id: string }, string>()
 
 function journal(value: unknown): ProApplicationRecord[] {
   if (value === undefined) return []
@@ -158,7 +163,11 @@ function journalWrite(
   }
 }
 
-function prepare(project: Project, write: IdbWrite, scope: ProjectStorageScope): RecoveryWrite {
+function prepare(
+  project: { id: string },
+  write: IdbWrite,
+  scope: ProjectStorageScope,
+): RecoveryWrite {
   let stamp = readLocalRevision(project)
   if (!stamp) {
     installLocalRevision(project, scope.identity)
@@ -245,7 +254,7 @@ async function commit(
 }
 
 export function coordinatedProjectWrite(
-  project: Project,
+  project: { id: string },
   write: IdbWrite,
   scope: ProjectStorageScope,
   generation = conditionalGeneration(scope.identity),
@@ -268,7 +277,7 @@ export function coordinatedProjectWrite(
 
 /** All requests + explicit commit; no digest/read callback is needed during pagehide. */
 export function stageProjectExit(
-  project: Project,
+  project: { id: string },
   write: IdbWrite,
   scope: ProjectStorageScope,
   incompleteBlocks = false,
@@ -315,7 +324,7 @@ export async function recoverProjectWrites(
   return recovered
 }
 
-function projectFromRecovery(recovery: RecoveryWrite): Project | null {
+function projectFromRecovery(recovery: RecoveryWrite): StoredProjectRecord | null {
   const records = new Map(recovery.write.puts)
   const id = recovery.projectId
   return assembleProjectRecord(
@@ -332,7 +341,7 @@ function projectFromRecovery(recovery: RecoveryWrite): Project | null {
 export async function loadRecoverableProjectDraft(
   scope: ProjectStorageScope,
   id: string,
-): Promise<Project | null> {
+): Promise<EditableStudioProject | null> {
   const keys = (await readAllKeys(scope.store)).filter(
     (key): key is string =>
       typeof key === 'string' && key.startsWith(`${PROJECT_RECOVERY_PREFIX}${id}:`),
@@ -349,8 +358,8 @@ export async function loadRecoverableProjectDraft(
   const draft = eligible[0]!
   try {
     const raw = projectFromRecovery(draft)
-    const { prepareProjectForHost } = await import('./projectValidation')
-    const project = raw && (await prepareProjectForHost(raw))
+    const { prepareEditableStudioProject } = await import('./editableProjectValidation')
+    const project = raw && (await prepareEditableStudioProject(raw))
     if (!project) return null
     installLocalRevision(project, scope.identity, head)
     const stamp = readLocalRevision(project)!
@@ -380,13 +389,11 @@ export async function listPreservedProjectDrafts(
     if (draft?.version !== 1 || !Array.isArray(draft.write?.puts)) return []
     const project = projectFromRecovery(draft)
     if (!project) return []
+    const summary = toProjectSummary(project.id, project)
+    if (!summary) return []
     return [
       {
-        id: project.id,
-        name: project.name,
-        createdAt: project.createdAt,
-        updatedAt: project.updatedAt,
-        mode: project.mode,
+        ...summary,
         hasPreservedEdit: true as const,
         ...(draft.incompleteBlocks ? { migrationPending: true as const } : {}),
       },
@@ -403,8 +410,8 @@ async function copyConflictingRecovery(
   const source = recovery.projectId
   const raw = projectFromRecovery(recovery)
   if (!raw) return
-  const { prepareProjectForHost } = await import('./projectValidation')
-  const project = await prepareProjectForHost(raw)
+  const { prepareEditableStudioProject } = await import('./editableProjectValidation')
+  const project = await prepareEditableStudioProject(raw)
   if (!project) return
   const id = `recuperado-${source.slice(0, 28)}-${recovery.head.token.replaceAll('-', '').slice(0, 24)}`
   const copy = { ...project, id, name: `${project.name.slice(0, 176)} (edição recuperada)` }
@@ -468,7 +475,7 @@ export async function listProApplications(
 
 /** Capture before restore's asynchronous work. This never grants a force-write. */
 export async function bindProjectToDurableHead(
-  project: Project,
+  project: { id: string },
   scope: ProjectStorageScope,
 ): Promise<void> {
   let [head, meta] = await readValues(scope.store, [
@@ -555,7 +562,7 @@ export function mutateProjectRecord(
 }
 
 export function renameLiveProject(
-  project: Project,
+  project: EditableStudioProject,
   name: string,
   scope: ProjectStorageScope,
 ): Promise<boolean> {

@@ -23,7 +23,10 @@ export type { ErrorEnvelope }
 
 /** Mapeia o `code` de domínio para o status HTTP apropriado. */
 const DOMAIN_STATUS: Record<string, number> = {
+  ZAPPY_CONTEXT_CONFLICT: 409,
   STUDIO_AI_UNAVAILABLE: 503,
+  STUDIO_PYTHON_ACTIVITY_UNAVAILABLE: 503,
+  GALLERY_SOURCE_UNAVAILABLE: 503,
   STUDIO_AI_CONFLICT: 409,
   STUDIO_BUILDER_CONFLICT: 409,
   LIVE_NOT_FOUND: 404,
@@ -47,6 +50,7 @@ const DOMAIN_STATUS: Record<string, number> = {
   // 424 e não 503: o defeito é do executor (dependência), não do members. Um 5xx aqui entraria
   // na conta do disjuntor do gateway e uma queda do executor fecharia TODAS as rotas do members.
   PROJECT_CHECK_UNAVAILABLE: 424,
+  PROJECT_CHECK_ANALYSIS_LIMIT: 424,
   PROJECT_CHECK_BUSY: 429,
   SECTION_LOCKED: 423,
   SECTION_GATE_INCOMPLETE: 409,

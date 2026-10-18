@@ -95,6 +95,17 @@ import { GetRoomService } from './application/room/get-room.service'
 import { SaveRoomService } from './application/room/save-room.service'
 import { SaveCourseRatingService } from './application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from './application/save-video-position/save-video-position.service'
+import { AuthorizeAuthoringRuntimeService } from './application/studio/authorize-authoring-runtime.service'
+import { AuthorizeFreeRuntimeService } from './application/studio/authorize-free-runtime.service'
+import { AuthorizeLessonRuntimeService } from './application/studio/authorize-lesson-runtime.service'
+import { AuthorizeLivePublicationRuntimeService } from './application/studio/authorize-live-publication-runtime.service'
+import { AuthorizeLiveRuntimeService } from './application/studio/authorize-live-runtime.service'
+import { AuthorizePublicRuntimeService } from './application/studio/authorize-public-runtime.service'
+import { AuthorizePythonAnalysisService } from './application/studio/authorize-python-analysis.service'
+import { FreeStudioAccessService } from './application/studio/free-studio-access.service'
+import { OpenLessonStudioService } from './application/studio/open-lesson-studio.service'
+import { PythonActivityInspectionService } from './application/studio/python-activity-inspection.service'
+import { StudioPythonBuilderPolicy } from './application/studio-pro/python-builder-policy'
 import { StudioBuilderService } from './application/studio-pro/studio-builder.service'
 import { createStudioBuilderCoordinator } from './application/studio-pro/studio-builder-coordinator'
 import { StudioSubmissionsAdminService } from './application/studio-submissions-admin/studio-submissions-admin.service'
@@ -111,6 +122,9 @@ import {
 import { ZappyHistoryService } from './application/zappy/zappy-history.service'
 import { ZappyKnowledgeService } from './application/zappy/zappy-knowledge.service'
 import type { LiveRewardsPort } from './domain/ports/live-rewards.port'
+import { createStudioAuthoringPolicy } from './domain/studio/authoring-policy'
+import { createStudioRuntimeHosts } from './domain/studio/runtime-hosts'
+import { createStudioRuntimePolicy } from './domain/studio/runtime-policy'
 import type { Env } from './infrastructure/config/env'
 import { createAuthHttpGateway } from './infrastructure/gateways/auth-http.gateway'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
@@ -141,6 +155,7 @@ import { DrizzleCreationCleanupRepository } from './infrastructure/persistence/d
 import { DrizzleCreationsRepository } from './infrastructure/persistence/drizzle/creations.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizzle/entitlement.repository'
+import { DrizzleGalleryCopyRepository } from './infrastructure/persistence/drizzle/gallery-copy.repository'
 import { DrizzleGamificationRepository } from './infrastructure/persistence/drizzle/gamification.repository'
 import {
   DrizzleHelpCollectionRepository,
@@ -171,6 +186,7 @@ import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room
 import { DrizzleStudioAiAccountRepository } from './infrastructure/persistence/drizzle/studio-ai-account.repository'
 import { DrizzleStudioAiUsageRepository } from './infrastructure/persistence/drizzle/studio-ai-usage.repository'
 import { DrizzleStudioBuilderRepository } from './infrastructure/persistence/drizzle/studio-builder.repository'
+import { DrizzleStudioLessonBindingRepository } from './infrastructure/persistence/drizzle/studio-lesson-binding.repository'
 import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
 import { DrizzleStudioUnlockRepository } from './infrastructure/persistence/drizzle/studio-unlock.repository'
 import { DrizzleTeacherBroadcastRepository } from './infrastructure/persistence/drizzle/teacher-broadcast.repository'
@@ -217,6 +233,22 @@ const RENEWAL_REMINDER_ADVISORY_LOCK_KEY = '30792292938117749'
  * concretos e os pluga nos ports.
  */
 export async function createApplication(env: Env): Promise<Application> {
+  // Verify before opening connections: malformed deployment policy fails startup.
+  const studioAuthoringPolicy =
+    env.STUDIO_AUTHORING_POLICY_JSON === undefined
+      ? undefined
+      : await createStudioAuthoringPolicy(JSON.parse(env.STUDIO_AUTHORING_POLICY_JSON))
+  if (env.STUDIO_RUNTIME_HOSTS_JSON && !studioAuthoringPolicy)
+    throw new Error('Os hosts de execução precisam de um catálogo aprovado.')
+  const studioRuntimePolicy = studioAuthoringPolicy
+    ? await createStudioRuntimePolicy(
+        studioAuthoringPolicy.describe(),
+        createStudioRuntimeHosts(
+          studioAuthoringPolicy.describe().catalog,
+          JSON.parse(env.STUDIO_RUNTIME_HOSTS_JSON ?? '[]'),
+        ),
+      )
+    : undefined
   // Espelho Sentry: TODO log de nível ERROR vira evento/issue (a convenção do
   // package é "log ERROR = sinal alertável"). Sem DSN o capture é no-op.
   const logger = withSentryMirror(
@@ -285,6 +317,17 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   // S2S: resolução de acesso em lote (consumido pela comunidade @sistemazero/hub).
   const accessCheck = new AccessCheckService(entitlements, clock)
+  const adultJourney = new AdultJourneyService(
+    new DrizzleAdultJourneyRepository(db),
+    courses,
+    clock,
+  )
+  const studioUnlockRepo = new DrizzleStudioUnlockRepository(db)
+  const authorizeFreeRuntime = new AuthorizeFreeRuntimeService(
+    new FreeStudioAccessService(accessCheck, gamificationRepo, studioUnlockRepo, adultJourney),
+    studioRuntimePolicy,
+    studioAuthoringPolicy,
+  )
   const liveBenefits = new DrizzleLiveBenefitsRepository(db)
   // S2S: teto de perfis kids da conta (consumido pelo `auth` ao criar perfil).
   const profileAllowance = new GetProfileAllowanceService(
@@ -305,12 +348,21 @@ export async function createApplication(env: Env): Promise<Application> {
     ...studioAiSecrets,
   })
   const studioAiUsageRepo = new DrizzleStudioAiUsageRepository(db)
-  const studioBuilderRepository = new DrizzleStudioBuilderRepository(db)
+  const studioBuilderRepository = new DrizzleStudioBuilderRepository(
+    db,
+    env.STUDIO_PYTHON_RUNTIME_URL ? new URL(env.STUDIO_PYTHON_RUNTIME_URL).origin : undefined,
+    clock,
+  )
+  const pythonBuilderPolicy = new StudioPythonBuilderPolicy(
+    authorizeFreeRuntime,
+    Boolean(env.STUDIO_PYTHON_RUNTIME_URL && env.STUDIO_PYTHON_RUNTIME_TOKEN),
+  )
   const studioBuilder = new StudioBuilderService(
     studioBuilderRepository,
-    () => new Date(),
+    clock,
     Boolean(env.STUDIO_BUILDER_EXECUTOR_URL && env.STUDIO_BUILDER_EXECUTOR_SECRET),
     Boolean(env.ADULT_STUDIO_BUILDER_EXECUTOR_URL && env.STUDIO_BUILDER_EXECUTOR_SECRET),
+    (...args) => pythonBuilderPolicy.execute(...args),
   )
   const studioAiUsage = new StudioAiUsageService({
     repository: studioAiUsageRepo,
@@ -633,6 +685,13 @@ export async function createApplication(env: Env): Promise<Application> {
   // Nasce aqui porque o "envio em dia" das seções lê os rascunhos da fase.
   const creationsRepo = new DrizzleCreationsRepository(db)
   const awardGamification = new AwardGamificationService(gamificationRepo, clock, logger)
+  const studioBindings = new DrizzleStudioLessonBindingRepository(db)
+  const pythonActivityInspections = new PythonActivityInspectionService({
+    runtimeUrl: env.STUDIO_PYTHON_RUNTIME_URL,
+    runtimeToken: env.STUDIO_PYTHON_RUNTIME_TOKEN,
+    policy: studioRuntimePolicy,
+    cleanupFailed: () => logger.warn('studio.python_activity.cleanup_failed'),
+  })
   const sectionProgression = new SectionProgressionService(
     learningRepository,
     progress,
@@ -646,6 +705,7 @@ export async function createApplication(env: Env): Promise<Application> {
     awardGamification,
     projectExecutor,
     async (courseId) => (await courses.findCourseById(courseId))?.audience ?? 'kids',
+    { inspections: pythonActivityInspections, bindings: studioBindings, live: liveWorkspace },
   )
   const learning = new LearningService(
     learningRepository,
@@ -683,11 +743,6 @@ export async function createApplication(env: Env): Promise<Application> {
   liveRewardsImpl = new LiveRewardsService(awardGamification)
   const adultProfileRepository = new DrizzleAdultProfileRepository(db)
   const adultProfile = new AdultProfileService(adultProfileRepository, clock)
-  const adultJourney = new AdultJourneyService(
-    new DrizzleAdultJourneyRepository(db),
-    courses,
-    clock,
-  )
   const getGamification = new GetGamificationService(gamificationRepo, clock, adultJourney)
   const getAvatar = new GetAvatarService(avatarRepo, gamificationRepo)
   const getAvatarsByProfiles = new GetAvatarsByProfilesService(avatarRepo, gamificationRepo)
@@ -708,7 +763,6 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const equipAvatar = new EquipAvatarService(avatarRepo, clock)
   const setAvatarPhoto = new SetAvatarPhotoService(avatarRepo, clock, env.AVATAR_PHOTO_URL_PREFIXES)
-  const studioUnlockRepo = new DrizzleStudioUnlockRepository(db)
   const getRoom = new GetRoomService(roomRepo, gamificationRepo)
   const saveRoom = new SaveRoomService(roomRepo, clock, logger)
   const buyRoomItem = new BuyRoomItemService(roomRepo, gamificationRepo, awardGamification, clock)
@@ -819,6 +873,7 @@ export async function createApplication(env: Env): Promise<Application> {
     () => randomUUID(),
     clock,
     sectionProgression,
+    studioBindings,
   )
   const getStudioCarryover = new GetStudioCarryoverService(
     checkAccess,
@@ -826,6 +881,12 @@ export async function createApplication(env: Env): Promise<Application> {
     progress,
     studioSubmissions,
     sectionProgression,
+    studioBindings,
+  )
+  const openLessonStudio = new OpenLessonStudioService(
+    new LessonDraftAccessService(courses, checkAccess, progress, sectionProgression),
+    courses,
+    studioBindings,
   )
   const getOwnStudioSubmission = new GetOwnStudioSubmissionService(
     checkAccess,
@@ -969,11 +1030,42 @@ export async function createApplication(env: Env): Promise<Application> {
     return { ready: checks.db === 'ok', checks }
   }
 
+  const studioDrafts = new DrizzleLessonDraftRepository(
+    db,
+    parsePublishedLessonBlock,
+    studioAuthoringPolicy,
+  )
+  const authorizeAuthoringRuntime = new AuthorizeAuthoringRuntimeService(
+    studioDrafts,
+    studioRuntimePolicy,
+  )
+  const authorizeLessonRuntime = new AuthorizeLessonRuntimeService(
+    openLessonStudio,
+    studioRuntimePolicy,
+  )
+  const authorizeLiveRuntime = new AuthorizeLiveRuntimeService(
+    liveWorkspace,
+    studioRuntimePolicy,
+    () => clock().getTime(),
+  )
   const server = createServer({
     liveMaterials,
     livePublication,
     liveBenefits,
     liveWorkspace,
+    publicRuntime: new AuthorizePublicRuntimeService(studioRuntimePolicy),
+    pythonAnalysis: new AuthorizePythonAnalysisService({
+      authoring: authorizeAuthoringRuntime,
+      lesson: authorizeLessonRuntime,
+      free: authorizeFreeRuntime,
+      live: authorizeLiveRuntime,
+    }),
+    livePublicationRuntime: new AuthorizeLivePublicationRuntimeService(
+      liveWorkspace,
+      studioRuntimePolicy,
+      () => clock().getTime(),
+    ),
+    liveRuntime: authorizeLiveRuntime,
     liveMedia,
     liveRecording,
     learning: {
@@ -985,14 +1077,17 @@ export async function createApplication(env: Env): Promise<Application> {
         creationsRepo,
         studioSubmissions,
         submitStudio,
+        new DrizzleGalleryCopyRepository(db),
+        new StudioGallerySourceService({
+          storageBaseURL: env.STUDIO_GALLERY_STORAGE_BASE_URL,
+          allowLoopbackHttp: env.NODE_ENV !== 'production',
+        }),
       ),
       preferences,
       learning,
-      imports: new LearningImportService(
-        new DrizzleLessonDraftRepository(db, parsePublishedLessonBlock),
-        courses,
-      ),
-      drafts: new DrizzleLessonDraftRepository(db, parsePublishedLessonBlock),
+      imports: new LearningImportService(studioDrafts, courses),
+      drafts: studioDrafts,
+      authorizeStudioRuntime: authorizeAuthoringRuntime,
       internalToken: env.INTERNAL_API_TOKEN,
       requireAdminEnabled: env.REQUIRE_ADMIN,
     },
@@ -1016,6 +1111,8 @@ export async function createApplication(env: Env): Promise<Application> {
       submitQuiz,
       submitStudio,
       getStudioCarryover,
+      openLessonStudio,
+      authorizeLessonRuntime,
       getOwnStudioSubmission,
       teacherThreads,
       getShowcasePayload,
@@ -1026,6 +1123,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getGamification,
       getChallenge,
       getStudioUnlocks,
+      authorizeFreeRuntime,
       getMissions,
       claimMission,
       claimUnitChest,
@@ -1140,6 +1238,7 @@ export async function createApplication(env: Env): Promise<Application> {
     content: {
       requireAdminEnabled: env.REQUIRE_ADMIN,
       internalToken: env.INTERNAL_API_TOKEN,
+      studioAuthoringPolicy,
       courses: courseAdmin,
       modules: moduleAdmin,
       lessons: lessonAdmin,
@@ -1325,5 +1424,6 @@ export async function createApplication(env: Env): Promise<Application> {
 
 import { GalleryDeliveryService } from './application/learning/gallery-delivery.service'
 import { PlatformActionService } from './application/learning/platform-action.service'
+import { StudioGallerySourceService } from './application/learning/studio-gallery-source.service'
 import { ProfilePreferencesService } from './application/profile-preferences/profile-preferences.service'
 import { DrizzleProfilePreferencesRepository } from './infrastructure/persistence/drizzle/profile-preferences.repository'

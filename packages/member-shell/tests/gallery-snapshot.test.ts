@@ -6,6 +6,25 @@ const original = globalThis.fetch
 afterEach(() => {
   globalThis.fetch = original
 })
+
+test('teacher keeps inline Python Pro and Pinta documents readable through the shared materializer', async () => {
+  for (const value of [
+    {
+      formatVersion: 3,
+      programmingLanguage: 'python',
+      kind: 'pro',
+      tree: { 'main.py': { kind: 'file', content: 'print("ação")' } },
+      assets: [{ id: 'drawing', name: 'herói' }],
+    },
+    { kind: 'pixel-sprite', name: 'Meu desenho', layers: [{ pixels: [0, 1, 2] }] },
+  ]) {
+    globalThis.fetch = Object.assign(
+      async () => new Response(Bun.gzipSync(JSON.stringify(value))),
+      { preconnect: original.preconnect },
+    )
+    expect(await readGallerySnapshot({ url: 'inline', parts: [] })).toEqual(value)
+  }
+})
 test('teacher restores the saved program and exact asset parts, rejecting missing or altered images', async () => {
   const part = JSON.stringify({ id: 'dino', dataUrl: 'data:image/png;base64,AA==' }),
     hash = createHash('sha256').update(part).digest('hex')

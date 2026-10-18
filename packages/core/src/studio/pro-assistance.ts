@@ -9,7 +9,7 @@ export interface StudioProAssistanceRequest {
   /** Observed editor diagnostics, not a successful build or a proven runtime cause. */
   baseline?: {
     revisionHash: string
-    source: 'typescript'
+    source: 'typescript' | 'pyright'
     diagnostics: Array<{ path: string; line: number; message: string; sourceHash: string }>
   }
   selection?: { path: string; startLine: number; endLine: number; sourceHash: string }
@@ -108,7 +108,7 @@ export function isStudioProAssistanceRequest(value: unknown): value is StudioPro
       !keys(item, ['revisionHash', 'source', 'diagnostics']) ||
       typeof item.revisionHash !== 'string' ||
       !hexDigest.test(item.revisionHash) ||
-      item.source !== 'typescript' ||
+      (item.source !== 'typescript' && item.source !== 'pyright') ||
       !Array.isArray(item.diagnostics) ||
       item.diagnostics.length > 6 ||
       !item.diagnostics.every(

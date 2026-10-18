@@ -1,0 +1,7 @@
+# Método de integração e revisão
+
+Inspeção independente em checkout detached4be50bbc; três frentes de revisão: Molda/persistência/assets; comunidade adulta/Kids/hostshared/Hub/acesso; objetivos/admin/Core/Members/runtime/migrações/CI. Raiz coordena mapa de sobreposição e resolve a aplicação das mudanças Python sobre o staging atualizado. Review por cy-review-round, sem duplicar defeitos já registrados nos demais PRDs. Issue nova só após reprodução ou prova de fonte/contrato; relatórios limpos não criam rodada vazia.
+
+Antes de mover bases, arquivar/verificar SHA cada arquivo WIP e preservar stash/ref. Fazer fast-forward localstaging/origin e featurebase limpa; reaplicar WIP retendo stash e ZIP. Não usar estratégia ours/theirs por arquivo sem conciliar os dois comportamentos. Fontes removidas por arquitetura remota não devem ser simplesmente ressuscitadas: reavaliar integrações Python à arquitetura atual. Reter export/source/runtimeprotocol/pin/Stop/ABA/namespace/cotas e novos contratos remoto.
+
+Checks pesados sequenciais por RAM16GB; agentes somente leitura/probes leves coordenados. Uma distribuição/SDK anterior não comprova fontes conciliadas. A autorização posterior do usuário permite commit/merge/push em staging após gates e review deste checkpoint, seguido da continuação dos lotes Python. Não executar deploy manual nem tocar produção. Originalworktree tem sete propostas untracked: preservar bytes e verificar apósfastforward. Todo backup/cleanup limita-se a caminhos próprios resolvidos e verificados.

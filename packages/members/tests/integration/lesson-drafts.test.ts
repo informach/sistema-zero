@@ -272,6 +272,26 @@ describe('o rascunho da fase guardado na conta', () => {
 })
 
 describe('o critério "envio em dia"', () => {
+  test('aceita v2 no envio e no commit, sem trancar uma entrega v1 pela migração', async () => {
+    const ctx = setup()
+    const first = `v2:${'a'.repeat(64)}`
+    const next = `v2:${'b'.repeat(64)}`
+    expect((await ctx.enviar(impressao('a'))).status).toBe(200)
+    ctx.avancar(1)
+    expect((await ctx.guardarRascunho(first)).status).toBe(200)
+    expect((await ctx.parte('personalizar'))?.pendingItems).toEqual([])
+    expect((await ctx.enviar(first)).status).toBe(200)
+    ctx.avancar(1)
+    expect((await ctx.guardarRascunho(next)).status).toBe(200)
+    expect((await ctx.parte('personalizar'))?.pendingItems).toEqual([
+      { kind: 'submission-outdated', text: 'Você mudou o projeto depois de enviar. Envie de novo' },
+    ])
+    const ticket = (await (
+      await ctx.request(`/creations/lesson-studio/${ctx.projeto}/download`)
+    ).json()) as { summary: { contentFingerprint: string } }
+    expect(ticket.summary.contentFingerprint).toBe(next)
+  })
+
   test('mudou depois de enviar: a parte pede "Envie de novo" e avançar é recusado', async () => {
     const ctx = setup()
     expect((await ctx.enviar(impressao('a'))).status).toBe(200)

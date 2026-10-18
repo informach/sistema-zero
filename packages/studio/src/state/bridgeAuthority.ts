@@ -1,4 +1,4 @@
-import type { Project } from '#core'
+import type { EditableStudioProject as Project } from '../core/editableProject'
 
 /**
  * Snapshot seguro para persistência/host quando o texto da Ponte ainda está à

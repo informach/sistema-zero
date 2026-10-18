@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { liveLessonCompletionIssues } from '@sistemazero/core/course/modality'
 import { ValidationError } from '@sistemazero/core/errors'
+import { awaitWithSignal } from '@sistemazero/core/http'
 import {
   defaultLessonSection,
   evaluateLearning,
@@ -14,6 +15,8 @@ import {
   playbackLessonStructure,
   publicInteractiveBlock,
   readVideoCoverage,
+  type SectionProjectLiveContext,
+  SectionProjectLiveContextSchema,
   validateLessonSections,
 } from '@sistemazero/core/learning'
 import {
@@ -29,6 +32,7 @@ import {
   type SceneStart,
   sceneStart,
 } from '@sistemazero/core/learning/scene'
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import { studioSectionCompletionIssues } from '@sistemazero/studio/server-project-checks'
 import type { LessonWithContent } from '../../domain/course/course'
 import { LessonComingSoonError, LessonNotFoundError } from '../../domain/course/course.errors'
@@ -124,21 +128,23 @@ export class LearningService {
     readonly sections: SectionProgressionService,
   ) {}
 
-  private async requireLesson(actor: LearningActor, lessonId: string) {
-    const lesson = await this.courses.findLessonWithContent(lessonId)
+  private async requireLesson(actor: LearningActor, lessonId: string, signal?: AbortSignal) {
+    const owned = <Value>(operation: () => Promise<Value>) =>
+      signal ? awaitWithSignal(operation, signal) : operation()
+    const lesson = await owned(() => this.courses.findLessonWithContent(lessonId))
     if (!lesson?.isPublished) throw new LessonNotFoundError()
-    const { course } = await this.access.requireById(
-      actor.accountId,
-      lesson.courseId,
-      actor.privileged,
-      actor.userId,
-      { lessonId },
+    const { course } = await owned(() =>
+      this.access.requireById(actor.accountId, lesson.courseId, actor.privileged, actor.userId, {
+        lessonId,
+      }),
     )
     if (hasComingSoonBlock(lesson.blocks)) throw new LessonComingSoonError()
-    const [completedLessonIds, outline] = await Promise.all([
-      this.progress.listCompletedLessonIds(actor.userId, course.id),
-      this.courses.findOutline(course.id, { publishedOnly: true }),
-    ])
+    const [completedLessonIds, outline] = await owned(() =>
+      Promise.all([
+        this.progress.listCompletedLessonIds(actor.userId, course.id),
+        this.courses.findOutline(course.id, { publishedOnly: true }),
+      ]),
+    )
     assertLessonUnlockedFromState(
       course,
       lessonId,
@@ -436,14 +442,41 @@ export class LearningService {
     sectionId: string,
     revision: string,
     project: unknown,
+    options: { signal?: AbortSignal; liveContext?: SectionProjectLiveContext } = {},
   ) {
-    const lesson = await this.requireLesson(actor, lessonId)
-    const course = await this.courses.findCourseById(lesson.courseId)
-    if (!course) throw new LessonNotFoundError()
-    return this.sections.checkProject(actor, lesson, sectionId, revision, project, {
-      audience: course.audience,
+    const capturedProject = copyStudioProjectJson(project)
+    const pythonProject =
+      typeof capturedProject === 'object' &&
+      capturedProject !== null &&
+      'programmingLanguage' in capturedProject &&
+      capturedProject.programmingLanguage === 'python'
+    const signal = AbortSignal.any([
+      AbortSignal.timeout(pythonProject ? 50_000 : 155_000),
+      ...(options.signal ? [options.signal] : []),
+    ])
+    const capturedActor = {
+      userId: actor.userId,
+      accountId: actor.accountId,
       privileged: actor.privileged,
-    })
+    }
+    const liveContext = options.liveContext
+      ? SectionProjectLiveContextSchema.parse(options.liveContext)
+      : undefined
+    const lesson = await this.requireLesson(capturedActor, lessonId, signal)
+    const course = await awaitWithSignal(() => this.courses.findCourseById(lesson.courseId), signal)
+    if (!course) throw new LessonNotFoundError()
+    return awaitWithSignal(
+      () =>
+        this.sections.checkProject(capturedActor, lesson, sectionId, revision, capturedProject, {
+          signal,
+          audience: course.audience,
+          privileged: capturedActor.privileged,
+          liveContext,
+          authorizeLesson: (authorizationSignal) =>
+            this.requireLesson(capturedActor, lessonId, authorizationSignal),
+        }),
+      signal,
+    )
   }
   async assertComplete(owner: LearningOwner, lesson: LessonWithContent) {
     const required = lesson.blocks.filter(

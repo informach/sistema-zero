@@ -1,9 +1,11 @@
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 import type { StudioProBuilderPage, StudioProBuilderView } from '@sistemazero/core/studio'
+import { StudioPythonPreviewReferenceSchema } from '@sistemazero/core/studio/python-preview-reference'
 import type {
   StudioTutorAdapter,
   StudioTutorAskResult,
   StudioTutorHistoryMessage,
+  StudioTutorHistoryPage,
 } from '@sistemazero/studio'
 import { sessionFetch as fetch } from './session-fetch'
 
@@ -73,6 +75,20 @@ export function createStudioZappyAdapter(
     })
     return (await requireOk<{ job: StudioProBuilderView | null }>(response)).job
   }
+  const contextual = (
+    operation: object,
+    transport: NonNullable<Parameters<StudioTutorAdapter['ask']>[1]>,
+  ) =>
+    transport.send((authorization, signal) =>
+      fetch(baseUrl, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        cache: 'no-store',
+        redirect: 'error',
+        body: JSON.stringify({ ...operation, authorization }),
+        signal: AbortSignal.any([signal, AbortSignal.timeout(QUICK_TIMEOUT_MS)]),
+      }),
+    )
   return {
     async loadCredits(signal) {
       const response = await fetch('/api/members/ai-credits', {
@@ -84,11 +100,24 @@ export function createStudioZappyAdapter(
       return (await requireOk<{ credits: AiCreditsView | null }>(response)).credits
     },
     builder: {
-      async availability(templateId, signal) {
+      async authorizePythonPreview(input, signal) {
         const response = await fetch(`${baseUrl}/build`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ operation: 'availability', templateId }),
+          cache: 'no-store',
+          redirect: 'error',
+          body: JSON.stringify({ operation: 'authorize-python-preview', ...input }),
+          signal: AbortSignal.any([signal, AbortSignal.timeout(QUICK_TIMEOUT_MS)]),
+        })
+        const body = await requireOk<{ reference: unknown }>(response)
+        signal.throwIfAborted()
+        return StudioPythonPreviewReferenceSchema.parse(body.reference)
+      },
+      async availability(templateId, signal, programmingLanguage) {
+        const response = await fetch(`${baseUrl}/build`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ operation: 'availability', templateId, programmingLanguage }),
           cache: 'no-store',
           signal: signal
             ? AbortSignal.any([signal, AbortSignal.timeout(QUICK_TIMEOUT_MS)])
@@ -97,7 +126,10 @@ export function createStudioZappyAdapter(
         return requireOk<{ available: boolean; reason?: string }>(response)
       },
       async create(input, signal) {
-        const pensaMissionId = currentTaskId()
+        const pensaMissionId =
+          input.base.version === 2 && input.base.configuration.programmingLanguage === 'python'
+            ? undefined
+            : currentTaskId()
         const job = await build(
           {
             operation: 'create',
@@ -144,7 +176,14 @@ export function createStudioZappyAdapter(
         await build({ operation: 'remove-project', projectId }, signal)
       },
     },
-    async loadHistory(projectId, before) {
+    async loadHistory(projectId, before, transport) {
+      if (transport)
+        return requireOk<StudioTutorHistoryPage>(
+          await contextual(
+            { operation: 'history', projectId, ...(before ? { before } : {}) },
+            transport,
+          ),
+        )
       const query = new URLSearchParams({ projectId })
       if (before) query.set('before', before)
       const response = await fetch(`${baseUrl}?${query.toString()}`, {
@@ -155,26 +194,74 @@ export function createStudioZappyAdapter(
         response,
       )
     },
-    async deleteHistory(projectId) {
+    async deleteHistory(projectId, transport) {
+      if (transport) {
+        await requireOk<{ ok: true }>(
+          await contextual({ operation: 'delete-history', projectId }, transport),
+        )
+        return
+      }
       const response = await fetch(`${baseUrl}?projectId=${encodeURIComponent(projectId)}`, {
         method: 'DELETE',
         signal: timeout(QUICK_TIMEOUT_MS),
       })
       await requireOk<{ ok: true }>(response)
     },
-    async ask(input) {
-      const pensaMissionId = currentTaskId()
-      const response = await fetch(`${baseUrl}/messages`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(pensaMissionId ? { ...input, pensaMissionId } : input),
-        signal: timeout(ASK_TIMEOUT_MS),
-      })
+    async ask(input, transport) {
+      const python = input.context.environment?.programmingLanguage === 'python'
+      const pensaMissionId = python ? null : currentTaskId()
+      if (python && !transport) throw new Error('O contexto da ajuda Python não está disponível.')
+      const request = (extra: object = {}, signal = timeout(ASK_TIMEOUT_MS)) =>
+        fetch(`${baseUrl}/messages`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            ...input,
+            ...extra,
+            ...(pensaMissionId ? { pensaMissionId } : {}),
+          }),
+          signal,
+          cache: 'no-store',
+          redirect: 'error',
+        })
+      const response =
+        python && transport
+          ? await transport.send((authorization, signal) =>
+              request(
+                { authorization, transportVersion: 1 },
+                AbortSignal.any([signal, AbortSignal.timeout(ASK_TIMEOUT_MS)]),
+              ),
+            )
+          : await request()
+      if (python && response.ok) {
+        const envelope = await requireOk<{
+          transportVersion: 1
+          status: number
+          body: StudioTutorAskResult & ErrorBody
+        }>(response)
+        if (envelope.transportVersion !== 1 || !Number.isInteger(envelope.status))
+          throw new Error('A resposta da ajuda Python não é válida.')
+        if (envelope.status < 200 || envelope.status >= 300)
+          throw Object.assign(
+            new Error(envelope.body?.error?.message ?? 'Não foi possível falar com o Zappy agora.'),
+            {
+              code: envelope.body?.error?.code ?? 'ZAPPY_UNAVAILABLE',
+              status: envelope.status,
+            },
+          )
+        return envelope.body
+      }
       // O saldo vem AO LADO da resposta, não dentro dela (o `response` é o que o
       // members persiste no histórico, e crédito é volátil).
       return requireOk<StudioTutorAskResult>(response)
     },
-    async feedback(input) {
+    async feedback(input, transport) {
+      if (transport) {
+        await requireOk<{ ok: true }>(
+          await contextual({ operation: 'feedback', ...input }, transport),
+        )
+        return
+      }
       const response = await fetch(`${baseUrl}/feedback`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },

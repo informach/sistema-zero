@@ -25,6 +25,7 @@ export type StudioTutorModeViolation = 'code-in-blocks' | 'blocks-in-pro'
 export function studioTutorModeViolation(
   text: string,
   kind: StudioTutorKind,
+  language: 'javascript' | 'python' = 'javascript',
 ): StudioTutorModeViolation | null {
   const plain = text
     .normalize('NFD')
@@ -46,6 +47,20 @@ export function studioTutorModeViolation(
     return null
   }
   const unwrapped = text.replace(/`([^`]+)`/g, '$1')
+  if (
+    language === 'python' &&
+    (/^\s*(?:def|class|for|while|if|elif|else|try|except|finally|with)\b[^\n]*:\s*(?:#.*)?$/m.test(
+      unwrapped,
+    ) ||
+      /^\s*(?:from\s+[\w.]+\s+import\s+|import\s+[\w.]+)/m.test(unwrapped) ||
+      /^\s*[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*\s*\([^\n]*\)\s*$/m.test(unwrapped) ||
+      /^\s*[A-Za-z_]\w*\s*=(?!=)/m.test(unwrapped) ||
+      /\b(?:pip|python(?:3)?)\s+(?:install|-m|\S+\.py)\b/i.test(unwrapped) ||
+      /\b(?:escreva|digite|cole|edite|abra)\b[^.!?\n]{0,80}\b(?:codigo python|arquivo\s+\S+\.py)\b/.test(
+        plain,
+      ))
+  )
+    return 'code-in-blocks'
   if (
     /```|\b(?:const|let|var|function)\b|=>/.test(unwrapped) ||
     /<[a-z][a-z0-9]*\s+[a-z-]+=/i.test(unwrapped) ||

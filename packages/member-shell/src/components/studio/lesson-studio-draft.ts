@@ -10,13 +10,14 @@
  * enfileirada aqui não pode ler do banco errado se a criança abrir o `/estudio` no meio.
  */
 import { studioContentFingerprint } from '@sistemazero/core/creations'
-import type { Project } from '@sistemazero/studio'
+import type { EditableStudioProject as Project } from '@sistemazero/studio'
 import {
   type LessonDraftChannel,
   LessonDraftOutdatedError,
   type LessonDraftRemote,
 } from '../../lib/lesson-draft-cloud'
 import { decideLessonDraftSeed } from '../../lib/lesson-draft-seed'
+import { assertStudioLessonSeedCompatibility } from '../../lib/studio-lesson-seed'
 
 type StudioModule = typeof import('@sistemazero/studio')
 
@@ -36,6 +37,8 @@ export interface StudioDraftDeps {
   projectId: string
   /** O id da "outra versão" (`lessonStudioBackupProjectId`). */
   backupId: string
+  /** Authoritative lesson seed; remote work cannot silently change its environment. */
+  initialProject: Project
 }
 
 /** A impressão do projeto como está no DISCO (a mesma régua do envio). */
@@ -47,14 +50,32 @@ export async function diskFingerprint(
   return project ? studioContentFingerprint(project) : null
 }
 
-/** Grava `raw` como o projeto `id` (conferido antes, substituindo blocos e capa antigos). */
-async function gravar(studio: StudioDraftDeps['studio'], raw: unknown, id: string) {
+/** Validate before any active/backup write or revision acknowledgement. */
+async function conferir(
+  studio: StudioDraftDeps['studio'],
+  raw: unknown,
+  id: string,
+  initialProject?: Project,
+) {
   const conferido = await studio.validateCloudProjectSnapshot(
     { ...(raw as Record<string, unknown>), id },
     { expectedId: id },
   )
-  await studio.replaceLocalProject(conferido.project, AULA)
+  if (initialProject)
+    assertStudioLessonSeedCompatibility(conferido.project, initialProject, 'cloud')
   return conferido.project as Project
+}
+
+/** Grava `raw` como o projeto `id` (conferido antes, substituindo blocos e capa antigos). */
+async function gravar(
+  studio: StudioDraftDeps['studio'],
+  raw: unknown,
+  id: string,
+  initialProject?: Project,
+) {
+  const project = await conferir(studio, raw, id, initialProject)
+  await studio.replaceLocalProject(project, AULA)
+  return project
 }
 
 /** A recusa diz que o documento é mais NOVO que esta página (só a página atualizada o lê). */
@@ -81,12 +102,10 @@ export async function keepRemoteAsOther(
   deps: StudioDraftDeps,
   remote: LessonDraftRemote,
 ): Promise<void> {
-  const local = await deps.studio
-    .loadProjectSnapshotForCloud(deps.projectId, AULA)
-    .catch(() => null)
+  const local = await deps.studio.loadProjectSnapshotForCloud(deps.projectId, AULA)
   const raw = await remote.load((local?.assets as unknown[] | undefined) ?? [])
   try {
-    await gravar(deps.studio, raw, deps.backupId)
+    await gravar(deps.studio, raw, deps.backupId, deps.initialProject)
   } catch (cause) {
     if (paginaAntiga(cause)) throw new LessonDraftOutdatedError(cause)
     throw cause
@@ -103,15 +122,28 @@ export async function prepareStudioLessonDraft(
   deps: StudioDraftDeps & {
     submission: { at: number; fingerprint: string | null } | null
     readSubmission: () => Promise<Project | null>
+    /** The context lookup already failed: open verified local work without another network wait. */
+    offline?: boolean
+    /** First admission cannot guess that an unavailable account has no previous work. */
+    requireRemoteCheck?: boolean
   },
 ): Promise<{ upload: boolean; other: boolean }> {
   const { studio, channel, blockId, projectId, backupId } = deps
-  const local = await studio.loadProjectSnapshotForCloud(projectId, AULA).catch(() => null)
+  const local = await studio.loadProjectSnapshotForCloud(projectId, AULA)
+  if (local) assertStudioLessonSeedCompatibility(local, deps.initialProject, 'local')
+  if (deps.offline) {
+    if (!local)
+      throw new Error('O projeto não está mais neste aparelho. Conecte-se para recuperá-lo.')
+    // Do not acknowledge a cloud revision. The existing queue handles reconnect/conflicts.
+    const other = await studio.loadProjectSummaryForCloud(backupId, AULA).catch(() => null)
+    return { upload: true, other: Boolean(other) }
+  }
   let remote: LessonDraftRemote | null = null
   let conheceConta = true
   try {
-    remote = await channel.peek(blockId)
-  } catch {
+    remote = await channel.peek(blockId, { signal: AbortSignal.timeout(15_000) })
+  } catch (error) {
+    if (deps.requireRemoteCheck) throw error
     // Sem resposta da conta (sem internet): segue com o que há aqui; a fila resolve depois.
     conheceConta = false
   }
@@ -128,11 +160,34 @@ export async function prepareStudioLessonDraft(
     skewMs,
   })
   const assets = (local?.assets as unknown[] | undefined) ?? []
+  let remoteProject: Promise<Project> | undefined
+  const readRemote = () => {
+    remoteProject ??= (async () => {
+      if (!remote) throw new Error('A versão da conta não está disponível.')
+      const raw = await remote.load(assets)
+      const checked = await studio.validateCloudProjectSnapshot(
+        { ...(raw as Record<string, unknown>), id: projectId },
+        { expectedId: projectId },
+      )
+      assertStudioLessonSeedCompatibility(checked.project, deps.initialProject, 'cloud')
+      return checked.project
+    })()
+    return remoteProject
+  }
+  // Adopting a revision authorizes a subsequent overwrite just as replacing the local copy
+  // does. Check the remote environment before any mark, backup or upload decision.
+  if (
+    remote &&
+    (decisao.open === 'submission' ||
+      (decisao.open === 'local' &&
+        (decisao.upload || decisao.adoptRevision !== null || decisao.backupCloud)))
+  )
+    await readRemote()
   let upload = false
   switch (decisao.open) {
     case 'local': {
       // A marca autoriza sobrescrever a conta: a outra versão precisa existir antes dela.
-      if (remote && decisao.backupCloud) await gravar(studio, await remote.load(assets), backupId)
+      if (remote && decisao.backupCloud) await gravar(studio, await readRemote(), backupId)
       if (remote && decisao.adoptRevision !== null) {
         // A conta tem uma revisão que este aparelho ainda não conhecia: passa a ser a base da
         // próxima subida (senão ela seria recusada por base vencida).
@@ -147,16 +202,18 @@ export async function prepareStudioLessonDraft(
     }
     case 'cloud': {
       if (!remote) break
+      const incoming = await readRemote()
       if (decisao.backupLocal && local) await gravar(studio, local, backupId)
-      const aberto = await gravar(studio, await remote.load(assets), projectId)
+      const aberto = await gravar(studio, incoming, projectId, deps.initialProject)
       channel.setMark(blockId, { revision: remote.revision, updatedAt: aberto.updatedAt })
       break
     }
     case 'submission': {
       const enviado = await deps.readSubmission()
       if (!enviado) break
+      const incoming = await conferir(studio, enviado, projectId, deps.initialProject)
       if (decisao.backupLocal && local) await gravar(studio, local, backupId)
-      await gravar(studio, enviado, projectId)
+      await gravar(studio, incoming, projectId, deps.initialProject)
       upload = conheceConta
       break
     }
@@ -169,12 +226,13 @@ export async function prepareStudioLessonDraft(
 
 /** O produtor da subida: relê o disco na hora (sempre o estado mais recente). */
 export function studioDraftProducer(
-  deps: Pick<StudioDraftDeps, 'studio' | 'blockId' | 'projectId'>,
+  deps: Pick<StudioDraftDeps, 'studio' | 'blockId' | 'projectId' | 'initialProject'>,
   onFingerprint?: (fingerprint: string | null) => void,
 ) {
   return async () => {
     const project = await deps.studio.loadProjectSnapshotForCloud(deps.projectId, AULA)
     if (!project) throw new Error('Não foi possível ler o projeto salvo')
+    assertStudioLessonSeedCompatibility(project, deps.initialProject, 'local')
     const fingerprint = await studioContentFingerprint(project)
     onFingerprint?.(fingerprint)
     return {
@@ -197,7 +255,7 @@ export async function swapOtherVersion(deps: StudioDraftDeps): Promise<Project |
     studio.loadProjectSnapshotForCloud(backupId, AULA),
   ])
   if (!outra) return null
-  const aberta = await gravar(studio, outra, projectId)
+  const aberta = await gravar(studio, outra, projectId, deps.initialProject)
   if (atual) {
     try {
       await gravar(studio, atual, backupId)
@@ -224,8 +282,22 @@ export async function resolveStudioConflict(
   firstContact: boolean,
 ): Promise<{ kept: boolean; opened: Project | null; adoptedAt: number | null }> {
   const local = await deps.studio.loadProjectSnapshotForCloud(deps.projectId, AULA)
-  if (local && remote.fingerprint && remote.fingerprint === (await studioContentFingerprint(local)))
+  if (local) assertStudioLessonSeedCompatibility(local, deps.initialProject, 'local')
+  if (
+    local &&
+    remote.fingerprint &&
+    remote.fingerprint === (await studioContentFingerprint(local))
+  ) {
+    // A content fingerprint is not an environment grant (e.g. Pro template metadata is outside
+    // its scope). Validate the downloaded document even when source bytes appear identical.
+    await conferir(
+      deps.studio,
+      await remote.load(local.assets ?? []),
+      deps.projectId,
+      deps.initialProject,
+    )
     return { kept: false, opened: null, adoptedAt: local.updatedAt }
+  }
   await keepRemoteAsOther(deps, remote)
   if (!firstContact) return { kept: true, opened: null, adoptedAt: null }
   const opened = await swapOtherVersion(deps)

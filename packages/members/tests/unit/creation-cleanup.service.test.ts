@@ -42,7 +42,8 @@ describe('CreationCleanupService', () => {
     await service.claim(['pensa'])
     await service.claim(['futuro', 'pensa', 'pensa'])
     await service.claim(['futuro'])
+    await service.claim(['gallery', 'futuro', 'gallery'])
 
-    expect(seen).toEqual([[], [], ['pensa'], ['pensa'], []])
+    expect(seen).toEqual([[], [], ['pensa'], ['pensa'], [], ['gallery']])
   })
 })

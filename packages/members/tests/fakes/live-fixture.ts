@@ -1,14 +1,13 @@
 import { randomUUID } from 'node:crypto'
 import { LiveService, type LiveServiceOptions } from '../../src/application/live/live.service'
-import type { LiveCourseRecord } from '../../src/domain/ports/live-course.port'
 import type { LiveRepository } from '../../src/domain/ports/live-repository.port'
 import { InMemoryLiveCourses, InMemoryLiveRepository } from './live-in-memory'
 
 export async function liveFixture(
   repository: LiveRepository = new InMemoryLiveRepository(),
   options: LiveServiceOptions = {},
-  /** On a real database: writes the course row a new cohort locks. */
-  persistCourse?: (course: LiveCourseRecord) => Promise<void>,
+  /** On a real database: persists the course and its authoring parents. */
+  persistCourse?: ConstructorParameters<typeof InMemoryLiveCourses>[0],
 ) {
   let now = new Date()
   const teacher = { id: randomUUID(), accountId: randomUUID(), name: 'Professora', staff: true }

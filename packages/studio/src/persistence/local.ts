@@ -1,7 +1,7 @@
 /** Entrada pública do adapter local; a implementação compartilha as fronteiras da store. */
 export { createLocalPersistenceAdapter } from '../state/projectStore'
 
-import type { Project } from '../core/project'
+import type { EditableStudioProject as Project } from '../core/editableProject'
 import { persistProject } from '../state/persistence'
 import { bindProjectToDurableHead } from '../state/projectStorageCoordinator'
 import { captureProjectStorageScope, getProjectStorageScope } from '../state/projectStorageRuntime'

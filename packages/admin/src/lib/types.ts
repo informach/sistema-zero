@@ -12,7 +12,7 @@ import type {
  */
 
 // Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
-import type { AnyBlockLevel, IDEMode, Project } from '@sistemazero/studio'
+import type { AnyBlockLevel, EditableStudioProject, IDEMode } from '@sistemazero/studio'
 
 export interface SessionUser {
   id: string
@@ -605,10 +605,11 @@ export interface EbookBlock {
  * campos são a config de aprendizado (nível, allowlist de blocos, modos).
  */
 export interface StudioBlock {
+  pythonLevel?: 1 | 2 | 3
   gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
   purpose?: 'experiment' | 'submission'
   kind: 'studio'
-  initialProject: Project
+  initialProject: EditableStudioProject
   /** Aceita a escala LEGADA (aulas pré-reforma 2D/3D); o editor normaliza no load. */
   level?: AnyBlockLevel
   allowBlocks?: string[]
@@ -619,7 +620,7 @@ export interface StudioBlock {
    * O GABARITO da professora (18/10/2026): o projeto pronto. Só a equipe vê (o members o tira da
    * aula do aluno); serve ao "Testar agora" dos objetivos e à publicação.
    */
-  solutionProject?: Project
+  solutionProject?: EditableStudioProject
   /** Nome do projeto contínuo (cadeia). Aulas com o mesmo nome carregam o código entre si. */
   chain?: string
   /** Vitrine (Mural dos Criadores): config da auto-publicação ao concluir a última aula. */
@@ -764,7 +765,7 @@ export interface StudioSubmissionCourseRow extends StudioSubmissionRow {
 
 /** Projeto enviado por um aluno (abrir no Estúdio embutido do admin). */
 export interface StudioSubmissionDetailView {
-  project: Project
+  project: EditableStudioProject
   submittedAt: string
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
@@ -783,7 +784,7 @@ export interface StudioSubmissionDetailView {
 
 /** A versão anterior de uma entrega (backup do reenvio) — baixar/inspecionar. */
 export interface StudioSubmissionPreviousView {
-  project: Project
+  project: EditableStudioProject
   submittedAt: string
 }
 

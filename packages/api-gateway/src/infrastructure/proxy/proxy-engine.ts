@@ -1,3 +1,4 @@
+import { awaitWithSignal } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import type { LoadBalancer, UpstreamTarget } from '../../domain/load-balancing/load-balancer.port'
 import type { Forwarder } from '../../domain/proxy/forwarder.port'
@@ -12,6 +13,7 @@ import { idleTimeoutStream } from './stream-guards'
 import { type UpstreamErrorKind, upstreamErrorResponse } from './upstream-error'
 
 export interface ProxyInput {
+  signal?: AbortSignal
   serviceId: string
   targets: readonly UpstreamTarget[]
   lb: LoadBalancer
@@ -57,6 +59,27 @@ export class ProxyEngine {
   constructor(private readonly deps: ProxyEngineDeps) {}
 
   async proxy(input: ProxyInput): Promise<ProxyResult> {
+    const observed: { attempts: number; targetId?: string } = { attempts: 0 }
+    if (!input.signal) return this.proxyOwned(input, observed)
+    try {
+      return await awaitWithSignal(
+        () => this.proxyOwned(input, observed),
+        input.signal,
+        (late) => {
+          void late.response.body?.cancel().catch(() => {})
+        },
+      )
+    } catch (error) {
+      if (!input.signal.aborted) throw error
+      this.deps.logger.info('proxy.cancelled', { requestId: input.requestId, ...observed })
+      return { response: upstreamErrorResponse('client_closed', input.requestId), ...observed }
+    }
+  }
+
+  private async proxyOwned(
+    input: ProxyInput,
+    observed: { attempts: number; targetId?: string },
+  ): Promise<ProxyResult> {
     const {
       serviceId,
       targets,
@@ -79,6 +102,7 @@ export class ProxyEngine {
     let lastTargetId: string | undefined
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      input.signal?.throwIfAborted()
       // Capa o timeout desta tentativa pelo budget restante → a latência ponta-a-ponta
       // fica limitada por budgetMs (não só os sleeps de backoff).
       const attemptTimeout =
@@ -98,6 +122,11 @@ export class ProxyEngine {
       lastTargetId = target.id
 
       const decision = await this.deps.breaker.beforeCall(serviceId, target.id)
+      if (input.signal?.aborted) {
+        if (decision.allow)
+          await this.deps.breaker.onCancelled(serviceId, target.id, decision.token)
+        input.signal.throwIfAborted()
+      }
       if (!decision.allow) {
         lastError = 'open_circuit'
         this.deps.logger.warn('proxy.attempt_failed', {
@@ -117,6 +146,24 @@ export class ProxyEngine {
       // Relógio MONOTÔNICO para medir latência (imune a ajustes de NTP/wall-clock).
       const t0 = performance.now()
       this.deps.stats.begin(target.id)
+      observed.attempts = attempt + 1
+      observed.targetId = target.id
+      let statsOpen = true
+      const finishStats = (cancelled = false) => {
+        if (!statsOpen) return
+        statsOpen = false
+        if (cancelled) this.deps.stats.cancel(target.id)
+        else this.deps.stats.end(target.id, performance.now() - t0)
+      }
+      let cancelling: Promise<void> | undefined
+      const cancelTrial = () =>
+        (cancelling ??= this.deps.breaker.onCancelled(serviceId, target.id, decision.token))
+      const withdrawn = () => {
+        finishStats(true)
+        void cancelTrial().catch(() => {})
+      }
+      input.signal?.addEventListener('abort', withdrawn, { once: true })
+      let upstreamResponse: Response | undefined
       try {
         const upstream = await this.deps.forwarder.forward({
           method,
@@ -124,18 +171,24 @@ export class ProxyEngine {
           path,
           headers,
           body,
-          signal: ctrl.signal,
+          signal: input.signal ? AbortSignal.any([ctrl.signal, input.signal]) : ctrl.signal,
         })
+        upstreamResponse = upstream
+        if (input.signal?.aborted) {
+          void upstream.body?.cancel().catch(() => {})
+          input.signal.throwIfAborted()
+        }
         // Trade-off deliberado: latência (EWMA) e in-flight são fechados na chegada
         // dos HEADERS, não no fim do corpo — TTFB é o sinal certo p/ p2c-ewma, e
         // rastrear o stream até o fim acoplaria o ciclo de vida do corpo ao LB.
         // Efeito: least-connections subconta streams longos (aceitável; hoje cada
         // serviço tem 1 instância e o corpo já está fluindo fora do hot path).
-        this.deps.stats.end(target.id, performance.now() - t0)
+        finishStats()
         const ok = upstream.status < 500
         if (ok) this.deps.health.recordSuccess(target.id)
         else this.deps.health.recordFailure(target.id)
         await this.deps.breaker.onResult(serviceId, target.id, ok, decision.token)
+        input.signal?.throwIfAborted()
 
         if (RETRYABLE_STATUSES.has(upstream.status) && attempt < maxAttempts - 1) {
           lastError = upstream.status === 504 ? 'timeout' : 'bad_gateway'
@@ -170,7 +223,12 @@ export class ProxyEngine {
         })
         return { response, targetId: target.id, attempts: attempt + 1 }
       } catch {
-        this.deps.stats.end(target.id, performance.now() - t0)
+        finishStats(input.signal?.aborted)
+        if (input.signal?.aborted) {
+          void upstreamResponse?.body?.cancel().catch(() => {})
+          await cancelTrial()
+          input.signal.throwIfAborted()
+        }
         this.deps.health.recordFailure(target.id)
         await this.deps.breaker.onResult(serviceId, target.id, false, decision.token)
         lastError = ctrl.signal.aborted ? 'timeout' : 'connect'
@@ -186,6 +244,7 @@ export class ProxyEngine {
         }
         break
       } finally {
+        input.signal?.removeEventListener('abort', withdrawn)
         clearTimeout(to)
       }
     }

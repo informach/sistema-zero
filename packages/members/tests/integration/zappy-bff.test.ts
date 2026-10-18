@@ -53,6 +53,84 @@ function post(
 }
 
 describe('persistência privada do Zappy', () => {
+  test('language metadata and portable IDs cross both internal HTTP schemas without changing legacy JavaScript IDs', async () => {
+    const requests: unknown[] = []
+    let answer: unknown
+    const zappy = {
+      reserve: async (input: unknown) => {
+        requests.push(input)
+        return { created: true, questionId: QUESTION_ID }
+      },
+      complete: async (input: unknown) => {
+        answer = input
+        return { id: MESSAGE_ID }
+      },
+    } as unknown as ZappyHistoryService
+    const { app } = buildApp({ internalToken: TOKEN, zappy })
+    const actor = { userId: USER_ID, accountId: ACCOUNT_ID, privileged: true }
+    for (const projectId of ['_game', '-game', 'old.game', 'old:game']) {
+      const programmingLanguage =
+        projectId.startsWith('_') || projectId.startsWith('-') ? 'python' : 'javascript'
+      expect(
+        (
+          await post(
+            app,
+            '/members/internal/zappy/questions',
+            {
+              actor,
+              projectId,
+              clientMessageId: crypto.randomUUID(),
+              question: 'Como funciona?',
+              programmingLanguage,
+            },
+            'member-shell',
+          )
+        ).status,
+      ).toBe(200)
+      expect(requests.at(-1)).toMatchObject({ projectId, programmingLanguage })
+    }
+    expect(
+      (
+        await post(
+          app,
+          '/members/internal/zappy/questions',
+          {
+            actor,
+            projectId: '_game',
+            clientMessageId: crypto.randomUUID(),
+            question: 'Como funciona?',
+            programmingLanguage: 'ruby',
+          },
+          'member-shell',
+        )
+      ).status,
+    ).toBe(400)
+    expect(requests).toHaveLength(4)
+    expect(
+      (
+        await put(
+          app,
+          `/members/internal/zappy/questions/${QUESTION_ID}/response`,
+          {
+            actor,
+            projectId: '_game',
+            latencyMs: 1,
+            response: {
+              id: MESSAGE_ID,
+              programmingLanguage: 'python',
+              kind: 'pro',
+              text: 'Observe o arquivo.',
+              scope: 'concept',
+              blockReferences: [],
+              createdAt: new Date().toISOString(),
+            },
+          },
+          'member-shell',
+        )
+      ).status,
+    ).toBe(200)
+    expect(answer).toMatchObject({ response: { programmingLanguage: 'python', kind: 'pro' } })
+  })
   test('modo, referências Pro e revisão atravessam a validação HTTP', async () => {
     let saved: unknown
     const zappy = {

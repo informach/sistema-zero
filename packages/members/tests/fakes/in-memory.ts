@@ -142,6 +142,7 @@ import type {
   StudioSubmissionRepository,
   StudioSubmissionState,
   StudioSubmissionSummary,
+  StudioSubmissionWriteResult,
 } from '../../src/domain/ports/studio-submission-repository.port'
 import type {
   StudioBlockGrant,
@@ -164,6 +165,12 @@ import {
   TROPHY_FOR_BADGE,
   TROPHY_SHELF_ITEM_ID,
 } from '../../src/domain/room/room-catalog'
+import {
+  reconcileStudioChainEnvironment,
+  type StudioChainCandidate,
+  type StudioChainEnvironment,
+  studioChainCandidate,
+} from '../../src/domain/studio/chain-environment'
 
 export const silentLogger: Logger = {
   debug() {},
@@ -426,6 +433,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   attachments: LessonAttachment[] = []
   onQuizGateChanged?: (blockId: string) => void
   private readonly pintaChainLocks = new Map<string, Promise<void>>()
+  private readonly studioAuthoringLocks = new Map<string, Promise<void>>()
+  private readonly studioChainEnvironments = new Map<string, StudioChainEnvironment | null>()
 
   async findCourseBySlug(slug: string): Promise<Course | null> {
     return this.courses.find((c) => c.slug === slug) ?? null
@@ -838,15 +847,24 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   }
 
   async deleteModule(id: string): Promise<boolean> {
-    if (!this.modules.some((m) => m.id === id)) return false
     const courseId = this.modules.find((m) => m.id === id)?.courseId
-    if (courseId) this.assertShowcaseRemains(courseId, { moduleId: id })
-    const lessonIds = new Set(this.lessons.filter((l) => l.moduleId === id).map((l) => l.id))
-    this.modules = this.modules.filter((m) => m.id !== id)
-    this.lessons = this.lessons.filter((l) => l.moduleId !== id)
-    this.blocks = this.blocks.filter((b) => !lessonIds.has(b.lessonId))
-    this.attachments = this.attachments.filter((a) => !lessonIds.has(a.lessonId))
-    return true
+    if (!courseId) return false
+    return this.withStudioAuthoringLock(courseId, async () => {
+      this.assertShowcaseRemains(courseId, { moduleId: id })
+      const lessonIds = new Set(this.lessons.filter((l) => l.moduleId === id).map((l) => l.id))
+      await this.claimStudioChains(
+        courseId,
+        [],
+        this.blocks
+          .filter((block) => lessonIds.has(block.lessonId))
+          .flatMap((block) => studioChainCandidate(block.content)),
+      )
+      this.modules = this.modules.filter((m) => m.id !== id)
+      this.lessons = this.lessons.filter((l) => l.moduleId !== id)
+      this.blocks = this.blocks.filter((b) => !lessonIds.has(b.lessonId))
+      this.attachments = this.attachments.filter((a) => !lessonIds.has(a.lessonId))
+      return true
+    })
   }
 
   async listModuleIds(courseId: string): Promise<string[]> {
@@ -896,13 +914,22 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   }
 
   async deleteLesson(id: string): Promise<boolean> {
-    if (!this.lessons.some((l) => l.id === id)) return false
     const courseId = this.lessons.find((l) => l.id === id)?.courseId
-    if (courseId) this.assertShowcaseRemains(courseId, { lessonId: id })
-    this.lessons = this.lessons.filter((l) => l.id !== id)
-    this.blocks = this.blocks.filter((b) => b.lessonId !== id)
-    this.attachments = this.attachments.filter((a) => a.lessonId !== id)
-    return true
+    if (!courseId) return false
+    return this.withStudioAuthoringLock(courseId, async () => {
+      this.assertShowcaseRemains(courseId, { lessonId: id })
+      await this.claimStudioChains(
+        courseId,
+        [],
+        this.blocks
+          .filter((block) => block.lessonId === id)
+          .flatMap((block) => studioChainCandidate(block.content)),
+      )
+      this.lessons = this.lessons.filter((l) => l.id !== id)
+      this.blocks = this.blocks.filter((b) => b.lessonId !== id)
+      this.attachments = this.attachments.filter((a) => a.lessonId !== id)
+      return true
+    })
   }
 
   async listLessonIds(moduleId: string): Promise<string[]> {
@@ -1041,6 +1068,66 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
         lessonTitle: lesson?.title ?? '',
         assetKind: pintaAssetKindOf(b.content as PintaBlock),
       }))
+  }
+
+  async withStudioAuthoringLock<T>(
+    courseId: string,
+    operation: (repository: ContentAdminRepository) => Promise<T>,
+  ): Promise<T> {
+    const previous = this.studioAuthoringLocks.get(courseId) ?? Promise.resolve()
+    let release = () => {}
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const current = previous.then(() => gate)
+    this.studioAuthoringLocks.set(courseId, current)
+    await previous
+    const before = new Map(
+      [...this.studioChainEnvironments].filter(([key]) => key.startsWith(`${courseId}:`)),
+    )
+    try {
+      return await operation(this)
+    } catch (error) {
+      for (const key of this.studioChainEnvironments.keys())
+        if (key.startsWith(`${courseId}:`)) this.studioChainEnvironments.delete(key)
+      for (const [key, value] of before) this.studioChainEnvironments.set(key, value)
+      throw error
+    } finally {
+      release()
+      if (this.studioAuthoringLocks.get(courseId) === current)
+        this.studioAuthoringLocks.delete(courseId)
+    }
+  }
+
+  async claimStudioChains(
+    courseId: string,
+    candidates: StudioChainCandidate[],
+    retiring: StudioChainCandidate[] = [],
+  ) {
+    const chains = [...new Set([...candidates, ...retiring].map((item) => item.chain))]
+    const lessonIds = new Set(
+      this.lessons.filter((lesson) => lesson.courseId === courseId).map((lesson) => lesson.id),
+    )
+    const history = this.blocks
+      .filter((block) => lessonIds.has(block.lessonId))
+      .flatMap((block) => studioChainCandidate(block.content))
+    for (const chain of chains) {
+      const key = `${courseId}:${chain}`
+      const projects = history.filter((item) => item.chain === chain).map((item) => item.project)
+      const environment = reconcileStudioChainEnvironment(
+        chain,
+        this.studioChainEnvironments.get(key),
+        projects.length
+          ? projects
+          : retiring.filter((item) => item.chain === chain).map((item) => item.project),
+        candidates.filter((item) => item.chain === chain).map((item) => item.project),
+      )
+      if (!this.studioChainEnvironments.has(key)) this.studioChainEnvironments.set(key, environment)
+    }
+  }
+
+  async findStudioBlockChain(blockId: string) {
+    return studioChainCandidate(this.blocks.find((block) => block.id === blockId)?.content)
   }
 
   async withPintaChainLock<T>(
@@ -1598,7 +1685,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
   async upsert(
     submission: StudioSubmissionRecord & { accountId: string },
     options?: { revision?: string; galleryRequestId?: string },
-  ): Promise<void> {
+  ): Promise<StudioSubmissionWriteResult> {
     const existing = this.submissions.find(
       (s) => s.userId === submission.userId && s.blockId === submission.blockId,
     )
@@ -1615,7 +1702,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           isGallerySubmission(existing?.project) &&
           existing.project.requestId === options.galleryRequestId
         )
-          return
+          return { duplicateGallery: true, receipt: gallerySubmissionReceipt(existing) }
         throw new LearningConflictError()
       }
       this.galleryRequests.set(key, options.galleryRequestId)
@@ -3611,4 +3698,5 @@ export class FakeCatalogGateway implements CatalogGateway {
 }
 
 import { isGallerySubmission } from '@sistemazero/core/learning'
+import { gallerySubmissionReceipt } from '../../src/domain/learning/gallery-receipt'
 import { LearningConflictError } from '../../src/domain/learning/learning.errors'

@@ -1,8 +1,5 @@
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
-import {
-  isStudioProTemplateId,
-  type StudioProTemplateId,
-} from '@sistemazero/core/studio/pro-templates'
+import { isStudioProTemplateId } from '@sistemazero/core/studio/pro-templates'
 import {
   isStudioTutorSourcePath,
   type StudioTutorCodeFile,
@@ -11,6 +8,9 @@ import {
   type StudioTutorIntent,
   type StudioTutorSelection,
 } from '@sistemazero/core/studio/pro-tutor'
+import { isStudioDocumentTemplateId } from '@sistemazero/core/studio/project-format'
+import type { StudioPythonAnalysisAuthorization } from '@sistemazero/core/studio/python-language-authorization'
+import type { StudioTutorEnvironment } from '@sistemazero/core/studio/tutor-environment'
 import type { ReactNode } from 'react'
 import {
   createContext,
@@ -23,9 +23,12 @@ import {
   useRef,
   useState,
 } from 'react'
-import type { IDEMode, Project, ProjectKind } from '#core'
+import type { IDEMode, ProjectKind } from '#core'
+import { type EditableStudioProject, isPythonProject } from '../core/editableProject'
 import { boundedProAssistanceSummary, getProAssistance } from '../core/proAssistance'
+import { readPythonWorkspaceDraft } from '../python/blocks/workspaceDraft'
 import { buildTutorBehavior, type StudioTutorBehaviorEntry } from './tutorBehavior'
+import { buildStudioTutorEnvironment } from './tutorEnvironment'
 import { createStudioTutorExcerpts, isCurrentStudioTutorSelection } from './tutorProContext'
 import {
   isStudioTutorSensitivePath,
@@ -76,9 +79,19 @@ export interface StudioTutorProEditorContext {
   installedPackages?: Array<{ name: string; version: string }>
 }
 
+/** Read on demand from the live Python workspace; never persisted or treated as source. */
+export interface StudioTutorClassicEditorContext {
+  projectId: string
+  path: string
+  sourceHash: string
+  workspace?: unknown
+  synchronization: 'ready' | 'pending' | 'unavailable'
+}
+
 /** Snapshot efêmero e deliberadamente pequeno enviado ao BFF a cada pergunta. */
 export interface StudioTutorProjectContext {
   projectId: string
+  environment?: StudioTutorEnvironment
   mode: IDEMode
   kind: ProjectKind
   blocks: StudioTutorCompactBlock[]
@@ -104,10 +117,16 @@ export interface StudioTutorProjectContext {
   semanticIssues?: Array<{ blockId?: string; message: string }>
   /** Só existe no Pro. O modo normal, inclusive a Ponte, ensina com blocos. */
   code?: StudioTutorCodeFile[]
+  /** Python source is authoritative; a pending visual buffer has not executed yet. */
+  python?: {
+    activeFile: string
+    workspace: 'ready' | 'pending' | 'unavailable'
+    source: StudioTutorCodeFile[]
+  }
   pro?: Omit<StudioTutorProEditorContext, 'projectId'> & {
     revision: number
     intent?: StudioTutorIntent
-    templateId?: StudioProTemplateId
+    templateId?: string
     decisions?: { version: 1; summary: string }
   }
 }
@@ -145,6 +164,7 @@ export interface StudioTutorHelpReference {
 }
 
 export interface StudioTutorResponse {
+  programmingLanguage?: 'javascript' | 'python'
   id: string
   intent?: StudioTutorIntent
   /** Original pedagogy; absent only in legacy responses. */
@@ -201,13 +221,29 @@ export interface StudioTutorAskResult {
 }
 
 /** I/O do host. O Studio nunca conhece sessão, provedor, quota ou banco. */
+export interface StudioTutorRequestTransport {
+  send(
+    operation: (
+      authorization: StudioPythonAnalysisAuthorization,
+      signal: AbortSignal,
+    ) => Promise<Response>,
+  ): Promise<Response>
+}
+
 export interface StudioTutorAdapter {
   loadCredits?(signal?: AbortSignal): Promise<AiCreditsView | null>
   builder?: import('@sistemazero/core/studio').StudioProBuilderAdapter
-  loadHistory(projectId: string, before?: string): Promise<StudioTutorHistoryPage>
-  deleteHistory(projectId: string): Promise<void>
-  ask(input: StudioTutorAskInput): Promise<StudioTutorAskResult>
-  feedback(input: StudioTutorFeedbackInput): Promise<void>
+  loadHistory(
+    projectId: string,
+    before?: string,
+    transport?: StudioTutorRequestTransport,
+  ): Promise<StudioTutorHistoryPage>
+  deleteHistory(projectId: string, transport?: StudioTutorRequestTransport): Promise<void>
+  ask(
+    input: StudioTutorAskInput,
+    transport?: StudioTutorRequestTransport,
+  ): Promise<StudioTutorAskResult>
+  feedback(input: StudioTutorFeedbackInput, transport?: StudioTutorRequestTransport): Promise<void>
 }
 
 export interface StudioTutorConfig {
@@ -249,6 +285,7 @@ interface StudioTutorState {
   proNavigate: RefObject<((reference: StudioTutorFileReference) => void) | null>
   /** Capture only on a request, not on every keystroke. Call after flushing project operations. */
   proCapture: RefObject<(() => StudioTutorProEditorContext | null) | null>
+  classicCapture: RefObject<(() => StudioTutorClassicEditorContext | null) | null>
   proValidateReference: RefObject<
     ((reference: StudioTutorFileReference) => StudioTutorFileReference | null) | null
   >
@@ -272,6 +309,7 @@ export function StudioTutorProvider({
   const proEditor = useRef<StudioTutorProEditorContext | null>(null)
   const proNavigate = useRef<((reference: StudioTutorFileReference) => void) | null>(null)
   const proCapture = useRef<(() => StudioTutorProEditorContext | null) | null>(null)
+  const classicCapture = useRef<(() => StudioTutorClassicEditorContext | null) | null>(null)
   const proValidateReference = useRef<
     ((reference: StudioTutorFileReference) => StudioTutorFileReference | null) | null
   >(null)
@@ -301,6 +339,7 @@ export function StudioTutorProvider({
       proEditor,
       proNavigate,
       proCapture,
+      classicCapture,
       proValidateReference,
       proRequest,
       requestProHelp,
@@ -316,6 +355,7 @@ export function useStudioTutor(): StudioTutorState {
   const proEditor = useRef<StudioTutorProEditorContext | null>(null)
   const proNavigate = useRef<((reference: StudioTutorFileReference) => void) | null>(null)
   const proCapture = useRef<(() => StudioTutorProEditorContext | null) | null>(null)
+  const classicCapture = useRef<(() => StudioTutorClassicEditorContext | null) | null>(null)
   const proValidateReference = useRef<
     ((reference: StudioTutorFileReference) => StudioTutorFileReference | null) | null
   >(null)
@@ -328,6 +368,7 @@ export function useStudioTutor(): StudioTutorState {
         proEditor,
         proNavigate,
         proCapture,
+        classicCapture,
         proValidateReference,
         proRequest: null,
         requestProHelp: () => undefined,
@@ -385,7 +426,7 @@ function compactBlocks(raw: unknown): StudioTutorCompactBlock[] {
 }
 
 function compactCode(
-  project: Project,
+  project: EditableStudioProject,
   question = '',
   editor?: StudioTutorProEditorContext,
   selected?: StudioTutorSelection,
@@ -396,7 +437,8 @@ function compactCode(
       if (node.kind === 'file') candidates.push({ path, content: node.content })
     }
   } else {
-    for (const [path, content] of Object.entries(project.files)) candidates.push({ path, content })
+    for (const [path, content] of Object.entries(project.files ?? {}))
+      candidates.push({ path, content })
     for (const file of project.extraFiles ?? [])
       candidates.push({ path: file.name, content: file.content })
   }
@@ -451,18 +493,20 @@ function compactCode(
 }
 
 export function buildStudioTutorContext(input: {
-  project: Project
+  project: EditableStudioProject
   selectedBlockId: string | null
   lastError: string | null
   question?: string
   proEditor?: StudioTutorProEditorContext | null
   proSelection?: StudioTutorSelection
+  classicEditor?: StudioTutorClassicEditorContext | null
   intent?: StudioTutorIntent
   /** Diagnósticos que o editor já calculou (pilhas soltas, problemas da IR). */
   draftBlockIds?: readonly string[]
   semanticIssues?: readonly { blockId?: string; message: string }[]
 }): StudioTutorProjectContext {
   const { project } = input
+  const python = isPythonProject(project)
   const includeCode = project.kind === 'pro'
   const editor =
     input.proEditor?.projectId === project.id
@@ -489,20 +533,86 @@ export function buildStudioTutorContext(input: {
     isCurrentStudioTutorSelection(requestedSelection, selectedFile.content)
       ? requestedSelection
       : undefined
-  const behavior = includeCode ? undefined : buildTutorBehavior(project.ir)
+  // Python AST/cache is never SZIR. In Python every saved top-level statement runs;
+  // the JavaScript draft/area diagnostics therefore have no equivalent authority.
+  const behavior = includeCode || python ? undefined : buildTutorBehavior(project.ir)
+  const storedDraft =
+    python && project.kind === 'classic' ? readPythonWorkspaceDraft(project) : undefined
+  const visualDraft =
+    storedDraft &&
+    isStudioTutorSourcePath(storedDraft.path) &&
+    !isStudioTutorSensitivePath(storedDraft.path)
+      ? storedDraft
+      : undefined
+  const classicEditor =
+    python &&
+    project.kind === 'classic' &&
+    input.classicEditor?.projectId === project.id &&
+    input.classicEditor.path.endsWith('.py') &&
+    isStudioTutorSourcePath(input.classicEditor.path) &&
+    !isStudioTutorSensitivePath(input.classicEditor.path) &&
+    project.files[input.classicEditor.path] !== undefined &&
+    studioTutorSourceHash(project.files[input.classicEditor.path]!) ===
+      input.classicEditor.sourceHash
+      ? input.classicEditor
+      : undefined
+  const pythonFile =
+    python && project.kind === 'classic'
+      ? (classicEditor?.path ?? visualDraft?.path ?? project.python.entrypoint)
+      : undefined
+  const templateId = python
+    ? isStudioDocumentTemplateId(project.proMeta?.templateId)
+      ? project.proMeta.templateId
+      : undefined
+    : isStudioProTemplateId(project.proMeta?.templateId)
+      ? project.proMeta.templateId
+      : undefined
+  const blocks = includeCode
+    ? []
+    : compactBlocks(
+        python
+          ? classicEditor
+            ? classicEditor.workspace
+            : visualDraft?.workspace
+          : project.blocksState,
+      )
   return {
     projectId: project.id,
+    environment: buildStudioTutorEnvironment(project),
     mode: project.mode,
     kind: project.kind === 'pro' ? 'pro' : 'classic',
-    blocks: includeCode ? [] : compactBlocks(project.blocksState),
+    blocks,
     installedExtensions: includeCode ? [] : project.installedExtensions.map((ext) => ext.id),
-    selectedBlockId: includeCode ? null : input.selectedBlockId,
-    lastError: input.lastError?.slice(0, MAX_ERROR_CHARS) ?? null,
+    selectedBlockId:
+      includeCode || (python && !blocks.some((block) => block.id === input.selectedBlockId))
+        ? null
+        : input.selectedBlockId,
+    lastError: input.lastError
+      ? redactStudioTutorSecrets(input.lastError).text.slice(0, MAX_ERROR_CHARS)
+      : null,
+    ...(pythonFile && python && project.kind === 'classic'
+      ? {
+          python: {
+            activeFile: pythonFile,
+            workspace:
+              classicEditor?.synchronization ??
+              (visualDraft
+                ? visualDraft.pending
+                  ? ('pending' as const)
+                  : ('ready' as const)
+                : ('unavailable' as const)),
+            source: createStudioTutorExcerpts(
+              { path: pythonFile, content: project.files[pythonFile] ?? '' },
+              { maxChars: MAX_CODE_CHARS_PER_FILE },
+            ),
+          },
+        }
+      : {}),
     ...(behavior?.length ? { behavior } : {}),
-    ...(!includeCode && input.draftBlockIds?.length
+    ...(!includeCode && !python && input.draftBlockIds?.length
       ? { draftBlockIds: [...input.draftBlockIds].slice(0, 40) }
       : {}),
-    ...(!includeCode && input.semanticIssues?.length
+    ...(!includeCode && !python && input.semanticIssues?.length
       ? { semanticIssues: input.semanticIssues.slice(0, 5).map((issue) => ({ ...issue })) }
       : {}),
     ...(includeCode
@@ -519,9 +629,7 @@ export function buildStudioTutorContext(input: {
             intent: input.intent ?? 'explain',
             ...(selection ? { selection } : {}),
             ...(editor?.synchronization ? { synchronization: editor.synchronization } : {}),
-            ...(isStudioProTemplateId(project.proMeta?.templateId)
-              ? { templateId: project.proMeta.templateId }
-              : {}),
+            ...(templateId ? { templateId } : {}),
             ...(editor?.activeFile && !isStudioTutorSensitivePath(editor.activeFile)
               ? { activeFile: editor.activeFile }
               : {}),

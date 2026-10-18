@@ -1,74 +1,86 @@
+import { awaitWithSignal } from '@sistemazero/core/http'
+import {
+  GALLERY_STUDIO_SOURCE_LIMITS,
+  materializeStudioGallerySnapshot,
+} from '@sistemazero/core/learning'
+
 /** Private URLs are supplied only after the teacher's access to the submission is checked. */
 export interface GallerySnapshotTicket {
   url: string
   parts: { hash: string; url: string }[]
 }
-const record = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v)
 
-async function readGzip(url: string, signal?: AbortSignal): Promise<string> {
-  const response = await fetch(url, { signal })
-  if (!response.ok || !response.body)
-    throw new Error('A cópia não pôde ser aberta. Tente novamente.')
-  const reader = response.body.pipeThrough(new DecompressionStream('gzip')).getReader()
-  const chunks: Uint8Array[] = []
-  let size = 0
-  try {
-    while (true) {
-      const result = await reader.read()
-      if (result.done) break
-      size += result.value.length
-      if (size > 128 * 1024 * 1024) throw new Error('A cópia excede o limite de leitura.')
-      chunks.push(result.value)
-    }
-  } catch (error) {
-    await reader.cancel().catch(() => {})
-    throw error
-  }
-  const bytes = new Uint8Array(size)
-  let offset = 0
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset)
-    offset += chunk.length
-  }
-  return new TextDecoder().decode(bytes)
-}
-
-/** Restores the exact submitted assets; missing/corrupt parts fail instead of silently disappearing. */
+/** Uses the same exact-byte materializer as Python correction; JS/Pinta remain readable. */
 export async function readGallerySnapshot(
   ticket: GallerySnapshotTicket,
-  signal?: AbortSignal,
+  ownerSignal?: AbortSignal,
 ): Promise<unknown> {
-  const raw: unknown = JSON.parse(await readGzip(ticket.url, signal))
-  if (!record(raw) || raw.format !== 'sz-studio-parts') return raw
+  const sourceURL = ticket.url
   if (
-    raw.version !== 1 ||
-    !record(raw.program) ||
-    !Array.isArray(raw.assets) ||
-    raw.assets.length > 128 ||
-    !raw.assets.every(
-      (hash): hash is string => typeof hash === 'string' && /^[a-f0-9]{64}$/.test(hash),
-    )
+    ticket.parts.length > GALLERY_STUDIO_SOURCE_LIMITS.parts ||
+    new Set(ticket.parts.map((part) => part.hash)).size !== ticket.parts.length
   )
-    throw new Error('Formato de projeto inválido.')
-  const hashes = raw.assets
-  const assets: unknown[] = Array.from({ length: hashes.length })
-  let cursor = 0
-  async function worker() {
-    while (cursor < hashes.length) {
-      const index = cursor++,
-        hash = hashes[index]
-      const part = ticket.parts.find((item) => item.hash === hash)
-      if (!part) throw new Error('A cópia está sem uma imagem do projeto.')
-      const json = await readGzip(part.url, signal)
-      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json))
-      const actualHash = Array.from(new Uint8Array(digest), (value) =>
-        value.toString(16).padStart(2, '0'),
-      ).join('')
-      if (actualHash !== hash) throw new Error('Uma imagem da cópia está corrompida.')
-      assets[index] = JSON.parse(json)
+    throw new Error('As referências da cópia são inválidas.')
+  const partURLs = new Map(ticket.parts.map((part) => [part.hash, part.url]))
+  const signal = AbortSignal.any([
+    AbortSignal.timeout(60000),
+    ...(ownerSignal ? [ownerSignal] : []),
+  ])
+  const budget = { compressed: 0, json: 0 }
+  async function readGzip(url: string, readingSignal: AbortSignal): Promise<Uint8Array> {
+    const response = await awaitWithSignal(
+      () => fetch(url, { signal: readingSignal }),
+      readingSignal,
+      (late) => {
+        void late.body?.cancel().catch(() => {})
+      },
+    )
+    if (!response.ok || !response.body) {
+      void response.body?.cancel().catch(() => {})
+      throw new Error('A cópia não pôde ser aberta. Tente novamente.')
     }
+    const counted = new TransformStream<Uint8Array<ArrayBuffer>, Uint8Array<ArrayBuffer>>({
+      transform(chunk, controller) {
+        budget.compressed += chunk.byteLength
+        if (budget.compressed > GALLERY_STUDIO_SOURCE_LIMITS.compressedBytes)
+          throw new Error('A cópia comprimida excede o limite de leitura.')
+        controller.enqueue(chunk)
+      },
+    })
+    const reader = response.body
+      .pipeThrough(counted)
+      .pipeThrough(new DecompressionStream('gzip'))
+      .getReader()
+    const chunks: Uint8Array[] = []
+    let size = 0
+    try {
+      for (;;) {
+        const result = await awaitWithSignal(() => reader.read(), readingSignal)
+        if (result.done) break
+        budget.json += result.value.byteLength
+        if (budget.json > GALLERY_STUDIO_SOURCE_LIMITS.jsonBytes)
+          throw new Error('A cópia excede o limite de leitura.')
+        chunks.push(result.value)
+        size += result.value.byteLength
+      }
+    } finally {
+      void reader.cancel().catch(() => {})
+    }
+    const bytes = new Uint8Array(size)
+    let offset = 0
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset)
+      offset += chunk.length
+    }
+    return bytes
   }
-  await Promise.all(Array.from({ length: Math.min(3, hashes.length) }, worker))
-  return { ...raw.program, assets }
+  return materializeStudioGallerySnapshot({
+    signal,
+    readMain: (readingSignal) => readGzip(sourceURL, readingSignal),
+    readPart: (hash, readingSignal) => {
+      const url = partURLs.get(hash)
+      if (!url) throw new Error('A cópia está sem uma imagem do projeto.')
+      return readGzip(url, readingSignal)
+    },
+  })
 }

@@ -7,7 +7,7 @@ import type {
   LiveWorkspaceView,
 } from '@sistemazero/core/live'
 import type {
-  Project,
+  EditableStudioProject as Project,
   StudioHandle,
   StudioPersistenceAdapter,
   StudioShareAdapter,
@@ -21,7 +21,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '../../lib/cn'
 import { dataUrlBase64ToBlob } from '../../lib/data-url'
 import { useReportActivityExpanded } from '../../lib/lesson-activity-expansion'
-import { liveRequest } from '../../lib/live/client'
+import { LiveRequestError, liveRequest } from '../../lib/live/client'
 import { cursorAnchor } from '../../lib/live/cursor'
 import type { LiveLessonWorkspace } from '../../lib/live/lesson-slot'
 import { createLivePreviewAdapter } from '../../lib/live/preview'
@@ -31,6 +31,7 @@ import { sessionFetch as fetch } from '../../lib/session-fetch'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
 import { SectionProjectCheck } from '../studio/section-project-check'
 import { LiveAssistanceCursor } from './live-assistance-cursor'
+import { useLiveStudioRuntime } from './use-live-studio-runtime'
 
 const StudioEditor = dynamic(
   () => import('@sistemazero/studio/editor').then((module) => module.StudioEditor),
@@ -280,12 +281,13 @@ export const LiveBlockWorkspace = memo(function LiveBlockWorkspace({
         let next = view
         if (!teacher && !view.readOnly) {
           try {
-            next = await liveRequest<LiveWorkspaceView>(
+            const claimed = await liveRequest<LiveWorkspaceView>(
               `/api/live/workspaces/${view.id}/claim?sessionId=${context.sessionId}`,
               { deviceId: context.deviceId, takeover: false },
               'POST',
               controller.signal,
             )
+            next = { ...claimed, studio: view.studio }
           } catch (cause) {
             if (!controller.signal.aborted)
               setError(cause instanceof Error ? cause.message : 'O projeto já está aberto.')
@@ -460,6 +462,7 @@ function WorkspaceEditor({
   const initialProject = useRef(initial.project as unknown as Project)
   const [editing, setEditing] = useState(false)
   const [ready, setReady] = useState(false)
+  const [viewApplied, setViewApplied] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [status, setStatus] = useState('Projeto guardado na sua conta')
@@ -561,6 +564,27 @@ function WorkspaceEditor({
     () => createLivePreviewAdapter(room.session.id, workspace.id),
     [room.session.id, workspace.id],
   )
+  const pythonRuntime = useLiveStudioRuntime({
+    project: initialProject.current,
+    userId: room.actorId,
+    context:
+      room.library || blockId
+        ? {
+            kind: 'live',
+            workspaceId: workspace.id,
+            sessionId: room.library ? null : room.session.id,
+            blockId: room.library ? null : (blockId ?? null),
+            deviceId,
+            writerEpoch: workspace.writerEpoch,
+          }
+        : null,
+    enabled: editing && !recovery && !workspace.readOnly,
+    observe: ready && viewApplied && !editing && !recovery,
+    leaseExpiresAt: workspace.leaseExpiresAt,
+    queue,
+    current: () => latest.current,
+  })
+  const invalidateRuntime = pythonRuntime.invalidate
   const publication = useRef<{ key: string; id: string } | null>(null)
   const [share] = useState<StudioShareAdapter | undefined>(() =>
     teacher || !publishToMural
@@ -665,6 +689,9 @@ function WorkspaceEditor({
         const local = await handle.prepareHandoff()
         if (
           local &&
+          // Opening may normalize metadata or the allowed mode without an edit.
+          // A journal entry still needs protection when an offline save cleared dirty.
+          (handle.isDirty() || staged.current !== null) &&
           previous.writerId === room.actorId &&
           previous.writerDeviceId === deviceId &&
           !sameLiveProject(local, previous.project) &&
@@ -685,6 +712,7 @@ function WorkspaceEditor({
         }
         await handle.applyObservedRevision(next.project as unknown as Project, next.revision)
         lastApplied.current = appliedKey
+        setViewApplied(true)
         if (own && !writingBlocked.current) {
           handle.resumeAuthorship(next.revision)
           setEditing(true)
@@ -708,6 +736,18 @@ function WorkspaceEditor({
           project: update.project ?? latest.current.project,
         }
         if (stopped) return
+        // Authority loss is immediate; applying its document still waits for journal saves.
+        // Runtime requests share that queue, so awaiting it first could preserve a revoked frame.
+        if (
+          next.writerEpoch >= latest.current.writerEpoch &&
+          (next.writerEpoch !== latest.current.writerEpoch ||
+            next.readOnly !== latest.current.readOnly ||
+            next.writerId !== latest.current.writerId ||
+            next.writerDeviceId !== latest.current.writerDeviceId)
+        ) {
+          invalidateRuntime()
+          setEditing(false)
+        }
         if (
           teacher &&
           next.assistance?.status === 'active' &&
@@ -737,7 +777,13 @@ function WorkspaceEditor({
           await apply(returned)
         }
       } catch (cause) {
-        if (!stopped) fail(cause)
+        if (!stopped) {
+          if (cause instanceof LiveRequestError && [401, 403, 404].includes(cause.status)) {
+            invalidateRuntime()
+            setEditing(false)
+          }
+          fail(cause)
+        }
       } finally {
         if (!stopped) timer = setTimeout(() => void poll(), 1000)
       }
@@ -747,7 +793,18 @@ function WorkspaceEditor({
       stopped = true
       clearTimeout(timer)
     }
-  }, [ready, base, adminBase, deviceId, teacher, room.actorId, apply, fail, workspaceRequest])
+  }, [
+    ready,
+    base,
+    adminBase,
+    deviceId,
+    teacher,
+    room.actorId,
+    apply,
+    fail,
+    workspaceRequest,
+    invalidateRuntime,
+  ])
   // biome-ignore lint/correctness/useExhaustiveDependencies: scheduleRetry só lê e grava refs; nas dependências o efeito reiniciaria a cada render.
   useEffect(() => {
     if (!editing) return
@@ -1054,11 +1111,13 @@ function WorkspaceEditor({
     : !editing
       ? 'Continue neste aparelho antes de compartilhar.'
       : undefined
-  const curationLevel = curation?.level
-  const curationBlocks = curation?.allowBlocks
-  const curationCategories = curation?.allowCategories
-  const curationModes = curation?.allowedModes
-  const curationReveal = curation?.allowLevelReveal
+  const boundCuration = initial.studio ?? curation
+  const curationLevel = boundCuration?.level
+  const curationBlocks = boundCuration?.allowBlocks
+  const curationCategories = boundCuration?.allowCategories
+  const curationModes = boundCuration?.allowedModes
+  const curationReveal = boundCuration?.allowLevelReveal
+  const curationPythonLevel = boundCuration?.pythonLevel
   const studioElement = useMemo(
     () =>
       persistence ? (
@@ -1067,9 +1126,11 @@ function WorkspaceEditor({
           initialProject={initialProject.current}
           persistence={persistence}
           editingAccess={editing ? 'author' : 'observer'}
+          writerEpoch={workspace.writerEpoch}
           autoRun={false}
           requireIsolatedPreview
           previewOriginAdapter={previewAdapter}
+          runtimeEnvironment={pythonRuntime.environment}
           projectMuted={muted}
           share={share}
           shareDisabledReason={shareDisabledReason}
@@ -1083,7 +1144,11 @@ function WorkspaceEditor({
           allowCategories={curationCategories}
           allowedModes={curationModes ?? (teacher ? undefined : LEARNER_MODES)}
           allowLevelReveal={curationReveal ?? false}
-          features={teacher ? TEACHER_FEATURES : LEARNER_FEATURES}
+          pythonLevel={curationPythonLevel}
+          features={{
+            ...(teacher ? TEACHER_FEATURES : LEARNER_FEATURES),
+            professional: initialProject.current.kind === 'pro',
+          }}
         />
       ) : (
         <p role="status" className="p-6">
@@ -1093,7 +1158,9 @@ function WorkspaceEditor({
     [
       persistence,
       editing,
+      workspace.writerEpoch,
       previewAdapter,
+      pythonRuntime.environment,
       muted,
       share,
       shareDisabledReason,
@@ -1105,11 +1172,28 @@ function WorkspaceEditor({
       curationCategories,
       curationModes,
       curationReveal,
+      curationPythonLevel,
       teacher,
     ],
   )
   return (
     <div className={cn('space-y-2.5', fill && 'flex min-h-0 flex-1 flex-col')}>
+      {pythonRuntime.loading ? (
+        <p role="status" className="text-sm">
+          Preparando Python…
+        </p>
+      ) : null}
+      {pythonRuntime.error ? (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center gap-2 rounded-xl border p-3 text-sm"
+        >
+          <span>{pythonRuntime.error}</span>
+          <Button variant="outline" onClick={pythonRuntime.retry}>
+            Tentar novamente
+          </Button>
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-2.5">
         <span
           className={`mr-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-bold text-sm ${offline || recovery ? 'bg-amber-100 text-amber-950' : 'text-muted-foreground'}`}
@@ -1365,14 +1449,31 @@ function WorkspaceEditor({
             event.target instanceof Element ? event.target : null,
           )
           const box = anchor?.rect
-          void workspaceRequest(`${adminBase}/cursor`, {
-            deviceId,
-            writerEpoch: latest.current.writerEpoch,
-            target: anchor?.target ?? null,
-            revision: latest.current.revision,
-            x: box?.width ? Math.max(0, Math.min(1, (event.clientX - box.left) / box.width)) : 0,
-            y: box?.height ? Math.max(0, Math.min(1, (event.clientY - box.top) / box.height)) : 0,
-          }).catch(() => {})
+          const { clientX, clientY } = event
+          const { writerEpoch, revision, assistance: currentAssistance } = latest.current
+          const requestedAt = lastCursor.current
+          const handle = editor.current
+          void (async () => {
+            const code = await handle?.getCodeCursorAnchor(clientX, clientY)
+            const current = latest.current
+            if (
+              handle !== editor.current ||
+              requestedAt !== lastCursor.current ||
+              current.writerEpoch !== writerEpoch ||
+              current.revision !== revision ||
+              current.assistance?.id !== currentAssistance?.id ||
+              current.assistance?.status !== 'active'
+            )
+              return
+            await workspaceRequest(`${adminBase}/cursor`, {
+              deviceId,
+              writerEpoch,
+              revision,
+              target: code ?? anchor?.target ?? null,
+              x: box?.width ? Math.max(0, Math.min(1, (clientX - box.left) / box.width)) : 0,
+              y: box?.height ? Math.max(0, Math.min(1, (clientY - box.top) / box.height)) : 0,
+            })
+          })().catch(() => {})
         }}
       >
         {studioElement}
@@ -1381,6 +1482,7 @@ function WorkspaceEditor({
             root={editorRoot}
             assistance={assistance}
             revision={workspace.revision}
+            editor={editor}
           />
         )}
       </div>
@@ -1389,6 +1491,33 @@ function WorkspaceEditor({
           blockId={blockId}
           handleRef={editor}
           subscribeProjectChanges={subscribeProjectChanges}
+          live={{
+            key: JSON.stringify([
+              workspace.id,
+              room.session.id,
+              blockId,
+              deviceId,
+              workspace.writerEpoch,
+            ]),
+            async prepare(signal) {
+              signal.throwIfAborted()
+              await editor.current?.save()
+              await queue.current
+              signal.throwIfAborted()
+              const current = latest.current
+              return {
+                context: {
+                  kind: 'live',
+                  workspaceId: current.id,
+                  sessionId: room.session.id,
+                  blockId,
+                  deviceId,
+                  writerEpoch: current.writerEpoch,
+                },
+                expectedWorkspaceRevision: current.revision,
+              }
+            },
+          }}
         />
       ) : null}
     </div>

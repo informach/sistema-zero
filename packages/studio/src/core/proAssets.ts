@@ -1,3 +1,8 @@
+import {
+  decodeProjectAsset as decodeProAsset,
+  digestAssetBytes as digest,
+  projectAssetFileExtension,
+} from './assetBinary'
 import { PRO_ASSET_DIRECTORY, PRO_ASSET_MANIFEST, validProAssetPath } from './proAssetPaths'
 import {
   asset3DManifest,
@@ -39,42 +44,7 @@ export interface ProAssetBundle {
   files: ReadonlyMap<string, Uint8Array>
 }
 
-const MIME_EXTENSIONS: Record<string, string> = {
-  'image/png': 'png',
-  'image/jpeg': 'jpg',
-  'image/webp': 'webp',
-  'image/gif': 'gif',
-  'image/svg+xml': 'svg',
-  'image/avif': 'avif',
-  'image/bmp': 'bmp',
-  'audio/mpeg': 'mp3',
-  'audio/mp3': 'mp3',
-  'audio/ogg': 'ogg',
-  'audio/wav': 'wav',
-  'audio/x-wav': 'wav',
-  'audio/webm': 'webm',
-  'audio/mp4': 'm4a',
-  'model/gltf-binary': 'glb',
-  'application/octet-stream': 'bin',
-  'image/vnd.radiance': 'hdr',
-  'image/x-hdr': 'hdr',
-}
-
-export function decodeProAsset(dataUrl: string): { mime: string; bytes: Uint8Array<ArrayBuffer> } {
-  const match = /^data:([^;,]+)(;base64)?,([\s\S]*)$/.exec(dataUrl)
-  if (!match) throw new Error('O arquivo do material tem um formato inválido.')
-  const mime = match[1]!.toLowerCase()
-  const raw = match[3]!
-  const bytes = match[2]
-    ? Uint8Array.from(atob(raw), (c) => c.charCodeAt(0))
-    : new TextEncoder().encode(decodeURIComponent(raw))
-  return { mime, bytes }
-}
-
-async function digest(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
-  const result = await crypto.subtle.digest('SHA-256', bytes)
-  return Array.from(new Uint8Array(result), (b) => b.toString(16).padStart(2, '0')).join('')
-}
+export { decodeProjectAsset as decodeProAsset } from './assetBinary'
 
 const cache = new WeakMap<
   ProjectAsset,
@@ -89,12 +59,7 @@ function materialize(asset: ProjectAsset) {
       throw new Error(`O material ${asset.name} não é válido.`)
     const { mime, bytes } = decodeProAsset(asset.dataUrl)
     const identity = await digest(new TextEncoder().encode(asset.id))
-    const extension =
-      asset.kind === 'model3d'
-        ? 'glb'
-        : asset.kind === 'environment3d'
-          ? 'hdr'
-          : (MIME_EXTENSIONS[mime] ?? 'bin')
+    const extension = projectAssetFileExtension(mime, asset.kind)
     const path = asset.proPath ?? `${PRO_ASSET_DIRECTORY}/${identity}.${extension}`
     if (!validProAssetPath(path))
       throw new Error(`O caminho do material ${asset.name} não é válido.`)
@@ -124,7 +89,7 @@ function materialize(asset: ProjectAsset) {
     if (asset.tilemap) {
       const { tileset, ...map } = asset.tilemap
       const sheet = decodeProAsset(tileset.dataUrl)
-      const sheetPath = `${PRO_ASSET_DIRECTORY}/${identity}-tiles.${MIME_EXTENSIONS[sheet.mime] ?? 'png'}`
+      const sheetPath = `${PRO_ASSET_DIRECTORY}/${identity}-tiles.${projectAssetFileExtension(sheet.mime, undefined, 'png')}`
       files.set(sheetPath, sheet.bytes)
       entry.tilemap = {
         ...map,

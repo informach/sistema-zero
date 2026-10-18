@@ -15,6 +15,11 @@ COPY runtime/pack-artifact.mjs ./
 COPY runtime/check-project.mjs ./
 COPY runtime/validation-profile.json ./
 COPY runtime/playtest.mjs runtime/gameplay.mjs runtime/check-objectives.mjs ./
+COPY runtime/execution-observation.generated.mjs ./
+COPY runtime/python-inspect.mjs ./
+COPY runtime/python-playtest.mjs runtime/python-playtest.generated.mjs ./
+COPY runtime/python-browser-resources.mjs ./
+COPY runtime/portable-path.generated.mjs ./
 
 RUN mkdir -p /workspace/builds \
   && chown -R node:node /workspace \
@@ -22,4 +27,5 @@ RUN mkdir -p /workspace/builds \
 
 USER node
 WORKDIR /workspace
+EXPOSE 3000
 ENTRYPOINT ["/sandbox"]

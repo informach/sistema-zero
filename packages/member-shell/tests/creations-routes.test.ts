@@ -970,7 +970,10 @@ describe('BFF das criações — o rascunho da fase (10/10/2026)', () => {
     }
   })
 
-  test('reserva do `lesson-studio` repassa a impressão digital ao members', async () => {
+  test.each([
+    'v1',
+    'v2',
+  ])('reserva do `lesson-studio` repassa a impressão %s ao members', async (version) => {
     const { routes, calls } = buildRoutes({
       members: {
         reserveCreationUpload: async (...args: unknown[]) => {
@@ -982,7 +985,7 @@ describe('BFF das criações — o rascunho da fase (10/10/2026)', () => {
         },
       },
     })
-    const fingerprint = `v1:${'a'.repeat(64)}`
+    const fingerprint = `${version}:${'a'.repeat(64)}`
     const res = await routes.creationsUploadUrl.POST(
       post({
         name: 'Meu jogo',

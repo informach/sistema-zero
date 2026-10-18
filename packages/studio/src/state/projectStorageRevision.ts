@@ -1,5 +1,5 @@
 import type { StudioProChange } from '@sistemazero/core/studio/pro-revision'
-import type { Project, ProjectAsset } from '../core/project'
+import type { ProjectAsset } from '../core/projectAssets'
 
 /** Local material inverse; binaries remain outside the textual tree and cloud artifacts. */
 export interface ProAssetEdit {
@@ -53,13 +53,15 @@ export interface LocalRevision {
   sequence: number
   token: string
 }
-type LocalProject = Project & { [localRevision]?: LocalRevision }
+/** Lineage belongs to a document identity, independently of language or payload. */
+type ProjectIdentity = { id: string }
+type LocalProject = ProjectIdentity & { [localRevision]?: LocalRevision }
 
-export function readLocalRevision(project: Project): LocalRevision | undefined {
+export function readLocalRevision(project: ProjectIdentity): LocalRevision | undefined {
   const stamp = (project as LocalProject)[localRevision]
   return stamp?.lineage.projectId === project.id ? stamp : undefined
 }
-export function installLocalRevision<T extends Project>(
+export function installLocalRevision<T extends ProjectIdentity>(
   project: T,
   scope: string,
   head?: LocalHead,
@@ -76,13 +78,19 @@ export function installLocalRevision<T extends Project>(
   ;(project as LocalProject)[localRevision] = { lineage, sequence: 0, token: crypto.randomUUID() }
   return project
 }
-export function copyLocalRevision<T extends Project>(source: Project, target: T): T {
+export function copyLocalRevision<T extends ProjectIdentity>(
+  source: ProjectIdentity,
+  target: T,
+): T {
   const stamp = readLocalRevision(source)
   if (stamp && source.id === target.id) (target as LocalProject)[localRevision] = stamp
   return target
 }
 /** Called for each immutable store edit, including hydration. No asynchronous hashing. */
-export function advanceLocalRevision<T extends Project>(previous: Project | null, next: T): T {
+export function advanceLocalRevision<T extends ProjectIdentity>(
+  previous: ProjectIdentity | null,
+  next: T,
+): T {
   const stamp = previous && readLocalRevision(previous)
   if (stamp && previous.id === next.id) {
     ;(next as LocalProject)[localRevision] = {
@@ -94,7 +102,7 @@ export function advanceLocalRevision<T extends Project>(previous: Project | null
   return next
 }
 /** A second editor gets a distinct writer, even if the host reused a loaded Project object. */
-export function forkLocalRevision<T extends Project>(project: T): T {
+export function forkLocalRevision<T extends ProjectIdentity>(project: T): T {
   const stamp = readLocalRevision(project)
   if (!stamp) return project
   const copy = { ...project }

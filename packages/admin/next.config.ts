@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { studioPythonCspOrigins, withStudioPythonCsp } from '@sistemazero/core/studio/runtime-csp'
 import type { NextConfig } from 'next'
 
 // Raiz do MONOREPO: o file tracing do standalone precisa enxergar o workspace
@@ -7,6 +8,7 @@ import type { NextConfig } from 'next'
 const monorepoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 
 const isDev = process.env.NODE_ENV !== 'production'
+const pythonFrameOrigins = studioPythonCspOrigins(process.env.STUDIO_PYTHON_FRAME_ORIGINS, isDev)
 
 /**
  * CSP do painel (defesa em profundidade — não há sink de HTML cru no app). Sem
@@ -30,38 +32,41 @@ const isDev = process.env.NODE_ENV !== 'production'
  *    `beacon.min.js` e o reporta em `cloudflareinsights.com/cdn-cgi/rum`. O script é coberto por
  *    `script-src https:`; o report fica explícito no `connect-src`. (Desligável no dashboard.)
  */
-const csp = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  // `blob:` p/ o preview/iframe do editor embarcável @sistemazero/studio (autoria + entregas).
-  "frame-src 'self' blob: https://player.vimeo.com",
-  "img-src 'self' data: blob: https:",
-  // `https:` p/ subrecursos PASSIVOS do preview do Estúdio (web fonts, áudio/vídeo, CSS externo).
-  "font-src 'self' data: https:",
-  "media-src 'self' blob: data: https:",
-  "style-src 'self' 'unsafe-inline' https:",
-  // `data:` é o que faz o PREVIEW do Estúdio renderizar nas ENTREGAS: o script.js do aluno é
-  // injetado como `<script src="data:text/javascript;base64,…">` num iframe `srcdoc`, que HERDA
-  // esta CSP do pai (só pode RESTRINGIR). Sem `data:` aqui, a entrega abre os blocos certinhos mas
-  // o preview fica EM BRANCO (o professor não vê o resultado). `https:` libera o CDN pinado de
-  // extensão (ex.: Three.js do Jogo 3D). A fronteira REAL do preview é o sandbox SEM
-  // `allow-same-origin` + a meta-CSP tight do próprio srcdoc (sem connect/worker —
-  // `studio/preview/csp.ts`); o painel não tem sink de HTML cru. Espelha o community-kids (mesmo
-  // código de aluno, mesma fronteira). `https:` também cobre o beacon do Cloudflare Insights.
-  // ⚠️ `'wasm-unsafe-eval'` é KEYWORD à parte: nem `https:` nem `'unsafe-inline'`
-  // liberam a compilação de um módulo WASM, e a recusa do Chrome é SILENCIOSA. Ela
-  // existe aqui pela prévia da animação Rive da trilha, no editor de curso — sem
-  // ela a prévia fica em branco sem erro na UI. Espelha o community-kids, que
-  // pagou esse preço antes pelo mascote animado. O WASM vem da NOSSA origem
-  // (`/rive/rive.wasm`, sincronizado no build), então `'self'` cobre o download.
-  `script-src 'self' 'unsafe-inline' data: https: 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ''}`,
-  "connect-src 'self' https://*.vimeo.com https://*.cloud.vimeo.com https://*.r2.cloudflarestorage.com https://cloudflareinsights.com",
-  "worker-src 'self' blob:",
-  ...(isDev ? [] : ['upgrade-insecure-requests']),
-].join('; ')
+const csp = withStudioPythonCsp(
+  [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    // `blob:` p/ o preview/iframe do editor embarcável @sistemazero/studio (autoria + entregas).
+    "frame-src 'self' blob: https://player.vimeo.com",
+    "img-src 'self' data: blob: https:",
+    // `https:` p/ subrecursos PASSIVOS do preview do Estúdio (web fonts, áudio/vídeo, CSS externo).
+    "font-src 'self' data: https:",
+    "media-src 'self' blob: data: https:",
+    "style-src 'self' 'unsafe-inline' https:",
+    // `data:` é o que faz o PREVIEW do Estúdio renderizar nas ENTREGAS: o script.js do aluno é
+    // injetado como `<script src="data:text/javascript;base64,…">` num iframe `srcdoc`, que HERDA
+    // esta CSP do pai (só pode RESTRINGIR). Sem `data:` aqui, a entrega abre os blocos certinhos mas
+    // o preview fica EM BRANCO (o professor não vê o resultado). `https:` libera o CDN pinado de
+    // extensão (ex.: Three.js do Jogo 3D). A fronteira REAL do preview é o sandbox SEM
+    // `allow-same-origin` + a meta-CSP tight do próprio srcdoc (sem connect/worker —
+    // `studio/preview/csp.ts`); o painel não tem sink de HTML cru. Espelha o community-kids (mesmo
+    // código de aluno, mesma fronteira). `https:` também cobre o beacon do Cloudflare Insights.
+    // ⚠️ `'wasm-unsafe-eval'` é KEYWORD à parte: nem `https:` nem `'unsafe-inline'`
+    // liberam a compilação de um módulo WASM, e a recusa do Chrome é SILENCIOSA. Ela
+    // existe aqui pela prévia da animação Rive da trilha, no editor de curso — sem
+    // ela a prévia fica em branco sem erro na UI. Espelha o community-kids, que
+    // pagou esse preço antes pelo mascote animado. O WASM vem da NOSSA origem
+    // (`/rive/rive.wasm`, sincronizado no build), então `'self'` cobre o download.
+    `script-src 'self' 'unsafe-inline' data: https: 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ''}`,
+    "connect-src 'self' https://*.vimeo.com https://*.cloud.vimeo.com https://*.r2.cloudflarestorage.com https://cloudflareinsights.com",
+    "worker-src 'self' blob:",
+    ...(isDev ? [] : ['upgrade-insecure-requests']),
+  ].join('; '),
+  pythonFrameOrigins,
+)
 
 const securityHeaders = [
   { key: 'Content-Security-Policy', value: csp },

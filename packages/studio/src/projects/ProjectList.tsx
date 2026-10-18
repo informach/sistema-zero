@@ -29,9 +29,12 @@ import { ImportButton, type ImportButtonHandle } from '../components/projects/Im
 import {
   type NewProjectCreateOptions,
   NewProjectModal,
+  type NewProjectModalProps,
 } from '../components/projects/NewProjectModal'
 import { ProjectCard } from '../components/projects/ProjectCard'
+import type { PythonProjectCreationEnvironment } from '../core/freeProjectOptions'
 import { perfMeasure, perfSpanAsync } from '../core/perf'
+import type { StudioProjectFactoryContext } from '../core/projectFactory'
 import {
   listAllProjects,
   loadProjectSummariesByIds,
@@ -66,6 +69,15 @@ export interface ProjectListProps {
   onOpenProject: (projectId: string) => void
   /** Habilita a criação de projetos profissionais (host com COOP/COEP). */
   professional?: boolean
+  pythonDiscovery?: NewProjectModalProps['pythonDiscovery']
+  pythonCreation?: {
+    environments: readonly PythonProjectCreationEnvironment[]
+    /** Fresh authenticated discovery immediately before creating a new document. */
+    prepare: (selection: {
+      kind: 'classic' | 'pro'
+      environmentKey: string
+    }) => Promise<StudioProjectFactoryContext>
+  }
   /** Extensões instaladas automaticamente num projeto básico novo. */
   initialExtensions?: readonly string[]
   /** Extensões que a jornada permite; usadas também pelo aviso de importação. */
@@ -152,6 +164,8 @@ function HostStatusPill({ status }: { status: StudioHostChromeStatus }): JSX.Ele
 export function ProjectList({
   onOpenProject,
   professional = false,
+  pythonCreation,
+  pythonDiscovery,
   initialExtensions,
   allowedExtensions,
   theme: themeProp,
@@ -360,6 +374,10 @@ export function ProjectList({
   const templates = useMemo(() => (professional ? listProTemplates() : undefined), [professional])
   const creationTemplates = useRef(templates)
   creationTemplates.current = templates
+  const creationPython = useRef(pythonCreation)
+  creationPython.current = pythonCreation
+  const creationProAvailable = useRef(professional)
+  creationProAvailable.current = professional
 
   const creationSequence = useRef(0)
   const creationMounted = useRef(true)
@@ -375,20 +393,34 @@ export function ProjectList({
     // Antes até do import: um chunk lento não pode começar a criação no perfil seguinte.
     const scope = captureProjectStorageScope()
     const sequence = ++creationSequence.current
+    const python = opts && 'programmingLanguage' in opts ? opts : null
     const current = () =>
       creationMounted.current &&
       creationSequence.current === sequence &&
       captureProjectStorageScope() === scope &&
-      (opts?.kind !== 'pro' ||
-        Boolean(creationTemplates.current?.some((template) => template.id === opts.templateId)))
+      (python
+        ? (python.kind !== 'pro' || creationProAvailable.current) &&
+          Boolean(
+            creationPython.current?.environments.some(
+              (environment) =>
+                environment.key === python.environmentKey && environment.kind === python.kind,
+            ),
+          )
+        : !opts ||
+          !('templateId' in opts) ||
+          Boolean(creationTemplates.current?.some((template) => template.id === opts.templateId)))
     try {
       const { useProjectStore } = await import('../state/projectStore')
       if (!current()) return
-      const { createProject, createProProject } = useProjectStore.getState()
+      const { createProject, createProProject, createPythonProject } = useProjectStore.getState()
+      const environment = python ? await creationPython.current!.prepare(python) : null
+      if (!current()) return
       const created =
-        opts?.kind === 'pro'
-          ? await createProProject(name, opts.templateId, { isCurrent: current })
-          : await createProject(name, initialExtensions)
+        python && environment
+          ? await createPythonProject(name, python.kind, environment, { isCurrent: current })
+          : opts && 'templateId' in opts
+            ? await createProProject(name, opts.templateId, { isCurrent: current })
+            : await createProject(name, initialExtensions)
       if (!current()) return
       setModalOpen(false)
       onOpenProject(created.id)
@@ -781,6 +813,8 @@ export function ProjectList({
           onClose={() => setModalOpen(false)}
           onCreate={handleCreate}
           professionalAvailable={professional}
+          pythonEnvironments={pythonCreation?.environments}
+          pythonDiscovery={pythonDiscovery}
           templates={templates}
           existingNames={existingNames}
         />

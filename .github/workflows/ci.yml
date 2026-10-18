@@ -85,6 +85,10 @@ jobs:
           # Mesma minor do dev local — lockfile e comportamento de teste estáveis.
           bun-version: '1.3.11'
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Instalar dependências (lockfile congelado)
         run: bun install --frozen-lockfile
 
@@ -108,9 +112,12 @@ jobs:
       - name: Lint (biome ci)
         run: bun run ci
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
+      - name: Preparar e verificar biblioteca padrão Python hermética
+        env:
+          STUDIO_PYTHON_BUILD_TEST_VENDOR_DIRECTORY: .cache/studio-python-runtime/vendor
+        run: |
+          bun packages/studio/scripts/build-python-runtime.ts
+          bun test ./packages/studio/scripts/python/prepare-stdlib.test.ts
 
       - name: Preparar testes de mídia das oficinas
         working-directory: packages/live-recorder
@@ -220,6 +227,23 @@ jobs:
       - name: Criar banco descartável para ledger e revisões do Studio
         run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE studio_pro_review"
 
+      - name: Criar banco descartável para entregas e builder Python
+        run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE sz_gallery_qa_ci"
+
+      - name: Criar banco descartável para a migração de linguagem do Zappy
+        run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE studio_test_zappy_135"
+
+      - name: Entregas e autorizações Python com PostgreSQL real
+        working-directory: packages/members
+        run: |
+          # A primeira prova aplica o histórico real antes das provas do builder.
+          bun test ./tests/db/gallery-copy.repository.test.ts
+          bun test ./tests/db/python-builder-authorization.test.ts
+          bun test ./tests/integration/python-builder-ack.test.ts
+        env:
+          GALLERY_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sz_gallery_qa_ci
+          STUDIO_BUILDER_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sz_gallery_qa_ci
+
       - name: Testes DB members (Postgres real)
         run: cd packages/members && bun test tests/db
         env:
@@ -227,6 +251,8 @@ jobs:
           PENSA_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/pensa_ci
           LEARNING_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sz_aulas_qa_ci
           STUDIO_REVIEW_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_pro_review
+          STUDIO_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_ci
+          ZAPPY_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_zappy_135
 
       - name: Pensa integrado com API e PostgreSQL reais
         working-directory: packages/pensa

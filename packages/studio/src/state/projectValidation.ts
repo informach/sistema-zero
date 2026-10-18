@@ -992,6 +992,18 @@ export function sanitizeStoredProject(
       'Este projeto precisa ser convertido antes da abertura.',
     )
   const r = copyDocument(raw)
+  const project = sanitizeJavaScriptProjectPayload(r, requestedId, proBuildLimits)
+  if (!project) return null
+  assertProjectContentPreserved(raw, project)
+  return copyLocalRevision(raw as { id: string }, project)
+}
+
+/** Payload validation is shared by the legacy reader and the explicit v3 adapter. */
+export function sanitizeJavaScriptProjectPayload(
+  r: Record<string, unknown>,
+  requestedId?: string,
+  proBuildLimits?: StudioProBuildLimits,
+): Project | null {
   // `requestedId` (load por chave interna do IndexedDB) é confiável — usado como
   // está. Sem ele (caminho do host `initialProject`/`sanitizeProjectForHost`), o
   // id vem do corpo NÃO confiável e precisa ser limitado/saneado.
@@ -1017,8 +1029,8 @@ export function sanitizeStoredProject(
   const extraFiles = limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles))
 
   // Modo profissional: aceita `kind:'pro'` só com `tree` válida + `proMeta`.
-  // Qualquer falha REBAIXA para classic (o `files` canônico vazio-válido evita
-  // crash). `node_modules` nunca passa (barrado em normalizeProPath).
+  // O chamador recusa qualquer perda pelo assertProjectContentPreserved; uma
+  // árvore inválida nunca é aberta como classic. `node_modules` não passa.
   let tree: ProjectTree | undefined
   let proMeta: ProProjectMeta | undefined
   if (r.kind === 'pro') {
@@ -1057,8 +1069,7 @@ export function sanitizeStoredProject(
   }
   const coverAssetName = sanitizeCoverAssetName(r.coverAssetName)
   if (coverAssetName) project.coverAssetName = coverAssetName
-  assertProjectContentPreserved(raw, project)
-  return copyLocalRevision(raw as unknown as Project, project)
+  return project
 }
 
 /**

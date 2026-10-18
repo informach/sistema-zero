@@ -1,4 +1,5 @@
 import 'server-only'
+import type { StudioAuthoringOptions } from '@sistemazero/core/studio/authoring-catalog'
 import type { PensaFunnelView } from '@/lib/pensa-funnel'
 import type { MemberToolUsageView } from '@/lib/tool-usage'
 import type {
@@ -20,6 +21,10 @@ import type {
 import { type GatewayResponse, gatewayFetch } from './gateway'
 
 const enc = encodeURIComponent
+
+export function getStudioAuthoringOptions(): Promise<GatewayResponse<StudioAuthoringOptions>> {
+  return gatewayFetch('/members/admin/studio/authoring-options')
+}
 
 /**
  * Agregados de uso de IA por conta (quota 50/dia + 500/mês): totais do mês,

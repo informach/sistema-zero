@@ -174,8 +174,29 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
       process.env.STUDIO_BUNDLE_BENCH_OUTPUT,
       JSON.stringify(
         {
-          initial: { files: initialFiles, raw: initialBytes, gzip: initialGzipBytes },
-          route: { files: [...routeFiles], raw: routeBytes, gzip: routeGzipBytes },
+          initial: {
+            files: initialFiles,
+            raw: initialBytes,
+            gzip: initialGzipBytes,
+            modules: initialChunks.map((chunk) =>
+              chunk?.type === 'chunk'
+                ? {
+                    file: chunk.fileName,
+                    raw: Buffer.byteLength(chunk.code),
+                    modules: Object.keys(chunk.modules),
+                  }
+                : null,
+            ),
+          },
+          route: {
+            files: [...routeFiles],
+            raw: routeBytes,
+            gzip: routeGzipBytes,
+            modules: [...routeFiles].map((file) => ({
+              file,
+              modules: Object.keys(chunkByFile.get(file)?.modules ?? {}),
+            })),
+          },
           modes: modeMeasurements,
         },
         null,

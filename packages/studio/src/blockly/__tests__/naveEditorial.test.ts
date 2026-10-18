@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
-import { isLearningManifest } from '@sistemazero/core/learning'
+import { isLearningManifest, type SectionProjectCheck } from '@sistemazero/core/learning'
 import {
   type Block,
   courseProjects,
@@ -18,6 +18,14 @@ import { registerExtensionBlocks } from '../blocks'
 import { buildIRFromWorkspace } from '../buildIR'
 import { evaluateStudioSectionProject } from '../projectCheckAuthoring'
 import { ensureBlocklyInitialized } from '../setup'
+
+function javascriptChecks(checks: readonly SectionProjectCheck[]) {
+  return checks.map((check) => {
+    if (check.programmingLanguage === 'python')
+      throw new Error('This editorial fixture requires JavaScript objectives')
+    return check
+  })
+}
 
 beforeAll(() => {
   ensureBlocklyInitialized()
@@ -45,9 +53,10 @@ function gameFor(day: number) {
     for (const section of manifest(day).sections)
       if (section.completion?.projectChecks)
         expect(
-          evaluateStudioSectionProject(section.completion.projectChecks, saved).filter(
-            (c) => !c.passed,
-          ),
+          evaluateStudioSectionProject(
+            javascriptChecks(section.completion.projectChecks),
+            saved,
+          ).filter((c) => !c.passed),
         ).toEqual([])
     return exampleHarness({ ...asteroidsExample, ir: buildIRFromWorkspace(workspace) }, () => 0.1)
   } finally {
@@ -285,7 +294,9 @@ test.each(mistakes)('rejects learner error: $name', ({ day, edit }) => {
   edit(all(project))
   expect(
     evaluateStudioSectionProject(
-      manifest(day).sections.find((s) => s.intent === 'delivery')!.completion!.projectChecks!,
+      javascriptChecks(
+        manifest(day).sections.find((s) => s.intent === 'delivery')!.completion!.projectChecks!,
+      ),
       project,
     ).some((c) => !c.passed),
   ).toBe(true)

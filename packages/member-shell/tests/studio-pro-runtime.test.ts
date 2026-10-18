@@ -1,11 +1,24 @@
 import { describe, expect, test } from 'bun:test'
 import {
   buildStudioProProject,
+  isProStudioProject,
   opaqueStudioRuntimeExecutionId,
   preflightStudioProBuild,
   StudioProRuntimeInputError,
   studioProRuntimePublicStatus,
 } from '../src/server/studio-pro-runtime'
+
+test('JavaScript Pro runtime classification retains legacy JS and excludes Python or invalid trees', () => {
+  const project = {
+    kind: 'pro',
+    tree: { 'index.html': { kind: 'file', content: '<main>Oi</main>' } },
+  }
+  expect(isProStudioProject(project)).toBe(true)
+  expect(isProStudioProject({ ...project, programmingLanguage: 'javascript' })).toBe(true)
+  expect(isProStudioProject({ ...project, programmingLanguage: 'python' })).toBe(false)
+  expect(isProStudioProject({ ...project, programmingLanguage: 'ruby' })).toBe(false)
+  expect(isProStudioProject({ ...project, tree: [] })).toBe(false)
+})
 
 test('preflight sends the complete bounded envelope, checks protocol and exposes actionable refusal', async () => {
   const input = {

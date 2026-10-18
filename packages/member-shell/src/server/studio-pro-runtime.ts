@@ -122,8 +122,12 @@ export function studioProRuntimePublicStatus(status: number): 400 | 413 | 422 | 
 
 export function isProStudioProject(value: unknown): value is Project & { kind: 'pro' } {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  if ('programmingLanguage' in value && value.programmingLanguage !== 'javascript') return false
   const project = value as Partial<Project>
-  return project.kind === 'pro' && Boolean(project.tree && typeof project.tree === 'object')
+  return (
+    project.kind === 'pro' &&
+    Boolean(project.tree && typeof project.tree === 'object' && !Array.isArray(project.tree))
+  )
 }
 
 export function proProjectTemplateId(project: Project): StudioProTemplateId | null {

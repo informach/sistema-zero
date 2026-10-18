@@ -1,5 +1,26 @@
 import { describe, expect, test } from 'bun:test'
+import { documentFixture } from '../../studio/src/state/fixtures/projectDocuments'
 import { isInitialTemplateProject } from '../src/lib/studio-template'
+
+for (const kind of ['classic', 'pro'] as const) {
+  test(`Python ${kind}: the overwrite warning compares actual Python files`, () => {
+    const initial = documentFixture('python', kind)
+    if (initial.programmingLanguage !== 'python') throw new Error('fixture')
+    expect(isInitialTemplateProject({ ...initial, id: 'saved' }, initial)).toBe(true)
+    const edited = structuredClone(initial)
+    if (edited.programmingLanguage !== 'python') throw new Error('fixture')
+    if (edited.kind === 'classic') edited.files[edited.python.entrypoint] += '\nprint(42)'
+    else edited.tree[edited.python.entrypoint] = { kind: 'file', content: 'print(42)' }
+    expect(isInitialTemplateProject(edited, initial)).toBe(false)
+    expect(isInitialTemplateProject(initial, documentFixture('javascript', kind))).toBe(false)
+    expect(
+      isInitialTemplateProject(
+        { ...initial, python: { ...initial.python, entrypoint: 'other.py' } },
+        initial,
+      ),
+    ).toBe(false)
+  })
+}
 
 /**
  * O detector do aviso anti-sobrescrita ("você está reenviando o projeto INICIAL da aula").

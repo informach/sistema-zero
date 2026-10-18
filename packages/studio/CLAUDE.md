@@ -1,6 +1,14 @@
 # @sistemazero/studio
 
-> **Objetivos do Estúdio (18/10/2026):** a auto-correção de AULA saiu inteira ([`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md)): `src/activity/`
+## JavaScript e Python no Estúdio (conciliação, 18/10/2026)
+
+`EditableStudioProject` representa as duas linguagens; `Project` continua sendo o tipo JavaScript legado. Projetos sem linguagem explícita continuam JavaScript. Documentos Python usam formato 3 e referência de runtime validada; não enviar seu código ao compilador JavaScript nem converter formatos por cast.
+
+Os módulos Python, a paleta de Programação e a extensão Turtle são carregados conforme a linguagem do projeto. `StudioProjectPlayer` escolhe o player antes de carregar a cadeia de execução, inclusive na página pública. O ambiente Python vem da autorização do contexto (autoria, aula, sala, Estúdio livre ou publicação); nome de perfil e URL enviados pelo navegador não concedem acesso.
+
+Os objetivos da parte substituem a antiga atividade do bloco nas duas linguagens. `src/activity/python.ts` permanece como avaliador interno da simulação formativa do Admin; sua existência não restaura nota, atividade do bloco ou aprovação reportada pelo cliente. O estado e os gates restantes da implementação estão em `docs/superpowers/plans/2026-10-16-studio-python-execution-state.md`; testes funcionais isolados não aprovam desempenho.
+
+> **Objetivos do Estúdio (18/10/2026):** a antiga atividade de auto-correção do bloco saiu ([`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md)): os antigos módulos JavaScript de `src/activity/`
 > (runner, harness, sandbox, nota), `ActivityPanel`, `checksStore`, `studio/activity.ts`, a prop
 > `activity` do `<StudioLesson>`, os tipos `LessonActivity`/`ActivityCheck` e
 > `StudioHandle.getActivityResult()`. Quem confere agora são os objetivos da parte, no SERVIDOR,

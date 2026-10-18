@@ -1,3 +1,4 @@
+import { compareContentFingerprints } from '../creations/content-fingerprint'
 import { isInteractiveBlock, type LessonSection } from './index'
 import { isPlatformAction, type PlatformAction } from './platform-action'
 import {
@@ -6,6 +7,11 @@ import {
   isSectionExecutionRule,
   type SectionExecutionRule,
 } from './project-execution'
+import {
+  isSectionPythonProjectCheck,
+  type SectionPythonProjectCheck,
+  sectionProjectChecksEnvironmentIssue,
+} from './python-project-checks'
 import type { LessonRequirementReason } from './requirements'
 
 export interface ProjectBlockPattern {
@@ -39,8 +45,9 @@ export type SectionStructureRule =
  */
 export type SectionObjectiveRule = SectionStructureRule | SectionExecutionRule
 
-export interface SectionProjectCheck {
+export interface SectionJavaScriptProjectCheck {
   id: string
+  programmingLanguage?: 'javascript'
   /** A frase que a criança lê na lista "Objetivos desta parte". */
   label: string
   rule: SectionObjectiveRule
@@ -100,7 +107,7 @@ export function projectObjectiveView(check: SectionProjectCheck): ProjectObjecti
     label: check.label,
     ...(check.hint ? { hint: check.hint } : {}),
     ...(check.optional ? { optional: true as const } : {}),
-    kind: projectObjectiveKind(check.rule),
+    kind: check.programmingLanguage === 'python' ? 'idea' : projectObjectiveKind(check.rule),
   }
 }
 
@@ -126,6 +133,7 @@ export interface ProjectObjectiveResult {
   id: string
   passed: boolean
 }
+export type SectionProjectCheck = SectionJavaScriptProjectCheck | SectionPythonProjectCheck
 
 /** Presence on every section opts a published lesson into sequential progression. */
 export interface SectionCompletion {
@@ -308,8 +316,10 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
     new Set(v.projectChecks.map((c) => (record(c) ? c.id : null))).size ===
       v.projectChecks.length &&
     v.projectChecks.every((c) => {
+      if (record(c) && c.programmingLanguage === 'python') return isSectionPythonProjectCheck(c)
       if (
         !record(c) ||
+        (c.programmingLanguage !== undefined && c.programmingLanguage !== 'javascript') ||
         !label(c.id) ||
         !(typeof c.label === 'string' && c.label.length <= 200) ||
         (c.hint !== undefined &&
@@ -496,16 +506,24 @@ export function sectionCompletionIssues(
       c.projectChecks?.some(
         (check) =>
           !label(check.label) ||
-          (check.rule.type === 'usesBlock'
-            ? hasBlankBlockType(check.rule)
-            : check.rule.type === 'usesLoop' ||
-                check.rule.type === 'behavior' ||
-                check.rule.type === 'script'
-              ? false
-              : !label(check.rule.name)),
+          (check.programmingLanguage === 'python'
+            ? false
+            : check.rule.type === 'usesBlock'
+              ? hasBlankBlockType(check.rule)
+              : check.rule.type === 'usesLoop' ||
+                  check.rule.type === 'behavior' ||
+                  check.rule.type === 'script'
+                ? false
+                : !label(check.rule.name)),
       )
     )
       add('Preencha o objetivo e o nome esperado na verificação do Estúdio.')
+    if (c.projectChecks?.length) {
+      const workspace = blocks.find((block) => block.id === s.workspaceBlockId)
+      const project = record(workspace?.content) ? workspace.content.initialProject : undefined
+      const issue = sectionProjectChecksEnvironmentIssue(c.projectChecks, project)
+      if (issue) add(issue)
+    }
     if (
       s.intent === 'material' &&
       (c.platformAction ||
@@ -593,6 +611,8 @@ export type SubmissionFreshness = 'missing' | 'outdated' | 'fresh'
  * ⚠️ Faltando a impressão de qualquer lado (envio antigo, rascunho que nunca subiu, navegador sem
  * `crypto.subtle`), a régua deixa passar: ela existe para lembrar a criança, nunca para prendê-la
  * por uma informação que o sistema não tem.
+ * Versões diferentes também são incomparáveis: migrar o formato não comprova que o aluno
+ * editou o programa. O próximo envio e rascunho usam a mesma régua e retomam a conferência.
  */
 export function submissionFreshness(input: {
   submission: { fingerprint: string | null; submittedAt: Date } | null
@@ -602,7 +622,7 @@ export function submissionFreshness(input: {
   const sent = input.submission.fingerprint
   const draft = input.draft
   if (!sent || !draft?.fingerprint) return 'fresh'
-  if (draft.fingerprint === sent) return 'fresh'
+  if (compareContentFingerprints(draft.fingerprint, sent) !== 'different') return 'fresh'
   return draft.syncedAt.getTime() > input.submission.submittedAt.getTime() ? 'outdated' : 'fresh'
 }
 

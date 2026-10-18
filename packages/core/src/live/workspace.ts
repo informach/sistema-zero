@@ -1,3 +1,4 @@
+import type { StudioCodeAnchor } from '../studio/code-anchor'
 import type { LiveSession, LiveStudioConfig, LiveWriteGuard } from './contracts'
 
 export function liveProjectOrigin(sessions: LiveSession[], session: LiveSession): LiveSession {
@@ -42,10 +43,12 @@ export interface LiveAssistanceView {
     expiresAt: string
   } | null
 }
-export interface LiveCursorTarget {
-  kind: 'control' | 'block'
-  id: string
-}
+export type LiveCursorTarget =
+  | StudioCodeAnchor
+  | {
+      kind: 'control' | 'block'
+      id: string
+    }
 export interface LiveWorkspaceView {
   id: string
   sessionId: string

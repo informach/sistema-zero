@@ -1,5 +1,6 @@
 import postgres from 'postgres'
 import { prepareLiveTestSchema } from './live-test-schema'
+import { studioMigrationTableStatements } from './studio-migration-tables'
 
 const DEFAULT_TEST_DB_NAME = 'sistemazero_test'
 const FALLBACK_URL = 'postgres://postgres:postgres@localhost:5433/sistemazero'
@@ -60,6 +61,10 @@ export async function prepareTestDatabase(
 
 /** Sparse repository fixtures share the current block read model, without production foreign keys. */
 async function prepareBlockReadModel(database: ReturnType<typeof postgres>) {
+  // A database built by real migrations owns its schema. Sparse fixtures must not replace
+  // production views (their historical column order differs) or synthesize missing tables.
+  const [migrated] = await database`select to_regclass('drizzle.members_migrations') as name`
+  if (migrated?.name) return
   await database`create schema if not exists members`
   await prepareLiveTestSchema(database)
   // Quotas and account deletion now also reach Studio Pro. These independent
@@ -85,6 +90,10 @@ async function prepareBlockReadModel(database: ReturnType<typeof postgres>) {
       for (const statement of source.split('--> statement-breakpoint'))
         if (statement.trim()) await transaction.unsafe(statement)
     }
+    const [gallery] = await transaction`select to_regclass('members.gallery_copy_attempts') as name`
+    if (!gallery?.name)
+      for (const statement of await studioMigrationTableStatements(['gallery_copy_attempts']))
+        await transaction.unsafe(statement)
   })
   await database.unsafe(`create table if not exists members.lesson_blocks (
     id uuid primary key, lesson_id uuid not null, kind text not null,

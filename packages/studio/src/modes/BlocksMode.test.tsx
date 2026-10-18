@@ -277,7 +277,7 @@ describe('BlocksMode', () => {
       // Época fechada: os blocos agora refletem os arquivos.
       expect(state.bridgeBlocksSyncedEpoch).toBe(1)
       // O código digitado NUNCA é regenerado por cima.
-      expect(state.project?.files['script.js']).toBe(typed)
+      expect(state.project?.files?.['script.js']).toBe(typed)
     })
   })
 

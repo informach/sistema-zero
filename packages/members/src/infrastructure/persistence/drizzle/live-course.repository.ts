@@ -33,6 +33,8 @@ export function courseModality(row: {
 
 function studioConfig(content: Record<string, unknown>): LiveStudioConfig {
   const config: LiveStudioConfig = {}
+  if (content.pythonLevel === 1 || content.pythonLevel === 2 || content.pythonLevel === 3)
+    config.pythonLevel = content.pythonLevel
   if (typeof content.level === 'string') config.level = content.level
   if (Array.isArray(content.allowBlocks))
     config.allowBlocks = content.allowBlocks.filter((item) => typeof item === 'string')

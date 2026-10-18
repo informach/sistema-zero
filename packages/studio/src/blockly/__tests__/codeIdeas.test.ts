@@ -65,6 +65,40 @@ describe('ideias de programação lidas do código', () => {
 })
 
 describe('de onde vem o código de cada projeto', () => {
+  test('um arquivo além do orçamento fica inconclusivo, nunca ausente', () => {
+    expect(() =>
+      collectCodeIdeas([{ name: 'main.js', code: 'while (true) break;'.padEnd(500_001) }]),
+    ).toThrow('Não consegui conferir todo o código')
+  })
+
+  test('o orçamento acumulado não pode omitir um arquivo posterior', () => {
+    expect(() =>
+      collectCodeIdeas([
+        { name: 'first.js', code: '/* primeiro */'.padEnd(250_000) },
+        { name: 'last.js', code: 'while (true) break;'.padEnd(250_001) },
+      ]),
+    ).toThrow('Não consegui conferir todo o código')
+  })
+
+  test('atingir o teto de nós não devolve contagens parciais', () => {
+    expect(() => collectCodeIdeas([{ name: 'main.js', code: 'x;'.repeat(100_001) }])).toThrow(
+      'Não consegui conferir todo o código',
+    )
+  })
+
+  test('um arquivo completo no limite continua sendo avaliado', () => {
+    expect(
+      collectCodeIdeas([{ name: 'main.js', code: 'while (true) break;'.padEnd(500_000) }]).loops,
+    ).toBe(1)
+  })
+
+  test('a leitura limitada da IR não pode ocultar código rawJS', () => {
+    expect(() =>
+      projectCodeIdeas({
+        ir: { items: Array.from({ length: 200_001 }, () => ({ type: 'noop' })) },
+      }),
+    ).toThrow('Não consegui conferir todo o código')
+  })
   test('Pro: a árvore, sem configuração nem dependências', () => {
     const files = projectCodeFiles({
       kind: 'pro',

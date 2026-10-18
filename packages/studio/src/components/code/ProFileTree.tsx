@@ -35,6 +35,7 @@ export function ProFileTree({
   const addProFile = useProjectStore((s) => s.addProFile)
   const addProDir = useProjectStore((s) => s.addProDir)
   const observer = useProjectStore((s) => s.editingAccess === 'observer')
+  const python = useProjectStore((s) => s.project?.programmingLanguage === 'python')
 
   const roots = useMemo(() => buildTreeView(tree), [tree])
   const [localCollapsed, setLocalCollapsed] = useState<string[]>([])
@@ -326,7 +327,9 @@ export function ProFileTree({
                 setError(null)
               }
             }}
-            placeholder={creating.kind === 'file' ? 'arquivo.ts' : 'pasta'}
+            placeholder={
+              creating.kind === 'file' ? (python ? 'arquivo.py' : 'arquivo.ts') : 'pasta'
+            }
             className="w-full rounded border border-sz-border bg-sz-bg px-2 py-1 font-mono text-xs text-sz-fg placeholder:text-sz-fg-mute"
           />
           <p className="text-xs text-sz-fg-mute">

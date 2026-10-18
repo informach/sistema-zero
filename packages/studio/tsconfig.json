@@ -17,6 +17,8 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    // The public-player browser fixture imports the real kids host, matching its Vite alias.
+    "paths": { "@/*": ["../community-kids/src/*"] },
     "isolatedModules": true,
     "verbatimModuleSyntax": false,
     "useDefineForClassFields": true,
@@ -27,12 +29,23 @@
     "src",
     "playground",
     "e2e",
+    "e2e-runtime",
+    "e2e-python-editor",
     "scripts/project-migrations",
+    "scripts/build-python-runtime.ts",
+    "scripts/python",
     "scripts/gen-pro-kit-*.ts",
     "scripts/verify-canvas-*.ts",
     "scripts/verify-pro-*.ts",
+    "scripts/verify-python-*.ts",
     "test-setup.ts",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "playwright.python-runtime.config.ts",
+    "playwright.python-editor.config.ts",
+    "playwright.python-live.config.ts",
+    "playwright.python-boot.config.ts",
+    "playwright.python-bridge.config.ts",
+    "playwright.python-builder.config.ts"
   ],
   "exclude": ["node_modules"]
 }

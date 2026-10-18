@@ -13,6 +13,7 @@ import {
   STUDIO_PRO_TEMPLATE_IDS,
   type StudioProTemplateId,
 } from './pro-templates'
+import { STUDIO_EXECUTION_ID_PATTERN } from './runtime-identity'
 
 /** Wire input; dependencies are derived and verified only by the runtime. */
 export interface StudioBuildSubmission {
@@ -23,7 +24,7 @@ export interface StudioBuildSubmission {
   binaries?: Record<string, { base64: string; sha256: string }>
   validate: boolean
 }
-const EXECUTION_ID = /^[a-z0-9][a-z0-9-]{15,95}$/
+const EXECUTION_ID = STUDIO_EXECUTION_ID_PATTERN
 const RESERVED_PATHS = new Set<string>(STUDIO_PRO_RESERVED_BUILD_PATHS)
 const PRO_BUILD_LIMITS = STUDIO_PRO_BUILD_LIMITS
 const normalizeBuildPath = normalizeStudioProBuildPath

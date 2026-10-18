@@ -1,8 +1,9 @@
 'use client'
 
+import { useFreeStudioRuntime } from '@sistemazero/member-shell/components/studio/use-free-runtime'
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import type {
-  Project,
+  EditableStudioProject as Project,
   StudioMoldaLibraryAdapter,
   StudioPintaLibraryAdapter,
   StudioShareAdapter,
@@ -41,6 +42,8 @@ function openCreationInMolda(creationId: string): void {
 export function StudioFullEditor({
   mod,
   projectId,
+  viewerId,
+  audience = 'kids',
   onExit,
   share,
   tutor,
@@ -55,6 +58,8 @@ export function StudioFullEditor({
 }: {
   mod: StudioModule
   projectId: string
+  viewerId: string | null
+  audience?: 'kids' | 'adult'
   onExit: () => void
   share: StudioShareAdapter
   tutor: StudioTutorConfig | undefined
@@ -73,6 +78,12 @@ export function StudioFullEditor({
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
+  const runtime = useFreeStudioRuntime({
+    project: state.status === 'ready' ? state.project : null,
+    viewerId,
+    audience,
+    enabled: state.status === 'ready' && state.project.kind !== 'pro' && !taskSession,
+  })
   const { setWorkspaceActive } = useFocusMode()
   const workspaceActive = state.status === 'ready' && state.project.kind !== 'pro'
   useLayoutEffect(() => {
@@ -142,35 +153,58 @@ export function StudioFullEditor({
   }
 
   return (
-    <mod.StudioEditor
-      initialProject={state.project}
-      persistence="local"
-      onExit={onExit}
-      onChange={handleActivity}
-      // Erro que o editor CONTEVE sozinho (ex.: o painel do Zappy caindo na sua
-      // própria boundary). Sem este fio ele morria num console.error e a
-      // próxima ocorrência voltava a ser adivinhação — foi exatamente o que
-      // aconteceu com o tutor derrubando a IDE em 08/2026.
-      onError={reportStudioError}
-      share={share}
-      tutor={tutor}
-      theme={theme}
-      level={tier.level}
-      allowBlocks={tier.allowBlocks}
-      allowExtensions={tier.allowedExtensions}
-      allowedModes={tier.allowedModes}
-      allowLevelReveal={tier.allowLevelReveal}
-      features={{ professional }}
-      onPromoteToPro={handlePromoteToPro}
-      // Só com posse do Pinta e do Molda (produtos vendidos à parte): sem o adapter, sem botão.
-      // Antes o "Editar o desenho" ia sempre e levava quem não tem o Pinta a uma tela bloqueada.
-      {...(pintaLibrary ? { onEditDrawing: openDrawingInPinta } : {})}
-      {...(moldaLibrary ? { onEditCreation: openCreationInMolda } : {})}
-      pintaLibrary={pintaLibrary}
-      moldaLibrary={moldaLibrary}
-      teamLibrary={teamLibrary}
-      showExamples={showExamples}
-      taskSession={taskSession}
-    />
+    <div className="flex h-full min-h-0 flex-col">
+      {state.project.programmingLanguage === 'python' && (runtime.loading || runtime.error) && (
+        <div
+          role={runtime.error ? 'alert' : 'status'}
+          className="flex items-center gap-2 px-3 py-2 text-sm"
+        >
+          {runtime.error ?? 'Preparando Python…'}
+          {runtime.error && (
+            <button type="button" onClick={runtime.retry}>
+              Tentar novamente
+            </button>
+          )}
+        </div>
+      )}
+      <div className="min-h-0 flex-1">
+        <mod.StudioEditor
+          initialProject={state.project}
+          persistence="local"
+          onExit={onExit}
+          onChange={handleActivity}
+          // Erro que o editor CONTEVE sozinho (ex.: o painel do Zappy caindo na sua
+          // própria boundary). Sem este fio ele morria num console.error e a
+          // próxima ocorrência voltava a ser adivinhação — foi exatamente o que
+          // aconteceu com o tutor derrubando a IDE em 08/2026.
+          onError={reportStudioError}
+          share={share}
+          tutor={tutor}
+          theme={theme}
+          level={tier.level}
+          allowBlocks={
+            state.project.programmingLanguage === 'python' ? undefined : tier.allowBlocks
+          }
+          pythonLevel={state.project.programmingLanguage === 'python' ? 3 : undefined}
+          allowExtensions={
+            state.project.programmingLanguage === 'python' ? undefined : tier.allowedExtensions
+          }
+          runtimeEnvironment={runtime.environment}
+          allowedModes={tier.allowedModes}
+          allowLevelReveal={tier.allowLevelReveal}
+          features={{ professional }}
+          onPromoteToPro={handlePromoteToPro}
+          // Só com posse do Pinta e do Molda (produtos vendidos à parte): sem o adapter, sem botão.
+          // Antes o "Editar o desenho" ia sempre e levava quem não tem o Pinta a uma tela bloqueada.
+          {...(pintaLibrary ? { onEditDrawing: openDrawingInPinta } : {})}
+          {...(moldaLibrary ? { onEditCreation: openCreationInMolda } : {})}
+          pintaLibrary={pintaLibrary}
+          moldaLibrary={moldaLibrary}
+          teamLibrary={teamLibrary}
+          showExamples={showExamples}
+          taskSession={taskSession}
+        />
+      </div>
+    </div>
   )
 }

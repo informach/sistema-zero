@@ -1,3 +1,4 @@
+import type { StudioProAssistanceMeta as ProAssistanceMeta } from '@sistemazero/core/studio/project-pro-metadata'
 import type { Project } from './project'
 import { CURRENT_PROJECT_FORMAT_VERSION } from './projectDocument'
 
@@ -21,46 +22,24 @@ export type ProFileLanguage =
   | 'css'
   | 'text'
 
-export interface ProFileNode {
-  kind: 'file'
-  content: string
-}
-export interface ProDirNode {
-  kind: 'dir'
-}
-export type ProNode = ProFileNode | ProDirNode
+export type ProNode = StudioProjectTree[string]
+export type ProFileNode = Extract<ProNode, { kind: 'file' }>
+export type ProDirNode = Extract<ProNode, { kind: 'dir' }>
 
 /**
  * Árvore path-keyed: chaves = caminhos POSIX relativos SEM barra inicial. Toda
  * pasta intermediária aparece explicitamente como `ProDirNode` (ex.: `src`
  * antes de `src/main.ts`).
  */
-export type ProjectTree = Record<string, ProNode>
+export type ProjectTree = StudioProjectTree
 
 export type ProjectKind = 'classic' | 'pro'
 
-export interface ProAssistanceDecision {
-  id: string
-  text: string
-  provenance: 'learner' | 'pensa' | 'kit' | 'suggestion'
-  confirmed: boolean
-}
-
-export interface ProAssistanceQuestion {
-  id: string
-  text: string
-  status: 'pending' | 'answered' | 'cancelled'
-  answer?: string
-  revisionHash?: string
-}
-
-/** Learner-owned context. Never contains provider prompts, credentials or undo patches. */
-export interface ProAssistanceMeta {
-  version: 1
-  briefing?: string
-  decisions?: ProAssistanceDecision[]
-  questions?: ProAssistanceQuestion[]
-}
+export type {
+  StudioProAssistanceDecision as ProAssistanceDecision,
+  StudioProAssistanceMeta as ProAssistanceMeta,
+  StudioProAssistanceQuestion as ProAssistanceQuestion,
+} from '@sistemazero/core/studio/project-pro-metadata'
 
 export interface ProProjectMeta {
   /** Reference only; the server independently verifies publication ownership. */
@@ -74,57 +53,7 @@ export interface ProProjectMeta {
   templateId: string
 }
 
-/** Extensões de ARQUIVO aceitas na árvore profissional. */
-const PRO_FILE_EXTENSIONS = new Set([
-  'ts',
-  'tsx',
-  'mts',
-  'cts',
-  'js',
-  'jsx',
-  'mjs',
-  'cjs',
-  'json',
-  'webmanifest',
-  'html',
-  'css',
-  'svg',
-  'txt',
-  'md',
-])
-
-const SEGMENT_RE = /^[A-Za-z0-9._-]+$/
-
-/**
- * Normaliza um caminho da árvore profissional. Aceita pastas e arquivos.
- * Rejeita (→ null): vazio, `..`/`.`, `node_modules` (anti-DoS), segmentos
- * inválidos. Com `expectFile`, exige extensão na allowlist.
- */
-export function normalizeProPath(
-  input: string,
-  opts: { expectFile?: boolean } = {},
-): string | null {
-  if (typeof input !== 'string') return null
-  const cleaned = input
-    .replace(/\\/g, '/')
-    .replace(/\/+/g, '/')
-    .replace(/^\/+|\/+$/g, '')
-  if (!cleaned) return null
-  const segments = cleaned.split('/')
-  for (const seg of segments) {
-    if (!seg || seg === '.' || seg === '..') return null
-    if (seg === 'node_modules') return null
-    if (seg !== seg.trim()) return null
-    if (!SEGMENT_RE.test(seg)) return null
-  }
-  if (opts.expectFile) {
-    const last = segments[segments.length - 1] ?? ''
-    const dot = last.lastIndexOf('.')
-    const ext = dot >= 0 ? last.slice(dot + 1).toLowerCase() : ''
-    if (!PRO_FILE_EXTENSIONS.has(ext)) return null
-  }
-  return segments.join('/')
-}
+export { normalizeProPath } from './proPaths'
 
 export function inferProLanguage(path: string): ProFileLanguage {
   const lower = path.toLowerCase()
@@ -184,3 +113,5 @@ export function buildProProject(
     installedExtensions: [],
   }
 }
+
+import type { StudioProjectTree } from '@sistemazero/core/studio/project-document'

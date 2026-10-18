@@ -64,7 +64,7 @@ export function liveUpstreamPath(
     ],
     POST: [
       `${session}/(?:join|heartbeat|requests|chat|workspace)`,
-      `workspaces/${UUID}/(?:claim|renew|commits|accept|revoke|acknowledge)`,
+      `workspaces/${UUID}/(?:claim|renew|commits|accept|revoke|acknowledge|runtime)`,
       `${media}/(?:join|publish|subscribe|complete|close|heartbeat|unpublish|unsubscribe)`,
     ],
     PUT: [`${session}/replay-progress`],

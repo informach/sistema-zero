@@ -24,6 +24,7 @@ function DiffSurface({
   const container = useRef<HTMLDivElement>(null)
   const models = useRef<monaco.editor.IDiffEditorModel | null>(null)
   const instance = useRef<monaco.editor.IStandaloneDiffEditor | null>(null)
+  const [languageError, setLanguageError] = useState(false)
   const fontSize = useSettingsStore((state) => (state.codeFontSizeChosen ? state.codeFontSize : 15))
   useLayoutEffect(() => {
     if (!container.current) return
@@ -66,22 +67,47 @@ function DiffSurface({
   }, [before, after])
   useLayoutEffect(() => {
     const language = proLanguage(inferLanguage(path))
-    if (models.current) {
-      monaco.editor.setModelLanguage(models.current.original, language)
-      monaco.editor.setModelLanguage(models.current.modified, language)
+    const pair = models.current
+    if (!pair) return
+    let active = true
+    setLanguageError(false)
+    const selectLanguage = () => {
+      if (!active || models.current !== pair) return
+      monaco.editor.setModelLanguage(pair.original, language)
+      monaco.editor.setModelLanguage(pair.modified, language)
+    }
+    // Review may open before the source editor. Own this registration without
+    // adding Python's tokenizer to JavaScript sessions or reviving disposed models.
+    if (language === 'python')
+      void import('monaco-editor/esm/vs/basic-languages/python/python.contribution.js').then(
+        selectLanguage,
+        () => {
+          if (active && models.current === pair) setLanguageError(true)
+        },
+      )
+    else selectLanguage()
+    return () => {
+      active = false
     }
   }, [path])
   useLayoutEffect(() => {
     instance.current?.updateOptions({ renderSideBySide: sideBySide, fontSize })
   }, [sideBySide, fontSize])
   return (
-    <section
-      className="max-h-[65vh] overflow-hidden rounded-lg border border-sz-border"
-      style={{ height }}
-      aria-label="Diferenças da proposta"
-    >
-      <div ref={container} className="h-full w-full" />
-    </section>
+    <>
+      {languageError && (
+        <p role="alert">
+          Não foi possível carregar as cores do código. As alterações continuam visíveis.
+        </p>
+      )}
+      <section
+        className="max-h-[65vh] overflow-hidden rounded-lg border border-sz-border"
+        style={{ height }}
+        aria-label="Diferenças da proposta"
+      >
+        <div ref={container} className="h-full w-full" />
+      </section>
+    </>
   )
 }
 

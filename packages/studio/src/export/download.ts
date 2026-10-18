@@ -1,4 +1,4 @@
-import type { Project } from '#core'
+import type { EditableStudioProject as Project } from '../core/editableProject'
 
 /**
  * Dispara o download de um Blob no navegador via `<a download>`. Único ponto do

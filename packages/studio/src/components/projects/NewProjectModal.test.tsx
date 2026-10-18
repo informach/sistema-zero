@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import type { PythonProjectCreationEnvironment } from '../../core/freeProjectOptions'
+import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import { NewProjectModal } from './NewProjectModal'
 
 // O modal é portalado — queries via `screen` (document.body).
@@ -8,6 +10,108 @@ function nameInput(): HTMLInputElement {
 }
 
 const noop = () => undefined
+
+it('JavaScript remains default; Python selects an exact environment and its own Pro starter', async () => {
+  const fixture = await pythonEnvironmentFixture('classic')
+  const environments: PythonProjectCreationEnvironment[] = (['classic', 'pro'] as const).map(
+    (kind) => ({
+      kind,
+      key: fixture.project.runtime.manifestSha256,
+      label: 'Python',
+      context: {
+        catalog: fixture.environment.catalog,
+        runtime: fixture.project.runtime,
+        releaseStatus: 'active',
+      },
+    }),
+  )
+  const creations: unknown[] = []
+  const props = {
+    open: true,
+    defaultName: 'Meu Python',
+    onClose: noop,
+    professionalAvailable: true,
+    onCreate: (_name: string, options?: unknown) => {
+      creations.push(options)
+    },
+  }
+  const view = render(<NewProjectModal {...props} pythonEnvironments={environments} />)
+  expect(
+    (screen.getByRole('radio', { name: 'JavaScript (padrão)' }) as HTMLInputElement).checked,
+  ).toBe(true)
+  await act(async () => fireEvent.click(screen.getByText('Criar e abrir')))
+  expect(creations).toEqual([undefined])
+  fireEvent.click(screen.getByRole('radio', { name: /^Python$/ }))
+  await act(async () => fireEvent.click(screen.getByText('Criar e abrir')))
+  expect(creations[1]).toEqual({
+    programmingLanguage: 'python',
+    kind: 'classic',
+    environmentKey: environments[0]!.key,
+  })
+  fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
+  expect(screen.queryByText('Escolha um ponto de partida')).toBeNull()
+  await act(async () => fireEvent.click(screen.getByText('Criar e abrir')))
+  expect(creations[2]).toEqual({
+    programmingLanguage: 'python',
+    kind: 'pro',
+    environmentKey: environments[1]!.key,
+  })
+  view.rerender(<NewProjectModal {...props} pythonEnvironments={[]} />)
+  expect(nameInput().value).toBe('Meu Python')
+  expect((screen.getByText('Criar e abrir') as HTMLButtonElement).disabled).toBe(true)
+  await act(async () => fireEvent.keyDown(nameInput(), { key: 'Enter' }))
+  expect(creations.length).toBe(3)
+  view.unmount()
+})
+
+it('Python discovery can be retried inside the dialog while preserving the chosen name', async () => {
+  let retries = 0
+  const props = { open: true, defaultName: 'Meu jogo', onClose: noop, onCreate: noop }
+  const retry = () => {
+    retries++
+  }
+  const view = render(
+    <NewProjectModal
+      {...props}
+      pythonDiscovery={{
+        loading: false,
+        unavailable: false,
+        error: 'Não foi possível consultar Python.',
+        retry,
+      }}
+    />,
+  )
+  fireEvent.change(nameInput(), { target: { value: 'Nome inventado' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+  expect(retries).toBe(1)
+  view.rerender(
+    <NewProjectModal {...props} pythonDiscovery={{ loading: true, unavailable: false, retry }} />,
+  )
+  expect(nameInput().value).toBe('Nome inventado')
+  expect(screen.getByRole('status').textContent).toContain('Consultando')
+  const fixture = await pythonEnvironmentFixture('classic')
+  view.rerender(
+    <NewProjectModal
+      {...props}
+      pythonDiscovery={{ loading: false, unavailable: false, retry }}
+      pythonEnvironments={[
+        {
+          key: fixture.project.runtime.manifestSha256,
+          label: 'Python',
+          kind: 'classic',
+          context: {
+            catalog: fixture.environment.catalog,
+            runtime: fixture.project.runtime,
+            releaseStatus: 'active',
+          },
+        },
+      ]}
+    />,
+  )
+  expect(nameInput().value).toBe('Nome inventado')
+  expect(screen.getByRole('radio', { name: /^Python$/ })).toBeTruthy()
+  view.unmount()
+})
 
 describe('NewProjectModal — nome do projeto', () => {
   afterEach(() => {

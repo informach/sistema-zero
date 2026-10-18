@@ -9,7 +9,9 @@ import {
   occurrenceIsOpen,
   supervisionStatus,
 } from '@sistemazero/core/live'
-import { createBlankProjectSnapshot as createEmptyProject } from '@sistemazero/studio/blank-project'
+import { codeAnchorMatchesSource, studioSourceAtPath } from '@sistemazero/core/studio/code-anchor'
+import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
+import type { StudioLiveRuntimeRequest } from '@sistemazero/core/studio/runtime-authorization'
 import {
   LiveAccessError,
   LiveConflictError,
@@ -17,13 +19,14 @@ import {
 } from '../../domain/live/live.errors'
 import { liveProjectKey } from '../../domain/live/live-course-rules'
 import { validateLiveSnapshot as validateSnapshot } from '../../domain/live/workspace-snapshot'
-import type { LiveStudioBlockRecord } from '../../domain/ports/live-course.port'
 import type { LiveActor, LiveCohortAggregate } from '../../domain/ports/live-repository.port'
 import type {
+  LiveWorkspaceMetadata,
   LiveWorkspaceRecord,
   LiveWorkspaceRepository,
   LiveWorkspaceTransaction,
 } from '../../domain/ports/live-workspace-repository.port'
+import { studioLessonBaseline } from '../../domain/studio/lesson-baseline'
 import type { LiveContext, LiveService } from './live.service'
 
 const LEASE_MS = 30_000
@@ -40,7 +43,7 @@ const view = ({
   ...workspace
 }: LiveWorkspaceRecord): LiveWorkspaceView => structuredClone(workspace)
 /** The encounters whose lesson already opened this project: access is judged in them. */
-const linkedSessions = (aggregate: LiveCohortAggregate, workspace: LiveWorkspaceRecord) =>
+const linkedSessions = (aggregate: LiveCohortAggregate, workspace: LiveWorkspaceMetadata) =>
   aggregate.sessions.filter(
     (session) => session.lessonId != null && workspace.lessonIds.includes(session.lessonId),
   )
@@ -58,7 +61,7 @@ interface AccessOptions {
 /** Thrown inside a transaction when the subscription answer is needed; resolved outside it. */
 class ContinuationCheckRequired extends Error {}
 type TransactionAccess = (
-  workspace: LiveWorkspaceRecord,
+  workspace: LiveWorkspaceMetadata,
   options?: { deviceId?: string; requireRoom?: boolean },
 ) => Promise<Access>
 type PollMemo = Map<string, { until: number; readOnly: boolean; contextSessionId?: string }>
@@ -95,7 +98,7 @@ export class LiveWorkspaceService {
 
   private async existingAccess(
     actor: LiveActor,
-    workspace: LiveWorkspaceRecord,
+    workspace: LiveWorkspaceMetadata,
     options: AccessOptions = {},
   ): Promise<Access> {
     const { deviceId, requireRoom = false } = options
@@ -105,7 +108,7 @@ export class LiveWorkspaceService {
     const owner = actor.id === workspace.learnerId && actor.accountId === workspace.accountId
     try {
       if (!aggregate) throw new LiveNotFoundError()
-      this.live.contextFor(actor, aggregate, workspace.sessionId)
+      this.live.contextFor(actor, aggregate, this.contextSessionId ?? workspace.sessionId)
     } catch (error) {
       if (
         (error instanceof LiveNotFoundError || error instanceof LiveAccessError) &&
@@ -220,7 +223,11 @@ export class LiveWorkspaceService {
    * After the lesson window, without a Studio subscription, the project is still the child's:
    * the owner (library only) and an assigned teacher may view and export it. Never a write.
    */
-  private async readOnlyAllowed(actor: LiveActor, workspace: LiveWorkspaceRecord) {
+  private async readOnlyAllowed(
+    actor: LiveActor,
+    workspace: LiveWorkspaceMetadata,
+    cohort: () => Promise<Cohort> = () => this.live.cohortForSession(workspace.sessionId),
+  ) {
     if (
       !actor.staff &&
       !this.contextSessionId &&
@@ -229,26 +236,12 @@ export class LiveWorkspaceService {
     )
       return true
     if (!actor.staff) return false
-    const aggregate = await this.live.cohortForSession(workspace.sessionId)
+    const aggregate = await cohort()
     if (!aggregate?.cohort.teacherIds.includes(actor.id)) return false
     return (
       !this.contextSessionId ||
       linkedSessions(aggregate, workspace).some((session) => session.id === this.contextSessionId)
     )
-  }
-
-  /** The block's `initialProject` as this child's project (`id` is the workspace id). */
-  private seed(block: LiveStudioBlockRecord, id: string) {
-    const initial = block.initialProject
-    if (typeof initial !== 'object' || initial === null || Array.isArray(initial))
-      return validateSnapshot(
-        JSON.parse(JSON.stringify(createEmptyProject(id, 'Meu projeto'))) as Record<
-          string,
-          unknown
-        >,
-        id,
-      )
-    return validateSnapshot({ ...(initial as Record<string, unknown>), id }, id)
   }
 
   /**
@@ -273,25 +266,69 @@ export class LiveWorkspaceService {
     if (!courseId || !lessonId) throw new LiveNotFoundError()
     const block = await this.live.studioBlock(lessonId, blockId)
     if (!block || block.courseId !== courseId) throw new LiveNotFoundError()
-    const projectKey = liveProjectKey(courseId, block)
+    const owner = {
+      userId: learnerId,
+      accountId:
+        context.role === 'teacher'
+          ? (aggregate.enrollments.find((item) => item.learnerId === learnerId)?.accountId ?? '')
+          : actor.accountId,
+    }
+    const binding = await this.repository.findBinding(owner, blockId)
+    if (
+      binding &&
+      (!binding.workspaceId ||
+        binding.baseline.lessonId !== lessonId ||
+        binding.baseline.courseId !== courseId)
+    )
+      throw new LiveConflictError('O vínculo deste projeto não corresponde à aula.')
+    // The exact admitted block retains its original chain and environment after publication.
+    const baseline =
+      binding?.baseline ??
+      studioLessonBaseline({
+        blockId,
+        lessonId,
+        courseId,
+        configuration: {
+          ...block.studio,
+          chain: block.chain ?? undefined,
+          initialProject: block.initialProject,
+        },
+      })
+    const projectKey = liveProjectKey(courseId, {
+      ...block,
+      chain: baseline.configuration.chain ?? null,
+    })
     let access: ReturnType<LiveWorkspaceService['accessIn']> | null = null
     try {
       access = this.accessIn(actor, aggregate, sessionId, learnerId)
     } catch (error) {
       if (!(error instanceof LiveAccessError)) throw error
     }
-    let record = await this.repository.findByKey(learnerId, projectKey)
+    let record = binding?.workspaceId
+      ? await this.repository.find(binding.workspaceId)
+      : await this.repository.findByKey(learnerId, projectKey)
+    // A chain key alone never authorizes interpreting saved work in another language/runtime.
+    // Check before linking this lesson or changing the anchor, including read-only opens.
+    if (
+      record &&
+      studioProjectContinuityIssue(record.project, baseline.configuration.initialProject)
+    )
+      throw new LiveConflictError(
+        'O projeto salvo e esta aula usam ambientes diferentes. O trabalho foi preservado; peça à equipe para conferir a configuração.',
+      )
     if (!access) {
       // This lesson is closed (deadline passed, not yet released, revoked): never a new project,
       // and an existing one only to read here. The owner and the assigned teacher keep reading
       // it (the library rules decide who); editing it is never reopened through this lesson.
       if (!record) throw new LiveAccessError()
       const readable = await this.forSession().get(actor, record.id)
-      return { ...readable, readOnly: true, studio: block.studio }
+      const { initialProject: _initial, chain: _chain, ...studio } = baseline.configuration
+      return { ...readable, readOnly: true, studio }
     }
     if (!record) {
       const id = randomUUID()
-      record = await this.repository.ensureByKey({
+      const project = validateSnapshot({ ...baseline.configuration.initialProject, id }, id)
+      record = {
         id,
         sessionId,
         learnerId,
@@ -301,19 +338,16 @@ export class LiveWorkspaceService {
         writerId: learnerId,
         writerDeviceId: null,
         leaseExpiresAt: null,
-        project: this.seed(block, id),
+        project,
         assistance: null,
         updatedAt: this.clock().toISOString(),
         projectKey,
         lessonIds: [lessonId],
-      })
+      }
     }
-    const anchor = record.sessionId
-    // Opened in a new lesson of the chain, or in an encounter of another cohort of the course.
-    const anchored = aggregate.sessions.some((session) => session.id === anchor)
-    if (!record.lessonIds.includes(lessonId) || !anchored)
-      record = await this.repository.linkLesson(record.id, { lessonId, sessionId })
-    return { ...(await this.forSession(sessionId).get(actor, record.id)), studio: block.studio }
+    const opened = await this.repository.openBound({ ...record, projectKey }, baseline, sessionId)
+    const { initialProject: _initial, chain: _chain, ...studio } = opened.baseline.configuration
+    return { ...(await this.forSession(sessionId).get(actor, opened.workspace.id)), studio }
   }
 
   private async read(actor: LiveActor, workspace: LiveWorkspaceRecord) {
@@ -336,6 +370,112 @@ export class LiveWorkspaceService {
     const workspace = await this.repository.find(id)
     if (!workspace) throw new LiveNotFoundError()
     return this.read(actor, workspace)
+  }
+
+  /** Fresh permission read. Neither this path nor its repository renews or changes a lease. */
+  async runtimeContext(
+    actor: LiveActor,
+    request: Pick<
+      StudioLiveRuntimeRequest,
+      'context' | 'operation' | 'subject' | 'expectedWorkspaceRevision'
+    >,
+  ) {
+    const context = request.context
+    if (this.contextSessionId !== (context.sessionId ?? undefined))
+      throw new LiveAccessError('O encontro da execução não corresponde ao projeto aberto.')
+    let continuation: boolean | undefined
+    for (;;) {
+      const snapshot = await this.repository.readRuntimeContext(
+        context.workspaceId,
+        context.sessionId,
+        context.blockId,
+      )
+      if (!snapshot) throw new LiveNotFoundError()
+      const { workspace, binding, cohort } = snapshot
+      if (context.writerEpoch !== workspace.writerEpoch)
+        throw new LiveConflictError('A autoria mudou. Aguarde a sincronização do projeto.')
+      let author =
+        workspace.writerId === actor.id &&
+        workspace.writerDeviceId === context.deviceId &&
+        Date.parse(workspace.leaseExpiresAt ?? '') > this.clock().getTime()
+      if (
+        context.sessionId === null &&
+        (actor.staff || actor.id !== workspace.learnerId || actor.accountId !== workspace.accountId)
+      )
+        throw new LiveAccessError(
+          'A biblioteca pertence ao criador do projeto. Abra a ajuda pelo bloco da aula.',
+        )
+      try {
+        const access: TransactionAccess = (current, options) =>
+          this.existingAccess(actor, current, {
+            ...options,
+            cohort: async () => cohort,
+            continuation: continuation ?? 'defer',
+          })
+        if (request.operation !== 'analyze')
+          await this.assertWriter(actor, workspace, access, context.deviceId, context.writerEpoch)
+        else {
+          try {
+            await access(workspace, { deviceId: context.deviceId })
+          } catch (error) {
+            if (
+              !(error instanceof LiveAccessError || error instanceof LiveNotFoundError) ||
+              !(await this.readOnlyAllowed(actor, workspace, async () => cohort))
+            )
+              throw error
+          }
+          // Reading and writing are separate rights. A still-current lease does not
+          // grant authorship after the lesson closes or its continuation expires.
+          if (author) {
+            try {
+              await this.assertWriter(
+                actor,
+                workspace,
+                access,
+                context.deviceId,
+                context.writerEpoch,
+              )
+            } catch (error) {
+              if (
+                !(
+                  error instanceof LiveAccessError ||
+                  error instanceof LiveNotFoundError ||
+                  error instanceof LiveConflictError
+                )
+              )
+                throw error
+              author = false
+            }
+          }
+        }
+      } catch (error) {
+        if (!(error instanceof ContinuationCheckRequired) || continuation !== undefined) throw error
+        continuation = (await this.continuation?.canContinue(actor.accountId)) ?? false
+        // Product lookup holds no connection/lock; re-read room and writer after it resolves.
+        continue
+      }
+      if (workspace.revision !== request.expectedWorkspaceRevision)
+        throw new LiveConflictError(
+          'Há uma revisão mais recente deste projeto. Aguarde a sincronização.',
+        )
+      if (
+        request.subject.id !== workspace.id ||
+        studioProjectContinuityIssue(request.subject, snapshot.environment)
+      )
+        throw new LiveConflictError('A execução precisa manter o ambiente do projeto salvo.')
+      if (context.sessionId) {
+        const session = cohort?.sessions.find((item) => item.id === context.sessionId)
+        if (
+          !binding ||
+          !session ||
+          binding.lessonId !== session.lessonId ||
+          binding.courseId !== cohort?.cohort.courseId ||
+          studioProjectContinuityIssue(request.subject, binding.environment)
+        )
+          throw new LiveAccessError('O bloco não está vinculado a este projeto e encontro.')
+      }
+      return { ...snapshot, author }
+    }
   }
 
   async poll(
@@ -514,7 +654,7 @@ export class LiveWorkspaceService {
 
   private async assertWriter(
     actor: LiveActor,
-    workspace: LiveWorkspaceRecord,
+    workspace: LiveWorkspaceMetadata,
     access: TransactionAccess,
     deviceId: string,
     writerEpoch: number,
@@ -552,6 +692,10 @@ export class LiveWorkspaceService {
     }
     if (workspace.revision !== input.expectedRevision)
       throw new LiveConflictError('Há uma revisão mais recente deste projeto.')
+    if (studioProjectContinuityIssue(project, workspace.project))
+      throw new LiveConflictError(
+        'A gravação não pode mudar o ambiente deste projeto. Seu trabalho anterior foi preservado.',
+      )
     workspace.revision++
     workspace.project = project
     workspace.updatedAt = this.clock().toISOString()
@@ -761,6 +905,15 @@ export class LiveWorkspaceService {
         throw new LiveAccessError()
       if (![input.x, input.y].every((n) => Number.isFinite(n) && n >= 0 && n <= 1))
         throw new ValidationError('Posição de cursor inválida.')
+      if (input.target?.kind === 'code') {
+        const source = studioSourceAtPath(workspace.project, input.target.id)
+        if (
+          input.revision !== workspace.revision ||
+          source === null ||
+          !(await codeAnchorMatchesSource(input.target, source))
+        )
+          throw new ValidationError('O código apontado ainda não corresponde à versão salva.')
+      }
       workspace.assistance.cursor = {
         x: input.x,
         y: input.y,

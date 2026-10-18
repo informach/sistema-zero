@@ -1,7 +1,9 @@
-import { type Project, type ProjectAsset, sanitizeProjectAssets } from '#core'
+import type { ProjectAsset } from '#core'
+import type { EditableStudioProject as Project } from '../core/editableProject'
 import { buildCloudThumb, CLOUD_THUMB_MAX_CHARS } from '../cover/cloudThumb'
 import { storeChosenCoverThumb } from '../cover/thumbCapture'
 import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
+import { prepareEditableCloudProject } from '../state/editableCloudProject'
 import {
   adoptProjectThumbs,
   deleteProject,
@@ -12,11 +14,7 @@ import {
   type ProjectSummary,
 } from '../state/persistence'
 import { getProjectStorageScope } from '../state/projectStorageRuntime'
-import {
-  loadSanitizedProjectById,
-  sanitizeCloudProjectSnapshot,
-  useProjectStore,
-} from '../state/projectStore'
+import { loadSanitizedProjectById, useProjectStore } from '../state/projectStore'
 
 /**
  * Importa um SNAPSHOT de projeto (o JSON jogável do Mural / `.szproject.json`)
@@ -34,6 +32,8 @@ export async function importProjectSnapshot(
     name?: string
     namespace?: string
     silent?: boolean
+    /** Cancels stale host/profile generations before writing the captured namespace. */
+    isCurrent?: () => boolean
     /**
      * A miniatura a gravar junto com o projeto novo (a cópia de conflito "(de outro aparelho)"
      * nasce com a capa que a nuvem listou, em vez de um card em branco até ser aberta).
@@ -50,6 +50,7 @@ export async function importProjectSnapshot(
   return useProjectStore.getState().importProjectFromJSON(value, {
     storageScope,
     silent: opts?.silent,
+    isCurrent: opts?.isCurrent,
     thumb: opts?.thumb,
   })
 }
@@ -148,10 +149,7 @@ export async function loadProjectSnapshotForCloud(
     opts?.namespace === undefined ? undefined : getProjectStorageScope(opts.namespace)
   const project = await loadSanitizedProjectById(id, storageScope)
   if (!project) return null
-  return snapshotProjectWithCurrentAuthority({
-    ...project,
-    assets: sanitizeProjectAssets(project.assets),
-  })
+  return snapshotProjectWithCurrentAuthority(project)
 }
 
 /**
@@ -205,5 +203,5 @@ export async function validateCloudProjectSnapshot(
   raw: unknown,
   opts?: { expectedId?: string },
 ): Promise<{ project: Project; warnings: string[] }> {
-  return sanitizeCloudProjectSnapshot(raw, opts)
+  return prepareEditableCloudProject(raw, opts)
 }

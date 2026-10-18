@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Estúdio JS/Python e audiência do host (18/10/2026)
+
+Os dois hosts usam os mesmos editores e rotas; a audiência estática de `createShell` acompanha descoberta, autorização e owners dos hooks. A identidade real do adulto segue para Members/Pensa; o namespace local `adult:<id>` serve apenas ao armazenamento. O BFF recusa contexto de audiência incompatível e o servidor reaplica política e posse na operação.
+
+JavaScript continua padrão para documentos antigos. A página pública usa o player que despacha por linguagem e revisão publicada. Aula Pro JavaScript só compila após vínculo durável editável; Python usa seu ambiente autorizado. Mudança de fonte/autosave não recria o interpretador; perda de acesso, troca de contexto ou revisão de autoria retira sua autorização.
+
+Testes HTTP/Next precisam dos construtores nativos de Request/Response/Headers. Hooks que registram HappyDOM rodam em fixtures de `qa/` chamadas por wrappers descobertos pelo `bun test`; não instalar DOM global no runner BFF. O cache de sessão pertence à vida da página, por isso restaurar apenas `document` depois de um teste não isola o módulo. Preservar asserções e prazos dos casos ao separar processos.
+
 ## Objetivos da parte no cartão da criança (18/10/2026)
 
 [`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). `components/studio/section-project-check.tsx` (`SectionProjectCheck` → `ObjectivesCard`):

@@ -10,11 +10,17 @@ import type { Database } from './db'
 import { accountDeletionFences, studioAiAccounts, studioAiOAuthStates } from './schema'
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
-export async function lockStudioAiAccount(tx: Transaction, accountId: string) {
+export async function lockStudioAiAccount(
+  tx: Transaction,
+  accountId: string,
+  signal?: AbortSignal,
+) {
+  signal?.throwIfAborted()
   // Same order as account purge; quota operations can acquire ai-usage after this lock.
   await tx.execute(
     sql`select pg_advisory_xact_lock(hashtextextended(${`members-account:${accountId}`}, 0))`,
   )
+  signal?.throwIfAborted()
   const [fence] = await tx
     .select({ id: accountDeletionFences.accountId })
     .from(accountDeletionFences)

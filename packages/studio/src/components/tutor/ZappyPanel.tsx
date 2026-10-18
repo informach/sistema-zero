@@ -1,7 +1,8 @@
 import { resolveAiCredits } from '@sistemazero/core/ai-credits'
 import type { FormEvent, JSX } from 'react'
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { cn, IconSparkles } from '#ui'
+import { isPythonProject } from '../../core/editableProject'
 import { ProAssistanceSummaryTooLarge } from '../../core/proAssistance'
 import { useDiagnosticsStore } from '../../state/diagnosticsStore'
 import { glossErrorMessage } from '../../state/errorGloss'
@@ -11,6 +12,7 @@ import { flushProjectOperations } from '../../state/projectOperations'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioLayout } from '../../studio/layoutContext'
+import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 import {
   buildStudioTutorRequest,
   type StudioTutorAskInput,
@@ -20,6 +22,7 @@ import {
   type StudioTutorHistoryMessage,
   type StudioTutorIntent,
   type StudioTutorLessonReference,
+  type StudioTutorRequestTransport,
   type StudioTutorResponse,
   type StudioTutorSelection,
   useStudioTutor,
@@ -99,9 +102,19 @@ function responseMessage(
 }
 
 export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.Element | null {
-  const { config, open, setOpen, proEditor, proNavigate, proCapture, proRequest, clearProRequest } =
-    useStudioTutor()
+  const {
+    config,
+    open,
+    setOpen,
+    proEditor,
+    proNavigate,
+    proCapture,
+    classicCapture,
+    proRequest,
+    clearProRequest,
+  } = useStudioTutor()
   const store = useProjectStoreApi()
+  const runtimeEnvironment = useStudioRuntimeEnvironment()
   const project = useProjectStore((s) => s.project)
   const setMode = useProjectStore((s) => s.setMode)
   const selectedBlockId = useHighlightStore((s) => s.selectedBlockId)
@@ -116,7 +129,10 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
       const entry = s.entries[i]
       if (!entry || !ERROR_LOG_KINDS.has(entry.kind)) continue
       const gloss = glossErrorMessage(entry.text)
-      const local = entry.errorLine != null ? ` (linha ${entry.errorLine} do script.js)` : ''
+      const local =
+        entry.errorLine != null
+          ? ` (linha ${entry.errorLine}${project && isPythonProject(project) ? '' : ' do script.js'})`
+          : ''
       return `${entry.errorStack || entry.text}${local}${gloss ? `\n${gloss}` : ''}`
     }
     return null
@@ -157,6 +173,25 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
   const operationGenerationRef = useRef(0)
 
   const projectId = project?.id ?? null
+  const programmingLanguage = project && isPythonProject(project) ? 'python' : 'javascript'
+  const contextualTransport = useCallback(
+    (expectedId: string, valid: () => boolean): StudioTutorRequestTransport | undefined => {
+      const current = store.getState().project
+      if (!current || !isPythonProject(current)) return undefined
+      const send = runtimeEnvironment?.requestPythonAssistance
+      if (!send) throw new Error('A ajuda Python ainda não está disponível neste espaço.')
+      return {
+        send: (operation) =>
+          send(() => {
+            const current = store.getState().project
+            return valid() && current?.id === expectedId && isPythonProject(current)
+              ? current
+              : null
+          }, operation),
+      }
+    },
+    [store, runtimeEnvironment],
+  )
   // biome-ignore lint/correctness/useExhaustiveDependencies: mudanças de sessão invalidam todas as continuações assíncronas anteriores
   useEffect(() => {
     operationGenerationRef.current += 1
@@ -169,7 +204,7 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
       setLoading(false)
       setError(null)
     }
-  }, [projectId, open, config])
+  }, [projectId, open, config, programmingLanguage, runtimeEnvironment])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: rascunhos pertencem ao projeto e ao adapter da sessão atual.
   useEffect(() => {
@@ -180,7 +215,7 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
     setSelection(undefined)
     setQuestion('')
     setHistorySearch('')
-  }, [projectId, config])
+  }, [projectId, config, programmingLanguage])
 
   useEffect(() => {
     if (!proRequest || proRequest.projectId !== projectId || !open) return
@@ -225,15 +260,19 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
 
   useEffect(() => {
     if (!open || !config || !projectId) return
+    setMessages([])
+    setNextHistoryCursor(null)
+    setError(null)
+    if (programmingLanguage === 'python' && !runtimeEnvironment?.requestPythonAssistance) {
+      setLoading(true)
+      return
+    }
     let active = true
     const historyScope = captureProjectStorageScope()
     const valid = () => active && captureProjectStorageScope() === historyScope
     setLoading(true)
-    setError(null)
-    setMessages([])
-    setNextHistoryCursor(null)
     config.adapter
-      .loadHistory(projectId)
+      .loadHistory(projectId, undefined, contextualTransport(projectId, valid))
       .then((page) => {
         if (valid()) {
           setMessages(page.messages)
@@ -249,7 +288,7 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
     return () => {
       active = false
     }
-  }, [open, config, projectId])
+  }, [open, config, projectId, programmingLanguage, runtimeEnvironment, contextualTransport])
 
   useEffect(() => {
     if (!open) return
@@ -334,12 +373,18 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
   const followUpSuggestions =
     busy ||
     loading ||
+    (lastAssistantResponse &&
+      (lastAssistantResponse.programmingLanguage ?? 'javascript') !== programmingLanguage) ||
     (lastAssistantResponse?.kind &&
       lastAssistantResponse.kind !== (project?.kind === 'pro' ? 'pro' : 'classic'))
       ? []
       : (lastAssistantResponse?.suggestions ?? []).filter(
           (suggestion) =>
-            !studioTutorModeViolation(suggestion, project?.kind === 'pro' ? 'pro' : 'classic'),
+            !studioTutorModeViolation(
+              suggestion,
+              project?.kind === 'pro' ? 'pro' : 'classic',
+              programmingLanguage,
+            ),
         )
   const pickSuggestion = (suggestion: string) => {
     pendingAttemptRef.current = null
@@ -360,10 +405,16 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
     if (!canAsk || !project || !config) return
     const operationGeneration = operationGenerationRef.current
     const scope = captureProjectStorageScope()
-    const valid = () =>
-      operationGenerationRef.current === operationGeneration &&
-      captureProjectStorageScope() === scope &&
-      store.getState().project?.id === project.id
+    const valid = () => {
+      const current = store.getState().project
+      return (
+        current?.id === project.id &&
+        operationGenerationRef.current === operationGeneration &&
+        captureProjectStorageScope() === scope &&
+        !runtimeEnvironment?.signal?.aborted &&
+        (isPythonProject(current) ? 'python' : 'javascript') === programmingLanguage
+      )
+    }
     let clientMessageId: string | undefined
     setError(null)
     setBusy(true)
@@ -372,6 +423,8 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
       let input =
         previous?.question === text &&
         previous.projectId === project.id &&
+        (previous.context.environment?.programmingLanguage ?? 'javascript') ===
+          programmingLanguage &&
         previous.context.kind === (project.kind === 'pro' ? 'pro' : 'classic') &&
         (project.kind !== 'pro' || previous.context.pro?.intent === intent)
           ? previous
@@ -403,6 +456,7 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
               ? { projectId: fresh.id, synchronization }
               : undefined,
           proSelection: selection,
+          classicEditor: classicCapture.current?.(),
           intent,
           selectedBlockId,
           lastError,
@@ -419,7 +473,23 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
         ...current,
         { id: input.clientMessageId, role: 'user', text, createdAt: new Date().toISOString() },
       ])
-      const result = await config.adapter.ask(input)
+      const python = input.context.environment?.programmingLanguage === 'python'
+      const requestAssistance = runtimeEnvironment?.requestPythonAssistance
+      if (python && !requestAssistance)
+        throw new Error('A ajuda Python ainda não está disponível neste espaço.')
+      const result = await config.adapter.ask(
+        input,
+        python && requestAssistance
+          ? {
+              send: (operation) =>
+                requestAssistance(() => {
+                  if (!valid()) return null
+                  const current = store.getState().project
+                  return current && isPythonProject(current) ? current : null
+                }, operation),
+            }
+          : undefined,
+      )
       if (!valid()) return
       pendingAttemptRef.current = null
       // Saldo ausente = nada foi consumido agora (resposta pronta, replay):
@@ -448,7 +518,15 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
     setLoadingEarlier(false)
     setError(null)
     try {
-      await config.adapter.deleteHistory(projectId)
+      await config.adapter.deleteHistory(
+        projectId,
+        contextualTransport(
+          projectId,
+          () =>
+            operationGenerationRef.current === operationGeneration &&
+            captureProjectStorageScope() === operationScope,
+        ),
+      )
       if (
         operationGenerationRef.current !== operationGeneration ||
         captureProjectStorageScope() !== operationScope
@@ -482,7 +560,16 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
     setLoadingEarlier(true)
     setError(null)
     try {
-      const page = await config.adapter.loadHistory(projectId, historyCursor)
+      const page = await config.adapter.loadHistory(
+        projectId,
+        historyCursor,
+        contextualTransport(
+          projectId,
+          () =>
+            operationGenerationRef.current === operationGeneration &&
+            captureProjectStorageScope() === operationScope,
+        ),
+      )
       if (
         operationGenerationRef.current !== operationGeneration ||
         captureProjectStorageScope() !== operationScope
@@ -514,7 +601,15 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
     const operationGeneration = operationGenerationRef.current
     const operationScope = captureProjectStorageScope()
     try {
-      await config.adapter.feedback({ projectId, responseId, useful })
+      await config.adapter.feedback(
+        { projectId, responseId, useful },
+        contextualTransport(
+          projectId,
+          () =>
+            operationGenerationRef.current === operationGeneration &&
+            captureProjectStorageScope() === operationScope,
+        ),
+      )
     } catch {
       if (
         operationGenerationRef.current !== operationGeneration ||
@@ -739,9 +834,14 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
             const isQuota = message.response?.scope === 'quota'
             const incompatible =
               message.role === 'assistant' &&
-              ((message.response?.kind &&
-                message.response.kind !== (project.kind === 'pro' ? 'pro' : 'classic')) ||
-                studioTutorModeViolation(message.text, project.kind === 'pro' ? 'pro' : 'classic'))
+              ((message.response?.programmingLanguage ?? 'javascript') !== programmingLanguage ||
+                (message.response?.kind &&
+                  message.response.kind !== (project.kind === 'pro' ? 'pro' : 'classic')) ||
+                studioTutorModeViolation(
+                  message.text,
+                  project.kind === 'pro' ? 'pro' : 'classic',
+                  programmingLanguage,
+                ))
             if (incompatible)
               return (
                 <details

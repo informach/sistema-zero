@@ -1,15 +1,11 @@
-import {
-  IDE_MODES,
-  type IDEMode,
-  type Project,
-  type ProjectAsset,
-  sanitizeProjectAssets,
-} from '#core'
+import type { EditableStudioProject } from '../core/editableProject'
 import { perfSpanAsync } from '../core/perf'
+import type { ProjectAsset } from '../core/projectAssets'
 import {
   CURRENT_PROJECT_FORMAT_VERSION,
   ProjectDocumentError,
   projectFormatVersion,
+  SUPPORTED_PROJECT_FORMAT_VERSION,
 } from '../core/projectDocument'
 import { cancelPendingAutosavesFor } from '../persistence/service'
 import {
@@ -50,8 +46,9 @@ import {
   projectToFilesRecord,
   projectToMetaRecord,
   projectToStateRecord,
+  type StoredProjectRecord,
 } from './projectStorageRecords'
-import { installLocalRevision, isLocalHead } from './projectStorageRevision'
+import { copyLocalRevision, installLocalRevision, isLocalHead } from './projectStorageRevision'
 import {
   captureProjectStorageScope,
   fenceGameStorageDelete,
@@ -62,8 +59,9 @@ import {
   scopedProjectIdentity,
   setProjectStorageNamespace,
 } from './projectStorageRuntime'
+import { type ProjectSummary, toProjectSummary } from './projectSummary'
 
-const MAX_PROJECT_SUMMARY_NAME_CHARS = 200
+export type { ProjectSummary } from './projectSummary'
 /** Teto da miniatura (data URL JPEG ~320×192 fica bem abaixo disso). */
 export const MAX_PROJECT_THUMB_CHARS = 300_000
 /** Evento de janela disparado quando uma miniatura termina de gravar. */
@@ -227,7 +225,7 @@ function runSerializedWrite(
 // import/load), então igualdade de referência é um dirty-check seguro: se a ref
 // não mudou desde o último persist deste id, a partição de assets não é
 // reescrita. Map por id, limpo no delete (a partição vai junto na transação que apaga).
-const lastPersistedAssetsRef = new Map<string, Project['assets']>()
+const lastPersistedAssetsRef = new Map<string, EditableStudioProject['assets']>()
 
 export interface PersistProjectOptions {
   /** Internal exit recovery: stages synchronously; it is not a saved-document ACK. */
@@ -252,11 +250,12 @@ export interface PersistProjectOptions {
 }
 
 export async function persistProject(
-  project: Project,
+  project: EditableStudioProject,
   options: PersistProjectOptions = {},
   storageScope?: ProjectStorageScope,
 ): Promise<void> {
-  if (projectFormatVersion(project) !== CURRENT_PROJECT_FORMAT_VERSION)
+  const version = projectFormatVersion(project)
+  if (version !== CURRENT_PROJECT_FORMAT_VERSION && version !== SUPPORTED_PROJECT_FORMAT_VERSION)
     throw new ProjectDocumentError(
       'migration-required',
       'Converta o projeto antes de guardar nesta versão.',
@@ -354,12 +353,12 @@ export async function loadProjectById(
   id: string,
   storageScope?: ProjectStorageScope,
   options: { recoverDraft?: boolean } = {},
-): Promise<Project | null> {
+): Promise<StoredProjectRecord | null> {
   const scope = storageScope ?? captureProjectStorageScope()
   notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
   if (options.recoverDraft) {
     const draft = await loadRecoverableProjectDraft(scope, id)
-    if (draft) return draft
+    if (draft) return copyLocalRevision(draft, { ...draft })
   }
   const kvStore = scope.store
   const [meta, files, state, blocks, assets, head] = await readValues(kvStore, [
@@ -392,11 +391,11 @@ export async function loadProjectById(
 export async function loadProjectShellById(
   id: string,
   storageScope?: ProjectStorageScope,
-): Promise<Project | null> {
+): Promise<StoredProjectRecord | null> {
   const scope = storageScope ?? captureProjectStorageScope()
   notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
   const draft = await loadRecoverableProjectDraft(scope, id)
-  if (draft) return draft
+  if (draft) return copyLocalRevision(draft, { ...draft })
   const kvStore = scope.store
   const [meta, files, assets, head] = await readValues(kvStore, [
     projectMetaKey(id),
@@ -435,7 +434,9 @@ export async function loadProjectMetaById(
   const meta = await readValue(kvStore, projectMetaKey(id))
   if (isRecord(meta)) return meta
   const historical = await loadHistoricalProject(id, storageScope)
-  return historical ? projectToMetaRecord(historical) : null
+  if (!historical) return null
+  const migratedMeta = await readValue(kvStore, projectMetaKey(id))
+  return isRecord(migratedMeta) ? migratedMeta : null
 }
 
 export async function loadProjectBlocksById(
@@ -446,7 +447,7 @@ export async function loadProjectBlocksById(
   const fromPartition = await readValue(kvStore, projectBlocksKey(id))
   if (fromPartition != null) return fromPartition
   const historical = await loadHistoricalProject(id, storageScope)
-  return historical?.blocksState ? projectToBlocksRecord(historical) : null
+  return historical?.blocksState ? { id, blocksState: historical.blocksState } : null
 }
 
 /**
@@ -464,12 +465,16 @@ export async function loadProjectAssetsById(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<ProjectAsset[]> {
-  const [record, head] = await readValues(getStore(storageScope), [
+  const [record, head, meta] = await readValues(getStore(storageScope), [
     projectAssetsKey(id),
     projectHeadKey(id),
+    projectMetaKey(id),
   ])
   if (!isRecord(record)) return []
-  const assets = sanitizeProjectAssets(record.assets)
+  const assets =
+    isRecord(meta) && meta.programmingLanguage === 'python'
+      ? (await import('../core/pythonAssets')).sanitizePythonProjectAssets(record.assets)
+      : (await import('../core/projectAssets')).sanitizeProjectAssets(record.assets)
   if (isLocalHead(head)) assetReadHeads.set(assets, head.token)
   return assets
 }
@@ -628,7 +633,7 @@ export async function deleteProject(
 export async function renameProjectMeta(
   id: string,
   name: string,
-  liveProject?: Project,
+  liveProject?: EditableStudioProject,
 ): Promise<void> {
   const scope = captureProjectStorageScope()
   // Ler e gravar o meta SERIALIZADO contra persistProject/deleteProject do mesmo id: até
@@ -651,20 +656,6 @@ export async function renameProjectMeta(
   if (scope.identity !== captureProjectStorageScope().identity) return
   notifyMirrorChanged(id)
   notifyProjectChanged(id)
-}
-
-export interface ProjectSummary {
-  /** Original preservado; abrir apresenta o diagnóstico sem bloquear os outros projetos. */
-  migrationPending?: boolean
-  hasPreservedEdit?: boolean
-  id: string
-  name: string
-  createdAt: number
-  updatedAt: number
-  /** Modo salvo do projeto — permite abrir o editor já no modo correto. */
-  mode: IDEMode
-  /** Miniatura do card (data URL), quando já capturada ao sair do editor. */
-  thumbDataUrl?: string
 }
 
 /**
@@ -759,22 +750,6 @@ function thumbDataUrlOf(value: unknown): string | undefined {
   if (!dataUrl.startsWith('data:image/') || dataUrl.length > MAX_PROJECT_THUMB_CHARS)
     return undefined
   return dataUrl
-}
-
-function toProjectSummary(id: string, value: unknown): ProjectSummary | null {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
-  const raw = value as Record<string, unknown>
-  if (!id) return null
-  const name =
-    typeof raw.name === 'string' && raw.name.trim()
-      ? raw.name.trim().slice(0, MAX_PROJECT_SUMMARY_NAME_CHARS)
-      : 'Sem título'
-  const createdAt =
-    typeof raw.createdAt === 'number' && Number.isFinite(raw.createdAt) ? raw.createdAt : 0
-  const updatedAt =
-    typeof raw.updatedAt === 'number' && Number.isFinite(raw.updatedAt) ? raw.updatedAt : createdAt
-  const mode = IDE_MODES.includes(raw.mode as IDEMode) ? (raw.mode as IDEMode) : 'blocks'
-  return { id, name, createdAt, updatedAt, mode }
 }
 
 export function listAllProjects(storageScope?: ProjectStorageScope): Promise<ProjectSummary[]> {
@@ -935,7 +910,7 @@ function notifyRecoveredProjects(scope: ProjectStorageScope, ids: readonly strin
 async function loadHistoricalProject(
   id: string,
   storageScope?: ProjectStorageScope,
-): Promise<Project | null> {
+): Promise<StoredProjectRecord | null> {
   const scope = storageScope ?? captureProjectStorageScope()
   const old = await readValues(scope.store, [
     `sz:project:${id}`,

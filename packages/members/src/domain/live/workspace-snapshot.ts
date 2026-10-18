@@ -1,5 +1,14 @@
 import { ValidationError } from '@sistemazero/core/errors'
-import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
+import { isStudioProRevisionPath } from '@sistemazero/core/studio/pro-revision'
+import {
+  StudioJavaScriptProMetadataSchema,
+  StudioProjectDocumentSchema,
+  StudioProjectTreeSchema,
+} from '@sistemazero/core/studio/project-document'
+import {
+  STUDIO_PROJECT_FORMAT_VERSION,
+  STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
+} from '@sistemazero/core/studio/project-format'
 
 function isDocumentRecord(value: unknown): value is Record<string, unknown> {
   return (
@@ -42,24 +51,65 @@ export function validateLiveSnapshot(
   }
   if (Buffer.byteLength(JSON.stringify(project), 'utf8') > 2_000_000)
     throw new ValidationError('O projeto da oficina pode ter até 2 MB.')
-  if (project.id !== id || project.formatVersion !== STUDIO_PROJECT_FORMAT_VERSION)
+  if (
+    project.id !== id ||
+    (project.formatVersion !== STUDIO_PROJECT_FORMAT_VERSION &&
+      project.formatVersion !== STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION)
+  )
     throw new ValidationError('A identidade ou versão do projeto não corresponde à oficina.')
-  if (project.kind === 'pro' || !['blocks', 'bridge'].includes(String(project.mode)))
-    throw new ValidationError('Esta sala usa projetos de Blocos e Ponte.')
+  if (project.formatVersion === STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION) {
+    if (!StudioProjectDocumentSchema.safeParse(project).success)
+      throw new ValidationError('O ambiente e os arquivos do projeto não são compatíveis.')
+  } else {
+    // Legacy JS remains byte-for-byte intact; only v3 can carry a runtime/Python lock.
+    if (
+      (project.programmingLanguage !== undefined && project.programmingLanguage !== 'javascript') ||
+      project.runtime !== undefined ||
+      project.python !== undefined ||
+      (project.kind !== undefined && project.kind !== 'classic' && project.kind !== 'pro') ||
+      (project.kind === 'pro'
+        ? project.mode !== 'code'
+        : !['blocks', 'bridge'].includes(String(project.mode)))
+    )
+      throw new ValidationError('O tipo e o modo do projeto não correspondem ao formato enviado.')
+  }
   if (typeof project.name !== 'string' || !project.name.trim() || project.name.length > 200)
     throw new ValidationError('Nome de projeto inválido.')
   if (
-    !isDocumentRecord(project.files) ||
-    !['index.html', 'style.css', 'script.js'].every(
-      (file) =>
-        typeof project.files === 'object' &&
-        project.files !== null &&
-        typeof (project.files as Record<string, unknown>)[file] === 'string',
-    )
+    project.programmingLanguage !== 'python' &&
+    (!isDocumentRecord(project.files) ||
+      !['index.html', 'style.css', 'script.js'].every(
+        (file) =>
+          typeof project.files === 'object' &&
+          project.files !== null &&
+          typeof (project.files as Record<string, unknown>)[file] === 'string',
+      ))
   )
     throw new ValidationError('Os arquivos básicos do projeto estão incompletos.')
-  if (!Object.values(project.files).every((value) => typeof value === 'string'))
+  if (
+    isDocumentRecord(project.files) &&
+    !Object.values(project.files).every((value) => typeof value === 'string')
+  )
     throw new ValidationError('Arquivo de projeto inválido.')
+  if (project.kind === 'pro' && project.programmingLanguage !== 'python') {
+    const tree = StudioProjectTreeSchema.safeParse(project.tree)
+    if (
+      !tree.success ||
+      Object.keys(tree.data).length > 5000 ||
+      !StudioJavaScriptProMetadataSchema.safeParse(project.proMeta).success
+    )
+      throw new ValidationError('A árvore ou a configuração do projeto Pro está incompleta.')
+    const seen = new Set<string>()
+    for (const path of Object.keys(tree.data)) {
+      if (!isStudioProRevisionPath(path) || seen.has(path.toLowerCase()))
+        throw new ValidationError('O projeto Pro contém caminhos inválidos ou repetidos.')
+      seen.add(path.toLowerCase())
+      const parts = path.split('/')
+      for (let index = 1; index < parts.length; index++)
+        if (tree.data[parts.slice(0, index).join('/')]?.kind !== 'dir')
+          throw new ValidationError('Uma pasta do projeto Pro está ausente.')
+    }
+  }
   if (project.assets !== undefined) {
     if (!Array.isArray(project.assets)) throw new ValidationError('Arquivos do projeto inválidos.')
     const names = new Set<string>()

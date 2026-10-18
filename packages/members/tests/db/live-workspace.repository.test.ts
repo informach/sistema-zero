@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { studioProjectContinuityReference } from '@sistemazero/core/studio/project-continuity'
+import { eq } from 'drizzle-orm'
 import { LiveService } from '../../src/application/live/live.service'
 import { LiveWorkspaceService } from '../../src/application/live/live-workspace.service'
 import type { LiveActor } from '../../src/domain/ports/live-repository.port'
@@ -9,7 +11,10 @@ import {
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleLiveRepository } from '../../src/infrastructure/persistence/drizzle/live.repository'
 import { DrizzleLiveWorkspaceRepository } from '../../src/infrastructure/persistence/drizzle/live-workspace.repository'
-import { accountDeletionFences } from '../../src/infrastructure/persistence/drizzle/schema'
+import {
+  accountDeletionFences,
+  liveWorkspaces,
+} from '../../src/infrastructure/persistence/drizzle/schema'
 import { InMemoryLiveCourses } from '../fakes/live-in-memory'
 import { persistLiveCourse } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
@@ -21,7 +26,9 @@ if (!databaseUrl)
 describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
   let connection: DbConnection
   /** The live course is read through the port; its SQL adapter has its own test. */
-  const liveCourses = new InMemoryLiveCourses((course) => persistLiveCourse(connection, course))
+  const liveCourses = new InMemoryLiveCourses((course, blocks) =>
+    persistLiveCourse(connection, course, blocks),
+  )
   beforeAll(() => {
     connection = createDbConnection(databaseUrl as string)
   })
@@ -79,6 +86,49 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
       deviceId: randomUUID(),
     }
   }
+
+  test('runtime metadata reads the original binding without source, media or writes, even during a save lock', async () => {
+    const f = await setup()
+    const lessonId = f.session.lessonId
+    if (!lessonId) throw new Error('The live fixture must have a published lesson')
+    const opened = await f.service.openForBlock(f.child, f.session.id, f.blockId)
+    const claimed = await f.service.claim(f.child, opened.id, f.deviceId, false)
+    const project = { ...claimed.project, privateSource: 'must-stay-in-database'.repeat(50_000) }
+    await connection.db
+      .update(liveWorkspaces)
+      .set({ project })
+      .where(eq(liveWorkspaces.id, opened.id))
+    const original = await f.repository.find(opened.id)
+    await connection.db.transaction(async (tx) => {
+      await tx
+        .select({ id: liveWorkspaces.id })
+        .from(liveWorkspaces)
+        .where(eq(liveWorkspaces.id, opened.id))
+        .for('update')
+      const snapshot = await f.repository.readRuntimeContext(opened.id, f.session.id, f.blockId)
+      expect(snapshot).not.toBeNull()
+      expect(studioProjectContinuityReference(snapshot?.environment)).toEqual(
+        studioProjectContinuityReference(project),
+      )
+      expect(snapshot?.binding?.lessonId).toBe(lessonId)
+      expect(snapshot?.binding?.baselineId).toHaveLength(64)
+      expect(snapshot?.workspace).not.toHaveProperty('project')
+      expect(JSON.stringify(snapshot)).not.toContain('must-stay-in-database')
+      expect(snapshot?.workspace.revision).toBe(claimed.revision)
+      expect(snapshot?.workspace.leaseExpiresAt).toBe(claimed.leaseExpiresAt)
+      expect(snapshot?.cohort?.sessions.map((item) => item.id)).toEqual([f.session.id])
+    })
+    expect(await f.repository.find(opened.id)).toEqual(original)
+    expect(
+      (await f.repository.readRuntimeContext(opened.id, f.session.id, randomUUID()))?.binding,
+    ).toBeNull()
+    await connection.db
+      .insert(accountDeletionFences)
+      .values({ accountId: f.child.accountId, createdAt: new Date() })
+    await expect(
+      f.repository.readRuntimeContext(opened.id, f.session.id, f.blockId),
+    ).rejects.toThrow('exclusão')
+  })
 
   test('criação concorrente mantém um projeto e dois autores não gravam a mesma revisão', async () => {
     const { service, repository, child, session, blockId } = await setup()

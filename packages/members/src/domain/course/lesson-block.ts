@@ -210,6 +210,7 @@ export type StudioMode = 'blocks' | 'bridge' | 'code'
  * aula até ser enviada — espelha o gate do quiz (ver mark-lesson-complete.service).
  */
 export interface StudioBlock {
+  pythonLevel?: 1 | 2 | 3
   gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
   purpose?: 'experiment' | 'submission'
   kind: 'studio'

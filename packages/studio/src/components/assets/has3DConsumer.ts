@@ -1,4 +1,4 @@
-import type { Project } from '#core'
+import type { EditableStudioProject as Project } from '../../core/editableProject'
 
 /**
  * Quem CONSOME `.glb`/`.hdr` no projeto. Sem nenhum consumidor, um binário 3D seria
@@ -21,7 +21,7 @@ export const THREE_D_CONSUMER_EXTENSIONS: ReadonlySet<string> = new Set([
 
 export type ThreeDConsumerProjectLike = Pick<
   Project,
-  'installedExtensions' | 'files' | 'blocksState' | 'kind'
+  'installedExtensions' | 'files' | 'blocksState' | 'kind' | 'programmingLanguage'
 >
 
 /**
@@ -50,7 +50,7 @@ function blocksStateUsesCanvas3D(blocksState: Project['blocksState']): boolean {
 export function projectHas3DConsumer(
   project: ThreeDConsumerProjectLike | null | undefined,
 ): boolean {
-  if (!project) return false
+  if (!project || project.programmingLanguage === 'python') return false
   // Pro imports engines through npm; block-extension installation is not its capability gate.
   if (project.kind === 'pro') return true
   if ((project.installedExtensions ?? []).some((e) => THREE_D_CONSUMER_EXTENSIONS.has(e.id))) {
@@ -76,6 +76,7 @@ export function projectHas3DMaterials(
   project: (ThreeDConsumerProjectLike & Pick<Project, 'assets'>) | null | undefined,
   hasMoldaLibrary: boolean,
 ): boolean {
+  if (project?.programmingLanguage === 'python') return false
   if (hasMoldaLibrary) return true
   if (projectHas3DConsumer(project)) return true
   return (project?.assets ?? []).some(

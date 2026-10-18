@@ -134,6 +134,7 @@ export const ptBR: Record<string, string> = {
 
   'console.clear': 'Limpar',
   'console.empty': 'Sem mensagens. Use console.log para registrar algo.',
+  'console.emptyPython': 'Sem mensagens. Use print para mostrar algo aqui.',
   'console.message': '1 mensagem',
   'console.messages': '{count} mensagens',
   'console.showBlock': 'Ver o bloco que causou o erro',
@@ -342,6 +343,11 @@ export const ptBR: Record<string, string> = {
   'code.advancedBlock': 'Código avançado',
 
   'export.title': 'Exportar para publicação',
+  'export.pythonTitle': 'Baixar para jogar no navegador',
+  'export.pythonDescription': 'Baixe uma versão do seu projeto para jogar no navegador.',
+  'export.pythonSourceNote': 'Para continuar programando no VS Code, use Baixar fonte.',
+  'export.pythonUnavailable':
+    'A exportação web Python não está disponível neste ambiente. Você pode baixar a fonte para continuar no computador.',
   'export.description':
     'Gera um arquivo ZIP pronto para publicar no Railway (o site mais o Dockerfile e o passo a passo).',
   'export.minify': 'Minificar o código (recomendado)',

@@ -2,6 +2,8 @@ import type { StudioAiActor, StudioAiFundingSource } from '../ai-credits'
 import type { StudioProArtifact, StudioProValidationIdentity } from './pro-artifact'
 import type { StudioProAssistanceJournal, StudioProAssistanceRequest } from './pro-assistance'
 import type { StudioProChange, StudioProRevision } from './pro-revision'
+import type { StudioPythonBuilderPreview } from './python-builder-preview'
+import type { StudioPythonPreviewReference } from './python-preview'
 
 export const STUDIO_PRO_BUILDER_LIMITS = {
   maxObjectiveChars: 2_000,
@@ -48,17 +50,24 @@ export interface StudioProBuilderCost {
   confirmedMicroUsd: number
   uncertain: boolean
 }
+export type StudioProBuilderPreview =
+  | {
+      kind?: 'javascript'
+      artifact: StudioProArtifact
+      revisionHash: string
+      validation: StudioProValidationIdentity
+    }
+  | StudioPythonBuilderPreview
+export function studioProBuilderPreviewExpiresAt(preview: StudioProBuilderPreview) {
+  return preview.kind === 'python' ? preview.reference.expiresAt : preview.artifact.expiresAt
+}
 export interface StudioProBuilderResult {
   change: StudioProChange
   revisionHash: string
   plan: string[]
   evidence: StudioProBuilderEvidence[]
   /** Missing on retained legacy results; a screenshot is never used as a game URL. */
-  preview?: {
-    artifact: StudioProArtifact
-    revisionHash: string
-    validation: StudioProValidationIdentity
-  }
+  preview?: StudioProBuilderPreview
 }
 export interface StudioProBuilderJob {
   id: string
@@ -85,6 +94,12 @@ export interface StudioProBuilderClaim {
   token: string | null
   /** Private worker payload, returned only with a validation lease. Never part of prompts. */
   binaries?: Record<string, { base64: string; sha256: string }>
+  /** Fresh internal lease/policy check; never a bearer grant or public project metadata. */
+  authorization?: { revisionHash: string; executionRevision: string; parentOrigin: string }
+  /** Repository-to-service payload, consumed before returning the policy decision. */
+  validationLease?: { revisionHash: string; parentOrigin: string }
+  /** Repository-to-service proposal scope, independent of an executor lease. */
+  proposalScope?: { revisionHash: string; parentOrigin: string }
 }
 /** Polling never retransmits the whole snapshot, private binaries or model/tool notes. */
 export type StudioProBuilderView = Omit<StudioProBuilderJob, 'base' | 'notes'> & {
@@ -113,6 +128,7 @@ export interface StudioProBuilderAdapter {
   availability?(
     templateId: string,
     signal?: AbortSignal,
+    programmingLanguage?: 'javascript' | 'python',
   ): Promise<{ available: boolean; reason?: string }>
   create(
     input: {
@@ -146,10 +162,29 @@ export interface StudioProBuilderAdapter {
     input: { id: string; projectId: string; version: number; revisionHash: string },
     signal?: AbortSignal,
   ): Promise<{ allowed: boolean; reason?: string }>
+  authorizePythonPreview?(
+    input: {
+      id: string
+      projectId: string
+      version: number
+      revisionHash: string
+      preview: { id: string; sha256: string }
+    },
+    signal: AbortSignal,
+  ): Promise<StudioPythonPreviewReference>
   removeProject?(projectId: string, signal?: AbortSignal): Promise<void>
   cancel(input: { id: string; projectId: string }): Promise<StudioProBuilderView | null>
 }
 export type StudioProBuilderCommand =
+  | {
+      operation: 'authorize-proposal'
+      id: string
+      projectId: string
+      version: number
+      revisionHash: string
+      purpose: 'apply' | 'preview'
+      preview?: { id: string; sha256: string }
+    }
   | {
       operation: 'create'
       id: string
@@ -186,6 +221,15 @@ export type StudioProBuilderCommand =
     }
   | { operation: 'claim'; id: string; projectId: string }
   | {
+      operation: 'authorize-validation'
+      id: string
+      projectId: string
+      token: string
+      version: number
+      revisionHash: string
+      runtimeOperation: 'analyze' | 'execute'
+    }
+  | {
       operation: 'checkpoint'
       id: string
       projectId: string
@@ -208,5 +252,6 @@ export interface StudioProBuilderRepository {
     actor: StudioAiActor,
     command: StudioProBuilderCommand,
     now: Date,
+    signal?: AbortSignal,
   ): Promise<StudioProBuilderClaim | null>
 }

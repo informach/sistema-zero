@@ -11,6 +11,8 @@ import {
   sceneUnknownSetupGoals,
 } from '@sistemazero/core/learning/scene'
 import { isStudioProTemplateId, STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
+import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-document'
+import { STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION } from '@sistemazero/core/studio/project-format'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { CourseAudience } from '../../domain/course/course'
 import {
@@ -44,6 +46,8 @@ import type {
   ModuleFields,
 } from '../../domain/ports/content-admin-repository.port'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
+import type { StudioAuthoringPolicy } from '../../domain/studio/authoring-policy'
+import { studioChainCandidate } from '../../domain/studio/chain-environment'
 import type { LearningService } from '../learning/learning.service'
 import {
   type AttachmentView,
@@ -512,7 +516,10 @@ function metasQueACenaNaoTem(content: LessonBlockContent): string[] {
 }
 
 /** Coerência semântica do bloco (além do shape TypeBox). Quiz/estúdio incoerente → 400. */
-export function assertBlockCoherent(content: LessonBlockContent): void {
+export function assertBlockCoherent(
+  content: LessonBlockContent,
+  studioPolicy?: StudioAuthoringPolicy,
+): void {
   if ((content.kind === 'studio' || content.kind === 'pinta') && content.gallery !== undefined) {
     if (
       !isGalleryDeliveryConfig(content.gallery, content.kind) ||
@@ -570,10 +577,31 @@ export function assertBlockCoherent(content: LessonBlockContent): void {
     if (JSON.stringify(content.initialProject).length > MAX_STUDIO_PROJECT_CHARS) {
       throw new InvalidContentCommandError('Projeto inicial excede o tamanho máximo permitido')
     }
+    const document = content.initialProject as {
+      formatVersion: number
+      programmingLanguage?: string
+    }
+    if (document.formatVersion === STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION) {
+      if (!studioPolicy)
+        throw new InvalidContentCommandError(
+          'O catálogo de ambientes ainda não está configurado para publicar este projeto.',
+        )
+      const { level, pythonLevel, allowBlocks, allowCategories, allowedModes, allowLevelReveal } =
+        content
+      studioPolicy.assert(StudioProjectDocumentSchema.parse(document), {
+        level,
+        allowBlocks,
+        allowCategories,
+        allowedModes,
+        allowLevelReveal,
+        pythonLevel,
+      })
+    }
     if (
       content.initialProject &&
       typeof content.initialProject === 'object' &&
       !Array.isArray(content.initialProject) &&
+      document.programmingLanguage !== 'python' &&
       (content.initialProject as { kind?: unknown }).kind === 'pro'
     ) {
       const project = content.initialProject as {
@@ -601,9 +629,24 @@ export function assertBlockCoherent(content: LessonBlockContent): void {
 /** Escritores antigos não podem reintroduzir projetos históricos nas aulas. */
 export function assertCurrentStudioAuthoring(project: unknown): void {
   if (
+    project &&
+    typeof project === 'object' &&
+    (project as { formatVersion?: unknown }).formatVersion ===
+      STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION
+  ) {
+    if (!StudioProjectDocumentSchema.safeParse(project).success)
+      throw new InvalidContentCommandError(
+        'O ambiente e os arquivos do projeto inicial são inválidos.',
+      )
+    return
+  }
+  if (
     !project ||
     typeof project !== 'object' ||
-    (project as { formatVersion?: unknown }).formatVersion !== STUDIO_PROJECT_FORMAT_VERSION
+    (project as { formatVersion?: unknown }).formatVersion !== STUDIO_PROJECT_FORMAT_VERSION ||
+    ('programmingLanguage' in project && project.programmingLanguage !== 'javascript') ||
+    'runtime' in project ||
+    'python' in project
   )
     throw new InvalidContentCommandError(
       'Abra o projeto no Studio atualizado antes de salvar a aula.',
@@ -611,9 +654,12 @@ export function assertCurrentStudioAuthoring(project: unknown): void {
 }
 
 /** Valida e estabiliza o desenho inicial antes de qualquer regra ou escrita no repositório. */
-export function canonicalizeBlockContent(content: LessonBlockContent): LessonBlockContent {
+export function canonicalizeBlockContent(
+  content: LessonBlockContent,
+  studioPolicy?: StudioAuthoringPolicy,
+): LessonBlockContent {
   if ((content.kind === 'studio' || content.kind === 'pinta') && content.gallery !== undefined) {
-    assertBlockCoherent(content)
+    assertBlockCoherent(content, studioPolicy)
     return content
   }
   if (content.kind !== 'pinta') return content
@@ -682,11 +728,14 @@ export async function assertPintaChainTypeMatches(
 }
 
 export class BlockAdminService {
-  constructor(private readonly content: ContentAdminRepository) {}
+  constructor(
+    private readonly content: ContentAdminRepository,
+    private readonly studioPolicy?: StudioAuthoringPolicy,
+  ) {}
 
   async create(lessonId: string, content: LessonBlockContent): Promise<BlockView> {
-    const canonicalContent = canonicalizeBlockContent(content)
-    assertBlockCoherent(canonicalContent)
+    const canonicalContent = canonicalizeBlockContent(content, this.studioPolicy)
+    assertBlockCoherent(canonicalContent, this.studioPolicy)
     const lesson = await this.content.findLessonById(lessonId)
     if (!lesson) throw new LessonNotFoundError()
     if (canonicalContent.kind === 'certificate') {
@@ -712,14 +761,41 @@ export class BlockAdminService {
         })
       }
     }
+    if (canonicalContent.kind === 'studio') {
+      return this.content.withStudioAuthoringLock(lesson.courseId, async (repository) => {
+        await repository.claimStudioChains(lesson.courseId, studioChainCandidate(canonicalContent))
+        return toBlockView(
+          await repository.createBlock(lessonId, canonicalContent.kind, canonicalContent),
+        )
+      })
+    }
     return toBlockView(
       await this.content.createBlock(lessonId, canonicalContent.kind, canonicalContent),
     )
   }
 
   async update(id: string, content: LessonBlockContent): Promise<BlockView> {
-    const canonicalContent = canonicalizeBlockContent(content)
-    assertBlockCoherent(canonicalContent)
+    const canonicalContent = canonicalizeBlockContent(content, this.studioPolicy)
+    assertBlockCoherent(canonicalContent, this.studioPolicy)
+    const courseId = await this.content.findBlockCourseId(id)
+    if (!courseId) throw new ContentNotFoundError('Bloco não encontrado')
+    return this.content.withStudioAuthoringLock(courseId, async (repository) => {
+      await repository.claimStudioChains(
+        courseId,
+        studioChainCandidate(canonicalContent),
+        await repository.findStudioBlockChain(id),
+      )
+      return new BlockAdminService(repository, this.studioPolicy).updateInTransaction(
+        id,
+        canonicalContent,
+      )
+    })
+  }
+
+  private async updateInTransaction(
+    id: string,
+    canonicalContent: LessonBlockContent,
+  ): Promise<BlockView> {
     let pintaCourseId: string | null = null
     if (canonicalContent.kind === 'pinta') {
       pintaCourseId = await this.content.findBlockCourseId(id)
@@ -758,8 +834,13 @@ export class BlockAdminService {
   }
 
   async remove(id: string): Promise<{ ok: true }> {
-    if (!(await this.content.deleteBlock(id)))
-      throw new ContentNotFoundError('Bloco não encontrado')
+    const courseId = await this.content.findBlockCourseId(id)
+    if (!courseId) throw new ContentNotFoundError('Bloco não encontrado')
+    await this.content.withStudioAuthoringLock(courseId, async (repository) => {
+      await repository.claimStudioChains(courseId, [], await repository.findStudioBlockChain(id))
+      if (!(await repository.deleteBlock(id)))
+        throw new ContentNotFoundError('Bloco não encontrado')
+    })
     return { ok: true }
   }
 

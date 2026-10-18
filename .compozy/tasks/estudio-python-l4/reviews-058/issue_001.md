@@ -1,0 +1,23 @@
+---
+status: resolved
+file: packages/studio/src/modes/python/PythonProCodeEditor.tsx
+line: 143
+severity: high
+author: claude-code
+provider_ref:
+---
+
+# Issue 001: Renomear entrypoint desativa a análise sem recuperação
+
+## Review Comment
+
+O efeito que cria `attachPythonEditorLanguage` deixou de depender do entrypoint para conservar o processo nativo durante renomeações. Porém a sessão ainda captura `const entrypoint = input.entrypoint()` em `editorSession.ts:78`; `snapshot()` lança `PythonLanguageStale` sempre que o getter atual diverge. O cliente também recebe a string antiga em `createPythonLanguageClient`. Ao renomear o arquivo principal, o efeito permanece vivo, mas todos os próximos pedidos de diagnóstico/completion/hover/símbolos são barrados pelo guard. `failed()` ignora esse erro stale, portanto a análise pode simplesmente desaparecer; `retry()` reinicia o cliente interno e chama o mesmo snapshot, que continua recusando o novo entrypoint. Só remontar o editor recupera a análise.
+
+Prova independente `packages/studio/.cache/review058-editor-entrypoint.test.ts` usa attach/editorSession/client reais, fronteiras Monaco e transporte inertes: consultar símbolos de main.py funciona e abre uma conexão; mudar entrypoint e árvore para game.py; chamar update e consultar novamente; o pedido é recusado antes do transporte. Retry seguido de nova consulta também é recusado; nenhuma segunda consulta ou conexão acontece. `bun test ./.cache/review058-editor-entrypoint.test.ts`: 1 pass, 0 fail, 6 verificações, exit0, afirmando o defeito. O teste de contextProvider que observa metadata fresca não alcança essa sessão do editor.
+
+Não duplica reviews-037/issue_005: aquela correção tornou o entrypoint imutável por sessão para impedir divergência da raiz de imports Pyright e recusa sync de outro entrypoint antes de escrever FS. A regressão nova é remover a recomposição do editor mantendo esses fences. Implementar uma transição explícita e segura de entrypoint, invalidando respostas antigas e reconfigurando a raiz da análise, ou recompor a sessão necessária; conservar fonte/modelos e o contrato de imports da037. Se conservar Docker/Pyright na mesma conexão for requisito, provar a reconfiguração real em vez de somente retirar o guard. Cobrir rename do arquivo/pasta principal, mudança sem alteração de texto, pedido antigo em voo, retry e import roots.
+
+## Triage
+
+- Decision: `VALID`
+- Notes: Corrigido pelo implementador e revalidado independentemente. editorSession passa getter ao cliente; mudanças de entrypoint invalidam queries antigas e geram sync inclusive metadata-only, preservando a conexão. Snapshot não mantém o fence imutável antigo. PythonProCodeEditor atualiza a sessão ao mudar tree/entrypoint e conserva ready quando editor/prefix permanecem iguais. Native valida candidato/entrypoint existente antes de alterar FS, reconfigura workspaceFolders e fecha/reabre documentos quando a raiz executável muda; mudanças no mesmo diretório continuam incrementais. Prova original convertida ao comportamento correto: rename main.py→game.py conserva consultas e uma conexão; retry explícito abre outra com snapshot completo do entrypoint atual. `bun test ./.cache/review058-editor-entrypoint.test.ts ./.cache/review058-client-transition.test.ts ./.cache/review058-context-provider.test.ts`, em Studio: 13 pass, 0 fail, 65 verificações, exit0. Adicionais independentes cobrem entrypoint-only/metadata-only sem mudança de texto, query antiga em voo, getter alterado durante sync antes de render/update, preservação do ACK para o próximo pedido, fonte exata, scope abort/DELETE e rejeição de resultados tardios/envelopes malformados/excessivos/429. `bun test ./tests/import-root.test.ts ./tests/concurrency.test.ts`, em studio-language-service: 7 pass, 0 fail, 35 verificações, exit0 (~5s), com Pyright Node real; nova raiz correta, módulo acima da raiz não resolvido, arquivo inicial ausente negado sem perder estado, ordem/cancelamento preservados. O conflito HappyDOM/Bun HTTP foi corrigido isolando a prova HTTP em subprocesso; combinado permanente `bun test ./tests/live-studio-runtime-hook.test.tsx ./tests/studio-python-language.test.ts` em member-shell: 18 pass/128 verificações, exit0 no mesmo processo com hook DOM, incluindo confirmação antes do resultado e cancelamento. Biome das seis implementações/testes diretamente ligados à correção: exit0. Nenhuma produção modificada nem navegador/TSC/build de aplicação executado pelo revisor; a evidência de navegador Chrome/Edge do implementador está em l5-analysis-entrypoint-browser-1.log (2/2), sem generalizar para LSP contextual completo ou desempenho. Geometria pública Turtle permanece fora deste review.

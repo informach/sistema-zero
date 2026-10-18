@@ -20,6 +20,7 @@ import {
   creationCleanupJobs,
   creations,
   entitlements,
+  galleryCopyAttempts,
   gamificationProfiles,
   leagueMembership,
   learningAttempts,
@@ -47,6 +48,7 @@ import {
   studioAiAccounts,
   studioBuilderJobs,
   studioBuilderProjectDeletions,
+  studioLessonBindings,
   studioSubmissions,
   teacherBroadcastRecipients,
   teacherThreads,
@@ -175,6 +177,14 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
           })
           .where(eq(pensaOperations.id, operation.id))
       }
+      await tx
+        .delete(studioLessonBindings)
+        .where(
+          or(
+            inArray(studioLessonBindings.userId, userIds),
+            eq(studioLessonBindings.accountId, accountId),
+          ),
+        )
       await purgeLiveAccount(tx, accountId, userIds)
       // OAuth states cascade; no provider credential survives an account deletion.
       await tx.delete(studioAiAccounts).where(eq(studioAiAccounts.accountId, accountId))
@@ -272,6 +282,14 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
           or(inArray(learningAttempts.userId, userIds), eq(learningAttempts.accountId, accountId)),
         )
       // Tabelas só com `user_id`.
+      await tx
+        .delete(galleryCopyAttempts)
+        .where(
+          or(
+            inArray(galleryCopyAttempts.userId, userIds),
+            eq(galleryCopyAttempts.accountId, accountId),
+          ),
+        )
       await tx.delete(entitlements).where(inArray(entitlements.userId, userIds))
       await tx.delete(lessonCompletions).where(inArray(lessonCompletions.userId, userIds))
       await tx.delete(lessonProgress).where(inArray(lessonProgress.userId, userIds))

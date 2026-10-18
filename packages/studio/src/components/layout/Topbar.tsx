@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { lazy, Suspense, useContext, useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { modesForKind, type Project } from '#core'
+import { modesForKind } from '#core'
 import {
   ConfirmDialog,
   cn,
@@ -30,6 +30,7 @@ import {
   type MenuSection,
   Modal,
 } from '#ui'
+import type { EditableStudioProject as Project } from '../../core/editableProject'
 import { downloadProjectAsJSON, triggerDownload } from '../../export/download'
 import { flushProjectOperations } from '../../state/projectOperations'
 import { useProjectStore } from '../../state/projectStore'

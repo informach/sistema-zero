@@ -1,14 +1,30 @@
 # Studio Runtime
 
-Compilador isolado das atividades Pro do Sistema Zero. Um BFF autorizado envia a árvore do projeto, o Worker aplica um catálogo fechado de dependências e o Cloudflare Sandbox executa o build sem acesso à internet. Somente o BFF chama o build; o navegador lê os arquivos compilados por um endereço temporário imprevisível, sem credenciais.
+Compilador isolado dos projetos Pro do Sistema Zero. Um BFF autorizado envia a árvore do projeto, o Worker aplica um catálogo fechado de dependências e o Cloudflare Sandbox executa o build sem acesso à internet. Somente o BFF chama o build; o navegador lê os arquivos compilados por um endereço temporário imprevisível, sem credenciais.
 
 ## Ambientes e capacidade
+
+O runtime Python usa a variável de implantação `STUDIO_PYTHON_DISTRIBUTIONS_JSON`, com o contrato `StudioPythonRuntimeConfigurationSchema` do Core:
+
+```json
+{
+  "version": 1,
+  "parentOrigins": ["https://kids.sistemazero.com.br"],
+  "deployments": [
+    { "status": "active", "deployment": { "release": "<objeto de release verificada>", "distribution": "<manifesto da distribuição>" } }
+  ]
+}
+```
+
+Os textos entre `<...>` são marcadores explicativos; a configuração real contém os objetos completos gerados pelo empacotador. Informe todas as origens qualificadas do editor, autoria, aulas/salas e página pública. Mantenha a mesma seleção e os mesmos estados de release na política de autoria do Members. `active` permite a distribuição aprovada; `retired` conserva projetos existentes; `revoked` recusa arquivos e metadata. A política de autoria decide separadamente quais releases permitem criar novos projetos.
+
+Envie os bytes da distribuição pelo procedimento confiável `storePythonRuntimeDistribution`, que verifica hashes e grava o marcador de conclusão por último. Um marcador no bucket não aprova uma distribuição. Ausência ou erro na variável mantém as rotas Python indisponíveis e preserva o fluxo JavaScript. A factory padrão lê a configuração; não é necessário um handler alternativo. Staging recebe o funcionamento normal para validação, sem flag temporária adicional; a distribuição e seus serviços precisam estar configurados e íntegros. Em produção, promova a release somente depois da qualificação completa. Essa variável não concede instalação PyPI, acesso ao Estúdio Pro nem autorização contextual de execução.
 
 Staging usa `bun run deploy:staging`, Worker `sistemazero-studio-runtime-staging` e bucket privado `sistemazero-studio-artifacts-staging`. O token `INTERNAL_TOKEN` é exclusivo desse ambiente e deve corresponder a `STUDIO_PRO_RUNTIME_TOKEN` em Kids, Admin, Auth e Members no Railway. As URLs de autorização e limpeza apontam para o Kids de staging.
 
 A configuração principal é a de produção, com Worker `sistemazero-studio-runtime` e bucket `sistemazero-studio-artifacts`. Promova o runtime junto da aplicação que entende artefatos; a aplicação anterior espera HTML inline. Preparar o bucket e as variáveis não exige substituir o runtime ativo antes dessa promoção.
 
-A imagem com Chromium exige `standard-1` (4 GiB de memória e 8 GB de disco). Na validação remota de 15/10/2026, `lite` falhou ao descompactar a imagem no disco de 2 GB. O limite de 50 instâncias permanece. Ambos os buckets expiram apenas `previews/` após dois dias; `published/` e `publications/` não têm expiração por idade.
+A imagem com Chromium exige `standard-1` (4 GiB de memória e 8 GB de disco). Na validação remota de 15/10/2026, `lite` falhou ao descompactar a imagem no disco de 2 GB. O limite de 50 instâncias permanece. A regra existente expira `previews/` após dois dias. Antes de ativar os inputs Python, configure também as duas regras de um dia descritas abaixo. `published/`, `publications/` e `runtimes/` não têm expiração por idade.
 
 Depois do deploy, aguarde o provisionamento dos contêineres e valide uma compilação com `validate: true`; `/healthz` sozinho não comprova que a imagem está pronta.
 
@@ -103,6 +119,42 @@ ou o estado do kit no Pro), `texto` (`null` acima de 50 mil letras) e `console` 
 com 3 s de prazo. Falha do próprio protocolo é falha do executor, nunca "não passou".
 ⚠️ A rota exige a imagem nova (o script entra no `Dockerfile`): reconstrua e implante o Worker
 antes de ligar os objetivos de execução no Members.
+## Inspeção Python interna
+
+As rotas abaixo exigem `Authorization: Bearer <INTERNAL_TOKEN>` antes da leitura do corpo. Não são chamadas diretamente pelo navegador. Precisam de `STUDIO_PYTHON_DISTRIBUTIONS_JSON`, `PYTHON_INPUTS` privado, `PythonInspectionJobs` e `PYTHON_UPLOAD_RATE_LIMITER`. Wrangler liga inputs e previews ao bucket privado de artefatos com prefixos separados. Isso não aprova releases nem configura a origem pública do serviço. Os consumidores completos do estúdio ainda estão em integração.
+
+- `POST /v1/python/inputs`: recebe `StudioPythonInputOpenSchema` (metadata, owner opaco derivado pelo BFF, executionId e requestId UUID). Retorna `{ok:true,input:<StudioPythonInputReference>}`. Até 2 MB de metadata; os arquivos mantêm o limite agregado de 32 MiB do contrato Python. Não há bytes/base64, URLs ou chaves de bucket no JSON.
+- `POST /v1/python/files/<sha256>`: recebe bytes binários originais no corpo, com a referência JSON em `X-Studio-Python-Input` (até 2048 bytes UTF-8). Só aceita hashes e tamanhos registrados; verifica o stream e o checksum R2. Não executa código.
+- `POST /v1/python/inspect`: recebe a referência como JSON. Resolve a distribuição exata aprovada e o upload completo; fornece os streams verificados ao SDK em `transport:'rpc'`, em contêiner exclusivo sem internet. O compilador usa `compile(bytes, path, 'exec')` para produzir o relatório vinculado à revisão e à versão efetiva do CPython; não executa imports ou código do aluno. Erros de sintaxe aparecem no relatório com `status:'failed'`. Esse relatório não é autorização nem prova de playtest.
+- `POST /v1/python/validate`: recebe `{version:1,input,structure,recipe,preview?}`. Compila e depois executa no player CPython protegido, em duas fases no mesmo sandbox. Receita e opção de preview são imutáveis para o input. Compilação recusada não inicia execução. O relatório limita-se a 3 MiB; a resposta admite mais 8192 bytes para o envelope e a referência de preview. A evidência não substitui a autorização contextual do BFF.
+- `POST /v1/python/previews/remove`: recebe a referência de input e persiste a retirada do preview no coordenador, mesmo quando a configuração de runtime foi retirada. Não exige que o cliente tenha recebido a URL. O BFF chama esta operação quando recusa uma resposta, inclusive na autorização final após a limpeza. Repetições não reabrem o job.
+- `POST /v1/python/inputs/remove`: recebe a referência e encerra sua geração. Retries são idempotentes enquanto o admission permanece válido; remove os bytes daquela geração e preserva admission/closure até o lifecycle. Reabrir uma solicitação encerrada exige um requestId novo.
+
+Inputs expiram em 15 minutos, independentemente de limpeza física. Cada geração tem UUID emitido exclusivamente pelo serviço; bytes e fechamento usam `python-inputs/<inputId>/<generation>/...`. Admission imutável fica em `python-input-states/<inputId>.json`. Se o lifecycle já retirou um admission e o mesmo nonce for reutilizado, a geração nova terá outro namespace: GC ou remoção atrasados nunca apagam arquivos/registro novos. A revisão, projeto, owner, execução, geração e validade da referência são conferidos; retries de open preservam a geração vencedora de `onlyIf`.
+
+O rate limiter de jobs existente aplica até dez admissões/inspeções por minuto por owner estável; o binding separado de transferências permite 120 uploads/remoções por minuto. Nonces e executionIds aleatórios não mudam a chave do limite. A autorização e o controle de concorrência do job no BFF continuam obrigatórios; o token S2S não substitui permissão de aluno, curadoria ou vínculo de aula/sala. O BFF deve conferir projectId contra o job autorizado e revalidar contexto antes do envio e antes de aceitar/aplicar o resultado. O Worker recusa alterações de configuração, token ou bindings observadas nas suas fronteiras assíncronas e revalida runtime/input antes de devolver um relatório.
+
+Configure lifecycle de **um dia somente para `python-inputs/` e `python-input-states/`**, nos buckets de cada ambiente. Essas regras removem órfãos de upload/cancelamento, closures e admissions; não devem abranger arquivos permanentes nem `maintenance/`. A configuração de lifecycle pertence ao bucket e não é aplicada automaticamente por editar Wrangler. O cron percorre até cem admissions por chamada, com prazo de 25 segundos e cursor persistido em `maintenance/python-input-cursor.json`; só avança depois de exclusões confirmadas. Erro transitório de leitura/exclusão repete a página; metadata comprovadamente inválida é contabilizada sem dirigir exclusões. Acompanhe falhas do cron e `failed` maior que zero; logs não contêm código, tokens ou referências individuais.
+
+Estas rotas estão preparadas no código, mas ainda exigem provas reais de R2/Cloudflare SDK e integração dos consumidores antes de ativação. Os testes de transporte em memória não substituem essa qualificação.
+
+## Preview Python protegido
+
+### Configuração do Construir Python no BFF
+
+Nos aplicativos Community e Community Kids, o shell compartilhado seleciona o executor pela linguagem persistida do projeto. `STUDIO_PRO_RUNTIME_URL` e `STUDIO_PRO_RUNTIME_TOKEN` continuam configurando JavaScript. Python usa os quatro valores opcionais `STUDIO_PYTHON_RUNTIME_URL`, `STUDIO_PYTHON_RUNTIME_TOKEN`, `STUDIO_PYTHON_LANGUAGE_URL` e `STUDIO_PYTHON_LANGUAGE_TOKEN`; todos precisam estar presentes para disponibilizar Construir Python. Cada token tem pelo menos 32 caracteres e corresponde ao `INTERNAL_TOKEN` do respectivo serviço no mesmo ambiente. São segredos de servidor, sem prefixo `NEXT_PUBLIC_`. Use HTTPS em produção; HTTP só é admitido explicitamente em loopback no desenvolvimento.
+
+Members também precisa do par `STUDIO_PYTHON_RUNTIME_URL`/`STUDIO_PYTHON_RUNTIME_TOKEN` para sua política e validação. Mantenha a mesma origem do compilador nos consumidores e na política de hosts. O serviço de linguagem é separado do compilador; sua ausência não autoriza ignorar Pyright. A configuração não concede acesso ao produto, ao nível Pro, a uma release nem às extensões: a política atual é reavaliada ao criar, validar, renovar, abrir a prévia e aplicar a proposta. A indisponibilidade de um serviço Python não desativa o provedor JavaScript configurado. A habilitação remota permanece sujeita à qualificação e à implantação próprias do ambiente.
+
+Exige `PYTHON_PREVIEWS`, uma release aprovada que inclua `standalone.mjs`, o coordenador e `STUDIO_PYTHON_PREVIEW_ORIGIN` com a origem HTTPS real do serviço (HTTP apenas em loopback). A origem deve ser distinta dos aplicativos e estar acessível pelo navegador. Configure-a explicitamente por ambiente; o código não adivinha domínios. Os aplicativos autorizados continuam definidos em `STUDIO_PYTHON_DISTRIBUTIONS_JSON.parentOrigins`.
+
+O produtor usa os mesmos arquivos verificados e a mesma revisão da validação. Aguarda a destruição confirmada do sandbox antes de armazenar o preview. Grava `python-preview-records/<id>.json` primeiro para permitir a coleta de uploads incompletos; arquivos ficam em `python-previews/<id>/files/` e o marcador completo é o último write. O runtime/WASM compartilhado não é copiado. Projeto, payload, relatório, captura e launcher têm cotas independentes das cotas JavaScript; nenhuma cota JavaScript aumenta.
+
+`GET/HEAD /v1/python-previews/<id>/<arquivo>` só entrega bytes íntegros, dentro de 24 horas e com decisão persistida `succeeded`, sandbox limpo e preview não retirado. Consulta a decisão novamente depois das leituras de armazenamento. Um marcador R2 sozinho não concede acesso. Jobs com preview preservam a decisão até seu deadline mais 24 horas; isso não prolonga os 15 minutos dos inputs. A remoção normal de inputs depois de um resultado aceito preserva o preview; o descarte explícito o retira. Falha de verificação final também provoca rollback físico, conservando o registro de GC para writes incertos.
+
+Somente o launcher estático gerado pelo serviço recebe permissão de script. O iframe externo confiável usa `allow-scripts allow-same-origin allow-downloads allow-forms`, conforme a constante compartilhada `STUDIO_PYTHON_PREVIEW_SANDBOX`, em origem distinta do aplicativo; `form-action 'none'` impede envio de formulários à rede. O frame interno Python permanece opaco, sem `allow-same-origin` ou `allow-forms`. Fontes HTML/JS/SVG do aluno são entregues como `application/octet-stream`, attachment e CSP restritiva. A política de ancestrais do runtime contempla o serviço e os aplicativos aprovados. Não aplique essas permissões ao iframe JavaScript legado.
+
+O cron usa `maintenance/python-preview-cursor.json` separado, até cem registros e 25 segundos por execução. Registro inválido é contado e não dirige exclusões; falhas operacionais repetem a página. Se usar lifecycle como proteção adicional, aplique pelo menos dois dias apenas a `python-previews/` e `python-preview-records/`. Nunca inclua runtimes compartilhados, publicações do Mural ou `maintenance/` nessa regra. A implantação remota e a ativação do catálogo continuam separadas das provas locais.
 
 ## Templates confiáveis
 
@@ -245,3 +297,7 @@ O bridge aceita controles apenas da janela pai e da origem configurada. Eventos 
 ## Escopo das provas
 
 Testes de contrato usam armazenamento/CAS em memória; provas de player usam React, Chromium e IndexedDB reais, com transporte controlado. Docker exercita uid 1000, rede desativada e limites de CPU/memória. Essas provas não substituem homologação em Cloudflare DO/R2/SDK, autenticação real de Pinta/Molda/Pensa, conta OpenRouter real nem aparelhos físicos. Não há flags de liberação: configuração dos serviços, permissões da jornada e compatibilidade técnica continuam sendo contratos do produto.
+
+### CSP dos aplicativos que incorporam Python
+
+Admin, comunidade adulta e Kids precisam configurar, antes do build Next, `STUDIO_PYTHON_FRAME_ORIGINS` como uma lista JSON das origens públicas exatas dos runtimes aprovados em `STUDIO_RUNTIME_HOSTS_JSON` do Members. Exemplo: `["https://python-runtime.exemplo.com"]`. A allowlist acrescenta somente `frame-src` e `connect-src`, para o iframe isolado e o carregamento autenticado por hash dos recursos imutáveis; não concede autorização de execução nem libera scripts arbitrários. Não use tokens, credenciais, curingas ou caminhos. HTTPS é obrigatório em produção; localhost HTTP só em desenvolvimento. Alterações exigem novo build para atualizar os headers. A URL privada do executor e o serviço de análise continuam configurações independentes.

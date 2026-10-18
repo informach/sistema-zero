@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'bun:test'
+import { studioSourceAtPath, studioSourceSha256 } from '@sistemazero/core/studio/code-anchor'
+import {
+  studioProjectContinuityIssue,
+  studioProjectContinuityReference,
+} from '@sistemazero/core/studio/project-continuity'
 import { createBlankProjectSnapshot as createEmptyProject } from '@sistemazero/studio/blank-project'
+import { documentFixture } from '../../../studio/src/state/fixtures/projectDocuments'
 import type { LiveContext } from '../../src/application/live/live.service'
 import { LiveWorkspaceService } from '../../src/application/live/live-workspace.service'
 import { LiveAccessError, LiveNotFoundError } from '../../src/domain/live/live.errors'
@@ -10,6 +16,7 @@ import type {
   LiveWorkspaceRepository,
   LiveWorkspaceRevision,
 } from '../../src/domain/ports/live-workspace-repository.port'
+import type { StudioLessonBinding } from '../../src/domain/ports/studio-lesson-binding-repository.port'
 
 const ids = {
   session: '00000000-0000-4000-8000-000000000001',
@@ -22,6 +29,218 @@ const ids = {
   lesson: '00000000-0000-4000-8000-000000000008',
   block: '00000000-0000-4000-8000-000000000009',
 }
+
+for (const language of ['javascript', 'python'] as const)
+  for (const kind of ['classic', 'pro'] as const)
+    test(`live ${language}/${kind} seeds, commits and reopens the same document under the writer lease`, async () => {
+      const { service, child, blocks } = setup()
+      const seed = { ...documentFixture(language, kind), assets: [] }
+      blocks.get(`${ids.lesson}:${ids.block}`)!.initialProject = seed
+      const opened = await service.openForBlock(child, ids.session, ids.block)
+      expect(opened.project).toEqual({ ...seed, id: opened.id })
+      const claimed = await service.claim(child, opened.id, ids.device, false)
+      const edited = { ...claimed.project, name: 'Projeto editado' }
+      const input = {
+        deviceId: ids.device,
+        expectedRevision: claimed.revision,
+        writerEpoch: claimed.writerEpoch,
+        mutationId: crypto.randomUUID(),
+        project: edited,
+      }
+      const saved = await service.commit(child, opened.id, input)
+      expect(saved.project).toEqual(edited)
+      expect((await service.openForBlock(child, ids.session, ids.block)).project).toEqual(edited)
+      await expect(
+        service.commit(child, opened.id, {
+          ...input,
+          mutationId: crypto.randomUUID(),
+          writerEpoch: claimed.writerEpoch + 1,
+        }),
+      ).rejects.toThrow('autoria mudou')
+      await expect(
+        service.commit({ ...child, accountId: 'another-family' }, opened.id, {
+          ...input,
+          mutationId: crypto.randomUUID(),
+          expectedRevision: saved.revision,
+        }),
+      ).rejects.toThrow()
+      expect((await service.get(child, opened.id)).project).toEqual(edited)
+    })
+
+for (const language of ['javascript', 'python'] as const)
+  for (const kind of ['classic', 'pro'] as const)
+    test(`code pointer ${language}/${kind} requires the confirmed source, revision and current teacher`, async () => {
+      const { service, child, teacher, blocks } = setup()
+      const seed = { ...documentFixture(language, kind), assets: [] }
+      blocks.get(`${ids.lesson}:${ids.block}`)!.initialProject = seed
+      let workspace = await service.openForBlock(child, ids.session, ids.block)
+      workspace = await service.claim(child, workspace.id, ids.device, false)
+      workspace = await service.requestAssistance(teacher, workspace.id)
+      workspace = await service.acceptAssistance(child, workspace.id, workspace.assistance!.id, {
+        deviceId: ids.device,
+        writerEpoch: workspace.writerEpoch,
+        expectedRevision: workspace.revision,
+        mutationId: crypto.randomUUID(),
+        project: workspace.project,
+      })
+      workspace = await service.attachTeacher(teacher, workspace.id, ids.teacherDevice)
+      const path =
+        kind === 'pro'
+          ? language === 'python'
+            ? 'src/main.py'
+            : 'src/main.ts'
+          : language === 'python'
+            ? 'main.py'
+            : 'script.js'
+      const source = studioSourceAtPath(workspace.project, path)!
+      const target = {
+        kind: 'code' as const,
+        id: path,
+        start: 0,
+        end: source.length,
+        sourceSha256: await studioSourceSha256(source),
+        modelVersion: 7,
+      }
+      const input = {
+        deviceId: ids.teacherDevice,
+        writerEpoch: workspace.writerEpoch,
+        revision: workspace.revision,
+        target,
+        x: 0,
+        y: 0,
+      }
+      await service.cursor(teacher, workspace.id, input)
+      const accepted = (await service.get(teacher, workspace.id)).assistance?.cursor
+      expect(accepted?.target).toEqual(target)
+      for (const candidate of [
+        { ...input, revision: workspace.revision - 1 },
+        { ...input, target: { ...target, sourceSha256: await studioSourceSha256(`${source} `) } },
+        { ...input, target: { ...target, id: 'missing.py' } },
+        { ...input, target: { ...target, end: source.length + 1 } },
+        { ...input, writerEpoch: workspace.writerEpoch - 1 },
+      ])
+        await expect(service.cursor(teacher, workspace.id, candidate)).rejects.toThrow()
+      await expect(service.cursor(child, workspace.id, input)).rejects.toThrow()
+      expect((await service.get(teacher, workspace.id)).assistance?.cursor).toEqual(accepted)
+    })
+
+test('a chain cannot link saved work to a different language or runtime', async () => {
+  const { service, child, blocks, records, context } = setup()
+  const block = blocks.get(`${ids.lesson}:${ids.block}`)!
+  block.chain = 'shared-name'
+  const opened = await service.openForBlock(child, ids.session, ids.block)
+  const original = structuredClone(records.get(opened.id))
+  const lessonId = crypto.randomUUID()
+  const session = { ...context.session, id: crypto.randomUUID(), lessonId, order: 1 }
+  context.aggregate.sessions.push(session)
+  context.aggregate.grants.push({ ...context.aggregate.grants[0]!, sessionId: session.id })
+  const other = {
+    ...block,
+    lessonId,
+    blockId: crypto.randomUUID(),
+    initialProject: { ...documentFixture('python', 'pro'), assets: [] },
+  }
+  blocks.set(`${lessonId}:${other.blockId}`, other)
+  await expect(service.openForBlock(child, session.id, other.blockId)).rejects.toThrow(
+    'ambientes diferentes',
+  )
+  expect(records.get(opened.id)).toEqual(original)
+  expect((await service.openForBlock(child, ids.session, ids.block)).id).toBe(opened.id)
+})
+
+test('a published seed change does not replace or invalidate an already linked lesson project', async () => {
+  const { service, child, blocks } = setup()
+  const opened = await service.openForBlock(child, ids.session, ids.block)
+  const claimed = await service.claim(child, opened.id, ids.device, false)
+  const edited = { ...opened.project, name: 'Trabalho já feito' }
+  await service.commit(child, opened.id, {
+    project: edited,
+    deviceId: ids.device,
+    writerEpoch: claimed.writerEpoch,
+    expectedRevision: claimed.revision,
+    mutationId: crypto.randomUUID(),
+  })
+  blocks.get(`${ids.lesson}:${ids.block}`)!.initialProject = {
+    ...documentFixture('python', 'pro'),
+    assets: [],
+  }
+  const reopened = await service.openForBlock(child, ids.session, ids.block)
+  expect(reopened.project).toEqual(edited)
+  expect(reopened.id).toBe(opened.id)
+})
+
+test('an invalid authored seed is not silently replaced with an empty JavaScript project', async () => {
+  const { service, child, blocks, records } = setup()
+  blocks.get(`${ids.lesson}:${ids.block}`)!.initialProject = 'broken-payload'
+  await expect(service.openForBlock(child, ids.session, ids.block)).rejects.toThrow(
+    'projeto inicial',
+  )
+  expect(records.size).toBe(0)
+})
+
+test('a second block in the same lesson is a new binding, even with the same chain name', async () => {
+  const { service, child, blocks, records } = setup()
+  const first = blocks.get(`${ids.lesson}:${ids.block}`)!
+  first.chain = 'same-game'
+  const opened = await service.openForBlock(child, ids.session, ids.block)
+  const second = {
+    ...first,
+    blockId: crypto.randomUUID(),
+    initialProject: { ...documentFixture('python', 'pro'), assets: [] },
+  }
+  blocks.set(`${ids.lesson}:${second.blockId}`, second)
+  await expect(service.openForBlock(child, ids.session, second.blockId)).rejects.toThrow(
+    'ambientes diferentes',
+  )
+  expect(records.size).toBe(1)
+  expect((await service.get(child, opened.id)).project).toEqual(opened.project)
+})
+
+test('reopening an admitted block preserves its chain and curation after authoring changes', async () => {
+  const { service, child, blocks, records } = setup()
+  const first = blocks.get(`${ids.lesson}:${ids.block}`)!
+  first.chain = 'original-game'
+  const opened = await service.openForBlock(child, ids.session, ids.block)
+  first.chain = 'new-game'
+  first.studio = { allowedModes: ['code'] }
+  first.initialProject = { ...documentFixture('python', 'pro'), assets: [] }
+  const reopened = await service.openForBlock(child, ids.session, ids.block)
+  expect(reopened.id).toBe(opened.id)
+  expect(reopened.project).toEqual(opened.project)
+  expect(reopened.studio).toEqual(opened.studio)
+  expect(records.size).toBe(1)
+})
+
+test('even the current writer cannot change the workspace language, kind or runtime in a commit', async () => {
+  const { service, child, blocks, records } = setup()
+  blocks.get(`${ids.lesson}:${ids.block}`)!.initialProject = {
+    ...documentFixture('python', 'classic'),
+    assets: [],
+  }
+  const opened = await service.openForBlock(child, ids.session, ids.block)
+  const claimed = await service.claim(child, opened.id, ids.device, false)
+  const original = structuredClone(records.get(opened.id))
+  for (const candidate of [
+    documentFixture('javascript', 'classic'),
+    documentFixture('python', 'pro'),
+    {
+      ...documentFixture('python', 'classic'),
+      runtime: { ...documentFixture('python', 'classic').runtime, releaseId: 'other-release' },
+    },
+  ]) {
+    await expect(
+      service.commit(child, opened.id, {
+        project: { ...candidate, id: opened.id, assets: [] },
+        expectedRevision: claimed.revision,
+        writerEpoch: claimed.writerEpoch,
+        deviceId: ids.device,
+        mutationId: crypto.randomUUID(),
+      }),
+    ).rejects.toThrow('não pode mudar o ambiente')
+    expect(records.get(opened.id)).toEqual(original)
+  }
+})
+
 function setup(
   continuation = false,
   recording?: { confirmPaused(occurrenceId: string): Promise<void> },
@@ -35,6 +254,7 @@ function setup(
     staff: true,
   }
   const records = new Map<string, LiveWorkspaceRecord>()
+  const bindings = new Map<string, StudioLessonBinding>()
   const revisions = new Map<string, LiveWorkspaceRevision>()
   /** Cohort loads: through the pool (outside locks) and through a write transaction. */
   const loads = { pool: 0, transaction: 0, continuationInsideLock: 0, continuation: 0 }
@@ -89,6 +309,56 @@ function setup(
     ],
   ])
   const repository: LiveWorkspaceRepository = {
+    readRuntimeContext: async (id, _sessionId, blockId) => {
+      const record = records.get(id)
+      if (!record) return null
+      const { project, ...workspace } = structuredClone(record)
+      const found = blockId
+        ? bindings.get(`${workspace.accountId}:${workspace.learnerId}:${blockId}`)
+        : null
+      const baseline = found?.workspaceId === id ? found.baseline : null
+      const { initialProject, chain: _chain, ...curation } = baseline?.configuration ?? {}
+      return {
+        workspace,
+        cohort: structuredClone(context.aggregate),
+        environment: studioProjectContinuityReference(project),
+        binding: baseline
+          ? {
+              baselineId: baseline.id,
+              lessonId: baseline.lessonId,
+              courseId: baseline.courseId,
+              environment: studioProjectContinuityReference(initialProject),
+              curation,
+            }
+          : null,
+      }
+    },
+    findBinding: async (owner, blockId) =>
+      structuredClone(bindings.get(`${owner.accountId}:${owner.userId}:${blockId}`) ?? null),
+    openBound: async (candidate, baseline, sessionId) => {
+      const key = `${candidate.accountId}:${candidate.learnerId}:${baseline.blockId}`
+      const bound = bindings.get(key)
+      const original = bound?.baseline ?? baseline
+      const previous = bound?.workspaceId
+        ? await repository.find(bound.workspaceId)
+        : await repository.findByKey(candidate.learnerId, candidate.projectKey)
+      if (
+        studioProjectContinuityIssue(
+          (previous ?? candidate).project,
+          original.configuration.initialProject,
+        )
+      )
+        throw new Error('ambientes diferentes')
+      const workspace = previous ?? (await repository.ensureByKey(candidate))
+      bindings.set(key, { baseline: structuredClone(original), workspaceId: workspace.id })
+      return {
+        workspace: await repository.linkLesson(workspace.id, {
+          lessonId: original.lessonId,
+          sessionId,
+        }),
+        baseline: original,
+      }
+    },
     find: async (id) => structuredClone(records.get(id) ?? null),
     listOwned: async (accountId, learnerId) =>
       [...records.values()]

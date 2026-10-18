@@ -35,8 +35,13 @@ import {
 import { importedLearningId } from '../../../domain/learning/learning-import'
 import { LessonDraftConflictError } from '../../../domain/learning/lesson-draft.errors'
 import { publishedLessonRevisions } from '../../../domain/learning/published-lesson-revisions'
-import type { LessonDraftRepository } from '../../../domain/ports/lesson-draft-repository.port'
+import type {
+  LessonDraftRepository,
+  StudioDraftRuntimeContext,
+} from '../../../domain/ports/lesson-draft-repository.port'
 import { stableJson } from '../../../domain/shared/stable-json'
+import type { StudioAuthoringPolicy } from '../../../domain/studio/authoring-policy'
+import { studioChainCandidate } from '../../../domain/studio/chain-environment'
 import { DrizzleContentAdminRepository, quizGateFingerprint } from './content-admin.repository'
 import { DrizzleCourseRepository } from './course.repository'
 import type { Database } from './db'
@@ -52,6 +57,7 @@ import {
   lessons,
   quizAttempts,
 } from './schema'
+import { studioCurationProjection, studioEnvironmentProjection } from './studio-runtime-projection'
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 export type ParsePublishedBlock = (value: unknown) => LessonBlockContent
@@ -202,6 +208,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
   constructor(
     private readonly db: Database,
     private readonly parseBlock: ParsePublishedBlock,
+    private readonly studioPolicy?: StudioAuthoringPolicy,
   ) {}
 
   async read(lessonId: string) {
@@ -209,6 +216,26 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       await lockDraft(tx, lessonId)
       return readDraft(tx, lessonId)
     })
+  }
+
+  async readStudioRuntimeContext(lessonId: string, blockId: string | null) {
+    // One MVCC snapshot binds metadata to its revision, without loading source/media
+    // into the service, creating drafts or locking course authoring.
+    const [context] = await this.db
+      .select({
+        revision: lessonDrafts.revision,
+        block: sql<StudioDraftRuntimeContext['block']>`(
+        select jsonb_build_object(
+          'kind', block->'content'->'kind',
+          'environment', ${studioEnvironmentProjection(sql`block->'content'->'initialProject'`)},
+          'curation', ${studioCurationProjection(sql`block->'content'`)}
+        ) from jsonb_array_elements(${lessonDrafts.document}->'blocks') as block
+        where block->>'id' = ${blockId} limit 1
+      )`,
+      })
+      .from(lessonDrafts)
+      .where(eq(lessonDrafts.lessonId, lessonId))
+    return context ?? null
   }
 
   private async write(
@@ -469,8 +496,8 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
     const anexosDaAula = new Set(document.attachments.map((a) => a.id))
     for (const block of document.blocks) {
       try {
-        const content = canonicalizeBlockContent(this.parseBlock(block.content))
-        assertBlockCoherent(content)
+        const content = canonicalizeBlockContent(this.parseBlock(block.content), this.studioPolicy)
+        assertBlockCoherent(content, this.studioPolicy)
         blocks.push({ id: block.id, content })
         if (content.kind === 'ebook') {
           const pdf = document.attachments.find(
@@ -572,6 +599,12 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
           .select()
           .from(lessonBlocks)
           .where(eq(lessonBlocks.lessonId, lessonId))
+        // Course lock is already held by write(). Claim BEFORE any old chain is overwritten.
+        await content.claimStudioChains(
+          snapshot.lesson.courseId,
+          blocks.flatMap((block) => studioChainCandidate(block.content)),
+          existingRows.flatMap((block) => studioChainCandidate(block.content)),
+        )
         // Client-provided identities can only create new rows or retain this lesson's own rows.
         if (ids.length) {
           const foreign = await tx

@@ -30,6 +30,7 @@ function montar(opts: {
   subscribe?: ProjectChangeSubscriber
   updatedAt?: number
   objectives?: typeof OBJECTIVES
+  save?: () => Promise<void>
 }) {
   const value: LessonPlayerContextValue = {
     lessonId: 'aula',
@@ -47,7 +48,10 @@ function montar(opts: {
     },
   }
   const handleRef = {
-    current: { getProject: () => ({ id: 'p', updatedAt: opts.updatedAt ?? 1000 }) } as never,
+    current: {
+      getProject: () => ({ id: 'p', updatedAt: opts.updatedAt ?? 1000 }),
+      save: opts.save ?? (async () => {}),
+    } as never,
   }
   return render(
     <KidsLessonCopy>
@@ -66,6 +70,25 @@ const estado = (label: string) =>
   screen.getByText(label).closest('[data-state]')?.getAttribute('data-state')
 
 describe('Objetivos da parte', () => {
+  test('a verificação aguarda a gravação do editor antes de enviar o projeto', async () => {
+    let finishSave: () => void = () => {}
+    const saved = new Promise<void>((resolve) => {
+      finishSave = resolve
+    })
+    const request = mock(async () =>
+      Response.json({ passed: true, results: OBJECTIVES.map(({ id }) => ({ id, passed: true })) }),
+    )
+    globalThis.fetch = request as unknown as typeof fetch
+    montar({ save: () => saved })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Verificar esta parte' }))
+    })
+    expect(request).toHaveBeenCalledTimes(0)
+    await act(async () => finishSave())
+    expect(request).toHaveBeenCalledTimes(1)
+    expect(estado('Use um laço')).toBe('passed')
+  })
+
   test('obrigatórios e extras em listas separadas; nada verificado ainda', () => {
     montar({})
     expect(screen.getByText('Desafio extra')).toBeTruthy()

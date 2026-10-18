@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { studioPythonCspOrigins, withStudioPythonCsp } from '@sistemazero/core/studio/runtime-csp'
 import type { NextConfig } from 'next'
 
 // Raiz do MONOREPO: o file tracing do standalone precisa enxergar o workspace
@@ -14,6 +15,7 @@ const resolveFromKids = createRequire(
 const threePackageRoot = path.dirname(path.dirname(resolveFromKids.resolve('three')))
 
 const isDev = process.env.NODE_ENV !== 'production'
+const pythonFrameOrigins = studioPythonCspOrigins(process.env.STUDIO_PYTHON_FRAME_ORIGINS, isDev)
 
 /**
  * CSP da área do aluno (defesa em profundidade — não há sink de HTML cru: o
@@ -57,36 +59,39 @@ function buildCsp({ pro }: { pro: boolean }): string {
   const frameSrc = pro
     ? "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com https://*.webcontainer-api.io https://stackblitz.com https://*.staticblitz.com"
     : "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com"
-  return [
-    "default-src 'self'",
-    "base-uri 'self'",
-    "object-src 'none'",
-    "frame-ancestors 'none'",
-    "form-action 'self'",
-    frameSrc,
-    // Capas de curso são URLs externas arbitrárias da autoria + avatares do R2.
-    "img-src 'self' data: blob: https:",
-    "font-src 'self' data: https:",
-    // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
-    // `data:` p/ o SOM do Estúdio: o áudio que a criança envia é embutido como
-    // `data:audio/…` e tocado tanto pelo `<audio>` da prévia (nesta página) quanto
-    // pelo `new Audio()` do jogo, dentro do iframe `srcdoc` — que HERDA esta CSP
-    // (só pode RESTRINGIR, nunca relaxar), exatamente como o `script-src` abaixo.
-    // Sem `data:` aqui, o som carrega mas NÃO TOCA, e a recusa é silenciosa: só
-    // aparece no console como "Refused to load media from 'data:audio/…'".
-    "media-src 'self' blob: data: https:",
-    "style-src 'self' 'unsafe-inline' https:",
-    // `data:` p/ o preview do Estúdio (@sistemazero/studio): o script.js do aluno é
-    // injetado como `<script src="data:text/javascript;base64,…">` dentro do iframe
-    // `srcdoc`, que HERDA esta CSP (só pode RESTRINGIR, nunca relaxar) — sem `data:`
-    // aqui, o preview do bloco/estúdio não executa o código da criança. Risco baixo: já
-    // há `'unsafe-inline'` e não existe sink de HTML cru; o sandbox SEM allow-same-origin
-    // segue sendo a fronteira real.
-    scriptSrc,
-    "connect-src 'self' https:",
-    "worker-src 'self' blob:",
-    ...(isDev ? [] : ['upgrade-insecure-requests']),
-  ].join('; ')
+  return withStudioPythonCsp(
+    [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "object-src 'none'",
+      "frame-ancestors 'none'",
+      "form-action 'self'",
+      frameSrc,
+      // Capas de curso são URLs externas arbitrárias da autoria + avatares do R2.
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data: https:",
+      // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
+      // `data:` p/ o SOM do Estúdio: o áudio que a criança envia é embutido como
+      // `data:audio/…` e tocado tanto pelo `<audio>` da prévia (nesta página) quanto
+      // pelo `new Audio()` do jogo, dentro do iframe `srcdoc` — que HERDA esta CSP
+      // (só pode RESTRINGIR, nunca relaxar), exatamente como o `script-src` abaixo.
+      // Sem `data:` aqui, o som carrega mas NÃO TOCA, e a recusa é silenciosa: só
+      // aparece no console como "Refused to load media from 'data:audio/…'".
+      "media-src 'self' blob: data: https:",
+      "style-src 'self' 'unsafe-inline' https:",
+      // `data:` p/ o preview do Estúdio (@sistemazero/studio): o script.js do aluno é
+      // injetado como `<script src="data:text/javascript;base64,…">` dentro do iframe
+      // `srcdoc`, que HERDA esta CSP (só pode RESTRINGIR, nunca relaxar) — sem `data:`
+      // aqui, o preview do bloco/estúdio não executa o código da criança. Risco baixo: já
+      // há `'unsafe-inline'` e não existe sink de HTML cru; o sandbox SEM allow-same-origin
+      // segue sendo a fronteira real.
+      scriptSrc,
+      "connect-src 'self' https:",
+      "worker-src 'self' blob:",
+      ...(isDev ? [] : ['upgrade-insecure-requests']),
+    ].join('; '),
+    pythonFrameOrigins,
+  )
 }
 
 const strictCsp = buildCsp({ pro: false })

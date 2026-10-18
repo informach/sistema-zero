@@ -14,10 +14,7 @@
  * `load(<este id>)` nunca acha o rascunho (perde tudo no refresh — bug do `:` colado). `blockId` e
  * `viewerId` são UUIDs, então o id todo fica no charset seguro.
  */
-export function lessonStudioProjectId(blockId: string, viewerId?: string | null): string {
-  const who = viewerId ? `${viewerId}-` : ''
-  return `sz-lesson-studio-${who}${blockId}`
-}
+export { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
 
 /**
  * A "outra versão" do rascunho da fase (10/10/2026): quando dois computadores mexeram ao mesmo

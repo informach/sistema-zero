@@ -1,3 +1,5 @@
+import { DomainError } from '../errors'
+import { isExecutionRule } from './project-execution'
 import {
   isProjectBlockPattern,
   type ProjectBlockPattern,
@@ -34,6 +36,16 @@ function literal(node: unknown): unknown {
   )[String(node.type)]
   if (!key) return undefined
   return node.fields[key] ?? node.fields.VALUE
+}
+
+/** A bounded reader could not inspect all relevant source; this is never a failed objective. */
+export class ProjectStructureAnalysisLimitError extends DomainError {
+  readonly code = 'PROJECT_CHECK_ANALYSIS_LIMIT'
+  constructor() {
+    super(
+      'Não consegui conferir todo o código deste projeto. Peça ajuda à equipe; nenhum resultado foi guardado.',
+    )
+  }
 }
 
 /** Only connected, enabled blocks inside an actual project area count. */
@@ -211,13 +223,20 @@ export function summarizeSectionObjectives<R extends { passed: boolean; optional
 }
 
 export function evaluateSectionProject(
-  checks: readonly { id: string; label: string; rule: SectionStructureRule }[],
+  checks: readonly import('./section-progression').SectionProjectCheck[],
   project: unknown,
   valueBlockTypes?: ReadonlySet<string>,
 ) {
+  if (checks.some((check) => check.programmingLanguage === 'python'))
+    throw new Error(
+      'Objetivos Python precisam da inspeção Python; o avaliador JavaScript não se aplica.',
+    )
   return checks.map((check) => ({
     checkId: check.id,
     label: check.label,
-    passed: evaluateProjectStructure(check.rule, project, valueBlockTypes),
+    passed:
+      check.programmingLanguage !== 'python' &&
+      !isExecutionRule(check.rule) &&
+      evaluateProjectStructure(check.rule, project, valueBlockTypes),
   }))
 }

@@ -1,12 +1,40 @@
 import { afterEach, expect, mock, spyOn, test } from 'bun:test'
 import type { StudioAiActor, StudioAiUsageAction } from '@sistemazero/core/ai-credits'
 import { createBlankProjectSnapshot } from '@sistemazero/studio/blank-project'
+import { pythonEnvironmentFixture } from '../../studio/src/state/fixtures/pythonEnvironment'
 import { studioDescriptionInput } from '../src/lib/studio-description-input'
 
 mock.module('server-only', () => ({}))
 process.env.JWT_HS256_SECRET ??= 'description-test-secret-with-32-characters'
 const { generateProjectDescription } = await import('../src/server/openrouter')
 afterEach(() => mock.restore())
+
+for (const kind of ['classic', 'pro'] as const)
+  test(`Python ${kind} descriptions contain bounded Python source, without assets or requirements`, async () => {
+    const { project } = await pythonEnvironmentFixture(kind)
+    const source = 'import turtle\nturtle.forward(60)\n'.repeat(200)
+    if (project.kind === 'pro') {
+      project.tree[project.python.entrypoint] = { kind: 'file', content: source }
+      project.tree['requirements.txt'] = { kind: 'file', content: 'PRIVATE_DEPENDENCIES' }
+      for (let index = 0; index < 8; index++)
+        project.tree[`helper_${index}.py`] = { kind: 'file', content: 'value = 42' }
+    } else {
+      project.files[project.python.entrypoint] = source
+      project.files['requirements.txt'] = 'PRIVATE_DEPENDENCIES'
+      for (let index = 0; index < 8; index++) project.files[`helper_${index}.py`] = 'value = 42'
+    }
+    const input = studioDescriptionInput(project, 'Meu Turtle')
+    expect(input.kind).toBe('python')
+    if (input.kind !== 'python') throw new Error('Expected Python description')
+    expect(input.projectKind).toBe(kind)
+    expect(input.sources).toHaveLength(6)
+    expect(input.sources[0]).toEqual({
+      path: project.python.entrypoint,
+      content: source.slice(0, 4000),
+    })
+    expect(JSON.stringify(input)).not.toContain('PRIVATE_DEPENDENCIES')
+    expect(JSON.stringify(input)).not.toContain(project.runtime.manifestSha256)
+  })
 
 test('Pro description reads bounded real sources, not dormant classic code or binaries', () => {
   const project = {

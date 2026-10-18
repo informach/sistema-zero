@@ -1,3 +1,8 @@
+import {
+  createExecutionObservationCodec,
+  isEncodedExecutionObservation,
+} from './execution-observation'
+
 /**
  * Objetivos que RODAM o jogo (18/10/2026, etapa 3 dos objetivos do Estúdio): o servidor abre o
  * projeto num navegador isolado (o `studio-runtime`), faz o que a regra manda (esperar, apertar
@@ -160,7 +165,7 @@ export function isExecutionModulePath(path: unknown): path is string {
   )
 }
 
-function jsonFits(value: unknown): value is ExecutionJson {
+export function isExecutionJson(value: unknown): value is ExecutionJson {
   let text: string
   try {
     text = JSON.stringify(value)
@@ -312,9 +317,9 @@ export function isSectionExecutionRule(rule: unknown): rule is SectionExecutionR
             Object.keys(item).every((key) => key === 'args' || key === 'expected') &&
             Array.isArray(item.args) &&
             item.args.length <= EXECUTION_LIMITS.maxArgs &&
-            item.args.every(jsonFits) &&
+            item.args.every(isExecutionJson) &&
             Object.hasOwn(item, 'expected') &&
-            jsonFits(item.expected),
+            isExecutionJson(item.expected),
         )
       )
     case 'script':
@@ -341,7 +346,12 @@ export interface ExecutionObjectiveResult {
 /** Igualdade de valores do teste: JSON com número tolerante a arredondamento de ponto flutuante. */
 export function executionValuesEqual(a: unknown, b: unknown): boolean {
   if (typeof a === 'number' && typeof b === 'number')
-    return a === b || Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b))
+    return (
+      a === b ||
+      (Number.isFinite(a) &&
+        Number.isFinite(b) &&
+        Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b)))
+    )
   if (Array.isArray(a) || Array.isArray(b)) {
     if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false
     return a.every((item, index) => executionValuesEqual(item, b[index]))
@@ -362,17 +372,32 @@ export function executionValuesEqual(a: unknown, b: unknown): boolean {
  * contém": um texto cortado não prova que a palavra não está lá). Achado do review da etapa 3.
  */
 const INCONCLUSIVE = new Set(['large', 'deep', 'error'])
+const observationCodec = createExecutionObservationCodec()
 const marker = (value: unknown): string | null =>
   record(value) && typeof value.$sz === 'string' && Object.keys(value).length === 1
     ? value.$sz
     : null
 
 export function isInconclusiveObservedValue(value: unknown): boolean {
+  if (isEncodedExecutionObservation(value)) {
+    try {
+      observationCodec.decode(value)
+      return false
+    } catch {
+      return true
+    }
+  }
   const mark = marker(value)
-  return mark !== null && INCONCLUSIVE.has(mark)
+  if (mark !== null && INCONCLUSIVE.has(mark)) return true
+  return Array.isArray(value)
+    ? value.some(isInconclusiveObservedValue)
+    : record(value)
+      ? Object.values(value).some(isInconclusiveObservedValue)
+      : false
 }
 
 function fromObserved(value: unknown): unknown {
+  if (isEncodedExecutionObservation(value)) return observationCodec.decode(value)
   const mark = marker(value)
   if (mark === null) return value
   if (mark === 'undefined') return undefined
@@ -406,7 +431,12 @@ export function compareExecutionValue(
         expected,
       )
     case 'notEquals':
-      return !compareExecutionValue(actual, 'equals', expected)
+      return !executionValuesEqual(
+        typeof expected === 'number' && typeof actual === 'string' && actual.trim() !== ''
+          ? Number(actual)
+          : actual,
+        expected,
+      )
     case 'contains':
     case 'notContains': {
       const text =
@@ -488,7 +518,16 @@ export interface ExecutionObservation {
 }
 
 const shortJson = (value: unknown) => {
-  if (record(value) && value.$sz === 'undefined') return 'nada (undefined)'
+  const encoded = isEncodedExecutionObservation(value)
+  if (encoded) {
+    try {
+      value = observationCodec.decode(value)
+    } catch {
+      return 'leitura inconclusiva'
+    }
+  }
+  if (value === undefined || (!encoded && record(value) && value.$sz === 'undefined'))
+    return 'nada (undefined)'
   let text: string
   try {
     text = JSON.stringify(value) ?? 'nada'
@@ -554,7 +593,9 @@ export function judgeExecutionObservation(
           passed: false,
           detail: `Com (${args}) a função deu erro: ${outcome?.error ?? 'sem resposta'}.`,
         }
-      if (!executionValuesEqual(outcome.value, item.expected))
+      if (isInconclusiveObservedValue(outcome.value))
+        return { passed: false, detail: 'Não consegui ler a resposta inteira da função.' }
+      if (!executionValuesEqual(fromObserved(outcome.value), item.expected))
         return {
           passed: false,
           detail: `Com (${args}) respondeu ${shortJson(outcome.value)}; esperava ${shortJson(item.expected)}.`,

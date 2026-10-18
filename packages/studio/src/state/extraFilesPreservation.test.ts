@@ -57,7 +57,7 @@ describe('preservação de arquivos extras (Código→Ponte→Código)', () => {
 
     const project = useProjectStore.getState().project
     expect(project?.extraFiles?.map((f) => f.name)).toEqual(['cores.css', 'utils.js'])
-    expect(project?.files['index.html']).toContain('Oi')
+    expect(project?.files?.['index.html']).toContain('Oi')
     expect(project?.ir).toEqual(ir)
   })
 })

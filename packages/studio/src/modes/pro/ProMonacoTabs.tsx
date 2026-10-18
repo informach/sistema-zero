@@ -29,9 +29,9 @@ export function MonacoTabs(props: MonacoTabsProps) {
       formatLabel={t('pro.organizeCode')}
       onFormatIssue={onFormatIssue}
       tabsRightSlot={<FontSizeControls defaultSize={15} />}
-      onEditorReady={(editor) => {
+      onEditorReady={(editor, scope) => {
         onEditorReady(editor)
-        props.onEditorReady?.(editor)
+        props.onEditorReady?.(editor, scope)
       }}
     />
   )

@@ -4,6 +4,7 @@ import {
   creativeToolAccessRef,
   creatorCommunityAccessRef,
 } from '@sistemazero/core/creations'
+import { StudioPublicProjectMetadataSchema } from '@sistemazero/core/studio/public-metadata'
 import {
   AccessUnavailableError,
   ChannelNotFoundError,
@@ -13,6 +14,7 @@ import {
 import type { CommunityReadRepository } from '../../domain/ports/community-read-repository.port'
 import type { MembersGateway } from '../../domain/ports/members-gateway.port'
 import type { AuthorActivity, ThreadRepository } from '../../domain/ports/thread-repository.port'
+import { ValidationError } from '../../domain/shared/errors'
 import type { Channel } from '../../domain/space/space'
 import type { ThreadStudioMeta } from '../../domain/thread/thread'
 import type { AccessResolutionService, Actor } from '../access/access-resolution.service'
@@ -64,7 +66,22 @@ function sanitizeStudioMeta(meta: ThreadStudioMeta | null | undefined): ThreadSt
     0,
     MAX_STUDIO_META_EXTENSIONS,
   )
-  return { pro: meta.pro === true, extensions }
+  const parsed = StudioPublicProjectMetadataSchema.safeParse({
+    pro: meta.pro === true,
+    extensions,
+    ...(meta.programmingLanguage ? { programmingLanguage: meta.programmingLanguage } : {}),
+    ...(meta.runtime
+      ? {
+          runtime: {
+            profileId: meta.runtime.profileId,
+            releaseId: meta.runtime.releaseId,
+            manifestSha256: meta.runtime.manifestSha256,
+          },
+        }
+      : {}),
+  })
+  if (!parsed.success) throw new ValidationError('Metadados do projeto inválidos.')
+  return parsed.data
 }
 
 export interface CreateShowcaseCommand {

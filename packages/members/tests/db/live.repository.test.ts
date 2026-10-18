@@ -45,7 +45,9 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
   })
 
   // The live course itself is read through the port; its SQL adapter has its own test file.
-  const courses = new InMemoryLiveCourses((course) => persistLiveCourse(connection, course))
+  const courses = new InMemoryLiveCourses((course, blocks) =>
+    persistLiveCourse(connection, course, blocks),
+  )
   async function setup(capacity = 1, courseStatus: 'draft' | 'published' = 'published') {
     const repository = new DrizzleLiveRepository(connection.db)
     const service = new LiveService(

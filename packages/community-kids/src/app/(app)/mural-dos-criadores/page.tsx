@@ -1,3 +1,4 @@
+import { pythonRemixCapabilities } from '@sistemazero/member-shell/lib/studio-python-remix'
 import { isPrivilegedRole, type StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { earnedStudioTier } from '@sistemazero/member-shell/server/studio-unlocks'
 import { KidsLockedMural } from '@/components/kids/kids-locked-mural'
@@ -7,6 +8,7 @@ import {
   getChallengeReadonly,
   getGamificationReadonly,
   getStudioUnlocksReadonly,
+  studioFreeOptionsReadonly,
 } from '@/server/members'
 import { getSession } from '@/server/session'
 
@@ -23,7 +25,7 @@ export default async function MuralPage() {
   // cards. Best-effort: soluço na checagem só esconde o botão (produto vendido à
   // parte). O tema do DESAFIO do mês alimenta a prateleira do topo — visível a quem
   // vê o Mural (participar é que exige Clube+Estúdio; ver não).
-  const [session, studioRes, challengeRes, gamRes, unlocksRes] = await Promise.all([
+  const [session, studioRes, challengeRes, gamRes, unlocksRes, python] = await Promise.all([
     getSession(),
     checkStudioAccessReadonly().catch(() => null),
     getChallengeReadonly().catch(() => null),
@@ -31,6 +33,9 @@ export default async function MuralPage() {
     // Paleta do CURRÍCULO: com ela o remix pergunta "o que você conquistou cobre este
     // jogo?" em vez de "seu nível cobre?" — mais exato agora que a paleta não vem do nível.
     getStudioUnlocksReadonly().catch(() => null),
+    studioFreeOptionsReadonly()
+      .then((response) => (response.status === 200 ? pythonRemixCapabilities(response.body) : []))
+      .catch(() => []),
   ])
   const ownsStudio =
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true
@@ -52,7 +57,7 @@ export default async function MuralPage() {
   }
   const remixTier: RemixTier | null =
     tier?.freeStudio === true && tier.hasPalette
-      ? { pro: tier.pro, allowedExtensions: [...tier.allowedExtensions] }
+      ? { pro: tier.pro, allowedExtensions: [...tier.allowedExtensions], python }
       : null
   const challenge =
     challengeRes?.status === 200 && challengeRes.body

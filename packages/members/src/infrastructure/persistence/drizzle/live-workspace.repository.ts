@@ -1,19 +1,34 @@
 import type { LiveAssistanceView } from '@sistemazero/core/live'
-import { and, desc, eq, gt, inArray, ne, sql } from 'drizzle-orm'
-import { LiveAccessError, LiveNotFoundError } from '../../../domain/live/live.errors'
+import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
+import { and, desc, eq, getTableColumns, gt, inArray, ne, sql } from 'drizzle-orm'
+import {
+  LiveAccessError,
+  LiveConflictError,
+  LiveNotFoundError,
+} from '../../../domain/live/live.errors'
 import type {
   LiveWorkspaceRecord,
   LiveWorkspaceRepository,
   LiveWorkspaceRevision,
+  LiveWorkspaceRuntimeContext,
 } from '../../../domain/ports/live-workspace-repository.port'
+import type { StudioLessonOwner } from '../../../domain/ports/studio-lesson-binding-repository.port'
+import type { StudioLessonBaseline } from '../../../domain/studio/lesson-baseline'
 import type { Database } from './db'
-import { loadLiveCohort } from './live.repository'
+import { loadLiveCohort, loadLiveRoom } from './live.repository'
 import {
   accountDeletionFences,
   liveSessions,
   liveWorkspaceRevisions,
   liveWorkspaces,
+  studioLessonBaselines,
+  studioLessonBindings,
 } from './schema'
+import {
+  insertStudioLessonBinding,
+  readStudioLessonBinding,
+} from './studio-lesson-binding.repository'
+import { studioCurationProjection, studioEnvironmentProjection } from './studio-runtime-projection'
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 async function lockAccount(tx: Transaction, accountId: string) {
@@ -49,6 +64,136 @@ function values(workspace: LiveWorkspaceRecord) {
 }
 export class DrizzleLiveWorkspaceRepository implements LiveWorkspaceRepository {
   constructor(private readonly db: Database) {}
+  async readRuntimeContext(
+    id: string,
+    sessionId: string | null,
+    blockId: string | null,
+  ): Promise<LiveWorkspaceRuntimeContext | null> {
+    return this.db.transaction(
+      async (tx) => {
+        const { project: _project, ...metadata } = getTableColumns(liveWorkspaces)
+        const [row] = await tx
+          .select({
+            ...metadata,
+            environment: studioEnvironmentProjection(sql`${liveWorkspaces.project}`),
+            cohortId: liveSessions.cohortId,
+            deletionFence: accountDeletionFences.accountId,
+          })
+          .from(liveWorkspaces)
+          .leftJoin(liveSessions, eq(liveSessions.id, liveWorkspaces.sessionId))
+          .leftJoin(
+            accountDeletionFences,
+            eq(accountDeletionFences.accountId, liveWorkspaces.accountId),
+          )
+          .where(eq(liveWorkspaces.id, id))
+        if (!row) return null
+        if (row.deletionFence) throw new LiveAccessError('Esta conta está em exclusão.')
+        const { environment, cohortId, deletionFence: _fence, ...stored } = row
+        const cohort = sessionId
+          ? await loadLiveRoom(tx, { sessionId })
+          : cohortId
+            ? await loadLiveCohort(tx, cohortId)
+            : null
+        const [binding] = blockId
+          ? await tx
+              .select({
+                baselineId: studioLessonBaselines.id,
+                lessonId: studioLessonBaselines.lessonId,
+                courseId: studioLessonBaselines.courseId,
+                environment: studioEnvironmentProjection(
+                  sql`${studioLessonBaselines.configuration}->'initialProject'`,
+                ),
+                curation: studioCurationProjection(sql`${studioLessonBaselines.configuration}`),
+              })
+              .from(studioLessonBindings)
+              .innerJoin(
+                studioLessonBaselines,
+                eq(studioLessonBaselines.id, studioLessonBindings.baselineId),
+              )
+              .where(
+                and(
+                  eq(studioLessonBindings.workspaceId, id),
+                  eq(studioLessonBindings.accountId, stored.accountId),
+                  eq(studioLessonBindings.userId, stored.learnerId),
+                  eq(studioLessonBindings.blockId, blockId),
+                ),
+              )
+          : []
+        return {
+          workspace: {
+            ...stored,
+            leaseExpiresAt: stored.leaseExpiresAt?.toISOString() ?? null,
+            updatedAt: stored.updatedAt.toISOString(),
+          },
+          environment,
+          // An encounter in another cohort cannot confer access to this workspace.
+          cohort: cohort?.cohort.id === cohortId ? cohort : null,
+          binding: binding ?? null,
+        }
+      },
+      { isolationLevel: 'repeatable read', accessMode: 'read only' },
+    )
+  }
+  findBinding(owner: StudioLessonOwner, blockId: string) {
+    return readStudioLessonBinding(this.db, owner, blockId)
+  }
+  async openBound(
+    candidate: LiveWorkspaceRecord & { projectKey: string },
+    baseline: StudioLessonBaseline,
+    sessionId: string,
+  ) {
+    return this.db.transaction(async (tx) => {
+      await lockAccount(tx, candidate.accountId)
+      const owner = { userId: candidate.learnerId, accountId: candidate.accountId }
+      const bound = await readStudioLessonBinding(tx, owner, baseline.blockId)
+      if (bound && !bound.workspaceId)
+        throw new LiveConflictError('Este projeto pertence a uma aula gravada.')
+      const condition = bound?.workspaceId
+        ? eq(liveWorkspaces.id, bound.workspaceId)
+        : and(
+            eq(liveWorkspaces.learnerId, candidate.learnerId),
+            eq(liveWorkspaces.projectKey, candidate.projectKey),
+          )
+      let [row] = await tx.select().from(liveWorkspaces).where(condition).for('update')
+      if (!row) {
+        if (bound) throw new LiveNotFoundError()
+        await tx.insert(liveWorkspaces).values(values(candidate)).onConflictDoNothing()
+        ;[row] = await tx.select().from(liveWorkspaces).where(condition).for('update')
+      }
+      if (!row || row.accountId !== candidate.accountId || row.learnerId !== candidate.learnerId)
+        throw new LiveAccessError()
+      const original = bound?.baseline ?? baseline
+      if (studioProjectContinuityIssue(row.project, original.configuration.initialProject))
+        throw new LiveConflictError(
+          'O projeto salvo e esta aula usam ambientes diferentes. O trabalho foi preservado; peça à equipe para conferir a configuração.',
+        )
+      const binding = bound ?? (await insertStudioLessonBinding(tx, owner, original, row.id))
+      const cohorts = await tx
+        .select({ id: liveSessions.id, cohortId: liveSessions.cohortId })
+        .from(liveSessions)
+        .where(inArray(liveSessions.id, [row.sessionId, sessionId]))
+      const anchorSessionId = row.sessionId
+      const anchor = cohorts.find((item) => item.id === anchorSessionId)?.cohortId
+      const target = cohorts.find((item) => item.id === sessionId)?.cohortId
+      if (!target) throw new LiveNotFoundError()
+      const lessonIds = row.lessonIds
+      const move = anchor !== target && row.assistance === null
+      if (move || !lessonIds.includes(original.lessonId)) {
+        const [updated] = await tx
+          .update(liveWorkspaces)
+          .set(
+            move
+              ? { sessionId, lessonIds: [original.lessonId] }
+              : { lessonIds: [...lessonIds, original.lessonId] },
+          )
+          .where(eq(liveWorkspaces.id, row.id))
+          .returning()
+        if (!updated) throw new LiveNotFoundError()
+        row = updated
+      }
+      return { workspace: record(row), baseline: binding.baseline }
+    })
+  }
   async find(id: string) {
     const [row] = await this.db.select().from(liveWorkspaces).where(eq(liveWorkspaces.id, id))
     return row ? record(row) : null

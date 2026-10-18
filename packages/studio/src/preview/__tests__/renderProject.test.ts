@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { createEmptyProject, type Project } from '#core'
+import { refineJavaScriptProjectDocument } from '../../state/javaScriptProjectValidation'
 import { renderProjectToPreviewDoc, renderProjectToPreviewDocAsync } from '../renderProject'
 
 function projectWith(overrides: Partial<Project> = {}): Project {
@@ -16,6 +17,61 @@ function projectWith(overrides: Partial<Project> = {}): Project {
 }
 
 describe('renderProjectToPreviewDoc', () => {
+  it('captures v3 source and host policy before loading its adapter or resources', async () => {
+    const project = refineJavaScriptProjectDocument({
+      ...projectWith(),
+      formatVersion: 3,
+      programmingLanguage: 'javascript',
+      kind: 'classic',
+      runtime: {
+        profileId: 'javascript-test',
+        releaseId: 'test-1',
+        manifestSha256: 'a'.repeat(64),
+      },
+    })
+    const options = {
+      parentOrigin: 'https://example.test',
+      fetchAllowedOrigins: ['https://allowed.test'],
+    }
+    const expected = await renderProjectToPreviewDocAsync(project, options)
+    const pending = renderProjectToPreviewDocAsync(project, options)
+    project.files['script.js'] = 'console.log("changed after capture")'
+    options.parentOrigin = 'https://changed.test'
+    options.fetchAllowedOrigins.push('https://changed.test')
+    expect(await pending).toBe(expected)
+  })
+
+  it('uses the same public-player recipe for current and v3 JavaScript documents', async () => {
+    const source = projectWith({
+      installedExtensions: [{ id: 'game-2d', version: '1.0.0', installedAt: 0 }],
+      assets: [
+        {
+          id: 'heroi',
+          name: 'heroi',
+          kind: 'image',
+          dataUrl: 'data:image/png;base64,AAAA',
+          source: 'upload',
+        },
+      ],
+      extraFiles: [{ name: 'helper.js', language: 'javascript', content: 'var helper = 42' }],
+    })
+    const document = refineJavaScriptProjectDocument({
+      ...source,
+      formatVersion: 3,
+      programmingLanguage: 'javascript',
+      kind: 'classic',
+      runtime: {
+        profileId: 'javascript-test',
+        releaseId: 'test-1',
+        manifestSha256: 'a'.repeat(64),
+      },
+    })
+    const options = { securityProfile: 'strict' as const, parentOrigin: 'https://example.test' }
+    expect(await renderProjectToPreviewDocAsync(document, options)).toBe(
+      await renderProjectToPreviewDocAsync(source, options),
+    )
+  })
+
   it('diagnóstico do host é opt-in e não aparece no player comum', async () => {
     const source = projectWith()
     expect(await renderProjectToPreviewDocAsync(source)).not.toContain(

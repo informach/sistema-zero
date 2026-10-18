@@ -139,6 +139,7 @@ function TeacherLesson({
               allowCategories: content.allowCategories,
               allowedModes: content.allowedModes,
               allowLevelReveal: content.allowLevelReveal,
+              pythonLevel: content.pythonLevel,
             }}
           />
         ) : null

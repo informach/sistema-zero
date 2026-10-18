@@ -28,7 +28,7 @@ export type {
  */
 
 // Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
-import type { AnyBlockLevel, IDEMode, Project } from '@sistemazero/studio'
+import type { AnyBlockLevel, IDEMode, EditableStudioProject as Project } from '@sistemazero/studio'
 
 // ── Sessão / usuário (claims do JWT do auth) ────────────────────────────────
 
@@ -480,6 +480,7 @@ export interface EbookBlock {
  * conclusão da aula até ser enviada — `studioState` reflete se já enviou.
  */
 export interface StudioBlock {
+  pythonLevel?: 1 | 2 | 3
   gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
   purpose?: 'experiment' | 'submission'
   kind: 'studio'
@@ -1285,6 +1286,7 @@ export interface AiUsageConsumeView {
 }
 
 export interface ZappyStoredResponseView {
+  programmingLanguage?: 'javascript' | 'python'
   intent?: import('@sistemazero/core/studio').StudioTutorIntent
   kind?: 'classic' | 'pro'
   fileReferences?: import('@sistemazero/core/studio').StudioTutorFileReference[]
@@ -1689,7 +1691,7 @@ export interface HubThreadView {
    * de `authorId`); COSMÉTICO por contrato — o gate real do remix é a checagem no clique
    * sobre o snapshot jogável. Ausente/`null` = post antigo ou sem projeto.
    */
-  studioMeta?: { pro: boolean; extensions: string[] } | null
+  studioMeta?: import('@sistemazero/core/studio/public-metadata').StudioPublicProjectMetadata | null
   reactions: HubReaction[]
   attachments: HubAttachmentView[]
   lastActivityAt: string

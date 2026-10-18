@@ -68,6 +68,7 @@ import { SectionCompletionEditor } from './section-completion-editor'
 import { TeacherNotesField } from './teacher-notes-field'
 
 export interface SectionAuthoringProps {
+  draftRevision?: string
   lesson: LessonContentView
   document: LessonDraftDocument<LessonBlockContent>
   canWrite: boolean
@@ -125,6 +126,7 @@ function SortableSection({
 export function LessonSectionAuthoring({
   lesson,
   document: doc,
+  draftRevision,
   canWrite,
   onChange,
   onAddBlock,
@@ -497,6 +499,20 @@ export function LessonSectionAuthoring({
                     </Button>
                   )}
                 <SectionCompletionEditor
+                  runtimeScope={
+                    draftRevision
+                      ? {
+                          userId: authorId,
+                          context: {
+                            kind: 'authoring',
+                            lessonId: lesson.id,
+                            draftRevision,
+                            blockId: editing.workspaceBlockId,
+                            purpose: 'authoring',
+                          },
+                        }
+                      : undefined
+                  }
                   allowPlatformAction={
                     !editing.workspaceBlockId &&
                     !editing.externalTool &&

@@ -16,7 +16,8 @@
  * módulo não entenda continua exatamente jogável como era — o que se ganha aqui
  * é X, Y e a tira, que hoje simplesmente não existem.
  */
-import type { ProjectFiles } from '../core/project'
+
+import type { ProjectFiles } from '#core'
 
 export type ControlSlot = 'A' | 'B' | 'X' | 'Y'
 export type StripSlot = 'select' | 'start'
@@ -243,10 +244,11 @@ const ACOES_DE_PAUSA = new Set(['pause', 'pausar'])
 const ACOES_DE_SELECIONAR = new Set(['select', 'voltar'])
 
 export interface ProjectComControles {
+  programmingLanguage?: 'javascript' | 'python'
   kind?: 'classic' | 'pro'
   proMeta?: { templateId: string }
   ir?: unknown
-  files?: Pick<ProjectFiles, 'script.js'> | ProjectFiles | undefined
+  files?: ProjectFiles | Record<string, string> | undefined
 }
 
 /** O mapa padrão: exatamente o que o pad já mandava antes deste lote. */
@@ -284,6 +286,11 @@ export function describeProjectControls(
 ): ProjectControls {
   const controles = defaultProjectControls()
   if (!projeto) return controles
+  if (projeto.programmingLanguage === 'python') {
+    controles.face.A = liga('Ação', 'space')
+    controles.face.B = liga('Confirmar', 'enter')
+    return controles
+  }
   if (projeto.kind === 'pro') {
     controles.face.A = liga('Ação', 'space')
     // Kits own their contextual controls inside the game; Pro never reads the

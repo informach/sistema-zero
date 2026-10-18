@@ -109,6 +109,35 @@ export function createInMemoryStore(): GatewayStore {
       return { total: b.total, fail: b.fail }
     },
 
+    async settleCircuitTrial(keys, token, outcome, now, ttlMs) {
+      // No await between token verification and transition: one atomic JS turn.
+      const entry = cache.get(keys.state)
+      const state = entry?.value
+      if (
+        !entry ||
+        entry.expiresAt <= Date.now() ||
+        typeof state !== 'object' ||
+        state === null ||
+        !('state' in state) ||
+        state.state !== 'half-open' ||
+        !('trialToken' in state) ||
+        state.trialToken !== token ||
+        !('openedAt' in state)
+      )
+        return false
+      if (outcome === 'success') {
+        cache.delete(keys.state)
+        breakers.delete(keys.counts)
+      } else {
+        cache.set(keys.state, {
+          value: { state: 'open', openedAt: outcome === 'cancel' ? state.openedAt : now },
+          expiresAt: Date.now() + ttlMs,
+        })
+      }
+      windows.delete(keys.gate)
+      return true
+    },
+
     async reset(key) {
       if (key) {
         windows.delete(key)

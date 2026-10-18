@@ -1,21 +1,36 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
+import type { StudioPythonPublication } from '@sistemazero/core/studio/python-publication'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { IDBFactory } from 'fake-indexeddb'
 import { createEmptyProject } from '#core'
+import { projectPublicationId } from '../../core/projectPublication'
+import { prepareEditableStudioProject } from '../../state/editableProjectValidation'
+import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
+import { loadProjectById } from '../../state/persistence'
 import { registerProjectOperation } from '../../state/projectOperations'
-import { setProjectStorageNamespace } from '../../state/projectStorageRuntime'
+import {
+  captureProjectStorageScope,
+  setProjectStorageNamespace,
+} from '../../state/projectStorageRuntime'
 import { type ProjectStoreApi, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { StudioStoresContext } from '../../state/storesContext'
+import { createStudioStores } from '../../state/studioStores'
 import type { StudioShareAdapter } from '../../studio/share'
 
 // bun:test NÃO isola module mocks por arquivo — captura o real ANTES e restaura
 // no afterAll (ver BottomPanel.test.tsx). Mockar a captura evita o timeout de
 // ~5.5s do iframe oculto sob happy-dom (que nunca executa o script).
 const realCover = { ...(await import('../../cover/coverCapture')) }
+const indexedDBDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
+Object.defineProperty(globalThis, 'indexedDB', { value: new IDBFactory(), configurable: true })
 mock.module('../../cover/coverCapture', () => ({
   captureCoverFromProject: async () => 'data:image/png;base64,FAKECOVER',
 }))
 
 afterAll(() => {
   mock.module('../../cover/coverCapture', () => realCover)
+  if (indexedDBDescriptor) Object.defineProperty(globalThis, 'indexedDB', indexedDBDescriptor)
+  else Reflect.deleteProperty(globalThis, 'indexedDB')
 })
 
 const { ShareDialog } = await import('./ShareDialog')
@@ -44,6 +59,140 @@ describe('ShareDialog', () => {
     cleanup()
     useProjectStore.setState({ project: null, isDirty: false, saveError: null })
     setProjectStorageNamespace('')
+  })
+
+  it('Python Classic persists its publication link, reopens history, updates, restores and disables that link', async () => {
+    setProjectStorageNamespace(`classic-share-${crypto.randomUUID()}`)
+    const scope = captureProjectStorageScope()
+    const stores = createStudioStores()
+    const { project: initial } = await pythonEnvironmentFixture('classic')
+    stores.project.getState().hydrateProject(initial)
+    expect(
+      stores.project.getState().setPythonFile('main.py', 'print("antes de publicar")\n'),
+    ).toBeNull()
+    await stores.persistence.save()
+    const project = stores.project.getState().project!
+    const playId = crypto.randomUUID()
+    const publication: StudioPythonPublication = {
+      publicationVersion: 2,
+      programmingLanguage: 'python',
+      kind: 'classic',
+      runtime: project.runtime!,
+      playId,
+      version: 2,
+      disabled: false,
+      activeRevision: '2'.repeat(64),
+      revisions: [1, 2].map((n) => ({
+        id: String(n).repeat(64),
+        sourceHash: 'a'.repeat(64),
+        artifactHash: 'b'.repeat(64),
+        createdAt: n * 1000,
+        approval: {
+          kind: 'python-browser',
+          runtime: project.runtime!,
+          snapshotSha256: 'c'.repeat(64),
+        },
+      })),
+    }
+    const history: NonNullable<StudioShareAdapter['publication']> = {
+      get: mock(async () => publication),
+      update: mock(async () => ({ ...publication, version: 3 })),
+      activate: mock(async (input) => ({
+        ...publication,
+        version: input.expectedVersion + 1,
+        activeRevision: input.revision,
+        disabled: input.disabled,
+      })),
+    }
+    const adapter = makeAdapter({
+      presetDescription: 'Meu jogo Python.',
+      presetCoverUrl: 'https://cover.test/game.png',
+      publication: history,
+      publish: mock(async () => ({ publicationId: playId, playUrl: `/jogar/${playId}` })),
+    })
+    const view = render(
+      <StudioStoresContext value={stores}>
+        <ShareDialog open onClose={() => {}} adapter={adapter} />
+      </StudioStoresContext>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Usar a capa da aventura' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
+    await screen.findByText('Copiar link')
+    const loaded = await prepareEditableStudioProject(await loadProjectById(project.id, scope))
+    if (!loaded) throw new Error('The published project was not persisted')
+    expect(projectPublicationId(loaded)).toBe(playId)
+    expect(stores.project.getState().isDirty).toBe(false)
+    view.unmount()
+    const reopened = createStudioStores()
+    reopened.project.getState().hydrateProject(loaded)
+    render(
+      <StudioStoresContext value={reopened}>
+        <ShareDialog open onClose={() => {}} adapter={adapter} />
+      </StudioStoresContext>,
+    )
+    await screen.findByText('Link ativo')
+    const sourceBefore = JSON.stringify(reopened.project.getState().project)
+    fireEvent.click(screen.getByRole('button', { name: 'Publicar versão atual neste link' }))
+    await waitFor(() => expect(history.update).toHaveBeenCalledTimes(1))
+    expect((history.update as ReturnType<typeof mock>).mock.calls[0]?.[0]).toMatchObject({
+      playId,
+      expectedVersion: 2,
+      project: { id: project.id, programmingLanguage: 'python', kind: 'classic' },
+    })
+    await waitFor(() =>
+      expect(
+        (screen.getByRole('button', { name: 'Restaurar no link' }) as HTMLButtonElement).disabled,
+      ).toBe(false),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Restaurar no link' }))
+    await waitFor(() => expect(history.activate).toHaveBeenCalledTimes(1))
+    expect((history.activate as ReturnType<typeof mock>).mock.calls[0]?.[0]).toMatchObject({
+      playId,
+      expectedVersion: 3,
+      revision: '1'.repeat(64),
+      disabled: false,
+    })
+    await waitFor(() =>
+      expect(
+        (screen.getByRole('button', { name: 'Desativar link' }) as HTMLButtonElement).disabled,
+      ).toBe(false),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Desativar link' }))
+    await screen.findByText('Link desativado')
+    expect(JSON.stringify(reopened.project.getState().project)).toBe(sourceBefore)
+  })
+
+  it('retries saving a committed publication link without publishing a second time', async () => {
+    let saves = 0
+    const stores = createStudioStores({
+      persistence: {
+        load: async () => null,
+        save: async () => {
+          if (++saves === 1) throw new Error('Disco indisponível')
+        },
+      },
+    })
+    const { project: initial } = await pythonEnvironmentFixture('classic')
+    stores.project.getState().hydrateProject(initial)
+    const playId = crypto.randomUUID()
+    const adapter = makeAdapter({
+      presetDescription: 'Jogo',
+      presetCoverUrl: 'https://cover.test/a.png',
+      publish: mock(async () => ({ publicationId: playId, playUrl: `/jogar/${playId}` })),
+    })
+    render(
+      <StudioStoresContext value={stores}>
+        <ShareDialog open onClose={() => {}} adapter={adapter} />
+      </StudioStoresContext>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Usar a capa da aventura' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
+    await screen.findByText(/Disco indisponível/)
+    fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
+    await screen.findByText('Copiar link')
+    expect(adapter.publish).toHaveBeenCalledTimes(1)
+    expect(saves).toBe(2)
+    expect(projectPublicationId(stores.project.getState().project!)).toBe(playId)
   })
 
   it('Pro flushes code, uses a verified cover and keeps one idempotency key after a lost response', async () => {
@@ -80,9 +229,12 @@ describe('ShareDialog', () => {
       release = registerProjectOperation(api, {
         projectId: project.id,
         flush: async () => {
+          const current = api.getState().project
+          if (!current || current.programmingLanguage === 'python' || current.kind !== 'pro')
+            throw new Error('The JavaScript Pro fixture changed')
           api.setState({
             project: {
-              ...project,
+              ...current,
               tree: { 'src/main.ts': { kind: 'file', content: 'saved code' } },
             },
           })

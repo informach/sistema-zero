@@ -1,6 +1,11 @@
 'use client'
 
-import type { ProjectObjectiveResult, ProjectObjectiveView } from '@sistemazero/core/learning'
+import { awaitWithSignal } from '@sistemazero/core/http'
+import type {
+  ProjectObjectiveResult,
+  ProjectObjectiveView,
+  SectionProjectLiveContext,
+} from '@sistemazero/core/learning'
 import type { StudioHandle } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import {
@@ -33,19 +38,22 @@ export function SectionProjectCheck({
   blockId,
   handleRef,
   subscribeProjectChanges,
+  live,
 }: {
   blockId: string
   handleRef: RefObject<StudioHandle | null>
   subscribeProjectChanges?: ProjectChangeSubscriber
+  live?: { key: string; prepare(signal: AbortSignal): Promise<SectionProjectLiveContext> }
 }) {
   const player = useLessonPlayer()
   const check = player?.sectionProjectCheck
   if (!player || !check || check.blockId !== blockId || !check.objectives?.length) return null
   return (
     <ObjectivesCard
-      key={`${player.viewerId}:${check.sectionId}:${check.revision}`}
+      key={`${player.viewerId}:${player.lessonId}:${check.sectionId}:${check.revision}:${live?.key ?? ''}`}
       handleRef={handleRef}
       subscribeProjectChanges={subscribeProjectChanges}
+      live={live}
     />
   )
 }
@@ -61,9 +69,11 @@ type Estado = 'passed' | 'failed' | 'unchecked'
 function ObjectivesCard({
   handleRef,
   subscribeProjectChanges,
+  live,
 }: {
   handleRef: RefObject<StudioHandle | null>
   subscribeProjectChanges?: ProjectChangeSubscriber
+  live?: { key: string; prepare(signal: AbortSignal): Promise<SectionProjectLiveContext> }
 }) {
   const player = useLessonPlayer()
   const { verificacao, erroDoServidor } = useLessonCopy()
@@ -82,6 +92,20 @@ function ObjectivesCard({
   // A última edição avisada pelo Estúdio. Uma edição que chega ENQUANTO a verificação está no ar
   // é mais nova que o projeto conferido: a resposta não pode apagar o aviso dela.
   const editadoEm = useRef(0)
+  const active = useRef<AbortController | null>(null)
+  const unsubscribe = useRef<(() => void) | undefined>(undefined)
+  const mounted = useRef(false)
+  const inFlight = useRef(false)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+      unsubscribe.current?.()
+      active.current?.abort()
+      active.current = null
+      inFlight.current = false
+    }
+  }, [])
 
   useEffect(() => {
     if (!subscribeProjectChanges) return
@@ -107,25 +131,74 @@ function ObjectivesCard({
   )
 
   async function verify() {
-    if (!check || !handleRef.current || !player || busy) return
+    const handle = handleRef.current
+    if (!check || !handle || !player || !mounted.current || inFlight.current) return
+    unsubscribe.current?.()
+    active.current?.abort()
+    const controller = new AbortController()
+    const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(170_000)])
+    active.current = controller
+    inFlight.current = true
     setBusy(true)
     setFeedback(null)
     setXp(null)
+    const assertOwner = () => {
+      signal.throwIfAborted()
+      if (!mounted.current || active.current !== controller || handleRef.current !== handle)
+        throw new DOMException('O editor desta verificação foi retirado.', 'AbortError')
+    }
+    const invalidate = () => {
+      controller.abort()
+      if (active.current !== controller || !mounted.current) return
+      active.current = null
+      inFlight.current = false
+      setBusy(false)
+      setFeedback(null)
+      setXp(null)
+      setStale(true)
+    }
     try {
-      // Com o código da Ponte mais novo que os blocos, o Estúdio ainda está lendo o que a criança
-      // digitou: espera um pouco (o servidor recusa esse retrato com STUDIO_PROJECT_SYNCING).
-      let project = handleRef.current.getProject()
+      // Wait for the same editor's bridge parser, never an abandoned snapshot.
+      let project = handle.getProject()
       for (let tries = 0; project?.bridgeCodeAhead && tries < 15; tries++) {
-        await new Promise((resolve) => setTimeout(resolve, 200))
-        project = handleRef.current?.getProject() ?? project
+        await awaitWithSignal(
+          () => new Promise<void>((resolve) => setTimeout(resolve, 200)),
+          signal,
+        )
+        assertOwner()
+        project = handle.getProject()
       }
+      assertOwner()
+      const liveContext = live
+        ? await awaitWithSignal(() => live.prepare(signal), signal)
+        : undefined
+      assertOwner()
+      if (!live) await awaitWithSignal(() => handle.save(), signal)
+      assertOwner()
+      project = handle.getProject()
       if (!project) return
-      const result = await apiSend<CheckResponse>(
-        `/api/members/lessons/${encodeURIComponent(player.lessonId)}/sections/${encodeURIComponent(check.sectionId)}/project-check`,
-        'POST',
-        { revision: check.revision, project },
-        { 'x-sz-viewer': player.viewerId ?? '' },
+      const submitted = JSON.stringify(project)
+      unsubscribe.current = handle.onProjectChange?.(invalidate)
+      const assertCurrent = () => {
+        assertOwner()
+        if (JSON.stringify(handle.getProject()) !== submitted) {
+          invalidate()
+          throw new DOMException('O projeto mudou durante a verificação.', 'AbortError')
+        }
+      }
+      assertCurrent()
+      const result = await awaitWithSignal(
+        () =>
+          apiSend<CheckResponse>(
+            `/api/members/lessons/${encodeURIComponent(player.lessonId)}/sections/${encodeURIComponent(check.sectionId)}/project-check`,
+            'POST',
+            { revision: check.revision, project, ...(liveContext ? { liveContext } : {}) },
+            { 'x-sz-viewer': player.viewerId ?? '' },
+            { signal },
+          ),
+        signal,
       )
+      assertCurrent()
       conferidoEm.current = project.updatedAt ?? Date.now()
       setResults(result.results)
       setStale(editadoEm.current > conferidoEm.current)
@@ -153,6 +226,13 @@ function ObjectivesCard({
       // cada objetivo já veio na resposta e fica nesta tela.
       if (result.passed) player.refreshAfterLearning?.()
     } catch (error) {
+      if (
+        !mounted.current ||
+        controller.signal.aborted ||
+        active.current !== controller ||
+        handleRef.current !== handle
+      )
+        return
       // ⚠️ O erro da API é um objeto simples (`ApiError`), não um `Error`: quem decide a frase é
       // o `erroDoServidor` (a rede sem `code` cai no padrão).
       setFeedback({
@@ -163,7 +243,10 @@ function ObjectivesCard({
         tone: 'erro',
       })
     } finally {
-      setBusy(false)
+      if (active.current === controller) {
+        inFlight.current = false
+        setBusy(false)
+      }
     }
   }
 

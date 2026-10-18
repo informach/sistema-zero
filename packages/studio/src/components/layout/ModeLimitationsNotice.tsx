@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import type { ExtraFile } from '#core'
 import { countAdvancedIR } from '#ir'
 import { Badge } from '#ui'
+import { javaScriptProject } from '../../core/editableProject'
 import { useProjectStore } from '../../state/projectStore'
 
 const EMPTY_EXTRAS: ExtraFile[] = []
@@ -19,8 +20,10 @@ const MAX_NAMES = 3
  * projeto é totalmente representável.
  */
 export function ModeLimitationsNotice(): JSX.Element | null {
-  const extraFiles = useProjectStore((s) => s.project?.extraFiles ?? EMPTY_EXTRAS)
-  const ir = useProjectStore((s) => s.project?.ir ?? null)
+  const extraFiles = useProjectStore(
+    (s) => javaScriptProject(s.project)?.extraFiles ?? EMPTY_EXTRAS,
+  )
+  const ir = useProjectStore((s) => javaScriptProject(s.project)?.ir ?? null)
   const advancedCount = useMemo(() => (ir ? countAdvancedIR(ir) : 0), [ir])
 
   const hasExtras = extraFiles.length > 0

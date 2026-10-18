@@ -4,7 +4,7 @@ import {
   EXECUTION_LIMITS,
   executionRuleBudgetMs,
   isExecutionRule,
-  type SectionProjectCheck,
+  type SectionJavaScriptProjectCheck,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { Select } from '@sistemazero/ui/select'
@@ -22,7 +22,7 @@ export function checkFromTemplate(
   template: ObjectiveTemplate,
   isPro: boolean,
   newId: () => string = () => crypto.randomUUID(),
-): SectionProjectCheck {
+): SectionJavaScriptProjectCheck {
   const rule =
     template.check.rule.type === 'functionReturns' && isPro && !template.check.rule.module
       ? { ...template.check.rule, module: 'src/regras.ts' }
@@ -43,15 +43,15 @@ export function ObjectiveTools({
   issuesOf = () => [],
   onAdd,
 }: {
-  checks: readonly SectionProjectCheck[]
+  checks: readonly SectionJavaScriptProjectCheck[]
   isPro: boolean
   /** O modelo do kit Pro do bloco, quando é kit (as sugestões usam o estado dele). */
   kitTemplateId?: string
   /** O bloco clássico libera a Ponte (os modelos de código cabem). */
   bridge: boolean
   /** A régua de autoria do bloco: modelo que ela acusaria neste projeto nem aparece. */
-  issuesOf?: (rule: SectionProjectCheck['rule']) => string[]
-  onAdd: (added: SectionProjectCheck[]) => void
+  issuesOf?: (rule: SectionJavaScriptProjectCheck['rule']) => string[]
+  onAdd: (added: SectionJavaScriptProjectCheck[]) => void
 }) {
   const ids = useId()
   // Só o que a autoria aceita NESTE projeto (3D clássico, paleta restrita, Pro sem kit…).
@@ -63,7 +63,10 @@ export function ObjectiveTools({
   const [chosen, setChosen] = useState('')
   const [pasted, setPasted] = useState('')
   // O texto para copiar à mão vale para a lista daquele clique: mudou a lista, ele some.
-  const [copied, setCopied] = useState<{ text: string; of: readonly SectionProjectCheck[] }>()
+  const [copied, setCopied] = useState<{
+    text: string
+    of: readonly SectionJavaScriptProjectCheck[]
+  }>()
   const copyText = copied && copied.of === checks ? copied.text : ''
   const [message, setMessage] = useState<string[]>([])
   const template = all.find((item) => item.id === chosen)

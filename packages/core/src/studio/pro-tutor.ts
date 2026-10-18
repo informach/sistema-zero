@@ -35,10 +35,10 @@ export interface StudioTutorCodeFile {
 /** Optional provenance keeps older clients readable without treating their signal as a build. */
 export interface StudioTutorDiagnostic {
   path: string
-  code: number
+  code: number | string
   line: number
   message: string
-  source?: 'typescript'
+  source?: 'typescript' | 'pyright'
   sourceHash?: string
   documentVersion?: number
 }

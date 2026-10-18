@@ -180,3 +180,26 @@ export function resolveAdultLearnerId(headers: Record<string, string | undefined
     throw new ForbiddenError('Use sua conta adulta.')
   return id
 }
+
+/** Free Studio requires an adult account or a verified student profile; parent sessions are not learners. */
+export function resolveStudioFreeActor(
+  headers: Record<string, string | undefined>,
+  audience: 'kids' | 'adult',
+) {
+  const userId = audience === 'adult' ? resolveAdultLearnerId(headers) : resolveUserId(headers)
+  const accountId = resolveAccountId(headers)
+  const privileged = isPrivilegedActor(headers)
+  if (
+    audience === 'kids' &&
+    !privileged &&
+    (headers['x-auth-kids-context'] !== 'student' || userId === accountId)
+  )
+    throw new ForbiddenError('Escolha um perfil de estudante para usar o Estúdio.')
+  return {
+    userId,
+    accountId,
+    audience,
+    privileged,
+    readOnly: Boolean(headers['x-auth-impersonator-id']),
+  }
+}

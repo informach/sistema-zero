@@ -1,3 +1,4 @@
+import { galleryStudioStorageBaseURL } from '@sistemazero/core/learning'
 import { z } from 'zod'
 
 /**
@@ -56,6 +57,14 @@ const EnvSchema = z
       .int()
       .positive()
       .default(2 * 1024 * 1024),
+    // Trusted deployment configuration. Never populated from an authoring/project request.
+    // Missing preserves JS v2; v3 publication requires a verified approved catalog.
+    STUDIO_AUTHORING_POLICY_JSON: z.string().min(1).max(2_000_000).optional(),
+    STUDIO_RUNTIME_HOSTS_JSON: z.string().min(1).max(200_000).optional(),
+    // Dedicated authenticated Python service. Never fall back to the JS/Pro service.
+    STUDIO_PYTHON_RUNTIME_URL: z.string().url().optional(),
+    STUDIO_PYTHON_RUNTIME_TOKEN: z.string().min(16).optional(),
+    STUDIO_GALLERY_STORAGE_BASE_URL: z.string().url().max(2048).optional(),
 
     DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
@@ -237,6 +246,51 @@ const EnvSchema = z
       .optional()
       .transform((value) => normalizeAvatarPhotoPrefixes(value)),
   })
+  .refine(
+    (env) => {
+      if (!env.STUDIO_GALLERY_STORAGE_BASE_URL) return true
+      try {
+        galleryStudioStorageBaseURL(
+          env.STUDIO_GALLERY_STORAGE_BASE_URL,
+          env.NODE_ENV !== 'production',
+        )
+        return true
+      } catch {
+        return false
+      }
+    },
+    {
+      message: 'A base das cópias da galeria deve usar HTTPS, sem credenciais, query ou fragmento.',
+      path: ['STUDIO_GALLERY_STORAGE_BASE_URL'],
+    },
+  )
+  .refine(
+    (env) => Boolean(env.STUDIO_PYTHON_RUNTIME_URL) === Boolean(env.STUDIO_PYTHON_RUNTIME_TOKEN),
+    {
+      message: 'Configure URL e token do serviço Python juntos.',
+      path: ['STUDIO_PYTHON_RUNTIME_URL'],
+    },
+  )
+  .refine(
+    (env) => {
+      if (!env.STUDIO_PYTHON_RUNTIME_URL) return true
+      const url = new URL(env.STUDIO_PYTHON_RUNTIME_URL)
+      return (
+        !url.username &&
+        !url.password &&
+        !url.hash &&
+        !url.search &&
+        (url.protocol === 'https:' ||
+          (url.protocol === 'http:' &&
+            env.NODE_ENV !== 'production' &&
+            ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)))
+      )
+    },
+    {
+      message: 'O serviço Python deve usar HTTPS (HTTP somente em localhost de desenvolvimento).',
+      path: ['STUDIO_PYTHON_RUNTIME_URL'],
+    },
+  )
   .refine(
     (env) =>
       Boolean(env.STUDIO_BUILDER_EXECUTOR_URL || env.ADULT_STUDIO_BUILDER_EXECUTOR_URL) ===

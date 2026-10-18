@@ -106,6 +106,7 @@ export const en: Record<string, string> = {
     'Only official Sistema Zero extensions reviewed by our team appear here.',
   'console.clear': 'Clear',
   'console.empty': 'No messages. Use console.log to record something.',
+  'console.emptyPython': 'No messages. Use print to show something here.',
   'console.message': '1 message',
   'console.messages': '{count} messages',
   'console.showBlock': 'Show the block that caused the error',
@@ -304,6 +305,11 @@ export const en: Record<string, string> = {
   'bridge.hideGeneratedInternals': 'Hide generated details',
   'code.advancedBlock': 'Advanced code',
   'export.title': 'Export for publishing',
+  'export.pythonTitle': 'Download to play in a browser',
+  'export.pythonDescription': 'Download a version of your project to play in a browser.',
+  'export.pythonSourceNote': 'To keep coding in VS Code, use Download source.',
+  'export.pythonUnavailable':
+    'Python web export is unavailable in this environment. You can download the source to continue on your computer.',
   'export.description':
     'Creates a ZIP ready to publish on Railway, including the site, Dockerfile, and instructions.',
   'export.minify': 'Minify code (recommended)',

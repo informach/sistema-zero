@@ -3,6 +3,7 @@ import {
   executionRuleBudgetMs,
   isExecutionRule,
   isSectionCompletion,
+  type SectionJavaScriptProjectCheck,
   type SectionProjectCheck,
 } from '@sistemazero/core/learning'
 
@@ -38,7 +39,7 @@ function objectivesIn(value: unknown): unknown[] | null {
 }
 
 export interface PastedObjectives {
-  checks: SectionProjectCheck[]
+  checks: SectionJavaScriptProjectCheck[]
   /** Frases para a professora: o que ficou de fora e por quê. */
   notes: string[]
 }
@@ -48,7 +49,7 @@ export function parseObjectivesClipboard(
   existing: readonly SectionProjectCheck[],
   newId: () => string = () => crypto.randomUUID(),
   /** A régua de autoria do bloco desta parte: o que ela acusa entra, mas com o aviso. */
-  issuesOf: (rule: SectionProjectCheck['rule']) => string[] = () => [],
+  issuesOf: (rule: SectionJavaScriptProjectCheck['rule']) => string[] = () => [],
 ): PastedObjectives {
   let parsed: unknown
   try {
@@ -65,7 +66,7 @@ export function parseObjectivesClipboard(
       checks: [],
       notes: ['Isso não parece uma lista de objetivos copiada. Use "Copiar objetivos" primeiro.'],
     }
-  const checks: SectionProjectCheck[] = []
+  const checks: SectionJavaScriptProjectCheck[] = []
   const notes: string[] = []
   let total = existing.length
   let execution = existing.filter((check) => isExecutionRule(check.rule)).length
@@ -74,6 +75,7 @@ export function parseObjectivesClipboard(
     0,
   )
   let invalid = 0
+  let otherLanguage = 0
   let overTotal = 0
   let overExecution = 0
   let overBudget = 0
@@ -90,6 +92,11 @@ export function parseObjectivesClipboard(
       continue
     }
     const check = candidate as unknown as SectionProjectCheck
+    // Estes atalhos pertencem ao editor JS; objetivos Python têm perfil e editor próprios.
+    if (check.programmingLanguage === 'python') {
+      otherLanguage++
+      continue
+    }
     if (total >= MAX_PROJECT_CHECKS) {
       overTotal++
       continue
@@ -116,6 +123,12 @@ export function parseObjectivesClipboard(
       invalid === 1
         ? 'Um objetivo não entrou: ele está incompleto ou foi feito numa versão diferente.'
         : `${invalid} objetivos não entraram: estão incompletos ou foram feitos numa versão diferente.`,
+    )
+  if (otherLanguage)
+    notes.push(
+      otherLanguage === 1
+        ? 'Um objetivo Python ficou de fora: esta parte usa JavaScript.'
+        : `${otherLanguage} objetivos Python ficaram de fora: esta parte usa JavaScript.`,
     )
   if (overTotal)
     notes.push(

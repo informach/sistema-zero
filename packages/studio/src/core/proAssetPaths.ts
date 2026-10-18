@@ -1,4 +1,4 @@
-import { normalizeProPath } from './proProject'
+import { normalizeProPath } from './proPaths'
 
 export const PRO_ASSET_DIRECTORY = 'public/studio-assets'
 export const PRO_ASSET_MANIFEST = `${PRO_ASSET_DIRECTORY}/manifest.json`

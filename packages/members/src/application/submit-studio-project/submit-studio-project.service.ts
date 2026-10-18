@@ -1,9 +1,15 @@
 import { createHash } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
-import { PayloadTooLargeError } from '@sistemazero/core/http'
+import { awaitWithSignal, PayloadTooLargeError } from '@sistemazero/core/http'
 import { type GallerySubmission, isGallerySubmission } from '@sistemazero/core/learning'
 import type { Logger } from '@sistemazero/core/logging'
-import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
+import {
+  STUDIO_PROJECT_FORMAT_VERSION,
+  STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
+} from '@sistemazero/core/studio'
+import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
+import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { CourseAudience } from '../../domain/course/course'
 import {
@@ -20,9 +26,12 @@ import {
 } from '../../domain/course/lesson-block'
 import { deterministicSourceId } from '../../domain/gamification/source-id'
 import { LearningConflictError } from '../../domain/learning/learning.errors'
+import { validateLiveSnapshot } from '../../domain/live/workspace-snapshot'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
+import type { StudioLessonBindingRepository } from '../../domain/ports/studio-lesson-binding-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
+import { StudioPythonActivityUnavailableError } from '../../domain/studio/python-activity.errors'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
 import type { SectionProgressionService } from '../learning/section-progression.service'
@@ -56,7 +65,14 @@ export interface SubmitStudioProjectOptions {
   /** Bloco que esta entrega atende. Default `studio` — zero regressão no caminho existente. */
   kind?: SubmissionBlockKind
   /** Only the authenticated gallery service can supply a validated immutable snapshot. */
-  gallery?: { snapshot: GallerySubmission; revision: string }
+  gallery?: {
+    snapshot: GallerySubmission
+    projectForChecks: unknown
+    revision: string
+    /** Server-only fresh ownership/revision check on the selected immutable work. */
+    authorize?(signal: AbortSignal): Promise<void>
+  }
+  signal?: AbortSignal
   /** Impressão digital do conteúdo enviado ("envio em dia"); a galeria não tem. */
   fingerprint?: string | null
 }
@@ -92,15 +108,25 @@ export class SubmitStudioProjectService {
     private readonly newId: () => string,
     private readonly clock: () => Date,
     private readonly sections: SectionProgressionService,
+    private readonly bindings?: StudioLessonBindingRepository,
   ) {}
 
   async execute(
     userId: string,
     lessonId: string,
     blockId: string,
-    project: unknown,
+    rawProject: unknown,
     options: SubmitStudioProjectOptions = {},
   ): Promise<StudioSubmissionResultView> {
+    // The lifetime starts before any authorization/read. A withdrawn request
+    // cannot wait indefinitely on a non-cooperative port or dispatch the next phase.
+    const signal = AbortSignal.any([
+      ...(options.signal ? [options.signal] : []),
+      AbortSignal.timeout(50_000),
+    ])
+    const owned = <T>(operation: () => Promise<T>, operationSignal = signal) =>
+      awaitWithSignal(operation, operationSignal)
+    signal.throwIfAborted()
     const {
       message = null,
       messageSpoken = false,
@@ -111,6 +137,7 @@ export class SubmitStudioProjectService {
       gallery,
       fingerprint = null,
     } = options
+    const project = kind === 'studio' ? copyStudioProjectJson(rawProject) : rawProject
     const contentFingerprint = gallery ? null : fingerprint
     const limits = SUBMISSION_LIMITS[kind]
     // Recado do aluno ao professor: trim → vazio vira null (não guarda " ").
@@ -126,27 +153,30 @@ export class SubmitStudioProjectService {
     }
     // A marca da voz acompanha o recado: sem recado não há o que ler com boa vontade.
     const noteSpoken = note !== null && messageSpoken === true
-    const lesson = await this.courses.findLessonWithContent(lessonId)
+    const lesson = await owned(() => this.courses.findLessonWithContent(lessonId))
     // Aula rascunho é invisível ao aluno → não aceita entregas.
     if (!lesson?.isPublished) throw new LessonNotFoundError()
     // Acesso pela CONTA (sessão de perfil); a entrega fica no userId (o perfil).
-    const { course } = await this.checkAccess.requireById(
-      accountId ?? userId,
-      lesson.courseId,
-      privileged,
-      userId,
-      { lessonId },
+    const { course } = await owned(() =>
+      this.checkAccess.requireById(accountId ?? userId, lesson.courseId, privileged, userId, {
+        lessonId,
+      }),
     )
-    await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
+    await owned(() =>
+      assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged),
+    )
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== kind || block.content.purpose === 'experiment')
       throw limits.notFound()
-    await this.sections.assertBlock(
-      { userId, accountId: accountId ?? userId },
-      lesson,
-      blockId,
-      privileged,
-      true,
+    await owned(() =>
+      this.sections.assertBlock(
+        { userId, accountId: accountId ?? userId },
+        lesson,
+        blockId,
+        privileged,
+        true,
+        { signal },
+      ),
     )
 
     // Aula EM PRODUÇÃO ("em breve"): a 4ª porta lateral. Com a aba ainda aberta, o
@@ -183,53 +213,176 @@ export class SubmitStudioProjectService {
       (!project ||
         typeof project !== 'object' ||
         !('formatVersion' in project) ||
-        project.formatVersion !== STUDIO_PROJECT_FORMAT_VERSION)
+        (project.formatVersion !== STUDIO_PROJECT_FORMAT_VERSION &&
+          project.formatVersion !== STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION))
     )
       throw new ValidationError(
         'Atualize a página e abra o projeto no Estúdio antes de enviar esta versão.',
       )
 
+    if (kind === 'studio' && !gallery && project && typeof project === 'object') {
+      if (
+        'formatVersion' in project &&
+        project.formatVersion === STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION
+      ) {
+        if (!('id' in project) || typeof project.id !== 'string')
+          throw new ValidationError('Identificador do projeto inválido.')
+        submissionProject = validateLiveSnapshot(project as Record<string, unknown>, project.id)
+      }
+      if (this.bindings && block.content.kind === 'studio') {
+        const bindings = this.bindings
+        const binding = await owned(() =>
+          bindings.find({ userId, accountId: accountId ?? userId }, blockId),
+        )
+        if (
+          binding?.workspaceId ||
+          studioProjectContinuityIssue(
+            submissionProject,
+            binding?.baseline.configuration.initialProject ?? block.content.initialProject,
+          )
+        )
+          throw new ValidationError(
+            'O projeto enviado não corresponde ao ambiente desta aula. Seu trabalho foi preservado.',
+          )
+      }
+    }
+
     const submittedAt = this.clock()
-    // O recado é a confirmação da entrega para a equipe. Persiste-o antes da linha "último
-    // vence": se o canal estiver indisponível, a entrega não é parcialmente confirmada e o
-    // aluno pode reenviar com segurança.
-    await this.mirrorSubmitNote({
-      note,
-      noteSpoken,
-      userId,
-      accountId: accountId ?? userId,
-      audience: course.audience,
-      blockId,
-      courseId: lesson.courseId,
-      lessonId,
-      title: lesson.title,
-      authorName,
-      project: submissionProject,
-    })
-    await this.submissions.upsert(
-      {
-        id: this.newId(),
+    const authoredRevision = block.contentRevision
+    const checkedProject = gallery?.projectForChecks ?? submissionProject
+    const isPythonSubmission =
+      !!checkedProject &&
+      typeof checkedProject === 'object' &&
+      'programmingLanguage' in checkedProject &&
+      checkedProject.programmingLanguage === 'python'
+    let baselineId: string | undefined
+    const reauthorizeSubmission = async (signal: AbortSignal) => {
+      signal.throwIfAborted()
+      if (!isPythonSubmission) {
+        if (gallery?.authorize) await owned(() => gallery.authorize!(signal), signal)
+        return
+      }
+      const fresh = await owned(() => this.courses.findLessonWithContent(lessonId), signal)
+      const current = fresh?.blocks.find((item) => item.id === blockId)
+      if (
+        !fresh?.isPublished ||
+        fresh.courseId !== lesson.courseId ||
+        current?.content.kind !== 'studio' ||
+        current.content.purpose === 'experiment' ||
+        current.contentRevision !== authoredRevision ||
+        (!privileged && hasComingSoonBlock(fresh.blocks)) ||
+        Boolean(current.content.gallery) !== Boolean(gallery)
+      )
+        throw new LearningConflictError()
+      const { course: currentCourse } = await owned(
+        () =>
+          this.checkAccess.requireById(accountId ?? userId, fresh.courseId, privileged, userId, {
+            lessonId,
+          }),
+        signal,
+      )
+      if (currentCourse.audience !== course.audience) throw new LearningConflictError()
+      await owned(
+        () =>
+          assertLessonUnlocked(
+            this.courses,
+            this.progress,
+            currentCourse,
+            lessonId,
+            userId,
+            privileged,
+          ),
+        signal,
+      )
+      await owned(
+        () =>
+          this.sections.assertBlock(
+            { userId, accountId: accountId ?? userId },
+            fresh,
+            blockId,
+            privileged,
+            true,
+            { signal },
+          ),
+        signal,
+      )
+      if (gallery) {
+        const authorize = gallery.authorize
+        if (!authorize) throw new StudioPythonActivityUnavailableError()
+        await owned(() => authorize(signal), signal)
+      } else {
+        const bindings = this.bindings
+        if (!bindings) throw new StudioPythonActivityUnavailableError()
+        const binding = await owned(
+          () => bindings.find({ userId, accountId: accountId ?? userId }, blockId),
+          signal,
+        )
+        if (
+          !binding ||
+          binding.workspaceId ||
+          binding.baseline.lessonId !== lessonId ||
+          binding.baseline.courseId !== fresh.courseId ||
+          (baselineId !== undefined && binding.baseline.id !== baselineId) ||
+          !submissionProject ||
+          typeof submissionProject !== 'object' ||
+          !('id' in submissionProject) ||
+          submissionProject.id !== lessonStudioProjectId(blockId, userId) ||
+          studioProjectContinuityIssue(
+            submissionProject,
+            binding.baseline.configuration.initialProject,
+          )
+        )
+          throw new LearningConflictError()
+        baselineId = binding.baseline.id
+      }
+      signal.throwIfAborted()
+    }
+    await reauthorizeSubmission(signal)
+    await owned(() =>
+      this.mirrorSubmitNote({
+        note,
+        noteSpoken,
+        userId,
+        accountId: accountId ?? userId,
+        audience: course.audience,
+        blockId,
+        courseId: lesson.courseId,
+        lessonId,
+        title: lesson.title,
+        authorName,
+        project: submissionProject,
+        galleryRequestId: gallery?.snapshot.requestId,
+      }),
+    )
+    await reauthorizeSubmission(signal)
+    const write = await owned(() =>
+      this.submissions.upsert(
+        {
+          id: this.newId(),
+          userId,
+          accountId: accountId ?? userId,
+          blockId,
+          lessonId,
+          courseId: lesson.courseId,
+          project: submissionProject,
+          submittedAt,
+          message: note,
+          messageSpoken: noteSpoken,
+          contentFingerprint,
+        },
+        { revision: authoredRevision, galleryRequestId: gallery?.snapshot.requestId },
+      ),
+    )
+    if (write?.duplicateGallery) return write.receipt
+    await owned(() =>
+      this.gamification.awardStudioSubmitted({
         userId,
         accountId: accountId ?? userId,
         blockId,
-        lessonId,
-        courseId: lesson.courseId,
-        project: submissionProject,
-        submittedAt,
-        message: note,
-        messageSpoken: noteSpoken,
-        contentFingerprint,
-      },
-      { revision: block.contentRevision, galleryRequestId: gallery?.snapshot.requestId },
+        audience: course.audience,
+        privileged,
+      }),
     )
-    // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco).
-    await this.gamification.awardStudioSubmitted({
-      userId,
-      accountId: accountId ?? userId,
-      blockId,
-      audience: course.audience,
-      privileged,
-    })
     return { submittedAt: submittedAt.toISOString() }
   }
 
@@ -254,9 +407,12 @@ export class SubmitStudioProjectService {
     title: string | null
     authorName: string | null
     project: unknown
+    galleryRequestId?: string
   }): Promise<void> {
     if (!args.note) return
-    const projectHash = createHash('sha256').update(JSON.stringify(args.project)).digest('hex')
+    const deliveryKey = args.galleryRequestId
+      ? `gallery:${args.galleryRequestId}`
+      : createHash('sha256').update(JSON.stringify(args.project)).digest('hex')
     try {
       await this.teacherThreads.studentPostByContext({
         userId: args.userId,
@@ -272,7 +428,7 @@ export class SubmitStudioProjectService {
         spoken: args.noteSpoken,
         dedupeId: deterministicSourceId(
           STUDIO_SUBMIT_NOTE_NAMESPACE,
-          `${args.userId}:${args.blockId}:${projectHash}:${args.note}`,
+          `${args.userId}:${args.blockId}:${deliveryKey}:${args.note}`,
         ),
       })
     } catch (error) {

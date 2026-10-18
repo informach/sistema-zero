@@ -30,6 +30,7 @@ import type {
   ListCoursesAdminFilter,
   ModuleFields,
 } from '../../../domain/ports/content-admin-repository.port'
+import type { StudioChainCandidate } from '../../../domain/studio/chain-environment'
 import type { Database } from './db'
 import { lessonContentAvailable } from './lesson-availability'
 import { lockLessonStructure, syncLessonStructure } from './lesson-structure'
@@ -44,6 +45,11 @@ import {
   modules,
   quizAttempts,
 } from './schema'
+import {
+  claimStudioChains,
+  findStudioBlockChain,
+  preserveStudioChainsForLessons,
+} from './studio-chain.repository'
 import { JAVASCRIPT_TRIM_CHARACTERS } from './text-normalization'
 
 type CourseRow = typeof courses.$inferSelect
@@ -684,6 +690,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         .from(lessons)
         .where(eq(lessons.moduleId, id))
       const lessonIds = lessonRows.map((r) => r.id)
+      if (mod) await preserveStudioChainsForLessons(tx, mod.courseId, lessonIds)
       if (lessonIds.length > 0) {
         await tx.delete(lessonCompletions).where(inArray(lessonCompletions.lessonId, lessonIds))
       }
@@ -812,6 +819,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         .from(lessons)
         .where(eq(lessons.id, id))
       if (existing) await this.preserveShowcase(tx, existing.courseId, { lessonId: id })
+      if (existing) await preserveStudioChainsForLessons(tx, existing.courseId, [id])
       await tx.delete(lessonCompletions).where(eq(lessonCompletions.lessonId, id))
       const deleted = await tx
         .delete(lessons)
@@ -1102,6 +1110,32 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       )
       return operation(new DrizzleContentAdminRepository(tx))
     })
+  }
+
+  async withStudioAuthoringLock<T>(
+    courseId: string,
+    operation: (repository: ContentAdminRepository) => Promise<T>,
+  ): Promise<T> {
+    return this.db.transaction(async (tx) => {
+      await tx
+        .select({ id: courses.id })
+        .from(courses)
+        .where(eq(courses.id, courseId))
+        .for('update')
+      return operation(new DrizzleContentAdminRepository(tx))
+    })
+  }
+
+  claimStudioChains(
+    courseId: string,
+    candidates: StudioChainCandidate[],
+    retiring: StudioChainCandidate[] = [],
+  ) {
+    return claimStudioChains(this.db, courseId, candidates, retiring)
+  }
+
+  findStudioBlockChain(blockId: string) {
+    return findStudioBlockChain(this.db, blockId)
   }
 
   async countCertificateBlocks(

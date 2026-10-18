@@ -9,7 +9,20 @@ import type { ProWorkspacePreferences } from './model'
 
 export { currentProDiagnostics } from './diagnostics'
 
-function diagnosticHint(code: number) {
+function diagnosticHint(code: number | string, source?: ProEditorDiagnostic['source']) {
+  if (source === 'pyright') {
+    if (code === 'reportUndefinedVariable')
+      return 'Este nome ainda não foi definido. Confira a escrita e onde ele foi criado.'
+    if (code === 'reportMissingImports' || code === 'reportMissingModuleSource')
+      return 'Confira o nome do módulo e se ele está disponível neste projeto Python.'
+    if (
+      code === 'reportArgumentType' ||
+      code === 'reportAssignmentType' ||
+      code === 'reportCallIssue'
+    )
+      return 'Confira os valores e argumentos usados nesta linha.'
+    return 'Confira a mensagem e a linha indicada. Em Python, a indentação também organiza o código.'
+  }
   if (code === 2307) return 'Confira se o caminho do arquivo ou o nome da biblioteca está certo.'
   if (code === 2322 || code === 2345)
     return 'O valor usado aqui tem um tipo diferente do esperado. Confira a linha indicada.'
@@ -142,7 +155,7 @@ export function ProBottomPanel({
               className="rounded border border-sz-border p-2 text-sm"
             >
               <p className="text-xs text-sz-fg-mute">
-                TypeScript ·{' '}
+                {item.source === 'pyright' ? 'Python · Pyright' : 'TypeScript'} ·{' '}
                 {item.severity === 'warning'
                   ? 'Aviso'
                   : item.severity === 'info'
@@ -156,11 +169,13 @@ export function ProBottomPanel({
               >
                 {item.path}:{item.line}
               </button>
-              <p className="text-xs text-sz-fg-mute">TS{item.code}</p>
+              <p className="text-xs text-sz-fg-mute">
+                {item.source === 'pyright' ? item.code : `TS${item.code}`}
+              </p>
               <pre className="whitespace-pre-wrap break-words">{item.message}</pre>
               <details className="mt-1 text-xs">
                 <summary>Como investigar</summary>
-                <p>{diagnosticHint(item.code)}</p>
+                <p>{diagnosticHint(item.code, item.source)}</p>
               </details>
               {investigate && (
                 <button

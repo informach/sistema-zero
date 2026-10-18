@@ -1,8 +1,8 @@
 'use client'
 
+import { readJsonBodyWithLimit } from '@sistemazero/core/http'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
-
-import type { Project, StudioProjectPlayerProps } from '@sistemazero/studio'
+import type { EditableStudioProject, Project, StudioProjectPlayerProps } from '@sistemazero/studio'
 import { describeProjectControls, type InternalPadMode } from '@sistemazero/studio/controls'
 import { Gamepad2, Maximize, Minimize } from 'lucide-react'
 import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -97,10 +97,11 @@ export function PublicPlayer({
 
 function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: string }) {
   const [Player, setPlayer] = useState<PlayerComponent | null>(null)
-  const [project, setProject] = useState<Project | null>(null)
+  const [project, setProject] = useState<EditableStudioProject | null>(null)
   const [published, setPublished] = useState<StudioProjectPlayerProps['published']>()
   const [author, setAuthor] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [runtimeError, setRuntimeError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
   const [gamepadOverride, setGamepadOverride] = useState<GamepadVisibilityOverride>(null)
   const [stageAspect, setStageAspect] = useState<StageAspect>(DEFAULT_STAGE_ASPECT)
@@ -110,9 +111,31 @@ function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: st
   const { fullscreen: telaCheia, alternar: alternarTelaCheia } = useFullscreen(stageRootRef)
 
   const handleRestart = useCallback(() => setReloadKey((k) => k + 1), [])
+  const pythonRuntimeRequest = useCallback(
+    async (input: { playId: string; publicationRevision: string }, signal: AbortSignal) => {
+      const response = await fetch('/api/studio/public-runtime', {
+        method: 'POST',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+        signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]),
+      })
+      const body: unknown = await readJsonBodyWithLimit(response, 2_000_000)
+      if (!response.ok)
+        throw Object.assign(
+          new Error(
+            'Não foi possível abrir esta revisão do jogo. Reabra a página para tentar novamente.',
+          ),
+          { status: response.status },
+        )
+      return body
+    },
+    [],
+  )
 
   useEffect(() => {
     let active = true
+    setRuntimeError(null)
     void (async () => {
       try {
         const [mod, res] = await Promise.all([
@@ -127,7 +150,19 @@ function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: st
           return
         }
         const rawAuthor = res.headers.get('X-Author-Name')
-        const proj = (await res.json()) as Project
+        const raw: unknown = await res.json()
+        let proj: EditableStudioProject
+        if (
+          raw &&
+          typeof raw === 'object' &&
+          'programmingLanguage' in raw &&
+          raw.programmingLanguage === 'python'
+        ) {
+          const { refinePythonProjectDocument } = await import(
+            '@sistemazero/studio/python-project-validation'
+          )
+          proj = await refinePythonProjectDocument(raw)
+        } else proj = raw as Project
         if (!active) return
         // Header URI-encoded (só ASCII em header). Falha de decode → sem nome.
         if (rawAuthor) {
@@ -140,14 +175,25 @@ function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: st
         setPlayer(() => mod.StudioProjectPlayer)
         const compiledUrl = res.headers.get('X-Studio-Pro-Url')
         const compiledRevision = res.headers.get('X-Studio-Pro-Revision')
-        if (proj.kind === 'pro' && (!compiledUrl || !compiledRevision)) {
+        const pythonRevision = res.headers.get('X-Studio-Python-Revision')
+        if (proj.programmingLanguage === 'python' && !/^[a-f0-9]{64}$/.test(pythonRevision ?? '')) {
+          setStatus('error')
+          return
+        }
+        if (
+          proj.programmingLanguage !== 'python' &&
+          proj.kind === 'pro' &&
+          (!compiledUrl || !compiledRevision)
+        ) {
           setStatus('error')
           return
         }
         setPublished(
-          compiledUrl && compiledRevision
-            ? { playId: id, revision: compiledRevision, url: compiledUrl }
-            : undefined,
+          proj.programmingLanguage === 'python' && pythonRevision
+            ? { programmingLanguage: 'python', playId: id, revision: pythonRevision }
+            : compiledUrl && compiledRevision
+              ? { playId: id, revision: compiledRevision, url: compiledUrl }
+              : undefined,
         )
         setProject(proj)
         setStatus('ready')
@@ -375,7 +421,7 @@ function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: st
           iframeRef={iframeRef}
           onRestart={handleRestart}
           showControls={gamepadVisible}
-          screenshotEnabled={project.kind !== 'pro'}
+          screenshotEnabled={project.programmingLanguage === 'python' || project.kind !== 'pro'}
           rotated={rotated}
           landscape={landscape}
           stageAspect={stageAspect}
@@ -387,6 +433,16 @@ function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: st
             ref={iframeRef}
             project={project}
             published={published}
+            pythonRuntimeRequest={pythonRuntimeRequest}
+            onReady={focarJogo}
+            onError={(error) => {
+              setRuntimeError(
+                project.programmingLanguage === 'python' && error
+                  ? error.message.slice(0, 2000)
+                  : null,
+              )
+              setStatus('error')
+            }}
             title={title}
           />
         </PublicStage>
@@ -405,10 +461,12 @@ function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: st
               <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
                 <KidsMascot expression="sleeping" className="size-16" />
                 <p className="font-bold [font-family:var(--font-display)] text-lg">
-                  Não encontramos este jogo.
+                  {runtimeError
+                    ? 'Não foi possível executar este jogo.'
+                    : 'Não encontramos este jogo.'}
                 </p>
                 <p className="max-w-xs text-muted-foreground text-sm">
-                  O link pode estar errado ou o jogo não está mais disponível.
+                  {runtimeError ?? 'O link pode estar errado ou o jogo não está mais disponível.'}
                 </p>
               </div>
             )}

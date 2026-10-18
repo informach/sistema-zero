@@ -21,6 +21,8 @@ import {
   activeLessonBlocks as lessonBlocks,
   lessons,
   modules,
+  studioLessonBaselines,
+  studioLessonBindings,
 } from './schema'
 import { JAVASCRIPT_TRIM_CHARACTERS } from './text-normalization'
 
@@ -348,6 +350,7 @@ export class DrizzleCourseRepository implements CourseRepository {
     lessonId: string,
     chain: string,
     kind: 'studio' | 'pinta',
+    owner?: { userId: string; accountId: string },
   ): Promise<{ blockId: string; lessonId: string } | null> {
     // Posição da aula atual no curso: (module.sortOrder, lesson.sortOrder).
     const [cur] = await this.db
@@ -357,6 +360,21 @@ export class DrizzleCourseRepository implements CourseRepository {
       .where(eq(lessons.id, lessonId))
       .limit(1)
     if (!cur) return null
+
+    // Coalesce the whole configuration, not its chain: a bound default/absent chain
+    // must stay absent even if the author later puts the block into another project.
+    const configuration =
+      kind === 'studio' && owner
+        ? sql`coalesce((
+      select ${studioLessonBaselines.configuration} from ${studioLessonBindings}
+      inner join ${studioLessonBaselines} on ${studioLessonBaselines.id} = ${studioLessonBindings.baselineId}
+      where ${studioLessonBindings.userId} = ${owner.userId}
+        and ${studioLessonBindings.accountId} = ${owner.accountId}
+        and ${studioLessonBindings.blockId} = ${lessonBlocks.id}
+        and ${studioLessonBaselines.courseId} = ${courseId}
+        and ${studioLessonBindings.workspaceId} is null
+    ), ${lessonBlocks.content})`
+        : sql`${lessonBlocks.content}`
 
     // Bloco do MESMO kind e da MESMA cadeia, em aula PUBLICADA do curso, ANTES da posição
     // atual (comparação de tupla row-value do Postgres). O mais próximo "para trás".
@@ -373,7 +391,7 @@ export class DrizzleCourseRepository implements CourseRepository {
           // `trim` nos DOIS lados: o `chain` do serviço já vem trimado; sem o `trim` no
           // valor armazenado, um `chain` autorado com espaço sobrando nunca casaria e o
           // carryover cairia silenciosamente no `initialProject` (perdendo o WIP do aluno).
-          sql`btrim(${lessonBlocks.content}->>'chain', ${JAVASCRIPT_TRIM_CHARACTERS}) = ${chain}`,
+          sql`btrim(${configuration}->>'chain', ${JAVASCRIPT_TRIM_CHARACTERS}) = ${chain}`,
           sql`(${modules.sortOrder}, ${lessons.sortOrder}) < (${cur.modSort}, ${cur.lessonSort})`,
         ),
       )

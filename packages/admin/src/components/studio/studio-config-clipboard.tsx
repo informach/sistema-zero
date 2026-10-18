@@ -1,6 +1,11 @@
 'use client'
 
 import {
+  PYTHON_LEARNING_LEVELS,
+  type PythonLearningLevel,
+  resolvePythonLearningLevel,
+} from '@sistemazero/core/studio/python-learning'
+import {
   BLOCK_LEVEL_OPTIONS,
   type BlockLevel,
   type IDEMode,
@@ -16,6 +21,9 @@ import { toast } from 'sonner'
  * atividade, cadeia nem vitrine (esses são específicos da aula).
  */
 export interface StudioConfigSnapshot {
+  /** Missing only in old clips, which always belong to legacy JavaScript. */
+  environmentKey?: string
+  pythonLevel?: PythonLearningLevel
   level: BlockLevel
   modes: IDEMode[]
   categories: string[]
@@ -36,7 +44,15 @@ function readClip(): StudioConfigSnapshot | null {
       // O localStorage guarda config LEGADA (escala de 3) para sempre — a
       // normalização aqui é PERMANENTE, não migração one-off.
       level: normalizeBlockLevel(v.level) ?? 'iniciante-2d',
-      modes: Array.isArray(v.modes) ? (v.modes as IDEMode[]) : [],
+      environmentKey: typeof v.environmentKey === 'string' ? v.environmentKey : 'javascript',
+      ...(v.pythonLevel !== undefined
+        ? { pythonLevel: resolvePythonLearningLevel(v.pythonLevel) }
+        : {}),
+      modes: Array.isArray(v.modes)
+        ? v.modes.filter(
+            (mode): mode is IDEMode => mode === 'blocks' || mode === 'bridge' || mode === 'code',
+          )
+        : [],
       categories: Array.isArray(v.categories)
         ? v.categories.filter((c) => typeof c === 'string')
         : [],
@@ -89,13 +105,22 @@ export function StudioConfigClipboard({
       toast.error('Nada copiado ainda. Copie a configuração de outra aula primeiro.')
       return
     }
+    if ((snap.environmentKey ?? 'javascript') !== (current.environmentKey ?? 'javascript')) {
+      toast.error(
+        'Esta configuração pertence a outro ambiente. Copie a configuração de uma aula com o mesmo ambiente do projeto atual.',
+      )
+      setClip(snap)
+      return
+    }
     onPaste(snap)
     setClip(snap)
     toast.success('Configuração colada.')
   }
 
   const clipLevelLabel = clip
-    ? (BLOCK_LEVEL_OPTIONS.find((o) => o.value === clip.level)?.label ?? clip.level)
+    ? ((clip.pythonLevel
+        ? PYTHON_LEARNING_LEVELS.find((option) => option.value === clip.pythonLevel)?.label
+        : BLOCK_LEVEL_OPTIONS.find((o) => o.value === clip.level)?.label) ?? clip.level)
     : null
   const pasteLabel = clip
     ? `Colar configuração (${clipLevelLabel}${clip.allowBlocks.length ? ` · ${clip.allowBlocks.length} blocos` : ''})`

@@ -5,11 +5,16 @@ import {
   type LessonDraftDocument,
 } from '@sistemazero/core/learning'
 import { chaveDeVoz } from '@sistemazero/core/learning/scene'
+import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-document'
 import { createEmptyProject } from '@sistemazero/studio'
+import { prepareEditableStudioProject } from '@sistemazero/studio/editable-project-validation'
+import { createEditableStudioProject } from '@sistemazero/studio/project-factory'
+import { authoringFixture } from '../../members/tests/fakes/studio-authoring-policy'
 import {
   buildContent,
   EMPTY_BLOCK,
 } from '../src/app/admin/membros/cursos/[courseId]/aulas/[lessonId]/lesson-editor-client'
+import { solutionFrom } from '../src/app/admin/membros/cursos/[courseId]/aulas/[lessonId]/studio-solution-field'
 import {
   appendLessonSection,
   copyLessonContent,
@@ -18,7 +23,73 @@ import {
   sectionCompletionSummary,
   suggestedCompletion,
 } from '../src/lib/lesson-authoring'
+import { prepareStudioAuthoringOptions } from '../src/lib/studio-authoring-options'
 import type { LessonBlockContent } from '../src/lib/types'
+
+test('gabaritos de nomes no limite permanecem canônicos sem alterar o inicial ou partir emoji', async () => {
+  for (const language of ['javascript', 'python'] as const) {
+    for (const kind of ['classic', 'pro'] as const) {
+      const fixture = await authoringFixture(language, kind)
+      const project = await prepareEditableStudioProject(fixture.project)
+      if (!project)
+        throw new Error('O projeto de autoria precisa ser aceito pelo leitor do Estúdio.')
+      for (const name of ['x'.repeat(190), 'x'.repeat(200), `${'x'.repeat(188)}😀`]) {
+        project.name = name
+        const original = JSON.stringify(project)
+        expect(StudioProjectDocumentSchema.safeParse(project).success).toBe(true)
+        const solution = solutionFrom(project)
+        expect(StudioProjectDocumentSchema.safeParse(solution).success).toBe(true)
+        expect(solution.name).toEndWith(' (gabarito)')
+        expect(solution.name).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/u)
+        expect(solution.id).not.toBe(project.id)
+        expect(JSON.stringify(project)).toBe(original)
+      }
+    }
+  }
+})
+
+test('o formulário salva nível Python independente sem traduzir o código nem a curadoria', async () => {
+  const fixture = await authoringFixture('python', 'classic')
+  const prepared = await prepareStudioAuthoringOptions({
+    legacyJavaScript: true,
+    catalog: fixture.configuration,
+  })
+  const project = await createEditableStudioProject(
+    { id: 'python-form', name: 'Python', programmingLanguage: 'python' },
+    { catalog: prepared.catalog!, runtime: fixture.project.runtime, releaseStatus: 'active' },
+  )
+  const content = buildContent(
+    {
+      ...EMPTY_BLOCK,
+      kind: 'studio',
+      studioPythonLevel: 2,
+      studioAllowBlocks: ['sz_py_print'],
+      studioCategories: ['Entrada e saída'],
+    },
+    project,
+  )
+  expect(content).toMatchObject({
+    kind: 'studio',
+    pythonLevel: 2,
+    allowBlocks: ['sz_py_print'],
+    allowCategories: ['Entrada e saída'],
+    initialProject: project,
+  })
+  expect(content).not.toHaveProperty('level')
+  const solution = solutionFrom(project)
+  expect(solution.id).not.toBe(project.id)
+  expect(solution).toMatchObject({
+    programmingLanguage: 'python',
+    runtime: project.runtime,
+    name: 'Python (gabarito)',
+  })
+  expect(
+    buildContent({ ...EMPTY_BLOCK, kind: 'studio' }, project, undefined, undefined, solution),
+  ).toHaveProperty('solutionProject', solution)
+  const legacy = buildContent({ ...EMPTY_BLOCK, kind: 'studio' }, createEmptyProject('old', 'JS'))
+  expect(legacy).toHaveProperty('level', 'iniciante-2d')
+  expect(legacy).not.toHaveProperty('pythonLevel')
+})
 
 function fixture(): LessonDraftDocument<LessonBlockContent> {
   return {

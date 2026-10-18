@@ -1,3 +1,7 @@
+import { z } from 'zod'
+
+export const GalleryCopyGenerationSchema = z.uuid()
+
 export interface GalleryDeliveryConfig {
   minItems: number
   maxItems: number
@@ -25,6 +29,8 @@ export interface GallerySubmission {
   kind: 'gallery-delivery'
   version: 1
   requestId: string
+  /** Absent only in historical snapshots. New copies are isolated by server-issued generation. */
+  copyGeneration?: string
   tool: 'studio' | 'pinta'
   items: GallerySubmissionItem[]
 }
@@ -38,6 +44,7 @@ export type GalleryDeliveryPlan =
   | { completed: true; result: { submittedAt: string; passed?: boolean; score?: number } }
   | {
       completed: false
+      copyGeneration: string
       snapshot: GallerySubmission
       copies: { source: string; destination: string }[]
     }
@@ -70,6 +77,8 @@ export function isGallerySubmission(v: unknown): v is GallerySubmission {
     v.kind === 'gallery-delivery' &&
     v.version === 1 &&
     typeof v.requestId === 'string' &&
+    (v.copyGeneration === undefined ||
+      GalleryCopyGenerationSchema.safeParse(v.copyGeneration).success) &&
     (v.tool === 'studio' || v.tool === 'pinta') &&
     Array.isArray(v.items) &&
     v.items.length > 0 &&

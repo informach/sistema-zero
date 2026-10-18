@@ -154,6 +154,7 @@ function fixture(
       }),
     },
     members: {
+      getOwnStudioSubmission: async () => ({ status: 200, body: { project } }),
       getShowcasePayload: async () => ({
         status: 200,
         body: { eligible: true, defaultCoverUrl: null },

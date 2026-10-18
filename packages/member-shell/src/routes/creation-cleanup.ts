@@ -6,7 +6,7 @@ import type { GatewayModule } from '../server/gateway'
 import { r2DeleteUgcPrefixes } from '../server/r2'
 
 interface CleanupJob {
-  scope?: 'pensa'
+  scope?: 'pensa' | 'gallery'
   id: string
   accountId: string
   userIds: string[]
@@ -62,7 +62,7 @@ export function createCreationCleanupWorkerRoutes(deps: {
           // finalizaria a conta da família inteira a partir do job de um plano.
           const claimed = await deps.gateway.gatewayFetchHmac<{ job?: CleanupJob }>(
             '/members/internal/creation-cleanups/claim',
-            { method: 'POST', body: { scopes: ['pensa'] } },
+            { method: 'POST', body: { scopes: ['pensa', 'gallery'] } },
           )
           if (claimed.status === 204) break
           const job = claimed.body?.job
@@ -75,7 +75,7 @@ export function createCreationCleanupWorkerRoutes(deps: {
           try {
             await (deps.deletePrefixes ?? r2DeleteUgcPrefixes)(job.prefixes)
             const finalizeBody = { accountId: job.accountId, userIds: job.userIds }
-            for (const path of job.scope === 'pensa'
+            for (const path of job.scope
               ? []
               : [
                   '/hub/internal/account-deletion/finalize',

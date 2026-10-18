@@ -6,13 +6,7 @@ import { createEmptyProject } from '../core/project'
 import { buildProProject } from '../core/proProject'
 import { migrateLocalProject } from '../project-migrations/localProjects'
 import { readAllKeys, readValue, writeInOneTransaction } from './idbTransaction'
-import {
-  deleteProject,
-  listAllProjects,
-  loadProjectById,
-  loadProjectShellById,
-  persistProject,
-} from './persistence'
+import { deleteProject, listAllProjects, persistProject } from './persistence'
 import { proBuilderDeletionKey } from './proBuilderDeletion'
 import { projectPersistence, registerProjectPersistence } from './projectOperations'
 import { recoverProjectWrites } from './projectStorageCoordinator'
@@ -27,7 +21,11 @@ import { projectStorageEntries } from './projectStorageRecords'
 import { type ProApplicationRecord, readLocalRevision } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
 import { setProjectStorageNamespace } from './projectStorageRuntime'
-import { createProjectStore } from './projectStore'
+import {
+  createProjectStore,
+  loadSanitizedProjectById as loadProjectById,
+  loadSanitizedProjectShellById as loadProjectShellById,
+} from './projectStore'
 import {
   applyProProposal,
   captureProRevision,

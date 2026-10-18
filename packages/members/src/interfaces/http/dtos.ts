@@ -1,4 +1,5 @@
 import { COURSE_MODALITIES } from '@sistemazero/core/course/modality'
+import { CONTENT_FINGERPRINT_PATTERN } from '@sistemazero/core/creations'
 import {
   HELP_COLLECTION_ICONS,
   HELP_COLLECTION_TONES,
@@ -7,6 +8,7 @@ import {
   HELP_TUTORIAL_STATUSES,
   HELP_VIDEO_PROVIDERS,
 } from '@sistemazero/core/help'
+import { STUDIO_READABLE_PROJECT_ID_PATTERN } from '@sistemazero/core/studio/project-format'
 import { t } from 'elysia'
 import { MAX_SUBMISSION_MESSAGE_CHARS } from '../../domain/course/lesson-block'
 import { InteractiveBlockSchema } from './learning.dtos'
@@ -119,7 +121,7 @@ export const PensaFunnelQuery = t.Object({
 const STUDIO_LOCAL_PROJECT_ID = t.String({
   minLength: 1,
   maxLength: 128,
-  pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$',
+  pattern: STUDIO_READABLE_PROJECT_ID_PATTERN.source,
 })
 export const ZappyHistoryQuery = t.Object({
   audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
@@ -133,6 +135,7 @@ const ZappyActor = t.Object({
   privileged: t.Boolean(),
 })
 export const ZappyInternalQuestionBody = t.Object({
+  programmingLanguage: t.Optional(t.Union([t.Literal('javascript'), t.Literal('python')])),
   actor: ZappyActor,
   projectId: STUDIO_LOCAL_PROJECT_ID,
   clientMessageId: UUID,
@@ -156,6 +159,7 @@ export const ZappyInternalResponseBody = t.Object({
   /** Motivo da reprova da validação (auditoria; nunca volta à criança). */
   rejection: t.Optional(t.String({ minLength: 1, maxLength: 40 })),
   response: t.Object({
+    programmingLanguage: t.Optional(t.Union([t.Literal('javascript'), t.Literal('python')])),
     id: UUID,
     intent: t.Optional(t.Union([t.Literal('explain'), t.Literal('investigate')])),
     kind: t.Optional(t.Union([t.Literal('classic'), t.Literal('pro')])),
@@ -1048,20 +1052,34 @@ const StudioLevelSchema = t.Union([
 const StudioModeSchema = t.Union([t.Literal('blocks'), t.Literal('bridge'), t.Literal('code')])
 /**
  * Snapshot `Project` do Estúdio (autoria do admin = `initialProject`; entrega do
- * aluno = corpo do submit). O TypeBox exige `name`+`files` e tolera propriedades adicionais.
+ * aluno = corpo do submit). JS/Classic usam files; Python Pro usa somente tree.
+ * A borda preserva os campos do documento; a validação estrutural inteira é do service.
  * O service também valida `kind:pro`, árvore e template contra o catálogo fechado. O
  * @sistemazero/studio sanitiza o shape inteiro na autoria e de novo no aluno. O teto de
  * tamanho do agregado é aplicado no service.
  */
-const StudioProjectSchema = t.Object(
-  {
-    name: t.String({ maxLength: 200 }),
-    files: t.Record(t.String({ maxLength: 200 }), t.String({ maxLength: 2_000_000 })),
-  },
-  { additionalProperties: true },
-)
+const StudioProjectSchema = t.Union([
+  t.Object(
+    {
+      name: t.String({ maxLength: 200 }),
+      files: t.Record(t.String({ maxLength: 200 }), t.String({ maxLength: 2_000_000 })),
+    },
+    { additionalProperties: true },
+  ),
+  t.Object(
+    {
+      formatVersion: t.Literal(3),
+      programmingLanguage: t.Literal('python'),
+      kind: t.Literal('pro'),
+      name: t.String({ maxLength: 200 }),
+      tree: t.Record(t.String({ maxLength: 240 }), t.Unknown()),
+    },
+    { additionalProperties: true },
+  ),
+])
 /** Bloco Estúdio: editor pré-configurado embutido na aula (ver domain/course/lesson-block.ts). */
 const StudioBlockSchema = t.Object({
+  pythonLevel: t.Optional(t.Union([t.Literal(1), t.Literal(2), t.Literal(3)])),
   kind: t.Literal('studio'),
   gallery: t.Optional(t.Object({ minItems: t.Literal(1), maxItems: t.Literal(1) })),
   purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
@@ -1239,6 +1257,16 @@ export const LessonBlockContentSchema = t.Union([
 export const StudioSubmissionParams = t.Object({ lessonId: UUID, blockId: UUID })
 /** Params da rota de carryover do Estúdio (carregar o projeto da aula contínua anterior). */
 export const StudioCarryoverParams = t.Object({ lessonId: UUID, blockId: UUID })
+export const StudioLessonContextBody = t.Optional(
+  t.Object({
+    confirm: t.Optional(
+      t.Object({
+        baselineId: t.String({ pattern: '^[a-f0-9]{64}$' }),
+        environment: t.Unknown(),
+      }),
+    ),
+  }),
+)
 /** Params da rota de payload da vitrine (Mural) — elegibilidade + conteúdo do post. */
 export const ShowcasePayloadParams = t.Object({ lessonId: UUID, blockId: UUID })
 /** Params da rota admin de UMA entrega (por bloco + aluno). `id` = blockId. */
@@ -1259,10 +1287,10 @@ export const StudioSubmissionBody = t.Object({
    */
   messageSpoken: t.Optional(t.Boolean()),
   /**
-   * Impressão digital do conteúdo enviado (`v1:<sha256>`, do navegador): é o que o "envio em
+   * Impressão digital versionada do conteúdo enviado (do navegador): é o que o "envio em
    * dia" compara com o rascunho guardado na conta. Opcional (cliente antigo = sem conferência).
    */
-  fingerprint: t.Optional(t.String({ pattern: '^v1:[a-f0-9]{64}$' })),
+  fingerprint: t.Optional(t.String({ pattern: CONTENT_FINGERPRINT_PATTERN.source })),
 })
 
 /**
@@ -1479,10 +1507,10 @@ export const CreationUploadBody = t.Object({
     ),
   ),
   /**
-   * Impressão digital do conteúdo (`v1:<sha256>`, régua do core): o "envio em dia" a compara com
+   * Impressão digital versionada do conteúdo (régua do core): o "envio em dia" a compara com
    * a do envio. Opcional; promovida no commit junto com os outros metadados.
    */
-  fingerprint: t.Optional(t.String({ pattern: '^v1:[a-f0-9]{64}$' })),
+  fingerprint: t.Optional(t.String({ pattern: CONTENT_FINGERPRINT_PATTERN.source })),
 })
 
 /** Exclusões também são condicionais: uma lápide velha não pode apagar uma edição nova. */

@@ -2,6 +2,7 @@
 
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
+import { useFreeStudioOptions } from '@sistemazero/member-shell/components/studio/use-free-options'
 // O CSS do Estúdio (tokens + @theme que GERA as utilitárias sz-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — um JS-import aqui só
 // traz os tokens, NÃO registra as cores p/ gerar as utilitárias (sem isso os modais e
@@ -112,6 +113,7 @@ export function StudioFullClient({
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [view, setView] = useState<View>({ name: 'list' })
+  const freeOptions = useFreeStudioOptions(viewerId, !taskId, audience)
   const [openingProject, setOpeningProject] = useState<'loading' | 'error' | null>(
     initialProjectId && !taskId ? 'loading' : null,
   )
@@ -707,19 +709,48 @@ export function StudioFullClient({
         <mod.StudioHostChromeProvider value={hostChrome}>
           <HostChromeAnnouncer text={announcement} />
           {view.name === 'list' ? (
-            <mod.ProjectList
-              onOpenProject={openProject}
-              theme={studioTheme}
-              professional={proAvailable}
-              initialExtensions={tier.initialExtensions}
-              allowedExtensions={tier.allowedExtensions}
-              showExamples={showExamples}
-              sections={projectSections}
-            />
+            <div className="flex h-full min-h-0 flex-col">
+              {!taskId && (freeOptions.loading || freeOptions.error || freeOptions.unavailable) && (
+                <div
+                  role={freeOptions.error ? 'alert' : 'status'}
+                  className="flex flex-wrap items-center gap-2 px-3 py-2 text-sm"
+                >
+                  {freeOptions.error ??
+                    (freeOptions.loading
+                      ? 'Consultando ambientes Python…'
+                      : 'Python ainda não está disponível para novos projetos.')}
+                  {freeOptions.error && (
+                    <button
+                      type="button"
+                      className="min-h-10 rounded px-3 font-semibold underline"
+                      onClick={freeOptions.retry}
+                    >
+                      Tentar novamente
+                    </button>
+                  )}
+                </div>
+              )}
+              <div className="min-h-0 flex-1">
+                <mod.ProjectList
+                  onOpenProject={openProject}
+                  theme={studioTheme}
+                  professional={proAvailable}
+                  pythonCreation={taskId ? undefined : freeOptions.creation}
+                  pythonDiscovery={taskId ? undefined : freeOptions}
+                  initialExtensions={tier.initialExtensions}
+                  allowedExtensions={tier.allowedExtensions}
+                  showExamples={showExamples}
+                  sections={projectSections}
+                />
+              </div>
+            </div>
           ) : (
             <StudioFullEditor
+              key={JSON.stringify([viewerId, view.projectId])}
+              audience={audience}
               mod={mod}
               projectId={view.projectId}
+              viewerId={viewerId}
               onExit={exitEditor}
               share={share}
               tutor={tutor}

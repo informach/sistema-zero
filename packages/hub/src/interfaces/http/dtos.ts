@@ -181,10 +181,27 @@ export const ShowcaseThreadBody = t.Object({
  * sobre o snapshot jogável). Vem do BFF, que o deriva do projeto SANEADO — mas a
  * rota é alcançável na borda, então NUNCA tratar como fronteira de segurança.
  */
-export const StudioMetaBody = t.Object({
-  pro: t.Boolean(),
-  extensions: t.Array(t.String({ minLength: 1, maxLength: 64 }), { maxItems: 8 }),
+const StudioRuntimeMetadata = t.Object({
+  profileId: t.String({ minLength: 1, maxLength: 96, pattern: '^[a-z0-9][a-z0-9._-]*$' }),
+  releaseId: t.String({ minLength: 1, maxLength: 96, pattern: '^[a-z0-9][a-z0-9._-]*$' }),
+  manifestSha256: t.String({ pattern: '^[a-f0-9]{64}$' }),
 })
+const StudioMetadataCommon = {
+  pro: t.Boolean(),
+  extensions: t.Array(t.String({ minLength: 1, maxLength: 128 }), { maxItems: 8 }),
+}
+export const StudioMetaBody = t.Union([
+  t.Object({
+    ...StudioMetadataCommon,
+    programmingLanguage: t.Optional(t.Literal('javascript')),
+    runtime: t.Optional(StudioRuntimeMetadata),
+  }),
+  t.Object({
+    ...StudioMetadataCommon,
+    programmingLanguage: t.Literal('python'),
+    runtime: StudioRuntimeMetadata,
+  }),
+])
 
 export const ShowcaseThreadStudioBody = t.Object({
   spaceSlug: SLUG,
