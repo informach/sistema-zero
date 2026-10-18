@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./cn": "./src/lib/cn.ts",
     "./phone": "./src/lib/phone.ts",
+    "./console-apps": "./src/lib/console-apps.ts",
     "./tokens": "./src/tokens/index.ts",
     "./styles/*": "./src/styles/*",
     "./palettes.css": "./src/styles/palettes/community.css",

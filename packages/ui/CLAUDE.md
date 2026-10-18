@@ -177,7 +177,13 @@ TOPO trata Esc/Tab; **o card é capado à viewport (`max-h-[calc(100dvh-6rem)]` 
 e rodapé FIXOS, só o corpo rola** — conteúdo alto (ex.: o Estúdio embutido na autoria de bloco) não
 transborda nem corta o topo, e o footer Salvar/Cancelar fica sempre visível; **largura via
 `className`** — default `max-w-lg`, sobrescreva p/ conteúdo largo, ex. `max-w-7xl` no bloco Estúdio)
-· info-tooltip · input · label (`Field` com `tooltip?`; **o erro vira
+· **console-user-menu** (`@sistemazero/ui/console-user-menu` — o menu do avatar dos TRÊS
+consoles internos (admin, helpdesk-app, marketing-app), que eram cópias: `ConsoleUserMenu` com
+`user`, `fallbackInitial`, `logoutPath`, `dropdownSide` e `apps`; o grupo "Apps" abre os outros
+consoles em nova aba, `rel="noopener noreferrer"`. A lista sai de **`@sistemazero/ui/console-apps`**
+(puro: `consoleAppLinks(atual, urls)` tira o console atual e as URLs ausentes e fecha SEMPRE com
+`INFORMACH_BACKSTAGE`, os Bastidores da Informach, URL fixa `https://admin.informach.com.br/`
+porque é a mesma em todo ambiente; nomes e ordem únicos; `tests/console-apps.test.ts`)) · info-tooltip · input · label (`Field` com `tooltip?`; **o erro vira
 `role="alert"` ligado por `aria-describedby` + `aria-invalid` no controle** — clona o filho) ·
 pagination · password-input (**olho alcançável por teclado**, `aria-pressed`) · progress · select ·
 **skeleton** (`@sistemazero/ui/skeleton` —

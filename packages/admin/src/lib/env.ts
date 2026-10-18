@@ -2,6 +2,20 @@ import 'server-only'
 import { z } from 'zod'
 
 /**
+ * URL pública de outro console (opcional). Em branco ou inválida conta como AUSENTE: é só um
+ * link, e o `getEnv` roda em toda página — uma variável mal preenchida no Railway não pode
+ * derrubar o app inteiro (o sintoma do erro é o link não aparecer). Só http(s): o valor vira
+ * `href`.
+ */
+export const optionalAppUrl = z.preprocess(
+  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+  z
+    .url({ protocol: /^https?$/ })
+    .optional()
+    .catch(undefined),
+)
+
+/**
  * Env do servidor (fail-fast). NUNCA é importado por Client Component — `server-only`
  * garante o erro de build se vazar para o bundle do cliente.
  */
@@ -32,6 +46,11 @@ const EnvSchema = z
     // equipe). OPCIONAIS: ausentes → o botão fica oculto.
     COMMUNITY_URL: z.string().url().optional(),
     KIDS_COMMUNITY_URL: z.string().url().optional(),
+
+    // Os outros consoles da equipe (menu do avatar + botão do painel de Atendimento), abertos
+    // em nova aba. OPCIONAIS: ausentes → o link some.
+    HELPDESK_APP_URL: optionalAppUrl,
+    MARKETING_APP_URL: optionalAppUrl,
 
     // ── Upload de mídia (opcionais: sem eles a feature responde "indisponível",
     //    não derruba o boot — os adapters validam presença com erro amigável) ──

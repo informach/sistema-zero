@@ -4,6 +4,7 @@ import {
   CreditCard,
   Gift,
   GraduationCap,
+  Headset,
   Home,
   Inbox,
   LayoutDashboard,
@@ -107,6 +108,8 @@ export const NAV_GROUPS: NavGroup[] = [
         match: '/admin/catalogo',
       },
       { label: 'Uso de IA', href: '/admin/ia', icon: Sparkles },
+      // Somente leitura: o trabalho acontece no app de atendimento (outra aba).
+      { label: 'Atendimento', href: '/admin/atendimento', icon: Headset },
     ],
   },
   {

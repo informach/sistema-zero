@@ -1,6 +1,7 @@
 'use client'
 
 import { BrandLogo } from '@sistemazero/ui/brand-logo'
+import type { ConsoleAppLink } from '@sistemazero/ui/console-apps'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
@@ -35,7 +36,13 @@ function badgeCount(counts: ProfessorCounts | undefined, key: string): number | 
  * topbar fina (logo + hambúrguer) + drawer lateral com o mesmo conteúdo, que
  * fecha ao navegar. Substituiu a topbar plana (07/2026).
  */
-export function AdminSidebar({ user }: { user: SessionUser }) {
+export function AdminSidebar({
+  user,
+  apps,
+}: {
+  user: SessionUser
+  apps?: readonly ConsoleAppLink[]
+}) {
   const pathname = usePathname()
   const [drawerOpen, setDrawerOpen] = useState(false)
   // UM store p/ as duas renderizações de NavGroups (desktop + drawer) — single-flight
@@ -64,7 +71,7 @@ export function AdminSidebar({ user }: { user: SessionUser }) {
         <PlatformSwitcher />
         <NavGroups pathname={pathname} role={user.role} counts={overview?.counts} />
         <div className="flex shrink-0 items-center justify-between border-t border-border px-4 py-3">
-          <UserMenu user={user} dropdownSide="up" />
+          <UserMenu user={user} apps={apps} dropdownSide="up" />
         </div>
       </aside>
 
@@ -79,7 +86,7 @@ export function AdminSidebar({ user }: { user: SessionUser }) {
         </button>
         <Logo />
         <div className="ml-auto flex items-center gap-1">
-          <UserMenu user={user} />
+          <UserMenu user={user} apps={apps} />
         </div>
       </header>
 

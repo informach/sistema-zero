@@ -1,9 +1,11 @@
+import { consoleAppLinks } from '@sistemazero/ui/console-apps'
 import { ShieldAlert } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { AdminSidebar } from '@/components/admin/admin-sidebar'
 import { LogoutButton } from '@/components/admin/logout-button'
 import { PlatformProvider } from '@/components/admin/platform-provider'
+import { getEnv } from '@/lib/env'
 import { PLATFORM_COOKIE, parsePlatform } from '@/lib/platform'
 import { isAdminRole } from '@/lib/types'
 import { getSession } from '@/server/session'
@@ -37,10 +39,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     )
   }
 
+  const env = getEnv()
+  const apps = consoleAppLinks('admin', {
+    helpdesk: env.HELPDESK_APP_URL,
+    marketing: env.MARKETING_APP_URL,
+  })
+
   return (
     <PlatformProvider initialPlatform={initialPlatform}>
       <div className="flex min-h-screen flex-col bg-background md:flex-row">
-        <AdminSidebar user={user} />
+        <AdminSidebar user={user} apps={apps} />
         <main className="min-w-0 flex-1">
           <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-6">{children}</div>
         </main>

@@ -14,7 +14,9 @@ do e-mail e do portal), thread + resposta com IA, base de conhecimento e configu
 Gmail + assinatura). **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é o
 **[@sistemazero/helpdesk](../helpdesk)** (porta 3013), consumido SEMPRE via api-gateway. Molde
 arquitetural: **`packages/marketing-app`** (BFF via gateway, cookies HttpOnly, réplica única).
-Porta **3014**. Domínio futuro: `helpdesk.sistemazero.com.br` (ou `atendimento`).
+Porta **3014**. Domínio de produção: `atendimento.sistemazero.com.br`. O admin mostra um painel
+somente leitura deste atendimento em `/admin/atendimento`, com atalhos para cá (`/tickets?queue=`,
+`?status=`, `/tickets/<id>`): mudar o nome desses filtros de URL quebra os atalhos de lá.
 
 > Estado: **F0–F7 COMPLETAS (01/09/2026)** — todas as telas no ar: **Painel** (exceções de SLA,
 > risco e tickets sem responsável + gráfico de volume de 14 dias), **Caixa de entrada** (atalhos
@@ -125,7 +127,9 @@ Setup local: Postgres up + auth/gateway/helpdesk rodando + usuário staff → `b
 
 `GATEWAY_URL` (prod: obrigatório explícito) · `JWT_HS256_SECRET` (dev) e/ou `JWT_JWKS_URL` (prod,
 obrigatório; recusa HS256) · `JWT_ISSUER`/`JWT_AUDIENCE` (obrigatórios em prod) · `SENTRY_DSN`
-(opcional). Regras em `src/instrumentation.ts` E `scripts/boot-check.mjs` (manter em sincronia).
+(opcional) · `ADMIN_APP_URL`/`MARKETING_APP_URL` (opcionais: os outros consoles, admin e marketing, no menu do avatar em
+nova aba; ausentes → o link some. O menu é o `ConsoleUserMenu` do `@sistemazero/ui`, com a lista
+montada no `(app)/layout.tsx` por `consoleAppLinks`). Regras em `src/instrumentation.ts` E `scripts/boot-check.mjs` (manter em sincronia).
 
 ## Deploy (Railway) — pendências da usuária
 

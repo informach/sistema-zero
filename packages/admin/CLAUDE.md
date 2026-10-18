@@ -1,5 +1,42 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Atendimento no admin: painel somente leitura + links entre consoles (17/10/2026)
+
+Decisão da dona: o app de atendimento (`helpdesk-app`) continua sendo onde se TRABALHA; o admin
+só mostra o que pede ação e leva até lá, em outra aba.
+
+- **Painel `/admin/atendimento`** (grupo Gestão, ícone `Headset`; `atendimento-client.tsx` +
+  `volume-chart.tsx`). Cartões "Precisa de atenção" (SLA estourado, em risco, sem responsável —
+  destacados quando > 0), "Fila" (novos, em aberto, aguardando cliente, resolvidos hoje/7 dias),
+  lista "Precisa de você" (5 tickets mais urgentes) e volume de 14 dias. Cada cartão e cada
+  ticket abre o app de atendimento JÁ no filtro (`HELPDESK_PATHS` em `lib/helpdesk-panel.ts`:
+  `?queue=attention|unassigned`, `?status=new|open|waiting`, `/tickets/<id>`), em nova aba
+  com `rel="noopener noreferrer"`. Botão "Abrir atendimento" no cabeçalho. NADA escreve no
+  helpdesk daqui.
+- **BFF**: `GET /api/helpdesk/stats` (pass-through de `/helpdesk/tickets/stats`) e
+  `GET /api/helpdesk/attention` (`/helpdesk/tickets?sla=attention&limit=5`, reduzido por
+  `toAttentionView` a id/assunto/solicitante/responsável/prazo: rascunho e resumo da IA NÃO
+  saem do BFF). Adapter `server/helpdesk.ts`. As rotas `/helpdesk/*` do gateway são staff+, o
+  mesmo público do admin: nenhuma rota nova no gateway. Tipos de `@sistemazero/helpdesk-contracts`
+  (dependência nova do admin, só `import type`).
+- Falha de carga NUNCA vira zero (traço + aviso, a mesma regra do painel do helpdesk-app); o
+  último dado bom fica na tela quando um "Atualizar" falha.
+- **Menu do avatar** = `ConsoleUserMenu` do `@sistemazero/ui` (os três consoles tinham cópias):
+  ganhou o grupo "Apps" com os OUTROS consoles e, sempre, os Bastidores da Informach
+  (`https://admin.informach.com.br/`, fixo) — `consoleAppLinks` de `@sistemazero/ui/console-apps`, montado no `app/admin/layout.tsx` a partir da env e passado
+  por `AdminSidebar` → `UserMenu`.
+- **Envs OPCIONAIS** `HELPDESK_APP_URL` e `MARKETING_APP_URL` (`optionalAppUrl` em `lib/env.ts`,
+  igual nos três consoles): ausente, em branco, sem `https://` ou fora de http(s) → o link e os
+  atalhos SOMEM (o painel avisa e segue mostrando os números). Não é fail-fast de propósito: é
+  só um link, e o `getEnv` roda em toda página. Criadas no Railway (staging e produção) em
+  17/10/2026 e registradas em `.railway/variables.ts` (as do helpdesk-app e do marketing-app
+  também).
+- ⚠️ Cada console tem login próprio (cookies `__Host-` presos à origem): abrir o atendimento
+  pela primeira vez pede login lá. Login único entre consoles ficou para depois (o molde seria
+  o handoff de uso único da impersonação).
+- Testes: `tests/helpdesk-panel.test.ts` (puros) e `tests/atendimento-panel.test.tsx` (tela,
+  falha vira traço, sem URL, menu do avatar).
+
 ## Cursos ao vivo: a oficina é um curso de modalidade "ao vivo" (14/10/2026)
 
 Decisão da dona (`docs/plans/2026-10-14-cursos-ao-vivo-design.md`): o editor de roteiro das
@@ -1090,6 +1127,8 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
   local de `/api/media/*`).
 - `JWT_ISSUER`/`JWT_AUDIENCE`: **OBRIGATÓRIOS em produção** (fail-fast no boot — mesma regra do
   gateway; prod = `sistemazero-auth`/`sistemazero`); em dev, casar com o auth ativa a checagem.
+- `HELPDESK_APP_URL` / `MARKETING_APP_URL` (opcionais): os outros consoles da equipe, no menu do
+  avatar e no painel `/admin/atendimento`. Ausentes → os links somem.
 - `SENTRY_DSN` (opcional): espelho de erros LOCAIS do painel (pipeline de mídia + exceções de Route
   Handler/RSC via `onRequestError`). Ausente = no-op. ⚠️ **Sem SDK** — o `src/server/sentry.ts` fala
   o protocolo de ingestão via `fetch` (o tracing do standalone/Turbopack não copia pacotes externos
