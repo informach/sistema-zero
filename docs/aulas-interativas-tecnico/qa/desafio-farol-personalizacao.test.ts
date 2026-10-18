@@ -113,7 +113,7 @@ describe('personalização completa do Farol', () => {
     expect(evaluateStudioSectionProject(farolEscolhido, apagado)[0]?.passed).toBe(false)
   })
 
-  test('um projeto salvo recebe novas escolhas sem perder imagens, código ou mensagens próprias', () => {
+  test('um projeto salvo recebe novas escolhas sem perder imagens, código ou mensagens próprias', async () => {
     const initial = montarProjetoFarol('concluido')
     const legacy = {
       ...initial.assets.find((asset) => asset.name === 'aventureiro')!,
@@ -126,12 +126,12 @@ describe('personalização completa do Farol', () => {
       name: 'Minha ilha',
       files: { ...initial.files, 'script.js': '// código já salvo pela criança' },
     }
-    const completed = completeLibraryAssets(saved, initial)
+    const completed = await completeLibraryAssets(saved, initial)
     expect(completed.assets[0]).toBe(legacy)
     expect(completed.files).toBe(saved.files)
     expect(completed.ir).toBe(saved.ir)
     expect(completed.assets.some((asset) => asset.name === 'menina-de-laco')).toBe(true)
     expect(completed.assets.some((asset) => asset.name === 'aventureiro')).toBe(true)
-    expect(completeLibraryAssets(completed, initial)).toBe(completed)
+    expect(await completeLibraryAssets(completed, initial)).toBe(completed)
   })
 })
