@@ -6,6 +6,7 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import type postgres from 'postgres'
 import { z } from 'zod'
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
+import { withPensaCutoverMigrations } from './pensa-cutover-migrations'
 
 const mode = process.argv[2]
 if (!['preflight', 'cutover', 'rollback', 'verify'].includes(mode ?? ''))
@@ -27,8 +28,7 @@ const journal = z
   .parse(JSON.parse(await readFile(resolve(migrations, 'meta/_journal.json'), 'utf8')))
 const final = journal.entries.find((e) => e.idx === 128),
   baseline = journal.entries.find((e) => e.idx === 125)
-if (!final || !baseline || journal.entries.at(-1)?.idx !== 128)
-  throw new Error('Review the cutover manifest before adding later migrations')
+if (!final || !baseline) throw new Error('The reviewed Pensa cutover migration baseline is missing')
 const hash = (value: string) => createHash('sha256').update(value).digest('hex')
 const quoted = (name: string) => `"${name.replaceAll('"', '""')}"`
 const literal = (value: string) => `'${value.replaceAll("'", "''")}'`
@@ -270,17 +270,23 @@ try {
         JSON.stringify(await foreignKeys()) !== JSON.stringify(manifest.foreignKeys)
       )
         throw new Error('Pensa changed since preflight; fence workers and create a new manifest')
-      if (apply)
-        await migrate(conn.db, {
-          migrationsFolder: migrations,
-          migrationsTable: 'members_migrations',
-        })
+      const appliedMigrations = await withPensaCutoverMigrations(
+        migrations,
+        async (folder, tags) => {
+          if (apply)
+            await migrate(conn.db, {
+              migrationsFolder: folder,
+              migrationsTable: 'members_migrations',
+            })
+          return tags
+        },
+      )
       console.log(
         JSON.stringify({
           mode,
           dryRun: !apply,
           projects: manifest.projects,
-          migrations: journal.entries.filter((e) => e.idx >= 126).map((e) => e.tag),
+          migrations: appliedMigrations,
           retained: [
             'creations',
             'xp_events',
