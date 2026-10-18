@@ -40,6 +40,20 @@ console.log(
   'Current staging Members:',
   JSON.stringify(current.serviceInstance.activeDeployments.map(summary)),
 )
+for (const [name, sid] of Object.entries({
+  'community-kids': 'fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f',
+  community: '9df1b493-4cea-4b36-bec8-7299f054c17d',
+  admin: 'e00eca0b-5323-4424-9b58-fdb073cfce82',
+})) {
+  const app = await query(
+    'query($sid:String!,$eid:String!){serviceInstance(serviceId:$sid,environmentId:$eid){activeDeployments{id status meta}}}',
+    { sid, eid: 'f634cff6-aafb-4804-8b69-172fad4e946e' },
+  )
+  console.log(
+    `Current staging ${name}:`,
+    JSON.stringify(app.serviceInstance.activeDeployments.map(summary)),
+  )
+}
 const schema = await query(
   '{__type(name:"Query"){fields{name args{name type{kind name ofType{kind name ofType{kind name}}}} type{kind name ofType{kind name ofType{kind name}}}}}}',
 )
