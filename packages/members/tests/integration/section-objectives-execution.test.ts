@@ -58,9 +58,13 @@ function fakeExecutor(answer: (input: ProjectExecutionCheckInput) => boolean | '
   return { executor, calls }
 }
 
-function setup(executor?: ProjectExecutionChecker, initialProject: unknown = classico()) {
+function setup(
+  executor?: ProjectExecutionChecker,
+  initialProject: unknown = classico(),
+  audience: 'kids' | 'adult' = 'kids',
+) {
   const env = buildApp({ projectExecutor: executor })
-  const course = seedSampleCourse(env.courses)
+  const course = seedSampleCourse(env.courses, 'curso-demo', 'published', audience)
   const lessonId = course.lessonIds[0]
   grantLifetime(env.entitlements, { userId: USER, courseRef: course.slug })
   env.courses.blocks = env.courses.blocks.filter((b) => b.lessonId !== lessonId)
@@ -104,20 +108,80 @@ function setup(executor?: ProjectExecutionChecker, initialProject: unknown = cla
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       }),
     )
-  const check = (project: unknown) =>
-    request(`/lessons/${lessonId}/sections/${section.id}/project-check`, 'POST', {
-      revision: structureRevision,
-      project,
-    })
+  const check = (project: unknown, headers: Record<string, string> = {}) =>
+    request(
+      `/lessons/${lessonId}/sections/${section.id}/project-check`,
+      'POST',
+      { revision: structureRevision, project },
+      headers,
+    )
   const read = async () =>
     (await (await request(`/courses/${course.slug}/lessons/${lessonId}`)).json()) as {
       sections: { completion?: { projectChecks?: Record<string, unknown>[] } }[]
       sectionProgress: { sections: { objectives?: unknown }[] }
     }
-  return { ...env, request, check, read }
+  return { ...env, course, lessonId, request, check, read }
 }
 
 describe('objetivos que rodam o jogo, no servidor', () => {
+  test('perfil Kids não lê aula adulta nem executa objetivos usando o acesso da conta', async () => {
+    const fake = fakeExecutor(() => true)
+    const ctx = setup(fake.executor, classico(), 'adult')
+    const headers = {
+      'x-auth-user-id': '22222222-2222-4222-8222-222222222222',
+      'x-auth-account-id': USER,
+      'x-auth-kids-context': 'child',
+    }
+    for (const role of ['customer', 'admin']) {
+      const actor = { ...headers, 'x-auth-user-role': role, 'x-auth-user-status': 'active' }
+      const lesson = await ctx.request(
+        `/courses/${ctx.course.slug}/lessons/${ctx.lessonId}`,
+        'GET',
+        undefined,
+        actor,
+      )
+      expect(lesson.status).toBe(403)
+      expect((await ctx.check(COM_LACO, actor)).status).toBe(403)
+    }
+    expect(fake.calls).toHaveLength(0)
+    expect(ctx.gamification.events).toHaveLength(0)
+  })
+
+  test('o mesmo perfil Kids conserva acesso e recompensa no curso infantil da conta', async () => {
+    const fake = fakeExecutor(() => true)
+    const ctx = setup(fake.executor, classico(), 'kids')
+    const childId = '22222222-2222-4222-8222-222222222222'
+    const headers = {
+      'x-auth-user-id': childId,
+      'x-auth-account-id': USER,
+      'x-auth-kids-context': 'child',
+    }
+    expect((await ctx.check(COM_LACO, headers)).status).toBe(200)
+    expect(fake.calls).toHaveLength(1)
+    expect(ctx.gamification.events).toHaveLength(1)
+    expect(ctx.gamification.events[0]).toMatchObject({ userId: childId, audience: 'kids' })
+  })
+
+  test.each([
+    'kids',
+    'adult',
+  ] as const)('executor e recompensa preservam o público %s após a conciliação', async (audience) => {
+    const fake = fakeExecutor(() => true)
+    const ctx = setup(fake.executor, classico(), audience)
+    const first = await ctx.check(COM_LACO)
+    expect(first.status).toBe(200)
+    expect(await first.json()).toMatchObject({ passed: true, gamification: { xpAwarded: 30 } })
+    expect(ctx.gamification.events).toHaveLength(1)
+    expect(ctx.gamification.events[0]).toMatchObject({
+      userId: USER,
+      audience,
+      sourceType: 'studio_passed',
+    })
+    expect((await ctx.check(COM_LACO)).status).toBe(200)
+    expect(ctx.gamification.events).toHaveLength(1)
+    expect(fake.calls).toHaveLength(2)
+  })
+
   test('a criança vê o tipo "o jogo faz algo" e nunca a regra', async () => {
     const ctx = setup(fakeExecutor(() => true).executor)
     const checks = (await ctx.read()).sections[0]?.completion?.projectChecks

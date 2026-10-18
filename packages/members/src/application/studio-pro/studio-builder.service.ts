@@ -185,6 +185,7 @@ export class StudioBuilderService {
     private readonly repository: StudioProBuilderRepository,
     private readonly clock = () => new Date(),
     readonly executionAvailable = false,
+    readonly adultExecutionAvailable = false,
   ) {}
   purgeExpired() {
     return this.repository.purgeExpired(this.clock())
@@ -204,7 +205,7 @@ export class StudioBuilderService {
     if (!parsed.success) throw new ValidationError('Comando de construção inválido.')
     const command: StudioProBuilderCommand = parsed.data
     if (command.operation === 'create') {
-      if (!this.executionAvailable)
+      if (!(actor.audience === 'adult' ? this.adultExecutionAvailable : this.executionAvailable))
         throw new ValidationError(
           'A execução automática está indisponível. Seu pedido continua no editor.',
         )

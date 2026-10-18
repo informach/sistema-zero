@@ -76,8 +76,12 @@ describe('o configurador de avatar dentro do layout', () => {
   // O componente monta three/fiber e um `<Canvas>`: happy-dom não tem WebGL, então o que dá
   // para travar aqui é a MARCAÇÃO. E é justamente ela o mecanismo.
   it('é imersivo no celular e entra no fluxo a partir do `md`, nos DOIS ramos', () => {
-    const configurator = source('src/components/kids/avatar3d/configurator.tsx')
-    const client = source('src/components/kids/avatar3d/configurator-client.tsx')
+    const configurator = source(
+      '../member-shell/src/components/cosmetics/avatar3d/configurator.tsx',
+    )
+    const client = source(
+      '../member-shell/src/components/cosmetics/avatar3d/configurator-client.tsx',
+    )
     const raiz =
       'fixed inset-0 z-50 flex flex-col bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1'
 

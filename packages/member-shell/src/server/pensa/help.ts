@@ -55,6 +55,7 @@ Uma missão atribuída a outra pessoa não deve ser assumida pela criança que p
     },
     complete,
     rejected,
+    context.view.project.audience ?? 'kids',
   )
   const links = context.references
     .filter((item) => item.href && reply.referenceIds.includes(item.id))

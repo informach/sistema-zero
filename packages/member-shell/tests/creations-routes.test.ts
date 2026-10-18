@@ -92,6 +92,7 @@ const SUMMARY = {
 
 function buildRoutes(
   over: {
+    audience?: 'adult' | 'kids'
     session?: unknown | null
     members?: Record<string, unknown>
     storage?: Record<string, unknown>
@@ -133,7 +134,10 @@ function buildRoutes(
   }
   const routes = createCreationsRoutes({
     // `session: null` = sem sessão (o `??` engoliria o null).
-    session: { getSession: async () => (over.session === undefined ? USER : over.session) },
+    session: {
+      audience: over.audience ?? 'kids',
+      getSession: async () => (over.session === undefined ? USER : over.session),
+    },
     members,
     storage: over.storage ?? storage,
   } as never)
@@ -148,6 +152,67 @@ const deleteRequest = (baseRevision: number) =>
     body: JSON.stringify({ baseRevision }),
   })
 const item = { params: Promise.resolve({ tool: 'studio', itemId: 'proj-1' }) }
+
+describe('protocolo de isolamento adulto durante deploy e rollback', () => {
+  test('members antigo não recebe reserva, commit ou exclusão e não ganha URL assinada', async () => {
+    const { routes, calls } = buildRoutes({ audience: 'adult' })
+    expect(
+      (
+        await routes.creationsUploadUrl.POST(
+          post({
+            formatVersion: 2,
+            name: 'Jogo',
+            kind: 'classic',
+            itemUpdatedAt: '2026-10-18T12:00:00Z',
+            bytes: 100,
+          }),
+          item,
+        )
+      ).status,
+    ).toBe(503)
+    expect((await routes.creationsCommit.POST(post({ revision: 2 }), item)).status).toBe(503)
+    expect((await routes.creationsDelete.DELETE(deleteRequest(2), item)).status).toBe(503)
+    expect(calls.reserveCreationUpload).toBeUndefined()
+    expect(calls.commitCreationUpload).toBeUndefined()
+    expect(calls.deleteCreation).toBeUndefined()
+    expect(r2.presignPut).toEqual([])
+    expect(r2.deleted).toEqual([])
+  })
+  test('reserva adulta só assina chave do contexto adulto confirmado', async () => {
+    for (const confirmed of [false, true]) {
+      const { routes } = buildRoutes({
+        audience: 'adult',
+        members: {
+          listCreations: async () => ({ status: 200, body: { audience: 'adult', items: [] } }),
+          reserveCreationUpload: async () => ({
+            status: 200,
+            body: {
+              revision: 2,
+              formatVersion: 2,
+              bytes: 100,
+              parts: [],
+              storageKey: `creations/${confirmed ? 'adult/' : ''}user-1/studio/proj-1/2.json.gz`,
+            },
+          }),
+        },
+      })
+      const response = await routes.creationsUploadUrl.POST(
+        post({
+          formatVersion: 2,
+          name: 'Jogo',
+          kind: 'classic',
+          itemUpdatedAt: '2026-10-18T12:00:00Z',
+          bytes: 100,
+        }),
+        item,
+      )
+      expect(response.status).toBe(confirmed ? 200 : 503)
+    }
+    expect(r2.presignPut.map((entry) => entry.key)).toEqual([
+      'creations/adult/user-1/studio/proj-1/2.json.gz',
+    ])
+  })
+})
 
 beforeEach(() => {
   r2.presignPut.length = 0

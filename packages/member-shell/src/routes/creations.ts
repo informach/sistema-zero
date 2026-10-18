@@ -260,6 +260,23 @@ export function createCreationsRoutes(deps: {
     return null
   }
 
+  /** Confirma o protocolo antes de mutar: members antigo ignora `audience` na query. */
+  async function requireAdultNamespace(tool: ToolName): Promise<NextResponse | null> {
+    if (session.audience !== 'adult') return null
+    const probe = await members.listCreations(tool, { limit: 1 })
+    if (probe.status !== 200) return response(probe.status, probe.body)
+    if (probe.body?.audience === 'adult') return null
+    return NextResponse.json(
+      {
+        error: {
+          code: 'UPSTREAM_INCOMPATIBLE',
+          message: 'A biblioteca adulta ainda não está disponível. Tente novamente.',
+        },
+      },
+      { status: 503 },
+    )
+  }
+
   async function parseItem(ctx: ItemCtx): Promise<{ tool: ToolName; itemId: string } | null> {
     const raw = await ctx.params
     const tool = Tool.safeParse(raw.tool)
@@ -282,6 +299,12 @@ export function createCreationsRoutes(deps: {
       const parsed = ListQuery.safeParse(Object.fromEntries(new URL(req.url).searchParams))
       if (!parsed.success) return invalid()
       const { status, body } = await members.listCreations(tool.data, parsed.data)
+      if (session.audience === 'adult' && status === 200 && body?.audience !== 'adult') {
+        return NextResponse.json(
+          { error: { code: 'UPSTREAM_INCOMPATIBLE', message: 'Biblioteca adulta indisponível.' } },
+          { status: 503 },
+        )
+      }
       return response(status, body)
     },
   }
@@ -292,6 +315,8 @@ export function createCreationsRoutes(deps: {
       if (readonly) return readonly
       const item = await parseItem(ctx)
       if (!item) return invalid()
+      const incompatible = await requireAdultNamespace(item.tool)
+      if (incompatible) return incompatible
       const parsed = UploadBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalid()
       // Acima do teto por item (manifesto + partes declaradas): a MESMA resposta que o members
@@ -312,6 +337,36 @@ export function createCreationsRoutes(deps: {
       }
       const reserved = await members.reserveCreationUpload(item.tool, item.itemId, parsed.data)
       if (reserved.status !== 200 || !reserved.body) return response(reserved.status, reserved.body)
+      if (session.audience === 'adult') {
+        const user = await session.getSession()
+        if (
+          !user ||
+          reserved.body.storageKey !==
+            creationStorageKey(user.id, item.tool, item.itemId, reserved.body.revision, 'adult') ||
+          reserved.body.parts?.some(
+            (part) =>
+              part.storageKey !==
+              creationPartStorageKey(
+                user.id,
+                item.tool,
+                item.itemId,
+                part.hash,
+                reserved.body?.revision ?? 0,
+                'adult',
+              ),
+          )
+        ) {
+          return NextResponse.json(
+            {
+              error: {
+                code: 'UPSTREAM_INCOMPATIBLE',
+                message: 'O serviço não confirmou o armazenamento adulto.',
+              },
+            },
+            { status: 503 },
+          )
+        }
+      }
       // Old services may silently strip the request field. Confirm before signing ANY PUT.
       // Only absence means legacy 1; malformed values (including null/string) fail closed.
       const confirmedFormat =
@@ -383,6 +438,8 @@ export function createCreationsRoutes(deps: {
       if (readonly) return readonly
       const item = await parseItem(ctx)
       if (!item) return invalid()
+      const incompatible = await requireAdultNamespace(item.tool)
+      if (incompatible) return incompatible
       const parsed = CommitBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalid()
       // PARTES que o cliente diz ter enviado: HEAD best-effort no R2 ANTES do members — um 404
@@ -409,6 +466,7 @@ export function createCreationsRoutes(deps: {
                       item.itemId,
                       hash,
                       parsed.data.revision,
+                      session.audience,
                     ),
                   )
                   .catch(() => null),
@@ -441,7 +499,13 @@ export function createCreationsRoutes(deps: {
         if (!user) return NextResponse.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
         try {
           const document = await storage.readJson(
-            creationStorageKey(user.id, item.tool, item.itemId, parsed.data.revision),
+            creationStorageKey(
+              user.id,
+              item.tool,
+              item.itemId,
+              parsed.data.revision,
+              session.audience,
+            ),
           )
           validateStudioCreationSnapshot(document, item.itemId)
           verifiedPartHashes =
@@ -486,6 +550,7 @@ export function createCreationsRoutes(deps: {
             item.tool,
             item.itemId,
             parsed.data.revision,
+            session.audience,
           )
           deleteQuietly(rejectedStorageKey, 'a revisão recusada')
         }
@@ -501,6 +566,8 @@ export function createCreationsRoutes(deps: {
       if (mismatch) return mismatch
       const item = await parseItem(ctx)
       if (!item) return invalid()
+      const incompatible = await requireAdultNamespace(item.tool)
+      if (incompatible) return incompatible
       const ticket = await members.getCreationDownload(item.tool, item.itemId)
       if (ticket.status !== 200 || !ticket.body) return response(ticket.status, ticket.body)
       try {
@@ -517,6 +584,8 @@ export function createCreationsRoutes(deps: {
       if (readonly) return readonly
       const item = await parseItem(ctx)
       if (!item) return invalid()
+      const incompatible = await requireAdultNamespace(item.tool)
+      if (incompatible) return incompatible
       const parsed = DeleteBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalid()
       const { status, body } = await members.deleteCreation(item.tool, item.itemId, parsed.data)

@@ -17,7 +17,8 @@ const retryableStatus = (status: number) => status === 408 || status === 429 || 
 
 export interface StudioArtifactHttpGatewayOptions {
   /** Base do BFF do kids (ex.: http://community-kids.railway.internal:3008). Sem `/api`. */
-  baseUrl: string
+  baseUrl?: string
+  adultBaseUrl?: string
   /** Segredo HMAC (= GATEWAY_HMAC_SECRET) que o BFF verifica. Sem ele → no-op silencioso. */
   hmacSecret?: string
   timeoutMs?: number
@@ -38,13 +39,21 @@ export function createStudioArtifactHttpGateway(
   opts: StudioArtifactHttpGatewayOptions,
 ): StudioArtifactGateway {
   const doFetch = opts.fetchImpl ?? fetch
-  const base = opts.baseUrl.replace(/\/$/, '')
+  const base = opts.baseUrl?.replace(/\/$/, '')
+  const adultBase = opts.adultBaseUrl?.replace(/\/$/, '')
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
   const now = opts.now ?? (() => new Date())
 
   return {
     async cleanupShowcaseArtifacts(args: CleanupShowcaseArtifactsArgs): Promise<void> {
       if (!opts.hmacSecret) return
+      const targetBase = args.audience === 'adult' ? adultBase : base
+      if (!targetBase) {
+        opts.logger?.warn('studio.cleanup_destination_missing', {
+          audience: args.audience ?? 'kids',
+        })
+        return
+      }
       const rawBody = JSON.stringify({ playId: args.playId, coverUrl: args.coverUrl })
       const deliveryId = randomUUID()
       for (let attempt = 1; attempt <= CLEANUP_ATTEMPTS; attempt++) {
@@ -56,7 +65,7 @@ export function createStudioArtifactHttpGateway(
             canonicalHmacMessage({ method: 'POST', path: CLEANUP_PATH, body: rawBody }),
             ts,
           )
-          const res = await doFetch(`${base}${CLEANUP_PATH}`, {
+          const res = await doFetch(`${targetBase}${CLEANUP_PATH}`, {
             method: 'POST',
             headers: {
               'content-type': 'application/json',

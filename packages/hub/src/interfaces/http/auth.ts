@@ -111,6 +111,7 @@ export function resolveProfilePublic(headers: Record<string, string | undefined>
 /** Monta o ator confiável a partir dos headers `X-Auth-User-*` (gateway). */
 export function resolveActor(headers: Record<string, string | undefined>): Actor {
   return {
+    kidsContext: Boolean(headers['x-auth-kids-context'] || headers['x-auth-profile-name']),
     userId: resolveUserId(headers),
     accountId: resolveAccountId(headers),
     displayName: resolveDisplayName(headers),

@@ -59,6 +59,7 @@ export function operationView(row: typeof pensaOperations.$inferSelect): P.Pensa
 
 export function projectMetadata(row: PensaProjectRow): P.PensaProjectMetadata {
   return P.PensaProjectMetadataSchema.parse({
+    ...(row.audience === 'adult' ? { audience: 'adult' } : {}),
     id: row.id,
     name: row.name,
     status: row.status,
@@ -85,7 +86,14 @@ export class DrizzlePensaProjectRepository {
     projectId: string,
     lock = false,
   ): Promise<PensaProjectState> {
-    const query = tx.select().from(pensaProjects).where(eq(pensaProjects.id, projectId))
+    if (actor.audience === 'adult' && actor.profileId !== actor.accountId)
+      pensaError('PROJECT_GONE', 'Conta adulta inválida.')
+    const query = tx
+      .select()
+      .from(pensaProjects)
+      .where(
+        and(eq(pensaProjects.id, projectId), eq(pensaProjects.audience, actor.audience ?? 'kids')),
+      )
     const [project] = lock ? await query.for('update') : await query
     if (!project) pensaError('PROJECT_GONE', 'Este projeto não está mais aqui.')
     const members = await tx
@@ -145,6 +153,7 @@ export class DrizzlePensaProjectRepository {
         .where(
           and(
             eq(creations.userId, project.gameProfileId),
+            eq(creations.audience, project.audience),
             eq(creations.tool, 'studio'),
             eq(creations.itemId, pensaGameId(projectId)),
             isNull(creations.deletedAt),
@@ -189,6 +198,7 @@ export class DrizzlePensaProjectRepository {
       .where(
         and(
           eq(creations.userId, programmerProfileId),
+          eq(creations.audience, project.audience),
           eq(creations.tool, 'studio'),
           eq(creations.itemId, pensaGameId(projectId)),
           isNull(creations.deletedAt),
@@ -283,6 +293,7 @@ export class DrizzlePensaProjectRepository {
           eq(pensaProjects.userId, actor.profileId),
           eq(pensaProjects.accountId, actor.accountId),
           eq(pensaProjects.status, status),
+          eq(pensaProjects.audience, actor.audience ?? 'kids'),
         ),
       )
       .orderBy(desc(pensaProjects.updatedAt))
@@ -298,6 +309,7 @@ export class DrizzlePensaProjectRepository {
                 eq(pensaProjectMembers.profileId, actor.profileId),
                 eq(pensaProjectMembers.accountId, actor.accountId),
                 eq(pensaProjects.status, status),
+                eq(pensaProjects.audience, actor.audience ?? 'kids'),
               ),
             )
             .limit(200)
@@ -328,7 +340,13 @@ export class DrizzlePensaProjectRepository {
       const [total] = await tx
         .select({ n: count() })
         .from(pensaProjects)
-        .where(and(eq(pensaProjects.userId, actor.profileId), eq(pensaProjects.status, 'active')))
+        .where(
+          and(
+            eq(pensaProjects.userId, actor.profileId),
+            eq(pensaProjects.audience, actor.audience ?? 'kids'),
+            eq(pensaProjects.status, 'active'),
+          ),
+        )
       if (Number(total?.n ?? 0) >= P.PENSA_LIMITS.activeProjects)
         pensaError('QUOTA_EXCEEDED', 'Arquive um projeto antes de começar outro.')
       const id = randomUUID(),
@@ -337,7 +355,7 @@ export class DrizzlePensaProjectRepository {
         id,
         userId: actor.profileId,
         accountId: actor.accountId,
-        audience: 'kids',
+        audience: actor.audience ?? 'kids',
         kind: 'game',
         name: 'Minha ideia',
         status: 'active',
@@ -634,6 +652,7 @@ export class DrizzlePensaProjectRepository {
         .where(
           and(
             eq(creations.userId, ref.profileId),
+            eq(creations.audience, state.project.audience),
             eq(creations.accountId, accountId),
             eq(creations.tool, ref.tool),
             eq(creations.itemId, ref.creationId),
@@ -707,6 +726,7 @@ export class DrizzlePensaProjectRepository {
         .where(
           and(
             eq(creations.userId, actor.profileId),
+            eq(creations.audience, actor.audience ?? 'kids'),
             eq(creations.accountId, actor.accountId),
             eq(creations.tool, ref.tool),
             eq(creations.itemId, ref.creationId),
@@ -809,6 +829,10 @@ export class DrizzlePensaProjectRepository {
       .update(pensaExecutionEvents)
       .set({ data: {} })
       .where(eq(pensaExecutionEvents.projectId, projectId))
-    await tx.delete(pensaProjects).where(eq(pensaProjects.id, projectId))
+    await tx
+      .delete(pensaProjects)
+      .where(
+        and(eq(pensaProjects.id, projectId), eq(pensaProjects.audience, actor.audience ?? 'kids')),
+      )
   }
 }

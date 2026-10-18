@@ -148,9 +148,8 @@ export class CourseAdminService {
       title: input.title?.trim() || source.title,
       audience: input.audience,
       modality,
-      // `studioUnlockBlocks` é currículo do Estúdio KIDS gravado: clone p/ adulto ou para curso ao
-      // vivo (que nunca libera bloco) não carrega.
-      dropStudioUnlockBlocks: input.audience === 'adult' || modality === 'live',
+      // Cursos gravados dos dois públicos podem liberar blocos; ao vivo permanece fora.
+      dropStudioUnlockBlocks: modality === 'live',
     })
     if (!cloned) throw new ContentNotFoundError('Curso não encontrado')
     return toCourseView(cloned)

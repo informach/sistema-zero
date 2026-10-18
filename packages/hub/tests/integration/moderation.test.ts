@@ -607,7 +607,7 @@ describe('moderação', () => {
     ])
   })
 
-  test('rejeitar NÃO recompensa; e servidor ADULTO não recompensa (Clube é kids)', async () => {
+  test('rejeitar NÃO recompensa; aprovação adulta recompensa somente o público adulto', async () => {
     const ctx = buildApp()
     const kids = await seed(ctx, { space: { audience: 'kids', requiresApproval: true } })
     const rejected = (
@@ -629,7 +629,8 @@ describe('moderação', () => {
     await ctx.app.handle(
       jsonRequest('POST', `/hub/admin/threads/${t2}/approve`, { headers: adminHeaders() }),
     )
-    expect(ctx.members.clubContributions).toHaveLength(0)
+    expect(ctx.members.clubContributions).toHaveLength(1)
+    expect(ctx.members.clubContributions[0]?.audience).toBe('adult')
   })
 
   test('silenciar com expiresAt inválido → 400', async () => {

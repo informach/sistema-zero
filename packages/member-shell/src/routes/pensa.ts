@@ -21,7 +21,9 @@ import {
 import { after, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
+import { learnerIdentity } from '../lib/learner-identity'
 import { isPrivilegedRole } from '../lib/studio-tier'
+import { hasAdultCapability } from '../server/adult-capabilities'
 import type { MembersClient } from '../server/clients'
 import { signCreationDownload } from '../server/creation-download'
 import { hasAiAppsLevel } from '../server/creative-apps-access'
@@ -97,6 +99,7 @@ async function readBody(request: Request, limit: number): Promise<unknown> {
 export function createPensaRoutes({
   members,
   session,
+  audience = 'kids',
   loadContext = loadPensaContext,
   worker = workPensa,
   schedule = after,
@@ -105,6 +108,7 @@ export function createPensaRoutes({
   members: PensaClient &
     PensaContextMembers &
     Pick<MembersClient, 'getAiCredits' | 'getGamification'>
+  audience?: 'kids' | 'adult'
   session: Pick<SessionModule, 'getSession'>
   loadContext?: typeof loadPensaContext
   worker?: typeof workPensa
@@ -114,7 +118,11 @@ export function createPensaRoutes({
   async function handle(request: Request, route: { params: Promise<{ path?: string[] }> }) {
     const user = await session.getSession()
     if (!user) return error(401, 'Entre de novo para continuar.', 'UNAUTHENTICATED')
-    if (user.kids?.kind !== 'student' && !isPrivilegedRole(user.role))
+    if (
+      audience === 'adult'
+        ? !learnerIdentity(user, 'adult')
+        : user.kids?.kind !== 'student' && !isPrivilegedRole(user.role)
+    )
       return error(403, 'Abra seu perfil na Comunidade Kids.', 'KIDS_PROFILE_REQUIRED')
     if (request.headers.get('x-sz-viewer') !== user.id)
       return error(
@@ -125,10 +133,22 @@ export function createPensaRoutes({
     if (request.method !== 'GET' && isReadonlyImpersonation(user))
       return error(403, 'A sessão de suporte é só leitura.', 'IMPERSONATION_READONLY')
     const actor: PensaActor = {
+      ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
       profileId: user.id,
       accountId: user.activeProfile?.accountId ?? user.id,
       privileged: isPrivilegedRole(user.role),
     }
+    if (
+      audience === 'adult' &&
+      request.method !== 'DELETE' &&
+      (!(await hasAdultCapability(members, user, 'pensa')) ||
+        !(await hasAdultCapability(members, user, 'ai')))
+    )
+      return error(
+        403,
+        'O Pensa será liberado após a formação avançada.',
+        'ADULT_CAPABILITY_REQUIRED',
+      )
     const { path = [] } = await route.params
     const [resource, id, action, leaf, tail] = path
     const expectedLength =
@@ -197,7 +217,7 @@ export function createPensaRoutes({
             ),
           )
         if (request.method !== 'POST') return error(405, 'Ação indisponível.')
-        if (!(await hasAiAppsLevel(members, user.role)))
+        if (audience === 'kids' && !(await hasAiAppsLevel(members, user.role)))
           return error(403, 'O Pensa abre no nível Inventor(a).', 'CAREER_LEVEL_REQUIRED')
         const parsed = PensaCreateProjectRequestSchema.parse(body)
         const refusal = pensaNarrativeRefusal(parsed.message)
@@ -334,7 +354,7 @@ export function createPensaRoutes({
             'O Zappy está descansando. Sua ideia continua guardada.',
             'AI_UNAVAILABLE',
           )
-        if (!(await hasAiAppsLevel(members, user.role)))
+        if (audience === 'kids' && !(await hasAiAppsLevel(members, user.role)))
           return error(403, 'O Pensa abre no nível Inventor(a).', 'CAREER_LEVEL_REQUIRED')
         const input = PensaMessageRequestSchema.parse(body)
         const refusal = pensaNarrativeRefusal(input.message)

@@ -1,5 +1,6 @@
 import 'server-only'
 import { randomUUID, timingSafeEqual } from 'node:crypto'
+import { CREATOR_SHOWCASE_SLUGS } from '@sistemazero/core/creations'
 import {
   InvalidJsonBodyError,
   RequestBodyTooLargeError,
@@ -79,7 +80,6 @@ function publicationError(error: unknown): NextResponse {
 const invalid = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 })
 
 /** Slug do servidor do Mural (kids). Só a vitrine kids chama estas rotas. */
-const MURAL_SPACE_SLUG = 'mural-dos-criadores'
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
 
 const COVER_MAX_BYTES = 4 * 1024 * 1024 // print do jogo (WebP/PNG)
@@ -196,16 +196,22 @@ export function createStudioRoutes(deps: {
   hub: HubClient
   members: MembersClient
   media: MediaModule
+  audience?: 'adult' | 'kids'
 }) {
   const { hub, members, media } = deps
+  const audience = deps.audience ?? 'kids'
+  const muralSpaceSlug = CREATOR_SHOWCASE_SLUGS[audience]
 
   async function proPublicationAccess(user: { role: string }): Promise<NextResponse | null> {
     if (isPrivilegedRole(user.role)) return null
     const progress = await members.getGamification()
     if (progress.status !== 200 || !progress.body)
       return NextResponse.json({ error: { code: 'JOURNEY_UNAVAILABLE' } }, { status: 503 })
-    if (!resolveStudioTier(progress.body.level?.slug, user.role).pro)
-      return NextResponse.json({ error: { code: 'FORBIDDEN_MODE' } }, { status: 403 })
+    const pro =
+      audience === 'adult'
+        ? progress.body.journey?.capabilities.includes('pro') === true
+        : resolveStudioTier(progress.body.level?.slug, user.role).pro
+    if (!pro) return NextResponse.json({ error: { code: 'FORBIDDEN_MODE' } }, { status: 403 })
     return null
   }
 
@@ -213,6 +219,13 @@ export function createStudioRoutes(deps: {
     POST: async (req: Request) => {
       const sess = await media.requireUploadSession(req)
       if (sess instanceof NextResponse) return sess
+      if (audience === 'adult' && !isPrivilegedRole(sess.role)) {
+        const progress = await members.getGamification()
+        if (progress.status !== 200 || !progress.body?.journey)
+          return NextResponse.json({ error: { code: 'JOURNEY_UNAVAILABLE' } }, { status: 503 })
+        if (!progress.body.journey.capabilities.includes('ai'))
+          return NextResponse.json({ error: { code: 'AI_NOT_UNLOCKED' } }, { status: 403 })
+      }
       if (describeRateLimited(sess.id)) {
         return NextResponse.json({ error: { code: 'RATE_LIMITED' } }, { status: 429 })
       }
@@ -296,6 +309,8 @@ export function createStudioRoutes(deps: {
           status: payload.status === 200 ? 502 : payload.status,
         })
       }
+      if (audience === 'adult' && payload.body.audience !== 'adult')
+        return NextResponse.json({ error: { code: 'WRONG_AUDIENCE' } }, { status: 403 })
       if (!payload.body.eligible) {
         return NextResponse.json(
           {
@@ -393,7 +408,7 @@ export function createStudioRoutes(deps: {
 
       // 4. Cria o post no Mural (o hub re-valida elegibilidade + autor do header).
       const r = await hub.createShowcaseThreadStudio({
-        spaceSlug: MURAL_SPACE_SLUG,
+        spaceSlug: muralSpaceSlug,
         lessonId,
         blockId,
         coverImageUrl,
@@ -440,7 +455,7 @@ export function createStudioRoutes(deps: {
       }
       return NextResponse.json(
         {
-          muralUrl: `/${MURAL_SPACE_SLUG}?thread=${encodeURIComponent(threadId)}`,
+          muralUrl: `/${muralSpaceSlug}?thread=${encodeURIComponent(threadId)}`,
           playUrl: `/jogar/${resolvedPlayId}`,
           ...(publicationProject?.kind === 'pro' ? { publicationId: resolvedPlayId } : {}),
           deduped: r.body.deduped,
@@ -459,6 +474,19 @@ export function createStudioRoutes(deps: {
     POST: async (req: Request) => {
       const sess = await media.requireUploadSession(req)
       if (sess instanceof NextResponse) return sess
+      if (audience === 'adult' && !isPrivilegedRole(sess.role)) {
+        const progress = await members.getGamification()
+        if (progress.status !== 200 || !progress.body?.journey)
+          return NextResponse.json({ error: { code: 'JOURNEY_UNAVAILABLE' } }, { status: 503 })
+        if (!progress.body.journey.capabilities.includes('studio'))
+          return NextResponse.json({ error: { code: 'JOURNEY_LOCKED' } }, { status: 403 })
+        const access = await members.checkStudioAccess()
+        if (access.status !== 200 || access.body?.access?.['estudio-completo'] !== true)
+          return NextResponse.json(
+            { error: { code: 'TOOL_ACCESS_REQUIRED' } },
+            { status: access.status >= 500 ? 503 : 403 },
+          )
+      }
 
       const oversized = rejectOversizedRequest(req, PUBLISH_MAX_BYTES)
       if (oversized) return oversized
@@ -500,7 +528,11 @@ export function createStudioRoutes(deps: {
           liveRevision,
           clientIdempotencyKey,
         )
-        if (response.status !== 200 || !response.body?.eligible)
+        if (
+          response.status !== 200 ||
+          !response.body?.eligible ||
+          (audience === 'adult' && response.body?.audience !== 'adult')
+        )
           return NextResponse.json(response.body ?? { error: { code: 'SHOWCASE_NOT_ELIGIBLE' } }, {
             status: response.status === 200 ? 409 : response.status,
           })
@@ -542,7 +574,11 @@ export function createStudioRoutes(deps: {
       const playId =
         liveSnapshot?.playId ??
         (publicationProject?.kind === 'pro'
-          ? studioPublicationPlayId(owner, 'standalone', clientIdempotencyKey)
+          ? studioPublicationPlayId(
+              owner,
+              audience === 'adult' ? 'adult-standalone' : 'standalone',
+              clientIdempotencyKey,
+            )
           : randomUUID())
       if (publicationProject?.kind === 'pro') {
         if (!liveSnapshot) {
@@ -639,7 +675,7 @@ export function createStudioRoutes(deps: {
               },
             }
           : {}),
-        spaceSlug: MURAL_SPACE_SLUG,
+        spaceSlug: muralSpaceSlug,
         title,
         description,
         coverImageUrl,
@@ -701,7 +737,7 @@ export function createStudioRoutes(deps: {
       }
       return NextResponse.json(
         {
-          muralUrl: `/${MURAL_SPACE_SLUG}?thread=${encodeURIComponent(threadId)}`,
+          muralUrl: `/${muralSpaceSlug}?thread=${encodeURIComponent(threadId)}`,
           playUrl: `/jogar/${resolvedPlayId}`,
           ...(publicationProject?.kind === 'pro' ? { publicationId: resolvedPlayId } : {}),
           deduped: r.body.deduped,
@@ -727,7 +763,11 @@ export function createStudioRoutes(deps: {
           status: playable.status,
         })
       }
-      if (playable.status !== 200 || playable.body?.visible !== true) {
+      if (
+        playable.status !== 200 ||
+        playable.body?.visible !== true ||
+        (audience === 'adult' && playable.body.audience !== 'adult')
+      ) {
         return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
       }
       // Visível confirmado → grava o dedupe (não polui o mapa com playIds inexistentes/ocultos).
@@ -927,7 +967,11 @@ export function createStudioRoutes(deps: {
           if (access.status !== 200 || access.body?.access?.['estudio-completo'] !== true)
             return NextResponse.json({ error: { code: 'SHOWCASE_NOT_ELIGIBLE' } }, { status: 403 })
           const visible = await hub.resolveStudioPlay(input.playId, false)
-          if (visible.status !== 200 || visible.body?.visible !== true)
+          if (
+            visible.status !== 200 ||
+            visible.body?.visible !== true ||
+            (audience === 'adult' && visible.body.audience !== 'adult')
+          )
             return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
           const previous = await callStudioPublication(
             { operation: 'get', playId: input.playId, owner },

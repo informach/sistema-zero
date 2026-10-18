@@ -140,6 +140,16 @@ interface ForaDaVarredura {
  */
 const FORA_DA_VARREDURA: ForaDaVarredura[] = [
   {
+    caminho: 'member-shell/src/server/adult-prompts.ts',
+    motivo:
+      'vocabulário exclusivo dos prompts adultos; no Kids o sistema original passa sem alteração',
+  },
+  {
+    caminho: 'core/src/journey/adult-policy.ts',
+    motivo:
+      'validação de autoria da jornada ADULTA; somente o Admin adulto apresenta estes erros, sem consumo na interface Kids',
+  },
+  {
     caminho: 'core/src/studio/pro-game-knowledge.ts',
     motivo:
       'manual técnico enviado ao modelo do construtor Pro, nunca desenhado na tela da criança',

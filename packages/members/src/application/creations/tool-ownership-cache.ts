@@ -24,10 +24,16 @@ export function toolOwnershipGeneration(): number {
   return generation
 }
 
-const keyOf = (accountId: string, tool: CreationTool) => `${accountId}:${tool}`
+const keyOf = (accountId: string, tool: CreationTool, audience: 'adult' | 'kids' = 'kids') =>
+  `${accountId}:${audience}:${tool}`
 
-export function toolOwnershipCached(accountId: string, tool: CreationTool, now: number): boolean {
-  const until = cache.get(keyOf(accountId, tool))
+export function toolOwnershipCached(
+  accountId: string,
+  tool: CreationTool,
+  now: number,
+  audience: 'adult' | 'kids' = 'kids',
+): boolean {
+  const until = cache.get(keyOf(accountId, tool, audience))
   return until !== undefined && until > now
 }
 
@@ -37,9 +43,10 @@ export function rememberToolOwned(
   now: number,
   /** A geração lida ANTES da consulta: mudou no meio, a resposta é velha e não é guardada. */
   since: number,
+  audience: 'adult' | 'kids' = 'kids',
 ): void {
   if (since !== generation) return
-  cache.set(keyOf(accountId, tool), now + TOOL_OWNERSHIP_TTL_MS)
+  cache.set(keyOf(accountId, tool, audience), now + TOOL_OWNERSHIP_TTL_MS)
   // Sem crescer sem fim (contas que nunca voltam): poda ocasional das vencidas.
   if (cache.size > 5_000) {
     for (const [key, expiry] of cache) if (expiry <= now) cache.delete(key)
@@ -60,7 +67,10 @@ export function invalidateToolOwnership(accountIds: string | readonly string[]):
   // TODAS as ferramentas, derivadas da lista: uma listada à mão ficava de fora e a
   // matrícula revogada seguia reservando por até 60 s nela.
   for (const accountId of contas) {
-    for (const tool of CREATION_TOOLS) cache.delete(keyOf(accountId, tool))
+    for (const tool of CREATION_TOOLS) {
+      cache.delete(keyOf(accountId, tool, 'kids'))
+      cache.delete(keyOf(accountId, tool, 'adult'))
+    }
   }
   for (const listener of ownershipListeners) listener(contas)
 }

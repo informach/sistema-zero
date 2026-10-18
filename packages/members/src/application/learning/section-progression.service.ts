@@ -86,6 +86,7 @@ export class SectionProgressionService {
      * esses objetivos responde "não consegui testar agora" e nada é guardado.
      */
     private readonly executor?: ProjectExecutionChecker,
+    private readonly courseAudience?: (courseId: string) => Promise<CourseAudience>,
   ) {}
 
   /**
@@ -191,14 +192,15 @@ export class SectionProgressionService {
   private async draftStates(
     userId: string,
     workspaces: ReadonlyArray<{ blockId: string; kind: 'studio' | 'pinta' }>,
+    audience: CourseAudience,
   ): Promise<Map<string, CreationDraftState>> {
     const states = new Map<string, CreationDraftState>()
     if (!this.drafts || workspaces.length === 0) return states
     const studio = workspaces.filter((w) => w.kind === 'studio').map((w) => w.blockId)
     const pinta = workspaces.filter((w) => w.kind === 'pinta').map((w) => w.blockId)
     const found = await Promise.all([
-      studio.length ? this.drafts.getDraftStates(userId, 'lesson-studio', studio) : [],
-      pinta.length ? this.drafts.getDraftStates(userId, 'lesson-pinta', pinta) : [],
+      studio.length ? this.drafts.getDraftStates(userId, 'lesson-studio', studio, audience) : [],
+      pinta.length ? this.drafts.getDraftStates(userId, 'lesson-pinta', pinta, audience) : [],
     ])
     for (const state of found.flat()) states.set(state.itemId, state)
     return states
@@ -303,7 +305,11 @@ export class SectionProgressionService {
         return workspace ? [[section.id, workspace] as const] : []
       }),
     )
-    const drafts = await this.draftStates(owner.userId, [...upToDateWorkspaces.values()])
+    const drafts = await this.draftStates(
+      owner.userId,
+      [...upToDateWorkspaces.values()],
+      (await this.courseAudience?.(lesson.courseId)) ?? 'kids',
+    )
     const settle = options.settle
     const settleBefore =
       settle === 'all'

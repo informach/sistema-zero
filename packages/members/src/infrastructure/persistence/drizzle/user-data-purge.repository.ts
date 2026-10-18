@@ -7,6 +7,9 @@ import { DrizzlePensaProjectRepository } from './pensa-project.repository'
 import { lockPensaAccount, releasePensaReservation } from './pensa-reservations'
 import {
   accountDeletionFences,
+  adultJourneyGrants,
+  adultProfiles,
+  adultStudioBuilderProjectDeletions,
   aiUsageDaily,
   aiUsageReservations,
   avatarConfigs,
@@ -180,6 +183,9 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
         .delete(studioBuilderProjectDeletions)
         .where(eq(studioBuilderProjectDeletions.accountId, accountId))
       await tx
+        .delete(adultStudioBuilderProjectDeletions)
+        .where(eq(adultStudioBuilderProjectDeletions.accountId, accountId))
+      await tx
         .delete(teacherBroadcastRecipients)
         .where(
           or(
@@ -272,6 +278,8 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx.delete(quizAttempts).where(inArray(quizAttempts.userId, userIds))
       await tx.delete(courseRatings).where(inArray(courseRatings.userId, userIds))
       await tx.delete(xpEvents).where(inArray(xpEvents.userId, userIds))
+      await tx.delete(adultProfiles).where(inArray(adultProfiles.userId, userIds))
+      await tx.delete(adultJourneyGrants).where(inArray(adultJourneyGrants.userId, userIds))
       await tx.delete(userBadges).where(inArray(userBadges.userId, userIds))
       await tx.delete(coinEvents).where(inArray(coinEvents.userId, userIds))
       await tx.delete(avatarInventory).where(inArray(avatarInventory.userId, userIds))

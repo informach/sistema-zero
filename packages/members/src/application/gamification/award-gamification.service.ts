@@ -292,6 +292,7 @@ export class AwardGamificationService {
   async awardPensaMilestone(input: {
     userId: string
     accountId: string
+    audience?: CourseAudience
     eventId: string
     projectCompleted: boolean
     xp: number
@@ -301,7 +302,7 @@ export class AwardGamificationService {
     return this.award(
       input.userId,
       input.accountId,
-      'kids',
+      input.audience ?? 'kids',
       [
         {
           sourceType: input.projectCompleted ? 'pensa_cycle_complete' : 'pensa_stage_complete',

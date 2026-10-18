@@ -1,7 +1,7 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, isNull, or } from 'drizzle-orm'
 import type { LiveBenefitsPort } from '../../../domain/ports/live-benefits.port'
 import type { Database } from './db'
-import { liveAccessGrants, liveEnrollments } from './schema'
+import { courses, liveAccessGrants, liveCohorts, liveEnrollments } from './schema'
 
 export class DrizzleLiveBenefitsRepository implements LiveBenefitsPort {
   constructor(private readonly db: Database) {}
@@ -14,11 +14,14 @@ export class DrizzleLiveBenefitsRepository implements LiveBenefitsPort {
         endsAt: liveAccessGrants.endsAt,
       })
       .from(liveEnrollments)
+      .innerJoin(liveCohorts, eq(liveCohorts.id, liveEnrollments.cohortId))
+      .leftJoin(courses, eq(courses.id, liveCohorts.courseId))
       .innerJoin(liveAccessGrants, eq(liveAccessGrants.enrollmentId, liveEnrollments.id))
       .where(
         and(
           eq(liveEnrollments.accountId, accountId),
           eq(liveEnrollments.status, 'active'),
+          or(isNull(liveCohorts.courseId), eq(courses.audience, 'kids')),
           isNull(liveAccessGrants.revokedAt),
           learnerId ? eq(liveEnrollments.learnerId, learnerId) : undefined,
         ),

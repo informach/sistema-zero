@@ -67,6 +67,8 @@ async function prepareBlockReadModel(database: ReturnType<typeof postgres>) {
   await database.begin(async (transaction) => {
     await transaction`select pg_advisory_xact_lock(16012026, 116)`
     for (const [table, migration] of [
+      ['adult_profiles', '0132_useful_jigsaw.sql'],
+      ['adult_journey_policy', '0131_adult_journey_policy.sql'],
       ['studio_ai_accounts', '0116_groovy_shriek.sql'],
       ['studio_ai_runs', '0117_absurd_jimmy_woo.sql'],
       ['studio_builder_jobs', '0120_cool_the_fallen.sql'],

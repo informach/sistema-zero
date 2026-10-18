@@ -119,15 +119,22 @@ describe('Members HTTP — GET /members/studio/unlocks', () => {
     expect(body.blocks.sort()).toEqual(['sz_g2d_create_ship', 'sz_g2d_on_key', 'sz_val_number'])
   })
 
-  test('a vitrine segrega: o mesmo perfil no adulto não vê o currículo kids', async () => {
+  test('a identidade segrega: perfil Kids é recusado e a conta adulta não herda o currículo infantil', async () => {
     const { app, courses, gamification } = buildApp()
     seedSampleCourse(courses, 'base-2d', 'published', 'kids', false, 'iniciante', '2d', 1)
     const course = withUnlocks(courses, 'base-2d', ['sz_g2d_create_ship'])
     await qualify(gamification, course.id)
-    expect((await readJson(await getUnlocks(app, '?audience=adult'))).blocks).toEqual([])
+    expect((await getUnlocks(app, '?audience=adult')).status).toBe(403)
+    const adult = await app.handle(
+      new Request('http://localhost/members/studio/unlocks?audience=adult', {
+        headers: { 'x-auth-user-id': ACCOUNT },
+      }),
+    )
+    expect(adult.status).toBe(200)
+    expect((await readJson(adult)).blocks).toEqual([])
   })
 
-  test('sem `?audience` o default é kids (a única vitrine com Estúdio livre)', async () => {
+  test('sem `?audience` o default continua Kids para os clientes anteriores', async () => {
     const { app, courses, gamification } = buildApp()
     seedSampleCourse(courses, 'base-2d', 'published', 'kids', false, 'iniciante', '2d', 1)
     const course = withUnlocks(courses, 'base-2d', ['sz_g2d_create_ship'])

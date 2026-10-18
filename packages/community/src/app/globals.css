@@ -10,6 +10,10 @@
    ⚠️ O @import fica JUNTO dos outros, ANTES de qualquer @source: `@import` depois de outra
    regra é inválido (o CSS o descarta em silêncio e o editor sai sem cor). */
 @import "../../../pinta/src/styles/pinta.css";
+@import "../../../molda/src/styles/molda.css";
+@import "@sistemazero/ui/tool-chrome.css";
+@import "../../../member-shell/src/styles/help.css";
+@import "../../../pensa/src/styles/pensa.css";
 /* Régua das cenas de aula (--container-scene + --color-scene-…): MESMO gotcha do Estúdio —
    sem este @import o @source não acha as cores e as utilitárias fill-scene-* somem. */
 @import "../../../member-shell/src/styles/scene.css";
@@ -24,6 +28,8 @@
    do @sistemazero/studio; os tokens --color-sz-* vêm do CSS importado pelo componente. */
 @source "../../../studio/src";
 @source "../../../pinta/src";
+@source "../../../molda/src";
+@source "../../../pensa/src";
 
 /* O tema escuro deixou de existir (11/09/2026: temas Padrão e Pink), mas o `@sistemazero/ui` e o
    member-shell ainda trazem `dark:` nas classes. Esta variante FICA: sem ela o Tailwind v4 volta
@@ -811,4 +817,21 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   background: var(--popover) !important;
   color: var(--popover-foreground) !important;
   border: 1px solid var(--border) !important;
+}
+
+/* Shared public game console, using the adult palette. */
+:root {
+  --snes-body: color-mix(in oklab, var(--primary) 14%, var(--card));
+  --snes-body-deep: color-mix(in oklab, var(--primary) 30%, var(--card));
+  --snes-body-edge: color-mix(in oklab, var(--primary) 55%, var(--card));
+  --snes-cross: var(--foreground);
+  --snes-cross-edge: var(--foreground);
+  --snes-cross-ink: var(--background);
+  --snes-strip: var(--foreground);
+  --snes-ink: var(--foreground);
+  --snes-bezel: var(--foreground);
+  --snes-a: var(--primary);
+  --snes-b: var(--pen-sucesso);
+  --snes-x: var(--primary);
+  --snes-y: var(--pen-alerta);
 }

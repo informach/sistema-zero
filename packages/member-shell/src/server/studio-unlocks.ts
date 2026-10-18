@@ -1,5 +1,6 @@
+import type { AdultJourneyView } from '@sistemazero/core/journey'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
-import { resolveStudioTier, type StudioTier } from '../lib/studio-tier'
+import { isPrivilegedRole, resolveStudioTier, type StudioTier } from '../lib/studio-tier'
 
 /**
  * Deriva as EXTENSÕES a partir dos blocos conquistados.
@@ -32,6 +33,37 @@ export function extensionsForBlocks(blocks: readonly string[]): string[] {
 
 /** Os tipos que o catálogo do Studio conhece hoje. */
 const KNOWN_BLOCKS = new Set(SERVER_BLOCK_CATALOG.map((entry) => entry.type))
+
+/** Modos adultos vêm da política adulta; a paleta vem dos cursos, sem usar rank Kids. */
+export function adultStudioTier(
+  journey: AdultJourneyView,
+  role: string | undefined,
+  blocks: readonly string[],
+): StudioTier {
+  const privileged = isPrivilegedRole(role)
+  const has = (capability: 'studio' | 'bridge' | 'pro') =>
+    privileged || journey.capabilities.includes(capability)
+  const palette = [...new Set(blocks.filter((type) => KNOWN_BLOCKS.has(type)))]
+  const hasPalette = privileged || palette.length > 0
+  const bridge = has('bridge')
+  const pro = has('pro')
+  return {
+    freeStudio: has('studio'),
+    level: 'avancado-3d',
+    ...(privileged ? {} : { allowBlocks: palette }),
+    hasPalette,
+    allowedExtensions: privileged
+      ? [...new Set(EXTENSION_BY_BLOCK.values())]
+      : extensionsForBlocks(palette),
+    initialExtensions: [],
+    allowedModes: bridge ? ['blocks', 'bridge'] : ['blocks'],
+    allowLevelReveal: false,
+    bridge,
+    pro,
+    canCreateProProject: pro,
+    canPromoteToPro: pro,
+  }
+}
 
 /**
  * O Estúdio livre de quem tem estes blocos conquistados. É a régua ÚNICA da paleta, do Zappy e

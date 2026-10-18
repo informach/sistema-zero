@@ -1,6 +1,7 @@
 import type { StudioAiFundingSource } from '@sistemazero/core/ai-credits'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
+import type { AdultCreatorCapability, AdultJourneyPolicy } from '@sistemazero/core/journey'
 import type {
   LearningAnswers,
   LearningAttemptView,
@@ -48,6 +49,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 import type { AvatarConfig } from '../../../domain/avatar/avatar-config'
+import type { CourseAudience } from '../../../domain/course/course'
 import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
@@ -1818,6 +1820,70 @@ export const helpTutorials = members.table(
   ],
 )
 
+// Biblioteca adulta: mesmo contrato editorial, dados independentes do Kids.
+export const adultHelpCollections = members.table(
+  'adult_help_collections',
+  {
+    id: uuid('id').primaryKey(),
+    slug: varchar('slug', { length: 80 }).notNull(),
+    title: varchar('title', { length: 60 }).notNull(),
+    description: varchar('description', { length: 240 }).notNull().default(''),
+    icon: varchar('icon', { length: 32 }).notNull(),
+    tone: varchar('tone', { length: 32 }).notNull(),
+    position: integer('position').notNull().default(0),
+    status: varchar('status', { length: 16 }).notNull().default('active'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('adult_help_collections_slug_uq').on(t.slug),
+    check('adult_help_collections_status_check', sql`${t.status} in ('active', 'archived')`),
+  ],
+)
+
+// O tutorial é um JSON inteiro em duas cópias: o admin edita `draft`; "Publicar" copia para
+// `published` (a criança lê SÓ essa) e grava `published_search_text`, o texto achatado e
+// normalizado que a busca do kids (no navegador) e a do Zappy (tsvector, índice criado à mão
+// na migration) leem. `revision` é o lock otimista do PATCH (`expectedRevision`), inteiro
+// porque viaja no corpo. RESTRICT na coleção: coleção com tutorial não é apagável, só arquiva.
+export const adultHelpTutorials = members.table(
+  'adult_help_tutorials',
+  {
+    id: uuid('id').primaryKey(),
+    slug: varchar('slug', { length: 80 }).notNull(),
+    collectionId: uuid('collection_id')
+      .notNull()
+      .references(() => adultHelpCollections.id),
+    status: varchar('status', { length: 16 }).notNull().default('draft'),
+    draft: jsonb('draft').$type<HelpTutorialDocument>().notNull(),
+    published: jsonb('published').$type<HelpTutorialDocument>(),
+    publishedSearchText: text('published_search_text'),
+    revision: integer('revision').notNull().default(1),
+    position: integer('position').notNull().default(0),
+    createdBy: uuid('created_by'),
+    updatedBy: uuid('updated_by'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('adult_help_tutorials_search_idx').using(
+      'gin',
+      sql`to_tsvector('portuguese', coalesce(${t.publishedSearchText}, ''))`,
+    ),
+    uniqueIndex('adult_help_tutorials_slug_uq').on(t.slug),
+    index('adult_help_tutorials_status_collection_idx').on(t.status, t.collectionId, t.position),
+    check(
+      'adult_help_tutorials_status_check',
+      sql`${t.status} in ('draft', 'published', 'archived')`,
+    ),
+    check(
+      'adult_help_tutorials_published_pair',
+      sql`(${t.status} = 'published') = (${t.published} is not null)`,
+    ),
+  ],
+)
+
 // ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta (18/08/2026) ──
 // ÍNDICE das criações que os editores LIVRES sobem sozinhos depois do autosave. O
 // blob (o `Project` do Estúdio / o `.pinta.json` do desenho, gzip) vive no R2 UGC
@@ -1852,6 +1918,7 @@ export const creations = members.table(
   'creations',
   {
     id: uuid('id').primaryKey(),
+    audience: text('audience').$type<CourseAudience>().notNull().default('kids'),
     /** Dono: o perfil da criança no kids; a própria conta no adulto. */
     userId: uuid('user_id').notNull(),
     /** Conta responsável (kids: o pai; adulto: = user_id). */
@@ -1910,8 +1977,9 @@ export const creations = members.table(
     syncedAt: timestamp('synced_at', { withTimezone: true }).notNull(),
   },
   (t) => [
-    uniqueIndex('creations_user_tool_item_uq').on(t.userId, t.tool, t.itemId),
-    index('creations_user_tool_idx').on(t.userId, t.tool, t.deletedAt),
+    check('creations_audience_check', sql`${t.audience} in ('adult', 'kids')`),
+    uniqueIndex('creations_user_audience_tool_item_uq').on(t.userId, t.audience, t.tool, t.itemId),
+    index('creations_user_tool_idx').on(t.userId, t.audience, t.tool, t.deletedAt),
     index('creations_tombstone_cleanup_idx').on(t.deletedAt).where(sql`${t.deletedAt} is not null`),
     // Quota por perfil (`usageWith`: count + sum(bytes) dos vivos já confirmados) a cada
     // reserva E commit, sob o advisory lock do perfil: índice PARCIAL com `bytes` como
@@ -2354,6 +2422,7 @@ export const studioAiRuns = members.table(
   'studio_ai_runs',
   {
     id: uuid('id').primaryKey(),
+    audience: text('audience').$type<CourseAudience>().notNull().default('kids'),
     accountId: uuid('account_id')
       .notNull()
       .references(() => studioAiAccounts.accountId, { onDelete: 'cascade' }),
@@ -2444,6 +2513,7 @@ export const studioBuilderJobs = members.table(
   'studio_builder_jobs',
   {
     id: uuid('id').primaryKey(),
+    audience: text('audience').$type<CourseAudience>().notNull().default('kids'),
     accountId: uuid('account_id').notNull(),
     userId: uuid('user_id').notNull(),
     projectId: varchar('project_id', { length: 128 }).notNull(),
@@ -2514,8 +2584,99 @@ export const studioBuilderProjectDeletions = members.table(
   ],
 )
 
+export const adultStudioBuilderProjectDeletions = members.table(
+  'adult_studio_builder_project_deletions',
+  {
+    accountId: uuid('account_id').notNull(),
+    userId: uuid('user_id').notNull(),
+    projectId: varchar('project_id', { length: 128 }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.accountId, table.userId, table.projectId] }),
+    index('adult_studio_builder_project_deletion_expiry_idx').on(table.expiresAt),
+  ],
+)
+
+export const adultChallengeCustomThemes = members.table('adult_challenge_custom_themes', {
+  id: uuid('id').primaryKey(),
+  emoji: text('emoji').notNull(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  // Arquivado sai da lista de ESCOLHA, mas segue valendo em mês que o referencia.
+  archived: boolean('archived').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+})
+
+export const adultChallengeMonthOverrides = members.table(
+  'adult_challenge_month_overrides',
+  {
+    // `m:YYYY-MM` (mês civil de SP) — a MESMA régua do ledger e do hub.
+    monthKey: text('month_key').primaryKey(),
+    // Snapshot do slug do catálogo EM CÓDIGO (sem FK: o catálogo não é tabela).
+    builtinSlug: text('builtin_slug'),
+    // RESTRICT (default): tema custom referenciado não é deletável — só arquiva.
+    customThemeId: uuid('custom_theme_id').references(() => adultChallengeCustomThemes.id),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    // Auditoria leve (quem definiu por último; o audit do gateway é a trilha real).
+    updatedByUserId: uuid('updated_by_user_id'),
+  },
+  (t) => [
+    check(
+      'adult_challenge_month_overrides_one_theme',
+      sql`(${t.builtinSlug} IS NULL) <> (${t.customThemeId} IS NULL)`,
+    ),
+  ],
+)
+
+export const adultProfiles = members.table('adult_profiles', {
+  userId: uuid('user_id').primaryKey(),
+  displayName: varchar('display_name', { length: 60 }).notNull(),
+  publicEnabled: boolean('public_enabled').notNull().default(false),
+  voiceEnabled: boolean('voice_enabled').notNull().default(false),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+})
+
+export const adultJourneyPolicy = members.table(
+  'adult_journey_policy',
+  {
+    id: text('id').primaryKey().default('adult'),
+    version: integer('version').notNull(),
+    policy: jsonb('policy').$type<AdultJourneyPolicy>().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    check('adult_journey_policy_id_check', sql`${table.id} = 'adult'`),
+    check('adult_journey_policy_version_check', sql`${table.version} >= 1`),
+  ],
+)
+
+export const adultJourneyGrants = members.table(
+  'adult_journey_grants',
+  {
+    userId: uuid('user_id').notNull(),
+    capability: text('capability').$type<AdultCreatorCapability>().notNull(),
+    policyVersion: integer('policy_version').notNull(),
+    grantedAt: timestamp('granted_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.capability] }),
+    check(
+      'adult_journey_capability_check',
+      sql`${table.capability} in ('studio', 'pinta', 'molda', 'bridge', 'pro', 'ai', 'pensa')`,
+    ),
+  ],
+)
+
 export const schema = {
+  adultChallengeCustomThemes,
+  adultChallengeMonthOverrides,
+  adultProfiles,
+  adultJourneyPolicy,
+  adultJourneyGrants,
   studioBuilderProjectDeletions,
+  adultStudioBuilderProjectDeletions,
   studioBuilderJobs,
   studioAiRuns,
   studioAiAttempts,
@@ -2597,6 +2758,8 @@ export const schema = {
   challengeMonthOverrides,
   helpCollections,
   helpTutorials,
+  adultHelpCollections,
+  adultHelpTutorials,
   creations,
   accountDeletionFences,
   creationCleanupJobs,

@@ -7,6 +7,7 @@ import {
 } from '@sistemazero/member-shell/components/attachment-uploader'
 import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
 import { renderUgcMarkdown } from '@sistemazero/member-shell/lib/markdown'
+import type { StudioRemixCapability } from '@sistemazero/member-shell/lib/studio-tier'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
@@ -16,6 +17,7 @@ import { ArrowLeft, Hash, Lock, MessageCircle, Plus, Send } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { ShowcaseCard } from '@/components/community/showcase-card'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type {
   HubChannelView,
@@ -59,7 +61,19 @@ function toggleReaction(reactions: HubReaction[], emoji: string, wasMine: boolea
     : [...reactions, { emoji, count: 1, reactedByMe: true }]
 }
 
-export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: string }) {
+export function SpaceViewClient({
+  slug,
+  viewerId,
+  showcase = false,
+  remixCapability = null,
+  showcaseFilter,
+}: {
+  slug: string
+  viewerId: string
+  showcase?: boolean
+  remixCapability?: StudioRemixCapability | null
+  showcaseFilter?: { sort: 'recent' | 'plays'; challengeKey: string | null }
+}) {
   const [space, setSpace] = useState<HubSpaceView | null>(null)
   const [channels, setChannels] = useState<HubChannelView[]>([])
   const [channel, setChannel] = useState<HubChannelView | null>(null)
@@ -103,7 +117,9 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
         if (!alive) return
         setSpace(sp)
         setChannels(ch.items)
-        setChannel(ch.items[0] ?? null)
+        setChannel(
+          (showcase ? ch.items.find((item) => item.slug === 'parede') : ch.items[0]) ?? null,
+        )
       })
       .catch((err) => {
         if (alive) toast.error((err as ApiError).message ?? 'Não foi possível abrir a comunidade.')
@@ -112,20 +128,33 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
     return () => {
       alive = false
     }
-  }, [slug])
+  }, [slug, showcase])
 
+  const threadQuery = new URLSearchParams(
+    showcaseFilter
+      ? {
+          sort: showcaseFilter.sort,
+          ...(showcaseFilter.challengeKey ? { challenge: showcaseFilter.challengeKey } : {}),
+        }
+      : {},
+  ).toString()
   // ── Ao trocar de canal: carrega a 1ª página de tópicos + marca visto ──
-  const loadThreads = useCallback(async (channelId: string) => {
-    try {
-      const page = await apiGet<HubPage<HubThreadView>>(`/api/hub/channels/${channelId}/threads`)
-      setThreads(page.items)
-      setThreadsCursor(page.nextCursor)
-      setThreadsHasMore(page.hasMore)
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar os tópicos.')
-    }
-    apiSend(`/api/hub/channels/${channelId}/seen`, 'POST', {}).catch(() => {})
-  }, [])
+  const loadThreads = useCallback(
+    async (channelId: string) => {
+      try {
+        const page = await apiGet<HubPage<HubThreadView>>(
+          `/api/hub/channels/${channelId}/threads${threadQuery ? `?${threadQuery}` : ''}`,
+        )
+        setThreads(page.items)
+        setThreadsCursor(page.nextCursor)
+        setThreadsHasMore(page.hasMore)
+      } catch (err) {
+        toast.error((err as ApiError).message ?? 'Falha ao carregar os tópicos.')
+      }
+      apiSend(`/api/hub/channels/${channelId}/seen`, 'POST', {}).catch(() => {})
+    },
+    [threadQuery],
+  )
 
   useEffect(() => {
     if (!channel) return
@@ -144,7 +173,7 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
     setLoadingMoreThreads(true)
     try {
       const page = await apiGet<HubPage<HubThreadView>>(
-        `/api/hub/channels/${channel.id}/threads?cursor=${encodeURIComponent(threadsCursor)}`,
+        `/api/hub/channels/${channel.id}/threads?cursor=${encodeURIComponent(threadsCursor)}${threadQuery ? `&${threadQuery}` : ''}`,
       )
       setThreads((prev) => {
         const seen = new Set(prev.map((t) => t.id))
@@ -429,29 +458,39 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
                 </Card>
               ) : (
                 <>
-                  {threads.map((t) => (
-                    <button
-                      type="button"
-                      key={t.id}
-                      onClick={() => openThread(t)}
-                      className="w-full text-left"
-                    >
-                      <Card className="space-y-1 p-3 transition-colors hover:bg-muted/50">
-                        <div className="flex items-center gap-2">
-                          {t.isPinned ? <Badge variant="muted">Fixado</Badge> : null}
-                          {t.pending ? <Badge variant="muted">Aguardando aprovação</Badge> : null}
-                          <span className="truncate font-medium">{t.title}</span>
-                        </div>
-                        <p className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span>{authorLabel(t.authorId)}</span>
-                          <span className="inline-flex items-center gap-1">
-                            <MessageCircle className="size-3" /> {t.commentCount}
-                          </span>
-                          <span>{timeAgo(t.lastActivityAt)}</span>
-                        </p>
-                      </Card>
-                    </button>
-                  ))}
+                  {threads.map((t) =>
+                    t.isShowcase ? (
+                      <ShowcaseCard
+                        key={t.id}
+                        thread={t}
+                        viewerId={viewerId}
+                        onOpen={() => void openThread(t)}
+                        capability={space?.canInteract ? remixCapability : null}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        key={t.id}
+                        onClick={() => openThread(t)}
+                        className="w-full text-left"
+                      >
+                        <Card className="space-y-1 p-3 transition-colors hover:bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            {t.isPinned ? <Badge variant="muted">Fixado</Badge> : null}
+                            {t.pending ? <Badge variant="muted">Aguardando aprovação</Badge> : null}
+                            <span className="truncate font-medium">{t.title}</span>
+                          </div>
+                          <p className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span>{t.authorDisplayName ?? authorLabel(t.authorId)}</span>
+                            <span className="inline-flex items-center gap-1">
+                              <MessageCircle className="size-3" /> {t.commentCount}
+                            </span>
+                            <span>{timeAgo(t.lastActivityAt)}</span>
+                          </p>
+                        </Card>
+                      </button>
+                    ),
+                  )}
                   {threadsHasMore ? (
                     <div className="flex justify-center pt-1">
                       <Button
@@ -556,7 +595,7 @@ function CommentCard({
   return (
     <Card className="space-y-2 p-3">
       <p className="text-xs text-muted-foreground">
-        {authorLabel(comment.authorId)}
+        {comment.authorDisplayName ?? authorLabel(comment.authorId)}
         {comment.pending ? ' · aguardando aprovação' : ''}
       </p>
       <div className="lesson-prose">{renderUgcMarkdown(comment.body)}</div>
@@ -628,7 +667,9 @@ function ThreadDetail({
 
       <Card className="space-y-3 p-4">
         <h2 className="text-lg font-bold">{thread.title}</h2>
-        <p className="text-xs text-muted-foreground">{authorLabel(thread.authorId)}</p>
+        <p className="text-xs text-muted-foreground">
+          {thread.authorDisplayName ?? authorLabel(thread.authorId)}
+        </p>
         <div className="lesson-prose">{renderUgcMarkdown(thread.body)}</div>
         <AttachmentList attachments={thread.attachments} />
         <div className="flex items-center justify-between">

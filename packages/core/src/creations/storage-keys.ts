@@ -22,8 +22,9 @@ export function creationStorageKey(
   tool: CreationStorageTool,
   itemId: string,
   revision: number,
+  audience: 'adult' | 'kids' = 'kids',
 ): string {
-  return `creations/${userId}/${tool}/${itemId}/${revision}.json.gz`
+  return `creations/${audience === 'adult' ? 'adult/' : ''}${userId}/${tool}/${itemId}/${revision}.json.gz`
 }
 
 /**
@@ -38,6 +39,7 @@ export function creationPartStorageKey(
   itemId: string,
   hash: string,
   rev: number,
+  audience: 'adult' | 'kids' = 'kids',
 ): string {
-  return `creations/${userId}/${tool}/${itemId}/parts/${hash}.${rev}.gz`
+  return `creations/${audience === 'adult' ? 'adult/' : ''}${userId}/${tool}/${itemId}/parts/${hash}.${rev}.gz`
 }

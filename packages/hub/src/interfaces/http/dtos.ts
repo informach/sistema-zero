@@ -6,6 +6,7 @@ const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{
 const UUID = t.String({ pattern: UUID_PATTERN })
 
 export const IdParams = t.Object({ id: UUID })
+export const AdultCommunityAccessBody = t.Object({ userId: UUID, accountId: UUID })
 export const AccountDeletionFinalizeBody = t.Object({
   accountId: UUID,
   userIds: t.Array(UUID, { minItems: 1, maxItems: 51 }),
@@ -241,6 +242,7 @@ export const ThreadListQuery = t.Object({
 
 /** Query do resolve do /jogar: `count=1` = conta a jogada (hit fundido no UPDATE). */
 export const PlayResolveQuery = t.Object({
+  audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
   count: t.Optional(t.Literal('1')),
 })
 
@@ -256,6 +258,7 @@ export const ShowcaseByAuthorsBody = t.Object({
 
 // Perfil público kids: vitrine INTEIRA de UM autor (sem janela), com capa.
 export const ShowcaseByAuthorBody = t.Object({
+  audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
   authorId: UUID,
   limit: t.Optional(t.Integer({ minimum: 1, maximum: 50 })),
 })
@@ -275,6 +278,7 @@ export const ActivityByAuthorsBody = t.Object({
  * members recusar self-remix. Anti-farm do marco `studio_remix`.
  */
 export const PlayCheckBody = t.Object({
+  audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
   playId: UUID,
 })
 

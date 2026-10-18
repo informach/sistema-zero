@@ -182,6 +182,7 @@ export function SceneTextureViewport({
         data-hand={hand}
         aria-label="Visualização da folha de pintura"
         onKeyDownCapture={(event) => {
+          if (event.target instanceof Element && event.target.closest('[data-paint-canvas]')) return
           if (event.key === ' ' && !event.ctrlKey && !event.metaKey) {
             space.current = true
             event.preventDefault()
@@ -191,6 +192,8 @@ export function SceneTextureViewport({
         onKeyUpCapture={(event) => {
           if (event.key === ' ') {
             space.current = false
+            if (event.target instanceof Element && event.target.closest('[data-paint-canvas]'))
+              return
             event.preventDefault()
             event.stopPropagation()
           }

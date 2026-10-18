@@ -29,7 +29,7 @@ export type PensaMascotPose = 'happy' | 'thinking' | 'celebrating' | 'sleeping'
 export interface PensaHostAdapter {
   viewerId?: string
   transport: PensaTransport
-  mode: 'kids'
+  mode: 'kids' | 'adult'
   theme?: 'light' | 'dark'
   mascotImages?: Partial<Record<PensaMascotPose, string>>
   renderListen?: (reference: PensaNarratableRef) => ReactNode

@@ -1024,7 +1024,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     const eligible =
       audience === 'kids'
         ? and(isNotNull(courses.id), or(isNull(courses.careerSlot), isNotNull(showcased.id)))
-        : and(isNotNull(courses.id), isNotNull(showcased.id))
+        : isNotNull(courses.id)
     const rows = await this.db
       .select({
         courseId: xpEvents.sourceId,
@@ -1059,7 +1059,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         courseId: row.courseId,
         completedAt: row.completedAt,
         showcasedAt:
-          audience === 'kids' && row.liveCourseId !== null && row.careerSlot === null
+          (audience === 'adult' || row.careerSlot === null) && row.liveCourseId !== null
             ? null
             : row.showcasedAt,
         courseUpdatedAt: row.courseUpdatedAt,

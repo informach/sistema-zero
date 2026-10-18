@@ -95,13 +95,13 @@ describe('os espelhos fora do members', () => {
     expect(read('member-shell/src/lib/types.ts')).toContain(
       `export type CreationToolView = ${uniao}`,
     )
-    expect(read('community-kids/src/lib/creations-cloud.ts')).toContain(
+    expect(read('member-shell/src/lib/creations-cloud.ts')).toContain(
       `export type CreationTool = ${uniao}`,
     )
   })
 
   test('o host do Molda liga a fila com a tool certa, o espelho e o selo; rota, proxy e prefixo embarcado', () => {
-    const client = read('community-kids/src/components/kids/molda-client.tsx')
+    const client = read('member-shell/src/components/creator/molda-client.tsx')
     expect(client).toContain("tool: 'molda'")
     expect(client).toContain('createCloudMirroredMoldaPersistence(')
     // O selo mora na barra do Molda (lote 6b): o host só manda os DADOS pelo Provider do
@@ -112,10 +112,10 @@ describe('os espelhos fora do members', () => {
     expect(client).not.toContain('CloudSaveBadge')
     expect(client).toContain('cloud.flush({ timeoutMs: 5000 })')
     expect(client).toContain('isAssetOpen: m.isMoldaAssetOpen')
-    const wrapper = read('community-kids/src/lib/molda-cloud-persistence.ts')
+    const wrapper = read('member-shell/src/lib/molda-cloud-persistence.ts')
     expect(wrapper).toContain('sz:creations-synced:molda:')
     expect(read('community-kids/src/proxy.ts')).toContain("'/molda'")
-    expect(read('community-kids/src/lib/embedded-app-path.ts')).toContain("'/molda'")
+    expect(read('member-shell/src/lib/embedded-app-path.ts')).toContain("'/molda'")
     expect(read('catalog/scripts/seed.ts')).toContain("'molda'")
   })
 })

@@ -36,7 +36,14 @@ export function CommunityHomeClient() {
       ) : (
         <div className="grid gap-3">
           {spaces.map((s) => (
-            <Link key={s.id} href={`/comunidade/${s.slug}`}>
+            <Link
+              key={s.id}
+              href={
+                s.slug === 'mural-dos-criadores-adulto'
+                  ? '/mural-dos-criadores-adulto'
+                  : `/comunidade/${s.slug}`
+              }
+            >
               <Card className="flex items-center gap-3 p-4 transition-colors hover:bg-muted/50">
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold">{s.name}</p>

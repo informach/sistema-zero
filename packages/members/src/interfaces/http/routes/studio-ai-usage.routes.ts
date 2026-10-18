@@ -1,5 +1,7 @@
 import { Elysia, t } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
+import { assertAdultCreativeAccess } from '../../../application/adult-journey/adult-creative-access'
+import type { AdultJourneyService } from '../../../application/adult-journey/adult-journey.service'
 import type { StudioAiUsageService } from '../../../application/ai-usage/studio-ai-usage.service'
 import { StudioAiUnavailableError } from '../../../domain/ai-usage/studio-ai.errors'
 import { AccessDeniedError } from '../../../domain/entitlement/entitlement.errors'
@@ -12,6 +14,7 @@ export function studioAiUsageRoutes(deps: {
   service?: StudioAiUsageService
   internalToken?: string
   accessCheck: AccessCheckService
+  adultJourney?: AdultJourneyService
 }) {
   return new Elysia({ prefix: '/members/internal/studio-ai' })
     .onTransform(({ headers }) => {
@@ -24,10 +27,22 @@ export function studioAiUsageRoutes(deps: {
         set.headers['Cache-Control'] = 'no-store'
         if (!deps.service) throw new StudioAiUnavailableError()
         const { actor, action } = body
+        if (
+          actor.audience === 'adult' &&
+          (action.operation === 'reserve' || action.operation === 'dispatch')
+        )
+          await assertAdultCreativeAccess(
+            deps,
+            actor,
+            'studio',
+            true,
+            action.operation === 'reserve' && action.request.purpose === 'builder',
+          )
         // Settlement/release must remain available after entitlement expiry; no new calls can start.
         if (
           (action.operation === 'reserve' || action.operation === 'dispatch') &&
-          !actor.privileged
+          !actor.privileged &&
+          actor.audience !== 'adult'
         ) {
           const access = await deps.accessCheck.execute(actor.accountId, ['estudio-completo'])
           if (
@@ -36,11 +51,15 @@ export function studioAiUsageRoutes(deps: {
           )
             throw new AccessDeniedError('Você não tem acesso ao Estúdio Completo')
         }
+        const context = actor.audience === 'adult' ? { audience: 'adult' as const } : {}
         switch (action.operation) {
           case 'reserve':
-            return { reservation: await deps.service.reserve(actor, action.request) }
+            return { ...context, reservation: await deps.service.reserve(actor, action.request) }
           case 'dispatch':
-            return { dispatch: await deps.service.dispatch(actor, action.runId, action.attempt) }
+            return {
+              ...context,
+              dispatch: await deps.service.dispatch(actor, action.runId, action.attempt),
+            }
           case 'settle':
             await deps.service.settle(actor, action.runId, action.settlement)
             return { ok: true }
@@ -48,12 +67,17 @@ export function studioAiUsageRoutes(deps: {
             await deps.service.finish(actor, action.runId)
             return { ok: true }
           case 'costs':
-            return { costs: await deps.service.costs(actor.accountId) }
+            return { ...context, costs: await deps.service.costs(actor.accountId) }
         }
       },
       {
         body: t.Object({
-          actor: t.Object({ accountId: Id, userId: Id, privileged: t.Boolean() }),
+          actor: t.Object({
+            accountId: Id,
+            userId: Id,
+            privileged: t.Boolean(),
+            audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
+          }),
           action: t.Union([
             t.Object({
               operation: t.Literal('reserve'),

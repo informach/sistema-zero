@@ -300,14 +300,14 @@ describe('GetStudioUnlocksService', () => {
     )
   })
 
-  test('curso Adult sem posição preserva a exigência de conclusão E Mural', async () => {
+  test('curso adulto libera paleta por conclusão; publicar sozinho não substitui conclusão', async () => {
     const { courses, service, userId, mark } = setup()
     const course = makeCourse(['sz_g2d_create_ship'], { audience: 'adult', careerSlot: null })
     courses.courses.push(course)
-    mark(course.id, { audience: 'adult', showcased: false })
+    mark(course.id, { audience: 'adult', completed: false })
     expect(await service.execute(userId, 'adult')).toEqual({ blocks: [] })
 
-    mark(course.id, { audience: 'adult', completed: false })
+    mark(course.id, { audience: 'adult', showcased: false })
     expect(await service.execute(userId, 'adult')).toEqual({ blocks: ['sz_g2d_create_ship'] })
   })
 

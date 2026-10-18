@@ -800,7 +800,7 @@ describe('Bloco Estúdio — carryover de projeto contínuo', () => {
 
   test('sessão de perfil: acesso pela CONTA, projeto pelo PERFIL', async () => {
     const { app, courses, entitlements } = buildApp()
-    const { slug, lessonIds } = seedSampleCourse(courses)
+    const { slug, lessonIds } = seedSampleCourse(courses, 'curso-demo', 'published', 'kids')
     const account = USER
     const p1 = '44444444-4444-4444-4444-444444444444'
     const p2 = '55555555-5555-5555-5555-555555555555'

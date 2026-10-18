@@ -172,3 +172,11 @@ export function assertInternalCaller(
     throw new UnauthorizedError('Chamada não autorizada (token interno ausente/inválido)')
   }
 }
+
+/** Adult learners are authenticated accounts, never Kids student or parental sessions. */
+export function resolveAdultLearnerId(headers: Record<string, string | undefined>): string {
+  const id = resolveUserId(headers)
+  if (id !== resolveAccountId(headers) || headers['x-auth-kids-context'])
+    throw new ForbiddenError('Use sua conta adulta.')
+  return id
+}

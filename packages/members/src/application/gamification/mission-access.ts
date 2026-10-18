@@ -29,8 +29,15 @@ export async function resolveMissionAccess(input: {
   now: Date
 }): Promise<MissionAccessPredicate> {
   if (input.privileged) return () => true
+  const scopedRef = (ref: string) =>
+    input.audience === 'adult' && ref === CLUBE_ACCESS_REF
+      ? 'adult-clube-dos-criadores'
+      : creativeToolAccessRef(ref, input.audience)
   const [result, liveSeat] = await Promise.all([
-    input.accessCheck.execute(input.accountId, [CLUBE_ACCESS_REF, ESTUDIO_ACCESS_REF]),
+    input.accessCheck.execute(
+      input.accountId,
+      [CLUBE_ACCESS_REF, ESTUDIO_ACCESS_REF].map(scopedRef),
+    ),
     input.liveSeats
       ? input.liveSeats.hasActiveSeat({
           accountId: input.accountId,
@@ -42,5 +49,7 @@ export async function resolveMissionAccess(input: {
   ])
   const owned = new Set<string>([...result.grants, ...result.communities])
   if (liveSeat) owned.add(LIVE_ACCESS_REF)
-  return (ref: string) => owned.has(ref)
+  return (ref: string) => owned.has(scopedRef(ref))
 }
+
+import { creativeToolAccessRef } from '@sistemazero/core/creations'

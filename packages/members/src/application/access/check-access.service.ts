@@ -87,6 +87,10 @@ export class CheckAccessService {
     learnerId: string | undefined,
     scope: AccessScope,
   ): Promise<CourseAccess> {
+    // Adult courses belong to the account itself, including live courses and staff previews.
+    // A Kids profile must never inherit its parent's adult enrollment as a learner.
+    if (course?.audience === 'adult' && learnerId !== undefined && learnerId !== userId)
+      throw new AccessDeniedError()
     if (course?.modality === 'live') {
       return this.assertLive(userId, course, privileged, learnerId ?? userId, scope)
     }

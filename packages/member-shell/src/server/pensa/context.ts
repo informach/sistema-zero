@@ -24,7 +24,7 @@ import { isPrivilegedRole } from '../../lib/studio-tier'
 import type { CreationIndexView, SessionUser } from '../../lib/types'
 import type { MembersClient } from '../clients'
 import type { r2ReadCreationJson } from '../r2'
-import { earnedStudioTier } from '../studio-unlocks'
+import { adultStudioTier, earnedStudioTier } from '../studio-unlocks'
 import { isStudioZappyAllowed } from '../zappy-access'
 import { PENSA_CATALOG_VERSION, pensaCatalog } from './catalog'
 import { PensaUnavailable } from './errors'
@@ -109,6 +109,13 @@ export async function loadPensaContext(
     )
   const facts = response.body
   const view = facts.base
+  const adult = actor.audience === 'adult'
+  if (adult && view.project.audience !== 'adult')
+    throw new PensaUnavailable('A plataforma está sendo atualizada. Tente novamente.')
+  const participantJourney = (profileId: string) =>
+    facts.code.profileId === profileId
+      ? facts.code.journey
+      : facts.art.find((p) => p.profileId === profileId)?.journey
   const inspection = facts.gameTicket
     ? await inspectPensaGame(
         facts.gameTicket,
@@ -124,20 +131,41 @@ export async function loadPensaContext(
     rank: string,
     profileId: string,
   ) =>
-    creativeToolAvailability({ tool, owned, level: rank, privileged: isPrivileged(profileId) }) ===
-    'available'
+    adult
+      ? Boolean(
+          owned &&
+            participantJourney(profileId)?.capabilities.includes(
+              tool === 'estudio-completo' ? 'studio' : tool,
+            ),
+        )
+      : creativeToolAvailability({
+          tool,
+          owned,
+          level: rank,
+          privileged: isPrivileged(profileId),
+        }) === 'available'
   if (!facts.code.level)
     throw new PensaUnavailable('Não consegui conferir os recursos de quem programa. Tente de novo.')
-  const tier = earnedStudioTier(
-    facts.code.level,
-    isPrivileged(facts.code.profileId) ? user.role : undefined,
-    facts.code.blocks,
-  )
+  if (adult && !facts.code.journey)
+    throw new PensaUnavailable('A jornada adulta está indisponível.')
+  const tier =
+    adult && facts.code.journey
+      ? adultStudioTier(
+          facts.code.journey,
+          isPrivileged(facts.code.profileId) ? user.role : undefined,
+          facts.code.blocks,
+        )
+      : earnedStudioTier(
+          facts.code.level,
+          isPrivileged(facts.code.profileId) ? user.role : undefined,
+          facts.code.blocks,
+        )
   const catalog = pensaCatalog(tier, '3d')
   const moldaTools = (rank: string, profileId: string) =>
-    MOLDA_TOOL_FAMILIES.filter(
-      (tool) =>
-        isPrivileged(profileId) || journeyLevelAtLeast(rank, MOLDA_TOOL_BAND_LEVELS[tool.band]),
+    MOLDA_TOOL_FAMILIES.filter((tool) =>
+      adult
+        ? participantJourney(profileId)?.capabilities.includes('molda')
+        : isPrivileged(profileId) || journeyLevelAtLeast(rank, MOLDA_TOOL_BAND_LEVELS[tool.band]),
     ).map((tool) => tool.id)
   const code: PensaParticipantCapabilities = {
     profileId: facts.code.profileId,
@@ -162,10 +190,12 @@ export async function loadPensaContext(
     blockIds: catalog.blocks.map((block) => block.type).sort(),
     extensionIds: [...tier.allowedExtensions].sort(),
     moldaTools: moldaTools(facts.code.level, facts.code.profileId),
-    tutor: isStudioZappyAllowed(
-      facts.code.profileId === user.id ? user : { role: '' },
-      facts.code.level,
-    ),
+    tutor: adult
+      ? facts.code.journey?.capabilities.includes('ai') === true
+      : isStudioZappyAllowed(
+          facts.code.profileId === user.id ? user : { role: '' },
+          facts.code.level,
+        ),
   }
   const participants = new Map<string, PensaParticipantCapabilities>([[code.profileId, code]])
   for (const artist of facts.art) {

@@ -3,6 +3,7 @@ import { preserve } from 'railway/iac'
 // Apenas nomes. Valores e referências permanecem no Railway de cada ambiente.
 const common: Record<string, string[]> = {
   hub: [
+    'ADULT_BFF_BASE_URL',
     'DATABASE_POOL_MAX',
     'DATABASE_URL',
     'GATEWAY_HMAC_SECRET',
@@ -229,6 +230,18 @@ const common: Record<string, string[]> = {
   ],
   community: [
     'APP_PUBLIC_URL',
+    'CREATION_CLEANUP_CRON_SECRET',
+    'GATEWAY_HMAC_SECRET',
+    'STUDIO_BUILDER_EXECUTOR_SECRET',
+    'STUDIO_PRO_RUNTIME_TOKEN',
+    'STUDIO_PRO_RUNTIME_URL',
+    'OPENROUTER_API_KEY',
+    'OPENROUTER_PENSA_MODEL',
+    'OPENROUTER_ZAPPY_MODEL',
+    'OPENROUTER_STUDIO_BUILDER_MODEL',
+    'ELEVENLABS_API_KEY',
+    'ELEVENLABS_VOICE_ID',
+    'VOICE_INPUT_ENABLED',
     'FUNNEL_URL',
     'GATEWAY_URL',
     'JWT_AUDIENCE',
@@ -287,6 +300,7 @@ const common: Record<string, string[]> = {
     'R2_SECRET_ACCESS_KEY',
   ],
   members: [
+    'ADULT_STUDIO_BUILDER_EXECUTOR_URL',
     'STUDIO_BUILDER_EXECUTOR_URL',
     'STUDIO_BUILDER_EXECUTOR_SECRET',
     // Objetivos que rodam o jogo (18/10/2026): o executor `/v1/check` do studio-runtime. Os

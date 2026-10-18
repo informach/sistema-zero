@@ -131,15 +131,19 @@ export interface MuralModerationMessageArgs {
 }
 
 export interface MembersGateway {
+  getAdultCreatorState?(
+    userId: string,
+  ): Promise<{ capabilities: string[]; displayName: string; publicEnabled: boolean }>
   getLiveMuralAccess(userId: string, accountId: string): Promise<boolean>
   getLiveShowcaseEligibility(args: {
+    audience?: 'adult' | 'kids'
     userId: string
     accountId: string
     workspaceId: string
     revision: number
     playId: string
     publicationToken: string
-  }): Promise<{ eligible: boolean; title: string }>
+  }): Promise<{ eligible: boolean; title: string; audience?: 'adult' | 'kids' }>
   checkAccess(
     userId: string,
     courseRefs: string[],

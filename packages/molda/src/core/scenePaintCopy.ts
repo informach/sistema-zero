@@ -19,6 +19,7 @@ export const SCENE_PAINT_COPY = {
   instructions: {
     pencil: 'Escolha uma cor e arraste sobre a peça.',
     eraser: 'Arraste para apagar a tinta. A cor de baixo aparece.',
+    cutout: 'Arraste para deixar os quadradinhos vazados. Pinte por cima para preencher de novo.',
     fill: 'Escolha uma cor e clique na área que quer preencher.',
     base: 'Clique na peça para trocar a cor de baixo do desenho.',
     picker: 'Clique em uma cor do modelo. Depois, continue com o Pincel.',

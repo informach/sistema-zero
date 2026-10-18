@@ -1,3 +1,4 @@
+import { createAdultProfileRoutes } from './routes/adult-profile'
 import 'server-only'
 import { sessionCookieNames } from './lib/cookies'
 import { paletteCookieName } from './lib/palette-cookie'
@@ -73,6 +74,7 @@ export function createShell(cfg: ShellConfig) {
   const hub = createHubClient(gateway, { audience: cfg.audience })
   const media = createMediaModule({ session, gateway })
   const routes = {
+    ...createAdultProfileRoutes({ session, gateway }),
     ...createLiveRoutes({ session, gateway }),
     ...createStudyAccessRoutes({ session, gateway, study }),
     ...createShellRoutes({
@@ -87,18 +89,18 @@ export function createShell(cfg: ShellConfig) {
     }),
     ...createHubRoutes({ hub, members, media, session, audience: cfg.audience }),
     ...createHelpdeskRoutes({ gateway, session, audience: cfg.audience }),
-    ...createStudioRoutes({ hub, members, media }),
-    ...createStudioZappyRoutes({ members, session }),
-    ...createStudioBuilderRoutes({ members, session }),
-    ...createStudioBuilderExecutorRoutes({ members }),
+    ...createStudioRoutes({ hub, members, media, audience: cfg.audience }),
+    ...createStudioZappyRoutes({ members, session, audience: cfg.audience }),
+    ...createStudioBuilderRoutes({ members, session, audience: cfg.audience }),
+    ...createStudioBuilderExecutorRoutes({ members, audience: cfg.audience }),
     ...createStudioOpenRouterRoutes({ members, session, cookieBase: cfg.cookieBase }),
     ...createStudioAiReconcileRoutes({ members }),
     ...createCertificateRoutes({ members, session }),
-    ...createPensaRoutes({ members, session }),
-    ...createPrivateNarrationRoutes({ members, session }),
+    ...createPensaRoutes({ members, session, audience: cfg.audience }),
+    ...createPrivateNarrationRoutes({ members, session, audience: cfg.audience }),
     ...createCreationsRoutes({ members, session }),
     ...createCreationCleanupWorkerRoutes({ gateway }),
-    ...createVoiceRoutes({ session, auth }),
+    ...createVoiceRoutes({ session, auth, members, audience: cfg.audience }),
   }
 
   return {

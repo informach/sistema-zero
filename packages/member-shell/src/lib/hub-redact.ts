@@ -57,6 +57,28 @@ export function redactAuthors<T>(body: T, viewerId: string | null, revealNames =
   return body
 }
 
+/** Adult opt-in is live: a historical Hub snapshot cannot re-enable a private profile. */
+export function attachAdultPublicIdentities(
+  body: unknown,
+  identities: ReadonlyMap<string, string>,
+): unknown {
+  if (!body || typeof body !== 'object') return body
+  if ('items' in body && Array.isArray(body.items))
+    return {
+      ...body,
+      items: body.items.map((item) => attachAdultPublicIdentities(item, identities)),
+    }
+  if ('authorId' in body && typeof body.authorId === 'string') {
+    const name = identities.get(body.authorId)
+    return {
+      ...body,
+      authorPublic: name !== undefined,
+      ...(name === undefined ? {} : { authorDisplayName: name }),
+    }
+  }
+  return body
+}
+
 /** Avatar+nível de um autor (do members em lote) para o `attachAuthorAvatars`. */
 export interface AuthorAvatarInfo {
   photoUrl: string | null

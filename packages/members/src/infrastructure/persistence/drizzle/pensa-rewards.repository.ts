@@ -5,6 +5,7 @@ import type { Database } from './db'
 import { accountDeletionFences, pensaExecutionEvents } from './schema'
 
 const rewardSchema = z.strictObject({
+  audience: z.enum(['adult', 'kids']).optional(),
   xp: z.number().int().positive(),
   coins: z.number().int().nonnegative(),
   privileged: z.boolean(),
@@ -48,6 +49,7 @@ export class DrizzlePensaRewardsRepository {
         const reward = rewardSchema.parse(pending.reward)
         const result = await this.awards.awardPensaMilestone({
           userId: event.profileId,
+          audience: reward.audience,
           accountId: event.accountId,
           eventId: event.id,
           projectCompleted: reward.sourceType === 'pensa_cycle_complete',

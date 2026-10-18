@@ -100,7 +100,12 @@ export class GalleryDeliveryService {
     }
     const copies: { source: string; destination: string }[] = []
     for (const selection of input.items) {
-      const creation = await this.creations.get(actor.userId, block.content.kind, selection.itemId)
+      const creation = await this.creations.get(
+        actor.userId,
+        block.content.kind,
+        selection.itemId,
+        course.audience,
+      )
       if (
         !creation ||
         creation.accountId !== actor.accountId ||
@@ -134,6 +139,7 @@ export class GalleryDeliveryService {
             creation.itemId,
             part.hash,
             part.rev,
+            course.audience,
           ),
           destination: `${prefix}/parts/${part.hash}.gz`,
         })

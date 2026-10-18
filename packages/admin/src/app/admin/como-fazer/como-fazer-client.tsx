@@ -26,6 +26,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { JsonImportPanel } from '@/components/admin/json-import-panel'
+import { usePlatform } from '@/components/admin/platform-provider'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { downloadJson } from '@/lib/download-json'
@@ -202,7 +203,22 @@ function pendenciasDoLote(file: HelpImportFile): Array<{ slug: string; issues: s
  * PUBLICADO; aqui se edita o rascunho, publica, despublica, arquiva e transporta por JSON
  * (o lote inicial em `docs/como-fazer/` e a viagem staging → produção).
  */
-export function ComoFazerClient({ currentRole }: { currentRole: string }) {
+export function ComoFazerClient(props: { currentRole: string }) {
+  const platform = usePlatform()
+  return <ComoFazerForPlatform key={platform} {...props} platform={platform} />
+}
+function ComoFazerForPlatform({
+  currentRole,
+  platform,
+}: {
+  currentRole: string
+  platform: 'kids' | 'adult'
+}) {
+  const helpPath = useCallback(
+    (path: string) => `${path}${path.includes('?') ? '&' : '?'}audience=${platform}`,
+    [platform],
+  )
+
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   const router = useRouter()
   const [tab, setTab] = useState<'tutoriais' | 'colecoes' | 'importar'>('tutoriais')
@@ -223,15 +239,17 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
   const reload = useCallback(async () => {
     try {
       const [c, t] = await Promise.all([
-        apiGet<{ collections: HelpCollectionView[] }>('/api/members/help/collections'),
-        apiGet<{ tutorials: HelpTutorialAdminSummaryView[] }>('/api/members/help/tutorials'),
+        apiGet<{ collections: HelpCollectionView[] }>(helpPath('/api/members/help/collections')),
+        apiGet<{ tutorials: HelpTutorialAdminSummaryView[] }>(
+          helpPath('/api/members/help/tutorials'),
+        ),
       ])
       setCollections(c.collections)
       setTutorials(t.tutorials)
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Não consegui carregar o Como fazer.')
     }
-  }, [])
+  }, [helpPath])
 
   useEffect(() => {
     void reload()
@@ -255,16 +273,20 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
     if (!novo) return
     setBusy(true)
     try {
-      const created = await apiSend<{ id: string }>('/api/members/help/tutorials', 'POST', {
-        slug: novo.slug,
-        collectionId: novo.collectionId,
-        draft: {
-          title: novo.title,
-          summary: '',
-          keywords: [],
-          steps: [{ id: 'passo-1', title: '', body: '' }],
+      const created = await apiSend<{ id: string }>(
+        helpPath('/api/members/help/tutorials'),
+        'POST',
+        {
+          slug: novo.slug,
+          collectionId: novo.collectionId,
+          draft: {
+            title: novo.title,
+            summary: '',
+            keywords: [],
+            steps: [{ id: 'passo-1', title: '', body: '' }],
+          },
         },
-      })
+      )
       setNovo(null)
       router.push(`/admin/como-fazer/${created.id}`)
     } catch (err) {
@@ -291,9 +313,9 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
     setBusy(true)
     try {
       if (colForm.id) {
-        await apiSend(`/api/members/help/collections/${colForm.id}`, 'PATCH', doc)
+        await apiSend(helpPath(`/api/members/help/collections/${colForm.id}`), 'PATCH', doc)
       } else {
-        await apiSend('/api/members/help/collections', 'POST', doc)
+        await apiSend(helpPath('/api/members/help/collections'), 'POST', doc)
       }
       setColForm(null)
       toast.success('Coleção salva.')
@@ -312,7 +334,7 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
     if (i < 0 || j < 0 || j >= ids.length) return
     ;[ids[i], ids[j]] = [ids[j] as string, ids[i] as string]
     try {
-      await apiSend('/api/members/help/collections/order', 'PUT', { ids })
+      await apiSend(helpPath('/api/members/help/collections/order'), 'PUT', { ids })
       await reload()
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Não consegui reordenar.')
@@ -334,7 +356,7 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
       confirmVariant: 'destructive',
       onConfirm: async () => {
         try {
-          await apiSend(`/api/members/help/collections/${c.id}/archive`, 'POST')
+          await apiSend(helpPath(`/api/members/help/collections/${c.id}/archive`), 'POST')
           toast.success('Coleção arquivada.')
           await reload()
         } catch (err) {
@@ -346,7 +368,7 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
 
   async function restoreCollection(c: HelpCollectionView) {
     try {
-      await apiSend(`/api/members/help/collections/${c.id}/restore`, 'POST')
+      await apiSend(helpPath(`/api/members/help/collections/${c.id}/restore`), 'POST')
       await reload()
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Não consegui restaurar.')
@@ -358,7 +380,7 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
       const data = await apiGet<{
         collections: HelpCollectionView[]
         tutorials: Array<{ slug: string; collectionId: string; position: number; draft: unknown }>
-      }>('/api/members/help/tutorials/export')
+      }>(helpPath('/api/members/help/tutorials/export'))
       const bySlug = new Map(data.collections.map((c) => [c.id, c.slug]))
       const file: HelpImportFile = {
         collections: data.collections.map((c, position) => ({
@@ -386,7 +408,7 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
   async function applyImport(data: HelpImportFile) {
     try {
       const result = await apiSend<HelpImportResultView>(
-        '/api/members/help/tutorials/import',
+        helpPath('/api/members/help/tutorials/import'),
         'POST',
         data,
       )
@@ -415,7 +437,11 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
     <div className="space-y-6">
       <AdminHeader
         title="Como fazer"
-        description="A biblioteca de ajuda do Kids: tutoriais curtos por tarefa, separados dos cursos. A criança só vê o que está publicado."
+        description={
+          platform === 'adult'
+            ? 'Tutoriais técnicos da comunidade adulta. O aluno vê somente o conteúdo publicado.'
+            : 'A biblioteca de ajuda do Kids: tutoriais curtos por tarefa, separados dos cursos. A criança só vê o que está publicado.'
+        }
         action={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => void exportAll()}>

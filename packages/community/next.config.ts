@@ -50,11 +50,10 @@ const csp = [
 ].join('; ')
 
 const securityHeaders = [
-  { key: 'Content-Security-Policy', value: csp },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=()' },
   // Isolamento de janela/recurso (defesa em profundidade). COOP corta a referência
   // de janela de um abridor cross-origin; CORP barra que outra origem embuta as
   // respostas autenticadas como subrecurso (sondagem por timing). COEP fica OFF de
@@ -93,6 +92,8 @@ const nextConfig: NextConfig = {
     // `lesson-blocks` do member-shell referencia o `PintaBlockView`, então o bundler do adulto
     // precisa compilar o pacote mesmo que nenhuma aula daqui use o bloco.
     '@sistemazero/pinta',
+    '@sistemazero/molda',
+    '@sistemazero/pensa',
     'three',
   ],
   // Security headers em TODAS as respostas (inclui `/api/me/avatar` e estáticos,
@@ -100,6 +101,40 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },
+      {
+        source: '/((?!estudio/pro/).*)',
+        headers: [{ key: 'Content-Security-Policy', value: csp }],
+      },
+      {
+        source: '/estudio/pro/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: csp
+              .replace(
+                /script-src[^;]+/,
+                "script-src 'self' 'unsafe-inline' data: https: 'unsafe-eval' 'wasm-unsafe-eval' blob:",
+              )
+              .replace(
+                "frame-src 'self' blob:",
+                "frame-src 'self' blob: https://*.webcontainer-api.io https://stackblitz.com https://*.staticblitz.com",
+              ),
+          },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [{ key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' }],
+      },
+      {
+        source: '/avatar3d/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
+      },
+      {
+        source: '/avatar3d/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
+      },
       // ⭐ A SALA da oficina ao vivo (curso ao vivo, 14/10/2026), como no Kids: câmera, microfone e
       // a tela liberados SÓ nesta rota, e o jogo do Estúdio da sala num documento temporário do R2
       // privado (o `frame-src`). O cabeçalho vale para o documento carregado: a sala se abre e se

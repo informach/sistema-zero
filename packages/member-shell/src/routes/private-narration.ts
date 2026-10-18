@@ -1,3 +1,4 @@
+import { hasAdultCapability } from '../server/adult-capabilities'
 import 'server-only'
 import { createHash, randomUUID } from 'node:crypto'
 import {
@@ -36,7 +37,8 @@ const fail = (status: number, message: string) =>
     { status, headers: { 'Cache-Control': 'private, no-store' } },
   )
 
-export type PrivateNarrationMembers = PensaContextMembers &
+export type PrivateNarrationMembers = Partial<Pick<MembersClient, 'getAdultProfileReadonly'>> &
+  PensaContextMembers &
   Pick<
     MembersClient,
     | 'checkPensaAccessReadonly'
@@ -52,9 +54,15 @@ export async function resolvePrivateNarration(
   user: SessionUser,
   ref: PrivateNarratableRef,
   loadContext = loadPensaContext,
+  audience: 'kids' | 'adult' = 'kids',
 ): Promise<string | null> {
   if (ref.origin === 'studio_message') {
-    if (!(await isStudioZappyAllowedForRequest(members, user))) return null
+    if (
+      audience === 'adult'
+        ? !(await hasAdultCapability(members, user, 'ai'))
+        : !(await isStudioZappyAllowedForRequest(members, user))
+    )
+      return null
     const access = await members.checkCreativeToolsAccessReadonly()
     if (access.body?.access?.['estudio-completo'] !== true && !isPrivilegedRole(user.role))
       return null
@@ -73,9 +81,15 @@ export async function resolvePrivateNarration(
     return null
   }
   const access = await members.checkPensaAccessReadonly()
-  if (access.body?.access?.pensa !== true || !(await hasAiAppsLevel(members, user.role)))
+  if (
+    access.body?.access?.pensa !== true ||
+    (audience === 'adult'
+      ? !(await hasAdultCapability(members, user, 'pensa'))
+      : !(await hasAiAppsLevel(members, user.role)))
+  )
     return null
   const actor = {
+    ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
     profileId: user.id,
     accountId: user.activeProfile?.accountId ?? user.id,
     privileged: isPrivilegedRole(user.role),
@@ -113,8 +127,11 @@ export async function resolvePrivateNarration(
 export function createPrivateNarrationRoutes({
   members,
   session,
-  resolveSource = (user, ref) => resolvePrivateNarration(members, user, ref),
+  audience = 'kids',
+  resolveSource = (user, ref) =>
+    resolvePrivateNarration(members, user, ref, loadPensaContext, audience),
 }: {
+  audience?: 'kids' | 'adult'
   members: PrivateNarrationMembers
   session: Pick<SessionModule, 'getSession'>
   resolveSource?: (user: SessionUser, ref: PrivateNarratableRef) => Promise<string | null>
@@ -125,6 +142,13 @@ export function createPrivateNarrationRoutes({
         const user = await session.getSession()
         if (!user || isReadonlyImpersonation(user) || req.headers.get('x-sz-viewer') !== user.id)
           return fail(403, 'Abra seu perfil de novo para ouvir.')
+        if (audience === 'adult') {
+          if (!(await hasAdultCapability(members, user, 'ai')))
+            return fail(403, 'A narração será liberada na formação avançada.')
+          const pref = await members.getAdultProfileReadonly?.().catch(() => null)
+          if (pref?.status !== 200 || !pref.body?.voiceEnabled)
+            return fail(403, 'Ative a voz nas suas preferências para ouvir.')
+        }
         const env = getEnv()
         if (!env.ELEVENLABS_API_KEY)
           return fail(503, 'A voz do Zappy está descansando. Você pode continuar lendo.')
@@ -150,6 +174,7 @@ export function createPrivateNarrationRoutes({
           .update(
             JSON.stringify([
               user.id,
+              ...(audience === 'adult' ? ['adult'] : []),
               parsed.data,
               voice,
               model,
@@ -159,6 +184,7 @@ export function createPrivateNarrationRoutes({
           )
           .digest('hex')
         const actor = {
+          ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
           profileId: user.id,
           accountId: user.activeProfile?.accountId ?? user.id,
           privileged: isPrivilegedRole(user.role),

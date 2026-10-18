@@ -1,3 +1,4 @@
+import { creativeToolAccessRef } from '@sistemazero/core/creations'
 import * as P from '@sistemazero/core/pensa'
 import { and, eq } from 'drizzle-orm'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
@@ -8,6 +9,7 @@ import type { GetStudioUnlocksService } from '../../../application/studio-unlock
 import { toCreationSummary } from '../../../domain/creations/creation'
 import { pensaError } from '../../../domain/pensa/project.errors'
 import { generateShareCode, normalizeShareCode } from '../../../domain/pensa/share-code'
+import type { AdultProfileRepository } from '../../../domain/ports/adult-profile-repository.port'
 import type { AuthGateway } from '../../../domain/ports/auth-gateway.port'
 import type { CreationsRepository } from '../../../domain/ports/creations-repository.port'
 import type { PensaProjectBase } from '../../../domain/ports/pensa-project-repository.port'
@@ -35,6 +37,9 @@ export interface DrizzlePensaTeamRepositoryDeps {
   studioUnlocks: GetStudioUnlocksService
   creations: CreationsRepository
   creationDownload: GetCreationDownloadService
+  adultCreations?: CreationsRepository
+  adultCreationDownload?: GetCreationDownloadService
+  adultProfiles?: AdultProfileRepository
 }
 
 export class DrizzlePensaTeamRepository implements PensaTeamRepository {
@@ -47,9 +52,19 @@ export class DrizzlePensaTeamRepository implements PensaTeamRepository {
     const state = await this.store.get(actor, id)
     const ids = state.team.people.map((p) => p.profileId)
     const [names, avatars] = await Promise.all([
-      this.deps.authGateway?.getProfileIdentities(ids).catch(() => new Map()) ?? new Map(),
+      state.project.audience === 'adult'
+        ? (this.deps.adultProfiles
+            ?.listPublic(ids)
+            .then(
+              (rows) =>
+                new Map(
+                  rows.map((row) => [row.userId, { firstName: row.displayName, public: true }]),
+                ),
+            )
+            .catch(() => new Map()) ?? new Map())
+        : (this.deps.authGateway?.getProfileIdentities(ids).catch(() => new Map()) ?? new Map()),
       this.deps.avatars
-        .execute(ids, 'kids')
+        .execute(ids, state.project.audience)
         .catch((): Record<string, { photoUrl: string | null }> => ({})),
     ])
     return {
@@ -64,6 +79,14 @@ export class DrizzlePensaTeamRepository implements PensaTeamRepository {
 
   async context(actor: P.PensaActor, id: string): Promise<PensaTeamFacts> {
     const state = await this.store.get(actor, id)
+    const creations =
+      state.project.audience === 'adult' ? this.deps.adultCreations : this.deps.creations
+    const download =
+      state.project.audience === 'adult'
+        ? this.deps.adultCreationDownload
+        : this.deps.creationDownload
+    if (!creations || !download)
+      pensaError('RESOURCES_UNAVAILABLE', 'A biblioteca adulta está indisponível.')
     const accountOf = (profileId: string) =>
       profileId === state.project.userId
         ? state.project.accountId
@@ -72,28 +95,36 @@ export class DrizzlePensaTeamRepository implements PensaTeamRepository {
       const accountId = accountOf(profileId)
       if (!accountId) pensaError('RESOURCES_CHANGED', 'Esta pessoa saiu da equipe.')
       const [level, access] = await Promise.all([
-        this.deps.gamification.execute(profileId, accountId, { audience: 'kids' }),
-        this.deps.accessCheck.execute(accountId, ['estudio-completo', 'pinta', 'molda']),
+        this.deps.gamification.execute(profileId, accountId, { audience: state.project.audience }),
+        this.deps.accessCheck.execute(
+          accountId,
+          ['estudio-completo', 'pinta', 'molda'].map((ref) =>
+            creativeToolAccessRef(ref, state.project.audience),
+          ),
+        ),
       ])
-      const owns = (ref: string) => access.grants.includes(ref) || access.communities.includes(ref)
+      const owns = (ref: string) =>
+        access.grants.includes(creativeToolAccessRef(ref, state.project.audience)) ||
+        access.communities.includes(creativeToolAccessRef(ref, state.project.audience))
       return {
         profileId,
         level: level.level.slug,
+        ...(state.project.audience === 'adult' ? { journey: level.journey } : {}),
         access: { studio: owns('estudio-completo'), pinta: owns('pinta'), molda: owns('molda') },
       }
     }
     const programmer = state.team.programmerProfileId
     const [code, blocks, pinta, molda, art] = await Promise.all([
       info(programmer),
-      this.deps.studioUnlocks.execute(programmer, 'kids'),
-      this.deps.creations.list(programmer, 'pinta'),
-      this.deps.creations.list(programmer, 'molda'),
+      this.deps.studioUnlocks.execute(programmer, state.project.audience),
+      creations.list(programmer, 'pinta'),
+      creations.list(programmer, 'molda'),
       Promise.all(state.team.artistProfileIds.map(info)),
     ])
-    const game = await this.deps.creations.get(programmer, 'studio', pensaGameId(id))
+    const game = await creations.get(programmer, 'studio', pensaGameId(id))
     const gameTicket =
       game && !game.deletedAt && game.storageRef && !game.pending
-        ? await this.deps.creationDownload.execute(programmer, 'studio', pensaGameId(id))
+        ? await download.execute(programmer, 'studio', pensaGameId(id))
         : null
     const base: PensaProjectBase = {
       ...this.deps.projects.base(state),
@@ -141,7 +172,13 @@ export class DrizzlePensaTeamRepository implements PensaTeamRepository {
     const [project] = await this.store.db
       .select()
       .from(pensaProjects)
-      .where(and(eq(pensaProjects.shareCode, normalized), eq(pensaProjects.status, 'active')))
+      .where(
+        and(
+          eq(pensaProjects.shareCode, normalized),
+          eq(pensaProjects.audience, actor.audience ?? 'kids'),
+          eq(pensaProjects.status, 'active'),
+        ),
+      )
     if (!project) pensaError('PROJECT_GONE', 'Este código não abriu um projeto.')
     await this.store.db.transaction(async (tx) => {
       await lockPensaAccount(tx, actor.accountId)
@@ -165,7 +202,11 @@ export class DrizzlePensaTeamRepository implements PensaTeamRepository {
         .from(pensaProjects)
         .where(eq(pensaProjects.id, project.id))
         .for('update')
-      if (locked?.status !== 'active' || locked.shareCode !== normalized)
+      if (
+        locked?.status !== 'active' ||
+        locked.shareCode !== normalized ||
+        locked.audience !== (actor.audience ?? 'kids')
+      )
         pensaError('PROJECT_GONE', 'Este código não abriu um projeto.')
       if (locked.userId === actor.profileId) {
         await this.store.event(tx, actor, project.id, requestId, hash, 'join')
@@ -189,6 +230,7 @@ export class DrizzlePensaTeamRepository implements PensaTeamRepository {
           and(
             eq(pensaProjectMembers.profileId, actor.profileId),
             eq(pensaProjects.status, 'active'),
+            eq(pensaProjects.audience, actor.audience ?? 'kids'),
           ),
         )
       if (joined.length >= P.PENSA_LIMITS.joinedProjects)
@@ -371,7 +413,10 @@ export class DrizzlePensaTeamRepository implements PensaTeamRepository {
       (i) => i.missionId === missionId && i.slot.id === slotId,
     )
     if (!item) pensaError('PROJECT_GONE', 'Esta arte não está disponível na equipe.')
-    const current = await this.deps.creationDownload.execute(
+    const download =
+      actor.audience === 'adult' ? this.deps.adultCreationDownload : this.deps.creationDownload
+    if (!download) pensaError('RESOURCES_UNAVAILABLE', 'A biblioteca adulta está indisponível.')
+    const current = await download.execute(
       item.creation.profileId,
       item.creation.tool,
       item.creation.creationId,

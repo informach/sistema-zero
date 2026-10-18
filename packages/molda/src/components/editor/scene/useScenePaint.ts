@@ -120,6 +120,7 @@ export function useScenePaint(
   const [temporaryPicker, setTemporaryPicker] = useState(false)
   const straight = useRef(false)
   const eraser = tool === 'eraser'
+  const [eraseMode, setEraseMode] = useState<'paint' | 'cutout'>('paint')
   const fill = tool === 'fill'
   const picker = tool === 'picker' || temporaryPicker
   /** Girar a pintura da face: cada toque numa face gira a pintura dela 90°. */
@@ -613,7 +614,17 @@ export function useScenePaint(
         }
         return false
       }
-      if (!gesture.begin(target, chosen, brush, image, prepared ? undefined : scope, document))
+      if (
+        !gesture.begin(
+          target,
+          chosen,
+          brush,
+          image,
+          prepared ? undefined : scope,
+          document,
+          eraser && eraseMode === 'cutout' && imageKind === 'color',
+        )
+      )
         return false
       stroke.current = { last: null, lastMirror: null }
       setError(null)
@@ -683,6 +694,11 @@ export function useScenePaint(
     },
     brush,
     eraser,
+    eraseMode,
+    setEraseMode: (value: 'paint' | 'cutout') => {
+      cancel()
+      setEraseMode(value)
+    },
     fill,
     picker,
     rotate,

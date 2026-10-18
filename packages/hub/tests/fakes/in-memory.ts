@@ -238,6 +238,7 @@ function ltPos(aT: Date, aId: string, bT: Date, bId: string): boolean {
 
 /** Fake in-memory de `ThreadRepository`. */
 export class InMemoryThreadRepository implements ThreadRepository {
+  audienceForChannel?: (channelId: string) => 'adult' | 'kids' | undefined
   threads: Thread[] = []
   comments: Comment[] = []
   /** Wireado pelo helper de teste: o vínculo de anexos é atômico com o create. */
@@ -305,7 +306,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
       channelId: input.channelId,
       authorId: input.authorId,
       // Vitrine não recebe recompensa de Clube (usa course_showcased) → sem conta snapshot.
-      authorAccountId: null,
+      authorAccountId: input.authorAccountId ?? null,
       title: input.title,
       slug: input.slug,
       body: input.body,
@@ -334,6 +335,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
   async hasVisibleShowcasePlayId(
     playId: string,
     countHit = false,
+    audience?: 'adult' | 'kids',
   ): Promise<{
     visible: boolean
     authorDisplayName: string | null
@@ -342,7 +344,14 @@ export class InMemoryThreadRepository implements ThreadRepository {
     playsCount: number
   }> {
     const found = this.threads.find(
-      (t) => t.playId === playId && t.isShowcase && t.status === 'visible',
+      (t) =>
+        t.playId === playId &&
+        t.isShowcase &&
+        t.status === 'visible' &&
+        (audience === undefined ||
+          (this.audienceForChannel
+            ? this.audienceForChannel(t.channelId) === audience
+            : audience === 'kids')),
     )
     if (found && countHit) found.playsCount += 1
     return {
@@ -420,11 +429,21 @@ export class InMemoryThreadRepository implements ThreadRepository {
   async listShowcaseByAuthor(
     authorId: string,
     limit: number,
+    audience?: 'adult' | 'kids',
   ): Promise<
     Array<{ title: string; playId: string | null; coverImageUrl: string | null; createdAt: Date }>
   > {
     return this.threads
-      .filter((t) => t.authorId === authorId && t.isShowcase && t.status === 'visible')
+      .filter(
+        (t) =>
+          t.authorId === authorId &&
+          t.isShowcase &&
+          t.status === 'visible' &&
+          (audience === undefined ||
+            (this.audienceForChannel
+              ? this.audienceForChannel(t.channelId) === audience
+              : audience === 'kids')),
+      )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, limit)
       .map((t) => ({
@@ -1094,11 +1113,22 @@ export class InMemoryProcessedWebhookRepository implements ProcessedWebhookRepos
 
 /** Fake do gateway do members: grants e master configuráveis por usuário. */
 export class FakeMembersGateway implements MembersGateway {
+  adultCapabilities = new Map<string, string[]>()
+  adultIdentities = new Map<string, { displayName: string; publicEnabled: boolean }>()
+  async getAdultCreatorState(userId: string) {
+    return {
+      capabilities: this.adultCapabilities.get(userId) ?? [],
+      ...(this.adultIdentities.get(userId) ?? { displayName: 'Criador', publicEnabled: false }),
+    }
+  }
   liveMuralLearners = new Set<string>()
   async getLiveMuralAccess(userId: string, accountId: string) {
     return this.liveMuralLearners.has(`${accountId}:${userId}`)
   }
-  liveEligibility = { eligible: false, title: '' }
+  liveEligibility: { eligible: boolean; title: string; audience?: 'adult' | 'kids' } = {
+    eligible: false,
+    title: '',
+  }
   async getLiveShowcaseEligibility() {
     return this.liveEligibility
   }

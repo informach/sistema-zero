@@ -714,6 +714,10 @@ export class LiveService {
     return this.repository.findBySession(sessionId)
   }
 
+  async courseAudience(courseId: string) {
+    return (await this.requireCourses().findCourse(courseId))?.audience ?? null
+  }
+
   /** A Studio block of the PUBLISHED lesson (the live project seed and curation). */
   async studioBlock(lessonId: string, blockId: string): Promise<LiveStudioBlockRecord | null> {
     return (await this.options.courses?.studioBlock(lessonId, blockId)) ?? null

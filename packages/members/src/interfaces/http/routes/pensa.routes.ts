@@ -1,13 +1,16 @@
+import { creativeToolAccessRef } from '@sistemazero/core/creations'
 import { creativeToolAvailability } from '@sistemazero/core/journey'
 import * as P from '@sistemazero/core/pensa'
 import { and, desc, eq, lt, or } from 'drizzle-orm'
 import { Elysia } from 'elysia'
 import { z } from 'zod'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
+import type { AdultJourneyService } from '../../../application/adult-journey/adult-journey.service'
 import type { GetAiCreditsService } from '../../../application/ai-usage/get-ai-credits.service'
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { PensaProjectService } from '../../../application/pensa/project.service'
 import type { PensaTeamService } from '../../../application/pensa/team.service'
+import { AccessDeniedError } from '../../../domain/entitlement/entitlement.errors'
 import { pensaError } from '../../../domain/pensa/project.errors'
 import {
   type DrizzlePensaCheckpointsRepository,
@@ -48,6 +51,7 @@ export interface PensaRoutesDeps {
   accessCheck: AccessCheckService
   getGamification: GetGamificationService
   credits: GetAiCreditsService
+  adultJourney?: AdultJourneyService
   internalToken?: string
 }
 
@@ -62,14 +66,27 @@ const inspection = z.strictObject({
   installedExtensionIds: z.array(z.string().min(1)).max(80),
 })
 
-export function pensaRoutes(deps: PensaRoutesDeps) {
+export function pensaRoutes(deps: PensaRoutesDeps, audience: 'kids' | 'adult' = 'kids') {
   const store = deps.store
   const actor = (headers: Record<string, string | undefined>): P.PensaActor => ({
+    ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
     profileId: resolveUserId(headers),
     accountId: resolveAccountId(headers),
     privileged: isPrivilegedActor(headers),
   })
   async function canGenerate(who: P.PensaActor) {
+    if (audience === 'adult') {
+      if (who.profileId !== who.accountId || !deps.adultJourney)
+        throw new AccessDeniedError('Use sua conta adulta.')
+      await deps.adultJourney.assert(who.profileId, 'pensa', who.privileged)
+      await deps.adultJourney.assert(who.profileId, 'ai', who.privileged)
+      if (who.privileged) return
+      const ref = creativeToolAccessRef('pensa', 'adult')
+      const access = await deps.accessCheck.execute(who.accountId, [ref])
+      if (!access.grants.includes(ref) && !access.communities.includes(ref))
+        throw new AccessDeniedError('O Pensa não está liberado para esta conta.')
+      return
+    }
     if (who.privileged) return
     const [access, progress] = await Promise.all([
       deps.accessCheck.execute(who.accountId, ['pensa']),
@@ -84,9 +101,14 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
     )
       pensaError('RESOURCES_UNAVAILABLE', 'O Pensa ainda não está liberado para este perfil.')
   }
-  const publicRoutes = new Elysia({ prefix: '/members/pensa' })
-    .onTransform(({ headers, request }) => {
+  const publicPrefix: string = `/members/${audience === 'adult' ? 'adult/' : ''}pensa`
+  const publicRoutes = new Elysia({ prefix: publicPrefix })
+    .onTransform(async ({ headers, request }) => {
       assertInternalCaller(headers['x-internal-token'], deps.internalToken)
+      if (audience === 'adult') {
+        if (headers['x-auth-kids-context']) throw new AccessDeniedError('Use sua conta adulta.')
+        if (request.method !== 'DELETE') await canGenerate(actor(headers))
+      }
       if (request.method !== 'GET' && headers['x-auth-impersonator-id'])
         pensaError('NOT_YOUR_MISSION', 'A sessão de suporte permite somente consultar.')
     })
@@ -321,10 +343,21 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
       deps.credits.execute(resolveAccountId(headers), isPrivilegedActor(headers)),
     )
 
-  const internal = new Elysia({ prefix: '/members/internal/pensa' })
+  const internalPrefix: string = `/members/internal/${audience === 'adult' ? 'adult/' : ''}pensa`
+  const internal = new Elysia({ prefix: internalPrefix })
     .onTransform(({ headers }) => {
       assertInternalCaller(headers['x-internal-token'], deps.internalToken)
       assertMemberShellConsumer(headers['x-consumer-id'])
+    })
+    .onBeforeHandle(({ body }) => {
+      if (body && typeof body === 'object' && 'actor' in body) {
+        const who = P.PensaActorSchema.parse(body.actor)
+        if (
+          (who.audience ?? 'kids') !== audience ||
+          (audience === 'adult' && who.profileId !== who.accountId)
+        )
+          pensaError('PROJECT_GONE', 'Contexto de projeto inválido.')
+      }
     })
     .post('/rewards/work', () => deps.rewards.work(), { body: z.strictObject({}) })
     .post(

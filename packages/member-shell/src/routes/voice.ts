@@ -1,5 +1,6 @@
 import { InMemoryRateLimiter } from '@sistemazero/core/security'
 import { NextResponse } from 'next/server'
+import { learnerIdentity } from '../lib/learner-identity'
 import type { ProfileView, SessionUser } from '../lib/types'
 import {
   audioFormatFromBytes,
@@ -9,6 +10,8 @@ import {
   sanitizeSpokenContext,
   spokenTextMaxChars,
 } from '../lib/voice/transcription'
+import { hasAdultCapability } from '../server/adult-capabilities'
+import type { MembersClient } from '../server/clients'
 import type { GatewayResponse } from '../server/gateway'
 import {
   isVoiceInputConfigured,
@@ -109,10 +112,14 @@ function readContext(req: Request): string {
 export function createVoiceRoutes({
   session,
   auth,
+  audience = 'kids',
+  members,
   transcribe = transcribeSpeech,
   configured = isVoiceInputConfigured,
   limits = sharedLimits,
 }: {
+  audience?: 'kids' | 'adult'
+  members?: Pick<MembersClient, 'getGamification' | 'getAdultProfileReadonly'>
   session: { getSession: () => Promise<SessionUser | null> }
   auth: { getMyProfile: () => Promise<GatewayResponse<{ profile: ProfileView | null }>> }
   transcribe?: (input: TranscribeInput) => Promise<{ text: string; model: string }>
@@ -124,7 +131,7 @@ export function createVoiceRoutes({
       const user = await session.getSession()
       if (!user) return fail(401, 'UNAUTHORIZED', 'Sessão expirada.')
       // A fala é da criança: nem a sessão dos pais nem a da equipe (mesmo no modo de escrita).
-      if (user.kids?.kind !== 'student')
+      if (audience === 'adult' ? !learnerIdentity(user, 'adult') : user.kids?.kind !== 'student')
         return fail(403, 'STUDENT_SESSION_REQUIRED', 'Falar em vez de escrever é para a criança.')
       if (user.act) return fail(403, 'SUPPORT_SESSION', 'A sessão de suporte não usa a fala.')
       if (user.status !== 'active') return fail(403, 'FORBIDDEN', 'Conta inativa.')
@@ -141,13 +148,27 @@ export function createVoiceRoutes({
         return fail(415, 'VOICE_FORMAT', 'Esse arquivo não é uma gravação de voz.')
 
       // A escolha dos pais, relida AGORA: desligar vale no pedido seguinte.
-      const mine = await auth.getMyProfile()
-      if (mine.status === 401) return fail(401, 'UNAUTHORIZED', 'Sessão expirada.')
-      if (mine.status !== 200)
-        return fail(503, 'VOICE_UNAVAILABLE', 'A fala não está disponível agora.')
-      const profile = mine.body?.profile
-      if (!profile || profile.id !== user.id || profile.voiceInputEnabled !== true)
-        return fail(403, 'VOICE_INPUT_DISABLED', 'A fala está desligada neste perfil.')
+      if (audience === 'adult') {
+        if (!members || !(await hasAdultCapability(members, user, 'ai')))
+          return fail(
+            403,
+            'ADULT_CAPABILITY_REQUIRED',
+            'A fala será liberada na formação avançada.',
+          )
+        const preferences = await members.getAdultProfileReadonly().catch(() => null)
+        if (preferences?.status !== 200 || !preferences.body)
+          return fail(503, 'VOICE_UNAVAILABLE', 'Não foi possível conferir sua preferência de voz.')
+        if (!preferences.body.voiceEnabled)
+          return fail(403, 'VOICE_INPUT_DISABLED', 'A fala está desligada nas suas preferências.')
+      } else {
+        const mine = await auth.getMyProfile()
+        if (mine.status === 401) return fail(401, 'UNAUTHORIZED', 'Sessão expirada.')
+        if (mine.status !== 200)
+          return fail(503, 'VOICE_UNAVAILABLE', 'A fala não está disponível agora.')
+        const profile = mine.body?.profile
+        if (!profile || profile.id !== user.id || profile.voiceInputEnabled !== true)
+          return fail(403, 'VOICE_INPUT_DISABLED', 'A fala está desligada neste perfil.')
+      }
 
       const read = await readAudio(req, SPOKEN_AUDIO_MAX_BYTES)
       if (!read.ok)

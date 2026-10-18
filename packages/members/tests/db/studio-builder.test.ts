@@ -6,12 +6,10 @@ import {
   STUDIO_PRO_BUILDER_LIMITS as limits,
 } from '@sistemazero/core/studio'
 import { StudioBuilderService } from '../../src/application/studio-pro/studio-builder.service'
-import {
-  createDbConnection,
-  type DbConnection,
-} from '../../src/infrastructure/persistence/drizzle/db'
+import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleStudioAiUsageRepository } from '../../src/infrastructure/persistence/drizzle/studio-ai-usage.repository'
 import { DrizzleStudioBuilderRepository } from '../../src/infrastructure/persistence/drizzle/studio-builder.repository'
+import { openStudioReviewDatabase } from './studio-review-database'
 
 const url = process.env.STUDIO_REVIEW_DATABASE_URL
 describe.skipIf(!url)('Studio builder — durable concurrency in Postgres', () => {
@@ -21,95 +19,19 @@ describe.skipIf(!url)('Studio builder — durable concurrency in Postgres', () =
     userId = randomUUID(),
     actor = { accountId, userId, privileged: false }
   beforeAll(async () => {
-    const target = new URL(url!)
-    if (
-      !['localhost', '127.0.0.1'].includes(target.hostname) ||
-      target.pathname !== '/studio_pro_review'
-    )
-      throw new Error('Use the dedicated local review database.')
-    connection = createDbConnection(url!, { max: 8 })
-    const [table] =
-      await connection.sql`select to_regclass('members.studio_builder_jobs') as present`
-    if (!table?.present) {
-      const migration = await Bun.file(
-        new URL(
-          '../../src/infrastructure/persistence/drizzle/migrations/0120_cool_the_fallen.sql',
-          import.meta.url,
-        ),
-      ).text()
-      for (const statement of migration.split('--> statement-breakpoint'))
-        if (statement.trim()) await connection.sql.unsafe(statement)
-    }
-    const [binaryColumn] =
-      await connection.sql`select 1 from information_schema.columns where table_schema = 'members' and table_name = 'studio_builder_jobs' and column_name = 'binaries'`
-    if (!binaryColumn) {
-      const migration = await Bun.file(
-        new URL(
-          '../../src/infrastructure/persistence/drizzle/migrations/0121_purple_taskmaster.sql',
-          import.meta.url,
-        ),
-      ).text()
-      for (const statement of migration.split('--> statement-breakpoint'))
-        if (statement.trim()) await connection.sql.unsafe(statement)
-    }
-    const [notesColumn] =
-      await connection.sql`select 1 from information_schema.columns where table_schema = 'members' and table_name = 'studio_builder_jobs' and column_name = 'notes'`
-    if (!notesColumn) {
-      const migration = await Bun.file(
-        new URL(
-          '../../src/infrastructure/persistence/drizzle/migrations/0122_optimal_argent.sql',
-          import.meta.url,
-        ),
-      ).text()
-      for (const statement of migration.split('--> statement-breakpoint'))
-        if (statement.trim()) await connection.sql.unsafe(statement)
-    }
+    connection = await openStudioReviewDatabase(url!)
     service = new StudioBuilderService(
       new DrizzleStudioBuilderRepository(connection.db),
       () => now,
       true,
+      true,
     )
-    const [assistanceColumn] =
-      await connection.sql`select 1 from information_schema.columns where table_schema = 'members' and table_name = 'studio_builder_jobs' and column_name = 'assistance'`
-    if (!assistanceColumn) {
-      const migration = await Bun.file(
-        new URL(
-          '../../src/infrastructure/persistence/drizzle/migrations/0123_steep_warlock.sql',
-          import.meta.url,
-        ),
-      ).text()
-      for (const statement of migration.split('--> statement-breakpoint'))
-        if (statement.trim()) await connection.sql.unsafe(statement)
-    }
-    const [deletionsTable] =
-      await connection.sql`select to_regclass('members.studio_builder_project_deletions') as present`
-    if (!deletionsTable?.present) {
-      const migration = await Bun.file(
-        new URL(
-          '../../src/infrastructure/persistence/drizzle/migrations/0124_superb_karen_page.sql',
-          import.meta.url,
-        ),
-      ).text()
-      for (const statement of migration.split('--> statement-breakpoint'))
-        if (statement.trim()) await connection.sql.unsafe(statement)
-    }
-    const [executionColumn] =
-      await connection.sql`select 1 from information_schema.columns where table_schema = 'members' and table_name = 'studio_builder_jobs' and column_name = 'execution'`
-    if (!executionColumn) {
-      const migration = await Bun.file(
-        new URL(
-          '../../src/infrastructure/persistence/drizzle/migrations/0125_opposite_guardian.sql',
-          import.meta.url,
-        ),
-      ).text()
-      for (const statement of migration.split('--> statement-breakpoint'))
-        if (statement.trim()) await connection.sql.unsafe(statement)
-    }
   })
   afterAll(async () => {
     if (!connection) return
     await connection.sql`delete from members.studio_builder_jobs where account_id = ${accountId}`
     await connection.sql`delete from members.studio_builder_project_deletions where account_id = ${accountId}`
+    await connection.sql`delete from members.adult_studio_builder_project_deletions where account_id = ${accountId}`
     await connection.sql`delete from members.account_deletion_fences where account_id = ${accountId}`
     await connection.sql`delete from members.studio_ai_accounts where account_id = ${accountId}`
     await connection.close()
@@ -669,5 +591,69 @@ describe.skipIf(!url)('Studio builder — durable concurrency in Postgres', () =
     ).toBe('failed')
     await connection.sql`insert into members.account_deletion_fences (account_id, created_at) values (${accountId}, ${now.toISOString()}::timestamptz)`
     await expect(create()).rejects.toThrow()
+  })
+  test('adult history, worker identity and deletion fence cannot affect the same Kids project', async () => {
+    const isolatedAccountId = randomUUID()
+    const kidsActor = { accountId: isolatedAccountId, userId: randomUUID(), privileged: false }
+    const base = await createStudioProRevision({
+      projectId: randomUUID(),
+      templateId: 'vanilla-vite',
+      devScript: 'dev',
+      files: { 'index.html': '<main>Play</main>' },
+      directories: [],
+      assets: '{"version":1,"assets":[]}',
+      assetFiles: {},
+    })
+    const kids = {
+      command: {
+        operation: 'create' as const,
+        parentOrigin: 'https://kids.test',
+        id: randomUUID(),
+        objective: 'Adicionar placar',
+        model: 'provider/model',
+        binaries: {},
+        base,
+      },
+    }
+    await service.execute(kidsActor, kids.command)
+    const adult = {
+      accountId: isolatedAccountId,
+      userId: isolatedAccountId,
+      privileged: false,
+      audience: 'adult' as const,
+    }
+    const command = { ...kids.command, id: randomUUID() }
+    const saved = await service.execute(adult, command)
+    expect(saved?.job.id).toBe(command.id)
+    const repo = new DrizzleStudioBuilderRepository(connection.db)
+    const pending = await repo.pendingExecutions(now, 100)
+    expect(pending.find((item) => item.id === command.id)?.actor).toEqual(adult)
+    expect(
+      (await service.list(adult, { projectId: command.base.projectId })).jobs.map(
+        (item) => item.id,
+      ),
+    ).toEqual([command.id])
+    expect(
+      (await service.list(kidsActor, { projectId: command.base.projectId })).jobs.map(
+        (item) => item.id,
+      ),
+    ).toEqual([kids.command.id])
+    await service.execute(adult, { operation: 'remove-project', projectId: command.base.projectId })
+    expect(
+      await service.execute(kidsActor, {
+        operation: 'get',
+        id: kids.command.id,
+        projectId: command.base.projectId,
+      }),
+    ).not.toBeNull()
+    expect(
+      await service.execute(adult, {
+        operation: 'get',
+        id: command.id,
+        projectId: command.base.projectId,
+      }),
+    ).toBeNull()
+    await connection.sql`delete from members.studio_builder_jobs where account_id = ${isolatedAccountId}`
+    await connection.sql`delete from members.adult_studio_builder_project_deletions where account_id = ${isolatedAccountId}`
   })
 })

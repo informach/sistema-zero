@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -10,6 +10,28 @@ import {
 } from './railway-config.mjs'
 
 const tree = 'a'.repeat(40)
+
+describe('dependências embarcadas no deploy', () => {
+  test.each([
+    ['community', 'molda'],
+    ['community', 'pensa'],
+    ['members', 'studio'],
+  ])('%s acompanha mudanças do pacote %s', (service, dependency) => {
+    const config = JSON.parse(
+      readFileSync(new URL(`../../.railway/services/${service}.json`, import.meta.url), 'utf8'),
+    ) as { build: { watchPatterns: string[] } }
+    expect(config.build.watchPatterns).toContain(`/packages/${dependency}/**`)
+    const workflow = readFileSync(
+      new URL('../../.github/workflows/ci.yml', import.meta.url),
+      'utf8',
+    )
+    const selection = workflow
+      .split('\n')
+      .find((line) => line.trimStart().startsWith(`packages/${dependency}/*)`))
+    expect(selection).toMatch(new RegExp(`\\badd ${service}(?:;|\\s)`))
+  })
+})
+
 function plan(changes: unknown[] = []) {
   return {
     kind: 'railway.config.plan',

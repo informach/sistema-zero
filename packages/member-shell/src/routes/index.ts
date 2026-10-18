@@ -991,6 +991,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const limit = clampInt(url.searchParams.get('limit'), 20, 1, 100)
       const cursor = url.searchParams.get('cursor') ?? undefined
       const { status, body } = await members.getRanking({ limit, cursor })
+      if (session.audience === 'adult' && status === 200 && body?.audience !== 'adult')
+        return NextResponse.json({ error: { code: 'ADULT_PROTOCOL_REQUIRED' } }, { status: 503 })
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
   }
@@ -1087,12 +1089,13 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           )
         }
 
-        const stored = await optimizeAndStoreAvatar(file, user.id, 'avatar3d')
+        const namespace = session.audience === 'adult' ? 'avatar3d-adult' : 'avatar3d'
+        const stored = await optimizeAndStoreAvatar(file, user.id, namespace)
         const { status, body } = await members.setAvatarPhoto(stored.url)
         if (status !== 200) {
           return NextResponse.json(body ?? { error: { code: 'UPDATE_FAILED' } }, { status })
         }
-        await removeStaleAvatars(user.id, stored.key, 'avatar3d')
+        await removeStaleAvatars(user.id, stored.key, namespace)
         return NextResponse.json({ url: stored.url })
       } catch (error) {
         return mediaErrorResponse(error)
@@ -1142,6 +1145,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   const missionsGet = {
     GET: async () => {
       const { status, body } = await members.getMissions()
+      if (session.audience === 'adult' && status === 200 && body?.audience !== 'adult')
+        return NextResponse.json({ error: { code: 'ADULT_PROTOCOL_REQUIRED' } }, { status: 503 })
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
   }
@@ -1151,6 +1156,11 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     POST: async (_req: Request, ctx: { params: Promise<{ slug: string }> }) => {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
+      if (session.audience === 'adult') {
+        const protocol = await members.getMissions()
+        if (protocol.status !== 200 || protocol.body?.audience !== 'adult')
+          return NextResponse.json({ error: { code: 'ADULT_PROTOCOL_REQUIRED' } }, { status: 503 })
+      }
       const { slug } = await ctx.params
       const { status, body } = await members.claimMission(slug)
       return NextResponse.json(body ?? { ok: status === 200 }, { status })

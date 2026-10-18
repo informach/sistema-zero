@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import { structuredBytes } from '../core/structuredBytes'
+import { compositeSceneImage, sceneBaseColor, scenePalette } from '../scene/composite'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
 import { makeModel } from '../testing/fixtures'
 import { createDocumentEditorStore } from './editorStore'
@@ -25,6 +26,43 @@ function fixture() {
   const gesture = createScenePaintGesture(editor, (error) => errors.push(error))
   return { editor, document, image, target, gesture, errors }
 }
+
+test('cutout gesture cancels its background preparation and commits one undo for a multi-pixel stroke', () => {
+  const { editor, document, image, target, gesture, errors } = fixture()
+  const read = () => {
+    const source = editor.getState().asset
+    const material = source.materials.find((entry) => entry.id === target.materialId)!
+    const palette = scenePalette(source)
+    return compositeSceneImage(
+      source.images.find((entry) => entry.id === image.id)!,
+      palette,
+      sceneBaseColor(material, palette),
+    )
+  }
+  try {
+    expect(gesture.begin(target, 0, 1, image, undefined, undefined, true)).toBe(true)
+    gesture.segment([0, 0], [1, 0])
+    expect(read()[3]).toBe(0)
+    gesture.cancel()
+    expect(editor.getState().asset).toBe(document)
+    expect(editor.getState().canUndo).toBe(false)
+    expect(gesture.begin(target, 0, 1, image, undefined, undefined, true)).toBe(true)
+    gesture.segment([0, 0], [1, 0])
+    gesture.segment([1, 0], [2, 0])
+    expect(gesture.end(true)).toBe(true)
+    const cut = editor.getState().asset
+    expect([read()[3], read()[7], read()[11]]).toEqual([0, 0, 0])
+    editor.getState().undo()
+    expect(editor.getState().asset.images).toEqual(document.images)
+    expect(editor.getState().asset.materials).toEqual(document.materials)
+    expect(editor.getState().canUndo).toBe(false)
+    editor.getState().redo()
+    expect(editor.getState().asset.images).toEqual(cut.images)
+    expect(errors).toEqual([])
+  } finally {
+    editor.getState().dispose()
+  }
+})
 
 test('paint gesture owns a whole stroke, supports no-op strokes, cancel and exactly one undo/redo', () => {
   const { editor, document, image, target, gesture, errors } = fixture()

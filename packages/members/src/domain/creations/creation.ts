@@ -169,6 +169,7 @@ export interface CreationPendingUpload {
 
 /** A linha completa (o repositório e os serviços). */
 export interface CreationRecord extends CreationSummary {
+  audience?: 'adult' | 'kids'
   id: string
   userId: string
   accountId: string

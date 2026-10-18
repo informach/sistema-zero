@@ -66,7 +66,8 @@ type PollMemo = Map<string, { until: number; readOnly: boolean; contextSessionId
 export class LiveWorkspaceService {
   constructor(
     private readonly repository: LiveWorkspaceRepository,
-    private readonly live: Pick<LiveService, 'contextFor' | 'cohortForSession' | 'studioBlock'>,
+    private readonly live: Pick<LiveService, 'contextFor' | 'cohortForSession' | 'studioBlock'> &
+      Partial<Pick<LiveService, 'courseAudience'>>,
     private readonly clock: () => Date = () => new Date(),
     private readonly recording?: { confirmPaused(occurrenceId: string): Promise<void> },
     private readonly continuation?: { canContinue(accountId: string): Promise<boolean> },
@@ -404,7 +405,12 @@ export class LiveWorkspaceService {
     return { workspaces }
   }
 
-  async showcaseSnapshot(actor: LiveActor, id: string, expectedRevision: number) {
+  async showcaseSnapshot(
+    actor: LiveActor,
+    id: string,
+    expectedRevision: number,
+    expectedAudience: 'kids' | 'adult' = 'kids',
+  ) {
     const workspace = await this.repository.find(id)
     if (
       !workspace ||
@@ -421,7 +427,14 @@ export class LiveWorkspaceService {
       workspace.assistance !== null
     )
       throw new LiveConflictError('Guarde o projeto e conclua a ajuda antes de publicar.')
+    const cohort = await this.live.cohortForSession(workspace.sessionId)
+    const audience = cohort?.cohort.courseId
+      ? ((await this.live.courseAudience?.(cohort.cohort.courseId)) ?? 'kids')
+      : 'kids'
+    if (audience !== expectedAudience || (audience === 'adult' && actor.id !== actor.accountId))
+      throw new LiveAccessError()
     return {
+      ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
       workspaceId: workspace.id,
       revision: workspace.revision,
       project: structuredClone(workspace.project),

@@ -12,6 +12,7 @@ import { TriangleAlert } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { AdultCourseAccessContract } from '@/components/admin/adult-course-access-contract'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { ImageUploader } from '@/components/media/image-uploader'
 import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
@@ -213,8 +214,9 @@ export function CourseFormDialog({
   const isKids = form.audience === 'kids'
   // Curso ao vivo não entra na Jornada: sem posição, sem liberação de blocos, sem trava de aula.
   const isLive = form.modality === 'live'
-  const studioUnlockRule =
-    form.journeyRole === 'positioned'
+  const studioUnlockRule = !isKids
+    ? 'O aluno adulto recebe estes blocos ao concluir o curso. A criação livre também verifica a etapa e a licença da ferramenta.'
+    : form.journeyRole === 'positioned'
       ? 'Curso da jornada: a criança recebe as ferramentas quando conclui o curso e publica no Mural.'
       : 'A criança recebe as ferramentas quando conclui todas as aulas.'
   const maxSlot = slotsForTier(form.level, form.track)
@@ -607,14 +609,21 @@ export function CourseFormDialog({
             ) : null}
           </Field>
         )}
+        {!isKids ? (
+          <AdultCourseAccessContract
+            slug={form.slug}
+            live={isLive}
+            blocks={form.studioUnlockBlocks.length}
+          />
+        ) : null}
         {/* Currículo do Estúdio livre (08/2026): a paleta é a UNIÃO dos blocos dos
             cursos elegíveis. Bônus Kids exige conclusão; curso com posição exige também
             o Mural. É o MESMO formato da aula (`allowBlocks`), então o picker e a
             importação por JSON já recusam id inexistente ou repetido. */}
-        {form.audience === 'kids' && !isLive && (
+        {!isLive && (
           <Field
             label="Ferramentas que este curso libera no Estúdio"
-            tooltip={`Liste os blocos que este curso usa, inclusive os fundamentos que já apareceram em cursos anteriores. ${studioUnlockRule} A caixa de ferramentas soma tudo que ela já conquistou, sem repetir.`}
+            tooltip={`Liste os blocos que este curso usa, inclusive os fundamentos que já apareceram em cursos anteriores. ${studioUnlockRule} A caixa de ferramentas soma tudo que ${isKids ? 'ela' : 'o aluno'} já conquistou, sem repetir.`}
           >
             <StudioBlocksPicker
               value={form.studioUnlockBlocks}
@@ -623,7 +632,9 @@ export function CourseFormDialog({
             <p className="mt-1.5 text-muted-foreground text-xs">{studioUnlockRule}</p>
             <p className="mt-1 text-muted-foreground text-xs">
               {form.studioUnlockBlocks.length === 0
-                ? 'Nenhum bloco: este curso não muda a caixa de ferramentas da criança.'
+                ? isKids
+                  ? 'Nenhum bloco: este curso não muda a caixa de ferramentas da criança.'
+                  : 'Nenhum bloco: este curso não acrescenta ferramentas à paleta do aluno.'
                 : `${form.studioUnlockBlocks.length} ${form.studioUnlockBlocks.length === 1 ? 'bloco' : 'blocos'}. As extensões saem sozinhas dos blocos escolhidos.`}
             </p>
             {/* O fluxo real da autora é subir a lista de blocos USADOS no curso, então a
@@ -631,8 +642,9 @@ export function CourseFormDialog({
                 comemoração compara com o que a CRIANÇA tem: ela só festeja o que é novo
                 para ela. */}
             <p className="mt-1 text-muted-foreground text-xs">
-              Pode repetir blocos de outros cursos sem problema: a criança recebe só os que ainda
-              não tem.
+              {isKids
+                ? 'Pode repetir blocos de outros cursos sem problema: a criança recebe só os que ainda não tem.'
+                : 'Pode repetir blocos de outros cursos: o aluno recebe apenas os que ainda não tem.'}
             </p>
             {/* A garantia pedida pela usuária, dita ao operador: tirar um bloco daqui muda o
                 que recebe quem ainda não ganhou a ferramenta, nunca revoga um grant existente. */}

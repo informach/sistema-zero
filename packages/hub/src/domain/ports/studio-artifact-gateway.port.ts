@@ -1,4 +1,5 @@
 export interface CleanupShowcaseArtifactsArgs {
+  audience?: 'adult' | 'kids'
   /** Id público do artefato jogável (UUID) → key `studio/play/<playId>.json` no R2 privado. */
   playId: string
   /** URL pública da capa (R2 público) OU `null` quando o post não tinha capa. */

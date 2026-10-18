@@ -120,6 +120,7 @@ const EnvSchema = z
     STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
     STUDIO_PRO_RUNTIME_TOKEN: z.string().min(16).optional(),
     STUDIO_BUILDER_EXECUTOR_URL: z.string().url().optional(),
+    ADULT_STUDIO_BUILDER_EXECUTOR_URL: z.string().url().optional(),
     STUDIO_BUILDER_EXECUTOR_SECRET: z.string().min(32).optional(),
     STUDIO_AI_VAULT_ACTIVE_ID: z.string().optional(),
     STUDIO_AI_CALLBACK_ORIGINS: z.string().optional(),
@@ -238,7 +239,8 @@ const EnvSchema = z
   })
   .refine(
     (env) =>
-      Boolean(env.STUDIO_BUILDER_EXECUTOR_URL) === Boolean(env.STUDIO_BUILDER_EXECUTOR_SECRET),
+      Boolean(env.STUDIO_BUILDER_EXECUTOR_URL || env.ADULT_STUDIO_BUILDER_EXECUTOR_URL) ===
+      Boolean(env.STUDIO_BUILDER_EXECUTOR_SECRET),
     {
       message: 'Configure URL e segredo do executor Studio juntos.',
       path: ['STUDIO_BUILDER_EXECUTOR_URL'],
@@ -246,17 +248,21 @@ const EnvSchema = z
   )
   .refine(
     (env) => {
-      if (!env.STUDIO_BUILDER_EXECUTOR_URL) return true
-      const url = new URL(env.STUDIO_BUILDER_EXECUTOR_URL)
-      return (
-        !url.username &&
-        !url.password &&
-        !url.hash &&
-        !url.search &&
-        (url.protocol === 'https:' ||
-          (url.protocol === 'http:' &&
-            env.NODE_ENV !== 'production' &&
-            ['localhost', '127.0.0.1'].includes(url.hostname)))
+      return [env.STUDIO_BUILDER_EXECUTOR_URL, env.ADULT_STUDIO_BUILDER_EXECUTOR_URL].every(
+        (value) => {
+          if (!value) return true
+          const url = new URL(value)
+          return (
+            !url.username &&
+            !url.password &&
+            !url.hash &&
+            !url.search &&
+            (url.protocol === 'https:' ||
+              (url.protocol === 'http:' &&
+                env.NODE_ENV !== 'production' &&
+                ['localhost', '127.0.0.1'].includes(url.hostname)))
+          )
+        },
       )
     },
     {

@@ -5,6 +5,8 @@ import type { MicroCache } from '../../infrastructure/cache/micro-cache'
 
 /** Ator resolvido dos headers `X-Auth-User-*` injetados pelo gateway. */
 export interface Actor {
+  /** Trusted Kids context; absent on adult account sessions. */
+  kidsContext?: boolean
   /** Identidade de DADOS: autor de tópicos/comentários, reações, "novidades". Em
    *  sessão de perfil (estilo Netflix) é o PERFIL de criança (x-auth-user-id). */
   userId: string

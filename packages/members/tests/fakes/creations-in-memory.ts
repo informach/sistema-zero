@@ -21,8 +21,12 @@ import type {
 } from '../../src/domain/ports/creations-repository.port'
 import { resolveParts } from '../../src/infrastructure/persistence/drizzle/creations.repository'
 
-const key = (userId: string, tool: CreationTool, itemId: string): string =>
-  `${userId}|${tool}|${itemId}`
+const key = (
+  userId: string,
+  tool: CreationTool,
+  itemId: string,
+  audience: 'adult' | 'kids' = 'kids',
+): string => `${audience === 'adult' ? 'adult|' : ''}${userId}|${tool}|${itemId}`
 
 const summaryOf = (row: CreationRecord): CreationSummary => {
   const summary: CreationSummary = {
@@ -52,13 +56,19 @@ const aliveCommitted = (row: CreationRecord): boolean =>
  * corrente, o contador de revisões nunca volta.
  */
 export class InMemoryCreationsRepository implements CreationsRepository {
-  readonly rows = new Map<string, CreationRecord>()
+  constructor(
+    readonly audience: 'adult' | 'kids' = 'kids',
+    readonly rows = new Map<string, CreationRecord>(),
+  ) {}
 
   async list(userId: string, tool: CreationTool): Promise<CreationSummary[]> {
     return [...this.rows.values()]
       .filter(
         (r) =>
-          r.userId === userId && r.tool === tool && (aliveCommitted(r) || r.deletedAt !== null),
+          (r.audience ?? 'kids') === this.audience &&
+          r.userId === userId &&
+          r.tool === tool &&
+          (aliveCommitted(r) || r.deletedAt !== null),
       )
       .sort((a, b) => b.itemUpdatedAt.getTime() - a.itemUpdatedAt.getTime())
       .map(summaryOf)
@@ -101,8 +111,13 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     return doomed.length
   }
 
-  async get(userId: string, tool: CreationTool, itemId: string): Promise<CreationRecord | null> {
-    const row = this.rows.get(key(userId, tool, itemId))
+  async get(
+    userId: string,
+    tool: CreationTool,
+    itemId: string,
+    audience: 'adult' | 'kids' = this.audience,
+  ): Promise<CreationRecord | null> {
+    const row = this.rows.get(key(userId, tool, itemId, audience))
     return row ? { ...row, pending: row.pending ? { ...row.pending } : null } : null
   }
 
@@ -110,9 +125,10 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     userId: string,
     tool: CreationTool,
     itemIds: readonly string[],
+    audience: 'adult' | 'kids' = this.audience,
   ): Promise<CreationDraftState[]> {
     return itemIds.flatMap((itemId) => {
-      const row = this.rows.get(key(userId, tool, itemId))
+      const row = this.rows.get(key(userId, tool, itemId, audience))
       return row && aliveCommitted(row)
         ? [{ itemId, fingerprint: row.contentFingerprint ?? null, syncedAt: row.syncedAt }]
         : []
@@ -123,7 +139,12 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     const countByTool = emptyCountByTool()
     let totalBytes = 0
     for (const row of this.rows.values()) {
-      if (row.userId !== userId || !aliveCommitted(row)) continue
+      if (
+        (row.audience ?? 'kids') !== this.audience ||
+        row.userId !== userId ||
+        !aliveCommitted(row)
+      )
+        continue
       // A biblioteca de paletas não ocupa vaga (os bytes contam) — espelho do SQL.
       if (!isPintaPaletteLibraryCreation(row)) countByTool[row.tool] += 1
       totalBytes += row.bytes
@@ -132,7 +153,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
   }
 
   async reserveUpload(input: CreationUploadInput): Promise<CreationUploadReservation> {
-    const k = key(input.userId, input.tool, input.itemId)
+    const k = key(input.userId, input.tool, input.itemId, this.audience)
     const existing = this.rows.get(k)
     const formatVersion = input.formatVersion ?? 1
     const requiredVersion = Math.max(
@@ -198,6 +219,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
       this.rows.set(k, {
         id: randomUUID(),
         userId: input.userId,
+        audience: this.audience,
         accountId: input.accountId,
         tool: input.tool,
         itemId: input.itemId,
@@ -237,7 +259,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     now: Date
     limits: CreationUploadInput['limits']
   }): Promise<CreationCommitResult> {
-    const k = key(input.userId, input.tool, input.itemId)
+    const k = key(input.userId, input.tool, input.itemId, this.audience)
     const existing = this.rows.get(k)
     if (!existing) return { ok: false }
     // Idempotente MESMO com outra reserva em voo (igual ao Drizzle).
@@ -327,7 +349,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     now: Date,
     maxFormatVersion = 1,
   ): ReturnType<CreationsRepository['softDelete']> {
-    const k = key(userId, tool, itemId)
+    const k = key(userId, tool, itemId, this.audience)
     const existing = this.rows.get(k)
     if (!existing) {
       return baseRevision === 0

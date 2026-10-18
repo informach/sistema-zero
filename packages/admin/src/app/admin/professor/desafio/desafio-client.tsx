@@ -31,6 +31,10 @@ import type {
  * tema NÃO afeta participação/XP das crianças: a tag do desafio é o MÊS.
  */
 export function DesafioClient() {
+  const platform = usePlatform()
+  return <DesafioForPlatform key={platform} platform={platform} />
+}
+function DesafioForPlatform({ platform }: { platform: 'kids' | 'adult' }) {
   const [months, setMonths] = useState<ChallengeMonthAdminView[] | null>(null)
   const [themes, setThemes] = useState<ChallengeThemesAdminView | null>(null)
   const [editingMonth, setEditingMonth] = useState<ChallengeMonthAdminView | null>(null)
@@ -40,15 +44,17 @@ export function DesafioClient() {
   const reload = useCallback(async () => {
     try {
       const [m, t] = await Promise.all([
-        apiGet<{ months: ChallengeMonthAdminView[] }>('/api/members/challenge/months'),
-        apiGet<ChallengeThemesAdminView>('/api/members/challenge/themes'),
+        apiGet<{ months: ChallengeMonthAdminView[] }>(
+          `/api/members/challenge/months?audience=${platform}`,
+        ),
+        apiGet<ChallengeThemesAdminView>(`/api/members/challenge/themes?audience=${platform}`),
       ])
       setMonths(m.months)
       setThemes(t)
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Não consegui carregar o desafio.')
     }
-  }, [])
+  }, [platform])
 
   useEffect(() => {
     void reload()
@@ -63,7 +69,7 @@ export function DesafioClient() {
       confirmText: 'Voltar ao sorteio',
       onConfirm: async () => {
         try {
-          await apiSend(`/api/members/challenge/months/${m.month}`, 'DELETE')
+          await apiSend(`/api/members/challenge/months/${m.month}?audience=${platform}`, 'DELETE')
           toast.success(`${monthLabelPt(m.month)} voltou ao sorteio.`)
           await reload()
         } catch (err) {
@@ -75,8 +81,6 @@ export function DesafioClient() {
 
   const loading = !months || !themes
 
-  const platform = usePlatform()
-
   return (
     <div className="space-y-8">
       <AdminHeader
@@ -86,7 +90,7 @@ export function DesafioClient() {
 
       {platform === 'adult' ? (
         <Card className="border-dashed p-4 text-muted-foreground text-sm">
-          O Desafio do mês é da plataforma Kids — este conteúdo não muda no modo Adultos.
+          Você está configurando o desafio adulto. Os temas e meses Kids permanecem separados.
         </Card>
       ) : null}
 
@@ -183,9 +187,13 @@ export function DesafioClient() {
                             confirmText: t.archived ? 'Reativar' : 'Arquivar',
                             onConfirm: async () => {
                               try {
-                                await apiSend(`/api/members/challenge/themes/${t.id}`, 'PATCH', {
-                                  archived: !t.archived,
-                                })
+                                await apiSend(
+                                  `/api/members/challenge/themes/${t.id}?audience=${platform}`,
+                                  'PATCH',
+                                  {
+                                    archived: !t.archived,
+                                  },
+                                )
                                 toast.success(t.archived ? 'Tema reativado.' : 'Tema arquivado.')
                                 await reload()
                               } catch (err) {
@@ -211,6 +219,7 @@ export function DesafioClient() {
 
       {editingMonth && themes ? (
         <ChangeMonthDialog
+          platform={platform}
           month={editingMonth}
           themes={themes}
           onClose={() => setEditingMonth(null)}
@@ -223,6 +232,7 @@ export function DesafioClient() {
 
       {themeForm ? (
         <ThemeFormDialog
+          platform={platform}
           theme={themeForm === 'new' ? null : themeForm}
           onClose={() => setThemeForm(null)}
           onSaved={async () => {
@@ -273,11 +283,13 @@ function ThemeCard({
 
 /** Escolha do tema de UM mês: fixos + custom ativos, com aviso p/ o mês no ar. */
 function ChangeMonthDialog({
+  platform,
   month,
   themes,
   onClose,
   onSaved,
 }: {
+  platform: 'kids' | 'adult'
   month: ChallengeMonthAdminView
   themes: ChallengeThemesAdminView
   onClose: () => void
@@ -309,7 +321,11 @@ function ChangeMonthDialog({
       const body = choice.startsWith('builtin:')
         ? { builtinSlug: choice.slice(8) }
         : { customThemeId: choice.slice(7) }
-      await apiSend(`/api/members/challenge/months/${month.month}`, 'PUT', body)
+      await apiSend(
+        `/api/members/challenge/months/${month.month}?audience=${platform}`,
+        'PUT',
+        body,
+      )
       toast.success(`Tema de ${monthLabelPt(month.month)} definido.`)
       await onSaved()
     } catch (err) {
@@ -386,10 +402,12 @@ function ChangeMonthDialog({
 
 /** Criar/editar tema custom (emoji, título e descrição — o que o card kids mostra). */
 function ThemeFormDialog({
+  platform,
   theme,
   onClose,
   onSaved,
 }: {
+  platform: 'kids' | 'adult'
   theme: ChallengeThemeAdminView | null
   onClose: () => void
   onSaved: () => Promise<void>
@@ -412,10 +430,14 @@ function ThemeFormDialog({
     }
     try {
       if (theme) {
-        await apiSend(`/api/members/challenge/themes/${theme.id}`, 'PATCH', body)
+        await apiSend(
+          `/api/members/challenge/themes/${theme.id}?audience=${platform}`,
+          'PATCH',
+          body,
+        )
         toast.success('Tema atualizado.')
       } else {
-        await apiSend('/api/members/challenge/themes', 'POST', body)
+        await apiSend(`/api/members/challenge/themes?audience=${platform}`, 'POST', body)
         toast.success('Tema criado. Defina um mês com ele quando quiser.')
       }
       await onSaved()

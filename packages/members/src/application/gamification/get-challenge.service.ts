@@ -8,6 +8,7 @@ import type { ChallengeConfigRepository } from '../../domain/ports/challenge-con
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 
 export interface ChallengeMeView {
+  audience?: 'adult'
   challenge: {
     /** `m:YYYY-MM` (mês civil de SP) — a MESMA chave que o hub valida no publish. */
     key: string
@@ -36,7 +37,7 @@ export class GetChallengeService {
 
   async execute(userId: string, audience: CourseAudience): Promise<ChallengeMeView> {
     const key = currentChallengeKey(this.clock())
-    const override = await this.challengeConfig.findOverrideWithTheme(key)
+    const override = await this.challengeConfig.findOverrideWithTheme(key, audience)
     const { theme } = resolveChallengeTheme(key, override)
     const entered = await this.repo.hasXpEvent(
       userId,
@@ -44,6 +45,10 @@ export class GetChallengeService {
       'challenge_entry',
       challengeSourceId(key),
     )
-    return { challenge: { key, ...theme }, entered }
+    return {
+      ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
+      challenge: { key, ...theme },
+      entered,
+    }
   }
 }

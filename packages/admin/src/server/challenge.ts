@@ -13,43 +13,68 @@ const enc = encodeURIComponent
 // mês e biblioteca de temas custom. Rotas `/members/admin/challenge/*`.
 
 /** Janela do painel: `GET /members/admin/challenge/months` (corrente + 11). */
-export function listChallengeMonths(): Promise<
-  GatewayResponse<{ months: ChallengeMonthAdminView[] }>
-> {
-  return gatewayFetch('/members/admin/challenge/months')
+export function listChallengeMonths(
+  audience = 'kids',
+): Promise<GatewayResponse<{ months: ChallengeMonthAdminView[] }>> {
+  return gatewayFetch('/members/admin/challenge/months', { query: { audience } })
 }
 
 /** Define o tema de um mês: `PUT /members/admin/challenge/months/:month`. */
 export function setChallengeMonth(
   month: string,
   body: unknown,
+  audience = 'kids',
 ): Promise<GatewayResponse<ChallengeMonthAdminView>> {
-  return gatewayFetch(`/members/admin/challenge/months/${enc(month)}`, { method: 'PUT', body })
+  return gatewayFetch(`/members/admin/challenge/months/${enc(month)}`, {
+    method: 'PUT',
+    body,
+    query: { audience },
+  })
 }
 
 /** Volta o mês ao sorteio: `DELETE /members/admin/challenge/months/:month`. */
 export function clearChallengeMonth(
   month: string,
+  audience = 'kids',
 ): Promise<GatewayResponse<ChallengeMonthAdminView>> {
-  return gatewayFetch(`/members/admin/challenge/months/${enc(month)}`, { method: 'DELETE' })
+  return gatewayFetch(`/members/admin/challenge/months/${enc(month)}`, {
+    method: 'DELETE',
+    query: { audience },
+  })
 }
 
 /** Biblioteca: `GET /members/admin/challenge/themes` (fixos + custom). */
-export function listChallengeThemes(): Promise<GatewayResponse<ChallengeThemesAdminView>> {
-  return gatewayFetch('/members/admin/challenge/themes')
+export function listChallengeThemes(
+  audience = 'kids',
+): Promise<GatewayResponse<ChallengeThemesAdminView>> {
+  return gatewayFetch('/members/admin/challenge/themes', { query: { audience } })
 }
 
 /** Cria tema custom: `POST /members/admin/challenge/themes`. */
 export function createChallengeTheme(
   body: unknown,
+  audience = 'kids',
 ): Promise<GatewayResponse<ChallengeThemeAdminView>> {
-  return gatewayFetch('/members/admin/challenge/themes', { method: 'POST', body })
+  return gatewayFetch('/members/admin/challenge/themes', {
+    method: 'POST',
+    body,
+    query: { audience },
+  })
 }
 
 /** Edita/arquiva tema custom: `PATCH /members/admin/challenge/themes/:id`. */
 export function updateChallengeTheme(
   id: string,
   body: unknown,
+  audience = 'kids',
 ): Promise<GatewayResponse<ChallengeThemeAdminView>> {
-  return gatewayFetch(`/members/admin/challenge/themes/${enc(id)}`, { method: 'PATCH', body })
+  return gatewayFetch(`/members/admin/challenge/themes/${enc(id)}`, {
+    method: 'PATCH',
+    body,
+    query: { audience },
+  })
+}
+
+export function challengeAudience(request: Request) {
+  return new URL(request.url).searchParams.get('audience') ?? 'kids'
 }

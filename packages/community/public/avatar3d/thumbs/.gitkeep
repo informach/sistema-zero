@@ -1,0 +1,2 @@
+# Miniaturas (PNG) pré-geradas das peças do avatar — `bun run gen:avatar-thumbs`.
+# Os <id>.png ficam aqui e são commitados; o configurador mostra `<img>` (zero WebGL).

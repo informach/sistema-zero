@@ -16,7 +16,7 @@ import type {
   HelpTutorialStatusChange,
 } from '../../../domain/ports/help-repository.port'
 import type { Database } from './db'
-import { helpCollections, helpTutorials } from './schema'
+import { adultHelpCollections, adultHelpTutorials, helpCollections, helpTutorials } from './schema'
 
 type CollectionRow = typeof helpCollections.$inferSelect
 type TutorialRow = typeof helpTutorials.$inferSelect
@@ -70,21 +70,29 @@ function toTutorial(row: TutorialRow): HelpTutorialRecord {
 }
 
 export class DrizzleHelpCollectionRepository implements HelpCollectionRepository {
-  constructor(private readonly db: Database) {}
+  private readonly collectionsTable
+  private readonly tutorialsTable
+  constructor(
+    private readonly db: Database,
+    audience: 'kids' | 'adult' = 'kids',
+  ) {
+    this.collectionsTable = audience === 'adult' ? adultHelpCollections : helpCollections
+    this.tutorialsTable = audience === 'adult' ? adultHelpTutorials : helpTutorials
+  }
 
   async list(): Promise<HelpCollectionRecord[]> {
     const rows = await this.db
       .select()
-      .from(helpCollections)
-      .orderBy(asc(helpCollections.position), asc(helpCollections.slug))
+      .from(this.collectionsTable)
+      .orderBy(asc(this.collectionsTable.position), asc(this.collectionsTable.slug))
     return rows.map(toCollection)
   }
 
   async findById(id: string): Promise<HelpCollectionRecord | null> {
     const rows = await this.db
       .select()
-      .from(helpCollections)
-      .where(eq(helpCollections.id, id))
+      .from(this.collectionsTable)
+      .where(eq(this.collectionsTable.id, id))
       .limit(1)
     return rows[0] ? toCollection(rows[0]) : null
   }
@@ -92,8 +100,8 @@ export class DrizzleHelpCollectionRepository implements HelpCollectionRepository
   async findBySlug(slug: string): Promise<HelpCollectionRecord | null> {
     const rows = await this.db
       .select()
-      .from(helpCollections)
-      .where(eq(helpCollections.slug, slug))
+      .from(this.collectionsTable)
+      .where(eq(this.collectionsTable.slug, slug))
       .limit(1)
     return rows[0] ? toCollection(rows[0]) : null
   }
@@ -101,7 +109,7 @@ export class DrizzleHelpCollectionRepository implements HelpCollectionRepository
   async create(input: CreateHelpCollectionInput): Promise<HelpCollectionRecord> {
     try {
       const rows = await this.db
-        .insert(helpCollections)
+        .insert(this.collectionsTable)
         .values({
           id: input.id,
           slug: input.slug,
@@ -129,9 +137,9 @@ export class DrizzleHelpCollectionRepository implements HelpCollectionRepository
   ): Promise<HelpCollectionRecord | null> {
     try {
       const rows = await this.db
-        .update(helpCollections)
+        .update(this.collectionsTable)
         .set({ ...patch, updatedAt: now })
-        .where(eq(helpCollections.id, id))
+        .where(eq(this.collectionsTable.id, id))
         .returning()
       return rows[0] ? toCollection(rows[0]) : null
     } catch (error) {
@@ -146,9 +154,9 @@ export class DrizzleHelpCollectionRepository implements HelpCollectionRepository
     now: Date,
   ): Promise<HelpCollectionRecord | null> {
     const rows = await this.db
-      .update(helpCollections)
+      .update(this.collectionsTable)
       .set({ status, updatedAt: now })
-      .where(eq(helpCollections.id, id))
+      .where(eq(this.collectionsTable.id, id))
       .returning()
     return rows[0] ? toCollection(rows[0]) : null
   }
@@ -156,9 +164,9 @@ export class DrizzleHelpCollectionRepository implements HelpCollectionRepository
   async reorder(ids: string[], now: Date): Promise<void> {
     await this.db.transaction(async (tx) => {
       const all = await tx
-        .select({ id: helpCollections.id })
-        .from(helpCollections)
-        .orderBy(asc(helpCollections.position), asc(helpCollections.slug))
+        .select({ id: this.collectionsTable.id })
+        .from(this.collectionsTable)
+        .orderBy(asc(this.collectionsTable.position), asc(this.collectionsTable.slug))
       const known = new Set(all.map((row) => row.id))
       const ordered = [
         ...ids.filter((id) => known.has(id)),
@@ -166,41 +174,56 @@ export class DrizzleHelpCollectionRepository implements HelpCollectionRepository
       ]
       for (const [position, id] of ordered.entries()) {
         await tx
-          .update(helpCollections)
+          .update(this.collectionsTable)
           .set({ position, updatedAt: now })
-          .where(eq(helpCollections.id, id))
+          .where(eq(this.collectionsTable.id, id))
       }
     })
   }
 
   async publishedCounts(): Promise<Map<string, number>> {
     const rows = await this.db
-      .select({ collectionId: helpTutorials.collectionId, count: sql<number>`count(*)::int` })
-      .from(helpTutorials)
-      .where(eq(helpTutorials.status, 'published'))
-      .groupBy(helpTutorials.collectionId)
+      .select({ collectionId: this.tutorialsTable.collectionId, count: sql<number>`count(*)::int` })
+      .from(this.tutorialsTable)
+      .where(eq(this.tutorialsTable.status, 'published'))
+      .groupBy(this.tutorialsTable.collectionId)
     return new Map(rows.map((row) => [row.collectionId, Number(row.count)]))
   }
 }
 
 export class DrizzleHelpTutorialRepository implements HelpTutorialRepository {
-  constructor(private readonly db: Database) {}
+  private readonly collectionsTable
+  private readonly tutorialsTable
+  constructor(
+    private readonly db: Database,
+    audience: 'kids' | 'adult' = 'kids',
+  ) {
+    this.collectionsTable = audience === 'adult' ? adultHelpCollections : helpCollections
+    this.tutorialsTable = audience === 'adult' ? adultHelpTutorials : helpTutorials
+  }
 
   async listPublished(): Promise<HelpTutorialRecord[]> {
     const rows = await this.db
-      .select({ tutorial: helpTutorials })
-      .from(helpTutorials)
-      .innerJoin(helpCollections, eq(helpCollections.id, helpTutorials.collectionId))
-      .where(eq(helpTutorials.status, 'published'))
-      .orderBy(asc(helpCollections.position), asc(helpTutorials.position), asc(helpTutorials.slug))
+      .select({ tutorial: this.tutorialsTable })
+      .from(this.tutorialsTable)
+      .innerJoin(
+        this.collectionsTable,
+        eq(this.collectionsTable.id, this.tutorialsTable.collectionId),
+      )
+      .where(eq(this.tutorialsTable.status, 'published'))
+      .orderBy(
+        asc(this.collectionsTable.position),
+        asc(this.tutorialsTable.position),
+        asc(this.tutorialsTable.slug),
+      )
     return rows.map((row) => toTutorial(row.tutorial))
   }
 
   async findPublishedBySlug(slug: string): Promise<HelpTutorialRecord | null> {
     const rows = await this.db
       .select()
-      .from(helpTutorials)
-      .where(and(eq(helpTutorials.slug, slug), eq(helpTutorials.status, 'published')))
+      .from(this.tutorialsTable)
+      .where(and(eq(this.tutorialsTable.slug, slug), eq(this.tutorialsTable.status, 'published')))
       .limit(1)
     return rows[0] ? toTutorial(rows[0]) : null
   }
@@ -211,27 +234,27 @@ export class DrizzleHelpTutorialRepository implements HelpTutorialRepository {
     // OR entre os termos, como a base do Zappy: o `ts_rank` premia quem casa mais termos.
     const orQuery = normalized.split(/\s+/).filter(Boolean).join(' or ')
     const tsQuery = sql`websearch_to_tsquery('portuguese', ${orQuery})`
-    const vector = sql`to_tsvector('portuguese', coalesce(${helpTutorials.publishedSearchText}, ''))`
+    const vector = sql`to_tsvector('portuguese', coalesce(${this.tutorialsTable.publishedSearchText}, ''))`
     const rank = sql<number>`ts_rank(${vector}, ${tsQuery})`
     const rows = await this.db
       .select({
-        id: helpTutorials.id,
-        slug: helpTutorials.slug,
-        collectionId: helpTutorials.collectionId,
-        published: helpTutorials.published,
+        id: this.tutorialsTable.id,
+        slug: this.tutorialsTable.slug,
+        collectionId: this.tutorialsTable.collectionId,
+        published: this.tutorialsTable.published,
         rank,
       })
-      .from(helpTutorials)
+      .from(this.tutorialsTable)
       .where(
         and(
-          eq(helpTutorials.status, 'published'),
+          eq(this.tutorialsTable.status, 'published'),
           // Só o tsquery: um OR com ILIKE obrigava seq scan (o GIN da 0097 nunca entrava) e a
           // pergunta inteira em `%...%` quase nunca casava. O `websearch_to_tsquery` com "or"
           // já cobre radical e acento (o texto é normalizado dos dois lados).
           sql`${vector} @@ ${tsQuery}`,
         ),
       )
-      .orderBy(desc(rank), asc(helpTutorials.position))
+      .orderBy(desc(rank), asc(this.tutorialsTable.position))
       .limit(Math.max(1, Math.min(10, limit)))
     return rows.flatMap((row) =>
       row.published
@@ -251,34 +274,46 @@ export class DrizzleHelpTutorialRepository implements HelpTutorialRepository {
 
   async listAll(filter: HelpTutorialListFilter = {}): Promise<HelpTutorialRecord[]> {
     const conditions = []
-    if (filter.status) conditions.push(eq(helpTutorials.status, filter.status))
-    if (filter.collectionId) conditions.push(eq(helpTutorials.collectionId, filter.collectionId))
+    if (filter.status) conditions.push(eq(this.tutorialsTable.status, filter.status))
+    if (filter.collectionId)
+      conditions.push(eq(this.tutorialsTable.collectionId, filter.collectionId))
     if (filter.q?.trim()) {
       // `%` e `_` são curingas do ILIKE: sem escapar, `q=%` listava tudo.
       const like = `%${filter.q.trim().replace(/[\\%_]/g, (c) => `\\${c}`)}%`
       conditions.push(
-        sql`(${helpTutorials.slug} ilike ${like} or ${helpTutorials.draft}->>'title' ilike ${like})`,
+        sql`(${this.tutorialsTable.slug} ilike ${like} or ${this.tutorialsTable.draft}->>'title' ilike ${like})`,
       )
     }
     const rows = await this.db
-      .select({ tutorial: helpTutorials })
-      .from(helpTutorials)
-      .innerJoin(helpCollections, eq(helpCollections.id, helpTutorials.collectionId))
+      .select({ tutorial: this.tutorialsTable })
+      .from(this.tutorialsTable)
+      .innerJoin(
+        this.collectionsTable,
+        eq(this.collectionsTable.id, this.tutorialsTable.collectionId),
+      )
       .where(conditions.length ? and(...conditions) : undefined)
-      .orderBy(asc(helpCollections.position), asc(helpTutorials.position), asc(helpTutorials.slug))
+      .orderBy(
+        asc(this.collectionsTable.position),
+        asc(this.tutorialsTable.position),
+        asc(this.tutorialsTable.slug),
+      )
     return rows.map((row) => toTutorial(row.tutorial))
   }
 
   async findById(id: string): Promise<HelpTutorialRecord | null> {
-    const rows = await this.db.select().from(helpTutorials).where(eq(helpTutorials.id, id)).limit(1)
+    const rows = await this.db
+      .select()
+      .from(this.tutorialsTable)
+      .where(eq(this.tutorialsTable.id, id))
+      .limit(1)
     return rows[0] ? toTutorial(rows[0]) : null
   }
 
   async findBySlug(slug: string): Promise<HelpTutorialRecord | null> {
     const rows = await this.db
       .select()
-      .from(helpTutorials)
-      .where(eq(helpTutorials.slug, slug))
+      .from(this.tutorialsTable)
+      .where(eq(this.tutorialsTable.slug, slug))
       .limit(1)
     return rows[0] ? toTutorial(rows[0]) : null
   }
@@ -286,7 +321,7 @@ export class DrizzleHelpTutorialRepository implements HelpTutorialRepository {
   async create(input: CreateHelpTutorialInput): Promise<HelpTutorialRecord> {
     try {
       const rows = await this.db
-        .insert(helpTutorials)
+        .insert(this.tutorialsTable)
         .values({
           id: input.id,
           slug: input.slug,
@@ -320,14 +355,16 @@ export class DrizzleHelpTutorialRepository implements HelpTutorialRepository {
   ): Promise<HelpTutorialRecord | 'conflict' | null> {
     try {
       const rows = await this.db
-        .update(helpTutorials)
+        .update(this.tutorialsTable)
         .set({
           ...patch,
-          revision: sql`${helpTutorials.revision} + 1`,
+          revision: sql`${this.tutorialsTable.revision} + 1`,
           updatedBy: actorId,
           updatedAt: now,
         })
-        .where(and(eq(helpTutorials.id, id), eq(helpTutorials.revision, expectedRevision)))
+        .where(
+          and(eq(this.tutorialsTable.id, id), eq(this.tutorialsTable.revision, expectedRevision)),
+        )
         .returning()
       if (rows[0]) return toTutorial(rows[0])
       const exists = await this.findById(id)
@@ -346,17 +383,19 @@ export class DrizzleHelpTutorialRepository implements HelpTutorialRepository {
     now: Date,
   ): Promise<HelpTutorialRecord | 'conflict' | null> {
     const rows = await this.db
-      .update(helpTutorials)
+      .update(this.tutorialsTable)
       .set({
         status: change.status,
         published: change.published,
         publishedSearchText: change.publishedSearchText,
         ...(change.publishedAt !== undefined ? { publishedAt: change.publishedAt } : {}),
-        revision: sql`${helpTutorials.revision} + 1`,
+        revision: sql`${this.tutorialsTable.revision} + 1`,
         updatedBy: actorId,
         updatedAt: now,
       })
-      .where(and(eq(helpTutorials.id, id), eq(helpTutorials.revision, expectedRevision)))
+      .where(
+        and(eq(this.tutorialsTable.id, id), eq(this.tutorialsTable.revision, expectedRevision)),
+      )
       .returning()
     if (rows[0]) return toTutorial(rows[0])
     const exists = await this.findById(id)
@@ -384,11 +423,11 @@ export class DrizzleHelpTutorialRepository implements HelpTutorialRepository {
   ): Promise<{ created: number; updated: number }> {
     return this.db.transaction(async (tx) => {
       const existing = await tx
-        .select({ id: helpTutorials.id, slug: helpTutorials.slug })
-        .from(helpTutorials)
+        .select({ id: this.tutorialsTable.id, slug: this.tutorialsTable.slug })
+        .from(this.tutorialsTable)
         .where(
           inArray(
-            helpTutorials.slug,
+            this.tutorialsTable.slug,
             items.map((item) => item.slug),
           ),
         )
@@ -399,19 +438,19 @@ export class DrizzleHelpTutorialRepository implements HelpTutorialRepository {
         const id = bySlug.get(item.slug)
         if (id) {
           await tx
-            .update(helpTutorials)
+            .update(this.tutorialsTable)
             .set({
               collectionId: item.collectionId,
               draft: item.draft,
               position: item.position,
-              revision: sql`${helpTutorials.revision} + 1`,
+              revision: sql`${this.tutorialsTable.revision} + 1`,
               updatedBy: actorId,
               updatedAt: now,
             })
-            .where(eq(helpTutorials.id, id))
+            .where(eq(this.tutorialsTable.id, id))
           updated += 1
         } else {
-          await tx.insert(helpTutorials).values({
+          await tx.insert(this.tutorialsTable).values({
             id: randomUUID(),
             slug: item.slug,
             collectionId: item.collectionId,
@@ -437,9 +476,12 @@ export class DrizzleHelpTutorialRepository implements HelpTutorialRepository {
   async countPublishedInCollection(collectionId: string): Promise<number> {
     const rows = await this.db
       .select({ count: sql<number>`count(*)::int` })
-      .from(helpTutorials)
+      .from(this.tutorialsTable)
       .where(
-        and(eq(helpTutorials.collectionId, collectionId), eq(helpTutorials.status, 'published')),
+        and(
+          eq(this.tutorialsTable.collectionId, collectionId),
+          eq(this.tutorialsTable.status, 'published'),
+        ),
       )
     return Number(rows[0]?.count ?? 0)
   }

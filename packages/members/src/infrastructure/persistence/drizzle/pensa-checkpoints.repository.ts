@@ -196,6 +196,7 @@ export class DrizzlePensaCheckpointsRepository {
         .where(
           and(
             eq(creations.userId, actor.profileId),
+            eq(creations.audience, actor.audience ?? 'kids'),
             eq(creations.accountId, actor.accountId),
             eq(creations.tool, 'studio'),
             eq(creations.itemId, pensaGameId(projectId)),
@@ -537,7 +538,13 @@ export class DrizzlePensaCheckpointsRepository {
       const [usage] = await tx
         .select({ bytes: sql<number>`coalesce(sum(${creations.bytes}),0)` })
         .from(creations)
-        .where(and(eq(creations.userId, actor.profileId), isNull(creations.deletedAt)))
+        .where(
+          and(
+            eq(creations.userId, actor.profileId),
+            eq(creations.audience, actor.audience ?? 'kids'),
+            isNull(creations.deletedAt),
+          ),
+        )
       if (
         Number(usage?.bytes ?? 0) - creation.bytes + snapshot.creation.bytes >
         CREATION_LIMITS.maxTotalBytes

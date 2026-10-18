@@ -6,16 +6,18 @@ import { studioTutorContextHint } from '@sistemazero/studio/tutor-mode'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
+import { learnerIdentity } from '../lib/learner-identity'
 import { RequestBodyTooLargeError, readBoundedJson } from '../lib/read-bounded-json'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { AiCreditsView } from '../lib/types'
+import { hasAdultCapability } from '../server/adult-capabilities'
 import type { MembersClient } from '../server/clients'
 import { loadPensaContext } from '../server/pensa/context'
 import { pensaStudioTutorMission } from '../server/pensa/missions'
 import { redactPensaText } from '../server/pensa/privacy'
 import type { SessionModule } from '../server/session'
 import { createStudioAiTransport } from '../server/studio-ai-transport'
-import { earnedStudioTier } from '../server/studio-unlocks'
+import { adultStudioTier, earnedStudioTier } from '../server/studio-unlocks'
 import { isStudioZappyAllowed, isStudioZappyAllowedForRequest } from '../server/zappy-access'
 import {
   answerPreparedStudioZappy,
@@ -214,16 +216,23 @@ function signedActor(user: Awaited<ReturnType<SessionModule['getSession']>>) {
 
 type ZappyOutcome = 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error' | 'rejected'
 
-export function createStudioZappyRoutes(deps: { members: MembersClient; session: SessionModule }) {
-  const { members, session: sessions } = deps
+export function createStudioZappyRoutes(deps: {
+  members: MembersClient
+  session: SessionModule
+  audience?: 'kids' | 'adult'
+}) {
+  const { members, session: sessions, audience = 'kids' } = deps
+  const allowed = (user: NonNullable<Awaited<ReturnType<SessionModule['getSession']>>>) =>
+    audience === 'adult'
+      ? hasAdultCapability(members, user, 'ai')
+      : isStudioZappyAllowedForRequest(members, user)
 
   const studioZappyHistory = {
     GET: async (req: Request) => {
       const user = await sessions.getSession()
       const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
-      if (!(await isStudioZappyAllowedForRequest(members, user)))
-        return error('ZAPPY_NOT_ENABLED', 403)
+      if (!(await allowed(user))) return error('ZAPPY_NOT_ENABLED', 403)
       if (!query) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
 
@@ -237,8 +246,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
       if (isReadonlyImpersonation(user)) return error('IMPERSONATION_READONLY', 403)
-      if (!(await isStudioZappyAllowedForRequest(members, user)))
-        return error('ZAPPY_NOT_ENABLED', 403)
+      if (!(await allowed(user))) return error('ZAPPY_NOT_ENABLED', 403)
       if (!query) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
       const result = await members.zappyDeleteHistory(query.projectId)
@@ -280,7 +288,13 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       if (gamification.status !== 200) return error('ZAPPY_UNAVAILABLE', 503)
       const levelSlug = gamification.body?.level?.slug
       // Reusa o rank desta rota para não consultar o members duas vezes.
-      if (!isStudioZappyAllowed(user, levelSlug)) return error('ZAPPY_NOT_ENABLED', 403)
+      if (
+        audience === 'adult'
+          ? !learnerIdentity(user, 'adult') ||
+            !gamification.body?.journey?.capabilities.includes('ai')
+          : !isStudioZappyAllowed(user, levelSlug)
+      )
+        return error('ZAPPY_NOT_ENABLED', 403)
       // O tutor oferece os MESMOS blocos que a paleta: os conquistados nos cursos (a equipe
       // tem o passe livre e não precisa deles). Falhou: indisponível, nunca "sem blocos".
       let unlockedBlocks: readonly string[] = []
@@ -288,7 +302,12 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
         if (unlocks?.status !== 200 || !unlocks.body) return error('ZAPPY_UNAVAILABLE', 503)
         unlockedBlocks = unlocks.body.blocks
       }
-      const tier = earnedStudioTier(levelSlug ?? 'noob', user.role, unlockedBlocks)
+      if (audience === 'adult' && !gamification.body?.journey)
+        return error('ZAPPY_UNAVAILABLE', 503)
+      const tier =
+        audience === 'adult' && gamification.body?.journey
+          ? adultStudioTier(gamification.body.journey, user.role, unlockedBlocks)
+          : earnedStudioTier(levelSlug ?? 'noob', user.role, unlockedBlocks)
       if (context.kind === 'pro' && context.mode !== 'code') return error('INVALID_INPUT', 400)
       if (context.kind !== 'pro' && !tier.hasPalette) return error('ZAPPY_NOT_ENABLED', 403)
       // allowedModes descreve as visualizações CLÁSSICAS. Pro tem capacidade própria.
@@ -400,6 +419,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
               members,
               user,
               {
+                ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
                 profileId: user.id,
                 accountId: user.activeProfile?.accountId ?? user.id,
                 privileged: isPrivilegedRole(user.role),
@@ -424,6 +444,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
             console.info('[pensa] contexto de missão indisponível no tutor')
           }
         prepared = prepareStudioZappyAnswer({
+          audience,
           question: safeQuestion.text,
           context: {
             ...context,
@@ -435,7 +456,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
               : null,
           },
           tier,
-          profileName: safeProfileName(user.activeProfile?.name),
+          profileName: audience === 'adult' ? 'Criador' : safeProfileName(user.activeProfile?.name),
           knowledge: knowledge.hits,
           // Memória: últimos turnos da conversa vêm na reserva (members antigo
           // sem o campo → sem memória, degrada sem quebrar).
@@ -555,8 +576,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
       if (isReadonlyImpersonation(user)) return error('IMPERSONATION_READONLY', 403)
-      if (!(await isStudioZappyAllowedForRequest(members, user)))
-        return error('ZAPPY_NOT_ENABLED', 403)
+      if (!(await allowed(user))) return error('ZAPPY_NOT_ENABLED', 403)
       let raw: unknown
       try {
         raw = await readBoundedJson(req, FEEDBACK_BODY_MAX_BYTES)

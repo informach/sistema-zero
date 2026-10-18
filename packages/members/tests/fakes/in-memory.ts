@@ -2796,7 +2796,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       )
         continue
       const bonusKids = audience === 'kids' && course.careerSlot === null
-      if (!bonusKids && !showcased.has(ce.sourceId)) continue
+      if (audience === 'kids' && !bonusKids && !showcased.has(ce.sourceId)) continue
       const raw = (course.metadata as Record<string, unknown> | null | undefined)
         ?.studioUnlockBlocks
       if (!Array.isArray(raw)) continue
@@ -2833,12 +2833,12 @@ export class InMemoryGamificationRepository implements GamificationRepository {
               : undefined
           if (!course) return []
           const bonusKids = audience === 'kids' && course.careerSlot === null
-          if (!bonusKids && !showcase) return []
+          if (audience === 'kids' && !bonusKids && !showcase) return []
           return [
             {
               courseId: completed.sourceId,
               completedAt: completed.createdAt,
-              showcasedAt: bonusKids ? null : (showcase?.createdAt ?? null),
+              showcasedAt: audience === 'adult' || bonusKids ? null : (showcase?.createdAt ?? null),
               courseUpdatedAt: course?.updatedAt ?? null,
             },
           ]

@@ -29,7 +29,10 @@ export class PurgeUserDataService {
       accountId: userId,
       cleanup: {
         id: this.newId(),
-        prefixes: userIds.map((ownerId) => `creations/${ownerId}/`),
+        prefixes: userIds.flatMap((ownerId) => [
+          `creations/${ownerId}/`,
+          `creations/adult/${ownerId}/`,
+        ]),
         // O JWT de acesso vale 15 min por padrão. Mais 5 min absorvem skew,
         // operações iniciadas antes da cerca e URLs PUT ainda em voo.
         notBefore: new Date(createdAt.getTime() + 20 * 60_000),
