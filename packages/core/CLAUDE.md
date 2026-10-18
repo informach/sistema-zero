@@ -31,7 +31,8 @@ ocupante da posição. Pro depende de Estúdio, sem dependência técnica da Pon
 `KidsJourneyCourseFact.graduationOnly` deriva de `course.level === 'lenda'`: formatura não é
 requisito para chegar ao topo, mas mantém o acesso legado por matrícula sem gate novo. Um curso
 normal fora da escada também pode ter `tier: null`, portanto não inferir formatura desse campo.
-Teste focado: `tests/kids-journey-policy.test.ts` e `tests/kids-journey-parity.test.ts`, junto de
+Teste focado: `tests/kids-journey-policy.test.ts`, `tests/kids-journey-parity.test.ts` e
+`tests/kids-journey-pause.test.ts`, junto de
 `journey.test.ts`/`journey-state.test.ts`. Baseline/SQL/consumidores e atualização da base ao
 checkpoint conciliado ainda são necessários antes de integrar/ativar.
 

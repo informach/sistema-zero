@@ -70,7 +70,7 @@ describe('Kids default preserves the legacy journey', () => {
         'molda-intermediate',
         'molda-professional',
       ],
-    ]
+    ] as const
     boundaries.forEach((count, index) => {
       const view = projectKidsJourney(kidsJourneyInput({ milestones: kidsMilestones(count) }))
       expect(view.earned.level).toBe(CREATOR_JOURNEY_LEVELS[index]!.slug)

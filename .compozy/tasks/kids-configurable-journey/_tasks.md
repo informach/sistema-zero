@@ -53,11 +53,11 @@ T1 foi iniciado antecipadamente por instrução explícita do root em 18/10/2026
 - [x] Implementar análise de ciclos jornada/base/reward e capacidade por ordem cumulativa; incompletude legada é warning distinto de novo ciclo inválido.
 - [x] Rodar em `packages/core`: `bun test tests/kids-journey-policy.test.ts tests/kids-journey-parity.test.ts tests/journey.test.ts tests/journey-state.test.ts`.
 
-Verificação: 44 testes, 0 falhas, 2.641 asserções; Biome focado limpo. TSC não executado por restrição explícita de recursos; atualizar base e verificar tipos antes de integrar. Fixture adicional: `packages/core/tests/fixtures/kids-journey.ts`. O contrato puro também expõe `kidsJourneySteps`, schemas/tipos, helpers de requisito/base e `resolveKidsJourneyCourseLock`; nenhum chamador produtivo foi migrado.
+Primeira verificação (`286614934`): 44 testes, 0 falhas, 2.641 asserções; Biome focado limpo; TSC ainda não estava autorizado naquela janela. Após correções de revisão, a validação final tem **50 pass, 0 fail, 2.716 asserções**, matriz em 344 ms e **TSC completo core EXIT0** (Node 24.22.0/TS 5.9.3). Atualizar base e revalidar diferenças antes de integrar. Fixture adicional: `packages/core/tests/fixtures/kids-journey.ts`. O contrato puro também expõe `kidsJourneySteps`, schemas/tipos, helpers de requisito/base e `resolveKidsJourneyCourseLock`; nenhum chamador produtivo foi migrado.
 
 - [x] Corrigir pausa na revisão: reter política ativa em `paused.policy`, manter gates/base e interromper todos os ganhos, com regressões em `packages/core/tests/kids-journey-pause.test.ts`.
 - [x] Preservar `graduationOnly` no fato de curso e distinguir formatura de curso normal fora da escada em readiness; acesso legado continua sem gate novo.
-- [ ] Repetir matriz completa na janela liberada pelo root e concluir revisão final antes de encerrar T1. Rodada focada pause/policy atual: 21 pass, 0 fail, 120 asserções.
+- [x] Repetir matriz completa na janela liberada pelo root, executar TSC core e concluir revisão final do recorte puro. Sem tarefas T2 iniciadas.
 
 **Aceite:** default e locks legados equivalentes nos casos de `_test-plan.md`; requisito vazio custom não sobe; pause não libera; prova de ordem sem união de marcos de cursos distintos.
 

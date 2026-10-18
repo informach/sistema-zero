@@ -1,8 +1,18 @@
 # Plano de testes — Jornada Kids configurável
 
-Status: T1 puro implementado antecipadamente por instrução do root; demais cenários planejados. Nenhum teste SQL/browser foi executado. Executar checks amplos em janela coordenada para não competir com a validação Python no PC de 16 GB.
+Status: T1 puro implementado antecipadamente por instrução do root e verificado com matriz completa focada + TSC core em janela autorizada; demais cenários planejados. Nenhum teste SQL/browser foi executado. Executar checks amplos em janela coordenada para não competir com a validação Python no PC de 16 GB.
 
-## Evidência do T1 — 18/10/2026
+## Validação final T1 — janela autorizada após SQL principal
+
+Fonte: `67edc1589` mais anotação literal `as const` da fixture de capacidades em `kids-journey-parity.test.ts`. A primeira execução de TSC identificou somente essa inferência `string[]`; a correção preserva literais, sem alterar comportamento.
+
+1. `bun test tests/kids-journey-policy.test.ts tests/kids-journey-parity.test.ts tests/kids-journey-pause.test.ts tests/journey.test.ts tests/journey-state.test.ts` em `packages/core`: **50 pass, 0 fail, 2.716 asserções, EXIT0, 344 ms**.
+2. Node **24.22.0** executando TypeScript **5.9.3** `tsc --noEmit --pretty false`, mesmo diretório: **EXIT0**, aproximadamente **3,8 s**, sem diagnósticos. Executável Node da cache do checkout Python foi somente lido/executado; compilador das dependências já existentes do principal; nenhum arquivo desses checkouts foi alterado.
+3. Biome focado e `git diff --cached --check`: limpos. Não houve build/browser/SQL/Docker/suíte global.
+
+T1 puro concluído no recorte revisado. Atualização ao checkpoint publicado e provas de baseline/consumidores continuam obrigatórias para T2+/integração.
+
+## Histórico da primeira rodada T1 — 18/10/2026
 
 Base `3d83a3f46` mais checkpoint documental `534fd038`; atualização ao checkpoint conciliado ainda obrigatória antes de integrar.
 
@@ -20,7 +30,7 @@ A primeira entrega (`286614934`) perdeu o critério de base custom ao representa
 - GREEN focado atual: `bun test tests/kids-journey-pause.test.ts tests/kids-journey-policy.test.ts` → **21 pass, 0 fail, 120 asserções**, aproximadamente 205 ms.
 - Revisão independente da pausa: policy/parity/pause → **25 pass, 0 fail, 2.591 asserções**, antes da adição dos dois casos de formatura.
 - Revisão independente de formatura: os dois casos novos → **2 pass, 0 fail, 4 asserções**; ajuste aprovado no recorte puro. O futuro adaptador precisa derivar `graduationOnly` do nível real do curso.
-- A matriz inteira aguardará a janela liberada pelo root: uma execução concorrente à validação SQL/Biome atingiu o timeout de 5 s no teste agregado de locks. O timeout não foi ampliado. A branch legacy do resolver deixou de calcular projeção/readiness que não utilizava.
+- Uma execução concorrente à validação SQL/Biome atingiu o timeout de 5 s no teste agregado de locks. O timeout não foi ampliado. A branch legacy do resolver deixou de calcular projeção/readiness que não utilizava; na janela final sequencial a matriz completa passou em 344 ms.
 
 ## Provas de domínio e default
 
