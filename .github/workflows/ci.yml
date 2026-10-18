@@ -12,7 +12,7 @@ jobs:
       - name: Inspect statuses only
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          HELPDESK_SERVICE_ID: ${{ vars.HELPDESK_SERVICE_ID }}
-          HELPDESK_APP_SERVICE_ID: ${{ vars.HELPDESK_APP_SERVICE_ID }}
-          LIVE_RECORDER_SERVICE_ID: ${{ vars.LIVE_RECORDER_SERVICE_ID }}
+          HELPDESK_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_SERVICE_ID }}
+          HELPDESK_APP_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_APP_SERVICE_ID }}
+          LIVE_RECORDER_SERVICE_ID: ${{ vars.RAILWAY_LIVE_RECORDER_SERVICE_ID }}
         run: node scripts/ci/molda-all-staging-readonly.mjs
