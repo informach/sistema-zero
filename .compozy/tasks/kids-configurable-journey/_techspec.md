@@ -1,6 +1,6 @@
 # Techspec — política própria de Jornada Kids
 
-Status: proposta implementável para revisão, sem aprovação de implementação/ativação. A estratégia de baseline precisa das provas SQL de `_test-plan.md` antes de ser considerada correta.
+Status: desenho aprovado pelo agente principal; T1 puro autorizado antecipadamente e implementado isoladamente. T2+ e integração aguardam checkpoint. A estratégia de baseline precisa das provas SQL de `_test-plan.md` antes de ser considerada correta.
 
 ## Arquitetura e alternativas
 
@@ -133,6 +133,8 @@ validateKidsJourneyPolicy(input: unknown): KidsJourneyPolicyValidation
 analyzeKidsJourneyReadiness(input: KidsJourneyReadinessInput): KidsJourneyReadiness
 compareKidsJourney(input: KidsJourneyComparisonInput): KidsJourneyImpact
 ```
+
+T1 também implementa os schemas/tipos de rede, `kidsJourneySteps`, helpers de requisito/base e `resolveKidsJourneyCourseLock`. Este último exige catálogo conhecido (array, inclusive vazio); catálogo desconhecido não pode ser convertido no fail-open de base ausente. Os consumidores existentes continuam sem usar esses contratos até T4+.
 
 Tipos de entrada carregam política/versão, marcos, concessões e fatos mínimos de catálogo. Não recebem clients, banco ou callback de persistência. Schemas Zod estritos, UUIDs, listas sem repetição, limite de 200 requisitos por avanço, slots conforme `journeySlotsForTier`, capacidades enumeradas. Não introduzir Effect-TS: projeto usa TS/Zod/ports.
 

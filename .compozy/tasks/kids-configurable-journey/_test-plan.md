@@ -1,6 +1,16 @@
 # Plano de testes — Jornada Kids configurável
 
-Status: cenários planejados. Nenhum teste produtivo/SQL/browser foi executado nesta fase de documentação. Executar em janela coordenada para não competir com a validação Python no PC de 16 GB.
+Status: T1 puro implementado antecipadamente por instrução do root; demais cenários planejados. Nenhum teste SQL/browser foi executado. Executar checks amplos em janela coordenada para não competir com a validação Python no PC de 16 GB.
+
+## Evidência do T1 — 18/10/2026
+
+Base `3d83a3f46` mais checkpoint documental `534fd038`; atualização ao checkpoint conciliado ainda obrigatória antes de integrar.
+
+- `bun test tests/kids-journey-policy.test.ts tests/kids-journey-parity.test.ts tests/journey.test.ts tests/journey-state.test.ts` em `packages/core`: **44 pass, 0 fail, 2.641 asserções**, aproximadamente 1,7 s na última rodada.
+- Biome focado nos três módulos novos, barrel e três arquivos de testes/fixtures: **7 arquivos verificados, sem erros**.
+- Cobertura efetiva: fronteiras de posto, cada slot ausente, ordem inversa, capacidades atuais, 2.352 combinações de locks, snapshots sem catálogo, identidade de base substituída, complete/showcase, schema/limites estruturais, piso/grants, pausa, preview sem mutação, ciclo explícito/slot e indisponibilidade de vitrine implícita.
+- Dependências locais: junction ignorada `packages/core/node_modules` aponta ao mesmo diretório do checkout principal; sem instalação ou alteração das dependências compartilhadas.
+- TSC/build/DB/browser/Docker/suíte global **não executados**, conforme restrição do root. Testes do avaliador não provam baseline/CAS/SQL nem integração dos consumidores.
 
 ## Provas de domínio e default
 

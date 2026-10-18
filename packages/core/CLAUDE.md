@@ -16,6 +16,19 @@ Guia operacional deste package. Leia antes de editar.
 > palpite, pistas e pergunta final continuam anexados à experimentação. Menções a
 > demonstração ou pergunta curta nas notas históricas abaixo não descrevem mais o contrato.
 
+## Jornada Kids configurável — núcleo puro antecipado (18/10/2026)
+
+`journey/kids-policy.ts`, `kids-projection.ts` e `kids-validation.ts` definem a política Kids própria,
+schemas, avanço/capacidades permanentes, simulação sem escrita e prontidão. Nenhum consumidor foi
+migrado nesta fase. O default deriva dos 8 postos/49 slots atuais; Adult continua independente.
+Posto, ferramenta global, licença, paleta curricular e linguagem/runtime são conceitos separados.
+`resolveKidsJourneyCourseLock` exige catálogo conhecido: erro de carga não é base ausente.
+Requisitos de slot preservam o retrato do curso antigo; requisito por courseId não herda outro
+ocupante da posição. Pro depende de Estúdio, sem dependência técnica da Ponte.
+Teste focado: `tests/kids-journey-policy.test.ts` e `tests/kids-journey-parity.test.ts`, junto de
+`journey.test.ts`/`journey-state.test.ts`. Baseline/SQL/consumidores e atualização da base ao
+checkpoint conciliado ainda são necessários antes de integrar/ativar.
+
 ## Objetivos que RODAM o jogo (18/10/2026)
 
 `learning/project-execution.ts`: as regras `behavior`/`functionReturns`/`script`

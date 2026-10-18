@@ -1,8 +1,8 @@
 # Jornada Kids configurável
 
-Status: desenho para revisão; nenhuma alteração produtiva implementada.
+Status: desenho aprovado pelo agente principal; T1 puro antecipado por instrução explícita. Nenhum consumidor produtivo, serviço, tabela ou UI foi integrado.
 
-Base inspecionada: `origin/staging` em `3d83a3f468502c44a8800c6e72ec7544380ab0f4`, em 18/10/2026. Worktree: `C:/Users/tocha/projects/sistema-zero-journey`, branch `feat/kids-configurable-journey`. A implementação depende do checkpoint conciliado de Estúdio JavaScript/Python informado pelo agente principal. Não mesclar nem publicar esta branch por iniciativa própria.
+Base inspecionada: `origin/staging` em `3d83a3f468502c44a8800c6e72ec7544380ab0f4`, em 18/10/2026. Worktree: `C:/Users/tocha/projects/sistema-zero-journey`, branch `feat/kids-configurable-journey`. A integração e T2+ dependem do checkpoint conciliado de Estúdio JavaScript/Python informado pelo agente principal. T1 foi autorizado antecipadamente sobre esta base; atualizar a base continua obrigatório antes de integrar. Não mesclar nem publicar esta branch por iniciativa própria.
 
 ## Leitura
 
@@ -22,6 +22,8 @@ Replays históricos por snapshot MVCC são uma alternativa ainda não aprovada n
 
 ## Limites desta entrega
 
-Foram feitas leituras de código, regras de package e contratos existentes. Não houve consulta ao banco, contagem de alunos, execução de SQL, benchmark, TSC, build, browser, Docker ou suíte global. Os cenários de banco no plano são verificações futuras obrigatórias, não resultados obtidos. Não foi inspecionado o WIP do checkout Python.
+Foram feitas leituras de código, regras de package e contratos existentes, além de testes unitários focados do T1. Não houve consulta ao banco, contagem de alunos, execução de SQL, benchmark, TSC, build, browser, Docker ou suíte global. Os cenários de banco no plano são verificações futuras obrigatórias, não resultados obtidos. O WIP Python foi lido apenas para compatibilidade: autorização/runtime/linguagem e níveis Python permanecem separados da jornada; nenhum arquivo daquele checkout foi alterado.
+
+T1: 44 testes passaram, 0 falhas, 2.641 asserções nos dois arquivos novos e `journey.test.ts`/`journey-state.test.ts`. Biome focado nos sete arquivos de código/testes passou. TSC permanece pendente por coordenação de recursos e não há afirmação de verificação de tipos completa. Ver detalhes em `_test-plan.md`.
 
 Skills utilizadas: brainstorming, find-rules, creating-spec e writing-plans. As instruções explícitas de análise isolada, sem perguntas e sem novos agentes prevalecem sobre perguntas, aprovação intermediária e delegação prescritas por algumas dessas skills. A especificação segue TS/Zod e a arquitetura real do projeto; não introduz Effect-TS por causa de um template genérico.

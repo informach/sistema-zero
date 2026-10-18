@@ -8,7 +8,7 @@
 
 **Spec:** [_techspec.md](./_techspec.md). **Produto:** [_prd.md](./_prd.md).
 
-Este plano será executado no worktree isolado após o agente principal informar checkpoint conciliado. Não usa subagentes adicionais. Nenhum item de implementação abaixo foi executado nesta fase.
+T1 foi iniciado antecipadamente por instrução explícita do root em 18/10/2026, somente no worktree isolado. A base ainda precisa ser atualizada ao checkpoint conciliado antes da integração e de T2+. Não usa subagentes adicionais. Tabelas/serviços/UI/consumidores não foram implementados.
 
 ## Restrições globais
 
@@ -36,7 +36,7 @@ Este plano será executado no worktree isolado após o agente principal informar
 
 ## T1 — Contrato e avaliador puro com paridade exata
 
-**Depende de:** T0.
+**Depende de:** T0 para integração; antecipação do núcleo puro autorizada pelo root.
 
 **Criar:** `packages/core/src/journey/kids-policy.ts`, `kids-projection.ts`, `kids-validation.ts`; `packages/core/tests/kids-journey-policy.test.ts`, `kids-journey-parity.test.ts`.
 
@@ -46,12 +46,14 @@ Este plano será executado no worktree isolado após o agente principal informar
 
 **Produz:** tipos e cinco funções públicas da techspec; `legacyKidsJourneyPolicy`, `projectKidsJourney`, `validateKidsJourneyPolicy`, `analyzeKidsJourneyReadiness`, `compareKidsJourney`.
 
-- [ ] Escrever teste de paridade para estado vazio, cada fronteira de posto, cada slot faltante, slots fora de ordem e curso apagado com snapshot. Oráculo = funções legadas; esperado fixo inclui 49/1/8 e os portões atuais para não validar duas cópias erradas.
-- [ ] Implementar adapter legado derivado da tabela existente; não congelar apenas os IDs atuais do catálogo.
-- [ ] Implementar schema estrito de legacy/configured/paused, sete avanços ordenados, requisitos/capacidades sem repetição e limites documentados.
-- [ ] Implementar avaliação monotônica do piso conquistado, capacidades separadas e complete/showcase por curso.
-- [ ] Implementar análise de ciclos jornada/base/reward e capacidade por ordem cumulativa; incompletude legada é warning distinto de novo ciclo inválido.
-- [ ] Rodar em `packages/core`: `bun test tests/kids-journey-policy.test.ts tests/kids-journey-parity.test.ts tests/journey.test.ts tests/journey-state.test.ts`.
+- [x] Escrever teste de paridade para estado vazio, cada fronteira de posto, cada slot faltante, slots fora de ordem e curso apagado com snapshot. Oráculo = funções legadas; esperado fixo inclui 49/1/8 e os portões atuais para não validar duas cópias erradas.
+- [x] Implementar adapter legado derivado da tabela existente; não congelar apenas os IDs atuais do catálogo.
+- [x] Implementar schema estrito de legacy/configured/paused, sete avanços ordenados, requisitos/capacidades sem repetição e limites documentados.
+- [x] Implementar avaliação monotônica do piso conquistado, capacidades separadas e complete/showcase por curso.
+- [x] Implementar análise de ciclos jornada/base/reward e capacidade por ordem cumulativa; incompletude legada é warning distinto de novo ciclo inválido.
+- [x] Rodar em `packages/core`: `bun test tests/kids-journey-policy.test.ts tests/kids-journey-parity.test.ts tests/journey.test.ts tests/journey-state.test.ts`.
+
+Verificação: 44 testes, 0 falhas, 2.641 asserções; Biome focado limpo. TSC não executado por restrição explícita de recursos; atualizar base e verificar tipos antes de integrar. Fixture adicional: `packages/core/tests/fixtures/kids-journey.ts`. O contrato puro também expõe `kidsJourneySteps`, schemas/tipos, helpers de requisito/base e `resolveKidsJourneyCourseLock`; nenhum chamador produtivo foi migrado.
 
 **Aceite:** default e locks legados equivalentes nos casos de `_test-plan.md`; requisito vazio custom não sobe; pause não libera; prova de ordem sem união de marcos de cursos distintos.
 

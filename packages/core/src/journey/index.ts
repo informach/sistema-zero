@@ -1,3 +1,6 @@
 export * from './adult-policy'
 export * from './catalog'
+export * from './kids-policy'
+export * from './kids-projection'
+export * from './kids-validation'
 export * from './state'
