@@ -78,11 +78,10 @@ test('internal Python inspection contract rejects JS-only checks, forgeable gate
 })
 
 test('legacy JavaScript authoring remains readable without a language flag and does not retain old activity grading', async () => {
-  const {
-    programmingLanguage: _language,
-    runtime: _runtime,
-    ...legacy
-  } = documentFixture('javascript', 'classic')
+  const project = documentFixture('javascript', 'classic')
+  if (project.programmingLanguage !== 'javascript' || project.kind !== 'classic')
+    throw new Error('Expected a Classic JavaScript fixture')
+  const { programmingLanguage: _language, runtime: _runtime, ...legacy } = project
   const response = await post({
     kind: 'studio',
     initialProject: { ...legacy, formatVersion: 2 },

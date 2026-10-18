@@ -31,12 +31,17 @@ confirmação e desfazer. Os tokens e o desenho compartilhado da plataforma perm
    somente leitura que antes não existia. A restauração agora conserva o descritor
    completo ou remove a propriedade temporária quando originalmente ausente.
    A reprodução do descritor passou de 13 aprovados/1 falha para 14 aprovados/zero falhas.
-4. **Dependência de tipos ausente no serviço de linguagem:** a checagem ampla local
+4. **Dependência de tipos ausente em pacotes com processos Node:** a checagem ampla local
    identificou duas versões de `@types/node` na mesma compilação, resolvidas por Bun
    e JSON-RPC através de dependências transitivas. Isso apagava o método `on` do tipo
-   do processo filho. O pacote agora declara `@types/node` 24.19.0 diretamente, com
+   do processo filho. Serviço de linguagem, Studio e Members agora declaram
+   `@types/node` 24.19.0 diretamente, com
    lockfile atualizado. As três configurações de tipos do serviço passaram, sem casts,
    supressões ou alterações no comportamento do runtime.
+5. **Fixture sem discriminação de tipo no Members:** o teste de projeto JavaScript
+   legado acessava `files` em uma união que também admite árvores Pro. O teste agora
+   confere que recebeu a variante JavaScript Classic antes de retirar os campos de
+   linguagem. Os três cenários do contrato permaneceram aprovados.
 
 ## Verificação da integração local
 
@@ -58,6 +63,10 @@ Foi integrado por fast-forward antes do merge desta alteração, sem conflitos.
 | Reprodução da restauração de `indexedDB` | 14 aprovados, zero falhas |
 | `STUDIO_STORAGE_BROWSER=chromium bun run test` em `packages/studio` após correção | 9.253 aprovados, zero falhas, 687 arquivos; 4 testes de executor pulados pela configuração existente |
 | `bun run typecheck` em `packages/studio-language-service` | Aprovado nas três configurações |
+| `bun run typecheck` em `packages/studio` após declarar os tipos do Node | Aprovado |
+| `bun run typecheck` em `packages/members` após as correções | Aprovado |
+| Prova de tipos dos eventos de processo com a configuração do Studio | Aprovado |
+| `bun test tests/unit/python-activity-schema.test.ts` em `packages/members` | 3 aprovados, zero falhas |
 | `git diff --check` | Aprovado |
 
 Os testes de navegador usam o seletor real de arquivos para JSON e ZIP, recarregam a
