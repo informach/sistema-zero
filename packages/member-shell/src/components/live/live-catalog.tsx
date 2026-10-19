@@ -38,10 +38,12 @@ const SKINS = {
     hero: 'kids-marca',
     heroAction: 'sz-btn-inverso',
   },
+  // A pele adulta segue a direção de arte de 18/10/2026: o cartão branco de borda fina, a próxima
+  // oficina na âncora escura da barra do topo e o botão branco retangular.
   adult: {
-    card: 'rounded-2xl border bg-card',
-    hero: 'bg-primary text-primary-foreground',
-    heroAction: 'bg-background text-foreground hover:bg-background/90',
+    card: 'sz-card-sm',
+    hero: 'bg-(--topo) text-(--sz-community-on-action)',
+    heroAction: 'rounded-[0.6rem]! bg-card text-foreground hover:bg-muted',
   },
 } as const
 const SkinContext = createContext<(typeof SKINS)[keyof typeof SKINS]>(SKINS.kids)

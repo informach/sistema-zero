@@ -92,7 +92,7 @@ export default function ProBuilderPanel({
   const store = useProjectStoreApi()
   const isDirty = useProjectStore((state) => state.isDirty)
   const preview = useProCandidatePreview()
-  const { proCapture } = useStudioTutor()
+  const { proCapture, config: tutorConfig } = useStudioTutor()
   const inputId = useId()
   const scope = useRef(captureProjectStorageScope())
   const [objective, setObjective] = useState('')
@@ -759,7 +759,9 @@ export default function ProBuilderPanel({
           {pendingCreate.current ? 'Recuperar solicitação' : 'Preparar proposta'}
         </button>
         <p className="text-xs text-sz-fg-mute">
-          A execução usa os limites de IA da família. Você revisa antes de aplicar.
+          {tutorConfig?.audience === 'adult'
+            ? 'A execução usa os pedidos de IA da sua conta. Você revisa antes de aplicar.'
+            : 'A execução usa os limites de IA da família. Você revisa antes de aplicar.'}
         </p>
         <p className="text-xs text-sz-fg-mute">
           O construtor pode consultar os arquivos do projeto, seu objetivo e o manifesto de
@@ -839,7 +841,12 @@ export default function ProBuilderPanel({
           </p>
           {job.cost && (
             <p className="text-xs">
-              Fonte: {job.cost.source === 'openrouter' ? 'OpenRouter do responsável' : 'assinatura'}{' '}
+              Fonte:{' '}
+              {job.cost.source === 'openrouter'
+                ? tutorConfig?.audience === 'adult'
+                  ? 'a sua conexão OpenRouter'
+                  : 'OpenRouter do responsável'
+                : 'assinatura'}{' '}
               · Custo confirmado: US$ {(job.cost.confirmedMicroUsd / 1_000_000).toFixed(6)}
               {job.cost.uncertain ? ' · Há consumo aguardando confirmação.' : ''}
             </p>

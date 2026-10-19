@@ -82,6 +82,10 @@
    componente (que o admin também usa). */
 @theme {
   --shadow-sm: 0 0 #0000;
+  /* A menor letra da comunidade adulta é de 17 px: com a base de 20 px, o `text-xs` (0,75rem)
+     dos componentes compartilhados daria 15 px. */
+  --text-xs: 0.85rem;
+  --text-xs--line-height: 1.45;
 }
 
 /* ============================================================
@@ -126,8 +130,11 @@
   --logo-zero-claro-de: var(--sz-community-action);
   --logo-zero-claro-ate: var(--sz-community-logo-zero);
 
-  --background: var(--pen-chao);
-  --background-alt: var(--pen-chao-alt);
+  /* Direção de arte de 18/10/2026: o chão do adulto é QUASE BRANCO (o do Pen clareado, ainda com o
+     toque da cor escolhida) e a aula fica no chão azulado do Pen, como no Kids. Mistura, não
+     literal: o chão continua seguindo a paleta da pessoa. */
+  --background: color-mix(in oklab, var(--pen-chao) 45%, white);
+  --background-alt: var(--pen-chao);
   --foreground: var(--pen-tinta);
 
   --card: var(--pen-cartao);
@@ -150,6 +157,9 @@
 
   --muted: var(--pen-sup2);
   --muted-foreground: var(--pen-tinta-suave);
+  /* A faixa clara dos componentes compartilhados (o "Veja também" do tutorial, o recado da sala
+     ao vivo). O Kids declara o mesmo nome; sem ele aqui, o chip ficava sem fundo. */
+  --band-creme: var(--pen-sup2);
 
   /* `accent` só marca estado de sucesso: o ✓ de aula concluída, "Aula concluída", a resposta
      certa do quiz e a entrega aprovada do Estúdio/Pinta (member-shell). */
@@ -172,6 +182,14 @@
   --chart-3: var(--sz-community-purple);
   --chart-4: var(--pen-alerta);
   --chart-5: var(--pen-tinta-suave);
+
+  /* A ação clareada (fundo de destaque) e a ação escurecida (texto sobre esse fundo): os pares
+     de "Continue aqui", da aula atual e do item ativo, nas seis cores do perfil. */
+  --acao-tint: color-mix(in oklab, var(--pen-acao) 11%, white);
+  --acao-texto: var(--pen-acao-hover);
+  --sucesso-tint: color-mix(in oklab, var(--pen-sucesso) 12%, white);
+  --aviso-tint: var(--sz-community-yellow-surface);
+  --aviso-texto: #5c4000;
 
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -236,12 +254,12 @@
    gruda abaixo do cabeçalho fixo) e a barra da chamada (`sz-live-controls`) acima do rodapé
    da aula; a barra publica a altura em `--sz-live-bar-height` e a página reserva as duas. */
 .sz-aula-adulto {
-  /* O cabeçalho fixo tem duas linhas no celular (a barra e os links) e uma a partir do md. */
-  --sz-lesson-stage-top: 6.75rem;
+  /* O cabeçalho fixo tem duas linhas (a barra e os links) até o xl e uma a partir dele. */
+  --sz-lesson-stage-top: 7.25rem;
 }
-@media (min-width: 768px) {
+@media (min-width: 1280px) {
   .sz-aula-adulto {
-    --sz-lesson-stage-top: 4.25rem;
+    --sz-lesson-stage-top: 4.5rem;
   }
 }
 .sz-app:has(.sz-live-controls) > main {
@@ -472,14 +490,32 @@ main:has(.sz-aula-adulto) {
   * {
     @apply border-border outline-ring/50;
   }
+  /* ⭐ A LETRA BASE É DE 20 PX (direção de arte de 18/10/2026, público de 50 a 70 anos). Pela raiz,
+     e não pelo corpo: o player da aula, os diálogos e os outros componentes compartilhados medem
+     em rem e crescem juntos, sem mudar o layout que dividem com o Kids. As ferramentas de tela
+     cheia (Estúdio, Pinta, Molda, Pensa e o avatar) são editores densos desenhados na base de
+     16 px e voltam a ela. */
+  html {
+    font-size: 125%;
+  }
+  html:has(.sz-app[data-embedded="true"]),
+  html:has([data-sz-public-player]) {
+    font-size: 100%;
+    /* O `text-xs` maior (17 px) é da pele: nos editores volta ao padrão do Tailwind. */
+    --text-xs: 0.75rem;
+    --text-xs--line-height: calc(1 / 0.75);
+  }
   body {
     --font-sans:
-      var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      var(--font-atkinson), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-display:
+      var(--font-bricolage), var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
     --font-mono:
       var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
       "Liberation Mono", "Courier New", monospace;
     font-family: var(--font-sans);
+    line-height: 1.6;
     @apply bg-background text-foreground;
   }
   a[href],
@@ -504,7 +540,7 @@ a.bg-primary.text-primary-foreground {
   background-image: none;
   background-color: var(--primary);
   color: var(--primary-foreground);
-  border-radius: 9999px;
+  border-radius: 0.6rem;
   transition: background-color 0.15s ease;
 }
 button.bg-primary.text-primary-foreground:hover:not(:disabled),
@@ -522,11 +558,11 @@ a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
     justify-content: center;
     gap: 0.5rem;
     font-family: inherit;
-    font-weight: 600;
-    font-size: 0.875rem;
-    padding: 0 1.125rem;
-    height: 2.5rem;
-    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0 1.3rem;
+    min-height: 2.8rem;
+    border-radius: 0.6rem;
     border: 0;
     background-color: var(--primary);
     color: var(--primary-foreground);
@@ -544,7 +580,7 @@ a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
 /* Barra de progresso (cards de curso + player): trilho claro e preenchimento na cor de ação. */
 .sz-progress {
   position: relative;
-  height: 0.375rem;
+  height: 0.6rem;
   background: var(--muted);
   border-radius: 9999px;
   overflow: hidden;
@@ -564,12 +600,12 @@ a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
   margin: 1.5rem 0;
 }
 
-/* Display text (Geist Mono para títulos curtos + números) */
+/* Títulos na Bricolage Grotesque (direção de arte de 18/10/2026; antes, Geist Mono). */
 .sz-display {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
 }
 /* Número em destaque (nota do quiz, número do módulo): na cor de ação, sem degradê. */
 .sz-display-grad {
@@ -588,15 +624,15 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 
 /* Prosa de aula (blocos rich_text renderizados como leitura) */
 .lesson-prose {
-  line-height: 1.75;
-  font-size: 0.9375rem;
+  line-height: 1.7;
+  font-size: 1.05rem;
 }
 .lesson-prose h1,
 .lesson-prose h2,
 .lesson-prose h3 {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
   margin: 1.5em 0 0.5em;
   line-height: 1.25;
 }
@@ -834,4 +870,374 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   --snes-b: var(--pen-sucesso);
   --snes-x: var(--primary);
   --snes-y: var(--pen-alerta);
+}
+
+/* ============================================================================
+   A PELE DA COMUNIDADE ADULTA (direção de arte de 18/10/2026)
+
+   O vocabulário das páginas do adulto: a faixa quadriculada do topo, o cartão branco, títulos na
+   Bricolage, botões RETANGULARES de 56 px (2,8rem na base de 20 px), selos com texto e a barra de
+   progresso. Medidas em rem: crescem com a raiz. A menor letra é de 17 px (0,85rem).
+   Em `@layer components` para o `className` de quem usa poder ajustar (a armadilha do kids).
+   ============================================================================ */
+@layer components {
+  .sz-page {
+    width: 100%;
+    max-width: 66rem;
+    margin-inline: auto;
+    padding-inline: 1.6rem;
+  }
+  .sz-band {
+    border-bottom: 1px solid var(--border);
+    background-color: var(--card);
+    background-image:
+      linear-gradient(color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(
+        90deg,
+        color-mix(in oklab, var(--foreground) 5%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 2rem 2rem;
+  }
+  .sz-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--muted-foreground);
+  }
+  .sz-h1,
+  .sz-h1-sm,
+  .sz-h2,
+  .sz-h3,
+  .sz-h4 {
+    margin: 0;
+    font-family: var(--font-display);
+    color: var(--foreground);
+  }
+  .sz-h1 {
+    font-weight: 800;
+    font-size: 2.4rem;
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+  }
+  .sz-h1-sm {
+    font-weight: 800;
+    font-size: 2rem;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+  .sz-h2 {
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+  .sz-h3 {
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1.25;
+  }
+  .sz-h4 {
+    font-weight: 700;
+    font-size: 1.05rem;
+    line-height: 1.3;
+  }
+  .sz-lead {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--muted-foreground);
+  }
+  .sz-card {
+    border: 1px solid var(--border);
+    border-radius: 1.2rem;
+    background: var(--card);
+    color: var(--card-foreground);
+  }
+  .sz-card-sm {
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    background: var(--card);
+    color: var(--card-foreground);
+  }
+  .sz-soft {
+    border-radius: 0.8rem;
+    background: var(--background);
+  }
+  .sz-btn,
+  .sz-btn-outline,
+  .sz-btn-quiet,
+  .sz-btn-white {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.8rem;
+    padding: 0 1.3rem;
+    border: 0;
+    border-radius: 0.6rem;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+  }
+  .sz-btn {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .sz-btn:hover {
+    background-color: var(--primary-hover);
+    color: var(--primary-foreground);
+  }
+  .sz-btn-outline {
+    border: 2px solid var(--foreground);
+    background-color: var(--card);
+    color: var(--foreground);
+  }
+  .sz-btn-outline:hover {
+    background-color: var(--muted);
+    color: var(--foreground);
+  }
+  .sz-btn-quiet {
+    background-color: var(--muted);
+    color: var(--foreground);
+  }
+  .sz-btn-quiet:hover {
+    background-color: color-mix(in oklab, var(--foreground) 9%, var(--muted));
+    color: var(--foreground);
+  }
+  .sz-btn-white {
+    background-color: var(--card);
+    color: var(--foreground);
+  }
+  .sz-btn-white:hover {
+    background-color: var(--muted);
+  }
+  .sz-btn-sm {
+    min-height: 2.4rem;
+    padding: 0 0.9rem;
+    font-size: 0.9rem;
+  }
+  :is(.sz-btn, .sz-btn-outline, .sz-btn-quiet, .sz-btn-white):disabled,
+  :is(.sz-btn, .sz-btn-outline, .sz-btn-quiet, .sz-btn-white)[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  :is(.sz-btn, .sz-btn-outline, .sz-btn-quiet, .sz-btn-white, .sz-iconbtn) svg {
+    flex: none;
+    width: 1.1em;
+    height: 1.1em;
+  }
+  .sz-iconbtn {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border: 2px solid var(--border);
+    border-radius: 0.6rem;
+    background: var(--card);
+    color: var(--foreground);
+    cursor: pointer;
+  }
+  .sz-iconbtn:hover {
+    background: var(--muted);
+  }
+  .sz-link {
+    font-weight: 700;
+    color: var(--link);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .sz-link:hover {
+    color: var(--link-hover);
+  }
+  .sz-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 1.7rem;
+    padding: 0 0.6rem;
+    border-radius: 9999px;
+    background: var(--muted);
+    color: var(--muted-foreground);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .sz-chip svg {
+    flex: none;
+    width: 1em;
+    height: 1em;
+  }
+  .sz-chip-ok {
+    background: var(--sucesso-tint);
+    color: var(--pen-ok-texto);
+  }
+  .sz-chip-acao {
+    background: var(--acao-tint);
+    color: var(--acao-texto);
+  }
+  .sz-chip-aviso {
+    background: var(--aviso-tint);
+    color: var(--aviso-texto);
+  }
+  .sz-chip-novo {
+    background: var(--sz-community-yellow);
+    color: var(--foreground);
+  }
+  .sz-chip-escuro {
+    background: var(--topo);
+    color: var(--primary-foreground);
+  }
+  .sz-num {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 0.6rem;
+    background: var(--muted);
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+  }
+  .sz-num-acao {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .sz-num-ok {
+    background: var(--pen-sucesso);
+    color: var(--primary-foreground);
+  }
+  /* ⚠️ Sem `.sz-bar` aqui: o Estúdio tem uma `.sz-bar` própria (a barra de ferramentas) no mesmo
+     pipeline de CSS. A barra de progresso da pele é o `Meter` de `profile/meter.tsx`. */
+  .sz-tile {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 3.6rem;
+    height: 3.6rem;
+    border-radius: 0.9rem;
+    background: var(--acao-tint);
+    color: var(--acao-texto);
+  }
+  .sz-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+}
+
+/* Foco sempre visível e largo nas peças da pele adulta, na cor de ação (3:1 sobre o claro). Sobre
+   o escuro (a barra do topo, as faixas `--topo`) a cor de ação clara é a que aparece. */
+:is(.sz-btn, .sz-btn-outline, .sz-btn-quiet, .sz-btn-white, .sz-iconbtn, .sz-link):focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+:is(.sz-btn-white, .bg-\(--topo\) :is(.sz-btn, .sz-link)):focus-visible {
+  outline-color: var(--sz-community-action-light);
+}
+
+/* Os botões dos componentes compartilhados (`@sistemazero/ui`) seguem a mesma forma: retângulo de
+   cantos de 12 px e alvo de 48 px. Fora de camada para vencer as utilitárias do componente. O
+   escopo é a RAIZ (os diálogos vão para o `body` por portal, fora do `.sz-app`); os editores
+   embarcados (`data-embedded`) e o jogo público ficam com o desenho deles. O escopo vai num
+   `:where()`, sem peso: a regra do rodapé da aula (56 px), logo abaixo, precisa vencer esta.
+   ⚠️ O tamanho de ícone se reconhece pelo TOKEN (`size-8`), nunca por `[class*="size-"]`: toda
+   classe do `Button` traz `[&_svg:not([class*='size-'])]:size-4`. */
+:where(:root:not(:has(.sz-app[data-embedded="true"], [data-sz-public-player])))
+  [data-slot="button"] {
+  min-height: 2.4rem;
+  border-radius: 0.6rem;
+}
+:where(:root:not(:has(.sz-app[data-embedded="true"], [data-sz-public-player])))
+  [data-slot="button"]:is(
+    [class~="size-6"],
+    [class~="size-7"],
+    [class~="size-8"],
+    [class~="size-9"]
+  ) {
+  min-width: 2.4rem;
+}
+/* O `size="sm"` do `Button` usa `text-[0.8rem]` (16 px aqui): a menor letra da pele é 17 px. */
+:where(:root:not(:has(.sz-app[data-embedded="true"], [data-sz-public-player])))
+  [data-slot="button"][class~="text-[0.8rem]"] {
+  font-size: 0.85rem;
+}
+
+/* O vídeo flutuante da aula calcula a geometria em px (`FLOAT_BAR_HEIGHT` 44 e `FLOAT_FRAME` 6, no
+   member-shell). Com a raiz a 20 px o `h-11` e o `px-1.5` dele cresceriam e o vídeo encostaria na
+   borda da janela: a barra e a moldura ficam nas medidas da conta. */
+.sz-aula-adulto .sz-lesson-video-float {
+  padding: 0 6px 6px;
+}
+.sz-aula-adulto .sz-lesson-video-float-bar,
+.sz-aula-adulto .sz-lesson-video-float-move {
+  height: 44px;
+}
+.sz-aula-adulto :is(.sz-lesson-video-float-minimize, .sz-lesson-video-float-size) {
+  width: 44px;
+  height: 44px;
+}
+
+/* A pele da AULA (direção de arte de 18/10/2026). O player é o do Kids e o layout não muda: os
+   botões do rodapé viram retângulos de 56 px sem relevo, e os chips das atividades ganham fundo
+   (o de criar no verde de "cumprido", os demais na cor de ação), com o ícone que já trazem. */
+.sz-aula-adulto .sz-lesson-nav [data-slot="button"] {
+  min-height: 2.8rem;
+  padding-inline: 1.1rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+/* Com os botões de 56 px, "Preciso de ajuda" e "Concluir aula" não cabem lado a lado num celular:
+   o grupo da direita do rodapé (o último filho da `sz-lesson-nav-inner`) quebra a linha. */
+.sz-aula-adulto .sz-lesson-nav-inner > div:last-child {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.sz-aula-adulto .sz-lesson-nav [data-slot="button"] svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.sz-aula-adulto .sz-lesson-chip {
+  align-self: flex-start;
+  border-radius: 9999px;
+  padding: 0.2rem 0.7rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.sz-aula-adulto
+  .sz-lesson-chip:is(
+    [data-chip="experimentation"],
+    [data-chip="html"],
+    [data-chip="project-play"]
+  ) {
+  background: var(--pen-sucesso);
+  color: #ffffff;
+}
+
+/* Na camada das peças, como elas: uma utilitária de quem usa (`px-0`, `text-2xl`) segue vencendo
+   no celular. */
+@layer components {
+  @media (max-width: 767px) {
+    .sz-page {
+      padding-inline: 0.8rem;
+    }
+    .sz-h1 {
+      font-size: 1.7rem;
+    }
+    .sz-h1-sm {
+      font-size: 1.55rem;
+    }
+  }
 }

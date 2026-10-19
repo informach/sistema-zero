@@ -495,6 +495,7 @@ export function StudioFullClient({
     narrationEnabled,
     voiceInputEnabled,
     taskId: handoffTaskId,
+    audience,
   })
 
   const { pintaLibrary, moldaLibrary } = useStudioCreationLibraries(

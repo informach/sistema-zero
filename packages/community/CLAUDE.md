@@ -21,16 +21,19 @@ Gateway** (NUNCA os serviços direto). Visual na paleta do Pen, com os temas **P
 > acesso pós-compra —, home na RAIZ `/` com grid de cursos, `/cursos` "Todos os cursos" com lock →
 > página de vendas, curso com módulos/aulas, player de aula com blocos polimórficos + anexos
 > (download autenticado com **marca d'água do e-mail do aluno** em PDF/imagem — bucket R2 privado) +
-> concluir + navegação, perfil com upload de avatar, compras, **classificação do curso** —
+> concluir + navegação, perfil (a foto é a do avatar 3D; o upload saiu da tela em 18/10/2026), compras, **classificação do curso** —
 > fluxo Udemy de 5 modais, ver Contratos — e **bloco e-book = LIVRO 3D interativo**
 > (react-three-fiber + pdf.js; PDF privado com marca d'água, ver §E-book)). A COMUNIDADE
 > (feed/fórum/etc.) é fatia futura.
 >
-> **Header (espelha a referência):** logo à esquerda (`w-[130px] md:w-[150px]`), menu CENTRALIZADO
-> (Início `/` + Todos os cursos `/cursos` — `nav.ts`), avatar à direita. Compras/Perfil/Sair vivem no **menu do avatar** (`user-menu.tsx`: cabeçalho com `UserAvatar` + nome + e-mail;
-> regras de exibição em `lib/user-display.ts` — nome → handle do e-mail → "Membro"/"M"). NÃO existe
-> rota `/home` (a referência era monolito com landing na raiz; aqui a home É a raiz). O layout do
-> grupo `(app)` hidrata `avatarUrl` fresco via `getMe()` (claims não carregam foto).
+> **Header (direção de arte de 18/10/2026, ver §Direção de arte adulta):** logo à esquerda, os seis
+> destinos com ícone E texto (Início, Cursos, Criar, Oficinas, Comunidade, Ajuda — `nav.ts`; do `xl`
+> para baixo descem, só com o texto, para uma segunda linha que rola de lado), o botão **Recados** com selo de
+> não-lidos e o menu do perfil à direita. Seu progresso, Meu avatar 3D, Meu espaço 3D, Meu perfil,
+> Compras e Sair vivem no **menu do perfil** (`user-menu.tsx`; regras de exibição em
+> `lib/user-display.ts` — nome → handle do e-mail → "Membro"/"M"). NÃO existe rota `/home` (a home É
+> a raiz). A imagem da pessoa é a **foto do avatar 3D** (`PersonAvatar`, como no Kids): o layout do
+> grupo `(app)` a busca com `getAvatarReadonly()` (claims não carregam foto); sem avatar, iniciais.
 
 > ⚠️ **EXTRAÇÃO 06/2026 — `@sistemazero/member-shell`:** todo o BFF (sessão/gateway/refresh/
 > mídia/marca d'água/clients), as libs puras, os componentes de DOMÍNIO (player, blocos, quiz,
@@ -53,7 +56,8 @@ pelo `audience` do curso. A sala e as regras moram no member-shell (§"Cursos ao
 estão as portas:
 
 - **Páginas**: `/oficinas` (`LiveCatalog skin="adult"`: as turmas em que a pessoa tem vaga; nada de
-  divulgação em outra tela) e `/oficinas/aulas/[id]` (`live-room-client.tsx`: o `LiveClassroom` com
+  divulgação em outra tela; ⚠️ desde 18/10/2026 o `SKINS.adult` do member-shell usa a classe
+  `sz-card-sm` e o token `--topo` DESTE app: renomear um deles derruba o cartão) e `/oficinas/aulas/[id]` (`live-room-client.tsx`: o `LiveClassroom` com
   a aula do encontro no slot, `LessonBlocks` de sempre, dentro de `sz-aula-adulto`). Atualizar a
   aula é RELER o JSON (`useLiveLesson`), nunca `router.refresh()`. O bloco Estúdio é o projeto ao
   vivo, SEM o Mural (`publishToMural` fica desligado). Item **Oficinas** no menu do topo (`nav.ts`).
@@ -135,6 +139,47 @@ adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
   `auditoria-contraste.js`. Medido em 11/09: todo texto habilitado passa (4,5:1; 3:1 no grande)
   nas oito páginas, nos dois temas.
 - ⚠️ O admin (`globals.css` próprio), o `@sistemazero/ui` e o member-shell NÃO mudaram.
+
+## Direção de arte adulta (18/10/2026)
+
+O público é de 50 a 70 anos. O desenho de referência é o Canvas "Comunidade adulta · direção de
+arte" (todas as telas, desktop e celular); ele usa só o que a plataforma já faz.
+
+- ⭐ **Letra base de 20 px.** `html { font-size: 125% }` no `globals.css`: tudo que é `rem` (as
+  páginas, o `@sistemazero/ui`, o player e os blocos do member-shell) cresce junto, sem bifurcar
+  componente compartilhado. Menor letra permitida: **17 px** (`--text-xs` sobe para `0.85rem`; não
+  use `text-[0.8rem]` ou menos; o `size="sm"` do `Button`, que usa `text-[0.8rem]`, é corrigido no
+  `globals.css`). ⚠️ As telas cheias de ferramenta (`data-embedded`: Estúdio, Pinta, Molda, Pensa e
+  o avatar; e o jogo público `/jogar`, por `data-sz-public-player`) voltam a 100% e ao `--text-xs`
+  do Tailwind: são editores densos com medidas próprias. O Estúdio DENTRO da aula e da sala ao vivo
+  segue a raiz de 20 px, como o resto da aula; a letra dos blocos é do editor (zoom + e −).
+  ⚠️ Media query em `rem` continua medindo 16 px (`xl` = 1280 px), é regra do CSS, não da raiz.
+  ⚠️ Medida em px no JS de componente compartilhado não cresce com a raiz: o vídeo flutuante da aula
+  (`FLOAT_BAR_HEIGHT`/`FLOAT_FRAME` do member-shell) tem a barra e a moldura presas em px aqui.
+- **Fontes**: Atkinson Hyperlegible Next (texto, `--font-sans`) e Bricolage Grotesque (títulos,
+  `--font-display`, `.sz-display`), por `next/font/google` no layout raiz. Linha de 1.6.
+- **Vocabulário de classes** (bloco "A PELE DA COMUNIDADE ADULTA" do `globals.css`): `sz-page`
+  (largura e respiro), `sz-band` (a faixa do topo de cada página), `sz-kicker`, `sz-h1`…`sz-h4`,
+  `sz-lead`, `sz-card`/`sz-card-sm`/`sz-soft`, `sz-btn` (+ `-outline`, `-quiet`, `-white`, `-sm`),
+  `sz-iconbtn`, `sz-link`, `sz-chip` (+ `-ok`, `-acao`, `-aviso`, `-novo`, `-escuro`), `sz-num`,
+  `sz-tile`, `sz-label` (⚠️ nunca `sz-bar`: é a barra de ferramentas do Estúdio, no mesmo CSS).
+  Botão é retângulo de cantos de 12 px e 56 px de altura, sem relevo; o `[data-slot="button"]` do
+  `@sistemazero/ui` segue a mesma forma (48 px), só nas páginas da comunidade (o escopo é a raiz
+  sem `data-embedded`, num `:where()` sem peso). Chip sempre com ícone ou palavra, nunca só cor.
+  Tons: `--acao-tint` e `--sucesso-tint` por `color-mix`, `--aviso-tint` = o amarelo de superfície do
+  `ui`, `--aviso-texto` um literal de tinta: ⚠️ nada de hexadecimal da PALETA aqui (o contrato do
+  `ui` continua valendo). Foco: contorno de 3 px na cor de ação (`--ring`); a cor de ação clara só
+  sobre o escuro (barra do topo, faixas `--topo`), onde é ela que passa de 3:1.
+- **Primitivos de página** (`components/community/page.tsx`): `PageBand` (kicker, título, lead,
+  voltar, ações), `PageBody`, `BackLink`, `SectionHeader`. Cada página desenha a própria faixa de
+  ponta a ponta e cuida da largura (`sz-page`): o `CommunityFrame` só dá a moldura antiga
+  (`max-w-6xl`) à **aula** e à **sala ao vivo**, que são componentes do Kids e mantêm o layout.
+- **Aula**: mesmo layout do player compartilhado; muda só a pele (rodapé com botões de 56 px,
+  chips das atividades com fundo, a letra maior pela raiz). Nada de regra nova no member-shell.
+- **Consumo de IA**: o texto adulto mora no `core` (`resolveAiCredits(view, { audience: 'adult' })`
+  — "pedidos", sem o tom infantil) e chega ao Pensa e ao tutor do Estúdio pelo `audience`. O
+  cartão do consumo fica em **Meu perfil** (seção "IA e voz"), como o cartão da área dos pais no
+  Kids; a página Criar só aponta para lá.
 
 ## Arquitetura (o padrão central — preserve-o; espelha o @sistemazero/admin)
 
@@ -233,14 +278,15 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 ## Invariantes (NÃO quebrar)
 
 1. **O community nunca chama os serviços direto** — tudo via gateway (`src/server/gateway.ts`).
-   Exceção CONSCIENTE (igual ao admin): `/api/me/avatar` fala com o **R2** (provedor externo) e por
-   isso tem guard de sessão próprio (`requireUploadSession(req)` em `src/server/media.ts` —
-   qualquer conta ATIVA, sem exigência de role; guard **ESTRITO**: token expirado NÃO autoriza —
-   `verifyAccessToken` + UMA tentativa de `tryRefresh` e re-verificação, como o admin;
-   `getSession` tolera exp SÓ p/ exibição; em MUTAÇÃO o guard também aplica a checagem
-   **anti-CSRF same-origin** — a rota fica fora do matcher do proxy). Upload tem **pre-check de
-   Content-Length** (`rejectOversizedRequest`) ANTES do `formData()` (o parse materializa o corpo
-   em memória) — **Content-Length é OBRIGATÓRIO** (411 se ausente; sem isso um corpo chunked
+   Exceção CONSCIENTE (igual ao admin): `/api/me/avatar` (⚠️ desde 18/10/2026 nenhuma tela a chama:
+   a foto da pessoa é a do avatar 3D, como no Kids, que também manteve a rota; as regras abaixo
+   valem enquanto ela existir) fala com o **R2** (provedor externo) e por isso tem guard de sessão
+   próprio (`requireUploadSession(req)` em `src/server/media.ts` — qualquer conta ATIVA, sem
+   exigência de role; guard **ESTRITO**: token expirado NÃO autoriza — `verifyAccessToken` + UMA
+   tentativa de `tryRefresh` e re-verificação, como o admin; `getSession` tolera exp SÓ p/ exibição;
+   em MUTAÇÃO o guard também aplica a checagem **anti-CSRF same-origin** — a rota fica fora do
+   matcher do proxy). Upload tem **pre-check de Content-Length** (`rejectOversizedRequest`)
+   ANTES do `formData()` (o parse materializa o corpo em memória) — **Content-Length é OBRIGATÓRIO** (411 se ausente; sem isso um corpo chunked
    passaria sem teto), excedente → 413 — e `mediaErrorResponse` **não vaza** a mensagem interna em
    prod (o erro vai pro **Sentry** via `captureServerException`; o `r2.ts` preserva a `cause`). Pipeline: multipart ≤5MB
    png/jpg/webp → sharp→WebP 512×512 (`image-optimizer.ts`, preset `avatar`) → R2
@@ -298,16 +344,19 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 ```
 src/
   app/
-    layout.tsx              Root (Geist fonts, data-sz-palette no <html>, Providers: Toaster)
+    layout.tsx              Root (Atkinson Hyperlegible Next + Bricolage Grotesque + Geist Mono,
+                            data-sz-palette no <html>, Providers: Toaster)
     (auth)/                 Grupo público (AuthSplitShell: form + imagem da comunidade)
       login/ · esqueci-senha/ · redefinir-senha/   (page + *-form.tsx client)
     (app)/                  Grupo logado (layout gate + avatar fresco + CommunityTopnav)
       page.tsx              / (HOME) — grid "Meus cursos" (CourseCard + .sz-progress)
       cursos/               /cursos "Todos os cursos" (catálogo c/ lock → página de vendas)
+      cursos/trilha/[track]/ Trilha (2d|3d): os cursos da trilha por nível (`lib/course-levels.ts`)
       cursos/[slug]/        Módulos/aulas + "continuar de onde parei"
       cursos/[slug]/aulas/[lessonId]/  Player (blocos + anexos + concluir + prev/next + outline
                                        + classificação do curso na sidebar — ver Contratos)
-      perfil/               Foto (upload R2) + editar nome/telefone + trocar senha (e-mail IMUTÁVEL)
+      perfil/               Avatar 3D (foto do editor, sem upload) + nome/telefone + cor + identidade
+                            na comunidade + IA e voz (`#ia`) + trocar senha (e-mail IMUTÁVEL)
       compras/              Tabela paginada + dialog de detalhe
     api/
       healthz/route.ts      liveness puro p/ o healthcheck do Railway (sem auth/upstream)
@@ -522,7 +571,8 @@ valida e só então importa o `server.js` standalone).
 - **Classificação do curso (estilo Udemy)**: o detalhe do curso traz `myRating`
   (`CourseRatingView {rating 1..5 passo 0.5, comment, feedbackAnswers, …} | null`) e
   `salesPageUrl`. Na página da aula, link **"Deixe uma classificação"** na sidebar (abaixo do
-  progresso) — renderizado SÓ com `myRating === null`; assim que a nota é salva o link some
+  progresso); na página do curso, o botão contornado **"Avaliar o curso"** (`trigger="button"`) —
+  renderizados SÓ com `myRating === null`; assim que a nota é salva o link some
   (sem edição posterior nesta fatia). Fluxo de 5 modais (`course-rating-flow.tsx`, Dialog do
   ui com `titleAlign='center'` + `onBack`): (1) estrelas com MEIA estrela (`StarRating` do
   `@sistemazero/ui` — clicar já persiste) → (2) frase pela nota + textarea → (3) 6 perguntas

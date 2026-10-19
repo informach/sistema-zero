@@ -196,7 +196,8 @@ arrasta; ampliada a atividade, a transmissão vira o flutuante; no celular empil
   (uuid) na consulta (`routes/live.ts`).
 - **Oficinas**: `LiveCatalog` agrupa as turmas por CURSO ("Suas oficinas": encontros, o próximo, as
   gravações para rever); "Conheça as oficinas" ficou só para o roteiro antigo (nada de divulgação).
-  `skin="adult"` para a comunidade adulta.
+  `skin="adult"` para a comunidade adulta (⚠️ desde 18/10/2026 a pele adulta usa a classe
+  `sz-card-sm` e o token `--topo`, que moram no `globals.css` da comunidade adulta).
 - ⭐⭐ **Desempenho** (pedido dela: "criança não tem paciência de esperar e repara tudo"). A sala é
   consultada a cada 3 s e chega como objeto NOVO (o relógio do servidor, o "visto há pouco" de
   cada um); nada disso pode re-renderizar a aula:

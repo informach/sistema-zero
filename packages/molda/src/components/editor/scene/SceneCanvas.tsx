@@ -50,6 +50,7 @@ import { SceneAnimationPoseControls } from './SceneAnimationPoseControls'
 import { SceneFirstSteps } from './SceneFirstSteps'
 import { type SceneSkinBrushMode, SceneSkinPaintControls } from './SceneSkinPaintControls'
 import { SceneSkinWeightMapControls } from './SceneSkinWeightMapControls'
+import { SceneStageDropdown } from './SceneStageDropdown'
 import { SceneTile } from './SceneTile'
 import { sceneCommand } from './sceneCommandRegistry'
 import { useCanvasHints } from './useCanvasHints'
@@ -593,7 +594,9 @@ function SceneCanvasAttempt({
         {shell && <ChevronDown aria-hidden="true" className="size-4" />}
       </summary>
       {/* Flutuando no palco (o Animar) o grupo fica à ESQUERDA: o menu abre para a direita. */}
-      <div className={dropClass(shell && slots.view === undefined ? 'stage' : 'right')}>
+      <SceneStageDropdown
+        className={dropClass(shell && slots.view === undefined ? 'stage' : 'right')}
+      >
         <Button variant="ghost" className="text-sm" onClick={() => view.viewport?.frame(true)}>
           Enquadrar só a escolhida
         </Button>
@@ -614,7 +617,7 @@ function SceneCanvasAttempt({
           </Button>
         ))}
         {viewExtras}
-      </div>
+      </SceneStageDropdown>
     </details>
   )
   const hints = useCanvasHints(mode)
@@ -626,7 +629,7 @@ function SceneCanvasAttempt({
         <span className={shell ? 'sr-only' : undefined}>{SCENE_SHELL_COPY.stageSettings}</span>
         {shell && <ChevronDown aria-hidden="true" className="size-4" />}
       </summary>
-      <div className={dropClass('settings')}>
+      <SceneStageDropdown className={dropClass('settings')}>
         {hints.hidden && (
           <>
             <Button className="text-sm" onClick={hints.restore}>
@@ -682,7 +685,7 @@ function SceneCanvasAttempt({
         <p className="flex min-h-11 items-center gap-2 px-1 text-sm">
           {copy.movementStep}: {movementStep.toLocaleString('pt-BR')}
         </p>
-      </div>
+      </SceneStageDropdown>
     </details>
   )
   // Sem slots (o desenho antigo e o teste que monta o palco sozinho): a faixa no pé do palco.

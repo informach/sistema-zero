@@ -316,7 +316,7 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
       expect(bounds.x).toBeGreaterThanOrEqual(previous.x + previous.width + 4)
     previous = bounds
   }
-  await expect(page.getByText('Trouxe 1 criação de volta!', { exact: true })).toHaveCount(0, {
+  await expect(page.getByText(COPY.gallery.imported(1), { exact: true })).toHaveCount(0, {
     timeout: 15000,
   })
   await page.screenshot({ path: info.outputPath('pintar-1440.png') })
@@ -371,7 +371,7 @@ test('basic authoring keeps the reference layout and exact imported key times', 
   await expect(page.getByLabel('Posição X', { exact: true })).toBeVisible()
   await expect(page.locator('canvas').first()).toBeVisible()
   await expect(page.getByRole('button', { name: 'Mover', exact: true })).toBeEnabled()
-  await expect(page.getByText('Trouxe 1 criação de volta!', { exact: true })).toHaveCount(0, {
+  await expect(page.getByText(COPY.gallery.imported(1), { exact: true })).toHaveCount(0, {
     timeout: 15000,
   })
   await page.screenshot({ path: info.outputPath('modelar-1440.png') })

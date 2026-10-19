@@ -44,7 +44,12 @@ function PensaWorkspace({
 }) {
   const state = usePensaProject(adapter.transport, initialProjectId)
   const { view, projects, loading, busy, error } = state
-  const credits = usePensaCredits(adapter.transport, view?.operation?.status, view?.revision?.id)
+  const credits = usePensaCredits(
+    adapter.transport,
+    view?.operation?.status,
+    view?.revision?.id,
+    adapter.mode,
+  )
   const chrome = usePensaHostChrome()
   const [draftText, setDraftText] = useState({ key: '', value: '' })
   const [kind, setKind] = useState<'planning' | 'help'>(initialHelpMissionId ? 'help' : 'planning')

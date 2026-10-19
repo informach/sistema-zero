@@ -83,14 +83,19 @@ export function setScenePieceCoordinates(
     ) as Vec3
   } else {
     if (field === 'dimensions') {
+      const size = current.bounds?.size
+      const message =
+        'O tamanho precisa ser maior que zero. Para dar espessura a uma face plana, use Puxar.'
+      requireScene(size, 'dimensions', message)
       requireScene(
-        current.bounds?.size.every((n) => n > 0) && values.every((n) => n > 0),
+        size.some((n) => n > 0) && values.every((n, axis) => (size[axis] === 0 ? n === 0 : n > 0)),
         'dimensions',
-        'O tamanho precisa ser maior que zero nos três eixos.',
+        message,
       )
-      next.scale = values.map(
-        (value, axis) =>
-          (Math.sign(current.trs.scale[axis]!) * value) / current.bounds!.size[axis]!,
+      next.scale = values.map((value, axis) =>
+        size[axis] === 0
+          ? current.trs.scale[axis]!
+          : (Math.sign(current.trs.scale[axis]!) * value) / size[axis]!,
       ) as Vec3
     } else next.rotation = quaternionFromEulerXYZ(values)
     const fixed = transformPoint(composeTransform(current.node.transform), current.localPivot)

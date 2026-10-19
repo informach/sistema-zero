@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { expect, test } from '@playwright/test'
 import { Vector3 } from 'three'
+import { COPY } from '../src/core/copy'
 import { sceneBounds } from '../src/scene/bounds'
 import { indexSceneDocument } from '../src/scene/documentIndex'
 import { sceneToJson } from '../src/scene/documentJson'
@@ -41,7 +42,7 @@ for (const theme of ['default', 'pink', 'dark'] as const) {
     await expect(page.getByLabel('Tamanho Y', { exact: true })).toHaveValue('2')
     await expect(page.getByLabel('Tamanho Z', { exact: true })).toHaveValue('8')
     await expect(page.getByLabel('Posição X', { exact: true })).toHaveValue('-5')
-    await expect(page.getByText('Trouxe 1 criação de volta!', { exact: true })).toHaveCount(0, {
+    await expect(page.getByText(COPY.gallery.imported(1), { exact: true })).toHaveCount(0, {
       timeout: 15000,
     })
     await page.evaluate(() => document.fonts.ready)

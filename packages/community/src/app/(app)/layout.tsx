@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { CommunityFrame } from '@/components/community/community-frame'
 import { AdultGamificationProvider } from '@/components/community/gamification-provider'
 import { actorLabel } from '@/lib/act'
-import { getMeReadonly } from '@/server/auth'
+import { getAvatarReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
 
@@ -15,16 +15,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const session = await getSession()
   if (!session || !learnerIdentity(session, 'adult')) redirect('/login')
 
-  // Avatar não vive nas claims do JWT → hidrata fresco do auth, best-effort e
-  // SOMENTE-LEITURA (layout é Server Component: refresh/escrita de cookie aqui
-  // LANÇA — "Cookies can only be modified in a Server Action or Route Handler").
-  // Access expirado/gateway fora → 401 → header cai no fallback de iniciais.
-  const me = await getMeReadonly()
-  const avatarUrl = me.status === 200 ? (me.body?.user?.avatarUrl ?? null) : null
+  // A imagem da pessoa é a FOTO DO AVATAR 3D, como no Kids (direção de arte de 18/10/2026): a
+  // foto enviada saiu. Best-effort e SOMENTE-LEITURA (layout é Server Component: refresh/escrita
+  // de cookie aqui LANÇA). Sem avatar, gateway fora ou access expirado → as iniciais.
+  const [avatar, gamification] = await Promise.all([
+    getAvatarReadonly().catch(() => null),
+    shell.members.getGamificationReadonly({ withRanking: true }).catch(() => null),
+  ])
+  const avatarUrl = avatar?.status === 200 ? (avatar.body?.photoUrl ?? null) : null
   const user = { ...session, avatarUrl }
-  const gamification = await shell.members
-    .getGamificationReadonly({ withRanking: true })
-    .catch(() => null)
 
   return (
     // `sz-app`: gancho do fundo da página (a aula troca para o fundo alternativo pelo CSS).

@@ -12,14 +12,23 @@ import { cn } from '#ui'
  * Sem dado (`unknown`) devolve `null`: o medidor SOME. Nunca mostre zero para
  * dizer "não consegui saber" — para a criança é a mesma coisa que "acabou".
  */
-export function ZappyCredits({ credits }: { credits?: AiCreditsView | null }): JSX.Element | null {
+export function ZappyCredits({
+  credits,
+  audience = 'kids',
+}: {
+  credits?: AiCreditsView | null
+  audience?: 'kids' | 'adult'
+}): JSX.Element | null {
+  const adulto = audience === 'adult'
   if (credits?.studioSource === 'openrouter')
     return (
       <div className="border-sz-border border-b px-4 py-1.5 text-xs text-sz-fg-mute">
-        Fonte no Estúdio: OpenRouter do responsável. O Pensa usa a franquia da família.
+        {adulto
+          ? 'Fonte no Estúdio: a sua conexão OpenRouter. O Pensa usa os pedidos da sua conta.'
+          : 'Fonte no Estúdio: OpenRouter do responsável. O Pensa usa a franquia da família.'}
       </div>
     )
-  const meter = resolveAiCredits(credits)
+  const meter = resolveAiCredits(credits, { audience })
   if (meter.state === 'unknown') return null
   const alerta = meter.state === 'low' || meter.state === 'exhausted'
   return (
@@ -32,7 +41,9 @@ export function ZappyCredits({ credits }: { credits?: AiCreditsView | null }): J
         <span aria-hidden="true">{meter.inline}</span>
       </span>
       <p className="text-xs text-sz-fg-mute">
-        Franquia da família, compartilhada entre Pensa e Zappy no Estúdio.
+        {adulto
+          ? 'Vale para o Pensa e o tutor do Estúdio.'
+          : 'Franquia da família, compartilhada entre Pensa e Zappy no Estúdio.'}
       </p>
     </div>
   )

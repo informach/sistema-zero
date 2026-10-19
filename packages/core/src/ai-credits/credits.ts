@@ -115,7 +115,63 @@ function quandoVolta(view: AiCreditsView, scope: AiCreditsScope): string {
     : `Tem mais no dia ${diaCivilPorExtenso(view.monthRenewsOn)}.`
 }
 
-export function resolveAiCredits(view: AiCreditsView | null | undefined): AiCreditsMeter {
+/**
+ * Para quem a frase fala. `kids` (o padrão) conta à criança que o bolso é da família; `adult`
+ * (comunidade adulta, 18/10/2026) fala com o dono da conta: "pedidos", sem família e sem emoji.
+ * O cálculo é o mesmo nos dois.
+ */
+export interface AiCreditsCopyOptions {
+  audience?: 'kids' | 'adult'
+}
+
+const PEDIDOS = (n: number) => (n === 1 ? 'pedido' : 'pedidos')
+
+function resolveAdultAiCredits(view: AiCreditsView): AiCreditsMeter {
+  if (view.unlimited) {
+    return {
+      state: 'unlimited',
+      remaining: Number.POSITIVE_INFINITY,
+      inline: 'Pedidos sem limite',
+      ariaLabel: 'Ajuda da IA: pedidos sem limite.',
+      exhausted: '',
+      renews: '',
+    }
+  }
+  const scope = bindingScope(view)
+  const remaining = scope === 'month' ? view.monthRemaining : view.dayRemaining
+  const limit = scope === 'month' ? view.monthLimit : view.dayLimit
+  const quando = scope === 'day' ? 'hoje' : 'este mês'
+  const volta = quandoVolta(view, scope)
+  if (remaining <= 0) {
+    const titulo = scope === 'day' ? 'Os pedidos de hoje acabaram' : 'Os pedidos deste mês acabaram'
+    return {
+      state: 'exhausted',
+      scope,
+      remaining: 0,
+      inline: titulo,
+      ariaLabel: `Ajuda da IA: ${titulo.toLowerCase()}. ${volta}`,
+      exhausted: `${titulo}. As ferramentas continuam abertas, só sem a ajuda da IA até renovar.`,
+      renews: volta,
+    }
+  }
+  const low = remaining <= aiCreditsLowThreshold(scope, limit)
+  const contagem = `${remaining} ${PEDIDOS(remaining)} ${quando}`
+  return {
+    state: low ? 'low' : 'plenty',
+    scope,
+    remaining,
+    inline: low ? `Só ${contagem}. ${volta}` : contagem,
+    ariaLabel: `Ajuda da IA: ${contagem}.`,
+    exhausted: '',
+    renews: volta,
+  }
+}
+
+export function resolveAiCredits(
+  view: AiCreditsView | null | undefined,
+  options: AiCreditsCopyOptions = {},
+): AiCreditsMeter {
+  if (isView(view) && options.audience === 'adult') return resolveAdultAiCredits(view)
   if (!isView(view)) {
     return {
       state: 'unknown',

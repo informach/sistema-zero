@@ -1,92 +1,113 @@
-import { Card } from '@sistemazero/ui/card'
-import { BookOpen, Lock, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Check, Lock } from 'lucide-react'
 import Link from 'next/link'
-import type { CatalogCourseView } from '@/lib/types'
+import { courseKicker, isCourseDone } from '@/lib/course-levels'
+import type { CatalogCourseView, CourseProgress } from '@/lib/types'
+import { CourseCover, ProgressBar } from './courses/course-cover'
 
 interface CatalogCourseCardProps {
   course: CatalogCourseView
+  /** Progresso de Meus cursos (aulas feitas); `null` quando o curso não é da pessoa. */
+  progress: CourseProgress | null
   /** URL final da página de vendas (metadata.salesPageUrl ?? FUNNEL_URL), resolvida no server. */
   salesUrl: string | null
 }
 
 /**
- * Card de "Todos os cursos": desbloqueado → entra no curso; bloqueado → cadeado
- * e clique leva à página de vendas (funil). Espelha o rodapé da referência
- * (ShieldCheck "Liberado" / Lock "Bloqueado").
+ * O cartão deitado de "Todos os cursos" (direção de arte de 18/10/2026): capa à esquerda, o eixo e
+ * o nível, o título e o estado com o botão: Concluído (Revisar curso), o progresso (Continuar),
+ * Liberado para você (Começar agora) ou Bloqueado (Conhecer o curso, na página de vendas em OUTRA
+ * aba, avisado no próprio cartão).
  */
-export function CatalogCourseCard({ course, salesUrl }: CatalogCourseCardProps) {
-  const body = (
-    <Card className="h-full overflow-hidden p-0 transition-shadow group-hover:shadow-lg">
-      <div className="relative aspect-video w-full overflow-hidden bg-muted">
-        {course.coverImageUrl ? (
-          // Capa pode ser URL externa arbitrária (autoria) → <img> simples,
-          // sem `next/image` (evita configurar remotePatterns por domínio).
-          <img
-            src={course.coverImageUrl}
-            alt=""
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-muted">
-            <BookOpen className="size-10 text-muted-foreground" />
-          </div>
-        )}
+export function CatalogCourseCard({ course, progress, salesUrl }: CatalogCourseCardProps) {
+  const href = `/cursos/${encodeURIComponent(course.courseSlug)}`
+  const done = course.hasAccess && isCourseDone({ milestones: course.milestones, progress })
+  const started = !done && (progress?.completedLessons ?? 0) > 0
+
+  return (
+    <article className="sz-card flex h-full flex-col overflow-hidden sm:flex-row">
+      <div className="relative aspect-video bg-(--topo) sm:aspect-auto sm:min-h-[12rem] sm:flex-[0_0_40%]">
+        <div className="absolute inset-0">
+          <CourseCover src={course.coverImageUrl} />
+        </div>
         {!course.hasAccess ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/55 backdrop-blur-[2px]">
-            <span className="flex size-12 items-center justify-center rounded-full border border-border bg-background/90 shadow-sm">
-              <Lock className="size-5 text-muted-foreground" />
-            </span>
-          </div>
+          <span className="sz-chip sz-chip-escuro absolute top-3 left-3">
+            <Lock aria-hidden />
+            Bloqueado
+          </span>
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col gap-3 p-4">
-        <div>
-          <h3 className="sz-display text-base">{course.title}</h3>
-          {course.subtitle ? (
-            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{course.subtitle}</p>
-          ) : null}
-        </div>
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-3 text-sm">
-          {/* Selos do Pen: "Liberado" na tinta de sucesso sobre o menta; "Bloqueado" neutro. */}
-          {course.hasAccess ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-2.5 py-1 font-semibold text-success-foreground text-xs">
-              <ShieldCheck className="size-4" />
-              Liberado
+      <div className="flex min-w-0 flex-1 flex-col gap-2.5 p-5 md:p-6">
+        <span className="sz-kicker">{courseKicker(course)}</span>
+        <h3 className="sz-h3">{course.title}</h3>
+        {!course.hasAccess ? (
+          <>
+            <span className="text-[0.85rem] text-muted-foreground">
+              Ainda não faz parte do seu acesso.
             </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 font-semibold text-muted-foreground text-xs">
-              <Lock className="size-4" />
-              Bloqueado
+            {salesUrl ? (
+              <>
+                {/* Página de vendas é EXTERNA (funil): nova aba, e o aviso fica à vista. */}
+                <a
+                  href={salesUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="sz-btn-outline sz-btn-sm mt-auto self-start"
+                >
+                  Conhecer o curso
+                  <ArrowRight aria-hidden />
+                </a>
+                <span className="text-[0.85rem] text-muted-foreground">
+                  Abre a página do curso em outra aba.
+                </span>
+              </>
+            ) : null}
+          </>
+        ) : done ? (
+          <>
+            <span className="sz-chip sz-chip-ok self-start">
+              <Check aria-hidden />
+              Concluído
             </span>
-          )}
-          {/* Sem `h-8 px-3 text-xs`: eles nunca valeram (a classe vencia as utilitárias) e o
-              botão sempre saiu com a altura padrão, que é a do Pen. */}
-          <span className="sz-btn-gradient">
-            {course.hasAccess ? 'Acessar curso' : 'Quero acesso'}
-          </span>
-        </div>
+            <Link
+              href={href}
+              prefetch={false}
+              className="sz-btn-outline sz-btn-sm mt-auto self-start"
+            >
+              Revisar curso
+            </Link>
+          </>
+        ) : started && progress ? (
+          <>
+            <div className="flex flex-col gap-1.5">
+              <div className="flex justify-between gap-3 text-[0.85rem] text-muted-foreground">
+                <span>
+                  {progress.completedLessons} de {progress.totalLessons} aulas
+                </span>
+                <span className="font-bold text-(--acao-texto)">{progress.percent}%</span>
+              </div>
+              <ProgressBar
+                value={progress.percent}
+                label={`Progresso em ${course.title}`}
+                className="h-2.5"
+              />
+            </div>
+            <Link href={href} prefetch={false} className="sz-btn sz-btn-sm mt-auto self-start">
+              Continuar
+            </Link>
+          </>
+        ) : (
+          <>
+            <span className="sz-chip sz-chip-acao self-start">Liberado para você</span>
+            <Link
+              href={href}
+              prefetch={false}
+              className="sz-btn-outline sz-btn-sm mt-auto self-start"
+            >
+              Começar agora
+            </Link>
+          </>
+        )}
       </div>
-    </Card>
+    </article>
   )
-
-  if (course.hasAccess) {
-    return (
-      <Link
-        href={`/cursos/${encodeURIComponent(course.courseSlug)}`}
-        className="group block h-full"
-      >
-        {body}
-      </Link>
-    )
-  }
-  if (salesUrl) {
-    // Página de vendas é EXTERNA (funil) → <a> em NOVA aba (aluno não sai da plataforma).
-    return (
-      <a href={salesUrl} target="_blank" rel="noopener noreferrer" className="group block h-full">
-        {body}
-      </a>
-    )
-  }
-  // Sem URL de vendas configurada → card informativo (não clicável).
-  return <div className="group block h-full">{body}</div>
 }

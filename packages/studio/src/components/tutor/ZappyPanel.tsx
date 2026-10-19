@@ -163,7 +163,7 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
     project?.id ?? null,
     open,
   )
-  const creditsMeter = resolveAiCredits(credits)
+  const creditsMeter = resolveAiCredits(credits, { audience: config?.audience })
   const [cooldownUntil, setCooldownUntil] = useState(0)
   const [now, setNow] = useState(Date.now())
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -716,7 +716,7 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
       {/* ⚠️ O botão "Perguntar" NÃO é desabilitado quando o saldo zera: o servidor
           é a autoridade, e um saldo velho numa aba aberta desde ontem trancaria a
           criança de graça. O aviso explica; a recusa real vem do BFF. */}
-      <ZappyCredits credits={credits} />
+      <ZappyCredits credits={credits} audience={config?.audience} />
 
       {project.kind === 'pro' && (
         <fieldset className="flex gap-2 border-b border-sz-border p-2">

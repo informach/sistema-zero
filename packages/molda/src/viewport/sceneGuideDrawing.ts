@@ -1,4 +1,4 @@
-import { BufferAttribute, BufferGeometry, Color, Points, PointsMaterial } from 'three'
+import { BufferAttribute, BufferGeometry, Color, DoubleSide, Points, PointsMaterial } from 'three'
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js'
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js'
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js'
@@ -13,7 +13,17 @@ export function guideLine(
 ) {
   const line = new LineSegments2(
     new LineSegmentsGeometry().setPositions(segments.flatMap(([a, b]) => [...a, ...b])),
-    new LineMaterial({ color, linewidth: width, depthTest, depthWrite: false, transparent: true }),
+    new LineMaterial({
+      color,
+      linewidth: width,
+      depthTest,
+      depthWrite: false,
+      transparent: true,
+      // Wide-line triangles expand in screen space. A reflected world matrix flips
+      // Three's face culling, but not these triangles' winding.
+      side: DoubleSide,
+      forceSinglePass: true,
+    }),
   )
   line.renderOrder = 20
   return line

@@ -1,18 +1,19 @@
+import { PageBand, PageBody } from '@/components/community/page'
 import { PurchasesClient, SubscriptionsSection } from './purchases-client'
 
 export const dynamic = 'force-dynamic'
 
 export default function PurchasesPage() {
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="sz-display text-2xl">Minhas compras</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Histórico das suas compras nesta conta.
-        </p>
-      </div>
-      <SubscriptionsSection />
-      <PurchasesClient />
-    </div>
+    <>
+      <PageBand
+        title="Compras e assinatura"
+        lead="O que você comprou, como pagou e a sua assinatura."
+      />
+      <PageBody className="gap-10">
+        <SubscriptionsSection />
+        <PurchasesClient />
+      </PageBody>
+    </>
   )
 }

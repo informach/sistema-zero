@@ -15,6 +15,8 @@ export interface KidsStudioTutorOptions {
   narrationEnabled: boolean
   voiceInputEnabled: boolean
   taskId: string | null
+  /** Para quem o medidor de IA fala (a comunidade adulta não tem "família"). Padrão: kids. */
+  audience?: 'kids' | 'adult'
 }
 
 /** StudioCore keeps the adapter; resolve the current mission at request time. */
@@ -25,6 +27,7 @@ export function useKidsStudioTutor({
   narrationEnabled,
   voiceInputEnabled,
   taskId,
+  audience = 'kids',
 }: KidsStudioTutorOptions) {
   const task = useRef(taskId)
   task.current = taskId
@@ -59,8 +62,9 @@ export function useKidsStudioTutor({
             openHelp: openStudioZappyHelp,
             cooldownMs: 1_500,
             credits: aiCredits,
+            audience,
           }
         : undefined,
-    [viewerId, zappyEnabled, aiCredits, narrationEnabled, voiceInputEnabled],
+    [viewerId, zappyEnabled, aiCredits, narrationEnabled, voiceInputEnabled, audience],
   )
 }
