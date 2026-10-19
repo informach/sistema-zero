@@ -847,3 +847,154 @@ por vez. Nenhum SQL/browser/servidor foi iniciado automaticamente após os tipos
 conferiu os18 hashes e oracle textual idêntico ao HEAD, sem novo bloqueio. P3 documental do
 quadro de subpaths Core foi corrigido; só essa linha difere do snapshot focado anterior.
 A qualificação integrada do Admin/recortes existentes permanece pendente, sem ampliar produto.
+
+## Conciliação3190 e cadeia backend real (19/10/2026)
+
+Checkpoint local5833b73cb preservou 317 arquivos e os recibos anteriores. Merge local
+0e20ea3bc incorporou 3190d9e08 sem conflitos, mantendo o novo audience de Zappy e a
+nota Adult da base. Não houve push, merge em staging principal ou deploy. Inventário
+final para incorporação: .cache/kids-configurable-journey/integration-files-vs-3190.txt
+(332 caminhos). A branch estava limpa após a conciliação.
+
+Cadeia nova usou a composição produtiva Members/Gateway, forwarder real, JWT RS256
+verificado contra JWKS loopback e PostgreSQL owned 127.0.0.1:5434. Cada execução criou
+banco novo e preservou o anterior; nenhum DROP/FORCE. Bootstrap V1 percorreu preparação,
+captura e publicação reais com ator system; não foi um INSERT de umaV1 fabricada.
+
+- admin-chain-r1.log: negativa preservada. O harness esperava leitura readonly com
+  token de perfil antigo sem claimKids, mas o Gateway recusou corretamente401
+  KIDS_LOGIN_REQUIRED. Não foi defeito de autorização do produto. A identidade QA
+  foi corrigida para separar perfil antigo 401, aluno Kids válido 403 e impersonação
+  readonly com claimact canônica; nenhuma fonte produtiva foi alterada.
+- admin-chain-r2.log e qa/admin-chain-result-kids_journey_admin_chain_20261019_r2.json:
+  EXIT0, sete cenários / 43 asserções, aproximadamente 6 s, banco novo homônimo.
+  Provou leituraV1 persistida/no-store; JWT/S2S e anti-spoof; equipe readonly;
+  admission com credencial dedicada e registro semXP; preview sem gravar;
+  preparação com ator confiável, candidato/hashes/versão fixos; retomada e avanço
+  explícito; hash inválido409; publicação V2 única com histórico e earned intactos;
+  expectedVersion antigo409. ScriptQA SHA256197c778f9f945873a25c6f782951ebcb264bf3f7ecaac48b5d90a179458b70df.
+
+Serviços QA47841–47843 encerrados por finally e ausência de listeners47841–47844
+conferida. Host devolvido ao root antes de Next/navegador. Escopo ainda NÃO provado:
+login/Auth issuer real, coorteAuth não vazia pelo handshake completo, Next/BFF/sessão
+no navegador, CSS/a11y e produção. A coorteAuth desta execução era vazia e as
+identidades eram assinadas localmente para QA. Os testes SQL prévios de fence/concorrência
+continuam provas separadas; esses sete cenários não repetiram essa cobertura.
+
+## Admin integrado em Next/Turbopack e Chrome/Edge (19/10/2026)
+
+Gate final r6: EXIT0, dez cenários reais (cinco por navegador), 42 checks explícitos do
+harness, além dos asserts Playwright não somados. Banco novo owned
+kids_journey_admin_browser_20261019_r6 em127.0.0.1:5434; sem DROP/FORCE. Node24.22.0,
+Next16.3.0 e Bun1.4.3 local, browsers instalados Chrome e Edge, sequenciais. Aplicação
+real Admin dev/Turbopack, sessão/cookies RS256 verificados por JWKS, BFF e composições
+produtivas Gateway/Members/forwarder/repositório, sem mock de fetch ou de banco.
+
+Provado em cada navegador: ausência de sessão redireciona ao login; sessão assinada
+carrega a política persistida; comparar mudança de modo; preparar com motivo; retomar
+o mesmo ID após reload sem advance automático; avançar explicitamente até ready;
+publicar manualmente; versão/auditoria/earned conferidos no PostgreSQL (V1→V2→V3).
+Equipe staff usa sessão real somente leitura e tentativa direta de escrita no BFF
+recebe403. Origem estrangeira recebe403. Ao parar o Gateway próprio, a tela mantém a
+versão carregada, mostra indisponibilidade e desabilita novas operações; não cria Faísca.
+Os500/ECONNREFUSED no log são dessa interrupção deliberada. pageerrors coletados=[];
+não é declaração de ausência de qualquer aviso em todos os caminhos do Admin.
+
+Negativos anteriores preservados, sem alterar asserções para esconder produto:
+
+- r1/r3: Turbopack recusou junction de dependências fora da raiz do worktree.
+- r2: tentativa de override do runner usou configuração raw sem defaults; falha do runner.
+- r4: modo alternativo Webpack encontrou node:crypto em instrumentation/sentry existente;
+  não qualificou o app. Nenhuma fonte desse código foi alterada para contornar o erro.
+- r5: Turbopack já abriu a página; lista de cursos recebeu404 porque o filtro do runner
+  selecionava path exato inexistente em vez da rota real wildcard members-admin-courses-read.
+  Corrigido somente o filtro QA; a UI recusou operar enquanto a lista não respondia.
+
+O runner final aplica temporariamente SOMENTE filesystem root/tracing para abranger as
+junctions dos worktrees. O restante da config, CSP, middleware, sessão e app é real.
+finally restaurou next.config.ts byte-a-byte: SHA original/restaurado
+26e44c6445c232ff0ba58567e98bba89dbe9cdf577d590a657921c5ac5d905bd;
+SHA durante o overlay37469204a2bdedc57e42ee7eb16467b60207aa84cc681c947a74f405012344b0.
+Core foi resolvido explicitamente para a fonte desta worktree, sem trocar versões.
+Isso não qualifica build/standalone de produção ou um install físico sem junctions.
+
+Recibos em .cache/kids-configurable-journey/:
+admin-browser-chain-r6.log, qa/admin-browser-chain-result-kids_journey_admin_browser_20261019_r6.json,
+qa/admin-browser-network-kids_journey_admin_browser_20261019_r6.json,
+qa/admin-next-config-r6-restoration.json e dez PNGs em
+qa/screenshots-kids_journey_admin_browser_20261019_r6/. Capturas desktop1440×1000 e
+mobile390×844 inspecionadas; campos/rótulos legíveis, painéis e readonly explícitos,
+sem corte de conteúdo observado. Não foi auditoria completa de acessibilidade.
+
+Todos os serviços próprios foram encerrados, ausência de listeners47841–47844 conferida.
+Sem commit/push após o gate por instrução do root. A fonte produtiva não precisou de
+correção nesta integração. Limites: identidades JWT emitidas localmente para QA e coorte
+Auth inicial vazia; não prova login/refresh Auth, migração de coorte real ou deploy.
+O fluxo visual editou modo; demais campos têm provas DOM/contrato específicas, sem
+alegar cobertura nativa de todas as combinações. Tipos finais pós-merge3190 aguardam
+janela; não extrapolar os tipos pré-merge para esta base.
+
+## Fechamento pós-merge: tipos e Auth/coorte real (19/10/2026)
+
+Tipos sobre a base conciliada3190: Core, Members, Kids, Admin e Gateway EXIT0/logs vazios
+em final-3190-{core,members,kids,admin,gateway}-types-1.log. Member Shell inicialmente
+EXIT2 apontou três fixtures desatualizadas, sem diagnóstico produtivo: courseId obrigatório,
+level obrigatório e import do resolveStudioTier retirado de produção. O foco preservou
+RED10pass/1fail/21asserts: a fixtureLLM chamava o export removido. Ajustes limitados aos três
+testes: identidade de curso explícita, level:null para o teste genérico de delta, e tier de
+preview Kids canônico no teste de textoLLM. Não reintroduz motor antigo, nem muda gates.
+GREEN11/24, Biome3/0 (sem alterações) e Member Shell incremental EXIT0/log vazio em
+final-3190-member-shell-types-2.log (~9,5s). Os outros cinco tipos não foram repetidos sem causa.
+
+Para fechar o limite da primeira integração com coorte vazia, executou-se nova cadeia REAL:
+Auth e Members com composições produtivas e DOIS bancos separados novos owned5434;
+Gateway real; login/chaves/JWKS emitidos pelo próprio Auth; sessão de responsável e aluno
+Kids reais. Nenhum JWT foi fabricado pelo runner nesta prova. O CLI produtivo
+scripts/bootstrap-kids-journey.ts initialize/advance/publish capturou a coorte via endpoint
+Auth S2S real e avançou o baseline; não houve seal manual nem INSERT de umaV1 pronta.
+
+Fixture sintética: três perfis criados antes da migrationAuth0023 (Construtor ativo com
+marcos históricos da primeira aventura, ativo semXP e arquivado semXP). A expansão manteve
+os três ready. Uma matrícula Kids local com maxProfiles5 forneceu o allowance real do
+cliente comum; não se usou passe de equipe para criar o novo perfil.
+
+Gate final auth-cohort-admission-chain-r3.log: EXIT0, sete cenários / 45 checks, ~6,6s.
+Bancos kids_journey_auth_chain_20261019_r3 e kids_journey_auth_members_chain_20261019_r3.
+
+- EnquantoV0/initializing, sessão de aluno emitida pelo Auth recebeu503 na leitura pública
+  de gamificação, sem level/view fabricados. É recusa explícita, não regressão para Faísca.
+- CLI capturou e processou os três owners, incluindo semXP/arquivado. Antes da exposição,
+  inspeção SQL readonly conferiu o baseline materializado e a versão ainda0.
+- V0→V1 preservou o Construtor: coder; studio+pinta; entry das duas primeiras etapas,
+  expanded das mesmas duas, reward das sete. São os direitos verdadeiros entre21 possíveis,
+  não uma concessão de todos21. O esperado foi derivado da entrada com1 posição concluída+
+  publicada, rankcoder e regra conhecida de base ausente: a próxima etapa expande ao entrar;
+  reward futuro sem base mantém o quirk legado e NÃO implica entrada. A leitura pública
+  com sessãoKids real retornou a mesma earned/policyVersion1. Owners semXP ficaram sem
+  novos postos, registrados para preservação futura; arquivado não foi reativado.
+- Repetir publish no CLI respondeu already-published e não duplicou histórico; ator system.
+- Com o lock de contaMembers retido por uma barreira QA, POST real de cliente criou perfil
+  e job duráveis pending. Não havia earned/registroMembers ainda; obter grantKids foi negado.
+  A grade parental conseguiu recuperar esse mesmo ID enquanto a chamada remota aguardava.
+- Ao liberar a barreira, o initializer Auth→Members com credencial dedicada materializou
+  owner/earned; o ACK permitiu Authready/jobcompleted. Só então foi emitida a sessãoKids,
+  que leu a política persistidaV1 como novo aluno, sem ferramentas globais indevidas.
+  Repetir o requestId retornou o mesmo perfil/job, sem consumir outro lugar no teto.
+
+Negativos do runner preservados em paresDBnovos: r1 usava sql.json raw após serializer
+Drizzle, corrigido para parâmetroJSONstring::jsonb; r2 tentava leitura normalreadSnapshot
+emV0 e foi corretamente recusado por InitializingError. Apenas a inspeção interna do
+baseline pré-publicação passou a SQLreadonly. Nenhuma guarda/fonte produtiva foi alterada.
+
+Recibos: qa/auth-chain-result-kids_journey_auth_chain_20261019_r3.json e
+qa/auth-chain-bootstrap-kids_journey_auth_chain_20261019_r3.log. ScriptQA SHA256
+3887c6436e592bfa95537f7847aae73f2c88663ee5169a6bdb9609b6f116e2d1.
+Todos serviços47841/47842/47845 encerrados; ausência de listeners conferida; host entregue
+à próxima janelaHub. Não houve build/browser extra, DROP/FORCE, dados reais ou produção.
+
+O gap Auth/coorte da primeira prova foi fechado localmente; os limites daquele recibo
+continuam históricos. Permanecem fora do aceite local: deploy/buildstandalone, escala/coorte
+representativa e ordem operacional emstaging/produção, auditoria completaa11y e combinações
+nativas de todos os campos. Retenção terminal continua somente desenho. Incorporação na
+base principal e ativação controlada pertencem ao root; nenhuma política foi ativada na
+plataforma. Este fechamento não autoriza remover contratos Adult/JS/Python legítimos.

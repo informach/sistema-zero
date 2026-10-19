@@ -1,4 +1,9 @@
 import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test'
+import {
+  analyzeKidsJourneyReadiness,
+  initialKidsJourneyPolicy,
+  KIDS_CREATOR_CAPABILITIES,
+} from '@sistemazero/core/journey'
 import { z } from 'zod'
 
 mock.module('server-only', () => ({}))
@@ -8,7 +13,20 @@ process.env.OPENROUTER_API_KEY ??= 'test-openrouter-key'
 
 const { completePensaJson } = await import('../src/server/pensa-llm')
 const { answerStudioZappy } = await import('../src/server/zappy-ai')
-const { resolveStudioTier } = await import('../src/lib/studio-tier')
+const { kidsStudioTier } = await import('../src/server/studio-unlocks')
+const policy = initialKidsJourneyPolicy()
+const staffTier = kidsStudioTier(
+  {
+    audience: 'kids',
+    kind: 'staff-preview',
+    policyVersion: 1,
+    mode: policy.mode,
+    tierAccess: policy.tierAccess,
+    capabilities: KIDS_CREATOR_CAPABILITIES,
+    readiness: analyzeKidsJourneyReadiness({ policy, catalog: [] }),
+  },
+  [],
+)
 
 describe('completePensaJson', () => {
   const previousApiKey = process.env.OPENROUTER_API_KEY
@@ -199,7 +217,7 @@ describe('completePensaJson', () => {
           selectedBlockId: null,
           lastError: null,
         },
-        tier: resolveStudioTier('god', 'staff'),
+        tier: staffTier,
         profileName: 'criador',
       })
 

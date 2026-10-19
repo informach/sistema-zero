@@ -336,3 +336,24 @@ Admin A separado: nove arquivos de transporte BFF e dois de teste foram escritos
 - [x] Atualizar documentação normativa que ainda aceitava perda de acesso ao publicar base.
 - [x] Qualificar Core→Members→Kids TSC em janela coordenada; logs vazios/EXIT0 e recibo específico.
 - [ ] Conferir integração nativa/Admin/JWT/banco e os demais gates T7; a jornada continua aberta.
+
+## Estado atual de integração (19/10/2026, após conciliação 3190)
+
+Os registros parciais acima são históricos por lote; não representam o inventário atual.
+EditorAdminC e Cleanup1 têm focados/tipos e review independentes encerrados nos recibos.
+
+- [x] Preservar317 arquivos no checkpoint 5833b73cb e backup raw antes da conciliação.
+- [x] Incorporar3190d9e08 por merge local 0e20ea3bc, sem conflitos ou push.
+- [x] Integrar backend real em banco novo owned: composição Members/Gateway, RS256/JWKS,
+  bootstrap auditadoV1, admission dedicado, preview, preparação/retomada/avanço e publicação CAS V2.
+  Sete cenários / 43 asserções EXIT0; limites e negativo inicial em _evidence.md.
+- [x] Qualificar Next/sessão/BFF/editor com backend e PostgreSQL reais no navegador: Chrome/Edge10 cenários,42 checksQA, imagens/negativos e overlay de filesystem restaurado em _evidence.md.
+- [x] Consolidar recibo final, limites operacionais e checklist de ativação/staging para o root. Tipos pós-merge dos seis pacotes0 e Auth real com coorte não vazia7/45 em _evidence.md; incorporação/ativação seguem o root.
+
+Nenhum bloqueio de fonte confirmado na cadeia backend. A configuração real de segredos,
+coorteAuth e a ordem operacional de rollout continuam requisitos de ativação; a prova local
+comJWT QA / coorte vazia não equivale a loginAuth ou migração de produção. Não ampliar produto.
+
+- [x] Fechar gap de coorteAuth vazia: CLI realcaptura3owners (Construtor/semXP/arquivado), preservaearned antesV1, e criação cliente pending→Members→ready com barreira real, sessãoKids e idempotência.
+- [x] Ajustar somente3fixtures detectadas no TSCMemberShell pós-merge; preservarRED, GREEN11/24, Biome3/0 e incrementalEXIT0.
+- [ ] Incorporação final pelo root e validação controlada emstaging antes de produção; não são deploys executados por este agente.

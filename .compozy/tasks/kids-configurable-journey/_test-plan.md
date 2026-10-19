@@ -1,6 +1,6 @@
 # Plano de testes — Jornada Kids configurável
 
-Status: checkpoints T1/T2 preservados; contrato/seed/persistência canônicos escritos, fora da composição. Core focado58/2763, SQL30/135 com fila/drain, purge3/25 e TSC Core/Members0 passaram. Admissão Auth, serviços/consumidores e cenários T3+/browser continuam planejados. Executar checks amplos em janela coordenada para não competir com a validação Python no PC de 16 GB.
+Status em 19/10/2026: contratos, persistência, admissão Auth, composição e consumidores foram implementados e qualificados por lotes, incluindo SQL44/206, purge3/25, matrizes locais e types descritos em _evidence.md. Editor Admin C e Cleanup1 têm tipos/review encerrados; após merge local da base3190, a cadeia backend real passou sete cenários / 43 asserções em banco novo owned. Next/sessão/BFF real e Chrome/Edge passaram dez cenários / 42 checksQA, conforme _evidence.md. Tipos pós-merge dos seis pacotes passaram; a prova complementar Auth real/CLI/S2S passou sete cenários / 45 checks com coorte não vazia, Construtor preservado e novo perfil pending→ready/sessãoKids real. Os JWT QA/coorte vazia são limites históricos da primeira prova. Incorporação principal e ativação em staging permanecem pendentes. Os registros abaixo preservam negativos e checkpoints históricos; não extrapolar cobertura de um lote para outro. Todo gate pesado depende de janela coordenada no PC de16GB.
 
 ## Validação T2 — janela coordenada de 18/10/2026
 

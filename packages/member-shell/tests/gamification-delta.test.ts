@@ -3,6 +3,7 @@ import { applyGamificationDelta } from '../src/lib/gamification-delta'
 import type { GamificationDelta, GamificationMeView } from '../src/lib/types'
 
 const initial: GamificationMeView = {
+  level: null,
   xp: 100,
   coins: { balance: 30 },
   streak: { current: 2, best: 5, activeToday: false },
