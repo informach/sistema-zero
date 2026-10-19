@@ -24,6 +24,11 @@ export interface MemberProxyConfig {
   /** A raiz `/` exige sessão? (home dos apps de aluno é a própria raiz). */
   isRootProtected: boolean
   /**
+   * Caminhos PÚBLICOS dentro de um prefixo protegido (ex.: `/ajuda/entrar`, a ajuda de quem não
+   * consegue entrar, debaixo do `/ajuda` logado do adulto). Vale o caminho exato e as subrotas.
+   */
+  publicPaths?: string[]
+  /**
    * Gate de PERFIL (estilo Netflix — só o kids usa). Quando setado (ex.: `/perfis`),
    * uma sessão da CONTA (sem a claim `pfl`) acessando a área de aprender é
    * redirecionada para ESTA rota (escolher um perfil); a própria rota e suas
@@ -71,9 +76,13 @@ export function createMemberProxy(cfg: MemberProxyConfig) {
       )
     }
 
+    const isPublic = (cfg.publicPaths ?? []).some(
+      (p) => pathname === p || pathname.startsWith(`${p}/`),
+    )
     const isProtected =
-      (cfg.isRootProtected && pathname === '/') ||
-      cfg.protectedPrefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+      !isPublic &&
+      ((cfg.isRootProtected && pathname === '/') ||
+        cfg.protectedPrefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`)))
     const isApi = pathname.startsWith('/api/')
     if (
       !isProtected &&

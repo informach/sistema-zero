@@ -1,7 +1,9 @@
 import type { CertificateValidationView } from '@sistemazero/member-shell/lib/types'
-import { BadgeCheck, RefreshCw, ShieldAlert } from 'lucide-react'
+import { BrandLogo } from '@sistemazero/ui/brand-logo'
+import { BadgeCheck, type LucideIcon, RefreshCw, SearchX, ShieldAlert } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import type { ReactNode } from 'react'
 import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
@@ -43,7 +45,8 @@ function formatDate(iso: string | null): string {
 /**
  * Página PÚBLICA (sem login) de validação de certificado — aberta pelo QR. FORA do
  * grupo `(app)` (sem gate). Mostra só dados não-sensíveis (nome + curso + data + série);
- * busca no servidor pelo client público do members.
+ * busca no servidor pelo client público do members. Pele adulta de 18/10/2026: a logo no alto, o
+ * cartão com a faixa verde de válido e frases diretas nos outros três estados.
  */
 export default async function ValidarPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -60,82 +63,125 @@ export default async function ValidarPage({ params }: { params: Promise<{ id: st
   const revoked = !v.valid && v.revoked
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-background p-6">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 text-center shadow-sm">
+    <div className="flex min-h-dvh flex-col bg-background">
+      <header className="border-border border-b bg-card">
+        <div className="sz-page flex min-h-20 items-center">
+          <BrandLogo fundo="claro" label="Sistema Zero" className="block h-auto w-44" />
+        </div>
+      </header>
+      <main className="sz-page flex flex-1 items-start justify-center pt-10 pb-16 md:items-center">
         {serviceError ? (
-          <>
-            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
-              <RefreshCw className="size-8" aria-hidden />
-            </div>
-            <h1 className="text-xl font-bold text-foreground">Não foi possível validar agora</h1>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Tivemos um tropeço ao conferir este certificado. Recarregue a página em alguns
-              instantes.
+          <StateCard
+            icon={RefreshCw}
+            chip="Fora do ar"
+            title="Não foi possível validar agora"
+            tone="neutro"
+          >
+            <p className="m-0">
+              A conferência falhou do nosso lado. Recarregue a página em alguns instantes.
             </p>
-          </>
+          </StateCard>
         ) : v.valid ? (
-          <>
-            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <BadgeCheck className="size-8" aria-hidden />
+          <article
+            aria-labelledby="certificado-valido"
+            className="sz-card w-full max-w-[41rem] overflow-hidden"
+          >
+            <div className="flex items-center gap-3 bg-(--pen-sucesso) px-7 py-5 text-white">
+              <BadgeCheck aria-hidden="true" className="size-8 flex-none" />
+              <h1 id="certificado-valido" className="sz-h2 text-white">
+                Certificado válido
+              </h1>
             </div>
-            <h1 className="text-xl font-bold text-foreground">Certificado válido</h1>
-            <p className="mt-4 text-base text-foreground">
-              <strong>{v.studentName}</strong> concluiu o curso
-            </p>
-            <p className="text-lg font-semibold text-primary">{v.courseTitle}</p>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Emitido pelo Sistema Zero em {formatDate(v.issuedAt)}
-            </p>
-            {v.serial ? (
-              <p className="mt-4 inline-block rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-                Nº {v.serial}
-              </p>
-            ) : null}
-          </>
-        ) : revoked ? (
-          <>
-            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-              <ShieldAlert className="size-8" aria-hidden />
-            </div>
-            <h1 className="text-xl font-bold text-foreground">Certificado revogado</h1>
-            <p className="mt-4 text-base text-foreground">
-              {v.studentName ? (
-                <>
+            <div className="flex flex-col gap-5 p-7">
+              <div className="flex flex-col gap-1">
+                <p className="m-0 text-[1.1rem]">
                   <strong>{v.studentName}</strong> concluiu o curso
-                </>
-              ) : (
-                'Este certificado foi emitido'
-              )}
-            </p>
-            {v.courseTitle ? (
-              <p className="text-lg font-semibold text-primary">{v.courseTitle}</p>
-            ) : null}
-            <p className="mt-3 text-sm text-muted-foreground">
-              Este certificado foi revogado e não é mais válido.
-            </p>
-            {v.revokedAt ? (
-              <p className="mt-2 text-xs text-muted-foreground">
-                Revogado em {formatDate(v.revokedAt)}
+                </p>
+                <p className="sz-h3 m-0">{v.courseTitle}</p>
+              </div>
+              <dl className="m-0 grid gap-3 sm:grid-cols-2">
+                <div className="sz-soft flex flex-col gap-1 px-4 py-3">
+                  <dt className="text-muted-foreground text-xs">Emitido pelo Sistema Zero em</dt>
+                  <dd className="m-0 font-bold">{formatDate(v.issuedAt)}</dd>
+                </div>
+                {v.serial ? (
+                  <div className="sz-soft flex flex-col gap-1 px-4 py-3">
+                    <dt className="text-muted-foreground text-xs">Número do certificado</dt>
+                    <dd className="m-0 font-bold font-mono">{v.serial}</dd>
+                  </div>
+                ) : null}
+              </dl>
+              <p className="m-0 text-muted-foreground">
+                Esta página confirma que o certificado foi emitido pela Sistema Zero e continua
+                válido. Ela abre para qualquer pessoa que escanear o QR do certificado.
               </p>
-            ) : null}
-            {v.serial ? (
-              <p className="mt-4 inline-block rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-                Nº {v.serial}
-              </p>
-            ) : null}
-          </>
-        ) : (
-          <>
-            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-              <ShieldAlert className="size-8" aria-hidden />
             </div>
-            <h1 className="text-xl font-bold text-foreground">Certificado não encontrado</h1>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Este certificado não existe ou não é mais válido. Verifique o código do QR.
+          </article>
+        ) : revoked ? (
+          <StateCard icon={ShieldAlert} chip="Revogado" title="Certificado revogado" tone="alerta">
+            {v.studentName && v.courseTitle ? (
+              <p className="m-0">
+                Emitido para <strong>{v.studentName}</strong>, no curso{' '}
+                <strong>{v.courseTitle}</strong>.
+              </p>
+            ) : null}
+            <p className="m-0">Este certificado foi revogado e não é mais válido.</p>
+            {v.revokedAt || v.serial ? (
+              <p className="m-0 text-muted-foreground text-xs">
+                {[
+                  v.revokedAt ? `Revogado em ${formatDate(v.revokedAt)}` : null,
+                  v.serial ? `Nº ${v.serial}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
+            ) : null}
+          </StateCard>
+        ) : (
+          <StateCard
+            icon={SearchX}
+            chip="Não encontrado"
+            title="Certificado não encontrado"
+            tone="alerta"
+          >
+            <p className="m-0">
+              Este certificado não existe ou não é mais válido. Confira se o QR foi lido inteiro.
             </p>
-          </>
+          </StateCard>
         )}
-      </div>
-    </main>
+      </main>
+    </div>
+  )
+}
+
+function StateCard({
+  icon: Icon,
+  chip,
+  title,
+  tone,
+  children,
+}: {
+  icon: LucideIcon
+  chip: string
+  title: string
+  tone: 'alerta' | 'neutro'
+  children: ReactNode
+}) {
+  return (
+    <article
+      aria-labelledby="certificado-estado"
+      className="sz-card flex w-full max-w-[41rem] flex-col gap-4 p-7"
+    >
+      <span
+        className={tone === 'alerta' ? 'sz-chip sz-chip-aviso self-start' : 'sz-chip self-start'}
+      >
+        <Icon aria-hidden="true" />
+        {chip}
+      </span>
+      <h1 id="certificado-estado" className="sz-h2">
+        {title}
+      </h1>
+      {children}
+    </article>
   )
 }

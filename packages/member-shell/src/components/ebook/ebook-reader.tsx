@@ -90,8 +90,7 @@ function ReaderSession({ pdfUrl, onOpened }: { pdfUrl: string; onOpened: () => v
               .join(''),
           )
       } catch {
-        if (!cancelled)
-          setError('Não foi possível mostrar esta página. Tente abrir novamente ou baixe o PDF.')
+        if (!cancelled) setError('Não foi possível mostrar esta página. Tente abrir novamente.')
       }
     })()
     return () => {

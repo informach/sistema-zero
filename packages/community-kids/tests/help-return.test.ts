@@ -11,6 +11,8 @@ describe('resolveHelpReturn', () => {
     expect(resolveHelpReturn('/cursos/corre-dino/aulas/abc-123')).toEqual({
       href: '/cursos/corre-dino/aulas/abc-123',
       label: 'Voltar para a fase',
+      courseSlug: 'corre-dino',
+      lessonId: 'abc-123',
     })
     expect(resolveHelpReturn('%2Fcursos%2Fcorre-dino%2Faulas%2Fabc')?.href).toBe(
       '/cursos/corre-dino/aulas/abc',

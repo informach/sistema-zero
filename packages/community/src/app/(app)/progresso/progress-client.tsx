@@ -2,7 +2,6 @@
 
 import type { AdultCreatorCapability, AdultJourneyView } from '@sistemazero/core/journey'
 import { apiSend } from '@sistemazero/member-shell/lib/api'
-import { badgeInfo } from '@sistemazero/member-shell/lib/badge-info'
 import type { GamificationMeView, MissionsMeView } from '@sistemazero/member-shell/lib/types'
 import { Input } from '@sistemazero/ui/input'
 import {
@@ -28,6 +27,7 @@ import { useAdultGamification } from '@/components/community/gamification-provid
 import { AdultMissions } from '@/components/community/missions'
 import { PageBand, PageBody } from '@/components/community/page'
 import { FIELD_CONTROL, ProfileField } from '@/components/community/profile/field'
+import { adultBadgeInfo } from '@/lib/adult-badges'
 import { cn } from '@/lib/cn'
 
 const CAPABILITY_LABELS: Record<AdultCreatorCapability, string> = {
@@ -73,7 +73,7 @@ function missingSentence(
       continue
     }
     parts.push(
-      item.milestone === 'showcase' ? `publicar o jogo de ${title} na Mostra` : `concluir ${title}`,
+      item.milestone === 'showcase' ? `publicar o jogo de ${title} no Mural` : `concluir ${title}`,
     )
   }
   const more = parts.length ? 'mais ' : ''
@@ -86,8 +86,8 @@ function missingSentence(
   if (unnamedShowcase)
     parts.push(
       unnamedShowcase === 1
-        ? `publicar ${more}um jogo na Mostra`
-        : `publicar ${more}${unnamedShowcase} jogos na Mostra`,
+        ? `publicar ${more}um jogo no Mural`
+        : `publicar ${more}${unnamedShowcase} jogos no Mural`,
     )
   return `${joinPt(parts)}.`
 }
@@ -267,7 +267,7 @@ function JourneySection({
 function BadgesSection({ badges }: { badges: GamificationMeView['badges'] }) {
   // O catálogo vem na ordem do members; as conquistadas sobem, sem mudar a ordem entre elas.
   const known = badges
-    .map((badge) => ({ badge, info: badgeInfo(badge.slug) }))
+    .map((badge) => ({ badge, info: adultBadgeInfo(badge.slug) }))
     .filter((entry) => entry.info !== null && entry.info !== undefined)
   const sorted = [
     ...known.filter((entry) => entry.badge.unlockedAt),

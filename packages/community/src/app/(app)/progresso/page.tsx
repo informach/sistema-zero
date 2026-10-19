@@ -14,7 +14,7 @@ const MAX_COURSE_LOOKUPS = 12
  * Os nomes dos cursos que a etapa em andamento ainda pede. A jornada fala em `courseId`, e as
  * listas do aluno não trazem o id: o detalhe de cada curso traz. Só quando há pendência, com teto,
  * e best-effort (sem nome, a frase conta os cursos). Os candidatos vêm de Meus cursos, primeiro os
- * que ainda têm um marco a cumprir (concluir ou mostrar na Mostra) e, entre eles, os que têm lugar
+ * que ainda têm um marco a cumprir (concluir ou publicar no Mural) e, entre eles, os que têm lugar
  * na jornada: são esses que a etapa pode estar pedindo. Uma conta com muitos cursos (equipe, chave
  * de todos os cursos) não gasta o teto com cursos já fechados.
  */

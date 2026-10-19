@@ -22,6 +22,8 @@ interface PublicStageProps {
   controls: ProjectControls
   /** Cabeçalho da página: fica DENTRO do palco para girar junto com ele. */
   header: ReactNode
+  /** Moldura do palco nu (sem console e sem giro). Padrão: a carta azul do Kids. */
+  frameClassName?: string
   /** O jogo. */
   children: ReactNode
 }
@@ -48,6 +50,7 @@ export function PublicStage({
   stageAspect,
   controls,
   header,
+  frameClassName,
   children,
 }: PublicStageProps) {
   const aspect = layoutAspect(stageAspect)
@@ -230,7 +233,8 @@ export function PublicStage({
     ? undefined
     : rotated
       ? 'bg-black'
-      : 'kids-unit-cyan rounded-3xl border-4 border-(--unit) bg-white shadow-[0_8px_0_color-mix(in_oklch,var(--unit)_40%,transparent)]'
+      : (frameClassName ??
+        'kids-unit-cyan rounded-3xl border-4 border-(--unit) bg-white shadow-[0_8px_0_color-mix(in_oklch,var(--unit)_40%,transparent)]')
 
   return (
     <div ref={rootRef} style={root}>

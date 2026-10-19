@@ -59,24 +59,34 @@ function ExamplePortrait() {
     <svg
       viewBox="0 0 120 120"
       role="img"
-      aria-label="Exemplo de avatar: uma mulher de cabelo grisalho preso e óculos"
+      aria-label="Exemplo de avatar: uma pessoa jovem de cabelo castanho na altura dos ombros e camiseta verde"
       className="block size-[3.6rem] flex-none rounded-full"
     >
       <rect width="120" height="120" fill="#E6EDFE" />
-      <path d="M18 120c4-24 22-36 42-36s38 12 42 36z" fill="#C8246F" />
-      <rect x="51" y="70" width="18" height="18" rx="6" fill="#E8B48F" />
-      <circle cx="60" cy="52" r="26" fill="#F2C29E" />
-      <path d="M33 50c0-18 12-28 27-28s27 10 27 28c-6-8-14-12-27-12s-21 4-27 12z" fill="#B9BEC9" />
-      <circle cx="60" cy="22" r="10" fill="#B9BEC9" />
-      <g fill="none" stroke="#0F1A33" strokeWidth="2.5">
-        <circle cx="49" cy="54" r="7" />
-        <circle cx="71" cy="54" r="7" />
-        <path d="M56 54h8" />
-      </g>
       <path
-        d="M52 66q8 6 16 0"
+        d="M32 50c0-20 12-30 28-30s28 10 28 30v30c0 4-3 6-6 6H38c-3 0-6-2-6-6z"
+        fill="#3B2A20"
+      />
+      <path d="M18 120c4-24 22-36 42-36s38 12 42 36z" fill="#0B7A54" />
+      <rect x="51" y="70" width="18" height="18" rx="6" fill="#B97A55" />
+      <circle cx="60" cy="52" r="24" fill="#D39A72" />
+      <path
+        d="M35 48c2-15 12-23 25-23s23 8 25 23c-9-2-18-7-23-14-4 7-14 12-27 14z"
+        fill="#3B2A20"
+      />
+      <path
+        d="M46 47h8M66 47h8"
         fill="none"
-        stroke="#9A4B35"
+        stroke="#3B2A20"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <circle cx="51" cy="55" r="2.6" fill="#0F1A33" />
+      <circle cx="69" cy="55" r="2.6" fill="#0F1A33" />
+      <path
+        d="M53 64q7 6 14 0"
+        fill="none"
+        stroke="#8A3F2B"
         strokeWidth="2.5"
         strokeLinecap="round"
       />

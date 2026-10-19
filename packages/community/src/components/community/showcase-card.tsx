@@ -17,7 +17,7 @@ import { cn } from '@/lib/cn'
 import { challengeMonthName } from './community/challenge-month'
 
 /**
- * O cartão de um jogo da Mostra (direção de arte de 18/10/2026): capa, selo do desafio, autor
+ * O cartão de um jogo do Mural (direção de arte de 18/10/2026): capa, selo do desafio, autor
  * (link para o perfil público), jogadas, Jogar em outra aba, Fazer minha versão e a conversa.
  * Quando o selo do post já diz que o jogo usa ferramentas que a pessoa não tem, o botão fica
  * tracejado e a frase explica; a checagem que vale continua no clique, pelo snapshot.

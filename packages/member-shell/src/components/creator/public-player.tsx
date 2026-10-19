@@ -4,7 +4,17 @@ import { readJsonBodyWithLimit } from '@sistemazero/core/http'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 import type { EditableStudioProject, Project, StudioProjectPlayerProps } from '@sistemazero/studio'
 import { describeProjectControls, type InternalPadMode } from '@sistemazero/studio/controls'
-import { Gamepad2, Maximize, Minimize } from 'lucide-react'
+import { BrandLogo } from '@sistemazero/ui/brand-logo'
+import {
+  AlertCircle,
+  ArrowUpRight,
+  Gamepad2,
+  Keyboard,
+  Loader2,
+  Maximize,
+  Minimize,
+  RotateCcw,
+} from 'lucide-react'
 import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   type GamepadVisibilityOverride,
@@ -85,17 +95,33 @@ function useViewport() {
 export function PublicPlayer({
   id,
   brandLabel = 'Sistema Zero',
+  skin = 'kids',
 }: {
   id: string
   brandLabel?: string
+  /**
+   * `adult` veste a página da comunidade adulta (direção de arte de 18/10/2026): o cabeçalho
+   * marinho com a logo, o nome do jogo e o crédito escritos, os botões com texto, uma linha de
+   * como jogar e nenhum mascote. O padrão é o Kids de sempre.
+   */
+  skin?: 'kids' | 'adult'
 }) {
   // `id` identifica todo o recurso assíncrono e todo o estado de execução do
   // jogo. Uma key nova desmonta a instância anterior de forma atômica: autor,
   // projeto, iframe, aspecto, foco e preferências nunca atravessam entre jogos.
-  return <PublicPlayerForProject key={id} id={id} brandLabel={brandLabel} />
+  return <PublicPlayerForProject key={id} id={id} brandLabel={brandLabel} skin={skin} />
 }
 
-function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: string }) {
+function PublicPlayerForProject({
+  id,
+  brandLabel,
+  skin,
+}: {
+  id: string
+  brandLabel: string
+  skin: 'kids' | 'adult'
+}) {
+  const adult = skin === 'adult'
   const [Player, setPlayer] = useState<PlayerComponent | null>(null)
   const [project, setProject] = useState<EditableStudioProject | null>(null)
   const [published, setPublished] = useState<StudioProjectPlayerProps['published']>()
@@ -342,7 +368,24 @@ function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: st
     return () => clearTimeout(timer)
   }, [status, reloadKey, gamepadVisible, controls.ownPadMode])
 
-  const header = (
+  const reload = () => {
+    setStatus('loading')
+    handleRestart()
+  }
+
+  const header = adult ? (
+    <AdultHeader
+      title={status === 'ready' ? title : null}
+      author={author}
+      brandLabel={brandLabel}
+      compact={rotated || gamepadVisible}
+      ready={status === 'ready'}
+      gamepadVisible={gamepadVisible}
+      onToggleGamepad={() => setGamepadOverride(toggledGamepadOverride(gamepadVisible))}
+      fullscreen={telaCheia}
+      onToggleFullscreen={alternarTelaCheia}
+    />
+  ) : (
     <header
       className={`relative z-10 flex shrink-0 items-center justify-between gap-3 px-4 ${
         rotated ? 'py-0' : 'py-2 sm:px-6 sm:py-3'
@@ -404,16 +447,24 @@ function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: st
   )
 
   return (
-    <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-background text-foreground">
+    <main
+      className={`relative flex h-dvh w-full flex-col overflow-hidden ${
+        adult
+          ? 'bg-[color-mix(in_oklab,var(--topo)_78%,black)] text-(--topo-texto)'
+          : 'bg-background text-foreground'
+      }`}
+    >
       {/* Fundo lúdico: dois brilhos suaves da marca (cyan/lime) — o jogo é a estrela. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-70"
-        style={{
-          background:
-            'radial-gradient(60rem 40rem at 12% -10%, color-mix(in oklch, var(--kids-cyan) 22%, transparent), transparent 60%), radial-gradient(50rem 36rem at 100% 110%, color-mix(in oklch, var(--kids-lime) 22%, transparent), transparent 60%)',
-        }}
-      />
+      {adult ? null : (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-70"
+          style={{
+            background:
+              'radial-gradient(60rem 40rem at 12% -10%, color-mix(in oklch, var(--kids-cyan) 22%, transparent), transparent 60%), radial-gradient(50rem 36rem at 100% 110%, color-mix(in oklch, var(--kids-lime) 22%, transparent), transparent 60%)',
+          }}
+        />
+      )}
 
       {status === 'ready' && Player && project ? (
         <PublicStage
@@ -427,6 +478,7 @@ function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: st
           stageAspect={stageAspect}
           controls={controls}
           header={header}
+          frameClassName={adult ? 'rounded-2xl border-2 border-(--topo-borda) bg-black' : undefined}
         >
           <Player
             key={reloadKey}
@@ -446,6 +498,11 @@ function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: st
             title={title}
           />
         </PublicStage>
+      ) : adult ? (
+        <>
+          {header}
+          <AdultStatus status={status} runtimeError={runtimeError} onReload={reload} />
+        </>
       ) : (
         <>
           {header}
@@ -473,6 +530,169 @@ function PublicPlayerForProject({ id, brandLabel }: { id: string; brandLabel: st
           </div>
         </>
       )}
+      {adult && status === 'ready' && !rotated && !gamepadVisible ? (
+        <div className="relative z-10 flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 pb-4 text-[17px] sm:px-7">
+          <span className="flex items-start gap-2">
+            <Keyboard aria-hidden="true" className="mt-0.5 size-5 flex-none" />
+            <span>
+              No computador, jogue pelo teclado. No celular, toque em{' '}
+              <strong className="text-white">Controles na tela</strong>.
+            </span>
+          </span>
+          <a
+            href={SITE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-12 items-center gap-1.5 font-bold text-(--sz-community-action-light) underline underline-offset-4"
+          >
+            Quer criar um jogo assim? Conheça a Sistema Zero
+            <ArrowUpRight aria-hidden="true" className="size-5" />
+          </a>
+        </div>
+      ) : null}
     </main>
+  )
+}
+
+const ADULT_BUTTON =
+  'inline-flex min-h-12 items-center gap-2 rounded-xl px-4 font-bold text-[17px] focus-visible:outline-3 focus-visible:outline-(--sz-community-action-light) focus-visible:outline-offset-2'
+
+/** O cabeçalho marinho da página pública na comunidade adulta. */
+function AdultHeader({
+  title,
+  author,
+  brandLabel,
+  compact,
+  ready,
+  gamepadVisible,
+  onToggleGamepad,
+  fullscreen,
+  onToggleFullscreen,
+}: {
+  title: string | null
+  author: string | null
+  brandLabel: string
+  /** Com o console ou o palco girado a altura é disputada: sai a logo. */
+  compact: boolean
+  ready: boolean
+  gamepadVisible: boolean
+  onToggleGamepad: () => void
+  fullscreen: boolean
+  onToggleFullscreen: () => void
+}) {
+  return (
+    <header
+      className={`relative z-10 flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-(--topo-borda) border-b bg-(--topo) px-4 ${
+        compact ? 'py-1.5' : 'py-3 sm:px-7'
+      }`}
+    >
+      <div className="flex min-w-0 flex-1 items-center gap-3.5">
+        {compact ? null : (
+          <>
+            <BrandLogo
+              fundo="escuro"
+              label={brandLabel}
+              className="hidden h-auto w-[132px] flex-none sm:block"
+            />
+            <span
+              aria-hidden="true"
+              className="hidden h-8 w-px flex-none bg-(--topo-borda) sm:block"
+            />
+          </>
+        )}
+        <div className="flex min-w-0 flex-col leading-tight">
+          <h1 className="m-0 truncate font-extrabold text-[22px] text-white [font-family:var(--font-display)]">
+            {title ?? 'Jogo da comunidade'}
+          </h1>
+          <span className="truncate text-[17px]">
+            {author ? (
+              <>
+                feito por <strong className="text-white">{author}</strong> na comunidade{' '}
+                {brandLabel}
+              </>
+            ) : (
+              <>feito na comunidade {brandLabel}</>
+            )}
+          </span>
+        </div>
+      </div>
+      {ready ? (
+        <div className="flex flex-wrap gap-2.5">
+          <button
+            type="button"
+            aria-pressed={gamepadVisible}
+            onClick={onToggleGamepad}
+            className={`${ADULT_BUTTON} border-2 border-(--topo-borda) text-white hover:bg-(--topo-borda) aria-pressed:bg-(--topo-borda)`}
+          >
+            <Gamepad2 aria-hidden="true" className="size-5" />
+            Controles na tela
+          </button>
+          {/* Com o console, a tela cheia mora na barra dele (o alvo é o corpo do console). */}
+          {gamepadVisible ? null : (
+            <button
+              type="button"
+              onClick={onToggleFullscreen}
+              className={`${ADULT_BUTTON} bg-primary text-primary-foreground hover:bg-(--primary-hover)`}
+            >
+              {fullscreen ? (
+                <Minimize aria-hidden="true" className="size-5" />
+              ) : (
+                <Maximize aria-hidden="true" className="size-5" />
+              )}
+              {fullscreen ? 'Sair da tela cheia' : 'Tela cheia'}
+            </button>
+          )}
+        </div>
+      ) : null}
+    </header>
+  )
+}
+
+/** Abrindo, link sem jogo e erro ao rodar, sem o mascote do Kids. */
+function AdultStatus({
+  status,
+  runtimeError,
+  onReload,
+}: {
+  status: 'loading' | 'ready' | 'error'
+  runtimeError: string | null
+  onReload: () => void
+}) {
+  return (
+    <div className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-3 px-6 text-center text-[17px]">
+      {status === 'loading' ? (
+        <div role="status" className="flex flex-col items-center gap-3">
+          <Loader2 aria-hidden="true" className="size-10 animate-spin" />
+          <p className="m-0 font-bold text-[20px] text-white">Preparando o jogo…</p>
+        </div>
+      ) : (
+        <div role="alert" className="flex max-w-md flex-col items-center gap-3">
+          <AlertCircle aria-hidden="true" className="size-10" />
+          <p className="m-0 font-bold text-[20px] text-white">
+            {runtimeError ? 'Não foi possível executar este jogo.' : 'Não encontramos este jogo.'}
+          </p>
+          {runtimeError ? (
+            <>
+              <button
+                type="button"
+                onClick={onReload}
+                className={`${ADULT_BUTTON} bg-primary text-primary-foreground hover:bg-(--primary-hover)`}
+              >
+                <RotateCcw aria-hidden="true" className="size-5" />
+                Recarregar
+              </button>
+              <details className="w-full text-left">
+                <summary className="min-h-12 cursor-pointer py-3 font-bold">Detalhes</summary>
+                <pre className="m-0 whitespace-pre-wrap break-words font-mono text-[17px]">
+                  {runtimeError}
+                </pre>
+              </details>
+            </>
+          ) : (
+            <p className="m-0">O link pode estar errado ou o jogo não está mais disponível.</p>
+          )}
+        </div>
+      )}
+    </div>
   )
 }

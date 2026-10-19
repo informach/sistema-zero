@@ -235,15 +235,14 @@ export const KIDS_LESSON_COPY: LessonCopy = {
   },
   material: {
     tituloDoLivro: 'Material da aventura',
-    previaDoLivro: 'Prévia do material. O livro 3D e o download do PDF aparecem na fase publicada.',
-    paraConcluir: 'Abra o livro ou baixe o PDF para concluir esta parte.',
+    previaDoLivro: 'Prévia do material. O livro 3D aparece na fase publicada.',
+    paraConcluir: 'Abra o livro para concluir esta parte.',
     caderno: 'Mapa da Aventura',
     livroNaAulaPublicada: 'O livro aparece na fase publicada.',
     cadernoIndisponivel:
       'O Mapa da Aventura ainda não está disponível nesta fase. Você pode continuar.',
     vincularPdf: 'Vincule um PDF a este bloco de materiais para mostrar o Mapa da Aventura aqui.',
     baixaNaAula: 'baixa na fase',
-    nomeDoArquivo: 'Material da fase',
   },
   certificado: {
     locked: 'Conclua as fases de antes e seu certificado aparece aqui!',

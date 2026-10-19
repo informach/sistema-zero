@@ -37,7 +37,7 @@ function Participant({
   if (entry.profileId)
     return (
       <Link
-        href={`/criador/${entry.profileId}`}
+        href={`/criador/${entry.profileId}?de=ranking`}
         prefetch={false}
         className={cn('sz-link', className)}
       >

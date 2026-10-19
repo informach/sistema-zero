@@ -40,7 +40,7 @@ export default async function AdultShowcasePage({
     <>
       <PageBand
         back={{ href: '/comunidade', label: 'Comunidade' }}
-        title="Mostra dos criadores"
+        title="Mural dos Criadores"
         lead="Jogos prontos da comunidade. Jogue no navegador, comente e faça a sua versão no Estúdio."
         actions={
           // Publicar é pelo Compartilhar do Estúdio; sem ele liberado, o Criar explica o porquê.
@@ -50,7 +50,7 @@ export default async function AdultShowcasePage({
           </Link>
         }
       >
-        <nav aria-label="Filtros da mostra" className="mt-2 flex flex-wrap items-center gap-2">
+        <nav aria-label="Filtros do Mural" className="mt-2 flex flex-wrap items-center gap-2">
           <Link
             href="/mural-dos-criadores-adulto"
             prefetch={false}

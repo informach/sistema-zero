@@ -9,7 +9,7 @@ import { apiGet } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import type { HubChannelView, HubSpaceView } from '@/lib/types'
 
-/** O espaço com os canais (só os fóruns: a Mostra tem o próprio cartão). */
+/** O espaço com os canais (só os fóruns: o Mural tem o próprio cartão). */
 interface ForumSpace {
   space: HubSpaceView
   channels: HubChannelView[] | null
@@ -22,7 +22,7 @@ type HomeState =
 
 /**
  * Os espaços da comunidade adulta (direção de arte de 18/10/2026): cada fórum com os canais e o
- * selo de novidade, e a Mostra num cartão próprio. Canais que não carregam não derrubam o cartão
+ * selo de novidade, e o Mural num cartão próprio. Canais que não carregam não derrubam o cartão
  * do espaço: o "Entrar" continua lá.
  */
 export function CommunityHomeClient() {
@@ -169,7 +169,7 @@ function ForumCard({ forum: { space, channels } }: { forum: ForumSpace }) {
   )
 }
 
-/** Ilustração decorativa da Mostra: três capas de jogo lado a lado, nas cores fixas da marca. */
+/** Ilustração decorativa do Mural: três capas de jogo lado a lado, nas cores fixas da marca. */
 function ShowcaseArt() {
   return (
     <svg
@@ -216,7 +216,7 @@ function ShowcaseSpaceCard({ space }: { space: HubSpaceView }) {
         </p>
         <div className="mt-auto flex flex-wrap gap-3 pt-1">
           <Link href="/mural-dos-criadores-adulto" prefetch={false} className="sz-btn">
-            Ver a Mostra
+            Ver o Mural
           </Link>
           <Link href="/desafios" prefetch={false} className="sz-btn-outline">
             Desafio do mês

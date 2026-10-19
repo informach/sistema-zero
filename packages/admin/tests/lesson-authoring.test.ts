@@ -255,9 +255,7 @@ describe('lesson authoring integrity', () => {
       intent: 'material' as const,
       completion: { version: 1 as const, blockIds: ['book'] },
     }
-    expect(sectionCompletionSummary(material, document.blocks)).toBe(
-      'Abrir o livro ou baixar o PDF',
-    )
+    expect(sectionCompletionSummary(material, document.blocks)).toBe('Abrir o livro')
     expect(sectionCompletionCandidates(document, material)[0]?.issue).toBeUndefined()
     expect(sectionCompletionSummary(document.sections[0]!, document.blocks)).toContain(
       '1 objetivo em Dino',

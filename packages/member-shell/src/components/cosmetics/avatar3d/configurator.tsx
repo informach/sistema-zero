@@ -3,7 +3,7 @@
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 
 import { Camera, Check, Loader2, Lock, RefreshCw, Shuffle, X } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import type { AvatarReturnPath } from '../../../lib/avatar-return'
 import {
@@ -17,23 +17,11 @@ import {
 import { cn } from '../../../lib/cn'
 import type { AvatarPartView, AvatarStateView } from '../../../lib/types'
 import { KidsBackButton, KidsMascot, ZappyCoin } from '../presentation'
+import { AVATAR_MESSAGES, type CosmeticsSkin } from '../skin'
 import { AvatarScene, type CaptureFn } from './avatar-scene'
+import type { AdultAvatarConfiguratorProps } from './configurator-adult'
+import { type LoadState, type Mode, POSES, type Slots } from './configurator-shared'
 import { AvatarThumb } from './thumb-canvas'
-
-type Slots = Record<string, AvatarSlot>
-type Mode = 'customize' | 'photo'
-type LoadState = 'loading' | 'ready' | 'error'
-
-/** Poses do `Poses.glb` (valor = nome da animação; rótulo PT didático). */
-const POSES = [
-  { id: 'Idle', label: 'Parado' },
-  { id: 'Chill', label: 'Relax' },
-  { id: 'Cool', label: 'Estiloso' },
-  { id: 'Punch', label: 'Soco' },
-  { id: 'Ninja', label: 'Ninja' },
-  { id: 'King', label: 'Rei' },
-  { id: 'Busy', label: 'Ocupado' },
-] as const
 
 /** Uma peça na grade — com MINIATURA renderizada (igual WawaSensei). "Nenhum" mostra "✕". */
 function ItemTile({
@@ -95,14 +83,24 @@ function ItemTile({
  * lojinha por categoria com MINIATURAS, paleta de cores, e duas abas — **Personalizar**
  * (vestir) e **Cabine de fotos** (escolher pose + posicionar a câmera e tirar a foto). A
  * "foto" (snapshot) vira o avatar em todo o app; a config 3D também é salva. Estado no members.
+ *
+ * `skin="adult"` (comunidade adulta) usa a MESMA lógica com outra tela (`configurator-adult.tsx`):
+ * título, voltar com texto, painel ao lado no computador e frases sem emoji (`../skin.ts`).
+ * ⚠️ A tela adulta chega por `adultView` (ver `configurator-adult-entry.tsx`), nunca por import
+ * daqui: importada aqui, ela iria no pacote do Kids, que nunca a desenha.
  */
 export function AvatarConfigurator({
   dark,
   returnTo,
+  skin = 'kids',
+  adultView: AdultView,
 }: {
   dark: boolean
   returnTo: AvatarReturnPath
+  skin?: CosmeticsSkin
+  adultView?: ComponentType<AdultAvatarConfiguratorProps>
 }) {
+  const messages = AVATAR_MESSAGES[skin]
   // Sair do avatar = navegação DURA para o destino interno permitido, NÃO `router.push`.
   // A foto nova do avatar
   // precisa aparecer em TODO lugar (menu, tab bar, quarto, perfil), e o avatar do menu/tab bar
@@ -256,9 +254,7 @@ export function AvatarConfigurator({
       })
       const body = await res.json().catch(() => null)
       if (!res.ok) {
-        toast.error(
-          res.status === 402 ? 'Você ainda não tem moedas suficientes!' : 'Não consegui comprar.',
-        )
+        toast.error(res.status === 402 ? messages.notEnoughCoins : messages.buyRefused)
         return
       }
       setState((s) =>
@@ -276,9 +272,9 @@ export function AvatarConfigurator({
       // Compra já equipa (a criança quer ver na hora) e desarma a confirmação.
       setPendingBuy(null)
       setSlots((sl) => ({ ...sl, [part.category]: { ...sl[part.category], asset: part.id } }))
-      toast.success('Desbloqueado! 🎉')
+      toast.success(messages.bought)
     } catch {
-      toast.error('Não consegui comprar agora.')
+      toast.error(messages.buyFailed)
     } finally {
       setBusy(null)
     }
@@ -311,16 +307,16 @@ export function AvatarConfigurator({
             const fd = new FormData()
             fd.append('file', new File([blob], 'avatar.png', { type: 'image/png' }))
             const photo = await fetch('/api/members/avatar/snapshot', { method: 'POST', body: fd })
-            if (!photo.ok) toast.error('Avatar salvo, mas a foto não atualizou agora.')
+            if (!photo.ok) toast.error(messages.photoNotUpdated)
           }
         } catch {
           // ignora — foto é cosmética; a próxima vez tenta de novo
         }
       }
-      toast.success(redirect ? 'Avatar salvo! 😄' : 'Mudanças salvas! 😄')
+      toast.success(redirect ? messages.savedAndLeaving : messages.saved)
       if (redirect) exitAvatar()
     } catch {
-      toast.error('Não consegui salvar agora. Tente de novo!')
+      toast.error(messages.saveFailed)
     } finally {
       setSaving(false)
     }
@@ -330,6 +326,41 @@ export function AvatarConfigurator({
   const currentColor = slots[category]?.color
   const items = partsByCategory.get(category) ?? []
   const activePose = mode === 'photo' ? pose : 'Idle'
+
+  if (skin === 'adult' && AdultView) {
+    return (
+      <AdultView
+        returnTo={returnTo}
+        dark={dark}
+        state={state}
+        loadState={loadState}
+        slots={slots}
+        balance={balance}
+        coinsUnlimited={coinsUnlimited}
+        mode={mode}
+        onMode={setMode}
+        pose={pose}
+        onPose={setPose}
+        category={category}
+        onCategory={setCategory}
+        busy={busy}
+        saving={saving}
+        hasLocked={hasLocked}
+        pendingPart={pendingBuy?.part ?? null}
+        items={items}
+        palette={palette}
+        currentColor={currentColor}
+        activePose={activePose}
+        onReady={onReady}
+        onRetry={() => void loadAvatar()}
+        onRandomize={randomize}
+        onSave={() => save({ redirect: mode === 'photo' || returnTo === '/' })}
+        onSelectPart={selectPart}
+        onCancelBuy={cancelPendingBuy}
+        onSelectColor={selectColor}
+      />
+    )
+  }
 
   if (loadState === 'error') {
     return (

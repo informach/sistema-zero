@@ -36,6 +36,7 @@ export function RoomCanvas({
   onPaintWall,
   paintColor = null,
   staticView = false,
+  emptyHint = 'Toque numa peça na lojinha para montar seu quarto! 🛋️',
 }: {
   state: RoomStateView
   mode: 'edit' | 'view'
@@ -51,6 +52,8 @@ export function RoomCanvas({
   paintColor?: string | null
   /** Cena estática (perfil público de um colega) → sem loop de animação contínuo. */
   staticView?: boolean
+  /** Convite do editor vazio (a pele adulta passa o dela; o padrão é o do Kids). */
+  emptyHint?: string
 }) {
   const dark = Boolean(lightingPreset(resolveRoomAppearance(state).lightingId).dark)
   // Alternativa textual da cena 3D p/ leitores de tela (no modo `view`, ex.: perfil público de um
@@ -87,7 +90,7 @@ export function RoomCanvas({
             dark ? 'text-white/85' : 'text-foreground/70',
           )}
         >
-          Toque numa peça na lojinha para montar seu quarto! 🛋️
+          {emptyHint}
         </p>
       ) : null}
     </div>

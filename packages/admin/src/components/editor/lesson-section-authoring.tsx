@@ -495,7 +495,7 @@ export function LessonSectionAuthoring({
                       variant="outline"
                       onClick={() => patch(editing.id, { intent: 'material' }, true)}
                     >
-                      Usar Material do curso para avançar ao abrir ou baixar o caderno
+                      Usar Material do curso para avançar ao abrir o livro
                     </Button>
                   )}
                 <SectionCompletionEditor

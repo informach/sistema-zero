@@ -422,7 +422,7 @@ export function SpaceViewClient({
     />
   ) : null
 
-  // ── A Mostra: a grade de jogos; "Comentários e reações" abre a conversa no lugar da grade ──
+  // ── O Mural: a grade de jogos; "Comentários e reações" abre a conversa no lugar da grade ──
   if (showcase) {
     if (detail) return <div className="mx-auto w-full max-w-[46rem]">{detail}</div>
     return (
@@ -431,7 +431,7 @@ export function SpaceViewClient({
           <p className="sz-card p-6 text-center text-muted-foreground">
             {showcaseFilter?.challengeKey
               ? 'Nenhum jogo no desafio deste mês ainda. Publique o seu pelo Estúdio.'
-              : 'Nenhum jogo na Mostra ainda. Publique o seu pelo Estúdio.'}
+              : 'Nenhum jogo no Mural ainda. Publique o seu pelo Estúdio.'}
           </p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -740,7 +740,7 @@ function SpaceViewSkeleton() {
   )
 }
 
-/** Esqueleto da grade da Mostra: três cartões de jogo. */
+/** Esqueleto da grade do Mural: três cartões de jogo. */
 function ShowcaseSkeleton() {
   return (
     <div aria-busy="true" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -909,7 +909,7 @@ function ThreadDetail({
   const author = thread.authorDisplayName ?? authorLabel(thread.authorId)
   const ref = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
-  // Uma coisa por vez (celular, ou a Mostra): a conversa abre no lugar da lista e o topo dela
+  // Uma coisa por vez (celular, ou o Mural): a conversa abre no lugar da lista e o topo dela
   // precisa aparecer, senão a pessoa fica no meio da página onde estava a lista. O foco vem para o
   // título, porque o botão que abriu sumiu com a lista. A `key` do tópico remonta o componente a
   // cada conversa aberta.

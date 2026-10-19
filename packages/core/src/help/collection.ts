@@ -16,6 +16,8 @@ export const HELP_COLLECTION_ICONS = [
   'gamepad',
   'sparkles',
   'book',
+  'users',
+  'user',
 ] as const
 export type HelpCollectionIcon = (typeof HELP_COLLECTION_ICONS)[number]
 

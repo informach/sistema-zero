@@ -12,7 +12,7 @@ const descriptions: Record<LessonBlockKind, string> = {
   studio: 'Criar um jogo na aula ou receber um projeto da galeria.',
   pinta: 'Desenhar na aula ou receber desenhos da galeria.',
   rich_text: 'Escrever e formatar texto, com imagens e links.',
-  ebook: 'Ler o livro 3D e baixar o caderno em PDF.',
+  ebook: 'Ler o livro 3D (para baixar, inclua o PDF num bloco de materiais).',
   quiz: 'Criar perguntas, respostas, comentários e nota de aprovação.',
   image: 'Mostrar uma imagem com legenda e descrição.',
   audio: 'Ouvir uma gravação ou orientação.',

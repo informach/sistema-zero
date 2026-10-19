@@ -14,7 +14,7 @@ import { SectionHeader } from '../page'
 const SHOWN = 3
 
 /**
- * Os jogos mais novos da Mostra adulta (o canal `parede` do Mural, na ordem Novidades), com o
+ * Os jogos mais novos do Mural adulto (o canal `parede` do Mural, na ordem Novidades), com o
  * mesmo cuidado do BFF do fórum: o nome do autor só aparece quando o perfil é público AGORA (a
  * identidade é relida no members e falha fechada), e o id cru de terceiros nunca chega à página.
  * Best-effort: sem canal, sem jogo ou com o hub fora, a seção não aparece.
@@ -52,14 +52,14 @@ export async function ShowcaseNews({ viewerId }: { viewerId: string | null }) {
     <section aria-labelledby="novidades-mostra" className="flex flex-col gap-5">
       <SectionHeader
         id="novidades-mostra"
-        title="Novidades na Mostra"
+        title="Novidades no Mural"
         action={
           <Link
             href="/mural-dos-criadores-adulto"
             prefetch={false}
             className="sz-link inline-flex min-h-[2.4rem] items-center"
           >
-            Ver a Mostra
+            Ver o Mural
           </Link>
         }
       />
@@ -97,14 +97,14 @@ export async function ShowcaseNews({ viewerId }: { viewerId: string | null }) {
                       Jogar
                     </a>
                   ) : (
-                    // Post sem link jogável (antigo ou do fluxo da aula): o jogo mora só na Mostra.
+                    // Post sem link jogável (antigo ou do fluxo da aula): o jogo mora só no Mural.
                     <Link
                       href="/mural-dos-criadores-adulto"
                       prefetch={false}
-                      aria-label={`Ver ${game.title} na Mostra`}
+                      aria-label={`Ver ${game.title} no Mural`}
                       className="sz-btn-outline sz-btn-sm"
                     >
-                      Ver na Mostra
+                      Ver no Mural
                     </Link>
                   )}
                 </div>

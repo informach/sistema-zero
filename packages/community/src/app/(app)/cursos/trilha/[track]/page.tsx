@@ -173,11 +173,11 @@ export default async function TrackPage({ params }: { params: Promise<{ track: s
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
             <h2 className="sz-h3 text-white">Terminou um curso? Mostre o seu jogo</h2>
             <p className="text-(--topo-texto)">
-              Publique na Mostra dos criadores e veja quantas vezes ele foi jogado.
+              Publique no Mural dos Criadores e veja quantas vezes ele foi jogado.
             </p>
           </div>
           <Link href="/mural-dos-criadores-adulto" prefetch={false} className="sz-btn-white">
-            Ver a Mostra
+            Ver o Mural
           </Link>
         </section>
       </div>
@@ -239,7 +239,7 @@ function TrackCourseRow({
     ) : null
   } else if (done) {
     detail = progress
-      ? `${progress.totalLessons} de ${lessonCountLabel(progress.totalLessons)}${course.milestones?.showcased ? ' · jogo publicado na Mostra' : ''}`
+      ? `${progress.totalLessons} de ${lessonCountLabel(progress.totalLessons)}${course.milestones?.showcased ? ' · jogo publicado no Mural' : ''}`
       : 'Curso concluído'
     action = (
       <Link href={courseHref(course.courseSlug)} prefetch={false} className="sz-btn-outline">
