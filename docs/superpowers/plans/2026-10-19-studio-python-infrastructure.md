@@ -35,7 +35,7 @@ Arquivos: scripts de promoção em `packages/studio-runtime/scripts/`, esquema d
 - [ ] Concluir diagnóstico dos HTTP400 do proxy de leitura R2 e conferir bytes/checksums/marker/catálogo permanentes; preservar negativos, sem retry oculto.
 - [x] Ampliar ferramenta de promoção para destino produção somente com vínculo explícito ambiente/bucket/origens; testar recusa de cruzamentos antes de upload.
 - [ ] Reutilizar exatamente a distribuição qualificada nos dois ambientes, mantendo identidade da release e catálogos/origens específicos.
-- [ ] Compilar servidor de análise e validar imagem/health/autenticação; provisionar Workers separados e segredos próprios por ambiente, preservando os já existentes.
+- [x] Compilar servidor de análise e validar imagem/health/autenticação; provisionar Workers separados e segredos próprios por ambiente, preservando os já existentes.
 
 ## Lote3: staging integrado
 
@@ -53,9 +53,13 @@ Arquivos: scripts de promoção em `packages/studio-runtime/scripts/`, esquema d
 
 ## Estado operacional registrado
 
+Atualização final de análise: fonte revisada passou34testes/208asserções, três tsconfigs, Biome26 e dez controles RPC no workerd real. Getter de diagnóstico que lança não impede cleanup, watchdog do teste mantém liveness sem alterar timeout produtivo e cleanup do harness preserva erro primário. Após essa fonte final, staging7d5d2de1-5f78-4896-9d16-02052ed119d5 e produção032069e6-2a7d-4914-b44f-915d34aa7678 passaram12/12 controles reais, com cleanup/410 e sem executar Python. Recibos finais `staging-python-language-qualified-20261019-r7.json` e `production-python-language-qualified-20261019-r2.json`. Catálogo e aplicativos continuam pendentes de rollout/validação; não confundir os serviços isolados com disponibilização completa.
+
+Compatibilidade de produção: member-shell em origin/main6f93dcbf... ainda envia contrato antigo sem parentOrigin e lê html; runtime novo devolve artifact. O Worker compartilhado de produção permanece e9872269... até implantação coordenada posterior à prova staging, preservando JavaScript atual. Os probes mínimos R2 passaram em staging (quatro braços) e produção somente leitura (dois braços), sem reproduzir400; interleaving negativo do operador segue preservado e sem causa demonstrada. Upload produção permanece incompleto.
+
 Em19/10, Railway recebeu17variáveis novas staging e19produção, por stdin e `--skip-deploys`, com leitura posterior e preservação de valores anteriores. Recibos `python-railway-{staging,production}-provisioned-20261019.json`. Catálogo/hosts Members ainda não foram ativados. Domínios produção foram confirmados ACTIVE via CLI, recibo `production-public-origins-20261019.json`.
 
-Dois Workers novos de análise foram implantados e receberam credenciais próprias dos respectivos ambientes. Nos dois, anônimo recebeu401 e token correto em caminho desconhecido recebeu404; produção teve uma primeira conferência negativa preservada e uma segunda positiva sem rotação, sem causa demonstrada para o primeiro assert. Sessão de análise remota ainda precisa do gate próprio. Build da imagem e13testes/99asserções com Pyright real passaram.
+Dois Workers novos de análise foram implantados e receberam credenciais próprias dos respectivos ambientes. Nos dois, anônimo recebeu401 e token correto em caminho desconhecido recebeu404; produção teve uma primeira conferência negativa preservada e uma segunda positiva sem rotação, sem causa demonstrada para o primeiro assert. A sessão remota inicialmente falhou porque AbortSignal não atravessa RPC na configuração suportada. A correção mantém cancelamento no DO executor por capacidade run/cancel, com dreno de corpo e retenção explícitos. Após review e provas locais, staging4e621c06... e produçãod5445e22... passaram os12controles reais open/start/sync/símbolos/Turtle/edição/stale/cleanup/410, sem executar fonte Python. Recibos `staging-python-language-qualified-20261019-r6.json` e `production-python-language-qualified-20261019-r1.json`. Isso não ativa o catálogo nem valida os aplicativos. Build da imagem e31testes/193asserções do serviço passaram.
 
 O runtime staging foi implantado em82d58cc2-cfb0-4a71-b6aa-195fe589b863. Sua entrega real conferiu manifesto,27arquivos públicos por SHA/bytes/ETag e12representações internas recusadas, incluindo ancestrais do iframe: `python-staging-public-delivery-20261019.json`. Readback nativo R2 de41objetos também passou no observador transparente HTTP+WebSocket do SDK (`staging-python-r2-observed-20261019-r3.json`). Negativos do proxy direto, sem causa demonstrada, continuam preservados. Isso não qualifica editor, aula ao vivo nem desempenho.
 

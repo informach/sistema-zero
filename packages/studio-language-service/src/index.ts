@@ -6,9 +6,22 @@ import {
   StudioPythonLanguageOpenSchema,
   StudioPythonLanguageStartSchema,
 } from '@sistemazero/core/studio/python-language-authorization'
+import { checkPythonLanguageHealth, PythonLanguageCommand } from './language-transport'
+import { LanguageStartupFailure, languageStartupDiagnostic } from './startup-diagnostics'
 
 export class PythonLanguageSandbox extends Sandbox {
   enableInternet = false
+  createLanguageCommand(body: ReadableStream<Uint8Array> | null, token: string) {
+    return new PythonLanguageCommand({
+      body,
+      token,
+      send: (request) => this.containerFetch(request, 8789),
+      retain: (promise) => this.ctx.waitUntil(promise),
+    })
+  }
+  async checkLanguageHealth(token: string) {
+    return checkPythonLanguageHealth(token, (request) => this.containerFetch(request, 8789))
+  }
 }
 interface RateLimitBinding {
   limit(input: { key: string }): Promise<{ success: boolean }>
@@ -178,25 +191,25 @@ export class PythonLanguageOwner extends DurableObject<Env> {
       if (this.lease(id)?.phase !== 'opening') throw new Error('Language startup cancelled')
     }
     assertOpening()
-    const sandbox = this.sandbox(id)
-    const process = await sandbox.startProcess(
-      '/usr/local/bin/node --max-old-space-size=96 /opt/language/server.mjs',
-      { processId: 'python-language', cwd: '/workspace', env: { PYTHON_LANGUAGE_TOKEN: token } },
-    )
-    assertOpening()
-    await process.waitForPort(8789, { mode: 'tcp', timeout: 30_000 })
-    assertOpening()
-    const response = await sandbox.containerFetch(
-      'http://language/healthz',
-      {
-        headers: { authorization: `Bearer ${token}` },
-        signal: AbortSignal.timeout(5000),
-      },
-      8789,
-    )
-    await response.body?.cancel()
-    assertOpening()
-    if (!response.ok) throw new Error('Language startup failed')
+    let stage: 'sandbox' | 'process' | 'port' | 'health' = 'sandbox'
+    try {
+      const sandbox = this.sandbox(id)
+      stage = 'process'
+      const process = await sandbox.startProcess(
+        '/usr/local/bin/node --max-old-space-size=96 /opt/language/server.mjs',
+        { processId: 'python-language', cwd: '/workspace', env: { PYTHON_LANGUAGE_TOKEN: token } },
+      )
+      assertOpening()
+      stage = 'port'
+      await process.waitForPort(8789, { mode: 'tcp', timeout: 30_000 })
+      assertOpening()
+      stage = 'health'
+      const healthy = await sandbox.checkLanguageHealth(token)
+      assertOpening()
+      if (!healthy) throw new Error('Language startup failed')
+    } catch (error) {
+      throw new LanguageStartupFailure(stage, error)
+    }
   }
   async start(id: string, binding: string): Promise<Response> {
     const row = this.lease(id)
@@ -216,6 +229,7 @@ export class PythonLanguageOwner extends DurableObject<Env> {
       )
       boot = this.boot(id, row.token)
       this.boots.set(id, boot)
+      this.ctx.waitUntil(boot.catch(() => {}))
     }
     try {
       await this.schedule()
@@ -229,16 +243,25 @@ export class PythonLanguageOwner extends DurableObject<Env> {
       )
       await this.schedule()
       return json({ ready: true })
-    } catch {
+    } catch (error) {
+      const diagnostic =
+        error instanceof LanguageStartupFailure
+          ? error.diagnostic
+          : { stage: 'lease', ...languageStartupDiagnostic(error) }
+      console.warn({ event: 'python-language-startup-failed', ...diagnostic })
       try {
         await this.destroy(id)
       } catch {
         /* Persisted cleanup is retried by the alarm. */
       }
-      return json(
+      const response = json(
         { error: 'unavailable', message: 'Não foi possível iniciar a análise Python.' },
         503,
       )
+      // This endpoint is service-authenticated. BFFs keep the fixed public error;
+      // operations receive only closed classifications, never SDK error details.
+      response.headers.set('x-studio-language-startup-failure', JSON.stringify(diagnostic))
+      return response
     } finally {
       if (this.boots.get(id) === boot) this.boots.delete(id)
     }
@@ -274,27 +297,36 @@ export class PythonLanguageOwner extends DurableObject<Env> {
       return expired()
     }
     const controller = new AbortController()
-    const pending = this.sandbox(id).containerFetch(
-      'http://language/command',
-      {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', authorization: `Bearer ${lease.token}` },
-        body: request.body,
-        signal: AbortSignal.any([
-          controller.signal,
-          request.signal,
-          AbortSignal.timeout(PYTHON_LANGUAGE_LIMITS.requestTimeoutMs + 2000),
-        ]),
-      },
-      8789,
-    )
+    const signal = AbortSignal.any([
+      controller.signal,
+      request.signal,
+      AbortSignal.timeout(PYTHON_LANGUAGE_LIMITS.requestTimeoutMs + 2000),
+    ])
+    const pending = (async () => {
+      const handle = await this.sandbox(id).createLanguageCommand(request.body, lease.token)
+      const cancel = () => this.ctx.waitUntil(handle.cancel().catch(() => {}))
+      signal.addEventListener('abort', cancel, { once: true })
+      try {
+        if (signal.aborted) await handle.cancel()
+        return await handle.run()
+      } finally {
+        signal.removeEventListener('abort', cancel)
+        handle[Symbol.dispose]()
+      }
+    })()
     const entry = { promise: pending, controller },
       requests = this.requests.get(id) ?? new Set()
     requests.add(entry)
     this.requests.set(id, requests)
+    this.ctx.waitUntil(
+      pending.then(
+        () => {},
+        () => {},
+      ),
+    )
     try {
       const response = await pending
-      if (this.lease(id)?.phase !== 'ready') {
+      if (signal.aborted || this.lease(id)?.phase !== 'ready') {
         await response.body?.cancel()
         return expired()
       }

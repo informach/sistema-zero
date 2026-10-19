@@ -112,6 +112,11 @@ jobs:
       - name: Lint (biome ci)
         run: bun run ci
 
+      - name: Verificar cancelamento Python por RPC no runtime real
+        working-directory: packages/studio-language-service
+        run: bun run verify:rpc
+        timeout-minutes: 2
+
       - name: Preparar e verificar biblioteca padrão Python hermética
         env:
           STUDIO_PYTHON_BUILD_TEST_VENDOR_DIRECTORY: .cache/studio-python-runtime/vendor

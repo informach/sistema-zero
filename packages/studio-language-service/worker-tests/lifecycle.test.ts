@@ -1,5 +1,6 @@
 import { Database } from 'bun:sqlite'
 import { expect, it, mock } from 'bun:test'
+import { PYTHON_LANGUAGE_LIMITS } from '@sistemazero/core/studio/python-language'
 import {
   type StudioPythonAnalysisAuthorization,
   studioPythonAnalysisBinding,
@@ -30,7 +31,7 @@ function deferred<T>() {
 const tick = async () => {
   for (let index = 0; index < 80; index++) await Promise.resolve()
 }
-type Stage = 'startProcess' | 'port' | 'health' | 'command' | 'none'
+type Stage = 'startProcess' | 'port' | 'health' | 'create' | 'command' | 'none'
 function sandboxProbe(stage: Stage) {
   const gate = deferred<void>(),
     entered = deferred<void>(),
@@ -57,14 +58,26 @@ function sandboxProbe(stage: Stage) {
           },
         }
       },
-      async containerFetch(url: string, init: RequestInit) {
-        const current = url.endsWith('healthz') ? 'health' : 'command'
-        if (current === 'command')
-          init.signal?.addEventListener('abort', () => {
-            commandAborted = true
-          })
-        await visit(current)
-        return Response.json({ ok: true })
+      async checkLanguageHealth(token: string) {
+        return checkPythonLanguageHealth(token, async () => {
+          await visit('health')
+          return Response.json({ ready: true })
+        })
+      },
+      async createLanguageCommand(body: ReadableStream<Uint8Array> | null, token: string) {
+        if (stage === 'create') await visit('create')
+        return new PythonLanguageCommand({
+          body,
+          token,
+          send: async (request) => {
+            request.signal.addEventListener('abort', () => {
+              commandAborted = true
+            })
+            await visit('command')
+            return Response.json({ ok: true })
+          },
+          retain() {},
+        })
       },
       async destroy() {
         trace.push('destroy')
@@ -75,6 +88,7 @@ function sandboxProbe(stage: Stage) {
 // Platform boundaries only: lease SQL and the worker/provider implementation are real.
 // A deliberately non-cooperative SDK exposes container recreation races after cancellation.
 mock.module('cloudflare:workers', () => ({
+  RpcTarget: class {},
   DurableObject: class {
     constructor(
       public ctx: unknown,
@@ -88,7 +102,176 @@ mock.module('@cloudflare/sandbox', () => ({
     return binding.sandbox
   },
 }))
+const { checkPythonLanguageHealth, PythonLanguageCommand } = await import(
+  '../src/language-transport'
+)
 const { PythonLanguageOwner, default: worker } = await import('../src/index')
+
+it('health rejects invalid credentials before I/O and reports success or denial after local drain', async () => {
+  let sends = 0
+  await expect(
+    checkPythonLanguageHealth('invalid', async () => {
+      sends++
+      return Response.json({})
+    }),
+  ).rejects.toThrow('Invalid language credential')
+  expect(sends).toBe(0)
+  expect(
+    await checkPythonLanguageHealth('a'.repeat(64), async (request) => {
+      sends++
+      expect(request.method).toBe('GET')
+      expect(request.url).toBe('http://language/healthz')
+      expect(request.headers.get('authorization')).toBe(`Bearer ${'a'.repeat(64)}`)
+      expect(request.signal.aborted).toBe(false)
+      return Response.json({ ready: true })
+    }),
+  ).toBe(true)
+  expect(
+    await checkPythonLanguageHealth('a'.repeat(64), async () => Response.json({}, { status: 401 })),
+  ).toBe(false)
+  expect(sends).toBe(1)
+})
+
+it('health native timeout cancels and drains a pending response body', async () => {
+  let cancelled = false
+  // AbortSignal.timeout does not retain the event loop. This referenced watchdog
+  // keeps the harness alive and fails independently if the real deadline stalls.
+  let watchdog: ReturnType<typeof setTimeout> | undefined
+  const deadline = new Promise<never>((_, reject) => {
+    watchdog = setTimeout(() => reject(new Error('Health timeout did not finish')), 8000)
+  })
+  try {
+    await expect(
+      Promise.race([
+        checkPythonLanguageHealth(
+          'a'.repeat(64),
+          async () =>
+            new Response(
+              new ReadableStream({
+                pull() {},
+                cancel() {
+                  cancelled = true
+                },
+              }),
+            ),
+        ),
+        deadline,
+      ]),
+    ).rejects.toMatchObject({ name: 'TimeoutError' })
+    expect(cancelled).toBe(true)
+  } finally {
+    clearTimeout(watchdog)
+  }
+}, 15_000)
+
+it('cancels a command handle before run without container I/O and releases its source', async () => {
+  let sends = 0,
+    cancelled = 0
+  const command = new PythonLanguageCommand({
+    body: new ReadableStream({
+      cancel() {
+        cancelled++
+      },
+    }),
+    token: 'a'.repeat(64),
+    async send() {
+      sends++
+      return Response.json({ ok: true })
+    },
+    retain() {},
+  })
+  await command.cancel()
+  await expect(command.run()).rejects.toThrow()
+  await expect(command.run()).rejects.toThrow()
+  expect(sends).toBe(0)
+  expect(cancelled).toBe(1)
+})
+
+it('runs a command only once, including concurrent and repeated RPC invocations', async () => {
+  let sends = 0
+  const retained: Promise<unknown>[] = []
+  const command = new PythonLanguageCommand({
+    body: null,
+    token: 'a'.repeat(64),
+    async send() {
+      sends++
+      return Response.json({ ready: true })
+    },
+    retain(promise) {
+      retained.push(promise)
+    },
+  })
+  const replies = await Promise.all([command.run(), command.run(), command.run()])
+  for (const reply of replies) expect(await reply.text()).toBe('{"ready":true}')
+  expect(sends).toBe(1)
+  expect(retained).toHaveLength(1)
+  await Promise.all(retained)
+  command[Symbol.dispose]()
+})
+
+it('awaits actual cancellation of a pending body before reporting command drain', async () => {
+  const entered = deferred<void>(),
+    release = deferred<void>()
+  let cancelled = false,
+    settled = false
+  const command = new PythonLanguageCommand({
+    body: null,
+    token: 'a'.repeat(64),
+    retain() {},
+    async send() {
+      return new Response(
+        new ReadableStream({
+          pull() {
+            entered.resolve()
+          },
+          async cancel() {
+            cancelled = true
+            await release.promise
+          },
+        }),
+      )
+    },
+  })
+  const running = command
+    .run()
+    .then(
+      () => false,
+      () => true,
+    )
+    .finally(() => {
+      settled = true
+    })
+  await entered.promise
+  await command.cancel()
+  await tick()
+  expect(cancelled).toBe(true)
+  expect(settled).toBe(false)
+  release.resolve()
+  expect(await running).toBe(true)
+})
+
+it('cancels an oversized response instead of passing or retaining an unbounded body', async () => {
+  let cancelled = 0
+  const command = new PythonLanguageCommand({
+    body: null,
+    token: 'a'.repeat(64),
+    retain() {},
+    async send() {
+      return new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(new Uint8Array(PYTHON_LANGUAGE_LIMITS.maxResponseBytes + 1))
+          },
+          cancel() {
+            cancelled++
+          },
+        }),
+      )
+    },
+  })
+  await expect(command.run()).rejects.toThrow('Language response too large')
+  expect(cancelled).toBe(1)
+})
 
 function fixture(stage: Stage = 'none', legacy = false) {
   const probe = sandboxProbe(stage),
@@ -230,6 +413,45 @@ function fixture(stage: Stage = 'none', legacy = false) {
   }
 }
 
+it('classifies startup failure for operations while hiding SDK environment and preserving cleanup', async () => {
+  const env = fixture()
+  const privateValue = 'private-process-environment-token'
+  env.probe.sandbox.startProcess = async () => {
+    throw Object.assign(new TypeError(`start is not a function ${privateValue}`), {
+      code: 'PROCESS_ERROR',
+      context: { env: { TOKEN: privateValue } },
+    })
+  }
+  try {
+    const reservation = await env.owner.open('project', binding)
+    const payload = await reservation.json()
+    if (
+      !payload ||
+      typeof payload !== 'object' ||
+      !('sessionId' in payload) ||
+      typeof payload.sessionId !== 'string'
+    )
+      throw new Error('Missing session reservation')
+    const { sessionId } = payload
+    const response = await env.owner.start(sessionId, binding)
+    expect(response.status).toBe(503)
+    expect(JSON.parse(response.headers.get('x-studio-language-startup-failure') ?? 'null')).toEqual(
+      {
+        stage: 'process',
+        name: 'TypeError',
+        code: 'PROCESS_ERROR',
+        reason: 'missing-method',
+      },
+    )
+    expect(await response.text()).not.toContain(privateValue)
+    expect(response.headers.get('x-studio-language-startup-failure')).not.toContain(privateValue)
+    expect(env.probe.trace).toEqual(['destroy'])
+    expect(env.rows()).toEqual([])
+  } finally {
+    await env.finish()
+  }
+})
+
 it('closes a reservation whose caller left before receiving its ID without starting a container', async () => {
   const env = fixture(),
     gate = env.holdReservation(),
@@ -326,6 +548,89 @@ it('aborts and drains an in-flight SDK command before final destruction and reje
     env.probe.gate.resolve()
     expect((await pending).status).toBe(410)
     expect((await closed).status).toBe(200)
+    expect(env.probe.trace.at(-1)).toBe('destroy')
+    expect(env.rows()).toEqual([])
+  } finally {
+    await env.finish()
+  }
+})
+
+it('rejects a late success when Owner cancellation reaches RPC after the response', async () => {
+  const env = fixture('command'),
+    cancellation = deferred<void>(),
+    controller = new AbortController()
+  const create = env.probe.sandbox.createLanguageCommand.bind(env.probe.sandbox)
+  env.probe.sandbox.createLanguageCommand = async (body, token) => {
+    const handle = await create(body, token),
+      cancel = handle.cancel.bind(handle)
+    handle.cancel = async () => {
+      await cancellation.promise
+      await cancel()
+    }
+    return handle
+  }
+  try {
+    const payload = await (await env.owner.open('project', binding)).json()
+    if (
+      !payload ||
+      typeof payload !== 'object' ||
+      !('sessionId' in payload) ||
+      typeof payload.sessionId !== 'string'
+    )
+      throw new Error('Missing session reservation')
+    const { sessionId } = payload
+    expect((await env.owner.start(sessionId, binding)).status).toBe(200)
+    const pending = env.owner.command(
+      sessionId,
+      new Request('https://private/command', {
+        method: 'POST',
+        headers: { 'x-studio-python-operation': 'query' },
+        body: '{}',
+        signal: controller.signal,
+      }),
+      binding,
+    )
+    await env.probe.entered.promise
+    controller.abort()
+    env.probe.gate.resolve()
+    expect((await pending).status).toBe(410)
+  } finally {
+    cancellation.resolve()
+    await env.finish()
+  }
+})
+
+it('drains handle creation during close and never runs the late command', async () => {
+  const env = fixture('create')
+  try {
+    const payload = await (await env.owner.open('project', binding)).json()
+    if (
+      !payload ||
+      typeof payload !== 'object' ||
+      !('sessionId' in payload) ||
+      typeof payload.sessionId !== 'string'
+    )
+      throw new Error('Missing session reservation')
+    const { sessionId } = payload
+    expect((await env.owner.start(sessionId, binding)).status).toBe(200)
+    const pending = env.owner.command(
+      sessionId,
+      new Request('https://private/command', {
+        method: 'POST',
+        headers: { 'x-studio-python-operation': 'query' },
+        body: '{}',
+      }),
+      binding,
+    )
+    await env.probe.entered.promise
+    const closed = env.owner.close(sessionId)
+    await tick()
+    expect(env.rows()[0]?.phase).toBe('closing')
+    expect(env.probe.trace).not.toContain('destroy')
+    env.probe.gate.resolve()
+    expect((await pending).status).toBe(410)
+    expect((await closed).status).toBe(200)
+    expect(env.probe.trace).not.toContain('command')
     expect(env.probe.trace.at(-1)).toBe('destroy')
     expect(env.rows()).toEqual([])
   } finally {

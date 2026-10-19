@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "bun test",
+    "verify:rpc": "node scripts/verify-rpc.mjs",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.worker.json && tsc --noEmit -p tsconfig.worker-tests.json",
     "build:server": "bun build runtime/server.ts --target=node --external pyright --outfile=dist/server.mjs",
     "check": "biome check ."
