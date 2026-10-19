@@ -256,3 +256,13 @@ test('resposta tardia de um comando não reverte estado mais recente recebido pe
   await screen.findByText(/Obrigado por confirmar/)
   expect(screen.getByText('A equipe já assumiu este atendimento.')).toBeTruthy()
 })
+test('o título do portal é h1 por padrão e h2 quando a página já tem o próprio título', () => {
+  const page = { items: [], total: 0, hasMore: false, nextCursor: null }
+  const kids = render(<CustomerHelpdeskPortal initialPage={page} />)
+  expect(screen.getByRole('heading', { level: 1, name: 'Atendimento' })).toBeTruthy()
+  kids.unmount()
+  // A Ajuda adulta abre com a faixa da página (o h1 é dela): o portal desce para seção.
+  render(<CustomerHelpdeskPortal initialPage={page} headingLevel="h2" />)
+  expect(screen.getByRole('heading', { level: 2, name: 'Atendimento' })).toBeTruthy()
+  expect(screen.queryByRole('heading', { level: 1 })).toBeNull()
+})

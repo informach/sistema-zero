@@ -1,55 +1,55 @@
-import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
-import { Card } from '@sistemazero/ui/card'
-import { BookOpen } from 'lucide-react'
+import { Check } from 'lucide-react'
 import Link from 'next/link'
+import { cn } from '@/lib/cn'
+import { isCourseDone } from '@/lib/course-levels'
 import type { MyCourseView } from '@/lib/types'
+import { CourseCover, ProgressBar } from './courses/course-cover'
 
-/** Card de curso da home ("Meus cursos"): capa + progresso + CTA. */
+/**
+ * O cartão de "Seus cursos" no Início (direção de arte de 18/10/2026): capa, título, aulas feitas
+ * com a porcentagem (ou o selo Concluído), a barra e o botão Continuar, Revisar curso ou Começar
+ * agora. O cartão inteiro é o link para o curso.
+ */
 export function CourseCard({ course }: { course: MyCourseView }) {
   const { progress } = course
+  const done = isCourseDone(course)
   const started = progress.completedLessons > 0
-  const done = progress.totalLessons > 0 && progress.completedLessons >= progress.totalLessons
-
   return (
-    <Link href={`/cursos/${encodeURIComponent(course.courseSlug)}`} className="group block">
-      <Card className="overflow-hidden p-0 transition-shadow group-hover:shadow-lg">
-        <div className="relative aspect-video w-full overflow-hidden bg-muted">
-          {course.coverImageUrl ? (
-            // Capa pode ser URL externa arbitrária (autoria) → <img> simples,
-            // sem `next/image` (evita configurar remotePatterns por domínio).
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={course.coverImageUrl}
-              alt=""
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-            />
+    <Link
+      href={`/cursos/${encodeURIComponent(course.courseSlug)}`}
+      prefetch={false}
+      className="group sz-card-sm flex h-full flex-col overflow-hidden text-foreground no-underline transition-colors hover:border-foreground/40"
+    >
+      <div className="aspect-video bg-(--topo)">
+        <CourseCover src={course.coverImageUrl} />
+      </div>
+      <div className="flex flex-1 flex-col gap-2.5 p-4 md:p-5">
+        <strong className="sz-h4">{course.title}</strong>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[0.85rem] text-muted-foreground">
+          <span>
+            {progress.completedLessons} de {progress.totalLessons} aulas
+          </span>
+          {done ? (
+            <span className="sz-chip sz-chip-ok">
+              <Check aria-hidden />
+              Concluído
+            </span>
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-muted">
-              <BookOpen className="size-10 text-muted-foreground" />
-            </div>
+            <span className={cn(started && 'font-bold text-(--acao-texto)')}>
+              {progress.percent}%
+            </span>
           )}
         </div>
-        <div className="flex flex-col gap-3 p-4">
-          <div>
-            <h3 className="sz-display text-base">{course.title}</h3>
-            {course.subtitle ? (
-              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{course.subtitle}</p>
-            ) : null}
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>
-                {progress.completedLessons} de {progress.totalLessons} aulas
-              </span>
-              <span className="sz-display text-primary">{progress.percent}%</span>
-            </div>
-            <ProgressBar value={progress.percent} />
-          </div>
-          <span className="sz-btn-gradient mt-1 w-full">
-            {done ? 'Revisar curso' : started ? 'Continuar' : 'Começar agora'}
-          </span>
-        </div>
-      </Card>
+        <ProgressBar
+          value={done ? 100 : progress.percent}
+          done={done}
+          label={`Progresso em ${course.title}`}
+          className="h-2.5"
+        />
+        <span className={cn('mt-auto', done || !started ? 'sz-btn-outline' : 'sz-btn')}>
+          {done ? 'Revisar curso' : started ? 'Continuar' : 'Começar agora'}
+        </span>
+      </div>
     </Link>
   )
 }

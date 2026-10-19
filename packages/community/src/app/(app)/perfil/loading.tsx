@@ -1,36 +1,45 @@
-import { Card, CardContent } from '@sistemazero/ui/card'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 
-// Campos-fantasma do formulário (nome/telefone/…).
-const FIELD_KEYS = ['f1', 'f2', 'f3']
+// Seções-fantasma do perfil (avatar, dados, cor…).
+const SECTION_KEYS = ['s1', 's2', 's3']
+const NAV_KEYS = ['n1', 'n2', 'n3', 'n4', 'n5']
 
 /**
- * Esqueleto do "Meu perfil" (fallback de Suspense do Next) — casa com o card de
- * foto + formulário (nome/telefone) + botão. `aria-busy` + sr-only.
+ * Esqueleto do "Meu perfil" (fallback de Suspense do Next): a faixa com o retrato, a coluna de
+ * atalhos e os cartões das seções. `aria-busy` + sr-only.
  */
 export default function ProfileLoading() {
   return (
-    <div aria-busy="true" className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <div aria-busy="true">
       <span className="sr-only">Carregando…</span>
-      <div>
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="mt-2 h-4 w-64 max-w-full" />
-      </div>
-      <Card>
-        <CardContent className="flex flex-col gap-5 pt-6">
-          <div className="flex items-center gap-4">
-            <Skeleton className="size-20 shrink-0 rounded-full" />
-            <Skeleton className="h-9 w-32 rounded-md" />
+      <section className="sz-band">
+        <div className="sz-page flex items-center gap-6 pt-10 pb-9 md:pt-11 md:pb-10">
+          <Skeleton className="size-[4.8rem] shrink-0 rounded-full" />
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <Skeleton className="h-10 w-56 max-w-full" />
+            <Skeleton className="h-5 w-96 max-w-full" />
           </div>
-          {FIELD_KEYS.map((k) => (
-            <div key={k} className="flex flex-col gap-2">
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+      </section>
+      <div className="sz-page flex flex-col gap-8 pt-10 pb-16 lg:flex-row lg:items-start">
+        <div className="sz-card hidden w-[14rem] flex-none flex-col gap-2 p-3 lg:flex">
+          {NAV_KEYS.map((k) => (
+            <Skeleton key={k} className="h-11 w-full rounded-[0.6rem]" />
+          ))}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-6">
+          {SECTION_KEYS.map((k) => (
+            <div key={k} className="sz-card flex flex-col gap-5 p-6 md:p-8">
+              <Skeleton className="h-7 w-48" />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Skeleton className="h-14 w-full rounded-[0.6rem]" />
+                <Skeleton className="h-14 w-full rounded-[0.6rem]" />
+              </div>
+              <Skeleton className="h-14 w-40 rounded-[0.6rem]" />
             </div>
           ))}
-          <Skeleton className="h-10 w-32 self-start rounded-md" />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

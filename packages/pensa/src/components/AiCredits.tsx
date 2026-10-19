@@ -2,10 +2,12 @@ import { type AiCreditsView, resolveAiCredits } from '@sistemazero/core/ai-credi
 import { useEffect, useState } from 'react'
 import type { PensaTransport } from '../core/types'
 
+/** `audience`: para quem a frase fala (no adulto, "pedidos" e sem a família). Padrão: kids. */
 export function usePensaCredits(
   transport: PensaTransport,
   operationStatus?: string,
   revisionId?: string,
+  audience: 'kids' | 'adult' = 'kids',
 ) {
   const [credits, setCredits] = useState<AiCreditsView | null>(null)
   // biome-ignore lint/correctness/useExhaustiveDependencies: Finished operations and accepted revisions invalidate the credit balance.
@@ -31,5 +33,5 @@ export function usePensaCredits(
       document.removeEventListener('visibilitychange', onVisible)
     }
   }, [transport, operationStatus, revisionId])
-  return resolveAiCredits(credits)
+  return resolveAiCredits(credits, { audience })
 }

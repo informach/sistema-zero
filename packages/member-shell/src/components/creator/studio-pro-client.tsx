@@ -155,6 +155,7 @@ function StudioProClientSession({
     narrationEnabled,
     voiceInputEnabled,
     taskId: boundHandoff?.mission.id ?? null,
+    audience,
   })
 
   // O módulo do Estúdio: é o mesmo que o editor PRO carrega por dentro (chunk já em

@@ -76,12 +76,16 @@ export function CustomerHelpdeskPortal({
   initialPage = EMPTY_PAGE,
   initialLoadFailed = false,
   parentAreaHref,
+  headingLevel = 'h1',
 }: {
   initialPage?: CustomerTicketPage
   initialLoadFailed?: boolean
   /** Presente apenas no Kids, caso o portão parental expire enquanto a página está aberta. */
   parentAreaHref?: string
+  /** `h2` quando a página já tem o próprio título (a Ajuda adulta): um `h1` só por página. */
+  headingLevel?: 'h1' | 'h2'
 }) {
+  const Heading = headingLevel
   const [page, setPage] = useState(initialPage)
   const [mode, setMode] = useState<'list' | 'new' | 'detail'>('list')
   const [detail, setDetail] = useState<CustomerTicketDetail | null>(null)
@@ -446,9 +450,9 @@ export function CustomerHelpdeskPortal({
             <ArrowLeft className="size-4" />
           </Button>
           <div>
-            <h1 id="support-title" className="text-2xl font-bold tracking-tight">
+            <Heading id="support-title" className="text-2xl font-bold tracking-tight">
               Abrir chamado
-            </h1>
+            </Heading>
             <p className="mt-1 text-sm text-muted-foreground">
               Descreva o que aconteceu. Quanto mais contexto você enviar, mais rápido conseguimos
               ajudar.
@@ -523,9 +527,9 @@ export function CustomerHelpdeskPortal({
           </Button>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 id="support-title" className="truncate text-2xl font-bold tracking-tight">
+              <Heading id="support-title" className="truncate text-2xl font-bold tracking-tight">
                 {detail.ticket.subject}
-              </h1>
+              </Heading>
               <CustomerTicketStatusBadge status={detail.ticket.status} />
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -627,12 +631,12 @@ export function CustomerHelpdeskPortal({
     <section className="mx-auto max-w-3xl space-y-5" aria-labelledby="support-title">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1
+          <Heading
             id="support-title"
             className="flex items-center gap-2 text-2xl font-bold tracking-tight"
           >
             <CircleHelp className="size-6 text-primary" /> Atendimento
-          </h1>
+          </Heading>
           <p className="mt-1 text-sm text-muted-foreground">
             Acompanhe seus chamados e fale diretamente com a equipe da Sistema Zero.
           </p>

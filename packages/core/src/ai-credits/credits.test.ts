@@ -151,3 +151,43 @@ describe('helpers', () => {
     expect(aiQuotaScopeOf({ code: 'AI_QUOTA_EXCEEDED' })).toBe('day')
   })
 })
+
+describe('resolveAiCredits — comunidade adulta', () => {
+  const adulto = { audience: 'adult' } as const
+
+  test('o mesmo cálculo, com "pedidos" e sem família nem emoji', () => {
+    const cheio = resolveAiCredits(view({ dayRemaining: 38 }), adulto)
+    expect(cheio.state).toBe('plenty')
+    expect(cheio.inline).toBe('38 pedidos hoje')
+    expect(cheio.ariaLabel).toBe('Ajuda da IA: 38 pedidos hoje.')
+    const pouco = resolveAiCredits(view({ dayRemaining: 3 }), adulto)
+    expect(pouco.state).toBe('low')
+    expect(pouco.inline).toBe('Só 3 pedidos hoje. Amanhã de manhã tem mais.')
+    const um = resolveAiCredits(view({ dayRemaining: 1 }), adulto)
+    expect(um.inline).toContain('1 pedido hoje')
+    for (const meter of [cheio, pouco, um]) {
+      expect(`${meter.inline}${meter.ariaLabel}${meter.exhausted}`).not.toMatch(/família|✨|⚠️/)
+    }
+  })
+
+  test('acabou: diz que a ferramenta continua aberta e quando volta, sem repetir', () => {
+    const dia = resolveAiCredits(view({ dayRemaining: 0 }), adulto)
+    expect(dia.state).toBe('exhausted')
+    expect(dia.inline).toBe('Os pedidos de hoje acabaram')
+    expect(dia.exhausted).toContain('continuam abertas')
+    expect(dia.exhausted).not.toContain('tem mais')
+    expect(dia.renews).toBe('Amanhã de manhã tem mais.')
+    const mes = resolveAiCredits(view({ dayRemaining: 9, monthRemaining: 0 }), adulto)
+    expect(mes.inline).toBe('Os pedidos deste mês acabaram')
+    expect(mes.renews).toBe('Tem mais no dia 1º de setembro.')
+  })
+
+  test('equipe sem limite e "não sei" seguem as mesmas regras', () => {
+    expect(resolveAiCredits(view({ unlimited: true }), adulto).inline).toBe('Pedidos sem limite')
+    expect(resolveAiCredits(null, adulto).state).toBe('unknown')
+  })
+
+  test('sem a opção, a frase do Kids não muda', () => {
+    expect(resolveAiCredits(view({ dayRemaining: 13 })).ariaLabel).toContain('de toda a família')
+  })
+})

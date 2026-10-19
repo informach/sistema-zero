@@ -8,13 +8,20 @@ import {
   studioRemixCovered,
 } from '@sistemazero/member-shell/lib/studio-tier'
 import type { HubThreadView } from '@sistemazero/member-shell/lib/types'
-import { Button } from '@sistemazero/ui/button'
-import { Card } from '@sistemazero/ui/card'
+import { Gamepad2, Lock, MessageCircle, Play, Repeat2, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/cn'
+import { challengeMonthName } from './community/challenge-month'
 
+/**
+ * O cartão de um jogo da Mostra (direção de arte de 18/10/2026): capa, selo do desafio, autor
+ * (link para o perfil público), jogadas, Jogar em outra aba, Fazer minha versão e a conversa.
+ * Quando o selo do post já diz que o jogo usa ferramentas que a pessoa não tem, o botão fica
+ * tracejado e a frase explica; a checagem que vale continua no clique, pelo snapshot.
+ */
 export function ShowcaseCard({
   thread,
   viewerId,
@@ -67,51 +74,105 @@ export function ShowcaseCard({
       if (!controller.signal.aborted) setBusy(false)
     }
   }
+  const author = thread.authorDisplayName || 'Criador'
+  const challengeMonth = thread.challengeKey ? challengeMonthName(thread.challengeKey) : null
+  // O selo vem do `studioMeta` do post (posts antigos não têm: o clique ainda confere no snapshot).
+  const locked = Boolean(
+    capability && thread.studioMeta && !studioRemixCovered(capability, thread.studioMeta),
+  )
+  const lockNoteId = `remix-trava-${thread.id}`
   return (
-    <Card className="overflow-hidden">
+    <article className="sz-card flex flex-col overflow-hidden">
       {thread.coverImageUrl ? (
         <img
           src={thread.coverImageUrl}
           alt={`Capa de ${thread.title}`}
-          className="aspect-video w-full object-cover"
+          className="aspect-video w-full bg-(--topo) object-cover"
           loading="lazy"
         />
-      ) : null}
-      <div className="space-y-3 p-5">
-        <h2 className="text-xl font-semibold">{thread.title}</h2>
-        <p className="text-sm text-muted-foreground">
+      ) : (
+        <div
+          aria-hidden
+          className="flex aspect-video w-full items-center justify-center bg-(--topo) text-(--sz-community-blue-light)"
+        >
+          <Gamepad2 className="size-[2.6rem]" />
+        </div>
+      )}
+      <div className="flex flex-1 flex-col gap-2.5 p-5 md:p-6">
+        {thread.challengeKey ? (
+          <span className="sz-chip sz-chip-aviso self-start">
+            <Trophy aria-hidden />
+            {challengeMonth ? `Desafio de ${challengeMonth}` : 'Desafio do mês'}
+          </span>
+        ) : null}
+        <h2 className="sz-h3">{thread.title}</h2>
+        <p className="text-[0.85rem] text-muted-foreground">
           {thread.authorProfileId ? (
-            <Link href={`/criador/${thread.authorProfileId}`} className="text-primary underline">
-              {thread.authorDisplayName || 'Criador'}
+            <Link href={`/criador/${thread.authorProfileId}`} prefetch={false} className="sz-link">
+              {author}
             </Link>
           ) : (
-            thread.authorDisplayName || 'Criador'
+            author
           )}{' '}
-          · {thread.playsCount ?? 0} jogadas
+          · {thread.playsCount ?? 0} {thread.playsCount === 1 ? 'jogada' : 'jogadas'}
         </p>
-        <p className="whitespace-pre-wrap text-sm">{thread.body}</p>
-        <div className="flex flex-wrap gap-3">
+        {thread.body ? (
+          <p className="line-clamp-4 whitespace-pre-wrap text-[0.85rem] text-foreground">
+            {thread.body}
+          </p>
+        ) : null}
+        <div className="mt-auto flex flex-col gap-2.5 pt-2">
           {thread.playId ? (
             <Link
-              className="inline-flex min-h-10 items-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground"
+              className="sz-btn w-full"
               href={`/jogar/${thread.playId}`}
               target="_blank"
               rel="noopener noreferrer"
               prefetch={false}
             >
+              <Play aria-hidden />
               Jogar
+              <span className="font-normal text-[0.85rem] opacity-90">(outra aba)</span>
             </Link>
           ) : null}
-          {capability && thread.playId ? (
-            <Button variant="outline" disabled={busy} onClick={() => void remix()}>
-              {busy ? 'Criando versão...' : 'Fazer minha versão'}
-            </Button>
+          <div className="flex gap-2.5">
+            {capability && thread.playId ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void remix()}
+                aria-describedby={locked ? lockNoteId : undefined}
+                className={cn(
+                  // Quebra em duas linhas quando a coluna é estreita (grade de 2 ou 3 jogos), em vez
+                  // de passar por cima do botão de comentários.
+                  'sz-btn-outline sz-btn-sm min-w-0 flex-1 whitespace-normal py-2',
+                  locked && 'border-dashed border-muted-foreground text-muted-foreground',
+                )}
+              >
+                {locked ? <Lock aria-hidden /> : <Repeat2 aria-hidden />}
+                {busy ? 'Criando versão...' : 'Fazer minha versão'}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={onOpen}
+              aria-label="Comentários e reações"
+              title="Comentários e reações"
+              className={cn(
+                'sz-iconbtn size-[2.4rem]',
+                !(capability && thread.playId) && 'ml-auto',
+              )}
+            >
+              <MessageCircle aria-hidden />
+            </button>
+          </div>
+          {locked ? (
+            <p id={lockNoteId} className="text-[0.85rem] text-muted-foreground">
+              Usa ferramentas que você ainda não liberou na jornada.
+            </p>
           ) : null}
-          <Button variant="outline" onClick={onOpen}>
-            Comentários e reações
-          </Button>
         </div>
       </div>
-    </Card>
+    </article>
   )
 }

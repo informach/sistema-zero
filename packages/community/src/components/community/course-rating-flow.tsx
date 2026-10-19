@@ -35,6 +35,8 @@ interface Props {
   /** URL da página de vendas (compartilhar) — `null` esconde o botão Compartilhar. */
   shareUrl: string | null
   viewer: RatingViewer
+  /** `button`: o botão contornado "Avaliar o curso" da página do curso. O padrão é o link da aula. */
+  trigger?: 'link' | 'button'
 }
 
 type Step = 1 | 2 | 3 | 4 | 5
@@ -104,7 +106,13 @@ async function copyToClipboard(text: string): Promise<boolean> {
  * → compartilhar. CADA passo persiste o estado ACUMULADO (fechar no meio não
  * perde nada); assim que a nota é salva, o aluno "já classificou" e o link some.
  */
-export function CourseRatingFlow({ courseSlug, initialRating, shareUrl, viewer }: Props) {
+export function CourseRatingFlow({
+  courseSlug,
+  initialRating,
+  shareUrl,
+  viewer,
+  trigger = 'link',
+}: Props) {
   const router = useRouter()
   const [hasRated, setHasRated] = useState(initialRating != null)
   const [open, setOpen] = useState(false)
@@ -205,14 +213,27 @@ export function CourseRatingFlow({ courseSlug, initialRating, shareUrl, viewer }
 
   return (
     <>
-      {!hasRated ? (
+      {!hasRated && trigger === 'button' ? (
         <button
           type="button"
           onClick={() => {
             setStep(1)
             setOpen(true)
           }}
-          className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-interactive transition-colors hover:text-interactive-hover"
+          className="sz-btn-outline"
+        >
+          <Star className="size-[1.1em]" aria-hidden />
+          Avaliar o curso
+        </button>
+      ) : null}
+      {!hasRated && trigger === 'link' ? (
+        <button
+          type="button"
+          onClick={() => {
+            setStep(1)
+            setOpen(true)
+          }}
+          className="mt-2 inline-flex min-h-[2.4rem] items-center gap-1.5 text-xs font-medium text-interactive transition-colors hover:text-interactive-hover"
         >
           <Star className="size-3.5 fill-amber-400 text-amber-400" />
           Deixe uma classificação

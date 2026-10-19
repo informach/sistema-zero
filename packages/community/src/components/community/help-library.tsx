@@ -1,92 +1,95 @@
 'use client'
 import type { HelpCollectionView, HelpTutorialEntry } from '@sistemazero/core/help'
-import { Button } from '@sistemazero/ui/button'
-import { Input } from '@sistemazero/ui/input'
+import { Search } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useId, useState } from 'react'
+import { HelpCollectionGrid, HelpTutorialRows } from './help/help-presentation'
+
+const normalize = (value: string) => value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
+/**
+ * A biblioteca "Como fazer" (direção de arte de 18/10/2026): a busca por palavra, as coleções em
+ * cartões e os tutoriais em linhas. A busca começa com o `?q=` que a página Ajuda manda.
+ */
 export function HelpLibrary({
   collections,
   tutorials,
   unavailable = false,
+  initialQuery = '',
+  showCollections = true,
 }: {
   collections: HelpCollectionView[]
   tutorials: HelpTutorialEntry[]
   unavailable?: boolean
+  initialQuery?: string
+  showCollections?: boolean
 }) {
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(initialQuery)
   const router = useRouter()
-  const normalize = (value: string) =>
-    value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
+  const searchId = useId()
   const needle = normalize(query.trim())
   const matches = tutorials.filter((item) =>
     normalize(`${item.title} ${item.summary} ${item.searchText}`).includes(needle),
   )
+
+  if (unavailable)
+    return (
+      <div role="alert" className="sz-card flex flex-col items-start gap-4 p-6">
+        <p className="m-0 font-bold">A biblioteca está indisponível agora.</p>
+        <button type="button" className="sz-btn-outline" onClick={() => router.refresh()}>
+          Tentar novamente
+        </button>
+      </div>
+    )
+
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="sz-display text-3xl">Como fazer</h1>
-        <p className="mt-2 text-muted-foreground">
-          Consulte tutoriais sobre a plataforma e as ferramentas.
-        </p>
-      </header>
-      {unavailable ? (
-        <div role="alert">
-          <p>A biblioteca está indisponível agora.</p>
-          <Button variant="outline" onClick={() => router.refresh()}>
-            Tentar novamente
-          </Button>
+    <div className="flex flex-col gap-10">
+      <div className="flex max-w-[43rem] flex-col gap-2">
+        <label htmlFor={searchId} className="sz-label">
+          Buscar tutorial
+        </label>
+        <div className="flex min-h-[2.8rem] items-center gap-3 rounded-[0.6rem] border-2 border-input bg-card px-4 focus-within:outline focus-within:outline-3 focus-within:outline-(--ring) focus-within:outline-offset-2">
+          <Search className="size-5 flex-none text-muted-foreground" aria-hidden />
+          <input
+            id={searchId}
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Ex.: aumentar a letra dos blocos"
+            className="min-h-[2.6rem] w-full min-w-0 border-0 bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
+          />
         </div>
-      ) : (
-        <>
-          <label className="grid gap-2">
-            Buscar tutorial
-            <Input value={query} onChange={(event) => setQuery(event.target.value)} type="search" />
-          </label>
-          <nav className="flex flex-wrap gap-4">
-            {collections
-              .filter((item) => item.publishedCount > 0)
-              .map((item) => (
-                <Link
-                  key={item.id}
-                  className="text-primary underline"
-                  href={`/como-fazer/colecao/${encodeURIComponent(item.slug)}`}
-                >
-                  {item.title}
-                </Link>
-              ))}
-          </nav>
-          {matches.length ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {matches.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/como-fazer/${encodeURIComponent(item.slug)}`}
-                  className="rounded-2xl bg-card p-5"
-                >
-                  <p className="text-sm text-muted-foreground">
-                    {collections.find((collection) => collection.id === item.collectionId)?.title}
-                  </p>
-                  <h2 className="font-semibold text-lg">{item.title}</h2>
-                  <p className="mt-2 text-sm">{item.summary}</p>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <p role="status">
-              {needle
-                ? 'Nenhum tutorial encontrado.'
-                : 'Os tutoriais ainda não foram publicados. Você pode enviar sua dúvida pela área de ajuda.'}
-            </p>
-          )}
-        </>
-      )}
-      <Link href="/ajuda" className="text-primary underline">
-        Falar com a equipe
-      </Link>
+      </div>
+
+      {showCollections && !needle ? <HelpCollectionGrid collections={collections} /> : null}
+
+      <section
+        aria-label={needle ? 'Resultados da busca' : 'Tutoriais'}
+        className="flex flex-col gap-4"
+      >
+        {needle ? (
+          <p role="status" className="m-0 text-muted-foreground">
+            {matches.length
+              ? `${matches.length} ${matches.length === 1 ? 'tutorial encontrado' : 'tutoriais encontrados'}`
+              : 'Nenhum tutorial encontrado.'}
+          </p>
+        ) : null}
+        {matches.length ? (
+          <HelpTutorialRows tutorials={matches} collections={collections} showCollection />
+        ) : !needle ? (
+          <p role="status" className="m-0 text-muted-foreground">
+            Os tutoriais ainda não foram publicados. Você pode enviar sua dúvida pela página Ajuda.
+          </p>
+        ) : null}
+      </section>
+
+      <p className="m-0">
+        Não encontrou o que procurava?{' '}
+        <Link href="/ajuda" prefetch={false} className="sz-link">
+          Falar com a equipe
+        </Link>
+      </p>
     </div>
   )
 }

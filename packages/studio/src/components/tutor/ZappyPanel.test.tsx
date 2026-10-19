@@ -1003,6 +1003,30 @@ describe('ZappyPanel', () => {
     expect(view.queryByText(/ajuda da família acabou/i)).toBeNull()
   })
 
+  it('na comunidade adulta o medidor fala em pedidos da conta, sem a família', async () => {
+    const view = render(renderPanel(silentAdapter(), { audience: 'adult', credits: CREDITS }))
+    expect(await view.findByText('13 pedidos hoje')).toBeTruthy()
+    expect(view.getByText('Vale para o Pensa e o tutor do Estúdio.')).toBeTruthy()
+    expect(view.queryByText(/família|responsável|ideias/i)).toBeNull()
+  })
+
+  it('na comunidade adulta a fonte OpenRouter é a conexão da própria pessoa', async () => {
+    const view = render(
+      renderPanel(silentAdapter(), {
+        audience: 'adult',
+        credits: { ...CREDITS, studioSource: 'openrouter' },
+      }),
+    )
+    await waitFor(() =>
+      expect(
+        view.queryByText(
+          'Fonte no Estúdio: a sua conexão OpenRouter. O Pensa usa os pedidos da sua conta.',
+        ),
+      ).not.toBeNull(),
+    )
+    expect(view.queryByText(/família|responsável/i)).toBeNull()
+  })
+
   it('equipe vê "sem limite" em vez de número', async () => {
     const view = render(
       renderPanel(silentAdapter(), {

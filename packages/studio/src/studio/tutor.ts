@@ -267,6 +267,11 @@ export interface StudioTutorConfig {
    * o medidor não aparece. NUNCA passe zeros para significar indisponibilidade.
    */
   credits?: AiCreditsView | null
+  /**
+   * Para quem o medidor fala: `kids` (padrão) explica que a franquia é da família; `adult`
+   * (comunidade adulta) fala com o dono da conta, em "pedidos". O cálculo é o mesmo.
+   */
+  audience?: 'kids' | 'adult'
 }
 
 export interface StudioTutorProRequest {

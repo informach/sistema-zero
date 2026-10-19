@@ -1,35 +1,38 @@
-import {
-  CircleHelp,
-  GraduationCap,
-  Home,
-  Mail,
-  MessagesSquare,
-  Radio,
-  Sparkles,
-  Trophy,
-} from 'lucide-react'
+import { BookOpen, CircleHelp, Home, Monitor, Radio, Users } from 'lucide-react'
 
 export interface NavItem {
   href: string
   label: string
   icon: typeof Home
-  /** Prefixo extra que também marca o item como ativo. */
-  match?: string
+  /** Prefixos extras que também marcam o item como ativo. */
+  match?: readonly string[]
 }
 
 /**
- * Navegação principal do aluno (centralizada no header). Compras/Perfil vivem
- * no menu do avatar. `/cursos` (catálogo) e `/cursos/[slug]` (detalhe) acendem
- * "Todos os cursos"; a home (grid "Meus cursos") acende "Início".
+ * Navegação principal do aluno (direção de arte de 18/10/2026): seis destinos, sempre com ícone E
+ * texto. Recados virou o botão com contador à direita e Progresso foi para o menu do perfil, junto
+ * de avatar, espaço 3D, perfil e compras: nenhuma rota saiu, só mudou de lugar.
+ * `/cursos` (catálogo, trilha e detalhe) acende "Cursos"; a home acende "Início".
  */
-export const NAV_ITEMS: NavItem[] = [
+export const NAV_ITEMS: readonly NavItem[] = [
   { href: '/', label: 'Início', icon: Home },
-  { href: '/cursos', label: 'Todos os cursos', icon: GraduationCap, match: '/cursos' },
-  { href: '/criar', label: 'Criar', icon: Sparkles, match: '/criar' },
+  { href: '/cursos', label: 'Cursos', icon: BookOpen },
+  { href: '/criar', label: 'Criar', icon: Monitor },
   // As oficinas ao vivo (cursos ao vivo, 14/10/2026): só as turmas em que a pessoa tem vaga.
-  { href: '/oficinas', label: 'Oficinas', icon: Radio, match: '/oficinas' },
-  { href: '/comunidade', label: 'Comunidade', icon: MessagesSquare, match: '/comunidade' },
-  { href: '/recados', label: 'Recados', icon: Mail, match: '/recados' },
-  { href: '/ajuda', label: 'Ajuda', icon: CircleHelp, match: '/ajuda' },
-  { href: '/progresso', label: 'Progresso', icon: Trophy, match: '/progresso' },
+  { href: '/oficinas', label: 'Oficinas', icon: Radio },
+  {
+    href: '/comunidade',
+    label: 'Comunidade',
+    icon: Users,
+    match: ['/mural-dos-criadores-adulto', '/desafios', '/criador'],
+  },
+  { href: '/ajuda', label: 'Ajuda', icon: CircleHelp, match: ['/como-fazer'] },
 ]
+
+/** O item acende na própria rota, nas sub-rotas e nos prefixos extras. A raiz, só exata. */
+export function isNavItemActive(item: NavItem, pathname: string): boolean {
+  if (item.href === '/') return pathname === '/'
+  return [item.href, ...(item.match ?? [])].some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  )
+}
