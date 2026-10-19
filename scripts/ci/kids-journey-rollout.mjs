@@ -15,6 +15,19 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { stagingJourney, uuidPattern } from '../release/kids-journey-bootstrap.mjs'
 
+// Diagnostics are generated locally. Never serialize an exception, command, API body or token.
+const preflightFailures = new WeakMap()
+const apiAuthorizationFailures = new WeakSet()
+export function describeKidsJourneyRolloutFailure(error) {
+  return {
+    kind: 'kids-journey-rollout-failure',
+    ...(preflightFailures.get(error) ?? {
+      step: 'unclassified',
+      reason: 'operation-failed',
+    }),
+  }
+}
+
 /** The returned value is the only barrier that authorizes the caller to deploy apps. */
 export async function runKidsJourneyRollout(input, ports) {
   const { sha, mode } = input
@@ -197,8 +210,21 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       body: JSON.stringify({ query, variables }),
       signal: AbortSignal.timeout(15000),
     })
+    if (response.status === 401 || response.status === 403) {
+      const error = new Error('Railway GraphQL negou a credencial')
+      apiAuthorizationFailures.add(error)
+      throw error
+    }
     if (!response.ok) throw new Error('Railway GraphQL indisponível')
     const result = await response.json()
+    if (
+      Array.isArray(result.errors) &&
+      result.errors.some((error) => error?.message === 'Not Authorized')
+    ) {
+      const error = new Error('Railway GraphQL negou a credencial')
+      apiAuthorizationFailures.add(error)
+      throw error
+    }
     if (result.errors || !result.data) throw new Error('Railway GraphQL recusou a operação')
     return result.data
   }
@@ -265,13 +291,28 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     now: () => Date.now(),
     log: (value) => console.log(JSON.stringify(value)),
     async preflight() {
-      if (cli(['--version']).trim() !== 'railway 5.62.1')
-        throw new Error('CLI Railway deve ser5.62.1')
-      exec('ssh', ['-V'], { stdio: ['ignore', 'pipe', 'pipe'], timeout: 5000 })
-      for (const service of ['members', 'auth']) {
-        const current = await single(service)
-        before.set(service, [current.id])
-        probe(service, current)
+      let step = 'cli-version'
+      try {
+        if (cli(['--version']).trim() !== 'railway 5.62.1')
+          throw new Error('CLI Railway deve ser5.62.1')
+        step = 'openssh-version'
+        exec('ssh', ['-V'], { stdio: ['ignore', 'pipe', 'pipe'], timeout: 5000 })
+        for (const service of ['members', 'auth']) {
+          step = `${service}-inventory`
+          const current = await single(service)
+          before.set(service, [current.id])
+          step = `${service}-probe`
+          probe(service, current)
+        }
+      } catch (error) {
+        if (error && (typeof error === 'object' || typeof error === 'function'))
+          preflightFailures.set(error, {
+            step,
+            reason: apiAuthorizationFailures.has(error)
+              ? 'api-authorization-rejected'
+              : 'operation-failed',
+          })
+        throw error
       }
     },
     async deploy(service) {
@@ -371,7 +412,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       )
       console.log(JSON.stringify({ kind: 'kids-journey-release-barrier', ...result }))
     }
-  } catch {
+  } catch (error) {
+    console.error(JSON.stringify(describeKidsJourneyRolloutFailure(error)))
     console.error(
       'Onda canônica Kids falhou. Apps não foram liberados por esta barreira; retome explicitamente o rollout.',
     )

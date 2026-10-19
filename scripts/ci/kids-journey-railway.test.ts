@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { stagingJourney } from '../release/kids-journey-bootstrap.mjs'
 import {
   createRailwayPorts,
+  describeKidsJourneyRolloutFailure,
   prepareSsh,
   validateBackendRolloutPlan,
 } from './kids-journey-rollout.mjs'
@@ -18,6 +19,7 @@ function transport(
     retire?: boolean
     wrongSha?: boolean
     hideOldAfterProbe?: boolean
+    failAt?: 'cli' | 'openssh' | 'inventory' | 'probe'
   } = {},
 ) {
   const commands: string[][] = [],
@@ -32,6 +34,12 @@ function transport(
     {
       exec(command: string, args: string[]) {
         commands.push([command, ...args])
+        if (
+          (options.failAt === 'cli' && args[0] === '--version') ||
+          (options.failAt === 'openssh' && command === 'ssh') ||
+          (options.failAt === 'probe' && args[0] === 'ssh')
+        )
+          throw new Error('sensitive raw transport detail')
         if (command === 'ssh') return ''
         if (args[0] === '--version') return 'railway 5.62.1\n'
         const code = args.at(-1) ?? ''
@@ -41,6 +49,11 @@ function transport(
         return JSON.stringify({ nonce, bun: '1.3.11' })
       },
       async fetch(_url: string, request: { body: string }) {
+        if (options.failAt === 'inventory')
+          return {
+            ok: true,
+            json: async () => ({ errors: [{ message: 'Not Authorized' }] }),
+          }
         const { query, variables } = JSON.parse(request.body)
         queries.push(query)
         let data: unknown
@@ -86,6 +99,35 @@ function transport(
 }
 
 describe('actual Railway boundary without remote I/O', () => {
+  test('preflight reports the failed boundary without raw transport output or secrets', async () => {
+    for (const [failAt, step, reason] of [
+      ['cli', 'cli-version', 'operation-failed'],
+      ['openssh', 'openssh-version', 'operation-failed'],
+      ['inventory', 'members-inventory', 'api-authorization-rejected'],
+      ['probe', 'members-probe', 'operation-failed'],
+    ] as const) {
+      const f = transport({ failAt })
+      let caught: unknown
+      try {
+        await f.ports.preflight()
+      } catch (error) {
+        caught = error
+      }
+      expect(caught).toBeInstanceOf(Error)
+      expect(describeKidsJourneyRolloutFailure(caught)).toEqual({
+        kind: 'kids-journey-rollout-failure',
+        step,
+        reason,
+      })
+      expect(JSON.stringify(describeKidsJourneyRolloutFailure(caught))).not.toContain('sensitive')
+      expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+    }
+    expect(describeKidsJourneyRolloutFailure(new Error('local-test-only'))).toEqual({
+      kind: 'kids-journey-rollout-failure',
+      step: 'unclassified',
+      reason: 'operation-failed',
+    })
+  })
   test('missing CI SSH credentials fail before touching the filesystem or deploying', () => {
     expect(() => prepareSsh({ RAILWAY_TOKEN: 'test' })).toThrow('identidade SSH')
   })
