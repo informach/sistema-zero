@@ -19,6 +19,8 @@ function transport(
     retire?: boolean
     wrongSha?: boolean
     hideOldAfterProbe?: boolean
+    failedProbeCheck?: 'environment' | 'service' | 'deployment' | 'commit' | 'required'
+    probeStderr?: string
     failAt?: 'cli' | 'openssh' | 'inventory' | 'probe'
   } = {},
 ) {
@@ -39,14 +41,26 @@ function transport(
           (options.failAt === 'openssh' && command === 'ssh') ||
           (options.failAt === 'probe' && args[0] === 'ssh')
         )
-          throw new Error('sensitive raw transport detail')
+          throw Object.assign(new Error('sensitive raw transport detail'), {
+            stderr: options.probeStderr ?? 'sensitive raw transport detail',
+          })
         if (command === 'ssh') return ''
         if (args[0] === '--version') return 'railway 5.62.1\n'
         const code = args.at(-1) ?? ''
         if (options.relayOnly) return '{"status":"waiting-for-container"}'
         const nonce = /nonce:"([a-f0-9]{32})"/.exec(code)?.[1]
         if (!nonce) throw new Error('Unexpected remote command')
-        return JSON.stringify({ nonce, bun: '1.3.11' })
+        return JSON.stringify({
+          nonce,
+          bun: '1.3.11',
+          checks: {
+            environment: options.failedProbeCheck !== 'environment',
+            service: options.failedProbeCheck !== 'service',
+            deployment: options.failedProbeCheck !== 'deployment',
+            commit: options.failedProbeCheck !== 'commit',
+            required: options.failedProbeCheck !== 'required',
+          },
+        })
       },
       async fetch(_url: string, request: { body: string }) {
         if (options.failAt === 'inventory')
@@ -104,7 +118,7 @@ describe('actual Railway boundary without remote I/O', () => {
       ['cli', 'cli-version', 'operation-failed'],
       ['openssh', 'openssh-version', 'operation-failed'],
       ['inventory', 'members-inventory', 'api-authorization-rejected'],
-      ['probe', 'members-probe', 'operation-failed'],
+      ['probe', 'members-probe', 'ssh-command-failed'],
     ] as const) {
       const f = transport({ failAt })
       let caught: unknown
@@ -126,6 +140,35 @@ describe('actual Railway boundary without remote I/O', () => {
       kind: 'kids-journey-rollout-failure',
       step: 'unclassified',
       reason: 'operation-failed',
+    })
+  })
+  test('preflight identifies remote metadata mismatches and SSH failures without printing values', async () => {
+    for (const check of ['environment', 'service', 'deployment', 'commit', 'required'] as const) {
+      const f = transport({ failedProbeCheck: check })
+      let caught: unknown
+      try {
+        await f.ports.preflight()
+      } catch (error) {
+        caught = error
+      }
+      expect(describeKidsJourneyRolloutFailure(caught)).toEqual({
+        kind: 'kids-journey-rollout-failure',
+        step: 'members-probe',
+        reason: `${check}-check-failed`,
+      })
+      expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+    }
+    const rejected = transport({ failAt: 'probe', probeStderr: 'Permission denied (publickey)' })
+    let caught: unknown
+    try {
+      await rejected.ports.preflight()
+    } catch (error) {
+      caught = error
+    }
+    expect(describeKidsJourneyRolloutFailure(caught)).toEqual({
+      kind: 'kids-journey-rollout-failure',
+      step: 'members-probe',
+      reason: 'ssh-identity-rejected',
     })
   })
   test('missing CI SSH credentials fail before touching the filesystem or deploying', () => {

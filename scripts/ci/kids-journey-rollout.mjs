@@ -18,6 +18,7 @@ import { stagingJourney, uuidPattern } from '../release/kids-journey-bootstrap.m
 // Diagnostics are generated locally. Never serialize an exception, command, API body or token.
 const preflightFailures = new WeakMap()
 const apiAuthorizationFailures = new WeakSet()
+const probeFailureReasons = new WeakMap()
 export function describeKidsJourneyRolloutFailure(error) {
   return {
     kind: 'kids-journey-rollout-failure',
@@ -282,10 +283,48 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
             'MEMBERS_PROFILE_ADMISSION_TOKEN',
           ]
     // Readonly and available in the OLD artifact; skipDeploys secrets need not exist there yet.
-    const code = `const e=process.env;if(e.RAILWAY_ENVIRONMENT_ID!==${JSON.stringify(stagingJourney.environment)}||e.RAILWAY_SERVICE_ID!==${JSON.stringify(stagingJourney[service])}||e.RAILWAY_DEPLOYMENT_ID!==${JSON.stringify(current.id)}||e.RAILWAY_GIT_COMMIT_SHA!==${JSON.stringify(current.meta.commitHash)}||${JSON.stringify(required)}.some(k=>!e[k]))process.exit(1);console.log(JSON.stringify({nonce:${JSON.stringify(nonce)},bun:Bun.version}))`
-    const reply = JSON.parse(ssh(service, ['bun', '-e', code]).trim())
-    if (reply.nonce !== nonce || typeof reply.bun !== 'string' || !/^\d+\.\d+\.\d+/.test(reply.bun))
-      throw new Error('Preflight SSH não executou no artefato esperado')
+    // Report only check outcomes. A failed remote assertion would otherwise look exactly like
+    // a rejected SSH connection, while printing environment values could expose credentials.
+    const code = `const e=process.env;console.log(JSON.stringify({nonce:${JSON.stringify(nonce)},bun:Bun.version,checks:{environment:e.RAILWAY_ENVIRONMENT_ID===${JSON.stringify(stagingJourney.environment)},service:e.RAILWAY_SERVICE_ID===${JSON.stringify(stagingJourney[service])},deployment:e.RAILWAY_DEPLOYMENT_ID===${JSON.stringify(current.id)},commit:e.RAILWAY_GIT_COMMIT_SHA===${JSON.stringify(current.meta.commitHash)},required:${JSON.stringify(required)}.every(k=>!!e[k])}}))`
+    let output
+    try {
+      output = ssh(service, ['bun', '-e', code])
+    } catch (error) {
+      const stderr = String(error?.stderr ?? '')
+      const reason = /Permission denied \(publickey\)/i.test(stderr)
+        ? 'ssh-identity-rejected'
+        : /Host key verification failed|REMOTE HOST IDENTIFICATION HAS CHANGED/i.test(stderr)
+          ? 'ssh-host-key-rejected'
+          : /timed out|connection refused|could not connect/i.test(stderr)
+            ? 'ssh-connection-failed'
+            : 'ssh-command-failed'
+      const failure = new Error('Preflight SSH não executou no artefato esperado')
+      probeFailureReasons.set(failure, reason)
+      throw failure
+    }
+    let reply
+    try {
+      reply = JSON.parse(output.trim())
+    } catch {
+      const failure = new Error('Preflight SSH não executou no artefato esperado')
+      probeFailureReasons.set(failure, 'ssh-response-invalid')
+      throw failure
+    }
+    if (
+      reply?.nonce !== nonce ||
+      typeof reply.bun !== 'string' ||
+      !/^\d+\.\d+\.\d+/.test(reply.bun)
+    ) {
+      const failure = new Error('Preflight SSH não executou no artefato esperado')
+      probeFailureReasons.set(failure, 'ssh-response-invalid')
+      throw failure
+    }
+    for (const check of ['environment', 'service', 'deployment', 'commit', 'required']) {
+      if (reply.checks?.[check] === true) continue
+      const failure = new Error('Preflight SSH encontrou identidade ou configuração divergente')
+      probeFailureReasons.set(failure, `${check}-check-failed`)
+      throw failure
+    }
   }
   return {
     now: () => Date.now(),
@@ -310,7 +349,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
             step,
             reason: apiAuthorizationFailures.has(error)
               ? 'api-authorization-rejected'
-              : 'operation-failed',
+              : (probeFailureReasons.get(error) ?? 'operation-failed'),
           })
         throw error
       }

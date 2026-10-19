@@ -1,0 +1,25 @@
+name: Diagnóstico SSH do staging
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: railway-staging-readonly-preflight
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_PROJECT_ID: 415d5a1c-5f75-432c-8445-b395d0977ce3
+      STAGING_ENV_ID: f634cff6-aafb-4804-8b69-172fad4e946e
+      RAILWAY_SSH_PRIVATE_KEY: ${{ secrets.RAILWAY_SSH_PRIVATE_KEY }}
+      RAILWAY_SSH_KNOWN_HOSTS: ${{ secrets.RAILWAY_SSH_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-railway
+      - name: Provar o deployment atual sem alterar serviços
+        run: node scripts/ci/kids-journey-rollout.mjs preflight "$GITHUB_SHA"
