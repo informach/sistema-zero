@@ -1,4 +1,7 @@
-import { isKidsStaffPreview, kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
+import {
+  isKidsStaffPreview,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { pythonRemixCapabilities } from '@sistemazero/member-shell/lib/studio-python-remix'
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { kidsStudioTier } from '@sistemazero/member-shell/server/studio-unlocks'

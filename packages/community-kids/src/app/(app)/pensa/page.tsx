@@ -1,4 +1,7 @@
-import { hasKidsCapability, kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
+import {
+  hasKidsCapability,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { KidsJourneyLockedPensa } from '@/components/kids/kids-journey-locked-pensa'
 import { KidsLockedPensa } from '@/components/kids/kids-locked-pensa'

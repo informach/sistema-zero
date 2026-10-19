@@ -8,12 +8,14 @@ export function kidsJourneyStaffPreviewRoutes(deps: {
   query: Pick<KidsJourneyQueryService, 'staffPreview'>
   internalToken: string | undefined
 }) {
-  return new Elysia({ name: 'kids-journey-staff-preview' })
-    .get('/members/journey/kids/staff-preview', ({ headers, set }) => {
+  return new Elysia({ name: 'kids-journey-staff-preview' }).get(
+    '/members/journey/kids/staff-preview',
+    ({ headers, set }) => {
       if (!deps.internalToken) throw new UnauthorizedError('Origem de prévia não configurada')
       assertInternalCaller(headers['x-internal-token'], deps.internalToken)
       resolveKidsStaffPreviewActor(headers)
       set.headers['cache-control'] = 'private, no-store'
       return deps.query.staffPreview()
-    })
+    },
+  )
 }

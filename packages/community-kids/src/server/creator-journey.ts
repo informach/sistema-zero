@@ -1,9 +1,22 @@
 import 'server-only'
-import { type CreativeToolId, type JourneyLevelSlug, kidsCreativeToolAvailability, type ToolAvailability } from '@sistemazero/core/journey'
-import { isKidsStaffPreview, kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
+import {
+  type CreativeToolId,
+  type JourneyLevelSlug,
+  kidsCreativeToolAvailability,
+  type ToolAvailability,
+} from '@sistemazero/core/journey'
+import {
+  isKidsStaffPreview,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { cache } from 'react'
+import {
+  checkCreativeToolsAccessReadonly,
+  getGamificationReadonly,
+  getStudioUnlocksReadonly,
+  listMyCourses,
+} from './members'
 import { studioGate } from './studio-gate'
-import { checkCreativeToolsAccessReadonly, getGamificationReadonly, getStudioUnlocksReadonly, listMyCourses } from './members'
 
 export interface CreativeTool {
   id: CreativeToolId
@@ -32,17 +45,22 @@ export const getCreativeTools = cache(async () => {
   if (studio.state === 'available') {
     // Reuse the entry gate, including known-block filtering. Own-account team preview does not
     // read or reconcile a learner's curriculum. This does not freeze policy achievements.
-    const unlocks = journey && isKidsStaffPreview(journey)
-      ? null : await getStudioUnlocksReadonly().catch(() => null)
+    const unlocks =
+      journey && isKidsStaffPreview(journey)
+        ? null
+        : await getStudioUnlocksReadonly().catch(() => null)
     const gate = studioGate(journey, unlocks)
-    studio.studioCurriculum = gate.kind === 'open' ? 'ready'
-      : gate.kind === 'unavailable' ? 'unavailable' : 'empty'
+    studio.studioCurriculum =
+      gate.kind === 'open' ? 'ready' : gate.kind === 'unavailable' ? 'unavailable' : 'empty'
   }
   return { level, journey, tools }
 })
 
 /** Creation hub retains globally earned tools and existing works even while curriculum is pending. */
 export const getCreatorJourney = cache(async () => {
-  const [tools, courses] = await Promise.all([getCreativeTools(), listMyCourses().catch(() => null)])
+  const [tools, courses] = await Promise.all([
+    getCreativeTools(),
+    listMyCourses().catch(() => null),
+  ])
   return { ...tools, courses: courses?.status === 200 ? (courses.body?.courses ?? null) : null }
 })

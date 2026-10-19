@@ -77,12 +77,19 @@ export class ListMyCoursesService {
       }
     }
 
-    const journeyState = audience === 'kids' && !privileged
-      ? await this.kidsJourney.courseState({ userId, accountId: accountId ?? userId }, courses.map((course) => course.id))
-      : null
+    const journeyState =
+      audience === 'kids' && !privileged
+        ? await this.kidsJourney.courseState(
+            { userId, accountId: accountId ?? userId },
+            courses.map((course) => course.id),
+          )
+        : null
     // Team bypass retains its actual ledger badges, without the previous qualification engine.
-    const milestones = journeyState?.milestones ?? (audience === 'kids' && privileged
-      ? await this.gamification.listCourseMilestones(userId, audience) : new Map())
+    const milestones =
+      journeyState?.milestones ??
+      (audience === 'kids' && privileged
+        ? await this.gamification.listCourseMilestones(userId, audience)
+        : new Map())
     const journeyLocks = journeyLockViews(courses, journeyState?.locks ?? null)
 
     // Contagens em LOTE (3 queries) em vez de 3 por curso (evita N+1). Numerador

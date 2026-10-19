@@ -29,11 +29,14 @@ export function HelpToolNotice({
   if (!state || state === 'unavailable') return null
   if (state === 'available' && studioCurriculum && studioCurriculum !== 'ready') {
     return (
-      <p className="sz-help-tool-notice text-foreground text-sm" role={studioCurriculum === 'unavailable' ? 'status' : undefined}>
+      <p
+        className="sz-help-tool-notice text-foreground text-sm"
+        role={studioCurriculum === 'unavailable' ? 'status' : undefined}
+      >
         {studioCurriculum === 'empty'
           ? 'Você já conquistou o Estúdio. Os blocos para criar vêm das suas aventuras.'
-          : 'Você já conquistou o Estúdio. Não foi possível consultar seus blocos agora.'}
-        {' '}Você pode ler este passo a passo mesmo assim.
+          : 'Você já conquistou o Estúdio. Não foi possível consultar seus blocos agora.'}{' '}
+        Você pode ler este passo a passo mesmo assim.
       </p>
     )
   }

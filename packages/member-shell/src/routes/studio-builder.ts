@@ -17,6 +17,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
 import { getEnv } from '../lib/env'
+import { kidsJourneyAccess } from '../lib/kids-journey-access'
 import { learnerIdentity } from '../lib/learner-identity'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { MembersClient } from '../server/clients'
@@ -39,7 +40,6 @@ import {
   studioProRuntimePublicStatus,
 } from '../server/studio-pro-runtime'
 import { kidsStudioTier } from '../server/studio-unlocks'
-import { kidsJourneyAccess } from '../lib/kids-journey-access'
 import { isStudioZappyAllowed } from '../server/zappy-access'
 import { isUnsafeZappyText, redactZappySensitiveText } from '../server/zappy-safety'
 
@@ -163,8 +163,7 @@ export function createStudioBuilderRoutes(deps: {
               ? !learnerIdentity(user, 'adult') ||
                 !gamification.body?.journey?.capabilities.includes('ai') ||
                 !gamification.body.journey.capabilities.includes('pro')
-              : !isStudioZappyAllowed(user, kids) ||
-                !kids || !kidsStudioTier(kids, []).pro
+              : !isStudioZappyAllowed(user, kids) || !kids || !kidsStudioTier(kids, []).pro
           )
             return error('O construtor precisa do modo Pro e do Zappy liberados.', 403)
         }

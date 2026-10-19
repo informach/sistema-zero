@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, test as bunTest } from 'bun:test'
+import { afterAll, beforeAll, test as bunTest, describe, expect } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { PurgeUserDataService } from '../../src/application/admin/purge-user-data/purge-user-data.service'
 import { InvalidStateTransitionError } from '../../src/domain/shared/errors'
@@ -6,7 +6,11 @@ import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/
 import { DrizzleKidsJourneyRepository } from '../../src/infrastructure/persistence/drizzle/kids-journey.repository'
 import { DrizzlePensaProjectRepository } from '../../src/infrastructure/persistence/drizzle/pensa-project.repository'
 import { DrizzleUserDataPurgeRepository } from '../../src/infrastructure/persistence/drizzle/user-data-purge.repository'
-import { kidsJourneyTestTarget, OwnedKidsJourneyTestWork, openKidsJourneyTestDatabase } from './kids-journey-database'
+import {
+  kidsJourneyTestTarget,
+  OwnedKidsJourneyTestWork,
+  openKidsJourneyTestDatabase,
+} from './kids-journey-database'
 
 const target = process.env.KIDS_JOURNEY_PURGE_TEST_DATABASE_URL
 if (target !== undefined) kidsJourneyTestTarget(target) // Invalid explicit targets fail, never skip/fallback.
@@ -18,17 +22,23 @@ describe.skipIf(!target)('Purga de dados do usuário no Postgres real', () => {
     bunTest(name, () => ownedWork.track(operation))
   }
 
-  beforeAll(() => ownedWork.track(async () => {
-    // Additive real migration history in an explicit owned DB. Never DROP, FORCE or port fallback.
-    conn = await openKidsJourneyTestDatabase(target!)
-    // One initial owned reset belongs to bootstrap. Every case uses new account/profile UUIDs;
-    // all subsequent checks are owner-scoped, and no singleton/configuration is reused.
-    const tables = await conn.sql<{ name: string }[]>`
+  beforeAll(
+    () =>
+      ownedWork.track(async () => {
+        // Additive real migration history in an explicit owned DB. Never DROP, FORCE or port fallback.
+        conn = await openKidsJourneyTestDatabase(target!)
+        // One initial owned reset belongs to bootstrap. Every case uses new account/profile UUIDs;
+        // all subsequent checks are owner-scoped, and no singleton/configuration is reused.
+        const tables = await conn.sql<{ name: string }[]>`
       select format('%I.%I', schemaname, tablename) as name
       from pg_tables where schemaname = 'members'
     `
-    await conn.sql.unsafe(`truncate table ${tables.map((table) => table.name).join(', ')} cascade`)
-  }), 60_000)
+        await conn.sql.unsafe(
+          `truncate table ${tables.map((table) => table.name).join(', ')} cascade`,
+        )
+      }),
+    60_000,
+  )
 
   afterAll(async () => {
     await ownedWork.drain()

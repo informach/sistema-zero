@@ -1,9 +1,11 @@
 import 'server-only'
 import { hasKidsCapability, type KidsJourneyAccess } from '../lib/kids-journey-access'
 import type { MembersClient } from './clients'
-import { readKidsCapabilities, type KidsCapabilityDecision } from './creative-apps-access'
+import { type KidsCapabilityDecision, readKidsCapabilities } from './creative-apps-access'
 
-interface ZappySession { role: string }
+interface ZappySession {
+  role: string
+}
 
 export function isStudioZappyAllowed(
   session: ZappySession | null | undefined,

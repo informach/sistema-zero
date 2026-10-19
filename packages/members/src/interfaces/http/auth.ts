@@ -189,11 +189,15 @@ export function resolveKidsStaffPreviewActor(headers: Record<string, string | un
   const accountId = resolveAccountId(headers)
   const context = headers['x-auth-kids-context']
   if (
-    accountId !== userId || headers['x-auth-account-id'] !== undefined ||
-    headers['x-auth-profile-name'] !== undefined || headers['x-auth-profile-public'] !== undefined ||
-    headers['x-auth-impersonator-id'] !== undefined || headers['x-auth-impersonation-mode'] !== undefined ||
+    accountId !== userId ||
+    headers['x-auth-account-id'] !== undefined ||
+    headers['x-auth-profile-name'] !== undefined ||
+    headers['x-auth-profile-public'] !== undefined ||
+    headers['x-auth-impersonator-id'] !== undefined ||
+    headers['x-auth-impersonation-mode'] !== undefined ||
     (context !== undefined && context !== 'parent')
-  ) throw new ForbiddenError('Use a conta da equipe, sem perfil de aluno ou sessão de suporte.')
+  )
+    throw new ForbiddenError('Use a conta da equipe, sem perfil de aluno ou sessão de suporte.')
   return { userId, accountId }
 }
 

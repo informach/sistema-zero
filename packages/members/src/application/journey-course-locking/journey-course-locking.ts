@@ -17,16 +17,25 @@ export function journeyLockViews(
       if (tier) foundationByTier.set(tier, course.slug)
     }
   }
-  return new Map(courses.map((course): [string, JourneyCourseLockView] => {
-    const lock = locks.get(course.id)
-    if (!lock) throw new KidsJourneyUnavailableError()
-    const tier = course.level === 'lenda' ? null : courseTier(course.level, course.track)
-    return [course.id, {
-      locked: lock.locked,
-      ...(lock.reason ? { reason: lock.reason } : {}),
-      ...(lock.requiredLevel ? { requiredLevel: lock.requiredLevel } : {}),
-      ...(lock.locked && lock.reason === 'foundation-first' && tier && foundationByTier.has(tier)
-        ? { foundationCourseSlug: foundationByTier.get(tier) } : {}),
-    }]
-  }))
+  return new Map(
+    courses.map((course): [string, JourneyCourseLockView] => {
+      const lock = locks.get(course.id)
+      if (!lock) throw new KidsJourneyUnavailableError()
+      const tier = course.level === 'lenda' ? null : courseTier(course.level, course.track)
+      return [
+        course.id,
+        {
+          locked: lock.locked,
+          ...(lock.reason ? { reason: lock.reason } : {}),
+          ...(lock.requiredLevel ? { requiredLevel: lock.requiredLevel } : {}),
+          ...(lock.locked &&
+          lock.reason === 'foundation-first' &&
+          tier &&
+          foundationByTier.has(tier)
+            ? { foundationCourseSlug: foundationByTier.get(tier) }
+            : {}),
+        },
+      ]
+    }),
+  )
 }

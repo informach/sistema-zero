@@ -6,14 +6,17 @@ import {
   pauseKidsJourneyPolicy,
   resolveKidsJourneyCourseLock,
 } from '@sistemazero/core/journey'
-import { KidsJourneyCatalogBusyError, KidsJourneyUnavailableError } from '../../src/domain/kids-journey/kids-journey.errors'
+import {
+  KidsJourneyCatalogBusyError,
+  KidsJourneyUnavailableError,
+} from '../../src/domain/kids-journey/kids-journey.errors'
 import type {
   KidsJourneyOwner,
   KidsJourneyPreparation,
 } from '../../src/domain/ports/kids-journey-repository.port'
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
-import { DrizzleKidsJourneyRepository } from '../../src/infrastructure/persistence/drizzle/kids-journey.repository'
 import { DrizzleGamificationRepository } from '../../src/infrastructure/persistence/drizzle/gamification.repository'
+import { DrizzleKidsJourneyRepository } from '../../src/infrastructure/persistence/drizzle/kids-journey.repository'
 import {
   kidsJourneyPolicy,
   kidsJourneyPreparations,
@@ -76,13 +79,24 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
       const traced = process.env.KIDS_JOURNEY_QA_TIMINGS === '1'
       const timing: { step: string; ms: number }[] = []
       const monitoring: Promise<unknown>[] = []
-      let stage = 'fixture-rows', started = performance.now()
-      const timer = traced ? setTimeout(() => {
-        monitoring.push(Promise.resolve(conn.sql`select pid,state,wait_event_type,wait_event,pg_blocking_pids(pid) as blockers,left(query,160) as query from pg_stat_activity where datname=current_database() and state <> 'idle'`).then(
-          (activity) => console.warn('[kids-harness-slow]', JSON.stringify({ stage, elapsed: performance.now() - started, activity })),
-          (error: unknown) => console.warn('[kids-harness-monitor-error]', error),
-        ))
-      }, 4_000) : undefined
+      let stage = 'fixture-rows',
+        started = performance.now()
+      const timer = traced
+        ? setTimeout(() => {
+            monitoring.push(
+              Promise.resolve(
+                conn.sql`select pid,state,wait_event_type,wait_event,pg_blocking_pids(pid) as blockers,left(query,160) as query from pg_stat_activity where datname=current_database() and state <> 'idle'`,
+              ).then(
+                (activity) =>
+                  console.warn(
+                    '[kids-harness-slow]',
+                    JSON.stringify({ stage, elapsed: performance.now() - started, activity }),
+                  ),
+                (error: unknown) => console.warn('[kids-harness-monitor-error]', error),
+              ),
+            )
+          }, 4_000)
+        : undefined
       async function measure(name: string, work: () => Promise<unknown>) {
         stage = name
         started = performance.now()
@@ -91,9 +105,15 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
       }
       try {
         await measure('fixture-rows', resetFixtureRows)
-        await measure('policy', async () => conn.db.insert(kidsJourneyPolicy).values(seedFixture.policy))
-        await measure('preparation', async () => conn.db.insert(kidsJourneyPreparations).values(seedFixture.preparation))
-        await measure('revision', async () => conn.db.insert(kidsJourneyRevisions).values(seedFixture.revision))
+        await measure('policy', async () =>
+          conn.db.insert(kidsJourneyPolicy).values(seedFixture.policy),
+        )
+        await measure('preparation', async () =>
+          conn.db.insert(kidsJourneyPreparations).values(seedFixture.preparation),
+        )
+        await measure('revision', async () =>
+          conn.db.insert(kidsJourneyRevisions).values(seedFixture.revision),
+        )
       } finally {
         if (timer !== undefined) clearTimeout(timer)
         await Promise.allSettled(monitoring)
@@ -1026,28 +1046,47 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
     await conn.sql`update members.kids_journey_policy set policy='{}'::jsonb where id='kids'`
     await expect(repo.readSnapshot([])).rejects.toBeInstanceOf(KidsJourneyUnavailableError)
     await expect(repo.initializeSeed()).rejects.toBeInstanceOf(KidsJourneyUnavailableError)
-    const [row] = await conn.sql`select version,policy from members.kids_journey_policy where id='kids'`
+    const [row] =
+      await conn.sql`select version,policy from members.kids_journey_policy where id='kids'`
     expect(row).toEqual({ version: 1, policy: {} })
   })
 
   async function milestonePolicy() {
     const ids = Array.from({ length: 14 }, () => randomUUID())
-    for (const id of ids) await conn.sql`insert into members.courses(id,slug,title,audience,level,track,journey_role,status,created_at,updated_at)
+    for (const id of ids)
+      await conn.sql`insert into members.courses(id,slug,title,audience,level,track,journey_role,status,created_at,updated_at)
       values (${id},${id},'Extra de marco','kids','primeiros-passos','2d','extra','published',now(),now())`
     const seed = initialKidsJourneyPolicy()
-    const outgoing: KidsJourneyPolicy = { ...seed, steps: seed.steps.map((step, index) => ({
-      ...step, requirements: [{ kind: 'course', courseId: ids[index]!, milestone: 'complete' }],
-    })) }
-    const restrictive: KidsJourneyPolicy = { ...outgoing, steps: outgoing.steps.map((step, index) => ({
-      ...step, requirements: [{ kind: 'course', courseId: ids[index + 7]!, milestone: 'complete' }], capabilities: [],
-    })) }
+    const outgoing: KidsJourneyPolicy = {
+      ...seed,
+      steps: seed.steps.map((step, index) => ({
+        ...step,
+        requirements: [{ kind: 'course', courseId: ids[index]!, milestone: 'complete' }],
+      })),
+    }
+    const restrictive: KidsJourneyPolicy = {
+      ...outgoing,
+      steps: outgoing.steps.map((step, index) => ({
+        ...step,
+        requirements: [{ kind: 'course', courseId: ids[index + 7]!, milestone: 'complete' }],
+        capabilities: [],
+      })),
+    }
     expect((await publish(await baseline(await prepare(1, outgoing))))!.version).toBe(2)
     return { ids, restrictive }
   }
-  function awardMilestone(subject: KidsJourneyOwner, courseId: string, audience: 'kids' | 'adult' = 'kids') {
+  function awardMilestone(
+    subject: KidsJourneyOwner,
+    courseId: string,
+    audience: 'kids' | 'adult' = 'kids',
+  ) {
     return new DrizzleGamificationRepository(conn.db).award({
-      ...subject, audience, events: [{ sourceType: 'course_complete', sourceId: courseId, amount: 0 }],
-      today: '2026-10-18', now: new Date('2026-10-18T12:00:00Z'), privileged: false,
+      ...subject,
+      audience,
+      events: [{ sourceType: 'course_complete', sourceId: courseId, amount: 0 }],
+      today: '2026-10-18',
+      now: new Date('2026-10-18T12:00:00Z'),
+      privileged: false,
     })
   }
 
@@ -1056,14 +1095,18 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
     const subject = owner()
     await profile(subject)
     const ready = await baseline(await prepare(2, restrictive))
-    expect((await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned.level).toBe('noob')
+    expect((await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned.level).toBe(
+      'noob',
+    )
     const award = await awardMilestone(subject, ids[0]!)
     expect(award.newEvents).toHaveLength(1)
     const earned = (await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned
     expect(earned.level).toBe('coder')
     expect(earned.capabilities).toEqual(['studio', 'pinta'])
     expect((await publish(ready))!.version).toBe(3)
-    expect((await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned).toEqual(earned)
+    expect((await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned).toEqual(
+      earned,
+    )
   })
 
   test('award hook: a deduplicated historical milestone replay still reconciles earned without duplicating XP', async () => {
@@ -1072,11 +1115,14 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
     await profile(subject)
     await conn.sql`insert into members.xp_events(id,user_id,audience,source_type,source_id,amount,source_level,source_track,created_at)
       values (${randomUUID()},${subject.userId},'kids','course_complete',${ids[0]!},0,'primeiros-passos','2d',now())`
-    expect((await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned.level).toBe('noob')
+    expect((await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned.level).toBe(
+      'noob',
+    )
     expect((await awardMilestone(subject, ids[0]!)).newEvents).toHaveLength(0)
     const snapshot = await repo.readSnapshot([subject])
     expect(snapshot.profiles.get(subject.userId)!.earned.level).toBe('coder')
-    const [events] = await conn.sql`select count(*)::int as count from members.xp_events where user_id=${subject.userId}`
+    const [events] =
+      await conn.sql`select count(*)::int as count from members.xp_events where user_id=${subject.userId}`
     expect(events!.count).toBe(1)
   })
 
@@ -1087,9 +1133,11 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
     const wrongAccount = randomUUID()
     await conn.sql`update members.kids_journey_earned set account_id=${wrongAccount} where user_id=${subject.userId}`
     await refusal(() => awardMilestone(subject, ids[0]!))
-    const [events] = await conn.sql`select count(*)::int as count from members.xp_events where user_id=${subject.userId}`
+    const [events] =
+      await conn.sql`select count(*)::int as count from members.xp_events where user_id=${subject.userId}`
     expect(events!.count).toBe(0)
-    const [earned] = await conn.sql`select level,account_id from members.kids_journey_earned where user_id=${subject.userId}`
+    const [earned] =
+      await conn.sql`select level,account_id from members.kids_journey_earned where user_id=${subject.userId}`
     expect(earned).toEqual({ level: 'noob', account_id: wrongAccount })
   })
 
@@ -1106,7 +1154,10 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
         expect((await publish(ready))!.version).toBe(3)
         release()
         expect((await award).newEvents).toHaveLength(1)
-      } finally { release(); await Promise.allSettled([award]) }
+      } finally {
+        release()
+        await Promise.allSettled([award])
+      }
     })
     const earned = (await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned
     expect(earned.level).toBe('noob')
@@ -1119,8 +1170,13 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
     await profile(subject)
     const ready = await baseline(await prepare(2, restrictive))
     let acquired!: () => void, failed!: (error: unknown) => void, release!: () => void
-    const held = new Promise<void>((resolve, reject) => { acquired = resolve; failed = reject })
-    const released = new Promise<void>((resolve) => { release = resolve })
+    const held = new Promise<void>((resolve, reject) => {
+      acquired = resolve
+      failed = reject
+    })
+    const released = new Promise<void>((resolve) => {
+      release = resolve
+    })
     const holder = conn.sql.begin(async (tx) => {
       await tx`select user_id from members.kids_journey_earned where user_id=${subject.userId} for update`
       acquired()
@@ -1136,11 +1192,16 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
       const deadline = Date.now() + 2_000
       let earnedBlocked = false
       do {
-        const [state] = await conn.sql`select exists(select 1 from pg_stat_activity where datname=current_database() and wait_event_type='Lock' and ltrim(query) ilike 'insert into %' and query ilike '%kids_journey_earned%') as blocked`
-        if (state!.blocked) { earnedBlocked = true; break }
+        const [state] =
+          await conn.sql`select exists(select 1 from pg_stat_activity where datname=current_database() and wait_event_type='Lock' and ltrim(query) ilike 'insert into %' and query ilike '%kids_journey_earned%') as blocked`
+        if (state!.blocked) {
+          earnedBlocked = true
+          break
+        }
       } while (Date.now() < deadline)
       if (!earnedBlocked) throw new Error('Award did not reach the held earned write')
-      const [uncommitted] = await conn.sql`select count(*)::int as count from members.xp_events where user_id=${subject.userId}`
+      const [uncommitted] =
+        await conn.sql`select count(*)::int as count from members.xp_events where user_id=${subject.userId}`
       expect(uncommitted!.count).toBe(0)
       publication = publish(ready)
       void publication.catch(() => {})
@@ -1149,25 +1210,35 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
       await holder
       expect((await award).newEvents).toHaveLength(1)
       expect((await publication)!.version).toBe(3)
-      expect((await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned.level).toBe('coder')
+      expect((await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned.level).toBe(
+        'coder',
+      )
     } finally {
       release()
-      await Promise.allSettled([holder, ...(award ? [award] : []), ...(publication ? [publication] : [])])
+      await Promise.allSettled([
+        holder,
+        ...(award ? [award] : []),
+        ...(publication ? [publication] : []),
+      ])
     }
   })
 
   test('award hook: Adult and filtered live course milestones do not require or recreate Kids policy', async () => {
-    const adultId = randomUUID(), liveId = randomUUID()
+    const adultId = randomUUID(),
+      liveId = randomUUID()
     await conn.sql`insert into members.courses(id,slug,title,audience,modality,created_at,updated_at)
       values (${adultId},${adultId},'Adulto','adult','recorded',now(),now()),
       (${liveId},${liveId},'Oficina','kids','live',now(),now())`
     await conn.sql`delete from members.kids_journey_policy`
-    const adult = owner(), child = owner()
+    const adult = owner(),
+      child = owner()
     expect((await awardMilestone(adult, adultId, 'adult')).newEvents).toHaveLength(1)
     expect((await awardMilestone(child, liveId)).newEvents).toHaveLength(0)
-    const [remaining] = await conn.sql`select count(*)::int as count from members.kids_journey_policy`
+    const [remaining] =
+      await conn.sql`select count(*)::int as count from members.kids_journey_policy`
     expect(remaining!.count).toBe(0)
-    const [earned] = await conn.sql`select count(*)::int as count from members.kids_journey_earned where user_id in (${adult.userId},${child.userId})`
+    const [earned] =
+      await conn.sql`select count(*)::int as count from members.kids_journey_earned where user_id in (${adult.userId},${child.userId})`
     expect(earned!.count).toBe(0)
   })
 
@@ -1175,8 +1246,14 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
     ['courses', 'update members.courses set title=title where false'],
     ['lessons', 'update members.lessons set title=title where false'],
     ['lesson_blocks', 'update members.lesson_blocks set sort_order=sort_order where false'],
-    ['blocks→lessons→courses', 'update members.lesson_blocks set sort_order=sort_order where false; update members.lessons set title=title where false; update members.courses set title=title where false'],
-    ['courses→lessons→blocks', 'update members.courses set title=title where false; update members.lessons set title=title where false; update members.lesson_blocks set sort_order=sort_order where false'],
+    [
+      'blocks→lessons→courses',
+      'update members.lesson_blocks set sort_order=sort_order where false; update members.lessons set title=title where false; update members.courses set title=title where false',
+    ],
+    [
+      'courses→lessons→blocks',
+      'update members.courses set title=title where false; update members.lessons set title=title where false; update members.lesson_blocks set sort_order=sort_order where false',
+    ],
   ] as const) {
     test(`publication refuses an existing RowExclusive writer on ${name} without advancing policy/history`, async () => {
       const ready = await prepare()
@@ -1213,7 +1290,10 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
   }
 
   test('publication refuses a real course deletion cascading through lessons and blocks, then rejects its committed catalog', async () => {
-    const courseId = randomUUID(), moduleId = randomUUID(), lessonId = randomUUID(), blockId = randomUUID()
+    const courseId = randomUUID(),
+      moduleId = randomUUID(),
+      lessonId = randomUUID(),
+      blockId = randomUUID()
     await conn.sql`insert into members.courses(id,slug,title,audience,level,created_at,updated_at)
       values (${courseId},${courseId},'Curso extra','kids','primeiros-passos',now(),now())`
     await conn.sql`insert into members.modules(id,course_id,title,created_at,updated_at) values (${moduleId},${courseId},'Parte',now(),now())`
@@ -1223,11 +1303,17 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
       values (${blockId},${lessonId},'studio',0,'{"kind":"studio","showcase":{"enabled":true}}'::jsonb)`
     const ready = await prepare()
     let acquired!: () => void, failed!: (error: unknown) => void, release!: () => void
-    const locked = new Promise<void>((resolve, reject) => { acquired = resolve; failed = reject })
-    const released = new Promise<void>((resolve) => { release = resolve })
+    const locked = new Promise<void>((resolve, reject) => {
+      acquired = resolve
+      failed = reject
+    })
+    const released = new Promise<void>((resolve) => {
+      release = resolve
+    })
     const writer = conn.sql.begin(async (tx) => {
       await tx`delete from members.courses where id=${courseId}`
-      const [remaining] = await tx`select count(*)::int as count from members.lesson_blocks where id=${blockId}`
+      const [remaining] =
+        await tx`select count(*)::int as count from members.lesson_blocks where id=${blockId}`
       expect(remaining!.count).toBe(0)
       acquired()
       await released
@@ -1238,7 +1324,10 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
       await expect(publish(ready)).rejects.toBeInstanceOf(KidsJourneyCatalogBusyError)
       expect((await repo.getPreparation(ready.id))!.status).toBe('ready')
       expect((await repo.readSnapshot([])).policy.version).toBe(1)
-    } finally { release(); await writer }
+    } finally {
+      release()
+      await writer
+    }
     // A new publication TX observes a fresh READ COMMITTED catalog after the writer committed.
     expect(await publish(ready)).toBeNull()
     expect((await repo.getPreparation(ready.id))!.status).toBe('stale')
@@ -1330,7 +1419,9 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
         .then(() => {
           writerCommitted = true
         })
-      void writer.catch((error: unknown) => { writerFailure = error })
+      void writer.catch((error: unknown) => {
+        writerFailure = error
+      })
       const writerDeadline = Date.now() + 2_000
       let writerBlocked = false
       do {

@@ -1,7 +1,10 @@
 import 'server-only'
 
+import {
+  hasKidsCapability,
+  type KidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
-import { hasKidsCapability, type KidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { getEnv } from '../lib/env'
 import { checkChallengeAccessReadonly, getAiCreditsReadonly, getChallengeReadonly } from './members'
 import type { getSession } from './session'

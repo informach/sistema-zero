@@ -1,5 +1,5 @@
-import { IDENTITY_UUID_PATTERN } from '@sistemazero/core/identity'
 import { UnauthorizedError } from '@sistemazero/core/http'
+import { IDENTITY_UUID_PATTERN } from '@sistemazero/core/identity'
 import { Elysia, t } from 'elysia'
 import type { KidsProfileAdmissionService } from '../../../application/kids-journey/kids-profile-admission.service'
 import { assertInternalCaller } from '../auth'
@@ -30,7 +30,10 @@ export function kidsProfileAdmissionRoutes(deps: {
       },
       {
         body: t.Object(
-          { userId: t.String({ pattern: IDENTITY_UUID_PATTERN }), accountId: t.String({ pattern: IDENTITY_UUID_PATTERN }) },
+          {
+            userId: t.String({ pattern: IDENTITY_UUID_PATTERN }),
+            accountId: t.String({ pattern: IDENTITY_UUID_PATTERN }),
+          },
           { additionalProperties: false },
         ),
       },

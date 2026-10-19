@@ -8,9 +8,9 @@ import { ParentReauthenticationRequiredError } from '../../src/domain/study-acce
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
 import { Email } from '../../src/domain/value-objects/email'
 import type { Database, DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
-import { DrizzleProfileCohortRepository } from '../../src/infrastructure/persistence/drizzle/profile-cohort.repository'
 import { DrizzleProfileRepository } from '../../src/infrastructure/persistence/drizzle/profile.repository'
 import { DrizzleProfileAdmissionRepository } from '../../src/infrastructure/persistence/drizzle/profile-admission.repository'
+import { DrizzleProfileCohortRepository } from '../../src/infrastructure/persistence/drizzle/profile-cohort.repository'
 import {
   profileAdmissions,
   profiles,
@@ -572,31 +572,66 @@ describe.skipIf(!target)('Auth profile admission / real migrations and stale wri
   test('the real Auth cohort includes archived/ready and blocked-account pending profiles without XP', async () => {
     const f = await pending()
     await accounts.prepareDeletion(f.account.id)
-    const page = await new DrizzleProfileCohortRepository(conn.db).readPage({ kind: 'start', limit: 200 })
+    const page = await new DrizzleProfileCohortRepository(conn.db).readPage({
+      kind: 'start',
+      limit: 200,
+    })
     expect(page.done).toBe(true)
     expect(page.owners).toContainEqual({ profileId: legacyActive, accountUserId: legacyAccount })
     expect(page.owners).toContainEqual({ profileId: legacyArchived, accountUserId: legacyAccount })
     expect(page.owners).toContainEqual({ profileId: f.profile.id, accountUserId: f.account.id })
-    expect(page.owners.every((owner) => Object.keys(owner).sort().join(',') === 'accountUserId,profileId')).toBe(true)
+    expect(
+      page.owners.every(
+        (owner) => Object.keys(owner).sort().join(',') === 'accountUserId,profileId',
+      ),
+    ).toBe(true)
   })
 
   test('UUID pages are work bounds, and late profiles behind the cursor remain pending and unselectable', async () => {
     const f = await pending()
     const cohort = new DrizzleProfileCohortRepository(conn.db)
     const start = await cohort.readPage({ kind: 'start', limit: 1 })
-    const above = ProfileAggregate.create({ id: 'ffffffff-ffff-4fff-bfff-ffffffffffff', accountUserId: f.account.id, name: 'Depois do limite', now })
-    const behind = ProfileAggregate.create({ id: '00000000-0000-4000-8000-000000000000', accountUserId: f.account.id, name: 'Antes do cursor', now })
+    const above = ProfileAggregate.create({
+      id: 'ffffffff-ffff-4fff-bfff-ffffffffffff',
+      accountUserId: f.account.id,
+      name: 'Depois do limite',
+      now,
+    })
+    const behind = ProfileAggregate.create({
+      id: '00000000-0000-4000-8000-000000000000',
+      accountUserId: f.account.id,
+      name: 'Antes do cursor',
+      now,
+    })
     expect(above.id > start.upperBound!).toBe(true)
     expect(behind.id < start.cursor!).toBe(true)
     for (const candidate of [above, behind]) {
-      expect((await repository.createWithinLimit(candidate, 3, { requestId: randomUUID(), requestHash: 'a'.repeat(64) })).outcome).toBe('created')
+      expect(
+        (
+          await repository.createWithinLimit(candidate, 3, {
+            requestId: randomUUID(),
+            requestHash: 'a'.repeat(64),
+          })
+        ).outcome,
+      ).toBe('created')
     }
-    const next = await cohort.readPage({ kind: 'continue', upperBound: start.upperBound!, cursor: start.cursor, limit: 200 })
+    const next = await cohort.readPage({
+      kind: 'continue',
+      upperBound: start.upperBound!,
+      cursor: start.cursor,
+      limit: 200,
+    })
     expect(next.upperBound).toBe(start.upperBound)
-    expect(next.owners.some((owner) => owner.profileId === above.id || owner.profileId === behind.id)).toBe(false)
+    expect(
+      next.owners.some((owner) => owner.profileId === above.id || owner.profileId === behind.id),
+    ).toBe(false)
     expect(await repository.listActiveByIds([above.id, behind.id])).toEqual([])
     expect((await repository.findById(behind.id))!.admissionState).toBe('pending')
-    expect(await conn.db.select().from(profileAdmissions).where(eq(profileAdmissions.profileId, behind.id))).toHaveLength(1)
+    expect(
+      await conn.db
+        .select()
+        .from(profileAdmissions)
+        .where(eq(profileAdmissions.profileId, behind.id)),
+    ).toHaveLength(1)
   })
-
 })

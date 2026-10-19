@@ -1,4 +1,3 @@
-import { pensaKidsJourney } from './pensa-fixtures'
 import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from 'bun:test'
 import {
   applyStudioProChange,
@@ -13,6 +12,7 @@ import {
 import { StudioPythonBuilderPreviewSchema } from '@sistemazero/core/studio/python-builder-preview'
 import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python-pro-execution'
 import { controlledPythonBuilderReport } from '../../members/tests/fakes/python-builder-report'
+import { pensaKidsJourney } from './pensa-fixtures'
 
 mock.module('server-only', () => ({}))
 process.env.JWT_HS256_SECRET ??= 'builder-route-test-secret-with-32-characters'
@@ -96,7 +96,10 @@ async function fixture(
     }),
     getGamification: async () => ({
       status: 200,
-      body: { level: { slug: options.level ?? 'god' }, kidsJourney: options.level === 'noob' ? pensaKidsJourney('noob', []) : pensaKidsJourney() },
+      body: {
+        level: { slug: options.level ?? 'god' },
+        kidsJourney: options.level === 'noob' ? pensaKidsJourney('noob', []) : pensaKidsJourney(),
+      },
     }),
     studioBuilder: async (actor: unknown, command: StudioProBuilderCommand) => {
       commands.push({ actor, command })

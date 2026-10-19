@@ -1,7 +1,7 @@
 // Synthetic, loopback-only QA stack. Run from the repository root with bun --no-env-file.
 // No payments, messaging or AI provider is configured; no remote records are modified.
 import { randomUUID } from 'node:crypto'
-import { mkdir, writeFile, appendFile } from 'node:fs/promises'
+import { appendFile, mkdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { readMigrationFiles } from 'drizzle-orm/migrator'
 import postgres from 'postgres'
@@ -87,10 +87,7 @@ async function migrateCanonicalHistory(pkg) {
     )
       throw new Error(`${pkg} canonical migration journal order is invalid`)
     const row = applied[index]
-    if (
-      row &&
-      (Number(row.created_at) !== migration.folderMillis || row.hash !== migration.hash)
-    )
+    if (row && (Number(row.created_at) !== migration.folderMillis || row.hash !== migration.hash))
       throw new Error(`${pkg} QA migration history diverged at index ${index}`)
   }
   const committed = []
@@ -110,10 +107,18 @@ async function migrateCanonicalHistory(pkg) {
   }
   await writeFile(
     resolve(artifactDirectory, `migrations-${pkg}.json`),
-    JSON.stringify({ package: pkg, previous: applied.length, total: migrations.length, committed }, null, 2) + '\n',
+    JSON.stringify(
+      { package: pkg, previous: applied.length, total: migrations.length, committed },
+      null,
+      2,
+    ) + '\n',
   )
   manifest.migrations ??= {}
-  manifest.migrations[pkg] = { previous: applied.length, applied: committed.length, total: migrations.length }
+  manifest.migrations[pkg] = {
+    previous: applied.length,
+    applied: committed.length,
+    total: migrations.length,
+  }
   await persistManifest()
 }
 async function shutdown(reason) {

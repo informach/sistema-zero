@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { studioGate } from '../src/server/studio-gate'
-import { kidsView, kidsStaffPreview } from './kids-journey-fixtures'
+import { kidsStaffPreview, kidsView } from './kids-journey-fixtures'
 
 const ok = (blocks: string[]) => ({ status: 200, body: { blocks } })
 
@@ -47,8 +47,12 @@ describe('a porta do Estúdio livre: os blocos dos cursos decidem', () => {
 
   test('a lista que não chegou é "tente de novo", nunca "sem blocos"', () => {
     expect(studioGate(kidsView(['studio', 'pro'], 'god'), null).kind).toBe('unavailable')
-    expect(studioGate(kidsView(['studio', 'pro'], 'god'), { status: 502, body: null }).kind).toBe('unavailable')
-    expect(studioGate(kidsView(['studio', 'pro'], 'god'), { status: 200, body: null }).kind).toBe('unavailable')
+    expect(studioGate(kidsView(['studio', 'pro'], 'god'), { status: 502, body: null }).kind).toBe(
+      'unavailable',
+    )
+    expect(studioGate(kidsView(['studio', 'pro'], 'god'), { status: 200, body: null }).kind).toBe(
+      'unavailable',
+    )
   })
 
   test('a equipe abre com tudo, mesmo sem curso e mesmo sem a lista', () => {
@@ -61,12 +65,14 @@ describe('a porta do Estúdio livre: os blocos dos cursos decidem', () => {
   })
 })
 
-
 test('unavailable policy never becomes a journey lock or a pretend Noob', () => {
   expect(studioGate(null, ok(['sz_g2d_setup_stage']))).toEqual({ kind: 'unavailable' })
 })
 
 test('custom capabilities open a low rank and can leave a high rank closed', () => {
   expect(studioGate(kidsView(['studio'], 'noob'), ok(['sz_g2d_setup_stage'])).kind).toBe('open')
-  expect(studioGate(kidsView([], 'god'), ok(['sz_g2d_setup_stage']))).toEqual({ kind: 'journey-locked', reason: 'level' })
+  expect(studioGate(kidsView([], 'god'), ok(['sz_g2d_setup_stage']))).toEqual({
+    kind: 'journey-locked',
+    reason: 'level',
+  })
 })

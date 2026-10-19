@@ -1,5 +1,8 @@
 import { getEnv } from '@sistemazero/member-shell/lib/env'
-import { hasKidsCapability, kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
+import {
+  hasKidsCapability,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { KidsJourneyLockedMolda } from '@/components/kids/kids-journey-locked-molda'
 import { KidsLockedMolda } from '@/components/kids/kids-locked-molda'
 import { KidsMoldaUnavailable } from '@/components/kids/kids-molda-unavailable'

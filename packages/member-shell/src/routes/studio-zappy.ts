@@ -27,7 +27,7 @@ import { validatePythonAnalysisDecision } from '../server/python-analysis-decisi
 import type { SessionModule } from '../server/session'
 import { createStudioAiTransport } from '../server/studio-ai-transport'
 import { adultStudioTier, kidsStudioTier } from '../server/studio-unlocks'
-import { isStudioZappyAllowed, getStudioZappyAccessForRequest } from '../server/zappy-access'
+import { getStudioZappyAccessForRequest, isStudioZappyAllowed } from '../server/zappy-access'
 import {
   answerPreparedStudioZappy,
   deterministicZappyReply,
@@ -274,7 +274,9 @@ export function createStudioZappyRoutes(deps: {
   const { members, session: sessions, audience = 'kids' } = deps
   const allowed = (user: NonNullable<Awaited<ReturnType<SessionModule['getSession']>>>) =>
     audience === 'adult'
-      ? hasAdultCapability(members, user, 'ai').then((yes) => yes ? 'allowed' as const : 'locked' as const)
+      ? hasAdultCapability(members, user, 'ai').then((yes) =>
+          yes ? ('allowed' as const) : ('locked' as const),
+        )
       : getStudioZappyAccessForRequest(members, user)
 
   const studioZappyHistory = {
@@ -449,7 +451,9 @@ export function createStudioZappyRoutes(deps: {
       const [studioAccess, gamification, unlocks] = await Promise.all([
         python ? true : hasStudioAccess(members),
         members.getGamification(),
-        python || audience === 'kids' || privileged || context.kind === 'pro' ? null : members.getStudioUnlocks(),
+        python || audience === 'kids' || privileged || context.kind === 'pro'
+          ? null
+          : members.getStudioUnlocks(),
       ])
       if (!studioAccess) return error('FORBIDDEN', 403)
       const safeQuestion = redactZappySensitiveText(parsed.data.question)
@@ -469,10 +473,12 @@ export function createStudioZappyRoutes(deps: {
       // O tutor oferece os MESMOS blocos que a paleta: os conquistados nos cursos (a equipe
       // tem o passe livre e não precisa deles). Falhou: indisponível, nunca "sem blocos".
       let unlockedBlocks: readonly string[] = []
-      const fullPalette = audience === 'adult' ? privileged : Boolean(kids && isKidsStaffPreview(kids))
+      const fullPalette =
+        audience === 'adult' ? privileged : Boolean(kids && isKidsStaffPreview(kids))
       if (!python && !fullPalette && context.kind !== 'pro') {
         // This GET may reconcile curriculum grants. Never call it for staff preview.
-        const curriculum = audience === 'adult' ? unlocks : await members.getStudioUnlocks().catch(() => null)
+        const curriculum =
+          audience === 'adult' ? unlocks : await members.getStudioUnlocks().catch(() => null)
         if (curriculum?.status !== 200 || !curriculum.body) return error('ZAPPY_UNAVAILABLE', 503)
         unlockedBlocks = curriculum.body.blocks
       }
@@ -481,7 +487,9 @@ export function createStudioZappyRoutes(deps: {
       const tier =
         audience === 'adult' && gamification.body?.journey
           ? adultStudioTier(gamification.body.journey, user.role, unlockedBlocks)
-          : kids ? kidsStudioTier(kids, unlockedBlocks) : null
+          : kids
+            ? kidsStudioTier(kids, unlockedBlocks)
+            : null
       if (!tier) return error('ZAPPY_UNAVAILABLE', 503)
       if (context.kind === 'pro' && context.mode !== 'code') return error('INVALID_INPUT', 400)
       if (!python && context.kind !== 'pro' && !tier.hasPalette)

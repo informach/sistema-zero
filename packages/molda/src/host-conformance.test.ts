@@ -88,7 +88,9 @@ describe('member-shell e catálogo', () => {
     expect(gate).toContain('KIDS_MOLDA_BAND_CAPABILITIES')
     expect(gate).not.toContain('journeyLevelAtLeast')
     expect(gate).not.toContain('moldaPreviewLevel')
-    expect(read('packages/community-kids/src/app/(app)/molda/page.tsx')).toContain("hasKidsCapability(journey, 'molda')")
+    expect(read('packages/community-kids/src/app/(app)/molda/page.tsx')).toContain(
+      "hasKidsCapability(journey, 'molda')",
+    )
     const clients = read('packages/member-shell/src/server/clients.ts')
     expect(clients).toContain("MOLDA_ACCESS_REF = 'molda'")
     expect(clients).toContain('checkMoldaAccessReadonly')

@@ -2,7 +2,10 @@ import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import { z } from 'zod'
 import type { ProfileJourneyGateway } from '../../domain/ports/profile-journey-gateway.port'
 
-const OwnerSchema = z.strictObject({ profileId: IdentityUuidSchema, accountUserId: IdentityUuidSchema })
+const OwnerSchema = z.strictObject({
+  profileId: IdentityUuidSchema,
+  accountUserId: IdentityUuidSchema,
+})
 const ReceiptSchema = z.strictObject({
   userId: IdentityUuidSchema,
   accountId: IdentityUuidSchema,

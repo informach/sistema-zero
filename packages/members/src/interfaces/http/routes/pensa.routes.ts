@@ -73,7 +73,9 @@ export function pensaRoutes(deps: PensaRoutesDeps, audience: 'kids' | 'adult' = 
     if (audience === 'kids' && privileged) resolveKidsStaffPreviewActor(headers)
     return {
       ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
-      profileId: resolveUserId(headers), accountId: resolveAccountId(headers), privileged,
+      profileId: resolveUserId(headers),
+      accountId: resolveAccountId(headers),
+      privileged,
     }
   }
   async function canGenerate(who: P.PensaActor) {
@@ -91,12 +93,20 @@ export function pensaRoutes(deps: PensaRoutesDeps, audience: 'kids' | 'adult' = 
     }
     const [access, progress] = await Promise.all([
       deps.accessCheck.execute(who.accountId, ['pensa']),
-      deps.getGamification.execute(who.profileId, who.accountId, { audience: 'kids', privileged: who.privileged }),
+      deps.getGamification.execute(who.profileId, who.accountId, {
+        audience: 'kids',
+        privileged: who.privileged,
+      }),
     ])
-    const capabilities = progress.kidsJourney?.earned.capabilities ?? progress.kidsPreview?.capabilities
-    if (!capabilities) pensaError('RESOURCES_UNAVAILABLE', 'A jornada ainda não está disponível para este perfil.')
-    if (!capabilities.includes('pensa') || !capabilities.includes('ai') ||
-      (!who.privileged && !access.grants.includes('pensa') && !access.communities.includes('pensa')))
+    const capabilities =
+      progress.kidsJourney?.earned.capabilities ?? progress.kidsPreview?.capabilities
+    if (!capabilities)
+      pensaError('RESOURCES_UNAVAILABLE', 'A jornada ainda não está disponível para este perfil.')
+    if (
+      !capabilities.includes('pensa') ||
+      !capabilities.includes('ai') ||
+      (!who.privileged && !access.grants.includes('pensa') && !access.communities.includes('pensa'))
+    )
       pensaError('RESOURCES_UNAVAILABLE', 'O Pensa ainda não está liberado para este perfil.')
   }
 

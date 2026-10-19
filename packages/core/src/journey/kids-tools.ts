@@ -17,7 +17,13 @@ export function kidsCreativeToolAvailability(input: {
   journey: KidsJourneyView | KidsJourneyStaffPreview | null
 }): { state: ToolAvailability; requiredLevel: JourneyLevelSlug | null } {
   const { journey, owned, tool } = input
-  if (!journey || !Number.isInteger(journey.policyVersion) || journey.policyVersion < 1 || journey.readiness.status === 'unavailable' || owned === null)
+  if (
+    !journey ||
+    !Number.isInteger(journey.policyVersion) ||
+    journey.policyVersion < 1 ||
+    journey.readiness.status === 'unavailable' ||
+    owned === null
+  )
     return { state: 'unavailable', requiredLevel: null }
   if (!owned) return { state: 'not-included', requiredLevel: null }
   const preview = 'kind' in journey

@@ -4,9 +4,17 @@ import { initialKidsJourneyPolicy, projectKidsJourney } from '@sistemazero/core/
 import { kidsStudentLevel } from '../../src/application/kids-journey/kids-student-level'
 
 function view() {
-  return projectKidsJourney({ policy: initialKidsJourneyPolicy(), policyVersion: 8,
-    catalog: [], milestones: [], earned: { level: 'coder', capabilities: [],
-      courseAccess: { entry: [], expanded: [], reward: [] } } })
+  return projectKidsJourney({
+    policy: initialKidsJourneyPolicy(),
+    policyVersion: 8,
+    catalog: [],
+    milestones: [],
+    earned: {
+      level: 'coder',
+      capabilities: [],
+      courseAccess: { entry: [], expanded: [], reward: [] },
+    },
+  })
 }
 
 test('rank display uses canonical earned and missing requirements rather than hardcoded thresholds', () => {
@@ -16,10 +24,20 @@ test('rank display uses canonical earned and missing requirements rather than ha
     { kind: 'slot', tier: 'avancado-3d', slot: 2, milestone: 'complete' },
     { kind: 'slot', tier: 'avancado-3d', slot: 3, milestone: 'showcase' },
   ]
-  expect(kidsStudentLevel(current)).toEqual({ slug: 'coder', next: 'hacker', remaining: {
-    any: 1, 'primeiros-passos-2d': 0, 'iniciante-2d': 0, 'iniciante-3d': 0,
-    'intermediario-2d': 0, 'intermediario-3d': 0, 'avancado-2d': 0, 'avancado-3d': 2,
-  } })
+  expect(kidsStudentLevel(current)).toEqual({
+    slug: 'coder',
+    next: 'hacker',
+    remaining: {
+      any: 1,
+      'primeiros-passos-2d': 0,
+      'iniciante-2d': 0,
+      'iniciante-3d': 0,
+      'intermediario-2d': 0,
+      'intermediario-3d': 0,
+      'avancado-2d': 0,
+      'avancado-3d': 2,
+    },
+  })
   expect(current.missing).toHaveLength(3)
 })
 

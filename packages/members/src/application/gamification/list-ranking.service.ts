@@ -55,7 +55,9 @@ export class ListRankingService {
       lastActivityDate: entry.lastActivityDate,
       photoUrl: avatars[entry.userId]?.photoUrl ?? null,
       levelSlug: avatars[entry.userId]?.level ?? (input.audience === 'adult' ? 'noob' : null),
-      ...(input.audience === 'kids' && avatars[entry.userId]?.level == null ? { journeyUnavailable: true as const } : {}),
+      ...(input.audience === 'kids' && avatars[entry.userId]?.level == null
+        ? { journeyUnavailable: true as const }
+        : {}),
     })
 
     return {

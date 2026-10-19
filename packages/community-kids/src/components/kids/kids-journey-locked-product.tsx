@@ -4,13 +4,7 @@ import { KidsRecado } from './kids-recado'
 import { KidsMascot } from './mascot'
 
 /** Produto comprado que ainda depende de um degrau da jornada. */
-export function KidsJourneyLockedProduct({
-  title,
-  intro,
-}: {
-  title: string
-  intro: string
-}) {
+export function KidsJourneyLockedProduct({ title, intro }: { title: string; intro: string }) {
   return (
     <KidsRecado
       art={<KidsMascot expression="sleeping" className="kid-float size-24" />}

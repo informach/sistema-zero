@@ -1,6 +1,10 @@
 import type { AdultJourneyView } from '@sistemazero/core/journey'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
-import { hasKidsCapability, isKidsStaffPreview, type KidsJourneyAccess } from '../lib/kids-journey-access'
+import {
+  hasKidsCapability,
+  isKidsStaffPreview,
+  type KidsJourneyAccess,
+} from '../lib/kids-journey-access'
 import { isPrivilegedRole, type StudioTier } from '../lib/studio-tier'
 
 /**

@@ -110,9 +110,13 @@ export class CheckAccessService {
     // One canonical policy/earned snapshot, separate from enrollment and live session grants.
     // The pure resolver preserves graduation/extra behavior without inventing a rank gate.
     if (course.audience === 'kids') {
-      const locks = await this.kidsJourney.courseLocks({ userId: learnerId ?? userId, accountId: userId }, [course.id])
+      const locks = await this.kidsJourney.courseLocks(
+        { userId: learnerId ?? userId, accountId: userId },
+        [course.id],
+      )
       const lock = locks.get(course.id)!
-      if (lock.locked && lock.reason) throw new CourseJourneyLockedError(lock.reason, lock.requiredLevel)
+      if (lock.locked && lock.reason)
+        throw new CourseJourneyLockedError(lock.reason, lock.requiredLevel)
     }
     return { course, entitlement }
   }

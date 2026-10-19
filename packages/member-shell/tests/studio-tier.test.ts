@@ -1,9 +1,6 @@
-import { resolveStudioTier } from './fixtures/legacy-studio-tier'
 import { describe, expect, test } from 'bun:test'
-import {
-  remixRequirementFromSnapshot,
-  studioTierCoversRemix,
-} from '../src/lib/studio-tier'
+import { remixRequirementFromSnapshot, studioTierCoversRemix } from '../src/lib/studio-tier'
+import { resolveStudioTier } from './fixtures/legacy-studio-tier'
 
 describe('frozen migration reference — ferramentas conquistadas', () => {
   test('Faísca usa o Estúdio apenas dentro das aulas', () => {

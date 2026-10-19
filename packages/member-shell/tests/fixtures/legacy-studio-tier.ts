@@ -54,7 +54,6 @@ export function resolveStudioTier(
   }
 }
 
-
 const KNOWN_BLOCKS = new Set(SERVER_BLOCK_CATALOG.map((entry) => entry.type))
 
 export function earnedStudioTier(

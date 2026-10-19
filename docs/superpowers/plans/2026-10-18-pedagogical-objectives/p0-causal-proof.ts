@@ -28,19 +28,28 @@ assert.equal(actual.passed, false, 'The initial project must not already pass th
 assert.equal(actual.results.find((item) => item.checkId === 'revelar-ao-toque')?.passed, true)
 assert.equal(actual.results.find((item) => item.checkId === 'somar-achado')?.passed, false)
 const publicationIssues = studioSectionCompletionIssues(
-  [{ ...countSection, id: countSection.key, blockIds: countSection.blockKeys,
-    workspaceBlockId: countSection.workspaceKey }],
+  [
+    {
+      ...countSection,
+      id: countSection.key,
+      blockIds: countSection.blockKeys,
+      workspaceBlockId: countSection.workspaceKey,
+    },
+  ],
   cade.blocks.map((block: any) => ({ id: block.key, content: block.content })),
 )
-const wrongPreservationIssue = publicationIssues.find((issue) =>
-  issue.message.includes('projeto inicial já cumpre') && issue.message.includes('Revele'),
+const wrongPreservationIssue = publicationIssues.find(
+  (issue) =>
+    issue.message.includes('projeto inicial já cumpre') && issue.message.includes('Revele'),
 )
 assert.ok(wrongPreservationIssue, 'Expected the existing publication defect to be reproduced.')
 
 const dino = read(dinoPath)
-const presence = dino.sections.find((section: any) => section.key === 'ligar-raio-x')
+const presence = dino.sections
+  .find((section: any) => section.key === 'ligar-raio-x')
   ?.completion.projectChecks.find((check: any) => check.id === 'raio-x')
-const absence = dino.sections.find((section: any) => section.key === 'retirar-contorno')
+const absence = dino.sections
+  .find((section: any) => section.key === 'retirar-contorno')
   ?.completion.projectChecks.find((check: any) => check.id === 'sem-raio-x')
 assert.ok(presence && absence)
 const nextDino = read(nextDinoPath)
@@ -51,7 +60,10 @@ let frame: any
 while (pending.length) {
   const value: any = pending.pop()
   if (!value || typeof value !== 'object') continue
-  if (value.type === 'sz_g2d_update_each_frame') { frame = value; break }
+  if (value.type === 'sz_g2d_update_each_frame') {
+    frame = value
+    break
+  }
   pending.push(...Object.values(value))
 }
 assert.ok(frame?.inputs?.BODY?.block)
@@ -63,25 +75,50 @@ tail.next = { block: { type: 'sz_g2d_draw_hitbox', fields: { SPRITE: 'dino' } } 
 const verdict = (project: unknown) => evaluateStudioSectionObjectives([presence, absence], project)
 const before = verdict(without)
 const after = verdict(withHitbox)
-assert.deepEqual(before.results.map((result) => result.passed), [false, true])
-assert.deepEqual(after.results.map((result) => result.passed), [true, false])
+assert.deepEqual(
+  before.results.map((result) => result.passed),
+  [false, true],
+)
+assert.deepEqual(
+  after.results.map((result) => result.passed),
+  [true, false],
+)
 assert.equal(before.passed, false)
 assert.equal(after.passed, false)
 
-const sourcePaths = [cadePath, dinoPath, nextDinoPath,
+const sourcePaths = [
+  cadePath,
+  dinoPath,
+  nextDinoPath,
   'packages/studio/src/blockly/projectCheckAuthoring.ts',
   'packages/core/src/learning/project-structure.ts',
-  'packages/core/src/learning/section-progression.ts']
+  'packages/core/src/learning/section-progression.ts',
+]
 const receipt = {
   kind: 'Existing P0 defects reproduced; no implementation fix applied',
   createdAt: new Date().toISOString(),
   durationMs: Math.round(performance.now() - started),
   cade: { initial: actual, publicationIssue: wrongPreservationIssue.message },
-  dino: { withoutHitbox: before, withHitbox: after,
-    conclusion: 'Opposing structural rules require different per-part reference snapshots.' },
-  sources: sourcePaths.map((path) => ({ path,
-    sha256: createHash('sha256').update(readFileSync(resolve(root, path))).digest('hex') })),
+  dino: {
+    withoutHitbox: before,
+    withHitbox: after,
+    conclusion: 'Opposing structural rules require different per-part reference snapshots.',
+  },
+  sources: sourcePaths.map((path) => ({
+    path,
+    sha256: createHash('sha256')
+      .update(readFileSync(resolve(root, path)))
+      .digest('hex'),
+  })),
 }
-writeFileSync(resolve(import.meta.dir, 'p0-causal-receipt.json'), JSON.stringify(receipt, null, 2) + '\n')
-console.log(JSON.stringify({ cadePreservationDefectReproduced: true,
-  dinoOpposingSnapshotsReproduced: true, durationMs: receipt.durationMs }))
+writeFileSync(
+  resolve(import.meta.dir, 'p0-causal-receipt.json'),
+  JSON.stringify(receipt, null, 2) + '\n',
+)
+console.log(
+  JSON.stringify({
+    cadePreservationDefectReproduced: true,
+    dinoOpposingSnapshotsReproduced: true,
+    durationMs: receipt.durationMs,
+  }),
+)

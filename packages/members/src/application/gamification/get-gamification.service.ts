@@ -1,19 +1,19 @@
 import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import type { KidsJourneyStaffPreview, KidsJourneyView } from '@sistemazero/core/journey'
-import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
-import { KidsJourneyUnavailableError } from '../../domain/kids-journey/kids-journey.errors'
-import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
-import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
-import { kidsStudentLevel } from '../kids-journey/kids-student-level'
 import type { CourseAudience } from '../../domain/course/course'
+import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import { BADGE_SLUGS, HIDDEN_UNTIL_UNLOCKED_BADGES } from '../../domain/gamification/badges'
 import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
 import { computeStudentLevel } from '../../domain/gamification/levels'
+import { KidsJourneyUnavailableError } from '../../domain/kids-journey/kids-journey.errors'
 import {
   type GamificationRepository,
   MAX_STREAK_FREEZES,
 } from '../../domain/ports/gamification-repository.port'
 import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
+import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
+import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
+import { kidsStudentLevel } from '../kids-journey/kids-student-level'
 import type { GamificationMeView } from '../mappers/views'
 
 /**
@@ -40,11 +40,14 @@ export class GetGamificationService {
     opts: { audience: CourseAudience; withRanking?: boolean; privileged?: boolean },
   ): Promise<GamificationMeView> {
     const captured = { ...opts }
-    const userId = captured.audience === 'kids' ? IdentityUuidSchema.parse(inputUserId) : inputUserId
-    const accountId = captured.audience === 'kids' ? IdentityUuidSchema.parse(inputAccountId) : inputAccountId
+    const userId =
+      captured.audience === 'kids' ? IdentityUuidSchema.parse(inputUserId) : inputUserId
+    const accountId =
+      captured.audience === 'kids' ? IdentityUuidSchema.parse(inputAccountId) : inputAccountId
     if (captured.audience !== 'kids') return this.read(userId, accountId, captured, null)
     if (captured.privileged) {
-      if (userId !== accountId) throw new AccessDeniedError('Use a conta da equipe, sem perfil de aluno.')
+      if (userId !== accountId)
+        throw new AccessDeniedError('Use a conta da equipe, sem perfil de aluno.')
       const preview = await this.kidsJourney.staffPreview()
       return this.read(userId, accountId, captured, null, preview)
     }

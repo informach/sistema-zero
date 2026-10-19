@@ -235,23 +235,46 @@ test('policy access gates participate in readiness instead of consulting old ran
   )
 })
 
-
 test('one batch keeps inherited entry, foundation requirements, independent reward and outside courses distinct', () => {
   const catalog = kidsJourneyFacts()
-  const reward = { ...catalog[48]!, id: '00000000-0000-4000-8000-000000001000', slot: null, journeyRole: 'reward' as const }
-  const outside = { ...catalog[2]!, id: '00000000-0000-4000-8000-000000001001', tier: null, journeyRole: 'extra' as const }
+  const reward = {
+    ...catalog[48]!,
+    id: '00000000-0000-4000-8000-000000001000',
+    slot: null,
+    journeyRole: 'reward' as const,
+  }
+  const outside = {
+    ...catalog[2]!,
+    id: '00000000-0000-4000-8000-000000001001',
+    tier: null,
+    journeyRole: 'extra' as const,
+  }
   const input = kidsJourneyInput({
-    earned: { level: 'coder', capabilities: [], courseAccess: { entry: ['iniciante-2d'], expanded: [], reward: ['avancado-3d'] } },
+    earned: {
+      level: 'coder',
+      capabilities: [],
+      courseAccess: { entry: ['iniciante-2d'], expanded: [], reward: ['avancado-3d'] },
+    },
     catalog: [...catalog, reward, outside],
   })
-  const before = resolveKidsJourneyCourseLocks({ ...input, catalog: input.catalog!, courses: [catalog[1]!, catalog[2]!, reward, outside] })
+  const before = resolveKidsJourneyCourseLocks({
+    ...input,
+    catalog: input.catalog!,
+    courses: [catalog[1]!, catalog[2]!, reward, outside],
+  })
   expect(before.get(catalog[1]!.id)).toEqual({ locked: false })
   expect(before.get(catalog[2]!.id)).toMatchObject({ locked: true, reason: 'foundation-first' })
   expect(before.get(reward.id)).toEqual({ locked: false })
   expect(before.get(outside.id)).toEqual({ locked: false })
-  const completeOnly = replaceTier({ foundation: { slot: 1, milestone: 'complete', whenMissing: 'locked' } })
-  const after = resolveKidsJourneyCourseLocks({ ...input, catalog: input.catalog!, policy: completeOnly,
-    milestones: [{ ...kidsMilestones(2)[1]!, showcased: false }], courses: [catalog[2]!, reward],
+  const completeOnly = replaceTier({
+    foundation: { slot: 1, milestone: 'complete', whenMissing: 'locked' },
+  })
+  const after = resolveKidsJourneyCourseLocks({
+    ...input,
+    catalog: input.catalog!,
+    policy: completeOnly,
+    milestones: [{ ...kidsMilestones(2)[1]!, showcased: false }],
+    courses: [catalog[2]!, reward],
   })
   expect(after.get(catalog[2]!.id)).toEqual({ locked: false })
   expect(after.get(reward.id)).toEqual({ locked: false })
@@ -260,11 +283,20 @@ test('one batch keeps inherited entry, foundation requirements, independent rewa
 test('paused batches use the frozen rank even when new course facts could promote the child', () => {
   const catalog = kidsJourneyFacts()
   const input = kidsJourneyInput({
-    policy: pauseKidsJourneyPolicy(initialKidsJourneyPolicy()), milestones: kidsMilestones(49),
-    earned: { level: 'coder', capabilities: ['studio', 'pinta'], courseAccess: { entry: [], expanded: [], reward: [] } },
+    policy: pauseKidsJourneyPolicy(initialKidsJourneyPolicy()),
+    milestones: kidsMilestones(49),
+    earned: {
+      level: 'coder',
+      capabilities: ['studio', 'pinta'],
+      courseAccess: { entry: [], expanded: [], reward: [] },
+    },
   })
   const locks = resolveKidsJourneyCourseLocks({ ...input, catalog, courses: catalog })
   expect(locks.size).toBe(49)
   expect(locks.get(catalog[2]!.id)).toEqual({ locked: false })
-  expect(locks.get(catalog[9]!.id)).toMatchObject({ locked: true, reason: 'future-tier', requiredLevel: 'hacker' })
+  expect(locks.get(catalog[9]!.id)).toMatchObject({
+    locked: true,
+    reason: 'future-tier',
+    requiredLevel: 'hacker',
+  })
 })

@@ -9,7 +9,10 @@ export class KidsProfileAdmissionService {
   constructor(private readonly journey: Pick<KidsJourneyRepository, 'initializeProfile'>) {}
 
   async initialize(input: KidsJourneyOwner) {
-    const owner = { userId: IdentityUuidSchema.parse(input.userId), accountId: IdentityUuidSchema.parse(input.accountId) }
+    const owner = {
+      userId: IdentityUuidSchema.parse(input.userId),
+      accountId: IdentityUuidSchema.parse(input.accountId),
+    }
     const policy = await this.journey.initializeProfile(owner)
     if (!policy) return null
     return { ...owner, policyVersion: policy.version }

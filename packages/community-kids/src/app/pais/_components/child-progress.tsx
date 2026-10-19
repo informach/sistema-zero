@@ -216,7 +216,9 @@ function ToolsCard({ child }: { child: ChildDashboardView }) {
             </StatusChip>
           ) : tool.owned ? (
             <StatusChip tone="neutral" icon={Clock}>
-              {tool.requiredLevel ? `Libera no ${levelInfo(tool.requiredLevel).label}` : 'Esta ferramenta ainda não foi liberada na jornada.'}
+              {tool.requiredLevel
+                ? `Libera no ${levelInfo(tool.requiredLevel).label}`
+                : 'Esta ferramenta ainda não foi liberada na jornada.'}
             </StatusChip>
           ) : (
             <StatusChip tone="neutral" icon={CircleSlash}>

@@ -35,9 +35,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -51,10 +49,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-a1-abertura",
-              "jogo-pronto"
-            ]
+            "blockIds": ["video-a1-abertura", "jogo-pronto"]
           }
         },
         {
@@ -67,9 +62,7 @@
           "classification": "context-or-material",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-a1-caderno"
-            ]
+            "blockIds": ["video-a1-caderno"]
           }
         },
         {
@@ -82,10 +75,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-a1-toque",
-              "experiencia-toque"
-            ]
+            "blockIds": ["video-a1-toque", "experiencia-toque"]
           }
         },
         {
@@ -98,10 +88,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-a1-programar",
-              "projeto"
-            ],
+            "blockIds": ["video-a1-programar", "projeto"],
             "projectChecks": [
               {
                 "id": "revelar-ao-toque",
@@ -136,9 +123,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -152,9 +137,7 @@
           "classification": "context-or-material",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-a2-retomada"
-            ]
+            "blockIds": ["video-a2-retomada"]
           }
         },
         {
@@ -167,10 +150,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-a2-variavel",
-              "experiencia-achados"
-            ]
+            "blockIds": ["video-a2-variavel", "experiencia-achados"]
           }
         },
         {
@@ -183,9 +163,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-a2-contagem"
-            ],
+            "blockIds": ["video-a2-contagem"],
             "projectChecks": [
               {
                 "id": "revelar-ao-toque",
@@ -230,10 +208,7 @@
           "classification": "embedded-delivery",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-a2-personalizar",
-              "projeto"
-            ],
+            "blockIds": ["video-a2-personalizar", "projeto"],
             "submissionUpToDate": true
           }
         },
@@ -247,9 +222,7 @@
           "classification": "embedded-optional",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-a2-fecho"
-            ]
+            "blockIds": ["video-a2-fecho"]
           }
         }
       ]
@@ -272,9 +245,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz-revisao-final"
-            ]
+            "blockIds": ["quiz-revisao-final"]
           }
         },
         {
@@ -287,10 +258,7 @@
           "classification": "certificate",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-certificado",
-              "certificado"
-            ]
+            "blockIds": ["video-certificado", "certificado"]
           }
         }
       ]
@@ -307,9 +275,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -323,10 +289,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-abertura",
-              "jogo-pronto"
-            ]
+            "blockIds": ["video-abertura", "jogo-pronto"]
           }
         },
         {
@@ -339,9 +302,7 @@
           "classification": "context-or-material",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-caderno"
-            ]
+            "blockIds": ["video-caderno"]
           }
         },
         {
@@ -354,10 +315,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-uma-vez-e-sempre",
-              "experiencia-uma-vez-e-sempre"
-            ]
+            "blockIds": ["video-uma-vez-e-sempre", "experiencia-uma-vez-e-sempre"]
           }
         },
         {
@@ -370,10 +328,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-limite-da-tela",
-              "experiencia-tela"
-            ]
+            "blockIds": ["video-limite-da-tela", "experiencia-tela"]
           }
         },
         {
@@ -386,9 +341,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-area-e-tela"
-            ],
+            "blockIds": ["video-area-e-tela"],
             "projectChecks": [
               {
                 "id": "area-iniciar",
@@ -425,9 +378,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-borda"
-            ],
+            "blockIds": ["video-borda"],
             "projectChecks": [
               {
                 "id": "tela-antes-da-borda",
@@ -468,10 +419,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-coordenadas",
-              "experiencia-coordenadas"
-            ]
+            "blockIds": ["video-coordenadas", "experiencia-coordenadas"]
           }
         },
         {
@@ -484,10 +432,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-criar-e-mostrar",
-              "descoberta"
-            ]
+            "blockIds": ["video-criar-e-mostrar", "descoberta"]
           }
         },
         {
@@ -500,9 +445,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-criar-dino"
-            ],
+            "blockIds": ["video-criar-dino"],
             "projectChecks": [
               {
                 "id": "borda-antes-do-dino",
@@ -547,10 +490,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "area-iniciar",
@@ -622,9 +562,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -638,10 +576,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-quadros",
-              "experiencia-laco"
-            ]
+            "blockIds": ["video-quadros", "experiencia-laco"]
           }
         },
         {
@@ -654,9 +589,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-motor-e-dino"
-            ],
+            "blockIds": ["video-motor-e-dino"],
             "projectChecks": [
               {
                 "id": "motor",
@@ -693,9 +626,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-limpeza"
-            ],
+            "blockIds": ["video-limpeza"],
             "projectChecks": [
               {
                 "id": "limpar",
@@ -721,10 +652,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-camadas",
-              "experiencia-camadas"
-            ]
+            "blockIds": ["video-camadas", "experiencia-camadas"]
           }
         },
         {
@@ -737,9 +665,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-ordem-certa"
-            ],
+            "blockIds": ["video-ordem-certa"],
             "projectChecks": [
               {
                 "id": "limpar-primeiro",
@@ -801,9 +727,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-retirar-borda"
-            ],
+            "blockIds": ["video-retirar-borda"],
             "projectChecks": [
               {
                 "id": "sem-borda",
@@ -839,10 +763,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-descricao",
-              "experiencia-descricao"
-            ]
+            "blockIds": ["video-descricao", "experiencia-descricao"]
           }
         },
         {
@@ -855,9 +776,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-descrever-jogo"
-            ],
+            "blockIds": ["video-descrever-jogo"],
             "projectChecks": [
               {
                 "id": "descricao",
@@ -884,10 +803,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "desenhar",
@@ -986,9 +902,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -1002,10 +916,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-gravidade-modelo",
-              "experiencia-gravidade"
-            ]
+            "blockIds": ["video-gravidade-modelo", "experiencia-gravidade"]
           }
         },
         {
@@ -1018,9 +929,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-aplicar-gravidade"
-            ],
+            "blockIds": ["video-aplicar-gravidade"],
             "projectChecks": [
               {
                 "id": "floresta-antes-da-gravidade",
@@ -1063,10 +972,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-impulso-modelo",
-              "experiencia-impulso"
-            ]
+            "blockIds": ["video-impulso-modelo", "experiencia-impulso"]
           }
         },
         {
@@ -1079,9 +985,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-comando-de-pulo"
-            ],
+            "blockIds": ["video-comando-de-pulo"],
             "projectChecks": [
               {
                 "id": "gravidade",
@@ -1138,9 +1042,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -1153,10 +1055,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "gravidade",
@@ -1230,9 +1129,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -1246,10 +1143,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-area-que-espera",
-              "experiencia-tres-areas"
-            ]
+            "blockIds": ["video-area-que-espera", "experiencia-tres-areas"]
           }
         },
         {
@@ -1262,10 +1156,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-dedo-e-pulo",
-              "experiencia-dedo-e-pulo"
-            ]
+            "blockIds": ["video-dedo-e-pulo", "experiencia-dedo-e-pulo"]
           }
         },
         {
@@ -1278,9 +1169,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-som-no-pulo"
-            ],
+            "blockIds": ["video-som-no-pulo"],
             "projectChecks": [
               {
                 "id": "som-pulo",
@@ -1330,10 +1219,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "som-pulo",
@@ -1415,9 +1301,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -1431,10 +1315,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-espaco-e-tempo",
-              "experiencia-ritmo"
-            ]
+            "blockIds": ["video-espaco-e-tempo", "experiencia-ritmo"]
           }
         },
         {
@@ -1447,9 +1328,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-grupo-e-relogio"
-            ],
+            "blockIds": ["video-grupo-e-relogio"],
             "projectChecks": [
               {
                 "id": "grupo",
@@ -1488,10 +1367,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-numero-negativo",
-              "experiencia-velocidade"
-            ]
+            "blockIds": ["video-numero-negativo", "experiencia-velocidade"]
           }
         },
         {
@@ -1504,9 +1380,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-criar-cactos"
-            ],
+            "blockIds": ["video-criar-cactos"],
             "projectChecks": [
               {
                 "id": "relogio",
@@ -1566,9 +1440,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-mover-e-desenhar"
-            ],
+            "blockIds": ["video-mover-e-desenhar"],
             "projectChecks": [
               {
                 "id": "mover-grupo",
@@ -1624,10 +1496,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "grupo",
@@ -1758,9 +1627,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -1774,10 +1641,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-visivel-guardado",
-              "experiencia-visivel-guardado"
-            ]
+            "blockIds": ["video-visivel-guardado", "experiencia-visivel-guardado"]
           }
         },
         {
@@ -1790,9 +1654,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-faxina"
-            ],
+            "blockIds": ["video-faxina"],
             "projectChecks": [
               {
                 "id": "faxina",
@@ -1849,9 +1711,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -1864,10 +1724,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "faxina",
@@ -1928,9 +1785,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -1944,10 +1799,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-condicao",
-              "experiencia-condicao"
-            ]
+            "blockIds": ["video-condicao", "experiencia-condicao"]
           }
         },
         {
@@ -1960,9 +1812,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-estado-inicio"
-            ],
+            "blockIds": ["video-estado-inicio"],
             "projectChecks": [
               {
                 "id": "cena-inicial",
@@ -1989,9 +1839,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-embrulhar"
-            ],
+            "blockIds": ["video-embrulhar"],
             "projectChecks": [
               {
                 "id": "proteger-gravidade",
@@ -2197,9 +2045,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-relogio"
-            ],
+            "blockIds": ["video-relogio"],
             "projectChecks": [
               {
                 "id": "proteger-relogio",
@@ -2257,10 +2103,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "cena-inicial",
@@ -2564,9 +2407,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -2580,9 +2421,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-menu"
-            ],
+            "blockIds": ["video-menu"],
             "projectChecks": [
               {
                 "id": "menu",
@@ -2627,10 +2466,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-convite",
-              "experiencia-convite"
-            ]
+            "blockIds": ["video-convite", "experiencia-convite"]
           }
         },
         {
@@ -2643,9 +2479,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrada-ampla"
-            ],
+            "blockIds": ["video-entrada-ampla"],
             "projectChecks": [
               {
                 "id": "entrada-menu",
@@ -2727,10 +2561,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "cena-inicial",
@@ -2859,9 +2690,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -2875,10 +2704,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-contato",
-              "experiencia-contato"
-            ]
+            "blockIds": ["video-contato", "experiencia-contato"]
           }
         },
         {
@@ -2891,9 +2717,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-batida-acaba-partida"
-            ],
+            "blockIds": ["video-batida-acaba-partida"],
             "projectChecks": [
               {
                 "id": "colisao",
@@ -2943,9 +2767,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-mapa-do-jogo"
-            ],
+            "blockIds": ["video-mapa-do-jogo"],
             "projectChecks": [
               {
                 "id": "tela-fim",
@@ -2981,9 +2803,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-batida-sentida"
-            ],
+            "blockIds": ["video-batida-sentida"],
             "projectChecks": [
               {
                 "id": "explodir",
@@ -3040,10 +2860,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-trocar-nao-limpa",
-              "experiencia-restart"
-            ]
+            "blockIds": ["video-trocar-nao-limpa", "experiencia-restart"]
           }
         },
         {
@@ -3056,9 +2873,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-caminho-de-volta"
-            ],
+            "blockIds": ["video-caminho-de-volta"],
             "projectChecks": [
               {
                 "id": "reiniciar",
@@ -3119,9 +2934,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -3134,10 +2947,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "colisao",
@@ -3321,9 +3131,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -3337,10 +3145,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-caixa-decide",
-              "experiencia-hitbox"
-            ]
+            "blockIds": ["video-caixa-decide", "experiencia-hitbox"]
           }
         },
         {
@@ -3353,9 +3158,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-ligar-raio-x"
-            ],
+            "blockIds": ["video-ligar-raio-x"],
             "projectChecks": [
               {
                 "id": "raio-x",
@@ -3383,9 +3186,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-ajustar-area"
-            ],
+            "blockIds": ["video-ajustar-area"],
             "projectChecks": [
               {
                 "id": "colisao-area",
@@ -3438,9 +3239,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-retirar-contorno"
-            ],
+            "blockIds": ["video-retirar-contorno"],
             "projectChecks": [
               {
                 "id": "colisao-area",
@@ -3489,10 +3288,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "colisao-area",
@@ -3545,9 +3341,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -3561,10 +3355,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-guardar-mudar-mostrar",
-              "experiencia-variavel"
-            ]
+            "blockIds": ["video-guardar-mudar-mostrar", "experiencia-variavel"]
           }
         },
         {
@@ -3577,9 +3368,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-caixinha-dos-pontos"
-            ],
+            "blockIds": ["video-caixinha-dos-pontos"],
             "projectChecks": [
               {
                 "id": "pontos-zero",
@@ -3609,9 +3398,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-numero-na-tela"
-            ],
+            "blockIds": ["video-numero-na-tela"],
             "projectChecks": [
               {
                 "id": "mostrar-pontos",
@@ -3658,10 +3445,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-quando-o-placar-cresce",
-              "experiencia-score"
-            ]
+            "blockIds": ["video-quando-o-placar-cresce", "experiencia-score"]
           }
         },
         {
@@ -3674,9 +3458,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-relogio-dos-pontos"
-            ],
+            "blockIds": ["video-relogio-dos-pontos"],
             "projectChecks": [
               {
                 "id": "relogio-pontos",
@@ -3732,9 +3514,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-frase-da-tela-de-fim"
-            ],
+            "blockIds": ["video-frase-da-tela-de-fim"],
             "projectChecks": [
               {
                 "id": "frase-pontos",
@@ -3795,9 +3575,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -3810,10 +3588,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "pontos-zero",
@@ -3966,9 +3741,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -3982,10 +3755,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-sorteio-tira-na-hora",
-              "experiencia-random"
-            ]
+            "blockIds": ["video-sorteio-tira-na-hora", "experiencia-random"]
           }
         },
         {
@@ -3998,9 +3768,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-lugar-diferente"
-            ],
+            "blockIds": ["video-lugar-diferente"],
             "projectChecks": [
               {
                 "id": "sortear-x",
@@ -4077,9 +3845,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-velocidade-propria"
-            ],
+            "blockIds": ["video-velocidade-propria"],
             "projectChecks": [
               {
                 "id": "sortear-x",
@@ -4155,10 +3921,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "sortear-x",
@@ -4269,9 +4032,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -4285,10 +4046,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-regua-negativos",
-              "experiencia-number-line"
-            ]
+            "blockIds": ["video-regua-negativos", "experiencia-number-line"]
           }
         },
         {
@@ -4301,10 +4059,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-o-que-o-freio-segura",
-              "experiencia-aceleracao"
-            ]
+            "blockIds": ["video-o-que-o-freio-segura", "experiencia-aceleracao"]
           }
         },
         {
@@ -4317,9 +4072,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-numero-que-manda"
-            ],
+            "blockIds": ["video-numero-que-manda"],
             "projectChecks": [
               {
                 "id": "velocidade-inicial",
@@ -4403,9 +4156,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-relogio-da-dificuldade"
-            ],
+            "blockIds": ["video-relogio-da-dificuldade"],
             "projectChecks": [
               {
                 "id": "relogio-dificuldade",
@@ -4445,9 +4196,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-acelerador-e-freio"
-            ],
+            "blockIds": ["video-acelerador-e-freio"],
             "projectChecks": [
               {
                 "id": "acelerar-com-limite",
@@ -4522,9 +4271,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-descricao-completa"
-            ],
+            "blockIds": ["video-descricao-completa"],
             "projectChecks": [
               {
                 "id": "descricao-completa",
@@ -4551,9 +4298,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -4566,10 +4311,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "velocidade-inicial",
@@ -4828,9 +4570,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz-revisao-final"
-            ]
+            "blockIds": ["quiz-revisao-final"]
           }
         },
         {
@@ -4843,10 +4583,7 @@
           "classification": "certificate",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-certificado-farol",
-              "certificado"
-            ]
+            "blockIds": ["video-certificado-farol", "certificado"]
           }
         }
       ]
@@ -4863,9 +4600,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -4879,10 +4614,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-intro-farol",
-              "jogo-pronto"
-            ]
+            "blockIds": ["video-intro-farol", "jogo-pronto"]
           }
         },
         {
@@ -4895,9 +4627,7 @@
           "classification": "context-or-material",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-intro-caderno"
-            ]
+            "blockIds": ["video-intro-caderno"]
           }
         },
         {
@@ -4910,10 +4640,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d1-quadro",
-              "experiencia-quadro"
-            ]
+            "blockIds": ["video-d1-quadro", "experiencia-quadro"]
           }
         },
         {
@@ -4926,9 +4653,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d1-andar"
-            ],
+            "blockIds": ["video-d1-andar"],
             "projectChecks": [
               {
                 "id": "direcional",
@@ -4972,10 +4697,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d1-limite",
-              "experiencia-limite"
-            ]
+            "blockIds": ["video-d1-limite", "experiencia-limite"]
           }
         },
         {
@@ -4988,10 +4710,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d1-borda",
-              "projeto"
-            ],
+            "blockIds": ["video-d1-borda", "projeto"],
             "projectChecks": [
               {
                 "id": "direcional",
@@ -5057,9 +4776,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -5073,10 +4790,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d2-contexto",
-              "experiencia-memoria"
-            ]
+            "blockIds": ["video-d2-contexto", "experiencia-memoria"]
           }
         },
         {
@@ -5089,9 +4803,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d2-recolher"
-            ],
+            "blockIds": ["video-d2-recolher"],
             "projectChecks": [
               {
                 "id": "direcional",
@@ -5174,9 +4886,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d2-guardar"
-            ],
+            "blockIds": ["video-d2-guardar"],
             "projectChecks": [
               {
                 "id": "direcional",
@@ -5320,10 +5030,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d2-programar",
-              "projeto"
-            ],
+            "blockIds": ["video-d2-programar", "projeto"],
             "projectChecks": [
               {
                 "id": "direcional",
@@ -5497,9 +5204,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -5513,10 +5218,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d3-condicao",
-              "experiencia-porta"
-            ]
+            "blockIds": ["video-d3-condicao", "experiencia-porta"]
           }
         },
         {
@@ -5529,9 +5231,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d3-sem-chave"
-            ],
+            "blockIds": ["video-d3-sem-chave"],
             "projectChecks": [
               {
                 "id": "direcional",
@@ -5764,9 +5464,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d3-decisao"
-            ],
+            "blockIds": ["video-d3-decisao"],
             "projectChecks": [
               {
                 "id": "direcional",
@@ -6148,9 +5846,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d3-personalizar"
-            ],
+            "blockIds": ["video-d3-personalizar"],
             "projectChecks": [
               {
                 "id": "acender",
@@ -6206,9 +5902,7 @@
           "classification": "embedded-optional",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d3-farol-mensagens"
-            ]
+            "blockIds": ["video-d3-farol-mensagens"]
           }
         },
         {
@@ -6221,10 +5915,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d3-posicao",
-              "experiencia-posicao"
-            ]
+            "blockIds": ["video-d3-posicao", "experiencia-posicao"]
           }
         },
         {
@@ -6237,10 +5928,7 @@
           "classification": "embedded-delivery",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d3-posicionar-chave",
-              "projeto"
-            ],
+            "blockIds": ["video-d3-posicionar-chave", "projeto"],
             "submissionUpToDate": true
           }
         },
@@ -6254,9 +5942,7 @@
           "classification": "embedded-optional",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-d3-fecho"
-            ]
+            "blockIds": ["video-d3-fecho"]
           }
         }
       ]
@@ -6273,9 +5959,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -6289,10 +5973,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-intervalo-das-pedras",
-              "experiencia-relogio"
-            ]
+            "blockIds": ["video-intervalo-das-pedras", "experiencia-relogio"]
           }
         },
         {
@@ -6305,9 +5986,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-grupo-e-relogio"
-            ],
+            "blockIds": ["video-grupo-e-relogio"],
             "projectChecks": [
               {
                 "id": "grupo-asteroides",
@@ -6358,10 +6037,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-posicao-sorteada",
-              "experiencia-sorteio"
-            ]
+            "blockIds": ["video-posicao-sorteada", "experiencia-sorteio"]
           }
         },
         {
@@ -6374,9 +6050,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-asteroide"
-            ],
+            "blockIds": ["video-asteroide"],
             "projectChecks": [
               {
                 "id": "asteroide",
@@ -6466,10 +6140,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "projeto"
-            ],
+            "blockIds": ["video-entrega", "projeto"],
             "projectChecks": [
               {
                 "id": "grupo-asteroides",
@@ -6599,9 +6270,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -6615,10 +6284,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-estado-do-jogo",
-              "experiencia-estado"
-            ]
+            "blockIds": ["video-estado-do-jogo", "experiencia-estado"]
           }
         },
         {
@@ -6631,9 +6297,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-embrulhar"
-            ],
+            "blockIds": ["video-embrulhar"],
             "projectChecks": [
               {
                 "id": "tela-inicial",
@@ -6766,9 +6430,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-relogio-e-tiro"
-            ],
+            "blockIds": ["video-relogio-e-tiro"],
             "projectChecks": [
               {
                 "id": "guardar-relogio",
@@ -6894,10 +6556,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-enter",
-              "projeto"
-            ],
+            "blockIds": ["video-enter", "projeto"],
             "projectChecks": [
               {
                 "id": "tela-inicial",
@@ -7176,9 +6835,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -7192,10 +6849,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-seta-e-velocidade",
-              "experiencia-seta-e-velocidade"
-            ]
+            "blockIds": ["video-seta-e-velocidade", "experiencia-seta-e-velocidade"]
           }
         },
         {
@@ -7208,9 +6862,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-setas-e-rastro"
-            ],
+            "blockIds": ["video-setas-e-rastro"],
             "projectChecks": [
               {
                 "id": "setas",
@@ -7242,9 +6894,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-limpeza"
-            ],
+            "blockIds": ["video-limpeza"],
             "projectChecks": [
               {
                 "id": "borracha",
@@ -7270,10 +6920,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-limite-da-tela",
-              "experiencia-limite-da-tela"
-            ]
+            "blockIds": ["video-limite-da-tela", "experiencia-limite-da-tela"]
           }
         },
         {
@@ -7286,9 +6933,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-limite-da-nave"
-            ],
+            "blockIds": ["video-limite-da-nave"],
             "projectChecks": [
               {
                 "id": "setas-antes-do-limite",
@@ -7334,10 +6979,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-ordem-dos-desenhos",
-              "experiencia-camadas"
-            ]
+            "blockIds": ["video-ordem-dos-desenhos", "experiencia-camadas"]
           }
         },
         {
@@ -7350,9 +6992,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-fundo-estrelado"
-            ],
+            "blockIds": ["video-fundo-estrelado"],
             "projectChecks": [
               {
                 "id": "borracha-primeiro",
@@ -7392,9 +7032,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -7407,10 +7045,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-teste-e-envio",
-              "projeto"
-            ],
+            "blockIds": ["video-teste-e-envio", "projeto"],
             "projectChecks": [
               {
                 "id": "tela",
@@ -7553,9 +7188,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -7569,10 +7202,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-tecla-e-repeticao",
-              "experiencia-tres-areas"
-            ]
+            "blockIds": ["video-tecla-e-repeticao", "experiencia-tres-areas"]
           }
         },
         {
@@ -7585,10 +7215,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-escrito-e-lido",
-              "experiencia-escrito-e-lido"
-            ]
+            "blockIds": ["video-escrito-e-lido", "experiencia-escrito-e-lido"]
           }
         },
         {
@@ -7601,10 +7228,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-direcao-do-tiro",
-              "experiencia-direcao"
-            ]
+            "blockIds": ["video-direcao-do-tiro", "experiencia-direcao"]
           }
         },
         {
@@ -7617,9 +7241,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-criar-tiro"
-            ],
+            "blockIds": ["video-criar-tiro"],
             "projectChecks": [
               {
                 "id": "grupo-tiros",
@@ -7766,9 +7388,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-tiros-voam"
-            ],
+            "blockIds": ["video-tiros-voam"],
             "projectChecks": [
               {
                 "id": "mover-tiros",
@@ -7809,10 +7429,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-tiro-fora-da-tela",
-              "experiencia-faxina"
-            ]
+            "blockIds": ["video-tiro-fora-da-tela", "experiencia-faxina"]
           }
         },
         {
@@ -7825,10 +7442,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-faxina",
-              "projeto"
-            ],
+            "blockIds": ["video-faxina", "projeto"],
             "projectChecks": [
               {
                 "id": "nave",
@@ -7989,9 +7603,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -8005,10 +7617,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-apelidos",
-              "experiencia-trombada"
-            ]
+            "blockIds": ["video-apelidos", "experiencia-trombada"]
           }
         },
         {
@@ -8021,9 +7630,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-colisao"
-            ],
+            "blockIds": ["video-colisao"],
             "projectChecks": [
               {
                 "id": "efeito-explosao",
@@ -8138,9 +7745,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -8153,10 +7758,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-fecho",
-              "projeto"
-            ],
+            "blockIds": ["video-fecho", "projeto"],
             "projectChecks": [
               {
                 "id": "efeito-tiro",
@@ -8455,9 +8057,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -8471,10 +8071,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-vidas-no-comeco",
-              "experiencia-uma-vez"
-            ]
+            "blockIds": ["video-vidas-no-comeco", "experiencia-uma-vez"]
           }
         },
         {
@@ -8487,9 +8084,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-vidas"
-            ],
+            "blockIds": ["video-vidas"],
             "projectChecks": [
               {
                 "id": "vida",
@@ -8538,10 +8133,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-protecao",
-              "experiencia-protecao"
-            ]
+            "blockIds": ["video-protecao", "experiencia-protecao"]
           }
         },
         {
@@ -8554,9 +8146,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-batida-e-coracoes"
-            ],
+            "blockIds": ["video-batida-e-coracoes"],
             "projectChecks": [
               {
                 "id": "remover-inimigo",
@@ -8648,9 +8238,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -8663,10 +8251,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-fecho",
-              "projeto"
-            ],
+            "blockIds": ["video-fecho", "projeto"],
             "projectChecks": [
               {
                 "id": "pontos",
@@ -8974,9 +8559,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -8990,9 +8573,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-finais"
-            ],
+            "blockIds": ["video-finais"],
             "projectChecks": [
               {
                 "id": "vitoria",
@@ -9156,9 +8737,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-mostrar-telas"
-            ],
+            "blockIds": ["video-mostrar-telas"],
             "projectChecks": [
               {
                 "id": "tela-inicio",
@@ -9263,10 +8842,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-reiniciar",
-              "experiencia-reiniciar"
-            ]
+            "blockIds": ["video-reiniciar", "experiencia-reiniciar"]
           }
         },
         {
@@ -9279,9 +8855,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-enter"
-            ],
+            "blockIds": ["video-enter"],
             "projectChecks": [
               {
                 "id": "enter",
@@ -9345,9 +8919,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -9360,10 +8932,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-ciclo-completo",
-              "projeto"
-            ],
+            "blockIds": ["video-ciclo-completo", "projeto"],
             "projectChecks": [
               {
                 "id": "alvo",
@@ -9996,9 +9565,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -10012,10 +9579,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-variavel",
-              "experiencia-variavel"
-            ]
+            "blockIds": ["video-variavel", "experiencia-variavel"]
           }
         },
         {
@@ -10028,10 +9592,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-pontos-e-placar",
-              "projeto"
-            ],
+            "blockIds": ["video-pontos-e-placar", "projeto"],
             "projectChecks": [
               {
                 "id": "pontos",
@@ -10128,9 +9689,7 @@
           "gallery": null,
           "hasInitialProject": true,
           "hasSolutionProject": false,
-          "allowedModes": [
-            "blocks"
-          ]
+          "allowedModes": ["blocks"]
         }
       ],
       "sections": [
@@ -10144,10 +9703,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-abertura",
-              "jogo-pronto"
-            ]
+            "blockIds": ["video-abertura", "jogo-pronto"]
           }
         },
         {
@@ -10160,9 +9716,7 @@
           "classification": "context-or-material",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-seu-caderno-do-aluno"
-            ]
+            "blockIds": ["video-seu-caderno-do-aluno"]
           }
         },
         {
@@ -10175,10 +9729,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-uma-vez-e-sempre",
-              "experiencia-areas"
-            ]
+            "blockIds": ["video-uma-vez-e-sempre", "experiencia-areas"]
           }
         },
         {
@@ -10191,9 +9742,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-montar-areas-tela"
-            ],
+            "blockIds": ["video-montar-areas-tela"],
             "projectChecks": [
               {
                 "id": "inicio",
@@ -10239,10 +9788,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-coordenadas",
-              "experiencia-coordenadas"
-            ]
+            "blockIds": ["video-coordenadas", "experiencia-coordenadas"]
           }
         },
         {
@@ -10255,10 +9801,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-criar-e-mostrar",
-              "experiencia-criar-mostrar"
-            ]
+            "blockIds": ["video-criar-e-mostrar", "experiencia-criar-mostrar"]
           }
         },
         {
@@ -10271,9 +9814,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-criar-nave"
-            ],
+            "blockIds": ["video-criar-nave"],
             "projectChecks": [
               {
                 "id": "nave",
@@ -10320,10 +9861,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-desenho-por-quadro",
-              "experiencia-quadro"
-            ]
+            "blockIds": ["video-desenho-por-quadro", "experiencia-quadro"]
           }
         },
         {
@@ -10336,10 +9874,7 @@
           "classification": "embedded-objectives",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-motor-e-nave",
-              "projeto"
-            ],
+            "blockIds": ["video-motor-e-nave", "projeto"],
             "projectChecks": [
               {
                 "id": "nave",
@@ -10430,10 +9965,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-jogo-pronto",
-              "jogo-pronto"
-            ]
+            "blockIds": ["video-jogo-pronto", "jogo-pronto"]
           }
         },
         {
@@ -10446,9 +9978,7 @@
           "classification": "context-or-material",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-caderno"
-            ]
+            "blockIds": ["video-caderno"]
           }
         },
         {
@@ -10461,10 +9991,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-aparencia-e-regras",
-              "experimento-tema-e-regra"
-            ]
+            "blockIds": ["video-aparencia-e-regras", "experimento-tema-e-regra"]
           }
         },
         {
@@ -10477,10 +10004,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-copias",
-              "experiencia-copia"
-            ]
+            "blockIds": ["video-copias", "experiencia-copia"]
           }
         },
         {
@@ -10493,9 +10017,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-exportar"
-            ]
+            "blockIds": ["video-exportar"]
           }
         },
         {
@@ -10508,9 +10030,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-importar"
-            ]
+            "blockIds": ["video-importar"]
           }
         },
         {
@@ -10523,10 +10043,7 @@
           "classification": "external-delivery",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "entrega-galeria-v6"
-            ]
+            "blockIds": ["video-entrega", "entrega-galeria-v6"]
           }
         }
       ]
@@ -10549,10 +10066,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-bordas",
-              "experimento-bordas"
-            ]
+            "blockIds": ["video-bordas", "experimento-bordas"]
           }
         },
         {
@@ -10565,9 +10079,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-nova-nave"
-            ]
+            "blockIds": ["video-nova-nave"]
           }
         },
         {
@@ -10580,10 +10092,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-espelho",
-              "experimento-espelho"
-            ]
+            "blockIds": ["video-espelho", "experimento-espelho"]
           }
         },
         {
@@ -10596,9 +10105,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-contorno"
-            ]
+            "blockIds": ["video-contorno"]
           }
         },
         {
@@ -10611,9 +10118,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-cores"
-            ]
+            "blockIds": ["video-cores"]
           }
         },
         {
@@ -10626,10 +10131,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-luz",
-              "experiencia-luz"
-            ]
+            "blockIds": ["video-luz", "experiencia-luz"]
           }
         },
         {
@@ -10642,9 +10144,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-volume"
-            ]
+            "blockIds": ["video-volume"]
           }
         },
         {
@@ -10657,10 +10157,7 @@
           "classification": "external-delivery",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "entrega-galeria-v6"
-            ]
+            "blockIds": ["video-entrega", "entrega-galeria-v6"]
           }
         }
       ]
@@ -10683,10 +10180,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-quadros",
-              "experiencia-quadros"
-            ]
+            "blockIds": ["video-quadros", "experiencia-quadros"]
           }
         },
         {
@@ -10699,9 +10193,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-primeiro-fogo"
-            ]
+            "blockIds": ["video-primeiro-fogo"]
           }
         },
         {
@@ -10714,10 +10206,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-fantasma",
-              "experiencia-fantasma"
-            ]
+            "blockIds": ["video-fantasma", "experiencia-fantasma"]
           }
         },
         {
@@ -10730,9 +10219,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-segundo-fogo"
-            ]
+            "blockIds": ["video-segundo-fogo"]
           }
         },
         {
@@ -10745,9 +10232,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-voando"
-            ]
+            "blockIds": ["video-voando"]
           }
         },
         {
@@ -10760,9 +10245,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -10775,10 +10258,7 @@
           "classification": "external-delivery",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "entrega-galeria-v6"
-            ]
+            "blockIds": ["video-entrega", "entrega-galeria-v6"]
           }
         }
       ]
@@ -10801,10 +10281,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-preenchimento-contorno",
-              "experiencia-cores"
-            ]
+            "blockIds": ["video-preenchimento-contorno", "experiencia-cores"]
           }
         },
         {
@@ -10817,9 +10294,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-novo-asteroide"
-            ]
+            "blockIds": ["video-novo-asteroide"]
           }
         },
         {
@@ -10832,9 +10307,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-forma-pedra"
-            ]
+            "blockIds": ["video-forma-pedra"]
           }
         },
         {
@@ -10847,9 +10320,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-curvas"
-            ]
+            "blockIds": ["video-curvas"]
           }
         },
         {
@@ -10862,9 +10333,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-crateras"
-            ]
+            "blockIds": ["video-crateras"]
           }
         },
         {
@@ -10877,10 +10346,7 @@
           "classification": "external-delivery",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "entrega-galeria-v6"
-            ]
+            "blockIds": ["video-entrega", "entrega-galeria-v6"]
           }
         }
       ]
@@ -10903,10 +10369,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-camadas",
-              "experimento-camadas"
-            ]
+            "blockIds": ["video-camadas", "experimento-camadas"]
           }
         },
         {
@@ -10919,9 +10382,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-chama"
-            ]
+            "blockIds": ["video-chama"]
           }
         },
         {
@@ -10934,9 +10395,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-miolo-fogo"
-            ]
+            "blockIds": ["video-miolo-fogo"]
           }
         },
         {
@@ -10949,10 +10408,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-mudanca-pequena",
-              "experimento-tanto-que-muda"
-            ]
+            "blockIds": ["video-mudanca-pequena", "experimento-tanto-que-muda"]
           }
         },
         {
@@ -10965,9 +10421,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-quadro-pedra"
-            ]
+            "blockIds": ["video-quadro-pedra"]
           }
         },
         {
@@ -10980,9 +10434,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-girando"
-            ]
+            "blockIds": ["video-girando"]
           }
         },
         {
@@ -10995,9 +10447,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -11010,10 +10460,7 @@
           "classification": "external-delivery",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "entrega-galeria-v6"
-            ]
+            "blockIds": ["video-entrega", "entrega-galeria-v6"]
           }
         }
       ]
@@ -11047,10 +10494,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-nomes",
-              "experimento-nomes"
-            ]
+            "blockIds": ["video-nomes", "experimento-nomes"]
           }
         },
         {
@@ -11063,9 +10507,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-trazer-artes"
-            ]
+            "blockIds": ["video-trazer-artes"]
           }
         },
         {
@@ -11078,10 +10520,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-recorte",
-              "experimento-recorte"
-            ]
+            "blockIds": ["video-recorte", "experimento-recorte"]
           }
         },
         {
@@ -11094,9 +10533,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-trocar-nave"
-            ]
+            "blockIds": ["video-trocar-nave"]
           }
         },
         {
@@ -11109,9 +10546,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-folha-nave"
-            ]
+            "blockIds": ["video-folha-nave"]
           }
         },
         {
@@ -11124,9 +10559,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-animar-nave"
-            ]
+            "blockIds": ["video-animar-nave"]
           }
         },
         {
@@ -11139,10 +10572,7 @@
           "classification": "external-delivery",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "entrega-galeria-v6"
-            ]
+            "blockIds": ["video-entrega", "entrega-galeria-v6"]
           }
         }
       ]
@@ -11176,10 +10606,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-dois-relogios",
-              "experimento-dois-relogios"
-            ]
+            "blockIds": ["video-dois-relogios", "experimento-dois-relogios"]
           }
         },
         {
@@ -11192,9 +10619,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-folha-pedra"
-            ]
+            "blockIds": ["video-folha-pedra"]
           }
         },
         {
@@ -11207,9 +10632,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-trocar-pedra"
-            ]
+            "blockIds": ["video-trocar-pedra"]
           }
         },
         {
@@ -11222,9 +10645,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-animar-pedra"
-            ]
+            "blockIds": ["video-animar-pedra"]
           }
         },
         {
@@ -11237,9 +10658,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -11252,10 +10671,7 @@
           "classification": "external-delivery",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "entrega-galeria-v6"
-            ]
+            "blockIds": ["video-entrega", "entrega-galeria-v6"]
           }
         }
       ]
@@ -11289,10 +10705,7 @@
           "classification": "interactive",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-copia-publicada",
-              "experimento-copia-publicada"
-            ]
+            "blockIds": ["video-copia-publicada", "experimento-copia-publicada"]
           }
         },
         {
@@ -11305,9 +10718,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-teste-completo"
-            ]
+            "blockIds": ["video-teste-completo"]
           }
         },
         {
@@ -11320,9 +10731,7 @@
           "classification": "external-practice",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-compartilhar"
-            ]
+            "blockIds": ["video-compartilhar"]
           }
         },
         {
@@ -11335,9 +10744,7 @@
           "classification": "quiz",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "quiz"
-            ]
+            "blockIds": ["quiz"]
           }
         },
         {
@@ -11350,10 +10757,7 @@
           "classification": "external-delivery",
           "completion": {
             "version": 1,
-            "blockIds": [
-              "video-entrega",
-              "entrega-galeria-v6"
-            ]
+            "blockIds": ["video-entrega", "entrega-galeria-v6"]
           }
         }
       ]

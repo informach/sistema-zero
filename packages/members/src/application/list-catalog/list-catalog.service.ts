@@ -36,9 +36,13 @@ export class ListCatalogService {
         ? this.gamification.listCourseMilestones(userId, audience)
         : Promise.resolve(null),
     ])
-    const journeyState = audience === 'kids' && !privileged
-      ? await this.kidsJourney.courseState({ userId, accountId: accountId ?? userId }, published.map((course) => course.id))
-      : null
+    const journeyState =
+      audience === 'kids' && !privileged
+        ? await this.kidsJourney.courseState(
+            { userId, accountId: accountId ?? userId },
+            published.map((course) => course.id),
+          )
+        : null
     const milestones = journeyState?.milestones ?? staffMilestones ?? new Map()
 
     // Chave-mestra POR AUDIÊNCIA destrava a vitrine inteira (atuais e futuros):

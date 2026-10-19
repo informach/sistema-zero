@@ -1,7 +1,6 @@
-import type { JourneyLevelSlug } from '@sistemazero/core/journey'
-import { pensaKidsJourney } from '../pensa-fixtures'
 import { mock } from 'bun:test'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
+import type { JourneyLevelSlug } from '@sistemazero/core/journey'
 import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
 import { StudioPythonAnalysisAuthorizationSchema } from '@sistemazero/core/studio/python-language-authorization'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
@@ -15,6 +14,7 @@ import { PYTHON_PROGRAMMING_CODECS } from '../../../studio/src/python/blocks/cat
 import { buildStudioTutorRequest } from '../../../studio/src/studio/tutor'
 import { studioTutorSourceHash } from '../../../studio/src/studio/tutorSafety'
 import type { SessionUser } from '../../src/lib/types'
+import { pensaKidsJourney } from '../pensa-fixtures'
 
 mock.module('server-only', () => ({}))
 process.env.JWT_HS256_SECRET ??= 'test-jwt-secret-with-32-characters'
@@ -151,7 +151,9 @@ export async function pythonZappyFixture(
           level: { slug: state.levelSlug },
           ...(audience === 'adult'
             ? { journey: { capabilities: state.adultAi ? ['ai'] : [] } }
-            : { kidsJourney: pensaKidsJourney(state.levelSlug, ['studio', 'pinta', 'ai', 'pensa']) }),
+            : {
+                kidsJourney: pensaKidsJourney(state.levelSlug, ['studio', 'pinta', 'ai', 'pensa']),
+              }),
         },
       }
     },

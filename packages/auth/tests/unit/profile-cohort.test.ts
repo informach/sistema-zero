@@ -103,13 +103,21 @@ test('cohort refuses oversized pages and a cursor beyond its bound', async () =>
   ).toBe(400)
 })
 
-
 test('cohort continuation preserves existing hex-format profile IDs and normalizes the work bound', async () => {
   const { app, profiles } = setup()
-  const profileId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', accountUserId = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
-  profiles.seedReady(ProfileAggregate.create({ id: profileId, accountUserId, name: 'Perfil existente' }))
-  const response = await app.handle(request({ kind: 'continue', upperBound: profileId.toUpperCase(), cursor: null, limit: 1 }))
+  const profileId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    accountUserId = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
+  profiles.seedReady(
+    ProfileAggregate.create({ id: profileId, accountUserId, name: 'Perfil existente' }),
+  )
+  const response = await app.handle(
+    request({ kind: 'continue', upperBound: profileId.toUpperCase(), cursor: null, limit: 1 }),
+  )
   expect(response.status).toBe(200)
-  expect(await response.json()).toEqual({ upperBound: profileId, cursor: profileId, done: true,
-    owners: [{ profileId, accountUserId }] })
+  expect(await response.json()).toEqual({
+    upperBound: profileId,
+    cursor: profileId,
+    done: true,
+    owners: [{ profileId, accountUserId }],
+  })
 })

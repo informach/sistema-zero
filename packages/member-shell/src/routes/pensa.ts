@@ -219,8 +219,14 @@ export function createPensaRoutes({
         if (request.method !== 'POST') return error(405, 'Ação indisponível.')
         if (audience === 'kids') {
           const capability = await readKidsCapabilities(members, ['pensa', 'ai'])
-          if (capability === 'unavailable') return error(503, 'Não consegui conferir sua jornada agora.', 'JOURNEY_UNAVAILABLE')
-          if (capability !== 'allowed') return error(403, 'O Pensa ainda não está liberado na sua jornada.', 'JOURNEY_CAPABILITY_REQUIRED')
+          if (capability === 'unavailable')
+            return error(503, 'Não consegui conferir sua jornada agora.', 'JOURNEY_UNAVAILABLE')
+          if (capability !== 'allowed')
+            return error(
+              403,
+              'O Pensa ainda não está liberado na sua jornada.',
+              'JOURNEY_CAPABILITY_REQUIRED',
+            )
         }
         const parsed = PensaCreateProjectRequestSchema.parse(body)
         const refusal = pensaNarrativeRefusal(parsed.message)
@@ -359,8 +365,14 @@ export function createPensaRoutes({
           )
         if (audience === 'kids') {
           const capability = await readKidsCapabilities(members, ['pensa', 'ai'])
-          if (capability === 'unavailable') return error(503, 'Não consegui conferir sua jornada agora.', 'JOURNEY_UNAVAILABLE')
-          if (capability !== 'allowed') return error(403, 'O Pensa ainda não está liberado na sua jornada.', 'JOURNEY_CAPABILITY_REQUIRED')
+          if (capability === 'unavailable')
+            return error(503, 'Não consegui conferir sua jornada agora.', 'JOURNEY_UNAVAILABLE')
+          if (capability !== 'allowed')
+            return error(
+              403,
+              'O Pensa ainda não está liberado na sua jornada.',
+              'JOURNEY_CAPABILITY_REQUIRED',
+            )
         }
         const input = PensaMessageRequestSchema.parse(body)
         const refusal = pensaNarrativeRefusal(input.message)

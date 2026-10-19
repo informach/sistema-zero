@@ -35,7 +35,9 @@ const descricoes: Record<CreativeToolId, string> = {
 export default async function CriarPage() {
   const journey = await getCreatorJourney()
   const earned = journey.tools.filter((tool) => tool.state === 'available')
-  const available = earned.filter((tool) => !tool.studioCurriculum || tool.studioCurriculum === 'ready')
+  const available = earned.filter(
+    (tool) => !tool.studioCurriculum || tool.studioCurriculum === 'ready',
+  )
   const future = journey.tools.filter((tool) => !available.includes(tool))
   return (
     <>

@@ -1,5 +1,5 @@
-import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import type { KidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
+import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { kidsStudioTier } from '@sistemazero/member-shell/server/studio-unlocks'
 import type { StudioUnlocksResult } from '@/lib/studio-cta'
 

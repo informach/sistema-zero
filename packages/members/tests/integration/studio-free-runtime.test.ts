@@ -162,10 +162,19 @@ test('HTTP denies siblings, foreign account, impersonation and inactive staff, r
   const staff = { 'x-auth-user-role': 'staff', 'x-auth-user-status': 'active' }
   // A role on a student-profile request is no longer the own-account preview.
   expect((await f.request(f.body, staff)).status).toBe(403)
-  const own = (extra: Record<string, string> = {}) => f.app.handle(new Request('http://localhost/members/studio/free-runtime', {
-    method: 'POST', headers: { 'content-type': 'application/json', 'x-auth-user-id': ACCOUNT, ...staff, ...extra },
-    body: JSON.stringify(f.body),
-  }))
+  const own = (extra: Record<string, string> = {}) =>
+    f.app.handle(
+      new Request('http://localhost/members/studio/free-runtime', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-auth-user-id': ACCOUNT,
+          ...staff,
+          ...extra,
+        },
+        body: JSON.stringify(f.body),
+      }),
+    )
   expect((await own()).status).toBe(200)
   expect((await own({ 'x-auth-kids-context': 'parent' })).status).toBe(200)
   expect((await own({ 'x-auth-impersonator-id': SIBLING })).status).toBe(403)

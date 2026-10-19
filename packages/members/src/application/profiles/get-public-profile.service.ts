@@ -1,5 +1,5 @@
-import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import { DomainError } from '@sistemazero/core/errors'
+import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import { canonicalizeAvatarConfig } from '../../domain/avatar/avatar-config'
 import type { AdultProfileRepository } from '../../domain/ports/adult-profile-repository.port'
 import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
@@ -11,16 +11,16 @@ class AdultPublicProfileNotFoundError extends DomainError {
   }
 }
 
-import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
-import { kidsStudentLevel } from '../kids-journey/kids-student-level'
-import { KidsJourneyUnavailableError } from '../../domain/kids-journey/kids-journey.errors'
 import type { CourseAudience } from '../../domain/course/course'
 import { computeStudentLevel } from '../../domain/gamification/levels'
+import { KidsJourneyUnavailableError } from '../../domain/kids-journey/kids-journey.errors'
 import type { AvatarRepository } from '../../domain/ports/avatar-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { HubGateway } from '../../domain/ports/hub-gateway.port'
 import type { RoomRepository } from '../../domain/ports/room-repository.port'
 import { canonicalizeRoomState } from '../../domain/room/room-catalog'
+import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
+import { kidsStudentLevel } from '../kids-journey/kids-student-level'
 import type { PublicProfileView } from '../mappers/views'
 
 /**
@@ -52,8 +52,10 @@ export class GetPublicProfileService {
   ) {}
 
   async execute(inputProfileId: string, audience: CourseAudience): Promise<PublicProfileView> {
-    const profileId = audience === 'kids' ? IdentityUuidSchema.parse(inputProfileId) : inputProfileId
-    const kids = audience === 'kids' ? (await this.kidsProfiles.getMany([profileId])).get(profileId) : null
+    const profileId =
+      audience === 'kids' ? IdentityUuidSchema.parse(inputProfileId) : inputProfileId
+    const kids =
+      audience === 'kids' ? (await this.kidsProfiles.getMany([profileId])).get(profileId) : null
     if (audience === 'kids' && !kids) throw new KidsJourneyUnavailableError()
     const adultProfile = audience === 'adult' ? await this.adultProfiles?.get(profileId) : null
     if (audience === 'adult' && !adultProfile?.publicEnabled)
@@ -70,7 +72,9 @@ export class GetPublicProfileService {
     ] = await Promise.all([
       this.gamification.getProfile(profileId, audience),
       this.gamification.listBadges(profileId, audience),
-      audience === 'adult' ? this.gamification.listQualifyingJourneySlots(profileId, 'adult') : null,
+      audience === 'adult'
+        ? this.gamification.listQualifyingJourneySlots(profileId, 'adult')
+        : null,
       this.avatar.getConfig(profileId, audience),
       this.avatar.getPhotoUrl(profileId, audience),
       this.room.getState(profileId, audience),

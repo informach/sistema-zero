@@ -1,5 +1,8 @@
 import { getEnv } from '@sistemazero/member-shell/lib/env'
-import { hasKidsCapability, kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
+import {
+  hasKidsCapability,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { KidsJourneyLockedPinta } from '@/components/kids/kids-journey-locked-pinta'
 import { KidsLockedPinta } from '@/components/kids/kids-locked-pinta'
 import { KidsPintaUnavailable } from '@/components/kids/kids-pinta-unavailable'

@@ -1,4 +1,8 @@
-import { hasKidsCapability, isKidsStaffPreview, type KidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
+import {
+  hasKidsCapability,
+  isKidsStaffPreview,
+  type KidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 
 interface StudioProSession {
   role: string
@@ -9,7 +13,11 @@ export type StudioProAccessDecision =
   | { allowed: true }
   | {
       allowed: false
-      code: 'PROFILE_SESSION_REQUIRED' | 'STUDIO_ACCESS_REQUIRED' | 'STUDIO_PRO_TIER_REQUIRED' | 'JOURNEY_UNAVAILABLE'
+      code:
+        | 'PROFILE_SESSION_REQUIRED'
+        | 'STUDIO_ACCESS_REQUIRED'
+        | 'STUDIO_PRO_TIER_REQUIRED'
+        | 'JOURNEY_UNAVAILABLE'
     }
 
 /**

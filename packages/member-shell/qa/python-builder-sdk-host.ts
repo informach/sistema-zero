@@ -14,11 +14,11 @@ import { StudioPythonLanguageOpenSchema } from '@sistemazero/core/studio/python-
 import { verifyStudioPythonPreviewManifest } from '@sistemazero/core/studio/python-preview'
 import { verifyStudioPythonDeployment } from '@sistemazero/core/studio/python-runtime-distribution'
 import { createStudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
+import { KidsJourneyQueryService } from '../../members/src/application/kids-journey/kids-journey-query.service'
 import { AuthorizeFreeRuntimeService } from '../../members/src/application/studio/authorize-free-runtime.service'
 import { FreeStudioAccessService } from '../../members/src/application/studio/free-studio-access.service'
 import { StudioPythonBuilderPolicy } from '../../members/src/application/studio-pro/python-builder-policy'
 import { StudioBuilderService } from '../../members/src/application/studio-pro/studio-builder.service'
-import { KidsJourneyQueryService } from '../../members/src/application/kids-journey/kids-journey-query.service'
 import type { KidsJourneySnapshot } from '../../members/src/domain/ports/kids-journey-repository.port'
 import { createStudioAuthoringPolicy } from '../../members/src/domain/studio/authoring-policy'
 import { createStudioRuntimeHosts } from '../../members/src/domain/studio/runtime-hosts'
@@ -148,14 +148,32 @@ export async function runStudioPythonBuilderSdkProof(input: {
       new KidsJourneyQueryService({
         async readSnapshot(owners): Promise<KidsJourneySnapshot> {
           return {
-            policy: { phase: 'published', version: 1, policy: initialKidsJourneyPolicy(), updatedAt: new Date(0) },
+            policy: {
+              phase: 'published',
+              version: 1,
+              policy: initialKidsJourneyPolicy(),
+              updatedAt: new Date(0),
+            },
             catalog: [],
-            profiles: new Map(owners.filter((owner) =>
-              owner.userId === actor.userId && owner.accountId === actor.accountId,
-            ).map((owner) => [owner.userId, {
-              ...owner, registered: true, milestones: [],
-              earned: { level: 'god', capabilities: [], courseAccess: { entry: [], expanded: [], reward: [] } },
-            }])),
+            profiles: new Map(
+              owners
+                .filter(
+                  (owner) => owner.userId === actor.userId && owner.accountId === actor.accountId,
+                )
+                .map((owner) => [
+                  owner.userId,
+                  {
+                    ...owner,
+                    registered: true,
+                    milestones: [],
+                    earned: {
+                      level: 'god',
+                      capabilities: [],
+                      courseAccess: { entry: [], expanded: [], reward: [] },
+                    },
+                  },
+                ]),
+            ),
           }
         },
       }),

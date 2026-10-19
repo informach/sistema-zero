@@ -16,7 +16,9 @@ export async function readKidsCapabilities(
     if (result.status !== 200) return 'unavailable'
     const journey = kidsJourneyAccess(result.body)
     if (!journey) return 'unavailable'
-    return required.every((capability) => hasKidsCapability(journey, capability)) ? 'allowed' : 'locked'
+    return required.every((capability) => hasKidsCapability(journey, capability))
+      ? 'allowed'
+      : 'locked'
   } catch {
     return 'unavailable'
   }

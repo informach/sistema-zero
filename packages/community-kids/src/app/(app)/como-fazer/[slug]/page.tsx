@@ -83,7 +83,12 @@ export default async function TutorialPage({
         />
         {tutorial.toolRef ? (
           <div className="mt-5">
-            <HelpToolNotice tool={tutorial.toolRef} state={tool?.state ?? null} requiredLevel={tool?.requiredLevel} studioCurriculum={tool?.studioCurriculum} />
+            <HelpToolNotice
+              tool={tutorial.toolRef}
+              state={tool?.state ?? null}
+              requiredLevel={tool?.requiredLevel}
+              studioCurriculum={tool?.studioCurriculum}
+            />
           </div>
         ) : null}
       </KidsBand>

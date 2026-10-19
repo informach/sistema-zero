@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { canOpenPensaStudioTask } from '../src/lib/pensa-capabilities'
-import { kidsView, kidsStaffPreview } from './kids-journey-fixtures'
+import { kidsStaffPreview, kidsView } from './kids-journey-fixtures'
 
 const COM_BLOCO = { status: 200, body: { blocks: ['sz_g2d_setup_stage'] } }
 const SEM_BLOCO = { status: 200, body: { blocks: [] } }

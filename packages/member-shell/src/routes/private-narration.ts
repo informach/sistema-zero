@@ -57,9 +57,12 @@ export async function resolvePrivateNarration(
   audience: 'kids' | 'adult' = 'kids',
 ): Promise<string | null> {
   if (ref.origin === 'studio_message') {
-    const capability = audience === 'adult'
-      ? await hasAdultCapability(members, user, 'ai') ? 'allowed' : 'locked'
-      : await getStudioZappyAccessForRequest(members, user)
+    const capability =
+      audience === 'adult'
+        ? (await hasAdultCapability(members, user, 'ai'))
+          ? 'allowed'
+          : 'locked'
+        : await getStudioZappyAccessForRequest(members, user)
     if (capability === 'unavailable') throw new Error('Jornada indisponível')
     if (capability !== 'allowed') return null
     const access = await members.checkCreativeToolsAccessReadonly()
@@ -80,9 +83,12 @@ export async function resolvePrivateNarration(
     return null
   }
   const access = await members.checkPensaAccessReadonly()
-  const capability = audience === 'adult'
-    ? await hasAdultCapability(members, user, 'pensa') ? 'allowed' : 'locked'
-    : await readKidsCapabilities(members, ['pensa', 'ai'])
+  const capability =
+    audience === 'adult'
+      ? (await hasAdultCapability(members, user, 'pensa'))
+        ? 'allowed'
+        : 'locked'
+      : await readKidsCapabilities(members, ['pensa', 'ai'])
   if (capability === 'unavailable') throw new Error('Jornada indisponível')
   if (access.body?.access?.pensa !== true || capability !== 'allowed') return null
   const actor = {

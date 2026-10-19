@@ -20,10 +20,7 @@ export interface FreeStudioActor {
 export class FreeStudioAccessService {
   constructor(
     private readonly access: Pick<AccessCheckService, 'execute'>,
-    private readonly gamification: Pick<
-      GamificationRepository,
-      'listStudioUnlocksByCourse'
-    >,
+    private readonly gamification: Pick<GamificationRepository, 'listStudioUnlocksByCourse'>,
     private readonly unlocks: Pick<StudioUnlockRepository, 'listGrants'>,
     private readonly kidsJourney: Pick<KidsJourneyQueryService, 'get' | 'staffPreview'>,
     private readonly adultJourney?: Pick<AdultJourneyService, 'get'>,

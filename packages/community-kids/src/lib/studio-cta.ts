@@ -1,4 +1,8 @@
-import { hasKidsCapability, isKidsStaffPreview, type KidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
+import {
+  hasKidsCapability,
+  isKidsStaffPreview,
+  type KidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 
 /** A resposta de `getStudioUnlocksReadonly()`, ou `null` quando a busca falhou. */
 export interface StudioUnlocksResult {

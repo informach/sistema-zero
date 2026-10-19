@@ -1,5 +1,4 @@
 import { IdentityUuidSchema } from '@sistemazero/core/identity'
-import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
 import type { CourseAudience } from '../../domain/course/course'
 import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
 import {
@@ -12,6 +11,7 @@ import {
   MAX_STREAK_FREEZES,
 } from '../../domain/ports/gamification-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
+import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
 
 /** Uma linha da LISTAGEM de crianças do painel (batch por página do auth). */
 export interface ProfileOverviewView {
@@ -47,12 +47,16 @@ export class GetProfilesOverviewService {
     profileIds: string[],
     audience: CourseAudience = 'kids',
   ): Promise<{ profiles: ProfileOverviewView[] }> {
-    const ids = [...new Set(profileIds.map((id) => audience === 'kids' ? IdentityUuidSchema.parse(id) : id))]
+    const ids = [
+      ...new Set(profileIds.map((id) => (audience === 'kids' ? IdentityUuidSchema.parse(id) : id))),
+    ]
     if (ids.length === 0) return { profiles: [] }
 
     const [records, qualifying, pending, kids] = await Promise.all([
       this.gamification.listByUserIds(ids, audience),
-      audience === 'adult' ? this.gamification.listQualifyingJourneySlotsForProfiles(ids, 'adult') : null,
+      audience === 'adult'
+        ? this.gamification.listQualifyingJourneySlotsForProfiles(ids, 'adult')
+        : null,
       this.studioSubmissions.countPendingByUsers(ids, audience),
       audience === 'kids' ? this.kidsProfiles.getMany(ids) : null,
     ])
@@ -65,7 +69,8 @@ export class GetProfilesOverviewService {
         return {
           profileId,
           xp: rec?.xp ?? 0,
-          levelSlug: kids ? kids.get(profileId)?.earned.level ?? null
+          levelSlug: kids
+            ? (kids.get(profileId)?.earned.level ?? null)
             : computeStudentLevel(qualifying?.get(profileId) ?? emptyQualifyingByTier()).slug,
           ...(kids && !kids.has(profileId) ? { journeyUnavailable: true as const } : {}),
           // Streak de EXIBIÇÃO — a mesma projeção do dashboard dos pais (freeze

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { canOpenFreeStudio } from '../src/lib/studio-cta'
-import { kidsView, kidsStaffPreview } from './kids-journey-fixtures'
+import { kidsStaffPreview, kidsView } from './kids-journey-fixtures'
 
 const blocos = (blocks: string[]) => ({ status: 200, body: { blocks } })
 const COM_BLOCO = blocos(['sz_g2d_setup_stage'])
@@ -34,7 +34,9 @@ describe('canOpenFreeStudio', () => {
 
   test('a lista que não chegou NÃO esconde o atalho (o /estudio diz "tente de novo")', () => {
     expect(canOpenFreeStudio(true, kidsView(['studio'], 'coder'), null)).toBe(true)
-    expect(canOpenFreeStudio(true, kidsView(['studio'], 'coder'), { status: 502, body: null })).toBe(true)
+    expect(
+      canOpenFreeStudio(true, kidsView(['studio'], 'coder'), { status: 502, body: null }),
+    ).toBe(true)
     // …mas nunca destranca a Faísca.
     expect(canOpenFreeStudio(true, kidsView([]), null)).toBe(false)
   })
@@ -47,7 +49,6 @@ describe('canOpenFreeStudio', () => {
     expect(canOpenFreeStudio(true, kidsStaffPreview, blocos([]))).toBe(true)
   })
 })
-
 
 test('custom studio capability controls the shortcut without reading the displayed rank', () => {
   expect(canOpenFreeStudio(true, kidsView(['studio'], 'noob'), COM_BLOCO)).toBe(true)

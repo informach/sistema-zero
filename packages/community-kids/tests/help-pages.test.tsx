@@ -45,22 +45,37 @@ describe('HelpToolNotice: aviso factual, sem oferta', () => {
   })
 
   it('abre mais adiante na jornada: idem, com a frase da jornada', () => {
-    const { container } = render(<HelpToolNotice tool="molda" state="career-locked" requiredLevel="explorer" />)
+    const { container } = render(
+      <HelpToolNotice tool="molda" state="career-locked" requiredLevel="explorer" />,
+    )
     expect(container.textContent).toContain('abre mais adiante na sua jornada')
     expect(screen.queryByRole('link')).toBeNull()
   })
 
   it('não promete posto futuro quando a política não o oferece', () => {
-    const { container } = render(<HelpToolNotice tool="pensa" state="career-locked" requiredLevel={null} />)
+    const { container } = render(
+      <HelpToolNotice tool="pensa" state="career-locked" requiredLevel={null} />,
+    )
     expect(container.textContent).toContain('ainda não está liberado neste perfil')
     expect(container.textContent).not.toContain('mais adiante')
     expect(screen.queryByRole('link')).toBeNull()
   })
 
-  it.each(['empty', 'unavailable'] as const)('preserva Estúdio conquistado com currículo %s sem prometer abrir', (studioCurriculum) => {
-    const { container } = render(<HelpToolNotice tool="estudio-completo" state="available" studioCurriculum={studioCurriculum} />)
+  it.each([
+    'empty',
+    'unavailable',
+  ] as const)('preserva Estúdio conquistado com currículo %s sem prometer abrir', (studioCurriculum) => {
+    const { container } = render(
+      <HelpToolNotice
+        tool="estudio-completo"
+        state="available"
+        studioCurriculum={studioCurriculum}
+      />,
+    )
     expect(container.textContent).toContain('já conquistou o Estúdio')
-    expect(container.textContent).toContain(studioCurriculum === 'empty' ? 'blocos para criar vêm' : 'Não foi possível consultar')
+    expect(container.textContent).toContain(
+      studioCurriculum === 'empty' ? 'blocos para criar vêm' : 'Não foi possível consultar',
+    )
     expect(screen.queryByRole('link')).toBeNull()
   })
 

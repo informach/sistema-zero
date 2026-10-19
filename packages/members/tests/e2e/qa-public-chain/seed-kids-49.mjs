@@ -11,6 +11,30 @@ import { DrizzleGamificationRepository } from '../../../src/infrastructure/persi
 import { DrizzleKidsJourneyRepository } from '../../../src/infrastructure/persistence/drizzle/kids-journey.repository'
 import { qaDatabaseUrl, readQaPublicManifest } from './read-manifest.mjs'
 
+/** Close every owned connection before returning or propagating the original failure. */
+export async function withQaConnections(work, closeConnections) {
+  let value
+  let primary
+  let failed = false
+  try {
+    value = await work()
+  } catch (error) {
+    primary = error
+    failed = true
+  }
+  const cleanup = await Promise.allSettled(
+    closeConnections.map((close) => Promise.resolve().then(close)),
+  )
+  const errors = cleanup.filter((item) => item.status === 'rejected').map((item) => item.reason)
+  if (errors.length)
+    throw new AggregateError(
+      [...(failed ? [primary] : []), ...errors],
+      'QA49 fixture cleanup failed',
+    )
+  if (failed) throw primary
+  return value
+}
+
 export async function seedKidsPublicQa49({ database, userId, accountId }) {
   if (process.env.STUDIO_QA_SEED_KIDS_49 !== '1')
     throw new Error('Explicit STUDIO_QA_SEED_KIDS_49=1 opt-in required')
@@ -26,8 +50,7 @@ export async function seedKidsPublicQa49({ database, userId, accountId }) {
     throw new Error('Real child/account identities required')
   const sql = postgres(database, { max: 2, onnotice: () => {} })
   const connection = createDbConnection(database, { max: 2 })
-  let primary
-  try {
+  return withQaConnections(async () => {
     const [profile] =
       await sql`select p.account_user_id,p.name,p.status,p.admission_state,u.email,u.status as account_status from auth.profiles p join auth.users u on u.id=p.account_user_id where p.id=${userId}`
     if (
@@ -213,18 +236,7 @@ export async function seedKidsPublicQa49({ database, userId, accountId }) {
       scope:
         'synthetic authored curriculum + trusted production award; not an end-to-end completion of49 lessons',
     }
-  } catch (error) {
-    primary = error
-    throw error
-  } finally {
-    const cleanup = await Promise.allSettled([connection.close(), sql.end()])
-    const errors = cleanup.filter((item) => item.status === 'rejected').map((item) => item.reason)
-    if (errors.length)
-      throw new AggregateError(
-        [...(primary ? [primary] : []), ...errors],
-        'QA49 fixture cleanup failed',
-      )
-  }
+  }, [() => connection.close(), () => sql.end()])
 }
 if (import.meta.main) {
   const manifest = await readQaPublicManifest(process.argv[2], { requireReady: false })

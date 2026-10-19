@@ -7,13 +7,11 @@ import {
   type ParentJourneyView,
 } from '@sistemazero/core/journey'
 import type { LearningTopicSummary } from '@sistemazero/core/learning'
-import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
-import { kidsStudentLevel } from '../kids-journey/kids-student-level'
-import { KidsJourneyUnavailableError } from '../../domain/kids-journey/kids-journey.errors'
 import type { CourseAudience } from '../../domain/course/course'
 import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
 import { computeStudentLevel } from '../../domain/gamification/levels'
 import { weekBoundsUtc, weeklyPeriodKey } from '../../domain/gamification/missions'
+import { KidsJourneyUnavailableError } from '../../domain/kids-journey/kids-journey.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import {
   type GamificationRepository,
@@ -24,6 +22,8 @@ import type { LearningRepository } from '../../domain/ports/learning-repository.
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { AccessCheckService } from '../access-check/access-check.service'
+import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
+import { kidsStudentLevel } from '../kids-journey/kids-student-level'
 
 /** Janela "Esta semana" (semana civil SP corrente, parcial) de um filho. */
 export interface ChildWeekStatsView {
@@ -96,8 +96,11 @@ export class GetChildrenStatsService {
     opts: { audience: CourseAudience },
   ): Promise<ChildStatsView[]> {
     const { audience } = opts
-    const accountId = audience === 'kids' ? IdentityUuidSchema.parse(inputAccountId) : inputAccountId
-    const profileIds = inputProfileIds.map((id) => audience === 'kids' ? IdentityUuidSchema.parse(id) : id)
+    const accountId =
+      audience === 'kids' ? IdentityUuidSchema.parse(inputAccountId) : inputAccountId
+    const profileIds = inputProfileIds.map((id) =>
+      audience === 'kids' ? IdentityUuidSchema.parse(id) : id,
+    )
     if (profileIds.length === 0) return []
 
     // 1) AUTORIZA + xp/streak num passo: só perfis da CONTA (account_id). Perfil de
@@ -126,10 +129,22 @@ export class GetChildrenStatsService {
       }
     }
     if (kidsStates) {
-      for (const record of authorized) if (!kidsStates.has(record.userId)) throw new KidsJourneyUnavailableError()
-      for (const profileId of kidsStates.keys()) if (!authorized.some((record) => record.userId === profileId))
-        authorized.push({ userId: profileId, accountId, xp: 0, streakCurrent: 0, streakBest: 0,
-          lastActivityDate: null, coinBalance: 0, streakFreezes: 0, vacationFrom: null, vacationTo: null })
+      for (const record of authorized)
+        if (!kidsStates.has(record.userId)) throw new KidsJourneyUnavailableError()
+      for (const profileId of kidsStates.keys())
+        if (!authorized.some((record) => record.userId === profileId))
+          authorized.push({
+            userId: profileId,
+            accountId,
+            xp: 0,
+            streakCurrent: 0,
+            streakBest: 0,
+            lastActivityDate: null,
+            coinBalance: 0,
+            streakFreezes: 0,
+            vacationFrom: null,
+            vacationTo: null,
+          })
     }
     if (authorized.length === 0) return []
     const authorizedIds = authorized.map((rec) => rec.userId)
@@ -198,7 +213,9 @@ export class GetChildrenStatsService {
           ),
           this.gamification.countBadgesUnlockedInPeriod(profileId, audience, weekFrom, now),
           this.studio.countSubmittedInPeriodByAudience(profileId, audience, weekFrom, now),
-          audience === 'adult' ? this.gamification.listJourneyCourseState(profileId, 'adult') : null,
+          audience === 'adult'
+            ? this.gamification.listJourneyCourseState(profileId, 'adult')
+            : null,
           this.learning.weeklyTopics(accountId, profileId, audience, weekFrom, now),
         ])
 
@@ -214,13 +231,28 @@ export class GetChildrenStatsService {
 
         const kids = kidsStates?.get(profileId)
         if (audience === 'kids' && !kids) throw new KidsJourneyUnavailableError()
-        const level = kids ? kidsStudentLevel(kids.journey) : computeStudentLevel(journeyState!.qualified)
-        const pendingIds = kids ? new Set(kids.milestones.filter((milestone) =>
-          milestone.completed && !milestone.showcased && kids.journey.missing.some((requirement) =>
-            requirement.milestone === 'showcase' && (requirement.kind === 'course'
-              ? requirement.courseId === milestone.courseId
-              : requirement.tier === milestone.qualifiedTier && requirement.slot === milestone.qualifiedSlot),
-          )).map((milestone) => milestone.courseId)) : null
+        const level = kids
+          ? kidsStudentLevel(kids.journey)
+          : computeStudentLevel(journeyState!.qualified)
+        const pendingIds = kids
+          ? new Set(
+              kids.milestones
+                .filter(
+                  (milestone) =>
+                    milestone.completed &&
+                    !milestone.showcased &&
+                    kids.journey.missing.some(
+                      (requirement) =>
+                        requirement.milestone === 'showcase' &&
+                        (requirement.kind === 'course'
+                          ? requirement.courseId === milestone.courseId
+                          : requirement.tier === milestone.qualifiedTier &&
+                            requirement.slot === milestone.qualifiedSlot),
+                    ),
+                )
+                .map((milestone) => milestone.courseId),
+            )
+          : null
         return {
           career: {
             level: level.slug,
@@ -234,9 +266,17 @@ export class GetChildrenStatsService {
               .map((course) => ({ courseSlug: course.slug, title: course.title })),
             tools: toolIds.map((id) => {
               const owned = ownedTools.has(id)
-              if (kids) return { id, owned, ...kidsCreativeToolAvailability({ tool: id, owned, journey: kids.journey }) }
+              if (kids)
+                return {
+                  id,
+                  owned,
+                  ...kidsCreativeToolAvailability({ tool: id, owned, journey: kids.journey }),
+                }
               // Adult still uses its existing course report; do not remove its legitimate helper.
-              return { id, owned, requiredLevel: CREATIVE_TOOL_LEVELS[id],
+              return {
+                id,
+                owned,
+                requiredLevel: CREATIVE_TOOL_LEVELS[id],
                 state: creativeToolAvailability({ tool: id, owned, level: level.slug }),
               }
             }),
