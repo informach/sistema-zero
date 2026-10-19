@@ -66,7 +66,9 @@ try {
         .for('update')
       if (!draft) return 'missing' as const
 
-      const lesson = await new DrizzleCourseRepository(tx).findLessonWithContent(lessonId)
+      const lesson = await new DrizzleCourseRepository(tx).findLessonWithContent(lessonId, {
+        includePrivateStudioAuthoring: true,
+      })
       if (!lesson) return 'missing' as const
       const [structure] = await tx
         .select({ sections: lessonStructures.sections })

@@ -29,8 +29,13 @@ import {
   isCompletionGatingBlock,
   type PintaBlock,
   pintaAssetKindOf,
+  toMemberFacingStudioContent,
 } from '../../src/domain/course/lesson-block'
 import { type QuizAttemptSummary, quizGateFingerprint } from '../../src/domain/course/quiz'
+import {
+  assertNoLegacyStudioExamples,
+  preserveStudioExamplesForLegacyWrite,
+} from '../../src/domain/course/studio-project-examples'
 import {
   EntitlementAggregate,
   type EntitlementState,
@@ -517,7 +522,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
 
   async findLessonWithContent(
     lessonId: string,
-    opts?: { includeAttachments?: boolean },
+    opts?: { includeAttachments?: boolean; includePrivateStudioAuthoring?: boolean },
   ): Promise<LessonWithContent | null> {
     const lesson = this.lessons.find((l) => l.id === lessonId)
     if (!lesson) return null
@@ -525,7 +530,12 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       ...lesson,
       blocks: this.blocks
         .filter((b) => b.lessonId === lessonId)
-        .sort((a, b) => a.sortOrder - b.sortOrder),
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((block) =>
+          block.content.kind === 'studio' && !opts?.includePrivateStudioAuthoring
+            ? { ...block, content: toMemberFacingStudioContent(block.content) }
+            : block,
+        ),
       attachments:
         opts?.includeAttachments === false
           ? []
@@ -951,6 +961,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     kind: LessonBlockKind,
     content: LessonBlockContent,
   ): Promise<LessonBlock> {
+    assertNoLegacyStudioExamples(content)
     const courseId = this.lessons.find((l) => l.id === lessonId)?.courseId
     if (courseId && kind === 'coming_soon') this.assertShowcaseRemains(courseId, { lessonId })
     const sortOrder = this.blocks
@@ -975,6 +986,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   ): Promise<LessonBlock | null> {
     const b = this.blocks.find((x) => x.id === id)
     if (!b) return null
+    content = preserveStudioExamplesForLegacyWrite(content, b.content)
     const courseId = this.lessons.find((l) => l.id === b.lessonId)?.courseId
     if (courseId && !(content.kind === 'studio' && content.showcase?.enabled))
       this.assertShowcaseRemains(

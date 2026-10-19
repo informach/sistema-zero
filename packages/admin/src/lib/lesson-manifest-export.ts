@@ -1,8 +1,11 @@
 import {
   isLearningManifest,
+  LEARNING_IMPORT_BODY_MAX_BYTES,
   type LearningManifest,
   type LessonDraftDocument,
-  type LessonSection,
+  learningImportBodyBytes,
+  learningManifestSource,
+  projectLessonManifestDraft,
   TEACHER_NOTES_MAX,
 } from '@sistemazero/core/learning'
 import { LESSON_BLOCK_KIND_LABELS, type LessonBlockContent, type LessonBlockKind } from './types'
@@ -21,6 +24,7 @@ import { LESSON_BLOCK_KIND_LABELS, type LessonBlockContent, type LessonBlockKind
 
 export interface ManifestExport {
   manifest: LearningManifest
+  source: string
   filename: string
   /** O que muda de um ambiente para o outro e a autora precisa saber ANTES de importar. */
   avisos: string[]
@@ -32,55 +36,9 @@ export interface ManifestExport {
 
 export class ManifestExportError extends Error {}
 
-/**
- * ⚠️⚠️ A KEY SAI DO ID DE ORIGEM, nunca da posição.
- *
- * O serviço de importação deriva o id do destino de
- * `sha256('sz-learning-v1:<lessonId do destino>:block:<key>')`, então a key é a IDENTIDADE do
- * bloco através dos ambientes: exportar de novo a MESMA aula de origem dá as mesmas keys, e a
- * reimportação no mesmo destino atualiza no lugar (`preserve`/`update`) em vez de criar um bloco
- * ao lado. Uma key por posição (`cena-1`, `cena-2`) seria mais bonita de ler e mapearia ERRADO
- * assim que a autora reordenasse ou apagasse blocos na origem entre um export e o seguinte — o
- * conteúdo de uma cena cairia sobre outra, levando junto o progresso das crianças naquele id.
- *
- * ⚠️⚠️ O que NÃO vale: exportar do DESTINO. Lá os ids já são os derivados, então as keys saem
- * outras, e reimportar esse arquivo no próprio destino DUPLICARIA os blocos. A origem tem que ser
- * sempre a mesma aula — é o fluxo real (o staging manda, a produção recebe).
- *
- * Oito dígitos hex do UUID dão 2^32 valores; a colisão é conferida na montagem e vira erro, em
- * vez de um manifesto que o validador do core recusa por key duplicada.
- */
-function keyFor(prefixo: string, id: string): string {
-  const hex = id
-    .replace(/[^0-9a-f]/gi, '')
-    .toLowerCase()
-    .slice(0, 8)
-  // A key do core é `/^[a-z][a-z0-9-]{0,79}$/`: o prefixo garante a inicial de letra e o hex
-  // pode começar por dígito sem problema.
-  return `${prefixo}-${hex || 'sem-id'}`
-}
-
-const PREFIXO: Record<LessonBlockKind, string> = {
-  interactive: 'cena',
-  rich_text: 'texto',
-  dialogue: 'fala',
-  video: 'video',
-  image: 'imagem',
-  audio: 'audio',
-  quiz: 'quiz',
-  embed: 'html',
-  ebook: 'ebook',
-  studio: 'estudio',
-  pinta: 'pinta',
-  certificate: 'certificado',
-  coming_soon: 'em-breve',
-  materials: 'materiais',
-}
-
 /** Tetos que só o MANIFESTO tem — o rascunho e a publicação aceitam mais. */
 const TETO = {
   markdown: 50_000,
-  plannedVideo: 5_000,
   dialogue: 400,
   blocos: 200,
   secoes: 59,
@@ -90,67 +48,7 @@ const TETO = {
   opcoes: 20,
 } as const
 
-type ManifestBlock = LearningManifest['blocks'][number]
-type ManifestSection = LearningManifest['sections'][number]
-type ManifestContent = Extract<ManifestBlock, { content: unknown }>['content']
-
-/** O que cada bloco do rascunho vira no manifesto, decidido ANTES de montar. */
-type Destino = { tipo: 'conteudo'; content: ManifestContent } | { tipo: 'video'; texto: string }
-
-/**
- * O texto do vídeo planejado. O manifesto não leva o arquivo nem o embed: leva a INSTRUÇÃO de
- * produção, que é o que a autora lê no destino para reenviar. Quando o bloco de origem já tem um
- * vídeo, o link entra no texto — é ele que identifica qual vídeo era.
- *
- * ⚠️ O campo de orientação do editor aceita 5000 caracteres e o manifesto também: somar o link
- * estoura o teto por poucos caracteres. Quem é cortada é a INSTRUÇÃO, nunca o link — sem ele a
- * autora não sabe qual vídeo reenviar.
- */
-function plannedVideoText(
-  content: Extract<LessonBlockContent, { kind: 'video' }>,
-  instructions: string | undefined,
-  avisar: (aviso: string) => void,
-): string {
-  const link = content.src?.trim() ? `Vídeo de origem: ${content.src.trim()}` : ''
-  const instrucao = instructions?.trim() ?? ''
-  const inteiro = [instrucao, link].filter(Boolean).join('\n')
-  if (inteiro.length <= TETO.plannedVideo) return inteiro || 'Vídeo a produzir.'
-  avisar(
-    'A orientação de um vídeo era longa demais para o manifesto e foi cortada no fim. O link do vídeo de origem foi preservado.',
-  )
-  const sobra = Math.max(0, TETO.plannedVideo - link.length - 1)
-  return `${instrucao.slice(0, sobra)}\n${link}`.trim()
-}
-
-/**
- * Tira da cena os endereços de ÁUDIO, que são do ambiente e não da autoria.
- *
- * ⚠️⚠️ `activity.vozes` é o dicionário `texto falado → URL do MP3`, e a URL aponta para o bucket
- * R2 DESTE ambiente. Levá-lo faz duas coisas ruins de uma vez: a produção passa a servir áudio do
- * bucket de staging (que some quando ele for limpo, e que a CSP de lá pode recusar em silêncio) e
- * o botão "Gerar a voz do Zappy" do destino diz "em dia" — ele considera pronta toda fala que já
- * tem entrada no dicionário, então ninguém clica e o erro nunca aparece. O áudio é cache
- * regenerável: um clique no destino refaz tudo, e a chave é o hash do TEXTO, então nem custa
- * crédito onde já foi gerado.
- *
- * ⚠️ `instructionAudioUrl` (a narração escolhida à mão para a cena) sai pelo mesmo motivo, e este
- * é PERDA de autoria — por isso ela é avisada. Levar o endereço quebrado seria pior: ficaria mudo
- * no destino sem ninguém saber.
- *
- * O `zappySpeech` (pronúncia escrita pela autora) também não cabe no formato do balão: a
- * autora é AVISADA, em vez de perdê-lo calada.
- */
-const AUDIO_DO_AMBIENTE = ['vozes', 'instructionAudioUrl'] as const
-
-function semAudioDoAmbiente(content: Extract<LessonBlockContent, { kind: 'interactive' }>) {
-  // ⚠️ Os casts por `unknown` são o preço de mexer numa união fechada por campos que só uma das
-  // variantes declara: a alternativa seria repetir o `switch` do core aqui dentro.
-  const activity = content.activity as unknown as Record<string, unknown> | undefined
-  if (!activity || !AUDIO_DO_AMBIENTE.some((campo) => campo in activity)) return content
-  const resto = { ...activity }
-  for (const campo of AUDIO_DO_AMBIENTE) delete resto[campo]
-  return { ...content, activity: resto } as unknown as typeof content
-}
+type Destino = { tipo: 'conteudo' | 'video' }
 
 export function buildLessonManifest(
   document: LessonDraftDocument<LessonBlockContent>,
@@ -171,7 +69,6 @@ export function buildLessonManifest(
       `Esta aula tem ${document.sections.length} seções e o manifesto aceita ${TETO.secoes}. Junte duas seções antes de exportar.`,
     )
 
-  const instrucoes = new Map(document.plannedVideos.map((v) => [v.blockId, v.instructions]))
   const withoutCompletion = document.sections.find((s) => !s.completion)
   if (withoutCompletion)
     throw new ManifestExportError(
@@ -190,10 +87,7 @@ export function buildLessonManifest(
     const kind = block.content.kind as LessonBlockKind
     switch (block.content.kind) {
       case 'interactive':
-        return {
-          tipo: 'conteudo',
-          content: semAudioDoAmbiente(block.content) as ManifestContent,
-        }
+        return { tipo: 'conteudo' }
       case 'rich_text': {
         const markdown = block.content.markdown ?? ''
         if (!markdown.trim())
@@ -204,25 +98,14 @@ export function buildLessonManifest(
           throw new ManifestExportError(
             `O ${nomeDoBloco(kind, posicao)} tem ${markdown.length} caracteres e o manifesto aceita ${TETO.markdown}. Divida esse texto em dois blocos antes de exportar.`,
           )
-        return { tipo: 'conteudo', content: { kind: 'rich_text', markdown } }
+        return { tipo: 'conteudo' }
       }
       case 'dialogue': {
         if (block.content.text.length > TETO.dialogue)
           throw new ManifestExportError(
             `A ${nomeDoBloco(kind, posicao)} tem ${block.content.text.length} caracteres e o manifesto aceita ${TETO.dialogue}. Encurte a fala antes de exportar.`,
           )
-        // ⚠️ SEM `vozes` (ver `semAudioDoAmbiente`) e sem `zappySpeech`: a pronúncia é autoria,
-        // mas o TIPO do balão no manifesto tem só `kind`/`text`/`pose`/`vozes`. Enfiar um campo
-        // fora do contrato funcionaria hoje (o validador não recusa extras) e quebraria no dia em
-        // que ele passasse a recusar — então ela vira AVISO, não contrabando.
-        return {
-          tipo: 'conteudo',
-          content: {
-            kind: 'dialogue',
-            text: block.content.text,
-            ...(block.content.pose ? { pose: block.content.pose } : {}),
-          } as ManifestContent,
-        }
+        return { tipo: 'conteudo' }
       }
       case 'quiz': {
         const { passingScore, questions } = block.content
@@ -247,30 +130,21 @@ export function buildLessonManifest(
           throw new ManifestExportError(
             `Uma pergunta do ${nomeDoBloco(kind, posicao)} tem ${larga.choices.length} opções e o manifesto aceita ${TETO.opcoes}.`,
           )
-        return { tipo: 'conteudo', content: { kind: 'quiz', passingScore, questions } }
+        return { tipo: 'conteudo' }
       }
       case 'video':
-        return {
-          tipo: 'video',
-          texto: plannedVideoText(block.content, instrucoes.get(block.id), avisar),
-        }
+        return { tipo: 'video' }
       case 'studio':
       case 'pinta':
       case 'certificate':
-        return { tipo: 'conteudo', content: block.content }
+        return { tipo: 'conteudo' }
       case 'materials': {
         const files = block.content.items.filter((item) => item.kind === 'file')
         if (files.length)
           avisar(
             `${files.length} arquivo(s) dos materiais precisam ser enviados novamente no destino e vinculados ao bloco importado.`,
           )
-        return {
-          tipo: 'conteudo',
-          content: {
-            ...block.content,
-            items: block.content.items.filter((item) => item.kind !== 'file'),
-          },
-        }
+        return { tipo: 'conteudo' }
       }
       default:
         throw new ManifestExportError(
@@ -279,84 +153,28 @@ export function buildLessonManifest(
     }
   })
 
-  // ── Passada 2: montar as chaves estáveis dos blocos. ───────────────────────────────────────
-  const keyByBlockId = new Map<string, string>()
-  const usadas = new Set<string>()
-
-  const blocks: ManifestBlock[] = []
-  let levados = 0
-  let videos = 0
-  document.blocks.forEach((block, posicao) => {
-    const kind = block.content.kind as LessonBlockKind
-    const key = keyFor(PREFIXO[kind] ?? 'bloco', block.id)
-    if (usadas.has(key))
-      throw new ManifestExportError(
-        'Dois blocos desta aula geraram a mesma chave. Avise no chamado: o manifesto não pode sair com chave repetida.',
-      )
-    usadas.add(key)
-    keyByBlockId.set(block.id, key)
-    const destino = destinos[posicao] as Destino
-    if (destino.tipo === 'conteudo') {
-      blocks.push({ key, content: destino.content })
-      levados += 1
-      return
-    }
-    if (destino.tipo === 'video') {
-      blocks.push({ key, plannedVideo: destino.texto })
-      videos += 1
-      return
-    }
-  })
-
-  const mapped = (blockId: string): string => {
-    const key = keyByBlockId.get(blockId)
-    if (!key)
-      throw new ManifestExportError(
-        'Uma seção aponta para um bloco que não está mais na aula. Recarregue o rascunho e tente de novo.',
-      )
-    return key
-  }
-  const keysDeSecao = new Set<string>()
-  const sections: ManifestSection[] = document.sections.map((section: LessonSection) => {
-    const key = keyFor('secao', section.id)
-    if (keysDeSecao.has(key))
-      throw new ManifestExportError(
-        'Duas seções desta aula geraram a mesma chave. Avise no chamado: o manifesto não pode sair com seção repetida.',
-      )
-    keysDeSecao.add(key)
+  for (const section of document.sections) {
     if (section.title.length > TETO.titulo || section.objective.length > TETO.objetivo)
       throw new ManifestExportError(
         `O título ou o objetivo da seção "${section.title.slice(0, 40)}" passa do que o manifesto aceita (${TETO.titulo} e ${TETO.objetivo} caracteres).`,
       )
-    const teacherNotes = section.teacherNotes?.trim() ? section.teacherNotes : undefined
-    if (teacherNotes && teacherNotes.length > TEACHER_NOTES_MAX)
+    if (section.teacherNotes?.trim() && section.teacherNotes.length > TEACHER_NOTES_MAX)
       throw new ManifestExportError(
         `As anotações da professora da seção "${section.title.slice(0, 40)}" passam de ${TEACHER_NOTES_MAX} caracteres. Encurte antes de exportar.`,
       )
-    return {
-      key,
-      title: section.title,
-      objective: section.objective,
-      // Aula de curso ao vivo: as anotações da professora VIAJAM (são autoria, texto puro). O
-      // destino só as mostra a quem conduz; a criança nunca recebe o campo.
-      ...(teacherNotes ? { teacherNotes } : {}),
-      intent: section.intent,
-      blockKeys: section.blockIds.map(mapped),
-      workspaceKey: section.workspaceBlockId ? mapped(section.workspaceBlockId) : null,
-      externalTool: section.externalTool,
-      // Os vídeos pendentes já saem como blocos `plannedVideo`; repeti-los aqui criaria um segundo
-      // bloco de vídeo no destino (o serviço converte cada `pendingMedia` num bloco novo).
-      pendingMedia: [],
-      ...(section.completion
-        ? {
-            completion: {
-              ...section.completion,
-              blockIds: section.completion.blockIds.map(mapped),
-            },
-          }
-        : {}),
-    }
-  })
+  }
+  let projection: ReturnType<typeof projectLessonManifestDraft>
+  try {
+    projection = projectLessonManifestDraft(document, courseSlug)
+  } catch (error) {
+    throw new ManifestExportError(
+      error instanceof Error ? error.message : 'Não foi possível preparar o manifesto.',
+    )
+  }
+  for (const warning of projection.warnings) avisar(warning)
+  const manifest = projection.manifest
+  const levados = destinos.filter((destino) => destino.tipo === 'conteudo').length
+  const videos = destinos.filter((destino) => destino.tipo === 'video').length
 
   if (videos)
     avisar(
@@ -382,14 +200,6 @@ export function buildLessonManifest(
       'Algum balão do Zappy tem ajuste de pronúncia. O manifesto não carrega esse campo: refaça o ajuste no destino.',
     )
 
-  const manifest: LearningManifest = {
-    version: 5,
-    courseSlug,
-    lessonSlug: document.slug,
-    title: document.title,
-    blocks,
-    sections,
-  }
   // A última rede: o mesmo validador que o import roda. Um manifesto que não passa aqui só
   // falharia lá, depois de a autora baixar o arquivo e abrir a outra aula. Os tetos conhecidos já
   // foram conferidos acima, um a um, com o nome do bloco — esta mensagem é para o que sobrar.
@@ -397,8 +207,13 @@ export function buildLessonManifest(
     throw new ManifestExportError(
       'Não consegui montar um manifesto válido para esta aula. Confira as seções e as atividades no "Revisar para publicar".',
     )
+  if (learningImportBodyBytes(manifest) > LEARNING_IMPORT_BODY_MAX_BYTES)
+    throw new ManifestExportError(
+      'A aula excede 2 MiB no corpo completo de importação. Reduza os snapshots antes de exportar.',
+    )
   return {
     manifest,
+    source: learningManifestSource(manifest),
     filename: `${courseSlug}-${document.slug}-manifesto.json`,
     avisos,
     levados,

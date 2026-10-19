@@ -1,9 +1,13 @@
 /** Shared learning contracts. No framework, persistence or editor dependency. */
 export * from './authoring'
+export * from './authoring-manifest-projection'
 export * from './gallery-delivery'
 export * from './gallery-studio-source'
 export * from './legacy-layout'
+export * from './legacy-studio-solutions'
+export * from './lesson-project-examples-gate'
 export * from './manifest-quiz'
+export * from './objective-entry-report'
 export * from './prediction-context'
 export * from './project-execution'
 export * from './project-structure'
@@ -12,9 +16,11 @@ export * from './quiz'
 export * from './requirements'
 export * from './section-progression'
 export * from './section-templates'
+export * from './studio-project-example-change'
+export * from './studio-project-examples'
 export * from './video-watch'
 
-import { StudioProjectDocumentSchema } from '../studio/project-document'
+import { isStudioAuthoringProject } from '../studio/authoring-project'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '../studio/project-format'
 import { StudioPythonLearningLevelSchema } from '../studio/python-learning'
 import { type GalleryDeliveryConfig, isGalleryDeliveryConfig } from './gallery-delivery'
@@ -37,6 +43,13 @@ import {
   sceneTargets,
 } from './scene'
 import { isSectionCompletion, type SectionCompletion } from './section-progression'
+import {
+  readManifestStudioProjectExamples,
+  type StudioProjectExamples,
+  studioLessonProjectExamplesIssues,
+  studioProjectExampleEnvironmentIssues,
+  studioProjectExampleSectionIssues,
+} from './studio-project-examples'
 export const SECTION_INTENTS = [
   'presentation',
   'exploration',
@@ -895,6 +908,8 @@ export function validateLessonSections(
   )
     return 'Cada bloco deve pertencer a uma seção, sem duplicação.'
   for (const section of sections) {
+    if (Object.hasOwn(section, 'projectExamples') || Object.hasOwn(section, 'solutionProject'))
+      return 'Guarde exemplos somente no registro privado do Estúdio.'
     if (section.completion !== undefined && !isSectionCompletion(section.completion))
       return 'Critérios de conclusão inválidos.'
     if (!text(section.title, 200) || section.objective.length > 2000)
@@ -933,6 +948,7 @@ export interface LearningManifest {
           | {
               kind: 'studio'
               initialProject: unknown
+              projectExamples?: StudioProjectExamples
               gallery?: GalleryDeliveryConfig
               purpose?: 'experiment' | 'submission'
               level?: string
@@ -981,33 +997,11 @@ export interface LearningManifest {
   >
 }
 
-/** Um snapshot do Estúdio no formato atual (projeto inicial ou gabarito de um bloco do manifesto). */
-function isManifestStudioProject(project: unknown): boolean {
-  if (record(project) && project.formatVersion === 3)
-    return StudioProjectDocumentSchema.safeParse(project).success
-  if (!record(project) || !record(project.files)) return false
-  const files = project.files
-  return (
-    project.formatVersion === STUDIO_PROJECT_FORMAT_VERSION &&
-    (project.programmingLanguage === undefined || project.programmingLanguage === 'javascript') &&
-    project.runtime === undefined &&
-    project.python === undefined &&
-    text(project.name, 200) &&
-    ['index.html', 'style.css', 'script.js'].every((name) => typeof files[name] === 'string') &&
-    Array.isArray(project.installedExtensions) &&
-    project.installedExtensions.every(
-      (extension: unknown) =>
-        record(extension) &&
-        text(extension.id, 80) &&
-        text(extension.version, 40) &&
-        typeof extension.installedAt === 'number',
-    )
-  )
-}
-
 function isManifestContent(content: unknown): boolean {
-  if (isInteractiveBlock(content) || isManifestQuiz(content)) return true
   if (!record(content)) return false
+  if (Object.hasOwn(content, 'solutionProject')) return false
+  if (Object.hasOwn(content, 'projectExamples') && content.kind !== 'studio') return false
+  if (isInteractiveBlock(content) || isManifestQuiz(content)) return true
   if (content.kind === 'rich_text') return text(content.markdown, 50000)
   if (content.kind === 'dialogue')
     return (
@@ -1022,11 +1016,11 @@ function isManifestContent(content: unknown): boolean {
       !StudioPythonLearningLevelSchema.safeParse(content.pythonLevel).success
     )
       return false
-    // O gabarito da professora (`solutionProject`, objetivos do Estúdio de 18/10/2026) viaja no
-    // manifesto com a mesma régua do projeto inicial; ele nunca chega ao aluno.
+    // The full registry is validated once, together with its portable section references below.
     return (
-      isManifestStudioProject(content.initialProject) &&
-      (content.solutionProject === undefined || isManifestStudioProject(content.solutionProject)) &&
+      isStudioAuthoringProject(content.initialProject) &&
+      (content.projectExamples === undefined ||
+        (record(content.projectExamples) && content.projectExamples.version === 1)) &&
       (content.gallery === undefined || isGalleryDeliveryConfig(content.gallery, 'studio'))
     )
   }
@@ -1117,6 +1111,8 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
     !value.sections.every(
       (s) =>
         record(s) &&
+        !Object.hasOwn(s, 'projectExamples') &&
+        !Object.hasOwn(s, 'solutionProject') &&
         key(s.key) &&
         text(s.title, 200) &&
         typeof s.objective === 'string' &&
@@ -1136,7 +1132,7 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
   const blockKeys = value.blocks.map((b) => b.key)
   const sectionKeys = value.sections.map((s) => s.key)
   const placed = value.sections.flatMap((s) => s.blockKeys)
-  return (
+  const structureValid =
     new Set(blockKeys).size === blockKeys.length &&
     new Set(sectionKeys).size === sectionKeys.length &&
     new Set(placed).size === placed.length &&
@@ -1145,7 +1141,30 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
     (!Array.isArray(value.retireBlockKeys) ||
       value.retireBlockKeys.every((k) => !blockKeys.includes(k))) &&
     value.sections.every((s) => s.workspaceKey === null || blockKeys.includes(s.workspaceKey))
-  )
+  if (!structureValid) return false
+  const registries: { blockId: string; bytes: number; registry: StudioProjectExamples }[] = []
+  for (const block of value.blocks) {
+    if (!record(block.content) || block.content.kind !== 'studio') continue
+    const read = readManifestStudioProjectExamples(block.content.projectExamples)
+    if (read.kind === 'invalid') return false
+    if (read.kind === 'absent') continue
+    if (
+      block.content.gallery !== undefined ||
+      studioProjectExampleSectionIssues(
+        read.value,
+        block.key,
+        value.sections.map((section) => ({
+          id: section.key,
+          workspaceBlockId: section.workspaceKey,
+        })),
+      ).length ||
+      studioProjectExampleEnvironmentIssues(read.value, block.content.initialProject).length
+    )
+      return false
+    registries.push({ blockId: block.key, bytes: read.bytes, registry: read.value })
+    if (studioLessonProjectExamplesIssues(registries).length) return false
+  }
+  return true
 }
 export * from './platform-action'
 

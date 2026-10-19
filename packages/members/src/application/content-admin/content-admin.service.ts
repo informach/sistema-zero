@@ -1,7 +1,12 @@
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import { ValidationError } from '@sistemazero/core/errors'
 import { journeySlotsForTier } from '@sistemazero/core/journey'
-import { isInteractiveBlock, isPdfAttachment } from '@sistemazero/core/learning'
+import {
+  isInteractiveBlock,
+  isPdfAttachment,
+  readStudioProjectExamples,
+  studioProjectExampleEnvironmentIssues,
+} from '@sistemazero/core/learning'
 import {
   isQuizQuestionSpeech,
   isQuizVozes,
@@ -35,8 +40,10 @@ import {
   type PintaAssetKindName,
   type PintaBlock,
   pintaAssetKindOf,
+  type StudioBlock,
 } from '../../domain/course/lesson-block'
 import { validateQuizAuthoring } from '../../domain/course/quiz'
+import { assertNoLegacyStudioExamples } from '../../domain/course/studio-project-examples'
 import type {
   AttachmentFields,
   ContentAdminRepository,
@@ -498,7 +505,9 @@ export class LessonAdminService {
   }
 
   async getContent(lessonId: string): Promise<LessonContentView> {
-    const lesson = await this.courses.findLessonWithContent(lessonId)
+    const lesson = await this.courses.findLessonWithContent(lessonId, {
+      includePrivateStudioAuthoring: true,
+    })
     if (!lesson) throw new LessonNotFoundError()
     return toLessonContentView(lesson)
   }
@@ -573,56 +582,83 @@ export function assertBlockCoherent(
   // Estúdio: limita o peso no jsonb e valida o discriminante crítico do projeto
   // Pro. O restante do snapshot continua defensivo e é sanitizado pelo Studio.
   if (content.kind === 'studio') {
-    assertCurrentStudioAuthoring(content.initialProject)
-    if (JSON.stringify(content.initialProject).length > MAX_STUDIO_PROJECT_CHARS) {
-      throw new InvalidContentCommandError('Projeto inicial excede o tamanho máximo permitido')
+    assertStudioBlockProject(content, content.initialProject, studioPolicy)
+    if (Object.hasOwn(content, 'solutionProject'))
+      throw new InvalidContentCommandError(
+        'Converta o gabarito global antigo para exemplos por parte.',
+      )
+    const examples = readStudioProjectExamples(content.projectExamples)
+    if (examples.kind === 'invalid')
+      throw new InvalidContentCommandError(examples.issues[0]?.message ?? 'Exemplos inválidos.')
+    if (examples.kind === 'valid') {
+      if (content.gallery)
+        throw new InvalidContentCommandError('Galerias não têm exemplos de um Estúdio incorporado.')
+      const [environmentIssue] = studioProjectExampleEnvironmentIssues(
+        examples.value,
+        content.initialProject,
+      )
+      if (environmentIssue) throw new InvalidContentCommandError(environmentIssue.message)
+      for (const project of Object.values(examples.value.examples)) {
+        try {
+          assertStudioBlockProject(content, project, studioPolicy)
+        } catch (error) {
+          throw new InvalidContentCommandError(
+            `Exemplo "${project.name}": ${error instanceof Error ? error.message : 'ambiente inválido.'}`,
+          )
+        }
+      }
     }
-    const document = content.initialProject as {
-      formatVersion: number
-      programmingLanguage?: string
-    }
-    if (document.formatVersion === STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION) {
-      if (!studioPolicy)
-        throw new InvalidContentCommandError(
-          'O catálogo de ambientes ainda não está configurado para publicar este projeto.',
-        )
-      const { level, pythonLevel, allowBlocks, allowCategories, allowedModes, allowLevelReveal } =
-        content
-      studioPolicy.assert(StudioProjectDocumentSchema.parse(document), {
-        level,
-        allowBlocks,
-        allowCategories,
-        allowedModes,
-        allowLevelReveal,
-        pythonLevel,
-      })
-    }
+  }
+}
+
+/** The same catalog, dependency and curation contract applies to the initial and private examples. */
+function assertStudioBlockProject(
+  content: StudioBlock,
+  project: unknown,
+  studioPolicy?: StudioAuthoringPolicy,
+): void {
+  assertCurrentStudioAuthoring(project)
+  if (JSON.stringify(project).length > MAX_STUDIO_PROJECT_CHARS)
+    throw new InvalidContentCommandError('Projeto inicial excede o tamanho máximo permitido')
+  if (
+    project &&
+    typeof project === 'object' &&
+    'formatVersion' in project &&
+    project.formatVersion === STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION
+  ) {
+    if (!studioPolicy)
+      throw new InvalidContentCommandError(
+        'O catálogo de ambientes ainda não está configurado para publicar este projeto.',
+      )
+    const { level, pythonLevel, allowBlocks, allowCategories, allowedModes, allowLevelReveal } =
+      content
+    studioPolicy.assert(StudioProjectDocumentSchema.parse(project), {
+      level,
+      pythonLevel,
+      allowBlocks,
+      allowCategories,
+      allowedModes,
+      allowLevelReveal,
+    })
+  }
+  if (
+    project &&
+    typeof project === 'object' &&
+    'kind' in project &&
+    project.kind === 'pro' &&
+    !('programmingLanguage' in project && project.programmingLanguage === 'python')
+  ) {
+    const tree = 'tree' in project ? project.tree : undefined
+    const meta = 'proMeta' in project ? project.proMeta : undefined
+    const templateId =
+      meta && typeof meta === 'object' && 'templateId' in meta ? meta.templateId : undefined
     if (
-      content.initialProject &&
-      typeof content.initialProject === 'object' &&
-      !Array.isArray(content.initialProject) &&
-      document.programmingLanguage !== 'python' &&
-      (content.initialProject as { kind?: unknown }).kind === 'pro'
-    ) {
-      const project = content.initialProject as {
-        tree?: unknown
-        proMeta?: { templateId?: unknown }
-      }
-      if (
-        !project.tree ||
-        typeof project.tree !== 'object' ||
-        Array.isArray(project.tree) ||
-        !isStudioProTemplateId(project.proMeta?.templateId)
-      ) {
-        throw new InvalidContentCommandError('Escolha um modelo Pro válido')
-      }
-    }
-    // O gabarito é um projeto do Estúdio como o inicial: a mesma régua de autoria vale.
-    if (content.solutionProject !== undefined) {
-      assertCurrentStudioAuthoring(content.solutionProject)
-      if (JSON.stringify(content.solutionProject).length > MAX_STUDIO_PROJECT_CHARS)
-        throw new InvalidContentCommandError('O gabarito excede o tamanho máximo permitido')
-    }
+      !tree ||
+      typeof tree !== 'object' ||
+      Array.isArray(tree) ||
+      !isStudioProTemplateId(templateId)
+    )
+      throw new InvalidContentCommandError('Escolha um modelo Pro válido')
   }
 }
 
@@ -734,6 +770,7 @@ export class BlockAdminService {
   ) {}
 
   async create(lessonId: string, content: LessonBlockContent): Promise<BlockView> {
+    assertNoLegacyStudioExamples(content)
     const canonicalContent = canonicalizeBlockContent(content, this.studioPolicy)
     assertBlockCoherent(canonicalContent, this.studioPolicy)
     const lesson = await this.content.findLessonById(lessonId)
@@ -775,6 +812,7 @@ export class BlockAdminService {
   }
 
   async update(id: string, content: LessonBlockContent): Promise<BlockView> {
+    assertNoLegacyStudioExamples(content)
     const canonicalContent = canonicalizeBlockContent(content, this.studioPolicy)
     assertBlockCoherent(canonicalContent, this.studioPolicy)
     const courseId = await this.content.findBlockCourseId(id)

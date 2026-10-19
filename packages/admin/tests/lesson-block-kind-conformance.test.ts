@@ -4,10 +4,7 @@ import { createEmptyProject } from '@sistemazero/studio'
 // do members no package.json e não deve passar a depender por causa de teste (mesmo
 // precedente do `journey-tier-conformance` aqui e do `badge-conformance` do kids).
 import { LESSON_BLOCK_KINDS as MEMBERS_KINDS } from '../../members/src/domain/course/lesson-block'
-import {
-  buildContent,
-  EMPTY_BLOCK,
-} from '../src/app/admin/membros/cursos/[courseId]/aulas/[lessonId]/lesson-editor-client'
+import { buildContent, EMPTY_BLOCK } from '../src/lib/lesson-block-form'
 import { LESSON_BLOCK_KINDS as ADMIN_KINDS } from '../src/lib/types'
 
 /**

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { ValidationError } from '@sistemazero/core/errors'
 import {
   defaultLessonSection,
   evaluateLearning,
@@ -18,11 +19,13 @@ import {
 } from '../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { LearningImportService } from '../../src/application/learning/learning-import.service'
 import { importedLearningId } from '../../src/domain/learning/learning-import'
+import { LessonDraftConflictError } from '../../src/domain/learning/lesson-draft.errors'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
 import type { Database } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleLearningRepository } from '../../src/infrastructure/persistence/drizzle/learning.repository'
 import { DrizzleLessonDraftRepository } from '../../src/infrastructure/persistence/drizzle/lesson-draft.repository'
+import { memberStudioContentProjection } from '../../src/infrastructure/persistence/drizzle/member-studio-content-projection'
 import {
   courses,
   lessonAttachments,
@@ -36,6 +39,15 @@ import {
 import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
 
 const actor = randomUUID()
+
+async function rejectionOf(operation: Promise<unknown>): Promise<unknown> {
+  try {
+    await operation
+    return null
+  } catch (error) {
+    return error
+  }
+}
 const interactive: InteractiveBlock = {
   kind: 'interactive',
   title: 'Ordene',
@@ -103,6 +115,175 @@ export function lessonDraftCases(getDb: () => Database) {
     return { db, now, courseId, moduleId, lessonId, repo, reader, content, change, publish }
   }
   describe('shared lesson draft and atomic publication', () => {
+    async function exampleFixture() {
+      const f = await fixture()
+      const project = {
+        formatVersion: 2,
+        id: 'same-project-id',
+        kind: 'classic',
+        name: 'Criar',
+        files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+        installedExtensions: [],
+      }
+      const block = await f.content.createBlock(f.lessonId, 'studio', {
+        kind: 'studio',
+        initialProject: project,
+        purpose: 'experiment',
+      })
+      const initial = await f.repo.read(f.lessonId)
+      const section = initial.document.sections[0]
+      if (!section) throw new Error('Expected a section')
+      const draft = await f.change(initial, {
+        type: 'structure',
+        sections: initial.document.sections.map((part) =>
+          part.id === section.id ? { ...part, workspaceBlockId: block.id } : part,
+        ),
+      })
+      return { ...f, project, block, section, draft }
+    }
+
+    test('private examples use the real draft CAS and idempotency ledger without cross-workspace reuse', async () => {
+      const f = await exampleFixture()
+      const exampleId = randomUUID()
+      const command = {
+        expectedRevision: f.draft.revision,
+        operationId: randomUUID(),
+        change: {
+          type: 'studio-example' as const,
+          blockId: f.block.id,
+          sectionId: f.section.id,
+          role: 'solution' as const,
+          action: { type: 'save' as const, exampleId, project: f.project },
+        },
+      }
+      const first = await f.repo.change(f.lessonId, actor, command)
+      const replay = await f.repo.change(f.lessonId, actor, command)
+      expect(replay.revision).toBe(first.revision)
+      expect(replay.document).toEqual(first.document)
+      const stale = await rejectionOf(
+        f.repo.change(f.lessonId, actor, { ...command, operationId: randomUUID() }),
+      )
+      expect(stale).toBeInstanceOf(LessonDraftConflictError)
+      expect(stale).toMatchObject({ code: 'LESSON_DRAFT_CONFLICT' })
+      const overwritten = await rejectionOf(
+        f.repo.change(f.lessonId, actor, {
+          ...command,
+          change: {
+            ...command.change,
+            action: {
+              ...command.change.action,
+              project: { ...f.project, name: 'Different bytes' },
+            },
+          },
+        }),
+      )
+      expect(overwritten).toBeInstanceOf(LessonDraftConflictError)
+      expect(overwritten).toMatchObject({ code: 'LESSON_DRAFT_CONFLICT' })
+      const other = await exampleFixture()
+      const foreign = await rejectionOf(
+        other.change(other.draft, {
+          type: 'studio-example',
+          blockId: other.block.id,
+          sectionId: other.section.id,
+          role: 'solution',
+          action: { type: 'reuse', exampleId },
+        }),
+      )
+      expect(foreign).toBeInstanceOf(ValidationError)
+      expect(foreign).toMatchObject({
+        code: 'VALIDATION_ERROR',
+        message: expect.stringContaining('neste Estúdio'),
+      })
+      const final = await f.repo.read(f.lessonId)
+      expect(final.revision).toBe(first.revision)
+      expect(final.document).toEqual(first.document)
+    })
+
+    test('large private examples are projected inside PostgreSQL and authoring snapshots stay complete', async () => {
+      const f = await exampleFixture()
+      const before = await f.reader.findLessonWithContent(f.lessonId)
+      const privateMarker = 'PRIVATE_PROJECT_EXAMPLE_SQL_SENTINEL'
+      const saved = await f.change(f.draft, {
+        type: 'studio-example',
+        blockId: f.block.id,
+        sectionId: f.section.id,
+        role: 'solution',
+        action: {
+          type: 'save',
+          exampleId: randomUUID(),
+          project: {
+            ...f.project,
+            files: { ...f.project.files, 'script.js': `//${privateMarker}${'x'.repeat(900_000)}` },
+          },
+        },
+      })
+      await f.publish(saved)
+      const projected = await f.reader.findLessonWithContent(f.lessonId)
+      const privateView = await f.reader.findLessonWithContent(f.lessonId, {
+        includePrivateStudioAuthoring: true,
+      })
+      const published = await f.repo.readPublished(f.lessonId)
+      expect(JSON.stringify(projected)).not.toContain(privateMarker)
+      expect(JSON.stringify(privateView)).toContain(privateMarker)
+      expect(JSON.stringify(published.document)).toContain(privateMarker)
+      expect(projected?.blocks[0]?.contentRevision).toBe(before?.blocks[0]?.contentRevision)
+      const [sizes] = await f.db
+        .select({
+          raw: sql<number>`octet_length(${lessonBlocks.content}::text)`,
+          public: sql<number>`octet_length(${memberStudioContentProjection(lessonBlocks.content)}::text)`,
+        })
+        .from(lessonBlocks)
+        .where(eq(lessonBlocks.id, f.block.id))
+      expect(sizes?.raw).toBeGreaterThan(900_000)
+      expect(sizes?.public).toBeLessThan(10_000)
+      const tooLargeInitial = {
+        ...f.project,
+        files: { ...f.project.files, 'script.js': 'x'.repeat(1_300_000) },
+      }
+      await expect(
+        f.content.updateBlock(f.block.id, 'studio', {
+          kind: 'studio',
+          initialProject: tooLargeInitial,
+          purpose: 'experiment',
+        }),
+      ).rejects.toThrow('2 MiB')
+      expect(
+        await f.reader.findLessonWithContent(f.lessonId, { includePrivateStudioAuthoring: true }),
+      ).toEqual(privateView)
+      const fittingInitial = {
+        ...f.project,
+        files: { ...f.project.files, 'script.js': 'x'.repeat(1_150_000) },
+      }
+      expect(
+        await f.content.updateBlock(f.block.id, 'studio', {
+          kind: 'studio',
+          initialProject: fittingInitial,
+          purpose: 'experiment',
+        }),
+      ).not.toBeNull()
+      const beforeNonStudio = await f.reader.findLessonWithContent(f.lessonId, {
+        includePrivateStudioAuthoring: true,
+      })
+      await expect(
+        f.content.createBlock(f.lessonId, 'rich_text', {
+          kind: 'rich_text',
+          markdown: 'x'.repeat(50_000),
+        }),
+      ).rejects.toThrow('2 MiB')
+      expect(
+        await f.reader.findLessonWithContent(f.lessonId, { includePrivateStudioAuthoring: true }),
+      ).toEqual(beforeNonStudio)
+      const structure = await new DrizzleLearningRepository(f.db).getStructure(f.lessonId)
+      if (!structure) throw new Error('Expected a published structure')
+      await expect(
+        new DrizzleLearningRepository(f.db).saveStructure(
+          f.lessonId,
+          structure.revision,
+          structure.sections.map((part) => ({ ...part, workspaceBlockId: null })),
+        ),
+      ).rejects.toThrow('parte')
+    })
+
     test('aula criada em rascunho passa a publicada pelo mesmo fluxo de revisão', async () => {
       const f = await fixture()
       await f.db.update(lessons).set({ isPublished: false }).where(eq(lessons.id, f.lessonId))

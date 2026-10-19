@@ -10,6 +10,7 @@ import {
   kitStateFields,
   projectCheckAuthoring,
   studioSectionCompletionIssues,
+  studioSectionCompletionReview,
 } from '../projectCheckAuthoring'
 
 const workspace = {
@@ -19,6 +20,22 @@ const workspace = {
   allowBlocks: ['sz_g2d_setup_stage', 'sz_g2d_create_sprite', 'sz_val_number'],
 }
 const stage = { type: 'usesBlock', blockType: 'sz_g2d_setup_stage' } as const
+const authoringSectionId = '11111111-1111-4111-8111-111111111111'
+const authoringExampleId = '22222222-2222-4222-8222-222222222222'
+const authoringProject = (extra: object = {}) => ({
+  formatVersion: 2,
+  name: 'Criar',
+  files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+  installedExtensions: [],
+  ...extra,
+})
+const solutionExamples = (solution: object) => ({
+  version: 1,
+  examples: {
+    [authoringExampleId]: authoringProject(solution),
+  },
+  sections: { [authoringSectionId]: { solutionExampleId: authoringExampleId } },
+})
 
 describe('objective authoring uses the actual workspace contracts', () => {
   test('validates every allowed field option against the real block parameter', () => {
@@ -251,10 +268,12 @@ describe('objective authoring uses the actual workspace contracts', () => {
 })
 
 describe('o gabarito da professora na publicação (18/10/2026)', () => {
-  const loopWorkspace = (solutionProject?: unknown) => ({
+  const loopWorkspace = (solutionProject?: object) => ({
     kind: 'studio',
-    initialProject: {},
-    ...(solutionProject === undefined ? {} : { solutionProject }),
+    initialProject: authoringProject(),
+    ...(solutionProject === undefined
+      ? {}
+      : { projectExamples: solutionExamples(solutionProject) }),
   })
   const comLaco = {
     ir: {
@@ -280,7 +299,7 @@ describe('o gabarito da professora na publicação (18/10/2026)', () => {
     },
   }
   const section = (optional?: true) => ({
-    ...defaultLessonSection('section', 'Repetir', []),
+    ...defaultLessonSection(authoringSectionId, 'Repetir', []),
     workspaceBlockId: 'workspace',
     completion: {
       version: 1 as const,
@@ -300,7 +319,7 @@ describe('o gabarito da professora na publicação (18/10/2026)', () => {
       ],
     },
   })
-  const issues = (solution: unknown, optional?: true) =>
+  const issues = (solution: object | undefined, optional?: true) =>
     studioSectionCompletionIssues(
       [section(optional)],
       [{ id: 'workspace', content: loopWorkspace(solution) }],
@@ -312,28 +331,109 @@ describe('o gabarito da professora na publicação (18/10/2026)', () => {
   test('gabarito que cumpre os obrigatórios publica, mesmo sem o extra', () => {
     expect(issues(comLaco, true)).toEqual([])
   })
-  test('projeto inicial que já cumpre um obrigatório bloqueia a publicação', () => {
-    const messages = studioSectionCompletionIssues(
+  test('all initial project objectives already satisfied produce an explicit aggregate warning, not a publication error', () => {
+    const review = studioSectionCompletionReview(
       [section()],
-      [{ id: 'workspace', content: { kind: 'studio', initialProject: comLaco } }],
-    ).map((issue) => issue.message)
-    expect(messages).toEqual([
-      'O projeto inicial já cumpre o objetivo obrigatório "Use um laço". Mude o objetivo ou o projeto inicial.',
+      [{ id: 'workspace', content: { kind: 'studio', initialProject: authoringProject(comLaco) } }],
+    )
+    expect(review.issues).toEqual([])
+    expect(review.entryReports).toEqual([
+      {
+        sectionId: authoringSectionId,
+        initial: { kind: 'already-satisfied', satisfiedIds: ['laco'] },
+        checkpoint: null,
+      },
     ])
   })
-  test('no Pro, o laço que o modelo já traz não cumpre; o gabarito precisa acrescentar um', () => {
-    const tree = (code: string) => ({
-      kind: 'pro',
-      tree: { 'src/main.ts': { kind: 'file', content: code } },
+  test('a prepared prerequisite stays valid when a different required objective is still missing', () => {
+    const part = section()
+    const review = studioSectionCompletionReview(
+      [
+        {
+          ...part,
+          completion: {
+            ...part.completion,
+            projectChecks: [
+              ...part.completion.projectChecks,
+              {
+                id: 'funcao',
+                label: 'Crie pular',
+                rule: { type: 'definesFunction', name: 'pular' },
+              },
+            ],
+          },
+        },
+      ],
+      [{ id: 'workspace', content: { kind: 'studio', initialProject: authoringProject(comLaco) } }],
+    )
+    expect(review.issues).toEqual([])
+    expect(review.entryReports[0]?.initial).toEqual({
+      kind: 'has-unmet-objectives',
+      unmetIds: ['funcao'],
     })
+  })
+  test('a syncing solution never approves stale IR and syncing initial/checkpoint reports stay inconclusive', () => {
+    const stale = {
+      ...comLaco,
+      bridgeCodeAhead: true,
+      files: { 'index.html': '', 'style.css': '', 'script.js': '// loop removed' },
+    }
+    const rejected = studioSectionCompletionReview(
+      [section()],
+      [{ id: 'workspace', content: loopWorkspace(stale) }],
+    )
+    expect(rejected.issues.map((issue) => issue.message).join(' ')).toContain(
+      'ainda está sincronizando',
+    )
+    expect(rejected.issues.map((issue) => issue.message).join(' ')).not.toContain('não cumpre')
+    const examples = solutionExamples(comLaco)
+    const entryId = '33333333-3333-4333-8333-333333333333'
+    Object.assign(examples.examples, { [entryId]: authoringProject(stale) })
+    Object.assign(examples.sections[authoringSectionId], { entryExampleId: entryId })
+    const review = studioSectionCompletionReview(
+      [section()],
+      [
+        {
+          id: 'workspace',
+          content: {
+            kind: 'studio',
+            initialProject: authoringProject(stale),
+            projectExamples: examples,
+          },
+        },
+      ],
+    )
+    expect(review.entryReports[0]?.initial).toEqual({
+      kind: 'inconclusive',
+      inconclusiveIds: ['laco'],
+    })
+    expect(review.entryReports[0]?.checkpoint).toEqual({
+      kind: 'inconclusive',
+      inconclusiveIds: ['laco'],
+    })
+    expect(review.issues.map((issue) => issue.message).join(' ')).toContain(
+      'projeto inicial ainda está sincronizando',
+    )
+  })
+  test('no Pro, o laço que o modelo já traz não cumpre; o gabarito precisa acrescentar um', () => {
+    const tree = (code: string) =>
+      authoringProject({
+        kind: 'pro',
+        proMeta: { templateId: 'vanilla-js' },
+        tree: { 'src/main.ts': { kind: 'file', content: code } },
+      })
     const modelo = tree('for (const x of lista) desenhar(x)')
-    const pro = (solution: unknown) =>
+    const pro = (solution: object) =>
       studioSectionCompletionIssues(
         [section()],
         [
           {
             id: 'workspace',
-            content: { kind: 'studio', initialProject: modelo, solutionProject: solution },
+            content: {
+              kind: 'studio',
+              initialProject: modelo,
+              projectExamples: solutionExamples(solution),
+            },
           },
         ],
       ).map((issue) => issue.message)
@@ -473,7 +573,7 @@ describe('objetivos que rodam o jogo (etapa 3, 18/10/2026)', () => {
 
   test('a publicação exige o gabarito quando há objetivo que roda o jogo', () => {
     const section = {
-      ...defaultLessonSection('section', 'Andar', []),
+      ...defaultLessonSection(authoringSectionId, 'Andar', []),
       workspaceBlockId: 'workspace',
       completion: {
         version: 1 as const,
@@ -484,11 +584,57 @@ describe('objetivos que rodam o jogo (etapa 3, 18/10/2026)', () => {
     const issues = (content: Record<string, unknown>) =>
       studioSectionCompletionIssues(
         [section],
-        [{ id: 'workspace', content: { kind: 'studio', initialProject: {}, ...content } }],
+        [
+          {
+            id: 'workspace',
+            content: { kind: 'studio', initialProject: authoringProject(), ...content },
+          },
+        ],
       ).map((issue) => issue.message)
     expect(issues({})).toEqual([
-      'Objetivos que rodam o jogo precisam de um gabarito: crie o gabarito no bloco do Estúdio e use "Testar agora".',
+      'Objetivos obrigatórios que rodam o jogo precisam de uma solução desta parte. Prepare a solução na parte e use "Testar agora".',
     ])
-    expect(issues({ solutionProject: {} })).toEqual([])
+    expect(issues({ projectExamples: solutionExamples({}) })).toEqual([])
+    const review = studioSectionCompletionReview(
+      [
+        {
+          ...section,
+          completion: {
+            ...section.completion,
+            projectChecks: [
+              ...section.completion.projectChecks,
+              { id: 'loop', label: 'Use um laço', rule: { type: 'usesLoop' } },
+            ],
+          },
+        },
+      ],
+      [
+        {
+          id: 'workspace',
+          content: {
+            kind: 'studio',
+            initialProject: authoringProject({
+              ir: {
+                version: 2,
+                html: [],
+                css: [],
+                extensions: [],
+                behavior: {
+                  molds: [],
+                  start: [],
+                  events: [],
+                  loops: [{ type: 'repeat', times: { type: 'num', value: 3 }, body: [] }],
+                },
+              },
+            }),
+            projectExamples: solutionExamples({}),
+          },
+        },
+      ],
+    )
+    expect(review.entryReports[0]?.initial).toEqual({
+      kind: 'inconclusive',
+      inconclusiveIds: ['anda'],
+    })
   })
 })

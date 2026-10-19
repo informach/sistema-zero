@@ -12,12 +12,22 @@ import {
   portaCompleta,
   portaSemChave,
 } from './desafio-farol-criterios'
-import { montarProjetoFarol } from './desafio-farol-projeto'
+import { montarProjetoFarol, montarProjetoFarolDaParte } from './desafio-farol-projeto'
 
 import { farol } from './quizzes-cursos-curtos'
 
 const DIR = resolve(import.meta.dir, '../../aulas-interativas/desafio-primeiro-jogo')
 const CURSO = 'desafio-primeiro-jogo'
+const EXEMPLOS = {
+  inicio: 'fa000001-0000-4000-8000-000000000001',
+  andar: 'fa000002-0000-4000-8000-000000000002',
+  borda: 'fa000003-0000-4000-8000-000000000003',
+  recolher: 'fa000004-0000-4000-8000-000000000004',
+  guardar: 'fa000005-0000-4000-8000-000000000005',
+  aviso: 'fa000006-0000-4000-8000-000000000006',
+  semChave: 'fa000007-0000-4000-8000-000000000007',
+  aceso: 'fa000008-0000-4000-8000-000000000008',
+}
 
 /**
  * Uma participação do avatar (AVATARES-NOS-VIDEOS.md): `depois` é o trecho literal da professora
@@ -193,6 +203,54 @@ const projeto = (etapa: 'dia-1' | 'dia-2' | 'dia-3') => ({
         }
       : {}),
     initialProject: montarProjetoFarol(etapa),
+    projectExamples:
+      etapa === 'dia-1'
+        ? {
+            version: 1,
+            examples: {
+              [EXEMPLOS.inicio]: montarProjetoFarol('dia-1'),
+              [EXEMPLOS.andar]: montarProjetoFarolDaParte('andar'),
+              [EXEMPLOS.borda]: montarProjetoFarolDaParte('borda'),
+            },
+            sections: {
+              andar: { entryExampleId: EXEMPLOS.inicio, solutionExampleId: EXEMPLOS.andar },
+              borda: { entryExampleId: EXEMPLOS.andar, solutionExampleId: EXEMPLOS.borda },
+            },
+          }
+        : etapa === 'dia-2'
+          ? {
+              version: 1,
+              examples: {
+                [EXEMPLOS.borda]: montarProjetoFarolDaParte('borda'),
+                [EXEMPLOS.recolher]: montarProjetoFarolDaParte('recolher'),
+                [EXEMPLOS.guardar]: montarProjetoFarolDaParte('guardar'),
+                [EXEMPLOS.aviso]: montarProjetoFarolDaParte('programar-chave'),
+              },
+              sections: {
+                recolher: { entryExampleId: EXEMPLOS.borda, solutionExampleId: EXEMPLOS.recolher },
+                guardar: { entryExampleId: EXEMPLOS.recolher, solutionExampleId: EXEMPLOS.guardar },
+                'programar-chave': {
+                  entryExampleId: EXEMPLOS.guardar,
+                  solutionExampleId: EXEMPLOS.aviso,
+                },
+              },
+            }
+          : {
+              version: 1,
+              examples: {
+                [EXEMPLOS.aviso]: montarProjetoFarolDaParte('programar-chave'),
+                [EXEMPLOS.semChave]: montarProjetoFarolDaParte('sem-chave'),
+                [EXEMPLOS.aceso]: montarProjetoFarolDaParte('decisao'),
+              },
+              sections: {
+                'sem-chave': {
+                  entryExampleId: EXEMPLOS.aviso,
+                  solutionExampleId: EXEMPLOS.semChave,
+                },
+                decisao: { entryExampleId: EXEMPLOS.semChave, solutionExampleId: EXEMPLOS.aceso },
+                personalizar: { entryExampleId: EXEMPLOS.aceso, solutionExampleId: EXEMPLOS.aceso },
+              },
+            },
   },
 })
 // O Dia 1 começa pela versão pronta e pelo caderno, como a Aula 1 do Cadê Todo Mundo?.

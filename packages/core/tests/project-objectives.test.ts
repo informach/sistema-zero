@@ -79,6 +79,31 @@ describe('objetivos da parte: o modelo', () => {
       requiredProjectChecks([{ id: 'a', optional: true }, { id: 'b' }]).map((c) => c.id),
     ).toEqual(['b'])
   })
+
+  test('a vista usa allowlist e não espalha autoria privada do critério ou dos materiais', () => {
+    const completion = Object.assign(
+      {
+        version: 1 as const,
+        blockIds: ['video'],
+        materialItems: [
+          Object.assign(
+            { blockId: 'materials', itemIds: ['map'] },
+            { teacherAnswer: 'PRIVATE_MATERIAL_SENTINEL' },
+          ),
+        ],
+      },
+      {
+        projectExamples: { secret: 'PRIVATE_EXAMPLE_SENTINEL' },
+        teacherAnswer: 'PRIVATE_ROOT_SENTINEL',
+      },
+    )
+    expect(sectionCompletionView(completion)).toEqual({
+      version: 1,
+      blockIds: ['video'],
+      materialItems: [{ blockId: 'materials', itemIds: ['map'] }],
+    })
+    expect(JSON.stringify(sectionCompletionView(completion))).not.toContain('PRIVATE_')
+  })
 })
 
 describe('objetivos da parte: a verificação', () => {

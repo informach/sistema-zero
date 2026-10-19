@@ -7,6 +7,8 @@ import {
   type LessonDraftCommand,
   type LessonDraftDocument,
   type LessonDraftIssue,
+  lessonStudioExampleTransportIssues,
+  lessonStudioProjectExampleIssues,
   restoreFromPublished,
   validateLessonSections,
 } from '@sistemazero/core/learning'
@@ -25,9 +27,9 @@ import {
   NoPublishedLessonError,
   NoShowcaseBlockError,
 } from '../../src/domain/course/course.errors'
+import { quizGateFingerprint } from '../../src/domain/course/quiz'
 import { LessonDraftConflictError } from '../../src/domain/learning/lesson-draft.errors'
 import type { LessonDraftRepository } from '../../src/domain/ports/lesson-draft-repository.port'
-import { stableJson } from '../../src/domain/shared/stable-json'
 import type { StudioAuthoringPolicy } from '../../src/domain/studio/authoring-policy'
 import { studioChainCandidate } from '../../src/domain/studio/chain-environment'
 import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
@@ -77,7 +79,9 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
   async read(lessonId: string) {
     const saved = this.drafts.get(lessonId)
     if (saved) return structuredClone(saved)
-    const lesson = await this.courses.findLessonWithContent(lessonId)
+    const lesson = await this.courses.findLessonWithContent(lessonId, {
+      includePrivateStudioAuthoring: true,
+    })
     if (!lesson) throw new LessonNotFoundError()
     const structure = await this.learning.getStructure(lessonId)
     const draft: LessonDraft = {
@@ -116,6 +120,13 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
   ) {
     const draft = await this.read(lessonId)
     if (draft.revision !== expectedRevision) throw new LessonDraftConflictError()
+    const [exampleIssue] = lessonStudioProjectExampleIssues(document.sections, document.blocks)
+    if (exampleIssue) throw new ValidationError(exampleIssue.message)
+    const lesson = await this.courses.findLesson(lessonId)
+    const course = lesson ? await this.courses.findCourseById(lesson.courseId) : null
+    if (!course) throw new LessonNotFoundError()
+    const [transportIssue] = lessonStudioExampleTransportIssues(document, course.slug)
+    if (transportIssue) throw new ValidationError(transportIssue.message)
     // O desfazer vale so ate a proxima alteracao (espelha o `write` do Drizzle).
     this.anteriores.delete(lessonId)
     const next = {
@@ -132,7 +143,9 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
 
   /** O publicado no formato do rascunho — a MESMA conversao do rascunho recem-nascido. */
   async readPublished(lessonId: string) {
-    const lesson = await this.courses.findLessonWithContent(lessonId)
+    const lesson = await this.courses.findLessonWithContent(lessonId, {
+      includePrivateStudioAuthoring: true,
+    })
     if (!lesson) throw new LessonNotFoundError()
     const structure = await this.learning.getStructure(lessonId)
     return {
@@ -193,6 +206,7 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
   }
   async change(lessonId: string, authorId: string, command: LessonDraftCommand) {
     const draft = await this.read(lessonId)
+    if (draft.revision !== command.expectedRevision) throw new LessonDraftConflictError()
     return this.replace(
       lessonId,
       authorId,
@@ -306,11 +320,10 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
       throw error
     }
     // Exercise the existing invalidation callbacks for changed assessments only.
-    this.courses.blocks = previous
     for (const block of blocks) {
       const old = previous.find((p) => p.id === block.id)
-      if (old && stableJson(old.content) !== stableJson(block.content))
-        await this.courses.updateBlock(block.id, block.kind, block.content)
+      if (old && quizGateFingerprint(old.content) !== quizGateFingerprint(block.content))
+        this.courses.onQuizGateChanged?.(block.id)
     }
     this.courses.blocks = [...previous.filter((b) => b.lessonId !== lessonId), ...blocks]
     Object.assign(lesson, {

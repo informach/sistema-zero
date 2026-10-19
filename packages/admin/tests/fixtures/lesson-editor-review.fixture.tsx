@@ -3,6 +3,7 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import {
   applyLessonDraftChange,
   type LessonDraftDocument,
+  readStudioProjectExamples,
   sectionCompletionIssues,
 } from '@sistemazero/core/learning'
 import { createEmptyProject } from '@sistemazero/studio'
@@ -20,6 +21,8 @@ mock.module('../../src/lib/lesson-draft-storage', () => ({
 }))
 const { act, useState, useImperativeHandle } = await import('react')
 let pendingStudioSave: (() => Promise<void>) | undefined
+let latestStudioChange: ((project: EditableStudioProject) => void) | undefined
+let latestStudioProject: EditableStudioProject | undefined
 mock.module('../../src/components/studio/studio-embed', () => ({
   StudioEmbed: ({
     initialProject,
@@ -31,6 +34,8 @@ mock.module('../../src/components/studio/studio-embed', () => ({
     onChange: (project: EditableStudioProject) => void
   }) => {
     const [project, setProject] = useState(initialProject)
+    latestStudioChange = onChange
+    latestStudioProject = project
     useImperativeHandle(
       handleRef,
       () => ({
@@ -85,6 +90,7 @@ async function harness() {
     beforePatch: async () => {},
     validations: [] as ReturnType<typeof seed>[],
     publishes: 0,
+    published: new Set<string>(),
   }
   globalThis.fetch = Object.assign(
     async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -96,7 +102,11 @@ async function harness() {
         state.validations.push(structuredClone(docs[id]!))
         return Response.json(sectionCompletionIssues(docs[id]!.sections, docs[id]!.blocks))
       }
-      if (path.endsWith('/publish')) state.publishes++
+      if (path.endsWith('/publish')) {
+        state.publishes++
+        state.published.add(id)
+        state.revision++
+      }
       if (init?.method === 'PATCH') {
         if (state.conflict) {
           state.conflict = false
@@ -116,8 +126,8 @@ async function harness() {
       return Response.json({
         lessonId: id,
         revision: String(state.revision),
-        publishedRevision: '0',
-        isPublished: false,
+        publishedRevision: state.published.has(id) ? String(state.revision) : '0',
+        isPublished: state.published.has(id),
         document: docs[id],
         updatedBy: 'author',
         updatedAt: new Date().toISOString(),
@@ -417,6 +427,228 @@ test('switching a Studio to gallery delivery preserves the latest initial projec
       gallery: { minItems: 1, maxItems: 1 },
       initialProject: { name: 'Projeto atualizado' },
     })
+  } finally {
+    await h.cleanup()
+  }
+})
+
+test('the real section editor saves, reuses and clears private examples without changing the initial project', async () => {
+  const h = await harness()
+  const sectionId = '11111111-1111-4111-8111-111111111111'
+  const project = createEmptyProject('22222222-2222-4222-8222-222222222222', 'Projeto inicial')
+  h.docs.a!.blocks = [{ id: 'workspace', content: { kind: 'studio', initialProject: project } }]
+  h.docs.a!.sections[0]!.id = sectionId
+  h.docs.a!.sections[0]!.blockIds = ['workspace']
+  h.docs.a!.sections[0]!.workspaceBlockId = 'workspace'
+  const currentRegistry = () => {
+    const content = h.docs.a!.blocks[0]!.content
+    if (content.kind !== 'studio') throw new Error('Expected Studio')
+    const result = readStudioProjectExamples(content.projectExamples)
+    if (result.kind !== 'valid') throw new Error('Expected private examples')
+    return result.value
+  }
+  try {
+    await h.render()
+    await h.click('Abrir todas')
+    await h.click('Definir avanço')
+    await h.click('Criar uma solução possível')
+    await settle(() => Boolean(h.button('Alterar projeto de teste')))
+    expect(h.container.querySelectorAll('button').length).toBeGreaterThan(0)
+    expect(
+      [...h.container.querySelectorAll('button')].filter(
+        (button) => button.textContent === 'Alterar projeto de teste',
+      ),
+    ).toHaveLength(1)
+    await h.click('Alterar projeto de teste')
+    await h.click('Salvar e voltar aos objetivos')
+    await settle(() => {
+      const content = h.docs.a!.blocks[0]!.content
+      return (
+        content.kind === 'studio' &&
+        readStudioProjectExamples(content.projectExamples).kind === 'valid'
+      )
+    })
+    const saved = currentRegistry()
+    const solutionId = saved.sections[sectionId]!.solutionExampleId!
+    expect(saved.examples[solutionId]!.name).toBe('Projeto atualizado')
+    expect(h.docs.a!.blocks[0]!.content).toMatchObject({
+      initialProject: { name: 'Projeto inicial' },
+    })
+    expect(h.container.textContent).toContain('Uma solução possível: Projeto atualizado')
+    const reuse = h.container.querySelector<HTMLSelectElement>(
+      '[aria-label="Usar exemplo existente como entrada para ensaio"]',
+    )!
+    await act(async () => {
+      reuse.value = solutionId
+      reuse.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+    await settle(() => currentRegistry().sections[sectionId]!.entryExampleId === solutionId)
+    await h.click('Remover uma solução possível')
+    await settle(() => !currentRegistry().sections[sectionId]!.solutionExampleId)
+    expect(currentRegistry().examples[solutionId]).toBeDefined()
+    expect(h.docs.a!.blocks[0]!.content).not.toHaveProperty('solutionProject')
+    expect(h.docs.a!.blocks[0]!.content).toMatchObject({
+      initialProject: { name: 'Projeto inicial' },
+    })
+  } finally {
+    await h.cleanup()
+  }
+})
+
+test('review waits for the open part solution to flush even while the authoring controls are busy', async () => {
+  const h = await harness()
+  const sectionId = '33333333-3333-4333-8333-333333333333'
+  const project = createEmptyProject('44444444-4444-4444-8444-444444444444', 'Entrada preservada')
+  h.docs.a!.blocks = [{ id: 'workspace', content: { kind: 'studio', initialProject: project } }]
+  h.docs.a!.sections[0]!.id = sectionId
+  h.docs.a!.sections[0]!.blockIds = ['workspace']
+  h.docs.a!.sections[0]!.workspaceBlockId = 'workspace'
+  const gate = Promise.withResolvers<void>()
+  let entered = false
+  try {
+    await h.render()
+    await h.click('Abrir todas')
+    await h.click('Definir avanço')
+    await h.click('Criar uma solução possível')
+    await settle(() => Boolean(h.button('Alterar projeto de teste')))
+    const editorNode = h.button('Alterar projeto de teste')
+    pendingStudioSave = async () => {
+      entered = true
+      await gate.promise
+    }
+    await h.click('Revisar para publicar')
+    expect(entered).toBe(true)
+    expect(h.state.validations).toHaveLength(0)
+    await act(async () => gate.resolve())
+    await settle(() => h.state.validations.length === 1)
+    const content = h.state.validations[0]!.blocks[0]!.content
+    if (content.kind !== 'studio') throw new Error('Expected Studio')
+    const registry = readStudioProjectExamples(content.projectExamples)
+    expect(registry.kind).toBe('valid')
+    if (registry.kind !== 'valid') throw new Error('Expected captured solution')
+    expect(registry.value.sections[sectionId]!.solutionExampleId).toBeDefined()
+    expect(h.button('Alterar projeto de teste')).toBe(editorNode)
+    expect(content.initialProject.name).toBe('Entrada preservada')
+  } finally {
+    gate.resolve()
+    pendingStudioSave = undefined
+    await h.cleanup()
+  }
+})
+
+test('accepting the server version retires an open private example and its late SDK callback', async () => {
+  const h = await harness()
+  const sectionId = '55555555-5555-4555-8555-555555555555'
+  const exampleId = '66666666-6666-4666-8666-666666666666'
+  const project = createEmptyProject('77777777-7777-4777-8777-777777777777', 'Inicial preservado')
+  const registry = (name: string) => ({
+    version: 1,
+    examples: { [exampleId]: { ...project, id: '88888888-8888-4888-8888-888888888888', name } },
+    sections: { [sectionId]: { solutionExampleId: exampleId } },
+  })
+  h.docs.a!.blocks = [
+    {
+      id: 'workspace',
+      content: { kind: 'studio', initialProject: project, projectExamples: registry('Servidor A') },
+    },
+  ]
+  h.docs.a!.sections[0]!.id = sectionId
+  h.docs.a!.sections[0]!.blockIds = ['workspace']
+  h.docs.a!.sections[0]!.workspaceBlockId = 'workspace'
+  try {
+    await h.render()
+    await h.click('Abrir todas')
+    await h.click('Definir avanço')
+    await h.click('Editar uma solução possível')
+    await settle(() => Boolean(h.button('Alterar projeto de teste')))
+    h.state.conflict = true
+    await h.click('Alterar projeto de teste')
+    await settle(() => Boolean(h.button('Abrir versão do servidor e arquivar cópia local')))
+    const lateChange = latestStudioChange!
+    const lateProject = { ...latestStudioProject!, name: 'A tardio sobre servidor B' }
+    h.docs.a!.blocks[0] = {
+      id: 'workspace',
+      content: { kind: 'studio', initialProject: project, projectExamples: registry('Servidor B') },
+    }
+    await h.click('Abrir versão do servidor e arquivar cópia local')
+    await act(async () => lateChange(lateProject))
+    const content = h.docs.a!.blocks[0]!.content
+    if (content.kind !== 'studio') throw new Error('Expected Studio')
+    const read = readStudioProjectExamples(content.projectExamples)
+    if (read.kind !== 'valid') throw new Error('Expected canonical server examples')
+    const id = read.value.sections[sectionId]!.solutionExampleId!
+    expect(read.value.examples[id]!.name).toBe('Servidor B')
+    expect(h.button('Alterar projeto de teste')).toBeUndefined()
+    expect(content.initialProject.name).toBe('Inicial preservado')
+  } finally {
+    await h.cleanup()
+  }
+})
+
+test('publishing adopts the canonical revision without remounting an open private example', async () => {
+  const h = await harness()
+  const sectionId = '99999999-9999-4999-8999-999999999999'
+  const project = createEmptyProject(
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    'Inicial preservado ao publicar',
+  )
+  h.docs.a!.blocks = [
+    {
+      id: 'workspace',
+      content: { kind: 'studio', purpose: 'experiment', initialProject: project },
+    },
+    {
+      id: 'quiz',
+      content: {
+        kind: 'quiz',
+        questions: [
+          {
+            id: 'question',
+            prompt: 'Qual comando mostra?',
+            choices: [
+              { id: 'print', label: 'print' },
+              { id: 'none', label: 'nenhum' },
+            ],
+            correctChoiceIds: ['print'],
+            explanation: 'print mostra.',
+          },
+        ],
+        passingScore: 100,
+      },
+    },
+  ]
+  h.docs.a!.sections[0]!.id = sectionId
+  h.docs.a!.sections[0]!.blockIds = ['workspace', 'quiz']
+  h.docs.a!.sections[0]!.workspaceBlockId = 'workspace'
+  h.docs.a!.sections[0]!.completion = { version: 1, blockIds: ['quiz'] }
+  try {
+    await h.render()
+    await h.click('Abrir todas')
+    await h.click('Editar avanço')
+    await h.click('Criar uma solução possível')
+    await settle(() => Boolean(h.button('Alterar projeto de teste')))
+    const editor = h.button('Alterar projeto de teste')!
+    await h.click('Alterar projeto de teste')
+    const workingId = latestStudioProject!.id
+    await h.click('Revisar para publicar')
+    await settle(() => Boolean(h.button('Publicar aula')))
+    expect(h.button('Publicar aula').disabled, h.container.textContent ?? '').toBe(false)
+    await h.click('Publicar aula')
+    expect(h.state.publishes, h.container.textContent ?? '').toBe(1)
+    await settle(
+      () => h.state.publishes === 1 && h.container.textContent!.includes('Aula publicada'),
+    )
+    expect(editor.isConnected).toBe(true)
+    expect(h.button('Alterar projeto de teste')).toBe(editor)
+    expect(latestStudioProject!.id).toBe(workingId)
+    const content = h.docs.a!.blocks[0]!.content
+    if (content.kind !== 'studio') throw new Error('Expected Studio')
+    const examples = readStudioProjectExamples(content.projectExamples)
+    if (examples.kind !== 'valid') throw new Error('Expected saved private example')
+    const example = examples.value.examples[examples.value.sections[sectionId]!.solutionExampleId!]!
+    expect(example.name).toBe('Projeto atualizado')
+    expect(example.id).toBe(workingId)
+    expect(content.initialProject.name).toBe('Inicial preservado ao publicar')
   } finally {
     await h.cleanup()
   }

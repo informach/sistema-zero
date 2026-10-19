@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 
-if (typeof document === 'undefined') GlobalRegistrator.register()
+if (typeof document === 'undefined') GlobalRegistrator.register({ url: 'http://localhost/' })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 const { act, useState } = await import('react')
 const { createRoot } = await import('react-dom/client')

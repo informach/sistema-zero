@@ -1,5 +1,8 @@
 # Cadê Todo Mundo? | Aula 1: O primeiro achado
 
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. primeiro-achado: entrada sem reação; solução com a reação no toque. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
+
+
 ## Direção da revisão
 
 Revisão de linguagem de 27/09/2026, depois de duas crianças assistirem ao curso. Uma delas não

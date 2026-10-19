@@ -5,6 +5,11 @@ import {
   type SectionCompletion,
   sectionCompletionIssues,
 } from '@sistemazero/core/learning'
+import {
+  objectiveProject,
+  objectiveSectionId,
+  objectiveWorkspace,
+} from './fixtures/section-objective-examples'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -123,11 +128,7 @@ test('objetivo ganha dica e desafio extra, e "Testar agora" confere inicial e ga
     blockIds: [],
     projectChecks: [{ id: 'laco', label: 'Use um laço', rule: { type: 'usesLoop' } }],
   }
-  const workspace = {
-    kind: 'studio',
-    initialProject: { ir: { js: [] } },
-    solutionProject: { ir: { js: [] } },
-  }
+  const workspace = objectiveWorkspace(objectiveProject(), objectiveProject())
   const render = () =>
     root.render(
       <SectionCompletionEditor
@@ -135,6 +136,7 @@ test('objetivo ganha dica e desafio extra, e "Testar agora" confere inicial e ga
         candidates={[]}
         hasStudio
         workspace={workspace}
+        sectionId={objectiveSectionId}
         onChange={(next) => {
           value = next
           render()

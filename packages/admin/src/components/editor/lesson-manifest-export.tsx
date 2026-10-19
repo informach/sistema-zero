@@ -4,7 +4,7 @@ import type { LessonDraftDocument } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { Download } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { downloadJson } from '@/lib/download-json'
+import { downloadJsonSource } from '@/lib/download-json'
 import {
   buildLessonManifest,
   type ManifestExport,
@@ -83,7 +83,7 @@ export function LessonManifestExport({
             </p>
             <Button
               variant="outline"
-              onClick={() => downloadJson(resultado.ok.filename, resultado.ok.manifest)}
+              onClick={() => downloadJsonSource(resultado.ok.filename, resultado.ok.source)}
             >
               <Download className="size-4" /> Baixar o manifesto desta aula
             </Button>

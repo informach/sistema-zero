@@ -1079,6 +1079,8 @@ const StudioProjectSchema = t.Union([
 ])
 /** Bloco Estúdio: editor pré-configurado embutido na aula (ver domain/course/lesson-block.ts). */
 const StudioBlockSchema = t.Object({
+  // Retain only so legacy writers reject explicitly instead of silently stripping the field.
+  projectExamples: t.Optional(t.Unknown()),
   pythonLevel: t.Optional(t.Union([t.Literal(1), t.Literal(2), t.Literal(3)])),
   kind: t.Literal('studio'),
   gallery: t.Optional(t.Object({ minItems: t.Literal(1), maxItems: t.Literal(1) })),
@@ -1093,7 +1095,7 @@ const StudioBlockSchema = t.Object({
    * Gabarito da professora (18/10/2026): o projeto que cumpre os objetivos da parte. Só a
    * autoria o lê ("Testar agora" e a revisão para publicar); a view do aluno NUNCA o leva.
    */
-  solutionProject: t.Optional(StudioProjectSchema),
+  solutionProject: t.Optional(t.Unknown()),
   /** Nome do projeto contínuo (cadeia) — ver StudioBlock em domain/course/lesson-block.ts. */
   chain: t.Optional(t.String({ maxLength: 80 })),
   /** Vitrine (Mural dos Criadores) — config da auto-publicação; ver StudioBlock. */

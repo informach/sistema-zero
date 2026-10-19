@@ -266,9 +266,9 @@ export async function createApplication(env: Env): Promise<Application> {
   const clock = () => new Date()
 
   // Adapters
-  const learningRepository = new DrizzleLearningRepository(db)
+  const learningRepository = new DrizzleLearningRepository(db, studioAuthoringPolicy)
   const courses = new DrizzleCourseRepository(db)
-  const content = new DrizzleContentAdminRepository(db)
+  const content = new DrizzleContentAdminRepository(db, studioAuthoringPolicy)
   const entitlements = new DrizzleEntitlementRepository(db)
   const progress = new DrizzleProgressRepository(db)
   const positions = new DrizzleVideoPositionRepository(db)

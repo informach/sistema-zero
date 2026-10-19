@@ -4,10 +4,6 @@ import {
   type LessonDraftDocument,
   sectionCompletionIssues,
 } from '@sistemazero/core/learning'
-import {
-  EMPTY_MATERIALS,
-  validateMaterials,
-} from '../src/app/admin/membros/cursos/[courseId]/aulas/[lessonId]/materials-builder'
 import { lessonEditorialWarnings } from '../src/components/editor/lesson-editorial-warnings'
 import {
   lessonContentLabel,
@@ -15,6 +11,7 @@ import {
   sectionCompletionSummary,
   suggestedCompletion,
 } from '../src/lib/lesson-authoring'
+import { EMPTY_MATERIALS, validateMaterials } from '../src/lib/lesson-block-form'
 import type { LessonBlockContent, MaterialItem } from '../src/lib/types'
 
 const anexo = (id: string, label: string) => ({

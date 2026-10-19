@@ -314,6 +314,21 @@ versões ainda não confirmadas. A ordem completa está em [Avatares nos vídeos
 
 ## 7. Como manter as decisões vivas
 
+**Evidência e liberdade, 19/10/2026:** uma solução privada é uma possibilidade de cumprir a parte,
+não um modelo visual obrigatório. Cores, imagens, mensagens e magnitude da velocidade são livres
+quando a intenção continua atendida. Um movimento pedido precisa acontecer na direção coerente:
+no Jogo 2D, Y menor sobe e Y maior desce; zero não cumpre um objetivo de movimento. Uma implementação
+equivalente que produz o mesmo efeito também deve passar quando o objetivo pede o efeito. Conferir
+a convenção de eixos de cada ambiente antes de reutilizar uma regra.
+
+Escolher evidência conforme o que se ensina. `usesBlock` confere estrutura e seu rótulo deve dizer
+isso; não certifica sozinho a partida. Objetivos de comportamento exigem observação real do efeito
+com cenário e entrada controlados. Testar alternativas válidas e contraexemplos, inclusive ausência,
+zero e direção oposta quando houver movimento. Os exemplos privados de entrada e solução pertencem
+a cada parte; um estado posterior não substitui a solução transitória de uma parte anterior.
+Preservar uma regra aprendida é legítimo; não desmontar o projeto inicial só para fazer todos os
+objetivos começarem falsos.
+
 1. Ao aprovar uma mudança pedagógica, registrar aqui a regra, motivo e escopo. Toda correção pedida na revisão de um curso que valha para outros cursos entra aqui no mesmo dia, para os próximos já nascerem certos. Se depender do curso, registrar também sua aplicação em `modulos-*.md` e na proposta. Atualizar orientações antigas que a contradigam.
 2. Atualizar juntos proposta, roteiro, gerador, manifesto, caderno e critérios. O manifesto gerado não pode ser a única edição: regenerá-lo precisa conservar a decisão.
 3. Regras estruturais verificáveis entram no validador e em testes com casos inválidos: ordem do Zappy, isolamento do quiz, paletas e preservação do certificado. Qualidade da explicação e pertinência da experiência exigem leitura humana.

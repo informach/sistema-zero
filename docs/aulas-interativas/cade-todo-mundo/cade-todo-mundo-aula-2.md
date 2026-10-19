@@ -1,5 +1,8 @@
 # Cadê Todo Mundo? | Aula 2: Complete a busca
 
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. contar-achados: entrada que já revela; solução que também soma 1. A regra de reação é preservação legítima. A conferência estrutural localiza a soma no evento; não comprova sozinha a ordem dos efeitos ou toda a partida. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
+
+
 ## Direção da revisão
 
 A criança retoma o projeto da Aula 1 e acrescenta a contagem. A experiência,

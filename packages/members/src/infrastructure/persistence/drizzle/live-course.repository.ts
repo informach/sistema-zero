@@ -8,6 +8,7 @@ import type {
   LiveStudioBlockRecord,
 } from '../../../domain/ports/live-course.port'
 import type { Database } from './db'
+import { memberStudioContentProjection } from './member-studio-content-projection'
 import {
   courses,
   activeLessonBlocks as lessonBlocks,
@@ -135,7 +136,7 @@ export class DrizzleLiveCourseRepository implements LiveCoursePort {
         blockId: lessonBlocks.id,
         lessonId: lessonBlocks.lessonId,
         kind: lessonBlocks.kind,
-        content: lessonBlocks.content,
+        content: memberStudioContentProjection(lessonBlocks.content),
         courseId: lessons.courseId,
         published: lessons.isPublished,
       })

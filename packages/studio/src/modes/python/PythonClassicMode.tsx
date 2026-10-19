@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { isPythonProject } from '../../core/editableProject'
 import { loadPythonAuthoring, pythonOfficialModules } from '../../python/blocks/authoring'
@@ -9,12 +9,6 @@ import { useSettingsStore } from '../../state/settingsStore'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 import { PythonClassicWorkspace } from './PythonClassicWorkspace'
-
-const SourceEditor = lazy(() =>
-  import('../../components/code/PythonSourceEditor').then((module) => ({
-    default: module.PythonSourceEditor,
-  })),
-)
 
 export function PythonClassicMode({ mode }: { mode: 'blocks' | 'bridge' }) {
   const projectId = useProjectStore((state) => state.project?.id)
@@ -91,40 +85,43 @@ function PythonClassicProjectMode({ mode }: { mode: 'blocks' | 'bridge' }) {
   }, [owner?.value, learning, revealed])
   if (python?.kind !== 'classic') return null
   const error = owner?.error ?? selection?.error
-  if (!environment || error)
-    return (
-      <div className="flex h-full min-h-0 flex-col">
-        <div role="alert" className="flex shrink-0 flex-wrap items-center gap-3 p-3 text-sm">
-          <p>
-            {error ??
-              'Os blocos ainda não estão disponíveis aqui. Seus arquivos continuam preservados.'}
-          </p>
-          <button
-            type="button"
-            className="min-h-10 rounded border border-sz-border px-3"
-            onClick={() => {
-              setLoaded(undefined)
-              setRetry((value) => value + 1)
-            }}
-          >
-            Tentar novamente
-          </button>
-        </div>
-        <div className="min-h-0 flex-1">
-          <Suspense fallback={<EditorSkeleton message="Abrindo seus arquivos Python…" />}>
-            <SourceEditor />
-          </Suspense>
-        </div>
+  const unavailable =
+    !environment || error ? (
+      <div role="alert" className="flex shrink-0 flex-wrap items-center gap-3 p-3 text-sm">
+        <p>
+          {error ??
+            'Os blocos ainda não estão disponíveis aqui. Seus arquivos continuam preservados.'}
+        </p>
+        <button
+          type="button"
+          className="min-h-10 rounded border border-sz-border px-3"
+          onClick={() => {
+            setLoaded(undefined)
+            setRetry((value) => value + 1)
+          }}
+        >
+          Tentar novamente
+        </button>
       </div>
-    )
-  if (!owner?.value || !selection?.palette)
-    return <EditorSkeleton message="Carregando os blocos Python…" />
+    ) : !owner?.value || !selection?.palette ? (
+      <EditorSkeleton message="Carregando os blocos Python…" />
+    ) : undefined
   return (
     <PythonClassicWorkspace
       mode={mode}
-      codecs={owner.value.codecs}
-      palette={selection.palette}
-      officialModules={officialModules}
+      // The source belongs to the open document, not to a transient runtime grant. Only the
+      // visual resource is removed while authority is missing or its new palette is loading.
+      blockly={
+        environment && owner?.value && selection?.palette
+          ? {
+              codecs: owner.value.codecs,
+              palette: selection.palette,
+              officialModules,
+            }
+          : undefined
+      }
+      unavailable={unavailable}
+      sourceFallback={!environment || Boolean(error)}
     />
   )
 }
