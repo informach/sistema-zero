@@ -10,6 +10,7 @@ import {
   isLearningManifest,
   type LessonDraft,
   type LessonDraftChange,
+  readManifestStudioProjectExamples,
 } from '@sistemazero/core/learning'
 import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import { eq, sql } from 'drizzle-orm'
@@ -197,6 +198,55 @@ export function lessonDraftCases(getDb: () => Database) {
       const final = await f.repo.read(f.lessonId)
       expect(final.revision).toBe(first.revision)
       expect(final.document).toEqual(first.document)
+    })
+
+    test('updating and publishing a section solution preserves every stored submission field', async () => {
+      const f = await exampleFixture()
+      const save = (draft: LessonDraft, exampleId: string, name: string) =>
+        f.change(draft, {
+          type: 'studio-example',
+          blockId: f.block.id,
+          sectionId: f.section.id,
+          role: 'solution',
+          action: { type: 'save', exampleId, project: { ...f.project, name } },
+        })
+      await f.publish(await save(f.draft, randomUUID(), 'Solução v1'))
+      const [original] = await f.db
+        .insert(studioSubmissions)
+        .values({
+          id: randomUUID(),
+          userId: randomUUID(),
+          accountId: randomUUID(),
+          lessonId: f.lessonId,
+          courseId: f.courseId,
+          blockId: f.block.id,
+          project: { ...f.project, name: 'Meu jogo original' },
+          message: 'terminei!',
+          score: 100,
+          results: [{ checkId: 'loop', passed: true }],
+          submittedAt: f.now,
+          checkedAt: f.now,
+          passedAt: f.now,
+        })
+        .returning()
+      if (!original) throw new Error('Expected the existing student submission')
+      const readSubmission = () =>
+        f.db.select().from(studioSubmissions).where(eq(studioSubmissions.id, original.id))
+      // A changed immutable snapshot gets a new ID through the section-example command.
+      const nextExampleId = randomUUID()
+      const updated = await save(await f.repo.read(f.lessonId), nextExampleId, 'Solução v2')
+      expect(await readSubmission()).toEqual([original])
+      await f.publish(updated)
+      expect(await readSubmission()).toEqual([original])
+      const published = await f.repo.readPublished(f.lessonId)
+      expect(
+        published.document.blocks.find((block) => block.id === f.block.id)?.content,
+      ).toMatchObject({
+        projectExamples: {
+          sections: { [f.section.id]: { solutionExampleId: nextExampleId } },
+          examples: { [nextExampleId]: { ...f.project, name: 'Solução v2' } },
+        },
+      })
     })
 
     test('large private examples are projected inside PostgreSQL and authoring snapshots stay complete', async () => {
@@ -959,7 +1009,24 @@ export function lessonDraftCases(getDb: () => Database) {
             const actual: unknown = draft.document.blocks.find(
               (block) => block.id === importedLearningId(f.lessonId, 'block', entry.key),
             )?.content
-            expect(actual).toEqual(entry.content)
+            let expected = entry.content
+            if (entry.content.kind === 'studio' && entry.content.projectExamples !== undefined) {
+              const read = readManifestStudioProjectExamples(entry.content.projectExamples)
+              if (read.kind !== 'valid') throw new Error(`Invalid Studio examples in ${path}`)
+              expected = {
+                ...entry.content,
+                projectExamples: {
+                  ...read.value,
+                  sections: Object.fromEntries(
+                    Object.entries(read.value.sections).map(([key, binding]) => [
+                      importedLearningId(f.lessonId, 'section', key),
+                      binding,
+                    ]),
+                  ),
+                },
+              }
+            }
+            expect(actual).toEqual(expected)
           }
         // O vídeo preservado precisa pertencer a uma seção. O importador usa a última
         // seção de fechamento quando existe; caso contrário, usa a última seção.

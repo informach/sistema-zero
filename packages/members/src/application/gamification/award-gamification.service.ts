@@ -28,7 +28,7 @@ import { type GamificationDeltaView, toGamificationDeltaView } from '../mappers/
  */
 export class AwardGamificationService {
   constructor(
-    private readonly repo: GamificationRepository,
+    private readonly repo: Pick<GamificationRepository, 'award'>,
     private readonly clock: () => Date,
     private readonly logger: Logger,
   ) {}

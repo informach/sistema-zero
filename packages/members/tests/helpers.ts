@@ -117,6 +117,7 @@ import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
 import type { HubAuthorActivity, HubGateway } from '../src/domain/ports/hub-gateway.port'
 import type { Env } from '../src/infrastructure/config/env'
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
+import { DrizzleGamificationRepository } from '../src/infrastructure/persistence/drizzle/gamification.repository'
 import { DrizzlePensaCheckpointsRepository } from '../src/infrastructure/persistence/drizzle/pensa-checkpoints.repository'
 import { DrizzlePensaNarrationsRepository } from '../src/infrastructure/persistence/drizzle/pensa-narrations.repository'
 import { DrizzlePensaOperationsRepository } from '../src/infrastructure/persistence/drizzle/pensa-operations.repository'
@@ -743,7 +744,18 @@ export function buildApp(
         operations: new DrizzlePensaOperationsRepository(commands, limits),
         checkpoints: new DrizzlePensaCheckpointsRepository(repo),
         narrations: new DrizzlePensaNarrationsRepository(repo),
-        rewards: new DrizzlePensaRewardsRepository(repo.db, awardGamification),
+        rewards: new DrizzlePensaRewardsRepository(
+          repo.db,
+          (tx) =>
+            new AwardGamificationService(
+              {
+                award: (input) =>
+                  new DrizzleGamificationRepository(repo.db).awardInTransaction(tx, input),
+              },
+              clock,
+              silentLogger,
+            ),
+        ),
         accessCheck,
         getGamification: new GetGamificationService(
           gamification,

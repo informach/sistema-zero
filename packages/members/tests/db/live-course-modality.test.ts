@@ -30,6 +30,7 @@ import {
 import { eligibleStudioGrants } from '../../src/infrastructure/persistence/drizzle/studio-unlock-eligibility'
 import { DrizzleZappyKnowledgeRepository } from '../../src/infrastructure/persistence/drizzle/zappy-knowledge.repository'
 import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
+import { publishKidsSeedForTest } from './kids-journey-seed-fixture'
 
 /**
  * Cursos AO VIVO (14/10/2026) no PostgreSQL REAL, com as migrations de verdade (inclusive a
@@ -399,10 +400,14 @@ describe.skipIf(!url)('Cursos ao vivo — PostgreSQL', () => {
       const live = await insertCourse({ modality: 'live' })
       const recorded = await insertCourse()
       const userId = randomUUID()
+      // Recorded milestones consume the canonical policy even in a mixed live-course batch.
+      const journey = await publishKidsSeedForTest(db)
+      const accountId = randomUUID()
+      await journey.initializeProfile({ userId, accountId })
       const award = (events: { sourceType: never; sourceId: string; amount: number }[]) =>
         repo.award({
           userId,
-          accountId: userId,
+          accountId,
           audience: 'kids',
           events,
           today: '2026-11-07',

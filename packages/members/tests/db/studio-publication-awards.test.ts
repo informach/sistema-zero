@@ -4,10 +4,7 @@ import { eq, inArray } from 'drizzle-orm'
 import { AwardGamificationService } from '../../src/application/gamification/award-gamification.service'
 import { studioPublishDaySourceId } from '../../src/domain/gamification/source-id'
 import type { AwardInput } from '../../src/domain/ports/gamification-repository.port'
-import {
-  createDbConnection,
-  type DbConnection,
-} from '../../src/infrastructure/persistence/drizzle/db'
+import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleGamificationRepository } from '../../src/infrastructure/persistence/drizzle/gamification.repository'
 import {
   accountDeletionFences,
@@ -20,16 +17,18 @@ import {
 } from '../../src/infrastructure/persistence/drizzle/schema'
 import { DrizzleUserDataPurgeRepository } from '../../src/infrastructure/persistence/drizzle/user-data-purge.repository'
 import { silentLogger } from '../fakes/in-memory'
+import { openStudioReviewDatabase } from './studio-review-database'
 
-const url = process.env.TEST_DATABASE_URL
+// Publication and purge exercise the complete schema, not the shared sparse repository fixtures.
+const url = process.env.STUDIO_REVIEW_DATABASE_URL
+if (url !== undefined && !url.trim())
+  throw new Error('STUDIO_REVIEW_DATABASE_URL is explicitly empty')
+
 describe.skipIf(!url)('durable standalone publication awards in PostgreSQL', () => {
   let connection: DbConnection, repository: DrizzleGamificationRepository
   const owners: string[] = []
-  beforeAll(() => {
-    const target = new URL(url!)
-    if (!['127.0.0.1', 'localhost', '[::1]'].includes(target.hostname))
-      throw new Error('Use explicit loopback QA database')
-    connection = createDbConnection(url!, { max: 4 })
+  beforeAll(async () => {
+    connection = await openStudioReviewDatabase(url!)
     repository = new DrizzleGamificationRepository(connection.db)
   })
   afterEach(async () => {

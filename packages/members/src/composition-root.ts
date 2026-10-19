@@ -1206,7 +1206,15 @@ export async function createApplication(env: Env): Promise<Application> {
       operations: pensaOperations,
       checkpoints: pensaCheckpoints,
       narrations: pensaNarrations,
-      rewards: new DrizzlePensaRewardsRepository(db, awardGamification),
+      rewards: new DrizzlePensaRewardsRepository(
+        db,
+        (tx) =>
+          new AwardGamificationService(
+            { award: (input) => gamificationRepo.awardInTransaction(tx, input) },
+            clock,
+            logger,
+          ),
+      ),
       accessCheck,
       getGamification,
       credits: aiCredits,

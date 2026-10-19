@@ -135,12 +135,23 @@ function activeAudienceAccessPredicate(audience: CourseAudience, now: Date) {
   )
 }
 
+type AwardTransaction = Parameters<Parameters<Database['transaction']>[0]>[0]
+
 export class DrizzleGamificationRepository implements GamificationRepository {
   constructor(private readonly db: Database) {}
 
   async award(input: AwardInput): Promise<AwardResult> {
+    return this.db.transaction(this.awardOperation(input))
+  }
+
+  /** Infrastructure unit of work: the outbox and award must share one SQL transaction. */
+  async awardInTransaction(tx: AwardTransaction, input: AwardInput): Promise<AwardResult> {
+    return this.awardOperation(input)(tx)
+  }
+
+  private awardOperation(input: AwardInput) {
     input = structuredClone(input)
-    return this.db.transaction(async (tx) => {
+    return async (tx: AwardTransaction) => {
       // Same ownership/account fence and lock order as learning, journey and purge.
       // A delivery after deletion is terminally acknowledged without recreating data.
       try {
@@ -709,7 +720,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         coinBalance,
         coinsCapped,
       }
-    })
+    }
   }
 
   async spendCoins(input: SpendCoinsInput): Promise<SpendCoinsResult> {

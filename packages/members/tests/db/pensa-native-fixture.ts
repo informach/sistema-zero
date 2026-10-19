@@ -37,6 +37,7 @@ import { DrizzleStudioUnlockRepository } from '../../src/infrastructure/persiste
 import { buildErrorResponse } from '../../src/interfaces/http/error-handler'
 import { pensaRoutes } from '../../src/interfaces/http/routes/pensa.routes'
 import { silentLogger } from '../fakes/in-memory'
+import { publishKidsSeedForTest } from './kids-journey-seed-fixture'
 import { openPensaTestDatabase } from './pensa-native-database'
 
 export async function nativePensa(
@@ -50,7 +51,7 @@ export async function nativePensa(
   const learnerId = randomUUID()
   const actor: P.PensaActor = {
     profileId: learnerId,
-    accountId: audience === 'adult' ? learnerId : randomUUID(),
+    accountId: audience === 'adult' || privileged ? learnerId : randomUUID(),
     privileged,
     ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
   }
@@ -67,6 +68,8 @@ export async function nativePensa(
     () => now,
   )
   const kidsJourneyRepository = new DrizzleKidsJourneyRepository(conn.db)
+  // Staff preview is own-account only and still requires a real published policy.
+  if (audience === 'kids' && privileged) await publishKidsSeedForTest(conn.db)
   const kidsJourneyQuery = new KidsJourneyQueryService(kidsJourneyRepository)
   const kidsJourneyProfiles = new KidsJourneyProfilesService(
     kidsJourneyRepository,
@@ -107,7 +110,12 @@ export async function nativePensa(
   )
   const rewards = new DrizzlePensaRewardsRepository(
     conn.db,
-    new AwardGamificationService(gamiRepo, () => now, silentLogger),
+    (tx) =>
+      new AwardGamificationService(
+        { award: (input) => gamiRepo.awardInTransaction(tx, input) },
+        () => now,
+        silentLogger,
+      ),
   )
   const deps = {
     adultJourney,
