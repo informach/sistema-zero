@@ -44,7 +44,7 @@ export async function uploadPythonPromotion(
     await writeFile(
       configPath,
       canonicalJson({
-        name: 'sistemazero-python-runtime-promotion-staging',
+        name: `sistemazero-python-runtime-promotion-${plan.input.environment}`,
         account_id: target.accountId,
         compatibility_date: '2026-07-01',
         r2_buckets: [{ binding: 'PYTHON_RUNTIME', bucket_name: target.bucketName, remote: true }],

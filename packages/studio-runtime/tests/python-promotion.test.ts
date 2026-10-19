@@ -9,7 +9,11 @@ import {
   StudioRuntimeReleaseSchema,
 } from '@sistemazero/core/studio/runtime-catalog'
 import { runPythonPromotionCommand } from '../scripts/promote-python-runtime'
-import { preparePythonPromotion, verifyPythonPromotionPlan } from '../scripts/python-promotion-plan'
+import {
+  type PythonPromotionInput,
+  preparePythonPromotion,
+  verifyPythonPromotionPlan,
+} from '../scripts/python-promotion-plan'
 import { uploadPythonPromotion } from '../scripts/python-promotion-r2'
 import { sha256 } from '../src/artifacts'
 import { pythonDistributionFixture } from './python-distribution-fixture'
@@ -23,7 +27,11 @@ afterEach(async () => {
   }
 })
 
-async function fixture() {
+async function fixture(environment: 'staging' | 'production' = 'staging') {
+  const bucketName: PythonPromotionInput['target']['bucketName'] =
+    environment === 'staging'
+      ? 'sistemazero-studio-artifacts-staging'
+      : 'sistemazero-studio-artifacts'
   const storage = await pythonDistributionFixture({
     compressed: true,
     standalone: true,
@@ -60,15 +68,15 @@ async function fixture() {
   await writeFile(join(directory, 'distribution.json'), JSON.stringify(distribution))
   const input = {
     version: 1,
-    environment: 'staging',
+    environment,
     target: {
       accountId: '1'.repeat(32),
-      bucketName: 'sistemazero-studio-artifacts-staging',
-      runtimeOrigin: 'https://python.staging.example',
+      bucketName,
+      runtimeOrigin: `https://python.${environment}.example`,
       parentOrigins: [
-        'https://admin.staging.example',
-        'https://adult.staging.example',
-        'https://kids.staging.example',
+        `https://admin.${environment}.example`,
+        `https://adult.${environment}.example`,
+        `https://kids.${environment}.example`,
       ],
     },
     distribution: { directory, sha256: await sha256Hex(canonicalJson(distribution)) },
@@ -117,8 +125,40 @@ test('offline plan is deterministic, binds distinct hashes and registers real Py
   expect(await verifyPythonPromotionPlan(first, first.planSha256)).toEqual(first)
 })
 
-test('existing JS/retired Python metadata and origins survive merge and repeat preparation', async () => {
+test('production reuses immutable release bytes with its own origins and catalog', async () => {
   const f = await fixture()
+  const staging = await preparePythonPromotion(f.input)
+  const production = await preparePythonPromotion({
+    ...f.input,
+    environment: 'production',
+    target: {
+      ...f.input.target,
+      bucketName: 'sistemazero-studio-artifacts',
+      runtimeOrigin: 'https://python.production.example',
+      parentOrigins: ['https://admin.production.example'],
+    },
+  })
+  expect(production.deployment).toEqual(staging.deployment)
+  expect(production.prefix).toBe(staging.prefix)
+  expect(production.markerSha256).toBe(staging.markerSha256)
+  expect(production.planSha256).not.toBe(staging.planSha256)
+  expect(production.workerCatalog.sha256).not.toBe(staging.workerCatalog.sha256)
+  expect(production.configuration.worker.parentOrigins).toEqual([
+    'https://admin.production.example',
+  ])
+  expect(production.configuration.hosts[0]?.origin).toBe('https://python.production.example')
+  expect(production.configuration.frameOrigins.admin).toEqual(['https://python.production.example'])
+  expect(JSON.stringify(production.configuration)).not.toContain('staging.example')
+  expect(production.defaults).toEqual(staging.defaults)
+  expect(await verifyPythonPromotionPlan(production, production.planSha256)).toEqual(production)
+  expect(await verifyPythonPromotionPlan(staging, staging.planSha256)).toEqual(staging)
+})
+
+test.each([
+  'staging',
+  'production',
+] as const)('existing JS/retired Python metadata and origins survive merge in %s', async (environment) => {
+  const f = await fixture(environment)
   const first = await preparePythonPromotion(f.input)
   first.configuration.worker.deployments[0]!.status = 'retired'
   first.configuration.members.releases[0]!.status = 'retired'
@@ -171,12 +211,18 @@ test('existing JS/retired Python metadata and origins survive merge and repeat p
   ])
 })
 
-test('permanent identity, staging target and immutable collision are enforced', async () => {
-  const f = await fixture()
+test.each([
+  'staging',
+  'production',
+] as const)('permanent identity, HTTPS origins and immutable collision are enforced in %s', async (environment) => {
+  const f = await fixture(environment)
   for (const invalid of [
-    { ...f.input, environment: 'production' },
-    { ...f.input, target: { ...f.input.target, bucketName: 'sistemazero-studio-artifacts' } },
     { ...f.input, target: { ...f.input.target, runtimeOrigin: 'http://127.0.0.1:5297' } },
+    { ...f.input, target: { ...f.input.target, runtimeOrigin: f.input.target.parentOrigins[0] } },
+    {
+      ...f.input,
+      baseline: { ...f.input.baseline, previewOrigin: 'https://previous-runtime.example' },
+    },
     { ...f.input, release: { ...f.input.release, profileId: 'python-probe' } },
     { ...f.input, release: { ...f.input.release, capabilities: ['edit', 'execute', 'terminal'] } },
   ])
@@ -191,8 +237,33 @@ test('permanent identity, staging target and immutable collision are enforced', 
   ).rejects.toThrow('identidade')
 })
 
-test('adding a release preserves revoked releases, previous parents and explicit state consistency', async () => {
+test('environment and bucket crossings fail before the upload connector', async () => {
   const f = await fixture()
+  const plan = await preparePythonPromotion(f.input)
+  let connections = 0
+  const connect = async () => {
+    connections++
+    throw new Error('must never connect')
+  }
+  for (const invalid of [
+    { ...f.input, environment: 'production' },
+    { ...f.input, target: { ...f.input.target, bucketName: 'sistemazero-studio-artifacts' } },
+    { ...f.input, environment: 'preview' },
+    { ...f.input, target: { ...f.input.target, bucketName: 'another-bucket' } },
+  ]) {
+    await expect(preparePythonPromotion(invalid)).rejects.toThrow()
+    await expect(
+      uploadPythonPromotion({ ...plan, input: invalid }, plan.planSha256, connect),
+    ).rejects.toThrow()
+  }
+  expect(connections).toBe(0)
+})
+
+test.each([
+  'staging',
+  'production',
+] as const)('adding a release preserves revoked releases, parents and state consistency in %s', async (environment) => {
+  const f = await fixture(environment)
   const first = await preparePythonPromotion(f.input)
   first.configuration.worker.deployments[0]!.status = 'revoked'
   first.configuration.members.releases[0]!.status = 'revoked'
@@ -218,8 +289,11 @@ test('adding a release preserves revoked releases, previous parents and explicit
   await expect(preparePythonPromotion(input)).rejects.toThrow('estados')
 })
 
-test('CLI prepare creates a pinned public plan, retries exactly and never overwrites a different plan', async () => {
-  const f = await fixture()
+test.each([
+  'staging',
+  'production',
+] as const)('CLI prepare creates an immutable pinned plan in %s', async (environment) => {
+  const f = await fixture(environment)
   const inputPath = join(f.directory, 'promotion-input.json')
   const outputPath = join(f.directory, 'promotion-plan.json')
   await writeFile(
@@ -338,12 +412,16 @@ test('valid gzip with matching artifact hashes must still reproduce every logica
   }
 })
 
-test('upload uses native conditional storage, marker then catalog, idempotent retry and always disposes', async () => {
-  const f = await fixture()
+test.each([
+  'staging',
+  'production',
+] as const)('upload uses conditional storage, marker then catalog, idempotence and disposal in %s', async (environment) => {
+  const f = await fixture(environment)
   const plan = await preparePythonPromotion(f.input)
   let disposed = 0
   const connect = async (configPath: string) => {
     const config = JSON.parse(await readFile(configPath, 'utf8'))
+    expect(config.name).toBe(`sistemazero-python-runtime-promotion-${environment}`)
     expect(config.account_id).toBe(f.input.target.accountId)
     expect(config.r2_buckets).toEqual([
       { binding: 'PYTHON_RUNTIME', bucket_name: f.input.target.bucketName, remote: true },
@@ -364,6 +442,8 @@ test('upload uses native conditional storage, marker then catalog, idempotent re
   ])
   expect(f.storage.objects.size).toBe(f.distribution.files.length + 2)
   expect(receipt.workerCatalog).toEqual(plan.workerCatalog)
+  expect(receipt.environment).toBe(environment)
+  expect(receipt.bucketName).toBe(f.input.target.bucketName)
   expect(receipt.distributionSha256).toBe(f.input.distribution.sha256)
   expect(JSON.stringify(receipt)).not.toContain(f.input.target.accountId)
   const count = f.storage.counts().puts

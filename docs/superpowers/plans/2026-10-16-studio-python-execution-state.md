@@ -1,4 +1,12 @@
 # Retomada — Estúdio Python/Turtle
+### Checkpoint do operador produção e configuração versionada — 19/10/2026
+
+Runtime staging entrega real aprovada: manifesto e27arquivos públicos íntegros,12representações gzip internas recusadas; recibo `python-staging-public-delivery-20261019.json`. Os dois Workers de análise e respectivos segredos foram provisionados, com401 anônimo/404 autorizado nos dois ambientes; produção segunda conferência passou preservando o segredo criado na primeira. URLs/tokens/CSP Railway de ambos ambientes foram conferidos por leitura, sem deploy dos aplicativos nem catálogo Members ativo. A configuração Worker versionada agora fixa os descriptors staging40ce822a... e produção6742f03c..., prevenindo perda no próximo deploy. Runtime produção continua na versão antiga até revisão de compatibilidade; configuração preparada não é implantação.
+
+Extensão do operador para production recebeu review root, testes19/153 e typecheck canônico completo EXIT0 (`python-promotion-production-canonical-types-r2.log`). A primeira tentativa de tipos detectou só fixture bucket:string; corrigida pela união literal real, sem cast de resultado. Plano staging9dba permaneceu byte/identidade equivalente; produção d4183cb6... usa mesma distribuição/release e origens produção ACTIVE confirmadas por CLI.
+
+**Novo negativo operacional:** upload produção pelo CLI canônico falhouHTTP400 sem CF-R2-Error; log `production-python-release-upload-20261019.log`. Objetos parciais imutáveis foram preservados; não foi declarado upload completo nem catálogo ativado. O readback staging por observador transparente passou41, mas o proxy direto continuou falhando em chaves variáveis. Investigação da camada Wrangler/preview segue separada do código de produto, sem retry oculto ou troca de versão para esconder erro. Não chamar produção pronta. Gate remoto de sessão Pyright real está preparado e ainda não executado; UI/aluno, CI/rollout e desempenho continuam pendentes.
+
 ### Infraestrutura dos dois ambientes autorizada; terceiro bloqueio CI — 19/10/2026
 
 Usuário autorizou configurar infraestrutura em staging e produção por CLIs. Preservada orientação anterior de só promover código da plataforma para produção após validação em staging. Plano operacional em elaboração no worktree Python: `2026-10-19-studio-python-infrastructure.md`. Projeto Railway e ambientes explícitos; nenhum deploy de app de produção disparado.

@@ -306,9 +306,18 @@ Testes de contrato usam armazenamento/CAS em memória; provas de player usam Rea
 
 Admin, comunidade adulta e Kids precisam configurar, antes do build Next, `STUDIO_PYTHON_FRAME_ORIGINS` como uma lista JSON das origens públicas exatas dos runtimes aprovados em `STUDIO_RUNTIME_HOSTS_JSON` do Members. Exemplo: `["https://python-runtime.exemplo.com"]`. A allowlist acrescenta somente `frame-src` e `connect-src`, para o iframe isolado e o carregamento autenticado por hash dos recursos imutáveis; não concede autorização de execução nem libera scripts arbitrários. Não use tokens, credenciais, curingas ou caminhos. HTTPS é obrigatório em produção; localhost HTTP só em desenvolvimento. Alterações exigem novo build para atualizar os headers. A URL privada do executor e o serviço de análise continuam configurações independentes.
 
-### Preparação e upload imutável Python para staging
+### Preparação e upload imutável Python por ambiente
 
-O comando `scripts/promote-python-runtime.ts` consome uma distribuição **já construída e qualificada**. `prepare` é inteiramente offline: não importa Wrangler, não resolve credenciais, não reconstrói e não baixa artefatos. `upload` usa o binding R2 nativo remoto, com a configuração isolada do bucket `sistemazero-studio-artifacts-staging`; nunca instala um endpoint de upload. Nenhuma fase altera variáveis remotas, ativa catálogo ou implanta aplicações.
+O comando `scripts/promote-python-runtime.ts` consome uma distribuição **já construída e qualificada**. `prepare` é inteiramente offline: não importa Wrangler, não resolve credenciais, não reconstrói e não baixa artefatos. `upload` usa o binding R2 nativo remoto, com configuração isolada do ambiente; nunca instala um endpoint de upload. Nenhuma fase altera variáveis remotas, ativa catálogo ou implanta aplicações.
+
+O esquema exige um dos pares abaixo e recusa qualquer cruzamento antes de conectar:
+
+| `environment` | `target.bucketName` |
+| --- | --- |
+| `staging` | `sistemazero-studio-artifacts-staging` |
+| `production` | `sistemazero-studio-artifacts` |
+
+Conta, origens HTTPS e snapshots anteriores vêm do input real de cada ambiente. O comando não deduz o ambiente pelo hostname. A distribuição, a identidade permanente e as capacidades qualificadas permanecem iguais na promoção dos mesmos bytes; as origens e o baseline próprios produzem planos e catálogos específicos. Não copiar o baseline nem as origens de staging para produção.
 
 O input público tem este formato (substitua conta, diretório e origens pelos valores reais de staging; o SHA identifica a distribuição J-CI qualificada):
 
@@ -355,6 +364,15 @@ Da raiz do repositório:
 bun packages/studio-runtime/scripts/promote-python-runtime.ts prepare --input staging-promotion-input.json --out staging-promotion-plan.json
 bun packages/studio-runtime/scripts/promote-python-runtime.ts upload --plan staging-promotion-plan.json --expect-plan-sha256 SHA_EXATO_DO_RECIBO_PREPARE
 ```
+
+Para produção, a mesma CLI recebe outro input, com `environment: "production"`, bucket de produção e snapshots/origens conferidos nesse ambiente:
+
+```text
+bun packages/studio-runtime/scripts/promote-python-runtime.ts prepare --input production-promotion-input.json --out production-promotion-plan.json
+bun packages/studio-runtime/scripts/promote-python-runtime.ts upload --plan production-promotion-plan.json --expect-plan-sha256 SHA_EXATO_DO_RECIBO_PREPARE_PRODUCTION
+```
+
+Preparar ou subir objetos em produção não publica o código da plataforma nem ativa Python. A implantação do código e a ativação coordenada em produção permanecem posteriores à validação integrada de staging. O nome do proxy isolado é `sistemazero-python-runtime-promotion-<environment>`; o nome staging anterior permanece idêntico.
 
 `prepare` recusa symlinks/junctions, escape de diretório, hashes/tamanhos diferentes, gzip incompatível, identidade já vinculada a outros bytes e configurações inconsistentes. A saída é criada exclusivamente: repetir aceita somente o mesmo plano. O plano inclui `baselineSha256`, `configurationSha256`, `authoringCatalogSha256`, `planSha256`, os dois manifestos e o prefixo `runtimes/<SHA-da-release>/`. `workerCatalog` fixa SHA, chave R2 e tamanho do JSON canônico de `configuration.worker`; `workerBindings` contém somente SHA e origem de preview, com limite de 5KB por valor. Blocos, dependências e categorias vêm dos codecs Programação/Turtle do código atual. Alterar o catálogo ou qualquer campo derivado exige preparar outro plano; os planos antigos que usavam JSON inline são históricos e não passam na revalidação atual.
 

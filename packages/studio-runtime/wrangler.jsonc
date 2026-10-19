@@ -67,6 +67,8 @@
     }
   ],
   "vars": {
+    "STUDIO_PYTHON_DISTRIBUTIONS_SHA256": "6742f03c85bcde761b3df3bac4377e6bf2ffa359ac6572089f38532d1b8e601c",
+    "STUDIO_PYTHON_PREVIEW_ORIGIN": "https://sistemazero-studio-runtime.helena-bcc.workers.dev",
     "PUBLICATION_AUTHORIZATION_URL": "https://kids.sistemazero.com.br/api/internal/studio-play",
     "PUBLICATION_AUTHORIZATION_ADULT_URL": "https://comunidade.sistemazero.com.br/api/internal/studio-play",
     "PUBLICATION_CLEANUP_URL": "https://kids.sistemazero.com.br/api/internal/studio-publication-cleanup",
@@ -76,6 +78,8 @@
     "staging": {
       "name": "sistemazero-studio-runtime-staging",
       "vars": {
+        "STUDIO_PYTHON_DISTRIBUTIONS_SHA256": "40ce822aab07184da90bec7a0902296d4889c011740063be6c859bc5b60c57b2",
+        "STUDIO_PYTHON_PREVIEW_ORIGIN": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev",
         "PUBLICATION_AUTHORIZATION_URL": "https://community-kids-staging.up.railway.app/api/internal/studio-play",
         "PUBLICATION_AUTHORIZATION_ADULT_URL": "https://community-staging-66f2.up.railway.app/api/internal/studio-play",
         "PUBLICATION_CLEANUP_URL": "https://community-kids-staging.up.railway.app/api/internal/studio-publication-cleanup",

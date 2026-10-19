@@ -59,35 +59,47 @@ const configurationSchema = z.strictObject({
 })
 
 /** Public deployment data only; secrets and arbitrary environment variables are rejected. */
-export const PythonPromotionInputSchema = z.strictObject({
-  version: z.literal(1),
-  environment: z.literal('staging'),
-  target: z.strictObject({
-    accountId: z.string().regex(/^[a-f0-9]{32}$/),
-    bucketName: z.literal('sistemazero-studio-artifacts-staging'),
-    runtimeOrigin: origin,
-    parentOrigins: origins.refine((values) => values.length > 0),
-  }),
-  distribution: z.strictObject({ directory: z.string().min(1), sha256: StudioSha256Schema }),
-  release: z.strictObject({
-    profileId: permanentId,
-    releaseId: permanentId,
-    capabilities: z
-      .array(
-        z.enum(['edit', 'execute', 'pause', 'publish', 'export-source', 'python-repl', 'assist']),
-      )
-      .min(3)
-      .max(7)
-      .refine(
-        (values) =>
-          new Set(values).size === values.length &&
-          ['edit', 'execute', 'export-source'].every((value) =>
-            values.some((item) => item === value),
-          ),
-      ),
-  }),
-  baseline: configurationSchema,
-})
+export const PythonPromotionInputSchema = z
+  .strictObject({
+    version: z.literal(1),
+    environment: z.enum(['staging', 'production']),
+    target: z.strictObject({
+      accountId: z.string().regex(/^[a-f0-9]{32}$/),
+      bucketName: z.enum(['sistemazero-studio-artifacts-staging', 'sistemazero-studio-artifacts']),
+      runtimeOrigin: origin,
+      parentOrigins: origins.refine((values) => values.length > 0),
+    }),
+    distribution: z.strictObject({ directory: z.string().min(1), sha256: StudioSha256Schema }),
+    release: z.strictObject({
+      profileId: permanentId,
+      releaseId: permanentId,
+      capabilities: z
+        .array(
+          z.enum(['edit', 'execute', 'pause', 'publish', 'export-source', 'python-repl', 'assist']),
+        )
+        .min(3)
+        .max(7)
+        .refine(
+          (values) =>
+            new Set(values).size === values.length &&
+            ['edit', 'execute', 'export-source'].every((value) =>
+              values.some((item) => item === value),
+            ),
+        ),
+    }),
+    baseline: configurationSchema,
+  })
+  .refine(
+    ({ environment, target }) =>
+      target.bucketName ===
+      (environment === 'staging'
+        ? 'sistemazero-studio-artifacts-staging'
+        : 'sistemazero-studio-artifacts'),
+    {
+      path: ['target', 'bucketName'],
+      message: 'O bucket deve corresponder ao ambiente informado.',
+    },
+  )
 export type PythonPromotionInput = z.infer<typeof PythonPromotionInputSchema>
 
 const digest = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex')
