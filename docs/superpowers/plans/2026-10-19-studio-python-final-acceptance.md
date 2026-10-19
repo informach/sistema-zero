@@ -2,7 +2,7 @@
 
 Este registro organiza o aceite final. Não substitui os contratos R01–R22 de [validação](../../plans/2026-10-16-estudio-python-validacao-entregas.md) nem as metas de [desempenho](../../plans/2026-10-16-estudio-python-desempenho.md). Um teste funcional verde não aprova automaticamente desempenho ou implantação.
 
-Base integrada: `aaf9d3897523dd43b27f4d01afa662cb74682467`, enviada a `staging`. A frente pedagógica adicional permanece em outro worktree; sua imagem de validação não está implantada. O histórico detalhado e os resultados anteriores estão no [registro de execução](2026-10-16-studio-python-execution-state.md).
+Base integrada: `fb90b50559b9e84401a332754f42563bcd291d79`, enviada a `staging`. A frente pedagógica adicional permanece em outro worktree; sua imagem de validação não está implantada. O histórico detalhado e os resultados anteriores estão no [registro de execução](2026-10-16-studio-python-execution-state.md).
 
 ## Identidades que não podem ser confundidas
 
@@ -20,12 +20,12 @@ Base integrada: `aaf9d3897523dd43b27f4d01afa662cb74682467`, enviada a `staging`.
 | --- | --- | --- |
 | Checkpoint local de banco | `members-db-ci39308143317-full-r3/receipt.json`: 339 aprovados, 38 ignorados, zero falhas; ferramentas PostgreSQL nativas verificadas | Tratar cada teste ignorado conforme seu contrato; não contar como aprovado. CI Linux atual é prova separada |
 | Tipos e estilo do checkpoint | Members e Studio completos aprovados; Biome CI em 10.420 arquivos, sem mudança das regras | Repetir somente os gates afetados por novo diff ou falha |
-| CI remoto e rollout | Run `39317345030`, HEAD `aaf9d389…`: oito jobs independentes, Studio e Members DB passaram; falhou no Pensa integrado por sessão staff inconsistente na fixture. Correção local passou no E2E original, tipos e seis controles de acesso | Executar novo catch-up. Preflight SSH, sequência canônica da Jornada e implantação não foram alcançados |
-| Inicialização F1 | Três combinações passaram nas medições locais abaixo, cada uma com 13 fluxos funcionais e dez amostras medidas | Classic/Edge; posteriormente amostragem normativa e vídeo. Este recorte não aprova F1 completo |
+| CI remoto e rollout | CI39323154554 aprovou oito jobs paralelos, Studio, MembersDB e Pensa nativo. Falhou depois numa fixture histórica AuthDB que herdou o novo default pending. Correção local exclusivamente de fixture passou69/69,344asserções,AuthTSC/Biome | Novo catch-up com base anterior ao rollout `3190d9e0…`. Preflight SSH, sequência canônica da Jornada e implantação ainda não foram alcançados; não declarar CI completo |
+| Inicialização F1 | Quatro combinações passaram nas medições locais abaixo: 52 fluxos funcionais, dez amostras medidas por combinação | Amostragem normativa e vídeo. Este recorte não aprova F1 completo |
 | Memória e encerramento | Provas anteriores de console em Chrome/Edge e 30 ciclos, sem relaxar 256 MiB | Editor + parser + execução agregados, F4 e vídeo; não extrapolar a prova de console |
 | Publicação e jogo públicos | Cadeia real Auth/SQL/R2/browser anterior passou oito percursos por navegador; publicação/remix/moderação observados | Revalidar as mudanças pertinentes e a implantação de staging, incluindo as quatro variantes JS/Python e execução anônima |
 | Serviço de linguagem | Worker isolado qualificado em staging e produção, 12 controles reais em cada ambiente | Editor e carga de oficina com o serviço implantado, sem confundir saúde do serviço com desempenho do editor |
-| Pedagogia adicional | Imagem992, matriz real do motor e Worker HTTP passaram; contrato HTTP com banco também passou. Microfluxo genuíno Members → Worker → SDK → SQL passou três cenários; recibo pedagógico `cade-a2-worker-live-1/r3/final-qualification.json` | Python assíncrono/preview992 e revisão final da composição antes de conteúdo obrigatório ou commit |
+| Pedagogia adicional | Provas992 completas, incluindo Python assíncrono/preview. P2 de sprites projetados corrigido e revisto; seis tipos,173testes e novo perfil/imagem78 passaram. Imagem78: quatro casos projetados e matriz18/90observações aprovados | Concluir Worker/SQL/Python78. As provas992 permanecem históricas, sem alegar validade para bytes posteriores; conteúdo A2 não ativado |
 | Infra Python staging | Distribuição R2 e entrega pública verificadas; Worker e serviço de linguagem preparados | Concluir rollout e ativar catálogo/hosts no Members por último; depois validar UI e autoridade reais |
 | Infra Python produção | Variáveis preparadas, análise qualificada; distribuição ainda incompleta | Resolver causa do operador R2 e qualificar promoção. Não atualizar o runtime compartilhado enquanto o aplicativo publicado usar o contrato JS antigo |
 
@@ -38,8 +38,9 @@ Os diretórios de evidência acima são relativos a `.cache/studio-python-l0/` n
 | Pro / Chrome | 8.395,70 ms | 1.428,40 ms | 1.429,90 ms | `jci-f1-overlap-candidate-chrome-pro-20261019T192837787Z/` |
 | Clássico / Chrome | 7.966,80 ms | 1.080,10 ms | 1.113,50 ms | `jci-f1-overlap-classic-chrome-20261019T203348014Z/` |
 | Pro / Edge | 8.379,30 ms | 1.479,70 ms | 1.363,20 ms | `jci-f1-overlap-pro-edge-20261019T203918493Z/` |
+| Clássico / Edge | 8.016,10 ms | 1.412,70 ms | 1.113,40 ms | `jci-f1-overlap-classic-edge-20261019T205421564Z/` |
 
-Cada série tem três aquecimentos e dez amostras medidas, sem retries ou exclusão de falhas. Todos os 13 fluxos e todas as dez amostras de cada série passaram. Distribuição996 preservada e sete hashes capturados conferidos após as duas séries novas. Mesmo computador de 16 GB; condições de memória inicial diferentes estão nos recibos, sem alegar controle completo do sistema. Servidor de QA com shaping de respostas 20 Mbps/80 ms, não emulação completa da rede. Tempo até bitmap útil observado, não até apresentação pelo compositor. Nenhuma chamada de vídeo nesta prova.
+Cada série tem três aquecimentos e dez amostras medidas, sem retries ou exclusão de falhas. Todos os 13 fluxos e todas as dez amostras de cada série passaram. Distribuição996 preservada e sete hashes capturados conferidos após cada série. Mesmo computador de 16 GB; condições de memória inicial diferentes estão nos recibos, sem alegar controle completo do sistema. Servidor de QA com shaping de respostas 20 Mbps/80 ms, não emulação completa da rede. Tempo até bitmap útil observado, não até apresentação pelo compositor. Nenhuma chamada de vídeo nesta prova.
 
 ## Matriz de revisão antes da conclusão
 
@@ -60,10 +61,10 @@ Todos os requisitos abaixo continuam abertos para o aceite final integrado. A ba
 
 ## Próxima janela de desempenho
 
-1. Encerrar o microfluxo pedagógico atual e confirmar limpeza antes de ocupar a máquina.
-2. Manter distribuição, fontes, servidor QA e rede controlada pinados. Executar F1 Classic/Chrome, Pro/Edge e Classic/Edge, cada um com três aquecimentos e dez medições diagnósticas, sem retries nem testes pesados paralelos.
-3. Preservar todas as amostras e falhas. Usar resumo que aceite explicitamente Classic/Pro e confira distribuição; o resumo antigo só aceitava Pro e permanece preservado.
-4. Se uma meta falhar, guardar o negativo e perfilar a combinação que falhou antes de mudar produto. Não atribuir a causa à linguagem, memória, navegador ou rede por hipótese.
-5. Só então ampliar para vídeo/F4, amostragem normativa e carga de oficina. Hardware de 16 GB serve à validação local, não substitui o computador de referência de 8 GB.
+1. As quatro séries diagnósticas F1 estão encerradas e seus servidores foram encerrados. A janela pesada está com a revisão/validação pedagógica; não disputar CPU e memória com outra medição.
+2. Preservar as 52 execuções e suas distribuições originais. Áudio portátil e qualificação integral de Pac-Man/Space Arena ainda exigem implementação, além de testes; consultar os contratos R21/R22.
+3. Ampliar para vídeo/F4 e amostragem normativa somente com artefato e cenário explicitamente identificados. Uma nova distribuição não herda as medidas996 como se fossem suas.
+4. A sala admite no máximo oito alunos. Medir a UI com oito e professor; para carga de trinta alunos, usar quatro salas válidas (8+8+8+6) e registrar quatro professores. Não remover a guarda de capacidade para produzir o benchmark.
+5. Se uma meta falhar, guardar o negativo e perfilar antes de mudar produto. Hardware de 16 GB serve à validação local, não substitui o computador de referência de 8 GB.
 
 O teste no segundo computador e a homologação física móvel seguem o adiamento solicitado pelo usuário. A programação é priorizada no computador; consulta responsiva continua no escopo. Nenhuma dessas medições adiadas será apresentada como executada.

@@ -612,15 +612,18 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     const arquivada = randomUUID()
     const orfao = randomUUID()
     const promo = randomUUID()
+    const preparando = randomUUID()
+    // Os perfis históricos já foram admitidos; os novos pending continuam fora da busca.
     await conn.sql`
       insert into auth.profiles
-        (id, account_user_id, name, birth_date, status, sort_order, created_at, updated_at)
+        (id, account_user_id, name, birth_date, status, admission_state, sort_order, created_at, updated_at)
       values
-        (${miguel}, ${ana.id}, 'Miguel', '2016-03-09', 'active', 0, now(), now()),
-        (${alice}, ${ana.id}, 'Alice', null, 'active', 1, now(), now()),
-        (${arquivada}, ${ana.id}, 'Beatriz', null, 'archived', 2, now(), now()),
-        (${orfao}, ${randomUUID()}, 'Zoe', null, 'active', 0, now(), now()),
-        (${promo}, ${rui.id}, 'Za 100%', null, 'active', 0, now(), now())`
+        (${miguel}, ${ana.id}, 'Miguel', '2016-03-09', 'active', 'ready', 0, now(), now()),
+        (${alice}, ${ana.id}, 'Alice', null, 'active', 'ready', 1, now(), now()),
+        (${arquivada}, ${ana.id}, 'Beatriz', null, 'archived', 'ready', 2, now(), now()),
+        (${orfao}, ${randomUUID()}, 'Zoe', null, 'active', 'ready', 0, now(), now()),
+        (${promo}, ${rui.id}, 'Za 100%', null, 'active', 'ready', 0, now(), now()),
+        (${preparando}, ${ana.id}, 'Miguel em preparo', null, 'active', 'pending', 3, now(), now())`
 
     // Por nome da criança (case-insensitive), com a conta responsável anexada.
     const byChild = await profiles.searchWithAccount({ q: 'migu', limit: 10, offset: 0 })
@@ -634,7 +637,7 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
       account: { id: ana.id, email: 'ana@familia.com', firstName: 'Ana', lastName: 'Souza' },
     })
 
-    // Por e-mail do responsável: os perfis ATIVOS da conta (arquivado fora), nome asc.
+    // Por e-mail do responsável: perfis ATIVOS e admitidos (arquivado/pending fora), nome asc.
     const byEmail = await profiles.searchWithAccount({ q: 'ana@familia', limit: 10, offset: 0 })
     expect(byEmail.total).toBe(2)
     expect(byEmail.items.map((i) => i.name)).toEqual(['Alice', 'Miguel'])
@@ -644,10 +647,13 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     expect(byFullName.total).toBe(2)
     expect(byFullName.items.map((i) => i.name)).toEqual(['Alice', 'Miguel'])
 
-    // Sem q → todos os ativos; conta apagada → account: null (o perfil segue listável).
+    // Sem q → ativos admitidos; conta apagada → account: null (o perfil segue listável).
     const all = await profiles.searchWithAccount({ limit: 10, offset: 0 })
     expect(all.total).toBe(4)
     expect(all.items.find((i) => i.id === orfao)?.account).toBeNull()
+    expect(all.items.some((i) => i.id === preparando)).toBe(false)
+    const pendingOnly = await profiles.searchWithAccount({ q: 'preparo', limit: 10, offset: 0 })
+    expect(pendingOnly).toEqual({ items: [], total: 0 })
 
     // '%' é LITERAL (escapado): casa só o nome que contém % — não vira curinga.
     const wildcard = await profiles.searchWithAccount({ q: '%', limit: 10, offset: 0 })
