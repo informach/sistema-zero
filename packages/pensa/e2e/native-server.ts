@@ -29,7 +29,6 @@ const user: SessionUser = {
   lastName: '',
   role: 'admin',
   status: 'active',
-  activeProfile: { accountId: fixture.actor.accountId },
 }
 const files = new Map<string, unknown>()
 async function gateway<T>(path: string, opts: CallOpts = {}): Promise<GatewayResponse<T>> {
@@ -45,7 +44,6 @@ async function gateway<T>(path: string, opts: CallOpts = {}): Promise<GatewayRes
         'x-internal-token': fixture.deps.internalToken,
         'x-consumer-id': 'member-shell',
         'x-auth-user-id': user.id,
-        'x-auth-account-id': fixture.actor.accountId,
         'x-auth-user-role': user.role,
         'x-auth-user-status': 'active',
       },
@@ -64,6 +62,7 @@ const members = {
     status: 200,
     body: await fixture.deps.getGamification.execute(user.id, fixture.actor.accountId, {
       audience: 'kids',
+      privileged: fixture.actor.privileged,
     }),
   }),
   zappyKnowledgeSearch: async () => ({ status: 200, body: { hits: [] } }),
