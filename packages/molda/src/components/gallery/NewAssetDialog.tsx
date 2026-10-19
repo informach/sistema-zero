@@ -8,7 +8,12 @@ import { clsx } from 'clsx'
 import type { FormEvent, JSX } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
-import { MOLDA_LIMITS, type TexelsPerUnit, type TextureSize } from '../../core/limits'
+import {
+  MOLDA_LIMITS,
+  NEW_MODEL_TEXELS_PER_UNIT,
+  type TexelsPerUnit,
+  type TextureSize,
+} from '../../core/limits'
 import {
   MOLDA_ASSET_KINDS,
   type MoldaAsset,
@@ -86,7 +91,7 @@ export function NewAssetDialog({
   const { showToast } = useToast()
   const [step, setStep] = useState<Step>('kind')
   const [kind, setKind] = useState<MoldaAssetKind | null>(null)
-  const [texels, setTexels] = useState<TexelsPerUnit>(4)
+  const [texels, setTexels] = useState<TexelsPerUnit>(NEW_MODEL_TEXELS_PER_UNIT)
   const [size, setSize] = useState<TextureSize>(32)
   const [preset, setPreset] = useState<SkyPresetId>('dia')
   const [templateId, setTemplateId] = useState<MoldaTemplateId | null>(null)
@@ -107,6 +112,7 @@ export function NewAssetDialog({
     setKind(null)
     setTemplateId(null)
     setName('')
+    setTexels(NEW_MODEL_TEXELS_PER_UNIT)
     setError(null)
     setBusy(false)
   }
@@ -149,7 +155,9 @@ export function NewAssetDialog({
     setBusy(true)
     setError(null)
     try {
-      const result = await gallery.getState().create({ kind: 'model', name, texelsPerUnit: 4 })
+      const result = await gallery
+        .getState()
+        .create({ kind: 'model', name, texelsPerUnit: NEW_MODEL_TEXELS_PER_UNIT })
       if (ticket !== operation.current) return
       if (!result.ok) {
         setError(
@@ -336,7 +344,7 @@ export function NewAssetDialog({
         <fieldset className="mt-4">
           <legend className="text-sm font-bold text-mld-text">{COPY.newAsset.texelsLabel}</legend>
           <p className="mt-1 text-xs text-mld-muted">{COPY.newAsset.texelsHint}</p>
-          <div className="mt-3 grid grid-cols-3 gap-3">
+          <div className="mt-3 grid grid-cols-2 gap-3">
             {MOLDA_LIMITS.texelsPerUnit.map((value) => (
               <OptionButton
                 key={value}

@@ -106,6 +106,30 @@ function mount(asset: MoldaSceneDocument, access: MoldaToolAccess | null = BASIC
 const withPiece = (): MoldaSceneDocument =>
   addScenePrimitive(migrateLegacyModel(makeModel()).document, 'box', 'Bloco')
 
+test('the basic pivot offers point picking and presets without the advanced modelling family', () => {
+  const source = withPiece()
+  const { editor, view, stage } = mount(source)
+  try {
+    choosePiece(view.container)
+    fireEvent.click(screen.getByRole('button', { name: /^Pivô$/ }))
+    const panel = within(screen.getByRole('region', { name: 'Onde a peça gira' }))
+    expect(panel.getByText('Ajuste fino').closest('details')!.open).toBe(false)
+    fireEvent.click(panel.getByRole('button', { name: 'Escolher na peça' }))
+    expect(stage.callbacks!.guideInput!()!.pivot!.snapVertex).toBe(true)
+    expect(editor.getState().canUndo).toBe(false)
+    fireEvent.click(panel.getByRole('button', { name: 'No meio' }))
+    expect(stage.callbacks!.guideInput!()!.pivot!.snapVertex).toBe(false)
+    fireEvent.click(panel.getByRole('button', { name: 'Na base' }))
+    expect(editor.getState().content.geometries).toBe(source.geometries)
+    expect(editor.getState().content.nodes.map((node) => node.transform)).toEqual(
+      source.nodes.map((node) => node.transform),
+    )
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
 /** Escolher como a criança escolhe: pelo botão da peça na hierarquia. */
 function choosePiece(container: HTMLElement): void {
   const button = container.querySelector<HTMLButtonElement>('button.mld-piece')

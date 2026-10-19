@@ -59,26 +59,27 @@ for (const theme of ['default', 'pink', 'dark'] as const) {
     await page.mouse.move(1100, 65)
     await shot('01-modelar-mover')
     await page.getByRole('button', { name: 'Pivô', exact: true }).click()
-    await page.getByRole('button', { name: 'Canto', exact: true }).click()
-    await expect(page.getByText('Colocar no:', { exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Na base', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Onde a peça gira', exact: true })).toBeVisible()
+    await page.getByText('Ajuste fino', { exact: true }).click()
     if (theme === 'dark')
       await expect(page.locator('[data-pivot-active="true"] legend')).toHaveCSS(
         'color',
         'rgb(201, 154, 247)',
       )
-    await expect(page.getByRole('button', { name: 'Canto', exact: true })).toHaveAttribute(
+    await expect(page.getByRole('button', { name: 'Na base', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
     await expect(page.getByLabel('Pivô · o ponto onde a peça gira X', { exact: true })).toHaveValue(
-      '3',
+      '0',
     )
     await expect(page.getByLabel('Pivô · o ponto onde a peça gira Z', { exact: true })).toHaveValue(
-      '4',
+      '0',
     )
     await page.mouse.move(1100, 65)
     await shot('02-modelar-pivo')
-    await page.getByRole('button', { name: 'Embaixo', exact: true }).click()
+    await page.getByRole('button', { name: 'Na base', exact: true }).click()
     await page.locator('summary').filter({ hasText: 'Seleção e organização' }).click()
     await page.getByRole('button', { name: 'Separar peça', exact: true }).click()
     await page.getByRole('button', { name: 'Enquadrar', exact: true }).click()

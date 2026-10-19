@@ -420,8 +420,15 @@ const EXCECOES: Excecao[] = [
   },
   {
     arquivo: 'molda/src/core/copy.ts',
-    trechos: ['Uma unidade equivale à imagem inteira.'],
-    motivo: 'unidade de MEDIDA da textura (o mapa UV), não a unidade do curso',
+    trechos: [
+      'Uma unidade equivale à imagem inteira.',
+      'No padrão, 1 pixel da pintura ocupa 1 unidade da peça.',
+      '1 pixel por unidade',
+      '2 pixels por unidade',
+      '4 pixels por unidade',
+      '8 pixels por unidade',
+    ],
+    motivo: 'unidade de MEDIDA da geometria e da textura (o mapa UV), não uma divisão da aventura',
   },
   {
     arquivo: 'molda/src/import/gltfSkinWeightValues.ts',

@@ -36,6 +36,7 @@ function setup(transform?: SceneTransformActions) {
     updates: number
     poses: Array<SceneAnimationPose | null>
     spaces: Array<'world' | 'local'>
+    supports: boolean[]
     disposed: boolean
   }> = []
   let fail = false
@@ -46,6 +47,7 @@ function setup(transform?: SceneTransformActions) {
       updates: 0,
       poses: [],
       spaces: [],
+      supports: [],
       disposed: false,
     }
     ports.push(state)
@@ -70,7 +72,7 @@ function setup(transform?: SceneTransformActions) {
       setComponentSelection: () => {},
       setPaintTarget: () => {},
       setAnimationEditing: () => {},
-      setSupportGuides: () => {},
+      setSupportGuides: (enabled) => state.supports.push(enabled),
       setSkinWeightTarget: () => {},
       setSkinPaintEnabled: () => {},
       setSkinPaintPreview: () => {},
@@ -142,6 +144,19 @@ test('animation starts on the piece axes and keeps its explicit choice separate 
     expect(spaces().at(-1)).toBe('world')
     f.setMode('model')
     expect(spaces().at(-1)).toBe('local')
+  } finally {
+    f.view.unmount()
+  }
+})
+
+test('bones become visible and selectable when entering animation', async () => {
+  const f = setup()
+  try {
+    await waitFor(() => expect(f.ports.at(-1)?.supports.at(-1)).toBe(false))
+    f.setMode('animation')
+    expect(f.ports.at(-1)?.supports.at(-1)).toBe(true)
+    f.setMode('model')
+    expect(f.ports.at(-1)?.supports.at(-1)).toBe(false)
   } finally {
     f.view.unmount()
   }

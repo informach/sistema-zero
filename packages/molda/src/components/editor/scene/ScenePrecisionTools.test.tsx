@@ -3,15 +3,16 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { COPY } from '../../../core/copy'
 import type { Vec3 } from '../../../core/model'
 import { structuredBytes } from '../../../core/structuredBytes'
+import { groupSceneNodes } from '../../../scene/commands'
+import type { MoldaSceneDocument } from '../../../scene/document'
 import { sceneLocalBounds } from '../../../scene/pivot'
 import { createDocumentEditorStore } from '../../../state/editorStore'
 import { animatedScene } from '../../../testing/sceneAnimation'
 import { sceneViewportProbe } from '../../../testing/sceneViewportProbe'
 import { SceneWorkshop } from './SceneWorkshop'
 
-function setup() {
-  const source = animatedScene(),
-    editor = createDocumentEditorStore({
+function setup(source: MoldaSceneDocument = animatedScene()) {
+  const editor = createDocumentEditorStore({
       asset: source,
       sizeOf: structuredBytes,
       persistence: { save: async () => {} },
@@ -64,26 +65,84 @@ test('numeric cut validates the full plane, previews without saving and creates 
   }
 })
 
-test('precision pivot targets use the canonical pivot without converting geometry or rebasing old animation', () => {
+test('visual pivot selection ends after picking a point, preserves the scene and undoes once', () => {
   const f = setup()
   try {
     fireEvent.click(screen.getByRole('button', { name: 'Pivô' }))
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Mostrar alça Y' }))
+    const panel = within(screen.getByRole('region', { name: 'Onde a peça gira' }))
+    const fine = panel.getByText('Ajuste fino').closest('details')!
+    expect(fine.open).toBe(false)
+    expect(screen.queryByText('Mais posições do pivô')).toBeNull()
+    fireEvent.click(panel.getByRole('button', { name: 'Escolher na peça' }))
+    expect(f.probe.ports.at(-1)!.callbacks.guideInput!()!.pivot!.snapVertex).toBe(true)
+    fireEvent.click(panel.getByRole('button', { name: 'Escolher na peça' }))
+    expect(f.editor.getState().content).toBe(f.source)
+    expect(f.probe.ports.at(-1)!.callbacks.guideInput!()!.pivot!.snapVertex).toBe(false)
+    fireEvent.click(panel.getByText('Ajuste fino'))
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Mover para cima e para baixo' }))
     expect(f.probe.ports.at(-1)!.callbacks.guideInput!()!.pivot!.vertical).toBe(true)
-    fireEvent.click(screen.getByRole('button', { name: 'Canto −X +Y −Z' }))
+    const point = sceneLocalBounds(f.source, 'body')!.min.map((n, i) =>
+      i === 1 ? sceneLocalBounds(f.source, 'body')!.max[1] : n,
+    ) as Vec3
+    fireEvent.click(panel.getByRole('button', { name: 'Escolher na peça' }))
+    act(() => f.probe.ports.at(-1)!.callbacks.guideInput!()!.pivot!.markVertex!('corner', point))
     const after = f.editor.getState().content
-    expect(after.nodes.find((node) => node.id === 'body')!.pivot).toEqual(
-      sceneLocalBounds(f.source, 'body')!.min.map((n, i) =>
-        i === 1 ? sceneLocalBounds(f.source, 'body')!.max[1] : n,
-      ) as Vec3,
-    )
+    expect(after.nodes.find((node) => node.id === 'body')!.pivot).toEqual(point)
     expect(after.animations).toBe(f.source.animations)
     expect(after.geometries).toBe(f.source.geometries)
+    expect(after.nodes.map((node) => node.transform)).toEqual(
+      f.source.nodes.map((node) => node.transform),
+    )
+    expect(f.probe.ports.at(-1)!.callbacks.guideInput!()!.pivot!.snapVertex).toBe(false)
     act(() => f.editor.getState().undo())
     expect(f.editor.getState().content.nodes).toEqual(f.source.nodes)
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Encaixar em um ponto da peça' }))
+    fireEvent.click(panel.getByRole('button', { name: 'Escolher na peça' }))
     expect(f.probe.ports.at(-1)!.callbacks.guideInput!()!.pivot!.snapVertex).toBe(true)
     expect(f.editor.getState().canUndo).toBe(false)
+    fireEvent.click(panel.getByRole('button', { name: 'Na base' }))
+    expect(f.probe.ports.at(-1)!.callbacks.guideInput!()!.pivot!.snapVertex).toBe(false)
+    expect(f.editor.getState().content.nodes.find((node) => node.id === 'body')!.pivot).toEqual(
+      sceneLocalBounds(f.source, 'body')!.base,
+    )
+    act(() => f.editor.getState().undo())
+    expect(f.editor.getState().content.nodes).toEqual(f.source.nodes)
+    act(() => f.editor.getState().redo())
+    expect(f.editor.getState().content.nodes.find((node) => node.id === 'body')!.pivot).toEqual(
+      sceneLocalBounds(f.source, 'body')!.base,
+    )
+  } finally {
+    f.close()
+  }
+})
+
+test('pivot presets support groups and locked pieces cannot accept point picking', () => {
+  const source = groupSceneNodes(animatedScene(), ['body'], { name: 'Roda e eixo' })
+  const f = setup(source)
+  try {
+    fireEvent.click(screen.getByRole('button', { name: 'Escolher Roda e eixo' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Pivô' }))
+    const panel = within(screen.getByRole('region', { name: 'Onde a peça gira' }))
+    expect(panel.getByRole('button', { name: 'Escolher na peça' }).hasAttribute('disabled')).toBe(
+      true,
+    )
+    expect(panel.getByRole('status').textContent).toContain('selecione uma peça do grupo')
+    fireEvent.click(panel.getByRole('button', { name: 'Na base' }))
+    const after = f.editor.getState().content
+    const group = after.nodes.find((node) => node.name === 'Roda e eixo')!
+    expect(group.pivot).toEqual(sceneLocalBounds(source, group.id)!.base)
+    expect(after.geometries).toBe(source.geometries)
+    expect(after.animations).toBe(source.animations)
+    act(() => f.editor.getState().undo())
+    expect(f.editor.getState().content.nodes).toEqual(source.nodes)
+    fireEvent.click(screen.getByRole('button', { name: 'Escolher corpo' }))
+    fireEvent.click(panel.getByRole('button', { name: 'Escolher na peça' }))
+    expect(f.probe.ports.at(-1)!.callbacks.guideInput!()!.pivot!.snapVertex).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: 'Travar corpo' }))
+    expect(f.probe.ports.at(-1)!.callbacks.guideInput!()!.pivot!.snapVertex).toBe(false)
+    expect(panel.getByRole('button', { name: 'Escolher na peça' }).hasAttribute('disabled')).toBe(
+      true,
+    )
+    expect(panel.getByRole('button', { name: 'Na base' }).hasAttribute('disabled')).toBe(true)
   } finally {
     f.close()
   }

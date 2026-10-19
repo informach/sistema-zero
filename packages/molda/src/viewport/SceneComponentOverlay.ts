@@ -24,6 +24,7 @@ import {
 } from '../scene/meshComponents'
 import { requireScene } from '../scene/validation'
 import type { SceneRenderResource } from './sceneRenderResource'
+import type { SceneEdgeSegments } from './sceneVisibleEdges'
 
 /** Session-only overlays own their attributes; disposing them cannot evict the model's GPU data. */
 export class SceneComponentOverlay {
@@ -76,6 +77,7 @@ export class SceneComponentOverlay {
   })
   private points: BufferGeometry | null = null
   private wire: BufferGeometry | null = null
+  private wireEdges: SceneEdgeSegments | null = null
   private fill: BufferGeometry | null = null
   private back: BufferGeometry | null = null
   private source: BufferGeometry | null = null
@@ -111,16 +113,10 @@ export class SceneComponentOverlay {
         'position',
         new BufferAttribute(backPositions, 3),
       )
-      const edges = meshComponentEdges(mesh)
-      const wirePositions = new Float32Array(edges.size * 6)
-      let offset = 0
-      for (const edge of edges.values())
-        for (const id of edge) {
-          const point = mesh.vertices[id]
-          if (!point) throw new Error('Vértice ausente no contorno.')
-          wirePositions.set(point, offset)
-          offset += 3
-        }
+    }
+    const edges = resource.edgePositionsFor(source)
+    if (edges !== this.wireEdges) {
+      const wirePositions = Float32Array.from(edges.flatMap(([a, b]) => [...a, ...b]))
       if (!wirePositions.every(Number.isFinite)) {
         this.clear()
         requireScene(
@@ -129,10 +125,16 @@ export class SceneComponentOverlay {
           'O contorno excede a precisão de desenho. Seus pontos continuam guardados.',
         )
       }
+      this.wire?.dispose()
       this.wire = new BufferGeometry().setAttribute(
         'position',
         new BufferAttribute(wirePositions, 3),
       )
+      this.wireEdges = edges
+      for (const group of this.instances.values()) {
+        const wire = group.children[0]
+        if (wire instanceof LineSegments) wire.geometry = this.wire
+      }
     }
     if (selection.mode === 'vertex' && !this.points) {
       const positions = new Float32Array(Object.keys(mesh.vertices).length * 3)
@@ -293,6 +295,7 @@ export class SceneComponentOverlay {
     this.back?.dispose()
     this.points?.dispose()
     this.points = null
+    this.wireEdges = null
     this.wire = this.fill = this.back = this.source = null
     this.selected = ''
     this.mode = null

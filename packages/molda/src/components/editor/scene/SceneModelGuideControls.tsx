@@ -1,129 +1,98 @@
-import type { Vec3 } from '../../../core/model'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
-import {
-  sceneLocalBounds,
-  sceneNodePivot,
-  setSceneAuthoringPivot,
-  setScenePivotPreset,
-} from '../../../scene/pivot'
+import { sceneLocalBounds, sceneNodePivot, setScenePivotPreset } from '../../../scene/pivot'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
+import { ArrowDownToLine, CircleDot, MousePointer2 } from '../../ui/icons'
+import { ScenePieceCoordinates } from './ScenePieceCoordinates'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 type Workshop = ReturnType<typeof useSceneWorkshop>
 
-export function ScenePivotChoices({
-  workshop,
-  compact = false,
-  precision = false,
-}: {
-  workshop: Workshop
-  compact?: boolean
-  precision?: boolean
-}) {
+export function ScenePivotChoices({ workshop }: { workshop: Workshop }) {
   const { can } = useMoldaToolAccess()
   const id = workshop.selected.length === 1 ? workshop.selected[0] : null
   const node = id ? workshop.index.scene.nodes.get(id) : null,
     bounds = id ? sceneLocalBounds(workshop.document, id) : null,
     pivot = node ? sceneNodePivot(node) : null,
     locked = id ? evaluateSceneNodeFlags(workshop.index.scene).get(id)?.locked : true
-  const active = (preset: 'center' | 'bottom' | 'corner') => {
+  const disabled = !bounds || !id || locked
+  const active = (preset: 'center' | 'bottom') => {
     if (!bounds || !pivot) return false
-    const point =
-      preset === 'center'
-        ? bounds.center
-        : preset === 'bottom'
-          ? bounds.base
-          : [bounds.max[0], bounds.min[1], bounds.max[2]]
+    const point = preset === 'center' ? bounds.center : bounds.base
     return point.every((n, i) => Math.abs(n - pivot[i]!) <= Math.max(...bounds.size) * 1e-10)
   }
   return (
-    <div className={compact ? 'mld-pivot-presets flex flex-wrap items-center gap-2' : 'space-y-2'}>
-      {!precision && (
-        <>
-          <span className="text-xs whitespace-nowrap text-mld-muted">Colocar no:</span>
-          <div className="flex flex-wrap gap-1">
-            <Button
-              disabled={!id || locked}
-              aria-pressed={active('center')}
-              onClick={() =>
-                id && workshop.run((source) => setScenePivotPreset(source, id, 'center'))
-              }
-            >
-              Centro
-            </Button>
-            <Button
-              disabled={!id || locked}
-              aria-pressed={active('bottom')}
-              onClick={() =>
-                id && workshop.run((source) => setScenePivotPreset(source, id, 'bottom'))
-              }
-            >
-              Embaixo
-            </Button>
-            <Button
-              disabled={!id || locked}
-              aria-pressed={active('corner')}
-              onClick={() =>
-                id && workshop.run((source) => setScenePivotPreset(source, id, 'corner'))
-              }
-            >
-              Canto
-            </Button>
-          </div>
-        </>
+    <section className="mld-pivot-controls space-y-3" aria-label="Onde a peça gira">
+      <div className="space-y-1">
+        <h3 className="text-sm font-bold">Onde a peça gira</h3>
+        <p className="text-xs leading-relaxed text-mld-muted">
+          Uma roda gira pelo meio. Uma porta gira pelo lado.
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          className="mld-pivot-choice"
+          disabled={disabled}
+          aria-pressed={active('center')}
+          onClick={() => choosePreset('center')}
+        >
+          <CircleDot aria-hidden="true" />
+          No meio
+        </button>
+        <button
+          type="button"
+          className="mld-pivot-choice"
+          disabled={disabled}
+          aria-pressed={active('bottom')}
+          onClick={() => choosePreset('bottom')}
+        >
+          <ArrowDownToLine aria-hidden="true" />
+          Na base
+        </button>
+      </div>
+      <button
+        type="button"
+        className="mld-pivot-choice w-full"
+        disabled={disabled || node?.kind !== 'mesh'}
+        aria-pressed={workshop.pivotSnap}
+        onClick={() => changeSnap(!workshop.pivotSnap)}
+      >
+        <MousePointer2 aria-hidden="true" />
+        Escolher na peça
+      </button>
+      <p role="status" className="text-xs leading-relaxed text-mld-muted">
+        {workshop.pivotSnap
+          ? 'Toque em um dos pontos destacados. Gire a câmera para alcançar o outro lado. Toque no botão de novo para cancelar.'
+          : node?.kind === 'group'
+            ? 'Para escolher um ponto, selecione uma peça do grupo.'
+            : 'Arraste as alças para mudar o ponto de giro.'}
+      </p>
+      {workshop.mode === 'animation' && (
+        <p className="text-xs text-mld-muted">As poses já gravadas continuam iguais.</p>
       )}
-      {precision && can('model.precise') && (
-        <details className="rounded-lg border border-mld-border bg-mld-surface p-2 text-xs">
-          <summary className="cursor-pointer font-bold">Mais posições do pivô</summary>
+      {can('model.pivot') && (
+        <details className="mld-disclosure">
+          <summary>Ajuste fino</summary>
+          <ScenePieceCoordinates workshop={workshop} onlyPivot />
           <label className="flex min-h-11 items-center gap-2">
             <input
               name="pivotVertical"
               type="checkbox"
+              disabled={disabled}
               checked={workshop.pivotVertical}
               onChange={(event) => workshop.setPivotVertical(event.target.checked)}
             />
-            Mostrar alça Y
+            Mover para cima e para baixo
           </label>
-          <label className="flex min-h-11 items-center gap-2">
-            <input
-              name="pivotSnapVertex"
-              type="checkbox"
-              disabled={node?.kind !== 'mesh' || locked}
-              checked={workshop.pivotSnap}
-              onChange={(event) => changeSnap(event.target.checked)}
-            />
-            Encaixar em um ponto da peça
-          </label>
-          {workshop.pivotSnap && (
-            <p role="status">
-              Clique em um ponto visível da peça. A câmera continua livre para girar.
-            </p>
-          )}
-          <div className="grid grid-cols-2 gap-1">
-            {bounds &&
-              [0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
-                const point = [0, 1, 2].map(
-                  (axis) => (i & (1 << axis) ? bounds.max : bounds.min)[axis],
-                ) as Vec3
-                return (
-                  <Button
-                    key={i}
-                    disabled={!id || locked}
-                    aria-pressed={point.every((n, axis) => n === pivot?.[axis])}
-                    onClick={() =>
-                      id && workshop.run((source) => setSceneAuthoringPivot(source, id, point))
-                    }
-                  >
-                    Canto {i & 1 ? '+X' : '−X'} {i & 2 ? '+Y' : '−Y'} {i & 4 ? '+Z' : '−Z'}
-                  </Button>
-                )
-              })}
-          </div>
         </details>
       )}
-    </div>
+    </section>
   )
+  function choosePreset(preset: 'center' | 'bottom') {
+    changeSnap(false)
+    if (id) workshop.run((source) => setScenePivotPreset(source, id, preset))
+  }
   function changeSnap(enabled: boolean) {
     workshop.cancelGesture()
     workshop.setPivotSnap(enabled)

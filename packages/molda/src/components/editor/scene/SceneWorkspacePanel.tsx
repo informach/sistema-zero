@@ -1,6 +1,5 @@
 import { lazy, Suspense } from 'react'
 import { Button } from '../../ui/Button'
-import { SceneSkinWeightTools } from './SceneSkinWeightTools'
 import type { useScenePaintSheetView } from './useScenePaintSheetView'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 import { SCENE_WORKSPACE_AREAS } from './workspaceAreaRegistry'
@@ -8,7 +7,6 @@ import { SCENE_WORKSPACE_AREAS } from './workspaceAreaRegistry'
 const Materials = lazy(() =>
   import('./SceneAppearancePanel').then((m) => ({ default: m.SceneAppearancePanel })),
 )
-const Skin = lazy(() => import('./SceneSkinPanel').then((m) => ({ default: m.SceneSkinPanel })))
 const Sheet = lazy(() => import('./ScenePaintSheet').then((m) => ({ default: m.ScenePaintSheet })))
 
 export function SceneWorkspacePanel({
@@ -18,16 +16,14 @@ export function SceneWorkspacePanel({
   workshop: ReturnType<typeof useSceneWorkshop>
   sheetView: ReturnType<typeof useScenePaintSheetView>
 }) {
-  const { area, components, primary } = workshop
-  if (!area || area === 'curves' || area === 'mesh') return null
+  const { area, primary } = workshop
+  if (!area || area === 'curves' || area === 'mesh' || area === 'skin') return null
   if (area === 'sheet' || area === 'uv')
     return (
       <Suspense fallback={<p role="status">Abrindo folha…</p>}>
         <Sheet workshop={workshop} state={sheetView} />
       </Suspense>
     )
-  const geometry =
-    primary?.kind === 'mesh' ? workshop.index.geometries.get(primary.geometryId) : null
   return (
     <section
       className="mld-workspace-panel mld-scroll-y"
@@ -50,33 +46,8 @@ export function SceneWorkspacePanel({
       <Suspense fallback={<p role="status">Abrindo ferramentas…</p>}>
         {primary?.kind !== 'mesh' ? (
           <p className="text-sm text-mld-muted">Escolha uma peça para trabalhar nesta área.</p>
-        ) : area === 'materials' ? (
-          <Materials key={primary.id} workshop={workshop} />
         ) : (
-          <>
-            {!components.selection && (
-              <Button
-                size="compact"
-                disabled={!components.canEdit}
-                onClick={() => workshop.openArea(area)}
-              >
-                Editar esta peça
-              </Button>
-            )}
-            {geometry?.kind === 'mesh' ? (
-              <Skin
-                key={primary.id}
-                editor={workshop.editor}
-                nodeId={primary.id}
-                onClose={() => workshop.openArea(null)}
-              />
-            ) : (
-              <p className="text-sm text-mld-muted">
-                Converta a forma em malha para ligar ossos a seus pontos.
-              </p>
-            )}
-            {components.weights && <SceneSkinWeightTools {...components.weights} />}
-          </>
+          <Materials key={primary.id} workshop={workshop} />
         )}
       </Suspense>
     </section>

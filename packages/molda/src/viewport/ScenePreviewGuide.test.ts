@@ -3,6 +3,36 @@ import { Points } from 'three'
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js'
 import { ScenePreviewGuide } from './ScenePreviewGuide'
 
+test('pivot markers are readable and follow visibility changes without losing hidden candidates', () => {
+  const guide = new ScenePreviewGuide()
+  try {
+    guide.update({
+      size: 1,
+      snapPoints: [
+        [0, 0, 0],
+        [0, 0, -1],
+      ],
+    })
+    const points = guide.root.children.find((child) => child instanceof Points)!
+    expect(points.material.size).toBe(14)
+    guide.updateSnapVisibility((point) => point[2] === 0)
+    expect(points.geometry.drawRange.count).toBe(1)
+    expect(points.geometry.getAttribute('position').getZ(0)).toBe(0)
+    guide.updateSnapVisibility((point) => point[2] === -1)
+    expect(points.geometry.drawRange.count).toBe(1)
+    expect(points.geometry.getAttribute('position').getZ(0)).toBe(-1)
+    guide.updateSnapVisibility(() => true)
+    expect(points.geometry.drawRange.count).toBe(2)
+    expect(points.geometry.getAttribute('position').getZ(0)).toBe(0)
+    expect(points.geometry.getAttribute('position').getZ(1)).toBe(-1)
+    guide.update(null)
+    expect(guide.root.children).toHaveLength(0)
+    guide.updateSnapVisibility(() => true)
+  } finally {
+    guide.dispose()
+  }
+})
+
 test('cut guides keep CSS sizes, draw above the surface, and retain only unoccluded candidate markers', () => {
   const guide = new ScenePreviewGuide()
   try {

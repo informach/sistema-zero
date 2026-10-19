@@ -152,8 +152,8 @@ test('intermediate precision opens local axes, pivot Y, alignment and a worker-b
     .selectOption('local')
   await page.locator('summary').filter({ hasText: 'Mais ajustes do palco' }).click()
   await page.getByRole('button', { name: 'Pivô', exact: true }).click()
-  await page.locator('summary').filter({ hasText: 'Mais posições do pivô' }).click()
-  await page.getByRole('checkbox', { name: 'Mostrar alça Y' }).check()
+  await page.locator('summary').filter({ hasText: 'Ajuste fino' }).click()
+  await page.getByRole('checkbox', { name: 'Mover para cima e para baixo' }).check()
   await expect(page.getByRole('button', { name: 'Pivô no eixo Y', exact: true })).toBeVisible()
   await page.locator('summary').filter({ hasText: 'Seleção e organização' }).click()
   await page.getByRole('button', { name: 'Separar peça', exact: true }).click()
@@ -468,14 +468,17 @@ test('move and pivot handles commit one drag, cancel interruptions and work whil
   await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
   await expect(page.getByLabel('Posição X', { exact: true })).toHaveValue('0')
   await page.getByRole('button', { name: 'Pivô', exact: true }).click()
-  await page.getByRole('button', { name: 'Canto', exact: true }).click()
+  await page.getByRole('button', { name: 'Na base', exact: true }).click()
+  await page.getByText('Ajuste fino', { exact: true }).click()
   const pivotX = page.getByLabel('Pivô · o ponto onde a peça gira X', { exact: true })
+  await pivotX.fill('2')
+  await pivotX.press('Enter')
   await expect(pivotX).toHaveValue('2')
-  await expect(page.getByRole('button', { name: 'Canto', exact: true })).toHaveAttribute(
+  await expect(page.getByRole('button', { name: 'Na base', exact: true })).toHaveAttribute(
     'aria-pressed',
-    'true',
+    'false',
   )
-  await expect(page.getByRole('button', { name: 'Centro', exact: true })).toHaveAttribute(
+  await expect(page.getByRole('button', { name: 'No meio', exact: true })).toHaveAttribute(
     'aria-pressed',
     'false',
   )
@@ -504,6 +507,7 @@ test('move and pivot handles commit one drag, cancel interruptions and work whil
   await expect(pivotX).toHaveValue('2')
   await page.getByRole('button', { name: 'Animar', exact: true }).click()
   await page.getByRole('button', { name: 'Pivô', exact: true }).click()
+  await page.getByText('Ajuste fino', { exact: true }).click()
   await page.screenshot({ path: info.outputPath('pivo-animar-before.png') })
   await drag(false)
   expect(await pivotX.inputValue()).not.toBe('2')

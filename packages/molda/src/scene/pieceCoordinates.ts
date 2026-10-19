@@ -9,6 +9,7 @@ import {
   transformPoint,
 } from './matrix'
 import { sceneLocalBounds, sceneNodePivot, setSceneAuthoringPivot } from './pivot'
+import { resizeScenePaint } from './resizePaint'
 import { sceneTransformTrs } from './transformTrs'
 import { requireScene, tuple } from './validation'
 
@@ -102,8 +103,12 @@ export function setScenePieceCoordinates(
     const rotated = transformDirection(composeTransform(next), current.localPivot)
     next.translation = fixed.map((value, axis) => value - rotated[axis]!) as Vec3
   }
-  return finishSceneCommand({
-    ...document,
-    nodes: document.nodes.map((node) => (node.id === nodeId ? { ...node, transform: next } : node)),
-  })
+  return finishSceneCommand(
+    resizeScenePaint(document, {
+      ...document,
+      nodes: document.nodes.map((node) =>
+        node.id === nodeId ? { ...node, transform: next } : node,
+      ),
+    }),
+  )
 }

@@ -34,6 +34,7 @@ import {
 import { meshSymmetrySource, synchronizeMeshSymmetry } from './meshSymmetry'
 import { parametricMesh, sceneGeometryMesh } from './parametricGeometry'
 import { primitiveDetail, readPrimitiveDetail } from './primitiveDetail'
+import { resizeScenePaint } from './resizePaint'
 import { duplicateSceneSkinTargets } from './skinTargets'
 import { triangulateFace } from './triangulate'
 import { boolean, choice, number, requireScene, text, tuple } from './validation'
@@ -405,7 +406,7 @@ export function transformSceneNodes(
       transform: { kind: 'affine', matrix: affineMultiply(inverse, affineMultiply(delta, world)) },
     }
   })
-  return finish({ ...document, nodes })
+  return finish(resizeScenePaint(document, { ...document, nodes }))
 }
 
 /** Group pivot starts at the selected geometry's world center. Different parents join at root. */

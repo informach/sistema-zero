@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import {
   BufferAttribute,
+  InstancedMesh,
   LineSegments,
   OrthographicCamera,
   PerspectiveCamera,
@@ -78,11 +79,13 @@ test('guides reuse owned attributes across 120 poses, validate before mutation a
     { document } = makeSceneSkinFixture(),
     source = structuredClone(document),
     points = prepareSceneSupports(indexSceneDocument(document), new Set(['lower']), null),
-    objects = overlay.root.children.map((object) => {
-      if (!(object instanceof Points || object instanceof LineSegments))
-        throw new Error('Missing guides')
-      return object
-    }),
+    bones = overlay.root.children.find(
+      (object) => object instanceof InstancedMesh,
+    ) as InstancedMesh,
+    objects = overlay.root.children.filter(
+      (object): object is Points | LineSegments =>
+        object instanceof Points || object instanceof LineSegments,
+    ),
     geometries = objects.map((object) => object.geometry),
     attributes = geometries.map((geometry) => {
       const attribute = geometry.getAttribute('position')
@@ -92,6 +95,7 @@ test('guides reuse owned attributes across 120 poses, validate before mutation a
     arrays = attributes.map((attribute) => attribute.array)
   let geometryDisposals = 0,
     materialDisposals = 0
+  expect(bones).toBeDefined()
   for (const object of objects) {
     object.geometry.addEventListener('dispose', () => {
       geometryDisposals++
@@ -105,6 +109,8 @@ test('guides reuse owned attributes across 120 poses, validate before mutation a
   try {
     expect(overlay.root.visible).toBe(false)
     overlay.update(points)
+    expect(bones.count).toBe(points.filter((point) => point.parent !== null).length)
+    expect(bones.instanceMatrix.version).toBeGreaterThan(0)
     const versions = attributes.map((attribute) => attribute.version)
     overlay.update(points)
     expect(attributes.map((attribute) => attribute.version)).toEqual(versions)

@@ -654,6 +654,7 @@ test('vincular uma malha aos apoios e desfazer usa a oficina pública e exporta 
     .getByRole('button', { name: 'Ossos e pesos', exact: true })
     .click()
   const modal = page.getByRole('region', { name: 'Área Ossos e pesos' })
+  await modal.getByText('Ajustes avançados', { exact: true }).click()
   await modal.getByRole('checkbox', { name: `Braço ${COPY.scene.skinBinding.group}` }).check()
   await modal.getByRole('checkbox', { name: `Antebraço ${COPY.scene.skinBinding.locator}` }).check()
   await modal.getByRole('button', { name: COPY.scene.skinBinding.prepare, exact: true }).click()

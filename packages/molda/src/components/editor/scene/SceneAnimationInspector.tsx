@@ -22,7 +22,6 @@ import { SceneAnimationPoseCard } from './SceneAnimationPoseCard'
 import { SceneAnimationPoseSetTools } from './SceneAnimationPoseSetTools'
 import { SceneAnimationPoseTools } from './SceneAnimationPoseTools'
 import { ScenePivotChoices } from './SceneModelGuideControls'
-import { ScenePieceCoordinates } from './ScenePieceCoordinates'
 import { SceneTransformSteps } from './SceneTransformSteps'
 import { SceneTwoBoneControls } from './SceneTwoBoneControls'
 import {
@@ -72,14 +71,9 @@ export function SceneAnimationInspector({
   const copy = COPY.scene
   if (workshop.tool === 'pivot' && can('model.pivot'))
     return (
-      <section className="space-y-3 border-t border-mld-border pt-3" aria-label="Pivô da peça">
-        <h3 className="text-sm font-bold">Pivô — onde gira</h3>
-        <p className="text-sm text-mld-muted">
-          Isso muda o ponto de giro para os próximos ajustes. As poses já gravadas continuam iguais.
-        </p>
-        <ScenePieceCoordinates workshop={workshop} onlyPivot />
-        {can('model.precise') && <ScenePivotChoices workshop={workshop} precision />}
-      </section>
+      <div className="border-t border-mld-border pt-3">
+        <ScenePivotChoices workshop={workshop} />
+      </div>
     )
   const clip = snapshot.source?.document === document ? snapshot.source.clip : null
   if (!clip) return <p className="text-sm text-mld-muted">{copy.animationEmpty}</p>

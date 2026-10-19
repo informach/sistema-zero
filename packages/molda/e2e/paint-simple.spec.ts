@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test'
 import { COPY } from '../src/core/copy'
 import { resolvePaletteColors } from '../src/core/sanitize'
 import { SCENE_PAINT_COPY as paintCopy } from '../src/core/scenePaintCopy'
+import { addScenePrimitive } from '../src/scene/commands'
+import { createSceneProject } from '../src/scene/createProject'
 import type { MoldaSceneDocument } from '../src/scene/document'
 import { sceneBentPaint } from '../src/testing/sceneBentPaint'
 import { openPainting, savedProject } from './paint-project'
@@ -12,7 +14,16 @@ for (const dark of [false, true]) {
   test(`pixel details open with one face click and stay beside the live model (${dark ? 'dark' : 'light'})`, async ({
     page,
   }) => {
-    const source = await openPainting(page, dark)
+    const empty = createSceneProject({ kind: 'empty', name: 'Pintura simples' })
+    const source = await openPainting(
+      page,
+      dark,
+      addScenePrimitive(
+        { ...empty, settings: { ...empty.settings, texelsPerUnit: 8 } },
+        'box',
+        'caixa',
+      ),
+    )
     await expect(page.getByRole('button', { name: '1 px', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true',

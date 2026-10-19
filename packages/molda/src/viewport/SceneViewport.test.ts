@@ -1350,8 +1350,7 @@ describe('scene viewport lifecycle and picking', () => {
       f.viewport.frame()
       f.tick()
       const guides = f.count().scene!.getObjectByName('molda-support-guides')!,
-        markers = guides.children[1],
-        chosen = guides.children[2],
+        [markers, chosen] = guides.children.filter((object) => object instanceof Points),
         mesh = f
           .count()
           .scene!.children[0]!.children.find((object) => object instanceof SkinnedMesh)
@@ -1440,7 +1439,7 @@ describe('scene viewport lifecycle and picking', () => {
       f.viewport.frame()
       f.tick()
       const guides = f.count().scene!.getObjectByName('molda-support-guides')!,
-        points = guides.children[1]
+        points = guides.children.find((object) => object instanceof Points)
       if (!(points instanceof Points)) throw new Error('Missing guides')
       const before = points.geometry.getAttribute('position').array.slice(),
         far = {

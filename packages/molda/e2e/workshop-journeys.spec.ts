@@ -30,7 +30,7 @@ test('criação rápida, montagem, pose de várias peças e telas menores', asyn
       modelar: await page.locator('canvas').first().boundingBox(),
     }
     await page.getByRole('button', { name: 'Bola', exact: true }).click()
-    await page.locator('summary').filter({ hasText: 'Mais sobre a peça' }).click()
+    await page.locator('summary').filter({ hasText: 'Ajustar por cliques' }).click()
     await page.getByRole('button', { name: 'Colocar em cima', exact: true }).click()
     await page.getByRole('button', { name: /^Escolher caixa$/i }).click()
     await page.getByRole('button', { name: 'Pintar', exact: true }).click()
@@ -177,7 +177,7 @@ test('pintura real, cor composta, movimento e recuperação da pose após recarr
     checks.push('real brush, eraser, undo and composite picker')
     await page.getByRole('button', { name: 'Modelar', exact: true }).click()
     await page.getByRole('button', { name: 'Bola', exact: true }).click()
-    await page.locator('summary').filter({ hasText: 'Mais sobre a peça' }).click()
+    await page.locator('summary').filter({ hasText: 'Ajustar por cliques' }).click()
     await page.getByRole('button', { name: 'Colocar em cima', exact: true }).click()
     await page.getByRole('button', { name: /^Escolher caixa/ }).click()
     await page.getByRole('button', { name: 'Animar', exact: true }).click()
@@ -297,7 +297,7 @@ test('câmera, pivô, divisão e decisões antes de abandonar prévias', async (
     await page.keyboard.press('Escape')
     await page.mouse.up()
     expect(await snapshot()).toEqual(initial)
-    await page.getByRole('button', { name: 'Canto', exact: true }).click()
+    await page.getByRole('button', { name: 'Na base', exact: true }).click()
     await shot('pivo-canto')
     await page.getByRole('button', { name: 'Pintar', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Pintar', exact: true })).toHaveAttribute(
@@ -384,7 +384,7 @@ test('câmera, pivô, divisão e decisões antes de abandonar prévias', async (
     )
     const animated = await snapshot()
     await page.getByRole('button', { name: 'Pivô', exact: true }).click()
-    await page.getByRole('button', { name: 'Embaixo', exact: true }).click()
+    await page.getByRole('button', { name: 'Na base', exact: true }).click()
     const changedPivot = await snapshot()
     expect(changedPivot.animations).toEqual(animated.animations)
     expect(changedPivot.geometries).toEqual(animated.geometries)
@@ -397,15 +397,16 @@ test('câmera, pivô, divisão e decisões antes de abandonar prévias', async (
     await expect(page.getByRole('tab', { name: 'Movimentos', exact: true })).toBeVisible()
     await page.getByRole('tab', { name: 'Movimentos', exact: true }).focus()
     await page.keyboard.press('ArrowRight')
-    await expect(page.getByRole('tab', { name: 'Peças', exact: true })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    )
-    await page.keyboard.press('ArrowRight')
     await expect(page.getByRole('tab', { name: 'Pose', exact: true })).toHaveAttribute(
       'aria-selected',
       'true',
     )
+    await page.keyboard.press('ArrowRight')
+    await expect(page.getByRole('tab', { name: 'Peças', exact: true })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    await page.getByRole('tab', { name: 'Pose', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Mais tempo · +2 s', exact: true })).toBeVisible()
     await shot('animar-compacto-pose')
     checks.push('compact animation keeps movements, pieces and pose separately reachable')
