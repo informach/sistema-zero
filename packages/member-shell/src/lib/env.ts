@@ -62,6 +62,9 @@ export const EnvSchema = z
     R2_SECRET_ACCESS_KEY: z.string().optional(),
     R2_BUCKET: z.string().optional(),
     R2_PUBLIC_URL: z.string().url().optional(),
+    // Endpoint S3 compatível para QA local. Ausente usa o endpoint oficial da conta R2.
+    // HTTP só é aceito em loopback; nunca se envia credenciais a um host remoto sem TLS.
+    R2_S3_ENDPOINT: z.string().url().optional(),
     // Bucket PRIVADO (materiais didáticos) — leitura p/ a rota de download com marca
     // d'água. Sem URL pública; mesmas credenciais R2. Ausente → download responde 503.
     R2_PRIVATE_BUCKET: z.string().optional(),
@@ -136,6 +139,24 @@ export const EnvSchema = z
     message: 'Em produção, MEMBER_SHELL_HMAC_SECRET é obrigatório para Zappy e downloads de aula',
     path: ['MEMBER_SHELL_HMAC_SECRET'],
   })
+  .refine(
+    (e) => {
+      if (!e.R2_S3_ENDPOINT) return true
+      const url = new URL(e.R2_S3_ENDPOINT)
+      return (
+        !url.username &&
+        !url.password &&
+        !url.search &&
+        !url.hash &&
+        (url.protocol === 'https:' ||
+          (url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)))
+      )
+    },
+    {
+      message: 'R2_S3_ENDPOINT exige HTTPS ou HTTP em loopback, sem credenciais ou parâmetros',
+      path: ['R2_S3_ENDPOINT'],
+    },
+  )
 
 export type Env = z.infer<typeof EnvSchema>
 

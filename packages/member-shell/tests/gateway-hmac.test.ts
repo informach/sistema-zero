@@ -79,3 +79,77 @@ describe('gatewayFetchHmac', () => {
     ).toBe(true)
   })
 })
+
+describe('gatewayFetchDual', () => {
+  test('keeps the student JWT and signs the same immutable publisher body after token refresh', async () => {
+    const body = {
+      publisher: {
+        authorId: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e010',
+        accountId: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e011',
+        audience: 'adult',
+      },
+      title: 'Jogo Turtle',
+    }
+    const requests: Array<{ url: string; headers: Headers; body: string }> = []
+    globalThis.fetch = (async (input, init) => {
+      const url = String(input)
+      const headers = new Headers(init?.headers)
+      const rawBody = String(init?.body)
+      requests.push({ url, headers, body: rawBody })
+      if (url.endsWith('/auth/refresh'))
+        return Response.json({
+          tokens: {
+            accessToken: 'student-renewed',
+            refreshToken: 'dual-refresh-successor',
+            tokenType: 'Bearer',
+            expiresIn: 900,
+            refreshExpiresIn: 3600,
+          },
+        })
+      if (headers.get('authorization') === 'Bearer student-original') {
+        body.title = 'Mutated by a different request'
+        return Response.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
+      }
+      return Response.json({ id: 'published' }, { status: 201 })
+    }) as typeof fetch
+    const gateway = createGatewayModule({
+      audience: 'adult',
+      getAccessToken: async () => 'student-original',
+      getRefreshToken: async () => 'dual-refresh-original',
+      verifyAccessTokenLocally: async () => ({ ok: true, user: {} }),
+      setSessionCookies: async () => {},
+    } as never)
+
+    expect(
+      await gateway.gatewayFetchDual('/hub/internal/showcase-thread-studio-standalone', {
+        method: 'POST',
+        body,
+      }),
+    ).toEqual({ status: 201, body: { id: 'published' } })
+
+    const studioRequests = requests.filter((request) => request.url.includes('/hub/internal/'))
+    expect(studioRequests).toHaveLength(2)
+    expect(studioRequests.map((request) => request.headers.get('authorization'))).toEqual([
+      'Bearer student-original',
+      'Bearer student-renewed',
+    ])
+    expect(studioRequests[0]?.body).toBe(studioRequests[1]?.body)
+    expect(JSON.parse(studioRequests[1]?.body ?? '{}').title).toBe('Jogo Turtle')
+    for (const request of studioRequests) {
+      expect(request.headers.get('x-consumer-id')).toBe('member-shell')
+      expect(
+        verifyHmacSignature({
+          secret: 'member-shell-test-secret-32-characters',
+          body: canonicalHmacMessage({
+            method: 'POST',
+            path: '/hub/internal/showcase-thread-studio-standalone',
+            body: request.body,
+          }),
+          signatureHeader: request.headers.get('x-signature') ?? undefined,
+          nowSeconds: Math.floor(Date.now() / 1000),
+          toleranceSeconds: 5,
+        }).valid,
+      ).toBe(true)
+    }
+  })
+})

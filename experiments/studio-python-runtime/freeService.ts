@@ -3,7 +3,10 @@ import { StudioAuthoringCatalogSchema } from '../../packages/core/src/studio/aut
 import { StudioFreeRuntimeRequestSchema } from '../../packages/core/src/studio/runtime-authorization'
 import type { StudioRuntimeRelease } from '../../packages/core/src/studio/runtime-catalog'
 import { AuthorizeFreeRuntimeService } from '../../packages/members/src/application/studio/authorize-free-runtime.service'
-import { FreeStudioAccessService } from '../../packages/members/src/application/studio/free-studio-access.service'
+import {
+  FreeStudioAccessService,
+  type FreeStudioActor,
+} from '../../packages/members/src/application/studio/free-studio-access.service'
 import { AccessDeniedError } from '../../packages/members/src/domain/entitlement/entitlement.errors'
 import { emptyQualifyingByTier } from '../../packages/members/src/domain/gamification/levels'
 import { createStudioAuthoringPolicy } from '../../packages/members/src/domain/studio/authoring-policy'
@@ -14,7 +17,8 @@ import { PYTHON_TURTLE_CODECS } from '../../packages/studio/src/python/extension
 
 /** Local qualification only: real free authorization/catalog, controlled account/product/achievement ports. */
 export async function createFreeRuntimeProbe(release: StudioRuntimeRelease, origin: string) {
-  const actor = {
+  const actor: FreeStudioActor = {
+    audience: 'kids',
     userId: '55555555-5555-4555-8555-555555555555',
     accountId: '66666666-6666-4666-8666-666666666666',
     privileged: false,

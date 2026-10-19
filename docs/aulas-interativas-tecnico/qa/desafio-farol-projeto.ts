@@ -216,8 +216,7 @@ function irFarol(etapa: DiaDoFarol | 'concluido'): SZIRV2 {
   }
 }
 
-export function montarProjetoFarol(etapa: DiaDoFarol | 'concluido'): Project {
-  const ir = irFarol(etapa)
+function projetoDoIR(ir: SZIRV2): Project {
   return {
     ...createEmptyProject('manifest-desafio-farol', NOME),
     createdAt: 0,
@@ -228,4 +227,51 @@ export function montarProjetoFarol(etapa: DiaDoFarol | 'concluido'): Project {
     assets: ASSETS_FAROL,
     installedExtensions: [{ id: 'game-2d', version: '1.2.0', installedAt: 0 }],
   }
+}
+
+export function montarProjetoFarol(etapa: DiaDoFarol | 'concluido'): Project {
+  return projetoDoIR(irFarol(etapa))
+}
+
+export type ParteProgramadaFarol =
+  | 'andar'
+  | 'borda'
+  | 'recolher'
+  | 'guardar'
+  | 'programar-chave'
+  | 'sem-chave'
+  | 'decisao'
+
+/** Exact transient teaching states; regenerate files AND visual cache from the same IR. */
+export function montarProjetoFarolDaParte(parte: ParteProgramadaFarol): Project {
+  const etapa =
+    parte === 'andar' || parte === 'borda'
+      ? 'dia-2'
+      : parte === 'sem-chave' || parte === 'decisao'
+        ? 'concluido'
+        : 'dia-3'
+  const ir = structuredClone(irFarol(etapa))
+  if (parte === 'andar') {
+    for (const loop of ir.behavior.loops)
+      if (loop.type === 'g2d:updateEachFrame')
+        loop.body = loop.body.filter((statement) => statement.type !== 'g2d:clampToScreen')
+  }
+  if (parte === 'recolher' || parte === 'guardar') {
+    if (parte === 'recolher')
+      ir.behavior.start = ir.behavior.start.filter(
+        (statement) => statement.type !== 'var' || statement.name !== 'temChave',
+      )
+    for (const event of ir.behavior.events)
+      if (event.type === 'g2d:onOverlap' && event.bVar === 'chave')
+        event.body = event.body.filter((statement) =>
+          parte === 'recolher'
+            ? statement.type === 'g2d:destroySprite'
+            : statement.type !== 'assign' || statement.name !== 'aviso',
+        )
+  }
+  if (parte === 'sem-chave')
+    for (const event of ir.behavior.events)
+      if (event.type === 'g2d:onOverlap' && event.bVar === 'farol')
+        for (const statement of event.body) if (statement.type === 'if') statement.then = []
+  return projetoDoIR(ir)
 }

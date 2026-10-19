@@ -466,6 +466,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
     storageRef: string
     uploadedParts?: readonly string[]
     verifiedPartHashes?: readonly string[]
+    verifiedFormatVersion?: number
     now: Date
     limits: CreationUploadInput['limits']
   }): Promise<CreationCommitResult> {
@@ -487,6 +488,8 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       // outra reserva em voo (`pending_revision` de outra aba): dizer 409 aqui faria o BFF
       // tratar a revisão corrente como "recusada" e apagar o blob VIVO do R2.
       if (row.revision === input.revision && row.storageRef) {
+        if (isStudioFormatTool(input.tool) && input.verifiedFormatVersion !== row.formatVersion)
+          return { ok: false, reason: 'manifest-mismatch' }
         return { ok: true, alreadyCommitted: true, previousStorageRef: null, releasedPartRefs: [] }
       }
       // Só a revisão RESERVADA confirma: um upload velho (ou de outro navegador) não
@@ -541,6 +544,8 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       // (o cliente confirma em `uploadedParts`; o BFF confere no R2 best-effort). A reserva
       // NÃO morre: um retry honesto pode passar.
       const formatVersion = row.pendingFormatVersion ?? 1
+      if (isStudioFormatTool(input.tool) && input.verifiedFormatVersion !== formatVersion)
+        return { ok: false, reason: 'manifest-mismatch' }
       // Defesa contra reservas legadas de um deploy misto; o corpo do commit não escolhe formato.
       const requiredVersion = Math.max(
         row.formatVersion,

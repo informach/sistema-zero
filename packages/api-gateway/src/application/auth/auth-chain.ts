@@ -19,6 +19,14 @@ export function createAuthChain(strategies: AuthStrategyMap): AuthChain {
     async authenticate(ctx, policy): Promise<AuthResult> {
       if (policy === 'public') return { ok: 'skip' }
 
+      if (policy.mode === 'all' && policy.strategies.some((kind) => !strategies[kind]))
+        return {
+          ok: false,
+          status: 503,
+          code: 'AUTH_UNAVAILABLE',
+          message: 'Uma estratégia de autenticação obrigatória está indisponível',
+        }
+
       const chain = policy.strategies
         .map((k) => strategies[k])
         .filter((s): s is AuthStrategy => Boolean(s))
@@ -33,6 +41,8 @@ export function createAuthChain(strategies: AuthStrategyMap): AuthChain {
 
       if (policy.mode === 'all') {
         let last: Extract<AuthResult, { ok: true }> | undefined
+        let jwt: Extract<AuthResult, { ok: true }> | undefined
+        let authenticatedConsumerId: string | undefined
         for (const s of chain) {
           const r = await s.authenticate(ctx)
           if (r.ok === false) return r
@@ -45,7 +55,12 @@ export function createAuthChain(strategies: AuthStrategyMap): AuthChain {
             }
           }
           last = r
+          if (r.principal.kind === 'jwt') jwt = r
+          if (r.principal.kind === 'hmac') authenticatedConsumerId = r.principal.subject
         }
+        // A service proof must not replace the student's identity or hide its own allowlist.
+        if (jwt && authenticatedConsumerId !== undefined)
+          return { ok: true, principal: jwt.principal, authenticatedConsumerId }
         return (
           last ?? { ok: false, status: 401, code: 'UNAUTHENTICATED', message: 'Não autenticado' }
         )

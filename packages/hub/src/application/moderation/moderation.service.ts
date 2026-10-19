@@ -269,6 +269,7 @@ export class ModerationService {
     if (thread?.isShowcase && thread.playId) {
       const audience = await this.audienceForChannel(thread.channelId)
       void this.studioBff.cleanupShowcaseArtifacts({
+        authorId: thread.authorId,
         ...(audience === 'adult' ? { audience } : {}),
         playId: thread.playId,
         coverUrl: thread.coverImageUrl,

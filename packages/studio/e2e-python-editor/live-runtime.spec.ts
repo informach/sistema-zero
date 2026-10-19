@@ -1,6 +1,13 @@
 import { writeFile } from 'node:fs/promises'
-import { expect, type Page, test } from '@playwright/test'
+import type { Page } from '@playwright/test'
 import type {} from './fixtures/live'
+import { expect, test } from './fixtures/pythonLanguageSessions'
+
+test.beforeEach(async ({ page, pythonLanguageSessions }) => {
+  pythonLanguageSessions.releaseWith(async () => {
+    if (!page.isClosed()) await page.evaluate(() => globalThis.studioLiveProbe?.close())
+  })
+})
 
 test('live Classic continuation applies its allowed mode without creating a recovery draft', async ({
   page,
@@ -28,6 +35,7 @@ for (const kind of ['classic', 'pro'] as const) {
     page,
     browser,
     request,
+    pythonLanguageSessions,
   }, testInfo) => {
     test.setTimeout(90_000)
     expect((await request.post(`/live-probe/setup?kind=${kind}`)).ok()).toBe(true)
@@ -36,6 +44,8 @@ for (const kind of ['classic', 'pro'] as const) {
       viewport: { width: 1440, height: 1000 },
     })
     const teacher = await teacherContext.newPage()
+    // Observe before navigation can open the teacher's independent language session.
+    pythonLanguageSessions.observePage(teacher)
     const timings: { stage: string; milliseconds: number; targetMs: number; reached: boolean }[] =
       []
     const drawing = async (target: Page, stage: string, targetMs: number) => {
@@ -52,6 +62,8 @@ for (const kind of ['classic', 'pro'] as const) {
         timings.push({ stage, milliseconds: Date.now() - started, targetMs, reached })
       }
     }
+    const primaryErrors: unknown[] = []
+    const teardownErrors: unknown[] = []
     try {
       await page.addInitScript(() => {
         addEventListener('message', (event) => {
@@ -130,6 +142,8 @@ for (const kind of ['classic', 'pro'] as const) {
       ).toBe(2)
       expect(state.requests.every((entry: { bytes: number }) => entry.bytes < 3000)).toBe(true)
       await page.evaluate(() => studioLiveProbe.close())
+    } catch (error: unknown) {
+      primaryErrors.push(error)
     } finally {
       try {
         const drafts = await page.evaluate(async () => {
@@ -190,13 +204,41 @@ for (const kind of ['classic', 'pro'] as const) {
         })
       } catch (error) {
         // Diagnostics must not replace the original browser failure or leak a context.
-        await testInfo.attach('live-diagnostic-error', {
-          contentType: 'text/plain',
-          body: String(error),
-        })
+        try {
+          await testInfo.attach('live-diagnostic-error', {
+            contentType: 'text/plain',
+            body: String(error),
+          })
+        } catch (attachmentError: unknown) {
+          teardownErrors.push(error, attachmentError)
+        }
       } finally {
-        await teacherContext.close()
+        const uiCleanup = await Promise.allSettled(
+          [page, teacher].map(async (target) => {
+            if (!target.isClosed()) await target.evaluate(() => globalThis.studioLiveProbe?.close())
+          }),
+        )
+        for (const result of uiCleanup)
+          if (result.status === 'rejected') teardownErrors.push(result.reason)
+        try {
+          // Verify both pages' exact reservation IDs before tearing down their browser transport.
+          await expect.poll(() => pythonLanguageSessions.aliveIdCount()).toBe(0)
+        } catch (error: unknown) {
+          teardownErrors.push(error)
+        } finally {
+          try {
+            await teacherContext.close()
+          } catch (error: unknown) {
+            teardownErrors.push(error)
+          }
+        }
       }
     }
+    if (teardownErrors.length)
+      throw new AggregateError(
+        [...primaryErrors, ...teardownErrors],
+        'Live handoff teardown failed; original test failures are retained.',
+      )
+    if (primaryErrors.length) throw primaryErrors[0]
   })
 }

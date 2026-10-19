@@ -81,6 +81,7 @@ for (const kind of ['classic', 'pro'] as const)
     const result = await authorizePythonRemix({
       snapshot: f.project,
       viewerId: f.viewerId,
+      audience: 'kids',
       options: f.options,
       signal: f.signal,
       request: f.decision,
@@ -93,6 +94,38 @@ for (const kind of ['classic', 'pro'] as const)
     expect(f.project).toEqual(before)
   })
 
+test('adult Python remix requests adult authoring and rejects a Kids decision', async () => {
+  const f = await fixture('pro')
+  const adultRequest = async (request: StudioFreeRuntimeRequest) => {
+    expect(request.context.audience).toBe('adult')
+    return f.decision(request)
+  }
+  const project = await authorizePythonRemix({
+    snapshot: f.project,
+    viewerId: f.viewerId,
+    audience: 'adult',
+    options: f.options,
+    signal: f.signal,
+    request: adultRequest,
+  })
+  expect(project).toEqual(f.project)
+  expect(f.requests[0]?.context.audience).toBe('adult')
+
+  await expect(
+    authorizePythonRemix({
+      snapshot: f.project,
+      viewerId: f.viewerId,
+      audience: 'adult',
+      options: f.options,
+      signal: f.signal,
+      request: async (request) => ({
+        ...(await f.decision(request)),
+        context: { ...request.context, audience: 'kids' },
+      }),
+    }),
+  ).rejects.toThrow('acesso mudou')
+})
+
 test('new Python remix refuses retired, revoked, missing and mismatched environments before authorization', async () => {
   const f = await fixture('pro')
   for (const status of ['retired', 'revoked']) {
@@ -102,6 +135,7 @@ test('new Python remix refuses retired, revoked, missing and mismatched environm
       authorizePythonRemix({
         snapshot: f.project,
         viewerId: f.viewerId,
+        audience: 'kids',
         options,
         signal: f.signal,
         request: f.decision,
@@ -112,6 +146,7 @@ test('new Python remix refuses retired, revoked, missing and mismatched environm
     authorizePythonRemix({
       snapshot: f.project,
       viewerId: f.viewerId,
+      audience: 'kids',
       options: { ...f.options, canCreatePro: false },
       signal: f.signal,
       request: f.decision,
@@ -121,6 +156,7 @@ test('new Python remix refuses retired, revoked, missing and mismatched environm
     authorizePythonRemix({
       snapshot: f.project,
       viewerId: f.viewerId,
+      audience: 'kids',
       options: { ...f.options, catalog: null },
       signal: f.signal,
       request: f.decision,
@@ -159,6 +195,7 @@ test('remix discards wrong actor, source, runtime, context, operation and expire
       authorizePythonRemix({
         snapshot: f.project,
         viewerId: f.viewerId,
+        audience: 'kids',
         options: f.options,
         signal: f.signal,
         request: async (request) => ({ ...(await f.decision(request)), ...change }),
@@ -172,6 +209,7 @@ test('an authorization denial or cancellation never yields an importable Python 
     authorizePythonRemix({
       snapshot: f.project,
       viewerId: f.viewerId,
+      audience: 'kids',
       options: f.options,
       signal: f.signal,
       request: async () => {
@@ -184,6 +222,7 @@ test('an authorization denial or cancellation never yields an importable Python 
     authorizePythonRemix({
       snapshot: f.project,
       viewerId: f.viewerId,
+      audience: 'kids',
       options: f.options,
       signal: controller.signal,
       request: async (request) => {

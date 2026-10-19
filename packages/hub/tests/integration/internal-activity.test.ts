@@ -6,6 +6,7 @@ import {
   adminHeaders,
   buildApp,
   jsonRequest,
+  publishStudioRequest,
   studentHeaders,
   TEST_INTERNAL_API_TOKEN,
   TEST_WEBHOOK_SECRET,
@@ -134,7 +135,8 @@ describe('activity-by-authors (rota interna HMAC — uso por ferramenta)', () =>
   /** Publica uma vitrine standalone no Mural (posse do Estúdio via fake) e devolve o thread id. */
   const publishShowcase = async (kid: string, playId: string): Promise<string> => {
     ctx.members.communitiesByUser.set(kid, new Set(['estudio-completo']))
-    const res = await ctx.app.handle(
+    const res = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
         headers: child(kid),
         body: {
@@ -172,8 +174,9 @@ describe('activity-by-authors (rota interna HMAC — uso por ferramenta)', () =>
     await createComment(kidA, t2)
     tick()
     const showcaseAt = now.toISOString()
-    const playId = randomUUID()
-    await publishShowcase(kidA, playId)
+    const threadId = await publishShowcase(kidA, randomUUID())
+    const playId = ctx.threadRepo.threads.find((thread) => thread.id === threadId)?.playId
+    if (!playId) throw new Error('Publicação sem playId')
     await hitPlay(playId)
     await hitPlay(playId)
 

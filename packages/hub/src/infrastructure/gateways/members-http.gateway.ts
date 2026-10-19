@@ -223,13 +223,19 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
       )
     },
 
-    async notifyChallengeEntry(args: ChallengeEntryArgs): Promise<void> {
-      await postSignedWebhook(CHALLENGE_WEBHOOK_PATH, 'challenge', {
-        userId: args.userId,
-        accountId: args.accountId,
-        audience: args.audience,
-        challengeKey: args.challengeKey,
-      })
+    async notifyChallengeEntry(args: ChallengeEntryArgs, deliveryId?: string): Promise<boolean> {
+      return postSignedWebhook(
+        CHALLENGE_WEBHOOK_PATH,
+        'challenge',
+        {
+          userId: args.userId,
+          accountId: args.accountId,
+          audience: args.audience,
+          challengeKey: args.challengeKey,
+          ...(args.publishedAt ? { publishedAt: args.publishedAt } : {}),
+        },
+        deliveryId,
+      )
     },
 
     async notifyClubContribution(args: ClubContributionArgs): Promise<void> {
@@ -251,13 +257,22 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
       })
     },
 
-    async notifyStandaloneShowcase(args: StandaloneShowcaseArgs): Promise<void> {
-      await postSignedWebhook(STANDALONE_SHOWCASE_WEBHOOK_PATH, 'showcase-standalone', {
-        userId: args.userId,
-        accountId: args.accountId,
-        audience: args.audience,
-        playId: args.playId,
-      })
+    async notifyStandaloneShowcase(
+      args: StandaloneShowcaseArgs,
+      deliveryId?: string,
+    ): Promise<boolean> {
+      return postSignedWebhook(
+        STANDALONE_SHOWCASE_WEBHOOK_PATH,
+        'showcase-standalone',
+        {
+          userId: args.userId,
+          accountId: args.accountId,
+          audience: args.audience,
+          playId: args.playId,
+          ...(args.publishedAt ? { publishedAt: args.publishedAt } : {}),
+        },
+        deliveryId,
+      )
     },
 
     async notifyPlaysMilestone(args: PlaysMilestoneArgs): Promise<void> {

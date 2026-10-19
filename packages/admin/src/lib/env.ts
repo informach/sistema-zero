@@ -40,6 +40,9 @@ const EnvSchema = z
     // mas precisa estar completo quando a autoria Pro for utilizada.
     STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
     STUDIO_PRO_RUNTIME_TOKEN: z.string().min(24).optional(),
+    // Serviço privado de análise do Pro Python; credenciais nunca chegam ao editor.
+    STUDIO_PYTHON_LANGUAGE_URL: z.string().url().optional(),
+    STUDIO_PYTHON_LANGUAGE_TOKEN: z.string().min(32).optional(),
 
     // "Ver como aluno" (editor de aula): URLs públicas dos apps de aluno — a
     // equipe abre a aula PUBLICADA no app certo pela audience (passe livre da
@@ -104,6 +107,13 @@ const EnvSchema = z
     message: 'Configure STUDIO_PRO_RUNTIME_URL e STUDIO_PRO_RUNTIME_TOKEN juntos',
     path: ['STUDIO_PRO_RUNTIME_URL'],
   })
+  .refine(
+    (e) => Boolean(e.STUDIO_PYTHON_LANGUAGE_URL) === Boolean(e.STUDIO_PYTHON_LANGUAGE_TOKEN),
+    {
+      message: 'Configure STUDIO_PYTHON_LANGUAGE_URL e STUDIO_PYTHON_LANGUAGE_TOKEN juntos',
+      path: ['STUDIO_PYTHON_LANGUAGE_URL'],
+    },
+  )
 
 export type Env = z.infer<typeof EnvSchema>
 

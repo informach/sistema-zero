@@ -61,9 +61,9 @@ O intérprete recebe o hint explícito. Quando true, inicia protocolo/fontes con
 
 Iniciar import do renderer Turtle e bootstrap/supervisor independentemente após snapshot/identity validados. Registrar promise owned do renderer, observando erro imediatamente. Graphics espera renderer válido, e nenhum run é admitido antes da barreira. `state:ready` e mensagem prepared só são publicados juntos depois que worker preparado e renderer terminarem; não anunciar ready antecipado. Falha de qualquer lado fecha geração e outro recurso. Fechamento anterior ao import tardio impede criação de canvas/playerBridge; callbacks tardios não reabrem geração.
 
-- [ ] Escrever gates de workerprimeiro/rendererprimeiro/erro de cada lado/Stop/pagehide antes de resolver import; verificar zero ready/aluno/canvas tardios e cleanup único.
-- [ ] Implementar barreira sem mudar o supervisor do programa nem suas quotas/ACKs; callbacks gráficos continuam validados pelo mesmo supervisor/renderer.
-- [ ] Rodar DOM/port tests e nativeChromeEdge carregamento/Stop/input/capture/publicplayer; revisão e correções.
+- [x] Escrever gates de workerprimeiro/rendererprimeiro/erro de cada lado/Stop/pagehide antes de resolver import; verificar zero ready/aluno/canvas tardios e cleanup único. RED causal antes da edição; native bootstrap22/22 ChromeEdge, sem retries/skips.
+- [x] Implementar barreira sem mudar o supervisor do programa nem suas quotas/ACKs; callbacks gráficos continuam validados pelo mesmo supervisor/renderer. Ready inicial retido, ready→prepared contíguos, bridge público só após ambos; import tardio e Stop sem efeitos tardios.
+- [ ] Rodar DOM/port tests e nativeChromeEdge carregamento/Stop/input/capture/publicplayer; revisão e correções. Já passaram22 unidades/144asserções, TSCStudio, Biome, nativebootstrap22 e regressão existente68 ChromeEdge (90 casos nativos), revisão independente sem achados. Publicplayer completo/export/SDK e performance continuam na qualificação coesa abaixo.
 
 ## Qualificação do lote coeso
 
@@ -71,3 +71,9 @@ Iniciar import do renderer Turtle e bootstrap/supervisor independentemente após
 - [ ] SDK Linux real com Turtle stdin/tecla/click/capture/preview/cleanup; export web real ClassicPro×ChromeEdge e fonte nativa, sem inventar compatibilidade por testes inertes.
 - [ ] F1 smoke frio/cache/editado com profiler desligado; investigar contador separado, metas e transporte inalterados. Só iniciar série30 após causas/falhas atuais tratadas; novos tempos instrumentados não substituem série.
 - [ ] Retomar restantes Pinta/Zappy/Mural/allgames/fullQA/fullreview/correções. O checkpoint compartilhado de conciliação segue a autorização de commit/merge/PUSH em staging; os lotes Python posteriores continuam sujeitos à revisão final e merge local originalmente pedidos.
+
+Checkpoint funcional C: distribuição `bb10dfef789ab3caccdbd11373e693fb754d55ac959d9be9c51dd6bf4c2bc391`, releasepin `d97a11329a840f2863fb52d938fbe424b7235a8fe38bcc09d85d67dcd6582cae`,39 arquivos. Recibo local `parallel-renderer-functional-receipt.json` confere56 anexos de distribuição da regressão e hashes das fontes. Não confundir o hash da distribuição com a impressão da imagem do executor: C altera o frame distribuído, não necessariamente os arquivos incluídos no fingerprint Docker. Conferir determinismo e ambos contratos antes do SDK; não gerar nova impressão artificial só para mudar a versão.
+
+Qualificação adicional em 18/10 21:10 UTC: SDK Linux/Docker passou com Turtle, stdin, tecla, clique, PNG, preview e cleanup confirmado. `parallel-renderer-sdk-receipt.json` confere por JSON canônico o manifesto inteiro: mesma distribuição bb10 do navegador, embora o catálogo SDK use outro releasepin (`8f0bdd512ae20212fb94aa572754e8dcb496c1490e2013cb2f5aa6a98daa5f37`). Não extrapolar essa prova para Builder/BFF completo.
+
+F1 sem profiler, rede agregada 20 Mbps/80 ms, Clássico/Pro × Chrome/Edge: três casos funcionais passaram e Pro/Edge falhou no GET secundário `/network` com prazo de 5 s. Seu desenho frio já havia sido medido em 8946,4 ms, preservado antes da falha. As quatro amostras frias ficaram em 8716,5–9132,8 ms (meta 12000); as três amostras com cache em 1563,9–1904,2 ms (meta 3000); as três após editar em 1563,7–1897,7 ms, **todas acima da meta 1500**. Uma amostra por fase, sem vídeo/PC de referência/série30. Resultado não aprova desempenho. Relatório/intervalos/erros preservados em `parallel-renderer-f1-receipt-1.json`; diagnóstico específico do contador é o próximo passo, sem aumentar prazos ou eliminar a checagem.

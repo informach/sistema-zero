@@ -1,4 +1,5 @@
 import 'server-only'
+import { Agent as HttpAgent } from 'node:http'
 import { gunzipSync } from 'node:zlib'
 import {
   CopyObjectCommand,
@@ -22,6 +23,12 @@ const DEFAULT_CACHE_CONTROL = 'public, max-age=31536000, immutable'
 export class MediaNotConfiguredError extends Error {
   readonly code = 'MEDIA_NOT_CONFIGURED'
 }
+
+/** A key missing from the private bucket is different from a failed storage request. */
+export class PrivateObjectNotFoundError extends Error {}
+
+/** The private bucket could not be read; callers may offer a retry. */
+export class PrivateObjectUnavailableError extends Error {}
 
 interface R2Config {
   accountId: string
@@ -93,13 +100,23 @@ function getClient(cfg: {
   secretAccessKey: string
 }): S3Client {
   if (cachedClient) return cachedClient
+  const alternateEndpoint = getEnv().R2_S3_ENDPOINT
   cachedClient = new S3Client({
     region: 'auto',
-    endpoint: `https://${cfg.accountId}.r2.cloudflarestorage.com`,
+    endpoint: alternateEndpoint ?? `https://${cfg.accountId}.r2.cloudflarestorage.com`,
+    forcePathStyle: Boolean(alternateEndpoint),
     credentials: { accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey },
     // Sem teto, R2 pendurado = request do aluno pendurada. O requestTimeout é
     // generoso porque materiais didáticos chegam a 200MB (stream). Espelha o admin.
-    requestHandler: { connectionTimeout: 5_000, requestTimeout: 120_000 },
+    requestHandler: {
+      connectionTimeout: 5_000,
+      requestTimeout: 120_000,
+      // Moto closes a missing HEAD response. Bun/Smithy may otherwise reuse its
+      // closed socket and strand the next LIST; production R2 keeps pooling.
+      ...(alternateEndpoint?.startsWith('http://')
+        ? { httpAgent: new HttpAgent({ keepAlive: false }) }
+        : {}),
+    },
   })
   return cachedClient
 }
@@ -134,6 +151,49 @@ export async function r2PutObject(input: R2PutObjectInput): Promise<{ key: strin
     throw new Error('Falha ao enviar o arquivo para o armazenamento.', { cause: error })
   }
   return { key, url: `${cfg.publicBaseUrl}/${key}` }
+}
+
+/** Atomic public creation: an existing object, including a terminal fence, wins. */
+export async function r2CreateObject(
+  input: R2PutObjectInput,
+): Promise<{ key: string; url: string } | null> {
+  const cfg = requireR2Config()
+  const key = normalizeKey(input.key)
+  try {
+    await getClient(cfg).send(
+      new PutObjectCommand({
+        Bucket: cfg.bucket,
+        Key: key,
+        Body: input.body,
+        ContentType: input.contentType,
+        CacheControl: input.cacheControl ?? DEFAULT_CACHE_CONTROL,
+        IfNoneMatch: '*',
+      }),
+    )
+  } catch (error) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      '$metadata' in error &&
+      error.$metadata &&
+      typeof error.$metadata === 'object' &&
+      'httpStatusCode' in error.$metadata &&
+      error.$metadata.httpStatusCode === 412
+    )
+      return null
+    throw new Error('Falha ao criar o arquivo no armazenamento.', { cause: error })
+  }
+  return { key, url: `${cfg.publicBaseUrl}/${key}` }
+}
+
+/** Retain the exact key without source bytes so a delayed conditional PUT cannot recreate it. */
+export async function r2FenceObject(key: string): Promise<void> {
+  await r2PutObject({
+    key,
+    body: Buffer.alloc(0),
+    contentType: 'application/octet-stream',
+    cacheControl: 'no-store',
+  })
 }
 
 /** Lista as keys sob um prefixo do bucket PÚBLICO (limpeza de avatares antigos). */
@@ -199,9 +259,15 @@ export async function r2GetObjectPrivate(key: string): Promise<R2PrivateObject> 
       contentLength: typeof res.ContentLength === 'number' ? res.ContentLength : null,
     }
   } catch (error) {
+    const name = (error as { name?: string })?.name
+    if (name === 'NotFound' || name === 'NoSuchKey' || name === '404') {
+      throw new PrivateObjectNotFoundError('Arquivo privado não encontrado.', { cause: error })
+    }
     console.error('[r2] getObjectPrivate falhou', { key: normalized, error })
     // `cause` preservada: o Sentry (mediaErrorResponse) enxerga o erro real do S3.
-    throw new Error('Falha ao buscar o arquivo no armazenamento.', { cause: error })
+    throw new PrivateObjectUnavailableError('Falha ao buscar o arquivo no armazenamento.', {
+      cause: error,
+    })
   }
 }
 
@@ -274,6 +340,29 @@ export async function r2HeadObjectPrivate(key: string): Promise<R2PrivateHead | 
 
 /** Sobe um objeto no bucket PRIVADO (cache de PDFs com marca d'água por aluno). */
 export async function r2PutObjectPrivate(input: R2PutObjectInput): Promise<void> {
+  await putPrivateObject(input, false)
+}
+
+/** Atomic creation: a concurrent writer or a retained tombstone wins over this PUT. */
+export async function r2CreateObjectPrivate(input: R2PutObjectInput): Promise<boolean> {
+  return putPrivateObject(input, true)
+}
+
+/** Replace only the exact object whose ownership/content was checked by the caller. */
+export async function r2ReplaceObjectPrivate(
+  input: R2PutObjectInput,
+  etag: string,
+): Promise<boolean> {
+  const normalized = etag.replace(/^"|"$/g, '')
+  if (!normalized || /["\r\n]/.test(normalized)) throw new Error('Versão do objeto inválida.')
+  return putPrivateObject(input, false, `"${normalized}"`)
+}
+
+async function putPrivateObject(
+  input: R2PutObjectInput,
+  onlyIfAbsent: boolean,
+  etag?: string,
+): Promise<boolean> {
   const cfg = requirePrivateR2Config()
   const key = normalizeKey(input.key)
   try {
@@ -286,9 +375,23 @@ export async function r2PutObjectPrivate(input: R2PutObjectInput): Promise<void>
         // Cache HTTP é irrelevante aqui (bucket sem acesso público; a entrega é
         // por URL pré-assinada de TTL curto) — não usar o default público/imutável.
         CacheControl: input.cacheControl ?? 'private, no-store',
+        ...(onlyIfAbsent ? { IfNoneMatch: '*' } : {}),
+        ...(etag ? { IfMatch: etag } : {}),
       }),
     )
+    return true
   } catch (error) {
+    if (
+      (onlyIfAbsent || etag) &&
+      error &&
+      typeof error === 'object' &&
+      '$metadata' in error &&
+      error.$metadata &&
+      typeof error.$metadata === 'object' &&
+      'httpStatusCode' in error.$metadata &&
+      error.$metadata.httpStatusCode === 412
+    )
+      return false
     console.error('[r2] putObjectPrivate falhou', { key, error })
     throw new Error('Falha ao gravar o arquivo no armazenamento.', { cause: error })
   }

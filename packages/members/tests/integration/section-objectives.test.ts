@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import {
   defaultLessonSection,
   type LessonSection,
+  readStudioProjectExamples,
   type SectionProgressView,
 } from '@sistemazero/core/learning'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
@@ -18,7 +19,8 @@ const REVISION = '12345678901234567890123456789012'
 const project = (behavior: Record<string, unknown[]>) => ({
   formatVersion: 2,
   name: 'Meu jogo',
-  files: {},
+  files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+  installedExtensions: [],
   ir: {
     version: 2,
     html: [],
@@ -43,6 +45,8 @@ function setup() {
   grantLifetime(env.entitlements, { userId: USER, courseRef: course.slug })
   env.courses.blocks = env.courses.blocks.filter((b) => b.lessonId !== lessonId)
   const studioId = randomUUID()
+  const sectionId = randomUUID()
+  const exampleId = randomUUID()
   env.courses.blocks.push({
     id: studioId,
     lessonId,
@@ -51,12 +55,17 @@ function setup() {
     contentRevision: REVISION,
     content: {
       kind: 'studio',
+      purpose: 'experiment',
       initialProject: VAZIO,
-      solutionProject: COM_LACO_E_FUNCAO,
+      projectExamples: {
+        version: 1,
+        examples: { [exampleId]: COM_LACO_E_FUNCAO },
+        sections: { [sectionId]: { solutionExampleId: exampleId } },
+      },
     },
   })
   const section: LessonSection = {
-    ...defaultLessonSection(randomUUID(), 'Monte o jogo', []),
+    ...defaultLessonSection(sectionId, 'Monte o jogo', [studioId]),
     intent: 'application',
     workspaceBlockId: studioId,
     completion: {
@@ -109,10 +118,46 @@ function setup() {
       revision: structureRevision,
       project: snapshot,
     })
-  return { ...env, lessonId, section, studioId, read, check, checkRaw }
+  return { ...env, courseSlug: course.slug, lessonId, section, studioId, read, check, checkRaw }
 }
 
 describe('objetivos da parte no servidor', () => {
+  test('o HTTP da aula não entrega exemplos privados nem a outra conta sem acesso', async () => {
+    const ctx = setup()
+    const studio = ctx.courses.blocks.find((block) => block.id === ctx.studioId)
+    if (studio?.content.kind !== 'studio') throw new Error('Expected the lesson Studio')
+    const exampleId = randomUUID()
+    const examples = readStudioProjectExamples({
+      version: 1,
+      examples: {
+        [exampleId]: {
+          ...COM_LACO_E_FUNCAO,
+          id: 'private-teacher-example',
+          name: 'PRIVATE_TEACHER_SOLUTION_SENTINEL',
+          createdAt: 0,
+          updatedAt: 0,
+          mode: 'blocks',
+          installedExtensions: [],
+          files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+        },
+      },
+      sections: { [ctx.section.id]: { solutionExampleId: exampleId } },
+    })
+    if (examples.kind !== 'valid') throw new Error('Expected valid private examples')
+    studio.content.projectExamples = examples.value
+    const lesson = await ctx.read()
+    expect(lesson.blocks.some((block) => block.id === ctx.studioId)).toBe(true)
+    expect(JSON.stringify(lesson)).not.toContain('PRIVATE_TEACHER_SOLUTION_SENTINEL')
+    expect(JSON.stringify(lesson)).not.toContain(exampleId)
+    const forbidden = await ctx.app.handle(
+      new Request(`http://localhost/members/courses/${ctx.courseSlug}/lessons/${ctx.lessonId}`, {
+        headers: { 'x-auth-user-id': '22222222-2222-2222-2222-222222222222' },
+      }),
+    )
+    expect(forbidden.status).toBe(403)
+    expect(await forbidden.text()).not.toContain('PRIVATE_TEACHER_SOLUTION_SENTINEL')
+  })
+
   test('a criança recebe a vista: rótulo, dica, extra e tipo, nunca a regra nem o gabarito', async () => {
     const ctx = setup()
     const lesson = await ctx.read()
@@ -246,11 +291,25 @@ describe('objetivos da parte no servidor', () => {
     expect(await objetivos()).toHaveLength(2)
     const block = ctx.courses.blocks.find((b) => b.id === ctx.studioId)
     if (block?.content.kind !== 'studio') throw new Error('bloco ausente')
-    const content = block.content
-    await ctx.courses.updateBlock(ctx.studioId, 'studio', { ...content, solutionProject: COM_LACO })
+    const initialDraft = await ctx.drafts.read(ctx.lessonId)
+    const changed = await ctx.drafts.change(ctx.lessonId, USER, {
+      expectedRevision: initialDraft.revision,
+      operationId: randomUUID(),
+      change: {
+        type: 'studio-example',
+        blockId: ctx.studioId,
+        sectionId: ctx.section.id,
+        role: 'solution',
+        action: { type: 'save', exampleId: randomUUID(), project: COM_LACO },
+      },
+    })
+    await ctx.drafts.publish(ctx.lessonId, USER, changed.revision, randomUUID(), [])
     expect(await objetivos()).toHaveLength(2)
+    const content = ctx.courses.blocks.find((b) => b.id === ctx.studioId)?.content
+    if (content?.kind !== 'studio') throw new Error('Published Studio missing')
+    const { projectExamples: _examples, ...editorConfiguration } = content
     await ctx.courses.updateBlock(ctx.studioId, 'studio', {
-      ...content,
+      ...editorConfiguration,
       initialProject: COM_LACO_E_FUNCAO,
     })
     expect(await objetivos()).toBeUndefined()

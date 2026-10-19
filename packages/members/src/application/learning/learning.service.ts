@@ -12,6 +12,7 @@ import {
   type LessonLearningReport,
   type LessonSection,
   learningHints,
+  lessonStudioProjectExampleIssues,
   playbackLessonStructure,
   publicInteractiveBlock,
   readVideoCoverage,
@@ -504,10 +505,14 @@ export class LearningService {
     expectedRevision: string | null,
     sections: LessonSection[],
   ) {
-    const lesson = await this.courses.findLessonWithContent(lessonId)
+    const lesson = await this.courses.findLessonWithContent(lessonId, {
+      includePrivateStudioAuthoring: true,
+    })
     if (!lesson) throw new LessonNotFoundError()
     const invalid = validateLessonSections(sections, lesson.blocks)
     if (invalid) throw new ValidationError(invalid)
+    const [exampleIssue] = lessonStudioProjectExampleIssues(sections, lesson.blocks)
+    if (exampleIssue) throw new ValidationError(exampleIssue.message)
     if (lesson.isPublished && sections.some((s) => s.pendingMedia.length))
       throw new ValidationError('Despublique a aula antes de marcar mídias pendentes.')
     const saved = await this.repository.saveStructure(lessonId, expectedRevision, sections)
@@ -559,7 +564,9 @@ export class LearningService {
     return { items, nextCursor: rows.length > 100 ? (items.at(-1)?.id ?? null) : null }
   }
   async assertPublishable(lessonId: string) {
-    const lesson = await this.courses.findLessonWithContent(lessonId)
+    const lesson = await this.courses.findLessonWithContent(lessonId, {
+      includePrivateStudioAuthoring: true,
+    })
     if (!lesson) throw new LessonNotFoundError()
     const course = await this.courses.findCourseById(lesson.courseId)
     const structure = await this.repository.getStructure(lessonId)

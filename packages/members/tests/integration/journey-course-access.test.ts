@@ -446,7 +446,7 @@ describe('marcos do curso nas listagens', () => {
   }
 
   test('separa concluído de concluído+publicado no catálogo', async () => {
-    const { app, courses, entitlements, gamification } = buildApp()
+    const { app, courses, entitlements, gamification, kidsJourneySnapshots } = buildApp()
     await comEntradaConcluida(courses, gamification)
     const base = seedSampleCourse(
       courses,
@@ -487,7 +487,8 @@ describe('marcos do curso nas listagens', () => {
     expect(bySlug.get('base-2d')?.milestones).toEqual({ completed: true, showcased: true })
     expect(bySlug.get('segundo-2d')?.milestones).toEqual({ completed: true, showcased: false })
     expect(bySlug.get('intocado-2d')?.milestones).toEqual({ completed: false, showcased: false })
-    expect(gamification.journeyCourseStateReads).toBe(1)
+    expect(kidsJourneySnapshots.snapshotReads).toBe(1)
+    expect(gamification.journeyCourseStateReads).toBe(0)
     expect(gamification.qualifyingJourneySlotReads).toBe(0)
   })
 
@@ -569,5 +570,49 @@ describe('marcos do curso nas listagens', () => {
     })
     expect(gamification.journeyCourseStateReads).toBe(0)
     expect(gamification.qualifyingJourneySlotReads).toBe(0)
+  })
+})
+
+
+describe('canonical Kids course consumers', () => {
+  test('configured complete-only milestones open both listing and direct access without requiring showcase or granting curriculum', async () => {
+    const env = buildApp()
+    const entry = seedSampleCourse(env.courses, 'canonical-entry', 'published', 'kids', false, 'primeiros-passos', '2d', 1)
+    const base = seedSampleCourse(env.courses, 'canonical-base', 'published', 'kids', false, 'iniciante', '2d', 1)
+    const next = seedSampleCourse(env.courses, 'canonical-next', 'published', 'kids', false, 'iniciante', '2d', 2)
+    grantAllKidsCourses(env.entitlements, { userId: ACCOUNT })
+    const policy = env.kidsJourneySnapshots.policy
+    env.kidsJourneySnapshots.policy = {
+      ...policy,
+      steps: policy.steps.map((step, index) => index === 0 ? { ...step,
+        requirements: step.requirements.map((requirement) => ({ ...requirement, milestone: 'complete' as const })),
+      } : step),
+      tierAccess: policy.tierAccess.map((rule) => rule.tier === 'iniciante-2d'
+        ? { ...rule, foundation: { ...rule.foundation, milestone: 'complete' as const } } : rule),
+    }
+    await env.gamification.award({ userId: USER, accountId: ACCOUNT, audience: 'kids',
+      events: [entry.courseId, base.courseId].map((sourceId) => ({ sourceType: 'course_complete', sourceId, amount: 0 })),
+      today: '2026-06-02', now: NOW, privileged: false,
+    })
+    const catalog = await env.app.handle(new Request('http://localhost/members/catalog?audience=kids', { headers }))
+    expect(catalog.status).toBe(200)
+    const body = await catalog.json() as { courses: { courseSlug: string; careerLock: { locked: boolean } }[] }
+    expect(body.courses.find((course) => course.courseSlug === 'canonical-next')!.careerLock.locked).toBe(false)
+    expect((await env.app.handle(new Request('http://localhost/members/courses/canonical-next', { headers }))).status).toBe(200)
+    expect((await env.app.handle(new Request(`http://localhost/members/courses/canonical-next/lessons/${next.lessonIds[0]}`, { headers }))).status).toBe(200)
+    expect(env.gamification.journeyCourseStateReads).toBe(0)
+    expect(env.gamification.qualifyingJourneySlotReads).toBe(0)
+    expect(await env.gamification.listStudioUnlocksByCourse(USER, 'kids')).toEqual([])
+  })
+
+  test('missing materialized registration is unavailable in catalog and direct access, never an unlocked or Noob response', async () => {
+    const env = buildApp()
+    seedSampleCourse(env.courses, 'canonical-unavailable', 'published', 'kids', false, 'primeiros-passos', '2d', 1)
+    grantAllKidsCourses(env.entitlements, { userId: ACCOUNT })
+    env.kidsJourneySnapshots.unavailableProfiles.add(USER)
+    for (const path of ['/members/catalog?audience=kids', '/members/courses/canonical-unavailable', '/members/courses?audience=kids']) {
+      const response = await env.app.handle(new Request(`http://localhost${path}`, { headers }))
+      expect(response.status).toBe(503)
+    }
   })
 })

@@ -1,7 +1,14 @@
 import type { StudioAiFundingSource } from '@sistemazero/core/ai-credits'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
-import type { AdultCreatorCapability, AdultJourneyPolicy } from '@sistemazero/core/journey'
+import type {
+  AdultCreatorCapability,
+  AdultJourneyPolicy,
+  JourneyCourseTier,
+  JourneyLevelSlug,
+  KidsCreatorCapability,
+  KidsJourneyPolicy,
+} from '@sistemazero/core/journey'
 import type {
   LearningAnswers,
   LearningAttemptView,
@@ -54,6 +61,11 @@ import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
 import type { LiveRecordingSegmentTime } from '../../../domain/live/recording-chapters'
+import type {
+  KidsJourneyAuthCapture,
+  KidsJourneyCatalogCourse,
+  KidsJourneyPreparationStatus,
+} from '../../../domain/ports/kids-journey-repository.port'
 import type { CourseFeedbackAnswers } from '../../../domain/rating/course-rating'
 import type { RoomState } from '../../../domain/room/room-catalog'
 
@@ -2769,7 +2781,189 @@ export const adultJourneyGrants = members.table(
   ],
 )
 
+// Canonical policy: initializing V0 is explicit; normal readers require published V>=1.
+export const kidsJourneyPolicy = members.table(
+  'kids_journey_policy',
+  {
+    id: text('id').primaryKey().default('kids'),
+    version: integer('version').notNull(),
+    phase: text('phase').$type<'initializing' | 'published'>().notNull(),
+    policy: jsonb('policy').$type<KidsJourneyPolicy>().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    check('kids_journey_policy_id_check', sql`${t.id} = 'kids'`),
+    check(
+      'kids_journey_policy_version_check',
+      sql`(${t.phase} = 'initializing' and ${t.version} = 0) or (${t.phase} = 'published' and ${t.version} >= 1)`,
+    ),
+    check(
+      'kids_journey_policy_shape_check',
+      sql`jsonb_typeof(${t.policy}) = 'object' and ${t.policy}->>'schemaVersion' = '1' and ${t.policy}->>'mode' in ('active','paused') and jsonb_typeof(${t.policy}->'steps') = 'array' and jsonb_typeof(${t.policy}->'tierAccess') = 'array'`,
+    ),
+  ],
+)
+
+export const kidsJourneyPreparations = members.table(
+  'kids_journey_preparations',
+  {
+    id: uuid('id').primaryKey(),
+    expectedVersion: integer('expected_version').notNull(),
+    sourcePolicy: jsonb('source_policy').$type<KidsJourneyPolicy>().notNull(),
+    candidatePolicy: jsonb('candidate_policy').$type<KidsJourneyPolicy>().notNull(),
+    draftHash: varchar('draft_hash', { length: 64 }).notNull(),
+    catalogHash: varchar('catalog_hash', { length: 64 }).notNull(),
+    cohortHash: varchar('cohort_hash', { length: 64 }),
+    origin: text('origin').$type<'seed' | 'configuration'>().notNull(),
+    captureStage: text('capture_stage').$type<'auth' | 'members' | 'hashing' | 'done'>().notNull(),
+    captureCursor: uuid('capture_cursor'),
+    authCapture: jsonb('auth_capture').$type<KidsJourneyAuthCapture>(),
+    catalog: jsonb('catalog').$type<readonly KidsJourneyCatalogCourse[]>().notNull(),
+    cursor: uuid('cursor'),
+    upperBound: uuid('upper_bound'),
+    processed: integer('processed').notNull().default(0),
+    status: text('status').$type<KidsJourneyPreparationStatus>().notNull(),
+    actorKind: text('actor_kind').$type<'system' | 'user'>().notNull(),
+    actorId: uuid('actor_id'),
+    reason: varchar('reason', { length: 500 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('kids_journey_preparations_status_idx').on(t.status, t.updatedAt),
+    check('kids_journey_preparations_version_check', sql`${t.expectedVersion} >= 0`),
+    check('kids_journey_preparations_count_check', sql`${t.processed} >= 0`),
+    check(
+      'kids_journey_preparations_status_check',
+      sql`${t.status} in ('capturing','preparing','ready','stale','published')`,
+    ),
+    check(
+      'kids_journey_preparations_reason_check',
+      sql`length(btrim(${t.reason})) between 1 and 500`,
+    ),
+    check(
+      'kids_journey_preparations_hash_check',
+      sql`${t.draftHash} ~ '^[a-f0-9]{64}$' and ${t.catalogHash} ~ '^[a-f0-9]{64}$'`,
+    ),
+    check('kids_journey_preparations_catalog_check', sql`jsonb_typeof(${t.catalog}) = 'array'`),
+    check(
+      'kids_journey_preparations_auth_capture_check',
+      sql`${t.authCapture} is null or jsonb_typeof(${t.authCapture}) = 'object'`,
+    ),
+    check(
+      'kids_journey_preparations_actor_check',
+      sql`(${t.actorKind} = 'system' and ${t.actorId} is null and ${t.origin} = 'seed' and ${t.expectedVersion} = 0) or (${t.actorKind} = 'user' and ${t.actorId} is not null and ${t.origin} = 'configuration' and ${t.expectedVersion} >= 1)`,
+    ),
+    check(
+      'kids_journey_preparations_capture_check',
+      sql`${t.captureStage} in ('auth','members','hashing','done') and (${t.status} not in ('preparing','ready','published') or (${t.captureStage} = 'done' and ${t.cohortHash} is not null and ${t.cohortHash} ~ '^[a-f0-9]{64}$'))`,
+    ),
+    check(
+      'kids_journey_preparations_cursor_check',
+      sql`${t.cursor} is null or (${t.upperBound} is not null and ${t.cursor} <= ${t.upperBound})`,
+    ),
+  ],
+)
+
+export const kidsJourneyPreparationOwners = members.table(
+  'kids_journey_preparation_owners',
+  {
+    preparationId: uuid('preparation_id')
+      .notNull()
+      .references(() => kidsJourneyPreparations.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id'),
+  },
+  (t) => [
+    primaryKey({ columns: [t.preparationId, t.userId] }),
+    index('kids_journey_preparation_owners_account_idx').on(t.accountId),
+  ],
+)
+
+export const kidsJourneyRevisions = members.table(
+  'kids_journey_revisions',
+  {
+    version: integer('version').primaryKey(),
+    previousVersion: integer('previous_version').notNull(),
+    preparationId: uuid('preparation_id')
+      .notNull()
+      .references(() => kidsJourneyPreparations.id),
+    policy: jsonb('policy').$type<KidsJourneyPolicy>().notNull(),
+    draftHash: varchar('draft_hash', { length: 64 }).notNull(),
+    catalogHash: varchar('catalog_hash', { length: 64 }).notNull(),
+    cohortHash: varchar('cohort_hash', { length: 64 }).notNull(),
+    actorKind: text('actor_kind').$type<'system' | 'user'>().notNull(),
+    actorId: uuid('actor_id'),
+    reason: varchar('reason', { length: 500 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('kids_journey_revisions_preparation_uq').on(t.preparationId),
+    check(
+      'kids_journey_revisions_version_check',
+      sql`${t.version} >= 1 and ${t.previousVersion} = ${t.version} - 1`,
+    ),
+    check('kids_journey_revisions_reason_check', sql`length(btrim(${t.reason})) between 1 and 500`),
+    check(
+      'kids_journey_revisions_actor_check',
+      sql`(${t.actorKind} = 'system' and ${t.actorId} is null and ${t.version} = 1) or (${t.actorKind} = 'user' and ${t.actorId} is not null and ${t.version} >= 2)`,
+    ),
+    check(
+      'kids_journey_revisions_hash_check',
+      sql`${t.draftHash} ~ '^[a-f0-9]{64}$' and ${t.catalogHash} ~ '^[a-f0-9]{64}$' and ${t.cohortHash} ~ '^[a-f0-9]{64}$'`,
+    ),
+  ],
+)
+
+export const kidsJourneyEarned = members.table(
+  'kids_journey_earned',
+  {
+    userId: uuid('user_id').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    level: text('level').$type<JourneyLevelSlug>().notNull(),
+    capabilities: jsonb('capabilities').$type<readonly KidsCreatorCapability[]>().notNull(),
+    entryTiers: text('entry_tiers')
+      .array()
+      .$type<JourneyCourseTier[]>()
+      .notNull()
+      .default(sql`array[]::text[]`),
+    expandedTiers: text('expanded_tiers')
+      .array()
+      .$type<JourneyCourseTier[]>()
+      .notNull()
+      .default(sql`array[]::text[]`),
+    rewardTiers: text('reward_tiers')
+      .array()
+      .$type<JourneyCourseTier[]>()
+      .notNull()
+      .default(sql`array[]::text[]`),
+    policyVersion: integer('policy_version').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('kids_journey_earned_account_idx').on(t.accountId),
+    check(
+      'kids_journey_earned_level_check',
+      sql`${t.level} in ('noob','coder','hacker','explorer','elite','architect','champion','god')`,
+    ),
+    check('kids_journey_earned_version_check', sql`${t.policyVersion} >= 0`),
+    check(
+      'kids_journey_earned_access_check',
+      sql`${t.entryTiers} <@ array['primeiros-passos-2d','iniciante-2d','iniciante-3d','intermediario-2d','intermediario-3d','avancado-2d','avancado-3d']::text[] and ${t.rewardTiers} <@ array['primeiros-passos-2d','iniciante-2d','iniciante-3d','intermediario-2d','intermediario-3d','avancado-2d','avancado-3d']::text[] and ${t.expandedTiers} <@ ${t.entryTiers} and cardinality(${t.entryTiers}) <= 7 and cardinality(${t.expandedTiers}) <= 7 and cardinality(${t.rewardTiers}) <= 7`,
+    ),
+    check(
+      'kids_journey_earned_capabilities_check',
+      sql`jsonb_typeof(${t.capabilities}) = 'array' and ${t.capabilities} <@ '["studio","pinta","bridge","pro","ai","pensa","molda","molda-intermediate","molda-professional"]'::jsonb`,
+    ),
+  ],
+)
+
 export const schema = {
+  kidsJourneyPolicy,
+  kidsJourneyPreparations,
+  kidsJourneyPreparationOwners,
+  kidsJourneyRevisions,
+  kidsJourneyEarned,
   adultChallengeCustomThemes,
   adultChallengeMonthOverrides,
   adultProfiles,

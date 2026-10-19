@@ -3,6 +3,7 @@ import {
   applyLessonDraftChange,
   defaultLessonSection,
   type LessonDraftDocument,
+  readStudioProjectExamples,
 } from '@sistemazero/core/learning'
 import { chaveDeVoz } from '@sistemazero/core/learning/scene'
 import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-document'
@@ -11,11 +12,6 @@ import { prepareEditableStudioProject } from '@sistemazero/studio/editable-proje
 import { createEditableStudioProject } from '@sistemazero/studio/project-factory'
 import { authoringFixture } from '../../members/tests/fakes/studio-authoring-policy'
 import {
-  buildContent,
-  EMPTY_BLOCK,
-} from '../src/app/admin/membros/cursos/[courseId]/aulas/[lessonId]/lesson-editor-client'
-import { solutionFrom } from '../src/app/admin/membros/cursos/[courseId]/aulas/[lessonId]/studio-solution-field'
-import {
   appendLessonSection,
   copyLessonContent,
   duplicateLessonSection,
@@ -23,10 +19,11 @@ import {
   sectionCompletionSummary,
   suggestedCompletion,
 } from '../src/lib/lesson-authoring'
+import { buildContent, EMPTY_BLOCK } from '../src/lib/lesson-block-form'
 import { prepareStudioAuthoringOptions } from '../src/lib/studio-authoring-options'
 import type { LessonBlockContent } from '../src/lib/types'
 
-test('gabaritos de nomes no limite permanecem canônicos sem alterar o inicial ou partir emoji', async () => {
+test('exemplos por parte preservam nomes no limite sem alterar o inicial ou partir emoji', async () => {
   for (const language of ['javascript', 'python'] as const) {
     for (const kind of ['classic', 'pro'] as const) {
       const fixture = await authoringFixture(language, kind)
@@ -37,9 +34,36 @@ test('gabaritos de nomes no limite permanecem canônicos sem alterar o inicial o
         project.name = name
         const original = JSON.stringify(project)
         expect(StudioProjectDocumentSchema.safeParse(project).success).toBe(true)
-        const solution = solutionFrom(project)
+        const solution = { ...project, id: crypto.randomUUID() }
         expect(StudioProjectDocumentSchema.safeParse(solution).success).toBe(true)
-        expect(solution.name).toEndWith(' (gabarito)')
+        const blockId = crypto.randomUUID(),
+          sectionId = crypto.randomUUID(),
+          exampleId = crypto.randomUUID()
+        const document: LessonDraftDocument<LessonBlockContent> = {
+          title: 'Exemplo por parte',
+          slug: 'exemplo-por-parte',
+          estimatedMinutes: null,
+          attachments: [],
+          plannedVideos: [],
+          blocks: [{ id: blockId, content: { kind: 'studio', initialProject: project } }],
+          sections: [
+            { ...defaultLessonSection(sectionId, 'Parte', [blockId]), workspaceBlockId: blockId },
+          ],
+        }
+        const saved = applyLessonDraftChange(document, {
+          type: 'studio-example',
+          blockId,
+          sectionId,
+          role: 'solution',
+          action: { type: 'save', exampleId, project: solution },
+        })
+        const content = saved.blocks[0]!.content
+        if (content.kind !== 'studio') throw new Error('Expected Studio')
+        const read = readStudioProjectExamples(content.projectExamples)
+        expect(read.kind).toBe('valid')
+        if (read.kind !== 'valid') throw new Error('Expected canonical private examples')
+        expect(read.value.sections[sectionId]?.solutionExampleId).toBe(exampleId)
+        expect(read.value.examples[exampleId]?.name).toBe(name)
         expect(solution.name).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/u)
         expect(solution.id).not.toBe(project.id)
         expect(JSON.stringify(project)).toBe(original)
@@ -76,16 +100,14 @@ test('o formulário salva nível Python independente sem traduzir o código nem 
     initialProject: project,
   })
   expect(content).not.toHaveProperty('level')
-  const solution = solutionFrom(project)
-  expect(solution.id).not.toBe(project.id)
-  expect(solution).toMatchObject({
-    programmingLanguage: 'python',
-    runtime: project.runtime,
-    name: 'Python (gabarito)',
-  })
-  expect(
-    buildContent({ ...EMPTY_BLOCK, kind: 'studio' }, project, undefined, undefined, solution),
-  ).toHaveProperty('solutionProject', solution)
+  expect(content).not.toHaveProperty('solutionProject')
+  expect(() =>
+    buildContent({ ...EMPTY_BLOCK, kind: 'studio' }, project, {
+      kind: 'studio',
+      initialProject: project,
+      solutionProject: { ...project, id: crypto.randomUUID() },
+    }),
+  ).toThrow('gabarito global')
   const legacy = buildContent({ ...EMPTY_BLOCK, kind: 'studio' }, createEmptyProject('old', 'JS'))
   expect(legacy).toHaveProperty('level', 'iniciante-2d')
   expect(legacy).not.toHaveProperty('pythonLevel')

@@ -1,3 +1,5 @@
+import type { JourneyLevelSlug } from '@sistemazero/core/journey'
+import { pensaKidsJourney } from '../pensa-fixtures'
 import { mock } from 'bun:test'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
@@ -58,7 +60,7 @@ export async function pythonZappyFixture(
   })
   const state = {
     allowed: true,
-    levelSlug: 'hacker',
+    levelSlug: 'hacker' as JourneyLevelSlug,
     adultAi: true,
     policies: 0,
     reservations: 0,
@@ -149,7 +151,7 @@ export async function pythonZappyFixture(
           level: { slug: state.levelSlug },
           ...(audience === 'adult'
             ? { journey: { capabilities: state.adultAi ? ['ai'] : [] } }
-            : {}),
+            : { kidsJourney: pensaKidsJourney(state.levelSlug, ['studio', 'pinta', 'ai', 'pensa']) }),
         },
       }
     },

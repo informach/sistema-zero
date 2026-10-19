@@ -5,7 +5,7 @@ import {
   type PythonBootResourceName,
   pythonBootResourceManifestKey,
 } from './bootResourceManifest'
-import { pythonWebBytesSha256, readPythonWebBytes } from './webFiles'
+import { pythonWebBytesSha256, readPythonWebBytesExact } from './webFiles'
 
 /** Narrow browser CacheStorage subset, not a generic authenticated response cache. */
 export interface PythonBootCacheStorage {
@@ -111,7 +111,7 @@ export function createPythonBootResourceStore(options: {
     }
     let bytes: Uint8Array<ArrayBuffer>
     try {
-      bytes = await readPythonWebBytes(response, file.bytes, signal)
+      bytes = await readPythonWebBytesExact(response, file.bytes, signal)
       signal.throwIfAborted()
       const sha256 = await pythonWebBytesSha256(bytes)
       signal.throwIfAborted()

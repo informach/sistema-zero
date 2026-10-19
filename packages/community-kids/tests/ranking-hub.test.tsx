@@ -63,6 +63,17 @@ const league: LeagueMeView = {
   entries: [{ position: 1, weeklyXp: 40, isMe: true, firstName: 'Lia' }],
 }
 
+test('ranking preserves unavailable rank as an explicit state instead of showing a new Faísca', () => {
+  const unavailable: RankingLeaderboardView = {
+    ...ranking,
+    items: ranking.items.map((entry) => ({ ...entry, levelSlug: null })),
+    me: ranking.me ? { ...ranking.me, levelSlug: null } : null,
+  }
+  render(<RankingHub initialRanking={unavailable} league={league} />)
+  expect(screen.queryAllByText('Faísca').length).toBe(0)
+  expect(screen.getAllByText('Posto indisponível').length).toBeGreaterThan(0)
+})
+
 afterEach(() => {
   globalThis.fetch = originalFetch
 })

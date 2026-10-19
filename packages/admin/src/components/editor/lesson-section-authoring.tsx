@@ -26,6 +26,7 @@ import {
   type LessonSection,
   SECTION_INTENT_LABELS,
   SECTION_INTENTS,
+  type StudioProjectExampleChange,
   sectionCompletionIssues,
   submissionUpToDateWorkspace,
 } from '@sistemazero/core/learning'
@@ -65,7 +66,10 @@ import {
 import type { BlockView, LessonBlockContent, LessonContentView } from '@/lib/types'
 import { LessonBlockKindBadge } from './lesson-block-kind'
 import { SectionCompletionEditor } from './section-completion-editor'
+import { SectionProjectExamples } from './section-project-examples'
 import { TeacherNotesField } from './teacher-notes-field'
+
+const rejectExampleChange = () => false
 
 export interface SectionAuthoringProps {
   draftRevision?: string
@@ -73,6 +77,10 @@ export interface SectionAuthoringProps {
   document: LessonDraftDocument<LessonBlockContent>
   canWrite: boolean
   onChange: (change: LessonDraftChange<LessonBlockContent>, immediate?: boolean) => void
+  onExampleChange?: (change: StudioProjectExampleChange, immediate?: boolean) => boolean
+  registerExampleCapture?: (capture: () => Promise<void>) => () => void
+  canCaptureExample?: () => boolean
+  onExampleEditingChange?: (editing: boolean) => void
   onAddBlock: (sectionId: string | null) => void
   onEditBlock: (block: BlockView) => void
   onRemoveBlock: (block: BlockView) => void
@@ -139,7 +147,16 @@ export function LessonSectionAuthoring({
   focusRequest,
   uploadStatus = {},
   live = false,
+  registerExampleCapture,
+  canCaptureExample,
+  onExampleChange,
+  onExampleEditingChange,
 }: SectionAuthoringProps) {
+  const [exampleEditing, setExampleEditing] = useState(false)
+  useEffect(() => {
+    onExampleEditingChange?.(exampleEditing)
+    return () => onExampleEditingChange?.(false)
+  }, [exampleEditing, onExampleEditingChange])
   const [openIds, setOpenIds] = useState<string[]>([])
   const [activeEditor, setActiveEditor] = useState<{
     sectionId: string
@@ -229,6 +246,7 @@ export function LessonSectionAuthoring({
     setActiveEditor({ sectionId, target })
   }
   function closeEditor() {
+    if (exampleEditing) return
     setActiveEditor(null)
     requestAnimationFrame(() => {
       returnFocus.current?.focus({ preventScroll: true })
@@ -463,7 +481,7 @@ export function LessonSectionAuthoring({
       )}
       {editing && activeEditor && (
         <section className="space-y-5 rounded-2xl border border-border bg-card p-5">
-          <Button variant="ghost" onClick={closeEditor}>
+          <Button variant="ghost" disabled={exampleEditing} onClick={closeEditor}>
             <ArrowLeft className="size-4" />
             Voltar ao percurso
           </Button>
@@ -481,6 +499,37 @@ export function LessonSectionAuthoring({
                 : 'Orientações e projeto da seção'}
             </h2>
           </div>
+          {activeEditor.target === 'completion' &&
+            (() => {
+              const workspace = tools.find((block) => block.id === editing.workspaceBlockId)
+              return workspace?.content.kind === 'studio' ? (
+                <SectionProjectExamples
+                  key={`${editing.id}:${workspace.id}`}
+                  workspace={workspace.content}
+                  blockId={workspace.id}
+                  sectionId={editing.id}
+                  canWrite={canWrite && Boolean(onExampleChange)}
+                  canCapture={canCaptureExample}
+                  runtimeScope={
+                    draftRevision
+                      ? {
+                          userId: authorId,
+                          context: {
+                            kind: 'authoring',
+                            lessonId: lesson.id,
+                            draftRevision,
+                            blockId: workspace.id,
+                            purpose: 'authoring',
+                          },
+                        }
+                      : undefined
+                  }
+                  onChange={onExampleChange ?? rejectExampleChange}
+                  registerCapture={registerExampleCapture}
+                  onEditingChange={setExampleEditing}
+                />
+              ) : null
+            })()}
           <fieldset disabled={!canWrite} className="space-y-5">
             {activeEditor.target === 'completion' ? (
               <>
@@ -498,46 +547,52 @@ export function LessonSectionAuthoring({
                       Usar Material do curso para avançar ao abrir ou baixar o caderno
                     </Button>
                   )}
-                <SectionCompletionEditor
-                  runtimeScope={
-                    draftRevision
-                      ? {
-                          userId: authorId,
-                          context: {
-                            kind: 'authoring',
-                            lessonId: lesson.id,
-                            draftRevision,
-                            blockId: editing.workspaceBlockId,
-                            purpose: 'authoring',
-                          },
-                        }
-                      : undefined
-                  }
-                  allowPlatformAction={
-                    !editing.workspaceBlockId &&
-                    !editing.externalTool &&
-                    editing.intent !== 'material'
-                  }
-                  value={editing.completion ?? { version: 1, blockIds: [] }}
-                  candidates={sectionCompletionCandidates(doc, editing)}
-                  hasStudio={tools.some(
-                    (b) => b.id === editing.workspaceBlockId && b.kind === 'studio',
-                  )}
-                  // A mesma régua do core: o espaço é um Estúdio/Pinta entregue numa parte de
-                  // entrega final que vem antes (ou é esta). Fora disso a publicação recusaria.
-                  allowSubmissionUpToDate={
-                    submissionUpToDateWorkspace(doc.sections, doc.blocks, editing.id) !== null
-                  }
-                  workspace={tools.find((b) => b.id === editing.workspaceBlockId)?.content}
-                  allowBlocks={tools.flatMap((b) =>
-                    b.id === editing.workspaceBlockId && b.content.kind === 'studio'
-                      ? (b.content.allowBlocks ?? [])
-                      : [],
-                  )}
-                  onChange={(completion) => patch(editing.id, { completion })}
-                />
+
+                {!exampleEditing && (
+                  <SectionCompletionEditor
+                    sectionId={editing.id}
+                    workspaceBlockId={editing.workspaceBlockId}
+                    runtimeScope={
+                      draftRevision
+                        ? {
+                            userId: authorId,
+                            context: {
+                              kind: 'authoring',
+                              lessonId: lesson.id,
+                              draftRevision,
+                              blockId: editing.workspaceBlockId,
+                              purpose: 'authoring',
+                            },
+                          }
+                        : undefined
+                    }
+                    allowPlatformAction={
+                      !editing.workspaceBlockId &&
+                      !editing.externalTool &&
+                      editing.intent !== 'material'
+                    }
+                    value={editing.completion ?? { version: 1, blockIds: [] }}
+                    candidates={sectionCompletionCandidates(doc, editing)}
+                    hasStudio={tools.some(
+                      (b) => b.id === editing.workspaceBlockId && b.kind === 'studio',
+                    )}
+                    // A mesma régua do core: o espaço é um Estúdio/Pinta entregue numa parte de
+                    // entrega final que vem antes (ou é esta). Fora disso a publicação recusaria.
+                    allowSubmissionUpToDate={
+                      submissionUpToDateWorkspace(doc.sections, doc.blocks, editing.id) !== null
+                    }
+                    workspace={tools.find((b) => b.id === editing.workspaceBlockId)?.content}
+                    allowBlocks={tools.flatMap((b) =>
+                      b.id === editing.workspaceBlockId && b.content.kind === 'studio'
+                        ? (b.content.allowBlocks ?? [])
+                        : [],
+                    )}
+                    onChange={(completion) => patch(editing.id, { completion })}
+                  />
+                )}
                 <Button
                   variant="outline"
+                  disabled={exampleEditing}
                   onClick={() => setActiveEditor({ sectionId: editing.id, target: 'settings' })}
                 >
                   Ajustar intenção ou ferramenta
@@ -634,7 +689,9 @@ export function LessonSectionAuthoring({
                 </p>
               ))}
           </fieldset>
-          <Button onClick={closeEditor}>Voltar ao percurso</Button>
+          <Button disabled={exampleEditing} onClick={closeEditor}>
+            Voltar ao percurso
+          </Button>
         </section>
       )}
       <div hidden={Boolean(editing)}>

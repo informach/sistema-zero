@@ -130,6 +130,91 @@ function setup(
   }
 }
 
+test('scheduled cleanup drains Kids and adult publication queues with the worker token', async () => {
+  const context = setup()
+  context.env.PUBLICATION_CLEANUP_URL = 'https://kids.test/api/internal/studio-publication-cleanup'
+  context.env.PUBLICATION_CLEANUP_ADULT_URL =
+    'https://adults.test/api/internal/studio-publication-cleanup'
+  const called: Array<{
+    url: string
+    authorization: string | null
+    redirect: RequestRedirect | undefined
+  }> = []
+  const pending: Promise<unknown>[] = []
+  const fetched = spyOn(globalThis, 'fetch').mockImplementation(
+    Object.assign(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        called.push({
+          url: String(input),
+          authorization: new Headers(init?.headers).get('Authorization'),
+          redirect: init?.redirect,
+        })
+        return new Response(null, { status: 204 })
+      },
+      { preconnect: globalThis.fetch.preconnect },
+    ),
+  )
+  try {
+    await context.handler.scheduled!({} as ScheduledEvent, context.env, {
+      waitUntil: (promise: Promise<unknown>) => {
+        pending.push(promise)
+      },
+    } as unknown as ExecutionContext)
+    await Promise.all(pending)
+    expect(called).toEqual([
+      {
+        url: context.env.PUBLICATION_CLEANUP_URL,
+        authorization: `Bearer ${TOKEN}`,
+        redirect: 'manual',
+      },
+      {
+        url: context.env.PUBLICATION_CLEANUP_ADULT_URL,
+        authorization: `Bearer ${TOKEN}`,
+        redirect: 'manual',
+      },
+    ])
+  } finally {
+    fetched.mockRestore()
+  }
+})
+
+test('reservation retirement authenticates before storage and validates its immutable identity', async () => {
+  const context = setup()
+  const body = {
+    operation: 'retire-reservation',
+    playId: crypto.randomUUID(),
+    owner: 'a'.repeat(64),
+    snapshotHash: 'b'.repeat(64),
+    retirementHash: 'c'.repeat(64),
+  }
+  const send = (payload: unknown, token = TOKEN) =>
+    execute(
+      context,
+      new Request('https://runtime.test/v1/publications', {
+        method: 'POST',
+        headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      }),
+    )
+  const bucket = context.env.PRO_ARTIFACTS!
+  const get = spyOn(bucket, 'get')
+  try {
+    expect((await send(body, 'invalid-token')).status).toBe(401)
+    expect(get).not.toHaveBeenCalled()
+    expect((await send({ ...body, snapshotHash: 'invalid' })).status).toBe(400)
+    expect(get).not.toHaveBeenCalled()
+    const response = await send(body)
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({ deleted: true })
+    expect(await (await bucket.get(`publications/${body.playId}/state.json`))!.text()).toContain(
+      body.retirementHash,
+    )
+    expect(context.factoryCalls()).toBe(0)
+  } finally {
+    get.mockRestore()
+  }
+})
+
 test('default handler wires only configured approved Python distributions and invalidates changed configuration', async () => {
   const f = await pythonDistributionFixture()
   await f.store()

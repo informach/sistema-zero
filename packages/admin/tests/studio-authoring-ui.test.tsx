@@ -60,21 +60,32 @@ mock.module('../src/components/studio/studio-embed-loader', () => ({
   loadStudioEmbedModule: async () => ({ module: { ...studio, StudioLesson: EditorProbe } }),
 }))
 const { StudioEmbed } = await import('../src/components/studio/studio-embed')
-const { StudioSolutionField, solutionFrom } = await import(
-  '../src/app/admin/membros/cursos/[courseId]/aulas/[lessonId]/studio-solution-field'
-)
+const { SectionProjectExamples } = await import('../src/components/editor/section-project-examples')
 const { StudioConfigClipboard } = await import('../src/components/studio/studio-config-clipboard')
 
-test('o gabarito Python recebe autorização própria, paleta de autoria e retira o ambiente ao mudar a revisão', async () => {
+test('a solução Python da parte recebe autorização própria e retira o ambiente ao mudar a revisão', async () => {
   const fixture = await pythonEnvironmentFixture('classic')
-  const solution = solutionFrom(fixture.project)
+  const solution = { ...fixture.project, id: crypto.randomUUID() }
+  const blockId = crypto.randomUUID(),
+    sectionId = crypto.randomUUID(),
+    exampleId = crypto.randomUUID()
+  const workspace = {
+    kind: 'studio' as const,
+    initialProject: fixture.project,
+    pythonLevel: 3 as const,
+    projectExamples: {
+      version: 1,
+      examples: { [exampleId]: solution },
+      sections: { [sectionId]: { solutionExampleId: exampleId } },
+    },
+  }
   const scope: StudioAuthoringRuntimeScope = {
     userId: '11111111-1111-4111-8111-111111111111',
     context: {
       kind: 'authoring',
       lessonId: '22222222-2222-4222-8222-222222222222',
       draftRevision: '33333333-3333-4333-8333-333333333333',
-      blockId: null,
+      blockId,
       purpose: 'authoring',
     },
   }
@@ -113,45 +124,51 @@ test('o gabarito Python recebe autorização própria, paleta de autoria e retir
   const container = document.createElement('div')
   document.body.append(container)
   const root = createRoot(container)
-  const handleRef = createRef<StudioHandle>()
+  const previousKeys = new Set(editorInputs.keys())
+  let workingId: string | undefined
   const render = (runtimeScope?: StudioAuthoringRuntimeScope) =>
     act(async () =>
       root.render(
-        <StudioSolutionField
-          solution={solution}
+        <SectionProjectExamples
+          workspace={workspace}
+          blockId={blockId}
+          sectionId={sectionId}
+          canWrite
           runtimeScope={runtimeScope}
-          handleRef={handleRef}
-          onCreate={() => {}}
-          onRemove={() => {}}
-          onChange={() => {}}
+          onChange={() => true}
         />,
       ),
     )
   try {
     await render()
-    await settle(() => editorInputs.has(solution.id))
+    await act(async () => click(container, 'Editar uma solução possível'))
+    await settle(() => {
+      workingId = [...editorInputs.keys()].find((id) => !previousKeys.has(id))
+      return Boolean(workingId)
+    })
+    if (!workingId) throw new Error('Expected independent working editor')
     expect(requests).toHaveLength(0)
-    expect(editorInputs.get(solution.id)?.runtimeEnvironment).toBeUndefined()
+    expect(editorInputs.get(workingId)?.runtimeEnvironment).toBeUndefined()
     await render(scope)
-    await settle(() => !!editorInputs.get(solution.id)?.runtimeEnvironment)
-    const first = editorInputs.get(solution.id)!.runtimeEnvironment!
-    expect(editorInputs.get(solution.id)?.pythonLevel).toBe(3)
+    await settle(() => !!editorInputs.get(workingId!)?.runtimeEnvironment)
+    const first = editorInputs.get(workingId)!.runtimeEnvironment!
+    expect(editorInputs.get(workingId)?.pythonLevel).toBe(3)
     expect(requests).toHaveLength(1)
-    expect(requests[0]).toMatchObject({ subject: { id: solution.id }, context: scope.context })
-    expect(solution.id).not.toBe(fixture.project.id)
+    expect(requests[0]).toMatchObject({ subject: { id: workingId }, context: scope.context })
+    expect(workingId).not.toBe(fixture.project.id)
+    expect(workingId).not.toBe(solution.id)
     await render({
       ...scope,
       context: { ...scope.context, draftRevision: '44444444-4444-4444-8444-444444444444' },
     })
     expect(first.signal?.aborted).toBe(true)
     await settle(
-      () =>
-        requests.length === 2 && editorInputs.get(solution.id)?.runtimeEnvironment !== undefined,
+      () => requests.length === 2 && editorInputs.get(workingId!)?.runtimeEnvironment !== undefined,
     )
   } finally {
     await act(async () => root.unmount())
     globalThis.fetch = originalFetch
-    editorInputs.delete(solution.id)
+    if (workingId) editorInputs.delete(workingId)
     container.remove()
   }
 })

@@ -1,3 +1,10 @@
+import { IdentityUuidSchema } from '@sistemazero/core/identity'
+import type { KidsJourneyStaffPreview, KidsJourneyView } from '@sistemazero/core/journey'
+import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
+import { KidsJourneyUnavailableError } from '../../domain/kids-journey/kids-journey.errors'
+import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
+import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
+import { kidsStudentLevel } from '../kids-journey/kids-student-level'
 import type { CourseAudience } from '../../domain/course/course'
 import { BADGE_SLUGS, HIDDEN_UNTIL_UNLOCKED_BADGES } from '../../domain/gamification/badges'
 import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
@@ -12,7 +19,8 @@ import type { GamificationMeView } from '../mappers/views'
 /**
  * Perfil de gamificação do aluno NA VITRINE pedida (XP/streak/badges são
  * segregados por audiência — `?audience=`, default `adult` como nas listagens).
- * Sem perfil ainda → zeros e catálogo todo bloqueado. O streak devolvido é o
+ * Kids exige registro e política persistida; perfil ausente é indisponível. Estatísticas de
+ * atividade sem XP seguem zero, sem fabricar posto/conquista. O streak devolvido é o
  * de EXIBIÇÃO (0 quando quebrado) — o valor cru persiste e recomeça na próxima
  * atividade. `withRanking` → inclui a colocação no ranking de XP da MESMA
  * vitrine (cálculo extra — só a página de perfil pede).
@@ -21,26 +29,58 @@ export class GetGamificationService {
   constructor(
     private readonly repo: GamificationRepository,
     private readonly clock: () => Date,
+    private readonly kidsJourney: Pick<KidsJourneyQueryService, 'get' | 'staffPreview'>,
+    private readonly kidsProfiles: Pick<KidsJourneyProfilesService, 'getMany'>,
     private readonly adultJourney?: Pick<AdultJourneyService, 'get'>,
   ) {}
 
   async execute(
-    userId: string,
-    accountId: string,
+    inputUserId: string,
+    inputAccountId: string,
     opts: { audience: CourseAudience; withRanking?: boolean; privileged?: boolean },
+  ): Promise<GamificationMeView> {
+    const captured = { ...opts }
+    const userId = captured.audience === 'kids' ? IdentityUuidSchema.parse(inputUserId) : inputUserId
+    const accountId = captured.audience === 'kids' ? IdentityUuidSchema.parse(inputAccountId) : inputAccountId
+    if (captured.audience !== 'kids') return this.read(userId, accountId, captured, null)
+    if (captured.privileged) {
+      if (userId !== accountId) throw new AccessDeniedError('Use a conta da equipe, sem perfil de aluno.')
+      const preview = await this.kidsJourney.staffPreview()
+      return this.read(userId, accountId, captured, null, preview)
+    }
+    const kids = await this.kidsJourney.get({ userId, accountId })
+    return this.read(userId, accountId, captured, kids)
+  }
+
+  /** Admin route has already authorized inspection; the profile owner comes from Members registry. */
+  async inspect(inputUserId: string, audience: CourseAudience): Promise<GamificationMeView> {
+    const userId = audience === 'kids' ? IdentityUuidSchema.parse(inputUserId) : inputUserId
+    if (audience !== 'kids') return this.read(userId, userId, { audience }, null)
+    const kids = (await this.kidsProfiles.getMany([userId])).get(userId)
+    if (!kids) throw new KidsJourneyUnavailableError()
+    // Ranking is deliberately absent: no account identity is fabricated for this inspection.
+    return this.read(userId, null, { audience }, kids)
+  }
+
+  private async read(
+    userId: string,
+    accountId: string | null,
+    opts: { audience: CourseAudience; withRanking?: boolean; privileged?: boolean },
+    kids: KidsJourneyView | null,
+    preview?: KidsJourneyStaffPreview,
   ): Promise<GamificationMeView> {
     // XP/streak/badges são do PERFIL (`userId`); o ranking precisa da CONTA
     // (`accountId`) para a pertinência à coorte (acesso da conta na audiência).
     // Equipe (privileged) NUNCA ranqueia (só cliente conta): omite o ranking — sem isto,
     // um membro da equipe que TAMBÉM comprou um curso se via ranqueado entre os clientes.
     const now = this.clock()
-    const wantsRanking = opts.withRanking && !opts.privileged
+    const wantsRanking = opts.withRanking && !opts.privileged && accountId !== null
     const [profile, badges, ranking, qualifying, studioUnlockRevision, journey] = await Promise.all(
       [
         this.repo.getProfile(userId, opts.audience),
         this.repo.listBadges(userId, opts.audience),
-        wantsRanking ? this.repo.getRanking(userId, accountId, opts.audience, now) : null,
-        this.repo.listQualifyingJourneySlots(userId, opts.audience),
+        wantsRanking ? this.repo.getRanking(userId, accountId!, opts.audience, now) : null,
+        opts.audience === 'adult' ? this.repo.listQualifyingJourneySlots(userId, 'adult') : null,
         opts.audience === 'kids'
           ? this.repo.getStudioUnlockRevision(userId, opts.audience).catch(() => null)
           : Promise.resolve(null),
@@ -97,8 +137,9 @@ export class GetGamificationService {
         slug,
         unlockedAt: unlockedBySlug.get(slug)?.toISOString() ?? null,
       })),
-      // Nível do aluno (rank): derivado dos cursos qualificados (concluído + Mural).
-      level: computeStudentLevel(qualifying),
+      level: kids ? kidsStudentLevel(kids) : qualifying ? computeStudentLevel(qualifying) : null,
+      ...(kids ? { kidsJourney: kids } : {}),
+      ...(preview ? { kidsPreview: preview } : {}),
       ...(journey ? { journey } : {}),
       ...(studioUnlockRevision ? { studioUnlockRevision } : {}),
       ...(ranking ? { ranking } : {}),

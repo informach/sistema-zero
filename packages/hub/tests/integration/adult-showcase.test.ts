@@ -3,7 +3,13 @@ import { randomUUID } from 'node:crypto'
 import { CREATOR_SHOWCASE_SLUGS } from '@sistemazero/core/creations'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { z } from 'zod'
-import { adminHeaders, buildApp, jsonRequest, studentHeaders } from '../helpers'
+import {
+  adminHeaders,
+  buildApp,
+  jsonRequest,
+  publishStudioRequest,
+  studentHeaders,
+} from '../helpers'
 
 async function setup(options: Parameters<typeof buildApp>[0] = {}) {
   const ctx = buildApp(options)
@@ -46,7 +52,8 @@ test('publicação de aula adulta valida curso, autor e parede adulta; tentativa
   ctx.members.showcaseEligibility.audience = 'adult'
   const body = adultBody()
   const publish = (extraHeaders = {}, extraBody = {}) =>
-    ctx.app.handle(
+    publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
         headers: studentHeaders(userId, extraHeaders),
         body: { ...body, ...extraBody },
@@ -73,7 +80,8 @@ test('criação livre adulta exige licença e jornada adulta; jogo e marcos de p
   const body = { ...adultBody(), title: 'Minha nave' }
   const { lessonId: _lesson, blockId: _block, ...standalone } = body
   const publish = (studioMeta?: { pro: boolean; extensions: string[] }) =>
-    ctx.app.handle(
+    publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
         headers: studentHeaders(userId),
         body: { ...standalone, studioMeta },
@@ -92,7 +100,7 @@ test('criação livre adulta exige licença e jornada adulta; jogo e marcos de p
   const play = (audience?: string) =>
     ctx.app.handle(
       new Request(
-        `http://localhost/hub/internal/studio-play/${body.playId}?count=1${audience ? `&audience=${audience}` : ''}`,
+        `http://localhost/hub/internal/studio-play/${ctx.threadRepo.threads[0]?.playId}?count=1${audience ? `&audience=${audience}` : ''}`,
         { headers: studentHeaders(userId) },
       ),
     )
@@ -108,11 +116,17 @@ test('criação livre adulta exige licença e jornada adulta; jogo e marcos de p
 })
 
 test('moderação adulta envia recado e limpeza ao contexto adulto, sem premiar a publicação duas vezes', async () => {
-  const cleanup: { playId: string; coverUrl: string | null; audience?: string }[] = []
+  const cleanup: {
+    authorId: string
+    playId: string
+    coverUrl: string | null
+    audience?: string
+  }[] = []
   const ctx = await setup({
     studioArtifacts: {
       async cleanupShowcaseArtifacts(args) {
         cleanup.push(args)
+        return true
       },
     },
   })
@@ -127,7 +141,8 @@ test('moderação adulta envia recado e limpeza ao contexto adulto, sem premiar 
     playId: randomUUID(),
     clientIdempotencyKey: randomUUID(),
   }
-  const publication = await ctx.app.handle(
+  const publication = await publishStudioRequest(
+    ctx.app,
     jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
       headers: studentHeaders(userId),
       body,
@@ -135,7 +150,7 @@ test('moderação adulta envia recado e limpeza ao contexto adulto, sem premiar 
   )
   expect(publication.status).toBe(200)
   const thread = ctx.threadRepo.threads[0]
-  if (!thread) throw new Error('Publicação ausente')
+  if (!thread?.playId) throw new Error('Publicação ausente')
   expect(thread.authorDisplayName).toBe('Criador escolhido')
   expect(thread.authorPublic).toBe(true)
   expect(thread.authorAccountId).toBe(userId)
@@ -165,7 +180,9 @@ test('moderação adulta envia recado e limpeza ao contexto adulto, sem premiar 
       )
     ).status,
   ).toBe(200)
-  expect(cleanup).toEqual([{ audience: 'adult', playId: body.playId, coverUrl: null }])
+  expect(cleanup).toEqual([
+    { authorId: userId, audience: 'adult', playId: thread.playId, coverUrl: null },
+  ])
 })
 
 test('disponibilidade da mostra adulta exige HMAC e conta própria', async () => {

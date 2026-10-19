@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto'
 import { resolve } from 'node:path'
+import { canonicalJson } from '../../packages/core/src/creations/content-fingerprint'
 import {
+  StudioPythonDistributionSchema,
   studioPythonRuntimePrefix,
   studioPythonRuntimeRoute,
 } from '../../packages/core/src/studio/python-runtime-distribution'
@@ -18,11 +20,49 @@ import { createPythonInspectionProbe } from './inspectionFixtures'
 import { createRuntimeNetworkProfile } from './network'
 import { TURTLE_EXTENSION } from './turtleFixtures'
 
-const standardLibrary = process.env.PYTHON_PROBE_STDLIB_RECIPE
-  ? await Bun.file(process.env.PYTHON_PROBE_STDLIB_RECIPE).json()
-  : undefined
-const distribution = await buildPythonRuntimeDistribution({ standardLibrary })
+// Bun1.3 Windows leaks server sockets into child_process children (oven-sh/bun#36938).
+// Fail before building/listening instead of producing unreliable qualification results.
+if (process.platform === 'win32' && !Bun.semver.satisfies(Bun.version, '>=1.4.0'))
+  throw new Error('O servidor de provas Python no Windows exige Bun 1.4 ou superior; use 1.4.3.')
+
+async function prepareDistribution() {
+  const directory = process.env.PYTHON_PROBE_DISTRIBUTION_DIRECTORY
+  const expectedHash = process.env.PYTHON_PROBE_DISTRIBUTION_SHA256
+  const recipe = process.env.PYTHON_PROBE_STDLIB_RECIPE
+  if (directory === undefined && expectedHash === undefined) {
+    const standardLibrary = recipe === undefined ? undefined : await Bun.file(recipe).json()
+    return buildPythonRuntimeDistribution({ standardLibrary })
+  }
+  if (!directory || !expectedHash || !/^[a-f0-9]{64}$/.test(expectedHash) || recipe !== undefined)
+    throw new Error('A distribuição pré-compilada exige diretório e SHA-256, sem outra receita.')
+  const manifest = StudioPythonDistributionSchema.parse(
+    await Bun.file(resolve(directory, 'distribution.json')).json(),
+  )
+  const hash = createHash('sha256').update(canonicalJson(manifest)).digest('hex')
+  if (hash !== expectedHash) throw new Error('SHA-256 da distribuição pré-compilada diferente.')
+  // storePythonRuntimeDistribution verifies every file and gzip representation before serving.
+  // These are host-only qualification inputs; projects and HTTP cannot select a directory.
+  return { directory: resolve(directory), hash, manifest }
+}
+const distribution = await prepareDistribution()
 const hostPort = Number(process.env.PYTHON_PROBE_PORT ?? '5297')
+const extraParentsRaw = JSON.parse(process.env.PYTHON_PROBE_PARENT_ORIGINS_JSON ?? '[]') as unknown
+if (
+  !Array.isArray(extraParentsRaw) ||
+  extraParentsRaw.length > 4 ||
+  extraParentsRaw.some((value) => {
+    if (typeof value !== 'string') return true
+    const origin = URL.parse(value)
+    if (!origin) return true
+    return (
+      origin.href !== `${origin.origin}/` ||
+      origin.protocol !== 'http:' ||
+      !['127.0.0.1', 'localhost', '[::1]'].includes(origin.hostname)
+    )
+  })
+)
+  throw new Error('Origens adicionais da prova Python precisam ser loopback e exatas.')
+const extraParentOrigins = extraParentsRaw as string[]
 // Real build bytes, test-only approval. Product catalog activation remains a separate gate.
 const release = await createStudioRuntimeRelease({
   manifestVersion: 1,
@@ -89,6 +129,7 @@ const serveDistribution = await createPythonDistributionServer({
   parentOrigins: [
     `http://127.0.0.1:${hostPort}`,
     ...(process.env.PYTHON_PROBE_EDITOR === '1' ? ['http://127.0.0.1:5298'] : []),
+    ...extraParentOrigins,
   ],
   status: () => 'active',
 })
@@ -227,7 +268,9 @@ const runtime = Bun.serve({
           : path.endsWith('.html')
             ? 'text/html'
             : 'application/octet-stream'
-    return new Response(Bun.file(resolve(distribution.directory, path)), {
+    const artifact = stored.get(`${studioPythonRuntimePrefix(release.manifestSha256)}files/${path}`)
+    if (!artifact) return new Response('Not found', { status: 404 })
+    return new Response(new Uint8Array(artifact.bytes), {
       headers: {
         ...headers,
         'Content-Type': type,

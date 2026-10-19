@@ -59,13 +59,16 @@ export interface CourseRepository {
     opts?: { publishedOnly?: boolean },
   ): Promise<Map<string, ModuleWithLessons[]>>
   /**
-   * Aula com o conteúdo completo (blocos ordenados + anexos). `includeAttachments`
+   * Aula com blocos ordenados e anexos. Por padrão, o Estúdio já é projetado na
+   * origem sem exemplos privados da autoria. Só autoria, publicação e restauração
+   * pedem `includePrivateStudioAuthoring: true` explicitamente.
+   * `includeAttachments`
    * (default `true`) pode ser `false` p/ leituras que só usam os blocos (ex.: os
    * GETs lazy do Studio) — evita 1 query de anexos descartada; `attachments` volta `[]`.
    */
   findLessonWithContent(
     lessonId: string,
-    opts?: { includeAttachments?: boolean },
+    opts?: { includeAttachments?: boolean; includePrivateStudioAuthoring?: boolean },
   ): Promise<LessonWithContent | null>
   /** Total de aulas do curso, qualquer status (visão de AUTORIA no admin). */
   countLessons(courseId: string): Promise<number>

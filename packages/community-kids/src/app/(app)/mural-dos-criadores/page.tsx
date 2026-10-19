@@ -1,6 +1,7 @@
+import { isKidsStaffPreview, kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { pythonRemixCapabilities } from '@sistemazero/member-shell/lib/studio-python-remix'
-import { isPrivilegedRole, type StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
-import { earnedStudioTier } from '@sistemazero/member-shell/server/studio-unlocks'
+import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
+import { kidsStudioTier } from '@sistemazero/member-shell/server/studio-unlocks'
 import { KidsLockedMural } from '@/components/kids/kids-locked-mural'
 import { KidsSpaceViewClient, type RemixTier } from '@/components/kids/kids-space-view-client'
 import {
@@ -42,18 +43,13 @@ export default async function MuralPage() {
   // Remix gated pela JORNADA além da posse: Faísca ainda não tem o Estúdio livre, e quem
   // não conquistou bloco nenhum também não o abre (o botão importaria um projeto que ela
   // nem consegue abrir). Rank ou blocos indisponíveis → sem tier → botão some
-  // (conservador; a EQUIPE resolve como Lenda mesmo sem eles).
+  // A prévia da equipe também exige a política publicada, sem simular posto.
   let tier: StudioTier | null = null
   if (ownsStudio) {
-    const privileged = isPrivilegedRole(session?.role)
+    const journey = kidsJourneyAccess(gamRes?.status === 200 ? gamRes.body : null)
     const unlockedBlocks = unlocksRes?.status === 200 ? (unlocksRes.body?.blocks ?? null) : null
-    if ((gamRes?.status === 200 && unlockedBlocks) || privileged) {
-      tier = earnedStudioTier(
-        gamRes?.body?.level?.slug ?? 'noob',
-        session?.role,
-        unlockedBlocks ?? [],
-      )
-    }
+    if (journey && (unlockedBlocks !== null || isKidsStaffPreview(journey)))
+      tier = kidsStudioTier(journey, unlockedBlocks ?? [])
   }
   const remixTier: RemixTier | null =
     tier?.freeStudio === true && tier.hasPalette

@@ -159,7 +159,10 @@ export class GetLeagueService {
         weeklyXp: r.weeklyXp,
         isMe: r.isMe,
         photoUrl: avatar?.photoUrl ?? null,
-        levelSlug: avatar?.level,
+        levelSlug: audience === 'kids' ? (avatar?.level ?? null) : avatar?.level,
+        ...(audience === 'kids' && (avatar?.journeyUnavailable || !avatar?.level)
+          ? { journeyUnavailable: true as const }
+          : {}),
         firstName: identity?.firstName ?? null,
         profileId: identity?.public ? r.id : undefined,
       }

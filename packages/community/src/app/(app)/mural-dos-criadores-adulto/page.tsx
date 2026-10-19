@@ -1,4 +1,5 @@
 import { CREATOR_SHOWCASE_SLUGS } from '@sistemazero/core/creations'
+import { pythonRemixCapabilities } from '@sistemazero/member-shell/lib/studio-python-remix'
 import { Plus, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { PageBand, PageBody } from '@/components/community/page'
@@ -23,11 +24,15 @@ export default async function AdultShowcasePage({
 }: {
   searchParams: Promise<{ desafio?: string; ordem?: string }>
 }) {
-  const [session, state, query, challengeResult] = await Promise.all([
+  const [session, state, query, challengeResult, python] = await Promise.all([
     getSession(),
     getCreativeToolsState(),
     searchParams,
     shell.members.getChallengeReadonly().catch(() => null),
+    shell.members
+      .studioFreeOptionsReadonly()
+      .then((response) => (response.status === 200 ? pythonRemixCapabilities(response.body) : []))
+      .catch(() => []),
   ])
   const challenge =
     challengeResult?.status === 200 && challengeResult.body?.audience === 'adult'
@@ -96,7 +101,7 @@ export default async function AdultShowcasePage({
           showcase
           remixCapability={
             state.kind === 'ready' && state.studioAvailable
-              ? { pro: state.tier.pro, allowedExtensions: state.tier.allowedExtensions }
+              ? { pro: state.tier.pro, allowedExtensions: state.tier.allowedExtensions, python }
               : null
           }
         />

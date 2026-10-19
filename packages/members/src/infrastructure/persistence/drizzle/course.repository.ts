@@ -15,6 +15,7 @@ import { ACCESSIBLE_COURSE_STATUSES } from '../../../domain/course/course'
 import type { CourseRepository } from '../../../domain/ports/course-repository.port'
 import type { Database } from './db'
 import { lessonContentAvailable } from './lesson-availability'
+import { memberStudioContentProjection } from './member-studio-content-projection'
 import {
   courses,
   lessonAttachments,
@@ -294,14 +295,24 @@ export class DrizzleCourseRepository implements CourseRepository {
 
   async findLessonWithContent(
     lessonId: string,
-    opts?: { includeAttachments?: boolean },
+    opts?: { includeAttachments?: boolean; includePrivateStudioAuthoring?: boolean },
   ): Promise<LessonWithContent | null> {
     const [lesson] = await this.db.select().from(lessons).where(eq(lessons.id, lessonId)).limit(1)
     if (!lesson) return null
     const wantAttachments = opts?.includeAttachments !== false
     const [blocks, attachments] = await Promise.all([
       this.db
-        .select()
+        .select({
+          id: lessonBlocks.id,
+          lessonId: lessonBlocks.lessonId,
+          kind: lessonBlocks.kind,
+          sortOrder: lessonBlocks.sortOrder,
+          archivedAt: lessonBlocks.archivedAt,
+          contentRevision: lessonBlocks.contentRevision,
+          content: opts?.includePrivateStudioAuthoring
+            ? lessonBlocks.content
+            : memberStudioContentProjection(lessonBlocks.content),
+        })
         .from(lessonBlocks)
         .where(eq(lessonBlocks.lessonId, lessonId))
         .orderBy(asc(lessonBlocks.sortOrder)),

@@ -26,7 +26,9 @@ export function kidsMayAccess(
       [
         '/hub/internal/showcase-thread',
         '/hub/internal/showcase-thread-studio',
+        '/hub/internal/showcase-thread-studio/prepare',
         '/hub/internal/showcase-thread-studio-standalone',
+        '/hub/internal/showcase-thread-studio-standalone/prepare',
       ].includes(pathname)
     )
       return true

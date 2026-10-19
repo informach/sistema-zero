@@ -168,6 +168,7 @@ export interface CreationsRepository {
     /** Hashes das partes que o cliente diz ter PUTado nesta reserva (as faltantes). */
     uploadedParts?: readonly string[]
     verifiedPartHashes?: readonly string[]
+    verifiedFormatVersion?: number
     now: Date
     /** Revalidados no commit, depois do PUT, sob lock por perfil. */
     limits: CreationUploadInput['limits']

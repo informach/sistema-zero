@@ -181,6 +181,22 @@ export function resolveAdultLearnerId(headers: Record<string, string | undefined
   return id
 }
 
+/** Trusted own-account team preview; a parent context alone never proves staff membership. */
+export function resolveKidsStaffPreviewActor(headers: Record<string, string | undefined>) {
+  if (!isPrivilegedActor(headers))
+    throw new ForbiddenError('Prévia disponível somente para a equipe ativa.')
+  const userId = resolveUserId(headers)
+  const accountId = resolveAccountId(headers)
+  const context = headers['x-auth-kids-context']
+  if (
+    accountId !== userId || headers['x-auth-account-id'] !== undefined ||
+    headers['x-auth-profile-name'] !== undefined || headers['x-auth-profile-public'] !== undefined ||
+    headers['x-auth-impersonator-id'] !== undefined || headers['x-auth-impersonation-mode'] !== undefined ||
+    (context !== undefined && context !== 'parent')
+  ) throw new ForbiddenError('Use a conta da equipe, sem perfil de aluno ou sessão de suporte.')
+  return { userId, accountId }
+}
+
 /** Free Studio requires an adult account or a verified student profile; parent sessions are not learners. */
 export function resolveStudioFreeActor(
   headers: Record<string, string | undefined>,
@@ -189,6 +205,7 @@ export function resolveStudioFreeActor(
   const userId = audience === 'adult' ? resolveAdultLearnerId(headers) : resolveUserId(headers)
   const accountId = resolveAccountId(headers)
   const privileged = isPrivilegedActor(headers)
+  if (audience === 'kids' && privileged) resolveKidsStaffPreviewActor(headers)
   if (
     audience === 'kids' &&
     !privileged &&

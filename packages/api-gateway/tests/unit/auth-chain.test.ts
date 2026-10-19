@@ -22,6 +22,32 @@ const policy = (o: { mode?: 'any' | 'all'; required?: boolean; strategies: AuthS
   authPolicySchema.parse(o)
 
 describe('auth chain', () => {
+  test.each([
+    ['jwt', 'hmac'],
+    ['hmac', 'jwt'],
+  ] as const)('all preserves JWT identity and authenticated HMAC consumer in order %s/%s', async (first, second) => {
+    expect(
+      await createAuthChain({ jwt: okJwt, hmac: okHmac }).authenticate(
+        makeContext(),
+        policy({ mode: 'all', strategies: [first, second] }),
+      ),
+    ).toMatchObject({
+      ok: true,
+      principal: { kind: 'jwt', subject: 'user-1' },
+      authenticatedConsumerId: 'sys-a',
+    })
+  })
+
+  test.each([
+    'jwt',
+    'hmac',
+  ] as const)('all fails closed when required %s strategy is unavailable', async (missing) => {
+    const chain = createAuthChain(missing === 'jwt' ? { hmac: okHmac } : { jwt: okJwt })
+    expect(
+      await chain.authenticate(makeContext(), policy({ mode: 'all', strategies: ['jwt', 'hmac'] })),
+    ).toMatchObject({ ok: false, status: 503, code: 'AUTH_UNAVAILABLE' })
+  })
+
   test('any: hmac skip + jwt ok → autentica via jwt', async () => {
     const chain = createAuthChain({ hmac: skipHmac, jwt: okJwt })
     const r = await chain.authenticate(

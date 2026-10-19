@@ -16,6 +16,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:seed": "bun run scripts/seed-course.ts",
+    "journey:bootstrap": "bun run scripts/bootstrap-kids-journey.ts",
     "career:finalize-first-steps": "bun run scripts/finalize-first-steps-rollout.ts",
     "entitlements:rollout-molda": "bun run scripts/rollout-molda-entitlements.ts",
     "submissions:audit-lost": "bun run scripts/audit-lost-studio-submissions.ts",

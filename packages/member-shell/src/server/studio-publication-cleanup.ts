@@ -1,29 +1,57 @@
 import 'server-only'
 import { isStudioPublicationId, STUDIO_PRO_PUBLICATION_LIMITS } from '@sistemazero/core/studio'
 import { getEnv } from '../lib/env'
-import { coverKeyFromPublicUrl } from '../lib/studio-cleanup'
 import {
   bufferFromStream,
   r2DeleteObjectPrivate,
-  r2DeleteObjects,
   r2GetObjectPrivate,
   r2HeadObjectPrivate,
   r2ListPrivatePage,
   r2PutObjectPrivate,
 } from './r2'
+import { readStudioCoverReceipt } from './studio-cover-candidates'
 import { callStudioPublication } from './studio-publication'
+import { retireStudioPublicationCover } from './studio-publication-cover'
+import {
+  readStudioPublicationOwner,
+  retireStudioPublicationOwner,
+} from './studio-publication-ownership'
+import { retireStudioPublicationSnapshot } from './studio-publication-snapshot'
 
 const PREFIX = 'studio/publication-cleanup/'
+const COMPLETED_PREFIX = 'studio/publication-cleanup-completed/'
 const CHECKPOINT = 'studio/maintenance/publication-cleanup.json'
 const keyOf = (playId: string) => `${PREFIX}${playId}.json`
+const completedKeyOf = (playId: string) => `${COMPLETED_PREFIX}${playId}.json`
 
 /** Persist intent before attempting remote deletion; the queue contains only object identifiers. */
-export async function enqueueStudioPublicationCleanup(playId: string, coverUrl?: unknown) {
+export async function enqueueStudioPublicationCleanup(
+  playId: string,
+  coverUrl?: unknown,
+  audience: 'kids' | 'adult' = 'kids',
+  authorId?: unknown,
+) {
   if (!isStudioPublicationId(playId)) throw new Error('Publicação inválida.')
-  const coverKey =
-    typeof coverUrl === 'string' ? coverKeyFromPublicUrl(getEnv().R2_PUBLIC_URL, coverUrl) : null
+  if (await r2HeadObjectPrivate(completedKeyOf(playId)))
+    return {
+      playId,
+      coverKey: null,
+      runtime: false,
+      coverReceiptKey: null,
+      ownershipKey: null,
+      alreadyCleaned: true,
+    }
+  if (!isStudioPublicationId(authorId)) throw new Error('Autor canônico inválido.')
+  const ownership = await readStudioPublicationOwner(audience, playId)
+  if (!ownership || ownership.authorId !== authorId)
+    throw new Error('Propriedade da publicação não comprovada.')
+  const receipt = await readStudioCoverReceipt(audience, playId)
+  if (receipt && typeof coverUrl === 'string' && receipt.coverUrl !== coverUrl)
+    throw new Error('A capa canônica diverge do recibo da publicação.')
+  // Hub URLs are presentation data, never authorization to delete a public object.
+  const coverKey = receipt?.coverKey ?? null
   let runtime = Boolean(getEnv().STUDIO_PRO_RUNTIME_URL || getEnv().STUDIO_PRO_RUNTIME_TOKEN)
-  // A configuration outage must never turn an existing Pro publication into a classic one.
+  // A configuration outage cannot skip retained artifacts for Pro or Classic Python.
   const sourceKey = `studio/play/${playId}.json`
   if (!runtime && (await r2HeadObjectPrivate(sourceKey))) {
     const source = await r2GetObjectPrivate(sourceKey)
@@ -33,10 +61,20 @@ export async function enqueueStudioPublicationCleanup(playId: string, coverUrl?:
       ),
     )
     runtime = Boolean(
-      project && typeof project === 'object' && 'kind' in project && project.kind === 'pro',
+      project &&
+        typeof project === 'object' &&
+        (('kind' in project && project.kind === 'pro') ||
+          ('programmingLanguage' in project && project.programmingLanguage === 'python')),
     )
   }
-  const intent = { playId, coverKey, runtime }
+  const intent = {
+    playId,
+    coverKey,
+    runtime,
+    coverReceiptKey: receipt?.key ?? null,
+    ownershipKey: ownership.key,
+    alreadyCleaned: false,
+  }
   await r2PutObjectPrivate({
     key: keyOf(playId),
     body: Buffer.from(JSON.stringify(intent)),
@@ -51,13 +89,32 @@ export async function performStudioPublicationCleanup(
   coverKey: string | null,
   signal?: AbortSignal,
   requiresRuntime = false,
+  coverReceiptKey: string | null = null,
+  ownershipKey: string | null = null,
 ) {
+  if (!ownershipKey) throw new Error('Propriedade da publicação não comprovada.')
+  const audience =
+    ownershipKey === `studio/publication-owners/kids/${playId}.json`
+      ? 'kids'
+      : ownershipKey === `studio/publication-owners/adult/${playId}.json`
+        ? 'adult'
+        : null
+  if (!audience) throw new Error('Recibo de propriedade inválido.')
+  // Fence the same keys used by conditional writers before any remote cleanup can finish.
+  await retireStudioPublicationSnapshot(playId)
+  await retireStudioPublicationOwner(audience, playId)
   const env = getEnv()
   // Classic installations need no runtime. Pro publications always require it.
   if (requiresRuntime || env.STUDIO_PRO_RUNTIME_URL || env.STUDIO_PRO_RUNTIME_TOKEN)
     await callStudioPublication({ operation: 'purge', playId }, signal)
-  await r2DeleteObjectPrivate(`studio/play/${playId}.json`)
-  if (coverKey) await r2DeleteObjects([coverKey])
+  if (coverKey) await retireStudioPublicationCover(coverKey)
+  if (coverReceiptKey) await r2DeleteObjectPrivate(coverReceiptKey)
+  await r2PutObjectPrivate({
+    key: completedKeyOf(playId),
+    body: Buffer.from(JSON.stringify({ playId, completedAt: Date.now() })),
+    contentType: 'application/json',
+    cacheControl: 'private, no-store',
+  })
   await r2DeleteObjectPrivate(keyOf(playId))
 }
 
@@ -91,6 +148,12 @@ export async function drainStudioPublicationCleanup() {
           !('runtime' in raw) ||
           typeof raw.runtime !== 'boolean' ||
           !('coverKey' in raw) ||
+          !('ownershipKey' in raw) ||
+          typeof raw.ownershipKey !== 'string' ||
+          ![
+            `studio/publication-owners/kids/${raw.playId}.json`,
+            `studio/publication-owners/adult/${raw.playId}.json`,
+          ].includes(raw.ownershipKey) ||
           !(
             raw.coverKey === null ||
             (typeof raw.coverKey === 'string' &&
@@ -99,7 +162,31 @@ export async function drainStudioPublicationCleanup() {
           )
         )
           throw new Error('Registro de limpeza inválido.')
-        await performStudioPublicationCleanup(raw.playId, raw.coverKey, undefined, raw.runtime)
+        const coverReceiptKey =
+          'coverReceiptKey' in raw && typeof raw.coverReceiptKey === 'string'
+            ? raw.coverReceiptKey
+            : null
+        if (
+          coverReceiptKey &&
+          ![
+            `studio/cover-receipts/kids/${raw.playId}.json`,
+            `studio/cover-receipts/adult/${raw.playId}.json`,
+          ].includes(coverReceiptKey)
+        )
+          throw new Error('Recibo de capa inválido.')
+        if (await r2HeadObjectPrivate(completedKeyOf(raw.playId))) {
+          await r2DeleteObjectPrivate(key)
+          completed++
+          return
+        }
+        await performStudioPublicationCleanup(
+          raw.playId,
+          raw.coverKey,
+          undefined,
+          raw.runtime,
+          coverReceiptKey,
+          raw.ownershipKey,
+        )
         completed++
       } catch {
         pending++

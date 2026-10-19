@@ -3,7 +3,11 @@
  * locais de autoria (modelo e catálogo para baixar) e a exportação do manifesto da aula.
  */
 export function downloadJson(filename: string, data: unknown) {
-  const blob = new Blob([`${JSON.stringify(data, null, 2)}\n`], {
+  downloadJsonSource(filename, `${JSON.stringify(data, null, 2)}\n`)
+}
+
+export function downloadJsonSource(filename: string, source: string) {
+  const blob = new Blob([source], {
     type: 'application/json;charset=utf-8',
   })
   const url = URL.createObjectURL(blob)

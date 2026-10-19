@@ -22,6 +22,8 @@ import {
   entitlements,
   galleryCopyAttempts,
   gamificationProfiles,
+  kidsJourneyEarned,
+  kidsJourneyPreparationOwners,
   leagueMembership,
   learningAttempts,
   lessonBlockProgress,
@@ -46,6 +48,7 @@ import {
   roomInventory,
   roomState,
   studioAiAccounts,
+  studioBlockGrants,
   studioBuilderJobs,
   studioBuilderProjectDeletions,
   studioLessonBindings,
@@ -88,6 +91,7 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       createdAt: Date
     }
   }): Promise<void> {
+    userIds = [...userIds]
     if (userIds.length === 0) return
     await this.db.transaction(async (tx) => {
       const readScope = () =>
@@ -211,6 +215,13 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
           sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${ownerId}`}, 0))`,
         )
       }
+      // Same account -> owner -> gamification order as award; drain an in-flight
+      // reward before erasing its ledger. Future deliveries observe the fence.
+      for (const ownerId of [...userIds].sort()) {
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${ownerId}`}, 0))`,
+        )
+      }
       await tx
         .delete(lessonEvidence)
         .where(or(eq(lessonEvidence.accountId, accountId), inArray(lessonEvidence.userId, userIds)))
@@ -295,9 +306,51 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx.delete(lessonProgress).where(inArray(lessonProgress.userId, userIds))
       await tx.delete(quizAttempts).where(inArray(quizAttempts.userId, userIds))
       await tx.delete(courseRatings).where(inArray(courseRatings.userId, userIds))
+      // Grants have no account column or cascading profile FK. Resolve ownership
+      // while its durable records still exist, including profiles omitted by Auth.
+      await tx
+        .delete(studioBlockGrants)
+        .where(
+          or(
+            inArray(studioBlockGrants.userId, userIds),
+            inArray(
+              studioBlockGrants.userId,
+              tx
+                .select({ userId: gamificationProfiles.userId })
+                .from(gamificationProfiles)
+                .where(eq(gamificationProfiles.accountId, accountId)),
+            ),
+            and(
+              eq(studioBlockGrants.audience, 'kids'),
+              inArray(
+                studioBlockGrants.userId,
+                tx
+                  .select({ userId: kidsJourneyEarned.userId })
+                  .from(kidsJourneyEarned)
+                  .where(eq(kidsJourneyEarned.accountId, accountId)),
+              ),
+            ),
+          ),
+        )
       await tx.delete(xpEvents).where(inArray(xpEvents.userId, userIds))
       await tx.delete(adultProfiles).where(inArray(adultProfiles.userId, userIds))
       await tx.delete(adultJourneyGrants).where(inArray(adultJourneyGrants.userId, userIds))
+      await tx
+        .delete(kidsJourneyPreparationOwners)
+        .where(
+          or(
+            inArray(kidsJourneyPreparationOwners.userId, userIds),
+            eq(kidsJourneyPreparationOwners.accountId, accountId),
+          ),
+        )
+      await tx
+        .delete(kidsJourneyEarned)
+        .where(
+          or(
+            inArray(kidsJourneyEarned.userId, userIds),
+            eq(kidsJourneyEarned.accountId, accountId),
+          ),
+        )
       await tx.delete(userBadges).where(inArray(userBadges.userId, userIds))
       await tx.delete(coinEvents).where(inArray(coinEvents.userId, userIds))
       await tx.delete(avatarInventory).where(inArray(avatarInventory.userId, userIds))

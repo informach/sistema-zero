@@ -1,7 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
-import { isLearningManifest } from '@sistemazero/core/learning'
+import {
+  isLearningManifest,
+  readStudioProjectExamples,
+  type StudioProjectExamples,
+} from '@sistemazero/core/learning'
+import { isStudioAuthoringProject } from '@sistemazero/core/studio/authoring-project'
 import { changeDraft, readDraft } from '../draft-authoring-helpers'
 import { buildApp, seedSampleCourse } from '../helpers'
 
@@ -57,6 +62,92 @@ async function revision(response: Response) {
 }
 
 describe('manifest import through the authoring HTTP boundary', () => {
+  test('missing registry preserves compatible private examples while replace explicitly removes them', async () => {
+    const f = await setup(2)
+    expect((await f.apply(await revision(await f.preview()))).status).toBe(200)
+    const draft = f.drafts.drafts.get(f.lessonId)
+    const studio = draft?.document.blocks.find((block) => block.content.kind === 'studio')
+    const section = draft?.document.sections.find((part) => part.workspaceBlockId === studio?.id)
+    if (!draft || !studio || !section) throw new Error('Expected the imported Studio workspace')
+    const exampleId = randomUUID()
+    const projectExamples = {
+      version: 1,
+      examples: { [exampleId]: studio.content.initialProject },
+      sections: { [section.id]: { solutionExampleId: exampleId } },
+    }
+    studio.content.projectExamples = projectExamples
+    const before = structuredClone(draft.document)
+    const preserved = await f.preview()
+    expect(preserved.status).toBe(200)
+    expect((await f.apply(await revision(preserved))).status).toBe(200)
+    expect((await readDraft(f.app, f.lessonId)).document).toEqual(before)
+    const replaced = await f.preview('replace')
+    expect(replaced.status).toBe(200)
+    expect(await replaced.clone().json()).toMatchObject({
+      removedExamples: [{ sectionId: section.id, role: 'solutionExampleId', exampleId }],
+    })
+    expect((await f.apply(await revision(replaced), 'replace')).status).toBe(200)
+    const after = await readDraft(f.app, f.lessonId)
+    expect(
+      after.document.blocks.find((block) => block.id === studio.id)?.content.projectExamples,
+    ).toBeUndefined()
+  })
+
+  test('portable examples map stable section keys, present empty clears, and immutable IDs cannot be overwritten', async () => {
+    const f = await setup(2)
+    const authored = f.document.blocks.find(
+      (block) => 'content' in block && block.content.kind === 'studio',
+    )
+    if (!authored || !('content' in authored) || authored.content.kind !== 'studio')
+      throw new Error('Expected Studio')
+    const part = f.document.sections.find((section) => section.workspaceKey === authored.key)
+    if (!part) throw new Error('Expected workspace part')
+    const initial = authored.content.initialProject
+    if (!isStudioAuthoringProject(initial)) throw new Error('Expected valid initial project')
+    const exampleId = randomUUID()
+    const projectExamples = {
+      version: 1,
+      examples: {
+        [exampleId]: {
+          ...initial,
+          name: 'Solução com outra cor livre',
+        },
+      },
+      sections: { [part.key]: { solutionExampleId: exampleId } },
+    } satisfies StudioProjectExamples
+    authored.content.projectExamples = projectExamples
+    expect(isLearningManifest(f.document)).toBe(true)
+    expect((await f.apply(await revision(await f.preview()))).status).toBe(200)
+    const first = await readDraft(f.app, f.lessonId)
+    const studio = first.document.blocks.find((block) => block.content.kind === 'studio')
+    const section = first.document.sections.find(
+      (section) => section.workspaceBlockId === studio?.id,
+    )
+    if (!studio || !section) throw new Error('Expected persisted workspace')
+    const parsed = readStudioProjectExamples(studio.content.projectExamples)
+    if (parsed.kind !== 'valid') throw new Error('Expected canonical registry')
+    expect(parsed.value.sections).toEqual({ [section.id]: { solutionExampleId: exampleId } })
+    expect(parsed.value.examples[exampleId]?.name).toBe('Solução com outra cor livre')
+    const again = await f.preview()
+    expect((await f.apply(await revision(again))).status).toBe(200)
+    expect((await readDraft(f.app, f.lessonId)).document).toEqual(first.document)
+    const snapshot = projectExamples.examples[exampleId]
+    if (!snapshot) throw new Error('Expected solution snapshot')
+    snapshot.name = 'Different bytes under the same ID'
+    const overwritten = await f.preview()
+    expect(overwritten.status).toBe(400)
+    expect(JSON.stringify(await overwritten.json())).toContain('imutável')
+    expect((await readDraft(f.app, f.lessonId)).document).toEqual(first.document)
+    authored.content.projectExamples = { version: 1, examples: {}, sections: {} }
+    const empty = await f.preview()
+    expect(empty.status).toBe(200)
+    expect((await f.apply(await revision(empty))).status).toBe(200)
+    expect(
+      (await readDraft(f.app, f.lessonId)).document.blocks.find((block) => block.id === studio.id)
+        ?.content.projectExamples,
+    ).toEqual({ version: 1, examples: {}, sections: {} })
+  })
+
   test('a importação mantém a marca de prévia em livro no bloco de materiais', async () => {
     const f = await setup(1)
     const caderno = f.document.blocks.find((block) => block.key === 'caderno')
@@ -152,7 +243,7 @@ describe('manifest import through the authoring HTTP boundary', () => {
     expect((await f.apply('not-a-revision')).status).toBe(400)
   })
 
-  test('o gabarito do Estúdio: o do manifesto entra; sem ele no manifesto, o do Admin fica', async () => {
+  test('the normal importer refuses global legacy solutions in the file and existing draft', async () => {
     const f = await setup(1)
     const id = randomUUID()
     const gabaritoDoAdmin = {
@@ -172,39 +263,17 @@ describe('manifest import through the authoring HTTP boundary', () => {
       },
       sortOrder: 20,
     })
-    const aviso = await f.preview()
-    expect(JSON.stringify(await aviso.clone().json())).toContain(
-      'O gabarito do Estúdio feito no Admin fica, mas o projeto inicial mudou',
-    )
-    expect((await f.apply(await revision(aviso))).status).toBe(200)
-    const studioDe = async () =>
-      (await readDraft(f.app, f.lessonId)).document.blocks.find(
-        (block) => block.content.kind === 'studio',
-      )?.content as { solutionProject?: unknown } | undefined
-    expect((await studioDe())?.solutionProject).toEqual(gabaritoDoAdmin)
+    const before = await readDraft(f.app, f.lessonId)
+    const refused = await f.preview()
+    expect(refused.status).toBe(400)
+    expect(JSON.stringify(await refused.json())).toContain('Converta')
+    expect((await readDraft(f.app, f.lessonId)).document).toEqual(before.document)
     const authored = f.document.blocks.find(
       (block) => 'content' in block && block.content.kind === 'studio',
     )
     if (!authored || !('content' in authored) || authored.content.kind !== 'studio')
       throw new Error('Estúdio ausente')
-    const gabaritoDoManifesto = {
-      ...(authored.content.initialProject as Record<string, unknown>),
-      name: 'Gabarito do manifesto',
-    }
-    Object.assign(authored.content, { solutionProject: gabaritoDoManifesto })
-    expect(isLearningManifest(f.document)).toBe(true)
-    expect((await f.apply(await revision(await f.preview()))).status).toBe(200)
-    expect((await studioDe())?.solutionProject).toEqual(gabaritoDoManifesto)
-    // Substituir tira o que foi feito à mão, inclusive o gabarito do Admin, e a prévia avisa.
-    delete (authored.content as { solutionProject?: unknown }).solutionProject
-    const substituir = await f.preview('replace')
-    expect(JSON.stringify(await substituir.clone().json())).toContain(
-      'O gabarito do Estúdio feito no Admin sai',
-    )
-    expect((await f.apply(await revision(substituir), 'replace')).status).toBe(200)
-    expect((await studioDe())?.solutionProject).toBeUndefined()
-    // Gabarito torto no manifesto: a rota recusa o manifesto inteiro.
-    Object.assign(authored.content, { solutionProject: { name: 'sem formato' } })
+    Object.assign(authored.content, { solutionProject: authored.content.initialProject })
     expect(isLearningManifest(f.document)).toBe(false)
     expect((await f.preview()).status).toBe(400)
   })

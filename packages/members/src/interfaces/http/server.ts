@@ -30,6 +30,8 @@ import { type CreationsRoutesDeps, creationsRoutes } from './routes/creations.ro
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type HelpRoutesDeps, helpRoutes } from './routes/help.routes'
 import { type InternalRoutesDeps, internalRoutes } from './routes/internal.routes'
+import { kidsJourneyRoutes } from './routes/kids-journey.routes'
+import { kidsProfileAdmissionRoutes } from './routes/kids-profile-admission.routes'
 import { type LearningRoutesDeps, learningRoutes } from './routes/learning.routes'
 import { type LiveRoutesDeps, liveRoutes } from './routes/live.routes'
 import { type LiveCourseRoutesDeps, liveCourseRoutes } from './routes/live-course.routes'
@@ -46,6 +48,8 @@ import { studioPythonAnalysisRoutes } from './routes/studio-python-analysis.rout
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
+  kidsJourney?: Parameters<typeof kidsJourneyRoutes>[0]
+  kidsProfileAdmission?: Parameters<typeof kidsProfileAdmissionRoutes>[0]
   adultJourney?: Parameters<typeof adultJourneyRoutes>[0]
   adultProfiles?: Parameters<typeof adultProfileRoutes>[0]
   liveMaterials?: LiveMaterialsService
@@ -244,6 +248,7 @@ export function createServer(deps: HttpDeps) {
     .use(creationsRoutes(deps.creations))
     .use(deps.adultProfiles ? adultProfileRoutes(deps.adultProfiles) : new Elysia())
     .use(deps.adultJourney ? adultJourneyRoutes(deps.adultJourney) : new Elysia())
+    .use(deps.kidsJourney ? kidsJourneyRoutes(deps.kidsJourney) : new Elysia())
     .use(
       creationCleanupRoutes({
         cleanup: deps.admin.creationCleanup,
@@ -254,6 +259,11 @@ export function createServer(deps: HttpDeps) {
     .use(adminRoutes(deps.admin))
     .use(contentRoutes(deps.content))
     .use(internalRoutes(deps.internal))
+    .use(
+      deps.kidsProfileAdmission
+        ? kidsProfileAdmissionRoutes(deps.kidsProfileAdmission)
+        : new Elysia(),
+    )
     .use(helpRoutes(deps.help))
     .use(deps.adultHelp ? helpRoutes(deps.adultHelp, 'adult') : new Elysia())
     .use(deps.live ? liveRoutes(deps.live) : new Elysia())

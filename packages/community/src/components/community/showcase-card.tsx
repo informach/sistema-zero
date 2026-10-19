@@ -11,7 +11,7 @@ import type { HubThreadView } from '@sistemazero/member-shell/lib/types'
 import { Gamepad2, Lock, MessageCircle, Play, Repeat2, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
 import { challengeMonthName } from './community/challenge-month'
@@ -36,30 +36,77 @@ export function ShowcaseCard({
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const pending = useRef<AbortController | null>(null)
-  useEffect(() => () => pending.current?.abort(), [])
+  const accessKey = JSON.stringify(capability)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: trocar perfil, jogo ou capacidades cancela a autorização em andamento.
+  useLayoutEffect(() => {
+    const cancel = () => pending.current?.abort()
+    const storage = (event: StorageEvent) => {
+      if (event.key === 'sz:kids:session-change') cancel()
+    }
+    window.addEventListener('sz:session-changed', cancel)
+    window.addEventListener('storage', storage)
+    return () => {
+      cancel()
+      window.removeEventListener('sz:session-changed', cancel)
+      window.removeEventListener('storage', storage)
+    }
+  }, [viewerId, accessKey, thread.playId])
   async function remix() {
-    if (!capability || !thread.playId || busy) return
+    if (!capability || !viewerId || !thread.playId || busy || pending.current) return
     const controller = new AbortController()
+    const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(60_000)])
     pending.current = controller
     setBusy(true)
     try {
       const response = await sessionFetch(`/api/studio/play/${encodeURIComponent(thread.playId)}`, {
-        signal: controller.signal,
+        signal,
+        cache: 'no-store',
       })
       if (!response.ok) throw new Error('Jogo indisponível')
-      const snapshot: unknown = await response.json()
-      if (!studioRemixCovered(capability, remixRequirementFromSnapshot(snapshot))) {
+      let snapshot: unknown = await response.json()
+      signal.throwIfAborted()
+      const requirement = remixRequirementFromSnapshot(snapshot)
+      if (!studioRemixCovered(capability, requirement)) {
         toast.info('Este jogo usa ferramentas que você ainda não liberou na sua jornada.')
         return
       }
+      if (requirement.programmingLanguage === 'python') {
+        const { authorizePythonRemix } = await import(
+          '@sistemazero/member-shell/lib/studio-python-remix'
+        )
+        signal.throwIfAborted()
+        const optionsResponse = await sessionFetch('/api/studio/free-options', {
+          signal,
+          cache: 'no-store',
+        })
+        if (!optionsResponse.ok) throw new Error('Ambiente Python indisponível')
+        snapshot = await authorizePythonRemix({
+          snapshot,
+          viewerId,
+          audience: 'adult',
+          options: await optionsResponse.json(),
+          signal,
+          request: async (input) => {
+            const decision = await sessionFetch('/api/studio/free-runtime', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify(input),
+              signal,
+            })
+            if (!decision.ok) throw new Error('Acesso ao ambiente Python indisponível')
+            return decision.json()
+          },
+        })
+      }
+      signal.throwIfAborted()
       const projectId = await importCreatorRemix(snapshot, {
         viewerId,
         audience: 'adult',
         capability,
         name: `Remix de ${thread.title}`,
-        signal: controller.signal,
+        signal,
       })
-      if (controller.signal.aborted) return
+      if (signal.aborted) return
       void sessionFetch('/api/studio/remix', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -68,10 +115,12 @@ export function ShowcaseCard({
       toast.success('Sua versão foi criada.')
       router.push(`/estudio?projeto=${encodeURIComponent(projectId)}`)
     } catch {
-      if (!controller.signal.aborted)
-        toast.error('Não foi possível criar sua versão. Tente novamente.')
+      if (!signal.aborted) toast.error('Não foi possível criar sua versão. Tente novamente.')
     } finally {
-      if (!controller.signal.aborted) setBusy(false)
+      if (pending.current === controller) {
+        pending.current = null
+        setBusy(false)
+      }
     }
   }
   const author = thread.authorDisplayName || 'Criador'

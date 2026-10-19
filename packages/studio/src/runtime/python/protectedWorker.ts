@@ -31,6 +31,8 @@ export function createProtectedPythonWorker(
   ).href
   const directory = new URL('./', import.meta.url).href
   const readerURL = new URL('./boot-reader.mjs', import.meta.url).href
+  const loaderURL = new URL('./pyodide.mjs', import.meta.url).href
+  const asmURL = new URL('./pyodide.asm.mjs', import.meta.url).href
   const source = `trustedTypes.createPolicy('sz-python-bootstrap', {});
 addEventListener('message', async function initialize(event) {
   removeEventListener('message', initialize);
@@ -44,11 +46,16 @@ addEventListener('message', async function initialize(event) {
       throw new Error('Configuração privada de boot Python inválida.');
     ${
       purpose === 'execution'
-        ? `const [reader, entry] = await Promise.all([
-      import(${JSON.stringify(readerURL)}), import(${JSON.stringify(workerURL)})
+        ? `const modules = Promise.all([
+      import(${JSON.stringify(loaderURL)}), import(${JSON.stringify(asmURL)})
     ]);
-    reader.configurePythonBootReader(event.ports[0], ${JSON.stringify(directory)});
-    await entry.startPythonWorker({ turtle: value.turtle });`
+    const initialized = Promise.all([
+      import(${JSON.stringify(readerURL)}), import(${JSON.stringify(workerURL)})
+    ]).then(([reader, entry]) => {
+      reader.configurePythonBootReader(event.ports[0], ${JSON.stringify(directory)});
+      return entry.startPythonWorker({ turtle: value.turtle });
+    });
+    await Promise.all([modules, initialized]);`
         : `const { configurePythonBootReader } = await import(${JSON.stringify(readerURL)});
     configurePythonBootReader(event.ports[0], ${JSON.stringify(directory)});
     await import(${JSON.stringify(workerURL)});`

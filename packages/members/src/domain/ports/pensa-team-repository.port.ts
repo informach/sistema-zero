@@ -14,16 +14,20 @@ export interface PensaTeamFacts {
   base: PensaProjectBase
   code: {
     profileId: string
-    level: string
+    level: string | null
     journey?: import('@sistemazero/core/journey').AdultJourneyView
+    kidsJourney?: import('@sistemazero/core/journey').KidsJourneyView
+    kidsPreview?: import('@sistemazero/core/journey').KidsJourneyStaffPreview
     blocks: string[]
     access: { studio: boolean; pinta: boolean; molda: boolean }
     creations: { pinta: CreationSummary[]; molda: CreationSummary[] }
   }
   art: Array<{
     profileId: string
-    level: string
+    level: string | null
     journey?: import('@sistemazero/core/journey').AdultJourneyView
+    kidsJourney?: import('@sistemazero/core/journey').KidsJourneyView
+    kidsPreview?: import('@sistemazero/core/journey').KidsJourneyStaffPreview
     access: { studio: boolean; pinta: boolean; molda: boolean }
   }>
   gameTicket: PensaCreationDownloadTicket | null

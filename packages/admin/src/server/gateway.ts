@@ -1,4 +1,5 @@
 import 'server-only'
+import { awaitWithSignal } from '@sistemazero/core/http'
 import { headers } from 'next/headers'
 import { getEnv } from '@/lib/env'
 import {
@@ -26,6 +27,7 @@ export interface CallOpts {
   query?: Record<string, string | number | undefined | null>
   /** Prazo próprio (padrão 60 s): o "Testar agora" espera o jogo rodar no executor. */
   timeoutMs?: number
+  signal?: AbortSignal
 }
 
 /**
@@ -50,6 +52,7 @@ async function clientForwardHeaders(): Promise<Record<string, string>> {
 }
 
 async function rawFetch(path: string, opts: CallOpts, access: string | null): Promise<Response> {
+  opts.signal?.throwIfAborted()
   const env = getEnv()
   const url = new URL(path, env.GATEWAY_URL)
   if (opts.query) {
@@ -62,12 +65,15 @@ async function rawFetch(path: string, opts: CallOpts, access: string | null): Pr
     ...(await clientForwardHeaders()),
   }
   if (access) reqHeaders.authorization = `Bearer ${access}`
+  opts.signal?.throwIfAborted()
   return fetch(url, {
     method: opts.method ?? 'GET',
     headers: reqHeaders,
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     cache: 'no-store',
-    signal: AbortSignal.timeout(opts.timeoutMs ?? GATEWAY_TIMEOUT_MS),
+    signal: opts.signal
+      ? AbortSignal.any([opts.signal, AbortSignal.timeout(opts.timeoutMs ?? GATEWAY_TIMEOUT_MS)])
+      : AbortSignal.timeout(opts.timeoutMs ?? GATEWAY_TIMEOUT_MS),
   })
 }
 
@@ -108,8 +114,12 @@ type RefreshResult = AuthTokens | 'invalid' | 'unavailable'
  * refresh token. Cada request grava os cookies na PRÓPRIA resposta, inclusive
  * quando recebeu um resultado já concluído. Falha transitória não limpa cookies.
  */
-export async function tryRefresh(): Promise<string | null> {
-  const refreshToken = await getRefreshToken()
+export async function tryRefresh(signal?: AbortSignal): Promise<string | null> {
+  signal?.throwIfAborted()
+  const refreshToken = signal
+    ? await awaitWithSignal(getRefreshToken, signal)
+    : await getRefreshToken()
+  signal?.throwIfAborted()
   if (!refreshToken) return null
   const now = Date.now()
   for (const [token, entry] of refreshResults) {
@@ -120,16 +130,21 @@ export async function tryRefresh(): Promise<string | null> {
     entry = { at: now, promise: rotateTokens(refreshToken) }
     refreshResults.set(refreshToken, entry)
   }
-  const result = await entry.promise
+  // The rotation belongs to all requests with this token. Abort only this waiter.
+  const rotation = entry.promise
+  const result = signal ? await awaitWithSignal(() => rotation, signal) : await rotation
+  signal?.throwIfAborted()
   if (result === 'unavailable') {
     if (refreshResults.get(refreshToken) === entry) refreshResults.delete(refreshToken)
     return null
   }
   if (result === 'invalid') {
-    await clearSessionCookies()
+    await clearSessionCookies(signal)
+    signal?.throwIfAborted()
     return null
   }
-  await setSessionCookies(result)
+  await setSessionCookies(result, signal)
+  signal?.throwIfAborted()
   return result.accessToken
 }
 
@@ -161,13 +176,18 @@ export async function gatewayFetch<T = unknown>(
   path: string,
   opts: CallOpts = {},
 ): Promise<GatewayResponse<T>> {
+  opts.signal?.throwIfAborted()
   const access = await getAccessToken()
   let res = await rawFetch(path, opts, access)
+  opts.signal?.throwIfAborted()
   if (res.status === 401) {
-    const renewed = await tryRefresh()
+    const renewed = await tryRefresh(opts.signal)
+    opts.signal?.throwIfAborted()
     if (renewed) res = await rawFetch(path, opts, renewed)
   }
-  return { status: res.status, body: await readJson<T>(res) }
+  const body = await readJson<T>(res)
+  opts.signal?.throwIfAborted()
+  return { status: res.status, body }
 }
 
 /**
@@ -177,12 +197,16 @@ export async function gatewayFetch<T = unknown>(
  * Handlers/Server Actions — a rotação escreve cookies).
  */
 export async function gatewayFetchRaw(path: string, opts: CallOpts = {}): Promise<Response> {
+  opts.signal?.throwIfAborted()
   const access = await getAccessToken()
   let res = await rawFetch(path, opts, access)
+  opts.signal?.throwIfAborted()
   if (res.status === 401) {
-    const renewed = await tryRefresh()
+    const renewed = await tryRefresh(opts.signal)
+    opts.signal?.throwIfAborted()
     if (renewed) res = await rawFetch(path, opts, renewed)
   }
+  opts.signal?.throwIfAborted()
   return res
 }
 

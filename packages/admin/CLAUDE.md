@@ -1,27 +1,35 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Jornada Kids canônica (implementação isolada, 19/10/2026)
+
+`/admin/professor/jornada-kids` lê somente a política persistida. Os oito nomes/ordem são
+metadata; requisitos, ferramentas e tierAccess vêm do registro. Postos e acesso às etapas
+têm painéis separados. Initializing/erro não cria seed ou Faísca no cliente. A permissão visual
+`permissions.canEdit` vem da mesma guarda de mutação do Members; getSession/papel isolado não
+prova conta própria. Todas as escritas seguem passando pelo BFF/gateway e são reautorizadas.
+
+Comparar chama o backend e identifica a simulação de novo aluno; não é relatório da coorte.
+Preparar exige motivo; ID fica no URL para retomar. Retomada não faz advance/publish. Avanço
+de lote é manual e publicação envia versão/três hashes da mesma preparação ready, sem ator
+do navegador ou retry invisível. Histórico tem erro próprio. Editor tem DOM/API e tipos locais
+qualificados; navegador real e integração JWT/banco ainda pendentes. Consulte os recibos em
+`.compozy/tasks/kids-configurable-journey/` antes de declarar rollout pronto.
+
 ## Autoria do Estúdio em duas linguagens (18/10/2026)
 
-O projeto inicial e o gabarito usam `EditableStudioProject`; JavaScript permanece o padrão. A escolha de ambiente, extensões e tipo vem das opções autorizadas, com troca explícita que preserva o projeto quando cancelada ou recusada. Python tem nível e paleta próprios; não traduzir a curadoria JavaScript por nome.
+O projeto inicial e os exemplos privados por parte usam `EditableStudioProject`; JavaScript permanece o padrão. A escolha de ambiente, extensões e tipo vem das opções autorizadas, com troca explícita que preserva o projeto quando cancelada ou recusada. Python tem nível e paleta próprios; não traduzir a curadoria JavaScript por nome.
 
-O gabarito possui id e handle próprios, recebe o contexto de autoria vigente (autor/aula/revisão/bloco), opções de ambiente e nível Python 3 de autoria. Seu runtime Python é independente do inicial e perde autorização quando o contexto muda. Um campo `runtime` no documento sozinho não habilita execução. Objetivos ficam na seção; modelos, colagem e testes de execução JavaScript não aceitam regras Python. O editor Python usa sua inspeção autorizada.
+Cada editor de exemplo possui working copy com id e handle próprios, recebe o contexto de autoria vigente (autor/aula/revisão/bloco) e conserva essa identidade enquanto salva snapshots. O UUID do snapshot é independente de `Project.id` e nunca vira chave React do editor. Seu runtime Python é independente do inicial e perde autorização quando o contexto muda. Um campo `runtime` no documento sozinho não habilita execução. Objetivos ficam na seção; modelos, colagem e testes de execução JavaScript não aceitam regras Python. O editor Python usa sua inspeção autorizada.
 
 Rascunhos podem guardar critérios incompletos; publicação os valida. "Testar agora" só mostra sucesso geral com resultados conclusivos: espera, falha do executor ou limite de análise não são aprovação. A publicação confere estrutura e exige gabarito para execução, mas ainda não exige uma evidência persistida de teste de execução aprovado.
 
 ## Gabarito e "Testar agora" dos objetivos (18/10/2026)
 
-[`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). No bloco Estúdio a "Atividade (auto-correção)" (`activity-builder.tsx`) SAIU; no lugar,
-logo abaixo do projeto inicial, o **Gabarito (só a equipe vê)** (`aulas/[lessonId]/
-studio-solution-field.tsx`): um segundo `StudioEmbed` com handle próprio, criado como CÓPIA do
-inicial com id novo (`solutionFrom` — dois editores não podem dividir o mesmo id), capturado no
-autosave e no salvar (`BlockForm.studioSolution` → `content.solutionProject`). O members tira o
-gabarito da aula do aluno.
+[`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). A atividade/autocorreção foi centralizada nos objetivos da parte. Em **Para avançar**, `section-project-examples.tsx` edita entrada para ensaio e uma solução possível. O registro canônico `StudioBlock.projectExamples` associa UUIDs de snapshots aos IDs de partes; comando `studio-example` salva/reutiliza/remove associações sob o CAS normal. A estrutura não retransmite projetos. Normal writers recusam `solutionProject`; o formato antigo só entra pelo conversor explícito, sem fallback na avaliação. Os exemplos nunca chegam à criança.
 
 `SectionCompletionEditor`: por objetivo, **dica** (até `PROJECT_CHECK_HINT_MAX`, vazia tira a
 chave) e **Desafio extra** (`optional`), com o selo Obrigatório/Desafio extra; **"Testar agora"**
-roda `lib/objectives-test.ts` (`testSectionObjectives`, puro) contra o projeto inicial (obrigatório
-cumprido ali = problema: a criança passa sem fazer nada) e o gabarito (obrigatório que falta = a
-publicação recusa), e avisa sem gabarito e com todos extras. O upload de projeto ficou como
+roda `lib/objectives-test.ts` (`testSectionObjectives`, puro) contra o inicial canônico e a solução da parte; entrada é diagnóstico da etapa, nunca substitui o baseline. Obrigatórios todos verdadeiros no inicial geram aviso explícito de checagem não discriminante, sem afirmar que vídeo/quiz/entrega já passaram. Obrigatório falso na solução recusa publicação; ausência, erro ou leitura inconclusiva não viram falso nem aprovação. O upload de projeto ficou como
 "Testar com outro projeto (arquivo)". A nota 0–100 saiu do viewer, da aba Entregas do curso e da
 fila de Entregas (e dos tipos/BFF). Testes: `tests/objectives-test.test.ts` e
 `tests/section-completion-editor.test.tsx`.

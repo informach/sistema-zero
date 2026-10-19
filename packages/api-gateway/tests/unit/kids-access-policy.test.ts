@@ -21,13 +21,21 @@ describe('áreas separadas no servidor', () => {
     for (const path of [
       '/hub/internal/showcase-thread',
       '/hub/internal/showcase-thread-studio',
+      '/hub/internal/showcase-thread-studio/prepare',
       '/hub/internal/showcase-thread-studio-standalone',
+      '/hub/internal/showcase-thread-studio-standalone/prepare',
     ]) {
       expect(kidsMayAccess(student, path, 'POST', 'andre')).toBe(true)
       expect(kidsMayAccess(student, path, 'DELETE', 'andre')).toBe(false)
       expect(kidsMayAccess(parent, path, 'POST', 'pai')).toBe(false)
     }
     expect(kidsMayAccess(student, '/members/internal/device-avatars', 'POST', 'andre')).toBe(false)
+    for (const path of [
+      '/hub/internal/showcase-thread-studio/prepare/retire',
+      '/hub/internal/showcase-thread-studio-standalone/prepare/extra',
+      '/hub/internal/showcase-thread-studio-standalone/retire',
+    ])
+      expect(kidsMayAccess(student, path, 'POST', 'andre')).toBe(false)
   })
   test('aluno não usa finanças, gestão, suporte adulto nem seleção antiga', () => {
     for (const path of [

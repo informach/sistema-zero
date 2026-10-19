@@ -1,5 +1,8 @@
 import { creativeToolAccessRef, isContentFingerprint } from '@sistemazero/core/creations'
-import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
+import {
+  STUDIO_PROJECT_FORMAT_VERSION,
+  STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
+} from '@sistemazero/core/studio'
 /**
  * "Guardado na sua conta" — os casos de uso do ÍNDICE das criações (Estúdio
  * Completo e Pinta). O blob nunca passa por aqui: o BFF assina PUT/GET no R2 UGC
@@ -267,7 +270,7 @@ export class ReserveCreationUploadService {
     }
     if (isStudioFormatTool(input.tool) && formatVersion < STUDIO_PROJECT_FORMAT_VERSION)
       throw new CreationClientOutdatedError(STUDIO_PROJECT_FORMAT_VERSION)
-    if (isStudioFormatTool(input.tool) && formatVersion > STUDIO_PROJECT_FORMAT_VERSION)
+    if (isStudioFormatTool(input.tool) && formatVersion > STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION)
       throw new ValidationError('Esta versão do servidor ainda não aceita esse formato de projeto')
     if (!Number.isInteger(input.bytes) || input.bytes <= 0) {
       throw new ValidationError('Tamanho do arquivo inválido')
@@ -413,12 +416,16 @@ export class CommitCreationUploadService {
     /** Hashes das partes que o cliente PUTou nesta reserva (as faltantes). */
     uploadedParts?: readonly string[]
     verifiedPartHashes?: readonly string[]
+    verifiedFormatVersion?: number
   }): Promise<CreationCommitOutcome> {
     if (!Number.isInteger(input.revision) || input.revision <= 0) {
       throw new ValidationError('Revisão inválida')
     }
     const uploadedParts = input.uploadedParts ?? []
-    if (isStudioFormatTool(input.tool) && !input.verifiedPartHashes)
+    if (
+      isStudioFormatTool(input.tool) &&
+      (!input.verifiedPartHashes || input.verifiedFormatVersion === undefined)
+    )
       throw new ValidationError(
         'O serviço precisa conferir o manifesto antes de confirmar o projeto',
       )
@@ -449,6 +456,9 @@ export class CommitCreationUploadService {
       ),
       ...(uploadedParts.length > 0 ? { uploadedParts } : {}),
       ...(input.verifiedPartHashes ? { verifiedPartHashes: input.verifiedPartHashes } : {}),
+      ...(input.verifiedFormatVersion !== undefined
+        ? { verifiedFormatVersion: input.verifiedFormatVersion }
+        : {}),
       now: this.clock(),
       limits: {
         maxItemBytes: CREATION_LIMITS.maxItemBytes,

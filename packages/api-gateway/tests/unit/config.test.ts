@@ -859,6 +859,42 @@ describe('gateway.config.ts (configuração real)', () => {
     })
   })
 
+  test('cover reconciliation is a signed member-shell route, separate from public play', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(registry.resolve('GET', '/hub/internal/studio-cover/123', 'v1')?.route).toMatchObject({
+      id: 'hub-studio-cover-reference',
+      service: 'hub',
+      auth: { required: true, strategies: ['hmac'], allowedConsumers: ['member-shell'] },
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    })
+    expect(registry.resolve('POST', '/hub/internal/studio-cover/123', 'v1')).toBeUndefined()
+    expect(
+      registry.resolve('POST', '/hub/internal/studio-artifact-cleanups/drain', 'v1')?.route,
+    ).toMatchObject({
+      id: 'hub-studio-artifact-cleanups-drain',
+      service: 'hub',
+      auth: { required: true, strategies: ['hmac'], allowedConsumers: ['member-shell'] },
+    })
+    expect(
+      registry.resolve('GET', '/hub/internal/studio-artifact-cleanups/drain', 'v1'),
+    ).toBeUndefined()
+    expect(
+      registry.resolve('POST', '/hub/internal/studio-reservation-cleanups/drain', 'v1')?.route,
+    ).toMatchObject({
+      id: 'hub-studio-reservation-cleanups-drain',
+      service: 'hub',
+      auth: { required: true, strategies: ['hmac'], allowedConsumers: ['member-shell'] },
+    })
+    expect(
+      registry.resolve('GET', '/hub/internal/studio-reservation-cleanups/drain', 'v1'),
+    ).toBeUndefined()
+    expect(registry.resolve('GET', '/hub/internal/studio-play/123', 'v1')?.route.auth).toBe(
+      'public',
+    )
+  })
+
   test('análise Python usa sessão ativa e cota independente da execução', () => {
     const analysis = realConfig.routes.find(
       (route) => route.id === 'members-studio-python-analysis',

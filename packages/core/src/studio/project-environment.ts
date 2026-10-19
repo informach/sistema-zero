@@ -19,6 +19,12 @@ export const StudioExactVersionSchema = z
   .max(64)
   .regex(/^[0-9][A-Za-z0-9.!+_-]*$/)
 
+/** Portable extension identity shared by the host and isolated execution boundary. */
+export const StudioExtensionReferenceSchema = z.strictObject({
+  id: StudioCatalogIdSchema,
+  version: StudioExactVersionSchema,
+})
+
 export {
   isStudioPortablePath,
   isStudioPythonAssetPath,

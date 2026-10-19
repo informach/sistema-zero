@@ -99,6 +99,40 @@ const AUTH_TIMEOUT_MS = 15_000
 /** Audiência da vitrine no members: `adult` (community) | `kids` (community-kids). */
 export type MembersAudience = 'adult' | 'kids'
 
+export type StudioPublicationPreparation =
+  | { state: 'reserved'; reservationId: string; playId: string; snapshotHash: string }
+  | { state: 'finalized'; thread: HubThreadView; deduped: true }
+  | { state: 'retired'; playId: string; thread: HubThreadView | null }
+
+type StudioPublicationPublisher = {
+  authorId: string
+  accountId: string
+  audience: MembersAudience
+}
+
+type StudioLessonPublicationPreparation = {
+  publisher: StudioPublicationPublisher
+  spaceSlug: string
+  lessonId: string
+  blockId: string
+  description: string
+  clientIdempotencyKey: string
+  snapshotHash: string
+  studioMeta?: StudioPublicProjectMetadata | null
+}
+
+type StudioStandalonePublicationPreparation = {
+  publisher: StudioPublicationPublisher
+  spaceSlug: string
+  title: string
+  description: string
+  clientIdempotencyKey: string
+  snapshotHash: string
+  studioMeta?: StudioPublicProjectMetadata | null
+  challengeKey?: string | null
+  liveWorkspace?: { id: string; revision: number; playId: string; publicationToken: string }
+}
+
 /**
  * Ref do produto vendável "Estúdio Completo" (= slug do produto/curso no catálogo).
  * Quem possui acessa o editor standalone e pode publicar do estúdio. ⚠️ Tem que casar
@@ -1284,10 +1318,12 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     },
     authorizePythonAnalysis(
       input: StudioPythonAnalysisAuthorization,
+      options?: { signal?: AbortSignal },
     ): Promise<GatewayResponse<unknown>> {
       return gw.gatewayFetch(`/members/studio/python-analysis?audience=${audience}`, {
         method: 'POST',
         body: input,
+        signal: options?.signal,
       })
     },
     authorizePublicRuntime(input: StudioPublicRuntimeRequest): Promise<GatewayResponse<unknown>> {
@@ -1413,7 +1449,12 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     commitCreationUpload(
       tool: CreationToolView,
       itemId: string,
-      body: { revision: number; uploadedParts?: string[]; verifiedPartHashes?: string[] },
+      body: {
+        revision: number
+        uploadedParts?: string[]
+        verifiedPartHashes?: string[]
+        verifiedFormatVersion?: number
+      },
     ): Promise<GatewayResponse<CreationCommitResultView>> {
       return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}/commit`, {
         method: 'POST',
@@ -1724,7 +1765,26 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
      * criança e o projeto ganha um `playId` (link público de jogar). Título/elegibilidade
      * continuam autoritativos do members; `clientIdempotencyKey` dedup-a duplo-clique.
      */
+    prepareShowcaseThreadStudio(
+      body: StudioLessonPublicationPreparation,
+    ): Promise<GatewayResponse<StudioPublicationPreparation>> {
+      return gw.gatewayFetchDual('/hub/internal/showcase-thread-studio/prepare', {
+        method: 'POST',
+        body,
+      })
+    },
+    prepareShowcaseThreadStudioStandalone(
+      body: StudioStandalonePublicationPreparation,
+    ): Promise<GatewayResponse<StudioPublicationPreparation>> {
+      return gw.gatewayFetchDual('/hub/internal/showcase-thread-studio-standalone/prepare', {
+        method: 'POST',
+        body,
+      })
+    },
     createShowcaseThreadStudio(body: {
+      reservationId: string
+      snapshotHash: string
+      publisher: { authorId: string; accountId: string; audience: MembersAudience }
       spaceSlug: string
       lessonId: string
       blockId: string
@@ -1735,7 +1795,7 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix no card (cosmético). */
       studioMeta?: StudioPublicProjectMetadata | null
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
-      return gw.gatewayFetch('/hub/internal/showcase-thread-studio', { method: 'POST', body })
+      return gw.gatewayFetchDual('/hub/internal/showcase-thread-studio', { method: 'POST', body })
     },
     /**
      * Variação do ESTÚDIO COMPLETO (produto vendável, SEM aula): `title` e `description`
@@ -1744,7 +1804,10 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
      * dedup-a duplo-clique (republicar = post novo).
      */
     createShowcaseThreadStudioStandalone(body: {
-      liveWorkspace?: { id: string; revision: number; publicationToken: string }
+      reservationId: string
+      snapshotHash: string
+      publisher: { authorId: string; accountId: string; audience: MembersAudience }
+      liveWorkspace?: { id: string; revision: number; playId: string; publicationToken: string }
       spaceSlug: string
       title: string
       description: string
@@ -1756,7 +1819,7 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix no card (cosmético). */
       studioMeta?: StudioPublicProjectMetadata | null
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
-      return gw.gatewayFetch('/hub/internal/showcase-thread-studio-standalone', {
+      return gw.gatewayFetchDual('/hub/internal/showcase-thread-studio-standalone', {
         method: 'POST',
         body,
       })
@@ -1770,11 +1833,37 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       playId: string,
       countHit = false,
     ): Promise<
-      GatewayResponse<{ visible: boolean; authorDisplayName?: string | null; audience?: 'adult' }>
+      GatewayResponse<{
+        visible: boolean
+        authorDisplayName?: string | null
+        audience?: 'adult'
+      }>
     > {
       return publicGet(
         `/hub/internal/studio-play/${enc(playId)}${audience === 'adult' ? `?audience=adult${countHit ? '&count=1' : ''}` : countHit ? '?count=1' : ''}`,
       )
+    },
+    resolveStudioCover(playId: string): Promise<
+      GatewayResponse<{
+        status: 'absent' | 'pending' | 'visible' | 'hidden' | 'deleted' | 'rejected'
+        coverImageUrl: string | null
+      }>
+    > {
+      return gw.gatewayFetchHmac(`/hub/internal/studio-cover/${enc(playId)}`, {
+        query: { audience },
+      })
+    },
+    drainStudioArtifactCleanups(): Promise<GatewayResponse<{ attempted: number }>> {
+      return gw.gatewayFetchHmac('/hub/internal/studio-artifact-cleanups/drain', {
+        method: 'POST',
+        body: { audience },
+      })
+    },
+    drainStudioReservationCleanups(): Promise<GatewayResponse<{ attempted: number }>> {
+      return gw.gatewayFetchHmac('/hub/internal/studio-reservation-cleanups/drain', {
+        method: 'POST',
+        body: { audience },
+      })
     },
     /** Jornada (RSC, sem refresh): jogos publicados no Mural + soma das jogadas. */
     myShowcaseStatsReadonly(): Promise<GatewayResponse<{ published: number; plays: number }>> {

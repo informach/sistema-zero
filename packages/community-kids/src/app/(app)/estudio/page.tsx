@@ -1,3 +1,4 @@
+import { kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import {
   KidsJourneyLockedStudio,
@@ -43,7 +44,7 @@ export default async function EstudioPage({
     // dos dois lados).
     checkCreativeToolsAccessReadonly(),
     getSession(),
-    // Rank do aluno → modos+perfil do editor. `withRanking:true` casa a chave do
+    // Política/earned do perfil → capacidades do editor. `withRanking:true` casa a chave do
     // React.cache com a da (app)/layout (dedup, sem ida extra). Best-effort.
     getGamificationReadonly({ withRanking: true }).catch(() => null),
     // Paleta pelo CURRÍCULO: bônus concluídos + cursos da jornada concluídos e publicados.
@@ -59,11 +60,12 @@ export default async function EstudioPage({
   // Falha ao consultar o rank não pode virar Faísca: isso esconderia ferramentas de
   // uma criança que já as conquistou. Mantemos o mesmo estado honesto de indisponibilidade.
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsStudioUnavailable} />
-  const levelSlug = gam.body?.level?.slug ?? 'noob'
-  // A paleta vem do CURRÍCULO: o nível decide o MODO (livre/Ponte/Pro) e os cursos
+  const journey = kidsJourneyAccess(gam.body)
+  if (!journey) return <ToolRouteRecado screen={KidsStudioUnavailable} />
+  // A política decide livre/Ponte/Pro; a paleta vem do CURRÍCULO e os cursos
   // conquistados decidem os BLOCOS. O produto pode estar comprado pela conta, mas a criação
   // livre só começa com algum bloco conquistado. Dentro das aulas o Estúdio segue disponível.
-  const gate = studioGate(levelSlug, session?.role, unlocksRes)
+  const gate = studioGate(journey, unlocksRes)
   if (gate.kind === 'unavailable') return <ToolRouteRecado screen={KidsStudioUnavailable} />
   if (gate.kind === 'journey-locked') {
     return (
@@ -73,7 +75,7 @@ export default async function EstudioPage({
     )
   }
   const { tier } = gate
-  const services = await readServices(session, levelSlug)
+  const services = await readServices(session, journey)
   // Exemplos prontos (vitrine + "Exemplos clássicos") aparecem SÓ p/ a EQUIPE
   // interna (superadmin/admin/staff), enquanto a usuária valida o catálogo — o
   // cliente segue sem eles. Deriva do PAPEL da conta, não do rank: uma criança

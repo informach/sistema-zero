@@ -1,5 +1,5 @@
 import 'server-only'
-import { randomUUID, timingSafeEqual } from 'node:crypto'
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto'
 import { CREATOR_SHOWCASE_SLUGS, canonicalJson } from '@sistemazero/core/creations'
 import {
   InvalidJsonBodyError,
@@ -18,6 +18,10 @@ import {
   StudioPublicProjectMetadataSchema,
 } from '@sistemazero/core/studio/public-metadata'
 import {
+  type StudioReservationContext,
+  StudioReservationRetirementSchema,
+} from '@sistemazero/core/studio/publication-reservation'
+import {
   StudioFreeRuntimeDecisionSchema,
   StudioLessonRuntimeDecisionSchema,
   StudioLivePublicationRuntimeDecisionSchema,
@@ -30,19 +34,26 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getEnv } from '../lib/env'
 import { UGC_IMAGE_INPUT_MIME } from '../lib/hub-attachments'
-import { verifyCleanupSignature } from '../lib/studio-cleanup'
-import { isPrivilegedRole, resolveStudioTier } from '../lib/studio-tier'
+import { hasKidsCapability, kidsJourneyAccess } from '../lib/kids-journey-access'
+import { verifyCleanupSignature, verifyReservationCleanupSignature } from '../lib/studio-cleanup'
+import { isPrivilegedRole } from '../lib/studio-tier'
 import type { HubClient, MembersClient } from '../server/clients'
 import { optimizeImage } from '../server/image-optimizer'
 import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
 import { generateProjectDescription } from '../server/openrouter'
 import {
   bufferFromStream,
-  r2DeleteObjectPrivate,
+  MediaNotConfiguredError,
+  PrivateObjectNotFoundError,
+  PrivateObjectUnavailableError,
   r2GetObjectPrivate,
-  r2PutObject,
-  r2PutObjectPrivate,
 } from '../server/r2'
+import {
+  acknowledgeStudioCoverCandidate,
+  commitStudioCoverCandidate,
+  drainStudioCoverCandidates,
+  enqueueStudioCoverCandidate,
+} from '../server/studio-cover-candidates'
 import {
   StudioProRuntimeInputError,
   StudioProRuntimeUpstreamError,
@@ -54,15 +65,26 @@ import {
   publishStudioPythonRevision,
   StudioPublicationError,
   studioPublicationOwner,
-  studioPublicationPlayId,
   studioPublicProject,
 } from '../server/studio-publication'
-
 import {
   drainStudioPublicationCleanup,
   enqueueStudioPublicationCleanup,
   performStudioPublicationCleanup,
 } from '../server/studio-publication-cleanup'
+import {
+  createStudioPublicationCover,
+  retireStudioPublicationCover,
+} from '../server/studio-publication-cover'
+import { recordStudioPublicationOwner } from '../server/studio-publication-ownership'
+import {
+  createStudioPublicationSnapshot,
+  isRetiredStudioPublicationSnapshot,
+} from '../server/studio-publication-snapshot'
+import {
+  drainStudioReservationCleanup,
+  retireStudioReservation,
+} from '../server/studio-reservation-cleanup'
 import { createStudioPublicRuntimeRoute } from './studio-public-runtime'
 
 export type StudioRoutes = ReturnType<typeof createStudioRoutes>
@@ -102,6 +124,17 @@ const PROJECT_MAX_BYTES = 6 * 1024 * 1024 // projeto auto-suficiente (assets dat
 const PUBLISH_MAX_BYTES = 8 * 1024 * 1024 // teto do multipart inteiro (cover + projeto + campos)
 /** Prefixo do artefato jogável no bucket PRIVADO (servido só via /api/studio/play/:id). */
 const PLAY_KEY = (id: string) => `studio/play/${id}.json`
+/** Each upload has its own key: a replay must never restore a moderated cover URL. */
+function publicationCoverKey(
+  sessionId: string,
+  playId: string,
+  requestId: string,
+  content: Uint8Array,
+  extension: string,
+): string {
+  const digest = createHash('sha256').update(content).digest('hex')
+  return `studio/cover/${sessionId}/${playId}/${requestId}-${randomUUID()}-${digest}.${extension}`
+}
 
 // Descrição: só os 3 arquivos canônicos (clampados) — NÃO o projeto com assets.
 const DescribeBody = z.union([
@@ -234,6 +267,10 @@ export function createStudioRoutes(deps: {
   const { hub, members, media } = deps
   const audience = deps.audience ?? 'kids'
   const muralSpaceSlug = CREATOR_SHOWCASE_SLUGS[audience]
+  // Next may reconstruct request.url with an internal host behind a reverse proxy.
+  // The published frame must authorize the public app, never a forwarded project-supplied URL.
+  const publicationParentOrigin = (request: Request) =>
+    new URL(getEnv().APP_PUBLIC_URL ?? request.url).origin
 
   type PublicationContext =
     | { kind: 'free' }
@@ -248,21 +285,45 @@ export function createStudioRoutes(deps: {
       pro: project.kind === 'pro',
       extensions: project.installedExtensions.map((extension) => extension.id).slice(0, 8),
     })
-  function assertCanonicalPublication(project: EditableStudioProject, canonical: unknown) {
-    const python = project.programmingLanguage === 'python'
+  function resolvePreparation(
+    result: Awaited<ReturnType<HubClient['prepareShowcaseThreadStudio']>>,
+    project: EditableStudioProject | null,
+    snapshotHash: string,
+    expectedPlayId?: string,
+  ) {
+    if (result.status !== 200 || !result.body)
+      return NextResponse.json(result.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
+        status: result.status === 200 ? 502 : result.status,
+      })
+    const prepared = result.body
+    if (prepared.state === 'retired')
+      return NextResponse.json({ error: { code: 'SHOWCASE_NOT_VISIBLE' } }, { status: 409 })
+    if (prepared.state === 'finalized') {
+      const thread = prepared.thread
+      if (thread?.status !== 'visible' || !thread.playId || !UUID_RE.test(thread.playId))
+        return NextResponse.json({ error: { code: 'SHOWCASE_NOT_VISIBLE' } }, { status: 409 })
+      const hasHistory = thread.studioMeta
+        ? thread.studioMeta.pro || thread.studioMeta.programmingLanguage === 'python'
+        : retained(project)
+      return NextResponse.json({
+        muralUrl: `/${muralSpaceSlug}?thread=${encodeURIComponent(thread.id)}`,
+        playUrl: `/jogar/${thread.playId}`,
+        ...(hasHistory ? { publicationId: thread.playId } : {}),
+        deduped: true,
+      })
+    }
     if (
-      python !== isStudioPythonPublication(canonical) ||
-      (python &&
-        isStudioPythonPublication(canonical) &&
-        (project.kind !== canonical.kind ||
-          project.runtime.profileId !== canonical.runtime.profileId ||
-          project.runtime.releaseId !== canonical.runtime.releaseId ||
-          project.runtime.manifestSha256 !== canonical.runtime.manifestSha256))
+      prepared.state !== 'reserved' ||
+      !UUID_RE.test(prepared.reservationId) ||
+      !UUID_RE.test(prepared.playId) ||
+      prepared.snapshotHash !== snapshotHash ||
+      (expectedPlayId !== undefined && prepared.playId !== expectedPlayId)
     )
-      throw new StudioPublicationError(
-        409,
-        'Este post já possui outro tipo de projeto. Crie uma nova publicação.',
+      return NextResponse.json(
+        { error: { code: 'INVALID_PUBLICATION_RESERVATION' } },
+        { status: 502 },
       )
+    return prepared
   }
   async function publishRevision(options: {
     project: EditableStudioProject
@@ -286,7 +347,7 @@ export function createStudioRoutes(deps: {
           context.kind === 'free'
             ? await members.authorizeFreeRuntime({
                 ...candidate,
-                context: { kind: 'free', audience: 'kids', projectId: options.project.id },
+                context: { kind: 'free', audience, projectId: options.project.id },
               })
             : context.kind === 'lesson'
               ? await members.authorizeLessonRuntime(context.lessonId, context.blockId, {
@@ -318,7 +379,7 @@ export function createStudioRoutes(deps: {
           throw new StudioPublicationError(502, 'A autorização da publicação está inválida.')
         const expectedContext =
           context.kind === 'free'
-            ? { kind: 'free', audience: 'kids', projectId: options.project.id }
+            ? { kind: 'free', audience, projectId: options.project.id }
             : context.kind === 'lesson'
               ? {
                   kind: 'lesson',
@@ -342,14 +403,17 @@ export function createStudioRoutes(deps: {
   }
 
   async function proPublicationAccess(user: { role: string }): Promise<NextResponse | null> {
-    if (isPrivilegedRole(user.role)) return null
+    if (audience === 'adult' && isPrivilegedRole(user.role)) return null
     const progress = await members.getGamification()
     if (progress.status !== 200 || !progress.body)
+      return NextResponse.json({ error: { code: 'JOURNEY_UNAVAILABLE' } }, { status: 503 })
+    const kids = audience === 'kids' ? kidsJourneyAccess(progress.body) : null
+    if (audience === 'kids' && !kids)
       return NextResponse.json({ error: { code: 'JOURNEY_UNAVAILABLE' } }, { status: 503 })
     const pro =
       audience === 'adult'
         ? progress.body.journey?.capabilities.includes('pro') === true
-        : resolveStudioTier(progress.body.level?.slug, user.role).pro
+        : kids !== null && hasKidsCapability(kids, 'studio') && hasKidsCapability(kids, 'pro')
     if (!pro) return NextResponse.json({ error: { code: 'FORBIDDEN_MODE' } }, { status: 403 })
     return null
   }
@@ -481,9 +545,47 @@ export function createStudioRoutes(deps: {
       } catch (error) {
         return publicationError(error)
       }
-      const playId = retained(publicationProject)
-        ? studioPublicationPlayId(owner, `lesson:${lessonId}:${blockId}`, clientIdempotencyKey)
-        : randomUUID()
+      const snapshotHash = createHash('sha256').update(projectBytes).digest('hex')
+      const preparation = resolvePreparation(
+        await hub.prepareShowcaseThreadStudio({
+          publisher: {
+            authorId: sess.id,
+            accountId: sess.activeProfile?.accountId ?? sess.id,
+            audience,
+          },
+          spaceSlug: muralSpaceSlug,
+          lessonId,
+          blockId,
+          description,
+          clientIdempotencyKey,
+          snapshotHash,
+          studioMeta,
+        }),
+        publicationProject,
+        snapshotHash,
+      )
+      if (preparation instanceof NextResponse) return preparation
+      const { playId, reservationId } = preparation
+      try {
+        await recordStudioPublicationOwner(
+          audience,
+          playId,
+          sess.id,
+          StudioReservationRetirementSchema.parse({
+            version: 1,
+            deliveryId: `studio-reservation-cleanup:${reservationId}`,
+            reservationId,
+            playId,
+            authorId: sess.id,
+            accountId: sess.activeProfile?.accountId ?? sess.id,
+            audience,
+            snapshotHash,
+            context: { kind: 'lesson', lessonId, blockId },
+          }),
+        )
+      } catch (error) {
+        return publicationError(error)
+      }
       if (publicationProject && retained(publicationProject)) {
         try {
           await publishRevision({
@@ -493,7 +595,7 @@ export function createStudioRoutes(deps: {
             owner,
             requestId: clientIdempotencyKey,
             expectedVersion: 0,
-            parentOrigin: new URL(req.url).origin,
+            parentOrigin: publicationParentOrigin(req),
             signal: req.signal,
             context: publicationContext,
           })
@@ -502,10 +604,17 @@ export function createStudioRoutes(deps: {
         }
       }
 
+      try {
+        await createStudioPublicationSnapshot(playId, projectBytes)
+      } catch (error) {
+        return publicationError(error)
+      }
+
       // 2. Capa: print/upload da criança → R2 PÚBLICO; OU a capa padrão do curso
       // (admin) quando ela escolheu "usar a capa do curso" (`useDefaultCover`). A URL
       // do admin vem do payload AUTORITATIVO do members (não confiamos no cliente).
       let coverImageUrl: string | null = null
+      let uploadedCoverKey: string | null = null
       const cover = form.get('cover')
       if (
         cover instanceof File &&
@@ -515,12 +624,22 @@ export function createStudioRoutes(deps: {
       ) {
         try {
           const optimized = await optimizeImage(await cover.arrayBuffer(), 'ugc')
-          const stored = await r2PutObject({
-            key: `studio/cover/${sess.id}/${randomUUID()}.${optimized.extension}`,
+          const coverKey = publicationCoverKey(
+            sess.id,
+            playId,
+            clientIdempotencyKey,
+            optimized.buffer,
+            optimized.extension,
+          )
+          await enqueueStudioCoverCandidate(audience, playId, coverKey)
+          const stored = await createStudioPublicationCover({
+            key: coverKey,
             body: optimized.buffer,
             contentType: optimized.contentType,
+            cacheControl: 'no-store',
           })
           coverImageUrl = stored.url
+          uploadedCoverKey = stored.key
         } catch {
           // best-effort: deixa null.
         }
@@ -544,31 +663,36 @@ export function createStudioRoutes(deps: {
             new Uint8Array(Buffer.from(capture.png, 'base64')).buffer,
             'ugc',
           )
-          coverImageUrl = (
-            await r2PutObject({
-              key: `studio/cover/${sess.id}/${playId}.${optimized.extension}`,
-              body: optimized.buffer,
-              contentType: optimized.contentType,
-            })
-          ).url
+          const coverKey = publicationCoverKey(
+            sess.id,
+            playId,
+            clientIdempotencyKey,
+            optimized.buffer,
+            optimized.extension,
+          )
+          await enqueueStudioCoverCandidate(audience, playId, coverKey)
+          const stored = await createStudioPublicationCover({
+            key: coverKey,
+            body: optimized.buffer,
+            contentType: optimized.contentType,
+            cacheControl: 'no-store',
+          })
+          coverImageUrl = stored.url
+          uploadedCoverKey = stored.key
         } catch (error) {
           return publicationError(error)
         }
       }
 
-      // 3. Projeto jogável → R2 PRIVADO (servido só via /api/studio/play/:id; sem URL pública).
-      try {
-        await r2PutObjectPrivate({
-          key: PLAY_KEY(playId),
-          body: projectBytes,
-          contentType: 'application/json',
-        })
-      } catch (error) {
-        return mediaErrorResponse(error)
-      }
-
       // 4. Cria o post no Mural (o hub re-valida elegibilidade + autor do header).
       const r = await hub.createShowcaseThreadStudio({
+        reservationId,
+        snapshotHash,
+        publisher: {
+          authorId: sess.id,
+          accountId: sess.activeProfile?.accountId ?? sess.id,
+          audience,
+        },
         spaceSlug: muralSpaceSlug,
         lessonId,
         blockId,
@@ -585,36 +709,29 @@ export function createStudioRoutes(deps: {
       }
       const threadId = r.body.thread.id
       // O playId real é o do post DEVOLVIDO (dedupe pode trazer um post anterior).
-      const resolvedPlayId = r.body.thread.playId ?? playId
-      if (publicationProject && retained(publicationProject) && resolvedPlayId !== playId) {
-        try {
-          const canonical = await callStudioPublication(
-            { operation: 'get', playId: resolvedPlayId, owner },
-            req.signal,
-          )
-          // A legacy deduplicated post can predate compiled Pro publications.
-          // Preserve an existing canonical revision; only migrate a missing one.
-          assertCanonicalPublication(publicationProject, canonical)
-          if (!isStudioPublication(canonical))
-            await publishRevision({
-              project: publicationProject,
-              source: projectBytes.toString('utf8'),
-              playId: resolvedPlayId,
-              owner,
-              requestId: clientIdempotencyKey,
-              expectedVersion: 0,
-              parentOrigin: new URL(req.url).origin,
-              signal: req.signal,
-              context: publicationContext,
-            })
-          await r2PutObjectPrivate({
-            key: PLAY_KEY(resolvedPlayId),
-            body: projectBytes,
-            contentType: 'application/json',
-          })
-        } catch (error) {
-          return publicationError(error)
+      const resolvedPlayId = r.body.thread.playId
+      if (resolvedPlayId !== playId)
+        return NextResponse.json(
+          { error: { code: 'PUBLICATION_RESERVATION_MISMATCH' } },
+          { status: 502 },
+        )
+      if (uploadedCoverKey) {
+        if (r.body.deduped) {
+          try {
+            await retireStudioPublicationCover(uploadedCoverKey)
+            await acknowledgeStudioCoverCandidate(audience, playId, uploadedCoverKey)
+          } catch {
+            // The durable intent retries after checking the Hub's canonical cover.
+          }
+        } else if (
+          r.body.thread.status === 'visible' &&
+          r.body.thread.coverImageUrl === coverImageUrl
+        ) {
+          await commitStudioCoverCandidate(audience, playId, uploadedCoverKey).catch(() => {})
         }
+      }
+      if (r.body.thread.status !== 'visible') {
+        return NextResponse.json({ error: { code: 'SHOWCASE_NOT_VISIBLE' } }, { status: 409 })
       }
       return NextResponse.json(
         {
@@ -731,26 +848,72 @@ export function createStudioRoutes(deps: {
       }
 
       const owner = studioPublicationOwner(sess.id, sess.activeProfile?.accountId ?? sess.id)
-      const playId =
-        liveSnapshot?.playId ??
-        (retained(publicationProject)
-          ? studioPublicationPlayId(
-              owner,
-              audience === 'adult' ? 'adult-standalone' : 'standalone',
-              clientIdempotencyKey,
-            )
-          : randomUUID())
+      if (!liveSnapshot && publicationProject?.kind === 'pro') {
+        const denied = await proPublicationAccess(sess)
+        if (denied) return denied
+        const access = await members.checkStudioAccess()
+        if (access.status !== 200 || access.body?.access?.['estudio-completo'] !== true)
+          return NextResponse.json(
+            { error: { code: 'SHOWCASE_NOT_ELIGIBLE' } },
+            { status: access.status >= 500 ? 503 : 403 },
+          )
+      }
+      const snapshotHash = createHash('sha256').update(projectBytes).digest('hex')
+      const preparation = resolvePreparation(
+        await hub.prepareShowcaseThreadStudioStandalone({
+          publisher: {
+            authorId: sess.id,
+            accountId: sess.activeProfile?.accountId ?? sess.id,
+            audience,
+          },
+          ...(liveSnapshot
+            ? {
+                liveWorkspace: {
+                  id: liveWorkspaceId,
+                  revision: liveRevision,
+                  playId: liveSnapshot.playId,
+                  publicationToken: liveSnapshot.publicationToken,
+                },
+              }
+            : {}),
+          spaceSlug: muralSpaceSlug,
+          title,
+          description,
+          clientIdempotencyKey,
+          challengeKey: liveSnapshot ? null : challengeKey,
+          snapshotHash,
+          studioMeta,
+        }),
+        publicationProject,
+        snapshotHash,
+        liveSnapshot?.playId,
+      )
+      if (preparation instanceof NextResponse) return preparation
+      const { playId, reservationId } = preparation
+      try {
+        const context: StudioReservationContext = liveSnapshot
+          ? { kind: 'live', workspaceId: liveWorkspaceId, revision: liveRevision }
+          : { kind: 'free', audience }
+        await recordStudioPublicationOwner(
+          audience,
+          playId,
+          sess.id,
+          StudioReservationRetirementSchema.parse({
+            version: 1,
+            deliveryId: `studio-reservation-cleanup:${reservationId}`,
+            reservationId,
+            playId,
+            authorId: sess.id,
+            accountId: sess.activeProfile?.accountId ?? sess.id,
+            audience,
+            snapshotHash,
+            context,
+          }),
+        )
+      } catch (error) {
+        return publicationError(error)
+      }
       if (publicationProject && retained(publicationProject)) {
-        if (!liveSnapshot && publicationProject.kind === 'pro') {
-          const denied = await proPublicationAccess(sess)
-          if (denied) return denied
-          const access = await members.checkStudioAccess()
-          if (access.status !== 200 || access.body?.access?.['estudio-completo'] !== true)
-            return NextResponse.json(
-              { error: { code: 'SHOWCASE_NOT_ELIGIBLE' } },
-              { status: access.status >= 500 ? 503 : 403 },
-            )
-        }
         try {
           await publishRevision({
             project: publicationProject,
@@ -759,7 +922,7 @@ export function createStudioRoutes(deps: {
             owner,
             requestId: clientIdempotencyKey,
             expectedVersion: 0,
-            parentOrigin: new URL(req.url).origin,
+            parentOrigin: publicationParentOrigin(req),
             signal: req.signal,
             context: liveSnapshot
               ? { kind: 'live', workspaceId: liveWorkspaceId, revision: liveRevision }
@@ -770,8 +933,15 @@ export function createStudioRoutes(deps: {
         }
       }
 
+      try {
+        await createStudioPublicationSnapshot(playId, projectBytes)
+      } catch (error) {
+        return publicationError(error)
+      }
+
       // Capa (print) → R2 PÚBLICO (best-effort → null = sem capa).
       let coverImageUrl: string | null = null
+      let uploadedCoverKey: string | null = null
       const cover = form.get('cover')
       if (
         cover instanceof File &&
@@ -781,12 +951,22 @@ export function createStudioRoutes(deps: {
       ) {
         try {
           const optimized = await optimizeImage(await cover.arrayBuffer(), 'ugc')
-          const stored = await r2PutObject({
-            key: `studio/cover/${sess.id}/${randomUUID()}.${optimized.extension}`,
+          const coverKey = publicationCoverKey(
+            sess.id,
+            playId,
+            clientIdempotencyKey,
+            optimized.buffer,
+            optimized.extension,
+          )
+          await enqueueStudioCoverCandidate(audience, playId, coverKey)
+          const stored = await createStudioPublicationCover({
+            key: coverKey,
             body: optimized.buffer,
             contentType: optimized.contentType,
+            cacheControl: 'no-store',
           })
           coverImageUrl = stored.url
+          uploadedCoverKey = stored.key
         } catch {
           // best-effort: deixa null.
         }
@@ -808,36 +988,42 @@ export function createStudioRoutes(deps: {
             new Uint8Array(Buffer.from(capture.png, 'base64')).buffer,
             'ugc',
           )
-          coverImageUrl = (
-            await r2PutObject({
-              key: `studio/cover/${sess.id}/${playId}.${optimized.extension}`,
-              body: optimized.buffer,
-              contentType: optimized.contentType,
-            })
-          ).url
+          const coverKey = publicationCoverKey(
+            sess.id,
+            playId,
+            clientIdempotencyKey,
+            optimized.buffer,
+            optimized.extension,
+          )
+          await enqueueStudioCoverCandidate(audience, playId, coverKey)
+          const stored = await createStudioPublicationCover({
+            key: coverKey,
+            body: optimized.buffer,
+            contentType: optimized.contentType,
+            cacheControl: 'no-store',
+          })
+          coverImageUrl = stored.url
+          uploadedCoverKey = stored.key
         } catch (error) {
           return publicationError(error)
         }
       }
 
-      // Projeto jogável → R2 PRIVADO (servido só via /api/studio/play/:id).
-      try {
-        await r2PutObjectPrivate({
-          key: PLAY_KEY(playId),
-          body: projectBytes,
-          contentType: 'application/json',
-        })
-      } catch (error) {
-        return mediaErrorResponse(error)
-      }
-
       // Cria o post no Mural (o hub re-valida a POSSE do produto + autor do header).
       const r = await hub.createShowcaseThreadStudioStandalone({
+        reservationId,
+        snapshotHash,
+        publisher: {
+          authorId: sess.id,
+          accountId: sess.activeProfile?.accountId ?? sess.id,
+          audience,
+        },
         ...(liveSnapshot
           ? {
               liveWorkspace: {
                 id: liveWorkspaceId,
                 revision: liveRevision,
+                playId: liveSnapshot.playId,
                 publicationToken: liveSnapshot.publicationToken,
               },
             }
@@ -859,52 +1045,29 @@ export function createStudioRoutes(deps: {
         })
       }
       const threadId = r.body.thread.id
-      const resolvedPlayId = r.body.thread.playId ?? playId
-      if (publicationProject && retained(publicationProject) && resolvedPlayId !== playId) {
-        try {
-          const canonical = await callStudioPublication(
-            { operation: 'get', playId: resolvedPlayId, owner },
-            req.signal,
-          )
-          // A legacy deduplicated post can predate compiled Pro publications.
-          // Preserve an existing canonical revision; only migrate a missing one.
-          assertCanonicalPublication(publicationProject, canonical)
-          if (!isStudioPublication(canonical))
-            await publishRevision({
-              project: publicationProject,
-              source: projectBytes.toString('utf8'),
-              playId: resolvedPlayId,
-              owner,
-              requestId: clientIdempotencyKey,
-              expectedVersion: 0,
-              parentOrigin: new URL(req.url).origin,
-              signal: req.signal,
-              context: liveSnapshot
-                ? { kind: 'live', workspaceId: liveWorkspaceId, revision: liveRevision }
-                : { kind: 'free' },
-            })
-          await r2PutObjectPrivate({
-            key: PLAY_KEY(resolvedPlayId),
-            body: projectBytes,
-            contentType: 'application/json',
-          })
-        } catch (error) {
-          return publicationError(error)
+      const resolvedPlayId = r.body.thread.playId
+      if (resolvedPlayId !== playId)
+        return NextResponse.json(
+          { error: { code: 'PUBLICATION_RESERVATION_MISMATCH' } },
+          { status: 502 },
+        )
+      if (uploadedCoverKey) {
+        if (r.body.deduped) {
+          try {
+            await retireStudioPublicationCover(uploadedCoverKey)
+            await acknowledgeStudioCoverCandidate(audience, playId, uploadedCoverKey)
+          } catch {
+            // The durable intent retries after checking the Hub's canonical cover.
+          }
+        } else if (
+          r.body.thread.status === 'visible' &&
+          r.body.thread.coverImageUrl === coverImageUrl
+        ) {
+          await commitStudioCoverCandidate(audience, playId, uploadedCoverKey).catch(() => {})
         }
       }
-      if (liveSnapshot && !retained(publicationProject) && resolvedPlayId !== playId) {
-        // Older attempts used random IDs. Hub identifies the canonical object
-        // for this same author/workspace/revision/key: restore it before success.
-        try {
-          await r2PutObjectPrivate({
-            key: PLAY_KEY(resolvedPlayId),
-            body: projectBytes,
-            contentType: 'application/json',
-          })
-        } catch (error) {
-          return mediaErrorResponse(error)
-        }
-        await r2DeleteObjectPrivate(PLAY_KEY(playId)).catch(() => {})
+      if (r.body.thread.status !== 'visible') {
+        return NextResponse.json({ error: { code: 'SHOWCASE_NOT_VISIBLE' } }, { status: 409 })
       }
       return NextResponse.json(
         {
@@ -946,7 +1109,10 @@ export function createStudioRoutes(deps: {
       try {
         const obj = await r2GetObjectPrivate(PLAY_KEY(id))
         const bytes = await bufferFromStream(obj.body, PROJECT_MAX_BYTES)
-        let project = await prepareEditableStudioProject(JSON.parse(bytes.toString('utf-8')))
+        const raw: unknown = JSON.parse(bytes.toString('utf-8'))
+        if (isRetiredStudioPublicationSnapshot(raw))
+          return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+        let project = await prepareEditableStudioProject(raw)
         let compiledUrl: string | undefined
         let compiledRevision: string | undefined
         let pythonRevision: string | undefined
@@ -1004,6 +1170,16 @@ export function createStudioRoutes(deps: {
         return new NextResponse(JSON.stringify(project), { status: 200, headers })
       } catch (error) {
         if (error instanceof StudioPublicationError) return publicationError(error)
+        if (error instanceof PrivateObjectNotFoundError)
+          return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+        if (
+          error instanceof PrivateObjectUnavailableError ||
+          error instanceof MediaNotConfiguredError
+        )
+          return NextResponse.json(
+            { error: { code: 'SERVICE_UNAVAILABLE' } },
+            { status: 503, headers: { 'Retry-After': '5' } },
+          )
         if (error instanceof ProjectDocumentError)
           return NextResponse.json(
             {
@@ -1014,8 +1190,10 @@ export function createStudioRoutes(deps: {
             },
             { status: 409 },
           )
-        // Erro = inexistente/inacessível (404), não vaza detalhe.
-        return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+        // JSON corrompido não pode ser entregue como projeto jogável.
+        if (error instanceof SyntaxError)
+          return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+        return mediaErrorResponse(error)
       }
     },
   }
@@ -1039,32 +1217,87 @@ export function createStudioRoutes(deps: {
       if (!verifyCleanupSignature(secret, raw, req.headers.get('x-signature'))) {
         return NextResponse.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
       }
-      let body: { playId?: unknown; coverUrl?: unknown }
+      let body: { playId?: unknown; coverUrl?: unknown; authorId?: unknown }
       try {
         body = JSON.parse(raw)
       } catch {
         return invalid()
       }
       const playId = typeof body.playId === 'string' ? body.playId : ''
-      if (!UUID_RE.test(playId)) return invalid()
+      if (
+        !UUID_RE.test(playId) ||
+        typeof body.authorId !== 'string' ||
+        !UUID_RE.test(body.authorId)
+      )
+        return invalid()
       let intent: Awaited<ReturnType<typeof enqueueStudioPublicationCleanup>>
       try {
-        intent = await enqueueStudioPublicationCleanup(playId.toLowerCase(), body.coverUrl)
+        intent = await enqueueStudioPublicationCleanup(
+          playId.toLowerCase(),
+          body.coverUrl,
+          audience,
+          body.authorId.toLowerCase(),
+        )
       } catch {
         // Hub retries 5xx; never acknowledge cleanup before its intent is durable.
         return NextResponse.json({ error: { code: 'CLEANUP_UNAVAILABLE' } }, { status: 503 })
       }
+      if (intent.alreadyCleaned) return new NextResponse(null, { status: 204 })
       try {
         await performStudioPublicationCleanup(
           intent.playId,
           intent.coverKey,
           AbortSignal.timeout(2500),
           intent.runtime,
+          intent.coverReceiptKey,
+          intent.ownershipKey,
         )
       } catch {
         console.info('[studio-publication] cleanup queued', { playId })
       }
       return new NextResponse(null, { status: 204 })
+    },
+  }
+
+  const studioReservationCleanup = {
+    POST: async (request: Request) => {
+      const secret = getEnv().GATEWAY_HMAC_SECRET
+      if (!secret)
+        return NextResponse.json({ error: { code: 'CLEANUP_UNAVAILABLE' } }, { status: 503 })
+      let raw: string
+      try {
+        raw = request.body ? (await bufferFromStream(request.body, 4096)).toString('utf8') : ''
+      } catch {
+        return invalid()
+      }
+      const deliveryId = request.headers.get('x-delivery-id')
+      if (
+        !verifyReservationCleanupSignature(
+          secret,
+          raw,
+          request.headers.get('x-signature'),
+          deliveryId,
+        )
+      )
+        return NextResponse.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
+      let parsed: ReturnType<typeof StudioReservationRetirementSchema.safeParse>
+      try {
+        parsed = StudioReservationRetirementSchema.safeParse(JSON.parse(raw))
+      } catch {
+        return invalid()
+      }
+      if (
+        !parsed.success ||
+        parsed.data.audience !== audience ||
+        parsed.data.deliveryId !== deliveryId
+      )
+        return invalid()
+      try {
+        await retireStudioReservation(parsed.data, AbortSignal.timeout(2500))
+        return new NextResponse(null, { status: 204 })
+      } catch {
+        return NextResponse.json({ error: { code: 'CLEANUP_UNAVAILABLE' } }, { status: 503 })
+      }
     },
   }
 
@@ -1076,9 +1309,27 @@ export function createStudioRoutes(deps: {
       if (!token || supplied.length !== expected.length || !timingSafeEqual(supplied, expected))
         return NextResponse.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
       try {
-        return NextResponse.json(await drainStudioPublicationCleanup(), {
-          headers: { 'Cache-Control': 'no-store' },
-        })
+        const [outbox, reservationsOutbox, publications, reservations, covers] = await Promise.all([
+          hub.drainStudioArtifactCleanups(),
+          hub.drainStudioReservationCleanups(),
+          drainStudioPublicationCleanup(),
+          drainStudioReservationCleanup(),
+          drainStudioCoverCandidates(audience, (playId) => hub.resolveStudioCover(playId)),
+        ])
+        if (outbox.status !== 200 || reservationsOutbox.status !== 200)
+          throw new Error('Fila de limpeza do Hub indisponível.')
+        return NextResponse.json(
+          {
+            outbox: outbox.body,
+            reservationsOutbox: reservationsOutbox.body,
+            publications,
+            reservations,
+            covers,
+          },
+          {
+            headers: { 'Cache-Control': 'no-store' },
+          },
+        )
       } catch {
         return NextResponse.json({ error: { code: 'CLEANUP_UNAVAILABLE' } }, { status: 503 })
       }
@@ -1180,7 +1431,7 @@ export function createStudioRoutes(deps: {
               owner,
               requestId: input.requestId,
               expectedVersion: input.expectedVersion,
-              parentOrigin: new URL(request.url).origin,
+              parentOrigin: publicationParentOrigin(request),
               signal: request.signal,
               context: { kind: 'free' },
             }),
@@ -1202,6 +1453,7 @@ export function createStudioRoutes(deps: {
     studioPublishStandalone,
     studioPlay,
     studioCleanup,
+    studioReservationCleanup,
     studioPublicationAuthorize,
     studioPublicationCleanup,
     studioPublication,

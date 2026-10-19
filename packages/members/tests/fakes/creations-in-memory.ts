@@ -6,6 +6,7 @@ import {
   type CreationSummary,
   type CreationTool,
   emptyCountByTool,
+  isStudioFormatTool,
 } from '../../src/domain/creations/creation'
 import {
   classifyPintaPaletteLibraryCreation,
@@ -256,6 +257,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     storageRef: string
     uploadedParts?: readonly string[]
     verifiedPartHashes?: readonly string[]
+    verifiedFormatVersion?: number
     now: Date
     limits: CreationUploadInput['limits']
   }): Promise<CreationCommitResult> {
@@ -264,9 +266,16 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     if (!existing) return { ok: false }
     // Idempotente MESMO com outra reserva em voo (igual ao Drizzle).
     if (existing.revision === input.revision && existing.storageRef) {
+      if (isStudioFormatTool(input.tool) && input.verifiedFormatVersion !== existing.formatVersion)
+        return { ok: false, reason: 'manifest-mismatch' }
       return { ok: true, alreadyCommitted: true, previousStorageRef: null, releasedPartRefs: [] }
     }
     if (!existing.pending || existing.pending.revision !== input.revision) return { ok: false }
+    if (
+      isStudioFormatTool(input.tool) &&
+      input.verifiedFormatVersion !== existing.pending.formatVersion
+    )
+      return { ok: false, reason: 'manifest-mismatch' }
     if (existing.pending.formatVersion < existing.formatVersion) {
       this.rows.set(k, { ...existing, pending: null })
       return { ok: false, reason: 'client-outdated', requiredVersion: existing.formatVersion }

@@ -64,6 +64,10 @@ import { GrantEntitlementService } from './application/grant-entitlement/grant-e
 import { GrantManualEntitlementService } from './application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { HelpService } from './application/help/help.service'
 import { IssueCertificateService } from './application/issue-certificate/issue-certificate.service'
+import { KidsJourneyConfigurationService } from './application/kids-journey/kids-journey-configuration.service'
+import { KidsJourneyProfilesService } from './application/kids-journey/kids-journey-profiles.service'
+import { KidsJourneyQueryService } from './application/kids-journey/kids-journey-query.service'
+import { KidsProfileAdmissionService } from './application/kids-journey/kids-profile-admission.service'
 import { LearningService } from './application/learning/learning.service'
 import { LearningImportService } from './application/learning/learning-import.service'
 import { SectionProgressionService } from './application/learning/section-progression.service'
@@ -161,6 +165,7 @@ import {
   DrizzleHelpCollectionRepository,
   DrizzleHelpTutorialRepository,
 } from './infrastructure/persistence/drizzle/help.repository'
+import { DrizzleKidsJourneyRepository } from './infrastructure/persistence/drizzle/kids-journey.repository'
 import { DrizzleLearningRepository } from './infrastructure/persistence/drizzle/learning.repository'
 import { DrizzleLessonDraftRepository } from './infrastructure/persistence/drizzle/lesson-draft.repository'
 import { DrizzleLiveRepository } from './infrastructure/persistence/drizzle/live.repository'
@@ -266,9 +271,9 @@ export async function createApplication(env: Env): Promise<Application> {
   const clock = () => new Date()
 
   // Adapters
-  const learningRepository = new DrizzleLearningRepository(db)
+  const learningRepository = new DrizzleLearningRepository(db, studioAuthoringPolicy)
   const courses = new DrizzleCourseRepository(db)
-  const content = new DrizzleContentAdminRepository(db)
+  const content = new DrizzleContentAdminRepository(db, studioAuthoringPolicy)
   const entitlements = new DrizzleEntitlementRepository(db)
   const progress = new DrizzleProgressRepository(db)
   const positions = new DrizzleVideoPositionRepository(db)
@@ -308,10 +313,14 @@ export async function createApplication(env: Env): Promise<Application> {
   // Casos de uso do aluno
   // Curso AO VIVO (14/10/2026): a aula abre pela vaga na turma (grants das oficinas).
   const liveLessonAccess = new DrizzleLiveLessonAccessRepository(db)
+  const kidsJourneyRepo = new DrizzleKidsJourneyRepository(db)
+  const kidsJourneyConfiguration = new KidsJourneyConfigurationService(kidsJourneyRepo)
+  const kidsJourneyQuery = new KidsJourneyQueryService(kidsJourneyRepo)
+  const kidsJourneyProfiles = new KidsJourneyProfilesService(kidsJourneyRepo, kidsJourneyQuery)
   const checkAccess = new CheckAccessService(
     courses,
     entitlements,
-    gamificationRepo,
+    kidsJourneyQuery,
     clock,
     liveLessonAccess,
   )
@@ -322,9 +331,16 @@ export async function createApplication(env: Env): Promise<Application> {
     courses,
     clock,
   )
+  const kidsProfileAdmission = new KidsProfileAdmissionService(kidsJourneyRepo)
   const studioUnlockRepo = new DrizzleStudioUnlockRepository(db)
   const authorizeFreeRuntime = new AuthorizeFreeRuntimeService(
-    new FreeStudioAccessService(accessCheck, gamificationRepo, studioUnlockRepo, adultJourney),
+    new FreeStudioAccessService(
+      accessCheck,
+      gamificationRepo,
+      studioUnlockRepo,
+      kidsJourneyQuery,
+      adultJourney,
+    ),
     studioRuntimePolicy,
     studioAuthoringPolicy,
   )
@@ -433,6 +449,7 @@ export async function createApplication(env: Env): Promise<Application> {
     accessCheck,
     learningRepository,
     clock,
+    kidsJourneyProfiles,
     hub,
   )
 
@@ -544,8 +561,15 @@ export async function createApplication(env: Env): Promise<Application> {
     positions,
     gamificationRepo,
     clock,
+    kidsJourneyQuery,
   )
-  const listCatalog = new ListCatalogService(courses, entitlements, gamificationRepo, clock)
+  const listCatalog = new ListCatalogService(
+    courses,
+    entitlements,
+    gamificationRepo,
+    clock,
+    kidsJourneyQuery,
+  )
   const getMyCourse = new GetMyCourseService(
     checkAccess,
     courses,
@@ -743,9 +767,19 @@ export async function createApplication(env: Env): Promise<Application> {
   liveRewardsImpl = new LiveRewardsService(awardGamification)
   const adultProfileRepository = new DrizzleAdultProfileRepository(db)
   const adultProfile = new AdultProfileService(adultProfileRepository, clock)
-  const getGamification = new GetGamificationService(gamificationRepo, clock, adultJourney)
+  const getGamification = new GetGamificationService(
+    gamificationRepo,
+    clock,
+    kidsJourneyQuery,
+    kidsJourneyProfiles,
+    adultJourney,
+  )
   const getAvatar = new GetAvatarService(avatarRepo, gamificationRepo)
-  const getAvatarsByProfiles = new GetAvatarsByProfilesService(avatarRepo, gamificationRepo)
+  const getAvatarsByProfiles = new GetAvatarsByProfilesService(
+    avatarRepo,
+    gamificationRepo,
+    kidsJourneyProfiles,
+  )
   const ranking = new ListRankingService(gamificationRepo, getAvatarsByProfiles, clock)
   const getRankingLeaderboard = new GetRankingLeaderboardService(
     gamificationRepo,
@@ -772,6 +806,7 @@ export async function createApplication(env: Env): Promise<Application> {
     roomRepo,
     hub,
     clock,
+    kidsJourneyProfiles,
     adultProfileRepository,
     adultJourney,
   )
@@ -785,6 +820,7 @@ export async function createApplication(env: Env): Promise<Application> {
     accessCheck,
     clock,
     listMyCourses,
+    kidsJourneyQuery,
     liveLessonAccess,
     adultJourney,
     hub,
@@ -990,6 +1026,7 @@ export async function createApplication(env: Env): Promise<Application> {
     gamificationRepo,
     studioSubmissions,
     clock,
+    kidsJourneyProfiles,
   )
   const getMemberActivity = new GetMemberActivityService(
     progress,
@@ -1169,6 +1206,14 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
     },
     adultProfiles: { service: adultProfile, internalToken: env.INTERNAL_API_TOKEN },
+    kidsJourney: {
+      service: kidsJourneyConfiguration,
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
+    kidsProfileAdmission: {
+      service: kidsProfileAdmission,
+      admissionToken: env.MEMBERS_PROFILE_ADMISSION_TOKEN,
+    },
     adultJourney: {
       service: adultJourney,
       profiles: adultProfile,

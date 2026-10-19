@@ -1,40 +1,38 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, test as bunTest } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { PurgeUserDataService } from '../../src/application/admin/purge-user-data/purge-user-data.service'
 import { InvalidStateTransitionError } from '../../src/domain/shared/errors'
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
+import { DrizzleKidsJourneyRepository } from '../../src/infrastructure/persistence/drizzle/kids-journey.repository'
 import { DrizzlePensaProjectRepository } from '../../src/infrastructure/persistence/drizzle/pensa-project.repository'
 import { DrizzleUserDataPurgeRepository } from '../../src/infrastructure/persistence/drizzle/user-data-purge.repository'
-import { openPensaTestDatabase } from './pensa-native-database'
-import { prepareTestDatabase } from './test-database'
+import { kidsJourneyTestTarget, OwnedKidsJourneyTestWork, openKidsJourneyTestDatabase } from './kids-journey-database'
 
-const testDatabaseUrl = await prepareTestDatabase()
-if (!testDatabaseUrl) {
-  console.warn('[tests/db] Postgres indisponível (porta 5433?) — teste de purga PULADO.')
-}
+const target = process.env.KIDS_JOURNEY_PURGE_TEST_DATABASE_URL
+if (target !== undefined) kidsJourneyTestTarget(target) // Invalid explicit targets fail, never skip/fallback.
 
-describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real', () => {
+describe.skipIf(!target)('Purga de dados do usuário no Postgres real', () => {
   let conn: DbConnection
+  const ownedWork = new OwnedKidsJourneyTestWork()
+  function test(name: string, operation: () => Promise<void>) {
+    bunTest(name, () => ownedWork.track(operation))
+  }
 
-  beforeAll(async () => {
-    if (!testDatabaseUrl) throw new Error('The PostgreSQL test target is missing')
-    const target = new URL(testDatabaseUrl)
-    target.pathname = '/pensa_account_purge_test'
-    conn = await openPensaTestDatabase('pensa_account_purge_test', false, target.toString())
-  }, 60_000)
-
-  afterAll(async () => {
-    await conn?.close()
-  })
-
-  beforeEach(async () => {
-    // Isolated database with the real schema: new purge dependencies cannot be hidden
-    // by partial handwritten tables or by whichever shared test happened to run first.
+  beforeAll(() => ownedWork.track(async () => {
+    // Additive real migration history in an explicit owned DB. Never DROP, FORCE or port fallback.
+    conn = await openKidsJourneyTestDatabase(target!)
+    // One initial owned reset belongs to bootstrap. Every case uses new account/profile UUIDs;
+    // all subsequent checks are owner-scoped, and no singleton/configuration is reused.
     const tables = await conn.sql<{ name: string }[]>`
       select format('%I.%I', schemaname, tablename) as name
       from pg_tables where schemaname = 'members'
     `
     await conn.sql.unsafe(`truncate table ${tables.map((table) => table.name).join(', ')} cascade`)
+  }), 60_000)
+
+  afterAll(async () => {
+    await ownedWork.drain()
+    await conn?.close()
   })
 
   async function addEntitlement(accountId: string, id = randomUUID()) {
@@ -72,7 +70,26 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     const profileId = randomUUID()
     const entitlementId = randomUUID()
 
+    const kids = new DrizzleKidsJourneyRepository(conn.db)
+    await kids.initializeSeed()
+    const preparation = (await kids.createSeedPreparation())!
+    const authOwners = [
+      { userId: profileId, accountId },
+      { userId: randomUUID(), accountId }, // A child omitted from purge.userIds is still account-owned.
+    ].sort((a, b) => a.userId.localeCompare(b.userId))
+    await kids.startSeedOwnerCapture(preparation.id, authOwners.at(-1)!.userId)
+    let authCursor: string | null = null
+    for (const owner of authOwners) {
+      await kids.appendSeedOwner({
+        preparationId: preparation.id,
+        expectedCursor: authCursor,
+        owner,
+      })
+      authCursor = owner.userId
+    }
     await addEntitlement(accountId, entitlementId)
+    await conn.sql`insert into members.kids_journey_earned(user_id,account_id,level,capabilities,policy_version,updated_at)
+      values (${profileId},${accountId},'coder','["studio","pinta"]'::jsonb,0,now())`
     await conn.sql`
       insert into members.teacher_threads
         (id, user_id, account_id, audience, context_type, last_message_at, created_at)
@@ -110,6 +127,8 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     })
 
     const tables = [
+      'kids_journey_earned',
+      'kids_journey_preparation_owners',
       'lesson_section_progress',
       'creations',
       'teacher_threads',

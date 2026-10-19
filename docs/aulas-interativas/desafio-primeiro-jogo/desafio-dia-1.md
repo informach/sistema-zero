@@ -1,5 +1,8 @@
 # A Chave do Farol · Dia 1 · O personagem ganha movimento
 
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. andar: entrada sem movimento e solução que anda sem borda. borda: entrada que já anda e solução com limite. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
+
+
 ## Resumo
 
 - Estado de entrada: primeiro contato com a aventura. No projeto, cenário, sprites, desenho por quadro e comportamento do barco preparados; sem controles nem movimento.
@@ -54,7 +57,7 @@ As falas estão aplicadas aos documentos; gravação, edição e publicação de
 
 O tour foi retirado. O contexto inicial permanece: anunciar **A Chave do Farol**, situar o barco e o farol apagado e convidar a jogar, sem mostrar o trajeto resolvido. A ajuda inclui `plataforma-baixar-materiais` e identifica o Como Fazer como área de ajuda. Nenhum mapa foi acrescentado como material.
 
-Os antigos vídeos `video-d1-chegada` e `video-d1-movimento` permanecem aposentados, com o contexto necessário incorporado à montagem. O review encontrou “sprite” no nome do bloco antes da definição; a explicação agora vem primeiro, também no caderno. O seletor de borda não tem campo ctx, e as instruções correspondem ao bloco atual. A velocidade permanece em 3; não há experiência nem montagem para escolher outro valor. Movimento e limite ficam dentro de **A cada quadro do jogo**.
+Os antigos vídeos `video-d1-chegada` e `video-d1-movimento` permanecem aposentados, com o contexto necessário incorporado à montagem. O review encontrou “sprite” no nome do bloco antes da definição; a explicação agora vem primeiro, também no caderno. O seletor de borda não tem campo ctx, e as instruções correspondem ao bloco atual. A velocidade 3 é o valor da demonstração; a magnitude pode variar, desde que o personagem se mova na direção pedida. Não há experiência nem montagem dedicada a comparar velocidades. Movimento e limite ficam dentro de **A cada quadro do jogo**.
 
 ## Proposta final
 
@@ -150,7 +153,7 @@ Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstra�
 
 Preservar as seções `apresentacao`, `caderno` e `borda` (agora a última, com a entrega), a chave `materiais-farol`, a chave `projeto` e a cadeia `desafio-primeiro-jogo`. Preservar também `quadro`, `andar` e `limite`. Retirar somente `tanto` e `velocidade`, com seus blocos aposentados explicitamente, sem apagar o progresso anterior. A pessoa programa as regras de movimento, não a arte nem o barco preparado.
 
-Valores finais: controles com as quatro direções, personagem, velocidade 3 e movimento antes do limite de tela. O Dia 2 assume esse trabalho enviado; a retomada preparada só é alternativa quando não há envio anterior.
+Valores da demonstração: controles com as quatro direções, personagem, velocidade 3 e movimento antes do limite de tela. A magnitude pode variar, desde que respeite a direção pedida; zero não demonstra movimento. O Dia 2 assume esse trabalho enviado; a retomada preparada só é alternativa quando não há envio anterior.
 
 No Admin, a aula antiga `boas-vindas` sai do curso sem apagar progresso nem certificados; ver [Atualização de aulas existentes](../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md#atualização-de-aulas-existentes). Anexar o PDF antes de gravar a seção 2. Os links do Como Fazer abrem na mesma aba e voltam para a aula.
 

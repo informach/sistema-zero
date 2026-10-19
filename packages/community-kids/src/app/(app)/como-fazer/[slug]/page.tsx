@@ -67,9 +67,7 @@ export default async function TutorialPage({
       label: publicados.get(relatedSlug) ?? relatedSlug,
       href: `/como-fazer/${encodeURIComponent(relatedSlug)}`,
     }))
-  const toolState = tutorial.toolRef
-    ? (tools?.tools.find((t) => t.id === tutorial.toolRef)?.state ?? null)
-    : null
+  const tool = tutorial.toolRef ? tools?.tools.find((t) => t.id === tutorial.toolRef) : null
   const colecao = (colecoesRes?.body?.collections ?? []).find((c) => c.id === tutorial.collectionId)
   const Icon = HELP_COLLECTION_ICON[colecao?.icon ?? 'book'] ?? HELP_COLLECTION_ICON.book
   const watermark = session?.id ? `Perfil ${session.id.slice(0, 8)}` : null
@@ -85,7 +83,7 @@ export default async function TutorialPage({
         />
         {tutorial.toolRef ? (
           <div className="mt-5">
-            <HelpToolNotice tool={tutorial.toolRef} state={toolState} />
+            <HelpToolNotice tool={tutorial.toolRef} state={tool?.state ?? null} requiredLevel={tool?.requiredLevel} studioCurriculum={tool?.studioCurriculum} />
           </div>
         ) : null}
       </KidsBand>

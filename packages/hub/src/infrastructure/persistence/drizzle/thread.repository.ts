@@ -1,5 +1,15 @@
+import { randomUUID } from 'node:crypto'
 import { and, asc, desc, eq, gte, inArray, lt, max, or, type SQL, sql } from 'drizzle-orm'
-import { DuplicateSlugError } from '../../../domain/hub-errors'
+import {
+  ConcurrencyConflictError,
+  DuplicateSlugError,
+  PostingNotAllowedError,
+} from '../../../domain/hub-errors'
+import { studioPublicationEventAt } from '../../../domain/ports/studio-event-repository.port'
+import type {
+  StudioReservationInput,
+  StudioReservationOutcome,
+} from '../../../domain/ports/studio-reservation-repository.port'
 import type {
   AuthorActivity,
   CreateCommentInput,
@@ -13,13 +23,37 @@ import type { Comment, Thread } from '../../../domain/thread/thread'
 import type { Database } from './db'
 import { isUniqueViolation } from './pg-errors'
 import {
+  accountDeletionFences,
   attachments,
   type CommentRow,
+  channels,
   comments,
   showcaseDeliveries,
+  spaces,
+  studioArtifactCleanups,
+  studioPublicationEvents,
+  studioPublicationReservations,
   type ThreadRow,
   threads,
 } from './schema'
+
+type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
+
+export async function lockStudioAccount(tx: Transaction, accountId: string) {
+  await tx.execute(
+    sql`select pg_advisory_xact_lock(hashtextextended(${`hub-studio-account:${accountId}`}, 0))`,
+  )
+}
+
+async function assertStudioAccount(tx: Transaction, accountId: string) {
+  await lockStudioAccount(tx, accountId)
+  const [fence] = await tx
+    .select()
+    .from(accountDeletionFences)
+    .where(eq(accountDeletionFences.accountId, accountId))
+    .limit(1)
+  if (fence) throw new PostingNotAllowedError('Conta em exclusão')
+}
 
 const toThread = (r: ThreadRow): Thread => ({
   id: r.id,
@@ -133,59 +167,249 @@ export class DrizzleThreadRepository implements ThreadRepository {
     input: CreateShowcaseThreadInput,
   ): Promise<{ thread: Thread; deduped: boolean }> {
     return this.db.transaction(async (tx) => {
-      // Idempotente pela chave: dois publish concorrentes (duplo-clique/re-conclusão)
-      // → só um insere; o outro recupera o existente. NASCE `visible` (aparece na hora).
-      const inserted = await tx
-        .insert(threads)
-        .values({
-          id: input.id,
-          version: 0,
-          channelId: input.channelId,
-          authorId: input.authorId,
-          authorAccountId: input.authorAccountId ?? null,
-          title: input.title,
-          slug: input.slug,
-          body: input.body,
-          isPinned: false,
-          isLocked: false,
-          status: 'visible',
-          commentCount: 0,
-          isShowcase: true,
-          authorDisplayName: input.authorDisplayName,
-          authorPublic: input.authorPublic,
-          coverImageUrl: input.coverImageUrl,
-          playId: input.playId,
-          challengeKey: input.challengeKey ?? null,
-          studioMeta: input.studioMeta ?? null,
-          showcaseIdempotencyKey: input.idempotencyKey,
-          lastActivityAt: input.now,
-          createdAt: input.now,
-          editedAt: null,
-        })
-        .onConflictDoNothing({ target: threads.showcaseIdempotencyKey })
-        .returning()
-      // Conflito na chave → já publicado; devolve o original.
-      const existing =
-        inserted[0] ??
-        (
-          await tx
-            .select()
-            .from(threads)
-            .where(eq(threads.showcaseIdempotencyKey, input.idempotencyKey))
-            .limit(1)
-        )[0]
-      if (!existing) throw new Error('Showcase transaction did not resolve a thread')
-      if (input.coursePublication) {
+      return this.createShowcaseInTransaction(tx, input)
+    })
+  }
+
+  private async createShowcaseInTransaction(tx: Transaction, input: CreateShowcaseThreadInput) {
+    // Idempotente pela chave: dois publish concorrentes (duplo-clique/re-conclusão)
+    // → só um insere; o outro recupera o existente. NASCE `visible` (aparece na hora).
+    const inserted = await tx
+      .insert(threads)
+      .values({
+        id: input.id,
+        version: 0,
+        channelId: input.channelId,
+        authorId: input.authorId,
+        authorAccountId: input.authorAccountId ?? null,
+        title: input.title,
+        slug: input.slug,
+        body: input.body,
+        isPinned: false,
+        isLocked: false,
+        status: 'visible',
+        commentCount: 0,
+        isShowcase: true,
+        authorDisplayName: input.authorDisplayName,
+        authorPublic: input.authorPublic,
+        coverImageUrl: input.coverImageUrl,
+        playId: input.playId,
+        challengeKey: input.challengeKey ?? null,
+        studioMeta: input.studioMeta ?? null,
+        showcaseIdempotencyKey: input.idempotencyKey,
+        lastActivityAt: input.now,
+        createdAt: input.now,
+        editedAt: null,
+      })
+      .onConflictDoNothing({ target: threads.showcaseIdempotencyKey })
+      .returning()
+    // Conflito na chave → já publicado; devolve o original.
+    const existing =
+      inserted[0] ??
+      (
         await tx
-          .insert(showcaseDeliveries)
-          .values({
+          .select()
+          .from(threads)
+          .where(eq(threads.showcaseIdempotencyKey, input.idempotencyKey))
+          .limit(1)
+      )[0]
+    if (!existing) throw new Error('Showcase transaction did not resolve a thread')
+    if (input.coursePublication) {
+      await tx
+        .insert(showcaseDeliveries)
+        .values({
+          threadId: existing.id,
+          ...input.coursePublication,
+          nextAttemptAt: input.now,
+        })
+        .onConflictDoNothing({ target: showcaseDeliveries.threadId })
+    }
+    return { thread: toThread(existing), deduped: inserted.length === 0 }
+  }
+
+  async prepareStudioPublication(input: StudioReservationInput): Promise<StudioReservationOutcome> {
+    const captured = structuredClone(input)
+    try {
+      return await this.db.transaction(async (tx) => {
+        await assertStudioAccount(tx, captured.accountId)
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended(${`hub-studio-key:${captured.idempotencyKey}`}, 0))`,
+        )
+        const [saved] = await tx
+          .select()
+          .from(studioPublicationReservations)
+          .where(
+            or(
+              eq(studioPublicationReservations.scopeKey, captured.scopeKey),
+              eq(studioPublicationReservations.idempotencyKey, captured.idempotencyKey),
+            ),
+          )
+          .for('update')
+        if (saved) {
+          if (
+            saved.authorId !== captured.authorId ||
+            (saved.accountId !== null && saved.accountId !== captured.accountId) ||
+            saved.audience !== captured.audience
+          )
+            throw new PostingNotAllowedError('Reserva pertence a outro autor')
+          if (saved.phase !== 'reserved') {
+            const [thread] = saved.threadId
+              ? await tx.select().from(threads).where(eq(threads.id, saved.threadId)).limit(1)
+              : []
+            if (
+              saved.phase === 'retired' ||
+              !thread ||
+              thread.status === 'deleted' ||
+              thread.status === 'rejected'
+            )
+              return {
+                state: 'retired',
+                playId: saved.playId,
+                thread: thread ? toThread(thread) : null,
+              }
+            return { state: 'finalized', thread: toThread(thread), deduped: true }
+          }
+          if (
+            saved.scopeKey !== captured.scopeKey ||
+            saved.idempotencyKey !== captured.idempotencyKey ||
+            saved.semanticHash !== captured.semanticHash ||
+            saved.snapshotHash !== captured.snapshotHash ||
+            saved.context !== captured.context ||
+            (captured.livePlayId && saved.playId !== captured.livePlayId)
+          )
+            throw new ConcurrencyConflictError()
+          return {
+            state: 'reserved',
+            reservationId: saved.id,
+            playId: saved.playId,
+            snapshotHash: captured.snapshotHash,
+          }
+        }
+        // Existing posts are references only; they are not evidence of artifact ownership.
+        const [existing] = await tx
+          .select()
+          .from(threads)
+          .where(eq(threads.showcaseIdempotencyKey, captured.idempotencyKey))
+          .limit(1)
+        if (existing) {
+          if (existing.authorId !== captured.authorId)
+            throw new PostingNotAllowedError('Autor divergente')
+          if (!existing.playId) throw new ConcurrencyConflictError()
+          const retired = existing.status === 'deleted' || existing.status === 'rejected'
+          await tx.insert(studioPublicationReservations).values({
+            id: captured.id,
+            idempotencyKey: captured.idempotencyKey,
+            playId: existing.playId,
+            authorId: captured.authorId,
+            accountId: null,
+            audience: captured.audience,
+            phase: retired ? 'retired' : 'finalized',
             threadId: existing.id,
-            ...input.coursePublication,
-            nextAttemptAt: input.now,
+            createdAt: captured.now,
+            updatedAt: captured.now,
           })
-          .onConflictDoNothing({ target: showcaseDeliveries.threadId })
+          return retired
+            ? { state: 'retired', playId: existing.playId, thread: toThread(existing) }
+            : { state: 'finalized', thread: toThread(existing), deduped: true }
+        }
+        const playId = captured.livePlayId ?? randomUUID()
+        // Live IDs come from a signed Members claim, but cannot alias another post/reservation.
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended(${`hub-studio-play:${playId}`}, 0))`,
+        )
+        const [playThread] = await tx
+          .select({ id: threads.id })
+          .from(threads)
+          .where(eq(threads.playId, playId))
+          .limit(1)
+        const [playReservation] = await tx
+          .select({ id: studioPublicationReservations.id })
+          .from(studioPublicationReservations)
+          .where(eq(studioPublicationReservations.playId, playId))
+          .limit(1)
+        if (playThread || playReservation) throw new ConcurrencyConflictError()
+        await tx.insert(studioPublicationReservations).values({
+          id: captured.id,
+          scopeKey: captured.scopeKey,
+          idempotencyKey: captured.idempotencyKey,
+          playId,
+          authorId: captured.authorId,
+          accountId: captured.accountId,
+          audience: captured.audience,
+          context: captured.context,
+          semanticHash: captured.semanticHash,
+          snapshotHash: captured.snapshotHash,
+          phase: 'reserved',
+          createdAt: captured.now,
+          updatedAt: captured.now,
+        })
+        return {
+          state: 'reserved',
+          reservationId: captured.id,
+          playId,
+          snapshotHash: captured.snapshotHash,
+        }
+      })
+    } catch (error) {
+      if (isUniqueViolation(error)) throw new ConcurrencyConflictError()
+      throw error
+    }
+  }
+
+  async finalizeStudioPublication(
+    reservationId: string,
+    input: StudioReservationInput,
+    thread: CreateShowcaseThreadInput,
+  ) {
+    const captured = structuredClone(input),
+      candidate = structuredClone(thread)
+    return this.db.transaction(async (tx) => {
+      await assertStudioAccount(tx, captured.accountId)
+      const [saved] = await tx
+        .select()
+        .from(studioPublicationReservations)
+        .where(eq(studioPublicationReservations.id, reservationId))
+        .for('update')
+      if (
+        !saved ||
+        saved.authorId !== captured.authorId ||
+        saved.accountId !== captured.accountId ||
+        saved.audience !== captured.audience
+      )
+        throw new PostingNotAllowedError('Reserva inválida')
+      if (
+        saved.scopeKey !== captured.scopeKey ||
+        saved.idempotencyKey !== captured.idempotencyKey ||
+        saved.semanticHash !== captured.semanticHash ||
+        saved.snapshotHash !== captured.snapshotHash ||
+        saved.context !== captured.context ||
+        saved.playId !== candidate.playId
+      )
+        throw new ConcurrencyConflictError()
+      if (saved.phase !== 'reserved') {
+        const [existing] = saved.threadId
+          ? await tx.select().from(threads).where(eq(threads.id, saved.threadId)).limit(1)
+          : []
+        if (!existing) throw new ConcurrencyConflictError()
+        return { thread: toThread(existing), deduped: true }
       }
-      return { thread: toThread(existing), deduped: inserted.length === 0 }
+      const result = await this.createShowcaseInTransaction(tx, candidate)
+      if (result.thread.playId !== saved.playId) throw new ConcurrencyConflictError()
+      for (const event of candidate.studioEvents ?? [])
+        await tx
+          .insert(studioPublicationEvents)
+          .values({
+            eventId: `studio:${result.thread.id}:${event.kind}`,
+            threadId: result.thread.id,
+            event: studioPublicationEventAt(event, result.thread.createdAt.toISOString()),
+            nextAttemptAt: captured.now,
+          })
+          .onConflictDoNothing()
+      await tx
+        .update(studioPublicationReservations)
+        .set({ phase: 'finalized', threadId: result.thread.id, updatedAt: captured.now })
+        .where(eq(studioPublicationReservations.id, saved.id))
+      return result
     })
   }
 
@@ -262,6 +486,41 @@ export class DrizzleThreadRepository implements ThreadRepository {
       authorId: row?.authorId ?? null,
       authorAccountId: row?.authorAccountId ?? null,
       playsCount: row?.playsCount ?? 0,
+    }
+  }
+
+  async showcaseCoverReference(playId: string, audience: 'adult' | 'kids') {
+    const [reservation] = await this.db
+      .select({ phase: studioPublicationReservations.phase })
+      .from(studioPublicationReservations)
+      .where(
+        and(
+          eq(studioPublicationReservations.playId, playId),
+          eq(studioPublicationReservations.audience, audience),
+        ),
+      )
+      .limit(1)
+    if (reservation?.phase === 'reserved')
+      return { status: 'pending' as const, coverImageUrl: null }
+    const [row] = await this.db
+      .select({ status: threads.status, coverImageUrl: threads.coverImageUrl })
+      .from(threads)
+      .where(
+        and(
+          eq(threads.playId, playId),
+          eq(threads.isShowcase, true),
+          sql`exists (
+            select 1 from hub.channels c join hub.spaces s on s.id = c.space_id
+            where c.id = ${threads.channelId} and s.audience = ${audience}
+          )`,
+        ),
+      )
+      .limit(1)
+    if (reservation?.phase === 'retired' && row?.status !== 'deleted' && row?.status !== 'rejected')
+      return { status: 'deleted' as const, coverImageUrl: null }
+    return {
+      status: row?.status ?? (reservation ? ('deleted' as const) : ('absent' as const)),
+      coverImageUrl: row?.coverImageUrl ?? null,
     }
   }
 
@@ -552,20 +811,64 @@ export class DrizzleThreadRepository implements ThreadRepository {
     now: Date,
     bumpActivity = false,
   ): Promise<'updated' | 'not_found' | 'invalid_state'> {
+    const transitionAt = new Date(now.getTime())
+    const allowedStatuses = [...fromStatuses]
     const set: Partial<typeof threads.$inferInsert> = { status }
-    if (bumpActivity) set.lastActivityAt = now
-    const rows = await this.db
-      .update(threads)
-      .set(set)
-      .where(and(eq(threads.id, id), inArray(threads.status, [...fromStatuses])))
-      .returning({ id: threads.id })
-    if (rows.length > 0) return 'updated'
-    const [existing] = await this.db
-      .select({ id: threads.id })
-      .from(threads)
-      .where(eq(threads.id, id))
-      .limit(1)
-    return existing ? 'invalid_state' : 'not_found'
+    if (bumpActivity) set.lastActivityAt = transitionAt
+    return this.db.transaction(async (tx) => {
+      // Finalize and moderation use reservation -> thread order. Never revive a retired ID.
+      const [reservation] = await tx
+        .select()
+        .from(studioPublicationReservations)
+        .where(eq(studioPublicationReservations.threadId, id))
+        .limit(1)
+      if (reservation?.accountId) await lockStudioAccount(tx, reservation.accountId)
+      if (reservation)
+        await tx
+          .select()
+          .from(studioPublicationReservations)
+          .where(eq(studioPublicationReservations.id, reservation.id))
+          .for('update')
+      const [changed] = await tx
+        .update(threads)
+        .set(set)
+        .where(and(eq(threads.id, id), inArray(threads.status, allowedStatuses)))
+        .returning()
+      if (!changed) {
+        const [existing] = await tx
+          .select({ id: threads.id })
+          .from(threads)
+          .where(eq(threads.id, id))
+          .limit(1)
+        return existing ? 'invalid_state' : 'not_found'
+      }
+      if ((status === 'deleted' || status === 'rejected') && changed.isShowcase && changed.playId) {
+        if (reservation)
+          await tx
+            .update(studioPublicationReservations)
+            .set({ phase: 'retired', updatedAt: transitionAt })
+            .where(eq(studioPublicationReservations.id, reservation.id))
+        const [scope] = await tx
+          .select({ audience: spaces.audience })
+          .from(channels)
+          .innerJoin(spaces, eq(channels.spaceId, spaces.id))
+          .where(eq(channels.id, changed.channelId))
+          .limit(1)
+        if (!scope) throw new Error('A vitrine não possui audiência para limpeza.')
+        await tx
+          .insert(studioArtifactCleanups)
+          .values({
+            threadId: changed.id,
+            authorId: changed.authorId,
+            playId: changed.playId,
+            coverUrl: changed.coverImageUrl,
+            audience: scope.audience,
+            nextAttemptAt: transitionAt,
+          })
+          .onConflictDoNothing({ target: studioArtifactCleanups.threadId })
+      }
+      return 'updated'
+    })
   }
 
   async setThreadPinned(id: string, pinned: boolean): Promise<boolean> {

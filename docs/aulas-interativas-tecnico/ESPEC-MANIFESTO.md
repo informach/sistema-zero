@@ -139,14 +139,28 @@ e `installedExtensions`. Use a versão do manifesto da extensão oficial. `chain
 `content`. O mesmo `key` pode ser `workspaceKey` nas seções de construção e aparecer em `blockKeys`
 na seção de entrega.
 
-**Gabarito (`solutionProject`, 18/10/2026):** o projeto pronto da equipe, no mesmo formato do
-`initialProject`, e opcional. Ele nunca chega ao aluno. É ele que prova os objetivos da seção: a
-publicação recusa objetivo obrigatório de estrutura que o gabarito não cumpre, e todo objetivo
-que **roda o jogo** exige o gabarito. O resultado de execução deve ser conferido em **Testar agora**:
-a publicação não executa o jogo nem exige um comprovante desse teste. Reimportar um manifesto SEM `solutionProject` no modo de preservar
-mantém o gabarito que a equipe criou no Admin (a substituição o tira); com ele, o do manifesto vale.
-A prévia avisa. A antiga `activity` do bloco Estúdio
-(auto-correção com nota) saiu em 18/10/2026: não a escreva, porque ela não é mais lida.
+**Exemplos privados por parte (`projectExamples`, 19/10/2026):** o bloco Estúdio carrega
+`{version: 1, examples: {UUID: projeto}, sections: {chaveDaParte: {entryExampleId?, solutionExampleId?}}}`.
+As chaves das partes são portáveis; a importação as converte para as identidades da aula.
+Cada exemplo e cada referência a ele usam um UUID próprio, conservado na importação/exportação.
+A identidade do exemplo é independente do `id` interno do projeto. Dois snapshots podem conservar
+esse id e ter conteúdos diferentes. Reutilizar compartilha um snapshot imutável; editar salva outro.
+
+`entryExampleId` é uma entrada opcional para ensaio. `solutionExampleId` é uma solução possível
+da própria parte, inclusive transitória. Esses projetos são privados. `initialProject` continua como
+projeto inicial e baseline canônico; a entrada para ensaio nunca substitui esse baseline.
+
+A publicação recusa objetivo estrutural obrigatório que a solução configurada não cumpre;
+objetivos de execução exigem solução. **Testar agora** distingue ausência, pendência, erro e resultado
+inconclusivo. Se o projeto inicial já cumpre todos os objetivos de projeto, há aviso agregado;
+isso não conclui vídeo, quiz ou envio. Cor, texto, desenho ou magnitude da velocidade do exemplo
+não vira igualdade obrigatória. Valor exato só cabe quando é a própria condição ensinada.
+
+No modo de preservar, ausência de `projectExamples` conserva o registro existente; presença é fonte
+da verdade, inclusive o registro vazio. No modo de substituir, ausência remove os exemplos. A prévia
+informa os vínculos afetados. `solutionProject` global é antigo: sua conversão é explícita pelo script
+`packages/members/scripts/convert-studio-manifest-examples.ts`. O runtime não herda solução global.
+A antiga `activity` do bloco Estúdio saiu em 18/10/2026; não a escreva.
 
 **Pinta:** `initialAsset` é o desenho inicial completo. Em entregas pela galeria, `initialAsset` é
 `null` e `gallery` informa `minItems` e `maxItems`; a criança escolhe criações da própria galeria.
@@ -333,7 +347,7 @@ servidor em **Verificar esta parte** (até 20; [especificação](../plans/2026-1
   `health`),
   `functionReturns` (`name`, `cases` com `args` e `expected`; no Pro, `module` com o arquivo que
   exporta a função) e `script` (`steps` e `code`, o corpo de uma função que devolve `true`; só Ponte e
-  Pro). Não valem em jogo 3D do modo Blocos. Todos exigem o `solutionProject`.
+  Pro). Não valem em jogo 3D do modo Blocos. Todos exigem a solução privada da própria parte.
 
 Na direção vigente, uma seção com vídeo e atividade nunca conclui por apenas um deles:
 

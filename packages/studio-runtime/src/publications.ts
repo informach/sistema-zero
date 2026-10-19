@@ -589,6 +589,67 @@ export async function purgePublication(
   return { deleted: true as const }
 }
 
+/** Retire an unfinalized reservation without treating a missing pointer as ownership proof. */
+export async function retirePublicationReservation(
+  bucket: PublicationBucket,
+  input: { playId: string; owner: string; snapshotHash: string; retirementHash: string },
+  now = Date.now(),
+) {
+  if (
+    !isStudioPublicationId(input.playId) ||
+    ![input.owner, input.snapshotHash, input.retirementHash].every(isStudioPublicationHash)
+  )
+    throw new PublicationError(400, 'Reserva inválida.')
+  const key = publicationKey(input.playId)
+  const previous = await bucket.get(key)
+  let alreadyRetired = false
+  if (previous) {
+    if (previous.size > 32_768) throw new PublicationError(409, 'Registro de publicação inválido.')
+    const raw = object(JSON.parse(await previous.text()))
+    const storedOwner = raw.owner
+    if (raw.deleted === true && raw.playId === input.playId) {
+      if (typeof raw.deletedAt !== 'number' || !Number.isFinite(raw.deletedAt))
+        throw new PublicationError(409, 'Registro terminal inválido.')
+      if (
+        Object.keys(raw).some(
+          (key) => !['playId', 'deleted', 'deletedAt', 'retirementHash'].includes(key),
+        )
+      )
+        throw new PublicationError(409, 'Registro terminal inválido.')
+      if (raw.retirementHash !== undefined && raw.retirementHash !== input.retirementHash)
+        throw new PublicationError(409, 'A retirada pertence a outra reserva.')
+      alreadyRetired = true
+    } else if (
+      !isStudioPublication(raw) ||
+      raw.playId !== input.playId ||
+      storedOwner !== input.owner ||
+      raw.version !== 1 ||
+      raw.revisions.length !== 1 ||
+      raw.revisions[0]?.sourceHash !== input.snapshotHash
+    ) {
+      throw new PublicationError(409, 'A reserva não comprova a propriedade desta publicação.')
+    }
+  }
+  if (!alreadyRetired) {
+    const written = await bucket.put(
+      key,
+      JSON.stringify({
+        playId: input.playId,
+        deleted: true,
+        deletedAt: now,
+        retirementHash: input.retirementHash,
+      }),
+      { onlyIf: new Headers(previous ? { 'If-Match': previous.etag } : { 'If-None-Match': '*' }) },
+    )
+    if (!written) throw new PublicationError(409, 'A publicação mudou durante a retirada.')
+  }
+  const page = await bucket.list({ prefix: `published/${input.playId}/`, limit: 1000 })
+  if (page.objects.length) await bucket.delete(page.objects.map((file) => file.key))
+  if (page.truncated)
+    throw new PublicationError(409, 'A retirada dos arquivos ainda está em andamento.')
+  return { deleted: true as const }
+}
+
 const GC_CURSOR_KEY = 'maintenance/publications-cursor.json'
 const ORPHAN_GRACE_MS = 48 * 60 * 60 * 1000
 /** One bounded page per cron; retained history is never pruned by age. */
@@ -734,34 +795,50 @@ export async function servePublishedArtifact(
 
 /** The endpoint is configuration, never a URL taken from a project or request. No redirect or cookies. */
 export function createPublicationAuthorizer(
-  endpoint: string | undefined,
+  endpoint: string | readonly string[] | undefined,
   token: string,
   fetchImpl: (url: string, init?: RequestInit) => Promise<Response> = fetch,
 ) {
+  const endpoints = Object.freeze(typeof endpoint === 'string' ? [endpoint] : [...(endpoint ?? [])])
   const pending = new Map<string, Promise<boolean>>()
   return (playId: string): Promise<boolean> => {
-    if (!endpoint || !token || !isStudioPublicationId(playId)) return Promise.resolve(false)
+    if (endpoints.length === 0 || !token || !isStudioPublicationId(playId))
+      return Promise.resolve(false)
     const current = pending.get(playId)
     if (current) return current
     if (pending.size >= 1000) return Promise.resolve(false)
+    const controllers = endpoints.map(() => new AbortController())
     const result = Promise.resolve()
-      .then(async () => {
-        try {
-          const response = await fetchImpl(endpoint, {
-            method: 'POST',
-            redirect: 'error',
-            cache: 'no-store',
-            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ playId }),
-            signal: AbortSignal.timeout(5000),
+      .then(() =>
+        Promise.any(
+          endpoints.map(async (url, index) => {
+            const response = await fetchImpl(url, {
+              method: 'POST',
+              // Workers supports manual/follow; manual keeps the service token on this endpoint.
+              redirect: 'manual',
+              cache: 'no-store',
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ playId }),
+              signal: AbortSignal.any([AbortSignal.timeout(5000), controllers[index]!.signal]),
+            })
+            if (!response.ok) {
+              void response.body?.cancel().catch(() => {})
+              throw new Error('Publication authorization unavailable')
+            }
+            const value = object(await readJsonBodyWithLimit(response, 1024))
+            if (value.visible !== true) throw new Error('Publication is not visible')
+            return true
+          }),
+        )
+          .then((approved) => {
+            for (const controller of controllers) controller.abort()
+            return approved
           })
-          if (!response.ok) return false
-          const value = object(await readJsonBodyWithLimit(response, 1024))
-          return value.visible === true
-        } catch {
-          return false
-        }
-      })
+          .catch(() => false),
+      )
       .finally(() => {
         pending.delete(playId)
       })

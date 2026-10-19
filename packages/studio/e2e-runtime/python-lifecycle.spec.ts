@@ -37,7 +37,13 @@ async function nativeMemory(cdp: CDPSession) {
     workingSetBytes += row.workingSetBytes!
   }
   expect(privateBytes).toBeGreaterThan(0)
-  return { privateBytes, workingSetBytes, processes: rows }
+  // Preserve process attribution from this owned browser's CDP session. Totals and
+  // acceptance budgets remain unchanged; renderer/GPU/browser growth can now be distinguished.
+  const processes = rows.map((row) => ({
+    ...row,
+    type: processInfo.find((process) => process.id === row.id)?.type ?? 'unknown',
+  }))
+  return { privateBytes, workingSetBytes, processes }
 }
 
 test('30 provider cycles release native workers and stabilize retained process memory', async ({

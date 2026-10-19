@@ -1,7 +1,11 @@
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { studioPythonCspOrigins, withStudioPythonCsp } from '@sistemazero/core/studio/runtime-csp'
+import {
+  studioPythonCspOrigins,
+  withStudioPublishedProCsp,
+  withStudioPythonCsp,
+} from '@sistemazero/core/studio/runtime-csp'
 import type { NextConfig } from 'next'
 
 // Raiz do MONOREPO: o file tracing do standalone precisa enxergar o workspace
@@ -215,6 +219,15 @@ const nextConfig: NextConfig = {
       },
       // Rota isolada do modo Código (PRO/WebContainer): CSP relaxada (WASM) + COEP
       // credentialless — escopados AQUI para não vazar p/ as páginas com vídeo.
+      {
+        source: '/jogar/:id',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: withStudioPublishedProCsp(strictCsp, process.env.STUDIO_PRO_RUNTIME_URL, isDev),
+          },
+        ],
+      },
       {
         source: '/estudio/pro/:path*',
         headers: [

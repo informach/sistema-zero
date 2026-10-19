@@ -162,6 +162,20 @@
       "when": 1792148403465,
       "tag": "0022_hard_leo",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792360403764,
+      "tag": "0023_profile_admission_expand",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792360408944,
+      "tag": "0024_profile_admission_pending",
+      "breakpoints": true
     }
   ]
 }

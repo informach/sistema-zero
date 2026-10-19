@@ -16,6 +16,8 @@ const readJson = (r: Response): Promise<any> => r.json()
 function seedKidsAccess(ctx: Ctx, userIds: string[] = [USER]) {
   const course = seedSampleCourse(ctx.courses, 'curso-kids', 'published', 'kids')
   for (const userId of userIds) {
+    // These existing league participants are admitted profiles, including those with no XP.
+    ctx.kidsJourneySnapshots.owners.set(userId, userId)
     grantLifetime(ctx.entitlements, { userId, courseRef: course.slug })
   }
   return course

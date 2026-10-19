@@ -1,10 +1,12 @@
 import { expect, mock, test } from 'bun:test'
+import { initialKidsJourneyPolicy } from '@sistemazero/core/journey'
 import {
   PENSA_ACTOR,
   PENSA_USER,
   pensaContext,
   pensaContextMembers,
   pensaId,
+  pensaKidsJourney,
 } from './pensa-fixtures'
 
 mock.module('server-only', () => ({}))
@@ -16,9 +18,15 @@ test('current capabilities use earned blocks and never borrow the observer staff
   const facts = (await members.pensaTeamCapabilities(PENSA_ACTOR, context.view.project.id)).body
   facts.code.profileId = pensaId(72)
   facts.code.level = 'coder'
+  facts.code.kidsJourney = pensaKidsJourney('coder', ['studio', 'pinta'])
   facts.code.blocks = ['sz_g2d_setup_stage', 'sz_g2d_top_down']
   facts.art = [
-    { profileId: PENSA_ACTOR.profileId, level: 'explorer', access: { pinta: true, molda: true } },
+    {
+      profileId: PENSA_ACTOR.profileId,
+      level: 'explorer',
+      kidsJourney: pensaKidsJourney('explorer', ['studio', 'pinta', 'molda']),
+      access: { pinta: true, molda: true },
+    },
   ]
   members.pensaTeamCapabilities = async () => ({ status: 200, body: facts })
   const actual = await loadPensaContext(
@@ -91,4 +99,130 @@ test('lesson excerpts never enter the model context when current course access c
   expect(actual.sources).toEqual([])
   expect(actual.references.find((reference) => reference.id === pensaId(81))?.href).toBeNull()
   expect(JSON.stringify(actual)).not.toContain('PRIVATE PAID LESSON BODY')
+})
+
+test('Pensa resources and Molda bands follow each participant capabilities rather than fixed ranks', async () => {
+  const context = pensaContext(),
+    members = pensaContextMembers(context)
+  const facts = (await members.pensaTeamCapabilities(PENSA_ACTOR, context.view.project.id)).body
+  facts.code.level = 'noob'
+  facts.code.kidsJourney = pensaKidsJourney('noob', [
+    'studio',
+    'ai',
+    'pensa',
+    'molda',
+    'molda-intermediate',
+  ])
+  facts.code.access.molda = true
+  facts.art = [
+    {
+      profileId: pensaId(72),
+      level: 'god',
+      kidsJourney: pensaKidsJourney('god', []),
+      access: { pinta: true, molda: true },
+    },
+  ]
+  members.pensaTeamCapabilities = async () => ({ status: 200, body: facts })
+  const actual = await loadPensaContext(
+    members,
+    PENSA_USER,
+    PENSA_ACTOR,
+    context.view.project.id,
+    '',
+  )
+  const programmer = actual.capabilities.participants.find(
+    (p) => p.profileId === PENSA_ACTOR.profileId,
+  )
+  expect(programmer).toMatchObject({
+    rank: 'noob',
+    studio: true,
+    tutor: true,
+    molda: true,
+    pinta: false,
+  })
+  expect(programmer?.moldaTools).toContain('model.pieces')
+  expect(programmer?.moldaTools).toContain('animate.batch')
+  expect(programmer?.moldaTools).not.toContain('model.skin')
+  const artist = actual.capabilities.participants.find((p) => p.profileId === pensaId(72))
+  expect(artist).toMatchObject({
+    rank: 'god',
+    studio: false,
+    pinta: false,
+    molda: false,
+    tutor: false,
+    blockIds: [],
+    moldaTools: [],
+  })
+})
+
+test('own team preview keeps full existing resources without creating a learner rank', async () => {
+  const context = pensaContext(),
+    members = pensaContextMembers(context)
+  const actor = { ...PENSA_ACTOR, accountId: PENSA_ACTOR.profileId, privileged: true }
+  const user = {
+    ...PENSA_USER,
+    role: 'staff',
+    activeProfile: undefined,
+    kids: { kind: 'parent' as const, sessionId: pensaId(90), authenticatedAt: 1_700_000_000 },
+  }
+  const facts = (await members.pensaTeamCapabilities(actor, context.view.project.id)).body
+  facts.code.level = null
+  facts.code.kidsJourney = undefined
+  facts.code.kidsPreview = {
+    audience: 'kids',
+    kind: 'staff-preview',
+    mode: 'active',
+    policyVersion: 2,
+    tierAccess: initialKidsJourneyPolicy().tierAccess,
+    capabilities: [
+      'studio',
+      'pro',
+      'bridge',
+      'ai',
+      'pensa',
+      'pinta',
+      'molda',
+      'molda-intermediate',
+      'molda-professional',
+    ],
+    readiness: { status: 'incomplete', horizon: 'noob', issues: [] },
+  }
+  facts.code.blocks = []
+  facts.code.access = { studio: false, pinta: false, molda: false }
+  members.pensaTeamCapabilities = async () => ({ status: 200, body: facts })
+  const actual = await loadPensaContext(members, user, actor, context.view.project.id, '')
+  expect(actual.capabilities.participants[0]).toMatchObject({
+    rank: null,
+    studio: true,
+    pinta: true,
+    molda: true,
+    tutor: true,
+  })
+  expect(actual.capabilities.participants[0]?.blockIds.length).toBeGreaterThan(0)
+  facts.code.profileId = pensaId(72)
+  await expect(loadPensaContext(members, user, actor, context.view.project.id, '')).rejects.toThrow(
+    'jornada',
+  )
+  facts.code.profileId = actor.profileId
+  await expect(
+    loadPensaContext(members, PENSA_USER, actor, context.view.project.id, ''),
+  ).rejects.toThrow('jornada')
+})
+
+test('missing or unavailable participant policy cannot fabricate Noob or empty-resource success', async () => {
+  const context = pensaContext(),
+    members = pensaContextMembers(context)
+  const facts = (await members.pensaTeamCapabilities(PENSA_ACTOR, context.view.project.id)).body
+  facts.code.kidsJourney = undefined
+  members.pensaTeamCapabilities = async () => ({ status: 200, body: facts })
+  await expect(
+    loadPensaContext(members, PENSA_USER, PENSA_ACTOR, context.view.project.id, ''),
+  ).rejects.toThrow('jornada')
+  facts.code.kidsJourney = {
+    ...pensaKidsJourney(),
+    readiness: { status: 'unavailable', horizon: null, issues: [] },
+  }
+  await expect(
+    loadPensaContext(members, PENSA_USER, PENSA_ACTOR, context.view.project.id, ''),
+  ).rejects.toThrow('jornada')
 })

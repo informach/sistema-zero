@@ -12,6 +12,7 @@ import {
 } from '@sistemazero/core/studio/python-language'
 import {
   STUDIO_PYTHON_ANALYSIS_CONTEXT_MAX_BYTES,
+  type StudioPythonAnalysisAuthorization,
   StudioPythonAnalysisAuthorizationSchema,
   studioPythonAnalysisBinding,
 } from '@sistemazero/core/studio/python-language-authorization'
@@ -57,6 +58,8 @@ export function createStudioPythonLanguageRoutes(
   media: Pick<MediaModule, 'requireUploadSession'>,
   options: {
     audience?: 'kids' | 'adult'
+    /** Host-owned boundary. Omitted keeps the Member Shell's existing contextual routes. */
+    contextKinds?: readonly StudioPythonAnalysisAuthorization['context']['kind'][]
     environment?: () => Pick<
       Env,
       'STUDIO_PYTHON_LANGUAGE_URL' | 'STUDIO_PYTHON_LANGUAGE_TOKEN' | 'NODE_ENV'
@@ -104,6 +107,8 @@ export function createStudioPythonLanguageRoutes(
         )
         const input = sessionId && !start ? commandBody.parse(raw) : authorizationBody.parse(raw)
         const authorization = input.authorization
+        if (options.contextKinds && !options.contextKinds.includes(authorization.context.kind))
+          return json({ error: { code: 'ACCESS_DENIED' } }, 403)
         if (
           authorization.context.kind === 'free' &&
           authorization.context.audience !== (options.audience ?? 'kids')
@@ -122,7 +127,9 @@ export function createStudioPythonLanguageRoutes(
           body = JSON.stringify(command)
         } else {
           if (!options.members) return unavailable()
-          const response = await options.members.authorizePythonAnalysis(authorization)
+          const response = await options.members.authorizePythonAnalysis(authorization, {
+            signal: request.signal,
+          })
           if (response.status !== 200) return json(response.body, response.status)
           if (
             !(await validatePythonAnalysisDecision(response.body, authorization, {
@@ -157,6 +164,8 @@ export function createStudioPythonLanguageRoutes(
     }
     async function forward() {
       try {
+        request.signal.throwIfAborted()
+        transport.signal.throwIfAborted()
         const upstream = await (options.request ?? globalThis.fetch)(url, {
           method: request.method,
           headers: {

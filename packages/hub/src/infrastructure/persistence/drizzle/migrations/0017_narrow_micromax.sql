@@ -1,0 +1,1 @@
+ALTER TABLE "hub"."studio_artifact_cleanups" ADD COLUMN "author_id" uuid;

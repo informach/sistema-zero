@@ -9,6 +9,8 @@ import {
   type LessonDraftCommand,
   type LessonDraftDocument,
   type LessonDraftIssue,
+  lessonStudioExampleTransportIssues,
+  lessonStudioProjectExampleIssues,
   restoreFromPublished,
   validateLessonSections,
 } from '@sistemazero/core/learning'
@@ -28,10 +30,7 @@ import {
   NoPublishedLessonError,
   NoShowcaseBlockError,
 } from '../../../domain/course/course.errors'
-import {
-  type LessonBlockContent,
-  MAX_STUDIO_PROJECT_CHARS,
-} from '../../../domain/course/lesson-block'
+import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import { importedLearningId } from '../../../domain/learning/learning-import'
 import { LessonDraftConflictError } from '../../../domain/learning/lesson-draft.errors'
 import { publishedLessonRevisions } from '../../../domain/learning/published-lesson-revisions'
@@ -64,7 +63,9 @@ export type ParsePublishedBlock = (value: unknown) => LessonBlockContent
 const fingerprint = (value: unknown) => createHash('sha256').update(stableJson(value)).digest('hex')
 
 async function publishedSnapshot(tx: Transaction, lessonId: string) {
-  const lesson = await new DrizzleCourseRepository(tx).findLessonWithContent(lessonId)
+  const lesson = await new DrizzleCourseRepository(tx).findLessonWithContent(lessonId, {
+    includePrivateStudioAuthoring: true,
+  })
   if (!lesson) throw new LessonNotFoundError()
   const [structure] = await tx
     .select()
@@ -131,12 +132,14 @@ async function lockDraft(tx: Transaction, lessonId: string) {
     .from(lessons)
     .where(eq(lessons.id, lessonId))
   if (!lesson) throw new LessonNotFoundError()
-  await tx
-    .select({ id: courses.id })
+  const [course] = await tx
+    .select({ id: courses.id, slug: courses.slug })
     .from(courses)
     .where(eq(courses.id, lesson.courseId))
     .for('update')
+  if (!course) throw new LessonNotFoundError()
   await lockLessonStructure(tx, lessonId)
+  return course
 }
 
 async function readDraft(tx: Transaction, lessonId: string): Promise<LessonDraft> {
@@ -247,7 +250,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
     update: (draft: LessonDraft, tx: Transaction) => Promise<LessonDraftDocument>,
   ) {
     return this.db.transaction(async (tx) => {
-      await lockDraft(tx, lessonId)
+      const authoringCourse = await lockDraft(tx, lessonId)
       const draft = await readDraft(tx, lessonId)
       const hash = fingerprint({ authorId, expectedRevision, input })
       const [previous] = await tx
@@ -267,23 +270,13 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       if (draft.revision !== expectedRevision) throw new LessonDraftConflictError()
       const document = await update(draft, tx)
       checkDocumentBounds(document)
+      const [exampleIssue] = lessonStudioProjectExampleIssues(document.sections, document.blocks)
+      if (exampleIssue) throw new ValidationError(exampleIssue.message)
+      const [transportIssue] = lessonStudioExampleTransportIssues(document, authoringCourse.slug)
+      if (transportIssue) throw new ValidationError(transportIssue.message)
       for (const block of document.blocks)
         if (block.content.kind === 'studio') {
           assertCurrentStudioAuthoring(block.content.initialProject)
-          // O gabarito (que pode chegar pelo manifesto) passa pela mesma régua do inicial, com uma
-          // frase que diz que o problema é ELE.
-          const solution = block.content.solutionProject
-          if (solution !== undefined) {
-            try {
-              assertCurrentStudioAuthoring(solution)
-            } catch {
-              throw new ValidationError(
-                'Abra o gabarito do Estúdio no Studio atualizado antes de publicar a aula.',
-              )
-            }
-            if (JSON.stringify(solution).length > MAX_STUDIO_PROJECT_CHARS)
-              throw new ValidationError('O gabarito do Estúdio excede o tamanho máximo permitido.')
-          }
         }
       const revision = randomUUID()
       const updatedAt = new Date()
@@ -356,7 +349,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
           !snapshot.compatibleRevisions.includes(draft.publishedRevision)
         )
           throw new LessonDraftConflictError()
-        const content = new DrizzleContentAdminRepository(tx)
+        const content = new DrizzleContentAdminRepository(tx, this.studioPolicy)
         const course = await new DrizzleCourseRepository(tx).findCourseById(
           snapshot.lesson.courseId,
         )
@@ -476,6 +469,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       document.blocks.map((b) => ({ id: b.id, kind: b.content.kind })),
     )
     if (invalid) issues.push({ message: invalid })
+    issues.push(...lessonStudioProjectExampleIssues(document.sections, document.blocks))
     if (document.sections.some((s) => s.pendingMedia.length))
       issues.push({
         message: 'Converta as mídias pendentes em cartões de vídeo antes de publicar.',
@@ -591,7 +585,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         if (publishingCourse?.modality === 'live')
           issues.push(...liveLessonCompletionIssues(draft.document.blocks, draft.document.sections))
         if (issues.length) throw new ValidationError(issues.map((i) => i.message).join('\n'))
-        const content = new DrizzleContentAdminRepository(tx)
+        const content = new DrizzleContentAdminRepository(tx, this.studioPolicy)
         const hadShowcase =
           (await content.listCourseIdsWithShowcaseBlock([snapshot.lesson.courseId])).length > 0
         const ids = blocks.map((b) => b.id)

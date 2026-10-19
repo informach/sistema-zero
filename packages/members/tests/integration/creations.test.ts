@@ -115,7 +115,7 @@ describe('biblioteca adulta e compatibilidade Kids', () => {
           ctx.app,
           'POST',
           `${path}/commit`,
-          { revision: 1, verifiedPartHashes: [] },
+          { revision: 1, verifiedPartHashes: [], verifiedFormatVersion: 2 },
           headers,
         )
       ).status,
@@ -142,7 +142,7 @@ describe('biblioteca adulta e compatibilidade Kids', () => {
           ctx.app,
           'POST',
           `${path}/commit?audience=adult`,
-          { revision: 1, verifiedPartHashes: [] },
+          { revision: 1, verifiedPartHashes: [], verifiedFormatVersion: 2 },
           headers,
         )
       ).status,
@@ -188,7 +188,13 @@ const commit = async (ctx: Ctx, tool: string, itemId: string, revision: number, 
   const parts = row?.pending?.revision === revision ? row.pending.parts : row?.parts
   return req(ctx.app, 'POST', `/members/creations/${tool}/${itemId}/commit`, {
     revision,
-    ...(tool === 'studio' ? { verifiedPartHashes: (parts ?? []).map((part) => part.hash) } : {}),
+    ...(tool === 'studio'
+      ? {
+          verifiedPartHashes: (parts ?? []).map((part) => part.hash),
+          verifiedFormatVersion:
+            row?.pending?.revision === revision ? row.pending.formatVersion : row?.formatVersion,
+        }
+      : {}),
     ...extra,
   })
 }
@@ -230,6 +236,24 @@ const PUBLIC_FIELDS = [
 ].sort()
 
 describe('criações guardadas na conta — HTTP', () => {
+  test('a versão verificada do documento precisa coincidir com a reserva em ambos os sentidos', async () => {
+    const ctx = buildWithTools()
+    for (const [reservedVersion, verifiedVersion] of [
+      [2, 3],
+      [3, 2],
+    ]) {
+      const id = `formato-${reservedVersion}`
+      const ticket = await json(
+        await reserve(ctx, 'studio', id, { formatVersion: reservedVersion }),
+      )
+      const result = await commit(ctx, 'studio', id, ticket.revision, {
+        verifiedFormatVersion: verifiedVersion,
+      })
+      expect(result.status).toBe(400)
+      expect((await listOf(ctx, 'studio')).some((item) => item.itemId === id)).toBe(false)
+    }
+  })
+
   test('o manifesto deve listar exatamente as partes reservadas; uma recusa conserva a revisão e a reserva', async () => {
     const ctx = buildWithTools()
     await saveItem(ctx, 'studio', 'manifesto')
@@ -264,6 +288,17 @@ describe('criações guardadas na conta — HTTP', () => {
       details: { requiredVersion: 2 },
     })
     expect(await listOf(ctx, 'studio')).toEqual([])
+  })
+
+  test('Studio guarda documentos Python v3 sem alterar a aceitação JavaScript v2', async () => {
+    const ctx = buildWithTools()
+    const js = await reserve(ctx, 'studio', 'javascript-v2', { formatVersion: 2 })
+    const python = await reserve(ctx, 'studio', 'python-v3', { formatVersion: 3 })
+    const future = await reserve(ctx, 'studio', 'future-v4', { formatVersion: 4 })
+    expect(js.status).toBe(200)
+    expect(python.status).toBe(200)
+    expect(await json(python)).toMatchObject({ formatVersion: 3, revision: 1 })
+    expect(future.status).toBe(400)
   })
 
   test('apagar de novo durante restauro cancela a reserva compatível, sem deixar o item voltar', async () => {
@@ -836,6 +871,7 @@ describe('criações guardadas na conta — HTTP', () => {
       revision: reserved.revision,
       bytes: 1,
       verifiedPartHashes: [],
+      verifiedFormatVersion: 2,
     })
     expect(committed.status).toBe(200)
     const [item] = await listOf(ctx, 'studio')

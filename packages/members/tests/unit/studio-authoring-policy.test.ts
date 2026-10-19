@@ -1,11 +1,38 @@
 import { expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
+import { readStudioProjectExamples } from '@sistemazero/core/learning'
 import {
   assertBlockCoherent,
   assertCurrentStudioAuthoring,
 } from '../../src/application/content-admin/content-admin.service'
 import { createStudioAuthoringPolicy } from '../../src/domain/studio/authoring-policy'
 import { authoringFixture } from '../fakes/studio-authoring-policy'
+
+test('private v3 examples use the same approved catalog and dependency policy as the canonical initial', async () => {
+  const { project, policy } = await authoringFixture('python', 'pro')
+  const exampleId = '11111111-1111-4111-8111-111111111111'
+  const sectionId = '22222222-2222-4222-8222-222222222222'
+  const solution = structuredClone(project)
+  const registry = {
+    version: 1,
+    examples: { [exampleId]: solution },
+    sections: { [sectionId]: { solutionExampleId: exampleId } },
+  }
+  const block = { kind: 'studio' as const, initialProject: project, projectExamples: registry }
+  expect(() => assertBlockCoherent(block, policy)).not.toThrow()
+  solution.installedExtensions = [{ id: 'foreign-extension', version: '1.0.0', installedAt: 1 }]
+  expect(readStudioProjectExamples(registry).kind).toBe('valid')
+  expect(() => assertBlockCoherent(block, policy)).toThrow('Exemplo')
+  solution.installedExtensions = []
+  if (solution.programmingLanguage !== 'python' || solution.kind !== 'pro')
+    throw new Error('Expected Python Pro')
+  solution.tree['requirements.txt'] = { kind: 'file', content: 'requests==2.0.0' }
+  expect(readStudioProjectExamples(registry).kind).toBe('valid')
+  expect(() => assertBlockCoherent(block, policy)).toThrow('requirements.txt')
+  expect(() =>
+    assertBlockCoherent({ kind: 'studio', initialProject: project }, policy),
+  ).not.toThrow()
+})
 
 test('discovery copies cannot alter approval, block curation or release lifecycle', async () => {
   const { policy, project, configuration } = await authoringFixture('python', 'classic')

@@ -1,5 +1,4 @@
 import { creativeToolAccessRef } from '@sistemazero/core/creations'
-import { creativeToolAvailability } from '@sistemazero/core/journey'
 import * as P from '@sistemazero/core/pensa'
 import { and, desc, eq, lt, or } from 'drizzle-orm'
 import { Elysia } from 'elysia'
@@ -37,6 +36,7 @@ import {
   assertMemberShellConsumer,
   isPrivilegedActor,
   resolveAccountId,
+  resolveKidsStaffPreviewActor,
   resolveUserId,
 } from '../auth'
 
@@ -68,12 +68,14 @@ const inspection = z.strictObject({
 
 export function pensaRoutes(deps: PensaRoutesDeps, audience: 'kids' | 'adult' = 'kids') {
   const store = deps.store
-  const actor = (headers: Record<string, string | undefined>): P.PensaActor => ({
-    ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
-    profileId: resolveUserId(headers),
-    accountId: resolveAccountId(headers),
-    privileged: isPrivilegedActor(headers),
-  })
+  const actor = (headers: Record<string, string | undefined>): P.PensaActor => {
+    const privileged = isPrivilegedActor(headers)
+    if (audience === 'kids' && privileged) resolveKidsStaffPreviewActor(headers)
+    return {
+      ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
+      profileId: resolveUserId(headers), accountId: resolveAccountId(headers), privileged,
+    }
+  }
   async function canGenerate(who: P.PensaActor) {
     if (audience === 'adult') {
       if (who.profileId !== who.accountId || !deps.adultJourney)
@@ -87,20 +89,17 @@ export function pensaRoutes(deps: PensaRoutesDeps, audience: 'kids' | 'adult' = 
         throw new AccessDeniedError('O Pensa não está liberado para esta conta.')
       return
     }
-    if (who.privileged) return
     const [access, progress] = await Promise.all([
       deps.accessCheck.execute(who.accountId, ['pensa']),
-      deps.getGamification.execute(who.profileId, who.accountId, { audience: 'kids' }),
+      deps.getGamification.execute(who.profileId, who.accountId, { audience: 'kids', privileged: who.privileged }),
     ])
-    if (
-      creativeToolAvailability({
-        tool: 'pensa',
-        owned: access.grants.includes('pensa') || access.communities.includes('pensa'),
-        level: progress.level.slug,
-      }) !== 'available'
-    )
+    const capabilities = progress.kidsJourney?.earned.capabilities ?? progress.kidsPreview?.capabilities
+    if (!capabilities) pensaError('RESOURCES_UNAVAILABLE', 'A jornada ainda não está disponível para este perfil.')
+    if (!capabilities.includes('pensa') || !capabilities.includes('ai') ||
+      (!who.privileged && !access.grants.includes('pensa') && !access.communities.includes('pensa')))
       pensaError('RESOURCES_UNAVAILABLE', 'O Pensa ainda não está liberado para este perfil.')
   }
+
   const publicPrefix: string = `/members/${audience === 'adult' ? 'adult/' : ''}pensa`
   const publicRoutes = new Elysia({ prefix: publicPrefix })
     .onTransform(async ({ headers, request }) => {

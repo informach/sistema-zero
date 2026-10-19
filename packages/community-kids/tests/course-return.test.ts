@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'bun:test'
-import { resolveCourseBack, trilhaHrefForCourse } from '../src/lib/course-return'
+import { initialKidsJourneyPolicy } from '@sistemazero/core/journey'
+import {
+  resolveCourseBack as canonicalResolveCourseBack,
+  trilhaHrefForCourse as canonicalTrilhaHrefForCourse,
+} from '../src/lib/course-return'
 
+const seed = initialKidsJourneyPolicy()
+const trilhaHrefForCourse = (course: Parameters<typeof canonicalTrilhaHrefForCourse>[0]) =>
+  canonicalTrilhaHrefForCourse(course, seed)
+const resolveCourseBack = (
+  from: string | undefined,
+  course: Parameters<typeof canonicalResolveCourseBack>[1],
+) => canonicalResolveCourseBack(from, course, seed)
 /**
  * A setinha da página do curso: ela volta para a trilha que LISTA o curso, senão a criança
  * cai numa lista que não tem o curso dela.
@@ -81,5 +92,22 @@ describe('destino da volta na página do curso', () => {
 
   it('curso sem degrau cai no mapa', () => {
     expect(resolveCourseBack(undefined, {})).toEqual({ href: '/cursos', label: 'Voltar ao mapa' })
+  })
+})
+
+it('policy changes move the breadcrumb with the real course group; unavailable policy returns to the map', () => {
+  const course = { level: 'iniciante', track: '2d' } as const
+  const changed = {
+    ...seed,
+    tierAccess: seed.tierAccess.map((rule) =>
+      rule.tier === 'iniciante-2d'
+        ? { ...rule, opensAt: 'god' as const, completedAt: 'god' as const }
+        : rule,
+    ),
+  }
+  expect(canonicalTrilhaHrefForCourse(course, changed)).toBe('/cursos/trilha/god')
+  expect(canonicalResolveCourseBack(undefined, course, null)).toEqual({
+    href: '/cursos',
+    label: 'Voltar ao mapa',
   })
 })

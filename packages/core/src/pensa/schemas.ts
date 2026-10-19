@@ -151,7 +151,8 @@ export const PensaTechnicalPlanSchema = z.strictObject({
 })
 export const PensaParticipantCapabilitiesSchema = z.strictObject({
   profileId: id,
-  rank: text(100),
+  // Explicit team preview has no learner rank; existing learner snapshots keep their string.
+  rank: text(100).nullable(),
   studio: z.boolean(),
   studioAuthoring: PensaAuthoringSchema,
   pinta: z.boolean(),

@@ -188,7 +188,7 @@ export class StudyAccessService {
       this.users.findById(grant.accountUserId),
       this.profiles.findById(grant.profileId),
     ])
-    if (!account?.isActive() || !profile?.belongsTo(account.id) || profile.isArchived)
+    if (!account?.isActive() || !profile?.belongsTo(account.id) || !profile.isSelectable)
       throw new StudyAccessRequiredError()
     const tokens = await this.tokens.issueForUser(account, {
       kids: { kind: 'student', sessionId, deviceId: grant.deviceId, grantId: grant.id },
@@ -248,7 +248,7 @@ export class StudyAccessService {
 
   private async requireProfile(account: string, profileId: string) {
     const profile = await this.profiles.findById(profileId)
-    if (!profile?.belongsTo(account) || profile.isArchived) throw new StudyAccessRequiredError()
+    if (!profile?.belongsTo(account) || !profile.isSelectable) throw new StudyAccessRequiredError()
     return profile
   }
 }

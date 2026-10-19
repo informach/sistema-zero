@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { ForbiddenError } from '@sistemazero/core/http'
 import {
   and,
   count,
@@ -73,6 +74,8 @@ import {
 } from '../../../domain/ports/gamification-repository.port'
 import { TROPHY_FOR_BADGE, TROPHY_SHELF_ITEM_ID } from '../../../domain/room/room-catalog'
 import type { Database } from './db'
+import { beginLockedKidsJourneyMilestone } from './kids-journey.repository'
+import { lockLearningOwner } from './learning-owner-lock'
 import { contentMissionOpportunities } from './mission-opportunities'
 import {
   avatarInventory,
@@ -136,7 +139,25 @@ export class DrizzleGamificationRepository implements GamificationRepository {
   constructor(private readonly db: Database) {}
 
   async award(input: AwardInput): Promise<AwardResult> {
+    input = structuredClone(input)
     return this.db.transaction(async (tx) => {
+      // Same ownership/account fence and lock order as learning, journey and purge.
+      // A delivery after deletion is terminally acknowledged without recreating data.
+      try {
+        await lockLearningOwner(tx, { userId: input.userId, accountId: input.accountId })
+      } catch (error) {
+        if (!(error instanceof ForbiddenError)) throw error
+        return {
+          xpAwarded: 0,
+          totalXp: 0,
+          streak: { current: 0, best: 0, extended: false, freezesConsumed: 0 },
+          newEvents: [],
+          badgesUnlocked: [],
+          coinsAwarded: 0,
+          coinBalance: 0,
+          coinsCapped: false,
+        }
+      }
       // Serializa o award POR ALUNO: dois completes simultâneos não correm no
       // read-then-upsert do perfil. Namespace 'gamification:' distinto do lock
       // de quiz ('userId:blockId') — o espaço de advisory locks é global ao
@@ -185,7 +206,20 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           })
         }
       }
-      const events = input.events.filter(
+      const [publication] = input.standalonePublicationId
+        ? await tx
+            .select({ id: xpEvents.id })
+            .from(xpEvents)
+            .where(
+              and(
+                eq(xpEvents.userId, input.userId),
+                eq(xpEvents.sourceType, 'studio_published'),
+                eq(xpEvents.sourceId, input.standalonePublicationId),
+              ),
+            )
+            .limit(1)
+        : []
+      const events = (publication ? [] : input.events).filter(
         (e) =>
           !(
             (e.sourceType === 'course_complete' || e.sourceType === 'course_showcased') &&
@@ -193,6 +227,17 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           ),
       )
       const courseMarcoIds = requestedMarcoIds.filter((id) => !liveCourseIds.has(id))
+
+      // Account/owner and gamification locks are already held before every read above.
+      // Add the shared Kids policy only for recorded-course milestones; ordinary XP,
+      // Adult and filtered live milestones remain independent of Kids policy.
+      const reconcileKidsJourney =
+        input.audience === 'kids' && courseMarcoIds.length > 0
+          ? await beginLockedKidsJourneyMilestone(tx, {
+              userId: input.userId,
+              accountId: input.accountId,
+            })
+          : null
 
       // Ledger idempotente: só os eventos realmente NOVOS voltam do RETURNING.
       const newEvents =
@@ -229,6 +274,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         const grants = await eligibleStudioGrants(tx, input.userId, input.audience, courseMarcoIds)
         await new DrizzleStudioUnlockRepository(tx).saveGrants(input.userId, input.audience, grants)
       }
+
+      // Same TX and shared version as the milestone, including a deduplicated replay.
+      // Live milestones were filtered above and must not create Kids journey concessions.
+      if (reconcileKidsJourney && courseMarcoIds.length > 0) await reconcileKidsJourney()
 
       // Todas as badges são DERIVADAS do estado (ledger/streak) — sem candidatas
       // do caller (o dedupe do user_badges torna o re-check inócuo).
@@ -379,6 +428,12 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         )
         .limit(1)
 
+      const historical = Boolean(
+        profile?.lastActivityDate && profile.lastActivityDate > input.today,
+      )
+      const lastActivityDate = historical ? profile!.lastActivityDate : input.today
+      const updatedAt =
+        profile?.updatedAt && profile.updatedAt > input.now ? profile.updatedAt : input.now
       const xpAwarded = newEvents.reduce((sum, e) => sum + e.amount, 0)
       let totalXp = profile?.xp ?? 0
       let streak = {
@@ -403,24 +458,28 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         const monthKey = input.today.slice(0, 7)
         const currentFreezes = profile?.streakFreezes ?? 0
         const grantsFreeFreeze =
-          profile?.freezeGrantedMonth !== monthKey && currentFreezes < MAX_STREAK_FREEZES
+          !historical &&
+          (!profile?.freezeGrantedMonth || profile.freezeGrantedMonth < monthKey) &&
+          currentFreezes < MAX_STREAK_FREEZES
         const freezesBefore = currentFreezes + (grantsFreeFreeze ? 1 : 0)
         // Avança o marcador só quando o grátis entrou; senão PRESERVA o anterior p/ o
         // benefício continuar disponível numa atividade futura em que haja espaço no teto.
         const freezeGrantedMonthNext = grantsFreeFreeze
           ? monthKey
           : (profile?.freezeGrantedMonth ?? null)
-        streak = advanceStreak(
-          {
-            streakCurrent: profile?.streakCurrent ?? 0,
-            streakBest: profile?.streakBest ?? 0,
-            lastActivityDate: profile?.lastActivityDate ?? null,
-            freezes: freezesBefore,
-            vacationFrom: profile?.vacationFrom ?? null,
-            vacationTo: profile?.vacationTo ?? null,
-          },
-          input.today,
-        )
+        streak = historical
+          ? streak
+          : advanceStreak(
+              {
+                streakCurrent: profile?.streakCurrent ?? 0,
+                streakBest: profile?.streakBest ?? 0,
+                lastActivityDate: profile?.lastActivityDate ?? null,
+                freezes: freezesBefore,
+                vacationFrom: profile?.vacationFrom ?? null,
+                vacationTo: profile?.vacationTo ?? null,
+              },
+              input.today,
+            )
         const freezesAfter = freezesBefore - streak.freezesConsumed
         totalXp += xpAwarded
 
@@ -446,8 +505,32 @@ export class DrizzleGamificationRepository implements GamificationRepository {
             }))
           : []
         // Teto diário: reseta o acumulado se virou o dia civil SP; aplica só à rotina.
-        const earnedTodayBase =
-          profile?.coinsEarnedDate === input.today ? (profile?.coinsEarnedToday ?? 0) : 0
+        const historicalWallet = Boolean(
+          profile?.coinsEarnedDate && profile.coinsEarnedDate > input.today,
+        )
+        const [historicalCoins] = historicalWallet
+          ? await tx
+              .select({ total: sum(coinEvents.amount) })
+              .from(coinEvents)
+              .where(
+                and(
+                  eq(coinEvents.userId, input.userId),
+                  eq(coinEvents.audience, input.audience),
+                  inArray(
+                    coinEvents.sourceType,
+                    Object.values(COIN_TYPE_FOR_XP).filter(
+                      (value): value is CoinSourceTypeValue => value !== undefined,
+                    ),
+                  ),
+                  sql`(${coinEvents.createdAt} at time zone 'America/Sao_Paulo')::date = ${input.today}::date`,
+                ),
+              )
+          : []
+        const earnedTodayBase = historicalWallet
+          ? Number(historicalCoins?.total ?? 0)
+          : profile?.coinsEarnedDate === input.today
+            ? (profile.coinsEarnedToday ?? 0)
+            : 0
         const cap = applyDailyCap(
           routine.map((c) => c.amount),
           earnedTodayBase,
@@ -536,16 +619,16 @@ export class DrizzleGamificationRepository implements GamificationRepository {
             xp: totalXp,
             streakCurrent: streak.current,
             streakBest: streak.best,
-            lastActivityDate: input.today,
+            lastActivityDate,
             privileged: input.privileged,
             coinBalance,
-            coinsEarnedToday: earnedTodayNext,
-            coinsEarnedDate: input.today,
+            coinsEarnedToday: historicalWallet ? profile!.coinsEarnedToday : earnedTodayNext,
+            coinsEarnedDate: historicalWallet ? profile!.coinsEarnedDate : input.today,
             lifetimeCoinsEarned: newLifetime,
             streakFreezes: freezesAfter,
             freezeGrantedMonth: freezeGrantedMonthNext,
             createdAt: input.now,
-            updatedAt: input.now,
+            updatedAt,
           })
           .onConflictDoUpdate({
             target: [gamificationProfiles.userId, gamificationProfiles.audience],
@@ -557,15 +640,15 @@ export class DrizzleGamificationRepository implements GamificationRepository {
               xp: totalXp,
               streakCurrent: streak.current,
               streakBest: streak.best,
-              lastActivityDate: input.today,
+              lastActivityDate,
               privileged: input.privileged,
               coinBalance,
-              coinsEarnedToday: earnedTodayNext,
-              coinsEarnedDate: input.today,
+              coinsEarnedToday: historicalWallet ? profile!.coinsEarnedToday : earnedTodayNext,
+              coinsEarnedDate: historicalWallet ? profile!.coinsEarnedDate : input.today,
               lifetimeCoinsEarned: newLifetime,
               streakFreezes: freezesAfter,
               freezeGrantedMonth: freezeGrantedMonthNext,
-              updatedAt: input.now,
+              updatedAt,
             },
           })
         for (const slug of streakBadgeSlugs(streak.current)) badgeCandidates.add(slug)
@@ -932,6 +1015,30 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       if (!slots.includes(slot)) slots.push(slot)
     }
     return result
+  }
+
+  async listCourseMilestones(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<Map<string, CourseMilestones>> {
+    const events = await this.db
+      .select({ courseId: xpEvents.sourceId, type: xpEvents.sourceType })
+      .from(xpEvents)
+      .where(
+        and(
+          eq(xpEvents.userId, userId),
+          eq(xpEvents.audience, audience),
+          inArray(xpEvents.sourceType, ['course_complete', 'course_showcased']),
+        ),
+      )
+    const milestones = new Map<string, CourseMilestones>()
+    for (const event of events) {
+      const value = milestones.get(event.courseId) ?? { completed: false, showcased: false }
+      if (event.type === 'course_complete') value.completed = true
+      if (event.type === 'course_showcased') value.showcased = true
+      milestones.set(event.courseId, value)
+    }
+    return milestones
   }
 
   /** Uma consulta, um snapshot: a trava e os selos nunca observam versões diferentes do ledger. */

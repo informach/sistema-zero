@@ -11,8 +11,8 @@ import {
   journeySlotsForTier,
   meetsJourneyLevel,
   missingJourneySlots,
-  resolveJourneyCourseLock,
 } from '../src/journey'
+import { resolveJourneyCourseLock } from './fixtures/legacy-kids-course-lock'
 
 describe('journeyLevelAtLeast', () => {
   test('compara pela posição na jornada e falha fechado para slugs inválidos', () => {

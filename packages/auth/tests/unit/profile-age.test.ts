@@ -50,6 +50,7 @@ describe('idade do perfil Kids', () => {
       voiceInputEnabled: false,
       voiceInputEnabledAt: null,
       status: 'active',
+      admissionState: 'ready',
       sortOrder: 0,
       createdAt,
       updatedAt: createdAt,

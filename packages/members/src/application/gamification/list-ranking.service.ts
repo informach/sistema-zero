@@ -54,7 +54,8 @@ export class ListRankingService {
       xp: entry.xp,
       lastActivityDate: entry.lastActivityDate,
       photoUrl: avatars[entry.userId]?.photoUrl ?? null,
-      levelSlug: avatars[entry.userId]?.level ?? 'noob',
+      levelSlug: avatars[entry.userId]?.level ?? (input.audience === 'adult' ? 'noob' : null),
+      ...(input.audience === 'kids' && avatars[entry.userId]?.level == null ? { journeyUnavailable: true as const } : {}),
     })
 
     return {

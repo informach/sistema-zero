@@ -251,14 +251,57 @@ export const profiles = auth.table(
     voiceInputEnabled: boolean('voice_input_enabled').notNull().default(false),
     voiceInputEnabledAt: timestamp('voice_input_enabled_at', { withTimezone: true }),
     status: profileStatusEnum('status').notNull().default('active'),
+    // Expand migration preserves existing ready profiles; all future inserts default to pending.
+    admissionState: text('admission_state', { enum: ['pending', 'ready'] })
+      .notNull()
+      .default('pending'),
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
   // Lista da grade (perfis ativos da conta, em ordem) + contagem do limite.
   (t) => [
+    check('profiles_admission_state_ck', sql`${t.admissionState} in ('pending','ready')`),
     index('profiles_account_idx').on(t.accountUserId, t.sortOrder),
     index('profiles_name_trgm_idx').using('gin', t.name.op('gin_trgm_ops')),
+  ],
+)
+
+/** Durable creation idempotency and leased admission work; removed only with the profile. */
+export const profileAdmissions = auth.table(
+  'profile_admissions',
+  {
+    profileId: uuid('profile_id')
+      .primaryKey()
+      .references(() => profiles.id, { onDelete: 'cascade' }),
+    accountUserId: uuid('account_user_id').notNull(),
+    requestId: uuid('request_id').notNull(),
+    requestHash: text('request_hash').notNull(),
+    status: text('status', { enum: ['pending', 'completed', 'cancelled'] })
+      .notNull()
+      .default('pending'),
+    attempts: integer('attempts').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull(),
+    leaseId: uuid('lease_id'),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+    lastErrorCode: text('last_error_code'),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('profile_admissions_account_request_uq').on(t.accountUserId, t.requestId),
+    index('profile_admissions_pending_idx')
+      .on(t.nextAttemptAt, t.profileId)
+      .where(sql`${t.status} = 'pending'`),
+    check('profile_admissions_status_ck', sql`${t.status} in ('pending','completed','cancelled')`),
+    check('profile_admissions_attempts_ck', sql`${t.attempts} >= 0`),
+    check('profile_admissions_request_hash_ck', sql`${t.requestHash} ~ '^[0-9a-f]{64}$'`),
+    check('profile_admissions_lease_ck', sql`(${t.leaseId} is null) = (${t.leaseUntil} is null)`),
+    check(
+      'profile_admissions_completed_ck',
+      sql`(${t.status} = 'pending' and ${t.completedAt} is null) or (${t.status} <> 'pending' and ${t.completedAt} is not null)`,
+    ),
   ],
 )
 
@@ -493,6 +536,7 @@ export const schema = {
   otpCodes,
   impersonationTokens,
   profiles,
+  profileAdmissions,
   profileVoiceInputEvents,
   auditLogs,
 }

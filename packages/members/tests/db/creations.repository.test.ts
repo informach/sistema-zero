@@ -124,6 +124,7 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     accountId: conta,
     tool: 'studio' as const,
     formatVersion: 2,
+    verifiedFormatVersion: 2,
     itemId: 'proj-1',
     name: 'Nave',
     kind: 'classic',
@@ -178,6 +179,7 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
           itemId: input.itemId,
           revision: 1,
           storageRef: `${repository.audience}/blob`,
+          verifiedFormatVersion: 2,
           now,
           limits: LIMITS,
         }),
@@ -209,6 +211,7 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       itemId: input.itemId,
       revision: reserved.revision,
       storageRef: 'manifesto',
+      verifiedFormatVersion: 2,
       now,
       limits: LIMITS,
     }
@@ -224,6 +227,39 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
         uploadedParts: ['a'.repeat(64)],
       }),
     ).toMatchObject({ ok: true })
+  })
+  test('formato validado deve coincidir com a reserva sob lock, sem promover divergências', async () => {
+    for (const [reservedVersion, verifiedVersion] of [
+      [2, 3],
+      [3, 2],
+    ]) {
+      const input = {
+        ...base,
+        userId: randomUUID(),
+        itemId: `formato-${reservedVersion}`,
+        formatVersion: reservedVersion,
+      }
+      const reserved = await repo.reserveUpload(input)
+      if (!reserved.ok) throw new Error('Reserva recusada')
+      const attempted = await repo.commit({
+        ...input,
+        revision: reserved.revision,
+        storageRef: 'mismatched',
+        verifiedPartHashes: [],
+        verifiedFormatVersion: verifiedVersion,
+      })
+      expect(attempted).toEqual({ ok: false, reason: 'manifest-mismatch' })
+      expect((await repo.get(input.userId, input.tool, input.itemId))?.revision).toBe(0)
+      expect(
+        await repo.commit({
+          ...input,
+          revision: reserved.revision,
+          storageRef: 'matched',
+          verifiedPartHashes: [],
+          verifiedFormatVersion: reservedVersion,
+        }),
+      ).toMatchObject({ ok: true })
+    }
   })
   test('o corte do Studio recusa formato antigo também dentro da transação', async () => {
     expect(await repo.reserveUpload({ ...base, userId: randomUUID(), formatVersion: 1 })).toEqual({
@@ -382,8 +418,12 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     expect(await repo.list(perfil, 'studio')).toHaveLength(0)
     expect((await repo.usage(perfil)).countByTool.studio).toBe(0)
 
-    expect(await repo.commit({ ...base, revision: 7, storageRef: 'x' })).toEqual({ ok: false })
-    expect(await repo.commit({ ...base, revision: 1, storageRef: key(1) })).toEqual({
+    expect(
+      await repo.commit({ ...base, verifiedFormatVersion: 2, revision: 7, storageRef: 'x' }),
+    ).toEqual({ ok: false })
+    expect(
+      await repo.commit({ ...base, verifiedFormatVersion: 2, revision: 1, storageRef: key(1) }),
+    ).toEqual({
       ok: true,
       alreadyCommitted: false,
       previousStorageRef: null,
@@ -417,7 +457,9 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     expect(beforeCommit?.itemUpdatedAt.toISOString()).toBe(now.toISOString())
     // Um commit(1) repetido com a reserva 2 em voo é IDEMPOTENTE (1 já é a corrente): 200 sem
     // mexer em nada — nunca 409, senão o BFF apagaria o blob vivo como "recusado".
-    expect(await repo.commit({ ...base, revision: 1, storageRef: key(1) })).toEqual({
+    expect(
+      await repo.commit({ ...base, verifiedFormatVersion: 2, revision: 1, storageRef: key(1) }),
+    ).toEqual({
       ok: true,
       alreadyCommitted: true,
       previousStorageRef: null,
@@ -425,7 +467,9 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     })
     expect((await repo.list(perfil, 'studio'))[0]?.name).toBe('Nave')
     // O commit certo devolve a chave anterior para o BFF apagar.
-    expect(await repo.commit({ ...base, revision: 2, storageRef: key(2) })).toEqual({
+    expect(
+      await repo.commit({ ...base, verifiedFormatVersion: 2, revision: 2, storageRef: key(2) }),
+    ).toEqual({
       ok: true,
       alreadyCommitted: false,
       previousStorageRef: key(1),
@@ -439,7 +483,9 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     expect(usage.totalBytes).toBe(250)
     expect(usage.countByTool.studio).toBe(1)
     // Idempotente: confirmar de novo a corrente é ok, sem chave anterior.
-    expect(await repo.commit({ ...base, revision: 2, storageRef: key(2) })).toEqual({
+    expect(
+      await repo.commit({ ...base, verifiedFormatVersion: 2, revision: 2, storageRef: key(2) }),
+    ).toEqual({
       ok: true,
       alreadyCommitted: true,
       previousStorageRef: null,
@@ -452,14 +498,21 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     const b = await repo.reserveUpload({ ...base, bytes: 20 })
     expect(a).toEqual({ ok: true, revision: 3, missingParts: [] })
     expect(b).toEqual({ ok: true, revision: 4, missingParts: [] })
-    expect(await repo.commit({ ...base, revision: 2, storageRef: key(2) })).toEqual({
+    expect(
+      await repo.commit({ ...base, verifiedFormatVersion: 2, revision: 2, storageRef: key(2) }),
+    ).toEqual({
       ok: true,
       alreadyCommitted: true,
       previousStorageRef: null,
       releasedPartRefs: [],
     })
-    expect(await repo.commit({ ...base, revision: 3, storageRef: key(3) })).toEqual({ ok: false })
-    expect((await repo.commit({ ...base, revision: 4, storageRef: key(4) })).ok).toBe(true)
+    expect(
+      await repo.commit({ ...base, verifiedFormatVersion: 2, revision: 3, storageRef: key(3) }),
+    ).toEqual({ ok: false })
+    expect(
+      (await repo.commit({ ...base, verifiedFormatVersion: 2, revision: 4, storageRef: key(4) }))
+        .ok,
+    ).toBe(true)
 
     // Outro dono não enxerga.
     expect(await repo.list(randomUUID(), 'studio')).toHaveLength(0)

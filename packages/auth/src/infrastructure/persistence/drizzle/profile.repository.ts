@@ -1,6 +1,9 @@
 import { and, asc, eq, ilike, inArray, or, type SQL, sql } from 'drizzle-orm'
+import { z } from 'zod'
 import type {
   CreateProfileOutcome,
+  ProfileCreationRequest,
+  ProfileOwner,
   ProfileRepository,
   ProfileWithAccountRow,
   SearchProfilesFilter,
@@ -10,10 +13,21 @@ import {
   type ProfileSnapshot,
   type VoiceInputConsentChange,
 } from '../../../domain/profile/profile.aggregate'
+import {
+  applyProfileDetails,
+  type ProfileDetailsDecision,
+  type ProfileDetailsState,
+  profileDetailsState,
+} from '../../../domain/profile/profile-details'
 import type { Database } from './db'
-import { profiles, profileVoiceInputEvents, users } from './schema'
+import { profileAdmissions, profiles, profileVoiceInputEvents, users } from './schema'
 
 type Row = typeof profiles.$inferSelect
+const OwnerSchema = z.strictObject({ profileId: z.uuid(), accountUserId: z.uuid() })
+const CreationRequestSchema = z.strictObject({
+  requestId: z.uuid(),
+  requestHash: z.string().regex(/^[0-9a-f]{64}$/),
+})
 
 /** A linha da trilha append-only do consentimento da fala (sempre junto do perfil). */
 function voiceInputEventRow(
@@ -43,6 +57,7 @@ function fromRow(row: Row): ProfileAggregate {
     voiceInputEnabled: row.voiceInputEnabled,
     voiceInputEnabledAt: row.voiceInputEnabledAt,
     status: row.status,
+    admissionState: row.admissionState,
     sortOrder: row.sortOrder,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -53,11 +68,26 @@ function fromRow(row: Row): ProfileAggregate {
 export class DrizzleProfileRepository implements ProfileRepository {
   constructor(private readonly db: Database) {}
 
-  async listActiveByAccount(accountUserId: string): Promise<ProfileAggregate[]> {
+  async listForParent(accountUserId: string): Promise<ProfileAggregate[]> {
     const rows = await this.db
       .select()
       .from(profiles)
       .where(and(eq(profiles.accountUserId, accountUserId), eq(profiles.status, 'active')))
+      .orderBy(asc(profiles.sortOrder))
+    return rows.map(fromRow)
+  }
+
+  async listActiveByAccount(accountUserId: string): Promise<ProfileAggregate[]> {
+    const rows = await this.db
+      .select()
+      .from(profiles)
+      .where(
+        and(
+          eq(profiles.accountUserId, accountUserId),
+          eq(profiles.status, 'active'),
+          eq(profiles.admissionState, 'ready'),
+        ),
+      )
       .orderBy(asc(profiles.sortOrder))
     return rows.map(fromRow)
   }
@@ -67,9 +97,30 @@ export class DrizzleProfileRepository implements ProfileRepository {
     return row ? fromRow(row) : null
   }
 
+  async findByCreationRequest(accountUserId: string, requestId: string) {
+    const [row] = await this.db
+      .select({ profile: profiles, requestHash: profileAdmissions.requestHash })
+      .from(profileAdmissions)
+      .innerJoin(profiles, eq(profiles.id, profileAdmissions.profileId))
+      .innerJoin(users, eq(users.id, profiles.accountUserId))
+      .where(
+        and(
+          eq(profileAdmissions.accountUserId, accountUserId),
+          eq(profiles.accountUserId, accountUserId),
+          eq(profileAdmissions.requestId, requestId),
+          eq(users.status, 'active'),
+        ),
+      )
+      .limit(1)
+    return row ? { profile: fromRow(row.profile), requestHash: row.requestHash } : null
+  }
+
   async listByIds(ids: string[]): Promise<ProfileAggregate[]> {
     if (ids.length === 0) return []
-    const rows = await this.db.select().from(profiles).where(inArray(profiles.id, ids))
+    const rows = await this.db
+      .select()
+      .from(profiles)
+      .where(and(inArray(profiles.id, ids), eq(profiles.admissionState, 'ready')))
     return rows.map(fromRow)
   }
 
@@ -78,7 +129,13 @@ export class DrizzleProfileRepository implements ProfileRepository {
     const rows = await this.db
       .select()
       .from(profiles)
-      .where(and(inArray(profiles.id, ids), eq(profiles.status, 'active')))
+      .where(
+        and(
+          inArray(profiles.id, ids),
+          eq(profiles.status, 'active'),
+          eq(profiles.admissionState, 'ready'),
+        ),
+      )
     return rows.map(fromRow)
   }
 
@@ -140,8 +197,12 @@ export class DrizzleProfileRepository implements ProfileRepository {
   async createWithinLimit(
     profile: ProfileAggregate,
     maxProfiles: number,
+    requestInput: ProfileCreationRequest,
   ): Promise<CreateProfileOutcome> {
-    const s = profile.toSnapshot()
+    const s = structuredClone(profile.toSnapshot())
+    const request = CreationRequestSchema.parse(requestInput)
+    const change = structuredClone(profile.voiceInputChange)
+    if (s.admissionState !== 'pending') throw new Error('New profiles must require admission')
     const outcome = await this.db.transaction(async (tx): Promise<CreateProfileOutcome> => {
       // Serializa os creates DESTA conta (o xact-lock solta no commit/rollback) →
       // contagem + insert viram atômicos: dois creates simultâneos não furam o teto.
@@ -153,7 +214,24 @@ export class DrizzleProfileRepository implements ProfileRepository {
         .from(users)
         .where(eq(users.id, s.accountUserId))
         .limit(1)
+        .for('update')
       if (account?.status !== 'active') return { outcome: 'account_inactive' as const }
+      const [existing] = await tx
+        .select({ profile: profiles, requestHash: profileAdmissions.requestHash })
+        .from(profileAdmissions)
+        .innerJoin(profiles, eq(profiles.id, profileAdmissions.profileId))
+        .where(
+          and(
+            eq(profileAdmissions.accountUserId, s.accountUserId),
+            eq(profiles.accountUserId, s.accountUserId),
+            eq(profileAdmissions.requestId, request.requestId),
+          ),
+        )
+        .limit(1)
+      if (existing)
+        return existing.requestHash === request.requestHash
+          ? { outcome: 'reused', profile: fromRow(existing.profile) }
+          : { outcome: 'request_conflict' }
       const [agg] = await tx
         .select({
           count: sql<number>`count(*)::int`,
@@ -175,14 +253,23 @@ export class DrizzleProfileRepository implements ProfileRepository {
           voiceInputEnabled: s.voiceInputEnabled,
           voiceInputEnabledAt: s.voiceInputEnabledAt,
           status: s.status,
+          admissionState: 'pending',
           sortOrder: (agg?.maxOrder ?? -1) + 1,
           createdAt: s.createdAt,
           updatedAt: s.updatedAt,
         })
         .returning()
       // Criado já com a fala ligada: a 1ª linha da trilha entra na MESMA transação.
-      const change = profile.voiceInputChange
       if (change) await tx.insert(profileVoiceInputEvents).values(voiceInputEventRow(s, change))
+      await tx.insert(profileAdmissions).values({
+        profileId: s.id,
+        accountUserId: s.accountUserId,
+        requestId: request.requestId,
+        requestHash: request.requestHash,
+        nextAttemptAt: s.createdAt,
+        createdAt: s.createdAt,
+        updatedAt: s.createdAt,
+      })
       // `row` sempre existe após um insert bem-sucedido (não-condicional).
       return { outcome: 'created' as const, profile: fromRow(row as Row) }
     })
@@ -190,58 +277,100 @@ export class DrizzleProfileRepository implements ProfileRepository {
     return outcome
   }
 
-  /**
-   * ⚠️ As colunas da FALA só são escritas junto com a linha da trilha, na mesma transação:
-   * toda mudança de `voice_input_enabled` no banco tem a sua prova. Sem mudança pendente, o
-   * UPDATE nem toca nelas (uma edição de nome com o perfil lido antes não desfaz o "desligar"
-   * que outra requisição acabou de gravar). Com mudança pendente, a linha é travada e relida:
-   * se outra requisição já gravou o mesmo valor (duplo clique), não há linha nova nem data nova.
-   */
-  async update(profile: ProfileAggregate): Promise<boolean> {
-    const s = profile.toSnapshot()
-    const details = {
-      name: s.name,
-      avatarUrl: s.avatarUrl,
-      whatsapp: s.whatsapp,
-      birthDate: s.birthDate,
-      publicProfileEnabled: s.publicProfileEnabled,
-      status: s.status,
-      updatedAt: s.updatedAt,
-    }
-    const change = profile.voiceInputChange
-    if (!change) {
-      const updated = await this.db
-        .update(profiles)
-        .set(details)
-        .where(eq(profiles.id, s.id))
-        .returning({ id: profiles.id })
-      return updated.length > 0
-    }
-    const saved = await this.db.transaction(async (tx) => {
-      const [current] = await tx
-        .select({ voiceInputEnabled: profiles.voiceInputEnabled })
-        .from(profiles)
-        .where(eq(profiles.id, s.id))
+  async editDetails(
+    ownerInput: ProfileOwner,
+    decide: (current: ProfileDetailsState) => ProfileDetailsDecision,
+  ): Promise<ProfileAggregate | null> {
+    const owner = OwnerSchema.parse(ownerInput)
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`profile:${owner.accountUserId}`}, 0))`,
+      )
+      const [account] = await tx
+        .select({ status: users.status })
+        .from(users)
+        .where(eq(users.id, owner.accountUserId))
         .for('update')
-      if (!current) return false
-      const flips = current.voiceInputEnabled !== change.enabled
+      if (account?.status !== 'active') return null
+      const [row] = await tx
+        .select()
+        .from(profiles)
+        .where(
+          and(eq(profiles.id, owner.profileId), eq(profiles.accountUserId, owner.accountUserId)),
+        )
+        .for('update')
+      if (row?.status !== 'active') return null
+      const profile = fromRow(row)
+      const decision = structuredClone(decide(profileDetailsState(profile)))
+      applyProfileDetails(profile, decision)
+      const state = profile.toSnapshot()
+      const changes = decision.changes
+      const patch: Partial<typeof profiles.$inferInsert> = { updatedAt: state.updatedAt }
+      if (changes.name !== undefined) patch.name = state.name
+      if (changes.avatarUrl !== undefined) patch.avatarUrl = state.avatarUrl
+      if (changes.whatsapp !== undefined) patch.whatsapp = state.whatsapp
+      if (changes.birthDate !== undefined) patch.birthDate = state.birthDate
+      if (changes.publicProfileEnabled !== undefined)
+        patch.publicProfileEnabled = state.publicProfileEnabled
+      const consent = profile.voiceInputChange
+      if (consent) {
+        patch.voiceInputEnabled = state.voiceInputEnabled
+        patch.voiceInputEnabledAt = state.voiceInputEnabledAt
+      }
+      const [saved] = await tx
+        .update(profiles)
+        .set(patch)
+        .where(eq(profiles.id, owner.profileId))
+        .returning()
+      if (consent)
+        await tx.insert(profileVoiceInputEvents).values(voiceInputEventRow(state, consent))
+      return saved ? fromRow(saved) : null
+    })
+  }
+
+  async archiveOwned(ownerInput: ProfileOwner, nowInput: Date): Promise<boolean> {
+    const owner = OwnerSchema.parse(ownerInput)
+    const now = new Date(z.date().parse(nowInput).getTime())
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`profile:${owner.accountUserId}`}, 0))`,
+      )
+      const [account] = await tx
+        .select({ status: users.status })
+        .from(users)
+        .where(eq(users.id, owner.accountUserId))
+        .for('update')
+      if (account?.status !== 'active') return false
+      const [profile] = await tx
+        .select()
+        .from(profiles)
+        .where(
+          and(eq(profiles.id, owner.profileId), eq(profiles.accountUserId, owner.accountUserId)),
+        )
+        .for('update')
+      if (!profile) return false
+      if (profile.status === 'archived') return true
       await tx
         .update(profiles)
-        .set(
-          flips
-            ? {
-                ...details,
-                voiceInputEnabled: s.voiceInputEnabled,
-                voiceInputEnabledAt: s.voiceInputEnabledAt,
-              }
-            : details,
+        .set({ status: 'archived', updatedAt: now })
+        .where(eq(profiles.id, owner.profileId))
+      await tx
+        .update(profileAdmissions)
+        .set({
+          status: 'cancelled',
+          completedAt: now,
+          leaseId: null,
+          leaseUntil: null,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(profileAdmissions.profileId, owner.profileId),
+            eq(profileAdmissions.status, 'pending'),
+          ),
         )
-        .where(eq(profiles.id, s.id))
-      if (flips) await tx.insert(profileVoiceInputEvents).values(voiceInputEventRow(s, change))
       return true
     })
-    if (saved) profile.markVoiceInputChangeSaved()
-    return saved
   }
 }
 
@@ -251,7 +380,7 @@ export class DrizzleProfileRepository implements ProfileRepository {
  * LIKE (\, %, _) — espelha o `buildListWhere` do user.repository (achado B5).
  */
 function buildSearchWhere(qRaw: string | undefined): SQL | undefined {
-  const clauses: SQL[] = [eq(profiles.status, 'active')]
+  const clauses: SQL[] = [eq(profiles.status, 'active'), eq(profiles.admissionState, 'ready')]
   const q = qRaw?.trim()
   if (q) {
     const like = `%${q.replace(/[\\%_]/g, '\\$&')}%`

@@ -13,6 +13,9 @@ import { ReactionService } from './application/reactions/reaction.service'
 import { ReadCommunityService } from './application/read-community/read-community.service'
 import { ReadStateService } from './application/read-state/read-state.service'
 import { DeliverShowcaseService } from './application/showcase/deliver-showcase.service'
+import { DeliverStudioCleanupsService } from './application/showcase/deliver-studio-cleanups.service'
+import { DeliverStudioEventsService } from './application/showcase/deliver-studio-events.service'
+import { DeliverStudioReservationCleanupsService } from './application/showcase/deliver-studio-reservation-cleanups.service'
 import { GetShowcaseDeliveryService } from './application/showcase/get-showcase-delivery.service'
 import { ShowcaseService } from './application/showcase/showcase.service'
 import { ThreadService } from './application/threads/thread.service'
@@ -27,6 +30,7 @@ import {
 } from './infrastructure/config/env'
 import { createMembersHttpGateway } from './infrastructure/gateways/members-http.gateway'
 import { createStudioArtifactHttpGateway } from './infrastructure/gateways/studio-artifact-http.gateway'
+import { createStudioReservationCleanupHttpGateway } from './infrastructure/gateways/studio-reservation-cleanup-http.gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAttachmentRepository } from './infrastructure/persistence/drizzle/attachment.repository'
 import { DrizzleCommunityAdminRepository } from './infrastructure/persistence/drizzle/community-admin.repository'
@@ -37,6 +41,9 @@ import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/
 import { DrizzleReactionRepository } from './infrastructure/persistence/drizzle/reaction.repository'
 import { DrizzleReadStateRepository } from './infrastructure/persistence/drizzle/read-state.repository'
 import { DrizzleShowcaseDeliveryRepository } from './infrastructure/persistence/drizzle/showcase-delivery.repository'
+import { DrizzleStudioCleanupRepository } from './infrastructure/persistence/drizzle/studio-cleanup.repository'
+import { DrizzleStudioEventRepository } from './infrastructure/persistence/drizzle/studio-event.repository'
+import { DrizzleStudioReservationCleanupRepository } from './infrastructure/persistence/drizzle/studio-reservation-cleanup.repository'
 import { DrizzleThreadRepository } from './infrastructure/persistence/drizzle/thread.repository'
 import { DrizzleUserDataPurgeRepository } from './infrastructure/persistence/drizzle/user-data-purge.repository'
 import { createServer } from './interfaces/http/server'
@@ -174,6 +181,22 @@ export async function createApplication(env: Env): Promise<Application> {
     showcaseWallChannelSlug(env),
     { walls: new Set(['mural-dos-criadores-adulto']), access: accessResolution },
   )
+  const deliverStudioCleanups = new DeliverStudioCleanupsService(
+    new DrizzleStudioCleanupRepository(db),
+    studioArtifacts,
+    () => new Date(),
+  )
+  const deliverReservationCleanups = new DeliverStudioReservationCleanupsService(
+    new DrizzleStudioReservationCleanupRepository(db),
+    createStudioReservationCleanupHttpGateway({
+      baseUrl: env.KIDS_BFF_BASE_URL,
+      adultBaseUrl: env.ADULT_BFF_BASE_URL,
+      hmacSecret: env.GATEWAY_HMAC_SECRET,
+      timeoutMs: env.KIDS_BFF_REQUEST_TIMEOUT_MS,
+      logger,
+    }),
+    () => new Date(),
+  )
   const moderationService = new ModerationService(
     threadRepo,
     moderationRepo,
@@ -226,6 +249,8 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
     },
     showcase: {
+      cleanups: deliverStudioCleanups,
+      reservationCleanups: deliverReservationCleanups,
       delivery: new GetShowcaseDeliveryService(new DrizzleShowcaseDeliveryRepository(db)),
       showcase: showcaseService,
       internalToken: env.INTERNAL_API_TOKEN,
@@ -259,8 +284,30 @@ export async function createApplication(env: Env): Promise<Application> {
   let cleanupTimer: ReturnType<typeof setInterval> | null = null
   let deliveryTimer: ReturnType<typeof setInterval> | null = null
   let deliveryCycle: Promise<void> | null = null
+  let artifactCleanupTimer: ReturnType<typeof setInterval> | null = null
+  let artifactCleanupCycle: Promise<void> | null = null
+  const runArtifactCleanups = () => {
+    if (artifactCleanupCycle) return
+    artifactCleanupCycle = deliverStudioCleanups
+      .drain()
+      .then(() => deliverReservationCleanups.drain())
+      .then(() => undefined)
+      .catch((error) =>
+        logger.error('studio.cleanup.delivery_failed', {
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      )
+      .finally(() => {
+        artifactCleanupCycle = null
+      })
+  }
   const deliverShowcase = new DeliverShowcaseService(
     new DrizzleShowcaseDeliveryRepository(db),
+    members,
+    () => new Date(),
+  )
+  const deliverStudioEvents = new DeliverStudioEventsService(
+    new DrizzleStudioEventRepository(db),
     members,
     () => new Date(),
   )
@@ -268,7 +315,11 @@ export async function createApplication(env: Env): Promise<Application> {
     if (deliveryCycle) return
     deliveryCycle = (async () => {
       // Bound each cycle; leases let other replicas work without duplicate claims.
-      for (let i = 0; i < 5; i++) if (!(await deliverShowcase.execute())) break
+      for (let i = 0; i < 5; i++) {
+        const course = await deliverShowcase.execute()
+        const studio = await deliverStudioEvents.execute()
+        if (!course && !studio) break
+      }
     })()
       .catch((error) => {
         logger.error('showcase.delivery.failed', {
@@ -312,6 +363,8 @@ export async function createApplication(env: Env): Promise<Application> {
     logger,
     async start() {
       runDeliveries()
+      runArtifactCleanups()
+      artifactCleanupTimer = setInterval(runArtifactCleanups, 5_000)
       deliveryTimer = setInterval(runDeliveries, 5_000)
       cleanupTimer = setInterval(() => {
         void runRetentionCycle().catch((error) =>
@@ -327,6 +380,8 @@ export async function createApplication(env: Env): Promise<Application> {
     async stop() {
       if (cleanupTimer) clearInterval(cleanupTimer)
       if (deliveryTimer) clearInterval(deliveryTimer)
+      if (artifactCleanupTimer) clearInterval(artifactCleanupTimer)
+      await artifactCleanupCycle
       await deliveryCycle
       await server.stop()
       await connection.close()

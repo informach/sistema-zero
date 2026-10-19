@@ -12,7 +12,7 @@ export class GetOwnProfileService {
 
   async execute(accountUserId: string, profileId: string): Promise<ProfileView | null> {
     const profile = await this.profiles.findById(profileId)
-    if (!profile?.belongsTo(accountUserId) || profile.isArchived) return null
+    if (!profile?.belongsTo(accountUserId) || !profile.isSelectable) return null
     return toProfileView(profile)
   }
 }

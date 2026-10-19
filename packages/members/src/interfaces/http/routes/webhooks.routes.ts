@@ -310,7 +310,10 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
           return { ok: true, deduped: true }
         }
-        if (body.challengeKey !== currentChallengeKey(deps.now())) {
+        if (
+          body.challengeKey !==
+          currentChallengeKey(body.publishedAt ? new Date(body.publishedAt) : deps.now())
+        ) {
           deps.logger.warn('challenge.month_mismatch', { challengeKey: body.challengeKey })
           if (deliveryId) await deps.processed.markProcessed(deliveryId, 'challenge')
           return { ok: true, ignored: true }
@@ -320,6 +323,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
           accountId: body.accountId,
           audience: body.audience,
           monthKey: body.challengeKey,
+          ...(body.publishedAt ? { publishedAt: new Date(body.publishedAt) } : {}),
         })
         if (!awarded) {
           set.status = 502
@@ -399,6 +403,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
           accountId: body.accountId,
           audience: body.audience,
           playId: body.playId,
+          ...(body.publishedAt ? { publishedAt: new Date(body.publishedAt) } : {}),
         })
         if (!awarded) {
           set.status = 502

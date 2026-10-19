@@ -203,7 +203,16 @@ export const StudioMetaBody = t.Union([
   }),
 ])
 
+const StudioPublisherBody = t.Object({
+  authorId: UUID,
+  accountId: UUID,
+  audience: t.Union([t.Literal('kids'), t.Literal('adult')]),
+})
+
 export const ShowcaseThreadStudioBody = t.Object({
+  reservationId: UUID,
+  snapshotHash: t.String({ pattern: '^[a-f0-9]{64}$' }),
+  publisher: StudioPublisherBody,
   spaceSlug: SLUG,
   lessonId: UUID,
   blockId: UUID,
@@ -225,10 +234,14 @@ export const ShowcaseThreadStudioBody = t.Object({
  * do header confiável; `clientIdempotencyKey` dedup-a duplo-clique (republicar = post novo).
  */
 export const ShowcaseThreadStudioStandaloneBody = t.Object({
+  reservationId: UUID,
+  snapshotHash: t.String({ pattern: '^[a-f0-9]{64}$' }),
+  publisher: StudioPublisherBody,
   liveWorkspace: t.Optional(
     t.Object({
       id: UUID,
       revision: t.Number({ minimum: 1, multipleOf: 1 }),
+      playId: UUID,
       publicationToken: t.String({ minLength: 1, maxLength: 4096 }),
     }),
   ),
@@ -246,6 +259,16 @@ export const ShowcaseThreadStudioStandaloneBody = t.Object({
   challengeKey: t.Optional(t.Union([t.String({ maxLength: 16 }), t.Null()])),
   studioMeta: t.Optional(t.Union([StudioMetaBody, t.Null()])),
 })
+
+export const ShowcaseThreadStudioPrepareBody = t.Omit(ShowcaseThreadStudioBody, [
+  'reservationId',
+  'playId',
+  'coverImageUrl',
+])
+export const ShowcaseThreadStudioStandalonePrepareBody = t.Omit(
+  ShowcaseThreadStudioStandaloneBody,
+  ['reservationId', 'playId', 'coverImageUrl'],
+)
 
 /** Paginação por cursor opaco (listagem de tópicos). */
 export const ThreadListQuery = t.Object({

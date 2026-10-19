@@ -123,12 +123,17 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
 
   return (
     new Elysia({ prefix: '/auth' })
-      .get('/profiles', ({ headers }) => deps.listProfiles.execute(accountContext(headers)))
+      .get('/profiles', ({ headers }) =>
+        deps.listProfiles.execute(accountContext(headers), {
+          includePending: !headers['x-auth-account-id']?.trim(),
+        }),
+      )
       .post(
         '/profiles',
         async ({ headers, body, set }) => {
           const actor = requireAccountSession(headers)
           const profile = await deps.createProfile.execute({
+            requestId: body.requestId,
             accountUserId: actor.id,
             // Equipe interna (superadmin/admin/staff) cria perfis ILIMITADOS p/ testar.
             privileged: isPrivilegedRole(actor.role),
@@ -170,6 +175,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             throw new ForbiddenError(VOICE_INPUT_PARENT_ONLY_MESSAGE)
           }
           const profile = await deps.updateProfile.execute({
+            profileSession: Boolean(headers['x-auth-account-id']?.trim()),
             accountUserId,
             profileId: params.id,
             name: body.name,

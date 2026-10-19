@@ -11,6 +11,11 @@ import { cadeTodoMundo } from './quizzes-cursos-curtos'
 
 const DIR = resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo')
 const CURSO = 'cade-todo-mundo'
+const EXEMPLOS = {
+  inicio: 'ca000001-0000-4000-8000-000000000001',
+  revelar: 'ca000002-0000-4000-8000-000000000002',
+  contar: 'ca000003-0000-4000-8000-000000000003',
+}
 const video = (key: string, title: string, direction: string) => ({
   key,
   plannedVideo: `Título: ${title}\n\n${direction}\n\nRoteiro falado completo: ${CURSO}-${key.includes('cert') ? 'certificado' : key.includes('a2') ? 'aula-2' : 'aula-1'}.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.`,
@@ -80,6 +85,33 @@ const studio = (
         }
       : {}),
     initialProject,
+    projectExamples: publishOnMural
+      ? {
+          version: 1,
+          examples: {
+            [EXEMPLOS.revelar]: montarProjetoCadeTodoMundo(true),
+            [EXEMPLOS.contar]: montarProjetoCadeTodoMundoCompleto(),
+          },
+          sections: {
+            'contar-achados': {
+              entryExampleId: EXEMPLOS.revelar,
+              solutionExampleId: EXEMPLOS.contar,
+            },
+          },
+        }
+      : {
+          version: 1,
+          examples: {
+            [EXEMPLOS.inicio]: montarProjetoCadeTodoMundo(),
+            [EXEMPLOS.revelar]: montarProjetoCadeTodoMundo(true),
+          },
+          sections: {
+            'primeiro-achado': {
+              entryExampleId: EXEMPLOS.inicio,
+              solutionExampleId: EXEMPLOS.revelar,
+            },
+          },
+        },
   },
 })
 
@@ -346,7 +378,7 @@ const aula2 = {
         },
         {
           id: 'somar-achado',
-          label: 'Conte um achado depois de revelar o personagem.',
+          label: 'Some 1 em achados dentro do evento de clicar ou tocar no esconderijo.',
           rule: {
             type: 'usesBlock',
             blockType: 'sz_js_var_increment',

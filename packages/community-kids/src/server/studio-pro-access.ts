@@ -1,4 +1,4 @@
-import { resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
+import { hasKidsCapability, isKidsStaffPreview, type KidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 
 interface StudioProSession {
   role: string
@@ -9,7 +9,7 @@ export type StudioProAccessDecision =
   | { allowed: true }
   | {
       allowed: false
-      code: 'PROFILE_SESSION_REQUIRED' | 'STUDIO_ACCESS_REQUIRED' | 'STUDIO_PRO_TIER_REQUIRED'
+      code: 'PROFILE_SESSION_REQUIRED' | 'STUDIO_ACCESS_REQUIRED' | 'STUDIO_PRO_TIER_REQUIRED' | 'JOURNEY_UNAVAILABLE'
     }
 
 /**
@@ -20,15 +20,18 @@ export type StudioProAccessDecision =
 export function resolveStudioProAccess({
   session,
   studioAccess,
-  levelSlug,
+  journey,
 }: {
   session: StudioProSession | null
   studioAccess: boolean
-  levelSlug: string | undefined
+  journey: KidsJourneyAccess | null
 }): StudioProAccessDecision {
-  if (!session?.activeProfile) return { allowed: false, code: 'PROFILE_SESSION_REQUIRED' }
+  const preview = journey !== null && isKidsStaffPreview(journey)
+  if (!session || (preview ? Boolean(session.activeProfile) : !session.activeProfile))
+    return { allowed: false, code: 'PROFILE_SESSION_REQUIRED' }
   if (!studioAccess) return { allowed: false, code: 'STUDIO_ACCESS_REQUIRED' }
-  if (!resolveStudioTier(levelSlug, session.role).pro) {
+  if (!journey) return { allowed: false, code: 'JOURNEY_UNAVAILABLE' }
+  if (!hasKidsCapability(journey, 'studio') || !hasKidsCapability(journey, 'pro')) {
     return { allowed: false, code: 'STUDIO_PRO_TIER_REQUIRED' }
   }
   return { allowed: true }

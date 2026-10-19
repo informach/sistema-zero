@@ -327,6 +327,7 @@ export class AwardGamificationService {
     userId: string
     accountId: string
     audience: CourseAudience
+    publishedAt?: Date
     monthKey: string
   }): Promise<GamificationDeltaView | null> {
     return this.award(
@@ -341,6 +342,8 @@ export class AwardGamificationService {
         },
       ],
       false,
+      true,
+      { occurredAt: input.publishedAt },
     )
   }
 
@@ -418,9 +421,11 @@ export class AwardGamificationService {
     accountId: string
     audience: CourseAudience
     /** playId público do post no Mural (uuid do hub). */
+    publishedAt?: Date
     playId: string
   }): Promise<GamificationDeltaView | null> {
-    const dayKey = localDateSaoPaulo(this.clock())
+    const occurredAt = input.publishedAt ? new Date(input.publishedAt.getTime()) : this.clock()
+    const dayKey = localDateSaoPaulo(occurredAt)
     return this.award(
       input.userId,
       input.accountId,
@@ -435,6 +440,8 @@ export class AwardGamificationService {
         },
       ],
       false,
+      true,
+      { occurredAt, standalonePublicationId: input.playId },
     )
   }
 
@@ -555,14 +562,18 @@ export class AwardGamificationService {
     events: AwardXpEventInput[],
     privileged: boolean,
     failOpen = true,
+    origin: { occurredAt?: Date; standalonePublicationId?: string } = {},
   ): Promise<GamificationDeltaView | null> {
-    const now = this.clock()
+    const now = origin.occurredAt ? new Date(origin.occurredAt.getTime()) : this.clock()
     try {
       const result = await this.repo.award({
         userId,
         accountId,
         audience,
         events,
+        ...(origin.standalonePublicationId
+          ? { standalonePublicationId: origin.standalonePublicationId }
+          : {}),
         today: localDateSaoPaulo(now),
         now,
         privileged,

@@ -249,6 +249,7 @@ export const ProfileIdParams = t.Object({ id: t.String({ pattern: UUID_PATTERN }
 
 /** Corpo de `POST /auth/profiles` (criar perfil de criança). */
 export const CreateProfileBody = t.Object({
+  requestId: t.String({ pattern: UUID_PATTERN }),
   name: PROFILE_NAME,
   avatarUrl: t.Optional(PROFILE_AVATAR),
   whatsapp: t.Optional(PROFILE_WHATSAPP),

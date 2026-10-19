@@ -127,6 +127,7 @@ export async function pythonGalleryFixture(
         storageRef: 'original/project.gz',
         uploadedParts: source.item.parts.map((part) => part.hash),
         verifiedPartHashes: source.item.parts.map((part) => part.hash),
+        verifiedFormatVersion: 3,
         now: new Date(),
         limits,
       })

@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Jornada Kids canônica (implementação isolada, 19/10/2026)
+
+O caminho Kids traduz a view canônica pelo adapter kidsStudioTier/kids-journey-access; não
+calcula liberação por rank fixo ou usa defaults de nível quando Members falha. Produto, paleta
+curricular, extensões, linguagem e runtime permanecem autoridades separadas. Preview de equipe
+própria vem de endpoint explícito e não concede posto ou earned virtual. Guardas de rota fazem
+a autorização real; flags/roles do cliente não habilitam Pro/IA. Preserve remix/leitura de
+projetos já existentes e todos os contratos JS/Python. Antigos exemplos resolveStudioTier nos
+registros históricos abaixo não são autoridade normal Kids. Gates integrados ainda pendentes.
+
 ## Estúdio JS/Python e audiência do host (18/10/2026)
 
 Os dois hosts usam os mesmos editores e rotas; a audiência estática de `createShell` acompanha descoberta, autorização e owners dos hooks. A identidade real do adulto segue para Members/Pensa; o namespace local `adult:<id>` serve apenas ao armazenamento. O BFF recusa contexto de audiência incompatível e o servidor reaplica política e posse na operação.

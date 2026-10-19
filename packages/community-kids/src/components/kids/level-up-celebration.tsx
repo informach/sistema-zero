@@ -30,7 +30,7 @@ export function LevelUpCelebration({
   /** Ferramenta ganha no MESMO momento; `null` = só subiu de nível. */
   tools?: ToolsGain | null
   /**
-   * O que o Molda ganhou neste posto (`moldaLevelGain`), só para quem tem o produto;
+   * O ganho real do Molda desde a observação anterior, só para quem tem o produto;
    * `null` = nada a dizer do Molda.
    */
   molda?: string | null
@@ -86,7 +86,9 @@ export function LevelUpCelebration({
         <h2 className="sz-display mt-1 text-3xl" style={{ color: info.colorVar }}>
           Agora você é {info.label}!
         </h2>
-        <p className="mt-2 text-muted-foreground text-sm">{info.blurb}</p>
+        <p className="mt-2 text-muted-foreground text-sm">
+          Você conquistou mais um posto na sua jornada de criação!
+        </p>
 
         {tools ? (
           <p className="mt-4 rounded-2xl bg-primary/10 px-4 py-3 font-bold text-primary text-sm">

@@ -45,16 +45,20 @@ export function createStudioArtifactHttpGateway(
   const now = opts.now ?? (() => new Date())
 
   return {
-    async cleanupShowcaseArtifacts(args: CleanupShowcaseArtifactsArgs): Promise<void> {
-      if (!opts.hmacSecret) return
+    async cleanupShowcaseArtifacts(args: CleanupShowcaseArtifactsArgs): Promise<boolean> {
+      if (!opts.hmacSecret) return false
       const targetBase = args.audience === 'adult' ? adultBase : base
       if (!targetBase) {
         opts.logger?.warn('studio.cleanup_destination_missing', {
           audience: args.audience ?? 'kids',
         })
-        return
+        return false
       }
-      const rawBody = JSON.stringify({ playId: args.playId, coverUrl: args.coverUrl })
+      const rawBody = JSON.stringify({
+        authorId: args.authorId,
+        playId: args.playId,
+        coverUrl: args.coverUrl,
+      })
       const deliveryId = randomUUID()
       for (let attempt = 1; attempt <= CLEANUP_ATTEMPTS; attempt++) {
         try {
@@ -67,6 +71,7 @@ export function createStudioArtifactHttpGateway(
           )
           const res = await doFetch(`${targetBase}${CLEANUP_PATH}`, {
             method: 'POST',
+            redirect: 'error',
             headers: {
               'content-type': 'application/json',
               'x-signature': `t=${ts},v1=${signature}`,
@@ -75,7 +80,8 @@ export function createStudioArtifactHttpGateway(
             body: rawBody,
             signal: AbortSignal.timeout(timeoutMs),
           })
-          if (res.ok) return
+          await res.body?.cancel()
+          if (res.ok) return true
           if (retryableStatus(res.status) && attempt < CLEANUP_ATTEMPTS) {
             await delay(CLEANUP_RETRY_BASE_MS * attempt)
             continue
@@ -85,7 +91,7 @@ export function createStudioArtifactHttpGateway(
             status: res.status,
             attempt,
           })
-          return
+          return false
         } catch (error) {
           if (attempt < CLEANUP_ATTEMPTS) {
             await delay(CLEANUP_RETRY_BASE_MS * attempt)
@@ -97,9 +103,10 @@ export function createStudioArtifactHttpGateway(
             attempt,
             error: error instanceof Error ? error.message : String(error),
           })
-          return
+          return false
         }
       }
+      return false
     },
   }
 }

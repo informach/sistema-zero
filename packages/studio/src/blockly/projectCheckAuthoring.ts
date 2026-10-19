@@ -4,12 +4,17 @@ import {
   evaluateProjectStructure,
   executionProjectChecks,
   executionRuleBudgetMs,
+  inspectLessonStudioProjectExamples,
   isExecutionRule,
   isProjectBlockPattern,
   isSectionCompletion,
   isSectionExecutionRule,
   type LessonSection,
   PROJECT_CHECK_AREAS,
+  type ProjectEntryReport,
+  type ProjectObjectiveVerdictRow,
+  projectEntryReport,
+  resolveStudioSectionExamples,
   type SectionExecutionRule,
   type SectionJavaScriptProjectCheck,
   type SectionObjectiveRule,
@@ -587,11 +592,18 @@ export function projectCheckAuthoring(workspace: unknown) {
   return { available, areas, issues, containers, inputs: projectCheckInputs }
 }
 
-export function studioSectionCompletionIssues(
+export function studioSectionCompletionReview(
   sections: LessonSection[],
   blocks: { id: string; content: unknown }[],
 ) {
-  return [
+  const examples = inspectLessonStudioProjectExamples(sections, blocks)
+  const entryReports: {
+    sectionId: string
+    initial: ProjectEntryReport
+    checkpoint: ProjectEntryReport | null
+  }[] = []
+  if (examples.issues.length) return { issues: examples.issues, entryReports }
+  const issues = [
     ...sectionCompletionIssues(sections, blocks),
     ...sections.flatMap((section) => {
       if (!isSectionCompletion(section.completion)) return []
@@ -620,41 +632,89 @@ export function studioSectionCompletionIssues(
         ]
       const content = record(workspace.content) ? workspace.content : {}
       const initial = content.initialProject
-      // O que o jogo FAZ só se confere rodando: a publicação exige o gabarito, e quem o roda é o
-      // "Testar agora" da autoria (o executor não entra no caminho de publicar).
-      if (executionProjectChecks(checks).length && content.solutionProject === undefined)
-        return [
-          {
-            sectionId: section.id,
-            message:
-              'Objetivos que rodam o jogo precisam de um gabarito: crie o gabarito no bloco do Estúdio e use "Testar agora".',
-          },
-        ]
+      const resolved = resolveStudioSectionExamples(
+        examples.registries.get(workspace.id),
+        section.id,
+      )
+      if (resolved.kind === 'invalid')
+        return resolved.issues.map((issue) => ({ sectionId: section.id, message: issue.message }))
+      const solution = resolved.kind === 'resolved' ? resolved.solution : undefined
+      const checkpoint = resolved.kind === 'resolved' ? resolved.entry : undefined
       const nameOf = (id: string) => checks.find((check) => check.id === id)?.label ?? id
       // Inicial e gabarito são conferidos aqui só na ESTRUTURA; a execução é do "Testar agora".
       const structural = checks.filter(
         (check): check is SectionJavaScriptProjectCheck =>
           check.programmingLanguage !== 'python' && !isExecutionRule(check.rule),
       )
-      // Um obrigatório que o projeto inicial já cumpre deixa a criança passar sem fazer nada.
-      const free =
-        initial === undefined
-          ? []
-          : evaluateStudioSectionObjectives(structural, initial, initial)
-              .results.filter((result) => !result.optional && result.passed)
-              .map((result) => ({
-                sectionId: section.id,
-                message: `O projeto inicial já cumpre o objetivo obrigatório "${nameOf(
-                  result.checkId,
-                )}". Mude o objetivo ou o projeto inicial.`,
-              }))
+      const syncing = (project: unknown) => record(project) && project.bridgeCodeAhead === true
+      const entryReport = (project: unknown) => {
+        const results =
+          project === undefined || syncing(project)
+            ? []
+            : evaluateStudioSectionObjectives(
+                structural.filter((check) => !syncing(initial) || check.rule.type === 'usesBlock'),
+                project,
+                initial,
+              ).results
+        return projectEntryReport(
+          checks.map<ProjectObjectiveVerdictRow>((check) => ({
+            id: check.id,
+            optional: Boolean(check.optional),
+            verdict:
+              syncing(project) || (syncing(initial) && check.rule.type !== 'usesBlock')
+                ? 'inconclusive'
+                : check.programmingLanguage === 'python' || isExecutionRule(check.rule)
+                  ? 'pending'
+                  : project === undefined
+                    ? 'inconclusive'
+                    : (results.find((result) => result.checkId === check.id)?.passed ??
+                      'inconclusive'),
+          })),
+        )
+      }
+      entryReports.push({
+        sectionId: section.id,
+        initial: entryReport(initial),
+        checkpoint: checkpoint === undefined ? null : entryReport(checkpoint),
+      })
+      if (syncing(solution))
+        return [
+          {
+            sectionId: section.id,
+            message:
+              'A solução desta parte ainda está sincronizando o código e os blocos. Aguarde a sincronização e guarde um snapshot atualizado antes de publicar.',
+          },
+        ]
+      if (
+        solution !== undefined &&
+        syncing(initial) &&
+        structural.some((check) => !check.optional && check.rule.type !== 'usesBlock')
+      )
+        return [
+          {
+            sectionId: section.id,
+            message:
+              'O projeto inicial ainda está sincronizando. Aguarde antes de comparar as ideias da solução com a base da aula.',
+          },
+        ]
+      // Prepared prerequisites are legitimate. An all-true aggregate is an authoring warning,
+      // never a claim that video, quiz, delivery or the whole part is already complete.
+      if (
+        executionProjectChecks(checks.filter((check) => !check.optional)).length &&
+        solution === undefined
+      )
+        return [
+          {
+            sectionId: section.id,
+            message:
+              'Objetivos obrigatórios que rodam o jogo precisam de uma solução desta parte. Prepare a solução na parte e use "Testar agora".',
+          },
+        ]
       // O gabarito da professora precisa cumprir o que a parte exige: um objetivo obrigatório que
       // nem o gabarito cumpre é um objetivo que a criança não consegue cumprir.
-      const solution = content.solutionProject
-      if (solution === undefined) return free
+      if (solution === undefined) return []
       const { results } = evaluateStudioSectionObjectives(structural, solution, initial)
       return [
-        ...free,
         ...results
           .filter((result) => !result.optional && !result.passed)
           .map((result) => ({
@@ -666,4 +726,12 @@ export function studioSectionCompletionIssues(
       ]
     }),
   ]
+  return { issues, entryReports }
+}
+
+export function studioSectionCompletionIssues(
+  sections: LessonSection[],
+  blocks: { id: string; content: unknown }[],
+) {
+  return studioSectionCompletionReview(sections, blocks).issues
 }

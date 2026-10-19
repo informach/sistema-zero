@@ -28,7 +28,17 @@ export function createEditorLanguageProbe() {
     async handle(request: Request): Promise<Response> {
       const path = new URL(request.url).pathname.replace('/api/studio/python-language', '')
       if (path === '/metrics')
-        return Response.json({ opened, closed, alive: sessions.size, methods })
+        return Response.json({
+          opened,
+          closed,
+          alive: sessions.size,
+          methods,
+          sessions: [...sessions].map(([id, session]) => ({
+            id,
+            projectId: session.projectId,
+            started: Boolean(session.language),
+          })),
+        })
       if (path === '' && request.method === 'POST') {
         const authorization = StudioPythonAnalysisAuthorizationSchema.parse(
           (await request.json()).authorization,

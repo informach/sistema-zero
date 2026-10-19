@@ -14,13 +14,11 @@ describe('chrome global de comemoração', () => {
   })
 })
 
-describe('a linha do Molda na comemoração', () => {
-  test('a frase chega pronta ao watcher, e a posse só é perguntada nos postos das faixas', () => {
-    expect(layoutSource).toContain('moldaGain=')
-    expect(layoutSource).toMatch(
-      /const gain = moldaLevelGain\(levelSlug\)\s*const moldaRes = gain \? await checkMoldaAccessReadonly\(\)/,
-    )
-    // A frase só passa com a posse CONFIRMADA (produtos vendidos à parte).
-    expect(layoutSource).toMatch(/access\?\.molda === true \? gain : null/)
+describe('Molda and journey observation remain separate from curriculum payloads', () => {
+  test('the chrome passes the canonical view and product state without a rank-derived band promise', () => {
+    expect(layoutSource).toContain('journey=')
+    expect(layoutSource).toContain('ownsMolda=')
+    expect(layoutSource).not.toContain('moldaLevelGain')
+    expect(layoutSource).toContain('key={session.id}')
   })
 })

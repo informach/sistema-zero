@@ -1,9 +1,9 @@
 import type { CourseAudience } from '../../domain/course/course'
-import { emptyQualifyingByTier } from '../../domain/gamification/levels'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
-import { journeyLocksForCourses } from '../journey-course-locking/journey-course-locking'
+import { journeyLockViews } from '../journey-course-locking/journey-course-locking'
+import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
 import { type CatalogCourseView, toCatalogCourseView } from '../mappers/views'
 
 /**
@@ -18,6 +18,7 @@ export class ListCatalogService {
     private readonly entitlements: EntitlementRepository,
     private readonly gamification: GamificationRepository,
     private readonly clock: () => Date,
+    private readonly kidsJourney: Pick<KidsJourneyQueryService, 'courseState'>,
   ) {}
 
   async execute(
@@ -27,18 +28,18 @@ export class ListCatalogService {
     accountId?: string,
   ): Promise<CatalogCourseView[]> {
     // `hasAccess` resolve a matrícula pela CONTA (sessão de perfil → accountId).
-    // ⚠️ Os MARCOS não seguem o `!privileged` do `qualified`: aquele é uma TRAVA
-    // (equipe passa por cima), estes são o histórico do próprio ator — esconder
-    // deles só apagaria o selo de quem testa a vitrine. Kids porque o Mural é kids.
-    const [published, active, journeyState] = await Promise.all([
+    // Normal Kids locks/badges use one policy/ledger snapshot; team bypass keeps only actual badges.
+    const [published, active, staffMilestones] = await Promise.all([
       this.courses.listPublishedCourses(audience),
       this.entitlements.listActiveByUser(accountId ?? userId, this.clock()),
-      audience === 'kids'
-        ? this.gamification.listJourneyCourseState(userId, audience)
+      audience === 'kids' && privileged
+        ? this.gamification.listCourseMilestones(userId, audience)
         : Promise.resolve(null),
     ])
-    const qualified = journeyState && !privileged ? journeyState.qualified : emptyQualifyingByTier()
-    const milestones = journeyState?.milestones ?? new Map()
+    const journeyState = audience === 'kids' && !privileged
+      ? await this.kidsJourney.courseState({ userId, accountId: accountId ?? userId }, published.map((course) => course.id))
+      : null
+    const milestones = journeyState?.milestones ?? staffMilestones ?? new Map()
 
     // Chave-mestra POR AUDIÊNCIA destrava a vitrine inteira (atuais e futuros):
     // `all_courses` na adulta, `all_kids_courses` na kids (cada uma só na sua).
@@ -50,11 +51,7 @@ export class ListCatalogService {
       if (e.accessType === 'course' && e.courseRef) owned.add(e.courseRef)
     }
 
-    const journeyLocks = journeyLocksForCourses(
-      published,
-      qualified,
-      audience === 'kids' && !privileged,
-    )
+    const journeyLocks = journeyLockViews(published, journeyState?.locks ?? null)
     return published.map((course) =>
       toCatalogCourseView(
         course,

@@ -84,9 +84,11 @@ describe('host kids', () => {
 
 describe('member-shell e catálogo', () => {
   test('portão de jornada e refs de acesso', () => {
-    expect(read('packages/member-shell/src/lib/studio-tier.ts')).toContain(
-      'THREE_D_CREATION_MIN_LEVEL',
-    )
+    const gate = read('packages/community-kids/src/lib/molda-tool-access.ts')
+    expect(gate).toContain('KIDS_MOLDA_BAND_CAPABILITIES')
+    expect(gate).not.toContain('journeyLevelAtLeast')
+    expect(gate).not.toContain('moldaPreviewLevel')
+    expect(read('packages/community-kids/src/app/(app)/molda/page.tsx')).toContain("hasKidsCapability(journey, 'molda')")
     const clients = read('packages/member-shell/src/server/clients.ts')
     expect(clients).toContain("MOLDA_ACCESS_REF = 'molda'")
     expect(clients).toContain('checkMoldaAccessReadonly')

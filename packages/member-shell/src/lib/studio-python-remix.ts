@@ -34,6 +34,7 @@ export async function pythonRemixCapabilities(
 export async function authorizePythonRemix(input: {
   snapshot: unknown
   viewerId: string
+  audience: 'kids' | 'adult'
   options: unknown
   request: (request: StudioFreeRuntimeRequest) => Promise<unknown>
   signal: AbortSignal
@@ -51,7 +52,7 @@ export async function authorizePythonRemix(input: {
     throw new Error('Este ambiente Python ainda não está disponível para criar sua versão.')
   const subject = studioRuntimeSubject(project)
   const snapshot = await preparePythonExecutionSnapshot(project)
-  const context = { kind: 'free' as const, audience: 'kids' as const, projectId: project.id }
+  const context = { kind: 'free' as const, audience: input.audience, projectId: project.id }
   input.signal.throwIfAborted()
   const decision = StudioFreeRuntimeDecisionSchema.parse(
     await input.request({

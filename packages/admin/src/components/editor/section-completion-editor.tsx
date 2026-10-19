@@ -29,8 +29,11 @@ import {
   type ExecutedProjects,
   ExecutionTestRejectedError,
   executionChecksOf,
+  OBJECTIVE_PROJECT_ROLES,
+  type ObjectiveVerdict,
+  resolveSectionObjectiveProjects,
   runExecutionTest,
-  testSectionObjectives,
+  testResolvedSectionObjectives,
 } from '@/lib/objectives-test'
 import type { StudioAuthoringRuntimeScope } from '../studio/use-studio-authoring-runtime'
 import { ExecutionRuleEditor } from './execution-rule-editor'
@@ -62,14 +65,11 @@ const NOT_EXECUTED: ExecutedProjects = {}
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-function verdictLabel(
-  verdict: boolean | null | 'pending' | 'error',
-  none: string,
-  running: boolean,
-): string {
+function verdictLabel(verdict: ObjectiveVerdict, none: string, running: boolean): string {
   if (verdict === null) return none
   if (verdict === 'pending') return running ? 'testando…' : 'aperte Testar agora'
   if (verdict === 'error') return 'não deu para testar'
+  if (verdict === 'inconclusive') return 'inconclusivo'
   return verdict ? 'cumpre' : 'falta'
 }
 
@@ -79,6 +79,8 @@ export function SectionCompletionEditor({
   hasStudio,
   allowBlocks,
   workspace,
+  sectionId,
+  workspaceBlockId,
   runtimeScope,
   allowPlatformAction = true,
   allowSubmissionUpToDate = false,
@@ -95,6 +97,8 @@ export function SectionCompletionEditor({
   hasStudio: boolean
   allowBlocks?: string[]
   workspace?: unknown
+  sectionId?: string
+  workspaceBlockId?: string | null
   runtimeScope?: StudioAuthoringRuntimeScope
   allowPlatformAction?: boolean
   /** A seção trabalha num Estúdio ou Pinta incorporado (não a galeria): o "envio em dia" cabe. */
@@ -112,8 +116,14 @@ export function SectionCompletionEditor({
     parsedProject?.success && parsedProject.data.programmingLanguage === 'python'
       ? parsedProject.data.runtime.profileId
       : null
-  const pythonChecks = allChecks.filter((check) => check.programmingLanguage === 'python')
-  const checks = allChecks.filter((check) => check.programmingLanguage !== 'python')
+  const pythonChecks = useMemo(
+    () => allChecks.filter((check) => check.programmingLanguage === 'python'),
+    [allChecks],
+  )
+  const checks = useMemo(
+    () => allChecks.filter((check) => check.programmingLanguage !== 'python'),
+    [allChecks],
+  )
   const mismatched = allChecks.some(
     (check) =>
       (check.programmingLanguage === 'python') !== python ||
@@ -208,64 +218,78 @@ export function SectionCompletionEditor({
       throw error
     }
   })()
-  // O "Testar agora" fica vivo depois do primeiro clique: mexer num objetivo ou no gabarito
-  // (que chega pelo autosave) atualiza o resultado na hora.
+  // Structure updates immediately. Execution belongs to one captured part/revision/context.
   const [tested, setTested] = useState(false)
-  // Os objetivos que RODAM o jogo vão ao executor (segundos): o resultado vale para os objetivos
-  // e os projetos daquele clique. Mudou algum? A linha pede um teste novo.
-  const content =
-    typeof workspace === 'object' && workspace !== null
-      ? (workspace as Record<string, unknown>)
-      : {}
-  const executionKey = JSON.stringify(
-    executionChecksOf(checks).map((check) => [check.id, check.rule]),
+  const references = useMemo(
+    () => resolveSectionObjectiveProjects(workspace, sectionId),
+    [workspace, sectionId],
   )
+  const executionOwner = useMemo(
+    () => ({ sectionId, workspaceBlockId, references, criteriaKey, scopeKey }),
+    [sectionId, workspaceBlockId, references, criteriaKey, scopeKey],
+  )
+  const latestExecutionOwner = useRef(executionOwner)
+  latestExecutionOwner.current = executionOwner
+  const executionLifetime = useRef<{
+    owner: typeof executionOwner
+    controller: AbortController
+  } | null>(null)
   const [run, setRun] = useState<{
-    key: string
-    initial: unknown
-    solution: unknown
+    owner: typeof executionOwner
     executed: ExecutedProjects
   } | null>(null)
-  const runRequest = useRef(0)
-  const runCurrent =
-    run &&
-    run.key === executionKey &&
-    run.initial === content.initialProject &&
-    run.solution === content.solutionProject
+  useEffect(
+    () => () => {
+      if (executionLifetime.current?.owner === executionOwner)
+        executionLifetime.current.controller.abort()
+    },
+    [executionOwner],
+  )
+  const runCurrent = run?.owner === executionOwner
   const executed: ExecutedProjects = runCurrent && run ? run.executed : NOT_EXECUTED
-  const running = runCurrent && (executed.initial === 'pending' || executed.solution === 'pending')
+  const running = runCurrent && OBJECTIVE_PROJECT_ROLES.some((role) => executed[role] === 'pending')
   const report = useMemo(
-    () => (tested ? testSectionObjectives(checks, workspace, executed) : null),
-    [tested, checks, workspace, executed],
+    () => (tested ? testResolvedSectionObjectives(checks, references, executed) : null),
+    [tested, checks, references, executed],
   )
   const runExecution = () => {
     const execution = executionChecksOf(checks)
-    if (!execution.length) return
-    const request = ++runRequest.current
-    const base = {
-      key: executionKey,
-      initial: content.initialProject,
-      solution: content.solutionProject,
-    }
-    const projects = { initial: content.initialProject, solution: content.solutionProject } as const
+    executionLifetime.current?.controller.abort()
+    if (!execution.length || references.problems.length) return
+    const controller = new AbortController()
+    const owner = executionOwner
+    executionLifetime.current = { owner, controller }
+    // Queueing the three roles must not observe a later mutation of the editor's objects.
+    const projects = structuredClone(references)
+    const capturedChecks = structuredClone(checks)
     const executedNow: ExecutedProjects = {}
-    for (const which of ['initial', 'solution'] as const)
-      if (projects[which] !== undefined) executedNow[which] = 'pending'
-    setRun({ ...base, executed: { ...executedNow } })
-    for (const which of ['initial', 'solution'] as const) {
-      if (projects[which] === undefined) continue
-      runExecutionTest(projects[which], checks, fetch, content.initialProject)
-        .then((outcome) => {
-          executedNow[which] = outcome
-        })
-        .catch((error: unknown) => {
-          executedNow[which] =
+    const syncing = (project: unknown) => record(project) && project.bridgeCodeAhead === true
+    for (const role of OBJECTIVE_PROJECT_ROLES)
+      if (projects[role] != null && !syncing(projects[role]) && !syncing(projects.initial))
+        executedNow[role] = 'pending'
+    const current = () => !controller.signal.aborted && latestExecutionOwner.current === owner
+    setRun({ owner, executed: { ...executedNow } })
+    // Keep one executor request in flight; checkpoints do not create three parallel games.
+    void (async () => {
+      for (const role of OBJECTIVE_PROJECT_ROLES) {
+        if (!current()) return
+        if (executedNow[role] !== 'pending') continue
+        try {
+          executedNow[role] = await runExecutionTest(
+            projects[role],
+            capturedChecks,
+            fetch,
+            projects.initial,
+            controller.signal,
+          )
+        } catch (error) {
+          if (!current()) return
+          executedNow[role] =
             error instanceof ExecutionTestRejectedError ? { rejected: error.message } : 'error'
-        })
-        .finally(() => {
-          if (runRequest.current === request) setRun({ ...base, executed: { ...executedNow } })
-        })
-    }
+        }
+        if (current()) setRun({ owner, executed: { ...executedNow } })
+      }
+    })()
   }
   const patchCheck = (
     id: string,
@@ -685,8 +709,9 @@ export function SectionCompletionEditor({
             {running ? 'Rodando o jogo…' : 'Testar agora'}
           </Button>
           <p className="text-xs text-muted-foreground">
-            Confere os objetivos no projeto inicial (deve faltar) e no gabarito (deve cumprir). Os
-            que rodam o jogo levam alguns segundos.
+            Confere o projeto inicial, o exemplo de entrada (se houver) e uma solução possível desta
+            parte. Pré-requisitos preparados podem estar cumpridos. Os testes de execução rodam um
+            projeto por vez e levam alguns segundos.
           </p>
           {report && (
             <div role="status" className="space-y-2 rounded-lg border border-border p-3 text-sm">
@@ -696,8 +721,9 @@ export function SectionCompletionEditor({
                     <span>
                       <span className="font-medium">{row.label}</span>
                       {row.optional ? ' (extra)' : ''}: inicial{' '}
-                      {verdictLabel(row.initial, 'sem projeto', running === true)} · gabarito{' '}
-                      {verdictLabel(row.solution, 'sem gabarito', running === true)}
+                      {verdictLabel(row.initial, 'sem projeto', running === true)} · entrada desta
+                      parte {verdictLabel(row.checkpoint, 'sem exemplo', running === true)} ·
+                      gabarito {verdictLabel(row.solution, 'sem gabarito', running === true)}
                     </span>
                     {row.solutionDetail && (
                       <span className="block text-xs text-muted-foreground">
@@ -731,6 +757,9 @@ export function SectionCompletionEditor({
               {report.problems.length === 0 &&
                 report.rows.every(
                   (row) => typeof row.initial === 'boolean' && typeof row.solution === 'boolean',
+                ) &&
+                report.rows.every(
+                  (row) => row.checkpoint === null || typeof row.checkpoint === 'boolean',
                 ) && <p className="text-success-foreground">Nenhum problema nos objetivos.</p>}
             </div>
           )}

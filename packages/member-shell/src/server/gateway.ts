@@ -60,7 +60,12 @@ export async function clientForwardHeaders(): Promise<ForwardHeaders> {
   }
 }
 
-async function rawFetch(path: string, opts: CallOpts, access: string | null): Promise<Response> {
+async function rawFetch(
+  path: string,
+  opts: CallOpts,
+  access: string | null,
+  signedConsumer = false,
+): Promise<Response> {
   const env = getEnv()
   const url = new URL(path, env.GATEWAY_URL)
   if (opts.query) {
@@ -73,11 +78,24 @@ async function rawFetch(path: string, opts: CallOpts, access: string | null): Pr
     ...(await clientForwardHeaders()),
   }
   if (access) reqHeaders.authorization = `Bearer ${access}`
+  const rawBody = opts.body === undefined ? '' : JSON.stringify(opts.body)
+  if (signedConsumer) {
+    if (!env.MEMBER_SHELL_HMAC_SECRET)
+      return Response.json({ error: { code: 'SERVICE_UNAVAILABLE' } }, { status: 503 })
+    const timestamp = Math.floor(Date.now() / 1000)
+    const signature = signHmac(
+      env.MEMBER_SHELL_HMAC_SECRET,
+      canonicalHmacMessage({ method: opts.method ?? 'GET', path: url.pathname, body: rawBody }),
+      timestamp,
+    )
+    reqHeaders['x-consumer-id'] = 'member-shell'
+    reqHeaders['x-signature'] = `t=${timestamp},v1=${signature}`
+  }
   try {
     return await fetch(url, {
       method: opts.method ?? 'GET',
       headers: reqHeaders,
-      body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+      body: opts.body !== undefined ? rawBody : undefined,
       cache: 'no-store',
       signal: AbortSignal.any([
         AbortSignal.timeout(opts.timeoutMs ?? GATEWAY_TIMEOUT_MS),
@@ -142,6 +160,7 @@ export function createGatewayModule(session: SessionModule) {
     opts: CallOpts,
     access: string | null,
     readOnly = false,
+    signedConsumer = false,
   ): Promise<Response> {
     if (session.audience === 'adult') {
       const verdict = access ? await session.verifyAccessTokenLocally(access) : null
@@ -181,7 +200,7 @@ export function createGatewayModule(session: SessionModule) {
         )
       }
     }
-    return rawFetch(path, opts, access)
+    return rawFetch(path, opts, access, signedConsumer)
   }
   /**
    * Rotação de tokens (gateway → auth /refresh) via `refreshTokens` (single-flight
@@ -227,6 +246,29 @@ export function createGatewayModule(session: SessionModule) {
     if (res.status === 401) {
       const renewed = await tryRefresh()
       if (renewed) res = await authenticatedFetch(path, opts, renewed)
+    }
+    return {
+      status: res.status,
+      body: await readJson<T>(res),
+      ...(res.headers.get('retry-after') ? { retryAfter: res.headers.get('retry-after')! } : {}),
+    }
+  }
+
+  /** Student JWT plus the member-shell service proof on the exact same JSON body. */
+  async function gatewayFetchDual<T = unknown>(
+    path: string,
+    opts: CallOpts,
+  ): Promise<GatewayResponse<T>> {
+    if (!getEnv().MEMBER_SHELL_HMAC_SECRET)
+      return { status: 503, body: { error: { code: 'SERVICE_UNAVAILABLE' } } as T }
+    // Capture one immutable JSON value before either transport attempt or token refresh.
+    const stable = opts.body === undefined ? undefined : JSON.parse(JSON.stringify(opts.body))
+    const signedOpts = { ...opts, body: stable }
+    const access = await session.getAccessToken()
+    let res = await authenticatedFetch(path, signedOpts, access, false, true)
+    if (res.status === 401) {
+      const renewed = await tryRefresh()
+      if (renewed) res = await authenticatedFetch(path, signedOpts, renewed, false, true)
     }
     return {
       status: res.status,
@@ -410,6 +452,7 @@ export function createGatewayModule(session: SessionModule) {
   return {
     tryRefresh,
     gatewayFetch,
+    gatewayFetchDual,
     gatewayFetchWithRefreshProof,
     gatewayFetchReadonly,
     gatewayFetchHmac,

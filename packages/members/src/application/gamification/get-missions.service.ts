@@ -1,7 +1,7 @@
-import { creativeToolAvailability } from '@sistemazero/core/journey'
+import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
+import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
 import type { CourseAudience } from '../../domain/course/course'
 import { localDateSaoPaulo } from '../../domain/gamification/gamification'
-import { computeStudentLevel } from '../../domain/gamification/levels'
 import {
   assignDailyMissions,
   assignMonthlyMissions,
@@ -34,6 +34,7 @@ export class GetMissionsService {
     private readonly accessCheck: AccessCheckService,
     private readonly clock: () => Date,
     private readonly listMyCourses: ListMyCoursesService,
+    private readonly kidsJourney: Pick<KidsJourneyQueryService, 'get' | 'staffPreview'>,
     /** Vaga nas oficinas ao vivo (missão `live_encounter`). Ausente = a missão não entra. */
     private readonly liveSeats?: Pick<LiveLessonAccessPort, 'hasActiveSeat'>,
     private readonly adultJourney?: Pick<AdultJourneyService, 'get'>,
@@ -58,20 +59,15 @@ export class GetMissionsService {
       privileged,
       now: this.clock(),
     })
-    const level =
-      audience === 'kids'
-        ? computeStudentLevel(await this.repo.listQualifyingJourneySlots(userId, audience))
-        : null
+    if (audience === 'kids' && privileged && userId !== accountId)
+      throw new AccessDeniedError('Use a conta da equipe, sem perfil de aluno.')
+    const kidsCapabilities = audience !== 'kids' ? null : privileged
+      ? (await this.kidsJourney.staffPreview()).capabilities
+      : (await this.kidsJourney.get({ userId, accountId })).earned.capabilities
     const adult = audience === 'adult' ? await this.adultJourney?.get(userId, privileged) : null
-    const freeCreation =
-      audience === 'adult'
-        ? Boolean(adult?.capabilities.includes('studio') && hasAccess(ESTUDIO_ACCESS_REF))
-        : creativeToolAvailability({
-            tool: 'estudio-completo',
-            owned: hasAccess(ESTUDIO_ACCESS_REF),
-            level: level?.slug ?? null,
-            privileged,
-          }) === 'available'
+    const freeCreation = audience === 'adult'
+      ? Boolean(adult?.capabilities.includes('studio') && hasAccess(ESTUDIO_ACCESS_REF))
+      : Boolean(kidsCapabilities?.includes('studio') && hasAccess(ESTUDIO_ACCESS_REF))
     const communityAvailable =
       audience === 'adult'
         ? privileged || (await this.hub?.canUseAdultShowcase?.(userId, accountId)) === true

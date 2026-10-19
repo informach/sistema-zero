@@ -30,7 +30,7 @@ if os.name == "nt" and not str(ROOT).startswith("\\\\\\\\?\\\\"):
 RUNTIME = ${JSON.stringify(`runtime/${runtimeHash}/`)}
 FRAME_POLICY = ${JSON.stringify(framePolicy)}
 PAGE_POLICY = ${JSON.stringify(pagePolicy)}
-ROOT_FILES = {"index.html", "player.css", "payload.json", "asset-attributions.json"}
+ROOT_FILES = {"index.html", "player.css", "payload.json", "runtime-deployment.json", "asset-attributions.json"}
 
 class Handler(BaseHTTPRequestHandler):
     def do_HEAD(self):

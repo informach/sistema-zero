@@ -72,6 +72,9 @@ __pycache__/
 test-results/
 playwright-report/
 
+# Wrangler/Miniflare local databases and object-storage state.
+.wrangler/
+
 # Temporários de sessão (scripts de operação, segredos efêmeros)
 .tmp/
 

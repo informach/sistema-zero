@@ -117,8 +117,23 @@ export type SectionCompletionView = Omit<SectionCompletion, 'projectChecks'> & {
 }
 
 export function sectionCompletionView(completion: SectionCompletion): SectionCompletionView {
-  const { projectChecks, ...rest } = completion
-  return projectChecks ? { ...rest, projectChecks: projectChecks.map(projectObjectiveView) } : rest
+  return {
+    version: completion.version,
+    blockIds: [...completion.blockIds],
+    ...(completion.materialItems
+      ? {
+          materialItems: completion.materialItems.map((item) => ({
+            blockId: item.blockId,
+            itemIds: [...item.itemIds],
+          })),
+        }
+      : {}),
+    ...(completion.platformAction ? { platformAction: completion.platformAction } : {}),
+    ...(completion.submissionUpToDate ? { submissionUpToDate: completion.submissionUpToDate } : {}),
+    ...(completion.projectChecks
+      ? { projectChecks: completion.projectChecks.map(projectObjectiveView) }
+      : {}),
+  }
 }
 
 /** Os objetivos que TRANCAM a parte. */
@@ -274,6 +289,8 @@ function hasBlankBlockType(pattern: ProjectBlockPattern): boolean {
 }
 
 export function isSectionCompletion(v: unknown): v is SectionCompletion {
+  if (record(v) && (Object.hasOwn(v, 'projectExamples') || Object.hasOwn(v, 'solutionProject')))
+    return false
   if (
     !record(v) ||
     v.version !== 1 ||

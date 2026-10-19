@@ -125,7 +125,7 @@ export async function callStudioPublication(
   if (value === null) return value
   if (isStudioPublication(value) && value.playId === body.playId) return value
   if (
-    body.operation === 'purge' &&
+    (body.operation === 'purge' || body.operation === 'retire-reservation') &&
     value &&
     typeof value === 'object' &&
     'deleted' in value &&

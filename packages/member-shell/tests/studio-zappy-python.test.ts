@@ -5,7 +5,7 @@ mock.module('server-only', () => ({}))
 process.env.JWT_HS256_SECRET ??= 'test-jwt-secret-with-32-characters'
 process.env.OPENROUTER_API_KEY ??= 'test-openrouter-key'
 const { buildStudioZappyPrompt } = await import('../src/server/zappy-ai')
-const { resolveStudioTier } = await import('../src/lib/studio-tier')
+const { resolveStudioTier } = await import('./fixtures/legacy-studio-tier')
 
 import { pythonZappyFixture } from './fixtures/zappy-python'
 

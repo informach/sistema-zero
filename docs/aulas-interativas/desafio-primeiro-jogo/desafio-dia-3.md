@@ -1,5 +1,8 @@
 # A Chave do Farol · Dia 3 · A luz do farol
 
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. sem-chave tem solução transitória com então vazio; decisao completa o caminho com chave. personalizar reutiliza o jogo funcional: o aviso de objetivos já atendidos não exige trocar uma imagem só para criar uma diferença. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
+
+
 ## Resumo
 
 - Estado de entrada: projeto enviado no Dia 2, com movimento, borda e coleta.

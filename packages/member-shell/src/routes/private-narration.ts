@@ -14,12 +14,12 @@ import type { PrivateNarratableRef } from '../lib/private-narration'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { SessionUser } from '../lib/types'
 import type { MembersClient } from '../server/clients'
-import { hasAiAppsLevel } from '../server/creative-apps-access'
+import { readKidsCapabilities } from '../server/creative-apps-access'
 import { loadPensaContext, type PensaContextMembers } from '../server/pensa/context'
 import { redactPensaText } from '../server/pensa/privacy'
 import { r2DeleteObjectUgc, r2PresignGetUgc, r2PutObjectUgc } from '../server/r2'
 import type { SessionModule } from '../server/session'
-import { isStudioZappyAllowedForRequest } from '../server/zappy-access'
+import { getStudioZappyAccessForRequest } from '../server/zappy-access'
 import { redactZappySensitiveText } from '../server/zappy-safety'
 
 const uuid = z.uuid()
@@ -57,12 +57,11 @@ export async function resolvePrivateNarration(
   audience: 'kids' | 'adult' = 'kids',
 ): Promise<string | null> {
   if (ref.origin === 'studio_message') {
-    if (
-      audience === 'adult'
-        ? !(await hasAdultCapability(members, user, 'ai'))
-        : !(await isStudioZappyAllowedForRequest(members, user))
-    )
-      return null
+    const capability = audience === 'adult'
+      ? await hasAdultCapability(members, user, 'ai') ? 'allowed' : 'locked'
+      : await getStudioZappyAccessForRequest(members, user)
+    if (capability === 'unavailable') throw new Error('Jornada indisponível')
+    if (capability !== 'allowed') return null
     const access = await members.checkCreativeToolsAccessReadonly()
     if (access.body?.access?.['estudio-completo'] !== true && !isPrivilegedRole(user.role))
       return null
@@ -81,13 +80,11 @@ export async function resolvePrivateNarration(
     return null
   }
   const access = await members.checkPensaAccessReadonly()
-  if (
-    access.body?.access?.pensa !== true ||
-    (audience === 'adult'
-      ? !(await hasAdultCapability(members, user, 'pensa'))
-      : !(await hasAiAppsLevel(members, user.role)))
-  )
-    return null
+  const capability = audience === 'adult'
+    ? await hasAdultCapability(members, user, 'pensa') ? 'allowed' : 'locked'
+    : await readKidsCapabilities(members, ['pensa', 'ai'])
+  if (capability === 'unavailable') throw new Error('Jornada indisponível')
+  if (access.body?.access?.pensa !== true || capability !== 'allowed') return null
   const actor = {
     ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
     profileId: user.id,

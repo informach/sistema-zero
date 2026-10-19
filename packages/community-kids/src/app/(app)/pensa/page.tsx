@@ -1,4 +1,4 @@
-import { meetsAiAppsLevel } from '@sistemazero/member-shell/server/creative-apps-access'
+import { hasKidsCapability, kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { KidsJourneyLockedPensa } from '@/components/kids/kids-journey-locked-pensa'
 import { KidsLockedPensa } from '@/components/kids/kids-locked-pensa'
@@ -41,7 +41,9 @@ export default async function PensaPage({
   const hasAccess = res.body?.access?.pensa === true
   if (!hasAccess) return <ToolRouteRecado screen={KidsLockedPensa} />
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsPensaUnavailable} />
-  if (!meetsAiAppsLevel(gam.body?.level?.slug, session?.role)) {
+  const journey = kidsJourneyAccess(gam.body)
+  if (!journey) return <ToolRouteRecado screen={KidsPensaUnavailable} />
+  if (!hasKidsCapability(journey, 'pensa') || !hasKidsCapability(journey, 'ai')) {
     return <ToolRouteRecado screen={KidsJourneyLockedPensa} />
   }
   // Contar a ideia falando (14/10/2026): a MESMA régua da fase e dos Recados (criança, sem sessão

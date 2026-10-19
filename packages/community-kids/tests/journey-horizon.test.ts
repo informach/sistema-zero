@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test'
+import { LEVEL_ORDER } from '../src/lib/level-info'
+import type { CatalogCourseView, StudentLevelSlug, StudentLevelView } from '../src/lib/types'
 import {
   hasHorizonNode,
   journeyHorizon,
@@ -9,9 +11,7 @@ import {
   readySlotsByTier,
   TIER_ORDER,
   visibleJourneyLevels,
-} from '../src/lib/journey-horizon'
-import { LEVEL_ORDER } from '../src/lib/level-info'
-import type { CatalogCourseView, StudentLevelSlug, StudentLevelView } from '../src/lib/types'
+} from './fixtures/legacy-journey-horizon'
 
 /**
  * O horizonte é a régua PROVISÓRIA: enquanto o catálogo não tem os 48 cursos, o mapa mostra
@@ -27,6 +27,7 @@ let seq = 0
 function course(level: Level, track: Track, careerSlot: number | null): CatalogCourseView {
   seq += 1
   return {
+    courseId: `00000000-0000-4000-8000-${String(seq).padStart(12, '0')}`,
     courseSlug: `curso-${seq}`,
     title: `Curso ${seq}`,
     subtitle: null,

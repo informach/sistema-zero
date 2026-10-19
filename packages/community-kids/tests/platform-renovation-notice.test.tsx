@@ -9,6 +9,7 @@ import {
   RENOVATION_CAMPAIGN,
   startRenovationVisit,
 } from '../src/lib/platform-renovation-visit'
+import { kidsView } from './kids-journey-fixtures'
 
 function notice(profileId: string | null = 'child-a', enabled = true) {
   return (
@@ -125,7 +126,7 @@ describe('aviso temporário por visita da criança', () => {
             startAvailable
           />
           <CelebrationWatcher
-            levelSlug="hacker"
+            journey={kidsView(['studio', 'pinta', 'ai', 'pensa'], 'hacker')}
             toolsRevision={null}
             ownsStudio={false}
             profileKey="overlay-child"

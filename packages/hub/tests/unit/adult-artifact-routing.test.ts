@@ -18,7 +18,7 @@ test('limpeza adulta usa o BFF adulto; ausência de configuração nunca desvia 
     fetchImpl,
   }
   const gateway = createStudioArtifactHttpGateway(options)
-  const input = { playId: randomUUID(), coverUrl: null }
+  const input = { authorId: randomUUID(), playId: randomUUID(), coverUrl: null }
   await gateway.cleanupShowcaseArtifacts({ ...input, audience: 'adult' })
   await gateway.cleanupShowcaseArtifacts(input)
   expect(calls).toEqual([

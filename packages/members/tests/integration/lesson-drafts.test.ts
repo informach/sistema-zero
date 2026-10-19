@@ -137,7 +137,7 @@ function setup(
     return request(
       `/creations/lesson-studio/${projeto}/commit`,
       'POST',
-      { revision, verifiedPartHashes: [] },
+      { revision, verifiedPartHashes: [], verifiedFormatVersion: STUDIO_PROJECT_FORMAT_VERSION },
       user,
     )
   }

@@ -1,5 +1,7 @@
 import { afterEach, expect, mock, spyOn, test } from 'bun:test'
 import { createHash } from 'node:crypto'
+import type { KidsCreatorCapability } from '@sistemazero/core/journey'
+import { initialKidsJourneyPolicy } from '@sistemazero/core/journey'
 import { STUDIO_PRO_TEMPLATE_IDS, type StudioProPublication } from '@sistemazero/core/studio'
 import { createBlankProjectSnapshot } from '@sistemazero/studio/blank-project'
 
@@ -20,9 +22,13 @@ function fixture(
     compiled?: boolean
     entitled?: boolean
     level?: string
+    capabilities?: KidsCreatorCapability[]
+    missingJourney?: boolean
+    role?: string
     journeyStatus?: number
     templateId?: string
     hubFirstFailure?: boolean
+    publicOrigin?: string
   } = {},
 ) {
   spyOn(optimizer, 'optimizeImage').mockImplementation(async () => ({
@@ -33,7 +39,7 @@ function fixture(
     height: 1,
     sizeBytes: 5,
   }))
-  spyOn(storage, 'r2PutObject').mockImplementation(async (input) => ({
+  spyOn(storage, 'r2CreateObject').mockImplementation(async (input) => ({
     key: input.key,
     url: `https://images.test/${input.key}`,
   }))
@@ -41,11 +47,23 @@ function fixture(
     ...env.getEnv(),
     STUDIO_PRO_RUNTIME_URL: 'https://runtime.test',
     STUDIO_PRO_RUNTIME_TOKEN: 'runtime-secret-fixture',
+    R2_PUBLIC_URL: 'https://images.test',
+    APP_PUBLIC_URL: options.publicOrigin,
   })
   const objects = new Map<string, Uint8Array>()
   spyOn(storage, 'r2PutObjectPrivate').mockImplementation(async (input) => {
     objects.set(input.key, new Uint8Array(input.body))
   })
+  spyOn(storage, 'r2CreateObjectPrivate').mockImplementation(async (input) => {
+    if (objects.has(input.key)) return false
+    objects.set(input.key, new Uint8Array(input.body))
+    return true
+  })
+  spyOn(storage, 'r2HeadObjectPrivate').mockImplementation(async (key) =>
+    objects.has(key)
+      ? { contentType: 'application/json', contentLength: objects.get(key)!.length, etag: 'test' }
+      : null,
+  )
   spyOn(storage, 'r2GetObjectPrivate').mockImplementation(async (key) => {
     const bytes = objects.get(key)
     if (!bytes) throw new Error('Missing object')
@@ -82,8 +100,10 @@ function fixture(
     expiresAt: Date.now() + 60_000,
   }
   const validation = { profileVersion: 1 as const, runtimeFingerprint: '1'.repeat(64) }
+  const parentOrigins: string[] = []
   const fetcher = mock(async (url: RequestInfo | URL, init?: RequestInit) => {
     const input = JSON.parse(String(init?.body))
+    if (typeof input.parentOrigin === 'string') parentOrigins.push(input.parentOrigin)
     if (String(url).endsWith('/v1/build')) {
       builds++
       expect(input.validate).toBe(true)
@@ -132,15 +152,35 @@ function fixture(
     throw new Error(`Unexpected command ${input.operation}`)
   })
   globalThis.fetch = Object.assign(fetcher, { preconnect: originalFetch.preconnect })
+  const reservationId = crypto.randomUUID(),
+    reservedPlayId = crypto.randomUUID()
+  let publishedThread: { id: string; playId: string; status: string } | null = null
+  const prepare = async (input: { snapshotHash: string }) => ({
+    status: 200,
+    body: publishedThread
+      ? { state: 'finalized', thread: publishedThread, deduped: true }
+      : {
+          state: 'reserved',
+          reservationId,
+          playId: reservedPlayId,
+          snapshotHash: input.snapshotHash,
+        },
+  })
   const createThread = async (input: { playId: string }) => {
     hubCalls++
     expect(state?.playId).toBe(input.playId)
+    publishedThread = { id: crypto.randomUUID(), playId: input.playId, status: 'visible' }
     return hubCalls === 1 && options.hubFirstFailure
       ? { status: 503, body: null }
       : {
           status: 200,
           body: {
-            thread: { id: crypto.randomUUID(), playId: input.playId },
+            thread: {
+              id: crypto.randomUUID(),
+              playId: input.playId,
+              status: 'visible',
+              coverImageUrl: null,
+            },
             deduped: hubCalls > 1,
           },
         }
@@ -149,7 +189,7 @@ function fixture(
     media: {
       requireUploadSession: async () => ({
         id: owner,
-        role: 'student',
+        role: options.role ?? 'student',
         activeProfile: { accountId: owner },
       }),
     },
@@ -161,7 +201,28 @@ function fixture(
       }),
       getGamification: async () => ({
         status: options.journeyStatus ?? 200,
-        body: { level: { slug: options.level ?? 'god' } },
+        body: {
+          level: { slug: options.level ?? 'god' },
+          ...(options.missingJourney
+            ? {}
+            : {
+                kidsJourney: {
+                  audience: 'kids',
+                  policyVersion: 2,
+                  mode: 'active',
+                  tierAccess: initialKidsJourneyPolicy().tierAccess,
+                  earned: {
+                    level: options.level ?? 'god',
+                    capabilities: options.capabilities ?? ['studio', 'pro'],
+                    courseAccess: { entry: [], expanded: [], reward: [] },
+                  },
+                  nextLevel: null,
+                  missing: [],
+                  advances: [],
+                  readiness: { status: 'incomplete', horizon: 'noob', issues: [] },
+                },
+              }),
+        },
       }),
       checkStudioAccess: async () => ({
         status: 200,
@@ -169,6 +230,8 @@ function fixture(
       }),
     },
     hub: {
+      prepareShowcaseThreadStudio: prepare,
+      prepareShowcaseThreadStudioStandalone: prepare,
       createShowcaseThreadStudioStandalone: createThread,
       createShowcaseThreadStudio: createThread,
       resolveStudioPlay: async () => ({ status: 200, body: { visible, authorDisplayName: 'Ana' } }),
@@ -199,12 +262,21 @@ function fixture(
     builds: () => builds,
     hubCalls: () => hubCalls,
     objects,
+    parentOrigins,
     state: () => state,
     hide: () => {
       visible = false
     },
   }
 }
+
+for (const lesson of [false, true])
+  test(`Pro ${lesson ? 'lesson' : 'free'} publication binds the public app origin behind an internal proxy`, async () => {
+    const f = fixture({ publicOrigin: 'https://public-community.test/' })
+    expect((await f.publish(lesson)).status).toBe(200)
+    expect(f.parentOrigins.length).toBeGreaterThan(0)
+    expect([...new Set(f.parentOrigins)]).toEqual(['https://public-community.test'])
+  })
 
 test('Pro publication validates before creating the Mural post and resolves a permanent revision for play/remix', async () => {
   const f = fixture()
@@ -273,7 +345,9 @@ test('entitlement and failed validation prevent any post or playable pointer', a
   for (const options of [{ entitled: false }, { compiled: false }]) {
     const f = fixture(options)
     expect((await f.publish()).status).toBe(options.compiled === false ? 422 : 403)
-    expect(f.objects.size).toBe(0)
+    expect([...f.objects.keys()].every((key) => key.startsWith('studio/publication-owners/'))).toBe(
+      true,
+    )
     expect(f.hubCalls()).toBe(0)
     expect(f.state()).toBeNull()
     mock.restore()
@@ -285,11 +359,17 @@ test('a lost Hub response retries the same permanent publication without compili
   expect((await f.publish()).status).toBe(503)
   expect((await f.publish()).status).toBe(200)
   expect(f.builds()).toBe(1)
-  expect(f.objects.size).toBe(1)
+  expect([...f.objects.keys()].filter((key) => key.startsWith('studio/play/'))).toHaveLength(1)
+  expect(
+    [...f.objects.keys()].filter((key) => key.startsWith('studio/publication-owners/')),
+  ).toHaveLength(1)
 })
 
 test('Pro publication enforces the journey on the server before compiling or creating a post', async () => {
-  for (const options of [{ level: 'hacker' }, { journeyStatus: 503 }]) {
+  for (const options of [
+    { level: 'god', capabilities: [] as KidsCreatorCapability[] },
+    { journeyStatus: 503 },
+  ]) {
     const f = fixture(options)
     expect((await f.publish()).status).toBe(options.journeyStatus ? 503 : 403)
     expect(f.builds()).toBe(0)
@@ -345,4 +425,17 @@ test('the runtime visibility callback requires its bearer, checks the Hub and ne
       await f.routes.studioPublicationAuthorize.POST(request('Bearer runtime-secret-fixture'))
     ).json(),
   ).toEqual({ visible: false })
+})
+
+test('Pro publication follows custom capabilities even at Noob, while a team role cannot bypass missing policy', async () => {
+  const lowRank = fixture({ level: 'noob', capabilities: ['studio', 'pro'] })
+  expect((await lowRank.publish()).status).toBe(200)
+  expect(lowRank.builds()).toBe(1)
+  mock.restore()
+  const unavailable = fixture({ role: 'staff', missingJourney: true })
+  const response = await unavailable.publish()
+  expect(response.status).toBe(503)
+  expect(await response.json()).toMatchObject({ error: { code: 'JOURNEY_UNAVAILABLE' } })
+  expect(unavailable.builds()).toBe(0)
+  expect(unavailable.hubCalls()).toBe(0)
 })

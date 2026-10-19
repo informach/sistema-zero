@@ -48,7 +48,7 @@ function setup() {
   })
   users.seed(account)
   users.seed(actor)
-  profiles.seed(profile)
+  profiles.seedReady(profile)
   return {
     users,
     profiles,

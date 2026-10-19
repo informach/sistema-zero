@@ -621,6 +621,8 @@ export interface StudioBlock {
    * aula do aluno); serve ao "Testar agora" dos objetivos e à publicação.
    */
   solutionProject?: EditableStudioProject
+  /** Private per-part registry; narrow through the Core authoring reader before using it. */
+  projectExamples?: unknown
   /** Nome do projeto contínuo (cadeia). Aulas com o mesmo nome carregam o código entre si. */
   chain?: string
   /** Vitrine (Mural dos Criadores): config da auto-publicação ao concluir a última aula. */

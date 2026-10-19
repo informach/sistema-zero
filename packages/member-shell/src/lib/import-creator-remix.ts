@@ -22,6 +22,11 @@ export async function importCreatorRemix(
   options.signal?.throwIfAborted()
   const namespace = creatorStorageNamespace(options.viewerId, options.audience)
   studio.setStudioStorageNamespace(namespace)
-  const result = await studio.importProjectSnapshot(snapshot, { name: options.name, namespace })
+  const result = await studio.importProjectSnapshot(snapshot, {
+    name: options.name,
+    namespace,
+    isCurrent: () => !options.signal?.aborted,
+  })
+  options.signal?.throwIfAborted()
   return result.project.id
 }

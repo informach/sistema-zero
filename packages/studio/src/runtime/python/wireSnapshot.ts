@@ -1,18 +1,11 @@
 import {
-  StudioCatalogIdSchema,
-  StudioExactVersionSchema,
+  StudioExtensionReferenceSchema,
   StudioPythonProjectConfigSchema,
   StudioRuntimeSelectionSchema,
 } from '@sistemazero/core/studio/project-environment'
 import { isStudioProjectId } from '@sistemazero/core/studio/project-format'
 import { STUDIO_PYTHON_MATERIAL_LIMITS } from '@sistemazero/core/studio/python-material-policy'
-import { z } from 'zod'
 import type { PythonExecutionSnapshot } from './protocol'
-
-const extensionSchema = z.strictObject({
-  id: StudioCatalogIdSchema,
-  version: StudioExactVersionSchema,
-})
 
 const hash = (value: unknown): value is string =>
   typeof value === 'string' && /^[a-f0-9]{64}$/.test(value)
@@ -38,7 +31,9 @@ export function readPythonWireSnapshot(raw: unknown): PythonExecutionSnapshot {
     throw new Error('Snapshot Python inválido.')
   const runtime = StudioRuntimeSelectionSchema.parse(raw.configuration.runtime)
   const python = StudioPythonProjectConfigSchema.parse(raw.configuration.python)
-  const extensions = raw.configuration.extensions.map((value) => extensionSchema.parse(value))
+  const extensions = raw.configuration.extensions.map((value) =>
+    StudioExtensionReferenceSchema.parse(value),
+  )
   if (python.dependencyLock.runtimeManifestSha256 !== runtime.manifestSha256)
     throw new Error('O lock não pertence ao ambiente do snapshot.')
   let total = 0

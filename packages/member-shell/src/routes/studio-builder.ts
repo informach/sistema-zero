@@ -38,7 +38,8 @@ import {
   StudioProRuntimeUpstreamError,
   studioProRuntimePublicStatus,
 } from '../server/studio-pro-runtime'
-import { earnedStudioTier } from '../server/studio-unlocks'
+import { kidsStudioTier } from '../server/studio-unlocks'
+import { kidsJourneyAccess } from '../lib/kids-journey-access'
 import { isStudioZappyAllowed } from '../server/zappy-access'
 import { isUnsafeZappyText, redactZappySensitiveText } from '../server/zappy-safety'
 
@@ -154,14 +155,16 @@ export function createStudioBuilderRoutes(deps: {
             gamification.status !== 200
           )
             return error('O Estúdio não está liberado para este perfil.', 403)
-          const level = gamification.body?.level?.slug
+          const kids = deps.audience !== 'adult' ? kidsJourneyAccess(gamification.body) : null
+          if (deps.audience !== 'adult' && !kids)
+            return error('Não consegui conferir sua jornada agora.', 503)
           if (
             deps.audience === 'adult'
               ? !learnerIdentity(user, 'adult') ||
                 !gamification.body?.journey?.capabilities.includes('ai') ||
                 !gamification.body.journey.capabilities.includes('pro')
-              : !isStudioZappyAllowed(user, level) ||
-                !earnedStudioTier(level ?? 'noob', user.role, []).pro
+              : !isStudioZappyAllowed(user, kids) ||
+                !kids || !kidsStudioTier(kids, []).pro
           )
             return error('O construtor precisa do modo Pro e do Zappy liberados.', 403)
         }

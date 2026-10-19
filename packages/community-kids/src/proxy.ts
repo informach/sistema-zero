@@ -65,6 +65,6 @@ export const config = {
   // `api/certificates` (validação PÚBLICA do certificado pelo QR — `GET /api/certificates/:id/validate`)
   // fica FORA do matcher: é anônima (sem gate de sessão), igual a `api/studio/play`.
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/members/avatar/snapshot|api/hub/uploads/image|api/hub/showcase|api/studio/publish|api/studio/play|api/studio/cleanup|api/internal/studio-play|api/internal/studio-publication-cleanup|api/internal/creation-cleanups|api/internal/studio-builder/execute|api/certificates).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/members/avatar/snapshot|api/hub/uploads/image|api/hub/showcase|api/studio/publish|api/studio/play|api/studio/cleanup|api/studio/reservation-cleanup|api/internal/studio-play|api/internal/studio-publication-cleanup|api/internal/creation-cleanups|api/internal/studio-builder/execute|api/certificates).*)',
   ],
 }

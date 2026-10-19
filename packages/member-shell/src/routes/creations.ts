@@ -5,7 +5,7 @@ import {
   creationStorageKey,
 } from '@sistemazero/core/creations'
 import { isDocumentRecord, ProjectDocumentError } from '@sistemazero/studio/project-document'
-import { validateStudioCreationSnapshot } from '@sistemazero/studio/project-validation'
+import { validateEditableStudioCreationSnapshot } from '@sistemazero/studio/project-validation'
 import { after, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
@@ -448,6 +448,7 @@ export function createCreationsRoutes(deps: {
       // promover uma revisão que aponta para partes inexistentes. Erro de HEAD ≠ 404 segue.
       const uploaded = parsed.data.uploadedParts ?? []
       let verifiedPartHashes: string[] | undefined
+      let verifiedFormatVersion: number | undefined
       if (uploaded.length > 0 && storage.headObject) {
         const user = await session.getSession()
         if (user) {
@@ -508,7 +509,8 @@ export function createCreationsRoutes(deps: {
               session.audience,
             ),
           )
-          validateStudioCreationSnapshot(document, item.itemId)
+          const project = await validateEditableStudioCreationSnapshot(document, item.itemId)
+          verifiedFormatVersion = project.formatVersion
           verifiedPartHashes =
             isDocumentRecord(document) && 'format' in document && Array.isArray(document.assets)
               ? (document.assets as string[])
@@ -525,6 +527,7 @@ export function createCreationsRoutes(deps: {
       const { status, body } = await members.commitCreationUpload(item.tool, item.itemId, {
         ...parsed.data,
         ...(verifiedPartHashes ? { verifiedPartHashes } : {}),
+        ...(verifiedFormatVersion !== undefined ? { verifiedFormatVersion } : {}),
       })
       if (status === 200 && body) {
         // Best-effort e DEPOIS da resposta: o manifesto anterior e as partes que a revisão

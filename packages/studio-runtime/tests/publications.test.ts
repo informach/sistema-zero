@@ -8,6 +8,7 @@ import {
   publicationCommand,
   publishedRevisionPrefix,
   purgePublication,
+  retirePublicationReservation,
   servePublishedArtifact,
 } from '../src/publications'
 import { memoryArtifactBucket } from './artifact-bucket'
@@ -135,6 +136,147 @@ test('moderation leaves a tombstone that prevents stale or new requests from res
   expect(await currentPublishedSource(f.bucket, initial.playId)).toBeNull()
 })
 
+test('reservation retirement fences an absent pointer and rejects a late promotion', async () => {
+  const f = await fixture()
+  const input = {
+    playId: f.input.playId,
+    owner: f.input.owner,
+    snapshotHash: await sha256(new TextEncoder().encode(f.input.source)),
+    retirementHash: 'b'.repeat(64),
+  }
+  expect(await retirePublicationReservation(f.bucket, input)).toEqual({ deleted: true })
+  await expect(f.publish()).rejects.toThrow('mudou')
+  expect(await currentPublishedSource(f.bucket, input.playId)).toBeNull()
+  expect(await retirePublicationReservation(f.bucket, input)).toEqual({ deleted: true })
+})
+
+test('a new published revision winning the CAS cannot be erased by retirement of an older reservation', async () => {
+  const f = await fixture()
+  await f.publish()
+  const originalPut = f.bucket.put.bind(f.bucket)
+  let reached!: () => void
+  let release!: () => void
+  const arrived = new Promise<void>((resolve) => {
+    reached = resolve
+  })
+  const proceed = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  f.bucket.put = async (key, value, options) => {
+    if (typeof value === 'string' && key.endsWith('/state.json') && JSON.parse(value).deleted) {
+      reached()
+      await proceed
+    }
+    return originalPut(key, value, options)
+  }
+  const retirement = retirePublicationReservation(f.bucket, {
+    playId: f.input.playId,
+    owner: f.input.owner,
+    snapshotHash: await sha256(new TextEncoder().encode(f.input.source)),
+    retirementHash: 'c'.repeat(64),
+  }).then(
+    () => null,
+    (error) => error,
+  )
+  await arrived
+  try {
+    const next = await f.publish({
+      requestId: crypto.randomUUID(),
+      expectedVersion: 1,
+      source: 'new valid revision',
+    })
+    expect(next.version).toBe(2)
+  } finally {
+    release()
+  }
+  expect((await retirement)?.message).toContain('mudou durante')
+  expect((await currentPublishedSource(f.bucket, f.input.playId))?.source).toBe(
+    'new valid revision',
+  )
+  expect([...f.objects.keys()].some((key) => key.startsWith(`published/${f.input.playId}/`))).toBe(
+    true,
+  )
+})
+
+test('a malformed terminal runtime record does not authorize deleting retained artifacts', async () => {
+  const f = await fixture()
+  await f.publish()
+  const key = `publications/${f.input.playId}/state.json`
+  await f.bucket.put(
+    key,
+    JSON.stringify({ playId: f.input.playId, deleted: true, source: 'retained private data' }),
+  )
+  await expect(
+    retirePublicationReservation(f.bucket, {
+      playId: f.input.playId,
+      owner: f.input.owner,
+      snapshotHash: await sha256(new TextEncoder().encode(f.input.source)),
+      retirementHash: 'd'.repeat(64),
+    }),
+  ).rejects.toThrow('terminal inválido')
+  expect(
+    [...f.objects.keys()].some((path) => path.startsWith(`published/${f.input.playId}/`)),
+  ).toBe(true)
+})
+
+test('a terminal timestamp cannot conceal retained runtime data', async () => {
+  const f = await fixture()
+  await f.bucket.put(
+    `publications/${f.input.playId}/state.json`,
+    JSON.stringify({
+      playId: f.input.playId,
+      deleted: true,
+      deletedAt: { source: 'private data' },
+    }),
+  )
+  await expect(
+    retirePublicationReservation(f.bucket, {
+      playId: f.input.playId,
+      owner: f.input.owner,
+      snapshotHash: await sha256(new TextEncoder().encode(f.input.source)),
+      retirementHash: 'd'.repeat(64),
+    }),
+  ).rejects.toThrow('terminal inválido')
+})
+
+test('reservation retirement checks owner, initial source and single-revision state before deleting', async () => {
+  const f = await fixture()
+  await f.publish()
+  const input = {
+    playId: f.input.playId,
+    owner: f.input.owner,
+    snapshotHash: await sha256(new TextEncoder().encode(f.input.source)),
+    retirementHash: 'b'.repeat(64),
+  }
+  const before = new Map(f.objects)
+  for (const invalid of [
+    { ...input, owner: 'c'.repeat(64) },
+    { ...input, snapshotHash: 'd'.repeat(64) },
+  ]) {
+    await expect(retirePublicationReservation(f.bucket, invalid)).rejects.toThrow('propriedade')
+    expect(f.objects).toEqual(before)
+  }
+  expect(await retirePublicationReservation(f.bucket, input)).toEqual({ deleted: true })
+  expect(await currentPublishedSource(f.bucket, input.playId)).toBeNull()
+  const changed = await fixture()
+  await changed.publish()
+  await changed.publish({
+    expectedVersion: 1,
+    requestId: crypto.randomUUID(),
+    source: 'new revision',
+  })
+  await expect(
+    retirePublicationReservation(changed.bucket, {
+      ...input,
+      playId: changed.input.playId,
+      snapshotHash: await sha256(new TextEncoder().encode(changed.input.source)),
+    }),
+  ).rejects.toThrow('propriedade')
+  expect((await currentPublishedSource(changed.bucket, changed.input.playId))?.source).toBe(
+    'new revision',
+  )
+})
+
 test('bounded collection retains all history, fresh orphan copies and ambiguous successful commits', async () => {
   const f = await fixture(),
     first = await f.publish()
@@ -258,7 +400,7 @@ test('moderation gates HTML, materials and conditional reads; authorization fail
     'private',
     async (_url, init) => {
       calls++
-      expect(init?.redirect).toBe('error')
+      expect(init?.redirect).toBe('manual')
       await gate
       return Response.json({ visible: calls === 1 })
     },
@@ -271,4 +413,84 @@ test('moderation gates HTML, materials and conditional reads; authorization fail
   expect(calls).toBe(1)
   expect(await authorize(state.playId)).toBe(false)
   expect(await createPublicationAuthorizer(undefined, 'private')(state.playId)).toBe(false)
+})
+
+test('published artifacts authorize a visible adult or Kids post, never an absent post', async () => {
+  const urls = [
+    'https://kids.test/api/internal/studio-play',
+    'https://adults.test/api/internal/studio-play',
+  ]
+  const playId = crypto.randomUUID()
+  const seen: string[] = []
+  const authorize = createPublicationAuthorizer(urls, 'private', async (url, init) => {
+    seen.push(url)
+    expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer private')
+    expect(JSON.parse(String(init?.body))).toEqual({ playId })
+    return Response.json({ visible: url === urls[1] })
+  })
+  expect(await authorize(playId)).toBe(true)
+  expect(seen).toEqual(urls)
+
+  const absent = createPublicationAuthorizer(urls, 'private', async () =>
+    Response.json({ visible: false }),
+  )
+  expect(await absent(playId)).toBe(false)
+  const kids = createPublicationAuthorizer(urls, 'private', async (url) => {
+    if (url === urls[1]) throw new Error('adult host unavailable')
+    return Response.json({ visible: true })
+  })
+  expect(await kids(playId)).toBe(true)
+})
+
+test('adult visibility does not wait for a slow Kids authorization endpoint', async () => {
+  const playId = crypto.randomUUID()
+  let releaseKids!: () => void
+  const kidsResponse = new Promise<Response>((resolve) => {
+    releaseKids = () => resolve(Response.json({ visible: false }))
+  })
+  let kidsAborted = false
+  const authorize = createPublicationAuthorizer(
+    ['https://kids.test/play', 'https://adults.test/play'],
+    'private',
+    (url, init) => {
+      if (!url.includes('kids.test')) return Promise.resolve(Response.json({ visible: true }))
+      init?.signal?.addEventListener('abort', () => {
+        kidsAborted = true
+        releaseKids()
+      })
+      return kidsResponse
+    },
+  )
+  try {
+    expect(
+      await Promise.race([
+        authorize(playId),
+        new Promise<boolean>((_, reject) =>
+          setTimeout(() => reject(new Error('Authorization waited for Kids')), 1000),
+        ),
+      ]),
+    ).toBe(true)
+    expect(kidsAborted).toBe(true)
+  } finally {
+    releaseKids()
+  }
+})
+
+test('publication visibility never follows a redirect or trusts its apparent successful body', async () => {
+  for (const status of [301, 302, 303, 307, 308]) {
+    const calls: { url: string; redirect: RequestRedirect | undefined }[] = []
+    const authorize = createPublicationAuthorizer(
+      'https://configured.test/authorize',
+      'private',
+      async (url, init) => {
+        calls.push({ url, redirect: init?.redirect })
+        return Response.json(
+          { visible: true },
+          { status, headers: { Location: 'https://other.test/capture' } },
+        )
+      },
+    )
+    expect(await authorize(crypto.randomUUID())).toBe(false)
+    expect(calls).toEqual([{ url: 'https://configured.test/authorize', redirect: 'manual' }])
+  }
 })

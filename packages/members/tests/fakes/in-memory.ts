@@ -29,8 +29,13 @@ import {
   isCompletionGatingBlock,
   type PintaBlock,
   pintaAssetKindOf,
+  toMemberFacingStudioContent,
 } from '../../src/domain/course/lesson-block'
 import { type QuizAttemptSummary, quizGateFingerprint } from '../../src/domain/course/quiz'
+import {
+  assertNoLegacyStudioExamples,
+  preserveStudioExamplesForLegacyWrite,
+} from '../../src/domain/course/studio-project-examples'
 import {
   EntitlementAggregate,
   type EntitlementState,
@@ -51,6 +56,7 @@ import {
   courseBadgeSlugs,
   liveCourseBadgeSlugs,
   liveEncounterBadgeSlugs,
+  localDateSaoPaulo,
   muralCommenterBadgeSlugs,
   pensaDefinitionBadgeSlugs,
   pensaProjectBadgeSlugs,
@@ -120,6 +126,7 @@ import {
   type SpendCoinsResult,
   type XpEventInput,
 } from '../../src/domain/ports/gamification-repository.port'
+import type { LearningOwner } from '../../src/domain/ports/learning-repository.port'
 import type { ParentReportRepository } from '../../src/domain/ports/parent-report-repository.port'
 import type { ProcessedWebhookRepository } from '../../src/domain/ports/processed-webhook-repository.port'
 import type {
@@ -517,7 +524,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
 
   async findLessonWithContent(
     lessonId: string,
-    opts?: { includeAttachments?: boolean },
+    opts?: { includeAttachments?: boolean; includePrivateStudioAuthoring?: boolean },
   ): Promise<LessonWithContent | null> {
     const lesson = this.lessons.find((l) => l.id === lessonId)
     if (!lesson) return null
@@ -525,7 +532,12 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       ...lesson,
       blocks: this.blocks
         .filter((b) => b.lessonId === lessonId)
-        .sort((a, b) => a.sortOrder - b.sortOrder),
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((block) =>
+          block.content.kind === 'studio' && !opts?.includePrivateStudioAuthoring
+            ? { ...block, content: toMemberFacingStudioContent(block.content) }
+            : block,
+        ),
       attachments:
         opts?.includeAttachments === false
           ? []
@@ -951,6 +963,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     kind: LessonBlockKind,
     content: LessonBlockContent,
   ): Promise<LessonBlock> {
+    assertNoLegacyStudioExamples(content)
     const courseId = this.lessons.find((l) => l.id === lessonId)?.courseId
     if (courseId && kind === 'coming_soon') this.assertShowcaseRemains(courseId, { lessonId })
     const sortOrder = this.blocks
@@ -975,6 +988,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   ): Promise<LessonBlock | null> {
     const b = this.blocks.find((x) => x.id === id)
     if (!b) return null
+    content = preserveStudioExamplesForLegacyWrite(content, b.content)
     const courseId = this.lessons.find((l) => l.id === b.lessonId)?.courseId
     if (courseId && !(content.kind === 'studio' && content.showcase?.enabled))
       this.assertShowcaseRemains(
@@ -2391,7 +2405,15 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     if (this.failAlways) throw new Error('gamification indisponível (fake)')
 
     const newEvents: AwardXpEventInput[] = []
-    for (const e of input.events) {
+    const publication =
+      input.standalonePublicationId &&
+      this.events.some(
+        (event) =>
+          event.userId === input.userId &&
+          event.sourceType === 'studio_published' &&
+          event.sourceId === input.standalonePublicationId,
+      )
+    for (const e of publication ? [] : input.events) {
       // UNIQUE continua (user, sourceType, sourceId) — um source pertence a UM curso.
       const dup = this.events.some(
         (x) =>
@@ -2518,6 +2540,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
 
     const key = this.profileKey(input.userId, input.audience)
     const profile = this.profiles.get(key)
+    const historical = Boolean(profile?.lastActivityDate && profile.lastActivityDate > input.today)
     const xpAwarded = newEvents.reduce((sum, e) => sum + e.amount, 0)
     let totalXp = profile?.xp ?? 0
     let streak = {
@@ -2538,19 +2561,23 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       const monthKey = input.today.slice(0, 7)
       const currentFreezes = profile?.streakFreezes ?? 0
       const grantsFreeFreeze =
-        this.freezeMonths.get(key) !== monthKey && currentFreezes < MAX_STREAK_FREEZES
+        !historical &&
+        (!this.freezeMonths.get(key) || this.freezeMonths.get(key)! < monthKey) &&
+        currentFreezes < MAX_STREAK_FREEZES
       const freezesBefore = currentFreezes + (grantsFreeFreeze ? 1 : 0)
-      streak = advanceStreak(
-        {
-          streakCurrent: profile?.streakCurrent ?? 0,
-          streakBest: profile?.streakBest ?? 0,
-          lastActivityDate: profile?.lastActivityDate ?? null,
-          freezes: freezesBefore,
-          vacationFrom: profile?.vacationFrom ?? null,
-          vacationTo: profile?.vacationTo ?? null,
-        },
-        input.today,
-      )
+      streak = historical
+        ? streak
+        : advanceStreak(
+            {
+              streakCurrent: profile?.streakCurrent ?? 0,
+              streakBest: profile?.streakBest ?? 0,
+              lastActivityDate: profile?.lastActivityDate ?? null,
+              freezes: freezesBefore,
+              vacationFrom: profile?.vacationFrom ?? null,
+              vacationTo: profile?.vacationTo ?? null,
+            },
+            input.today,
+          )
       const freezesAfter = freezesBefore - streak.freezesConsumed
       if (grantsFreeFreeze) this.freezeMonths.set(key, monthKey)
       totalXp += xpAwarded
@@ -2570,7 +2597,20 @@ export class InMemoryGamificationRepository implements GamificationRepository {
           }))
         : []
       const wallet = this.wallets.get(key) ?? { earnedToday: 0, earnedDate: null, lifetime: 0 }
-      const earnedTodayBase = wallet.earnedDate === input.today ? wallet.earnedToday : 0
+      const historicalWallet = Boolean(wallet.earnedDate && wallet.earnedDate > input.today)
+      const earnedTodayBase = historicalWallet
+        ? this.coinEvents
+            .filter(
+              (event) =>
+                event.userId === input.userId &&
+                event.audience === input.audience &&
+                Object.values(COIN_TYPE_FOR_XP).some((type) => type === event.sourceType) &&
+                localDateSaoPaulo(event.createdAt) === input.today,
+            )
+            .reduce((total, event) => total + event.amount, 0)
+        : wallet.earnedDate === input.today
+          ? wallet.earnedToday
+          : 0
       const cap = applyDailyCap(
         routine.map((c) => c.amount),
         earnedTodayBase,
@@ -2608,8 +2648,8 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       coinBalance = (profile?.coinBalance ?? 0) + coinsAwarded
       const newLifetime = wallet.lifetime + coinsAwarded
       this.wallets.set(key, {
-        earnedToday: earnedTodayBase + cap.totalGranted,
-        earnedDate: input.today,
+        earnedToday: historicalWallet ? wallet.earnedToday : earnedTodayBase + cap.totalGranted,
+        earnedDate: historicalWallet ? wallet.earnedDate : input.today,
         lifetime: newLifetime,
       })
 
@@ -2619,7 +2659,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         xp: totalXp,
         streakCurrent: streak.current,
         streakBest: streak.best,
-        lastActivityDate: input.today,
+        lastActivityDate: historical ? profile!.lastActivityDate : input.today,
         coinBalance,
         streakFreezes: freezesAfter,
         // Férias é preservada (set/limpa só via setVacation) — award nunca a altera.
@@ -2799,6 +2839,23 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     return this.badges
       .filter((b) => b.userId === userId && b.audience === audience)
       .map((b) => ({ badgeSlug: b.badgeSlug, unlockedAt: b.unlockedAt }))
+  }
+
+  async listCourseMilestones(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<Map<string, CourseMilestones>> {
+    const milestones = new Map<string, CourseMilestones>()
+    for (const event of this.events) {
+      if (event.userId !== userId || event.audience !== audience) continue
+      if (event.sourceType !== 'course_complete' && event.sourceType !== 'course_showcased')
+        continue
+      const value = milestones.get(event.sourceId) ?? { completed: false, showcased: false }
+      if (event.sourceType === 'course_complete') value.completed = true
+      else value.showcased = true
+      milestones.set(event.sourceId, value)
+    }
+    return milestones
   }
 
   /** Mirror do SQL: cursos com AMBOS os marcos (complete ∩ showcased) por DEGRAU (nível×eixo). */
@@ -3568,6 +3625,14 @@ export class InMemoryAvatarRepository implements AvatarRepository {
  */
 export class InMemoryStudioUnlockRepository implements StudioUnlockRepository {
   readonly grants: { userId: string; audience: CourseAudience; grant: StudioBlockGrant }[] = []
+
+  async freezeGrants(
+    owner: LearningOwner,
+    audience: CourseAudience,
+    grants: readonly StudioBlockGrant[],
+  ): Promise<void> {
+    await this.saveGrants(owner.userId, audience, grants)
+  }
 
   async listGrants(userId: string, audience: CourseAudience): Promise<StudioBlockGrant[]> {
     return this.grants

@@ -200,6 +200,7 @@ export function LessonStructureEditor(
   const { lesson, document, preview, onPreviewChange, audience } = props
   const kids = audience === 'kids'
   const [rehearsalMode, setRehearsalMode] = useState(false)
+  const [exampleEditing, setExampleEditing] = useState(false)
   const blocks = new Map(lesson.blocks.map((b) => [b.id, b]))
   const previewLesson: LessonDetailView = {
     id: lesson.id,
@@ -262,12 +263,16 @@ export function LessonStructureEditor(
               livremente.
             </p>
           </div>
-          <Button variant="outline" onClick={() => onPreviewChange(!preview)}>
+          <Button
+            variant="outline"
+            disabled={exampleEditing}
+            onClick={() => onPreviewChange(!preview)}
+          >
             {preview ? 'Voltar à edição' : 'Prévia do rascunho'}
           </Button>
         </div>
       )}
-      {preview && (
+      {preview && !exampleEditing && (
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2" role="group" aria-label="Modo da prévia">
             <Button
@@ -306,7 +311,7 @@ export function LessonStructureEditor(
         </div>
       )}
       <div hidden={preview}>
-        <LessonSectionAuthoring {...props} />
+        <LessonSectionAuthoring {...props} onExampleEditingChange={setExampleEditing} />
       </div>
     </section>
   )

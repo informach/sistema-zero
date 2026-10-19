@@ -1,4 +1,9 @@
 # Gamificação Kids — manual mestre (operação + desenvolvimento)
+> Jornada Kids configurável (modelo em implementação, ativação integrada pendente): posto e
+> capacidades globais vêm da política persistida e das conquistas permanentes, não do XP nem do
+> cálculo fixo usado no relatório Adult. Concluir um avanço, adquirir ferramentas curriculares e
+> ter licença são decisões separadas. Este manual mantém XP/moedas/streak/badges; requisitos,
+> baseline e operação da política estão em [Jornada do Criador](jornada-do-criador.md).
 
 > Fonte da verdade da **gamificação da plataforma infantil** (`@sistemazero/community-kids`):
 > XP, sequência (streak), conquistas, moeda **Zappy Coins**, avatar, quarto virtual,

@@ -1,8 +1,13 @@
-import type { ProfileAggregate } from '../../domain/profile/profile.aggregate'
+import type {
+  ProfileAdmissionState,
+  ProfileAggregate,
+} from '../../domain/profile/profile.aggregate'
 
 /** View pública do perfil (grade Netflix). Sem `accountUserId`/`status`/timestamps. */
 export interface ProfileView {
   id: string
+  /** The parent grade may show pending; child selectors require ready independently. */
+  admissionState: ProfileAdmissionState
   name: string
   avatarUrl: string | null
   whatsapp: string | null
@@ -20,6 +25,7 @@ export interface ProfileView {
 export function toProfileView(p: ProfileAggregate): ProfileView {
   return {
     id: p.id,
+    admissionState: p.admissionState,
     name: p.name,
     avatarUrl: p.avatarUrl,
     whatsapp: p.whatsapp,

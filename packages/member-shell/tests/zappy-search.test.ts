@@ -10,7 +10,7 @@ const { expandedTerms, scoreTokens, searchTerms, tokenizeSearchable } = await im
   '../src/server/zappy-search'
 )
 const { buildStudioZappyPrompt } = await import('../src/server/zappy-ai')
-const { resolveStudioTier } = await import('../src/lib/studio-tier')
+const { resolveStudioTier } = await import('./fixtures/legacy-studio-tier')
 
 describe('zappy-search (busca léxica do tutor)', () => {
   it('tokeniza ids de bloco em palavras além da palavra inteira', () => {

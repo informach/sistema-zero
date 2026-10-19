@@ -39,7 +39,9 @@ test('free-creation missions wait for the journey without reshuffling or hiding 
       ctx.positions,
       ctx.gamification,
       () => now,
+      ctx.kidsJourneyQuery,
     ),
+    ctx.kidsJourneyQuery,
   )
   const read = async () => {
     const view = await service.execute(userId, accountId, 'kids')
@@ -138,7 +140,9 @@ test('content missions use the learner access and remaining events, preserving e
       ctx.positions,
       ctx.gamification,
       () => now,
+      ctx.kidsJourneyQuery,
     ),
+    ctx.kidsJourneyQuery,
   )
   const read = async (learner = userId) => {
     const view = await service.execute(learner, accountId, 'kids')
@@ -182,4 +186,29 @@ test('content missions use the learner access and remaining events, preserving e
   ).toBe(1)
   ctx.courses.blocks = ctx.courses.blocks.filter((b) => b.id !== quizId)
   expect((await read()).find((m) => m.slug === 'daily-quiz')).toEqual(done)
+})
+
+
+test('creation missions use frozen capabilities independently of rank and propagate unavailable registration', async () => {
+  const ctx = buildApp(), accountId = randomUUID()
+  const ownsStudio = (ref: string) => ref === 'estudio-completo'
+  const userId = Array.from({ length: 100 }, () => randomUUID()).find((id) =>
+    [...assignWeeklyMissions(id, weeklyPeriodKey(today), ownsStudio),
+     ...assignMonthlyMissions(id, monthlyPeriodKey(today), ownsStudio)]
+      .some((mission) => mission.goalType === 'studio_remix'),
+  )
+  if (!userId) throw new Error('No remix mission in fixture cohort')
+  grantLifetime(ctx.entitlements, { userId: accountId, courseRef: 'estudio-completo' })
+  ctx.kidsJourneySnapshots.earned.set(userId, {
+    level: 'noob', capabilities: ['studio'], courseAccess: { entry: [], expanded: [], reward: [] },
+  })
+  const service = new GetMissionsService(ctx.gamification,
+    new AccessCheckService(ctx.entitlements, () => now), () => now,
+    new ListMyCoursesService(ctx.entitlements, ctx.courses, ctx.progress, ctx.positions,
+      ctx.gamification, () => now, ctx.kidsJourneyQuery), ctx.kidsJourneyQuery)
+  const result = await service.execute(userId, accountId, 'kids')
+  expect([...result.weekly, ...result.monthly].some((mission) => mission.goalType === 'studio_remix')).toBe(true)
+  expect(ctx.gamification.qualifyingJourneySlotReads).toBe(0)
+  ctx.kidsJourneySnapshots.unavailableProfiles.add(userId)
+  await expect(service.execute(userId, accountId, 'kids')).rejects.toMatchObject({ code: 'KIDS_JOURNEY_UNAVAILABLE' })
 })

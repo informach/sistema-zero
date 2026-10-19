@@ -174,17 +174,13 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       )
       // Gamificação do APRENDIZE (ficha admin): XP/nível/streak/badges/coins da vitrine
       // pedida. O `:userId` é o aprendiz (conta=adult / perfil=kids — o BFF passa a
-      // audiência certa). Read-only: sem ranking (`accountId`=userId é irrelevante) nem
+      // audiência certa). Read-only: owner Kids vem do registro canônico; sem ranking nem
       // passe de equipe (o painel sempre vê o estado REAL do aluno).
       .get(
         '/members/:userId/gamification',
         async ({ params, query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.getGamification.execute(params.userId, params.userId, {
-            audience: query.audience ?? 'adult',
-            withRanking: false,
-            privileged: false,
-          })
+          return deps.getGamification.inspect(params.userId, query.audience ?? 'adult')
         },
         { params: UserIdParams, query: AdminGamificationQuery },
       )

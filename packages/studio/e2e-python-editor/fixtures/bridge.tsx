@@ -7,6 +7,7 @@ import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import * as Blockly from 'blockly/core'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { StrictMode } from 'react'
+import { flushSync } from 'react-dom'
 import type { Root } from 'react-dom/client'
 import { ModeArea } from '../../src/components/layout/ModeArea'
 import { isPythonProject } from '../../src/core/editableProject'
@@ -339,7 +340,7 @@ export function createBridgeProbe(root: Root) {
     },
     unmount() {
       unsubscribeSelections()
-      root.render(null)
+      flushSync(() => root.render(null))
     },
   }
 }

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import {
   CREATOR_SHOWCASE_SLUGS,
+  canonicalJson,
   creativeToolAccessRef,
   creatorCommunityAccessRef,
 } from '@sistemazero/core/creations'
@@ -13,7 +14,15 @@ import {
 } from '../../domain/hub-errors'
 import type { CommunityReadRepository } from '../../domain/ports/community-read-repository.port'
 import type { MembersGateway } from '../../domain/ports/members-gateway.port'
-import type { AuthorActivity, ThreadRepository } from '../../domain/ports/thread-repository.port'
+import type {
+  StudioReservationInput,
+  StudioReservationOutcome,
+} from '../../domain/ports/studio-reservation-repository.port'
+import type {
+  AuthorActivity,
+  CreateShowcaseThreadInput,
+  ThreadRepository,
+} from '../../domain/ports/thread-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 import type { Channel } from '../../domain/space/space'
 import type { ThreadStudioMeta } from '../../domain/thread/thread'
@@ -95,6 +104,9 @@ export interface CreateShowcaseCommand {
 }
 
 export interface CreateShowcaseFromStudioCommand {
+  reservationId?: string
+  snapshotHash?: string
+  publisher: { authorId: string; accountId: string; audience: 'kids' | 'adult' }
   spaceSlug: string
   lessonId: string
   blockId: string
@@ -110,7 +122,10 @@ export interface CreateShowcaseFromStudioCommand {
 }
 
 export interface CreateStandaloneShowcaseCommand {
-  liveWorkspace?: { id: string; revision: number; publicationToken: string }
+  reservationId?: string
+  snapshotHash?: string
+  publisher: { authorId: string; accountId: string; audience: 'kids' | 'adult' }
+  liveWorkspace?: { id: string; revision: number; playId?: string; publicationToken: string }
   spaceSlug: string
   /** Título escrito pela criança (= nome do projeto). NÃO há título autoritativo (sem aula). */
   title: string
@@ -165,6 +180,85 @@ export class ShowcaseService {
     private readonly showcaseChannelSlug = 'parede',
     private readonly adult?: { walls: ReadonlySet<string>; access: AccessResolutionService },
   ) {}
+
+  private reservationInput(
+    actor: Actor,
+    cmd: CreateShowcaseFromStudioCommand | CreateStandaloneShowcaseCommand,
+    input: CreateShowcaseThreadInput,
+    context: string,
+  ): StudioReservationInput {
+    if (!cmd.snapshotHash || !/^[a-f0-9]{64}$/.test(cmd.snapshotHash))
+      throw new ValidationError('Snapshot da publicação inválido.')
+    const audience = cmd.publisher.audience
+    return {
+      id: this.newId(),
+      authorId: actor.userId,
+      accountId: actor.accountId,
+      audience,
+      context,
+      scopeKey: createHash('sha256')
+        .update(
+          canonicalJson([
+            audience,
+            actor.userId,
+            actor.accountId,
+            context,
+            cmd.clientIdempotencyKey,
+          ]),
+        )
+        .digest('hex'),
+      idempotencyKey: input.idempotencyKey,
+      semanticHash: createHash('sha256')
+        .update(
+          canonicalJson({
+            context,
+            snapshotHash: cmd.snapshotHash,
+            title: input.title,
+            description: input.body,
+            studioMeta: input.studioMeta ?? null,
+            challengeKey: 'challengeKey' in cmd ? (cmd.challengeKey ?? null) : null,
+          }),
+        )
+        .digest('hex'),
+      snapshotHash: cmd.snapshotHash,
+      ...('liveWorkspace' in cmd && cmd.liveWorkspace
+        ? { livePlayId: cmd.liveWorkspace.playId ?? cmd.playId }
+        : {}),
+      now: new Date(input.now.getTime()),
+    }
+  }
+  private reservationView(outcome: StudioReservationOutcome) {
+    if (outcome.state === 'finalized') return { ...outcome, thread: toThreadView(outcome.thread) }
+    if (outcome.state === 'retired')
+      return { ...outcome, thread: outcome.thread ? toThreadView(outcome.thread) : null }
+    return outcome
+  }
+  async prepareFromStudio(actor: Actor, cmd: CreateShowcaseFromStudioCommand) {
+    const result = await this.executeFromStudio(actor, cmd, true)
+    if (!('state' in result)) throw new Error('Invalid publication preparation')
+    return result
+  }
+  async createFromStudio(
+    actor: Actor,
+    cmd: CreateShowcaseFromStudioCommand,
+  ): Promise<{ thread: ThreadView; deduped: boolean }> {
+    const result = await this.executeFromStudio(actor, cmd, false)
+    if ('state' in result) throw new Error('Invalid publication finalization')
+    return result
+  }
+  async prepareStandaloneShowcase(actor: Actor, cmd: CreateStandaloneShowcaseCommand) {
+    const result = await this.executeStandaloneShowcase(actor, cmd, true)
+    if (!('state' in result)) throw new Error('Invalid publication preparation')
+    return result
+  }
+  async createStandaloneShowcase(
+    actor: Actor,
+    cmd: CreateStandaloneShowcaseCommand,
+  ): Promise<{ thread: ThreadView; deduped: boolean }> {
+    const result = await this.executeStandaloneShowcase(actor, cmd, false)
+    if ('state' in result) throw new Error('Invalid publication finalization')
+    return result
+  }
 
   async adultCommunityAvailable(userId: string, accountId: string): Promise<boolean> {
     if (userId !== accountId) return false
@@ -387,6 +481,11 @@ export class ShowcaseService {
     }
   }
 
+  /** The cleanup job must distinguish a reversible hide from a deleted post. */
+  showcaseCoverReference(playId: string, audience: 'adult' | 'kids') {
+    return this.threads.showcaseCoverReference(playId, audience)
+  }
+
   /** Jornada do aluno: quantos jogos publicados (visíveis) + soma das jogadas. */
   async myShowcaseStats(actor: Actor): Promise<{ published: number; plays: number }> {
     // `authorId` das threads de vitrine é o PERFIL (actor.userId) — mesma identidade
@@ -446,10 +545,15 @@ export class ShowcaseService {
    * post NOVO, imutável; duplo-clique/retry do MESMO ato dedup-a). O TÍTULO continua
    * AUTORITATIVO do members (defesa em profundidade — a parede é curada).
    */
-  async createFromStudio(
+  private async executeFromStudio(
     actor: Actor,
     cmd: CreateShowcaseFromStudioCommand,
-  ): Promise<{ thread: ThreadView; deduped: boolean }> {
+    prepare: boolean,
+  ) {
+    actor = { ...actor }
+    cmd = structuredClone(cmd)
+    if (cmd.publisher.authorId !== actor.userId || cmd.publisher.accountId !== actor.accountId)
+      throw new PostingNotAllowedError('Autor da publicação divergente')
     const elig = await this.members.getShowcaseEligibility({
       userId: actor.userId,
       accountId: actor.accountId,
@@ -460,6 +564,8 @@ export class ShowcaseService {
       privileged: actor.privileged,
     })
     if (!elig.eligible) throw new PostingNotAllowedError('Projeto não elegível para o Mural')
+    if (cmd.publisher.audience !== elig.audience)
+      throw new PostingNotAllowedError('Audiência da publicação divergente')
     await this.assertNotVisitorOnly(actor, elig.audience)
 
     // Destino: parede curada do Mural (mesmas guardas de `create`) — ver helper.
@@ -490,7 +596,7 @@ export class ShowcaseService {
       .digest('hex')
 
     const id = this.newId()
-    const { thread, deduped } = await this.threads.createShowcaseThread({
+    const candidate: CreateShowcaseThreadInput = {
       id,
       channelId: channel.id,
       authorId: actor.userId,
@@ -511,7 +617,22 @@ export class ShowcaseService {
       },
       idempotencyKey,
       now: this.clock(),
-    })
+    }
+    const reservation = this.reservationInput(
+      actor,
+      cmd,
+      candidate,
+      canonicalJson({ kind: 'lesson', lessonId: cmd.lessonId, blockId: cmd.blockId }),
+    )
+    if (prepare)
+      return this.reservationView(await this.threads.prepareStudioPublication(reservation))
+    if (!cmd.reservationId) throw new ValidationError('Prepare a publicação antes de finalizar.')
+    const { thread, deduped } = await this.threads.finalizeStudioPublication(
+      cmd.reservationId,
+      reservation,
+      candidate,
+    )
+    if (thread.status !== 'visible') return { thread: toThreadView(thread), deduped }
     // Nível do aluno: mesma notificação best-effort do `create` (idempotente por user+curso).
     // FIRE-AND-FORGET (não `await`): a thread já está salva; bloquear a resposta aqui
     // penduraria o "Publicar no Mural" por segundos se o members estivesse lento/fora (o
@@ -537,14 +658,23 @@ export class ShowcaseService {
    *  - Autor do header confiável; destino kids + parede curada (mesmas guardas).
    *  - Idempotência = `autor:standalone:clientKey` (duplo-clique dedup-a; republicar = post novo).
    */
-  async createStandaloneShowcase(
+  private async executeStandaloneShowcase(
     actor: Actor,
     cmd: CreateStandaloneShowcaseCommand,
-  ): Promise<{ thread: ThreadView; deduped: boolean }> {
+    prepare: boolean,
+  ) {
+    actor = { ...actor }
+    cmd = structuredClone(cmd)
     // Elegibilidade = posse do produto do Estúdio (acesso pela CONTA). Fail-closed:
     // um erro transitório no members NÃO libera a publicação (o gateway re-entrega).
     // Com tag de DESAFIO, a MESMA chamada também resolve a posse do Clube (1 ida).
-    const audience = this.adult?.walls.has(cmd.spaceSlug) ? 'adult' : 'kids'
+    const audience: 'adult' | 'kids' = this.adult?.walls.has(cmd.spaceSlug) ? 'adult' : 'kids'
+    if (
+      cmd.publisher.authorId !== actor.userId ||
+      cmd.publisher.accountId !== actor.accountId ||
+      cmd.publisher.audience !== audience
+    )
+      throw new PostingNotAllowedError('Autor da publicação divergente')
     if (audience === 'adult') {
       this.assertAdultActor(actor)
     }
@@ -637,7 +767,7 @@ export class ShowcaseService {
       .digest('hex')
 
     const id = this.newId()
-    const { thread, deduped } = await this.threads.createShowcaseThread({
+    const candidate: CreateShowcaseThreadInput = {
       id,
       channelId: channel.id,
       authorId: actor.userId,
@@ -650,32 +780,93 @@ export class ShowcaseService {
       coverImageUrl,
       playId: cmd.playId,
       challengeKey,
+      studioEvents: [
+        ...(challengeKey
+          ? [
+              {
+                kind: 'challenge' as const,
+                payload: {
+                  userId: actor.userId,
+                  accountId: actor.accountId,
+                  audience,
+                  challengeKey,
+                  publishedAt: this.clock().toISOString(),
+                },
+              },
+            ]
+          : []),
+        ...(!cmd.liveWorkspace
+          ? [
+              {
+                kind: 'standalone' as const,
+                payload: {
+                  userId: actor.userId,
+                  accountId: actor.accountId,
+                  audience,
+                  playId: cmd.playId,
+                  publishedAt: this.clock().toISOString(),
+                },
+              },
+            ]
+          : []),
+      ],
       studioMeta: sanitizeStudioMeta(cmd.studioMeta),
       idempotencyKey,
       now: this.clock(),
-    })
+    }
+    const reservation = this.reservationInput(
+      actor,
+      cmd,
+      candidate,
+      canonicalJson(
+        cmd.liveWorkspace
+          ? {
+              kind: 'live',
+              workspaceId: cmd.liveWorkspace.id,
+              revision: cmd.liveWorkspace.revision,
+            }
+          : { kind: 'free', audience },
+      ),
+    )
+    if (prepare)
+      return this.reservationView(await this.threads.prepareStudioPublication(reservation))
+    if (!cmd.reservationId) throw new ValidationError('Prepare a publicação antes de finalizar.')
+    const { thread, deduped } = await this.threads.finalizeStudioPublication(
+      cmd.reservationId,
+      reservation,
+      candidate,
+    )
+    if (thread.status !== 'visible') return { thread: toThreadView(thread), deduped }
     // Desafio do mês: avisa o members (XP + badge) SÓ quando a thread nasceu/existe
     // com a tag — fire-and-forget best-effort como o notifyShowcasePublished; o
     // members deduplica por mês (mesmo no `deduped` a notificação recupera uma 1ª falha).
     if (thread.challengeKey) {
-      void this.members.notifyChallengeEntry({
-        userId: actor.userId,
-        accountId: actor.accountId,
-        audience,
-        challengeKey: thread.challengeKey,
-      })
+      void this.members.notifyChallengeEntry(
+        {
+          userId: actor.userId,
+          accountId: actor.accountId,
+          audience,
+          challengeKey: thread.challengeKey,
+          publishedAt: thread.createdAt.toISOString(),
+        },
+        `studio:${thread.id}:challenge`,
+      )
     }
     // Retenção pós-cursos: publicar standalone gera gamificação — marco `studio_published`
     // (missões gated por estudio-completo) + XP diário de publicar (streak/liga de quem
     // só cria). FIRE-AND-FORGET best-effort (espelha o notifyShowcasePublished); notifica
     // mesmo no `deduped` (recupera falha anterior; o members é idempotente por playId/dia).
     if (thread.playId && !cmd.liveWorkspace) {
-      void this.members.notifyStandaloneShowcase({
-        userId: actor.userId,
-        accountId: actor.accountId,
-        audience,
-        playId: thread.playId,
-      })
+      void this.members.notifyStandaloneShowcase(
+        {
+          userId: actor.userId,
+          accountId: actor.accountId,
+          audience,
+          playId: thread.playId,
+          publishedAt: thread.createdAt.toISOString(),
+        },
+        `studio:${thread.id}:standalone`,
+      )
     }
     return { thread: toThreadView(thread), deduped }
   }

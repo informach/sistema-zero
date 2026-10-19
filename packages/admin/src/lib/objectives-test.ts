@@ -1,18 +1,18 @@
 import {
   isExecutionRule,
+  type ProjectEntryReport,
+  type ProjectObjectiveVerdict,
   ProjectStructureAnalysisLimitError,
+  projectEntryReport,
+  readStudioProjectExamples,
+  resolveStudioSectionExamples,
   type SectionJavaScriptProjectCheck,
+  studioProjectExampleEnvironmentIssues,
 } from '@sistemazero/core/learning'
 import { evaluateStudioSectionObjectives } from '@sistemazero/studio/server-project-checks'
 
-/**
- * O "Testar agora" dos objetivos da parte (18/10/2026): roda os objetivos contra o projeto INICIAL
- * (que deve falhar: senão a criança cumpre sem fazer nada) e contra o GABARITO (que deve passar:
- * senão nem a professora consegue). Os de ESTRUTURA são conferidos aqui, na hora; os que RODAM o
- * jogo (etapa 3) chegam do executor pelo `executed`, e enquanto não chegam a linha diz "testando".
- * Pura, para a régua ser testada sem montar o editor.
- */
-export type ObjectiveVerdict = boolean | null | 'pending' | 'error'
+/** Diagnostics of project objectives only. This never completes a student's part. */
+export type ObjectiveVerdict = ProjectObjectiveVerdict
 
 export interface ObjectiveTestRow {
   id: string
@@ -20,6 +20,8 @@ export interface ObjectiveTestRow {
   optional: boolean
   /** O projeto inicial já cumpre? `null` = sem projeto inicial; `pending` = o executor ainda roda. */
   initial: ObjectiveVerdict
+  /** Optional authoring checkpoint; never replaces the initial code-idea baseline. */
+  checkpoint: ObjectiveVerdict
   /** O gabarito cumpre? `null` = sem gabarito. */
   solution: ObjectiveVerdict
   /** O que o executor viu no gabarito (só objetivos que rodam o jogo). */
@@ -34,6 +36,8 @@ export interface ObjectivesTestReport {
   problems: string[]
   /** Avisos que não impedem publicar. */
   notes: string[]
+  initialEntry: ProjectEntryReport
+  checkpointEntry: ProjectEntryReport | null
 }
 
 /** A resposta do executor para um projeto (o `POST /api/members/project-checks/test`). */
@@ -49,7 +53,52 @@ export interface ExecutionTestRejected {
 
 export interface ExecutedProjects {
   initial?: ExecutionTestOutcome | ExecutionTestRejected | 'pending' | 'error'
+  checkpoint?: ExecutionTestOutcome | ExecutionTestRejected | 'pending' | 'error'
   solution?: ExecutionTestOutcome | ExecutionTestRejected | 'pending' | 'error'
+}
+
+export const OBJECTIVE_PROJECT_ROLES = ['initial', 'checkpoint', 'solution'] as const
+export type ObjectiveProjectRole = (typeof OBJECTIVE_PROJECT_ROLES)[number]
+export interface SectionObjectiveProjects {
+  initial: unknown
+  checkpoint?: unknown
+  solution?: unknown
+  problems: string[]
+}
+
+/** Resolve once per workspace/part change, rather than recopying a large registry per result. */
+export function resolveSectionObjectiveProjects(
+  workspace: unknown,
+  sectionId?: string,
+): SectionObjectiveProjects {
+  const content = record(workspace) ? workspace : {}
+  const projects: SectionObjectiveProjects = { initial: content.initialProject, problems: [] }
+  if (Object.hasOwn(content, 'solutionProject')) {
+    projects.problems.push('Converta o gabarito global para exemplos por parte antes de testar.')
+    return projects
+  }
+  const read = readStudioProjectExamples(content.projectExamples)
+  if (read.kind === 'absent') return projects
+  if (read.kind === 'invalid') {
+    projects.problems = read.issues.map((issue) => issue.message)
+    return projects
+  }
+  if (!sectionId) {
+    projects.problems.push('Escolha a parte para conferir seus exemplos.')
+    return projects
+  }
+  const environmentIssues = studioProjectExampleEnvironmentIssues(read.value, projects.initial)
+  if (environmentIssues.length) {
+    projects.problems = environmentIssues.map((issue) => issue.message)
+    return projects
+  }
+  const resolved = resolveStudioSectionExamples(read.value, sectionId)
+  if (resolved.kind === 'invalid') projects.problems = resolved.issues.map((issue) => issue.message)
+  if (resolved.kind === 'resolved') {
+    projects.solution = resolved.solution
+    projects.checkpoint = resolved.entry
+  }
+  return projects
 }
 
 /** Erro de `runExecutionTest` quando o servidor diz POR QUE o projeto não pode ser testado. */
@@ -69,38 +118,58 @@ export function testSectionObjectives(
   checks: readonly SectionJavaScriptProjectCheck[],
   workspace: unknown,
   executed: ExecutedProjects = {},
+  sectionId?: string,
 ): ObjectivesTestReport {
-  const content = record(workspace) ? workspace : {}
-  const initial = content.initialProject
-  const solution = content.solutionProject
+  return testResolvedSectionObjectives(
+    checks,
+    resolveSectionObjectiveProjects(workspace, sectionId),
+    executed,
+  )
+}
+
+export function testResolvedSectionObjectives(
+  checks: readonly SectionJavaScriptProjectCheck[],
+  projects: SectionObjectiveProjects,
+  executed: ExecutedProjects = {},
+): ObjectivesTestReport {
+  const { initial, solution, checkpoint } = projects
+  const syncing = (project: unknown) => record(project) && project.bridgeCodeAhead === true
+  let analysisLimited = false
   // No código só conta o que mudou em relação ao projeto inicial (o mesmo critério do servidor).
-  const passedBy = (project: unknown): Map<string, boolean> | null | 'error' => {
+  const passedBy = (project: unknown): Map<string, boolean> | null | 'inconclusive' => {
     if (project === undefined || project === null) return null
+    if (syncing(project)) return 'inconclusive'
     try {
       return new Map(
-        evaluateStudioSectionObjectives(checks, project, initial ?? undefined).results.map((r) => [
-          r.checkId,
-          r.passed,
-        ]),
+        evaluateStudioSectionObjectives(
+          checks.filter((check) => !syncing(initial) || check.rule.type === 'usesBlock'),
+          project,
+          initial ?? undefined,
+        ).results.map((r) => [r.checkId, r.passed]),
       )
     } catch (error) {
-      if (error instanceof ProjectStructureAnalysisLimitError) return 'error'
+      if (error instanceof ProjectStructureAnalysisLimitError) {
+        analysisLimited = true
+        return 'inconclusive'
+      }
       throw error
     }
   }
   const byInitial = passedBy(initial)
   const bySolution = passedBy(solution)
+  const byCheckpoint = passedBy(checkpoint)
   const verdict = (
     check: SectionJavaScriptProjectCheck,
-    structural: Map<string, boolean> | null | 'error',
+    structural: Map<string, boolean> | null | 'inconclusive',
     run: ExecutedProjects['initial'],
   ): ObjectiveVerdict => {
     if (!structural) return null
-    if (structural === 'error') return 'error'
-    if (!isExecutionRule(check.rule)) return structural.get(check.id) ?? false
+    if (structural === 'inconclusive') return 'inconclusive'
+    if (syncing(initial) && check.rule.type !== 'usesBlock') return 'inconclusive'
+    if (!isExecutionRule(check.rule)) return structural.get(check.id) ?? 'inconclusive'
     if (run === undefined || run === 'pending') return 'pending'
     if (run === 'error' || 'rejected' in run) return 'error'
-    return run.results.find((r) => r.id === check.id)?.passed ?? false
+    return run.results.find((r) => r.id === check.id)?.passed ?? 'inconclusive'
   }
   const rows = checks.map((check, index): ObjectiveTestRow => {
     const solutionRun =
@@ -114,40 +183,38 @@ export function testSectionObjectives(
       label: nameOf(check, index),
       optional: check.optional === true,
       initial: verdict(check, byInitial, executed.initial),
-      solution: verdict(check, bySolution, executed.solution),
+      checkpoint: projects.problems.length
+        ? 'error'
+        : verdict(check, byCheckpoint, executed.checkpoint),
+      solution: projects.problems.length ? 'error' : verdict(check, bySolution, executed.solution),
       ...(detail ? { solutionDetail: detail } : {}),
       ...(screenshot ? { screenshot } : {}),
     }
   })
-  const problems: string[] = []
+  const problems: string[] = [...projects.problems]
   const notes: string[] = []
   for (const row of rows) {
     if (!row.optional && row.solution === false)
       problems.push(
         `O gabarito não cumpre "${row.label}". Ajuste o gabarito ou o objetivo antes de publicar.`,
       )
-    if (!row.optional && row.initial === true)
-      problems.push(
-        `O projeto inicial já cumpre "${row.label}": a criança passa sem fazer nada. Mude o objetivo ou o projeto inicial antes de publicar.`,
-      )
     if (row.optional && row.solution === false)
       notes.push(`O gabarito não cumpre o desafio extra "${row.label}".`)
-    if (row.optional && row.initial === true)
-      notes.push(`O projeto inicial já cumpre o desafio extra "${row.label}": ele sai de graça.`)
   }
   for (const [which, label] of [
     ['initial', 'No projeto inicial'],
+    ['checkpoint', 'No exemplo de entrada desta parte'],
     ['solution', 'No gabarito'],
   ] as const) {
     const run = executed[which]
     if (typeof run === 'object' && 'rejected' in run) problems.push(`${label}: ${run.rejected}`)
   }
   const unavailable = (run: ExecutedProjects['initial']) => run === 'error'
-  if (byInitial === 'error' || bySolution === 'error')
+  if (analysisLimited)
     notes.push(
       'Não consegui conferir todo o código dentro dos limites do teste. A análise ficou inconclusiva; peça ajuda à equipe.',
     )
-  if (unavailable(executed.initial) || unavailable(executed.solution))
+  if (OBJECTIVE_PROJECT_ROLES.some((role) => unavailable(executed[role])))
     notes.push(
       'Não consegui rodar o jogo agora para conferir os objetivos que o testam. Tente de novo.',
     )
@@ -155,13 +222,53 @@ export function testSectionObjectives(
     notes.push(
       'Todos os objetivos são desafios extras: a parte não exige nada do projeto para seguir.',
     )
-  if (bySolution === null && checks.length > 0)
-    (executionChecksOf(checks).length ? problems : notes).push(
-      executionChecksOf(checks).length
-        ? 'Sem gabarito: objetivos que rodam o jogo precisam do gabarito para publicar. Crie o gabarito no bloco do Estúdio.'
-        : 'Sem gabarito: o teste só confere o projeto inicial. Crie o gabarito no bloco do Estúdio para conferir se cada objetivo pode ser cumprido.',
+  if (!projects.problems.length && bySolution === null && checks.length > 0)
+    (executionChecksOf(checks.filter((check) => !check.optional)).length ? problems : notes).push(
+      executionChecksOf(checks.filter((check) => !check.optional)).length
+        ? 'Sem gabarito: objetivos obrigatórios que rodam o jogo precisam do gabarito desta parte para publicar. Prepare uma solução possível nesta parte.'
+        : 'Sem gabarito desta parte: prepare uma solução possível para conferir se os objetivos podem ser cumpridos.',
     )
-  return { rows, problems, notes }
+  if (syncing(solution))
+    problems.push(
+      'A solução desta parte ainda está sincronizando código e blocos. Guarde um snapshot atualizado antes de publicar.',
+    )
+  if (syncing(initial) || syncing(checkpoint))
+    notes.push(
+      'Um projeto de entrada ainda está sincronizando código e blocos. Aguarde a sincronização antes de conferir seus objetivos.',
+    )
+  if (
+    syncing(initial) &&
+    solution !== undefined &&
+    checks.some(
+      (check) => !check.optional && !isExecutionRule(check.rule) && check.rule.type !== 'usesBlock',
+    )
+  )
+    problems.push(
+      'O projeto inicial ainda está sincronizando. Aguarde antes de comparar as ideias da solução com a base da aula.',
+    )
+  const entry = (which: 'initial' | 'checkpoint') =>
+    projectEntryReport(
+      rows.map((row) => ({
+        id: row.id,
+        optional: row.optional,
+        verdict: row[which],
+      })),
+    )
+  const initialEntry = entry('initial')
+  const checkpointEntry = checkpoint === undefined ? null : entry('checkpoint')
+  for (const [label, report] of [
+    ['O projeto inicial', initialEntry],
+    ['O exemplo de entrada desta parte', checkpointEntry],
+  ] as const)
+    if (report?.kind === 'already-satisfied')
+      notes.push(
+        `${label} já cumpre todos os objetivos obrigatórios do projeto. Confira se isso combina com a proposta da parte. Este aviso não avalia vídeo, quiz e entrega nem conclui a parte.`,
+      )
+  if (rows.some((row) => OBJECTIVE_PROJECT_ROLES.some((role) => row[role] === 'inconclusive')))
+    notes.push(
+      'Há resultados inconclusivos. Eles não significam objetivo cumprido ou não cumprido.',
+    )
+  return { rows, problems, notes, initialEntry, checkpointEntry }
 }
 
 /** Roda no executor os objetivos que testam o jogo, contra um projeto. */
@@ -171,10 +278,12 @@ export async function runExecutionTest(
   fetchImpl: typeof fetch = fetch,
   /** O projeto inicial do bloco: o servidor confere que o gabarito é do mesmo tipo e modelo. */
   initialProject?: unknown,
+  signal?: AbortSignal,
 ): Promise<ExecutionTestOutcome> {
   const response = await fetchImpl('/api/members/project-checks/test', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal,
     body: JSON.stringify({
       project,
       ...(initialProject === undefined || initialProject === project ? {} : { initialProject }),
@@ -195,6 +304,16 @@ export async function runExecutionTest(
         ? body.error.message
         : 'O projeto ficou grande demais para o teste.',
     )
-  if (!response.ok || !body || !Array.isArray(body.results)) throw new Error('teste indisponível')
+  signal?.throwIfAborted()
+  if (
+    !response.ok ||
+    !body ||
+    !Array.isArray(body.results) ||
+    body.results.some(
+      (result) =>
+        !record(result) || typeof result.id !== 'string' || typeof result.passed !== 'boolean',
+    )
+  )
+    throw new Error('teste indisponível')
   return body
 }

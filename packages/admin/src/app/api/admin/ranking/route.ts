@@ -15,7 +15,8 @@ export interface RankingListRow {
   accountName: string | null
   accountEmail: string | null
   photoUrl: string | null
-  levelSlug: string
+  levelSlug: string | null
+  journeyUnavailable?: true
   position: number
   xp: number
   lastActivityDate: string | null
@@ -117,6 +118,7 @@ function common(item: AdminRankingEntryRaw) {
     accountId: item.accountId,
     photoUrl: item.photoUrl,
     levelSlug: item.levelSlug,
+    ...(item.journeyUnavailable ? { journeyUnavailable: true as const } : {}),
     position: item.position,
     xp: item.xp,
     lastActivityDate: item.lastActivityDate,

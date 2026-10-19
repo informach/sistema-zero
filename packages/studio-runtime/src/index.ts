@@ -54,6 +54,7 @@ import {
   PublicationError,
   publicationCommand,
   purgePublication,
+  retirePublicationReservation,
   servePublishedArtifact,
 } from './publications'
 import { createConfiguredPythonRuntime } from './python-configuration'
@@ -96,7 +97,9 @@ export interface Env {
   INTERNAL_TOKEN: string
   PRO_ARTIFACTS: PublicationBucket
   PUBLICATION_AUTHORIZATION_URL?: string
+  PUBLICATION_AUTHORIZATION_ADULT_URL?: string
   PUBLICATION_CLEANUP_URL?: string
+  PUBLICATION_CLEANUP_ADULT_URL?: string
   /** Trusted deployment JSON. Missing leaves Python unavailable and preserves JavaScript. */
   STUDIO_PYTHON_DISTRIBUTIONS_JSON?: string
   /** Private temporary input bucket; absence keeps new S2S Python operations unavailable. */
@@ -125,7 +128,7 @@ export function createStudioRuntimeHandler(
     return configuredPython.registry
   }
   let authorization:
-    | { endpoint: string | undefined; token: string; check: (playId: string) => Promise<boolean> }
+    | { endpointsKey: string; token: string; check: (playId: string) => Promise<boolean> }
     | undefined
   return {
     async scheduled(_event, env, ctx) {
@@ -141,18 +144,22 @@ export function createStudioRuntimeHandler(
             console.info('[studio-python] input collection', result)
           }),
         )
-      if (env.PUBLICATION_CLEANUP_URL && env.INTERNAL_TOKEN)
+      for (const cleanupURL of [env.PUBLICATION_CLEANUP_URL, env.PUBLICATION_CLEANUP_ADULT_URL]) {
+        if (!cleanupURL || !env.INTERNAL_TOKEN) continue
         ctx.waitUntil(
-          fetch(env.PUBLICATION_CLEANUP_URL, {
+          fetch(cleanupURL, {
             method: 'POST',
-            redirect: 'error',
+            // Never follow a redirect carrying the service credential; Workers supports manual.
+            redirect: 'manual',
             headers: { Authorization: `Bearer ${env.INTERNAL_TOKEN}` },
             signal: AbortSignal.timeout(60_000),
           }).then(async (response) => {
             await response.body?.cancel()
-            if (!response.ok) throw new Error(`Publication cleanup pending (${response.status})`)
+            if (!response.ok)
+              throw new Error(`Publication cleanup pending (${response.status}): ${cleanupURL}`)
           }),
         )
+      }
       ctx.waitUntil(
         collectPublicationGarbage(env.PRO_ARTIFACTS).then((result) => {
           console.info('[studio-publication] collection', result)
@@ -380,18 +387,20 @@ export function createStudioRuntimeHandler(
         }
       }
       if (url.pathname.startsWith('/v1/published/')) {
+        const authorizationEndpoints = [
+          env.PUBLICATION_AUTHORIZATION_URL,
+          env.PUBLICATION_AUTHORIZATION_ADULT_URL,
+        ].filter((endpoint): endpoint is string => Boolean(endpoint))
+        const endpointsKey = JSON.stringify(authorizationEndpoints)
         if (
           !authorization ||
-          authorization.endpoint !== env.PUBLICATION_AUTHORIZATION_URL ||
+          authorization.endpointsKey !== endpointsKey ||
           authorization.token !== env.INTERNAL_TOKEN
         ) {
           authorization = {
-            endpoint: env.PUBLICATION_AUTHORIZATION_URL,
+            endpointsKey,
             token: env.INTERNAL_TOKEN,
-            check: createPublicationAuthorizer(
-              env.PUBLICATION_AUTHORIZATION_URL,
-              env.INTERNAL_TOKEN,
-            ),
+            check: createPublicationAuthorizer(authorizationEndpoints, env.INTERNAL_TOKEN),
           }
         }
         try {
@@ -428,6 +437,32 @@ export function createStudioRuntimeHandler(
             request,
             STUDIO_PRO_PUBLICATION_LIMITS.maxRequestBytes,
           )
+          if (
+            body &&
+            typeof body === 'object' &&
+            'operation' in body &&
+            body.operation === 'retire-reservation'
+          ) {
+            if (
+              !('playId' in body) ||
+              !isStudioPublicationId(body.playId) ||
+              !('owner' in body) ||
+              !isStudioPublicationHash(body.owner) ||
+              !('snapshotHash' in body) ||
+              !isStudioPublicationHash(body.snapshotHash) ||
+              !('retirementHash' in body) ||
+              !isStudioPublicationHash(body.retirementHash)
+            )
+              throw new PublicationError(400, 'Reserva inválida.')
+            return Response.json(
+              await retirePublicationReservation(env.PRO_ARTIFACTS, {
+                playId: body.playId,
+                owner: body.owner,
+                snapshotHash: body.snapshotHash,
+                retirementHash: body.retirementHash,
+              }),
+            )
+          }
           if (
             body &&
             typeof body === 'object' &&

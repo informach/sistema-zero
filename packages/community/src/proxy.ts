@@ -44,6 +44,6 @@ export const config = {
   // do `requireUploadSession`). `api/certificates` (validação PÚBLICA por QR, sem
   // login) também fica de fora — sem gate de sessão.
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/members/avatar/snapshot|api/studio/play|api/studio/publish|api/studio/cleanup|api/internal/studio-builder/execute|api/hub/uploads/image|api/certificates).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/members/avatar/snapshot|api/studio/play|api/studio/publish|api/studio/cleanup|api/studio/reservation-cleanup|api/internal/studio-play|api/internal/studio-publication-cleanup|api/internal/studio-builder/execute|api/hub/uploads/image|api/certificates).*)',
   ],
 }

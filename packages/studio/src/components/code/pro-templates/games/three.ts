@@ -7,6 +7,10 @@ import * as THREE from 'three'
 import { GLTFLoader, type GLTF } from 'three/addons/loaders/GLTFLoader.js'
 import { clone } from 'three/addons/utils/SkeletonUtils.js'
 
+export class ModelActorDimensionsError extends Error {
+  constructor(message: string) { super(message); this.name = 'ModelActorDimensionsError' }
+}
+
 /** Cache promises, not just completed requests. Clones share owned GPU resources. */
 export class ModelLibrary {
   private cache = new Map<string, Promise<GLTF>>()
@@ -26,7 +30,8 @@ export class ModelLibrary {
     if (this.disposed) throw new Error('Biblioteca encerrada.')
     const root = clone(gltf.scene)
     const box = new THREE.Box3().setFromObject(root), size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3())
-    if (!Number.isFinite(size.y) || size.y <= 0 || !Number.isFinite(height) || height <= 0) { disposeSkeletons(root); throw new Error('O modelo precisa ter dimensões válidas.') }
+    if (!Number.isFinite(size.y) || size.y <= 0) { disposeSkeletons(root); throw new ModelActorDimensionsError('Este modelo não tem altura para substituir o personagem. Escolha um modelo com volume.') }
+    if (!Number.isFinite(height) || height <= 0) { disposeSkeletons(root); throw new ModelActorDimensionsError('Defina modelHeight maior que zero em src/config.ts.') }
     const object = new THREE.Group()
     root.position.sub(new THREE.Vector3(center.x, box.min.y, center.z))
     object.add(root); object.scale.setScalar(height / size.y)
@@ -70,7 +75,7 @@ export function disposeObject(root: THREE.Object3D) {
     'src/game.ts': `
 import * as THREE from 'three'
 import { config } from './config'
-import { ModelLibrary, disposeObject } from './assets'
+import { ModelActorDimensionsError, ModelLibrary, disposeObject } from './assets'
 import { frameLoop } from './lifecycle'
 import type { GameUI } from './ui'
 import type { GameInput } from './input'
@@ -114,7 +119,12 @@ export function createGame(ui: GameUI, input: GameInput): GameController {
   if (config.modelPath) void library.actor(config.modelPath,config.modelHeight,config.animation).then(value => {
     if (disposed) { value.dispose(); return }
     actor = value; body.visible = false; nose.visible = false; visual.add(value.object); invalidate()
-  }).catch(() => { if (!disposed) ui.note('Não foi possível abrir o modelo. Confira o caminho em src/config.ts; o personagem inicial continua disponível.') })
+  }).catch(error => {
+    if (disposed) return
+    ui.note(error instanceof ModelActorDimensionsError
+      ? error.message + ' O personagem inicial continua disponível.'
+      : 'Não foi possível abrir o modelo. Confira o caminho em src/config.ts; o personagem inicial continua disponível.')
+  })
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
   const resize = () => { const w = ui.stage.clientWidth, h = ui.stage.clientHeight; if (!w || !h) return; renderer.setPixelRatio(Math.min(ui.reducedQuality ? 1 : config.maxDpr,devicePixelRatio || 1)); renderer.setSize(w,h,false); camera.aspect = w/h; camera.updateProjectionMatrix(); invalidate() }
   const stopQuality = ui.onQuality(resize)

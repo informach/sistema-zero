@@ -1,21 +1,45 @@
-import { expect, test } from '@playwright/test'
 import { StudioPythonDistributionSchema } from '@sistemazero/core/studio/python-runtime-distribution'
 import { PYTHON_BOOT_CACHE_PREFIX } from '../src/runtime/python/bootResourceManifest'
 import { installDrawingTiming, type RunClickClock } from './fixtures/drawingTiming'
 import type {} from './fixtures/live'
 import { turtleF1Source } from './fixtures/performance'
+import { expect, test } from './fixtures/pythonLanguageSessions'
 import { tracePythonFrameLayout } from './layout-diagnostic'
 
 // DOM snapshot recording is observable CPU work, not part of the child's Studio.
 // Keep it in functional suites; performance diagnosis uses only opt-in CPU traces.
 test.use({ trace: 'off' })
+
+test.beforeEach(async ({ page, pythonLanguageSessions }) => {
+  pythonLanguageSessions.releaseWith(async () => {
+    if (!page.isClosed()) await page.evaluate(() => globalThis.studioLiveProbe?.close())
+  })
+})
 const f1 = process.env.PYTHON_LIVE_WORKLOAD === 'f1'
+
+function describeFailure(error: unknown, depth = 0): unknown {
+  if (!(error instanceof Error)) return String(error).slice(0, 4000)
+  const aggregateErrors = error instanceof AggregateError ? error.errors : undefined
+  const errors: unknown[] = []
+  if (depth < 2 && Array.isArray(aggregateErrors))
+    for (let index = 0; index < Math.min(aggregateErrors.length, 5); index++)
+      errors.push(describeFailure(aggregateErrors[index], depth + 1))
+  return {
+    name: String(error.name).slice(0, 200),
+    message: String(error.message).slice(0, 4000),
+    stack: error.stack === undefined ? undefined : String(error.stack).slice(0, 8000),
+    cause:
+      depth < 2 && error.cause !== undefined ? describeFailure(error.cause, depth + 1) : undefined,
+    errors: aggregateErrors === undefined ? undefined : errors,
+  }
+}
 
 for (const kind of ['classic', 'pro'] as const)
   test(`diagnostic live ${kind}: execute cold, cached and after editing to presented drawing`, async ({
     page,
     request,
     browser,
+    pythonLanguageSessions,
   }, testInfo) => {
     test.setTimeout(90000)
     const evidence = {
@@ -26,6 +50,8 @@ for (const kind of ['classic', 'pro'] as const)
       scope:
         'Diagnostic: trusted DOM click to first useful bitmap sampled by read-only rAF in the fresh frame (not GPU/compositor time). Automation dispatch and observer latency recorded separately; Playwright DOM tracing off, optional CPU trace overhead remains when enabled. Edited source accepted before clicking. Real room editor/runtime, controlled actors/storage; one sample per phase per repetition. F1 clears HTTP cache and only the tested runtime CacheStorage generation before cold click after editor/parser preparation; response shaping recorded when enabled, not full upload/RTT/NIC emulation. No video or reference-PC qualification.',
       distribution: await (await request.get('http://127.0.0.1:5297/distribution')).json(),
+      preparation: [{ step: 'distribution received', elapsedMs: 0 }],
+      failure: undefined as unknown,
       coldCacheReset: undefined as { name: string; existed: boolean; removed: boolean } | undefined,
       samples: [] as {
         phase: string
@@ -103,33 +129,50 @@ for (const kind of ['classic', 'pro'] as const)
         framing: chunked ? 'chunked' : 'length',
       })
     })
+    const primaryErrors: unknown[] = []
+    const teardownErrors: unknown[] = []
+    const preparationStarted = performance.now()
+    const preparing = (step: string) => {
+      evidence.preparation.push({ step, elapsedMs: performance.now() - preparationStarted })
+    }
     try {
+      preparing('room setup')
       expect(
         (
           await request.post(`/live-probe/setup?kind=${kind}&workload=${f1 ? 'f1' : 'drawing'}`)
         ).ok(),
       ).toBe(true)
+      preparing('install drawing observer')
       await installDrawingTiming(page)
+      preparing('navigate editor')
       await page.goto('/')
+      preparing('wait for editor bridge')
       await page.waitForFunction(() => !!globalThis.studioLiveProbe)
+      preparing('create child editor')
       await page.evaluate(() => studioLiveProbe.create('child'))
+      preparing('wait for execute enabled')
       await expect(page.getByRole('button', { name: 'Executar', exact: true })).toBeEnabled()
       if (f1) {
+        preparing('wait for F1 source')
         await expect
           .poll(() => page.evaluate(() => studioLiveProbe.read()))
           .toBe(turtleF1Source('red'))
         // Open actual output before timing. Classic hides Console by default;
         // Pro does not mount it until its tab is visited.
+        preparing('open console menu')
         await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
         const consoleMenu = page.getByRole('menuitem', { name: 'Console', exact: true })
         if ((await consoleMenu.getAttribute('aria-current')) !== 'true') await consoleMenu.click()
         else await page.keyboard.press('Escape')
         if (kind === 'pro') {
+          preparing('open Pro console tab')
           const consoleTab = page.getByRole('button', { name: 'Console', exact: true })
           if ((await consoleTab.getAttribute('aria-expanded')) !== 'true') await consoleTab.click()
         }
+        preparing('wait for console visible')
         await expect(page.getByRole('button', { name: 'Limpar', exact: true })).toBeVisible()
         if (kind === 'classic') {
+          preparing('wait for Classic parser')
           // Executar/Monaco readiness does not imply that the blocks parser has
           // finished its own download. Do not clear its in-flight HTTP cache.
           const editor = page.locator('section[aria-label="Editor de blocos Python"]')
@@ -140,6 +183,7 @@ for (const kind of ['classic', 'pro'] as const)
             })
             .toBe(false)
         }
+        preparing('clear browser HTTP cache')
         const session = await page.context().newCDPSession(page)
         try {
           await session.send('Network.enable')
@@ -147,11 +191,13 @@ for (const kind of ['classic', 'pro'] as const)
         } finally {
           await session.detach()
         }
+        preparing('read runtime configuration')
         const configuration = await (
           await request.get('http://127.0.0.1:5297/configuration')
         ).json()
         const directory = new URL('./', configuration.providerFrameURL).href
         const cacheName = `${PYTHON_BOOT_CACHE_PREFIX}${encodeURIComponent(directory)}:${evidence.distribution.release.manifestSha256}`
+        preparing('clear tested boot generation cache')
         evidence.coldCacheReset = await page.evaluate(async (name) => {
           const before = await caches.keys()
           const existed = before.includes(name)
@@ -166,6 +212,7 @@ for (const kind of ['classic', 'pro'] as const)
           return { name, existed, removed }
         }, cacheName)
       }
+      preparing('preparation complete')
       for (const phase of ['cold', 'cached', 'edited'] as const) {
         const finishTrace =
           phase === 'edited'
@@ -338,11 +385,38 @@ for (const kind of ['classic', 'pro'] as const)
         }
         if (phaseFailed) throw phaseFailure
       }
+    } catch (error: unknown) {
+      primaryErrors.push(error)
+      try {
+        evidence.failure = describeFailure(error)
+      } catch {
+        evidence.failure = { name: 'DiagnosticSerializationError' }
+      }
     } finally {
-      await testInfo.attach('live-startup-diagnostic', {
-        body: JSON.stringify(evidence, null, 2),
-        contentType: 'application/json',
-      })
-      await page.evaluate(() => globalThis.studioLiveProbe?.close()).catch(() => undefined)
+      try {
+        await testInfo.attach('live-startup-diagnostic', {
+          body: JSON.stringify(evidence, null, 2),
+          contentType: 'application/json',
+        })
+      } catch (error: unknown) {
+        teardownErrors.push(error)
+      }
+      try {
+        if (!page.isClosed()) await page.evaluate(() => globalThis.studioLiveProbe?.close())
+      } catch (error: unknown) {
+        teardownErrors.push(error)
+      }
+      try {
+        // Ownership checks run after all measured phases, also when a phase or attachment failed.
+        await expect.poll(() => pythonLanguageSessions.aliveIdCount()).toBe(0)
+      } catch (error: unknown) {
+        teardownErrors.push(error)
+      }
     }
+    if (teardownErrors.length)
+      throw new AggregateError(
+        [...primaryErrors, ...teardownErrors],
+        'Live performance teardown failed; original phase failures are retained.',
+      )
+    if (primaryErrors.length) throw primaryErrors[0]
   })

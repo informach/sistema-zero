@@ -9,8 +9,8 @@ const { buildBehaviorDigest, buildDraftSummary, buildProjectOutline } = await im
   '../src/server/zappy-project-outline'
 )
 const { buildStudioZappyPrompt, relevantExampleRecipes } = await import('../src/server/zappy-ai')
-const { resolveStudioTier } = await import('../src/lib/studio-tier')
-const { earnedStudioTier } = await import('../src/server/studio-unlocks')
+const { resolveStudioTier } = await import('./fixtures/legacy-studio-tier')
+const { earnedStudioTier } = await import('./fixtures/legacy-studio-tier')
 const { looksLikeDiagnosisQuestion } = await import('../src/server/zappy-search')
 
 const CATALOG = new Map([

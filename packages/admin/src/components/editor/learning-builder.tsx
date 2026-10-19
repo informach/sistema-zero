@@ -37,13 +37,14 @@ import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { useId, useRef, useState } from 'react'
-import { newProjectPlayActivity } from '../../lib/project-play-authoring'
+
+export { EMPTY_LEARNING, newLearningActivity } from '../../lib/learning-form-defaults'
+
 // ⚠️ Caminho relativo, e não o alias `@/`: o ensaio visual do kids compila este arquivo pelo
 // CAMINHO, e lá o alias do admin não existe.
 import {
   lembrar,
   type MemoriaDaAutoria,
-  textoAoTrocarCena,
   trocarCena,
   trocarTipo,
 } from '../../lib/scene-authoring-rules'
@@ -155,33 +156,6 @@ export const ACTIVITY_KINDS = [
     hint: 'Uma página sua, isolada num quadro. Para o que as cenas não cobrem.',
   },
 ] as const satisfies readonly { type: LearningActivity['type']; label: string; hint: string }[]
-
-export function newLearningActivity(type: LearningActivity['type']): LearningActivity {
-  switch (type) {
-    case 'project-play':
-      return newProjectPlayActivity()
-    case 'experimentation':
-      return { type, scene: 'world' }
-    case 'html':
-      return {
-        type,
-        html: "<h2>Experimente uma ideia</h2>\n<button onclick=\"learning.save({tests:(learning.state.tests||0)+1});learning.participated();this.textContent='Você fez '+learning.state.tests+' testes'\">Experimentar</button>",
-      }
-  }
-}
-
-/**
- * ⚠️ O bloco novo já nasce com o texto do modelo da cena padrão. Nascia em branco, e as regras
- * de troca só disparam numa TROCA — clicar no cartão já marcado não emite evento. Quem aceitava
- * o padrão escrevia tudo à mão e ainda levava o erro de campo obrigatório; quem clicava em
- * qualquer outra cena ganhava o texto de graça. O mesmo botão, dois comportamentos.
- */
-export const EMPTY_LEARNING: InteractiveBlock = {
-  kind: 'interactive',
-  required: false,
-  activity: newLearningActivity('experimentation'),
-  ...textoAoTrocarCena({ title: '', instructions: '', hints: [] }, null, 'world'),
-}
 
 function ChoiceFields({
   choices,

@@ -19,6 +19,7 @@ const longSourcePath = `project/${'portable-'.repeat(25)}main.py`
 files[longSourcePath] =
   '# A portable source path remains accessible under a deep Windows directory.'
 files['payload.json'] = '{}'
+files['runtime-deployment.json'] = JSON.stringify({ runtimeMetadata: hash })
 for (const [path, content] of Object.entries(files)) {
   const target = resolve(directory, path)
   await mkdir(resolve(target, '..'), { recursive: true })
@@ -70,6 +71,10 @@ try {
   assert.equal(page.status, 200)
   assert.match(page.headers.get('content-security-policy') ?? '', /frame-src 'self'/)
   assert.match(await page.text(), /id="stage"/)
+  const deployment = await request('runtime-deployment.json')
+  assert.equal(deployment.status, 200)
+  assert.equal(deployment.headers.get('content-type'), 'application/json')
+  assert.equal(await deployment.text(), files['runtime-deployment.json'])
   const frame = await request(`runtime/${hash}/frame.html`)
   assert.equal(frame.status, 200)
   assert.equal(frame.headers.get('access-control-allow-origin'), '*')

@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
-import { isPdfAttachment } from '@sistemazero/core/learning'
+import {
+  isPdfAttachment,
+  lessonStudioProjectExampleIssues,
+  remapStudioExampleContent,
+} from '@sistemazero/core/learning'
 import { and, asc, count, eq, inArray, isNull, ne, or, type SQL, sql } from 'drizzle-orm'
 import { blockRevisionFingerprint } from '../../../domain/course/block-revision'
 import type {
@@ -21,6 +25,10 @@ import {
 } from '../../../domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../../domain/course/lesson-block'
 import { quizGateFingerprint } from '../../../domain/course/quiz'
+import {
+  assertNoLegacyStudioExamples,
+  preserveStudioExamplesForLegacyWrite,
+} from '../../../domain/course/studio-project-examples'
 import type {
   AttachmentFields,
   CloneCourseOverrides,
@@ -30,6 +38,7 @@ import type {
   ListCoursesAdminFilter,
   ModuleFields,
 } from '../../../domain/ports/content-admin-repository.port'
+import type { StudioAuthoringPolicy } from '../../../domain/studio/authoring-policy'
 import type { StudioChainCandidate } from '../../../domain/studio/chain-environment'
 import type { Database } from './db'
 import { lessonContentAvailable } from './lesson-availability'
@@ -50,6 +59,10 @@ import {
   findStudioBlockChain,
   preserveStudioChainsForLessons,
 } from './studio-chain.repository'
+import {
+  assertDraftStudioExampleTransport,
+  assertPublishedStudioExamples,
+} from './studio-examples-publication-gate'
 import { JAVASCRIPT_TRIM_CHARACTERS } from './text-normalization'
 
 type CourseRow = typeof courses.$inferSelect
@@ -214,7 +227,10 @@ type DatabaseTransaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 type DatabaseExecutor = Database | DatabaseTransaction
 
 export class DrizzleContentAdminRepository implements ContentAdminRepository {
-  constructor(private readonly db: DatabaseExecutor) {}
+  constructor(
+    private readonly db: DatabaseExecutor,
+    private readonly studioPolicy?: StudioAuthoringPolicy,
+  ) {}
 
   /** Every removal and course publication locks the course first, so concurrent
    * editors cannot each remove the other's remaining publication activity. */
@@ -440,6 +456,47 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       const blockIdMap = new Map(srcBlocks.map((block) => [block.id, randomUUID()]))
       const moduleIdMap = new Map(srcModules.map((m) => [m.id, randomUUID()]))
       const lessonIdMap = new Map(srcLessons.map((l) => [l.id, randomUUID()]))
+      const structures =
+        lessonIds.length > 0
+          ? await tx
+              .select()
+              .from(lessonStructures)
+              .where(inArray(lessonStructures.lessonId, lessonIds))
+          : []
+      const sectionIdMap = new Map(
+        structures.flatMap((structure) =>
+          structure.sections.map((section) => [section.id, randomUUID()] as const),
+        ),
+      )
+      const clonedSectionId = (sectionId: string) => {
+        const mapped = sectionIdMap.get(sectionId)
+        if (!mapped) throw new Error('Parte ausente no mapa do clone')
+        return mapped
+      }
+      const clonedContents = new Map(
+        srcBlocks.map((block) => [
+          block.id,
+          remapStudioExampleContent(block.content, (sectionId) => sectionIdMap.get(sectionId)),
+        ]),
+      )
+      // The full target context is checked before any cloned registry is persisted.
+      for (const lesson of srcLessons) {
+        const structure = structures.find((entry) => entry.lessonId === lesson.id)
+        const targetSections = (structure?.sections ?? []).map((section) => ({
+          id: clonedSectionId(section.id),
+          workspaceBlockId: section.workspaceBlockId
+            ? (blockIdMap.get(section.workspaceBlockId) ?? null)
+            : null,
+        }))
+        const targetBlocks = srcBlocks
+          .filter((block) => block.lessonId === lesson.id)
+          .map((block) => ({
+            id: blockIdMap.get(block.id) ?? '',
+            content: clonedContents.get(block.id),
+          }))
+        const [issue] = lessonStudioProjectExampleIssues(targetSections, targetBlocks)
+        if (issue) throw new ValidationError(issue.message)
+      }
       if (srcModules.length > 0) {
         await tx.insert(modules).values(
           srcModules.map((m) => ({
@@ -477,17 +534,13 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
             lessonId: lessonIdMap.get(b.lessonId) as string,
             kind: b.kind,
             sortOrder: b.sortOrder,
-            content: b.content,
+            content: clonedContents.get(b.id) ?? b.content,
             // Conteúdo idêntico = mesma revisão (o Zappy não re-extrai à toa).
             contentRevision: b.contentRevision,
           })),
         )
       }
       if (lessonIds.length > 0) {
-        const structures = await tx
-          .select()
-          .from(lessonStructures)
-          .where(inArray(lessonStructures.lessonId, lessonIds))
         for (const structure of structures) {
           const targetLessonId = lessonIdMap.get(structure.lessonId)
           if (!targetLessonId) throw new Error('Aula ausente no mapa do clone')
@@ -496,7 +549,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
             revision: randomUUID(),
             sections: structure.sections.map((section) => ({
               ...section,
-              id: randomUUID(),
+              id: clonedSectionId(section.id),
               blockIds: section.blockIds.map((id) => {
                 const mapped = blockIdMap.get(id)
                 if (!mapped) throw new Error('Bloco ausente no mapa do clone')
@@ -511,6 +564,16 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
                         if (!mapped) throw new Error('Critério ausente no mapa do clone')
                         return mapped
                       }),
+                      ...(section.completion.materialItems
+                        ? {
+                            materialItems: section.completion.materialItems.map((item) => {
+                              const mapped = blockIdMap.get(item.blockId)
+                              if (!mapped)
+                                throw new Error('Material obrigatório ausente no mapa do clone')
+                              return { ...item, blockId: mapped }
+                            }),
+                          }
+                        : {}),
                     },
                   }
                 : {}),
@@ -534,6 +597,10 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           })),
         )
       }
+      for (const lessonId of [...lessonIdMap.values()].sort()) {
+        await lockLessonStructure(tx, lessonId)
+        await assertPublishedStudioExamples(tx, lessonId, this.studioPolicy, row.slug)
+      }
       return toCourse(row as CourseRow)
     })
   }
@@ -550,6 +617,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
             audience: courses.audience,
             slot: courses.careerSlot,
             modality: courses.modality,
+            slug: courses.slug,
           })
           .from(courses)
           .where(eq(courses.id, course.id))
@@ -596,9 +664,21 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
             previous.audience !== 'kids' ||
             previous.slot === null)
         ) {
-          const repository = new DrizzleContentAdminRepository(tx)
+          const repository = new DrizzleContentAdminRepository(tx, this.studioPolicy)
           if (!(await repository.listCourseIdsWithShowcaseBlock([course.id])).length)
             throw new NoShowcaseBlockError()
+        }
+        if (updated.length && previous?.slug !== course.slug) {
+          const courseLessons = await tx
+            .select({ id: lessons.id })
+            .from(lessons)
+            .where(eq(lessons.courseId, course.id))
+            .orderBy(asc(lessons.id))
+          for (const lesson of courseLessons) {
+            await lockLessonStructure(tx, lesson.id)
+            await assertPublishedStudioExamples(tx, lesson.id, this.studioPolicy, course.slug)
+            await assertDraftStudioExampleTransport(tx, lesson.id, course.slug)
+          }
         }
         return updated.length > 0
       })
@@ -802,6 +882,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           })
           .where(eq(lessons.id, id))
           .returning()
+        if (row) await assertPublishedStudioExamples(tx, id, this.studioPolicy)
         return row ? toLesson(row) : null
       })
     } catch (error) {
@@ -862,6 +943,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     kind: LessonBlockKind,
     content: LessonBlockContent,
   ): Promise<LessonBlock> {
+    assertNoLegacyStudioExamples(content)
     return retrySortOrderCollision(async () => {
       // Cada tentativa ganha uma transação própria — ou um SAVEPOINT quando este repositório
       // já está dentro de `withPintaChainLock`. Assim uma colisão 23505 não envenena a
@@ -892,6 +974,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           .returning()
         if (!row) throw new Error('insert de bloco não retornou a linha')
         await syncLessonStructure(tx, lessonId)
+        await assertPublishedStudioExamples(tx, lessonId, this.studioPolicy)
         return toBlock(row)
       })
     })
@@ -926,6 +1009,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         .limit(1)
       if (!current) return null
 
+      content = preserveStudioExamplesForLegacyWrite(content, current.content)
+
       const quizGateChanged = quizGateFingerprint(current.content) !== quizGateFingerprint(content)
       const [row] = await tx
         .update(lessonBlocks)
@@ -946,13 +1031,17 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         await tx.delete(quizAttempts).where(eq(quizAttempts.blockId, id))
       }
       await syncLessonStructure(tx, row.lessonId)
+      await assertPublishedStudioExamples(tx, row.lessonId, this.studioPolicy)
       return toBlock(row)
     })
   }
 
   async deleteBlock(id: string): Promise<boolean> {
     return this.db.transaction(async (tx) => {
-      const courseId = await new DrizzleContentAdminRepository(tx).findBlockCourseId(id)
+      const courseId = await new DrizzleContentAdminRepository(
+        tx,
+        this.studioPolicy,
+      ).findBlockCourseId(id)
       if (courseId) await this.preserveShowcase(tx, courseId, { blockId: id })
       const [block] = await tx
         .select({ lessonId: lessonBlocks.lessonId })
@@ -1108,7 +1197,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${`pinta-chain:${courseId}:${chain}`}, 0))`,
       )
-      return operation(new DrizzleContentAdminRepository(tx))
+      return operation(new DrizzleContentAdminRepository(tx, this.studioPolicy))
     })
   }
 
@@ -1122,7 +1211,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         .from(courses)
         .where(eq(courses.id, courseId))
         .for('update')
-      return operation(new DrizzleContentAdminRepository(tx))
+      return operation(new DrizzleContentAdminRepository(tx, this.studioPolicy))
     })
   }
 

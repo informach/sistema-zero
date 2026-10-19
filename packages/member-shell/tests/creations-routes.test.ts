@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
 import { createEmptyProject } from '@sistemazero/studio/project'
+import { documentFixture } from '../../studio/src/state/fixtures/projectDocuments'
 
 // `server-only` lança fora do React Server; neutraliza para testar os handlers.
 mock.module('server-only', () => ({}))
@@ -596,7 +597,12 @@ describe('BFF das criações — PARTES (assets do Estúdio por conteúdo)', () 
     )
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ item: SUMMARY })
-    expect(sentToMembers).toEqual({ revision: 3, uploadedParts: [HASH_A], verifiedPartHashes: [] })
+    expect(sentToMembers).toEqual({
+      revision: 3,
+      uploadedParts: [HASH_A],
+      verifiedPartHashes: [],
+      verifiedFormatVersion: 2,
+    })
     await settle()
     expect(r2.deletedBatches).toEqual([released])
   })
@@ -680,6 +686,42 @@ describe('BFF das criações — PARTES (assets do Estúdio por conteúdo)', () 
 })
 
 describe('BFF das criações — commit', () => {
+  test('promove o documento Python v3 e preserva a revisão de recursos conferida', async () => {
+    const project = { ...documentFixture('python', 'classic'), id: 'proj-1', assets: [] }
+    const { routes, calls } = buildRoutes({
+      storage: {
+        ...storage,
+        readJson: async () => ({
+          format: 'sz-studio-parts',
+          version: 1,
+          program: project,
+          assets: [HASH_A],
+        }),
+      },
+    })
+    const res = await routes.creationsCommit.POST(post({ revision: 2 }), item)
+    expect(res.status).toBe(200)
+    expect((calls.commitCreationUpload?.[0] as unknown[])[2]).toEqual({
+      revision: 2,
+      verifiedPartHashes: [HASH_A],
+      verifiedFormatVersion: 3,
+    })
+  })
+
+  test('recusa fonte Python v3 corrompida antes de promover a revisão', async () => {
+    const project = { ...documentFixture('python', 'classic'), id: 'proj-1', assets: [] }
+    const { routes, calls } = buildRoutes({
+      storage: {
+        ...storage,
+        readJson: async () => ({ ...project, files: { 'main.py': 42 } }),
+      },
+    })
+    const res = await routes.creationsCommit.POST(post({ revision: 2 }), item)
+    expect(res.status).toBe(409)
+    expect(await res.json()).toMatchObject({ error: { code: 'CREATION_DOCUMENT_INVALID' } })
+    expect(calls.commitCreationUpload).toBeUndefined()
+  })
+
   test('confere o documento do R2 antes do commit e recusa formato antigo sem promover nem apagar', async () => {
     const { routes, calls } = buildRoutes({
       storage: {
@@ -700,6 +742,7 @@ describe('BFF das criações — commit', () => {
     expect((calls.commitCreationUpload?.[0] as unknown[])[2]).toEqual({
       revision: 2,
       verifiedPartHashes: [],
+      verifiedFormatVersion: 2,
     })
     expect(r2.deleted).toEqual(['creations/u/studio/proj-1/1.json.gz'])
     const body = await res.json()
@@ -710,6 +753,16 @@ describe('BFF das criações — commit', () => {
     const { routes } = buildRoutes()
     const res = await routes.creationsCommit.POST(post({ revision: 2, bytes: 1 }), item)
     expect(res.status).toBe(400)
+  })
+
+  test('o navegador não pode declarar a versão verificada do documento no commit', async () => {
+    const { routes, calls } = buildRoutes()
+    const res = await routes.creationsCommit.POST(
+      post({ revision: 2, verifiedFormatVersion: 3 }),
+      item,
+    )
+    expect(res.status).toBe(400)
+    expect(calls.commitCreationUpload).toBeUndefined()
   })
 
   test('o DELETE do blob anterior no R2 fica FORA do caminho crítico: a resposta do commit sai mesmo com o R2 pendurado', async () => {

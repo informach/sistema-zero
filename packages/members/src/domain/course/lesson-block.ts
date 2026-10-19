@@ -232,6 +232,8 @@ export interface StudioBlock {
    * (`toMemberFacingStudioContent`).
    */
   solutionProject?: unknown
+  /** Private JSON snapshots. Narrow through readStudioProjectExamples at the authoring boundary. */
+  projectExamples?: unknown
   /**
    * Nome do PROJETO CONTÍNUO (cadeia). Aulas com o MESMO `chain` no mesmo curso
    * formam uma sequência que constrói um único projeto (ex.: um jogo ao longo de N
@@ -541,10 +543,63 @@ export function isCompletionGatingBlock(content: LessonBlockContent): boolean {
  * professora (`solutionProject`) e sem a `activity` de conteúdo gravado antes de 18/10/2026
  * (a auto-correção antiga, que levava as respostas esperadas ao navegador).
  */
-export function toMemberFacingStudioContent(content: StudioBlock): StudioBlock {
-  const { solutionProject: _gabarito, ...rest } = content as StudioBlock & { activity?: unknown }
-  const { activity: _legado, ...visible } = rest as typeof rest & { activity?: unknown }
-  return visible
+export const STUDIO_MEMBER_CONTENT_KEYS = [
+  'kind',
+  'initialProject',
+  'pythonLevel',
+  'gallery',
+  'purpose',
+  'level',
+  'allowBlocks',
+  'allowCategories',
+  'allowedModes',
+  'allowLevelReveal',
+  'chain',
+  'showcase',
+] as const satisfies readonly (keyof StudioBlock)[]
+
+export const STUDIO_MEMBER_GALLERY_KEYS = ['minItems', 'maxItems'] as const
+export const STUDIO_MEMBER_SHOWCASE_KEYS = [
+  'enabled',
+  'title',
+  'summary',
+  'defaultCoverUrl',
+] as const
+
+export type MemberFacingStudioBlock = Pick<StudioBlock, (typeof STUDIO_MEMBER_CONTENT_KEYS)[number]>
+
+export function toMemberFacingStudioContent(content: StudioBlock): MemberFacingStudioBlock {
+  return {
+    kind: 'studio',
+    initialProject: content.initialProject,
+    ...(content.pythonLevel !== undefined ? { pythonLevel: content.pythonLevel } : {}),
+    ...(content.gallery
+      ? { gallery: { minItems: content.gallery.minItems, maxItems: content.gallery.maxItems } }
+      : {}),
+    ...(content.purpose !== undefined ? { purpose: content.purpose } : {}),
+    ...(content.level !== undefined ? { level: content.level } : {}),
+    ...(content.allowBlocks ? { allowBlocks: [...content.allowBlocks] } : {}),
+    ...(content.allowCategories ? { allowCategories: [...content.allowCategories] } : {}),
+    ...(content.allowedModes ? { allowedModes: [...content.allowedModes] } : {}),
+    ...(content.allowLevelReveal !== undefined
+      ? { allowLevelReveal: content.allowLevelReveal }
+      : {}),
+    ...(content.chain !== undefined ? { chain: content.chain } : {}),
+    ...(content.showcase
+      ? {
+          showcase: {
+            enabled: content.showcase.enabled,
+            ...(content.showcase.title !== undefined ? { title: content.showcase.title } : {}),
+            ...(content.showcase.summary !== undefined
+              ? { summary: content.showcase.summary }
+              : {}),
+            ...(content.showcase.defaultCoverUrl !== undefined
+              ? { defaultCoverUrl: content.showcase.defaultCoverUrl }
+              : {}),
+          },
+        }
+      : {}),
+  }
 }
 
 export function hasComingSoonBlock(blocks: readonly { content: LessonBlockContent }[]): boolean {

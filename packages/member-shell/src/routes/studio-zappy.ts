@@ -13,6 +13,7 @@ import { studioTutorContextHint } from '@sistemazero/studio/tutor-mode'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
+import { isKidsStaffPreview, kidsJourneyAccess } from '../lib/kids-journey-access'
 import { learnerIdentity } from '../lib/learner-identity'
 import { RequestBodyTooLargeError, readBoundedJson } from '../lib/read-bounded-json'
 import { isPrivilegedRole } from '../lib/studio-tier'
@@ -25,8 +26,8 @@ import { redactPensaText } from '../server/pensa/privacy'
 import { validatePythonAnalysisDecision } from '../server/python-analysis-decision'
 import type { SessionModule } from '../server/session'
 import { createStudioAiTransport } from '../server/studio-ai-transport'
-import { adultStudioTier, earnedStudioTier } from '../server/studio-unlocks'
-import { isStudioZappyAllowed, isStudioZappyAllowedForRequest } from '../server/zappy-access'
+import { adultStudioTier, kidsStudioTier } from '../server/studio-unlocks'
+import { isStudioZappyAllowed, getStudioZappyAccessForRequest } from '../server/zappy-access'
 import {
   answerPreparedStudioZappy,
   deterministicZappyReply,
@@ -273,8 +274,8 @@ export function createStudioZappyRoutes(deps: {
   const { members, session: sessions, audience = 'kids' } = deps
   const allowed = (user: NonNullable<Awaited<ReturnType<SessionModule['getSession']>>>) =>
     audience === 'adult'
-      ? hasAdultCapability(members, user, 'ai')
-      : isStudioZappyAllowedForRequest(members, user)
+      ? hasAdultCapability(members, user, 'ai').then((yes) => yes ? 'allowed' as const : 'locked' as const)
+      : getStudioZappyAccessForRequest(members, user)
 
   const studioZappyHistory = {
     POST: async (req: Request) => {
@@ -293,7 +294,9 @@ export function createStudioZappyRoutes(deps: {
       const parsed = ContextualHistoryBody.safeParse(raw)
       if (!parsed.success || parsed.data.projectId !== parsed.data.authorization.subject.id)
         return error('INVALID_INPUT', 400)
-      if (!(await allowed(user))) return error('ZAPPY_NOT_ENABLED', 403)
+      const capability = await allowed(user)
+      if (capability === 'unavailable') return error('ZAPPY_UNAVAILABLE', 503)
+      if (capability !== 'allowed') return error('ZAPPY_NOT_ENABLED', 403)
       const input = parsed.data
       try {
         const approved = await members.authorizePythonAnalysis(input.authorization)
@@ -328,7 +331,9 @@ export function createStudioZappyRoutes(deps: {
       const user = await sessions.getSession()
       const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
-      if (!(await allowed(user))) return error('ZAPPY_NOT_ENABLED', 403)
+      const capability = await allowed(user)
+      if (capability === 'unavailable') return error('ZAPPY_UNAVAILABLE', 503)
+      if (capability !== 'allowed') return error('ZAPPY_NOT_ENABLED', 403)
       if (!query) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
 
@@ -342,7 +347,9 @@ export function createStudioZappyRoutes(deps: {
       const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
       if (isReadonlyImpersonation(user)) return error('IMPERSONATION_READONLY', 403)
-      if (!(await allowed(user))) return error('ZAPPY_NOT_ENABLED', 403)
+      const capability = await allowed(user)
+      if (capability === 'unavailable') return error('ZAPPY_UNAVAILABLE', 503)
+      if (capability !== 'allowed') return error('ZAPPY_NOT_ENABLED', 403)
       if (!query) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
       const result = await members.zappyDeleteHistory(query.projectId)
@@ -367,9 +374,8 @@ export function createStudioZappyRoutes(deps: {
       if (!parsed.success || parsed.data.projectId !== parsed.data.context.projectId) {
         return error('INVALID_INPUT', 400)
       }
-      // Posse, rank e blocos conquistados são INDEPENDENTES: em série custavam idas inteiras
-      // de latência com a criança esperando. A ordem das CHECAGENS abaixo continua a mesma —
-      // só a espera virou uma só. A equipe tem o passe livre e nem pergunta pelos blocos.
+      // Product and published policy are independent reads. Kids curriculum is requested only
+      // after the view distinguishes a learner from an explicit read-only team preview.
       const privileged = isPrivilegedRole(user.role)
       const context: ZappyContextInput = parsed.data.context
       const python = context.environment?.programmingLanguage === 'python'
@@ -443,35 +449,40 @@ export function createStudioZappyRoutes(deps: {
       const [studioAccess, gamification, unlocks] = await Promise.all([
         python ? true : hasStudioAccess(members),
         members.getGamification(),
-        python || privileged || context.kind === 'pro' ? null : members.getStudioUnlocks(),
+        python || audience === 'kids' || privileged || context.kind === 'pro' ? null : members.getStudioUnlocks(),
       ])
       if (!studioAccess) return error('FORBIDDEN', 403)
       const safeQuestion = redactZappySensitiveText(parsed.data.question)
 
-      // Rank/modos/extensões vêm do members + catálogo da jornada, nunca do cliente.
+      // Capabilities and curriculum come from Members, never from client rank/role claims.
       if (gamification.status !== 200) return error('ZAPPY_UNAVAILABLE', 503)
-      const levelSlug = gamification.body?.level?.slug
-      // Reusa o rank desta rota para não consultar o members duas vezes.
+      const kids = audience === 'kids' ? kidsJourneyAccess(gamification.body) : null
+      if (audience === 'kids' && !kids) return error('ZAPPY_UNAVAILABLE', 503)
+      // Reuse the published view rather than reading policy twice.
       if (
         audience === 'adult'
           ? !learnerIdentity(user, 'adult') ||
             !gamification.body?.journey?.capabilities.includes('ai')
-          : !isStudioZappyAllowed(user, levelSlug)
+          : !isStudioZappyAllowed(user, kids)
       )
         return error('ZAPPY_NOT_ENABLED', 403)
       // O tutor oferece os MESMOS blocos que a paleta: os conquistados nos cursos (a equipe
       // tem o passe livre e não precisa deles). Falhou: indisponível, nunca "sem blocos".
       let unlockedBlocks: readonly string[] = []
-      if (!python && !privileged && context.kind !== 'pro') {
-        if (unlocks?.status !== 200 || !unlocks.body) return error('ZAPPY_UNAVAILABLE', 503)
-        unlockedBlocks = unlocks.body.blocks
+      const fullPalette = audience === 'adult' ? privileged : Boolean(kids && isKidsStaffPreview(kids))
+      if (!python && !fullPalette && context.kind !== 'pro') {
+        // This GET may reconcile curriculum grants. Never call it for staff preview.
+        const curriculum = audience === 'adult' ? unlocks : await members.getStudioUnlocks().catch(() => null)
+        if (curriculum?.status !== 200 || !curriculum.body) return error('ZAPPY_UNAVAILABLE', 503)
+        unlockedBlocks = curriculum.body.blocks
       }
       if (audience === 'adult' && !gamification.body?.journey)
         return error('ZAPPY_UNAVAILABLE', 503)
       const tier =
         audience === 'adult' && gamification.body?.journey
           ? adultStudioTier(gamification.body.journey, user.role, unlockedBlocks)
-          : earnedStudioTier(levelSlug ?? 'noob', user.role, unlockedBlocks)
+          : kids ? kidsStudioTier(kids, unlockedBlocks) : null
+      if (!tier) return error('ZAPPY_UNAVAILABLE', 503)
       if (context.kind === 'pro' && context.mode !== 'code') return error('INVALID_INPUT', 400)
       if (!python && context.kind !== 'pro' && !tier.hasPalette)
         return error('ZAPPY_NOT_ENABLED', 403)
@@ -772,7 +783,9 @@ export function createStudioZappyRoutes(deps: {
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
       if (isReadonlyImpersonation(user)) return error('IMPERSONATION_READONLY', 403)
-      if (!(await allowed(user))) return error('ZAPPY_NOT_ENABLED', 403)
+      const capability = await allowed(user)
+      if (capability === 'unavailable') return error('ZAPPY_UNAVAILABLE', 503)
+      if (capability !== 'allowed') return error('ZAPPY_NOT_ENABLED', 403)
       let raw: unknown
       try {
         raw = await readBoundedJson(req, FEEDBACK_BODY_MAX_BYTES)

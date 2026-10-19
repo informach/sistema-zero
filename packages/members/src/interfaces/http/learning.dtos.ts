@@ -741,6 +741,10 @@ export const SectionRule = t.Union([
   }),
 ])
 export const SectionCompletionSchema = t.Object({
+  // Retain these forbidden legacy/misplaced fields through normalization so domain
+  // validation rejects them instead of silently acknowledging a lossy write.
+  projectExamples: t.Optional(t.Unknown()),
+  solutionProject: t.Optional(t.Unknown()),
   version: t.Literal(1),
   blockIds: t.Array(Id, { maxItems: 200 }),
   materialItems: t.Optional(
@@ -816,6 +820,8 @@ export const SectionProjectBody = t.Object({
   ),
 })
 export const LessonSectionSchema = t.Object({
+  projectExamples: t.Optional(t.Unknown()),
+  solutionProject: t.Optional(t.Unknown()),
   id: Id,
   title: t.String({ minLength: 1, maxLength: 200 }),
   objective: t.String({ maxLength: 2000 }),

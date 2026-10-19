@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test'
 import type {} from './fixtures/bridge'
+import { expect, test } from './fixtures/pythonLanguageSessions'
 
 for (const kind of ['classic', 'pro'] as const)
   test(`live code anchor ${kind} follows canonical mixed EOL/UTF-16 and hides after edits or scrolling`, async ({

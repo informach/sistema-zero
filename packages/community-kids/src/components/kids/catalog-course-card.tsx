@@ -3,6 +3,7 @@ import { ArrowRight, BookOpen, CircleCheck, Gift, Lock, Play } from 'lucide-reac
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
+import { LEVEL_INFO } from '@/lib/level-info'
 import type { CatalogCourseView, MyCourseView } from '@/lib/types'
 import { CourseAccessExpiry } from './course-access-expiry'
 import { CourseBadgeChip } from './course-badge-chip'
@@ -52,14 +53,14 @@ export function CatalogCourseCard({
   const journeyLocked = course.hasAccess && course.careerLock?.locked === true
   const available = course.hasAccess && !journeyLocked
   const foundationFirst = journeyLocked && course.careerLock?.reason === 'foundation-first'
-  // Bônus = recompensa da etapa: abre sozinho quando os obrigatórios completam.
+  // O servidor já avaliou o direito retido e o requisito da política publicada.
   const tierReward = journeyLocked && course.careerLock?.reason === 'tier-reward'
   const linha = layout === 'linha'
-  // ⚠️ Sem "etapa" e sem nome de degrau: é vocabulário de quem MONTA o curso. Para a
-  // criança basta saber que é prêmio e o que destrava.
-  // ⚠️ E sem QUANTIDADE, nem implícita: "os outros cursos" ficou errado quando a trilha da
-  // Faísca virou um degrau de UM curso só (14/08). "A trilha" vale para 1, 7 ou 8.
-  const rewardLabel = 'Prêmio! Abre quando você terminar a trilha'
+  const rewardPost = course.careerLock?.requiredLevel
+  const rewardLabel =
+    rewardPost && Object.hasOwn(LEVEL_INFO, rewardPost)
+      ? `Prêmio! Abre no posto ${LEVEL_INFO[rewardPost].label}`
+      : 'Prêmio! Requisito indisponível no momento'
 
   const cover = (
     <div

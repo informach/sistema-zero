@@ -113,6 +113,9 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
             itemId: params.itemId,
             revision: body.revision,
             ...(body.verifiedPartHashes ? { verifiedPartHashes: body.verifiedPartHashes } : {}),
+            ...(body.verifiedFormatVersion !== undefined
+              ? { verifiedFormatVersion: body.verifiedFormatVersion }
+              : {}),
             ...(body.uploadedParts ? { uploadedParts: body.uploadedParts } : {}),
           }),
         { query: AudienceQuery, params: CreationItemParams, body: CreationCommitBody },

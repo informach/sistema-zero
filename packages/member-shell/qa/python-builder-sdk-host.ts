@@ -5,7 +5,7 @@ import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { canonicalJson } from '@sistemazero/core/creations'
-import { creatorJourneyLevel } from '@sistemazero/core/journey'
+import { initialKidsJourneyPolicy } from '@sistemazero/core/journey'
 import { StudioAuthoringCatalogSchema } from '@sistemazero/core/studio/authoring-catalog'
 import { applyStudioProChange, studioProDigest } from '@sistemazero/core/studio/pro-revision'
 import type { StudioPythonBuilderPreview } from '@sistemazero/core/studio/python-builder-preview'
@@ -18,7 +18,8 @@ import { AuthorizeFreeRuntimeService } from '../../members/src/application/studi
 import { FreeStudioAccessService } from '../../members/src/application/studio/free-studio-access.service'
 import { StudioPythonBuilderPolicy } from '../../members/src/application/studio-pro/python-builder-policy'
 import { StudioBuilderService } from '../../members/src/application/studio-pro/studio-builder.service'
-import { emptyQualifyingByTier } from '../../members/src/domain/gamification/levels'
+import { KidsJourneyQueryService } from '../../members/src/application/kids-journey/kids-journey-query.service'
+import type { KidsJourneySnapshot } from '../../members/src/domain/ports/kids-journey-repository.port'
 import { createStudioAuthoringPolicy } from '../../members/src/domain/studio/authoring-policy'
 import { createStudioRuntimeHosts } from '../../members/src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../members/src/domain/studio/runtime-policy'
@@ -141,11 +142,23 @@ export async function runStudioPythonBuilderSdkProof(input: {
         }),
       },
       {
-        listQualifyingJourneySlots: async () =>
-          Object.assign(emptyQualifyingByTier(), creatorJourneyLevel('god').requiredSlots),
         listStudioUnlocksByCourse: async () => [],
       },
       { listGrants: async () => [] },
+      new KidsJourneyQueryService({
+        async readSnapshot(owners): Promise<KidsJourneySnapshot> {
+          return {
+            policy: { phase: 'published', version: 1, policy: initialKidsJourneyPolicy(), updatedAt: new Date(0) },
+            catalog: [],
+            profiles: new Map(owners.filter((owner) =>
+              owner.userId === actor.userId && owner.accountId === actor.accountId,
+            ).map((owner) => [owner.userId, {
+              ...owner, registered: true, milestones: [],
+              earned: { level: 'god', capabilities: [], courseAccess: { entry: [], expanded: [], reward: [] } },
+            }])),
+          }
+        },
+      }),
     ),
     permission = new StudioPythonBuilderPolicy(
       new AuthorizeFreeRuntimeService(access, runtimePolicy, authoring),

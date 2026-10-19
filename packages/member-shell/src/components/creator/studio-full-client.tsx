@@ -76,7 +76,7 @@ export function StudioFullClient({
    * no Compartilhar. O gate REAL da tag é o do hub no publish.
    */
   challenge?: { key: string; title: string } | null
-  /** Modos pelo RANK e blocos pelos CURSOS concluídos (ver `earnedStudioTier`). */
+  /** Modos pelas capacidades canônicas e blocos pelos CURSOS concluídos. */
   tier: StudioTier
   /**
    * Mostrar os EXEMPLOS prontos — a vitrine "Que jogo você quer criar?" na lista

@@ -4,7 +4,6 @@ import {
   falaDaExplicacaoDoQuiz,
   falaDaPerguntaDoQuiz,
   type QuizQuestionSpeech,
-  type SceneVozes,
   type ZappySpeechOverride,
 } from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
@@ -16,15 +15,9 @@ import { useState } from 'react'
 import { JsonImportPanel } from '@/components/admin/json-import-panel'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { ZappySpeechEditor, type ZappySpeechRow } from '@/components/editor/zappy-speech-editor'
+import type { QuizValue } from '@/lib/lesson-block-form'
 import { parseQuizImport, QUIZ_IMPORT_EXAMPLE } from '@/lib/lesson-block-import'
 import type { QuizQuestion } from '@/lib/types'
-
-export interface QuizValue {
-  questions: QuizQuestion[]
-  passingScore?: number
-  /** A voz do Zappy (pergunta e explicação de cada questão), gerada pelo botão da aula. */
-  vozes?: SceneVozes
-}
 
 type QuizSpeechSlot = keyof QuizQuestionSpeech
 
@@ -54,22 +47,6 @@ function linhasDaFala(q: QuizQuestion): ZappySpeechRow[] {
       override: q.zappySpeech?.explanation,
     })
   return linhas
-}
-
-/**
- * Primeiro erro de validação do quiz (ou `null` se ok). Espelha o que o members
- * exige: ≥1 pergunta; por pergunta, prompt, ≥2 opções (com texto) e ≥1 correta.
- */
-export function validateQuiz(quiz: QuizValue): string | null {
-  if (quiz.questions.length === 0) return 'Adicione ao menos uma pergunta ao quiz.'
-  for (const [i, q] of quiz.questions.entries()) {
-    const n = i + 1
-    if (!q.prompt.trim()) return `Pergunta ${n}: informe o enunciado.`
-    if (q.choices.length < 2) return `Pergunta ${n}: adicione ao menos 2 opções.`
-    if (q.choices.some((c) => !c.label.trim())) return `Pergunta ${n}: há opção sem texto.`
-    if (q.correctChoiceIds.length === 0) return `Pergunta ${n}: marque ao menos 1 opção correta.`
-  }
-  return null
 }
 
 function newChoice(): { id: string; label: string } {

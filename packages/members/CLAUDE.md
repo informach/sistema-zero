@@ -1,5 +1,46 @@
 # CLAUDE.md — @sistemazero/members
 
+## Jornada Kids configurável — modelo canônico isolado (18/10/2026)
+
+`kids-journey-repository.port.ts` e o adapter Drizzle adicionam snapshot read-only/batch,
+freeze monotônico por perfil+conta, preparação keyset e CAS com histórico. As cinco tabelas
+Kids vêm da migration **gerada** `0136_kids_journey_policy`, regenerada antes de qualquer
+publicação compartilhada. Seed canônico persistido: initializing V0→published V1, auditado
+por system sem UUID humano fictício. Ausência/corrupção não é regra/fallback. Leitores normais
+exigem published. Código antigo de progressão fica somente até migrar todos os consumidores;
+não ligar um segundo autorizador nem adaptar ABI de protótipo não implantado.
+Capacidades pedagógicas não substituem matrícula, paleta curricular ou autorização JS/Python.
+
+O namespace advisory `kids-journey-policy` também protege v0: conta → owner (`creation-quota`)
+→ gamification → política compartilhada → preparação. Publicação final toma SHARE NOWAIT nas três tabelas do catálogo como primeira operação
+de TX READ COMMITTED, depois política exclusiva/preparação, sem percorrer contas.55P03
+recusa e libera TX antes do erro ao autor; sem retry automático. Preview mantém RR read-only. Pausa retém gates, congela posto/app capabilities e permite
+expansão de aulas pela conclusão real da base sob posto congelado. Earned preserva também
+21 direitos limitados entry/expanded/reward por tier, com expanded⇒entry e reward independente.
+O catálogo captura tags cruas para fallback campo a campo e deriva `graduationOnly` de `level`.
+
+**Migração de consumidores em WIP isolado.** CheckAccess, catálogo, meus cursos, gamificação e
+relatórios Kids usam a view canônica. Configuração e preview explícito de equipe estão montados;
+o Admin tem BFF/editor com provas locais, sem integração de autenticação/banco ou rollout. Não
+expor publicação antes de completar consumidores/rollout e sua qualificação. Uma
+preparação bounded sozinha não protege um novo perfil que aparece atrás do cursor. O serviço
+tem retomada por preparação durável; retention/qualificação operacional seguem pendentes. Não
+inferir entrega da feature pelo DDL. O GET global expõe canEdit pela mesma guarda de mutação;
+é apenas metadata visual e não dispensa a autorização de cada escrita. O cálculo fixo de levels
+e ferramentas restante atende Adult; nenhum ramo Kids normal deve chamá-lo.
+Coorte inicial vem de TODOS os pares Auth (inclusive sem XP/arquivados) mais históricos
+com owner comprovado; captura Auth≤20 por avanço com envelope0137/owner+cursorCAS em TX individual, Members1/TX, hash50/TX e
+baseline1/TX. Publicação recorrente captura todos earned. `initializeProfile` persiste noob/[]
+antes de visibilidade Auth, com handshake/worker Auth escritos e SQL19/77/tipos0 no snapshot de qualificação anterior.
+Hook award/replay/coorte qualificado por SQL44/206 e purge3/25. Query/configuração/HTTP e
+consumidores de cursos/FreeRuntime têm focados verdes; tipos globais dessas edições, CLI e
+integração das aplicações ainda pendentes. Não inferir entrega completa. Ver specs em
+`.compozy/tasks/kids-configurable-journey/` na raiz. Não inferir escala dos fixtures SQL.
+
+SQL opt-in em `tests/db/kids-journey.repository.test.ts` exige
+`KIDS_JOURNEY_TEST_DATABASE_URL` local com nome `kids_journey_*`; não usa `DATABASE_URL` como
+fallback. Aplica histórico real em banco descartável explícito. Skip não qualifica SQL.
+
 ## Contratos conciliados do Estúdio JS/Python (18/10/2026)
 
 `SectionProjectCheck` distingue objetivos JavaScript e Python. Python usa inspeção estrutural autorizada pelo servidor, vinculada ao perfil de runtime do inicial, ao vínculo durável da aula e, ao vivo, ao bloco/workspace/geração de escrita. A lista canônica da seção decide obrigatórios, extras e progressão; a simulação de autoria não registra conclusão ou XP. Entregar projeto/recado não recupera a antiga nota do bloco.
@@ -2789,3 +2830,7 @@ mostra na revisão.
   Zappy é SÓ tsquery (o `OR ilike` anulava o GIN). A data do `HelpTutorialEntry` é a do
   PUBLICADO. ⚠️ Pende: corrida arquivar-coleção × publicar (check-then-act sem lock) e
   `helpReferences` guardadas em respostas antigas do Zappy apontando para tutorial despublicado.
+
+## Composição administrativa da jornada Kids (19/10/2026)
+
+composition-root compõe KidsJourneyConfigurationService sobre o mesmo DrizzleKidsJourneyRepository dos leitores/admissão; server monta kidsJourneyRoutes. GET nunca cria seed nem converte initializing em published. As sete rotas exatas usam token interno e guard canônico de equipe ativa; preparação/advance/publicação exigem conta própria admin/superadmin sem perfil/contexto/impersonação. Gateway e BFF têm allowlists concretas. A persistência conserva CAS, baseline, cursor e auditoria próprios; a composição não implementa motor paralelo nem altera licença, matrícula ou paleta curricular. Focados do servidor composto e regressão Adult passaram; tipos e integração gateway→Members/SQL operacional seguem nos recibos do lote, sem presumir deploy.

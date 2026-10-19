@@ -80,6 +80,9 @@ export function attachPythonEditorLanguage(input: {
     generation = 0
   let timer: ReturnType<typeof setTimeout> | undefined
   let activeDiagnostics: AbortController | undefined
+  let completionSerial = 0
+  let completionNavigation = 0
+  const recoveredCompletionVersions = new WeakMap<Model, number>()
   const listeners = new Map<Model, Monaco.IDisposable>()
   const pathOf = (model: Model) => getMonacoModelPath(model).slice(prefix.length + 1)
   const owned = (model: Model) =>
@@ -205,6 +208,26 @@ export function attachPythonEditorLanguage(input: {
     if (disposed || !owned(model) || token.isCancellationRequested) return
     const version = model.getVersionId(),
       captured = generation
+    const serial = method === 'completions' ? ++completionSerial : 0
+    const position = editor.getPosition()
+    const completion =
+      serial &&
+      offset !== undefined &&
+      editor.getModel() === model &&
+      position &&
+      model.getOffsetAt(position) === offset &&
+      editor.getSelection()?.isEmpty() &&
+      editor.hasTextFocus()
+        ? {
+            serial,
+            offset,
+            text: model.getValue(),
+            version,
+            navigation: completionNavigation,
+            path: pathOf(model),
+            entrypoint: input.entrypoint(),
+          }
+        : undefined
     const controller = new AbortController()
     const subscription = token.onCancellationRequested(() => controller.abort())
     try {
@@ -255,6 +278,63 @@ export function attachPythonEditorLanguage(input: {
       return undefined
     } finally {
       subscription.dispose()
+      if (completion)
+        queueMicrotask(() => {
+          try {
+            if (
+              disposed ||
+              !owned(model) ||
+              token.isCancellationRequested ||
+              completion.serial !== completionSerial ||
+              completion.navigation !== completionNavigation ||
+              pathOf(model) !== completion.path ||
+              input.tree()[completion.path]?.kind !== 'file' ||
+              input.entrypoint() !== completion.entrypoint ||
+              editor.getModel() !== model ||
+              !editor.hasTextFocus() ||
+              !editor.getSelection()?.isEmpty()
+            )
+              return
+            const currentVersion = model.getVersionId()
+            if (
+              currentVersion === completion.version ||
+              recoveredCompletionVersions.get(model) === currentVersion
+            )
+              return
+            const text = model.getValue()
+            const insertedLength = text.length - completion.text.length
+            if (
+              insertedLength <= 0 ||
+              text.slice(0, completion.offset) !== completion.text.slice(0, completion.offset) ||
+              text.slice(completion.offset + insertedLength) !==
+                completion.text.slice(completion.offset) ||
+              !/^[\p{ID_Continue}]+$/u.test(
+                text.slice(completion.offset, completion.offset + insertedLength),
+              )
+            )
+              return
+            const cursor = editor.getPosition()
+            if (!cursor || model.getOffsetAt(cursor) !== completion.offset + insertedLength) return
+            const action = editor.getAction('editor.action.triggerSuggest')
+            if (!action) return
+            // A stale reply remains discarded. Public IntelliSense asks again at the new cursor.
+            recoveredCompletionVersions.set(model, currentVersion)
+            // Monaco's trigger action is disabled while its previous popup is visible.
+            // The public hide command cancels that request and clears its cached suggestions.
+            editor.trigger('python-completion-recovery', 'hideSuggestWidget', {})
+            void action.run().catch((error: unknown) => {
+              if (
+                !disposed &&
+                owned(model) &&
+                completion.serial === completionSerial &&
+                model.getVersionId() === currentVersion
+              )
+                failed(error)
+            })
+          } catch (error) {
+            failed(error)
+          }
+        })
     }
   }
   function definitionModel(tree: ProjectTree, path: string) {
@@ -364,7 +444,19 @@ export function attachPythonEditorLanguage(input: {
     }
     editor.focus()
   }
+  const blurred = editor.onDidBlurEditorText(() => {
+    completionNavigation++
+  })
+  const cursorChanged = editor.onDidChangeCursorSelection((event) => {
+    if (
+      event.source !== 'keyboard' ||
+      event.reason !== monaco.editor.CursorChangeReason.NotSet ||
+      !event.selection.isEmpty()
+    )
+      completionNavigation++
+  })
   const changed = editor.onDidChangeModel(() => {
+    completionNavigation++
     reveal()
     update()
   })
@@ -398,6 +490,8 @@ export function attachPythonEditorLanguage(input: {
       created.dispose()
       removed.dispose()
       changed.dispose()
+      cursorChanged.dispose()
+      blurred.dispose()
       opener.dispose()
       for (const [model, listener] of listeners) {
         listener.dispose()

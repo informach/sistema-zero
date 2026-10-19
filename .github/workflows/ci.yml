@@ -253,6 +253,8 @@ jobs:
           STUDIO_REVIEW_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_pro_review
           STUDIO_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_ci
           ZAPPY_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_zappy_135
+          KIDS_JOURNEY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_ci
+          KIDS_JOURNEY_PURGE_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_purge_ci
 
       - name: Pensa integrado com API e PostgreSQL reais
         working-directory: packages/pensa
@@ -301,6 +303,8 @@ jobs:
           DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review_tests
           MARKETING_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review_tests
           TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review_tests
+          # Fresh database is created by the guarded harness to exercise pre-existing profiles before 0023.
+          PROFILE_ADMISSION_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/kids_journey_auth_admission_ci
 
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck
@@ -552,17 +556,26 @@ jobs:
 
       - uses: ./.github/actions/setup-railway
 
+      - name: Provar SSH readonly antes de qualquer apply/deploy
+        env:
+          RAILWAY_SSH_PRIVATE_KEY: ${{ secrets.RAILWAY_SSH_PRIVATE_KEY }}
+          RAILWAY_SSH_KNOWN_HOSTS: ${{ secrets.RAILWAY_SSH_KNOWN_HOSTS }}
+        run: node scripts/ci/kids-journey-rollout.mjs preflight "$GITHUB_SHA"
+
       - name: Aplicar configuração de staging antes dos deployments
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           node scripts/ci/railway-config.mjs plan staging "$RUNNER_TEMP/railway-staging-plan.json"
+          node scripts/ci/kids-journey-rollout.mjs check-plan "$RUNNER_TEMP/railway-staging-plan.json"
           node scripts/ci/railway-config.mjs apply staging "$RUNNER_TEMP/railway-staging-plan.json"
 
       - name: Calcular serviços afetados e deployar
         env:
           BEFORE: ${{ github.event.inputs.before_sha || github.event.before }}
           FORCED: ${{ github.event.inputs.services }}
+          RAILWAY_SSH_PRIVATE_KEY: ${{ secrets.RAILWAY_SSH_PRIVATE_KEY }}
+          RAILWAY_SSH_KNOWN_HOSTS: ${{ secrets.RAILWAY_SSH_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
 
@@ -736,37 +749,17 @@ jobs:
             done
           }
 
-          # ⚠️⚠️ ORDEM: o members sobe ANTES dos apps que carregam o player de cena e do admin que
-          # escreve blocos novos. O player novo contra o members antigo pode gravar progresso errado
-          # ou receber 400; o admin novo contra o enum antigo pode falhar ao salvar materiais. O
-          # inverso é tolerado. Os outros serviços sobem junto com o members. Se ele não ficar pronto,
-          # esses apps NÃO sobem e o job fica vermelho.
-          # ⚠️ Um push novo CANCELA este run (concurrency): cancelado entre as duas fases, os apps ficam sem
-          # deploy e o run seguinte só olha o diff DELE. Remédio: gh workflow run ci.yml --ref staging
-          # -f services=admin,community-kids,community
-          DEPOIS_DO_MEMBERS=(community-kids community admin)
-          ESPERA_MEMBERS=0
-          if [ -n "${WANT[members]:-}" ]; then
-            for s in "${DEPOIS_DO_MEMBERS[@]}"; do
-              if [ -n "${WANT[$s]:-}" ]; then ESPERA_MEMBERS=1; fi
-            done
+          # O wrapper é a barreira canônica: migrations/V0 -> Auth novo e antigos
+          # REMOVED -> captura/baseline/V1. /readyz sozinho não libera os apps.
+          # Erro/cancelamento preserva dados e exige retomada explícita, sem fallback.
+          if [ -n "${WANT[members]:-}" ] || [ -n "${WANT[auth]:-}" ]; then
+            node scripts/ci/kids-journey-rollout.mjs deploy "$GITHUB_SHA"
+            unset 'WANT[members]' 'WANT[auth]'
+          elif [ -n "${WANT[community-kids]:-}" ] || [ -n "${WANT[community]:-}" ] || [ -n "${WANT[admin]:-}" ]; then
+            node scripts/ci/kids-journey-rollout.mjs verify "$GITHUB_SHA"
           fi
-          for s in "${!WANT[@]}"; do
-            if [ "$ESPERA_MEMBERS" -eq 1 ] && [[ " ${DEPOIS_DO_MEMBERS[*]} " == *" $s "* ]]; then continue; fi
-            disparar "$s"
-          done
-          if [ "$ESPERA_MEMBERS" -eq 1 ]; then
-            echo "esperando o members antes de: ${DEPOIS_DO_MEMBERS[*]}"
-            esperar members
-            if [ "$FAIL" -eq 1 ] || [ "$PENDING" -eq 1 ]; then
-              echo "::error::o members não ficou pronto: ${DEPOIS_DO_MEMBERS[*]} NÃO foram disparados (contratos de aula incompatíveis)"
-              esperar "${!DEP[@]}"
-              exit 1
-            fi
-            for s in "${DEPOIS_DO_MEMBERS[@]}"; do
-              if [ -n "${WANT[$s]:-}" ]; then disparar "$s"; fi
-            done
-          fi
+          for s in "${!WANT[@]}"; do disparar "$s"; done
+          if [ "${#DEP[@]}" -eq 0 ]; then echo "onda canônica concluída; nenhum outro serviço solicitado"; exit 0; fi
 
           esperar "${!DEP[@]}"
           if [ "$FAIL" -eq 1 ] || [ "$PENDING" -eq 1 ]; then echo "::error::deploy do staging não convergiu"; exit 1; fi

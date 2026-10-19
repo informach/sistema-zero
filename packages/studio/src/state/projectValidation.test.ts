@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'bun:test'
 import { createEmptyProject } from '../core/project'
 import { retainProjectTools } from '../core/projectDocument'
+import { documentFixture } from './fixtures/projectDocuments'
 import {
   prepareProjectForHost,
   sanitizeCoverAssetName,
   sanitizeStoredProject,
+  validateEditableStudioCreationSnapshot,
   validateStudioCreationSnapshot,
 } from './projectValidation'
 
@@ -67,6 +69,32 @@ describe('fronteira compartilhada de projetos', () => {
     expect(() =>
       validateStudioCreationSnapshot({ ...manifest, assets: ['inválido'] }, project.id),
     ).toThrow('manifesto')
+  })
+
+  it('valida o programa Python v3 da nuvem sem converter a fonte em JavaScript', async () => {
+    const project = { ...documentFixture('python', 'classic'), assets: [] }
+    const manifest = { format: 'sz-studio-parts', version: 1, program: project, assets: [] }
+    const checked = await validateEditableStudioCreationSnapshot(manifest, project.id)
+    expect(checked.programmingLanguage).toBe('python')
+    expect(checked.kind).toBe('classic')
+    if (checked.programmingLanguage !== 'python' || checked.kind !== 'classic')
+      throw new Error('Leitor trocou a linguagem')
+    if (project.programmingLanguage !== 'python' || project.kind !== 'classic')
+      throw new Error('Fixture Python Classic mudou')
+    expect(checked.files).toEqual(project.files)
+    await expect(validateEditableStudioCreationSnapshot(manifest, 'outro')).rejects.toThrow(
+      'pertence',
+    )
+  })
+
+  it('confere JavaScript v3 pela mesma fronteira e recusa Python v3 inválido', async () => {
+    const javascript = { ...documentFixture('javascript', 'classic'), assets: [] }
+    const checked = await validateEditableStudioCreationSnapshot(javascript, javascript.id)
+    expect(checked.programmingLanguage).toBe('javascript')
+    const python = { ...documentFixture('python', 'classic'), assets: [] }
+    await expect(
+      validateEditableStudioCreationSnapshot({ ...python, files: { 'main.py': 42 } }, python.id),
+    ).rejects.toThrow('inválido')
   })
 
   it('retém as ferramentas usadas depois de apagar sua última instância', () => {

@@ -1,8 +1,18 @@
 import { ValidationError } from '@sistemazero/core/errors'
 import {
   type DraftBlock,
+  hasLegacyStudioManifestSolution,
   isLearningManifest,
+  LEARNING_IMPORT_BODY_MAX_BYTES,
   type LessonDraftDocument,
+  learningImportBodyBytes,
+  lessonStudioExampleTransportIssues,
+  lessonStudioProjectExampleIssues,
+  pruneLessonStudioExamples,
+  readManifestStudioProjectExamples,
+  readStudioProjectExamples,
+  remapStudioExampleSections,
+  studioExampleBindings,
   validateLessonSections,
 } from '@sistemazero/core/learning'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
@@ -64,17 +74,33 @@ function importedContent(
 ): DraftBlock['content'] {
   if (!previous || previous.kind !== authored.kind) return authored
   if (authored.kind === 'pinta') return { ...authored, initialAsset: previous.initialAsset }
-  // O gabarito do Estúdio pode ter sido feito no Admin depois da importação: no modo de preservar,
-  // um manifesto que não traz gabarito não o apaga (o que traz, manda); a substituição, que tira
-  // o que foi feito à mão, tira o gabarito também. A prévia avisa nos dois casos.
   if (
     mode === 'preserve' &&
     authored.kind === 'studio' &&
-    authored.solutionProject === undefined &&
+    authored.projectExamples === undefined &&
     previous.kind === 'studio' &&
-    previous.solutionProject !== undefined
+    previous.projectExamples !== undefined
   )
-    return { ...authored, solutionProject: previous.solutionProject }
+    return { ...authored, projectExamples: previous.projectExamples }
+  if (
+    authored.kind === 'studio' &&
+    previous.kind === 'studio' &&
+    authored.projectExamples !== undefined &&
+    previous.projectExamples !== undefined
+  ) {
+    const incoming = readStudioProjectExamples(authored.projectExamples)
+    const current = readStudioProjectExamples(previous.projectExamples)
+    if (incoming.kind !== 'valid' || current.kind !== 'valid')
+      throw new ValidationError('O registro de exemplos do Estúdio está inválido.')
+    for (const [id, project] of Object.entries(incoming.value.examples))
+      if (
+        Object.hasOwn(current.value.examples, id) &&
+        stableJson(project) !== stableJson(current.value.examples[id])
+      )
+        throw new ValidationError(
+          'Um exemplo guardado é imutável. Use um novo ID para a solução alterada no manifesto.',
+        )
+  }
   if (authored.kind === 'materials' && Array.isArray(authored.items)) {
     if (!Array.isArray(previous.items) || authored.items.length === 0)
       return { ...authored, items: Array.isArray(previous.items) ? previous.items : authored.items }
@@ -107,6 +133,17 @@ function importedContent(
   return authored
 }
 
+function exampleBindings(blocks: LessonDraftDocument['blocks']) {
+  return blocks.flatMap((block) => {
+    if (block.content.kind !== 'studio') return []
+    const read = readStudioProjectExamples(block.content.projectExamples)
+    if (read.kind === 'invalid')
+      throw new ValidationError(read.issues[0]?.message ?? 'Exemplos inválidos.')
+    if (read.kind === 'absent') return []
+    return studioExampleBindings(read.value).map((binding) => ({ blockId: block.id, ...binding }))
+  })
+}
+
 export class LearningImportService {
   constructor(
     private readonly repository: LessonDraftRepository,
@@ -114,6 +151,10 @@ export class LearningImportService {
   ) {}
 
   async preview(lessonId: string, manifest: unknown, mode: LearningImportMode = 'preserve') {
+    if (hasLegacyStudioManifestSolution(manifest))
+      throw new ValidationError(
+        'Este manifesto contém um gabarito global antigo. Converta o arquivo para exemplos por parte antes de importar.',
+      )
     if (!isLearningManifest(manifest))
       throw new ValidationError(
         'Manifesto de aula inválido. Confira os blocos, seções e referências.',
@@ -122,6 +163,14 @@ export class LearningImportService {
       this.repository.read(lessonId),
       this.courses.findLessonWithContent(lessonId),
     ])
+    if (draft.document.blocks.some((block) => Object.hasOwn(block.content, 'solutionProject')))
+      throw new ValidationError(
+        'Converta o gabarito global desta aula para exemplos por parte antes de importar.',
+      )
+    if (learningImportBodyBytes(manifest, mode, draft.revision) > LEARNING_IMPORT_BODY_MAX_BYTES)
+      throw new ValidationError(
+        'O corpo de importação, incluindo revisão e operação, excede 2 MiB.',
+      )
     if (!lesson) throw new LessonNotFoundError()
     const course = await this.courses.findCourseById(lesson.courseId)
     if (course?.slug !== manifest.courseSlug || draft.document.slug !== manifest.lessonSlug)
@@ -145,9 +194,14 @@ export class LearningImportService {
       plannedVideos: [],
     }
     const mapping = new Map<string, string>()
+    const sectionMapping = new Map(
+      manifest.sections.map((section) => [
+        section.key,
+        importedLearningId(lessonId, 'section', section.key),
+      ]),
+    )
     const used = new Set<string>()
     let replacedStudioProject = false
-    let adminSolution = false
     const actions: Array<{
       id: string
       label?: string
@@ -228,15 +282,16 @@ export class LearningImportService {
           stableJson(previous.content.initialProject) !== stableJson(entry.content.initialProject)
         )
           replacedStudioProject = true
-        if (
-          previous?.content.kind === 'studio' &&
-          entry.content.kind === 'studio' &&
-          previous.content.solutionProject !== undefined &&
-          (entry.content as { solutionProject?: unknown }).solutionProject === undefined
-        )
-          adminSolution = true
+        const authored = { ...entry.content }
+        if (authored.kind === 'studio' && authored.projectExamples !== undefined) {
+          const read = readManifestStudioProjectExamples(authored.projectExamples)
+          if (read.kind !== 'valid') throw new ValidationError('Exemplos inválidos no manifesto.')
+          authored.projectExamples = remapStudioExampleSections(read.value, (key) =>
+            sectionMapping.get(key),
+          )
+        }
         mapping.set(entry.key, id)
-        add({ id, content: importedContent({ ...entry.content }, previous?.content, mode) })
+        add({ id, content: importedContent(authored, previous?.content, mode) })
       }
     }
     const mapped = (key: string) => {
@@ -261,7 +316,20 @@ export class LearningImportService {
       // Anotações da professora por seção (cursos ao vivo): viajam do manifesto ao rascunho.
       ...(s.teacherNotes !== undefined ? { teacherNotes: s.teacherNotes } : {}),
       ...(s.completion
-        ? { completion: { ...s.completion, blockIds: s.completion.blockIds.map(mapped) } }
+        ? {
+            completion: {
+              ...s.completion,
+              blockIds: s.completion.blockIds.map(mapped),
+              ...(s.completion.materialItems
+                ? {
+                    materialItems: s.completion.materialItems.map((item) => ({
+                      blockId: mapped(item.blockId),
+                      itemIds: [...item.itemIds],
+                    })),
+                  }
+                : {}),
+            },
+          }
         : {}),
     }))
     const retireIds = new Set(
@@ -295,6 +363,30 @@ export class LearningImportService {
     const closing =
       document.sections.findLast((s) => s.intent === 'closing') ?? document.sections.at(-1)
     if (closing && retained.length) closing.blockIds.push(...retained.map((b) => b.id))
+    const beforeExamples = exampleBindings(draft.document.blocks)
+    document.blocks = pruneLessonStudioExamples(document).blocks
+    const afterExamples = exampleBindings(document.blocks)
+    const removedExamples = beforeExamples
+      .filter(
+        (before) =>
+          !afterExamples.some(
+            (after) =>
+              before.blockId === after.blockId &&
+              before.sectionId === after.sectionId &&
+              before.role === after.role &&
+              before.exampleId === after.exampleId,
+          ),
+      )
+      .map((example) => ({
+        ...example,
+        sectionTitle:
+          draft.document.sections.find((section) => section.id === example.sectionId)?.title ??
+          'Parte sem vínculo',
+      }))
+    const [exampleIssue] = lessonStudioProjectExampleIssues(document.sections, document.blocks)
+    if (exampleIssue) throw new ValidationError(exampleIssue.message)
+    const [transportIssue] = lessonStudioExampleTransportIssues(document, course.slug)
+    if (transportIssue) throw new ValidationError(transportIssue.message)
     const leaving = omitted.filter((block) => !retained.includes(block))
     const linkedLeaving = leaving.filter((block) => linkedVimeoId(draft.document, block))
     for (const video of draft.document.plannedVideos)
@@ -320,6 +412,7 @@ export class LearningImportService {
       sections: document.sections,
       blocks: actions,
       removedSections,
+      removedExamples,
       document,
       warnings: [
         ...(replacedStudioProject
@@ -327,15 +420,13 @@ export class LearningImportService {
               'O projeto inicial do Estúdio será substituído pelo manifesto. Projetos e entregas já salvos pelos alunos não são apagados.',
             ]
           : []),
-        ...(adminSolution
+        ...(removedExamples.length
           ? [
-              mode === 'replace'
-                ? 'O gabarito do Estúdio feito no Admin sai: o manifesto não traz gabarito. Os objetivos que rodam o jogo vão pedir um novo.'
-                : replacedStudioProject
-                  ? 'O gabarito do Estúdio feito no Admin fica, mas o projeto inicial mudou: confira o gabarito no "Testar agora".'
-                  : 'O gabarito do Estúdio feito no Admin fica (o manifesto não traz gabarito).',
+              `A importação substitui ou remove ${removedExamples.length} associação(ões) de exemplos por parte. Confira as partes removidas e o modo escolhido antes de aplicar.`,
             ]
-          : []),
+          : beforeExamples.length
+            ? ['Os exemplos por parte compatíveis feitos no Admin serão preservados.']
+            : []),
         ...(leaving.length || removedSections.length
           ? [
               mode === 'replace'
@@ -384,6 +475,13 @@ export class LearningImportService {
     operationId: string,
     mode: LearningImportMode = 'preserve',
   ) {
+    if (
+      learningImportBodyBytes(manifest, mode, expectedFingerprint, operationId) >
+      LEARNING_IMPORT_BODY_MAX_BYTES
+    )
+      throw new ValidationError(
+        'O corpo de importação, incluindo revisão e operação, excede 2 MiB.',
+      )
     const plan = await this.preview(lessonId, manifest, mode)
     const draft = await this.repository.replace(
       lessonId,

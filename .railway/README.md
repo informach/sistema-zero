@@ -52,3 +52,106 @@ node scripts/ci/railway-config.mjs apply staging /tmp/railway-staging-plan.json
 Guarde os planos fora da pasta `.railway/`, pois ela é fixada por hash. O apply recusa estado remoto alterado ou árvore diferente. Se isso ocorrer antes do merge, reexecute o job de plano do PR. Depois do merge, investigue o drift e abra um novo PR para gerar um plano atualizado; não desative a verificação nem passe `--confirm-destructive` para contorná-la.
 
 Referências: [IaC Railway](https://docs.railway.com/infrastructure-as-code), [Wait for CI](https://docs.railway.com/deployments/github-autodeploys#wait-for-ci).
+
+
+## Jornada Kids — credencial de admissão
+
+Auth e Members precisam do mesmo `MEMBERS_PROFILE_ADMISSION_TOKEN`, dedicado ao initializer privado
+Auth→Members. Os nomes estão em `variables.ts`; os valores devem ser provisionados no ambiente antes
+do rollout. Nenhuma credencial foi criada, consultada ou aplicada por esta implementação. Não reutilizar
+`MEMBERS_INTERNAL_TOKEN`, não publicar o valor no browser e não registrar headers/body com o segredo.
+Os dois serviços recusam boot de produção sem essa configuração; o initializer também nega token
+não configurado/ausente/incorreto fora de produção. Erro remoto mantém o mesmo perfil pending e job
+para retry durável, sem nova cobrança/ID nem fallback de concessão.
+
+A ativação depende do runbook da jornada: provisionar seed V0, retirar criadores Auth antigos,
+capturar todos os perfis anteriores (inclusive arquivados e sem XP), materializar baseline e publicar V1
+antes de liberar o tráfego migrado. As migrations Auth preservam existentes ready; somente futuros
+nascem pending. Não habilitar rollout parcial só porque migrations, token e processos iniciaram.
+CI habilita as suites SQL Kids e Auth admission com URLs explícitas em bancos descartáveis separados;
+Auth usa um banco novo para provar a expansão sobre perfis reais anteriores à migration0023.
+
+## Primeiro rollout canônico Kids no staging
+
+O CI usa `scripts/ci/kids-journey-rollout.mjs`, exclusivamente no projeto/ambiente staging
+fixados no script. Não existe flagPython, política de fallback ou INSERT de earned no runner.
+O token dedicado de admissão foi provisionado nos dois serviços staging em19/10/2026 com
+`skipDeploys:true`; isso não muda o ambiente de containers antigos já em execução. O root
+mantém o recibo operacional local; nenhum valor está neste repositório.
+
+A ordem é: preflightSSH readonly no artefato antigo → planoIaC que não antecipa backends/apps
+→ deployMembers+migrations → initializeV0 → deployAuth/retirada dos antigos → captura/baseline
+bounded na mesma preparação → publishV1/verificação → apps. `SUCCESS` e `/readyz` sozinhos
+não comprovam preservação ou retirada. O runner exige `REMOVED` de cada deployment anterior
+observado, conservando os IDs mesmo quando somem de activeDeployments; confere Auth de novo
+durante a captura e antes/depois da publicação. O container Members confirma seu SHA, service,
+ambiente e deployment antes de executar o CLI produtivo.
+
+**Janela operacional:** manter congelados deploys/rollbacks externos, criadores antigos,
+import/backfill e autoria do catálogo durante toda a carga inicial. O trigger nativo staging
+fica desligado e o CI serializa sua própria onda, mas isso não é um lock contra um operador
+externo. As rechecagens detectam deriva observada, sem atomicidade crossDB. Se esse contrato
+for violado, parar e investigar a integridade da coorte antes de retomar; não assumir que um
+cursor avançado incluiu um perfil criado por uma instância antiga durante a violação. Não
+prometer zero downtime: se a onda parar após migrar o backend, apps antigos podem apresentar
+indisponibilidade explícita até a retomada controlada.
+
+Um erro/stale/CAS/recibo malformado ou progresso canônico repetido falha o job sem liberar
+apps. O hash de progresso inclui os cursores reais e a etapa de captura, mantendo IDs privados
+no container; `processed:0` durante a passagem Auth→Members não é erro. Reexecução explícita
+normal usa initialize para recuperar a mesma preparação persistida ou reconhecer a policy já
+publicada; não reseed/reset. Após cancelamento, usar dispatch explícito com
+`services=members,auth,admin,community-kids,community` e SHA/range corretos. Push só de apps faz
+verificação readonly de published, sem migrar/republicar a política.
+
+O applyIaC pode iniciar deployments: o guard anterior ao apply recusa mudanças de build,
+deploy ou source em Auth, Members, Admin, Community e Kids. Essas mudanças exigem uma onda
+operacional própria; não remover o guard para contornar o primeiro bootstrap. Os demais
+gates de segurança do plano continuam valendo.
+
+### Identidade SSH do CI
+
+RailwayCLI5.62.1 usa o OpenSSH do sistema, com argumentos preservados e stdin não interativo.
+Referências: [comando oficial](https://docs.railway.com/cli/ssh) e
+[transporte da versão pinada](https://github.com/railwayapp/cli/blob/v5.62.1/src/commands/ssh/native.rs).
+A chave precisa estar cadastrada no mesmo usuário/workspace usado pelo tokenAPI do CI.
+ChavesRailway não têm escopo nativo de ambiente: usar a menor autoridade disponível; o nosso
+wrapper e workflow recusam qualquer ambiente diferente do staging. O runner não registra
+chaves automaticamente, não usa tmux e não desliga a verificação do host.
+
+Procedimento do operador, em terminal confiável, sem imprimir valores privados:
+
+1. Criar uma identidadeEd25519 dedicada ao CI em diretório temporário privado; não reutilizar
+   chave pessoal. `ssh-keygen -t ed25519 -N '' -f <arquivo-privado>` gera também `<arquivo-privado>.pub`.
+2. Registrar **somente a pública** com `railway ssh keys add --key <arquivo-privado>.pub
+   --name github-staging-rollout`, sob a identidade/workspace correta. O fingerprint público
+   pode ser conferido com `ssh-keygen -lf <arquivo-privado>.pub`.
+3. Enviar a privada diretamente por stdin: `gh secret set RAILWAY_SSH_PRIVATE_KEY
+   --repo informach/sistema-zero < <arquivo-privado>` (sintaxe de shell POSIX; em PowerShell,
+   usar pipe de `Get-Content -Raw -LiteralPath` para o mesmo comando). Nunca colar em comando,
+   log, comentário, arquivo versionado ou saída de ferramenta. Retirar a cópia temporária
+   depois da conferência, preservando um processo de rotação/revogação da identidadeCI.
+4. Obter uma entrada `ssh.railway.com <tipo> <chave-pública-do-host>` de um known_hosts já
+   autenticado ou confirmá-la com Railway por canal confiável. `ssh-keyscan` pode coletar um
+   candidato, mas não autentica sua origem: comparar o fingerprint com a referência confiável
+   antes de adotá-lo. Não inventar fingerprint nem aceitar cegamente o primeiro contato.
+   `ssh-keygen -lf <known-hosts-verificado>` confere o fingerprint; enviar o arquivo por stdin
+   a `gh secret set RAILWAY_SSH_KNOWN_HOSTS --repo informach/sistema-zero`.
+5. Conferir apenas nomes/presença com `gh secret list --repo informach/sistema-zero`; os
+   valores não são recuperáveis pelo GitHub. Executar o preflight do workflow antes de
+   qualquer apply/deploy. Ele exige nonce, Bun e contexto do container, pois o relay pode
+   responder exit0 antes de executar o comando. Falha de autenticação/host/contexto bloqueia
+   a onda, sem fallback para proxy público de banco ou outro protocolo.
+
+Neste ambiente, o operador confirmou uma entrada Ed25519 de `ssh.railway.com` já existente
+no truststore local `~/.ssh/known_hosts`. Essa referência permite preparar o arquivo do CI
+sem um novo primeiro contato; conferir e transferir somente a entrada desse host. Isso não
+equivale a um fingerprint oficial publicado pelo Railway. O registro da identidade dedicada
+e os secretsSSH continuam ações operacionais separadas, a confirmar pelo operador.
+
+O CI grava a identidade e known_hosts temporários com permissão0600 e um bloco OpenSSH
+temporário `BatchMode yes`, `StrictHostKeyChecking yes`, `IdentitiesOnly yes`. Restaura a
+configuração anterior e tenta retirar os arquivos privados mesmo se a restauração falhar.
+Os testes locais provam essa limpeza e a ordem/recusa da onda; não substituem o primeiro
+preflightSSH real e a validação staging. Esta implementação não fez deploy nem criou
+segredos/chaves remotos.

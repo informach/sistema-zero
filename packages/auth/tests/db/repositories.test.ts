@@ -4,6 +4,7 @@ import path from 'node:path'
 import { sha256Hex } from '@sistemazero/core/security'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
+import { UpdateProfileDetailsService } from '../../src/application/profiles/update-profile.service'
 import { ProfileAggregate } from '../../src/domain/profile/profile.aggregate'
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
 import { EmailAlreadyInUseError } from '../../src/domain/user/user.errors'
@@ -187,7 +188,12 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
       accountUserId: user.id,
       name: 'Novo perfil',
     })
-    expect(await profiles.createWithinLimit(candidate, 5)).toEqual({
+    expect(
+      await profiles.createWithinLimit(candidate, 5, {
+        requestId: randomUUID(),
+        requestHash: 'a'.repeat(64),
+      }),
+    ).toEqual({
       outcome: 'account_inactive',
     })
   })
@@ -207,14 +213,19 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     expect(legacy.toSnapshot().voiceInputEnabledAt).toBeNull()
 
     const consentAt = new Date('2026-10-14T15:30:00.000Z')
-    legacy.setVoiceInputEnabled(true, { kind: 'parent' }, consentAt)
-    expect(await profiles.update(legacy)).toBe(true)
+    await new UpdateProfileDetailsService(profiles, () => consentAt).execute({
+      accountUserId: user.id,
+      profileId: legacyId,
+      voiceInputEnabled: true,
+    })
     const on = await profiles.findById(legacyId)
     expect(on?.voiceInputEnabled).toBe(true)
     expect(on?.toSnapshot().voiceInputEnabledAt?.toISOString()).toBe(consentAt.toISOString())
 
-    on?.setVoiceInputEnabled(false, { kind: 'parent' }, new Date('2026-10-14T16:00:00.000Z'))
-    if (on) expect(await profiles.update(on)).toBe(true)
+    await new UpdateProfileDetailsService(
+      profiles,
+      () => new Date('2026-10-14T16:00:00.000Z'),
+    ).execute({ accountUserId: user.id, profileId: legacyId, voiceInputEnabled: false })
     const off = await profiles.findById(legacyId)
     expect(off?.voiceInputEnabled).toBe(false)
     expect(off?.toSnapshot().voiceInputEnabledAt).toBeNull()
@@ -227,7 +238,10 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
       now: consentAt,
     })
     created.setVoiceInputEnabled(true, { kind: 'parent' }, consentAt)
-    const outcome = await profiles.createWithinLimit(created, 5)
+    const outcome = await profiles.createWithinLimit(created, 5, {
+      requestId: randomUUID(),
+      requestHash: 'a'.repeat(64),
+    })
     if (outcome.outcome !== 'created') throw new Error(`perfil não criado: ${outcome.outcome}`)
     const reloaded = await profiles.findById(created.id)
     expect(reloaded?.voiceInputEnabled).toBe(true)
@@ -262,29 +276,49 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
       now: createdAt,
     })
     created.setVoiceInputEnabled(true, { kind: 'parent' }, createdAt)
-    expect((await profiles.createWithinLimit(created, 5)).outcome).toBe('created')
+    expect(
+      (
+        await profiles.createWithinLimit(created, 5, {
+          requestId: randomUUID(),
+          requestHash: 'a'.repeat(64),
+        })
+      ).outcome,
+    ).toBe('created')
     expect(created.voiceInputChange).toBeNull()
 
     // Reenviar ligada (o formulário dos pais trocando só o nome): nenhuma linha nova.
     const resend = await profiles.findById(created.id)
     if (!resend) throw new Error('perfil não encontrado')
-    resend.updateDetails({ name: 'Bia Maria' }, new Date('2026-10-14T15:10:00.000Z'))
-    resend.setVoiceInputEnabled(true, { kind: 'parent' }, new Date('2026-10-14T15:10:00.000Z'))
-    expect(await profiles.update(resend)).toBe(true)
+    await new UpdateProfileDetailsService(
+      profiles,
+      () => new Date('2026-10-14T15:10:00.000Z'),
+    ).execute({
+      accountUserId: user.id,
+      profileId: created.id,
+      name: 'Bia Maria',
+      voiceInputEnabled: true,
+    })
 
     // O suporte desliga: a linha leva o ator real.
     const offAt = new Date('2026-10-14T15:20:00.000Z')
     const off = await profiles.findById(created.id)
     if (!off) throw new Error('perfil não encontrado')
-    off.setVoiceInputEnabled(false, { kind: 'support', impersonatorId: supportId }, offAt)
-    expect(await profiles.update(off)).toBe(true)
+    await new UpdateProfileDetailsService(profiles, () => offAt).execute({
+      accountUserId: user.id,
+      profileId: created.id,
+      voiceInputEnabled: false,
+      impersonatorId: supportId,
+    })
 
     // Os pais religam: a data em vigor é a nova, e a antiga segue provada na trilha.
     const onAgainAt = new Date('2026-10-14T15:30:00.000Z')
     const onAgain = await profiles.findById(created.id)
     if (!onAgain) throw new Error('perfil não encontrado')
-    onAgain.setVoiceInputEnabled(true, { kind: 'parent' }, onAgainAt)
-    expect(await profiles.update(onAgain)).toBe(true)
+    await new UpdateProfileDetailsService(profiles, () => onAgainAt).execute({
+      accountUserId: user.id,
+      profileId: created.id,
+      voiceInputEnabled: true,
+    })
 
     const reloaded = await profiles.findById(created.id)
     expect(reloaded?.name).toBe('Bia Maria')
@@ -322,15 +356,15 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
       },
     ])
 
-    // Duplo clique: duas requisições leem ligada e ambas desligam. Só a 1ª é mudança;
-    // a 2ª não grava linha nem mexe na data.
-    const first = await profiles.findById(created.id)
-    const second = await profiles.findById(created.id)
-    if (!first || !second) throw new Error('perfil não encontrado')
-    first.setVoiceInputEnabled(false, { kind: 'parent' }, new Date('2026-10-14T15:40:00.000Z'))
-    second.setVoiceInputEnabled(false, { kind: 'parent' }, new Date('2026-10-14T15:41:00.000Z'))
-    expect(await profiles.update(first)).toBe(true)
-    expect(await profiles.update(second)).toBe(true)
+    // Two explicit disable requests observe the locked current state; only the first changes consent.
+    await new UpdateProfileDetailsService(
+      profiles,
+      () => new Date('2026-10-14T15:40:00.000Z'),
+    ).execute({ accountUserId: user.id, profileId: created.id, voiceInputEnabled: false })
+    await new UpdateProfileDetailsService(
+      profiles,
+      () => new Date('2026-10-14T15:41:00.000Z'),
+    ).execute({ accountUserId: user.id, profileId: created.id, voiceInputEnabled: false })
     expect((await trailOf(created.id)).map((row) => row.enabled)).toEqual([
       true,
       false,
@@ -340,8 +374,10 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
 
     // Edição defasada (`reloaded` leu ligada antes do "desligar") não religa sem trilha.
     if (!reloaded) throw new Error('perfil não encontrado')
-    reloaded.updateDetails({ name: 'Bia M' }, new Date('2026-10-14T15:50:00.000Z'))
-    expect(await profiles.update(reloaded)).toBe(true)
+    await new UpdateProfileDetailsService(
+      profiles,
+      () => new Date('2026-10-14T15:50:00.000Z'),
+    ).execute({ accountUserId: user.id, profileId: created.id, name: 'Bia M' })
     const afterStale = await profiles.findById(created.id)
     expect(afterStale?.name).toBe('Bia M')
     expect(afterStale?.voiceInputEnabled).toBe(false)

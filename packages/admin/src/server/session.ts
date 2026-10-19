@@ -1,4 +1,5 @@
 import 'server-only'
+import { awaitWithSignal } from '@sistemazero/core/http'
 import {
   createRemoteJWKSet,
   decodeJwt,
@@ -139,8 +140,9 @@ export async function getRefreshToken(): Promise<string | null> {
   return (await cookies()).get(REFRESH_COOKIE)?.value ?? null
 }
 
-export async function setSessionCookies(tokens: AuthTokens): Promise<void> {
-  const store = await cookies()
+export async function setSessionCookies(tokens: AuthTokens, signal?: AbortSignal): Promise<void> {
+  const store = signal ? await awaitWithSignal(cookies, signal) : await cookies()
+  signal?.throwIfAborted()
   const base = { httpOnly: true, sameSite: 'lax' as const, secure: isProd(), path: '/' }
   // O access cookie persiste pela vida do refresh; o exp do JWT (curto) é o que
   // dispara o refresh-on-401 nas chamadas de dados.
@@ -148,8 +150,9 @@ export async function setSessionCookies(tokens: AuthTokens): Promise<void> {
   store.set(REFRESH_COOKIE, tokens.refreshToken, { ...base, maxAge: tokens.refreshExpiresIn })
 }
 
-export async function clearSessionCookies(): Promise<void> {
-  const store = await cookies()
+export async function clearSessionCookies(signal?: AbortSignal): Promise<void> {
+  const store = signal ? await awaitWithSignal(cookies, signal) : await cookies()
+  signal?.throwIfAborted()
   // `set('', maxAge: 0)` com os MESMOS atributos da escrita — `delete()` pelado
   // não manda `Secure` e o browser REJEITA a remoção de um `__Host-*` em prod
   // (o cookie sobrevivia: logout não deslogava). Ver `expireCookieOptions`.

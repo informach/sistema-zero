@@ -1,5 +1,6 @@
-import { expect, test } from '@playwright/test'
+import type { Request, Route } from '@playwright/test'
 import type {} from './fixtures/bridge'
+import { expect, test } from './fixtures/pythonLanguageSessions'
 
 test('Pro symbol rename validates Python names and reviews cross-file changes without rewriting trivia', async ({
   page,
@@ -90,6 +91,7 @@ test('Pro symbol rename refuses a candidate that parses but cannot compile', asy
 
 test('Pro analysis follows entrypoint moves and ignores same-name modules above its execution root', async ({
   page,
+  pythonLanguageSessions,
 }) => {
   test.setTimeout(60_000)
   await page.goto('/')
@@ -108,7 +110,7 @@ test('Pro analysis follows entrypoint moves and ignores same-name modules above 
   await expect
     .poll(() => page.evaluate(() => pythonBridgeProbe.proState().source), { timeout: 30_000 })
     .toBe('valor = "SRC"\n')
-  const before = await (await page.request.get('/api/studio/python-language/metrics')).json()
+  const before = await pythonLanguageSessions.openedIdCount()
   await page.getByRole('button', { name: 'Renomear ou mover src', exact: true }).click()
   await page.getByRole('textbox', { name: 'Renomear src', exact: true }).fill('game')
   await page.getByRole('textbox', { name: 'Renomear src', exact: true }).press('Enter')
@@ -124,26 +126,14 @@ test('Pro analysis follows entrypoint moves and ignores same-name modules above 
   await expect
     .poll(() => page.evaluate(() => pythonBridgeProbe.proState().source))
     .toBe('valor = "SRC"\n')
-  expect(
-    (await (await page.request.get('/api/studio/python-language/metrics')).json()).opened,
-  ).toBe(before.opened)
+  expect(await pythonLanguageSessions.openedIdCount()).toBe(before)
   expect((await page.evaluate(() => pythonBridgeProbe.proState())).tree?.['helper.py']).toEqual({
     kind: 'file',
     content: 'valor = "ROOT"\n',
   })
-  await expect
-    .poll(
-      async () =>
-        (await (await page.request.get('/api/studio/python-language/metrics')).json()).alive,
-    )
-    .toBe(1)
+  await expect.poll(() => pythonLanguageSessions.aliveIdCount()).toBe(1)
   await page.evaluate(() => pythonBridgeProbe.unmount())
-  await expect
-    .poll(
-      async () =>
-        (await (await page.request.get('/api/studio/python-language/metrics')).json()).alive,
-    )
-    .toBe(0)
+  await expect.poll(() => pythonLanguageSessions.aliveIdCount()).toBe(0)
 })
 
 test('Pro file rename reviews real CPython imports, warns on deletion and recovers the operation', async ({
@@ -280,6 +270,7 @@ test('Pro console runs real Python in the current namespace without changing sav
 
 test('Python Pro uses actual Pyright for diagnostics, Turtle completion and cross-file navigation', async ({
   page,
+  pythonLanguageSessions,
 }) => {
   await page.goto('/')
   await page.waitForFunction(() => !!globalThis.pythonBridgeProbe)
@@ -315,12 +306,79 @@ test('Python Pro uses actual Pyright for diagnostics, Turtle completion and cros
     .toContain('helper.py')
   await expect(page.locator('.monaco-editor .view-lines')).toContainText('return a + b')
   await page.evaluate(() => pythonBridgeProbe.unmount())
-  await expect
-    .poll(
-      async () =>
-        (await (await page.request.get('/api/studio/python-language/metrics')).json()).alive,
+  await expect.poll(() => pythonLanguageSessions.aliveIdCount()).toBe(0)
+})
+
+test('Python completion recovers when typing invalidates a pending real Pyright answer', async ({
+  page,
+  pythonLanguageSessions,
+}) => {
+  const pattern = '**/api/studio/python-language/**'
+  let release!: () => void
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  let firstRequest: Request | undefined
+  let firstResponseReady = false
+  let firstTransfer: Promise<void> | undefined
+  let completionRequests = 0
+  const intercept = async (route: Route) => {
+    const request = route.request()
+    const input = request.method() === 'POST' ? request.postDataJSON() : undefined
+    if (input?.command?.kind !== 'query' || input.command.method !== 'completions') {
+      await route.continue()
+      return
+    }
+    completionRequests++
+    if (firstRequest) {
+      await route.continue()
+      return
+    }
+    firstRequest = request
+    firstTransfer = (async () => {
+      // Keep a real server answer pending at the browser; no completion values are fabricated.
+      const response = await route.fetch({ timeout: 5000 })
+      firstResponseReady = true
+      await gate
+      try {
+        await route.fulfill({ response })
+      } catch (error) {
+        // Source invalidation legitimately aborts this obsolete browser request.
+        if (!request.failure()) throw error
+      }
+    })()
+    await firstTransfer
+  }
+  await page.route(pattern, intercept)
+  try {
+    await page.goto('/')
+    await page.waitForFunction(() => !!globalThis.pythonBridgeProbe)
+    await page.evaluate(() => pythonBridgeProbe.create())
+    await page.evaluate(() =>
+      pythonBridgeProbe.openPro({
+        'src/main.py': 'import turtle\ntartaruga = turtle.Turtle()\ntartaruga.\n',
+      }),
     )
-    .toBe(0)
+    await expect.poll(() => pythonLanguageSessions.aliveIdCount(), { timeout: 15_000 }).toBe(1)
+    await page.evaluate(() => pythonBridgeProbe.proCursor(3, 11))
+    await page.evaluate(() => pythonBridgeProbe.proAction('editor.action.triggerSuggest'))
+    await expect.poll(() => firstResponseReady, { timeout: 15_000 }).toBe(true)
+    await page.keyboard.type('for')
+    await expect
+      .poll(() => page.evaluate(() => pythonBridgeProbe.proState().source))
+      .toContain('tartaruga.for')
+    await expect.poll(() => firstRequest?.failure()?.errorText).toContain('ERR_ABORTED')
+    release()
+    await firstTransfer
+    await expect(page.locator('.suggest-widget')).toContainText('forward', { timeout: 15_000 })
+    expect(completionRequests).toBeGreaterThanOrEqual(2)
+    await page.evaluate(() => pythonBridgeProbe.unmount())
+    await expect.poll(() => pythonLanguageSessions.aliveIdCount()).toBe(0)
+  } finally {
+    release()
+    await firstTransfer
+    await page.unroute(pattern, intercept)
+  }
 })
 
 test('Python keeps original mixed line endings while diagnostics and definitions use correct positions', async ({

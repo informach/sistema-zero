@@ -1,0 +1,12 @@
+# Classic/Ponte initial analysis missed the existing cold-readiness budget
+
+Status: investigating; no root cause established
+Severity: medium (functional/performance qualification)
+
+Native ownership run9 finished51pass/1fail across52Chrome/Edge cases. Chrome `Ponte synchronizes actual Blockly and Monaco edits and executes the saved Python` failed in beforeEach: the initial block3 did not appear inside the unchanged12-second browser-initialization budget. The page still showed “Atualizando os blocos a partir do código…”. The equivalent Edge case and other Bridge cases passed. The earlier full82 suite passed before the QA teardown additions; neither observation establishes a deterministic product regression or dismissal as a flake.
+
+Independent trace inspection: goto~2.34s; analysis frame~3.24s; metadata~3.46s; blob worker~6.47s; analysis-worker~7.22s; WASM/stdlib complete~7.69s; assertion ends~12.35s. Critical files return200. There is a gap before worker creation and after WASM delivery, without evidence establishing scheduling, integrity checks, CPython startup or parse as the cause. No Pyright request belongs to this case; Classic reverse parsing uses browser CPython. Do not label this a slow language service.
+
+Ownership cleanup succeeded for this failed case and all other52cases (39reservations, own/global0). Preserve report/trace at `parallel-c-public-export-9-ownership` and do not raise the12s budget, retry away the failure or weaken block readiness. Next: a cache-only diagnostic with readonly stage timings and optional CPU trace, separating unprofiled observations from instrumented cost. No production workaround has been applied.
+
+The prepared cache-only diagnostic first failed at config load, before tests, because Playwright's Node24 transform treated `import.meta.dirname` in the temporary TS config inconsistently (`exports is not defined`). Cache config now resolves and verifies its owned cwd without `import.meta`; no product/test budget/source change. Unprofiled `cold-analysis-diagnostic/first-d2` then passed Chrome and Edge **2/2** under the existing12s readiness budget, no skips/retries. Chrome initial block at3294.6ms, Edge at2652.4ms from navigation start; analysis workers were created at1969.0/1408.3ms. These normal-path samples do not reproduce or explain the prior12s failure. Retain issue investigating, especially under suite load; do not reclassify old failure as solved.

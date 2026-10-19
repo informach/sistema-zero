@@ -1,4 +1,5 @@
 import type { CourseAudience } from '../course/course'
+import type { LearningOwner } from './learning-repository.port'
 
 /** Uma conquista congelada: o que ESTE curso deu a ESTE aluno. */
 export interface StudioBlockGrant {
@@ -26,9 +27,21 @@ export interface StudioUnlockRepository {
   /** Conquistas congeladas do aluno na vitrine (vazio = nada congelado ainda). */
   listGrants(userId: string, audience: CourseAudience): Promise<StudioBlockGrant[]>
   /**
+   * Concilia uma leitura do currículo em transação própria, sob o lock do owner
+   * autenticado e o fence de exclusão. Recusa contas excluídas, inclusive se a
+   * leitura elegível começou antes do purge.
+   */
+  freezeGrants(
+    owner: LearningOwner,
+    audience: CourseAudience,
+    grants: readonly StudioBlockGrant[],
+  ): Promise<void>
+  /**
    * Congela (ou amplia) o que um curso deu ao aluno. O repositório garante uma UNIÃO
    * atômica com a linha existente, mesmo quando o chamador parte de uma leitura atrasada;
    * é idempotente por (aluno, vitrine, curso).
+   * Primitiva da transação de award: o chamador já protege owner/fence na mesma TX.
+   * Leituras conciliadoras devem usar freezeGrants.
    */
   saveGrants(
     userId: string,

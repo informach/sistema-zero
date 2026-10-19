@@ -425,6 +425,10 @@ describe('moderação', () => {
       jsonRequest('POST', `/hub/admin/threads/${pendingId}/hide`, { headers: adminHeaders() }),
     )
     expect(hideRejected.status).toBe(409)
+    const approveRejected = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${pendingId}/approve`, { headers: adminHeaders() }),
+    )
+    expect(approveRejected.status).toBe(409)
     expect(ctx.threadRepo.threads.find((thread) => thread.id === pendingId)?.status).toBe(
       'rejected',
     )
@@ -526,10 +530,11 @@ describe('moderação', () => {
   })
 
   test('apagar post de vitrine limpa o R2 (playId + capa); OCULTAR não', async () => {
-    const calls: Array<{ playId: string; coverUrl: string | null }> = []
+    const calls: Array<{ authorId: string; playId: string; coverUrl: string | null }> = []
     const studioArtifacts: StudioArtifactGateway = {
       async cleanupShowcaseArtifacts(args) {
         calls.push(args)
+        return true
       },
     }
     const ctx = buildApp({ studioArtifacts })
@@ -563,7 +568,7 @@ describe('moderação', () => {
       jsonRequest('POST', `/hub/admin/threads/${thread.id}/delete`, { headers: adminHeaders() }),
     )
     expect(deleted.status).toBe(200)
-    expect(calls).toEqual([{ playId, coverUrl: cover }])
+    expect(calls).toEqual([{ authorId: thread.authorId, playId, coverUrl: cover }])
   })
 
   test('apagar tópico NÃO-vitrine não chama a limpeza de R2', async () => {
@@ -571,6 +576,7 @@ describe('moderação', () => {
     const studioArtifacts: StudioArtifactGateway = {
       async cleanupShowcaseArtifacts(args) {
         calls.push(args)
+        return true
       },
     }
     const ctx = buildApp({ studioArtifacts })

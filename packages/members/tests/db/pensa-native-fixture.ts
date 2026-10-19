@@ -1,3 +1,6 @@
+import { KidsJourneyQueryService } from '../../src/application/kids-journey/kids-journey-query.service'
+import { KidsJourneyProfilesService } from '../../src/application/kids-journey/kids-journey-profiles.service'
+import { DrizzleKidsJourneyRepository } from '../../src/infrastructure/persistence/drizzle/kids-journey.repository'
 import { randomUUID } from 'node:crypto'
 import * as P from '@sistemazero/core/pensa'
 import { Elysia } from 'elysia'
@@ -63,14 +66,17 @@ export async function nativePensa(
     new DrizzleCourseRepository(conn.db),
     () => now,
   )
-  const getGamification = new GetGamificationService(gamiRepo, () => now, adultJourney)
+  const kidsJourneyRepository = new DrizzleKidsJourneyRepository(conn.db)
+  const kidsJourneyQuery = new KidsJourneyQueryService(kidsJourneyRepository)
+  const kidsJourneyProfiles = new KidsJourneyProfilesService(kidsJourneyRepository, kidsJourneyQuery)
+  const getGamification = new GetGamificationService(gamiRepo, () => now, kidsJourneyQuery, kidsJourneyProfiles, adultJourney)
   const accessCheck = new AccessCheckService(new DrizzleEntitlementRepository(conn.db), () => now)
   const creationRepo = new DrizzleCreationsRepository(conn.db)
   const team = new PensaTeamService(
     new DrizzlePensaTeamRepository({
       projects: commands,
       authGateway: null,
-      avatars: new GetAvatarsByProfilesService(new DrizzleAvatarRepository(conn.db), gamiRepo),
+      avatars: new GetAvatarsByProfilesService(new DrizzleAvatarRepository(conn.db), gamiRepo, kidsJourneyProfiles),
       accessCheck,
       gamification: getGamification,
       studioUnlocks: new GetStudioUnlocksService(

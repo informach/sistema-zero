@@ -1,5 +1,5 @@
 import { afterEach, expect, mock, spyOn, test } from 'bun:test'
-import { creatorJourneyLevel } from '@sistemazero/core/journey'
+import { initialKidsJourneyPolicy, projectAdultJourney } from '@sistemazero/core/journey'
 import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
 import type {
   StudioFreeRuntimeRequest,
@@ -8,12 +8,16 @@ import type {
   StudioPublicRuntimeRequest,
 } from '@sistemazero/core/studio/runtime-authorization'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
+import sharp from 'sharp'
+import { KidsJourneyQueryService } from '../../members/src/application/kids-journey/kids-journey-query.service'
 import { AuthorizeFreeRuntimeService } from '../../members/src/application/studio/authorize-free-runtime.service'
 import { AuthorizeLessonRuntimeService } from '../../members/src/application/studio/authorize-lesson-runtime.service'
 import { AuthorizeLivePublicationRuntimeService } from '../../members/src/application/studio/authorize-live-publication-runtime.service'
 import { AuthorizePublicRuntimeService } from '../../members/src/application/studio/authorize-public-runtime.service'
 import { FreeStudioAccessService } from '../../members/src/application/studio/free-studio-access.service'
-import { emptyQualifyingByTier } from '../../members/src/domain/gamification/levels'
+import { InvalidContentCommandError } from '../../members/src/domain/course/course.errors'
+import { AccessDeniedError } from '../../members/src/domain/entitlement/entitlement.errors'
+import type { KidsJourneySnapshot } from '../../members/src/domain/ports/kids-journey-repository.port'
 import { createStudioRuntimeHosts } from '../../members/src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../members/src/domain/studio/runtime-policy'
 import { authoringFixture } from '../../members/tests/fakes/studio-authoring-policy'
@@ -22,6 +26,7 @@ import {
   currentPublishedSource,
   PublicationError,
   publicationCommand,
+  purgePublication,
 } from '../../studio-runtime/src/publications'
 import { memoryArtifactBucket } from '../../studio-runtime/tests/artifact-bucket'
 
@@ -36,12 +41,21 @@ afterEach(() => {
   globalThis.fetch = originalFetch
 })
 
-async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'live') {
-  const f = await authoringFixture('python', kind)
+async function fixture(
+  kind: 'classic' | 'pro',
+  context: 'free' | 'lesson' | 'live',
+  audience: 'kids' | 'adult' = 'kids',
+  language: 'python' | 'javascript' = 'python',
+  identity?: { userId: string; accountId: string; requestId: string; publicObjects: Set<string> },
+  runtimeStatus: 'active' | 'retired' | 'revoked' = 'active',
+) {
+  const f = await authoringFixture(language, kind)
+  if (language === 'python') f.configuration.releases[0]!.status = runtimeStatus
+  const userId = identity?.userId ?? crypto.randomUUID()
   const actor = {
-    audience: 'kids' as const,
-    userId: crypto.randomUUID(),
-    accountId: crypto.randomUUID(),
+    audience,
+    userId,
+    accountId: identity?.accountId ?? (audience === 'adult' ? userId : crypto.randomUUID()),
     privileged: false,
     readOnly: false,
   }
@@ -56,9 +70,10 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
         : f.project.id
   const policy = await createStudioRuntimePolicy(
     f.configuration,
-    createStudioRuntimeHosts(f.configuration.catalog, [
-      { runtime: f.project.runtime, origin: 'https://runtime.test' },
-    ]),
+    createStudioRuntimeHosts(
+      f.configuration.catalog,
+      language === 'python' ? [{ runtime: f.project.runtime, origin: 'https://runtime.test' }] : [],
+    ),
   )
   const state = {
     owned: context === 'free',
@@ -68,23 +83,59 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
     posts: 0,
     liveRevision: 3,
     hubFirstFailure: false,
+    threadStatus: 'visible' as 'visible' | 'deleted' | 'rejected',
+    canonicalPlayId: null as string | null,
+    livePlayId: crypto.randomUUID(),
+    prepareFirstFailure: false,
+    prepares: 0,
+    reservationFault: null as 'snapshot' | 'missing-id' | 'live-id' | null,
   }
+  // Admitted owner + published seed are shared by BFF and runtime authorization.
+  const kidsJourney = new KidsJourneyQueryService({
+    async readSnapshot(owners): Promise<KidsJourneySnapshot> {
+      return {
+        policy: {
+          phase: 'published',
+          version: 1,
+          policy: initialKidsJourneyPolicy(),
+          updatedAt: new Date(0),
+        },
+        catalog: [],
+        profiles: new Map(
+          owners
+            .filter((owner) => owner.userId === actor.userId && owner.accountId === actor.accountId)
+            .map((owner) => [
+              owner.userId,
+              {
+                ...owner,
+                registered: true,
+                milestones: [],
+                earned: {
+                  level: context === 'free' ? 'god' : 'noob',
+                  capabilities: [],
+                  courseAccess: { entry: [], expanded: [], reward: [] },
+                },
+              },
+            ]),
+        ),
+      }
+    },
+  })
   const free = new AuthorizeFreeRuntimeService(
     new FreeStudioAccessService(
       {
         async execute() {
           return {
             grants: [],
-            communities: state.owned ? ['estudio-completo'] : [],
+            communities: state.owned
+              ? [audience === 'adult' ? 'adult-estudio-completo' : 'estudio-completo']
+              : [],
             hasMaster: false,
             hasMasterKids: false,
           }
         },
       },
       {
-        async listQualifyingJourneySlots() {
-          return Object.assign(emptyQualifyingByTier(), creatorJourneyLevel('god').requiredSlots)
-        },
         async listStudioUnlocksByCourse() {
           return [{ courseId: 'course', blocks: [SERVER_BLOCK_CATALOG[0]!.type] }]
         },
@@ -92,6 +143,17 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
       {
         async listGrants() {
           return []
+        },
+      },
+      kidsJourney,
+      {
+        async get() {
+          return projectAdultJourney(
+            { schemaVersion: 1, stages: [] },
+            0,
+            [],
+            ['studio', 'bridge', 'pro'],
+          )
         },
       },
     ),
@@ -133,13 +195,42 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
   const publicRuntime = new AuthorizePublicRuntimeService(policy)
   const bucket = memoryArtifactBucket()
   const objects = new Map<string, Uint8Array>()
+  const publicCoverKeys: string[] = []
+  const publicCacheControls: Array<string | undefined> = []
+  const publicObjects = identity?.publicObjects ?? new Set<string>()
+  const retiredCoverKeys = new Set<string>()
   spyOn(env, 'getEnv').mockReturnValue({
     ...env.getEnv(),
     STUDIO_PRO_RUNTIME_URL: 'https://runtime.test',
     STUDIO_PRO_RUNTIME_TOKEN: 'runtime-test-token',
+    R2_PUBLIC_URL: 'https://media.test',
   })
   spyOn(storage, 'r2PutObjectPrivate').mockImplementation(async (input) => {
     objects.set(input.key, new Uint8Array(input.body))
+  })
+  spyOn(storage, 'r2CreateObjectPrivate').mockImplementation(async (input) => {
+    if (objects.has(input.key)) return false
+    objects.set(input.key, new Uint8Array(input.body))
+    return true
+  })
+  spyOn(storage, 'r2HeadObjectPrivate').mockImplementation(async (key) =>
+    objects.has(key)
+      ? { contentType: 'application/json', contentLength: objects.get(key)!.length, etag: 'test' }
+      : null,
+  )
+  spyOn(storage, 'r2DeleteObjectPrivate').mockImplementation(async (key) => {
+    objects.delete(key)
+  })
+  spyOn(storage, 'r2CreateObject').mockImplementation(async (input) => {
+    if (publicObjects.has(input.key) || retiredCoverKeys.has(input.key)) return null
+    publicCoverKeys.push(input.key)
+    publicCacheControls.push(input.cacheControl)
+    publicObjects.add(input.key)
+    return { key: input.key, url: `https://media.test/${input.key}` }
+  })
+  spyOn(storage, 'r2FenceObject').mockImplementation(async (key) => {
+    retiredCoverKeys.add(key)
+    publicObjects.delete(key)
   })
   spyOn(storage, 'r2GetObjectPrivate').mockImplementation(async (key) => {
     const bytes = objects.get(key)
@@ -156,11 +247,13 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
     state.calls.push(input.operation)
     try {
       return Response.json(
-        input.operation === 'resolve'
-          ? await currentPublishedSource(bucket.bucket, input.playId)
-          : input.operation === 'resolve-metadata'
-            ? await currentPublishedPublication(bucket.bucket, input.playId)
-            : await publicationCommand(bucket.bucket, input),
+        input.operation === 'purge'
+          ? await purgePublication(bucket.bucket, input.playId)
+          : input.operation === 'resolve'
+            ? await currentPublishedSource(bucket.bucket, input.playId)
+            : input.operation === 'resolve-metadata'
+              ? await currentPublishedPublication(bucket.bucket, input.playId)
+              : await publicationCommand(bucket.bucket, input),
       )
     } catch (error) {
       if (error instanceof PublicationError)
@@ -169,16 +262,79 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
     }
   })
   globalThis.fetch = Object.assign(upstream, { preconnect: originalFetch.preconnect })
-  const livePlayId = crypto.randomUUID()
-  const post = async (input: { playId: string }) => {
+  const reservations = new Map<
+    string,
+    { reservationId: string; playId: string; snapshotHash: string }
+  >()
+  const finalized = new Map<string, { id: string; playId: string; studioMeta?: unknown }>()
+  const prepare = async (input: {
+    clientIdempotencyKey: string
+    snapshotHash: string
+    liveWorkspace?: { playId: string }
+  }) => {
+    state.prepares++
+    const existing = finalized.get(input.clientIdempotencyKey)
+    const canonical = state.canonicalPlayId
+      ? [...finalized.values()].find((thread) => thread.playId === state.canonicalPlayId)
+      : existing
+    if (canonical)
+      return {
+        status: 200,
+        body: {
+          state: 'finalized',
+          deduped: true,
+          thread: { ...canonical, status: state.threadStatus },
+        },
+      }
+    let reservation = reservations.get(input.clientIdempotencyKey)
+    if (reservation && reservation.snapshotHash !== input.snapshotHash)
+      return { status: 409, body: null }
+    if (!reservation) {
+      reservation = {
+        reservationId: crypto.randomUUID(),
+        playId: input.liveWorkspace?.playId ?? crypto.randomUUID(),
+        snapshotHash: input.snapshotHash,
+      }
+      reservations.set(input.clientIdempotencyKey, reservation)
+    }
+    if (state.prepareFirstFailure && state.prepares === 1) return { status: 503, body: null }
+    if (state.reservationFault === 'snapshot')
+      return {
+        status: 200,
+        body: { state: 'reserved', ...reservation, snapshotHash: '0'.repeat(64) },
+      }
+    if (state.reservationFault === 'missing-id')
+      return { status: 200, body: { state: 'reserved', ...reservation, reservationId: null } }
+    if (state.reservationFault === 'live-id')
+      return {
+        status: 200,
+        body: { state: 'reserved', ...reservation, playId: crypto.randomUUID() },
+      }
+    return { status: 200, body: { state: 'reserved', ...reservation } }
+  }
+  const post = async (input: {
+    playId: string
+    clientIdempotencyKey: string
+    studioMeta?: unknown
+  }) => {
     state.posts++
+    const thread = { id: crypto.randomUUID(), playId: input.playId, studioMeta: input.studioMeta }
+    finalized.set(input.clientIdempotencyKey, thread)
     if (state.posts === 1 && state.hubFirstFailure) return { status: 503, body: null }
     return {
       status: 200,
-      body: { thread: { id: crypto.randomUUID(), playId: input.playId }, deduped: state.posts > 1 },
+      body: {
+        thread: {
+          id: crypto.randomUUID(),
+          playId: state.canonicalPlayId ?? input.playId,
+          status: state.threadStatus,
+        },
+        deduped: state.posts > 1,
+      },
     }
   }
   const routes = createStudioRoutes({
+    audience,
     media: {
       requireUploadSession: async () => ({
         id: actor.userId,
@@ -189,7 +345,17 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
     members: {
       getGamification: async () => ({
         status: 200,
-        body: { level: { slug: context === 'free' ? 'god' : 'noob' } },
+        body: {
+          level: { slug: context === 'free' ? 'god' : 'noob' },
+          ...(audience === 'adult'
+            ? { journey: { capabilities: ['studio', 'bridge', 'pro'] } }
+            : {
+                kidsJourney: await kidsJourney.get({
+                  userId: actor.userId,
+                  accountId: actor.accountId,
+                }),
+              }),
+        },
       }),
       checkStudioAccess: async () => ({
         status: 200,
@@ -209,14 +375,20 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
         body: {
           eligible: state.allowed,
           project: structuredClone(f.project),
-          playId: livePlayId,
+          playId: state.livePlayId,
           publicationToken: 'server-attested-fixture',
           revision: state.liveRevision,
         },
       }),
       authorizeFreeRuntime: async (input: StudioFreeRuntimeRequest) => {
         state.calls.push('authorize-free')
-        return { status: 200, body: await free.execute(actor, input) }
+        try {
+          return { status: 200, body: await free.execute(actor, input) }
+        } catch (error) {
+          if (error instanceof AccessDeniedError) return { status: 403, body: null }
+          if (error instanceof InvalidContentCommandError) return { status: 400, body: null }
+          throw error
+        }
       },
       authorizeLessonRuntime: async (
         _lesson: string,
@@ -245,6 +417,8 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
       }),
     },
     hub: {
+      prepareShowcaseThreadStudio: prepare,
+      prepareShowcaseThreadStudioStandalone: prepare,
       createShowcaseThreadStudio: post,
       createShowcaseThreadStudioStandalone: post,
       resolveStudioPlay: async () => ({
@@ -253,13 +427,19 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
       }),
     },
   } as never)
-  const requestId = crypto.randomUUID()
-  const publish = async (uploadedProject: unknown = f.project) => {
+  const requestId = identity?.requestId ?? crypto.randomUUID()
+  const publish = async (
+    uploadedProject: unknown = f.project,
+    coverBytes?: Uint8Array,
+    publicationRequestId = requestId,
+  ) => {
     const form = new FormData()
     form.set('title', 'Meu jogo')
     form.set('description', 'Meu projeto Python')
-    form.set('clientIdempotencyKey', requestId)
+    form.set('clientIdempotencyKey', publicationRequestId)
     form.set('project', new File([JSON.stringify(uploadedProject)], 'project.json'))
+    if (coverBytes)
+      form.set('cover', new File([new Uint8Array(coverBytes)], 'cover.png', { type: 'image/png' }))
     if (context === 'lesson') {
       form.set('lessonId', lessonId)
       form.set('blockId', blockId)
@@ -277,7 +457,19 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
       ? routes.studioPublish.POST(request)
       : routes.studioPublishStandalone.POST(request)
   }
-  return { ...f, ...bucket, actor, state, routes, publish, objects, requestId }
+  return {
+    ...f,
+    ...bucket,
+    actor,
+    state,
+    routes,
+    publish,
+    objects,
+    publicCoverKeys,
+    publicCacheControls,
+    publicObjects,
+    requestId,
+  }
 }
 
 for (const context of ['free', 'lesson', 'live'] as const)
@@ -320,6 +512,183 @@ for (const context of ['free', 'lesson', 'live'] as const)
       expect(f.state.calls).not.toContain('cover')
     })
 
+for (const kind of ['classic', 'pro'] as const)
+  test(`adult free Python ${kind} publication authorizes the adult audience`, async () => {
+    const f = await fixture(kind, 'free', 'adult')
+    const response = await f.publish()
+    expect(response.status).toBe(200)
+    const body = await response.json()
+    expect(f.state.calls).toContain('authorize-free')
+    expect((await currentPublishedSource(f.bucket, body.publicationId))?.publication).toMatchObject(
+      { programmingLanguage: 'python', kind },
+    )
+  })
+
+for (const context of ['free', 'lesson', 'live'] as const)
+  for (const kind of ['classic', 'pro'] as const)
+    test(`${context} Python ${kind} deduplication preserves the canonical published bytes`, async () => {
+      const f = await fixture(kind, context)
+      const first = await f.publish()
+      expect(first.status).toBe(200)
+      const playId = (await first.json()).publicationId as string
+      const sourceKey = `studio/play/${playId}.json`
+      const before = f.objects.get(sourceKey)!.slice()
+      const retainedBefore = await currentPublishedSource(f.bucket, playId)
+      const keysBefore = [...f.objects.keys()]
+      const callsBefore = [...f.state.calls]
+      f.state.canonicalPlayId = playId
+      f.state.livePlayId = crypto.randomUUID()
+      f.project.name = 'A draft edited after publication'
+      const retry = await f.publish(f.project, undefined, crypto.randomUUID())
+      expect(retry.status).toBe(200)
+      expect((await retry.json()).publicationId).toBe(playId)
+      expect(f.objects.get(sourceKey)).toEqual(before)
+      expect((await currentPublishedSource(f.bucket, playId))?.source).toBe(retainedBefore?.source)
+      expect([...f.objects.keys()]).toEqual(keysBefore)
+      expect(f.state.calls).toEqual(callsBefore)
+    })
+
+for (const context of ['free', 'lesson', 'live'] as const)
+  test(`${context} a finalized legacy post is returned without claiming or rewriting its artifact`, async () => {
+    const f = await fixture('classic', context)
+    const first = await f.publish()
+    expect(first.status).toBe(200)
+    const playId = (await first.json()).publicationId as string
+    const sourceKey = `studio/play/${playId}.json`
+    const before = f.objects.get(sourceKey)!.slice()
+    f.objects.delete(`studio/publication-owners/kids/${playId}.json`)
+    f.state.canonicalPlayId = playId
+    f.state.livePlayId = crypto.randomUUID()
+    f.project.name = 'An unverified replacement'
+    const retry = await f.publish(f.project, undefined, crypto.randomUUID())
+    expect(retry.status).toBe(200)
+    expect(f.objects.get(sourceKey)).toEqual(before)
+    expect(f.objects.has(`studio/publication-owners/kids/${playId}.json`)).toBe(false)
+  })
+
+for (const context of ['free', 'lesson', 'live'] as const)
+  test(`${context} JavaScript Classic deduplication cannot replace or claim an unverified canonical snapshot`, async () => {
+    const f = await fixture('classic', context, 'kids', 'javascript')
+    const first = await f.publish()
+    expect(first.status).toBe(200)
+    const playId = (await first.json()).playUrl.split('/').at(-1)!
+    const sourceKey = `studio/play/${playId}.json`
+    const before = f.objects.get(sourceKey)!.slice()
+    f.state.canonicalPlayId = playId
+    f.state.livePlayId = crypto.randomUUID()
+    f.project.name = 'A changed draft'
+    const replay = await f.publish(f.project, undefined, crypto.randomUUID())
+    expect(replay.status).toBe(200)
+    expect(f.objects.get(sourceKey)).toEqual(before)
+    f.objects.delete(`studio/publication-owners/kids/${playId}.json`)
+    f.state.livePlayId = crypto.randomUUID()
+    const unverified = await f.publish(f.project, undefined, crypto.randomUUID())
+    expect(unverified.status).toBe(200)
+    expect(f.objects.get(sourceKey)).toEqual(before)
+    expect(f.objects.has(`studio/publication-owners/kids/${playId}.json`)).toBe(false)
+  })
+
+test('a missing private snapshot is 404, while a temporary storage failure is retryable', async () => {
+  const f = await fixture('classic', 'free')
+  const published = await f.publish()
+  expect(published.status).toBe(200)
+  const playId = (await published.json()).publicationId as string
+  const play = () =>
+    f.routes.studioPlay.GET(new Request('https://kids.test/'), {
+      params: Promise.resolve({ id: playId }),
+    })
+
+  spyOn(storage, 'r2GetObjectPrivate').mockRejectedValueOnce(
+    new storage.PrivateObjectNotFoundError('missing'),
+  )
+  const missing = await play()
+  expect(missing.status).toBe(404)
+  expect(await missing.json()).toEqual({ error: { code: 'NOT_FOUND' } })
+
+  spyOn(storage, 'r2GetObjectPrivate').mockRejectedValueOnce(
+    new storage.PrivateObjectUnavailableError('storage offline'),
+  )
+  const unavailable = await play()
+  expect(unavailable.status).toBe(503)
+  expect(unavailable.headers.get('Retry-After')).toBe('5')
+  expect(await unavailable.json()).toEqual({ error: { code: 'SERVICE_UNAVAILABLE' } })
+
+  expect((await play()).status).toBe(200)
+})
+
+test('revoked Python release cannot publish; retired existing release stays playable', async () => {
+  const revoked = await fixture('classic', 'free', 'kids', 'python', undefined, 'revoked')
+  const refused = await revoked.publish()
+  expect(refused.status).toBe(403)
+  expect(
+    [...revoked.objects.keys()].every((key) => key.startsWith('studio/publication-owners/')),
+  ).toBe(true)
+  expect(revoked.state.calls).not.toContain('promote-python')
+  expect(revoked.publicObjects.size).toBe(0)
+
+  const retired = await fixture('classic', 'free', 'kids', 'python', undefined, 'retired')
+  const published = await retired.publish()
+  expect(published.status).toBe(200)
+  const playId = (await published.json()).publicationId as string
+  const playable = await retired.routes.studioPlay.GET(new Request('https://kids.test/'), {
+    params: Promise.resolve({ id: playId }),
+  })
+  expect(playable.status).toBe(200)
+})
+
+test('a Python project cannot publish a Turtle extension absent from its approved release', async () => {
+  const f = await fixture('classic', 'free')
+  f.project.installedExtensions = [{ id: 'python-turtle', version: '1.0.0', installedAt: 1 }]
+  const refused = await f.publish()
+  expect(refused.status).toBe(403)
+  expect([...f.objects.keys()].every((key) => key.startsWith('studio/publication-owners/'))).toBe(
+    true,
+  )
+  expect(f.state.calls).not.toContain('promote-python')
+  expect(f.publicObjects.size).toBe(0)
+})
+
+for (const context of ['free', 'lesson', 'live'] as const) {
+  for (const fault of ['snapshot', 'missing-id'] as const) {
+    test(`${context} rejects a reservation with ${fault} mismatch before any artifact write`, async () => {
+      const f = await fixture('classic', context)
+      f.state.reservationFault = fault
+      const response = await f.publish()
+      expect(response.status).toBe(502)
+      expect((await response.json()).error.code).toBe('INVALID_PUBLICATION_RESERVATION')
+      expect(f.objects.size).toBe(0)
+      expect(f.publicObjects.size).toBe(0)
+      expect(f.state.posts).toBe(0)
+      expect(f.state.calls).not.toContain('promote-python')
+    })
+  }
+}
+
+test('live rejects a reservation for a different signed workspace publication', async () => {
+  const f = await fixture('pro', 'live')
+  f.state.reservationFault = 'live-id'
+  const response = await f.publish()
+  expect(response.status).toBe(502)
+  expect((await response.json()).error.code).toBe('INVALID_PUBLICATION_RESERVATION')
+  expect(f.objects.size).toBe(0)
+  expect(f.publicObjects.size).toBe(0)
+  expect(f.state.posts).toBe(0)
+  expect(f.state.calls).not.toContain('promote-python')
+})
+
+test('a lost reservation response writes no artifact and retries the same reserved ID', async () => {
+  const f = await fixture('pro', 'free')
+  f.state.prepareFirstFailure = true
+  expect((await f.publish()).status).toBe(503)
+  expect(f.objects.size).toBe(0)
+  expect(f.publicObjects.size).toBe(0)
+  expect(f.state.calls).not.toContain('promote-python')
+  expect(f.state.posts).toBe(0)
+  expect((await f.publish()).status).toBe(200)
+  expect([...f.objects.keys()].filter((key) => key.startsWith('studio/play/'))).toHaveLength(1)
+  expect(f.state.posts).toBe(1)
+})
+
 test('a lost Hub response retries the exact Python publication without adding a second retained revision', async () => {
   const f = await fixture('pro', 'free')
   f.state.hubFirstFailure = true
@@ -330,7 +699,138 @@ test('a lost Hub response retries the exact Python publication without adding a 
   expect(
     (await currentPublishedSource(f.bucket, body.publicationId))?.publication.revisions,
   ).toHaveLength(1)
-  expect(f.objects.size).toBe(1)
+  expect([...f.objects.keys()].filter((key) => key.startsWith('studio/play/'))).toHaveLength(1)
+  expect(
+    [...f.objects.keys()].filter((key) => key.startsWith('studio/publication-owners/')),
+  ).toHaveLength(1)
+})
+
+test('replaying a finalized publication preserves its cover without uploading another candidate', async () => {
+  const f = await fixture('classic', 'free')
+  const cover = new Uint8Array(
+    await sharp({
+      create: { width: 8, height: 8, channels: 4, background: '#ff0000' },
+    })
+      .png()
+      .toBuffer(),
+  )
+  const first = await f.publish(f.project, cover)
+  const replay = await f.publish(f.project, cover)
+  expect(first.status).toBe(200)
+  expect(replay.status).toBe(200)
+  const firstBody = await first.json()
+  const replayBody = await replay.json()
+  expect(replayBody.publicationId).toBe(firstBody.publicationId)
+  expect(f.publicCoverKeys).toHaveLength(1)
+  expect(f.publicCacheControls).toEqual(['no-store'])
+  expect(new Set(f.publicCoverKeys).size).toBe(1)
+  const firstCoverKey = f.publicCoverKeys[0]!
+  expect([...f.publicObjects]).toEqual([firstCoverKey])
+  expect(firstCoverKey).toMatch(
+    new RegExp(
+      `^studio/cover/${f.actor.userId}/${firstBody.publicationId}/${f.requestId}-[a-f0-9-]{36}-[a-f0-9]{64}\\.webp$`,
+    ),
+  )
+  expect(
+    (await currentPublishedSource(f.bucket, firstBody.publicationId))?.publication.revisions,
+  ).toHaveLength(1)
+})
+
+test('replay after moderation cannot restore the original public cover or retained source', async () => {
+  const f = await fixture('classic', 'free')
+  const cover = new Uint8Array(
+    await sharp({ create: { width: 8, height: 8, channels: 4, background: '#ff0000' } })
+      .png()
+      .toBuffer(),
+  )
+  const first = await f.publish(f.project, cover)
+  expect(first.status).toBe(200)
+  const playId = (await first.json()).publicationId as string
+  const originalCover = f.publicCoverKeys[0]!
+  f.publicObjects.delete(originalCover)
+  f.state.threadStatus = 'deleted'
+  const cleanup = await import('../src/server/studio-publication-cleanup')
+  const intent = await cleanup.enqueueStudioPublicationCleanup(
+    playId,
+    undefined,
+    'kids',
+    f.actor.userId,
+  )
+  await cleanup.performStudioPublicationCleanup(
+    playId,
+    intent.coverKey,
+    undefined,
+    intent.runtime,
+    intent.coverReceiptKey,
+    intent.ownershipKey,
+  )
+  const retired = f.objects.get(`studio/play/${playId}.json`)!.slice()
+  const replay = await f.publish(f.project, cover)
+  expect(replay.status).toBe(409)
+  expect(f.publicObjects.size).toBe(0)
+  expect(f.publicCoverKeys[1]).not.toBe(originalCover)
+  expect(f.objects.get(`studio/play/${playId}.json`)).toEqual(retired)
+  expect(JSON.parse(new TextDecoder().decode(retired))).toEqual({
+    playId,
+    studioPublicationState: 'retired',
+  })
+  expect(await currentPublishedSource(f.bucket, playId)).toBeNull()
+})
+
+for (const moderationStatus of ['deleted', 'rejected'] as const)
+  test(`JavaScript Classic replay after ${moderationStatus} leaves no candidate snapshot or cover`, async () => {
+    const f = await fixture('classic', 'free', 'kids', 'javascript')
+    const cover = new Uint8Array(
+      await sharp({ create: { width: 8, height: 8, channels: 4, background: '#ff0000' } })
+        .png()
+        .toBuffer(),
+    )
+    const first = await f.publish(f.project, cover)
+    expect(first.status).toBe(200)
+    const firstPlayId = (await first.json()).playUrl.split('/').at(-1)!
+    const originalCover = f.publicCoverKeys[0]!
+    f.publicObjects.delete(originalCover)
+    f.objects.delete(`studio/play/${firstPlayId}.json`)
+    f.state.threadStatus = moderationStatus
+    f.state.canonicalPlayId = firstPlayId
+    const replay = await f.publish(f.project, cover)
+    expect(replay.status).toBe(409)
+    expect(f.publicObjects.size).toBe(0)
+    expect(f.publicCoverKeys[1]).not.toBe(originalCover)
+    expect(f.objects.has(`studio/play/${firstPlayId}.json`)).toBe(false)
+    expect([...f.objects.keys()].filter((key) => key.startsWith('studio/play/'))).toHaveLength(0)
+    expect(
+      [...f.objects.keys()].filter((key) => key.startsWith('studio/publication-owners/')),
+    ).toEqual([`studio/publication-owners/kids/${firstPlayId}.json`])
+    expect(
+      [...f.objects.keys()].filter((key) => key.startsWith('studio/cover-candidates/')),
+    ).toHaveLength(1)
+  })
+
+test('same author and request in two publication contexts never share a cover object', async () => {
+  const identity = {
+    userId: crypto.randomUUID(),
+    accountId: crypto.randomUUID(),
+    requestId: crypto.randomUUID(),
+    publicObjects: new Set<string>(),
+  }
+  const cover = new Uint8Array(
+    await sharp({ create: { width: 8, height: 8, channels: 4, background: '#ff0000' } })
+      .png()
+      .toBuffer(),
+  )
+  const free = await fixture('classic', 'free', 'kids', 'python', identity)
+  expect((await free.publish(free.project, cover)).status).toBe(200)
+  const freeKey = free.publicCoverKeys[0]!
+  const lesson = await fixture('classic', 'lesson', 'kids', 'python', identity)
+  expect((await lesson.publish(lesson.project, cover)).status).toBe(200)
+  const lessonKey = lesson.publicCoverKeys[0]!
+  expect(lessonKey).not.toBe(freeKey)
+  expect(identity.publicObjects.has(freeKey)).toBe(true)
+  expect(identity.publicObjects.has(lessonKey)).toBe(true)
+  await storage.r2FenceObject(freeKey)
+  expect(identity.publicObjects.has(freeKey)).toBe(false)
+  expect(identity.publicObjects.has(lessonKey)).toBe(true)
 })
 
 test('free Python publication separates the edited draft from public update, restore and disable', async () => {

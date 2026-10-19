@@ -332,7 +332,13 @@ function Podium({ entries }: { entries: RankingEntryView[] }) {
             <span className="mt-1.5 font-medium text-muted-foreground text-sm tabular-nums md:text-[0.9375rem]">
               {entry.xp.toLocaleString('pt-BR')} XP
             </span>
-            <LevelBadge levelSlug={entry.levelSlug} size="sm" className="mt-2 max-w-full" />
+            {entry.levelSlug ? (
+              <LevelBadge levelSlug={entry.levelSlug} size="sm" className="mt-2 max-w-full" />
+            ) : (
+              <span role="status" className="mt-2 text-muted-foreground text-xs">
+                Posto indisponível
+              </span>
+            )}
             <div
               className={cn(
                 'mt-3.5 grid w-full place-items-center rounded-t-[1rem] md:rounded-t-[1.5rem]',
@@ -374,7 +380,13 @@ function RankingRow({ entry }: { entry: RankingEntryView }) {
       />
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2.5 gap-y-1">
         <ParticipantName entry={entry} className="truncate font-extrabold text-base" />
-        <LevelBadge levelSlug={entry.levelSlug} size="sm" />
+        {entry.levelSlug ? (
+          <LevelBadge levelSlug={entry.levelSlug} size="sm" />
+        ) : (
+          <span role="status" className="text-muted-foreground text-xs">
+            Posto indisponível
+          </span>
+        )}
       </div>
       <span className="shrink-0 font-extrabold text-muted-foreground text-[0.9375rem] tabular-nums">
         {entry.xp.toLocaleString('pt-BR')} XP

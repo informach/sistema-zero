@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
 import { sha256Hex } from '@sistemazero/core/security'
 import { saoPauloDayKey } from '@sistemazero/core/time'
 import { decodeJwt } from 'jose'
@@ -20,6 +21,7 @@ import { ChangeImpersonationModeService } from '../../src/application/impersonat
 import { CreateImpersonationTokenService } from '../../src/application/impersonation/create-impersonation-token.service'
 import { ExchangeImpersonationTokenService } from '../../src/application/impersonation/exchange-impersonation-token.service'
 import { ImpersonationSessionValidator } from '../../src/application/impersonation/impersonation-session-validator'
+import { ReadProfileCohortService } from '../../src/application/internal/read-profile-cohort.service'
 import { WriteAuditLogService } from '../../src/application/internal/write-audit-log/write-audit-log.service'
 import { LoginService } from '../../src/application/login/login.service'
 import { LogoutService } from '../../src/application/logout/logout.service'
@@ -36,6 +38,7 @@ import { CreateProfileService } from '../../src/application/profiles/create-prof
 import { ExitProfileSessionService } from '../../src/application/profiles/exit-profile-session.service'
 import { GetPublicProfileService } from '../../src/application/profiles/get-public-profile.service'
 import { ListProfilesService } from '../../src/application/profiles/list-profiles.service'
+import { ProfileAdmissionService } from '../../src/application/profiles/profile-admission.service'
 import { SelectProfileService } from '../../src/application/profiles/select-profile.service'
 import { UpdateProfileDetailsService } from '../../src/application/profiles/update-profile.service'
 import { RefreshService } from '../../src/application/refresh/refresh.service'
@@ -51,6 +54,7 @@ import { createServer } from '../../src/interfaces/http/server'
 import {
   FakeMessagingClient,
   FakeProfileAllowanceGateway,
+  FakeProfileJourneyGateway,
   fakeHasher,
   InMemoryAuditLogRepository,
   InMemoryImpersonationTokenRepository,
@@ -61,6 +65,7 @@ import {
   InMemoryUserRepository,
   silentLogger,
 } from '../fakes/in-memory'
+import { InMemoryProfileCohortRepository } from '../fakes/profile-cohort'
 import { testTokenIssuer } from '../helpers'
 
 const COMMUNITY_URL = 'http://localhost:3007'
@@ -68,7 +73,12 @@ const KIDS_COMMUNITY_URL = 'http://localhost:3008'
 const INTERNAL_TOKEN = 'internal-token-de-teste'
 
 function buildApp(
-  opts: { otpCooldownSeconds?: number; resetCooldownSeconds?: number; ready?: boolean } = {},
+  opts: {
+    otpCooldownSeconds?: number
+    resetCooldownSeconds?: number
+    ready?: boolean
+    journeyReady?: boolean
+  } = {},
 ) {
   // Cooldowns DESLIGADOS por default: os fluxos da suíte fazem pedidos em rajada
   // (ex.: dois forgot-password seguidos). Os testes de cooldown ligam via opts.
@@ -194,6 +204,8 @@ function buildApp(
     silentLogger,
   )
   const allowance = new FakeProfileAllowanceGateway()
+  const journeyGateway = new FakeProfileJourneyGateway()
+  journeyGateway.result = opts.journeyReady === false ? 'not_ready' : 'admitted'
   let profileSeq = 0
   const listProfiles = new ListProfilesService(profilesRepo)
   const createProfile = new CreateProfileService(
@@ -201,6 +213,7 @@ function buildApp(
     allowance,
     () => `00000000-0000-4000-8000-${String(++profileSeq).padStart(12, '0')}`,
     () => new Date(),
+    new ProfileAdmissionService(profilesRepo, journeyGateway, () => new Date(), silentLogger),
   )
   const updateProfileDetails = new UpdateProfileDetailsService(profilesRepo, () => new Date())
   const archiveProfile = new ArchiveProfileService(profilesRepo, () => new Date())
@@ -278,6 +291,9 @@ function buildApp(
     changeImpersonationMode,
     users,
     profilesRepo,
+    readProfileCohort: new ReadProfileCohortService(
+      new InMemoryProfileCohortRepository(profilesRepo),
+    ),
     profiles: {
       listProfiles,
       createProfile,
@@ -296,6 +312,7 @@ function buildApp(
     users,
     profilesRepo,
     allowance,
+    journeyGateway,
     refreshTokens,
     resetTokens,
     otpCodes,
@@ -1302,6 +1319,7 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       voiceInputEnabled: false,
       voiceInputEnabledAt: null,
       status: over.status ?? 'active',
+      admissionState: 'ready',
       sortOrder: 0,
       createdAt: now,
       updatedAt: now,
@@ -1447,6 +1465,7 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       voiceInputEnabled: false,
       voiceInputEnabledAt: null,
       status: 'active',
+      admissionState: 'ready',
       sortOrder: 0,
       createdAt: now,
       updatedAt: now,
@@ -1462,6 +1481,7 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       voiceInputEnabled: false,
       voiceInputEnabledAt: null,
       status: 'archived',
+      admissionState: 'ready',
       sortOrder: 1,
       createdAt: now,
       updatedAt: now,
@@ -2079,6 +2099,22 @@ describe('Auth — perfis (estilo Netflix)', () => {
   const ACCOUNT = '11111111-1111-4111-8111-111111111111'
   const OTHER = '22222222-2222-4222-8222-222222222222'
 
+  function buildProfilesApp(journeyReady = true) {
+    const built = buildApp({ journeyReady })
+    for (const id of [ACCOUNT, OTHER]) {
+      built.users.seed(
+        UserAggregate.register({
+          id,
+          email: Email.create(`${id}@example.test`),
+          passwordHash: 'unused-profile-fixture',
+          firstName: 'Responsavel',
+          lastName: 'Teste',
+        }),
+      )
+    }
+    return built
+  }
+
   // Headers que o gateway injeta para uma conta de responsável (customer ativo) +
   // o token interno que prova a origem.
   function gw(accountId = ACCOUNT, extra: Record<string, string> = {}) {
@@ -2104,6 +2140,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
   }
   interface Profile {
     id: string
+    admissionState: 'pending' | 'ready'
     name: string
     avatarUrl: string | null
     whatsapp: string | null
@@ -2112,10 +2149,77 @@ describe('Auth — perfis (estilo Netflix)', () => {
     sortOrder: number
   }
 
+  test('admission: criação exige requestId estável e ausência não grava perfil', async () => {
+    const { app, allowance, profilesRepo } = buildProfilesApp()
+    allowance.maxProfiles = 2
+    expect((await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))).status).toBe(
+      400,
+    )
+    expect(profilesRepo.byId.size).toBe(0)
+  })
+
+  test('admission: pending aparece só na grade parental e não autoriza seleção, público ou ownership', async () => {
+    const { app, allowance } = buildProfilesApp(false)
+    allowance.maxProfiles = 2
+    const response = await app.handle(
+      req('POST', '/auth/profiles', gw(), {
+        requestId: randomUUID(),
+        name: 'Sofia',
+        publicProfileEnabled: true,
+      }),
+    )
+    expect(response.status).toBe(201)
+    const { profile } = (await response.json()) as { profile: Profile }
+    expect(profile.admissionState).toBe('pending')
+    const grade = (await (await app.handle(req('GET', '/auth/profiles', gw()))).json()) as {
+      profiles: Profile[]
+    }
+    expect(grade.profiles.map((p) => p.id)).toEqual([profile.id])
+    const child = (await (
+      await app.handle(
+        req(
+          'GET',
+          '/auth/profiles',
+          gw(profile.id, {
+            'x-auth-account-id': ACCOUNT,
+          }),
+        ),
+      )
+    ).json()) as { profiles: Profile[] }
+    expect(child.profiles).toEqual([])
+    expect(
+      (await app.handle(req('POST', `/auth/profiles/${profile.id}/select`, gw()))).status,
+    ).toBe(404)
+    expect(
+      (
+        await app.handle(
+          req('GET', `/auth/internal/profiles/${profile.id}/public`, {
+            'x-internal-token': INTERNAL_TOKEN,
+          }),
+        )
+      ).status,
+    ).toBe(404)
+    const ownership = await (
+      await app.handle(
+        req(
+          'POST',
+          '/auth/internal/profiles/ownership',
+          {
+            'x-internal-token': INTERNAL_TOKEN,
+          },
+          { accountId: ACCOUNT, profileId: profile.id },
+        ),
+      )
+    ).json()
+    expect(ownership).toEqual({ valid: false })
+  })
+
   test('o teto vem do members: maxProfiles=0 → 409 (a conta não comprou)', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 0
-    const res = await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+    const res = await app.handle(
+      req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Sofia' }),
+    )
     expect(res.status).toBe(409)
     expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
       'PROFILE_LIMIT_REACHED',
@@ -2126,13 +2230,17 @@ describe('Auth — perfis (estilo Netflix)', () => {
   // Kids sem matrícula — bypassa o teto do members (e nem consulta o S2S).
   for (const role of ['superadmin', 'admin', 'staff'] as const) {
     test(`equipe (${role}): perfis ilimitados mesmo com allowance=0 (sem S2S)`, async () => {
-      const { app, allowance } = buildApp()
+      const { app, allowance } = buildProfilesApp()
       allowance.maxProfiles = 0 // a conta da equipe não tem matrícula kids
       const headers = gw(ACCOUNT, { 'x-auth-user-role': role })
       for (const name of ['Sofia', 'Théo', 'Bia']) {
-        expect((await app.handle(req('POST', '/auth/profiles', headers, { name }))).status).toBe(
-          201,
-        )
+        expect(
+          (
+            await app.handle(
+              req('POST', '/auth/profiles', headers, { requestId: randomUUID(), name }),
+            )
+          ).status,
+        ).toBe(201)
       }
       const list = (await (await app.handle(req('GET', '/auth/profiles', headers))).json()) as {
         profiles: Profile[]
@@ -2144,30 +2252,42 @@ describe('Auth — perfis (estilo Netflix)', () => {
   }
 
   test('o pai decide o perfil público já na CRIAÇÃO (opt-in no POST; ausente → OFF)', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 2
     // Com o opt-in ligado no próprio create (tutorial de 1º acesso, 08/2026).
     const on = (await (
       await app.handle(
-        req('POST', '/auth/profiles', gw(), { name: 'Sofia', publicProfileEnabled: true }),
+        req('POST', '/auth/profiles', gw(), {
+          requestId: randomUUID(),
+          name: 'Sofia',
+          publicProfileEnabled: true,
+        }),
       )
     ).json()) as { profile: Profile }
     expect(on.profile.publicProfileEnabled).toBe(true)
     // Ausente → nasce DESLIGADO (o default seguro do agregado, opt-in de verdade).
     const off = (await (
-      await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Théo' }))
+      await app.handle(
+        req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Théo' }),
+      )
     ).json()) as { profile: Profile }
     expect(off.profile.publicProfileEnabled).toBe(false)
   })
 
   test('cria até o teto e barra o excedente; a lista volta ordenada', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 2
-    const a = await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+    const a = await app.handle(
+      req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Sofia' }),
+    )
     expect(a.status).toBe(201)
-    const b = await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Théo' }))
+    const b = await app.handle(
+      req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Théo' }),
+    )
     expect(b.status).toBe(201)
-    const c = await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Extra' }))
+    const c = await app.handle(
+      req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Extra' }),
+    )
     expect(c.status).toBe(409)
 
     const list = (await (await app.handle(req('GET', '/auth/profiles', gw()))).json()) as {
@@ -2177,10 +2297,12 @@ describe('Auth — perfis (estilo Netflix)', () => {
   })
 
   test('editar e arquivar: arquivar libera um slot do teto', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 1
     const created = (await (
-      await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+      await app.handle(
+        req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Sofia' }),
+      )
     ).json()) as { profile: Profile }
     const id = created.profile.id
 
@@ -2194,25 +2316,35 @@ describe('Auth — perfis (estilo Netflix)', () => {
     expect(patched.profile.whatsapp).toBe('+55319')
 
     // No teto (1) — não cria outro.
-    expect((await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Outro' }))).status).toBe(
-      409,
-    )
+    expect(
+      (
+        await app.handle(
+          req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Outro' }),
+        )
+      ).status,
+    ).toBe(409)
     // Arquivar libera o slot.
     expect((await app.handle(req('DELETE', `/auth/profiles/${id}`, gw()))).status).toBe(200)
     const after = (await (await app.handle(req('GET', '/auth/profiles', gw()))).json()) as {
       profiles: Profile[]
     }
     expect(after.profiles).toHaveLength(0)
-    expect((await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Novo' }))).status).toBe(
-      201,
-    )
+    expect(
+      (
+        await app.handle(
+          req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Novo' }),
+        )
+      ).status,
+    ).toBe(201)
   })
 
   test('ownership: editar/arquivar perfil de OUTRA conta → 404 (não vaza)', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 1
     const created = (await (
-      await app.handle(req('POST', '/auth/profiles', gw(ACCOUNT), { name: 'Sofia' }))
+      await app.handle(
+        req('POST', '/auth/profiles', gw(ACCOUNT), { requestId: randomUUID(), name: 'Sofia' }),
+      )
     ).json()) as { profile: Profile }
     const id = created.profile.id
     expect(
@@ -2227,21 +2359,29 @@ describe('Auth — perfis (estilo Netflix)', () => {
   })
 
   test('foto inválida (não http(s)) → 400', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 2
     const res = await app.handle(
-      req('POST', '/auth/profiles', gw(), { name: 'Sofia', avatarUrl: 'javascript:alert(1)' }),
+      req('POST', '/auth/profiles', gw(), {
+        requestId: randomUUID(),
+        name: 'Sofia',
+        avatarUrl: 'javascript:alert(1)',
+      }),
     )
     expect(res.status).toBe(400)
   })
 
   test('data de nascimento: a CONTA grava/edita; a sessão de PERFIL é barrada (403)', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 1
     // A conta (responsável) cria o perfil JÁ com a data de nascimento.
     const created = (await (
       await app.handle(
-        req('POST', '/auth/profiles', gw(), { name: 'Sofia', birthDate: '2015-04-10' }),
+        req('POST', '/auth/profiles', gw(), {
+          requestId: randomUUID(),
+          name: 'Sofia',
+          birthDate: '2015-04-10',
+        }),
       )
     ).json()) as { profile: Profile }
     expect(created.profile.birthDate).toBe('2015-04-10')
@@ -2280,7 +2420,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
   })
 
   test('cadastro com 18 anos completos → 400 PROFILE_AGE_RESTRICTED', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 1
     // ⚠️ O dia de referência é o CIVIL DE SÃO PAULO, a mesma régua do agregado
     // (`assertBirthDate` → `saoPauloDayKey`). Montar "18 anos exatos" a partir da
@@ -2291,7 +2431,11 @@ describe('Auth — perfis (estilo Netflix)', () => {
     const exactlyEighteen = `${String((ano ?? 0) - 18).padStart(4, '0')}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
 
     const response = await app.handle(
-      req('POST', '/auth/profiles', gw(), { name: 'Pessoa adulta', birthDate: exactlyEighteen }),
+      req('POST', '/auth/profiles', gw(), {
+        requestId: randomUUID(),
+        name: 'Pessoa adulta',
+        birthDate: exactlyEighteen,
+      }),
     )
     expect(response.status).toBe(400)
     expect(await response.json()).toEqual({
@@ -2303,10 +2447,12 @@ describe('Auth — perfis (estilo Netflix)', () => {
   })
 
   test('perfil público: a CONTA liga/desliga; a sessão de PERFIL é barrada (403); rota interna devolve nome+flag', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 1
     const created = (await (
-      await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+      await app.handle(
+        req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Sofia' }),
+      )
     ).json()) as { profile: Profile }
     const id = created.profile.id
     expect(created.profile.publicProfileEnabled).toBe(false) // nasce privado (opt-in)
@@ -2349,7 +2495,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
   })
 
   test('guardas de origem: sem token interno → 401; sem identidade → 401', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 2
     // Sem x-internal-token (GET — sem schema de corpo, o guard de origem corre primeiro).
     const noToken = await app.handle(
@@ -2402,7 +2548,7 @@ describe('Auth — sessão de perfil (PR2)', () => {
       user: { id: string }
     }
     const accountId = reg.user.id
-    built.profilesRepo.seed(
+    built.profilesRepo.seedReady(
       ProfileAggregate.create({ id: PROFILE_ID, accountUserId: accountId, name: 'Sofia' }),
     )
     return { ...built, accountId }
@@ -2429,13 +2575,17 @@ describe('Auth — sessão de perfil (PR2)', () => {
         .status,
     ).toBe(200)
     // Criar e arquivar seguem só na área dos pais (sessão da conta).
-    expect((await app.handle(req('POST', '/auth/profiles', ph, { name: 'Outro' }))).status).toBe(
-      403,
-    )
+    expect(
+      (
+        await app.handle(
+          req('POST', '/auth/profiles', ph, { requestId: randomUUID(), name: 'Outro' }),
+        )
+      ).status,
+    ).toBe(403)
     expect((await app.handle(req('DELETE', `/auth/profiles/${PROFILE_ID}`, ph))).status).toBe(403)
     // Editar o perfil de um IRMÃO (outro id) a partir da sessão de perfil → 403.
     const SIBLING = '55555555-5555-4555-8555-555555555555'
-    profilesRepo.seed(
+    profilesRepo.seedReady(
       ProfileAggregate.create({ id: SIBLING, accountUserId: accountId, name: 'Irmão' }),
     )
     expect(
@@ -2521,9 +2671,7 @@ describe('Auth — sessão de perfil (PR2)', () => {
     expect(decodeJwt(r1.tokens.accessToken).pfl).toMatchObject({ accountId })
 
     // A regra vale também para as famílias antigas, sem contexto Kids.
-    const profile = await profilesRepo.findById(PROFILE_ID)
-    profile?.archive()
-    if (profile) await profilesRepo.update(profile)
+    await profilesRepo.archiveOwned({ profileId: PROFILE_ID, accountUserId: accountId }, new Date())
     const r2 = await app.handle(post('/auth/refresh', { refreshToken: r1.tokens.refreshToken }))
     expect(r2.status).toBe(401)
     expect(await r2.json()).not.toHaveProperty('tokens')
@@ -2750,7 +2898,7 @@ describe('Kids: sessão adulta curta, login recente nos dados sensíveis e fluxo
       user: { id: string }
     }
     const accountId = reg.user.id
-    built.profilesRepo.seed(
+    built.profilesRepo.seedReady(
       ProfileAggregate.create({
         id: PROFILE_ID,
         accountUserId: accountId,
@@ -2928,7 +3076,7 @@ describe('Kids: fala da criança (voz → texto), consentimento dos pais por cri
       user: { id: string }
     }
     const accountId = reg.user.id
-    built.profilesRepo.seed(
+    built.profilesRepo.seedReady(
       ProfileAggregate.create({ id: PROFILE_ID, accountUserId: accountId, name: 'Sofia' }),
     )
     const patchProfile = (headers: Record<string, string>, body: unknown) =>
@@ -3073,8 +3221,8 @@ describe('Kids: fala da criança (voz → texto), consentimento dos pais por cri
 
   test('criar já com a fala ligada pede login recente e nunca vem do suporte', async () => {
     const { app, accountId, profilesRepo } = await setup()
-    const create = (headers: Record<string, string>, body: unknown) =>
-      app.handle(req('POST', '/auth/profiles', headers, body))
+    const create = (headers: Record<string, string>, body: Record<string, unknown>) =>
+      app.handle(req('POST', '/auth/profiles', headers, { requestId: randomUUID(), ...body }))
     const before = profilesRepo.byId.size
 
     const stale = await create(gwParent(accountId, nowSeconds() - 16 * 60), {

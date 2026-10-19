@@ -1,4 +1,6 @@
 import { Elysia, t } from 'elysia'
+import type { DeliverStudioCleanupsService } from '../../../application/showcase/deliver-studio-cleanups.service'
+import type { DeliverStudioReservationCleanupsService } from '../../../application/showcase/deliver-studio-reservation-cleanups.service'
 import type { GetShowcaseDeliveryService } from '../../../application/showcase/get-showcase-delivery.service'
 import type { ShowcaseService } from '../../../application/showcase/showcase.service'
 import { assertInternalCaller, resolveActor } from '../auth'
@@ -7,10 +9,14 @@ import {
   PlayResolveQuery,
   ShowcaseThreadBody,
   ShowcaseThreadStudioBody,
+  ShowcaseThreadStudioPrepareBody,
   ShowcaseThreadStudioStandaloneBody,
+  ShowcaseThreadStudioStandalonePrepareBody,
 } from '../dtos'
 
 export interface ShowcaseRoutesDeps {
+  cleanups: DeliverStudioCleanupsService
+  reservationCleanups: DeliverStudioReservationCleanupsService
   delivery: GetShowcaseDeliveryService
   showcase: ShowcaseService
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → desligado. */
@@ -44,11 +50,34 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
       { body: ShowcaseThreadBody },
     )
     .post(
+      '/hub/internal/showcase-thread-studio/prepare',
+      async ({ headers, body }) =>
+        deps.showcase.prepareFromStudio(resolveActor(headers), {
+          ...body,
+          playId: '',
+          coverImageUrl: null,
+        }),
+      { body: ShowcaseThreadStudioPrepareBody },
+    )
+    .post(
+      '/hub/internal/showcase-thread-studio-standalone/prepare',
+      async ({ headers, body }) =>
+        deps.showcase.prepareStandaloneShowcase(resolveActor(headers), {
+          ...body,
+          playId: body.liveWorkspace?.playId ?? '',
+          coverImageUrl: null,
+        }),
+      { body: ShowcaseThreadStudioStandalonePrepareBody },
+    )
+    .post(
       '/hub/internal/showcase-thread-studio',
       async ({ headers, body }) => {
         // Kid-driven (botão Compartilhar do Estúdio): descrição da criança + link
         // público de jogar. Mesmas guardas; título/elegibilidade do members.
         const { thread, deduped } = await deps.showcase.createFromStudio(resolveActor(headers), {
+          reservationId: body.reservationId,
+          snapshotHash: body.snapshotHash,
+          publisher: body.publisher,
           spaceSlug: body.spaceSlug,
           lessonId: body.lessonId,
           blockId: body.blockId,
@@ -70,6 +99,9 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
         const { thread, deduped } = await deps.showcase.createStandaloneShowcase(
           resolveActor(headers),
           {
+            reservationId: body.reservationId,
+            snapshotHash: body.snapshotHash,
+            publisher: body.publisher,
             spaceSlug: body.spaceSlug,
             title: body.title,
             description: body.description,
@@ -103,6 +135,34 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
         }
       },
       { params: PlayIdParams, query: PlayResolveQuery },
+    )
+    .get(
+      '/hub/internal/studio-cover/:playId',
+      ({ params, query }) => deps.showcase.showcaseCoverReference(params.playId, query.audience),
+      {
+        params: PlayIdParams,
+        query: t.Object({ audience: t.Union([t.Literal('kids'), t.Literal('adult')]) }),
+      },
+    )
+    .post(
+      '/hub/internal/studio-artifact-cleanups/drain',
+      async ({ body }) => deps.cleanups.drain(body.audience),
+      {
+        body: t.Object(
+          { audience: t.Union([t.Literal('kids'), t.Literal('adult')]) },
+          { additionalProperties: false },
+        ),
+      },
+    )
+    .post(
+      '/hub/internal/studio-reservation-cleanups/drain',
+      async ({ body }) => deps.reservationCleanups.drain(body.audience),
+      {
+        body: t.Object(
+          { audience: t.Union([t.Literal('kids'), t.Literal('adult')]) },
+          { additionalProperties: false },
+        ),
+      },
     )
     .get('/hub/my-showcase-stats', async ({ headers }) => {
       // Rota de ALUNO (JWT no gateway; aqui o token interno + ator dos headers):

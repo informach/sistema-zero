@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useState } from 'react'
+import { lazy, type ReactNode, Suspense, useRef, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import {
   PythonBlocklyEditor,
@@ -27,9 +27,13 @@ const SourceEditor = lazy(() =>
   })),
 )
 
-export interface PythonClassicWorkspaceProps
-  extends Pick<PythonBlocklyEditorProps, 'codecs' | 'palette' | 'officialModules'> {
+export interface PythonClassicWorkspaceProps {
   mode: 'blocks' | 'bridge'
+  /** Present only for the current qualified environment. Never retain an old grant here. */
+  blockly?: Pick<PythonBlocklyEditorProps, 'codecs' | 'palette' | 'officialModules'>
+  unavailable?: ReactNode
+  /** Preserve file recovery in blocks mode without mounting a hidden source editor normally. */
+  sourceFallback?: boolean
 }
 
 /** Shared composition; the host supplies its qualified catalog and pedagogical selection. */
@@ -38,7 +42,12 @@ export function PythonClassicWorkspace(props: PythonClassicWorkspaceProps) {
   return <PythonClassicProjectWorkspace key={projectId} {...props} />
 }
 
-function PythonClassicProjectWorkspace({ mode, ...blocks }: PythonClassicWorkspaceProps) {
+function PythonClassicProjectWorkspace({
+  mode,
+  blockly,
+  unavailable,
+  sourceFallback = false,
+}: PythonClassicWorkspaceProps) {
   const project = useProjectStore((state) => state.project)
   const store = useProjectStoreApi()
   const pending = usePendingEditorEdits()
@@ -61,7 +70,7 @@ function PythonClassicProjectWorkspace({ mode, ...blocks }: PythonClassicWorkspa
   const path =
     selected &&
     project.files[selected] !== undefined &&
-    (mode === 'bridge' || selected.endsWith('.py'))
+    (mode === 'bridge' || (!blockly && sourceFallback) || selected.endsWith('.py'))
       ? selected
       : project.python.entrypoint
   const changeFile = (file: string) => {
@@ -121,18 +130,6 @@ function PythonClassicProjectWorkspace({ mode, ...blocks }: PythonClassicWorkspa
       nonce: ++nonce.current,
     })
   }
-  const visual = path.endsWith('.py') ? (
-    <PythonBlocklyEditor
-      {...blocks}
-      path={path}
-      onSelectRange={selectRange}
-      sourceCursor={cursor?.path === path ? cursor : undefined}
-    />
-  ) : (
-    <p className="p-4 text-sm text-sz-fg-soft">
-      Este arquivo é editado no modo fonte. Selecione um arquivo .py para ver seus blocos.
-    </p>
-  )
   const source = (
     <Suspense fallback={<EditorSkeleton message="Carregando o código Python…" />}>
       <SourceEditor
@@ -146,6 +143,23 @@ function PythonClassicProjectWorkspace({ mode, ...blocks }: PythonClassicWorkspa
         onCursorChange={selectSource}
       />
     </Suspense>
+  )
+  const visual = !blockly ? (
+    <div className="flex h-full min-h-0 flex-col">
+      {unavailable}
+      {mode === 'blocks' && sourceFallback && <div className="min-h-0 flex-1">{source}</div>}
+    </div>
+  ) : path.endsWith('.py') ? (
+    <PythonBlocklyEditor
+      {...blockly}
+      path={path}
+      onSelectRange={selectRange}
+      sourceCursor={cursor?.path === path ? cursor : undefined}
+    />
+  ) : (
+    <p className="p-4 text-sm text-sz-fg-soft">
+      Este arquivo é editado no modo fonte. Selecione um arquivo .py para ver seus blocos.
+    </p>
   )
   const preview = <PythonEditorPreview />
   return (

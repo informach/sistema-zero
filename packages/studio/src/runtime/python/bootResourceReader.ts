@@ -74,17 +74,28 @@ export function createPythonBootResourceReader(options: { port: MessagePort; dir
       invalid()
       return
     }
-    const response = new Response(message.bytes, {
-      status: 200,
-      headers: {
-        'Content-Type': PYTHON_BOOT_RESOURCE_MIME[entry.name],
-        'Content-Length': String(message.bytes.byteLength),
+    // Enqueue transfers ownership; preserve the length before the buffer is detached.
+    const byteLength = message.bytes.byteLength
+    const response = new Response(
+      new ReadableStream<Uint8Array>({
+        type: 'bytes',
+        start(controller) {
+          controller.enqueue(new Uint8Array(message.bytes))
+          controller.close()
+        },
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': PYTHON_BOOT_RESOURCE_MIME[entry.name],
+          'Content-Length': String(byteLength),
+        },
       },
-    })
+    )
     pending.delete(message.id)
     clearTimeout(entry.timer)
     received++
-    receivedBytes += message.bytes.byteLength
+    receivedBytes += byteLength
     port.postMessage({ protocol: 1, type: 'ack', id: message.id } satisfies PythonBootRequest)
     entry.resolve(response)
   }

@@ -9,6 +9,7 @@ import type {
 import {
   isLegacyLessonLayout,
   legacyLessonSections,
+  lessonStudioProjectExampleIssues,
   mergeVideoWatchAnswers,
   validateLessonSections,
 } from '@sistemazero/core/learning'
@@ -21,6 +22,7 @@ import type {
   LearningRepository,
   SaveLearningProgress,
 } from '../../../domain/ports/learning-repository.port'
+import type { StudioAuthoringPolicy } from '../../../domain/studio/authoring-policy'
 import type { Database } from './db'
 import { lockLearningOwner } from './learning-owner-lock'
 import { lockLessonStructure } from './lesson-structure'
@@ -35,6 +37,7 @@ import {
   lessonStructures,
   lessons,
 } from './schema'
+import { assertPublishedStudioExamples } from './studio-examples-publication-gate'
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 const owned = (owner: LearningOwner) =>
@@ -67,7 +70,10 @@ function attemptView(row: typeof learningAttempts.$inferSelect): LearningAttempt
 }
 
 export class DrizzleLearningRepository implements LearningRepository {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly db: Database,
+    private readonly studioPolicy?: StudioAuthoringPolicy,
+  ) {}
 
   async listEvidence(owner: LearningOwner, lessonId: string, beforeId?: string) {
     const scope = and(
@@ -275,6 +281,10 @@ export class DrizzleLearningRepository implements LearningRepository {
       const blocks = await tx.select().from(lessonBlocks).where(eq(lessonBlocks.lessonId, lessonId))
       const invalid = validateLessonSections(sections, blocks)
       if (invalid) throw new ValidationError(invalid)
+      // This legacy structural endpoint does not carry an authoring preview/undo document.
+      // Refuse destructive retargeting instead of silently dropping private associations.
+      const [exampleIssue] = lessonStudioProjectExampleIssues(sections, blocks)
+      if (exampleIssue) throw new ValidationError(exampleIssue.message)
       if (lesson.isPublished && sections.some((s) => s.pendingMedia.length))
         throw new ValidationError('Despublique a aula antes de marcar mídias pendentes.')
       const revision = randomUUID()
@@ -284,6 +294,7 @@ export class DrizzleLearningRepository implements LearningRepository {
           .values({ lessonId, revision, sections })
           .onConflictDoNothing()
           .returning()
+        if (saved) await assertPublishedStudioExamples(tx, lessonId, this.studioPolicy)
         return saved ? { revision, sections } : null
       }
       const [saved] = await tx
@@ -296,6 +307,7 @@ export class DrizzleLearningRepository implements LearningRepository {
           ),
         )
         .returning()
+      if (saved) await assertPublishedStudioExamples(tx, lessonId, this.studioPolicy)
       return saved ? { revision, sections } : null
     })
   }

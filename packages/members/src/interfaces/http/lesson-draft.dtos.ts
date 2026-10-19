@@ -57,6 +57,17 @@ export const DraftCommandSchema = t.Object({
   operationId: Id,
   change: t.Union([
     t.Object({
+      type: t.Literal('studio-example'),
+      blockId: Id,
+      sectionId: Id,
+      role: t.Union([t.Literal('entry'), t.Literal('solution')]),
+      action: t.Union([
+        t.Object({ type: t.Literal('save'), exampleId: Id, project: t.Unknown() }),
+        t.Object({ type: t.Literal('reuse'), exampleId: Id }),
+        t.Object({ type: t.Literal('clear') }),
+      ]),
+    }),
+    t.Object({
       type: t.Literal('block'),
       block: t.Object({
         id: Id,

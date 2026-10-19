@@ -1,5 +1,10 @@
 import { expect, test } from 'bun:test'
+import {
+  NATIVE_PYTHON_BOOT_TIMEOUT_MS,
+  runNativePythonBootCases,
+} from '../../__tests__/nativePythonBootCases'
 import { createPythonBootResourceBroker } from './bootResourceBroker'
+import { PYTHON_BOOT_RESOURCE_MIME } from './bootResourceContract'
 import { PYTHON_BOOT_RESOURCE_NAMES, pythonBootResourceManifestKey } from './bootResourceManifest'
 import { createPythonBootResourceReader } from './bootResourceReader'
 import { pythonWebBytesSha256 } from './webFiles'
@@ -66,8 +71,13 @@ test('native ports transfer exactly three verified public resources and complete
     const responses = await Promise.all(
       PYTHON_BOOT_RESOURCE_NAMES.map((name) => reader.fetch(`https://runtime.test/pinned/${name}`)),
     )
-    for (const response of responses)
+    for (const [index, response] of responses.entries()) {
+      expect(response.headers.get('content-length')).toBe(String(bytes.byteLength))
+      expect(response.headers.get('content-type')).toBe(
+        PYTHON_BOOT_RESOURCE_MIME[PYTHON_BOOT_RESOURCE_NAMES[index]!],
+      )
       expect(new Uint8Array(await response.arrayBuffer())).toEqual(bytes)
+    }
     await complete.promise
     expect(seen).toEqual([...PYTHON_BOOT_RESOURCE_NAMES])
     expect(broker.closed).toBe(true)
@@ -77,6 +87,14 @@ test('native ports transfer exactly three verified public resources and complete
     broker.dispose()
   }
 })
+
+test(
+  'native Node24 reader buffer ownership',
+  async () => {
+    await runNativePythonBootCases('reader-ownership')
+  },
+  NATIVE_PYTHON_BOOT_TIMEOUT_MS,
+)
 
 for (const invalid of [
   { protocol: 1, type: 'read', id: 1, name: '../private' },

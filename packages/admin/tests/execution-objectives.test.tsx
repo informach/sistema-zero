@@ -18,6 +18,11 @@ import {
   runExecutionTest,
   testSectionObjectives,
 } from '../src/lib/objectives-test'
+import {
+  objectiveProject,
+  objectiveSectionId,
+  objectiveWorkspace,
+} from './fixtures/section-objective-examples'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -69,21 +74,27 @@ describe('a autoria dos objetivos que rodam o jogo', () => {
   })
 
   test('o "Testar agora" junta a estrutura (na hora) e a execução (do executor)', () => {
-    const workspace = { initialProject: {}, solutionProject: {} }
-    const antes = testSectionObjectives([laco, anda], workspace)
+    const workspace = objectiveWorkspace(objectiveProject(), objectiveProject())
+    const antes = testSectionObjectives([laco, anda], workspace, {}, objectiveSectionId)
     expect(antes.rows[1]).toMatchObject({ initial: 'pending', solution: 'pending' })
-    const depois = testSectionObjectives([laco, anda], workspace, {
-      initial: { results: [{ id: 'anda', passed: false }] },
-      solution: {
-        results: [{ id: 'anda', passed: false, detail: 'o herói não andou' }],
-        screenshots: { anda: 'anBn' },
+    const depois = testSectionObjectives(
+      [laco, anda],
+      workspace,
+      {
+        initial: { results: [{ id: 'anda', passed: false }] },
+        solution: {
+          results: [{ id: 'anda', passed: false, detail: 'o herói não andou' }],
+          screenshots: { anda: 'anBn' },
+        },
       },
-    })
+      objectiveSectionId,
+    )
     expect(depois.rows[1]).toEqual({
       id: 'anda',
       label: 'O herói anda',
       optional: false,
       initial: false,
+      checkpoint: null,
       solution: false,
       solutionDetail: 'o herói não andou',
       screenshot: 'anBn',
@@ -91,7 +102,12 @@ describe('a autoria dos objetivos que rodam o jogo', () => {
     expect(depois.problems).toContain(
       'O gabarito não cumpre "O herói anda". Ajuste o gabarito ou o objetivo antes de publicar.',
     )
-    const falhou = testSectionObjectives([anda], workspace, { initial: 'error', solution: 'error' })
+    const falhou = testSectionObjectives(
+      [anda],
+      workspace,
+      { initial: 'error', solution: 'error' },
+      objectiveSectionId,
+    )
     expect(falhou.notes[0]).toContain('Não consegui rodar o jogo agora')
     // Sem gabarito, quem roda o jogo não publica: vira problema, não aviso.
     expect(testSectionObjectives([anda], { initialProject: {} }).problems[0]).toContain(
@@ -138,8 +154,9 @@ describe('a autoria dos objetivos que rodam o jogo', () => {
     expect(sent[1]).not.toHaveProperty('initialProject')
     const report = testSectionObjectives(
       [anda],
-      { initialProject: {}, solutionProject: {} },
+      objectiveWorkspace(objectiveProject(), objectiveProject()),
       { initial: { results: [] }, solution: { rejected: 'Escolha o modelo Pro do bloco.' } },
+      objectiveSectionId,
     )
     expect(report.problems).toContain('No gabarito: Escolha o modelo Pro do bloco.')
     expect(report.notes.join(' ')).not.toContain('Não consegui rodar o jogo agora')
@@ -165,10 +182,10 @@ test('a professora monta "o jogo faz algo" no editor e testa contra o gabarito',
       screenshots: { c1: 'anBn' },
     })
   }) as unknown as typeof fetch
-  const workspace = {
-    initialProject: { name: 'initial', files: {} },
-    solutionProject: { name: 'solution', files: {} },
-  }
+  const workspace = objectiveWorkspace(
+    objectiveProject({ name: 'initial' }),
+    objectiveProject({ name: 'solution' }),
+  )
   const render = () =>
     root.render(
       <SectionCompletionEditor
@@ -176,6 +193,7 @@ test('a professora monta "o jogo faz algo" no editor e testa contra o gabarito',
         candidates={[]}
         hasStudio
         workspace={workspace}
+        sectionId={objectiveSectionId}
         onChange={(next) => {
           value = next
           render()

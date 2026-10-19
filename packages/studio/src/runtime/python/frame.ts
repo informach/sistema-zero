@@ -57,6 +57,9 @@ async function initialize(event: MessageEvent<unknown>) {
   let supervisor: ReturnType<typeof createPythonWorkerSupervisor> | undefined
   let bootstrap: ReturnType<typeof createProtectedPythonWorker> | undefined
   let renderer: TurtleRenderer | undefined
+  let rendererReady = false
+  let workerReady = false
+  let prepared = false
   let activity: StudioPythonActivity | undefined
   let activityControlsApplied = false
   const playerBridge = new AbortController()
@@ -90,7 +93,7 @@ async function initialize(event: MessageEvent<unknown>) {
     supervisor?.stop()
     if (!supervisor) bootstrap?.worker.terminate()
     bootstrap?.release()
-    renderer?.dispose()
+    disposeRenderer()
     port.close()
     resources.close()
     removeEventListener('pagehide', close)
@@ -98,6 +101,31 @@ async function initialize(event: MessageEvent<unknown>) {
   function fail(message: string) {
     send({ type: 'event', event: { type: 'failed', code: 'runtime-unavailable', message } })
     close()
+  }
+  function disposeRenderer() {
+    const current = renderer
+    renderer = undefined
+    current?.dispose()
+  }
+  function announcePrepared() {
+    if (closed || prepared || !workerReady || !rendererReady) return
+    if (renderer) {
+      try {
+        installPythonPlayerBridge({
+          parent,
+          origin: event.origin,
+          signal: playerBridge.signal,
+          canvas: () => document.body.querySelector('canvas'),
+          capture: async () => (await renderer?.capture()) ?? null,
+        })
+      } catch {
+        fail('Não foi possível preparar os controles do ambiente gráfico Python.')
+        return
+      }
+    }
+    prepared = true
+    send({ type: 'event', event: { type: 'state', state: 'ready' } })
+    send({ type: 'prepared' })
   }
   port.onmessageerror = () => fail('Não foi possível ler o comando do estúdio.')
   port.onmessage = async (event: MessageEvent<unknown>) => {
@@ -126,7 +154,14 @@ async function initialize(event: MessageEvent<unknown>) {
     }
     commandSequence = command.commandId
     try {
+      if ('type' in command && command.type === 'stop') {
+        supervisor?.stop()
+        send({ type: 'ack', commandId: command.commandId, ok: true })
+        close()
+        return
+      }
       if (!supervisor || !('type' in command)) throw new Error('O ambiente ainda não está pronto.')
+      if (!prepared) throw new Error('O ambiente ainda não está pronto.')
       if (command.type === 'capture') {
         send({
           type: 'ack',
@@ -136,8 +171,7 @@ async function initialize(event: MessageEvent<unknown>) {
         })
         return
       }
-      if (command.type === 'stop') supervisor.stop()
-      else if (command.type === 'run') supervisor.run()
+      if (command.type === 'run') supervisor.run()
       else if (command.type === 'activity-controls') {
         if (!activity || activityControlsApplied)
           throw new Error('Os controles da tarefa não estão disponíveis nesta execução.')
@@ -191,7 +225,6 @@ async function initialize(event: MessageEvent<unknown>) {
         else throw new Error('Entrada inválida.')
       } else throw new Error('Comando de execução inválido.')
       send({ type: 'ack', commandId: command.commandId, ok: true })
-      if (command.type === 'stop') close()
     } catch (error) {
       send({
         type: 'ack',
@@ -216,29 +249,33 @@ async function initialize(event: MessageEvent<unknown>) {
       snapshot.configuration.runtime.manifestSha256 !== identity.runtimeManifestSha256
     )
       throw new Error('O snapshot pertence a outra execução.')
-    if (hasTurtleExtension(snapshot.configuration.extensions)) {
-      const module: typeof import('./turtle/renderer') = await import(
+    const turtle = hasTurtleExtension(snapshot.configuration.extensions)
+    rendererReady = !turtle
+    if (turtle) {
+      void import(
         /* @vite-ignore */
         new URL('./turtle-renderer.mjs', import.meta.url).href
       )
-      if (closed) return
-      document.documentElement.style.height = '100%'
-      document.body.style.cssText =
-        'margin:0;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden'
-      renderer = module.createTurtleRenderer(document.body, { activityPresentation: !!activity })
-      installPythonPlayerBridge({
-        parent,
-        origin: event.origin,
-        signal: playerBridge.signal,
-        canvas: () => document.body.querySelector('canvas'),
-        capture: async () => (await renderer?.capture()) ?? null,
-      })
+        .then((module: typeof import('./turtle/renderer')) => {
+          if (closed) return
+          document.documentElement.style.height = '100%'
+          document.body.style.cssText =
+            'margin:0;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden'
+          renderer = module.createTurtleRenderer(document.body, {
+            activityPresentation: !!activity,
+          })
+          rendererReady = true
+          announcePrepared()
+        })
+        .catch((error: unknown) =>
+          fail(
+            error instanceof Error
+              ? error.message.slice(0, 4000)
+              : 'Não foi possível preparar o ambiente gráfico Python.',
+          ),
+        )
     }
-    bootstrap = createProtectedPythonWorker(
-      'execution',
-      resources,
-      hasTurtleExtension(snapshot.configuration.extensions),
-    )
+    bootstrap = createProtectedPythonWorker('execution', resources, turtle)
     supervisor = createPythonWorkerSupervisor({
       worker: bootstrap.worker,
       snapshot,
@@ -251,21 +288,32 @@ async function initialize(event: MessageEvent<unknown>) {
           }
         : {}),
       emit(event) {
+        // The supervisor may finish first. Keep its initial ready behind the
+        // same barrier as the renderer; the host requires ready before prepared.
+        if (!prepared && event.type === 'state' && event.state === 'ready') return
         send({ type: 'event', event })
         if (event.type === 'failed') close()
       },
       onReady() {
         bootstrap?.release()
-        send({ type: 'prepared' })
+        workerReady = true
+        announcePrepared()
       },
       onRelease() {
         bootstrap?.release()
-        renderer?.dispose()
+        playerBridge.abort()
+        disposeRenderer()
       },
-      ...(renderer
+      ...(turtle
         ? {
-            graphics: (request: string, images: { id: number; bytes: Uint8Array<ArrayBuffer> }[]) =>
-              renderer!.exchange(request, images),
+            graphics: (
+              request: string,
+              images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
+            ) => {
+              if (!prepared || !renderer || closed)
+                throw new Error('O ambiente gráfico ainda não está pronto.')
+              return renderer.exchange(request, images)
+            },
           }
         : {}),
     })

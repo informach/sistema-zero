@@ -102,6 +102,7 @@ export function useKidsStudioRemix({
           snapshot = await authorizePythonRemix({
             snapshot,
             viewerId,
+            audience: 'kids',
             options,
             signal,
             request: (input) =>

@@ -1,6 +1,10 @@
 /** Validação compartilhada de projetos. Sem React, Blockly, disco ou efeitos de gravação. */
 
-import { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio/project-format'
+import {
+  STUDIO_PARTS_FORMAT,
+  STUDIO_PARTS_VERSION,
+  STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
+} from '@sistemazero/core/studio/project-format'
 import { ulid } from 'ulid'
 import {
   createEmptyProject,
@@ -34,6 +38,7 @@ import {
   hasValidBehaviorAreasStateVersion,
 } from '../blockly/blocksStateVersion'
 import { WEB_BLOCK_TYPES_BY_CATEGORY } from '../codecs/web/registry'
+import type { EditableStudioProject } from '../core/editableProject'
 import {
   assertProjectContentPreserved,
   CURRENT_PROJECT_FORMAT_VERSION,
@@ -1735,7 +1740,7 @@ export async function sanitizeCloudProjectSnapshot(
 }
 
 /** Confere o programa efetivamente enviado antes de promover a revisão na nuvem. */
-export function validateStudioCreationSnapshot(raw: unknown, expectedId: string): Project {
+function studioCreationProgram(raw: unknown): unknown {
   let document = raw
   if (isDocumentRecord(raw) && 'format' in raw) {
     if (
@@ -1752,7 +1757,14 @@ export function validateStudioCreationSnapshot(raw: unknown, expectedId: string)
       throw new ProjectDocumentError('invalid-document', 'O manifesto de recursos é inválido.')
     document = raw.program
   }
-  const project = sanitizeProjectForHost(document)
+  return document
+}
+
+function assertStudioCreationIdentity(
+  document: unknown,
+  project: EditableStudioProject | null,
+  expectedId: string,
+): asserts project is EditableStudioProject {
   if (
     !project ||
     !isDocumentRecord(document) ||
@@ -1763,5 +1775,33 @@ export function validateStudioCreationSnapshot(raw: unknown, expectedId: string)
       'invalid-document',
       'O conteúdo enviado não pertence a esta criação.',
     )
+}
+
+/** Mantém a leitura síncrona dos projetos JavaScript legados. */
+export function validateStudioCreationSnapshot(raw: unknown, expectedId: string): Project {
+  const document = studioCreationProgram(raw)
+  const project = sanitizeProjectForHost(document)
+  assertStudioCreationIdentity(document, project, expectedId)
+  return project
+}
+
+/** Confere JS legado ou v3 com o mesmo leitor estrito usado para abrir no editor. */
+export async function validateEditableStudioCreationSnapshot(
+  raw: unknown,
+  expectedId: string,
+): Promise<EditableStudioProject> {
+  const document = studioCreationProgram(raw)
+  if (projectFormatVersion(document) !== STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION)
+    return validateStudioCreationSnapshot(raw, expectedId)
+
+  let project: EditableStudioProject | null
+  try {
+    const { prepareEditableStudioProject } = await import('./editableProjectValidation')
+    project = await prepareEditableStudioProject(document)
+  } catch (error) {
+    if (error instanceof ProjectDocumentError) throw error
+    throw new ProjectDocumentError('invalid-document', 'O projeto enviado é inválido.')
+  }
+  assertStudioCreationIdentity(document, project, expectedId)
   return project
 }

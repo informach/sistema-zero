@@ -16,9 +16,11 @@ export async function requireLocalAdminSession(
    * `staff` também passa: a professora de uma turma pode ser da equipe sem ser admin (a gravação
    * do encontro é publicada por ela). A autorização fina continua no members.
    */
-  { allowStaff = false }: { allowStaff?: boolean } = {},
+  { allowStaff = false, signal }: { allowStaff?: boolean; signal?: AbortSignal } = {},
 ): Promise<SessionUser | NextResponse> {
+  signal?.throwIfAborted()
   const requestHeaders = await headers()
+  signal?.throwIfAborted()
   if (
     !isSameOriginRequest({
       secFetchSite: requestHeaders.get('sec-fetch-site'),
@@ -36,10 +38,12 @@ export async function requireLocalAdminSession(
   const refresh = await getRefreshToken()
   let verdict: AccessVerdict =
     access && refresh ? await verifyAccessToken(access) : { ok: false, expired: false }
+  signal?.throwIfAborted()
   if (!verdict.ok && verdict.expired) {
-    const renewed = await tryRefresh()
+    const renewed = await tryRefresh(signal)
     if (renewed) verdict = await verifyAccessToken(renewed)
   }
+  signal?.throwIfAborted()
   if (!verdict.ok) {
     return NextResponse.json(
       { error: { code: 'UNAUTHORIZED', message: 'Sessão expirada. Faça login novamente.' } },

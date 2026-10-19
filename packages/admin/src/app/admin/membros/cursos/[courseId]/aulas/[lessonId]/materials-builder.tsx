@@ -8,20 +8,13 @@ import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react'
 import { FileUploader, type UploadedFile } from '@/components/media/file-uploader'
 import { ImageUploader } from '@/components/media/image-uploader'
+import type { MaterialsValue } from '@/lib/lesson-block-form'
 import {
   type AttachmentView,
   MATERIALS_MAX_ITEMS,
   type MaterialItem,
   type MaterialItemKind,
-  type MaterialsBlock,
 } from '@/lib/types'
-
-export interface MaterialsValue {
-  title: string
-  items: MaterialItem[]
-}
-
-export const EMPTY_MATERIALS: MaterialsValue = { title: '', items: [] }
 
 const ITEM_LABELS: Record<MaterialItemKind, string> = {
   file: 'Arquivo para baixar',
@@ -29,29 +22,6 @@ const ITEM_LABELS: Record<MaterialItemKind, string> = {
   text: 'Recado',
   link: 'Link',
   video: 'Vídeo',
-}
-
-/**
- * Primeiro erro da lista de materiais, ou `null`. Espelha o que o members exige — é aqui que a
- * autora descobre o problema, e não na hora de publicar.
- */
-export function validateMaterials(v: MaterialsValue): string | null {
-  if (v.items.length === 0) return 'Adicione ao menos um material.'
-  if (v.items.length > MATERIALS_MAX_ITEMS)
-    return `Os materiais aceitam até ${MATERIALS_MAX_ITEMS} itens.`
-  for (const item of v.items) {
-    if (item.kind === 'file' && !item.attachmentId) return 'Envie o arquivo de cada item.'
-    if (item.kind === 'image' && !item.url.trim()) return 'Envie a imagem de cada item.'
-    if (item.kind === 'text' && !item.markdown.trim()) return 'Escreva o recado.'
-    if (item.kind === 'link' && !item.label.trim()) return 'Dê um nome a cada link.'
-    if ((item.kind === 'link' || item.kind === 'video') && !/^https:\/\//i.test(item.url.trim()))
-      return 'Os endereços de link e de vídeo precisam começar com https://.'
-  }
-  return null
-}
-
-export function materialsFromContent(content: MaterialsBlock): MaterialsValue {
-  return { title: content.title ?? '', items: content.items }
 }
 
 function novoItem(kind: MaterialItemKind): MaterialItem {
