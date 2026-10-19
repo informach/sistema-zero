@@ -515,9 +515,9 @@ export const COPY = {
     meshCounts: (vertices: number, faces: number) => `${vertices} pontos e ${faces} faces`,
     editFaces: 'Editar malha',
     editSkinBase: 'Editar forma-base',
-    supportGuides: 'Ver apoios',
+    supportGuides: 'Ver ossos e apoios',
     supportGuidesHint:
-      'Os pontos mostram os grupos e apoios originais, mesmo atrás das peças. Toque num ponto para escolher. Use a lista da oficina para escolher pelo nome.',
+      'Toque no ponto de um osso para escolher. Use Girar ou Mover para manipulá-lo. A lista da oficina mostra os nomes.',
     skinBaseHint:
       'Você está editando a forma-base, sem a dobra dos ossos. Ao terminar, a peça volta a mostrar a deformação. Os pesos continuam guardados.',
     componentModes: { vertex: 'Pontos', edge: 'Linhas', face: 'Faces' },
@@ -1350,12 +1350,14 @@ export const COPY = {
     stepOptions: 'Como vai ser?',
     stepName: 'Que nome vai ter?',
     progress: (current: number, total: number) => `Passo ${current} de ${total}`,
-    texelsLabel: 'Texels por bloco',
-    texelsHint: 'Quantos pontinhos de tinta cabem em cada bloco da grade. Dá para mudar depois.',
+    texelsLabel: 'Detalhes da pintura',
+    texelsHint:
+      'No padrão, 1 pixel da pintura ocupa 1 unidade da peça. Mais pixels permitem detalhes menores.',
     texelsOptions: {
-      2: 'Poucos',
-      4: 'Normal',
-      8: 'Muitos',
+      1: '1 pixel por unidade',
+      2: '2 pixels por unidade',
+      4: '4 pixels por unidade',
+      8: '8 pixels por unidade',
     } as Record<number, string>,
     sizeLabel: 'Tamanho da folha',
     sizeHint: 'Em pixels. 32 é um bom começo.',

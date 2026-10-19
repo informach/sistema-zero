@@ -122,6 +122,8 @@ interface Props {
   animation?: SceneAnimationPlayer
   animationPose?: SceneAnimationPoseGesture
   mode?: 'model' | 'paint' | 'animation'
+  /** Show editable bone guides while the bones workspace is open. */
+  showBones?: boolean
   /** Espelho de pintura ligado na caixa de ferramentas da aba Pintar. */
   paintMirror?: boolean
   /** O que cobre o palco por um tempo, como a face de perto da aba Pintar. */
@@ -186,6 +188,7 @@ function SceneCanvasAttempt({
   animation,
   animationPose,
   mode = 'model',
+  showBones = false,
   paintTarget = null,
   paintScope = null,
   paintGuides = null,
@@ -220,7 +223,8 @@ function SceneCanvasAttempt({
   const [localLook, setLocalLook] = useState(false)
   const look = looking ?? localLook
   const setLook = onLookingChange ?? setLocalLook
-  const [supportGuides, setSupportGuides] = useState(false)
+  const [supportGuideOverride, setSupportGuideOverride] = useState<boolean | null>(null)
+  const supportGuides = supportGuideOverride ?? (mode === 'animation' || showBones)
   const [brushMode, setBrushMode] = useState<SceneSkinBrushMode>('off')
   const [brushRadius, setBrushRadius] = useState('1')
   const [brushStrength, setBrushStrength] = useState(25)
@@ -302,6 +306,7 @@ function SceneCanvasAttempt({
       : can(mode === 'animation' ? 'animate.create' : 'model.pieces'))
   const activeTool =
     look ||
+    guideInput?.rig ||
     tool === 'pivot' ||
     tool === 'cut' ||
     tool === 'knife' ||
@@ -457,9 +462,14 @@ function SceneCanvasAttempt({
   const areaTools = slots?.areaTools === undefined ? [] : tools.filter(isArea)
 
   // ── a dica do momento ───────────────────────────────────────────────────────────────────
-  const hint =
-    tool === 'pivot'
-      ? 'A peça gira em volta do pivô.'
+  const hint = guideInput?.rig
+    ? guideInput.rig.enabled
+      ? 'Toque para marcar as articulações. Arraste no fundo para olhar.'
+      : 'Experimente a dobra pelo painel. Sua criação só muda ao usar a montagem.'
+    : tool === 'pivot'
+      ? guideInput?.pivot?.snapVertex
+        ? 'Toque em um ponto destacado para escolher onde a peça gira.'
+        : 'Arraste as alças para mudar onde a peça gira.'
       : tool === 'knife'
         ? guideInput?.knife?.edgesOnly
           ? 'Clique em uma linha para escolher a faixa. Enter aplica; Esc cancela. Arraste para olhar.'
@@ -667,7 +677,7 @@ function SceneCanvasAttempt({
             className="justify-start px-3 text-sm"
             disabled={!view.viewport}
             aria-pressed={supportGuides}
-            onClick={() => setSupportGuides((shown) => !shown)}
+            onClick={() => setSupportGuideOverride(!supportGuides)}
           >
             {copy.supportGuides}
           </Button>

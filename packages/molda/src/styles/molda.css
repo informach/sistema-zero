@@ -496,32 +496,32 @@
   @media (min-width: 1101px) {
     .mld-inspector-pieces {
       flex: 0 1 auto;
-      min-height: 60px;
-      max-height: 30%;
+      min-height: 84px;
+      max-height: 32%;
     }
     .mld-inspector-sections[data-activity="model"] .mld-inspector-pieces {
-      max-height: 40%;
+      max-height: 42%;
     }
     .mld-inspector-sections[data-activity="paint"] .mld-inspector-pieces {
-      flex: 1 1 auto;
-      max-height: none;
+      max-height: 26%;
     }
     .mld-inspector-sections[data-activity="paint"] .mld-inspector-overview {
-      flex: 0 1 auto;
-      max-height: 66%;
+      flex: 1 1 auto;
+      min-height: 128px;
+      max-height: 70%;
     }
     .mld-inspector-sections[data-activity="paint"] .mld-inspector-properties {
       flex: 0 1 auto;
-      max-height: 35%;
+      min-height: 80px;
+      max-height: 30%;
     }
     /* Ao abrir a pintura de perto/camadas, reservar espaço para trabalhar na imagem. */
     .mld-inspector-sections[data-activity="paint"]:has(.mld-inspector-properties details[open]) {
       .mld-inspector-overview {
-        max-height: 30%;
+        max-height: 35%;
       }
       .mld-inspector-pieces {
-        flex: 0 1 auto;
-        max-height: 20%;
+        max-height: 24%;
       }
       .mld-inspector-properties {
         flex: 1 1 0;
@@ -1358,15 +1358,11 @@
     }
   }
   @media (max-width: 1100px) {
-    [data-molda-theme] .mld-inspector-content > .mld-inspector-overview,
-    [data-molda-theme] .mld-inspector-content > .mld-inspector-properties {
-      max-height: none;
-      overflow-y: visible;
-    }
-    .mld-inspector-sections[data-activity="animation"] .mld-inspector-overview {
+    [data-molda-theme] .mld-inspector-sections > .contents > [role="tabpanel"]:not([hidden]) {
       flex: 1 1 auto;
       min-height: 0;
       max-height: none;
+      overflow-y: auto;
     }
     [data-molda-theme].mld-workshop {
       --mld-rail-width: 88px;
@@ -2781,20 +2777,62 @@
   line-height: 1.5;
   margin-bottom: 8px;
 }
-[data-molda-theme] .mld-pivot-presets button[aria-pressed="true"] {
-  background: var(--mld-pivot);
+[data-molda-theme] .mld-pivot-choice[aria-pressed="true"] {
+  background: var(--mld-pivot-bg);
   border-color: var(--mld-pivot);
-  color: white;
+  color: var(--mld-pivot-text);
 }
-[data-molda-theme] .mld-pivot-presets button {
-  min-height: 30px;
-  padding: 5px 10px;
+[data-molda-theme] .mld-pivot-choice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--color-mld-border);
+  border-radius: 10px;
+  background: var(--color-mld-surface);
   font-size: 13px;
+  font-weight: 700;
 }
-@media (any-pointer: coarse) {
-  [data-molda-theme] .mld-pivot-presets button {
-    min-height: 44px;
-  }
+[data-molda-theme] .mld-pivot-choice svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+[data-molda-theme] .mld-pivot-choice:hover:not(:disabled) {
+  border-color: var(--mld-pivot);
+}
+[data-molda-theme] .mld-pivot-choice:focus-visible {
+  outline: 2px solid var(--mld-pivot);
+  outline-offset: 2px;
+}
+[data-molda-theme] .mld-pivot-choice:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+[data-molda-theme] .mld-rig-labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+[data-molda-theme] .mld-rig-labels > span {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--mld-pivot);
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+}
+[data-molda-theme] .mld-rig-labels > span[hidden] {
+  display: none;
 }
 [data-molda-theme] .mld-timeline {
   --mld-timeline-label-width: 180px;
@@ -3147,13 +3185,13 @@
 @media (min-width: 1101px) {
   [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-overview {
     flex: 0 1 244px;
-    max-height: 244px;
-    min-height: 100px;
+    max-height: 35%;
+    min-height: 96px;
   }
   [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-pieces {
     flex: 0 1 240px;
-    max-height: 240px;
-    min-height: 80px;
+    max-height: 28%;
+    min-height: 84px;
   }
   [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-properties {
     flex: 1 1 205px;

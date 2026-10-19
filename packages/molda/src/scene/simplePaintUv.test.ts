@@ -88,7 +88,7 @@ test('simple UV transfers each old face into a continuous chart, retains layers,
       .layers.map(({ name, visible, opacity }) => ({ name, visible, opacity })),
   )
   expect(image.layers[0]!.pixels.some((value) => value === 2)).toBe(true)
-  expect(image.layers[1]!.pixels.filter((value) => value === 5)).toHaveLength(4)
+  expect(image.layers[1]!.pixels.filter((value) => value === 5)).toHaveLength(1)
   expect(mesh.vertices).toEqual(painted(document, f.nodeId).mesh.vertices)
   expect(Object.keys(mesh.faces)).toEqual(Object.keys(painted(document, f.nodeId).mesh.faces))
   expect(document).toEqual(before)

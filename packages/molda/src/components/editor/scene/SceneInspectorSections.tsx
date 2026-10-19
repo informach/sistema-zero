@@ -5,7 +5,7 @@ import { useMediaQuery } from '../../ui/useMediaQuery'
 const INSPECTOR_TAB =
   'min-h-10 flex-1 rounded-full px-2 text-[0.8125rem] font-extrabold text-mld-muted transition hover:text-mld-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent aria-selected:bg-mld-surface aria-selected:text-mld-accent aria-selected:shadow-sm'
 
-/** Independent scroll regions; compact screens expose named tabs without unmounting forms. */
+/** The hierarchy stays first in every mode; compact screens expose separate named tabs. */
 export function SceneInspectorSections({
   mode,
   overview,
@@ -18,12 +18,11 @@ export function SceneInspectorSections({
   children: ReactNode
 }) {
   const compact = useMediaQuery('(max-width: 1100px)')
-  const joinedScroll = compact && mode === 'paint'
   const id = useId()
   const [tab, setTab] = useState<'pieces' | 'details' | 'overview'>(
-    mode === 'animation' ? 'overview' : 'details',
+    mode === 'model' ? 'details' : 'overview',
   )
-  useEffect(() => setTab(mode === 'animation' ? 'overview' : 'details'), [mode])
+  useEffect(() => setTab(mode === 'model' ? 'details' : 'overview'), [mode])
   return (
     <div
       className="mld-inspector-sections flex min-h-0 flex-1 flex-col gap-2 overflow-hidden px-1.5 pt-3 pb-2"
@@ -52,20 +51,6 @@ export function SceneInspectorSections({
             tabs[next]?.focus()
           }}
         >
-          {mode === 'animation' && (
-            <button
-              type="button"
-              role="tab"
-              id={`${id}-tab-overview`}
-              aria-controls={`${id}-overview`}
-              tabIndex={tab === 'overview' ? 0 : -1}
-              aria-selected={tab === 'overview'}
-              className={INSPECTOR_TAB}
-              onClick={() => setTab('overview')}
-            >
-              Movimentos
-            </button>
-          )}
           <button
             type="button"
             role="tab"
@@ -78,27 +63,45 @@ export function SceneInspectorSections({
           >
             Peças
           </button>
+          {mode !== 'model' && (
+            <button
+              type="button"
+              role="tab"
+              id={`${id}-tab-overview`}
+              aria-controls={`${id}-overview`}
+              tabIndex={tab === 'overview' ? 0 : -1}
+              aria-selected={tab === 'overview'}
+              className={INSPECTOR_TAB}
+              onClick={() => setTab('overview')}
+            >
+              {mode === 'paint' ? 'Cores' : 'Movimentos'}
+            </button>
+          )}
           <button
             type="button"
             role="tab"
             id={`${id}-tab-details`}
-            aria-controls={mode === 'paint' ? `${id}-overview ${id}-details` : `${id}-details`}
+            aria-controls={`${id}-details`}
             tabIndex={tab === 'details' ? 0 : -1}
             aria-selected={tab === 'details'}
             className={INSPECTOR_TAB}
             onClick={() => setTab('details')}
           >
-            {mode === 'paint' ? 'Cores' : mode === 'animation' ? 'Pose' : 'Ajustar'}
+            {mode === 'paint' ? 'Ajustes' : mode === 'animation' ? 'Pose' : 'Ajustar'}
           </button>
         </div>
       )}
-      <div
-        className={
-          joinedScroll
-            ? 'mld-inspector-content mld-scroll-y min-h-0 flex-1 overflow-y-auto'
-            : 'contents'
-        }
-      >
+      <div className="contents">
+        <section
+          id={`${id}-pieces`}
+          role={compact ? 'tabpanel' : 'region'}
+          aria-label={compact ? undefined : 'Lista de peças'}
+          aria-labelledby={compact ? `${id}-tab-pieces` : undefined}
+          hidden={compact && tab !== 'pieces'}
+          className={`mld-inspector-pieces mld-scroll-y overflow-y-auto border-b border-mld-border px-1.5 pb-2 ${compact ? 'min-h-0 flex-1' : ''}`}
+        >
+          {pieces}
+        </section>
         {overview && (
           <section
             id={`${id}-overview`}
@@ -110,32 +113,20 @@ export function SceneInspectorSections({
                   ? 'Movimentos e atalhos'
                   : 'Cores disponíveis'
             }
-            aria-labelledby={
-              compact ? `${id}-tab-${mode === 'animation' ? 'overview' : 'details'}` : undefined
-            }
-            hidden={compact && tab !== (mode === 'animation' ? 'overview' : 'details')}
-            className={`mld-inspector-overview shrink-0 px-1.5 ${joinedScroll ? '' : 'mld-scroll-y overflow-y-auto'}`}
+            aria-labelledby={compact ? `${id}-tab-overview` : undefined}
+            hidden={compact && tab !== 'overview'}
+            className="mld-inspector-overview mld-scroll-y min-h-0 overflow-y-auto border-b border-mld-border px-1.5 pb-2"
           >
             {overview}
           </section>
         )}
-        <section
-          id={`${id}-pieces`}
-          role={compact ? 'tabpanel' : 'region'}
-          aria-label={compact ? undefined : 'Lista de peças'}
-          aria-labelledby={compact ? `${id}-tab-pieces` : undefined}
-          hidden={compact && tab !== 'pieces'}
-          className={`mld-inspector-pieces mld-scroll-y overflow-y-auto px-1.5 ${compact ? 'min-h-0 flex-1' : ''}`}
-        >
-          {pieces}
-        </section>
         <section
           id={`${id}-details`}
           role={compact ? 'tabpanel' : 'region'}
           aria-label={compact ? undefined : 'Ajustes do contexto'}
           aria-labelledby={compact ? `${id}-tab-details` : undefined}
           hidden={compact && tab !== 'details'}
-          className={`mld-inspector-properties min-h-0 flex-1 space-y-2 px-1.5 ${joinedScroll ? '' : 'mld-scroll-y overflow-y-auto'}`}
+          className="mld-inspector-properties mld-scroll-y min-h-0 flex-1 space-y-2 overflow-y-auto px-1.5"
         >
           {children}
         </section>

@@ -9,6 +9,7 @@ import { createStore, type StoreApi } from 'zustand/vanilla'
 import { type MoldaAssetSummary, summarizeAsset } from '../core/assetSummary'
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
+import { NEW_MODEL_TEXELS_PER_UNIT } from '../core/limits'
 import { createAsset, type MoldaAsset, type NewAssetInput } from '../core/model'
 import { normalizeAssetName, uniqueAssetName } from '../core/names'
 import { findTemplate } from '../templates/catalog'
@@ -232,7 +233,15 @@ export function createGalleryStore(
           if (!base) return { ok: false, reason: 'invalid-name' }
           const name = uniqueAssetName(base, takenNames(get().assets))
           if (!name) return { ok: false, reason: 'invalid-name' }
-          const asset = createAsset(input, name)
+          const asset = createAsset(
+            input.kind === 'model'
+              ? {
+                  ...input,
+                  texelsPerUnit: input.texelsPerUnit ?? NEW_MODEL_TEXELS_PER_UNIT,
+                }
+              : input,
+            name,
+          )
           try {
             await persistence.save(asset)
           } catch (error) {

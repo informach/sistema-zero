@@ -103,6 +103,8 @@ for (const dark of [false, true])
       'box',
       'carroceria',
     )
+    // Existing projects retain the original 4 px/unit density; the new default is tested separately.
+    source = { ...source, settings: { ...source.settings, texelsPerUnit: 4 } }
     const nodeId = source.nodes.at(-1)!.id
     source = convertSceneNodesToMesh(source, [nodeId])
     source = editSceneMesh(source, nodeId, (mesh) => {

@@ -26,7 +26,6 @@ export function SceneSaveProtection({
   recovery?: SceneRecoveryController
   backup(): boolean
 }) {
-  const saved = useStore(editor, (state) => state.savedAsset)
   const saveState = useStore(editor, (state) => state.saveState)
   const saveError = useStore(editor, (state) => state.saveError)
   const contentRevision = useStore(editor, (state) => state.contentRevision)
@@ -42,9 +41,9 @@ export function SceneSaveProtection({
   const [discarding, setDiscarding] = useState<SceneRecoveryCandidate | null>(null)
   const failure =
     saveError !== null && saveError !== COPY.scene.conflict
-      ? `${saveError}:${saved.updatedAt}`
+      ? saveError
       : rescue.phase === 'error'
-        ? `recovery:${rescue.error}:${saved.updatedAt}`
+        ? `recovery:${rescue.error}`
         : null
   const protectedNow =
     rescue.protectedContentRevision === contentRevision &&

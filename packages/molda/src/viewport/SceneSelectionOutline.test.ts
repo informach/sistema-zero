@@ -6,9 +6,26 @@ import { createSceneProject } from '../scene/createProject'
 import { cutMeshWithKnife } from '../scene/meshKnife'
 import { prepareSceneAnimation } from '../scene/sampleAnimation'
 import { createSceneSkin } from '../scene/skinCommands'
+import { makeSceneCutoutPlane } from '../testing/sceneCutoutPlane'
 import { makeSceneSkinFixture } from '../testing/sceneSkin'
 import { SceneSelectionOutline } from './SceneSelectionOutline'
 import { SceneRenderResource } from './sceneRenderResource'
+
+test('the selected cutout plane does not draw its erased rectangular border', () => {
+  const document = makeSceneCutoutPlane()
+  const resource = new SceneRenderResource(),
+    outline = new SceneSelectionOutline()
+  try {
+    resource.update(document)
+    outline.update(resource, new Set([document.nodes[0]!.id]), null)
+    const line = outline.root.children[0]
+    if (!(line instanceof LineSegments2)) throw new Error('Missing selection contour')
+    expect(line.geometry.getAttribute('instanceStart').count).toBe(0)
+  } finally {
+    outline.dispose()
+    resource.dispose()
+  }
+})
 
 test('the selected piece keeps coplanar knife edges visible without displaying render triangulation', () => {
   const source = addScenePrimitive(

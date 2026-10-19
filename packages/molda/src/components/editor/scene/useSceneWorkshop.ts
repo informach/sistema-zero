@@ -8,6 +8,7 @@ import type { SceneAnimationTarget } from '../../../scene/animationTarget'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { sameSceneContent } from '../../../scene/documentContent'
 import { indexSceneDocument } from '../../../scene/documentIndex'
+import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
 import { SceneGraphError, selectSceneSubtrees } from '../../../scene/graph'
 import type { ScenePaintTarget } from '../../../scene/imagePaint'
 import type { AffineMatrix } from '../../../scene/matrix'
@@ -23,6 +24,7 @@ import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
 import { newModelIntent } from '../../../state/newModelIntent'
 import { createScenePivotGesture } from '../../../state/scenePivotGesture'
+import { createSceneRigBuilder } from '../../../state/sceneRigBuilder'
 import { createSceneTransformGesture } from '../../../state/sceneTransformGesture'
 import type { SceneTransformTool } from '../../../viewport/sceneViewportTypes'
 import { useMoldaToolAccess, useMoldaToolGate } from '../../toolAccess'
@@ -535,6 +537,68 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     run,
   })
   const modelGuides = useSceneModelGuides(editor, (next) => !!run(() => next))
+  const rigRun = useRef(run)
+  rigRun.current = run
+  const rigScope = useRef<(nodeId: string) => boolean>(() => false)
+  rigScope.current = (nodeId) =>
+    can('model.skin') &&
+    mode === 'model' &&
+    area === 'skin' &&
+    selected.length === 1 &&
+    selected[0] === nodeId
+  const rig = useMemo(
+    () =>
+      createSceneRigBuilder(
+        editor,
+        (next) => !!rigRun.current(() => next),
+        undefined,
+        (nodeId) => rigScope.current(nodeId),
+      ),
+    [editor],
+  )
+  const rigSnapshot = useSyncExternalStore(rig.subscribe, rig.getSnapshot, rig.getSnapshot)
+  useEffect(() => {
+    const disconnect = rig.connect()
+    const interrupt = () => rig.interrupt()
+    const hidden = () => {
+      if (window.document.hidden) interrupt()
+    }
+    window.addEventListener('blur', interrupt)
+    window.document.addEventListener('visibilitychange', hidden)
+    window.document.addEventListener('webglcontextlost', interrupt, true)
+    return () => {
+      disconnect()
+      window.removeEventListener('blur', interrupt)
+      window.document.removeEventListener('visibilitychange', hidden)
+      window.document.removeEventListener('webglcontextlost', interrupt, true)
+    }
+  }, [rig])
+  const rigAllowed = can('model.skin')
+  useEffect(() => {
+    const draft = rig.getSnapshot().draft
+    if (
+      !rigAllowed ||
+      mode !== 'model' ||
+      area !== 'skin' ||
+      (draft && (selected.length !== 1 || selected[0] !== draft.nodeId))
+    )
+      rig.cancel()
+  }, [rig, rigAllowed, mode, area, selected])
+  useEffect(
+    () =>
+      registerContext('rig-builder', () => {
+        const draft = rig.getSnapshot().draft
+        if (!draft) return null
+        return {
+          title: 'A montagem dos ossos ainda está em prévia',
+          applyLabel: 'Usar montagem',
+          canApply: draft.phase === 'try' && !!draft.candidate,
+          apply: rig.confirm,
+          discard: rig.cancel,
+        }
+      }),
+    [rig, registerContext],
+  )
   const solidCut = useSceneSolidCut(editor, (next) => !!run(() => next))
   const knife = useSceneKnife(editor, (next) => !!run(() => next))
   const cutAllowed = can('model.cut')
@@ -782,10 +846,10 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         cancelGesture()
         setLooking(false)
         setTool('select')
-        if (next === 'mesh' || next === 'uv' || next === 'skin') {
+        if (next === 'mesh' || next === 'uv') {
           closePaint()
           if (next !== 'uv') releasePrep()
-          const componentMode = next === 'skin' ? 'vertex' : 'face'
+          const componentMode = 'face'
           components.open(
             componentMode,
             components.selection?.mode === componentMode
@@ -814,10 +878,18 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       })
     },
     modelGuides,
+    rig,
+    rigDraft: rigSnapshot.draft,
+    rigError: rigSnapshot.error,
     pivotGesture,
-    pivotVertical: can('model.precise') && pivotVertical,
+    pivotVertical: pivotGate.allowed && pivotVertical,
     setPivotVertical,
-    pivotSnap: can('model.precise') && pivotSnap,
+    pivotSnap:
+      pivotGate.allowed &&
+      pivotSnap &&
+      selected.length === 1 &&
+      index.scene.nodes.get(selected[0]!)?.kind === 'mesh' &&
+      !evaluateSceneNodeFlags(index.scene).get(selected[0]!)?.locked,
     setPivotSnap,
     showPreviousPose,
     setShowPreviousPose,

@@ -1,6 +1,7 @@
 import {
   AxesHelper,
   type Intersection,
+  Mesh,
   PCFShadowMap,
   Plane,
   Raycaster,
@@ -77,6 +78,7 @@ import { SceneTransformGizmo } from './SceneTransformGizmo'
 import { SceneComponentPicker } from './sceneComponentPicking'
 import { SceneCutPicker } from './sceneCutPicking'
 import { pickSceneKnifePoint } from './sceneKnifePicking'
+import { SceneOcclusionQuery } from './sceneOcclusionQuery'
 import { pickSceneRegion } from './sceneRegionPicking'
 import { SceneRenderResource } from './sceneRenderResource'
 import { pickSceneSkinPaint } from './sceneSkinPaintPick'
@@ -290,6 +292,22 @@ export class SceneViewport implements SceneViewportPort {
         this.updatePivotHandles()
         this.gizmo?.draw()
         const guideInput = this.callbacks.guideInput?.()
+        if (guideInput?.pivot?.snapVertex) {
+          this.rig.camera.updateMatrixWorld(true)
+          const visibility = new SceneOcclusionQuery(
+            this.resource.root.children
+              .filter((object) => object.visible)
+              .filter((object) => object instanceof Mesh),
+            this.rig.camera,
+          )
+          try {
+            this.previewGuide.updateSnapVisibility((point) =>
+              visibility.visible(new Vector3(...point)),
+            )
+          } finally {
+            visibility.dispose()
+          }
+        }
         const cut = guideInput?.cut ?? guideInput?.knife
         const node = cut && this.index?.scene.nodes.get(cut.nodeId)
         const geometry = node?.kind === 'mesh' && this.index?.geometries.get(node.geometryId)
@@ -358,7 +376,7 @@ export class SceneViewport implements SceneViewportPort {
           const pointer = { x: event.clientX, y: event.clientY }
           if (this.bodyMoving || this.bodySelection) return { ...pointer }
           const guide = this.callbacks.guideInput?.()
-          if (guide?.cut || guide?.knife || guide?.pivot) return null
+          if (guide?.cut || guide?.knife || guide?.pivot || guide?.rig) return null
           if (guide && !this.contextLost && this.paintMode !== 'look') {
             const rect = canvas.getBoundingClientRect()
             let point: [number, number, number] | undefined
@@ -1037,7 +1055,7 @@ export class SceneViewport implements SceneViewportPort {
           ]
         : undefined,
     )
-    this.pivotHandles?.setEnabled(editable)
+    this.pivotHandles?.setEnabled(editable && !input?.snapVertex)
     this.pivotHandles?.setVerticalVisible(input?.vertical === true)
     this.pivotHandles?.draw()
   }
@@ -1048,6 +1066,9 @@ export class SceneViewport implements SceneViewportPort {
       input?.pivot?.nodeId,
       input?.pivot?.vertical,
       input?.pivot?.snapVertex,
+      input?.rig?.nodeId,
+      input?.rig?.enabled,
+      input?.rig?.plane,
       input?.cut?.nodeId,
       input?.cut?.midpoint,
       input?.knife?.nodeId,
@@ -1272,7 +1293,7 @@ export class SceneViewport implements SceneViewportPort {
     if (frame === this.resource.frameForImage(imageId)) return
     this.paint?.cancel()
     if (this.resource.setImageFrame(imageId, frame)) {
-      this.ground.invalidateShadow()
+      this.updateVisibility()
       this.request()
     }
   }
@@ -1440,6 +1461,28 @@ export class SceneViewport implements SceneViewportPort {
       return
     const rect = this.canvas.getBoundingClientRect()
     if (rect.width <= 0 || rect.height <= 0) return
+    const rig = this.callbacks.guideInput?.()?.rig
+    if (rig) {
+      if (!rig.enabled) return
+      this.rig.camera.updateWorldMatrix(true, false)
+      const ray = new Raycaster()
+      ray.setFromCamera(
+        new Vector2(
+          ((event.clientX - rect.left) / rect.width) * 2 - 1,
+          1 - ((event.clientY - rect.top) / rect.height) * 2,
+        ),
+        this.rig.camera,
+      )
+      const plane = new Plane().setFromNormalAndCoplanarPoint(
+        new Vector3(...rig.plane.normal).normalize(),
+        new Vector3(...rig.plane.origin),
+      )
+      if (Math.abs(ray.ray.direction.dot(plane.normal)) > 0.05) {
+        const point = ray.ray.intersectPlane(plane, new Vector3())
+        if (point) rig.mark(point.toArray())
+      }
+      return
+    }
     const knife = this.callbacks.guideInput?.()?.knife
     if (knife) {
       const point = this.knifePoint(event, knife)

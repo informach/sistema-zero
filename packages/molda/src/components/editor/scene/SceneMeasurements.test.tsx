@@ -55,19 +55,6 @@ test('dimensions and position use integers by default and decimals are explicitl
     fireEvent.blur(size())
     expect(editor.getState().content).toBe(fractional)
     expect(size().getAttribute('step')).toBe('1')
-    fireEvent.click(screen.getByText('Mais sobre a peça', { exact: true }))
-    fireEvent.click(screen.getByRole('button', { name: 'Mover' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Mover Lado · X mais' }))
-    expect(scenePieceCoordinates(editor.getState().content, nodeId).position[0]).toBe(-2)
-    fireEvent.click(screen.getByRole('button', { name: 'Tamanho' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Maior' }))
-    expect(scenePieceCoordinates(editor.getState().content, nodeId).dimensions[0]).toBe(4)
-    fireEvent.click(fractions)
-    fireEvent.click(screen.getByRole('button', { name: 'Menor' }))
-    expect(scenePieceCoordinates(editor.getState().content, nodeId).dimensions[0]).toBeCloseTo(
-      3.9,
-      12,
-    )
   } finally {
     view.unmount()
     editor.getState().dispose()

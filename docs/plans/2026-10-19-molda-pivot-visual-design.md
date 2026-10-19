@@ -46,3 +46,23 @@ coordenadas recolhidas.
 
 Não mudar o formato dos projetos, a matemática do pivô nem as animações existentes.
 Não converter conjuntos em malhas. Não acrescentar um segundo editor do pivô.
+
+## Implementação e revisão concluídas
+
+- O painel compartilhado substitui os oito botões de cantos, com controles de
+  pelo menos 44 px e destaque usando os tokens existentes do pivô.
+- A escolha no 3D oculta temporariamente as alças e a prévia de rotação, exibe
+  pontos maiores e filtra a oclusão com a mesma consulta utilizada na seleção.
+  Mudar de vista atualiza os pontos visíveis. Um clique bem-sucedido devolve as
+  alças. Escape e o próprio botão cancelam sem editar o documento.
+- Revisados bloqueio de peças, conjuntos, acesso básico, campos numéricos e
+  revogação da ferramenta. Transformações, geometria e poses permanecem iguais.
+- Verificação: 447 testes na regressão dos componentes e domínios envolvidos;
+  72 testes focados após os ajustes finais dos controles e guias; 16 testes de
+  vocabulário; TypeScript, Biome e build do playground aprovados.
+- Navegador: Modelar e Animar em Chromium e Firefox, incluindo um ponto do lado
+  oposto após mudar a vista; regressões de arrasto/cancelamento e alça vertical;
+  três composições de tema. Capturas conferidas visualmente.
+- As referências `02-modelar-pivo` refletem o novo painel. As referências de
+  Pintar e Animar também foram atualizadas para a escala de pintura 1:1 já
+  implementada anteriormente nesta branch.

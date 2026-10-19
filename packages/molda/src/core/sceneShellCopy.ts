@@ -18,8 +18,6 @@ export const SCENE_SHELL_COPY = {
   tools: 'Ferramentas',
   /** O que a criança usa menos: a caixa e o laço, os grupos e a malha. */
   moreTools: 'Mais ferramentas',
-  /** O que é do dia a dia fica à vista; o nome, mostrar, travar e o grupo ficam aqui. */
-  moreAboutPiece: 'Mais sobre a peça',
   /** A faixa de baixo do Modelar sem peça escolhida: ela nunca some, para o palco não pular. */
   surfaceHint: 'Escolha uma peça para mudar a cor e o acabamento dela.',
   /** O rótulo da faixa de baixo para quem usa leitor de tela. */

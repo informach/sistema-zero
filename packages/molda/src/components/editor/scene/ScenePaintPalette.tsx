@@ -76,13 +76,147 @@ export function ScenePaintPalette({
     <RequiresTool family="paint.brush">
       <section
         aria-label={SCENE_PAINT_COPY.colors}
-        className="mld-paint-palette shrink-0 space-y-3 border-b border-mld-border py-3"
+        className="mld-paint-palette shrink-0 space-y-3 py-2"
       >
-        <div className="space-y-1">
-          <h3 className="mld-display text-lg">{paint.eraser ? 'Borracha' : copy.chooseColor}</h3>
+        <div className="space-y-3 rounded-xl border border-mld-border bg-mld-surface p-3">
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="size-10 shrink-0 rounded-lg border border-mld-border shadow-sm"
+              style={{ background: hex }}
+            />
+            <div className="min-w-0 flex-1">
+              <h3 className="mld-display text-base leading-tight">{copy.chooseColor}</h3>
+              <p className="truncate text-xs text-mld-muted">
+                {copy.currentColor}: {NAMES[hex] ?? 'Personalizada'}
+              </p>
+            </div>
+          </div>
+          <div className="mld-paint-swatches">
+            {colors.map(({ index, hex: value }) => (
+              <button
+                key={value}
+                type="button"
+                aria-label={COPY.a11y.colorSwatch(index, value)}
+                aria-pressed={hex === value}
+                title={NAMES[value] ?? 'Cor personalizada'}
+                disabled={busy}
+                onClick={() => paint.setColor([...hexToRgb(value), 255])}
+                className={`${swatchClass(hex === value, 'compact')} mld-paint-swatch`}
+                style={{ backgroundColor: value }}
+              />
+            ))}
+          </div>
+          {paint.recentColors.length > 0 && (
+            <div className="border-t border-mld-border pt-2">
+              <p className="mld-kicker mb-2">{copy.recentColors}</p>
+              <div className="flex flex-wrap gap-2">
+                {paint.recentColors.map((entry) => {
+                  const value = rgbToHex(entry[0], entry[1], entry[2])
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-label={`Usadas agora: ${value}`}
+                      className={`${swatchClass(hex === value)} rounded-full!`}
+                      style={{ background: value }}
+                      disabled={busy}
+                      onClick={() => paint.setColor(entry)}
+                    />
+                  )
+                })}
+              </div>
+            </div>
+          )}
+          <details className="mld-disclosure">
+            <summary>{copy.customColor}</summary>
+            <div className="space-y-3 pb-2">
+              <SceneColorPicker ink={paint.ink} disabled={busy} change={paint.newColorStep} />
+              <Button
+                variant="ghost"
+                className="w-full text-sm"
+                aria-label={copy.saveColor}
+                disabled={busy || favorite || paint.favoritesFull}
+                onClick={paint.toggleFavorite}
+              >
+                <Plus aria-hidden="true" className="size-4" /> {copy.saveColor}
+              </Button>
+            </div>
+          </details>
+          {paint.favoritesUnavailable && (
+            <p role="status" className="text-xs text-mld-muted">
+              As cores continuam disponíveis nesta sessão. Não foi possível guardar a paleta neste
+              navegador.
+            </p>
+          )}
+          {paint.favoritesFull && (
+            <p className="text-xs text-mld-muted">Sua paleta chegou a 256 cores guardadas.</p>
+          )}
+        </div>
+        <div className="space-y-2 rounded-xl border border-mld-border p-3">
+          <p className="mld-kicker">Ferramenta atual</p>
           <p className="text-sm text-mld-muted" aria-live="polite">
             {instruction}
           </p>
+          {paint.fill && (
+            <fieldset className="space-y-1">
+              <legend className="text-sm font-bold">O que pintar?</legend>
+              <label className="flex min-h-11 items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="fill-scope"
+                  checked={paint.fillScope === 'area'}
+                  onChange={() => paint.setFillScope('area')}
+                />
+                Área desta face
+              </label>
+              {(paint.data?.imageKind ?? 'color') === 'color' && (
+                <RequiresTool family="model.finish">
+                  <label className="flex min-h-11 items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="fill-scope"
+                      checked={paint.fillScope === 'base'}
+                      onChange={() => paint.setFillScope('base')}
+                    />
+                    Cor de fundo da peça
+                  </label>
+                </RequiresTool>
+              )}
+            </fieldset>
+          )}
+          {paint.eraser && (paint.data?.imageKind ?? 'color') === 'color' && (
+            <fieldset className="space-y-1">
+              <legend className="text-xs font-bold">Como apagar?</legend>
+              <div className="flex gap-1">
+                {(
+                  [
+                    ['paint', 'Apagar tinta'],
+                    ['cutout', 'Deixar vazado'],
+                  ] as const
+                ).map(([mode, label]) => (
+                  <Button
+                    key={mode}
+                    size="compact"
+                    variant="outline"
+                    aria-pressed={paint.eraseMode === mode}
+                    onClick={() => paint.setEraseMode(mode)}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+            </fieldset>
+          )}
+          {paint.eraser && paint.eraseMode !== 'cutout' && (
+            <p className="text-xs text-mld-muted">
+              Apaga só o desenho
+              {paint.data && paint.data.image.layers.length > 1
+                ? ` da camada “${paint.data.layer.name}”`
+                : ''}
+              . A cor de baixo aparece.
+            </p>
+          )}
         </div>
         {preparation && !(paint.fill && paint.fillScope === 'base') && (
           <div className="space-y-2 rounded-xl border border-mld-border bg-mld-surface p-3">
@@ -94,34 +228,8 @@ export function ScenePaintPalette({
             </Button>
           </div>
         )}
-        <div className="flex items-center gap-3">
-          <span
-            aria-hidden="true"
-            className="size-12 shrink-0 rounded-xl border-2 border-mld-surface shadow-sm"
-            style={{ background: hex }}
-          />
-          <div className="min-w-0 flex-1">
-            <p className="mld-display text-base leading-tight">{NAMES[hex] ?? 'Personalizada'}</p>
-            <p className="text-xs text-mld-muted">{copy.currentColor}</p>
-          </div>
-        </div>
-        <div className="mld-paint-swatches">
-          {colors.map(({ index, hex: value }) => (
-            <button
-              key={value}
-              type="button"
-              aria-label={COPY.a11y.colorSwatch(index, value)}
-              aria-pressed={hex === value}
-              title={NAMES[value] ?? 'Cor personalizada'}
-              disabled={busy}
-              onClick={() => paint.setColor([...hexToRgb(value), 255])}
-              className={`${swatchClass(hex === value, 'compact')} mld-paint-swatch`}
-              style={{ backgroundColor: value }}
-            />
-          ))}
-        </div>
         {mapping && (
-          <div className="space-y-1">
+          <div className="space-y-1 rounded-xl border border-mld-border p-3">
             <Button
               className="w-full text-sm"
               disabled={busy || mapping.disabled}
@@ -131,110 +239,6 @@ export function ScenePaintPalette({
             </Button>
             <p className="text-xs text-mld-muted">{copy.simpleUvHint}</p>
           </div>
-        )}
-        <details className="mld-disclosure">
-          <summary>{copy.customColor}</summary>
-          <div className="space-y-3 pb-2">
-            <SceneColorPicker ink={paint.ink} disabled={busy} change={paint.newColorStep} />
-            <Button
-              variant="ghost"
-              className="w-full text-sm"
-              aria-label={copy.saveColor}
-              disabled={busy || favorite || paint.favoritesFull}
-              onClick={paint.toggleFavorite}
-            >
-              <Plus aria-hidden="true" className="size-4" /> {copy.saveColor}
-            </Button>
-          </div>
-        </details>
-        {paint.favoritesUnavailable && (
-          <p role="status" className="text-xs text-mld-muted">
-            As cores continuam disponíveis nesta sessão. Não foi possível guardar a paleta neste
-            navegador.
-          </p>
-        )}
-        {paint.favoritesFull && (
-          <p className="text-xs text-mld-muted">Sua paleta chegou a 256 cores guardadas.</p>
-        )}
-        {paint.recentColors.length > 0 && (
-          <div>
-            <p className="mld-kicker mb-2">{copy.recentColors}</p>
-            <div className="flex flex-wrap gap-2">
-              {paint.recentColors.map((entry) => {
-                const value = rgbToHex(entry[0], entry[1], entry[2])
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    aria-label={`Usadas agora: ${value}`}
-                    className={`${swatchClass(hex === value)} rounded-full!`}
-                    style={{ background: value }}
-                    disabled={busy}
-                    onClick={() => paint.setColor(entry)}
-                  />
-                )
-              })}
-            </div>
-          </div>
-        )}
-        {paint.fill && (
-          <fieldset className="space-y-1">
-            <legend className="text-sm font-bold">O que pintar?</legend>
-            <label className="flex min-h-11 items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="fill-scope"
-                checked={paint.fillScope === 'area'}
-                onChange={() => paint.setFillScope('area')}
-              />
-              Área desta face
-            </label>
-            {(paint.data?.imageKind ?? 'color') === 'color' && (
-              <RequiresTool family="model.finish">
-                <label className="flex min-h-11 items-center gap-2 text-sm">
-                  <input
-                    type="radio"
-                    name="fill-scope"
-                    checked={paint.fillScope === 'base'}
-                    onChange={() => paint.setFillScope('base')}
-                  />
-                  Cor de fundo da peça
-                </label>
-              </RequiresTool>
-            )}
-          </fieldset>
-        )}
-        {paint.eraser && (paint.data?.imageKind ?? 'color') === 'color' && (
-          <fieldset className="space-y-1">
-            <legend className="text-xs font-bold">Como apagar?</legend>
-            <div className="flex gap-1">
-              {(
-                [
-                  ['paint', 'Apagar tinta'],
-                  ['cutout', 'Deixar vazado'],
-                ] as const
-              ).map(([mode, label]) => (
-                <Button
-                  key={mode}
-                  size="compact"
-                  variant="outline"
-                  aria-pressed={paint.eraseMode === mode}
-                  onClick={() => paint.setEraseMode(mode)}
-                >
-                  {label}
-                </Button>
-              ))}
-            </div>
-          </fieldset>
-        )}
-        {paint.eraser && paint.eraseMode !== 'cutout' && (
-          <p className="text-xs text-mld-muted">
-            Apaga só o desenho
-            {paint.data && paint.data.image.layers.length > 1
-              ? ` da camada “${paint.data.layer.name}”`
-              : ''}
-            . A cor de baixo aparece.
-          </p>
         )}
       </section>
     </RequiresTool>

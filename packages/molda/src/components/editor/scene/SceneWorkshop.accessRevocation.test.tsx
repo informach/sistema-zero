@@ -33,6 +33,7 @@ function mount(denied: MoldaToolFamilyId[] = []) {
   return {
     source,
     editor,
+    probe,
     view,
     deny: (...families: MoldaToolFamilyId[]) => view.rerender(draw(families)),
     dispose: () => {
@@ -41,6 +42,40 @@ function mount(denied: MoldaToolFamilyId[] = []) {
     },
   }
 }
+
+test('revoking bones discards the guide and retained marking or start actions cannot restore it', () => {
+  const f = mount()
+  try {
+    fireEvent.click(screen.getByRole('button', { name: 'Escolher corpo' }))
+    const open = () =>
+      fireEvent.click(
+        within(screen.getByRole('navigation', { name: 'Áreas da oficina' })).getByRole('button', {
+          name: 'Ossos e pesos',
+        }),
+      )
+    open()
+    const start = screen.getByRole('button', { name: 'Montar ossos' })
+    fireEvent.click(start)
+    const guide = f.probe.ports.at(-1)!.callbacks.guideInput?.()?.rig
+    expect(guide).toBeDefined()
+    act(() => guide!.mark([0, 1, 0]))
+    expect(screen.getByRole('list', { name: 'Articulações marcadas' })).toBeDefined()
+    f.deny('model.skin')
+    act(() => guide!.mark([0, 2, 0]))
+    fireEvent.click(start)
+    expect(screen.queryByRole('region', { name: 'Área Ossos e pesos' })).toBeNull()
+    expect(f.probe.ports.at(-1)!.callbacks.guideInput?.()?.rig).toBeUndefined()
+    f.deny()
+    fireEvent.click(start)
+    open()
+    expect(screen.queryByRole('list', { name: 'Articulações marcadas' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Montar ossos' })).toBeDefined()
+    expect(f.editor.getState().content).toBe(f.source)
+    expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    f.dispose()
+  }
+})
 
 test('revoking animation creation closes rename and regranting cannot resurrect its draft', async () => {
   const f = mount()
@@ -148,6 +183,7 @@ test('revoking pivot while a numeric draft is focused cannot commit it on blur',
   try {
     fireEvent.click(screen.getByRole('button', { name: 'Escolher corpo' }))
     fireEvent.click(screen.getByRole('button', { name: 'Pivô' }))
+    fireEvent.click(screen.getByText('Ajuste fino'))
     const field = screen.getByRole('spinbutton', { name: 'Pivô · o ponto onde a peça gira X' })
     field.focus()
     fireEvent.change(field, { target: { value: '9' } })

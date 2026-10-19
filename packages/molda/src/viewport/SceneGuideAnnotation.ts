@@ -8,6 +8,7 @@ export class SceneGuideAnnotation {
   private readonly ghost: HTMLDivElement
   private readonly ghostText: HTMLSpanElement
   private readonly knife: SVGSVGElement
+  private readonly rigLabels: HTMLDivElement
   private pointer: { x: number; y: number } | null = null
   private state: ScenePreviewGuideState | null = null
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -54,9 +55,20 @@ export class SceneGuideAnnotation {
     }
     this.knife.style.display = 'none'
     canvas.parentElement?.append(this.knife)
+    this.rigLabels = canvas.ownerDocument.createElement('div')
+    this.rigLabels.className = 'mld-rig-labels'
+    this.rigLabels.setAttribute('aria-hidden', 'true')
+    canvas.parentElement?.append(this.rigLabels)
   }
   update(state: ScenePreviewGuideState | null) {
     this.state = state
+    const count = state?.rig?.points.length ?? 0
+    while (this.rigLabels.children.length > count) this.rigLabels.lastElementChild?.remove()
+    while (this.rigLabels.children.length < count) {
+      const label = this.canvas.ownerDocument.createElement('span')
+      label.textContent = String(this.rigLabels.children.length + 1)
+      this.rigLabels.append(label)
+    }
   }
   setPointer(pointer: { x: number; y: number } | null) {
     this.pointer = pointer
@@ -80,6 +92,21 @@ export class SceneGuideAnnotation {
       this.knife.style.top = `${point.y + 8}px`
     }
     const label = this.state?.ghost?.label
+    for (const [i, point] of (this.state?.rig?.points ?? []).entries()) {
+      const projected = project(point)
+      const marker = this.rigLabels.children.item(i)
+      if (!(marker instanceof HTMLElement)) continue
+      marker.hidden =
+        !width ||
+        !height ||
+        !projected.visible ||
+        projected.x < 0 ||
+        projected.y < 0 ||
+        projected.x > width ||
+        projected.y > height
+      marker.style.left = `${projected.x + 10}px`
+      marker.style.top = `${projected.y - 26}px`
+    }
     this.ghost.hidden = !label || !width || !height || !ghostPoints.length
     if (!this.ghost.hidden) {
       const top = ghostPoints
@@ -112,5 +139,6 @@ export class SceneGuideAnnotation {
     this.element.remove()
     this.ghost.remove()
     this.knife.remove()
+    this.rigLabels.remove()
   }
 }

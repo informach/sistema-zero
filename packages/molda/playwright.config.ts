@@ -28,7 +28,7 @@ export default defineConfig({
     {
       name: 'firefox',
       testMatch:
-        /(scene-workshop|simple-uv|pixel-cutouts|gallery-project-import|duplicate-selection|plane(?:-handles)?)\.spec\.ts/,
+        /(scene-workshop|simple-uv|pixel-cutouts|pixel-scale|pivot-visual|rig-builder|gallery-project-import|duplicate-selection|plane(?:-handles|-cutouts)?)\.spec\.ts/,
       use: { ...devices['Desktop Firefox'] },
     },
     {

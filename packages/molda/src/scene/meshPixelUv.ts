@@ -101,15 +101,15 @@ export function pixelMeshUv(
     )
     const coordinates = [...used].map((id) => points.get(id)!)
     const min: Vec2 = [
-      Math.floor(Math.min(...coordinates.map((p) => p[0]))),
-      Math.floor(Math.min(...coordinates.map((p) => p[1]))),
+      Math.min(...coordinates.map((p) => p[0])),
+      Math.min(...coordinates.map((p) => p[1])),
     ]
     charts.push({
       faces,
       points,
       min,
-      width: Math.max(1, Math.ceil(Math.max(...coordinates.map((p) => p[0]))) - min[0]),
-      height: Math.max(1, Math.ceil(Math.max(...coordinates.map((p) => p[1]))) - min[1]),
+      width: pixelExtent(Math.max(...coordinates.map((p) => p[0])) - min[0]),
+      height: pixelExtent(Math.max(...coordinates.map((p) => p[1])) - min[1]),
     })
   }
   const layout = packSceneShelves(charts)
@@ -131,4 +131,10 @@ export function pixelMeshUv(
     return [(slot.x + point[0] - chart.min[0]) / side, (slot.y + point[1] - chart.min[1]) / side]
   })
   return { mesh: mapped, width: side, height: side, charts: charts.map((chart) => chart.faces) }
+}
+
+/** Only absorb floating-point error at integer boundaries; fractional coverage rounds up. */
+export function pixelExtent(value: number) {
+  const integer = Math.round(value)
+  return Math.max(1, Math.ceil(Math.abs(value - integer) <= 1e-10 ? integer : value))
 }

@@ -59,7 +59,7 @@ test('position and size fields, click steps and advanced dimensions use units or
   await size.press('ArrowUp')
   await size.press('Enter')
   await expect(size).toHaveValue('3.4')
-  await page.getByText('Mais sobre a peça', { exact: true }).click()
+  await page.getByText('Ajustar por cliques', { exact: true }).click()
   await page
     .getByRole('button', { name: 'Tamanho', exact: true })
     .and(page.locator('[aria-keyshortcuts="S"]'))

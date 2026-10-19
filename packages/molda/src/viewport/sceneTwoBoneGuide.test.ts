@@ -40,11 +40,10 @@ test('a four-point guide allocates only 192 attribute bytes, reuses them, suppre
   const overlay = new SceneSupportOverlay(4),
     source = makeSceneTwoBoneFixture(),
     prepared = prepareSceneTwoBonePose(source, 'clip', ['root', 'middle', 'tip'], 0),
-    objects = overlay.root.children.map((object) => {
-      if (!(object instanceof Points || object instanceof LineSegments))
-        throw new Error('Missing guide')
-      return object
-    }),
+    objects = overlay.root.children.filter(
+      (object): object is Points | LineSegments =>
+        object instanceof Points || object instanceof LineSegments,
+    ),
     attributes = objects.map((object) => {
       const position = object.geometry.getAttribute('position')
       if (!(position instanceof BufferAttribute)) throw new Error('Missing owned attribute')
@@ -57,6 +56,7 @@ test('a four-point guide allocates only 192 attribute bytes, reuses them, suppre
     object.material.addEventListener('dispose', () => disposed++)
   }
   try {
+    expect(objects).toHaveLength(3)
     expect(attributes.reduce((bytes, attribute) => bytes + attribute.array.byteLength, 0)).toBe(192)
     for (let i = 0; i < 120; i++) {
       const points = prepareSceneTwoBoneGuide(prepared.sample([1, 1, i / 100]).pose, () => true)

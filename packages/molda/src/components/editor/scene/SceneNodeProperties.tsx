@@ -1,19 +1,15 @@
-import { type CSSProperties, useId } from 'react'
+import type { CSSProperties } from 'react'
 import { COPY } from '../../../core/copy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import {
   deleteSceneNodes,
-  renameSceneNode,
-  reparentSceneNodes,
   resizeScenePrimitive,
-  setSceneNodeFlag,
   setScenePrimitiveDetail,
 } from '../../../scene/commands'
 import { editScenePath } from '../../../scene/pathCommands'
 import { duplicateSceneNodesNearby } from '../../../scene/placement'
 import { primitiveDetail } from '../../../scene/primitiveDetail'
 import { RequiresTool, useMoldaToolAccess } from '../../toolAccess'
-import { Button } from '../../ui/Button'
 import { Copy, Trash2 } from '../../ui/icons'
 import { focusWorkshopStage } from './focusStage'
 import { SceneAdjustmentForm } from './SceneAdjustmentForm'
@@ -36,7 +32,7 @@ const DISCLOSURE = 'mld-disclosure'
 
 /**
  * Cartão contextual da peça: apenas o ajuste da ferramenta ativa, seguido da aparência.
- * Medidas, organização e operações avançadas ficam em detalhes com seus respectivos acessos.
+ * A organização das peças fica na árvore; operações avançadas respeitam seus acessos.
  */
 export function SceneNodeProperties({
   workshop,
@@ -44,7 +40,6 @@ export function SceneNodeProperties({
   workshop: ReturnType<typeof useSceneWorkshop>
 }) {
   const copy = COPY.scene
-  const nameId = useId()
   const chosenMode = workshop.tool
   // O portão: mover, girar e mudar tamanho são `model.pieces`; o ponto de giro e as medidas,
   // `model.precise`. Trancado não aparece.
@@ -54,8 +49,7 @@ export function SceneNodeProperties({
   )
   const mode = modes.find((mode) => mode === chosenMode)
   const precise = can('model.precise')
-  const { primary, selected, run, document, index, covered } = workshop
-  const groups = document.nodes.filter((node) => node.kind === 'group' && !covered.has(node.id))
+  const { primary, selected, run, document, index } = workshop
   const geometry = primary?.kind === 'mesh' ? index.geometries.get(primary.geometryId) : undefined
   if (!selected.length)
     return (
@@ -128,11 +122,15 @@ export function SceneNodeProperties({
           )}
         </p>
       )}
-      {primary && (can('model.coordinates') || can('model.pivot')) && (
+      {primary && mode !== 'pivot' && (can('model.coordinates') || can('model.pivot')) && (
         <ScenePieceCoordinates workshop={workshop} />
       )}
-      {primary && workshop.tool === 'pivot' && can('model.pivot') && can('model.precise') && (
-        <ScenePivotChoices workshop={workshop} precision />
+      {primary && mode === 'pivot' && <ScenePivotChoices workshop={workshop} />}
+      {primary && mode !== 'pivot' && can('model.pieces') && (
+        <details className={DISCLOSURE}>
+          <summary>Ajustar por cliques</summary>
+          <SceneTransformSteps workshop={workshop} />
+        </details>
       )}
       <RequiresTool family="model.pieces">
         <SceneFlipControls workshop={workshop} />
@@ -212,96 +210,6 @@ export function SceneNodeProperties({
         />
       )}
       <SceneMirrors workshop={workshop} />
-      {/* Com várias escolhidas sobra o grupo: colocar todas de uma vez num grupo continua aqui. */}
-      <details className={DISCLOSURE}>
-        <summary>{SCENE_SHELL_COPY.moreAboutPiece}</summary>
-        <div className="space-y-3 px-1 pb-1">
-          {primary && can('model.pieces') && <SceneTransformSteps workshop={workshop} />}
-          {primary && (
-            <>
-              <form
-                key={`${primary.id}-${primary.name}`}
-                className="space-y-2"
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  const name = new FormData(event.currentTarget).get('name')
-                  if (typeof name === 'string')
-                    run((source) => renameSceneNode(source, primary.id, name))
-                }}
-              >
-                <label htmlFor={nameId} className="text-sm font-bold text-mld-text">
-                  {copy.nodeName}
-                </label>
-                <input
-                  id={nameId}
-                  name="name"
-                  required
-                  maxLength={48}
-                  defaultValue={primary.name}
-                  className="min-h-11 w-full rounded-lg border border-mld-border bg-mld-surface px-3 text-sm text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent"
-                />
-                <Button type="submit" className="w-full text-sm">
-                  {copy.rename}
-                </Button>
-              </form>
-              <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-mld-text">
-                <input
-                  type="checkbox"
-                  name="visible"
-                  checked={!primary.hidden}
-                  className="size-5 accent-mld-accent"
-                  onChange={(event) =>
-                    run((source) =>
-                      setSceneNodeFlag(source, [primary.id], 'hidden', !event.target.checked),
-                    )
-                  }
-                />
-                {copy.visible}
-              </label>
-              <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-mld-text">
-                <input
-                  type="checkbox"
-                  name="locked"
-                  checked={primary.locked}
-                  className="size-5 accent-mld-accent"
-                  onChange={(event) =>
-                    run((source) =>
-                      setSceneNodeFlag(source, [primary.id], 'locked', event.target.checked),
-                    )
-                  }
-                />
-                {copy.locked}
-              </label>
-            </>
-          )}
-          <RequiresTool family="model.pieces">
-            <details className={DISCLOSURE}>
-              <summary>{copy.organize}</summary>
-              <div className="space-y-1">
-                <Button
-                  className="w-full text-sm"
-                  disabled={selected.every((id) => index.scene.nodes.get(id)?.parentId === null)}
-                  onClick={() => run((source) => reparentSceneNodes(source, selected, null))}
-                >
-                  {copy.root}
-                </Button>
-                {groups.map((group) => (
-                  <Button
-                    key={group.id}
-                    className="w-full justify-start text-sm"
-                    onClick={() => run((source) => reparentSceneNodes(source, selected, group.id))}
-                  >
-                    {group.name}
-                  </Button>
-                ))}
-                {groups.length === 0 && (
-                  <p className="p-2 text-sm text-mld-muted">{copy.noGroups}</p>
-                )}
-              </div>
-            </details>
-          </RequiresTool>
-        </div>
-      </details>
     </div>
   )
 }

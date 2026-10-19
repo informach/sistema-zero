@@ -62,3 +62,24 @@ Testes de domínio, propriedade de sessão e regressão de vínculos existentes;
 fluxo completo em Chromium e Firefox; conferência visual do painel em tamanhos
 de tela usuais; vocabulário infantil, TypeScript, lint e build do playground.
 Não publicar nem alterar projetos existentes ao abrir a ferramenta.
+
+## Implementação e conferência local
+
+- Painel guiado à direita, com marcação numerada diretamente no palco, escolha
+  Frente/Lado/Cima e correção de pontos. Arrastar a câmera não marca articulações.
+- Preparação isolada da malha, cadeia e pesos; teste real da dobra pelo painel.
+  A confirmação guarda o repouso, nunca a rotação usada no teste, em uma operação
+  de desfazer/refazer. Miniatura e salvamento não recebem a prévia.
+- Cancelamento e troca de contexto invalidam as ações anteriores; interrupções
+  do cálculo preservam os pontos. Revogação de acesso e desconexão abortam a sessão.
+- Vínculos existentes e edição manual continuam em Ajustes avançados. O atalho
+  para Animar escolhe um osso que movimenta a cadeia, em vez da ponta sem filhos.
+- Conferidos pintura/UV, cópia de geometria compartilhada, pais com reflexão e
+  escala desigual, preservação de animações, cancelamento e exportação GLB.
+- Verificação: 127 testes de domínio/integração, 16 de vocabulário, 8 fluxos em
+  Chromium/Firefox (incluindo 1024×768), TypeScript, lint e build do playground.
+  A conferência visual retirou também a reserva de 300 px do painel antigo em
+  telas menores; a montagem usa toda a altura disponível do palco.
+  Exportação mantém o aviso já existente do validador sobre a hierarquia da malha
+  vinculada (`NODE_SKINNED_MESH_NON_ROOT`), sem erros de validação.
+- Implementação disponível no playground local; sem publicação nesta etapa.

@@ -7,6 +7,20 @@ import { createMemoryPersistence } from './memoryPersistence'
 import { MoldaStorageBudgetError, markMoldaAssetClosed, markMoldaAssetOpen } from './persistence'
 
 describe('galleryStore', () => {
+  test('new gallery models default to one pixel per unit without converting existing models or overriding an explicit density', async () => {
+    const old = makeModel(),
+      persistence = createMemoryPersistence([old])
+    const gallery = createGalleryStore(persistence)
+    await gallery.getState().load()
+    const created = await gallery.getState().create({ kind: 'model', name: 'nova' })
+    expect(created.ok && created.asset.kind === 'model' && created.asset.texelsPerUnit).toBe(1)
+    const detailed = await gallery
+      .getState()
+      .create({ kind: 'model', name: 'detalhada', texelsPerUnit: 4 })
+    expect(detailed.ok && detailed.asset.kind === 'model' && detailed.asset.texelsPerUnit).toBe(4)
+    expect(await persistence.load(old.id)).toEqual(old)
+  })
+
   test('listing retains summaries only and CRUD reads just its target from the latest disk revision', async () => {
     const p = createMemoryPersistence([makeModel(), makeSky()])
     const listContent = spyOn(p, 'loadAll')

@@ -18,7 +18,7 @@ export const MOLDA_LIMITS = {
   minSkin: 4,
   maxSkin: 32,
   /** Texels por unidade da grade ("resolução da pele"). */
-  texelsPerUnit: [2, 4, 8] as const,
+  texelsPerUnit: [1, 2, 4, 8] as const,
   /** Lado máximo do atlas (potência de 2) no export. */
   atlasMax: 512,
   /** Lados possíveis de uma textura. */
@@ -67,6 +67,8 @@ export const MOLDA_LIMITS = {
 } as const
 
 export type TexelsPerUnit = (typeof MOLDA_LIMITS.texelsPerUnit)[number]
+/** New workshop creations only; legacy readers and factories retain their original default. */
+export const NEW_MODEL_TEXELS_PER_UNIT: TexelsPerUnit = 1
 export type TextureSize = (typeof MOLDA_LIMITS.textureSizes)[number]
 
 export function isTexelsPerUnit(value: unknown): value is TexelsPerUnit {

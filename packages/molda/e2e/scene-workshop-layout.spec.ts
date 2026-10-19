@@ -297,3 +297,48 @@ test('no nível de entrada, a oficina padrão não cobre nada', async ({ page })
   await checkEverySize(page, 'Pintar no básico')
   expect(pageErrors).toEqual([])
 })
+
+test('o painel direito mantém peças acima do conteúdo de cada modo', async ({ page }, testInfo) => {
+  await openFreshModel(page, 'painel-organizado-e2e', 'nivel=god')
+  await page.getByText('Adicionar', { exact: true }).click()
+  await page.getByRole('button', { name: 'Caixa', exact: true }).click()
+  await page.setViewportSize({ width: 1366, height: 768 })
+
+  for (const mode of ['Modelar', 'Pintar', 'Animar'] as const) {
+    await page.getByRole('button', { name: mode, exact: true }).click()
+    await page.locator('.mld-workshop-inspector').screenshot({
+      path: testInfo.outputPath(`painel-${mode.toLowerCase()}-desktop.png`),
+    })
+    const pieces = await page.locator('.mld-inspector-pieces').boundingBox()
+    const overview = (await page.locator('.mld-inspector-overview').count())
+      ? await page.locator('.mld-inspector-overview').boundingBox()
+      : null
+    const details = await page.locator('.mld-inspector-properties').boundingBox()
+    expect(pieces).not.toBeNull()
+    expect(details).not.toBeNull()
+    if (overview) {
+      expect(pieces!.y + pieces!.height, mode).toBeLessThanOrEqual(overview.y)
+      expect(overview.y + overview.height, mode).toBeLessThanOrEqual(details!.y)
+    } else {
+      expect(pieces!.y + pieces!.height, mode).toBeLessThanOrEqual(details!.y)
+    }
+  }
+
+  await page.getByRole('button', { name: 'Pintar', exact: true }).click()
+  await page.setViewportSize({ width: 1024, height: 768 })
+  const tabs = page.getByRole('tablist', { name: 'Painel da criação' }).getByRole('tab')
+  await expect(tabs).toHaveText(['Peças', 'Cores', 'Ajustes'])
+  await expect(page.getByRole('tabpanel', { name: 'Cores' })).toBeVisible()
+  await expect(page.getByRole('tabpanel', { name: 'Ajustes' })).toBeHidden()
+  await page.locator('.mld-workshop-inspector').screenshot({
+    path: testInfo.outputPath('painel-pintar-compacto.png'),
+  })
+  await tabs.getByText('Ajustes').click()
+  await expect(page.getByRole('tabpanel', { name: 'Ajustes' })).toBeVisible()
+  await expect(page.getByRole('tabpanel', { name: 'Cores' })).toBeHidden()
+  await tabs.getByText('Peças').click()
+  await expect(page.getByRole('tabpanel', { name: 'Peças' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Animar', exact: true }).click()
+  await expect(tabs).toHaveText(['Peças', 'Movimentos', 'Pose'])
+})

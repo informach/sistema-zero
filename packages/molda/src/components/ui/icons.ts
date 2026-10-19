@@ -75,6 +75,7 @@ export {
   Redo2,
   Repeat,
   Rotate3d,
+  RotateCcw,
   RotateCw,
   Save,
   Scale3d,

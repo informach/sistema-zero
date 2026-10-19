@@ -29,6 +29,7 @@ import { compileSceneSkinGeometry, deformSceneSkin } from '../scene/skinPose'
 import { guideLine, guidePoints } from './sceneGuideDrawing'
 
 export interface ScenePreviewGuideState {
+  rig?: { points: readonly Vec3[]; active: number | null }
   points?: readonly Vec3[]
   snapPoints?: readonly Vec3[]
   path?: readonly Vec3[]
@@ -59,7 +60,17 @@ export class ScenePreviewGuide {
   readonly ghostLabelPoints: Vec3[] = []
   private source: ScenePreviewGuideState | null = null
   private midpoints: Points | null = null
+  private snapPoints: Points | null = null
   private cutLines: Array<{ line: LineSegments2; provisional: boolean }> = []
+  updateSnapVisibility(visible: (point: Vec3) => boolean) {
+    if (!this.snapPoints || !this.source?.snapPoints) return
+    const positions = this.snapPoints.geometry.getAttribute('position')
+    let count = 0
+    for (const point of this.source.snapPoints)
+      if (visible(point)) positions.setXYZ(count++, ...point)
+    positions.needsUpdate = true
+    this.snapPoints.geometry.setDrawRange(0, count)
+  }
   updateCutVisibility(
     visible: (point: Vec3) => boolean,
     visibleSegments?: (
@@ -101,8 +112,28 @@ export class ScenePreviewGuide {
     this.source = state
     if (!state) return
     const size = Math.max(state.size, 0.2)
-    if (state.snapPoints?.length)
-      this.root.add(guidePoints(state.snapPoints, 10, 0xffffff, 0x8b3fd9, 2))
+    if (state.rig?.points.length) {
+      const points = state.rig.points
+      const segments = points.slice(1).map((point, i) => [points[i]!, point] as const)
+      if (segments.length) {
+        this.root.add(
+          guideLine(segments, 0xffffff, 7, false),
+          guideLine(segments, 0x8b3fd9, 4, false),
+        )
+      }
+      const markers = guidePoints(points, 16, 0xffffff, 0x8b3fd9, 3)
+      markers.frustumCulled = false
+      this.root.add(markers)
+      const active = state.rig.active
+      if (active !== null && points[active])
+        this.root.add(guidePoints([points[active]!], 24, 0x8b3fd9, 0xffffff, 3))
+    }
+    if (state.snapPoints?.length) {
+      this.snapPoints = guidePoints(state.snapPoints, 14, 0xffffff, 0x8b3fd9, 2)
+      // Camera-dependent filtering rewrites the buffer; an old bounding sphere is not valid.
+      this.snapPoints.frustumCulled = false
+      this.root.add(this.snapPoints)
+    }
     const add = (geometry: BufferGeometry, opacity: number) => {
       const mesh = new Mesh(
         geometry,
@@ -253,6 +284,7 @@ export class ScenePreviewGuide {
       }
     this.root.clear()
     this.midpoints = null
+    this.snapPoints = null
     this.cutLines = []
     this.ghostLabelPoints.length = 0
     this.source = null

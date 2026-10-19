@@ -17,6 +17,12 @@ import type { SceneDrawIssue } from './sceneRenderResource'
 import type { CameraView } from './types'
 
 export interface SceneGuideInput {
+  rig?: {
+    nodeId: string
+    enabled: boolean
+    plane: MeshCutPlane
+    mark(point: Vec3): void
+  }
   knife?: {
     nodeId: string
     midpoint: boolean
