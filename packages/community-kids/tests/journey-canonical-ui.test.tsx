@@ -166,6 +166,7 @@ test('canonical card: missing policy does not use the nullable badge fallback', 
   const { container } = render(<CreatorJourneyCard gamification={gamification(null)} />)
   expect(container.textContent).toContain('Não foi possível consultar sua jornada agora')
   expect(screen.queryByText('Faísca') === null).toBe(true)
+  expect(container.querySelector('.kids-aura')).toBeNull()
 })
 
 test('canonical card: team preview has no learner badge or virtual rewards', () => {
@@ -174,6 +175,16 @@ test('canonical card: team preview has no learner badge or virtual rewards', () 
   )
   expect(container.textContent).toContain('Prévia da equipe')
   expect(screen.queryByText('Faísca') === null).toBe(true)
+  expect(container.querySelector('.kids-aura')).toBeNull()
+})
+
+test('canonical card: aura follows persisted earned rank instead of a stale summary badge', () => {
+  const view = journey()
+  const gam = gamification(view)
+  gam.level = gam.level ? { ...gam.level, slug: 'god' } : null
+  const { container } = render(<CreatorJourneyCard gamification={gam} />)
+  expect(container.querySelector('.kids-aura')?.getAttribute('style')).toContain('--level-coder')
+  expect(container.querySelector('.kids-aura')?.getAttribute('style')).not.toContain('--level-god')
 })
 
 test('canonical presentation: lower horizon preserves every earned rank and retained tool', () => {

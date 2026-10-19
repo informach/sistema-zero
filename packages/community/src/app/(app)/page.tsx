@@ -23,7 +23,7 @@ export const dynamic = 'force-dynamic'
 /**
  * O Início adulto (direção de arte de 18/10/2026): a saudação com a próxima aula na faixa, o
  * cartão "Continuar" e o módulo atual, os recados e o ritmo ao lado, os cursos da pessoa e as
- * novidades da Mostra. Cada parte some sozinha quando o dado não existe.
+ * novidades do Mural. Cada parte some sozinha quando o dado não existe.
  */
 export default async function HomePage() {
   const [user, courses, threads, unread] = await Promise.all([
@@ -150,7 +150,7 @@ export default async function HomePage() {
           )}
         </section>
 
-        {/* A Mostra vem do hub: não segura o resto do Início (chega quando ficar pronta). */}
+        {/* O Mural vem do hub: não segura o resto do Início (chega quando ficar pronta). */}
         <Suspense fallback={null}>
           <ShowcaseNews viewerId={user?.id ?? null} />
         </Suspense>

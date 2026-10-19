@@ -178,7 +178,6 @@ export interface LessonCopy {
     cadernoIndisponivel: string
     vincularPdf: string
     baixaNaAula: string
-    nomeDoArquivo: string
   }
   certificado: {
     locked: string
@@ -354,15 +353,13 @@ export const ADULT_LESSON_COPY: LessonCopy = {
   },
   material: {
     tituloDoLivro: 'Material do curso',
-    previaDoLivro:
-      'Prévia do material. O livro 3D e o download do PDF ficam disponíveis na aula publicada.',
-    paraConcluir: 'Abra o livro ou baixe o PDF para concluir esta etapa.',
+    previaDoLivro: 'Prévia do material. O livro 3D fica disponível na aula publicada.',
+    paraConcluir: 'Abra o livro para concluir esta etapa.',
     caderno: 'Caderno do Aluno',
     livroNaAulaPublicada: 'O livro fica disponível na aula publicada.',
     cadernoIndisponivel: 'O caderno ainda não está disponível nesta aula. Você pode continuar.',
     vincularPdf: 'Vincule um PDF a este bloco de materiais para mostrar o caderno aqui.',
     baixaNaAula: 'baixa na aula',
-    nomeDoArquivo: 'Material da aula',
   },
   certificado: {
     locked: 'Conclua as aulas anteriores ao certificado para liberar a emissão.',

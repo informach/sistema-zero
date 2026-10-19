@@ -2,16 +2,46 @@
 
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ROOM_GRID, ROOM_ITEM_INFO, ROOM_WALL_PALETTE } from '../../../lib/room-catalog'
 import type { RoomEditorView, RoomItemView, RoomStateView, RoomThemeView } from '../../../lib/types'
+import { type CosmeticsSkin, ROOM_MESSAGES } from '../skin'
 import { effectiveFootprint, type Rot, rectsOverlap, WALL_H_CELLS, wallLength } from './coords'
 import { freeFloorSpot, freeWallSpot, isFreeAt } from './placement'
+import type { RoomBuilderViewProps } from './room-builder-model'
 import { type RoomBuilderTab, RoomBuilderView, type RoomLoadState } from './room-builder-view'
 
-/** Editor do quarto 3D: cena ao vivo + barra de categorias (móveis/piso/parede/clima/…). */
-export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null }) {
+/** A tela que o orquestrador desenha: a do Kids, ou a adulta (que também lê as dicas dos troféus). */
+export type RoomBuilderViewComponent = ComponentType<
+  RoomBuilderViewProps & { trophyHints?: Readonly<Record<string, string>> }
+>
+
+/** Teto de peças posicionadas (espelha o members). */
+const MAX_PIECES = 40
+
+function surfaceLabel(itemId: string): string {
+  return ROOM_ITEM_INFO[itemId]?.labelPt ?? itemId
+}
+
+/**
+ * Editor do quarto 3D: cena ao vivo + barra de categorias (móveis/piso/parede/clima/…).
+ * `skin="adult"`: a mesma regra com as frases da comunidade adulta ("Meu espaço 3D"); a tela adulta
+ * chega por `view` (ver `room-builder-adult.tsx`), para o pacote do Kids não a carregar.
+ */
+export function RoomBuilder({
+  avatarPhotoUrl,
+  skin = 'kids',
+  trophyHints,
+  view: View = RoomBuilderView,
+}: {
+  avatarPhotoUrl?: string | null
+  skin?: CosmeticsSkin
+  /** Pele adulta: como conquistar cada troféu, na voz do app (o Kids usa o `TROPHY_HINT`). */
+  trophyHints?: Readonly<Record<string, string>>
+  view?: RoomBuilderViewComponent
+}) {
+  const messages = ROOM_MESSAGES[skin]
   const [data, setData] = useState<RoomEditorView | null>(null)
   const [loadState, setLoadState] = useState<RoomLoadState>('loading')
   const [draft, setDraft] = useState<RoomStateView>({
@@ -165,14 +195,14 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     // Decide a colocação ANTES de mexer no estado: assim o toast só fala "adicionado" quando
     // a peça REALMENTE entrou (antes mentia mesmo com o quarto cheio / sem vão livre).
     const current = draftRef.current
-    if (current.placedItems.length >= 40) {
-      toast('Seu quarto está cheio! Tire algo antes de adicionar mais. 🧹')
+    if (current.placedItems.length >= MAX_PIECES) {
+      toast(messages.full(MAX_PIECES))
       return
     }
     if (info.mount === 'wall') {
       const s = freeWallSpot(current.placedItems, info.w, info.h)
       if (!s) {
-        toast('Não cabe mais nada nessa parede! 🧱')
+        toast(messages.wallFull)
         return
       }
       updateDraft((d) => ({
@@ -189,12 +219,12 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
           if (opt) {
             const placed = placeOnSurfaceAsNew(item.id, opt.itemId)
             if (placed) {
-              toast.success(`${info.labelPt} em cima! ✨`)
+              toast.success(messages.placedOn(info.labelPt, surfaceLabel(opt.itemId)))
               return
             }
           }
         }
-        toast('Não cabe mais nada no chão! 🧹')
+        toast(messages.floorFull)
         return
       }
       updateDraft((d) => ({
@@ -202,7 +232,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         placedItems: [...d.placedItems, { itemId: item.id, x: s.x, y: s.y }],
       }))
     }
-    toast.success(`${info.labelPt} no quarto! ✨`)
+    toast.success(messages.placed(info.labelPt))
   }
 
   function removeSelected() {
@@ -216,7 +246,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         const stillPlaced = placedItems.some((p) => !p.on && p.itemId === removed.itemId)
         if (!stillPlaced && placedItems.some((p) => p.on === removed.itemId)) {
           placedItems = placedItems.filter((p) => p.on !== removed.itemId)
-          toast('O que estava em cima voltou para a bandeja! 🧺')
+          toast(messages.childrenRemoved)
         }
       }
       return { ...d, placedItems }
@@ -271,7 +301,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     if (!it || !info?.stackable) return
     const slot = firstFreeSlot(current, parentId)
     if (slot === null) {
-      toast('Essa superfície está cheia! 🧺')
+      toast(messages.surfaceFull)
       return
     }
     updateDraft((d) => ({
@@ -281,7 +311,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
       ),
     }))
     setStackPicker(false)
-    toast.success(`${info.labelPt} em cima! ✨`)
+    toast.success(messages.placedOn(info.labelPt, surfaceLabel(parentId)))
   }
 
   /** Tira o filho do nicho e devolve ao 1º vão livre do chão. */
@@ -293,7 +323,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     if (!it?.on || !info) return
     const s = freeFloorSpot(current.placedItems, info.w, info.h)
     if (!s) {
-      toast('Não cabe mais nada no chão! 🧹')
+      toast(messages.floorFull)
       return
     }
     updateDraft((d) => ({
@@ -357,7 +387,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
       return rectsOverlap(x, y, fp.w, fp.h, p.x, p.y, ofp.w, ofp.h)
     })
     if (collides) {
-      toast('Sem espaço para girar aqui! 🔄')
+      toast(messages.noRoomToRotate)
       return
     }
     updateDraft((d) => ({
@@ -397,9 +427,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
       })
       const body = await res.json().catch(() => null)
       if (!res.ok) {
-        toast.error(
-          res.status === 402 ? 'Você ainda não tem moedas suficientes!' : 'Não consegui comprar.',
-        )
+        toast.error(res.status === 402 ? messages.notEnoughCoins : messages.buyRefused)
         return
       }
       const own = (list: RoomThemeView[] | undefined) =>
@@ -419,9 +447,9 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
       if (body?.unlimited === true) setCoinsUnlimited(true)
       // Sucesso desarma a confirmação; na falha ela fica de pé (dá p/ desistir ou tentar de novo).
       setConfirmBuyId(null)
-      toast.success('Desbloqueado! 🎉')
+      toast.success(messages.bought)
     } catch {
-      toast.error('Não consegui comprar agora.')
+      toast.error(messages.buyFailed)
     } finally {
       setBusy(null)
     }
@@ -437,16 +465,17 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         body: JSON.stringify(draftRef.current),
       })
       if (!res.ok) throw new Error('save failed')
-      toast.success('Quarto salvo! 🏠')
+      toast.success(messages.saved)
     } catch {
-      toast.error('Não consegui salvar agora. Tente de novo!')
+      toast.error(messages.saveFailed)
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <RoomBuilderView
+    <View
+      trophyHints={trophyHints}
       scene={{
         avatarPhotoUrl,
         data,

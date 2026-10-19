@@ -14,6 +14,7 @@ import type {
 import { cache } from 'react'
 import { getEnv } from '../lib/env'
 import type {
+  AdultJourneyBadgeView,
   AiCreditsView,
   AiUsageConsumeView,
   AmbassadorEnrollmentView,
@@ -806,9 +807,16 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     getAdultProfileReadonly(): Promise<GatewayResponse<AdultProfilePreferences>> {
       return gw.gatewayFetchReadonly('/members/adult/profile')
     },
-    getAdultPublicIdentities(
-      ids: string[],
-    ): Promise<GatewayResponse<{ identities: { userId: string; displayName: string }[] }>> {
+    getAdultPublicIdentities(ids: string[]): Promise<
+      GatewayResponse<{
+        identities: {
+          userId: string
+          displayName: string
+          photoUrl?: string
+          journey?: AdultJourneyBadgeView
+        }[]
+      }>
+    > {
       return gw.gatewayFetch('/members/adult/profiles/public-identities', {
         query: { ids: ids.join(',') },
       })

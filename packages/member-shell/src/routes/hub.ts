@@ -14,6 +14,7 @@ import {
   UGC_IMAGE_INPUT_MIME,
 } from '../lib/hub-attachments'
 import {
+  type AdultPublicIdentity,
   attachAdultPublicIdentities,
   attachAuthorAvatars,
   collectAuthorIds,
@@ -109,8 +110,8 @@ export function createHubRoutes(deps: {
   audience: MembersAudience
 }) {
   const { hub, members, media, session, audience } = deps
-  // Só o Clube/Mural KIDS mostra rosto+aura+nome de todos; o fórum adulto segue com a
-  // redação clássica (nome só quando público, sem avatar).
+  // Só o Clube/Mural KIDS mostra rosto+aura+nome de todos; no adulto, nome, foto e a etapa da
+  // jornada (o anel da cor) só de quem mostra o perfil.
   const revealAuthors = audience === 'kids'
   // Id do viewer p/ redigir o autor de terceiros (null = sem sessão → tudo redigido).
   const viewerId = async (): Promise<string | null> => (await session.getSession())?.id ?? null
@@ -127,13 +128,13 @@ export function createHubRoutes(deps: {
   ): Promise<NextResponse> => {
     if (!revealAuthors) {
       const ids = [...collectAuthorIds(r.body)]
-      const identities = new Map<string, string>()
+      const identities = new Map<string, AdultPublicIdentity>()
       try {
         for (let offset = 0; offset < ids.length; offset += 100) {
           const response = await members.getAdultPublicIdentities(ids.slice(offset, offset + 100))
           if (response.status === 200)
-            for (const identity of response.body?.identities ?? [])
-              identities.set(identity.userId, identity.displayName)
+            for (const { userId, ...identity } of response.body?.identities ?? [])
+              identities.set(userId, identity)
         }
       } catch {
         /* Public identities fail closed; the forum remains readable. */

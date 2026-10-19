@@ -70,8 +70,37 @@ export interface AdultJourneyView {
     title: string
     completed: boolean
     available: boolean
+    /** Todos os cursos que a etapa pede (a página da etapa lista os feitos e os que faltam). */
+    requirements: { courseId: string; milestone: 'complete' | 'showcase' }[]
     missing: { courseId: string; milestone: 'complete' | 'showcase' }[]
+    /** O que a etapa libera quando termina. */
+    capabilities: AdultCreatorCapability[]
   }[]
+}
+
+/**
+ * Onde a pessoa está na jornada adulta: a primeira etapa ainda não concluída. Quem concluiu todas
+ * fica numa posição a mais, `stages.length + 1` (sem etapa, `stageId`/`title` nulos), que é o
+ * "jornada completa" da apresentação. A cor e o nome dessa última posição são da interface.
+ */
+export interface AdultJourneyPosition {
+  /** 1-based. */
+  position: number
+  /** Etapas configuradas + a posição de quem terminou tudo. */
+  total: number
+  stageId: string | null
+  title: string | null
+}
+
+export function adultJourneyPosition(
+  view: Pick<AdultJourneyView, 'configured' | 'stages'> | null | undefined,
+): AdultJourneyPosition | null {
+  if (!view?.configured || view.stages.length === 0) return null
+  const total = view.stages.length + 1
+  const index = view.stages.findIndex((stage) => !stage.completed)
+  if (index === -1) return { position: total, total, stageId: null, title: null }
+  const stage = view.stages[index]
+  return { position: index + 1, total, stageId: stage?.id ?? null, title: stage?.title ?? null }
 }
 
 /** Exige as etapas anteriores e os marcos reais; XP e licença não substituem conclusão. */
@@ -85,15 +114,27 @@ export function projectAdultJourney(
   const earned = new Set(frozen)
   let previousComplete = true
   const stages = policy.stages.map((stage) => {
-    const missing = stage.requirements.filter((requirement) => {
-      const milestone = byCourse.get(requirement.courseId)
-      return !milestone?.completed || (requirement.milestone === 'showcase' && !milestone.showcased)
-    })
+    const missing = stage.requirements
+      .filter((requirement) => {
+        const milestone = byCourse.get(requirement.courseId)
+        return (
+          !milestone?.completed || (requirement.milestone === 'showcase' && !milestone.showcased)
+        )
+      })
+      .map((requirement) => ({ ...requirement }))
     const available = previousComplete
     const completed = available && missing.length === 0
     if (completed) for (const capability of stage.capabilities) earned.add(capability)
     previousComplete = completed
-    return { id: stage.id, title: stage.title, completed, available, missing }
+    return {
+      id: stage.id,
+      title: stage.title,
+      completed,
+      available,
+      requirements: stage.requirements.map((requirement) => ({ ...requirement })),
+      missing,
+      capabilities: [...stage.capabilities],
+    }
   })
   return {
     audience: 'adult',

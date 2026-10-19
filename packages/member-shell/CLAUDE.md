@@ -10,6 +10,46 @@ a autorização real; flags/roles do cliente não habilitam Pro/IA. Preserve rem
 projetos já existentes e todos os contratos JS/Python. Antigos exemplos resolveStudioTier nos
 registros históricos abaixo não são autoridade normal Kids. Gates integrados ainda pendentes.
 
+## Peças com a pele da comunidade adulta (19/10/2026)
+
+Pedidos da direção de arte adulta (o CLAUDE.md do community, §"Entrada, páginas públicas…"). O
+padrão de tudo abaixo continua sendo o Kids, byte por byte.
+
+- **`createMemberProxy({ publicPaths })`**: caminhos públicos DENTRO de um prefixo protegido (o
+  caminho exato e as subrotas). O adulto usa `['/ajuda/entrar']`. Teste em
+  `tests/proxy-palette.test.ts`.
+- **`PublicPlayer({ skin: 'adult' })`** e `PublicStage({ frameClassName })`: cabeçalho marinho com a
+  logo, o nome do jogo e o crédito escritos, botões com texto, a linha de como jogar e os estados
+  sem mascote. ⚠️ Lê tokens do adulto (`--topo`, `--topo-borda`, `--topo-texto`).
+- **O bloco E-book (livro 3D) é só para ler** (decisão dela, 19/10/2026): o "Baixar PDF" saiu
+  do `EbookBlockView` nos DOIS apps; o arquivo se baixa pelo bloco de materiais. O acesso conta
+  ao abrir o livro (`onMaterialAccess('opened')`); o `downloaded` antigo segue valendo no core.
+- **`lib/help-return.ts`** (`resolveHelpReturn(valor, rótulo)`): a allowlist do `?voltar=` do Como
+  fazer saiu do Kids para cá (o Kids reexporta com "Voltar para a fase"; o adulto usa "Voltar para a
+  aula") e devolve também `courseSlug`/`lessonId`.
+- **Meu avatar 3D e Meu espaço 3D na pele adulta** (`skin="adult"`, `components/cosmetics`): a
+  MESMA lógica (`configurator.tsx`, `room-builder.tsx`) com outra tela (`configurator-adult.tsx`,
+  `room-builder-view-adult.tsx`) e as frases de `skin.ts`. ⚠️⚠️ A tela adulta só entra por uma
+  ENTRADA própria (`configurator-adult-entry` e `room-builder-adult`, exportadas no
+  `package.json`): o `configurator.tsx` recebe `adultView` e o `room-builder.tsx` recebe `view`,
+  então quem importa só o Kids nunca baixa a tela adulta (o review de 19/10/2026 achou o pacote do
+  Kids carregando os dois). O `AvatarConfiguratorClient` escolhe o `dynamic` pela pele; o
+  `RoomBuilderView` virou só do Kids (sem `skin`). As dicas dos troféus adultos chegam do app por
+  `trophyHints` (nunca a dica do Kids), e o desenho mora no `cosmetics-adult.css` do community,
+  que lê tokens do `globals.css` de lá (`community/tests/adult-cosmetics.test.ts` trava as classes
+  e os tokens). Sem o avatar carregado, o painel adulto diz "Carregando" em vez das peças.
+
+## A etapa da jornada adulta nas listas (19/10/2026)
+
+- `AdultJourneyBadgeView {position, total, title}` (`lib/types.ts`): `journey?` em
+  `RankingEntryView`/`LeagueEntryView` e `authorJourney?` nos tópicos/comentários do hub. `total`
+  inclui a Lenda (a última posição, `title: null`).
+- **Hub adulto:** `attachAdultPublicIdentities` recebe `{displayName, photoUrl?, journey?}` por
+  autor e grava `authorDisplayName`, `authorAvatarUrl` e `authorJourney` SÓ de quem mostra o
+  perfil; quem não mostra sai com `authorAvatarUrl`/`authorJourney` `null`, mesmo que um registro
+  antigo do Hub trouxesse a foto. `getAdultPublicIdentities` devolve foto e etapa.
+- `courseId` obrigatório em `CatalogCourseView`/`MyCourseView`: identidade canônica usada pelas jornadas Kids e adulta.
+
 ## Estúdio JS/Python e audiência do host (18/10/2026)
 
 Os dois hosts usam os mesmos editores e rotas; a audiência estática de `createShell` acompanha descoberta, autorização e owners dos hooks. A identidade real do adulto segue para Members/Pensa; o namespace local `adult:<id>` serve apenas ao armazenamento. O BFF recusa contexto de audiência incompatível e o servidor reaplica política e posse na operação.

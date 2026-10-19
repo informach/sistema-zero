@@ -53,6 +53,14 @@ acesso por matrícula sem novo gate. Curso normal fora da escada também pode te
 Focados atuais: canonical/policy/parity/pause/journey/journey-state, 60 testes/2772 asserções.
 Novos consumidores Members estão em migração isolada; isso não qualifica a integração completa.
 
+## Posição na jornada adulta (19/10/2026)
+
+`adultJourneyPosition(view)` (`journey/adult-policy.ts`): a etapa atual é a primeira não concluída
+(`{position, total, stageId, title}`); com todas concluídas, `position = total = stages + 1` e
+`title: null` (a Lenda). Jornada não configurada ou vazia → `null`. A view de cada etapa traz
+também `requirements` e `capabilities` (cópias, nunca aliases da política). É a régua única que o
+members (listas) e o community (anel, chip, página da etapa) usam.
+
 ## Objetivos que RODAM o jogo (18/10/2026)
 
 `learning/project-execution.ts`: as regras `behavior`/`functionReturns`/`script`

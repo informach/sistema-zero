@@ -109,7 +109,12 @@ export function UserMenu({
 
   const avatar = (size: 'sm' | 'md') =>
     isProfile ? (
-      <AvatarWithAura photoUrl={avatarPhotoUrl} name={displayName} size={size} />
+      <AvatarWithAura
+        photoUrl={avatarPhotoUrl}
+        name={displayName}
+        levelSlug={levelSlug}
+        size={size}
+      />
     ) : (
       <UserAvatar
         avatarUrl={user.avatarUrl}
@@ -140,6 +145,7 @@ export function UserMenu({
               <AvatarWithAura
                 photoUrl={avatarPhotoUrl}
                 name={displayName}
+                levelSlug={levelSlug}
                 size="sm"
                 className="size-10"
               />

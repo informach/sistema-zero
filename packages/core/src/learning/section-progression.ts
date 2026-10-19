@@ -490,8 +490,7 @@ export function sectionCompletionIssues(
           add('Um arquivo obrigatório foi removido ou ainda não foi enviado.')
         }
       } else if (content.kind === 'ebook') {
-        if (s.intent !== 'material')
-          add('Use a seção Material do curso para exigir abrir o livro ou baixar o PDF.')
+        if (s.intent !== 'material') add('Use a seção Material do curso para exigir abrir o livro.')
       } else if (content.kind === 'quiz') {
         if (
           typeof content.passingScore !== 'number' ||

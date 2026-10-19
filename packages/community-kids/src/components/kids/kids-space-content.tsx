@@ -364,7 +364,7 @@ function ForumChannel({
                       {item.pending ? <Tag>Aguardando ✅</Tag> : null}
                       <span className="truncate font-extrabold text-[0.9375rem]">{item.title}</span>
                     </span>
-                    <span className="mt-1.5 flex items-center gap-3 text-muted-foreground text-xs">
+                    <span className="mt-2.5 flex items-center gap-3 text-muted-foreground text-xs">
                       <AuthorBadge
                         item={item}
                         viewerId={viewerId}

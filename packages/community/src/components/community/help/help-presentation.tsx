@@ -15,6 +15,8 @@ import {
   type LucideIcon,
   Palette,
   Sparkles,
+  UserRound,
+  Users,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -32,6 +34,8 @@ const HELP_ICON: Record<HelpCollectionIcon, LucideIcon> = {
   gamepad: Gamepad2,
   sparkles: Sparkles,
   book: BookOpen,
+  users: Users,
+  user: UserRound,
 }
 
 /** `marca` segue a cor escolhida no perfil; as demais são as cores de identidade das oficinas. */

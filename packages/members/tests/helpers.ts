@@ -216,9 +216,9 @@ export function buildApp(
   // gamification recebe avatar/room p/ a compra ATÔMICA (spendCoins concede a posse junto).
   const gamification = new InMemoryGamificationRepository({ entitlements, courses, avatar, room })
   const adultProfileRepository = new InMemoryAdultProfileRepository()
-  const adultProfile = new AdultProfileService(adultProfileRepository, clock)
   const adultJourneyRepository = new InMemoryAdultJourneyRepository(gamification)
   const adultJourney = new AdultJourneyService(adultJourneyRepository, courses, clock)
+  const adultProfile = new AdultProfileService(adultProfileRepository, clock, avatar, adultJourney)
   const parentReports = new InMemoryParentReportRepository()
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
@@ -373,6 +373,7 @@ export function buildApp(
     authGateway,
     new EncryptedRankingCursorCodec(WEBHOOK_SECRET),
     adultProfileRepository,
+    adultJourney,
   )
 
   const env = {
@@ -668,6 +669,7 @@ export function buildApp(
         avatarsByProfiles,
         authGateway,
         adultProfileRepository,
+        adultJourney,
       ),
       getRankingLeaderboard,
       childrenStats: new GetChildrenStatsService(

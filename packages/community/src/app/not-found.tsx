@@ -1,14 +1,23 @@
 import Link from 'next/link'
+import { StatusScreen } from '@/components/community/status-screen'
 
-/** Página 404 da área do aluno. */
+/** Página 404 da comunidade adulta, com três caminhos para seguir. */
 export default function NotFound() {
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-6 text-center">
-      <h1 className="text-2xl font-semibold">Página não encontrada</h1>
-      <p className="text-muted-foreground">O endereço que você acessou não existe ou foi movido.</p>
-      <Link href="/" className="text-interactive hover:text-interactive-hover">
+    <StatusScreen
+      big="404"
+      title="Página não encontrada"
+      text="O endereço que você acessou não existe ou foi movido. Escolha um dos caminhos abaixo."
+    >
+      <Link href="/" className="sz-btn">
         Ir para o início
       </Link>
-    </div>
+      <Link href="/cursos" className="sz-btn-outline">
+        Ver os cursos
+      </Link>
+      <Link href="/ajuda" className="sz-btn-outline">
+        Ajuda
+      </Link>
+    </StatusScreen>
   )
 }

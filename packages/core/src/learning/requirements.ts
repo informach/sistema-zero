@@ -110,7 +110,8 @@ export function lessonCompletionRequirements(input: {
         )
         add(
           'MATERIAL_GATE_NOT_ACCESSED',
-          'Abra o livro ou baixe o PDF',
+          'Abra o livro',
+          // `downloaded` vem de quem baixou pelo bloco antes de 19/10/2026 (o botão saiu).
           saved?.answers.materialAccess === 'opened' ||
             saved?.answers.materialAccess === 'downloaded',
           'Material da aula',

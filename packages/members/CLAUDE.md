@@ -41,6 +41,31 @@ SQL opt-in em `tests/db/kids-journey.repository.test.ts` exige
 `KIDS_JOURNEY_TEST_DATABASE_URL` local com nome `kids_journey_*`; não usa `DATABASE_URL` como
 fallback. Aplica histórico real em banco descartável explícito. Skip não qualifica SQL.
 
+## A etapa da jornada adulta nas listas e o seed inicial (19/10/2026)
+
+- **Posição na jornada** (`adultJourneyPosition`, core): a etapa atual é a PRIMEIRA não concluída;
+  com todas concluídas, a posição é `stages.length + 1` (a Lenda, `title: null`). `total` =
+  etapas + 1. `AdultJourneyService.positions(userIds)` calcula em LOTE (uma leitura da política e
+  `listMilestonesForUsers`, UMA consulta `inArray` em `xp_events`); sem política, mapa vazio.
+- **Nas listas** (`AdultJourneyBadgeView {position, total, title}`): `RankingEntryView.journey`,
+  `LeagueEntryView.journey` e `AdultProfileService.publicIdentities` (agora com `photoUrl` e
+  `journey`). ⚠️ Privacidade: no ADULTO, etapa E FOTO só de quem mostra o perfil e da própria
+  pessoa; a foto de quem não mostra sai `null` no ranking e na liga (antes ia ao navegador e só a
+  tela a escondia). Best-effort: falha da jornada não derruba a lista.
+- **`courseId` em `CatalogCourseView` e `MyCourseView`** (aditivo): a jornada fala em `courseId`,
+  e a página da etapa e o Seu progresso adultos casam por ele.
+- **Seed inicial da jornada adulta** (`application/adult-journey/adult-journey-seed.ts` +
+  `scripts/seed-adult-journey.ts`, `bun run journey:seed-adult`): as 7 etapas do Kids, uma por
+  nível (Primeiros passos 2D … Avançado 3D), com os cursos ADULTOS, GRAVADOS e PUBLICADOS de cada
+  nível (`lenda` fora); para na primeira etapa sem curso. Libera ao concluir: Aprendiz → Estúdio e
+  Pinta; Inventor(a) → Molda; Arquiteto(a) de Mundos → Ponte, IA e Pensa (IA só depois de curso
+  avançado, regra do `configure`); Gênio da Criação → Pro. Marco por curso, como o Kids: terminar
+  E publicar no Mural no curso que tem a atividade de publicar (`listCourseIdsWithShowcaseBlock`),
+  senão só terminar; `--milestone=complete|showcase` força um só. **Mostra o plano e não grava**
+  sem `--apply`; com jornada já configurada, só troca com `--force`. Grava pela MESMA validação do
+  Admin (`configure` com a versão atual). ⚠️ Não rodar em staging/produção sem a confirmação da
+  dona. Testes: `tests/unit/adult-journey-seed.test.ts`.
+
 ## Contratos conciliados do Estúdio JS/Python (18/10/2026)
 
 `SectionProjectCheck` distingue objetivos JavaScript e Python. Python usa inspeção estrutural autorizada pelo servidor, vinculada ao perfil de runtime do inicial, ao vínculo durável da aula e, ao vivo, ao bloco/workspace/geração de escrita. A lista canônica da seção decide obrigatórios, extras e progressão; a simulação de autoria não registra conclusão ou XP. Entregar projeto/recado não recupera a antiga nota do bloco.

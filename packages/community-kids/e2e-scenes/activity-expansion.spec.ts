@@ -14,7 +14,15 @@ test('o título repetido da seção volta a ser visível ao ampliar a experiênc
 })
 
 for (const activity of [
-  { path: '/project-play', expand: 'Ampliar jogo', badge: 'Brinque', body: 'iframe' },
+  // O player do jogo troca o iframe do "Carregando…" por um elemento NOVO quando o jogo fica
+  // pronto (key nova). Guardar o nó antes disso prendia o teste ao placeholder, que sai da página
+  // com ou sem ampliar: o CI ora passava, ora não, conforme o jogo ficava pronto antes ou depois.
+  {
+    path: '/project-play',
+    expand: 'Ampliar jogo',
+    badge: 'Brinque',
+    body: 'iframe[aria-busy="false"]',
+  },
   { path: '/', expand: 'Ampliar experiência', badge: 'Experimente', body: '.sz-scene-console' },
 ]) {
   for (const viewport of [
@@ -42,6 +50,7 @@ for (const activity of [
           padding: style.padding,
         }
       })
+      await expect(block.locator(activity.body)).toHaveCount(1)
       const body = await block.locator(activity.body).elementHandle()
       await page.getByRole('button', { name: activity.expand }).click()
       const dialog = page.getByRole('dialog')

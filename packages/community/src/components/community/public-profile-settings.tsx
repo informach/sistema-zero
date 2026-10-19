@@ -158,7 +158,7 @@ export function PublicProfileSettings({
                 {busy === 'identity' ? 'Salvando...' : 'Salvar preferências'}
               </button>
               {saved.publicEnabled ? (
-                <Link className="sz-link" href={`/criador/${viewerId}`} prefetch={false}>
+                <Link className="sz-link" href={`/criador/${viewerId}?de=perfil`} prefetch={false}>
                   Ver meu perfil público
                 </Link>
               ) : null}

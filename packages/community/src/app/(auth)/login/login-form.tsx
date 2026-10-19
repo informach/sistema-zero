@@ -1,248 +1,358 @@
 'use client'
 
-import { Button } from '@sistemazero/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sistemazero/ui/card'
-import { Input } from '@sistemazero/ui/input'
-import { Field } from '@sistemazero/ui/label'
-import { PasswordInput } from '@sistemazero/ui/password-input'
-import { Spinner } from '@sistemazero/ui/spinner'
 import Link from 'next/link'
-import { useState } from 'react'
-import { toast } from 'sonner'
-import { z } from 'zod'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
+import {
+  AuthAlert,
+  CODE_ERROR,
+  CodeInput,
+  clockTime,
+  describedBy,
+  EMAIL_HINT_ERROR,
+  errorCodeOf,
+  Field,
+  inputClass,
+  LiveMessage,
+  looksLikeEmail,
+  NETWORK_ERROR,
+  PasswordField,
+  postJson,
+  SubmitButton,
+  TextButton,
+} from '@/components/community/auth/auth-fields'
+import { AuthHeading, AuthHelpLink } from '@/components/community/auth-split-shell'
+import { cn } from '@/lib/cn'
 
-const emailSchema = z.string().email('E-mail inválido')
-
-const ERROR_MESSAGES: Record<string, string> = {
-  INVALID_CREDENTIALS: 'E-mail ou senha incorretos.',
-  INVALID_OTP: 'Código inválido ou expirado.',
-  INACTIVE: 'Conta inativa. Fale com o suporte.',
-  INVALID_INPUT: 'Dados inválidos.',
-  // Conta comprada/convidada que ainda não definiu a senha: o login por código é
-  // bloqueado. A saída é criar a senha pelo link de 1º acesso (ou "esqueci a senha").
-  PASSWORD_NOT_SET:
-    'Você ainda não criou sua senha. Use o link de primeiro acesso do seu e-mail ou toque em "Esqueci minha senha".',
-  TOO_MANY_ATTEMPTS: 'Muitas tentativas. Aguarde um minuto e tente novamente.',
-  SERVICE_UNAVAILABLE: 'Serviço indisponível no momento. Tente novamente em instantes.',
+/** As recusas do servidor, ditas para quem está entrando (sem jargão, com o próximo passo). */
+const SERVER_MESSAGES: Record<string, ReactNode> = {
+  INVALID_CREDENTIALS: (
+    <>
+      <strong>E-mail ou senha incorretos.</strong> Confira as letras maiúsculas e tente de novo, ou
+      use “Esqueci minha senha”.
+    </>
+  ),
+  INVALID_OTP: (
+    <>
+      <strong>Código errado ou vencido.</strong> Confira os 6 números ou toque em Reenviar código.
+    </>
+  ),
+  INACTIVE: (
+    <>
+      <strong>Esta conta está inativa.</strong> Veja na ajuda para entrar como falar com a equipe.
+    </>
+  ),
+  // Conta comprada que ainda não criou a senha: o código não entra por ela.
+  PASSWORD_NOT_SET: (
+    <>
+      <strong>Você ainda não criou a sua senha.</strong> Abra o link da mensagem de boas-vindas ou
+      use “Esqueci minha senha”.
+    </>
+  ),
+  TOO_MANY_ATTEMPTS: 'Muitas tentativas seguidas. Espere um minuto e tente de novo.',
+  TOO_MANY_REQUESTS: 'Muitas tentativas seguidas. Espere um minuto e tente de novo.',
+  SERVICE_UNAVAILABLE: 'O acesso está fora do ar agora. Tente de novo em alguns instantes.',
 }
 
 type Mode = 'password' | 'otp'
 type Errors = { email?: string; password?: string; code?: string }
 
-/** Login do aluno: por SENHA (padrão) ou por CÓDIGO (OTP por e-mail, passwordless). */
-export function LoginForm() {
+/**
+ * Entrar (direção de arte de 18/10/2026): por SENHA (padrão) ou por CÓDIGO no e-mail. Os erros
+ * ficam escritos embaixo do campo e a recusa do servidor vira um aviso fixo acima do botão.
+ */
+export function LoginForm({ notice }: { notice?: ReactNode }) {
   const [mode, setMode] = useState<Mode>('password')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [code, setCode] = useState('')
   const [codeSent, setCodeSent] = useState(false)
   const [errors, setErrors] = useState<Errors>({})
+  const [serverError, setServerError] = useState<ReactNode>(null)
   const [loading, setLoading] = useState(false)
+  const [resentAt, setResentAt] = useState<string | null>(null)
+  const [announcement, setAnnouncement] = useState('')
+  // "Usar outro e-mail" desmonta o botão que tinha o foco: ele volta para o campo do e-mail; o
+  // código enviado leva o foco para o campo do código.
+  const emailInput = useRef<HTMLInputElement>(null)
+  const codeInput = useRef<HTMLDivElement>(null)
+  const focusAfter = useRef<'email' | 'code' | null>(null)
+  useEffect(() => {
+    const target = focusAfter.current
+    focusAfter.current = null
+    if (target === 'email' && !codeSent) emailInput.current?.focus()
+    if (target === 'code' && codeSent) codeInput.current?.querySelector('input')?.focus()
+  }, [codeSent])
 
   function goHome() {
-    // Navegação de DOCUMENTO de propósito: o login muda cookies HttpOnly e o
-    // par `router.replace + router.refresh` corre um contra o outro (o refresh
-    // não espera a navegação commitar e re-renderiza /login, que agora redireciona
-    // — vercel/next.js#54766; o aluno ficava preso no /login até um F5). O full
-    // load garante que o servidor veja a sessão nova; `replace` tira o /login do
-    // histórico (voltar não retorna ao form).
+    // Navegação de DOCUMENTO de propósito: o login muda cookies HttpOnly e o par
+    // `router.replace + router.refresh` corre um contra o outro (vercel/next.js#54766). O full
+    // load garante que o servidor veja a sessão nova; `replace` tira o /login do histórico.
     window.location.replace('/')
-  }
-
-  function setIssues(error: z.ZodError) {
-    const next: Errors = {}
-    for (const issue of error.issues) {
-      const key = issue.path[0]
-      if (key === 'email' || key === 'password' || key === 'code') next[key] = issue.message
-    }
-    setErrors(next)
-  }
-
-  async function post(path: string, body: unknown): Promise<Response> {
-    return fetch(path, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-  }
-
-  async function toastError(res: Response, fallback: string) {
-    const data = (await res.json().catch(() => null)) as { error?: { code?: string } } | null
-    toast.error(ERROR_MESSAGES[data?.error?.code ?? ''] ?? fallback)
   }
 
   async function run(fn: () => Promise<void>) {
     setLoading(true)
+    setServerError(null)
     try {
       await fn()
     } catch {
-      toast.error('Falha de rede. Tente novamente.')
+      setServerError(NETWORK_ERROR)
     } finally {
       setLoading(false)
     }
   }
 
+  async function refuse(res: Response, fallback: string) {
+    const code = await errorCodeOf(res)
+    // O BFF recusa o e-mail com `INVALID_INPUT` (a régua daqui é a mesma, mas um e-mail colado
+    // com espaço no meio ainda chega lá): o erro vai para o campo, onde a pessoa conserta.
+    if (code === 'INVALID_INPUT') return setErrors({ email: EMAIL_HINT_ERROR })
+    setServerError(SERVER_MESSAGES[code] ?? fallback)
+  }
+
   async function submitPassword() {
-    const parsed = z
-      .object({ email: emailSchema, password: z.string().min(1, 'Informe a senha') })
-      .safeParse({ email, password })
-    if (!parsed.success) return setIssues(parsed.error)
-    setErrors({})
+    const next: Errors = {}
+    if (!looksLikeEmail(email)) next.email = EMAIL_HINT_ERROR
+    if (!password) next.password = 'Digite a sua senha.'
+    setErrors(next)
+    if (next.email || next.password) return
     await run(async () => {
-      const res = await post('/api/auth/login', parsed.data)
+      const res = await postJson('/api/auth/login', { email: email.trim(), password })
       if (res.ok) return goHome()
-      await toastError(res, 'Não foi possível entrar.')
+      await refuse(res, 'Não foi possível entrar. Tente de novo.')
     })
   }
 
-  async function sendCode() {
-    const parsed = emailSchema.safeParse(email)
-    if (!parsed.success) return setErrors({ email: parsed.error.issues[0]?.message })
+  async function sendCode(resend = false) {
+    if (!looksLikeEmail(email)) return setErrors({ email: EMAIL_HINT_ERROR })
     setErrors({})
     await run(async () => {
-      // Anti-enumeração: com o AUTH de pé a resposta é sempre 200 — mas rate
-      // limit (429) e indisponibilidade (503) são reais e o aluno precisa saber.
-      const res = await post('/api/auth/otp/request', { email, purpose: 'sign_in' })
-      if (!res.ok) {
-        await toastError(res, 'Não foi possível enviar o código.')
+      // Anti-enumeração: com o Auth de pé a resposta é sempre 200. Limite (429) e indisponibilidade
+      // (503) são reais e a pessoa precisa saber.
+      const res = await postJson('/api/auth/otp/request', {
+        email: email.trim(),
+        purpose: 'sign_in',
+      })
+      if (!res.ok) return refuse(res, 'Não foi possível enviar o código. Tente de novo.')
+      setCode('')
+      if (resend) {
+        const time = clockTime(new Date())
+        setResentAt(time)
+        setAnnouncement(`Código reenviado às ${time}. Confira o seu e-mail.`)
         return
       }
+      setResentAt(null)
+      setAnnouncement('Código enviado. Confira o seu e-mail e digite os 6 números.')
+      focusAfter.current = 'code'
       setCodeSent(true)
-      toast.success('Se houver uma conta com este e-mail, enviamos um código.')
     })
   }
 
   async function verifyCode() {
-    const parsed = z
-      .object({ email: emailSchema, code: z.string().min(4, 'Informe o código') })
-      .safeParse({ email, code })
-    if (!parsed.success) return setIssues(parsed.error)
+    if (code.length < 6) return setErrors({ code: CODE_ERROR })
     setErrors({})
     await run(async () => {
-      const res = await post('/api/auth/otp/verify', { email, code })
+      const res = await postJson('/api/auth/otp/verify', { email: email.trim(), code })
       if (res.ok) return goHome()
-      await toastError(res, 'Não foi possível entrar.')
+      await refuse(res, 'Não foi possível entrar. Tente de novo.')
     })
   }
 
   function switchMode(next: Mode) {
+    // Durante um envio a troca fica parada: a resposta do modo antigo apareceria no modo novo.
+    if (next === mode || loading) return
     setMode(next)
     setErrors({})
+    setServerError(null)
     setCode('')
     setCodeSent(false)
     setPassword('')
+    setResentAt(null)
+    setAnnouncement('')
+  }
+
+  function useAnotherEmail() {
+    focusAfter.current = 'email'
+    setCodeSent(false)
+    setCode('')
+    setErrors({})
+    setServerError(null)
+    setResentAt(null)
+    setAnnouncement('')
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-xl">Entrar</CardTitle>
-        <CardDescription>
-          {mode === 'password'
-            ? 'Acesse sua área de aluno.'
-            : 'Receba um código de acesso por e-mail.'}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {mode === 'password' ? (
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault()
-              await submitPassword()
-            }}
-            noValidate
-            className="flex flex-col gap-4"
-          >
-            <Field label="E-mail" htmlFor="email" error={errors.email}>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                aria-invalid={Boolean(errors.email)}
-              />
-            </Field>
-            <Field label="Senha" htmlFor="password" error={errors.password}>
-              <PasswordInput
-                id="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                aria-invalid={Boolean(errors.password)}
-              />
-            </Field>
-            <Button type="submit" disabled={loading} className="mt-2">
-              {loading ? <Spinner /> : null}
-              Entrar
-            </Button>
-          </form>
-        ) : (
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault()
-              await (codeSent ? verifyCode() : sendCode())
-            }}
-            noValidate
-            className="flex flex-col gap-4"
-          >
-            <Field label="E-mail" htmlFor="email" error={errors.email}>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                readOnly={codeSent}
-                aria-invalid={Boolean(errors.email)}
-              />
-            </Field>
-            {codeSent ? (
-              <Field label="Código de acesso" htmlFor="code" error={errors.code}>
-                <Input
-                  id="code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  placeholder="000000"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                  aria-invalid={Boolean(errors.code)}
-                />
-              </Field>
-            ) : null}
-            <Button type="submit" disabled={loading} className="mt-2">
-              {loading ? <Spinner /> : null}
-              {codeSent ? 'Entrar' : 'Enviar código'}
-            </Button>
-            {codeSent ? (
-              <button
-                type="button"
-                onClick={() => sendCode()}
-                disabled={loading}
-                className="text-center text-sm text-interactive hover:text-interactive-hover"
-              >
-                Reenviar código
-              </button>
-            ) : null}
-          </form>
-        )}
+    <div className="flex flex-col gap-6">
+      <AuthHeading
+        title="Entrar"
+        lead="Acesse seus cursos, seus projetos e os recados da equipe."
+      />
 
-        <div className="mt-4 flex flex-col gap-2">
-          <button
-            type="button"
-            onClick={() => switchMode(mode === 'password' ? 'otp' : 'password')}
-            className="text-center text-sm text-interactive hover:text-interactive-hover"
+      {notice}
+
+      <div
+        role="group"
+        aria-label="Como você quer entrar"
+        className="grid grid-cols-2 gap-1.5 rounded-[0.8rem] bg-muted p-1.5"
+      >
+        <ModeButton
+          pressed={mode === 'password'}
+          disabled={loading}
+          onClick={() => switchMode('password')}
+        >
+          Com senha
+        </ModeButton>
+        <ModeButton pressed={mode === 'otp'} disabled={loading} onClick={() => switchMode('otp')}>
+          Com código por e-mail
+        </ModeButton>
+      </div>
+
+      {mode === 'password' ? (
+        <form
+          noValidate
+          onSubmit={async (e) => {
+            e.preventDefault()
+            await submitPassword()
+          }}
+          className="flex flex-col gap-5"
+        >
+          <Field id="email" label="E-mail" error={errors.email}>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="nome@exemplo.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              aria-invalid={Boolean(errors.email) || undefined}
+              aria-describedby={describedBy('email', { error: Boolean(errors.email) })}
+              className={inputClass(Boolean(errors.email))}
+            />
+          </Field>
+          <Field id="password" label="Senha" error={errors.password}>
+            <PasswordField
+              id="password"
+              value={password}
+              onChange={setPassword}
+              visible={showPassword}
+              onToggle={() => setShowPassword((v) => !v)}
+              autoComplete="current-password"
+              invalid={Boolean(errors.password)}
+              ariaDescribedBy={describedBy('password', { error: Boolean(errors.password) })}
+            />
+          </Field>
+          {serverError ? <AuthAlert tone="error">{serverError}</AuthAlert> : null}
+          <SubmitButton loading={loading}>Entrar</SubmitButton>
+          <Link
+            href="/esqueci-senha"
+            className="sz-link inline-flex min-h-12 items-center self-center"
           >
-            {mode === 'password' ? 'Entrar com código por e-mail' : 'Entrar com senha'}
-          </button>
-          <p className="text-center text-sm text-muted-foreground">
-            <Link href="/esqueci-senha" className="text-interactive hover:text-interactive-hover">
-              Esqueci minha senha
-            </Link>
+            Esqueci minha senha
+          </Link>
+        </form>
+      ) : (
+        <form
+          noValidate
+          onSubmit={async (e) => {
+            e.preventDefault()
+            await (codeSent ? verifyCode() : sendCode())
+          }}
+          className="flex flex-col gap-5"
+        >
+          <Field id="email" label="E-mail" error={errors.email}>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="nome@exemplo.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              ref={emailInput}
+              readOnly={codeSent}
+              aria-invalid={Boolean(errors.email) || undefined}
+              aria-describedby={describedBy('email', { error: Boolean(errors.email) })}
+              className={inputClass(Boolean(errors.email))}
+            />
+          </Field>
+          {codeSent ? (
+            <>
+              <AuthAlert tone="ok" live={false}>
+                Se houver uma conta com este e-mail, enviamos um código de 6 números. Confira também
+                a caixa de spam.
+                {resentAt ? (
+                  <strong className="mt-1 block">Código reenviado às {resentAt}.</strong>
+                ) : null}
+              </AuthAlert>
+              <div ref={codeInput}>
+                <Field id="code" label="Código de acesso" error={errors.code}>
+                  <CodeInput
+                    id="code"
+                    value={code}
+                    onChange={setCode}
+                    invalid={Boolean(errors.code)}
+                    ariaDescribedBy={describedBy('code', { error: Boolean(errors.code) })}
+                  />
+                </Field>
+              </div>
+            </>
+          ) : null}
+          {serverError ? <AuthAlert tone="error">{serverError}</AuthAlert> : null}
+          <SubmitButton loading={loading}>{codeSent ? 'Entrar' : 'Enviar código'}</SubmitButton>
+          {codeSent ? (
+            <div className="flex flex-wrap justify-center gap-x-7 gap-y-1">
+              <TextButton onClick={() => sendCode(true)} disabled={loading}>
+                Reenviar código
+              </TextButton>
+              <TextButton onClick={useAnotherEmail} disabled={loading}>
+                Usar outro e-mail
+              </TextButton>
+            </div>
+          ) : null}
+          <p className="m-0 text-muted-foreground text-xs">
+            O código entra pela conta que já tem senha criada. No primeiro acesso, crie a senha pelo
+            link do e-mail de boas-vindas.
           </p>
-        </div>
-      </CardContent>
-    </Card>
+        </form>
+      )}
+
+      <AuthAlert tone="info" live={false}>
+        <strong>Primeiro acesso?</strong> Depois da compra, enviamos por e-mail e WhatsApp um link
+        para você criar a sua senha. Abra o link e escolha a senha antes de entrar aqui.
+      </AuthAlert>
+
+      <LiveMessage message={announcement} />
+
+      <AuthHelpLink>Não consegue entrar? Veja a ajuda para entrar</AuthHelpLink>
+    </div>
+  )
+}
+
+function ModeButton({
+  pressed,
+  disabled,
+  onClick,
+  children,
+}: {
+  pressed: boolean
+  disabled?: boolean
+  onClick: () => void
+  children: ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={pressed}
+      aria-disabled={disabled || undefined}
+      onClick={onClick}
+      className={cn(
+        'min-h-14 rounded-[0.6rem] px-2 font-bold leading-tight focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2',
+        pressed
+          ? 'bg-card text-foreground shadow-[0_1px_3px_rgba(15,26,51,0.18)]'
+          : 'bg-transparent text-muted-foreground hover:text-foreground',
+      )}
+    >
+      {children}
+    </button>
   )
 }

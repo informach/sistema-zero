@@ -35,6 +35,8 @@ export const proxy = createMemberProxy({
     '/como-fazer',
   ],
   isRootProtected: true,
+  // A ajuda de quem não consegue entrar mora debaixo do `/ajuda` logado e é pública.
+  publicPaths: ['/ajuda/entrar'],
 })
 
 export const config = {

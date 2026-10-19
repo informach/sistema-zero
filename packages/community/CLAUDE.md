@@ -186,6 +186,80 @@ a plataforma já faz.
   cartão do consumo fica em **Meu perfil** (seção "IA e voz"), como o cartão da área dos pais no
   Kids; a página Criar só aponta para lá.
 
+## Entrada, páginas públicas, perfil público e Ajuda (19/10/2026)
+
+O resto do Canvas "Comunidade adulta · direção de arte" (as pranchas de entrada, páginas sem login,
+avatar, espaço 3D, perfil público e Como fazer), na mesma régua da seção anterior.
+
+- ⚠️ **Imagem de gente nunca é de idoso** (pedido dela, 19/10/2026): a régua de leitura é a de 50 a
+  70 anos, mas quem tem mais de 40 não gosta de se ver como velho. Ilustração de exemplo (avatar,
+  pessoa) é de jovem adulto; nada de "senhor/senhora" nem de vovó/vovô no texto.
+- **Entrada** (`(auth)/`): o layout do grupo só passa os filhos; cada página monta o
+  `AuthSplitShell` (`components/community/auth-split-shell.tsx`) com o painel marinho DELA
+  (`AuthAside`, só a partir de 1024 px). As peças dos formulários moram em
+  `components/community/auth/auth-fields.tsx`: campo de 64 px com rótulo em cima, erro escrito
+  embaixo (com ícone), "Mostrar"/"Esconder" com texto na senha, a regra dos 10 caracteres que
+  responde ao digitar, e avisos que ficam na tela (`AuthAlert`) no lugar dos toasts. Entrar tem
+  "Com senha" | "Com código por e-mail"; Esqueci minha senha tem os dois passos à vista e termina
+  num cartão "Senha nova salva"; Criar a senha (`/redefinir-senha?token=`) termina em "Senha
+  criada", e o link sem código, usado (`INVALID_RESET_TOKEN`) ou vencido (`RESET_TOKEN_EXPIRED`)
+  vira a página `InvalidLink` com o próximo passo. `/login?erro=impersonacao` mostra o aviso do
+  link de suporte vencido.
+- **`/ajuda/entrar`** (`(auth)/ajuda/entrar`): a ajuda PÚBLICA de quem não consegue entrar
+  (`noindex`). ⚠️ Mora debaixo do `/ajuda` logado, então o `proxy.ts` a declara em `publicPaths`
+  (opção nova do `createMemberProxy`). O contato é `contato@sistemazero.com.br`: o Help Desk lê essa
+  caixa e cada e-mail vira um chamado. Logado, o contato é sempre "Abrir chamado" na Ajuda.
+- **Páginas públicas**: `/jogar` usa `PublicPlayer skin="adult"` (member-shell: cabeçalho marinho
+  com logo, nome do jogo e "feito por …", "Controles na tela"/"Tela cheia" com texto, a linha de
+  como jogar, sem mascote; o Kids segue igual); `/validar` ganhou a logo e o cartão com a faixa
+  verde; `not-found.tsx` e o novo `error.tsx` usam `StatusScreen`
+  (`components/community/status-screen.tsx`, a barra escura só com a logo). ⚠️ O `error.tsx`
+  recebe `retry` (Next 16.2+), não `reset`: o `reset` só limpa o erro e re-renderiza sem buscar de
+  novo, então o "Tentar de novo" de um erro de servidor ficava preso no mesmo erro.
+- **Meu avatar 3D e Meu espaço 3D** usam a pele adulta do member-shell: `/meu-avatar` passa
+  `skin="adult"` e `/quarto` usa a entrada `AdultRoomBuilder` (`room-builder-adult`) com as dicas
+  de `src/lib/adult-trophy-hints.ts`. O desenho mora em `src/app/cosmetics-adult.css` (importado
+  pelo `globals.css`) e lê os tokens daqui: renomear um token quebra o teste
+  `tests/adult-cosmetics.test.ts`, não a cor calada.
+- **Formulários de entrada (review de 19/10/2026)**: o e-mail é conferido pela mesma régua do BFF
+  (`z.string().email()`), o recado de "código reenviado" e de troca de passo vai por uma região viva
+  sempre montada (`LiveMessage`) e o foco vai para o título ou o campo do passo novo.
+- **Perfil público** (`/criador/[id]`): faixa marinha com foto grande e quatro números, jogos antes
+  das conquistas, conquistas com a explicação (`adultBadgeInfo` de `src/lib/adult-badges.ts`: o
+  texto adulto, sem "fase"/"aventura"/"quarto", com o ícone do `BADGE_INFO` do member-shell; mora
+  AQUI porque o guarda `copy-vocabulario` do Kids varre o member-shell), espaço 3D "Só para ver" e o
+  aviso quando o perfil é seu. O voltar segue `?de=mural|ranking|perfil`.
+- **Mural, não Mostra**: a vitrine adulta se chama Mural dos Criadores em toda tela, como no Kids.
+- **Ajuda**: a busca leva ao Como fazer ("Buscar no Como fazer"); com tutorial publicado, a faixa
+  escura do Como fazer, as coleções com a contagem e os passo a passo em destaque
+  (`FEATURED_SLUGS`, do lote `docs/como-fazer-adulto`); sem tutorial, só a busca. O tutorial aberto
+  de uma aula (`?voltar=`, régua `resolveHelpReturn` do member-shell) mostra "Você veio da aula …"
+  com "Voltar para a aula", e os "Veja também" levam a volta junto.
+- **Como fazer adulto**: o conteúdo (8 coleções, 50 tutoriais) está em `docs/como-fazer-adulto/`
+  (`como-fazer.json` + `validar.ts` + README). Publicar é manual: Admin → Como fazer → plataforma
+  Adulto → importar → revisar e publicar. Os ícones `users` e `user` entraram na allowlist do core.
+
+## A cor da etapa da jornada (19/10/2026)
+
+Pedido dela: no perfil público, a etapa da jornada; e, como no Kids, um anel na cor da etapa em
+volta da foto. Prancha "Perfil público e a cor da etapa" e "Jornada adulta" no Canvas.
+
+- **A cor vem da POSIÇÃO** (`lib/journey-stage.ts`): `--etapa-1` … `--etapa-7` e `--etapa-lenda`
+  no `globals.css`, os MESMOS valores dos `--level-*` do Kids (as duas cores da marca por token).
+  A última posição é sempre a Lenda (dourado). O nome da etapa vem sempre escrito junto: a cor
+  nunca é a única pista. `stageBadgeOf(journey)` dá a etapa de quem tem a jornada inteira.
+- **Peças** (`components/community/journey/stage.tsx`, desenho `.sz-etapa-*` no `globals.css`):
+  `StageRing` (o anel, `dark` sobre o marinho), `StageChip`, `StageLine`, `StageDot`, `StageFace`
+  (foto ou iniciais com o anel) e `JourneyRibbon` (a fita, uma imagem com a frase inteira).
+- **Onde:** a foto do menu do perfil e do próprio menu (com a linha da etapa); o perfil público
+  (anel grande, chip e fita); Seu progresso (cartões coloridos, "Ao concluir, libera", cada um
+  levando à página da etapa); ranking e liga; Mural, Clube e as novidades do Mural na Início.
+- **`/cursos/etapa/[id]`**: a página da etapa (o que libera, os cursos que ela pede com o estado e
+  o próximo passo). A jornada vem do mesmo pedido do layout; os cursos, do catálogo (que traz o
+  `courseId`) e de Meus cursos. Etapa que não existe é 404.
+- A jornada é cadastrada no Admin; o script `journey:seed-adult` do members faz o cadastro inicial.
+- Testes: `tests/journey-stage.test.ts`.
+
 ## Arquitetura (o padrão central — preserve-o; espelha o @sistemazero/admin)
 
 ```

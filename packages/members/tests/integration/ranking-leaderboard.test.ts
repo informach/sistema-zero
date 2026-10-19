@@ -253,3 +253,77 @@ describe('Ranking geral paginado', () => {
     expect(staff.status).toBe(403)
   })
 })
+
+describe('Ranking adulto: foto e etapa só de quem mostra o perfil', () => {
+  test('a foto de quem não mostra o perfil não sai do members; a própria pessoa vê a dela', async () => {
+    const { app, courses, entitlements, gamification, avatar, adultJourney } = buildApp({
+      now: new Date('2026-09-06T12:01:00.000Z'),
+    })
+    const course = seedSampleCourse(courses, 'ranking-adulto', 'published', 'adult')
+    await adultJourney.configure(
+      {
+        schemaVersion: 1,
+        stages: [
+          {
+            id: 'aprendiz',
+            title: 'Aprendiz',
+            requirements: [{ courseId: course.courseId, milestone: 'complete' }],
+            capabilities: [],
+          },
+        ],
+      },
+      0,
+    )
+    for (const id of [ME, TIED_PUBLIC, TIED_PRIVATE]) {
+      grantLifetime(entitlements, { userId: id, courseRef: course.slug })
+      await gamification.award({
+        userId: id,
+        accountId: id,
+        audience: 'adult',
+        events: [
+          {
+            sourceType: 'lesson_complete',
+            sourceId: randomUUID(),
+            amount: id === ME ? 10 : 80,
+            coins: 0,
+          },
+        ],
+        today: '2026-09-06',
+        now: new Date('2026-09-06T12:00:00.000Z'),
+        privileged: false,
+      })
+      await avatar.setPhotoUrl(id, id, 'adult', `https://cdn.exemplo/${id}.png`, new Date())
+    }
+    for (const [id, publicEnabled] of [
+      [TIED_PUBLIC, true],
+      [TIED_PRIVATE, false],
+    ] as const) {
+      const saved = await app.handle(
+        new Request('http://localhost/members/adult/profile', {
+          method: 'PUT',
+          headers: { 'x-auth-user-id': id, 'content-type': 'application/json' },
+          body: JSON.stringify({ displayName: 'Pessoa', publicEnabled, voiceEnabled: false }),
+        }),
+      )
+      expect(saved.status).toBe(200)
+    }
+
+    const response = await app.handle(
+      new Request('http://localhost/members/gamification/ranking?audience=adult', {
+        headers: { 'x-auth-user-id': ME },
+      }),
+    )
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as RankingLeaderboardView
+    const stage = { position: 1, total: 2, title: 'Aprendiz' }
+    const publicRow = body.items.find((entry) => entry.profileId === TIED_PUBLIC)
+    const privateRow = body.items.find((entry) => !entry.isMe && entry.profileId === undefined)
+    expect(publicRow).toMatchObject({
+      photoUrl: `https://cdn.exemplo/${TIED_PUBLIC}.png`,
+      journey: stage,
+    })
+    expect(privateRow?.photoUrl).toBeNull()
+    expect(privateRow).not.toHaveProperty('journey')
+    expect(body.me).toMatchObject({ photoUrl: `https://cdn.exemplo/${ME}.png`, journey: stage })
+  })
+})

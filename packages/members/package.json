@@ -19,6 +19,7 @@
     "journey:bootstrap": "bun run scripts/bootstrap-kids-journey.ts",
     "career:finalize-first-steps": "bun run scripts/finalize-first-steps-rollout.ts",
     "entitlements:rollout-molda": "bun run scripts/rollout-molda-entitlements.ts",
+    "journey:seed-adult": "bun run scripts/seed-adult-journey.ts",
     "submissions:audit-lost": "bun run scripts/audit-lost-studio-submissions.ts",
     "submissions:restore": "bun run scripts/restore-studio-submissions.ts",
     "check": "biome check .",

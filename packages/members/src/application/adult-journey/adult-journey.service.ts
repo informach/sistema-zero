@@ -3,7 +3,9 @@ import {
   ADULT_CREATOR_CAPABILITIES,
   type AdultCreatorCapability,
   AdultJourneyPolicySchema,
+  type AdultJourneyPosition,
   type AdultJourneyView,
+  adultJourneyPosition,
   EMPTY_ADULT_JOURNEY_POLICY,
   projectAdultJourney,
 } from '@sistemazero/core/journey'
@@ -95,6 +97,26 @@ export class AdultJourneyService {
       return privileged ? { ...result, capabilities: [...ADULT_CREATOR_CAPABILITIES] } : result
     }
     throw new AdultJourneyConflictError()
+  }
+
+  /**
+   * A etapa de VÁRIAS pessoas: a política uma vez e os marcos numa consulta só. Só leitura (não
+   * congela capacidades: a posição não depende delas) e vazia sem jornada configurada.
+   */
+  async positions(userIds: readonly string[]): Promise<Map<string, AdultJourneyPosition>> {
+    const out = new Map<string, AdultJourneyPosition>()
+    const unique = [...new Set(userIds)]
+    if (unique.length === 0) return out
+    const record = await this.policy()
+    if (record.policy.stages.length === 0) return out
+    const milestones = await this.repository.listMilestonesForUsers(unique)
+    for (const userId of unique) {
+      const position = adultJourneyPosition(
+        projectAdultJourney(record.policy, record.version, milestones.get(userId) ?? []),
+      )
+      if (position) out.set(userId, position)
+    }
+    return out
   }
 
   async assert(userId: string, capability: AdultCreatorCapability, privileged = false) {

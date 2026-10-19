@@ -109,11 +109,13 @@ function IdentityCard({
           aria-label="Personalizar avatar"
           title="Personalizar avatar"
           onClick={onCustomize}
-          className="group relative w-fit shrink-0 cursor-pointer rounded-[1.5rem] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--sz-primary-fg)"
+          // O contorno do foco vai por fora da aura (folga + anel + fio = 11,5px), senão some nela.
+          className="group relative w-fit shrink-0 cursor-pointer rounded-[1.5rem] focus-visible:outline-2 focus-visible:outline-offset-[14px] focus-visible:outline-(--sz-primary-fg)"
         >
           <AvatarWithAura
             photoUrl={avatarPhotoUrl}
             name={profile.name}
+            levelSlug={level?.slug}
             size="xl"
             // O quadrado de vidro das telas-modelo, e não o círculo: sobre o azul do
             // herói, a inicial no círculo azul da marca sumiria.

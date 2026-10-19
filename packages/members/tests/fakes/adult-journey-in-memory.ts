@@ -7,6 +7,7 @@ import type {
   AdultJourneyPolicyRecord,
   AdultJourneyRepository,
 } from '../../src/domain/ports/adult-journey-repository.port'
+import { groupMilestones } from '../../src/infrastructure/persistence/drizzle/adult-journey.repository'
 import type { InMemoryGamificationRepository } from './in-memory'
 
 export class InMemoryAdultJourneyRepository implements AdultJourneyRepository {
@@ -22,24 +23,24 @@ export class InMemoryAdultJourneyRepository implements AdultJourneyRepository {
     return structuredClone(this.record)
   }
   async listMilestones(userId: string): Promise<AdultCourseMilestone[]> {
-    const result = new Map<string, AdultCourseMilestone>()
-    for (const event of this.gamification.events) {
-      if (
-        event.userId !== userId ||
-        event.audience !== 'adult' ||
-        !['course_complete', 'course_showcased'].includes(event.sourceType)
-      )
-        continue
-      const milestone = result.get(event.sourceId) ?? {
-        courseId: event.sourceId,
-        completed: false,
-        showcased: false,
-      }
-      if (event.sourceType === 'course_complete') milestone.completed = true
-      if (event.sourceType === 'course_showcased') milestone.showcased = true
-      result.set(event.sourceId, milestone)
-    }
-    return [...result.values()]
+    return (await this.listMilestonesForUsers([userId])).get(userId) ?? []
+  }
+  async listMilestonesForUsers(userIds: readonly string[]) {
+    const wanted = new Set(userIds)
+    return groupMilestones(
+      this.gamification.events
+        .filter(
+          (event) =>
+            wanted.has(event.userId) &&
+            event.audience === 'adult' &&
+            ['course_complete', 'course_showcased'].includes(event.sourceType),
+        )
+        .map((event) => ({
+          userId: event.userId,
+          courseId: event.sourceId,
+          type: event.sourceType,
+        })),
+    )
   }
   async listGranted(userId: string) {
     return [...(this.grants.get(userId) ?? [])]

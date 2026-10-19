@@ -13,10 +13,12 @@ import { Skeleton } from '@sistemazero/ui/skeleton'
 import { ArrowLeft, Flag, Lock, MessageCircle, MessagesSquare, Plus, Send } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { StageDot, StageFace, StageLine } from '@/components/community/journey/stage'
 import { BackLink, PageBand, PageBody } from '@/components/community/page'
 import { ShowcaseCard } from '@/components/community/showcase-card'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
+import { stageTinyLabel } from '@/lib/journey-stage'
 import type {
   HubChannelView,
   HubCommentView,
@@ -422,7 +424,7 @@ export function SpaceViewClient({
     />
   ) : null
 
-  // ── A Mostra: a grade de jogos; "Comentários e reações" abre a conversa no lugar da grade ──
+  // ── O Mural: a grade de jogos; "Comentários e reações" abre a conversa no lugar da grade ──
   if (showcase) {
     if (detail) return <div className="mx-auto w-full max-w-[46rem]">{detail}</div>
     return (
@@ -431,7 +433,7 @@ export function SpaceViewClient({
           <p className="sz-card p-6 text-center text-muted-foreground">
             {showcaseFilter?.challengeKey
               ? 'Nenhum jogo no desafio deste mês ainda. Publique o seu pelo Estúdio.'
-              : 'Nenhum jogo na Mostra ainda. Publique o seu pelo Estúdio.'}
+              : 'Nenhum jogo no Mural ainda. Publique o seu pelo Estúdio.'}
           </p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -673,6 +675,12 @@ function TopicCard({
       <strong>{thread.title}</strong>
       <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.85rem] text-muted-foreground">
         <span>{author}</span>
+        {thread.authorJourney ? (
+          <span className="inline-flex items-center gap-1.5">
+            <StageDot badge={thread.authorJourney} />
+            {stageTinyLabel(thread.authorJourney)}
+          </span>
+        ) : null}
         <span className="inline-flex items-center gap-1">
           <MessageCircle aria-hidden className="size-4" />
           {thread.commentCount}
@@ -686,8 +694,31 @@ function TopicCard({
   )
 }
 
-/** A inicial de quem escreveu, na cor de ação para "Você". O Hub adulto não manda foto. */
-function AuthorAvatar({ label, own }: { label: string; own: boolean }) {
+/**
+ * A foto de quem escreveu com o anel da etapa (19/10/2026), quando a pessoa mostra o perfil; senão a
+ * inicial, na cor de ação para "Você".
+ */
+function AuthorAvatar({
+  label,
+  own,
+  photoUrl,
+  journey,
+}: {
+  label: string
+  own: boolean
+  photoUrl?: string | null
+  journey?: HubThreadView['authorJourney']
+}) {
+  if (photoUrl || journey)
+    return (
+      <StageFace
+        name={label}
+        photoUrl={photoUrl}
+        badge={journey}
+        size="p"
+        className="size-[2.2rem] text-[0.85rem]"
+      />
+    )
   return (
     <span
       aria-hidden
@@ -740,7 +771,7 @@ function SpaceViewSkeleton() {
   )
 }
 
-/** Esqueleto da grade da Mostra: três cartões de jogo. */
+/** Esqueleto da grade do Mural: três cartões de jogo. */
 function ShowcaseSkeleton() {
   return (
     <div aria-busy="true" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -835,7 +866,12 @@ function CommentCard({
   const author = comment.authorDisplayName ?? authorLabel(comment.authorId)
   return (
     <div className="flex gap-3">
-      <AuthorAvatar label={author} own={authorLabel(comment.authorId) === 'Você'} />
+      <AuthorAvatar
+        label={author}
+        own={authorLabel(comment.authorId) === 'Você'}
+        photoUrl={comment.authorAvatarUrl}
+        journey={comment.authorJourney}
+      />
       <div
         className={cn(
           'flex min-w-0 flex-1 flex-col gap-1.5 rounded-[0.8rem] px-4 py-3',
@@ -844,6 +880,7 @@ function CommentCard({
       >
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.85rem]">
           <strong>{author}</strong>
+          {comment.authorJourney ? <StageLine badge={comment.authorJourney} /> : null}
           <span className="text-muted-foreground">{timeAgo(comment.createdAt)}</span>
           {comment.pending ? (
             <span className="sz-chip sz-chip-aviso">Aguardando aprovação</span>
@@ -909,7 +946,7 @@ function ThreadDetail({
   const author = thread.authorDisplayName ?? authorLabel(thread.authorId)
   const ref = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
-  // Uma coisa por vez (celular, ou a Mostra): a conversa abre no lugar da lista e o topo dela
+  // Uma coisa por vez (celular, ou o Mural): a conversa abre no lugar da lista e o topo dela
   // precisa aparecer, senão a pessoa fica no meio da página onde estava a lista. O foco vem para o
   // título, porque o botão que abriu sumiu com a lista. A `key` do tópico remonta o componente a
   // cada conversa aberta.
@@ -945,9 +982,15 @@ function ThreadDetail({
           {thread.title}
         </h2>
         <div className="flex items-center gap-3">
-          <AuthorAvatar label={author} own={authorLabel(thread.authorId) === 'Você'} />
+          <AuthorAvatar
+            label={author}
+            own={authorLabel(thread.authorId) === 'Você'}
+            photoUrl={thread.authorAvatarUrl}
+            journey={thread.authorJourney}
+          />
           <span className="flex flex-col">
             <strong>{author}</strong>
+            {thread.authorJourney ? <StageLine badge={thread.authorJourney} /> : null}
             <span className="text-[0.85rem] text-muted-foreground">
               {timeAgo(thread.createdAt)}
             </span>

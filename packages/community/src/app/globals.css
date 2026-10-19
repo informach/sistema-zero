@@ -21,6 +21,7 @@
    derivam. ⚠️ Valor Pen NÃO se repete aqui — ele nasce no registro de `packages/ui/src/tokens`
    e a cor escolhida no perfil chega por `data-sz-palette` no <html>. */
 @import "@sistemazero/ui/community-kids-theme.css";
+@import "./cosmetics-adult.css";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
 @source "../../../member-shell/src";
@@ -121,6 +122,19 @@
   --topo-texto: var(--sz-community-menu-text);
   --topo-icone: var(--sz-community-menu-icon);
   --topo-vidro: var(--sz-community-menu-glass);
+
+  /* A cor de cada etapa da jornada adulta (19/10/2026): a MESMA do nível de mesma posição no Kids
+     (`--level-*` de lá), fixa, sem seguir a cor escolhida pela pessoa. A cor vem da posição
+     (`lib/journey-stage.ts`); a última posição é sempre a Lenda. */
+  --etapa-1: oklch(0.55 0.02 255); /* cinza (o começo) */
+  --etapa-2: var(--sz-community-blue);
+  --etapa-3: var(--sz-community-orange);
+  --etapa-4: oklch(0.5 0.14 195); /* verde-azulado */
+  --etapa-5: oklch(0.5 0.2 300); /* violeta */
+  --etapa-6: oklch(0.48 0.16 356); /* rosa profundo */
+  --etapa-7: oklch(0.45 0.19 265); /* anil */
+  --etapa-lenda: oklch(0.66 0.16 75); /* dourado */
+  --etapa-lenda-tinta: var(--foreground);
 
   /* O ZERO da logo oficial (`@sistemazero/ui/brand-logo`): o degradê da marca, um por fundo.
      Os painéis internos e o funil leem os MESMOS nomes (o componente virou compartilhado em
@@ -1132,6 +1146,98 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   .sz-label {
     font-size: 0.9rem;
     font-weight: 700;
+  }
+
+  /* A cor da etapa (`components/community/journey/stage.tsx`): o anel em volta da foto, o ponto, o
+     chip e a fita. `--etapa-cor` chega pelo `style` de cada peça. */
+  .sz-etapa-anel {
+    --anel-espessura: 3px;
+    --anel-folga: 2px;
+    display: inline-flex;
+    flex: none;
+    border: var(--anel-espessura) solid var(--etapa-cor);
+    border-radius: 9999px;
+    padding: var(--anel-folga);
+    background: var(--card);
+  }
+  .sz-etapa-anel[data-tamanho="p"] {
+    --anel-espessura: 2px;
+    --anel-folga: 1.5px;
+  }
+  .sz-etapa-anel[data-tamanho="g"] {
+    --anel-espessura: 6px;
+    --anel-folga: 3px;
+  }
+  .sz-etapa-anel[data-fundo="escuro"] {
+    background: var(--topo);
+    box-shadow: 0 0 0 2px rgb(255 255 255 / 0.9);
+  }
+  .sz-etapa-ponto {
+    display: inline-block;
+    flex: none;
+    width: 0.75em;
+    height: 0.75em;
+    border-radius: 9999px;
+    background: var(--etapa-cor);
+    box-shadow: 0 0 0 2px var(--card);
+  }
+  .sz-etapa-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.2rem;
+    padding: 0.2rem 0.85rem 0.2rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    background: var(--card);
+    color: var(--foreground);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .sz-etapa-chip[data-fundo="escuro"] {
+    border-color: transparent;
+    background: var(--topo-borda);
+    color: #fff;
+  }
+  .sz-etapa-chip[data-fundo="escuro"] .sz-etapa-ponto {
+    box-shadow: 0 0 0 2px #fff;
+  }
+  .sz-etapa-linha {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--muted-foreground);
+    font-size: 0.85rem;
+    line-height: 1.35;
+  }
+  .sz-etapa-fita {
+    display: grid;
+    gap: 0.3rem;
+  }
+  .sz-etapa-fita > span {
+    height: 0.7rem;
+    border-radius: 9999px;
+    background: var(--muted);
+  }
+  /* No marinho, a etapa que ainda vem é um contorno vazio: a diferença para a concluída fica na
+     FORMA, não só na cor (o anil e o rosa ficavam a 1,1:1 de um cinza translúcido). */
+  .sz-etapa-fita[data-fundo="escuro"] > span {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.45);
+  }
+  .sz-etapa-fita > span[data-estado="feita"] {
+    background: var(--etapa-cor);
+    box-shadow: none;
+  }
+  .sz-etapa-fita > span[data-estado="atual"] {
+    background: linear-gradient(
+      90deg,
+      var(--etapa-cor) var(--etapa-parte),
+      color-mix(in oklab, var(--etapa-cor) 28%, transparent) var(--etapa-parte)
+    );
+    box-shadow: none;
+    outline: 2px solid var(--etapa-cor);
+    outline-offset: 1px;
   }
 }
 

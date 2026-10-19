@@ -264,3 +264,100 @@ test('Kids parental sessions cannot select adult identity through query or adult
     expect((await request(ctx, path, 'GET', undefined, parent)).status).toBe(403)
   }
 })
+
+test('a etapa nas listas: posição em lote e identidades públicas com a foto e a etapa', async () => {
+  const ctx = buildApp()
+  const first = seedSampleCourse(ctx.courses)
+  const second = seedSampleCourse(ctx.courses, 'segundo-curso-adulto')
+  await ctx.adultJourney.configure(
+    {
+      schemaVersion: 1,
+      stages: [
+        {
+          id: 'aprendiz',
+          title: 'Aprendiz',
+          requirements: [{ courseId: first.courseId, milestone: 'complete' }],
+          capabilities: ['studio'],
+        },
+        {
+          id: 'construtor',
+          title: 'Construtor(a)',
+          requirements: [{ courseId: second.courseId, milestone: 'complete' }],
+          capabilities: [],
+        },
+      ],
+    },
+    0,
+  )
+  const other = crypto.randomUUID()
+  const privateOne = crypto.randomUUID()
+  ctx.gamification.events.push({
+    userId: other,
+    audience: 'adult',
+    sourceType: 'course_complete',
+    sourceId: first.courseId,
+    amount: 0,
+    createdAt: new Date(),
+  })
+  const positions = await ctx.adultJourney.positions([userId, other, other])
+  expect(positions.get(userId)).toEqual({
+    position: 1,
+    total: 3,
+    stageId: 'aprendiz',
+    title: 'Aprendiz',
+  })
+  expect(positions.get(other)?.title).toBe('Construtor(a)')
+
+  for (const [id, publicEnabled] of [
+    [other, true],
+    [privateOne, false],
+  ] as const) {
+    const saved = await ctx.app.handle(
+      new Request('http://localhost/members/adult/profile', {
+        method: 'PUT',
+        headers: { 'x-auth-user-id': id, 'content-type': 'application/json' },
+        body: JSON.stringify({ displayName: 'Rita', publicEnabled, voiceEnabled: false }),
+      }),
+    )
+    expect(saved.status).toBe(200)
+  }
+  await ctx.avatar.setPhotoUrl(other, other, 'adult', 'https://cdn.exemplo/rita.png', new Date())
+  await ctx.avatar.setPhotoUrl(
+    privateOne,
+    privateOne,
+    'adult',
+    'https://cdn.exemplo/p.png',
+    new Date(),
+  )
+  const response = await request(
+    ctx,
+    `/adult/profiles/public-identities?ids=${other},${privateOne}`,
+  )
+  expect(await response.json()).toEqual({
+    identities: [
+      {
+        userId: other,
+        displayName: 'Rita',
+        photoUrl: 'https://cdn.exemplo/rita.png',
+        journey: { position: 2, total: 3, title: 'Construtor(a)' },
+      },
+    ],
+  })
+})
+
+test('sem jornada configurada, as listas seguem sem etapa', async () => {
+  const ctx = buildApp()
+  expect((await ctx.adultJourney.positions([userId])).size).toBe(0)
+})
+
+test('no adulto, a foto em lote sai só a da própria pessoa (a dos outros vem pela identidade pública)', async () => {
+  const ctx = buildApp()
+  const other = crypto.randomUUID()
+  await ctx.avatar.setPhotoUrl(userId, userId, 'adult', 'https://cdn.exemplo/eu.png', new Date())
+  await ctx.avatar.setPhotoUrl(other, other, 'adult', 'https://cdn.exemplo/outro.png', new Date())
+  const adult = await request(ctx, `/avatars?ids=${userId},${other}&audience=adult`)
+  expect(adult.status).toBe(200)
+  const body = (await adult.json()) as { avatars: Record<string, { photoUrl: string | null }> }
+  expect(Object.keys(body.avatars)).toEqual([userId])
+  expect(body.avatars[userId]?.photoUrl).toBe('https://cdn.exemplo/eu.png')
+})

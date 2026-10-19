@@ -57,6 +57,8 @@ const ICON_LABEL: Record<(typeof HELP_COLLECTION_ICONS)[number], string> = {
   gamepad: 'Controle',
   sparkles: 'Brilho',
   book: 'Livro',
+  users: 'Pessoas (comunidade)',
+  user: 'Pessoa (conta)',
 }
 const TONE_LABEL: Record<(typeof HELP_COLLECTION_TONES)[number], string> = {
   marca: 'Cor da casa (azul)',

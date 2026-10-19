@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 const STEPS = [
   {
     title: 'Crie o seu jogo no Estúdio',
-    text: 'Pode ser um jogo novo ou a sua versão de um jogo da Mostra.',
+    text: 'Pode ser um jogo novo ou a sua versão de um jogo do Mural.',
   },
   {
     title: 'Na hora de publicar, marque “Participar do desafio”',
@@ -18,7 +18,7 @@ const STEPS = [
   },
   {
     title: 'Seu jogo entra na prateleira do desafio',
-    text: 'Todos podem jogar e comentar na Mostra.',
+    text: 'Todos podem jogar e comentar no Mural.',
   },
 ] as const
 
@@ -37,7 +37,7 @@ export default async function AdultChallengesPage() {
     return (
       <>
         <PageBand
-          back={{ href: '/mural-dos-criadores-adulto', label: 'Mostra dos criadores' }}
+          back={{ href: '/mural-dos-criadores-adulto', label: 'Mural dos Criadores' }}
           title="Desafio do mês"
         />
         <PageBody>
@@ -60,7 +60,7 @@ export default async function AdultChallengesPage() {
         <div className="sz-page flex flex-col gap-3.5 pt-7 pb-11">
           <BackLink
             href="/mural-dos-criadores-adulto"
-            label="Mostra dos criadores"
+            label="Mural dos Criadores"
             className="text-(--sz-community-on-action) hover:text-(--sz-community-on-action) hover:underline"
           />
           <span className="sz-chip sz-chip-novo self-start">
@@ -124,7 +124,7 @@ export default async function AdultChallengesPage() {
             )}
             <p className="text-[0.85rem] text-muted-foreground">
               {entered
-                ? 'Você já participou neste mês. Seu jogo está na mostra.'
+                ? 'Você já participou neste mês. Seu jogo está no Mural.'
                 : 'Ao publicar seu jogo, marque a opção de participar do desafio.'}
             </p>
           </aside>

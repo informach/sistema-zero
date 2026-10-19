@@ -4,9 +4,11 @@ import { ChevronRight, LogOut, Palette, Receipt, Trophy, User } from 'lucide-rea
 import Link from 'next/link'
 import { useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
+import { stageBadgeOf, stageSpokenLabel } from '@/lib/journey-stage'
 import type { SessionUserWithAvatar } from '@/lib/types'
 import { getUserDisplayName, getUserInitials } from '@/lib/user-display'
 import { useAdultGamification } from './gamification-provider'
+import { StageLine, StageRing } from './journey/stage'
 
 /**
  * A imagem da pessoa na comunidade adulta: a foto do avatar 3D, como no Kids (direção de arte de
@@ -58,6 +60,8 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
   const gamification = useAdultGamification()
   const progress = gamification?.progress
   const name = getUserDisplayName(user.firstName, user.lastName, user.email)
+  // A etapa da jornada (19/10/2026): o anel da cor em volta da foto e o nome da etapa no menu.
+  const stage = stageBadgeOf(progress?.journey)
 
   useEffect(() => {
     if (!open) return
@@ -108,15 +112,21 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
         ref={trigger}
         type="button"
         onClick={() => setOpen((value) => !value)}
-        aria-label={`Menu do perfil de ${name}`}
+        aria-label={`Menu do perfil de ${name}${stage ? `, ${stageSpokenLabel(stage)}` : ''}`}
         aria-expanded={open}
         aria-controls={panelId}
         className={cn(
-          'block rounded-full border-2 transition-opacity hover:opacity-90',
-          open ? 'border-white' : 'border-(--sz-community-action-light)',
+          'block rounded-full transition-opacity hover:opacity-90',
+          // Com a jornada, o anel da etapa é a borda (aberto, um contorno branco em volta); sem
+          // ela, a borda de sempre.
+          !stage && 'border-2',
+          !stage && (open ? 'border-white' : 'border-(--sz-community-action-light)'),
+          stage && open && 'outline-2 outline-white outline-offset-2',
         )}
       >
-        <PersonAvatar user={user} className="size-[2.4rem] text-[0.85rem]" />
+        <StageRing badge={stage} dark>
+          <PersonAvatar user={user} className="size-[2.4rem] text-[0.85rem]" />
+        </StageRing>
       </button>
       {open ? (
         <div
@@ -124,10 +134,13 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
           className="absolute right-0 z-50 mt-2 w-[min(20rem,calc(100vw-1.6rem))] overflow-hidden rounded-[1rem] border border-border bg-popover text-popover-foreground shadow-[0_18px_40px_rgba(15,26,51,0.18)]"
         >
           <div className="flex items-center gap-3.5 border-border border-b px-5 py-4">
-            <PersonAvatar user={user} className="size-[3.2rem] text-[1rem]" />
-            <div className="min-w-0">
+            <StageRing badge={stage}>
+              <PersonAvatar user={user} className="size-[3.2rem] text-[1rem]" />
+            </StageRing>
+            <div className="flex min-w-0 flex-col">
               <p className="truncate font-bold text-[1.05rem]">{name}</p>
               <p className="truncate text-[0.85rem] text-muted-foreground">{user.email}</p>
+              {stage ? <StageLine badge={stage} className="mt-0.5" /> : null}
             </div>
           </div>
           <Link

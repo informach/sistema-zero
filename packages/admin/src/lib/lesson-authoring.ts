@@ -78,7 +78,7 @@ export function completionBlockLabel(content: LessonBlockContent): string {
     case 'video':
       return 'Assistir a 90% do vídeo'
     case 'ebook':
-      return 'Abrir o livro ou baixar o PDF'
+      return 'Abrir o livro'
     case 'materials':
       return 'Baixar arquivos selecionados'
     case 'studio':

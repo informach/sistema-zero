@@ -906,6 +906,17 @@ export interface GamificationMeView {
   ranking?: { position: number; totalStudents: number }
 }
 
+/**
+ * A etapa da jornada ADULTA de outra pessoa nas listas (ranking, liga, Mural, Clube), para o anel
+ * da cor: `position` 1..`total` (`total` = etapas + 1; a última é a Lenda, `title` null). Só vem de
+ * quem mostra o perfil ou do próprio viewer; ausente sem jornada configurada.
+ */
+export interface AdultJourneyBadgeView {
+  position: number
+  total: number
+  title: string | null
+}
+
 /** Linha pública/redigida do ranking geral acumulado. */
 export interface RankingEntryView {
   position: number
@@ -917,6 +928,8 @@ export interface RankingEntryView {
   journeyUnavailable?: true
   /** Presente somente quando o perfil kids é público por opt-in dos pais. */
   profileId?: string
+  /** A etapa da jornada adulta (só no adulto, de quem mostra o perfil ou do próprio viewer). */
+  journey?: AdultJourneyBadgeView
 }
 
 export interface RankingLeaderboardView {
@@ -1005,6 +1018,8 @@ export interface LeagueEntryView {
   firstName?: string | null
   /** id do perfil — SÓ quando público (opt-in) → link p/ `/crianca/[id]`. */
   profileId?: string
+  /** A etapa da jornada adulta (só no adulto, de quem mostra o perfil ou do próprio viewer). */
+  journey?: AdultJourneyBadgeView
 }
 export interface LeagueMeView {
   audience?: 'adult'
@@ -1682,6 +1697,8 @@ export interface HubThreadView {
    */
   authorAvatarUrl?: string | null
   authorLevel?: StudentLevelSlug | null
+  /** Adulto: a etapa da jornada de quem mostra o perfil (o anel da cor). */
+  authorJourney?: AdultJourneyBadgeView | null
   /** Capa do projeto (URL pública) — só na vitrine. */
   coverImageUrl: string | null
   /**
@@ -1802,6 +1819,8 @@ export interface HubCommentView {
   /** Foto do avatar 3D + slug do nível (aura), em lote pelo BFF — só KIDS. Ver `HubThreadView`. */
   authorAvatarUrl?: string | null
   authorLevel?: StudentLevelSlug | null
+  /** Adulto: a etapa da jornada de quem mostra o perfil (o anel da cor). */
+  authorJourney?: AdultJourneyBadgeView | null
   body: string
   status: HubContentStatus
   pending: boolean

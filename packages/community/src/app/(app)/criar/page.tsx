@@ -309,7 +309,7 @@ export default async function CreatePage() {
               href="/mural-dos-criadores-adulto"
               icon={Play}
               color="var(--link)"
-              title="Mostra de jogos"
+              title="Mural dos Criadores"
               text="Jogue o que a comunidade publicou e publique os seus."
             />
             <ShortcutCard

@@ -16,6 +16,8 @@ export interface AdultJourneyRepository {
     now: Date,
   ): Promise<AdultJourneyPolicyRecord | null>
   listMilestones(userId: string): Promise<AdultCourseMilestone[]>
+  /** Os marcos de VÁRIAS pessoas numa consulta só (a etapa nas listas: ranking, Mural, Clube). */
+  listMilestonesForUsers(userIds: readonly string[]): Promise<Map<string, AdultCourseMilestone[]>>
   listGranted(userId: string): Promise<AdultCreatorCapability[]>
   freezeGranted(
     userId: string,

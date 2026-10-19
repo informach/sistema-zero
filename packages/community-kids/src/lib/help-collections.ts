@@ -10,6 +10,8 @@ import {
   type LucideIcon,
   Palette,
   Sparkles,
+  UserRound,
+  Users,
 } from 'lucide-react'
 
 /**
@@ -29,6 +31,8 @@ export const HELP_COLLECTION_ICON: Record<HelpCollectionIcon, LucideIcon> = {
   gamepad: Gamepad2,
   sparkles: Sparkles,
   book: BookOpen,
+  users: Users,
+  user: UserRound,
 }
 
 export interface HelpToneColors {

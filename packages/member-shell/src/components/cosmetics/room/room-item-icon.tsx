@@ -1,0 +1,96 @@
+import {
+  AppWindow,
+  Archive,
+  Armchair,
+  Award,
+  Bed,
+  BedDouble,
+  Bird,
+  Blinds,
+  Cat,
+  Clapperboard,
+  Clock,
+  Dog,
+  Earth,
+  Flag,
+  Flame,
+  Frame,
+  Gamepad2,
+  Guitar,
+  ImageIcon,
+  Lamp,
+  LampFloor,
+  Library,
+  type LucideIcon,
+  Medal,
+  NotebookPen,
+  Package,
+  PartyPopper,
+  RectangleVertical,
+  Rocket,
+  ScrollText,
+  Sofa,
+  Sprout,
+  Star,
+  ToyBrick,
+  TreeDeciduous,
+  Trophy,
+  Tv,
+  UtensilsCrossed,
+  Volleyball,
+} from 'lucide-react'
+
+/**
+ * O ícone de LINHA de cada peça do espaço na pele adulta (no Kids, o emoji de `ROOM_ITEM_INFO`).
+ * Sempre ao lado do nome da peça, nunca sozinho. Id novo sem ícone cai na caixa (`Package`).
+ */
+const ICONS: Record<string, LucideIcon> = {
+  cama: Bed,
+  cadeira: Armchair,
+  mesa: UtensilsCrossed,
+  sofa: Sofa,
+  estante: Library,
+  bau: Archive,
+  'mesa-estudo': NotebookPen,
+  tv: Tv,
+  beliche: BedDouble,
+  pufe: Armchair,
+  ursinho: ToyBrick,
+  balao: PartyPopper,
+  bandeira: Flag,
+  globo: Earth,
+  guitarra: Guitar,
+  bola: Volleyball,
+  quadro: Frame,
+  estrela: Star,
+  janela: Blinds,
+  relogio: Clock,
+  prateleira: AppWindow,
+  poster: ImageIcon,
+  espelho: RectangleVertical,
+  planta: Sprout,
+  arvore: TreeDeciduous,
+  luminaria: LampFloor,
+  vela: Lamp,
+  'pet-gato': Cat,
+  'pet-cachorro': Dog,
+  'pet-passaro': Bird,
+  'trofeu-primeiro-jogo': Trophy,
+  'trofeu-diploma': ScrollText,
+  'trofeu-chama': Flame,
+  'trofeu-medalha-mil': Medal,
+  'trofeu-foguete': Rocket,
+  'trofeu-console': Gamepad2,
+  'trofeu-estrela-do-mural': Star,
+  'trofeu-oficina-completa': Clapperboard,
+  'estante-trofeus': Award,
+}
+
+export function roomItemIcon(id: string): LucideIcon {
+  return ICONS[id] ?? Package
+}
+
+export function RoomItemIcon({ id, className }: { id: string; className?: string }) {
+  const Icon = roomItemIcon(id)
+  return <Icon aria-hidden="true" className={className} />
+}

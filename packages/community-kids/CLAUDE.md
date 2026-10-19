@@ -15,6 +15,21 @@ reais e licença; selos de curso e paleta curricular mantêm seu critério próp
 projetos existentes. Veja docs/jornada-do-criador.md e os recibos de cada lote antes de alterar
 comportamento; a integração e o rollout ainda não estão qualificados.
 
+## A aura do nível voltou (19/10/2026)
+
+Pedido dela, junto com o anel da etapa na comunidade adulta: o `AvatarWithAura` volta a desenhar
+o anel na cor do nível (`--level-<slug>`), que tinha saído em 10/09/2026 (as descrições de "sem
+anel" mais abaixo são históricas). O anel é uma SOMBRA no próprio avatar (`.kids-aura` +
+`.kids-aura-<tamanho>` no `globals.css`): folga clara e o anel, acompanhando a forma do
+`className` (o quadrado arredondado do perfil também) sem mudar o tamanho de nada; no vidro do
+herói o fio de dentro continua (`.kids-aura.kids-marca-vidro`). Nível desconhecido ou ausente,
+sem anel. As telas passam o nível: menu, cartão da jornada na Início, perfil, perfil público,
+ranking, liga e os autores do Clube/Mural. No perfil, no menu e no cartão da jornada o nível
+também vem escrito (`LevelBadge`); nas listas a aura só ajuda a reconhecer de longe. No herói azul
+um fio claro por fora separa o anel do fundo (o Construtor(a) no tema azul tem a mesma cor do
+herói), e o foco do avatar do perfil fica por fora da aura. Teste: `tests/avatar-aura.test.tsx`
+e o pódio em `tests/ranking-hub.test.tsx`.
+
 ## Objetivos da parte (18/10/2026)
 
 [`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). O cartão é do member-shell (ver lá); aqui ele veste a pele da casa pelos ganchos
@@ -1551,6 +1566,9 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
 reiniciar o jogo. Os tokens `--sz-activity-card-*` do cartão da aula também vestem o cartão
 ampliado. A rolagem mantém o cabeçalho da experiência acessível em telas pequenas e com
 fonte aumentada. QA: `e2e-scenes/activity-expansion.spec.ts`, junto das suítes de jogo e cena.
+⚠️ O teste só guarda o `<iframe>` do jogo depois de `aria-busy="false"` (19/10/2026): o player
+troca o iframe do "Carregando…" por um elemento NOVO quando o jogo fica pronto, e guardar o nó
+antes disso fazia o CI falhar ou passar conforme a velocidade da máquina.
 
 A aula é do member-shell (compartilhada com o adulto), então o kids a veste por CSS a partir dos
 GANCHOS de lá (lista no CLAUDE.md do member-shell, invariante 8). ⚠️ As regras ficam FORA de camada

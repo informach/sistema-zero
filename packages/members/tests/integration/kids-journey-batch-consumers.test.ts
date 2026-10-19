@@ -14,7 +14,9 @@ test('peer avatars and Admin overview use one canonical batch including register
   registered(ctx, first, accountId, 'architect')
   registered(ctx, second, accountId, 'noob')
   const ids = [first, second, unknown].join(',')
-  const avatars = await ctx.app.handle(new Request(`http://localhost/members/avatars?ids=${ids}&audience=kids`))
+  const avatars = await ctx.app.handle(new Request(`http://localhost/members/avatars?ids=${ids}&audience=kids`, {
+    headers: { 'x-auth-user-id': first },
+  }))
   expect(avatars.status).toBe(200)
   const batch = await avatars.json()
   expect(batch.avatars[first]).toEqual({ photoUrl: null, level: 'architect' })

@@ -15,7 +15,7 @@ export default async function AdultPlayPage({ params }: { params: Promise<{ id: 
   // player mede o cabeçalho em px para decidir quando pedir para girar o celular.
   return (
     <div data-sz-public-player className="contents">
-      <PublicPlayer id={id} />
+      <PublicPlayer id={id} skin="adult" />
     </div>
   )
 }

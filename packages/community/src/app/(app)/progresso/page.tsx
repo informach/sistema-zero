@@ -7,16 +7,14 @@ import { ProgressClient } from './progress-client'
 
 export const dynamic = 'force-dynamic'
 
-/** Teto de detalhes de curso lidos para dar nome às pendências da jornada. */
+/** Teto de detalhes de curso lidos para dar nome às pendências (só num members sem `courseId`). */
 const MAX_COURSE_LOOKUPS = 12
 
 /**
- * Os nomes dos cursos que a etapa em andamento ainda pede. A jornada fala em `courseId`, e as
- * listas do aluno não trazem o id: o detalhe de cada curso traz. Só quando há pendência, com teto,
- * e best-effort (sem nome, a frase conta os cursos). Os candidatos vêm de Meus cursos, primeiro os
- * que ainda têm um marco a cumprir (concluir ou mostrar na Mostra) e, entre eles, os que têm lugar
- * na jornada: são esses que a etapa pode estar pedindo. Uma conta com muitos cursos (equipe, chave
- * de todos os cursos) não gasta o teto com cursos já fechados.
+ * Os nomes dos cursos que a etapa em andamento ainda pede. A jornada fala em `courseId`, que o
+ * catálogo traz desde 19/10/2026: uma leitura só dá nome a todos. Num members anterior (sem o id
+ * no catálogo), o detalhe de cada curso de Meus cursos traz o id, com teto, e os que ainda têm um
+ * marco a cumprir vêm primeiro. Best-effort: sem nome, a frase conta os cursos.
  */
 async function pendingCourseTitles(journey: AdultJourneyView | undefined) {
   const pending = new Set(
@@ -27,6 +25,12 @@ async function pendingCourseTitles(journey: AdultJourneyView | undefined) {
       : [],
   )
   if (!pending.size) return {}
+  const titles: Record<string, string> = {}
+  const catalog = await shell.members.listCatalog().catch(() => null)
+  const courses = catalog?.status === 200 ? (catalog.body?.courses ?? []) : []
+  for (const course of courses)
+    if (course.courseId && pending.has(course.courseId)) titles[course.courseId] = course.title
+  if (courses.some((course) => course.courseId)) return titles
   const mine = await shell.members.listMyCourses().catch(() => null)
   const weight = (course: MyCourseView) =>
     (course.milestones?.completed && course.milestones.showcased ? 2 : 0) +
@@ -39,7 +43,6 @@ async function pendingCourseTitles(journey: AdultJourneyView | undefined) {
   const details = await Promise.all(
     slugs.map((slug) => shell.members.getMyCourseReadonly(slug).catch(() => null)),
   )
-  const titles: Record<string, string> = {}
   for (const detail of details) {
     const course = detail?.status === 200 ? detail.body : null
     if (course?.id && pending.has(course.id)) titles[course.id] = course.title

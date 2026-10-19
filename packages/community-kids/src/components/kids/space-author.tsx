@@ -42,7 +42,7 @@ export function AuthorBadge({
 }) {
   const label = authorText(item, viewerId)
   return (
-    <span className="inline-flex min-w-0 items-center gap-1.5">
+    <span className="inline-flex min-w-0 items-center gap-2.5">
       {/* Sem foto do avatar 3D, a INICIAL do nome na bolinha (a das telas-modelo),
           e não o boneco genérico igual para todo mundo. */}
       <AvatarWithAura

@@ -319,6 +319,7 @@ function Podium({ entries }: { entries: RankingEntryView[] }) {
             <AvatarWithAura
               photoUrl={entry.photoUrl}
               name={entry.firstName ?? (entry.isMe ? 'Você' : null)}
+              levelSlug={entry.levelSlug}
               size="lg"
               className={metal.avatar}
               label={entry.isMe ? 'Seu avatar' : `Avatar de ${entry.firstName ?? 'colega'}`}
@@ -374,6 +375,7 @@ function RankingRow({ entry }: { entry: RankingEntryView }) {
       <AvatarWithAura
         photoUrl={entry.photoUrl}
         name={entry.firstName ?? (entry.isMe ? 'Você' : null)}
+        levelSlug={entry.levelSlug}
         size="sm"
         className="size-9"
         label={entry.isMe ? 'Seu avatar' : `Avatar de ${entry.firstName ?? 'colega'}`}

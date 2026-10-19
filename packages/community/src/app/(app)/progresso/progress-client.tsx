@@ -2,7 +2,6 @@
 
 import type { AdultCreatorCapability, AdultJourneyView } from '@sistemazero/core/journey'
 import { apiSend } from '@sistemazero/member-shell/lib/api'
-import { badgeInfo } from '@sistemazero/member-shell/lib/badge-info'
 import type { GamificationMeView, MissionsMeView } from '@sistemazero/member-shell/lib/types'
 import { Input } from '@sistemazero/ui/input'
 import {
@@ -25,10 +24,20 @@ import Link from 'next/link'
 import { type FormEvent, type ReactNode, useState } from 'react'
 import { toast } from 'sonner'
 import { useAdultGamification } from '@/components/community/gamification-provider'
+import { JourneyRibbon, StageChip } from '@/components/community/journey/stage'
 import { AdultMissions } from '@/components/community/missions'
 import { PageBand, PageBody } from '@/components/community/page'
 import { FIELD_CONTROL, ProfileField } from '@/components/community/profile/field'
+import { adultBadgeInfo } from '@/lib/adult-badges'
 import { cn } from '@/lib/cn'
+import {
+  isLegend,
+  normalizeJourney,
+  type StageBadge,
+  stageBadgeOf,
+  stageColor,
+  stageInk,
+} from '@/lib/journey-stage'
 
 const CAPABILITY_LABELS: Record<AdultCreatorCapability, string> = {
   studio: 'Estúdio',
@@ -39,6 +48,18 @@ const CAPABILITY_LABELS: Record<AdultCreatorCapability, string> = {
   ai: 'IA',
   pensa: 'Pensa',
 }
+
+/** O que a etapa libera, por extenso ("Ao concluir, libera: o Molda, a oficina 3D"). */
+const CAPABILITY_PHRASES: Record<AdultCreatorCapability, string> = {
+  studio: 'o Estúdio livre',
+  pinta: 'o Pinta',
+  molda: 'o Molda, a oficina 3D',
+  bridge: 'a Ponte entre blocos e código',
+  pro: 'o Estúdio Pro, com código',
+  ai: 'o assistente de IA',
+  pensa: 'o Pensa',
+}
+const capabilityPhrase = (capability: AdultCreatorCapability) => CAPABILITY_PHRASES[capability]
 
 const numberPt = new Intl.NumberFormat('pt-BR')
 
@@ -73,7 +94,7 @@ function missingSentence(
       continue
     }
     parts.push(
-      item.milestone === 'showcase' ? `publicar o jogo de ${title} na Mostra` : `concluir ${title}`,
+      item.milestone === 'showcase' ? `publicar o jogo de ${title} no Mural` : `concluir ${title}`,
     )
   }
   const more = parts.length ? 'mais ' : ''
@@ -86,8 +107,8 @@ function missingSentence(
   if (unnamedShowcase)
     parts.push(
       unnamedShowcase === 1
-        ? `publicar ${more}um jogo na Mostra`
-        : `publicar ${more}${unnamedShowcase} jogos na Mostra`,
+        ? `publicar ${more}um jogo no Mural`
+        : `publicar ${more}${unnamedShowcase} jogos no Mural`,
     )
   return `${joinPt(parts)}.`
 }
@@ -187,87 +208,165 @@ function StatTile({ icon, label, value }: { icon: LucideIcon; label: string; val
 }
 
 function JourneySection({
-  journey,
+  journey: received,
   titles,
 }: {
   journey: AdultJourneyView
   titles: Record<string, string>
 }) {
+  const journey = normalizeJourney(received)
   const unlocked = journey.capabilities.map((capability) => CAPABILITY_LABELS[capability])
+  const stage = stageBadgeOf(journey)
+  if (!stage) return null
+  const total = stage.total
+  const current = isLegend(stage) ? undefined : journey.stages[stage.position - 1]
   return (
-    <section aria-labelledby="progresso-jornada" className="sz-card flex flex-col gap-5 p-6 md:p-8">
+    <section aria-labelledby="progresso-jornada" className="sz-card flex flex-col gap-6 p-6 md:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex min-w-0 flex-1 basis-[20rem] flex-col gap-1.5">
+        <div className="flex min-w-0 flex-1 basis-[20rem] flex-col gap-2">
           <h2 id="progresso-jornada" className="sz-h2">
             Sua jornada
           </h2>
           <p className="text-muted-foreground">
-            Cada etapa pede cursos concluídos e jogos publicados. As etapas liberam ferramentas.
+            Cada etapa tem os cursos de um nível e uma cor. Ao concluir uma etapa, você libera as
+            ferramentas dela e a próxima abre.
           </p>
         </div>
-        {unlocked.length ? (
-          <span className="sz-chip sz-chip-ok h-auto whitespace-normal py-1">
-            <Check aria-hidden />
-            Liberados: {joinPt(unlocked)}
-          </span>
-        ) : null}
+        <StageChip badge={stage} />
       </div>
-      <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {journey.stages.map((stage, index) => {
-          const step = `Etapa ${index + 1}`
-          if (stage.completed)
-            return (
-              <li
-                key={stage.id}
-                className="flex flex-col gap-2.5 rounded-[0.9rem] bg-(--sucesso-tint) p-5"
-              >
-                <span className="flex items-center gap-2 font-bold text-(--pen-ok-texto)">
-                  <CheckCircle2 className="size-5" aria-hidden />
-                  {step} · Concluída
-                </span>
-                <strong className="sz-h3">{stage.title}</strong>
-              </li>
-            )
-          if (stage.available)
-            return (
-              <li
-                key={stage.id}
-                className="flex flex-col gap-2.5 rounded-[0.9rem] bg-(--acao-tint) p-5 shadow-[inset_0_0_0_2px_var(--primary)]"
-              >
-                <span className="flex items-center gap-2 font-bold text-(--acao-texto)">
-                  <ArrowRight className="size-5" aria-hidden />
-                  {step} · Em andamento
-                </span>
-                <strong className="sz-h3">{stage.title}</strong>
-                {stage.missing.length ? (
-                  <p className="text-[0.9rem]">
-                    <b>Falta:</b> {missingSentence(stage.missing, titles)}
-                  </p>
-                ) : null}
-              </li>
-            )
+      <JourneyRibbon
+        badge={stage}
+        currentShare={
+          current?.requirements.length
+            ? 1 - current.missing.length / current.requirements.length
+            : undefined
+        }
+      />
+      {current?.missing.length ? (
+        <p className="m-0">
+          <b>Para concluir a etapa {stage.position}:</b> {missingSentence(current.missing, titles)}
+          {current.capabilities.length ? (
+            <> Ao concluir, você libera {joinPt(current.capabilities.map(capabilityPhrase))}.</>
+          ) : null}
+        </p>
+      ) : null}
+      {unlocked.length ? (
+        <span className="sz-chip sz-chip-ok h-auto self-start whitespace-normal py-1">
+          <Check aria-hidden />
+          Já liberados: {joinPt(unlocked)}
+        </span>
+      ) : null}
+      <ol className="m-0 grid list-none gap-4 p-0 md:grid-cols-2 lg:grid-cols-3">
+        {journey.stages.map((item, index) => {
+          const badge = { position: index + 1, total, title: item.title }
+          const state = item.completed ? 'feita' : item.available ? 'aqui' : 'fechada'
           return (
-            <li key={stage.id} className="flex flex-col gap-2.5 rounded-[0.9rem] bg-background p-5">
-              <span className="flex items-center gap-2 font-bold text-muted-foreground">
-                <Lock className="size-5" aria-hidden />
-                {step}
-              </span>
-              <strong className="sz-h3">{stage.title}</strong>
-              <p className="text-[0.9rem] text-muted-foreground">
-                Conclua a etapa anterior para avançar.
-              </p>
+            <li key={item.id}>
+              <Link
+                href={`/cursos/etapa/${encodeURIComponent(item.id)}`}
+                prefetch={false}
+                className={cn(
+                  'flex h-full flex-col gap-3 rounded-[1rem] border p-5 text-foreground no-underline transition-colors hover:border-foreground focus-visible:outline-3 focus-visible:outline-(--ring) focus-visible:outline-offset-2',
+                  state === 'aqui' ? 'border-transparent' : 'border-border',
+                  state === 'fechada' ? 'bg-background' : 'bg-card',
+                )}
+                style={
+                  state === 'aqui'
+                    ? { boxShadow: `inset 0 0 0 3px ${stageColor(badge)}` }
+                    : undefined
+                }
+              >
+                {/* O número em cima e o nome embaixo, na largura do cartão: no celular estreito,
+                    ao lado do círculo, "Explorador(a)" não cabia. */}
+                <span className="flex items-center gap-3.5">
+                  <StageMedal badge={badge} />
+                  <span className="font-bold text-[0.9rem] text-muted-foreground">
+                    Etapa {index + 1}
+                  </span>
+                </span>
+                <strong className="sz-h4 break-words">{item.title}</strong>
+                <span className="text-[0.9rem]">
+                  <b>Ao concluir, libera:</b>{' '}
+                  {item.capabilities.length
+                    ? joinPt(item.capabilities.map(capabilityPhrase))
+                    : index === journey.stages.length - 1
+                      ? 'o título de Lenda'
+                      : 'a próxima etapa'}
+                </span>
+                <StageState state={state} index={index} />
+              </Link>
             </li>
           )
         })}
+        <li>
+          <div className="flex h-full flex-col gap-3 rounded-[1rem] border border-border bg-card p-5">
+            <span className="flex items-center gap-3.5">
+              <StageMedal badge={{ position: total, total, title: null }} />
+              <span className="font-bold text-[0.9rem] text-muted-foreground">Fim da jornada</span>
+            </span>
+            <strong className="sz-h4">Lenda</strong>
+            <span className="text-[0.9rem]">
+              Não tem cursos: é o título de quem conclui todas as etapas.
+            </span>
+            {isLegend(stage) ? (
+              <StageState state="aqui" index={total - 1} />
+            ) : (
+              <span className="sz-chip mt-auto self-start">
+                <Lock aria-hidden />
+                Depois da etapa {total - 1}
+              </span>
+            )}
+          </div>
+        </li>
       </ol>
     </section>
+  )
+}
+
+function StageState({ state, index }: { state: 'feita' | 'aqui' | 'fechada'; index: number }) {
+  if (state === 'feita')
+    return (
+      <span className="sz-chip sz-chip-ok mt-auto self-start">
+        <CheckCircle2 aria-hidden />
+        Concluída
+      </span>
+    )
+  if (state === 'aqui')
+    return (
+      <span className="sz-chip sz-chip-acao mt-auto self-start">
+        <ArrowRight aria-hidden />
+        Você está aqui
+      </span>
+    )
+  return (
+    <span className="sz-chip mt-auto self-start">
+      <Lock aria-hidden />
+      Abre depois da etapa {index}
+    </span>
+  )
+}
+
+/** O número da etapa dentro de um círculo na cor dela (com o branco em volta, como o anel). */
+function StageMedal({ badge }: { badge: StageBadge }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-flex size-12 flex-none items-center justify-center rounded-full font-extrabold text-[1.15rem] [font-family:var(--font-display)]"
+      style={{
+        background: stageColor(badge),
+        color: stageInk(badge),
+        boxShadow: `0 0 0 3px var(--card), 0 0 0 5px ${stageColor(badge)}`,
+      }}
+    >
+      {badge.position}
+    </span>
   )
 }
 
 function BadgesSection({ badges }: { badges: GamificationMeView['badges'] }) {
   // O catálogo vem na ordem do members; as conquistadas sobem, sem mudar a ordem entre elas.
   const known = badges
-    .map((badge) => ({ badge, info: badgeInfo(badge.slug) }))
+    .map((badge) => ({ badge, info: adultBadgeInfo(badge.slug) }))
     .filter((entry) => entry.info !== null && entry.info !== undefined)
   const sorted = [
     ...known.filter((entry) => entry.badge.unlockedAt),

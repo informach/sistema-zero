@@ -1,8 +1,8 @@
 'use client'
 
-import { badgeInfo } from '@sistemazero/member-shell/lib/badge-info'
 import { Flame, Sparkles } from 'lucide-react'
 import Link from 'next/link'
+import { adultBadgeInfo } from '@/lib/adult-badges'
 import { useAdultGamification } from '../gamification-provider'
 
 /**
@@ -16,7 +16,7 @@ export function RhythmCard() {
   const lastBadge = progress.badges
     .filter((badge) => badge.unlockedAt)
     .sort((a, b) => (b.unlockedAt ?? '').localeCompare(a.unlockedAt ?? ''))[0]
-  const lastBadgeTitle = lastBadge ? (badgeInfo(lastBadge.slug)?.title ?? null) : null
+  const lastBadgeTitle = lastBadge ? (adultBadgeInfo(lastBadge.slug)?.title ?? null) : null
 
   return (
     <article className="sz-card flex flex-col gap-3.5 p-5 md:p-7">
