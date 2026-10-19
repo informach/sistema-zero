@@ -1,3 +1,4 @@
+import type { AdultJourneyPosition } from '@sistemazero/core/journey'
 import type { CourseAudience } from '../../domain/course/course'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import type { AdultProfileRepository } from '../../domain/ports/adult-profile-repository.port'
@@ -5,6 +6,7 @@ import type { AuthGateway, ProfileIdentity } from '../../domain/ports/auth-gatew
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { RankingCursorCodec } from '../../domain/ports/ranking-cursor.port'
 import { ValidationError } from '../../domain/shared/errors'
+import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import type { RankingEntryView, RankingLeaderboardView } from '../mappers/views'
 import type { ListRankingService } from './list-ranking.service'
 
@@ -17,6 +19,28 @@ function chunks<T>(items: T[], size: number): T[][] {
   return out
 }
 
+/** A etapa nas listas: só a posição, o total e o nome (nunca o id da etapa). */
+export function badgeOf(position: AdultJourneyPosition) {
+  return { position: position.position, total: position.total, title: position.title }
+}
+
+/**
+ * A etapa das pessoas de uma lista adulta, numa leitura só. Best-effort: sem jornada configurada,
+ * fora do adulto ou com o banco recusando, a lista segue sem o anel.
+ */
+export async function adultJourneysFor(
+  journey: Pick<AdultJourneyService, 'positions'> | undefined,
+  audience: CourseAudience,
+  userIds: readonly string[],
+): Promise<Map<string, AdultJourneyPosition>> {
+  if (!journey || audience !== 'adult' || userIds.length === 0) return new Map()
+  try {
+    return await journey.positions(userIds)
+  } catch {
+    return new Map()
+  }
+}
+
 /** Projeção pública/redigida do ranking geral para a comunidade do aluno. */
 export class GetRankingLeaderboardService {
   constructor(
@@ -26,6 +50,7 @@ export class GetRankingLeaderboardService {
     private readonly auth: AuthGateway | null,
     private readonly cursors: RankingCursorCodec,
     private readonly adultProfiles?: AdultProfileRepository,
+    private readonly adultJourney?: Pick<AdultJourneyService, 'positions'>,
   ) {}
 
   async execute(
@@ -65,17 +90,30 @@ export class GetRankingLeaderboardService {
     const all = [...visibleItems, ...(page.me ? [page.me] : [])]
     const unique = [...new Map(all.map((entry) => [entry.userId, entry])).values()]
     const identities = await this.identities(unique, input.audience)
+    const journeys = await adultJourneysFor(
+      this.adultJourney,
+      input.audience,
+      unique
+        .map((entry) => entry.userId)
+        .filter((id) => id === userId || identities.get(id)?.public),
+    )
 
     const toPublic = (entry: (typeof page.items)[number]): RankingEntryView => {
       const identity = identities.get(entry.userId)
+      const journey = journeys.get(entry.userId)
       return {
         position: entry.position,
         xp: entry.xp,
         isMe: entry.userId === userId,
         firstName: identity?.firstName || null,
-        photoUrl: entry.photoUrl,
+        // Adulto: a foto (como o nome e a etapa) só de quem mostra o perfil e da própria pessoa.
+        photoUrl:
+          input.audience !== 'adult' || entry.userId === userId || identity?.public
+            ? entry.photoUrl
+            : null,
         levelSlug: entry.levelSlug,
         ...(identity?.public ? { profileId: entry.userId } : {}),
+        ...(journey ? { journey: badgeOf(journey) } : {}),
       }
     }
 

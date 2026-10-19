@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
 import { challengeMonthName } from './community/challenge-month'
+import { StageFace, StageLine } from './journey/stage'
 
 /**
  * O cartão de um jogo do Mural (direção de arte de 18/10/2026): capa, selo do desafio, autor
@@ -106,16 +107,34 @@ export function ShowcaseCard({
           </span>
         ) : null}
         <h2 className="sz-h3">{thread.title}</h2>
-        <p className="text-[0.85rem] text-muted-foreground">
-          {thread.authorProfileId ? (
-            <Link href={`/criador/${thread.authorProfileId}`} prefetch={false} className="sz-link">
-              {author}
-            </Link>
-          ) : (
-            author
-          )}{' '}
-          · {thread.playsCount ?? 0} {thread.playsCount === 1 ? 'jogada' : 'jogadas'}
-        </p>
+        <div className="flex items-center gap-3">
+          {thread.authorAvatarUrl || thread.authorJourney ? (
+            <StageFace
+              name={author}
+              photoUrl={thread.authorAvatarUrl}
+              badge={thread.authorJourney}
+              size="p"
+              className="size-10 text-[0.85rem]"
+            />
+          ) : null}
+          <p className="flex min-w-0 flex-col text-[0.85rem] text-muted-foreground">
+            <span>
+              {thread.authorProfileId ? (
+                <Link
+                  href={`/criador/${thread.authorProfileId}`}
+                  prefetch={false}
+                  className="sz-link"
+                >
+                  {author}
+                </Link>
+              ) : (
+                author
+              )}{' '}
+              · {thread.playsCount ?? 0} {thread.playsCount === 1 ? 'jogada' : 'jogadas'}
+            </span>
+            {thread.authorJourney ? <StageLine badge={thread.authorJourney} /> : null}
+          </p>
+        </div>
         {thread.body ? (
           <p className="line-clamp-4 whitespace-pre-wrap text-[0.85rem] text-foreground">
             {thread.body}

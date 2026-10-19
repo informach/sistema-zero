@@ -2,8 +2,10 @@ import { RoomCanvas } from '@sistemazero/member-shell/components/cosmetics/room/
 import { ArrowLeft, Eye, Gamepad2, Play, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { JourneyRibbon, StageChip, StageRing } from '@/components/community/journey/stage'
 import { PageBody, SectionHeader } from '@/components/community/page'
 import { adultBadgeInfo } from '@/lib/adult-badges'
+import { isLegend, normalizeJourney, stageBadgeOf } from '@/lib/journey-stage'
 import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
 
@@ -68,6 +70,11 @@ export default async function AdultPublicProfile({
     .filter((item) => item.info !== null)
   const name = profile.displayName || 'Criador'
   const isMe = session?.id === id
+  // A etapa da jornada (19/10/2026): o anel da cor na foto, o chip com o nome e a fita.
+  const journey = normalizeJourney(profile.journey)
+  const stage = stageBadgeOf(journey)
+  const current = stage && !isLegend(stage) ? journey?.stages[stage.position - 1] : undefined
+  const missing = current?.missing.length ?? 0
   const stats = [
     { label: 'Pontos de experiência', value: `${NUMBER.format(profile.xp)} XP` },
     profile.ranking
@@ -81,23 +88,26 @@ export default async function AdultPublicProfile({
     <>
       <ProfileBand back={back}>
         <div className="flex flex-wrap items-center gap-6">
-          {profile.avatarPhotoUrl ? (
-            <img
-              src={profile.avatarPhotoUrl}
-              alt={`Foto do avatar de ${name}`}
-              className="size-24 flex-none rounded-full border-4 border-(--sz-community-action-light) bg-(--acao-tint) object-cover md:size-32"
-            />
-          ) : (
-            <span
-              aria-hidden="true"
-              className="inline-flex size-24 flex-none items-center justify-center rounded-full border-4 border-(--sz-community-action-light) bg-primary font-bold text-[2rem] text-primary-foreground md:size-32"
-            >
-              {initials(name)}
-            </span>
-          )}
-          <div className="flex min-w-0 flex-col gap-1.5">
+          <StageRing badge={stage} size="g" dark>
+            {profile.avatarPhotoUrl ? (
+              <img
+                src={profile.avatarPhotoUrl}
+                alt={`Foto do avatar de ${name}`}
+                className={`size-24 flex-none rounded-full bg-(--acao-tint) object-cover md:size-32 ${stage ? '' : 'border-4 border-(--sz-community-action-light)'}`}
+              />
+            ) : (
+              <span
+                aria-hidden="true"
+                className={`inline-flex size-24 flex-none items-center justify-center rounded-full bg-primary font-bold text-[2rem] text-primary-foreground md:size-32 ${stage ? '' : 'border-4 border-(--sz-community-action-light)'}`}
+              >
+                {initials(name)}
+              </span>
+            )}
+          </StageRing>
+          <div className="flex min-w-0 flex-col gap-2">
             <span className="sz-kicker text-(--topo-texto)">PERFIL DE CRIADOR</span>
             <h1 className="sz-h1 break-words text-white">{name}</h1>
+            {stage ? <StageChip badge={stage} dark className="self-start" /> : null}
           </div>
         </div>
         <dl className="m-0 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -113,6 +123,29 @@ export default async function AdultPublicProfile({
             </div>
           ))}
         </dl>
+        {stage ? (
+          <div className="flex flex-col gap-2.5 rounded-2xl bg-(--topo-borda) px-5 py-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <strong className="text-white">Jornada do Criador</strong>
+              <span className="text-xs">
+                {isLegend(stage)
+                  ? 'Concluiu todas as etapas'
+                  : missing > 0
+                    ? `${missing} ${missing === 1 ? 'curso falta' : 'cursos faltam'} para concluir a etapa ${stage.position}`
+                    : `Na etapa ${stage.position}`}
+              </span>
+            </div>
+            <JourneyRibbon
+              badge={stage}
+              dark
+              currentShare={
+                current?.requirements.length
+                  ? 1 - current.missing.length / current.requirements.length
+                  : undefined
+              }
+            />
+          </div>
+        ) : null}
       </ProfileBand>
       <PageBody>
         {isMe ? (

@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { cn } from '@/lib/cn'
 
 const SIZES = {
@@ -29,6 +30,7 @@ export function KidsAvatar({
   name,
   size = 'md',
   className,
+  style,
   label,
 }: {
   /** URL do snapshot (`avatarPhotoUrl`/`photoUrl` das views). `null`/ausente → default. */
@@ -37,6 +39,8 @@ export function KidsAvatar({
   name?: string | null
   size?: keyof typeof SIZES
   className?: string
+  /** Estilo extra (a cor da aura, no `AvatarWithAura`). */
+  style?: CSSProperties
   /** Texto acessível (ex.: "Avatar de Lia"). */
   label?: string
 }) {
@@ -52,6 +56,7 @@ export function KidsAvatar({
         SIZES[size],
         className,
       )}
+      style={style}
     >
       {photoUrl ? (
         <img

@@ -93,6 +93,7 @@ export function CreatorJourneyCard({
       <AvatarWithAura
         photoUrl={avatarPhotoUrl}
         name={name}
+        levelSlug={level?.slug}
         size="lg"
         className={cn('md:size-[4.5rem]', AVATAR_CLARO)}
         label="Seu avatar"

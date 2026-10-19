@@ -9,8 +9,10 @@ import { Medal } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { StageFace, StageLine } from '@/components/community/journey/stage'
 import { PageBand, PageBody } from '@/components/community/page'
 import { cn } from '@/lib/cn'
+import type { StageBadge } from '@/lib/journey-stage'
 
 const leagueNames: Record<string, string> = {
   bronze: 'Bronze',
@@ -24,27 +26,56 @@ const numberPt = new Intl.NumberFormat('pt-BR')
 
 /**
  * O nome de quem aparece: "Você" para a própria linha; o primeiro nome com link para o perfil
- * público quando a pessoa o abriu; sem perfil público, "Participante".
+ * público quando a pessoa o abriu; sem perfil público, "Participante". Com a foto e a etapa da
+ * jornada (19/10/2026), que o members só manda de quem mostra o perfil e da própria pessoa: o anel
+ * da cor em volta da foto e o nome da etapa embaixo do nome.
  */
 function Participant({
   entry,
   className,
 }: {
-  entry: { isMe: boolean; profileId?: string; firstName?: string | null }
+  entry: {
+    isMe: boolean
+    profileId?: string
+    firstName?: string | null
+    photoUrl?: string | null
+    journey?: StageBadge
+  }
   className?: string
 }) {
-  if (entry.isMe) return <strong className={className}>Você</strong>
-  if (entry.profileId)
-    return (
-      <Link
-        href={`/criador/${entry.profileId}?de=ranking`}
-        prefetch={false}
-        className={cn('sz-link', className)}
-      >
-        {entry.firstName ?? 'Participante'}
-      </Link>
-    )
-  return <span className={className}>Participante</span>
+  const label = entry.isMe
+    ? 'Você'
+    : entry.profileId
+      ? (entry.firstName ?? 'Participante')
+      : 'Participante'
+  const name = entry.isMe ? (
+    <strong>Você</strong>
+  ) : entry.profileId ? (
+    <Link href={`/criador/${entry.profileId}?de=ranking`} prefetch={false} className="sz-link">
+      {label}
+    </Link>
+  ) : (
+    <span>{label}</span>
+  )
+  // A foto só a partir de 640px: no celular a linha não comporta foto, nome e etapa lado a lado
+  // (a etapa continua escrita embaixo do nome).
+  return (
+    <span className={cn('flex min-w-0 items-center gap-3', className)}>
+      <span className="hidden sm:inline-flex">
+        <StageFace
+          name={entry.isMe ? (entry.firstName ?? label) : label}
+          photoUrl={entry.isMe || entry.profileId ? entry.photoUrl : null}
+          badge={entry.journey}
+          size="p"
+          className="size-10 text-[0.85rem]"
+        />
+      </span>
+      <span className="flex min-w-0 flex-col break-words">
+        {name}
+        {entry.journey ? <StageLine badge={entry.journey} /> : null}
+      </span>
+    </span>
+  )
 }
 
 function leagueChangeSentence(league: LeagueMeView): string {
@@ -121,7 +152,10 @@ function RankingSection({ initial }: { initial: RankingLeaderboardView | null })
   const meOutside = ranking?.me && !ranking.items.some((entry) => entry.isMe) ? ranking.me : null
 
   return (
-    <section aria-labelledby="ranking-geral" className="sz-card flex flex-col gap-4 p-6 md:p-8">
+    <section
+      aria-labelledby="ranking-geral"
+      className="sz-card flex flex-col gap-4 p-4 sm:p-6 md:p-8"
+    >
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 id="ranking-geral" className="sz-h2">
           Ranking geral
@@ -138,27 +172,39 @@ function RankingSection({ initial }: { initial: RankingLeaderboardView | null })
             <p className="text-muted-foreground">Conquiste XP para participar do ranking.</p>
           )}
           {ranking.items.length || meOutside ? (
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="text-[0.9rem] text-muted-foreground">
-                  <th scope="col" className="w-[5rem] px-3 py-2.5 font-bold sm:px-4">
-                    Posição
-                  </th>
-                  <th scope="col" className="px-3 py-2.5 font-bold sm:px-4">
-                    Participante
-                  </th>
-                  <th scope="col" className="px-3 py-2.5 text-right font-bold sm:px-4">
-                    XP
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {ranking.items.map((entry, index) => (
-                  <RankingRow key={entry.profileId ?? `anonymous-${index}`} entry={entry} />
-                ))}
-                {meOutside ? <RankingRow entry={meOutside} detached /> : null}
-              </tbody>
-            </table>
+            // A tabela cabe no celular (colunas estreitas, sem foto); a rolagem é só a rede.
+            <div className="overflow-x-auto">
+              <table className="w-full table-fixed border-collapse text-left">
+                <thead>
+                  <tr className="text-[0.9rem] text-muted-foreground">
+                    <th
+                      scope="col"
+                      className="w-[3rem] px-1.5 py-2.5 font-bold sm:w-[6rem] sm:px-4"
+                    >
+                      <span aria-hidden="true" className="sm:hidden">
+                        Nº
+                      </span>
+                      <span className="sr-only sm:not-sr-only">Posição</span>
+                    </th>
+                    <th scope="col" className="px-1.5 py-2.5 font-bold sm:px-4">
+                      Participante
+                    </th>
+                    <th
+                      scope="col"
+                      className="w-[4.6rem] px-1.5 py-2.5 text-right font-bold sm:w-[7rem] sm:px-4"
+                    >
+                      XP
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ranking.items.map((entry, index) => (
+                    <RankingRow key={entry.profileId ?? `anonymous-${index}`} entry={entry} />
+                  ))}
+                  {meOutside ? <RankingRow entry={meOutside} detached /> : null}
+                </tbody>
+              </table>
+            </div>
           ) : null}
           <div className="flex flex-wrap justify-end gap-3">
             <button
@@ -189,7 +235,7 @@ function RankingSection({ initial }: { initial: RankingLeaderboardView | null })
 }
 
 function RankingRow({ entry, detached = false }: { entry: RankingEntryView; detached?: boolean }) {
-  const cell = 'h-[3rem] px-3 sm:px-4'
+  const cell = 'h-[3.6rem] px-1.5 py-2 sm:px-4'
   return (
     <>
       {detached ? (

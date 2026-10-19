@@ -29,6 +29,17 @@ padrão de tudo abaixo continua sendo o Kids, byte por byte.
   que lê tokens do `globals.css` de lá (`community/tests/adult-cosmetics.test.ts` trava as classes
   e os tokens). Sem o avatar carregado, o painel adulto diz "Carregando" em vez das peças.
 
+## A etapa da jornada adulta nas listas (19/10/2026)
+
+- `AdultJourneyBadgeView {position, total, title}` (`lib/types.ts`): `journey?` em
+  `RankingEntryView`/`LeagueEntryView` e `authorJourney?` nos tópicos/comentários do hub. `total`
+  inclui a Lenda (a última posição, `title: null`).
+- **Hub adulto:** `attachAdultPublicIdentities` recebe `{displayName, photoUrl?, journey?}` por
+  autor e grava `authorDisplayName`, `authorAvatarUrl` e `authorJourney` SÓ de quem mostra o
+  perfil; quem não mostra sai com `authorAvatarUrl`/`authorJourney` `null`, mesmo que um registro
+  antigo do Hub trouxesse a foto. `getAdultPublicIdentities` devolve foto e etapa.
+- `courseId?` em `CatalogCourseView`/`MyCourseView` (opcional: tolera members antigo).
+
 ## Estúdio JS/Python e audiência do host (18/10/2026)
 
 Os dois hosts usam os mesmos editores e rotas; a audiência estática de `createShell` acompanha descoberta, autorização e owners dos hooks. A identidade real do adulto segue para Members/Pensa; o namespace local `adult:<id>` serve apenas ao armazenamento. O BFF recusa contexto de audiência incompatível e o servidor reaplica política e posse na operação.

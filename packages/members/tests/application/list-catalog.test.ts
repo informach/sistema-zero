@@ -116,6 +116,7 @@ describe('ListCatalogService (catálogo "Todos os cursos")', () => {
 
     const [view] = await service.execute(userId)
     expect(view).toEqual({
+      courseId: courses.courses[0]?.id ?? '',
       courseSlug: 'curso',
       title: 'Curso',
       subtitle: 'Sub',

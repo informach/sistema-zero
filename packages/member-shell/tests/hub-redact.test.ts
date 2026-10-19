@@ -243,11 +243,41 @@ test('perfil adulto privado não volta a ser público por snapshot antigo do Hub
     authorDisplayName: null,
   })
   expect(
-    redactAuthors(attachAdultPublicIdentities(snapshot, new Map([[OTHER, 'Nome escolhido']])), ME),
+    redactAuthors(
+      attachAdultPublicIdentities(snapshot, new Map([[OTHER, { displayName: 'Nome escolhido' }]])),
+      ME,
+    ),
   ).toMatchObject({
     authorId: null,
     authorPublic: true,
     authorProfileId: OTHER,
     authorDisplayName: 'Nome escolhido',
+    authorAvatarUrl: null,
+    authorJourney: null,
+  })
+})
+
+test('adulto: foto e etapa só de quem mostra o perfil, nunca de um retrato antigo do Hub', () => {
+  const journey = { position: 3, total: 8, title: 'Inventor(a)' }
+  const page = {
+    items: [
+      { authorId: OTHER, authorPublic: true, authorAvatarUrl: 'https://cdn/velha.png' },
+      { authorId: 'user-public' },
+    ],
+  }
+  const out = attachAdultPublicIdentities(
+    page,
+    new Map([['user-public', { displayName: 'Ana', photoUrl: 'https://cdn/ana.png', journey }]]),
+  ) as { items: Record<string, unknown>[] }
+  expect(out.items[0]).toMatchObject({
+    authorPublic: false,
+    authorAvatarUrl: null,
+    authorJourney: null,
+  })
+  expect(out.items[1]).toMatchObject({
+    authorPublic: true,
+    authorDisplayName: 'Ana',
+    authorAvatarUrl: 'https://cdn/ana.png',
+    authorJourney: journey,
   })
 })

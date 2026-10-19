@@ -1,5 +1,6 @@
 import { CREATOR_SHOWCASE_SLUGS } from '@sistemazero/core/creations'
 import {
+  type AdultPublicIdentity,
   attachAdultPublicIdentities,
   collectAuthorIds,
   redactAuthors,
@@ -9,6 +10,7 @@ import Link from 'next/link'
 import type { HubPage, HubThreadView } from '@/lib/types'
 import { shell } from '@/server/shell'
 import { CourseCover } from '../courses/course-cover'
+import { StageLine } from '../journey/stage'
 import { SectionHeader } from '../page'
 
 const SHOWN = 3
@@ -28,12 +30,12 @@ async function loadShowcase(viewerId: string | null): Promise<HubThreadView[]> {
     const page = await shell.hub.listThreads(channel.id, { limit: 12, sort: 'recent' })
     if (page.status !== 200 || !page.body) return []
     const ids = [...collectAuthorIds(page.body)].slice(0, 100)
-    const identities = new Map<string, string>()
+    const identities = new Map<string, AdultPublicIdentity>()
     if (ids.length > 0) {
       const response = await shell.members.getAdultPublicIdentities(ids).catch(() => null)
       if (response?.status === 200)
-        for (const identity of response.body?.identities ?? [])
-          identities.set(identity.userId, identity.displayName)
+        for (const { userId, ...identity } of response.body?.identities ?? [])
+          identities.set(userId, identity)
     }
     const safe = redactAuthors(
       attachAdultPublicIdentities(page.body, identities) as HubPage<HubThreadView>,
@@ -84,6 +86,7 @@ export async function ShowcaseNews({ viewerId }: { viewerId: string | null }) {
                     ? 'ainda sem jogadas'
                     : `${plays} ${plays === 1 ? 'jogada' : 'jogadas'}`}
                 </span>
+                {game.authorJourney ? <StageLine badge={game.authorJourney} /> : null}
                 <div className="mt-auto pt-2.5">
                   {game.playId ? (
                     <a

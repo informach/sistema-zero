@@ -9,6 +9,26 @@ import type { AdultJourneyRepository } from '../../../domain/ports/adult-journey
 import type { Database } from './db'
 import { accountDeletionFences, adultJourneyGrants, adultJourneyPolicy, xpEvents } from './schema'
 
+/** Junta as linhas do ledger em marcos por pessoa e curso (os dois marcos sem cruzar). */
+export function groupMilestones(
+  rows: readonly { userId: string; courseId: string; type: string }[],
+): Map<string, AdultCourseMilestone[]> {
+  const byUser = new Map<string, Map<string, AdultCourseMilestone>>()
+  for (const row of rows) {
+    const courses = byUser.get(row.userId) ?? new Map<string, AdultCourseMilestone>()
+    const milestone = courses.get(row.courseId) ?? {
+      courseId: row.courseId,
+      completed: false,
+      showcased: false,
+    }
+    if (row.type === 'course_complete') milestone.completed = true
+    if (row.type === 'course_showcased') milestone.showcased = true
+    courses.set(row.courseId, milestone)
+    byUser.set(row.userId, courses)
+  }
+  return new Map([...byUser].map(([userId, courses]) => [userId, [...courses.values()]]))
+}
+
 export class DrizzleAdultJourneyRepository implements AdultJourneyRepository {
   constructor(private readonly db: Database) {}
   async getPolicy() {
@@ -40,28 +60,24 @@ export class DrizzleAdultJourneyRepository implements AdultJourneyRepository {
     return row ? { version: row.version, policy: row.policy } : null
   }
   async listMilestones(userId: string): Promise<AdultCourseMilestone[]> {
+    return (await this.listMilestonesForUsers([userId])).get(userId) ?? []
+  }
+  async listMilestonesForUsers(
+    userIds: readonly string[],
+  ): Promise<Map<string, AdultCourseMilestone[]>> {
+    const out = new Map<string, AdultCourseMilestone[]>()
+    if (userIds.length === 0) return out
     const rows = await this.db
-      .select({ courseId: xpEvents.sourceId, type: xpEvents.sourceType })
+      .select({ userId: xpEvents.userId, courseId: xpEvents.sourceId, type: xpEvents.sourceType })
       .from(xpEvents)
       .where(
         and(
-          eq(xpEvents.userId, userId),
+          inArray(xpEvents.userId, [...userIds]),
           eq(xpEvents.audience, 'adult'),
           inArray(xpEvents.sourceType, ['course_complete', 'course_showcased']),
         ),
       )
-    const result = new Map<string, AdultCourseMilestone>()
-    for (const row of rows) {
-      const milestone = result.get(row.courseId) ?? {
-        courseId: row.courseId,
-        completed: false,
-        showcased: false,
-      }
-      if (row.type === 'course_complete') milestone.completed = true
-      if (row.type === 'course_showcased') milestone.showcased = true
-      result.set(row.courseId, milestone)
-    }
-    return [...result.values()]
+    return groupMilestones(rows)
   }
   async listGranted(userId: string): Promise<AdultCreatorCapability[]> {
     return (

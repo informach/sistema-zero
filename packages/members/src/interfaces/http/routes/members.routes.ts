@@ -759,14 +759,21 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       // Avatar + NÍVEL em LOTE por profileId (peer-viewable, como o perfil público): o
       // BFF do Clube/Mural pinta rosto+aura de cada autor numa ida (sem N+1). Só dado
       // de jogo (foto do boneco 3D + slug do nível); nome/e-mail nunca passam por aqui.
+      // ⚠️ No ADULTO a foto é escolha da pessoa (só sai de quem mostra o perfil, pelo
+      // `/adult/profiles/public-identities`): aqui o adulto recebe só a PRÓPRIA (19/10/2026).
       .get(
         '/avatars',
-        async ({ query }) => ({
-          avatars: await deps.getAvatarsByProfiles.execute(
-            parseProfileIds(query.ids),
-            query.audience ?? 'kids',
-          ),
-        }),
+        async ({ query, headers }) => {
+          const audience = query.audience ?? 'kids'
+          const ids = parseProfileIds(query.ids)
+          const viewerId = resolveUserId(headers)
+          return {
+            avatars: await deps.getAvatarsByProfiles.execute(
+              audience === 'adult' ? ids.filter((id) => id === viewerId) : ids,
+              audience,
+            ),
+          }
+        },
         { query: AvatarsBatchQuery },
       )
       // A lista vem do reconhecimento do navegador no Auth. Apenas o BFF

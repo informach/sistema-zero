@@ -80,6 +80,10 @@ describe('central de ranking kids', () => {
     // telas-modelo), e só uma vez: ela não está na página carregada.
     expect(screen.getByText('Lia')).toBeTruthy()
     expect(screen.getAllByText('você')).toHaveLength(1)
+    // A aura do nível (19/10/2026): o pódio passa o nível de cada um ao avatar.
+    const avatar = screen.getByRole('img', { name: 'Avatar de Bia' })
+    expect(avatar.className).toContain('kids-aura')
+    expect(avatar.getAttribute('style')).toContain('--kids-aura-cor: var(--level-coder)')
   })
 
   test('o pódio DIZ o lugar de cada um (o desenho troca a ordem e o placar tem empate)', () => {

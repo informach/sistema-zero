@@ -239,3 +239,83 @@ describe('Liga — board e resolução de tier', () => {
     expect(body.entries[0]).toHaveProperty('photoUrl') // avatar sempre presente (local)
   })
 })
+
+describe('Liga adulta: foto e etapa só de quem mostra o perfil', () => {
+  test('quem não mostra o perfil fica sem foto e sem etapa; a própria pessoa vê as dela', async () => {
+    const ctx = buildApp() // semana corrente w:2026-06-01
+    const { app, gamification, avatar, adultJourney } = ctx
+    const PUB = '22222222-2222-2222-2222-222222222222'
+    const PRIV = '33333333-3333-3333-3333-333333333333'
+    const course = seedSampleCourse(ctx.courses, 'curso-adulto-liga', 'published', 'adult')
+    await adultJourney.configure(
+      {
+        schemaVersion: 1,
+        stages: [
+          {
+            id: 'aprendiz',
+            title: 'Aprendiz',
+            requirements: [{ courseId: course.courseId, milestone: 'complete' }],
+            capabilities: [],
+          },
+        ],
+      },
+      0,
+    )
+    for (const [u, xp] of [
+      [USER, 30],
+      [PUB, 20],
+      [PRIV, 10],
+    ] as const) {
+      grantLifetime(ctx.entitlements, { userId: u, courseRef: course.slug })
+      gamification.leagueMemberships.push({
+        userId: u,
+        accountId: u,
+        audience: 'adult',
+        weekKey: 'w:2026-06-01',
+        tier: 'bronze',
+      })
+      gamification.events.push({
+        userId: u,
+        audience: 'adult',
+        sourceType: 'lesson_complete',
+        sourceId: randomUUID(),
+        amount: xp,
+        createdAt: new Date('2026-06-02T12:00:00.000Z'),
+      })
+      await avatar.setPhotoUrl(u, u, 'adult', `https://cdn.example/${u}.png`, new Date())
+    }
+    for (const [id, publicEnabled] of [
+      [PUB, true],
+      [PRIV, false],
+    ] as const) {
+      const saved = await app.handle(
+        new Request('http://localhost/members/adult/profile', {
+          method: 'PUT',
+          headers: { 'x-auth-user-id': id, 'content-type': 'application/json' },
+          body: JSON.stringify({ displayName: 'Pessoa', publicEnabled, voiceEnabled: false }),
+        }),
+      )
+      expect(saved.status).toBe(200)
+    }
+
+    const response = await app.handle(
+      new Request('http://localhost/members/gamification/league/me?audience=adult', { headers }),
+    )
+    expect(response.status).toBe(200)
+    const [me, pub, priv] = (await readJson(response)).entries
+    const stage = { position: 1, total: 2, title: 'Aprendiz' }
+    expect(me).toMatchObject({
+      isMe: true,
+      photoUrl: `https://cdn.example/${USER}.png`,
+      journey: stage,
+    })
+    expect(pub).toMatchObject({
+      profileId: PUB,
+      photoUrl: `https://cdn.example/${PUB}.png`,
+      journey: stage,
+    })
+    expect(priv.photoUrl).toBeNull()
+    expect(priv.profileId).toBeUndefined()
+    expect(priv).not.toHaveProperty('journey')
+  })
+})

@@ -13,6 +13,7 @@ describe.skipIf(!url)('jornada adulta (Postgres real)', () => {
   let conn: DbConnection
   let repository: DrizzleAdultJourneyRepository
   const userId = randomUUID()
+  const otherId = randomUUID()
   const now = new Date('2026-10-18T12:00:00Z')
   beforeAll(async () => {
     conn = createDbConnection(url as string)
@@ -29,7 +30,7 @@ describe.skipIf(!url)('jornada adulta (Postgres real)', () => {
   })
   afterAll(async () => {
     await conn.sql`delete from members.adult_journey_grants where user_id = ${userId}`
-    await conn.sql`delete from members.xp_events where user_id = ${userId}`
+    await conn.sql`delete from members.xp_events where user_id in (${userId}, ${otherId})`
     await conn.sql`delete from members.account_deletion_fences where account_id = ${userId}`
     await conn.sql`delete from members.adult_journey_policy`
     await conn.sql.end()
@@ -71,5 +72,20 @@ describe.skipIf(!url)('jornada adulta (Postgres real)', () => {
       { courseId: course, completed: true, showcased: false },
     ])
     expect(await repository.listMilestones(randomUUID())).toEqual([])
+  })
+  test('marcos de várias pessoas numa consulta: só os adultos de curso, separados por pessoa', async () => {
+    const shared = randomUUID()
+    const own = randomUUID()
+    const insert = (user: string, audience: string, type: string, source: string) =>
+      conn.sql`insert into members.xp_events (id, user_id, audience, source_type, source_id, amount, created_at)
+        values (${randomUUID()}, ${user}, ${audience}, ${type}, ${source}, 0, ${now.toISOString()})`
+    await insert(otherId, 'adult', 'course_complete', shared)
+    await insert(otherId, 'adult', 'course_showcased', shared)
+    await insert(otherId, 'adult', 'lesson_complete', own)
+    await insert(otherId, 'kids', 'course_complete', own)
+    const byUser = await repository.listMilestonesForUsers([userId, otherId, randomUUID()])
+    expect(byUser.get(otherId)).toEqual([{ courseId: shared, completed: true, showcased: true }])
+    expect(byUser.get(userId)?.every((milestone) => milestone.courseId !== shared)).toBe(true)
+    expect((await repository.listMilestonesForUsers([])).size).toBe(0)
   })
 })

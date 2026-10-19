@@ -742,7 +742,12 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   liveRewardsImpl = new LiveRewardsService(awardGamification)
   const adultProfileRepository = new DrizzleAdultProfileRepository(db)
-  const adultProfile = new AdultProfileService(adultProfileRepository, clock)
+  const adultProfile = new AdultProfileService(
+    adultProfileRepository,
+    clock,
+    avatarRepo,
+    adultJourney,
+  )
   const getGamification = new GetGamificationService(gamificationRepo, clock, adultJourney)
   const getAvatar = new GetAvatarService(avatarRepo, gamificationRepo)
   const getAvatarsByProfiles = new GetAvatarsByProfilesService(avatarRepo, gamificationRepo)
@@ -754,6 +759,7 @@ export async function createApplication(env: Env): Promise<Application> {
     authGateway,
     new EncryptedRankingCursorCodec(env.GATEWAY_HMAC_SECRET),
     adultProfileRepository,
+    adultJourney,
   )
   const buyAvatarPart = new BuyAvatarPartService(
     avatarRepo,
@@ -825,6 +831,7 @@ export async function createApplication(env: Env): Promise<Application> {
     getAvatarsByProfiles,
     authGateway,
     adultProfileRepository,
+    adultJourney,
   )
   const markComplete = new MarkLessonCompleteService(
     checkAccess,

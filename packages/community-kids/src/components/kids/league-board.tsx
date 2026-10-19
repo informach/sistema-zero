@@ -73,6 +73,7 @@ export function LeagueBoard({ league }: { league: LeagueMeView }) {
                 // ficava com bolinhas "C" iguais, que não é a inicial de ninguém (full review
                 // de 11/09/2026). Sem nome, vale o personagem padrão.
                 name={e.firstName ?? null}
+                levelSlug={e.levelSlug}
                 size="sm"
                 className="size-9"
                 label={e.isMe ? 'Seu avatar' : `Avatar de ${name}`}

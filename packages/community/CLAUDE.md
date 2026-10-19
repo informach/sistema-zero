@@ -239,6 +239,27 @@ avatar, espaço 3D, perfil público e Como fazer), na mesma régua da seção an
   (`como-fazer.json` + `validar.ts` + README). Publicar é manual: Admin → Como fazer → plataforma
   Adulto → importar → revisar e publicar. Os ícones `users` e `user` entraram na allowlist do core.
 
+## A cor da etapa da jornada (19/10/2026)
+
+Pedido dela: no perfil público, a etapa da jornada; e, como no Kids, um anel na cor da etapa em
+volta da foto. Prancha "Perfil público e a cor da etapa" e "Jornada adulta" no Canvas.
+
+- **A cor vem da POSIÇÃO** (`lib/journey-stage.ts`): `--etapa-1` … `--etapa-7` e `--etapa-lenda`
+  no `globals.css`, os MESMOS valores dos `--level-*` do Kids (as duas cores da marca por token).
+  A última posição é sempre a Lenda (dourado). O nome da etapa vem sempre escrito junto: a cor
+  nunca é a única pista. `stageBadgeOf(journey)` dá a etapa de quem tem a jornada inteira.
+- **Peças** (`components/community/journey/stage.tsx`, desenho `.sz-etapa-*` no `globals.css`):
+  `StageRing` (o anel, `dark` sobre o marinho), `StageChip`, `StageLine`, `StageDot`, `StageFace`
+  (foto ou iniciais com o anel) e `JourneyRibbon` (a fita, uma imagem com a frase inteira).
+- **Onde:** a foto do menu do perfil e do próprio menu (com a linha da etapa); o perfil público
+  (anel grande, chip e fita); Seu progresso (cartões coloridos, "Ao concluir, libera", cada um
+  levando à página da etapa); ranking e liga; Mural, Clube e as novidades do Mural na Início.
+- **`/cursos/etapa/[id]`**: a página da etapa (o que libera, os cursos que ela pede com o estado e
+  o próximo passo). A jornada vem do mesmo pedido do layout; os cursos, do catálogo (que traz o
+  `courseId`) e de Meus cursos. Etapa que não existe é 404.
+- A jornada é cadastrada no Admin; o script `journey:seed-adult` do members faz o cadastro inicial.
+- Testes: `tests/journey-stage.test.ts`.
+
 ## Arquitetura (o padrão central — preserve-o; espelha o @sistemazero/admin)
 
 ```

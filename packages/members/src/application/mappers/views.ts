@@ -232,6 +232,16 @@ export interface GamificationMeView {
   ranking?: { position: number; totalStudents: number }
 }
 
+/**
+ * A etapa da jornada ADULTA de uma pessoa, para as listas (o anel da cor da etapa). `title` nulo =
+ * terminou todas as etapas (a interface dá o nome e a cor dessa última posição).
+ */
+export interface AdultJourneyBadgeView {
+  position: number
+  total: number
+  title: string | null
+}
+
 /** Linha pública do ranking geral. Nunca carrega ids internos de conta. */
 export interface RankingEntryView {
   position: number
@@ -242,6 +252,8 @@ export interface RankingEntryView {
   levelSlug: StudentLevelSlug
   /** Só existe quando o perfil kids aceitou ser público. */
   profileId?: string
+  /** Só no adulto, e só para quem mostra o perfil (ou a própria pessoa). */
+  journey?: AdultJourneyBadgeView
 }
 
 /** Página pública do ranking geral, com a própria linha disponível fora da página. */
@@ -362,6 +374,8 @@ export interface LeagueEntryView {
   firstName?: string | null
   /** id do perfil — SÓ quando público (opt-in) → link p/ `/crianca/[id]`. */
   profileId?: string
+  /** Só no adulto, e só para quem mostra o perfil (ou a própria pessoa). */
+  journey?: AdultJourneyBadgeView
 }
 
 /** Liga semanal do aluno (`GET …/league/me`). */
@@ -442,6 +456,8 @@ export interface AvatarStateView {
 }
 
 export interface MyCourseView {
+  /** O id do curso: a jornada adulta fala em `courseId` (Seu progresso e a página da etapa). */
+  courseId: string
   courseSlug: string
   title: string
   subtitle: string | null
@@ -474,6 +490,7 @@ export function toMyCourseView(
   milestones: CourseMilestonesView = { completed: false, showcased: false },
 ): MyCourseView {
   return {
+    courseId: course.id,
     courseSlug: course.slug,
     title: course.title,
     subtitle: course.subtitle,
@@ -496,6 +513,8 @@ export function toMyCourseView(
  * com a flag de acesso do aluno. Sem progresso (isso é da home/detalhe).
  */
 export interface CatalogCourseView {
+  /** O id do curso: a jornada adulta fala em `courseId` (a página da etapa casa por ele). */
+  courseId: string
   courseSlug: string
   title: string
   subtitle: string | null
@@ -527,6 +546,7 @@ export function toCatalogCourseView(
   milestones: CourseMilestonesView = { completed: false, showcased: false },
 ): CatalogCourseView {
   return {
+    courseId: course.id,
     courseSlug: course.slug,
     title: course.title,
     subtitle: course.subtitle,
