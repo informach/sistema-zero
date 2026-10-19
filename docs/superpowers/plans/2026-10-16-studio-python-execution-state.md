@@ -1,4 +1,10 @@
 # Retomada — Estúdio Python/Turtle
+### Segundo bloqueio do CI reproduzido e corrigido na fixture — 19/10/2026
+
+O commit `e2a465030285a2a7543f13f32db3ab95f0db34d9` foi enviado e incorporado por fast-forward ao worktree Python. Run39294062088 passou build da imagem, smoke/objetivos no sandbox e Biome. O passo de testes dos pacotes encontrou uma única falha entre779 testes Admin: `api-cancellation.test.ts` esperava `/login`, mas o DOM compartilhado havia sido criado como `about:blank`. O contrato401 foi preservado; o problema era a resolução de URL relativa nessa fixture. Preload explícito `about:blank` reproduziu RED4/1. Somente a fixture agora estabelece origem HTTP dentro de try/finally, mantém assert de pathname e acrescenta assert de URL absoluta; `api.ts` não mudou. Mesmo preload passou5/13; suíte Admin completa passou779/0/3109 em72,71s; Biome do arquivo e diffcheck passaram. Log remoto preservado em `ci39294062088-watch/ci-job118201881311-failed.log`; RED/GREEN locais permanecem separados.
+
+**Catch-up de implantação necessário:** o workflow automático calcula serviços pelo intervalo do último push, mesmo quando o CI anterior falhou antes do deploy. Um push contendo somente essa fixture selecionaria apenas Admin. O mecanismo existente `workflow_dispatch services=auto before_sha=<baseline ancestral confirmado>` permite recuperar o intervalo acumulado e executar a onda Jornada. Não confundir último CI verde com baseline de todos os serviços: run39220453284/f048 implantou apenas Community. Conferir Auth/Members reais antes de escolher o intervalo; nenhum dispatch foi executado nesta etapa.
+
 ### Correção do CI pronta para envio — 19/10/2026
 
 O lote de correção do CI está qualificado no worktree principal: Biome completo passou em 10.404 arquivos; os cinco testes de limpeza QA passaram com 24 asserções; Members TSC com cache novo passou, log vazio, em 119,736s. Os 91 hashes do inventário permaneceram estáveis. Recibo `checkpoint-ci39291153083/members-types-receipt-2.json` SHA32dd97383cbee489737d2029a73f97275cb94ae61baa707810300da937de63c0; handoff SHA bd0cbc3502f7527444f1ecd381e1ec706ef03be95dfa19053a544bc70a86e916.

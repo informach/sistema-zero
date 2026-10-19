@@ -93,9 +93,12 @@ test('an ordinary uncanceled 401 retains the login redirect contract', async () 
     preconnect: originalFetch.preconnect,
   })
   try {
+    // A prior test can own an about:blank DOM; relative navigation needs the app origin.
+    window.location.href = 'http://localhost/admin/draft'
     const rejected = await apiGet('/draft').catch((error: unknown) => error)
     expect(rejected).toEqual({ status: 401, code: 'UNAUTHORIZED', message: 'Sessão expirada.' })
     expect(window.location.pathname).toBe('/login')
+    expect(window.location.href).toBe('http://localhost/login')
   } finally {
     globalThis.fetch = originalFetch
     window.location.href = originalUrl
