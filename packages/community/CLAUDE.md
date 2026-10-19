@@ -142,8 +142,13 @@ adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
 
 ## Direção de arte adulta (18/10/2026)
 
-O público é de 50 a 70 anos. O desenho de referência é o Canvas "Comunidade adulta · direção de
-arte" (todas as telas, desktop e celular); ele usa só o que a plataforma já faz.
+O público são **adultos iniciantes** que querem criar jogos e projetos digitais (a definição do
+Júlio). A proposta comercial de 18/10/2026 testa duas células com o mesmo curso: 50 a 70 anos e 30
+a 55 anos (curiosos por jogos e tecnologia, pais, quem jogava videogame na infância). O desenho usa
+o leitor mais exigente, o de 50 a 70 anos, como **régua de leitura** (letra, alvos, contraste,
+rótulos com texto), sem nada que fale de idade ou exclua a outra célula. O desenho de referência é
+o Canvas "Comunidade adulta · direção de arte" (todas as telas, desktop e celular); ele usa só o que
+a plataforma já faz.
 
 - ⭐ **Letra base de 20 px.** `html { font-size: 125% }` no `globals.css`: tudo que é `rem` (as
   páginas, o `@sistemazero/ui`, o player e os blocos do member-shell) cresce junto, sem bifurcar

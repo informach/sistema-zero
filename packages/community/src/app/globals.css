@@ -490,9 +490,9 @@ main:has(.sz-aula-adulto) {
   * {
     @apply border-border outline-ring/50;
   }
-  /* ⭐ A LETRA BASE É DE 20 PX (direção de arte de 18/10/2026, público de 50 a 70 anos). Pela raiz,
-     e não pelo corpo: o player da aula, os diálogos e os outros componentes compartilhados medem
-     em rem e crescem juntos, sem mudar o layout que dividem com o Kids. As ferramentas de tela
+  /* ⭐ A LETRA BASE É DE 20 PX (direção de arte de 18/10/2026: adultos iniciantes, com o leitor de 50
+     a 70 anos como régua de leitura). Pela raiz, e não pelo corpo: o player da aula, os diálogos e
+     os outros componentes compartilhados medem em rem e crescem juntos, sem mudar o layout que dividem com o Kids. As ferramentas de tela
      cheia (Estúdio, Pinta, Molda, Pensa e o avatar) são editores densos desenhados na base de
      16 px e voltam a ela. */
   html {

@@ -27,7 +27,8 @@ export const metadata: Metadata = {
 /**
  * As letras da comunidade adulta (direção de arte de 18/10/2026): a Atkinson Hyperlegible Next no
  * texto, desenhada para quem enxerga com dificuldade, a Bricolage Grotesque nos títulos e a Geist
- * Mono nos rótulos curtos. O público tem de 50 a 70 anos: a letra base é de 20 px (`globals.css`).
+ * Mono nos rótulos curtos. O público são adultos iniciantes, com o leitor de 50 a 70 anos como régua
+ * de leitura: a letra base é de 20 px (`globals.css`).
  * As duas famílias são variáveis: sem `weight`, todos os pesos vêm num arquivo só (com só 400 e
  * 700, o `font-medium` e o `font-semibold` dos componentes compartilhados caíam nos vizinhos).
  */
