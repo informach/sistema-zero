@@ -53,7 +53,7 @@ export function canonicalJourneyProgress(view: KidsJourneyView): CanonicalJourne
   if (view.mode === 'paused')
     return {
       kind: 'paused',
-      hint: 'Suas conquistas estão guardadas. As próximas etapas estão em preparação.',
+      hint: 'Suas conquistas estão guardadas. As próximas aventuras estão em preparação.',
     }
   const advance = view.advances.find((step) => step.level === view.nextLevel)
   const pending = advance?.requirements.filter((item) => item.state === 'pending') ?? []

@@ -12,6 +12,7 @@ import { ADULT_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy'
 // Só LEITURA: a régua de concordância é dos roteiros (outro dono); a tela segue a mesma.
 import { CONCORDANCIA_ERRADA } from '../../../docs/aulas-interativas-tecnico/qa/palavras-da-escola'
 import { conclusaoRecusada, KIDS_LESSON_COPY, PALAVRAS_DA_ESCOLA } from '../src/lib/lesson-copy'
+import { AUTHORING_VOCABULARY_EXCEPTIONS } from './fixtures/authoring-vocabulary'
 import {
   linhasVisiveis,
   listarFontes,
@@ -207,6 +208,7 @@ interface Excecao {
  * aparecer UMA vez no arquivo e cobrir alguma palavra; o resto do mesmo texto continua varrido.
  */
 const EXCECOES: Excecao[] = [
+  ...AUTHORING_VOCABULARY_EXCEPTIONS,
   {
     arquivo: 'member-shell/src/server/pensa/planning.ts',
     trechos: [
@@ -609,6 +611,20 @@ describe('a criança lê aventura, não escola', () => {
     ).toEqual(['aula'])
     // Trecho sem palavra da escola não conta como uso.
     expect(palavrasSoltas('Próxima parte', ['Próxima parte']).usados).toEqual([])
+  })
+
+  test('diagnóstico auditado não libera novo texto de tela no mesmo arquivo', () => {
+    expect(AUTHORING_VOCABULARY_EXCEPTIONS.flatMap((e) => e.trechos)).toHaveLength(31)
+    for (const { arquivo, trechos } of AUTHORING_VOCABULARY_EXCEPTIONS) {
+      const permitidos = EXCECOES.filter((e) => e.arquivo === arquivo).flatMap((e) => e.trechos)
+      for (const trecho of trechos) {
+        expect(palavrasSoltas(trecho, permitidos).soltas).toEqual([])
+        expect(palavrasSoltas(`${trecho} Complete a aula nova.`, permitidos).soltas).toEqual([
+          'aula',
+        ])
+      }
+      expect(palavrasSoltas('Complete a aula nova.', permitidos).soltas).toEqual(['aula'])
+    }
   })
 
   test('o detector pega a escola no texto de tela e ignora o código', () => {

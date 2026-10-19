@@ -135,7 +135,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
           </h1>
           <p className="mt-4 font-medium text-[1.0625rem] text-muted-foreground">
             {beyondHorizon
-              ? `As próximas etapas da trilha de ${levelInfo(levelSlug).label} estão em preparação. As aventuras que você já abriu continuam disponíveis.`
+              ? `As próximas aventuras da trilha de ${levelInfo(levelSlug).label} estão em preparação. As aventuras que você já abriu continuam disponíveis.`
               : `Veja no mapa o que falta para abrir a trilha de ${levelInfo(levelSlug).label}. Suas conquistas continuam guardadas.`}
           </p>
           <Link href="/cursos" className="sz-btn-gradient mt-6 gap-2 px-6">

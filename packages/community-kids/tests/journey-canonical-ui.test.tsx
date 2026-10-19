@@ -13,6 +13,7 @@ import { CreatorJourneyCard } from '../src/components/kids/creator-journey-card'
 import { JourneyTimeline } from '../src/components/kids/journey-timeline'
 import { canonicalJourneyProgress } from '../src/lib/journey-presentation'
 import type { GamificationMeView } from '../src/lib/types'
+import { AUTHORING_VOCABULARY_EXCEPTIONS } from './fixtures/authoring-vocabulary'
 import { kidsStaffPreview } from './kids-journey-fixtures'
 
 afterEach(cleanup)
@@ -71,6 +72,31 @@ function gamification(view: KidsJourneyView | null): GamificationMeView {
 function currentText() {
   return screen.getByText('Você está aqui').closest('li')?.textContent ?? ''
 }
+
+test('canonical child UI never renders raw authoring or protocol diagnostics from metadata', () => {
+  const view = journey()
+  const messages = AUTHORING_VOCABULARY_EXCEPTIONS.flatMap((entry) => entry.trechos)
+  view.readiness = {
+    ...view.readiness,
+    status: 'incomplete',
+    issues: messages.map((message) => ({
+      code: 'invalid-policy',
+      level: null,
+      requirementIndex: null,
+      severity: 'error',
+      message,
+    })),
+  }
+  const { container } = render(
+    <>
+      <JourneyTimeline gamification={gamification(view)} />
+      <CreatorJourneyCard gamification={gamification(view)} />
+    </>,
+  )
+  expect(container.textContent).toContain('Construtor(a)')
+  for (const message of messages) expect(container.textContent).not.toContain(message)
+  expect(container.textContent).not.toMatch(/\baula\b|\bcurso\b|\betapa\b/i)
+})
 
 test('canonical timeline: missing policy is explicit and never fabricates a Faísca learner', () => {
   const { container } = render(<JourneyTimeline gamification={gamification(null)} />)

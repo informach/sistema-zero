@@ -85,7 +85,10 @@ export function journeyRewardInfo(
       : !view.earned.capabilities.includes(capability),
   )
   if (!earnedNode && view.mode === 'paused')
-    return { title: 'Próximas aventuras', description: 'As próximas etapas estão em preparação.' }
+    return {
+      title: 'Próximas aventuras',
+      description: 'As próximas aventuras estão em preparação.',
+    }
   if (capabilities.length) return capabilityRewardInfo(capabilities)
   if (slug === 'noob')
     return {
