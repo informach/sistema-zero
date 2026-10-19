@@ -1,14 +1,21 @@
-import { creatorJourneyLevel } from '../../packages/core/src/journey'
+import {
+  initialKidsJourneyPolicy,
+  KIDS_CREATOR_CAPABILITIES,
+} from '../../packages/core/src/journey'
 import { StudioAuthoringCatalogSchema } from '../../packages/core/src/studio/authoring-catalog'
 import { StudioFreeRuntimeRequestSchema } from '../../packages/core/src/studio/runtime-authorization'
 import type { StudioRuntimeRelease } from '../../packages/core/src/studio/runtime-catalog'
+import { KidsJourneyQueryService } from '../../packages/members/src/application/kids-journey/kids-journey-query.service'
 import { AuthorizeFreeRuntimeService } from '../../packages/members/src/application/studio/authorize-free-runtime.service'
 import {
   FreeStudioAccessService,
   type FreeStudioActor,
 } from '../../packages/members/src/application/studio/free-studio-access.service'
 import { AccessDeniedError } from '../../packages/members/src/domain/entitlement/entitlement.errors'
-import { emptyQualifyingByTier } from '../../packages/members/src/domain/gamification/levels'
+import type {
+  KidsJourneyProfileSnapshot,
+  KidsJourneySnapshot,
+} from '../../packages/members/src/domain/ports/kids-journey-repository.port'
 import { createStudioAuthoringPolicy } from '../../packages/members/src/domain/studio/authoring-policy'
 import { createStudioRuntimeHosts } from '../../packages/members/src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../packages/members/src/domain/studio/runtime-policy'
@@ -71,9 +78,6 @@ export async function createFreeRuntimeProbe(release: StudioRuntimeRelease, orig
         },
       },
       {
-        async listQualifyingJourneySlots() {
-          return Object.assign(emptyQualifyingByTier(), creatorJourneyLevel('god').requiredSlots)
-        },
         async listStudioUnlocksByCourse() {
           return [{ courseId: 'local-fixture', blocks: ['sz_g2d_create_ship'] }]
         },
@@ -83,6 +87,35 @@ export async function createFreeRuntimeProbe(release: StudioRuntimeRelease, orig
           return []
         },
       },
+      new KidsJourneyQueryService({
+        async readSnapshot(owners): Promise<KidsJourneySnapshot> {
+          const profiles = new Map<string, KidsJourneyProfileSnapshot>()
+          for (const owner of owners) {
+            if (owner.userId !== actor.userId || owner.accountId !== actor.accountId)
+              throw new AccessDeniedError('Unknown local probe owner')
+            profiles.set(owner.userId, {
+              ...owner,
+              registered: true,
+              milestones: [],
+              earned: {
+                level: 'god',
+                capabilities: [...KIDS_CREATOR_CAPABILITIES],
+                courseAccess: { entry: [], expanded: [], reward: [] },
+              },
+            })
+          }
+          return {
+            policy: {
+              phase: 'published',
+              version: 1,
+              policy: initialKidsJourneyPolicy(),
+              updatedAt: new Date('2026-10-19T00:00:00.000Z'),
+            },
+            catalog: [],
+            profiles,
+          }
+        },
+      }),
     ),
     await createStudioRuntimePolicy(
       configuration,

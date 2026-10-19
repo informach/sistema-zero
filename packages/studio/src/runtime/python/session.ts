@@ -309,11 +309,9 @@ export function preparePythonFrameSession(options: {
       let resourcePort: MessagePort | undefined
       try {
         if (useBootResources) {
-          const host = await preparePythonBootResourceHost({
-            frameURL: new URL('frame.html', url),
-            runtimeManifestSha256: identity.runtimeManifestSha256,
-            signal: bootSignal,
-          })
+          const result = await bootPreparation
+          if (!result.ok) throw result.error
+          const host = result.host
           if (!active || closed || bootSignal.aborted) {
             channel.port2.close()
             return
@@ -516,6 +514,20 @@ export function preparePythonFrameSession(options: {
     }
     window.addEventListener('message', initialize)
     signal.addEventListener('abort', aborted, { once: true })
+    // Public pinned metadata is independent of document loading. Observe failure
+    // now, but consume it only after the authenticated hello negotiates this port.
+    const bootPreparation = Promise.resolve()
+      .then(() =>
+        preparePythonBootResourceHost({
+          frameURL: new URL('frame.html', url),
+          runtimeManifestSha256: identity.runtimeManifestSha256,
+          signal: bootSignal,
+        }),
+      )
+      .then(
+        (host) => ({ ok: true as const, host }),
+        (error: unknown) => ({ ok: false as const, error }),
+      )
     frame.removeAttribute('srcdoc')
     // Pro hosts keep COEP; anonymous framing permits this isolated runtime without cookies.
     frame.setAttribute('credentialless', '')
