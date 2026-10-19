@@ -1,16 +1,29 @@
 import { describe, expect, test } from 'bun:test'
+import { initialKidsJourneyPolicy } from '@sistemazero/core/journey'
 import {
-  coursesForLevel,
+  coursesForLevel as canonicalCoursesForLevel,
+  levelForTier as canonicalLevelForTier,
+  tierCompletion as canonicalTierCompletion,
   journeyNodeState,
-  LEVEL_TIER,
-  levelForTier,
   nodeShowsCheck,
-  tierCompletion,
   trilhaLocked,
 } from '../src/lib/journey-map'
 import { LEVEL_ORDER } from '../src/lib/level-info'
 import type { CatalogCourseView, StudentLevelView } from '../src/lib/types'
+import { LEVEL_TIER } from './fixtures/legacy-journey-map'
+import { kidsView } from './kids-journey-fixtures'
 
+const seed = initialKidsJourneyPolicy()
+const coursesForLevel = (
+  level: Parameters<typeof canonicalCoursesForLevel>[0],
+  courses: readonly CatalogCourseView[],
+) => canonicalCoursesForLevel(level, courses, seed)
+const tierCompletion = (
+  level: Parameters<typeof canonicalTierCompletion>[0],
+  courses: readonly CatalogCourseView[],
+) => canonicalTierCompletion(level, courses, seed)
+const levelForTier = (tier: Parameters<typeof canonicalLevelForTier>[0]) =>
+  canonicalLevelForTier(tier, seed)
 function course(over: Partial<CatalogCourseView>): CatalogCourseView {
   return {
     courseSlug: 'curso',
@@ -26,8 +39,10 @@ function course(over: Partial<CatalogCourseView>): CatalogCourseView {
   } as CatalogCourseView
 }
 
-const levelView = (slug: StudentLevelView['slug']): StudentLevelView =>
-  ({ slug, next: null, remaining: null }) as StudentLevelView
+const levelView = (slug: StudentLevelView['slug']) => ({
+  ...kidsView([]),
+  earned: { ...kidsView([]).earned, level: slug },
+})
 
 describe('journey-map (regras puras do Mapa da Jornada)', () => {
   test('LEVEL_TIER espelha o learningTier do core (todos os níveis mapeados)', () => {
@@ -43,9 +58,9 @@ describe('journey-map (regras puras do Mapa da Jornada)', () => {
     expect(journeyNodeState('hacker', 'noob')).toBe('done')
     expect(journeyNodeState('hacker', 'hacker')).toBe('current')
     expect(journeyNodeState('hacker', 'god')).toBe('locked')
-    // Slug desconhecido (nível novo no backend antes do deploy) → trata como Faísca.
-    expect(journeyNodeState('nivel-do-futuro', 'noob')).toBe('current')
-    expect(journeyNodeState('nivel-do-futuro', 'coder')).toBe('locked')
+    // Identidade desconhecida não fabrica uma conquista de Faísca.
+    expect(journeyNodeState('nivel-do-futuro' as StudentLevelView['slug'], 'noob')).toBe('locked')
+    expect(journeyNodeState('nivel-do-futuro' as StudentLevelView['slug'], 'coder')).toBe('locked')
   })
 
   test('levelForTier devolve o 1º nível que estuda a trilha', () => {
@@ -349,7 +364,7 @@ describe('trilhaLocked (deep-link por nível)', () => {
     // EQUIPE/estado especial: algum curso do nível liberado → nunca mura.
     const openCourse = course({ level: 'avancado', track: '3d' })
     expect(trilhaLocked(levelView('noob'), 'champion', [openCourse])).toBe(false)
-    // Sem gamificação (nível nulo) → não bloqueia (fallback fica com a página).
-    expect(trilhaLocked(null, 'champion', [lockedCourse])).toBe(false)
+    // Política indisponível: o deep-link nunca fabrica uma liberação.
+    expect(trilhaLocked(null, 'champion', [lockedCourse])).toBe(true)
   })
 })

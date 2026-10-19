@@ -1,12 +1,11 @@
 import { creativeToolAccessRef } from '@sistemazero/core/creations'
-import { creatorJourneyLevel } from '@sistemazero/core/journey'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
-import { computeStudentLevel } from '../../domain/gamification/levels'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { StudioUnlockRepository } from '../../domain/ports/studio-unlock-repository.port'
 import type { AccessCheckService } from '../access-check/access-check.service'
 import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
+import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
 
 const knownJavaScriptBlocks = new Set(SERVER_BLOCK_CATALOG.map(({ type }) => type))
 export interface FreeStudioActor {
@@ -23,13 +22,15 @@ export class FreeStudioAccessService {
     private readonly access: Pick<AccessCheckService, 'execute'>,
     private readonly gamification: Pick<
       GamificationRepository,
-      'listQualifyingJourneySlots' | 'listStudioUnlocksByCourse'
+      'listStudioUnlocksByCourse'
     >,
     private readonly unlocks: Pick<StudioUnlockRepository, 'listGrants'>,
+    private readonly kidsJourney: Pick<KidsJourneyQueryService, 'get' | 'staffPreview'>,
     private readonly adultJourney?: Pick<AdultJourneyService, 'get'>,
   ) {}
 
-  async execute(actor: FreeStudioActor, purpose: 'creation' | 'existing-pro' = 'creation') {
+  async execute(inputActor: FreeStudioActor, purpose: 'creation' | 'existing-pro' = 'creation') {
+    const actor = { ...inputActor }
     if (actor.readOnly)
       throw new AccessDeniedError('A sessão de suporte não pode executar projetos.')
     if (actor.audience === 'adult') {
@@ -53,16 +54,32 @@ export class FreeStudioAccessService {
       return { pro, modes }
     }
     if (actor.audience !== 'kids') throw new AccessDeniedError('Público inválido.')
-    if (actor.privileged) return creatorJourneyLevel('god').reward
+    if (actor.privileged) {
+      if (actor.userId !== actor.accountId)
+        throw new AccessDeniedError('Use a conta da equipe, sem perfil de aluno.')
+      const preview = await this.kidsJourney.staffPreview()
+      return {
+        pro: preview.capabilities.includes('pro'),
+        modes: preview.capabilities.includes('bridge')
+          ? ['blocks' as const, 'bridge' as const]
+          : ['blocks' as const],
+      }
+    }
     const owned = await this.access.execute(actor.accountId, ['estudio-completo'])
     if (
       !owned.grants.includes('estudio-completo') &&
       !owned.communities.includes('estudio-completo')
     )
       throw new AccessDeniedError('Você não tem acesso ao Estúdio Completo.')
-    const qualifying = await this.gamification.listQualifyingJourneySlots(actor.userId, 'kids')
-    const reward = creatorJourneyLevel(computeStudentLevel(qualifying).slug).reward
-    if (!reward.freeStudio)
+    const journey = await this.kidsJourney.get({ userId: actor.userId, accountId: actor.accountId })
+    const capabilities = journey.earned.capabilities
+    const reward = {
+      pro: capabilities.includes('pro'),
+      modes: capabilities.includes('bridge')
+        ? ['blocks' as const, 'bridge' as const]
+        : ['blocks' as const],
+    }
+    if (!capabilities.includes('studio'))
       throw new AccessDeniedError('Seu nível ainda não libera o Estúdio Completo.')
     // The existing Pro route is gated by product + Pro level, independently of the
     // curriculum palette required by the project-creation gallery.

@@ -1,3 +1,4 @@
+import { pensaKidsJourney } from './pensa-fixtures'
 import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from 'bun:test'
 import {
   applyStudioProChange,
@@ -95,7 +96,7 @@ async function fixture(
     }),
     getGamification: async () => ({
       status: 200,
-      body: { level: { slug: options.level ?? 'god' } },
+      body: { level: { slug: options.level ?? 'god' }, kidsJourney: options.level === 'noob' ? pensaKidsJourney('noob', []) : pensaKidsJourney() },
     }),
     studioBuilder: async (actor: unknown, command: StudioProBuilderCommand) => {
       commands.push({ actor, command })

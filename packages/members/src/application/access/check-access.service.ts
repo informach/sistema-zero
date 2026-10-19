@@ -1,4 +1,3 @@
-import { resolveJourneyCourseLock } from '@sistemazero/core/journey'
 import { type Course, isCourseAccessible } from '../../domain/course/course'
 import {
   CourseJourneyLockedError,
@@ -7,11 +6,10 @@ import {
 } from '../../domain/course/course.errors'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
-import { courseTier } from '../../domain/gamification/levels'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
-import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { LiveLessonAccessPort } from '../../domain/ports/live-lesson-access.port'
+import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
 
 export interface CourseAccess {
   course: Course
@@ -53,7 +51,7 @@ export class CheckAccessService {
   constructor(
     private readonly courses: CourseRepository,
     private readonly entitlements: EntitlementRepository,
-    private readonly gamification: GamificationRepository,
+    private readonly kidsJourney: Pick<KidsJourneyQueryService, 'courseLocks'>,
     private readonly clock: () => Date,
     private readonly live: LiveLessonAccessPort,
   ) {}
@@ -109,40 +107,12 @@ export class CheckAccessService {
       { masterType: course.audience === 'adult' ? 'all_courses' : 'all_kids_courses' },
     )
     if (!entitlement) throw new AccessDeniedError()
-    // Trava pedagógica de TODO curso kids: posições seguem a trilha
-    // (future-tier/foundation-first) e o bônus é recompensa da etapa
-    // (tier-reward — abre quando ela completa).
-    // Curso `lenda` é FORA da jornada → sem gate pedagógico (acesso = matrícula; o
-    // portão de "ver" é o nó da Lenda no mapa).
-    if (course.audience === 'kids' && course.level !== 'lenda') {
-      const qualified = await this.gamification.listQualifyingJourneySlots(
-        learnerId ?? userId,
-        course.audience,
-      )
-      // A base (slot 1) nunca depende de si mesma; nos demais (posições 2+ E
-      // bônus), sem um curso-base PUBLICADO a trava falha aberta (senão a etapa
-      // inteira ficaria presa) — mesma regra do projetor da listagem.
-      const foundationAvailable =
-        course.careerSlot === 1 ||
-        (await this.courses.hasPublishedFoundationCourse(
-          course.audience,
-          course.level,
-          course.track,
-        ))
-      // Par que não é degrau da jornada (ex.: `primeiros-passos` + `3d`) não trava.
-      const tier = courseTier(course.level, course.track)
-      const lock = tier
-        ? resolveJourneyCourseLock(
-            qualified,
-            tier,
-            course.careerSlot,
-            foundationAvailable,
-            course.journeyRole,
-          )
-        : { locked: false as const }
-      if (lock.locked && lock.reason) {
-        throw new CourseJourneyLockedError(lock.reason, lock.requiredLevel)
-      }
+    // One canonical policy/earned snapshot, separate from enrollment and live session grants.
+    // The pure resolver preserves graduation/extra behavior without inventing a rank gate.
+    if (course.audience === 'kids') {
+      const locks = await this.kidsJourney.courseLocks({ userId: learnerId ?? userId, accountId: userId }, [course.id])
+      const lock = locks.get(course.id)!
+      if (lock.locked && lock.reason) throw new CourseJourneyLockedError(lock.reason, lock.requiredLevel)
     }
     return { course, entitlement }
   }

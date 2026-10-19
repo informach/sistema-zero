@@ -75,6 +75,7 @@ export class GetRankingLeaderboardService {
         firstName: identity?.firstName || null,
         photoUrl: entry.photoUrl,
         levelSlug: entry.levelSlug,
+        ...(entry.journeyUnavailable ? { journeyUnavailable: true as const } : {}),
         ...(identity?.public ? { profileId: entry.userId } : {}),
       }
     }

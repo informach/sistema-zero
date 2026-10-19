@@ -32,6 +32,8 @@ export interface KidsJourneyEarnedRecord extends KidsJourneyOwner {
 }
 
 export interface KidsJourneyProfileSnapshot extends KidsJourneyOwner {
+  /** Members earned row exists; this is not Auth admission/session authorization. */
+  registered: boolean
   milestones: readonly KidsCourseMilestone[]
   earned: KidsJourneyEarned
 }
@@ -52,6 +54,12 @@ export const KIDS_JOURNEY_PREPARATION_STATUSES = [
 ] as const
 export type KidsJourneyPreparationStatus = (typeof KIDS_JOURNEY_PREPARATION_STATUSES)[number]
 
+/** Durable Auth UUID work bound/cursor; null means the authoritative capture has not started. */
+export interface KidsJourneyAuthCapture {
+  upperBound: string | null
+  cursor: string | null
+}
+
 export interface KidsJourneyPreparation {
   id: string
   expectedVersion: number
@@ -63,6 +71,7 @@ export interface KidsJourneyPreparation {
   origin: 'seed' | 'configuration'
   captureStage: 'auth' | 'members' | 'hashing' | 'done'
   captureCursor: string | null
+  authCapture: KidsJourneyAuthCapture | null
   catalog: readonly KidsJourneyCatalogCourse[]
   /** UUID keyset, bounded at creation. Never a timestamp supplied by a client. */
   cursor: string | null
@@ -97,9 +106,19 @@ export interface KidsJourneyRepository {
   /** Provision once; missing after history or corruption is never repaired silently. */
   initializeSeed(): Promise<KidsJourneyPolicyRecord>
   createSeedPreparation(): Promise<KidsJourneyPreparation | null>
-  /** Auth-authoritative pairs, captured before enabling the new creators. Bounded/replayable. */
-  appendSeedOwners(id: string, owners: readonly KidsJourneyOwner[]): Promise<boolean>
-  sealSeedOwners(id: string): Promise<KidsJourneyPreparation | null>
+  /** Fix the Auth work bound once. A concurrent/replayed start returns the already captured envelope. */
+  startSeedOwnerCapture(
+    id: string,
+    upperBound: string | null,
+  ): Promise<KidsJourneyPreparation | null>
+  /** ONE Auth owner per transaction; materialization and cursor CAS commit together. */
+  appendSeedOwner(input: {
+    preparationId: string
+    expectedCursor: string | null
+    owner: KidsJourneyOwner
+  }): Promise<KidsJourneyPreparation | null>
+  /** Internal orchestrator calls only after Auth returned done at this exact cursor. */
+  sealSeedOwners(id: string, expectedCursor: string | null): Promise<KidsJourneyPreparation | null>
   /** One bounded Members-identity/hash page; no unbounded INSERT SELECT or aggregate. */
   advanceCapture(
     id: string,
@@ -108,6 +127,8 @@ export interface KidsJourneyRepository {
   ): Promise<KidsJourneyPreparation | null>
   /** Auth-only admission/reconciliation, persists even noob/empty; no normal visibility in V0. */
   initializeProfile(owner: KidsJourneyOwner): Promise<KidsJourneyPolicyRecord | null>
+  /** Internal batch identity lookup from the materialized registry; never authorizes a session. */
+  listOwners(profileIds: readonly string[]): Promise<readonly KidsJourneyOwner[]>
   readSnapshot(owners: readonly KidsJourneyOwner[]): Promise<KidsJourneySnapshot>
   /** Server-internal only; CAS + account fence + immutable owner + monotonic union. */
   freezeEarned(

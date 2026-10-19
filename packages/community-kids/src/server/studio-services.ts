@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
-import { isStudioZappyAllowed } from '@sistemazero/member-shell/server/zappy-access'
+import { hasKidsCapability, type KidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { getEnv } from '../lib/env'
 import { checkChallengeAccessReadonly, getAiCreditsReadonly, getChallengeReadonly } from './members'
 import type { getSession } from './session'
@@ -12,8 +12,8 @@ export function prepareStudioServices() {
   const challenge = getChallengeReadonly().catch(() => null)
   const challengeAccess = checkChallengeAccessReadonly().catch(() => null)
   const credits = getAiCreditsReadonly().catch(() => null)
-  return async (session: Awaited<ReturnType<typeof getSession>>, levelSlug: string | undefined) => {
-    const zappyEnabled = isStudioZappyAllowed(session, levelSlug)
+  return async (session: Awaited<ReturnType<typeof getSession>>, journey: KidsJourneyAccess) => {
+    const zappyEnabled = Boolean(session && hasKidsCapability(journey, 'ai'))
     const [access, creditsResult, voiceProfile] = await Promise.all([
       challengeAccess,
       zappyEnabled ? credits : null,

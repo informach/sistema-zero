@@ -326,6 +326,8 @@ export interface GamificationRepository {
    * derivação e evita misturar eventos de snapshots diferentes.
    */
   listJourneyCourseState(userId: string, audience: CourseAudience): Promise<JourneyCourseState>
+  /** Raw ledger badges only; no qualification, rank or pedagogical gate. */
+  listCourseMilestones(userId: string, audience: CourseAudience): Promise<Map<string, CourseMilestones>>
   /**
    * Blocos do Estúdio que os cursos ELEGÍVEIS do aluno liberam AGORA, POR CURSO.
    * Curso Kids bônus exige `course_complete`; curso Kids com posição e curso Adult

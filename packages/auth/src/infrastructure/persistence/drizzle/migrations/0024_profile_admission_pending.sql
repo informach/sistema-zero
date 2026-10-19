@@ -1,0 +1,1 @@
+ALTER TABLE "auth"."profiles" ALTER COLUMN "admission_state" SET DEFAULT 'pending';

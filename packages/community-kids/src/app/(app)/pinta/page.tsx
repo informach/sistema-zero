@@ -1,5 +1,5 @@
 import { getEnv } from '@sistemazero/member-shell/lib/env'
-import { meetsFreeCreationLevel } from '@sistemazero/member-shell/server/creative-apps-access'
+import { hasKidsCapability, kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { KidsJourneyLockedPinta } from '@/components/kids/kids-journey-locked-pinta'
 import { KidsLockedPinta } from '@/components/kids/kids-locked-pinta'
 import { KidsPintaUnavailable } from '@/components/kids/kids-pinta-unavailable'
@@ -42,13 +42,14 @@ export default async function PintaPage() {
   const hasAccess = res.body?.access?.pinta === true
   if (!hasAccess) return <ToolRouteRecado screen={KidsLockedPinta} />
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsPintaUnavailable} />
-  if (!meetsFreeCreationLevel(gam.body?.level?.slug, session?.role)) {
+  const journey = kidsJourneyAccess(gam.body)
+  if (!journey) return <ToolRouteRecado screen={KidsPintaUnavailable} />
+  if (!hasKidsCapability(journey, 'pinta')) {
     return <ToolRouteRecado screen={KidsJourneyLockedPinta} />
   }
   const studioAvailable = canOpenPensaStudioTask({
     studioProductOwned: res.body?.access?.['estudio-completo'] === true,
-    levelSlug: gam?.status === 200 ? gam.body?.level?.slug : undefined,
-    role: session?.role,
+    journey,
     unlocks: unlocksRes,
   })
   return (

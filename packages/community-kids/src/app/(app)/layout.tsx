@@ -1,5 +1,9 @@
 import type { CreativeToolId } from '@sistemazero/core/journey'
 import { ImpersonationBanner } from '@sistemazero/member-shell/components/impersonation-banner'
+import {
+  isKidsStaffPreview,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { AppSidebar } from '@/components/kids/app-sidebar'
@@ -14,7 +18,6 @@ import { PlatformRenovationNotice } from '@/components/kids/platform-renovation-
 import { SessionBoundary } from '@/components/kids/session-boundary'
 import { actorLabel } from '@/lib/act'
 import { getEnv } from '@/lib/env'
-import { moldaLevelGain } from '@/lib/molda-level-gain'
 import { getMeReadonly } from '@/server/auth'
 import { getCreativeTools } from '@/server/creator-journey'
 import {
@@ -62,7 +65,7 @@ async function loadChrome(session: Session) {
 
 /**
  * As ferramentas que o MENU pode oferecer. Mesma régua da página de destino
- * (`creativeToolAvailability`), para o menu nunca levar a criança a uma tela trancada.
+ * (`getCreativeTools`), para o menu nunca levar a criança a uma tela trancada.
  * ⚠️ `unavailable` (a consulta falhou) ENTRA na lista: um soluço de rede não pode
  * encolher o menu na cara dela, e a página tem a tela de "tente de novo".
  */
@@ -118,23 +121,27 @@ async function CelebrationChrome({ session }: { session: Session }) {
     getGamificationReadonly({ withRanking: true }),
     checkStudioAccessReadonly().catch(() => null),
   ])
-  const levelSlug = gam.status === 200 ? gam.body?.level?.slug : undefined
+  const access = kidsJourneyAccess(gam.status === 200 ? gam.body : null)
+  const journey = access && !isKidsStaffPreview(access) ? access : null
   const toolsRevision = gam.status === 200 ? (gam.body?.studioUnlockRevision ?? null) : null
   const studioAccess = studioRes?.body?.access?.['estudio-completo']
   const ownsStudio =
     studioRes?.status === 200 && typeof studioAccess === 'boolean' ? studioAccess : null
-  // O Molda é vendido à parte: a linha "No Molda" da comemoração só vai para quem tem o
-  // produto, e a pergunta só é feita nos postos em que uma faixa de ferramentas dele abre (a
-  // ida é deduplicada com a da página /molda). O watcher recebe a frase pronta, ou `null`.
-  const gain = moldaLevelGain(levelSlug)
-  const moldaRes = gain ? await checkMoldaAccessReadonly().catch(() => null) : null
-  const moldaGain = moldaRes?.status === 200 && moldaRes.body?.access?.molda === true ? gain : null
+  // Ask only for an actually earned resource; rank never implies a Molda tool band.
+  const moldaRes = journey?.earned.capabilities.includes('molda')
+    ? await checkMoldaAccessReadonly().catch(() => null)
+    : null
+  const ownsMolda =
+    moldaRes?.status === 200 && typeof moldaRes.body?.access?.molda === 'boolean'
+      ? moldaRes.body.access.molda
+      : null
   return (
     <CelebrationWatcher
-      levelSlug={levelSlug}
+      key={session.id}
+      journey={journey}
       toolsRevision={toolsRevision}
       ownsStudio={ownsStudio}
-      moldaGain={moldaGain}
+      ownsMolda={ownsMolda}
       profileKey={session.id}
     />
   )

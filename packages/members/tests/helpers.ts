@@ -61,6 +61,9 @@ import { GrantEntitlementService } from '../src/application/grant-entitlement/gr
 import { GrantManualEntitlementService } from '../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { HelpService } from '../src/application/help/help.service'
 import { IssueCertificateService } from '../src/application/issue-certificate/issue-certificate.service'
+import type { KidsJourneyConfigurationService } from '../src/application/kids-journey/kids-journey-configuration.service'
+import { KidsJourneyProfilesService } from '../src/application/kids-journey/kids-journey-profiles.service'
+import { KidsJourneyQueryService } from '../src/application/kids-journey/kids-journey-query.service'
 import { LearningService } from '../src/application/learning/learning.service'
 import { LearningImportService } from '../src/application/learning/learning-import.service'
 import { SectionProgressionService } from '../src/application/learning/section-progression.service'
@@ -152,6 +155,7 @@ import {
   InMemoryVideoPositionRepository,
   silentLogger,
 } from './fakes/in-memory'
+import { InMemoryKidsJourneySnapshots } from './fakes/kids-journey-in-memory'
 import { InMemoryLearningRepository } from './fakes/learning-in-memory'
 import { InMemoryLessonDraftRepository } from './fakes/lesson-draft-in-memory'
 import { InMemoryLiveLessonAccess } from './fakes/live-lesson-access-in-memory'
@@ -164,6 +168,7 @@ export function buildApp(
   opts: {
     now?: Date
     internalToken?: string
+    kidsJourneyConfiguration?: KidsJourneyConfigurationService
     requireAdmin?: boolean
     /** Limites da quota de IA (default 50/dia + 500/mês — os de produção). */
     aiLimits?: { daily: number; monthly: number }
@@ -249,10 +254,13 @@ export function buildApp(
 
   // Curso ao vivo: as vagas (grants) das oficinas, semeáveis por teste.
   const liveLessonAccess = new InMemoryLiveLessonAccess(courses)
+  const kidsJourneySnapshots = new InMemoryKidsJourneySnapshots(courses, gamification)
+  const kidsJourneyQuery = new KidsJourneyQueryService(kidsJourneySnapshots)
+  const kidsJourneyProfiles = new KidsJourneyProfilesService(kidsJourneySnapshots, kidsJourneyQuery)
   const checkAccess = new CheckAccessService(
     courses,
     entitlements,
-    gamification,
+    kidsJourneyQuery,
     clock,
     liveLessonAccess,
   )
@@ -352,7 +360,11 @@ export function buildApp(
     },
   }
 
-  const avatarsByProfiles = new GetAvatarsByProfilesService(avatar, gamification)
+  const avatarsByProfiles = new GetAvatarsByProfilesService(
+    avatar,
+    gamification,
+    kidsJourneyProfiles,
+  )
   const ranking = new ListRankingService(gamification, avatarsByProfiles, clock)
   const getRankingLeaderboard = new GetRankingLeaderboardService(
     gamification,
@@ -432,7 +444,13 @@ export function buildApp(
     opts.studioRuntimePolicy,
   )
   const authorizeFreeRuntime = new AuthorizeFreeRuntimeService(
-    new FreeStudioAccessService(accessCheck, gamification, studioUnlocks, adultJourney),
+    new FreeStudioAccessService(
+      accessCheck,
+      gamification,
+      studioUnlocks,
+      kidsJourneyQuery,
+      adultJourney,
+    ),
     opts.studioRuntimePolicy,
     opts.studioAuthoringPolicy,
     () => clock().getTime(),
@@ -459,12 +477,24 @@ export function buildApp(
     gamification,
     accessCheck,
     clock,
-    new ListMyCoursesService(entitlements, courses, progress, positions, gamification, clock),
+    new ListMyCoursesService(
+      entitlements,
+      courses,
+      progress,
+      positions,
+      gamification,
+      clock,
+      kidsJourneyQuery,
+    ),
+    kidsJourneyQuery,
     liveLessonAccess,
     adultJourney,
     hub,
   )
   const app = createServer({
+    kidsJourney: opts.kidsJourneyConfiguration
+      ? { service: opts.kidsJourneyConfiguration, internalToken: opts.internalToken }
+      : undefined,
     pythonAnalysis: new AuthorizePythonAnalysisService({
       authoring: authorizeAuthoringRuntime,
       free: authorizeFreeRuntime,
@@ -495,8 +525,15 @@ export function buildApp(
         positions,
         gamification,
         clock,
+        kidsJourneyQuery,
       ),
-      listCatalog: new ListCatalogService(courses, entitlements, gamification, clock),
+      listCatalog: new ListCatalogService(
+        courses,
+        entitlements,
+        gamification,
+        clock,
+        kidsJourneyQuery,
+      ),
       accessCheck: new AccessCheckService(entitlements, clock),
       getMyCourse: new GetMyCourseService(
         checkAccess,
@@ -599,7 +636,13 @@ export function buildApp(
         learningRepository,
         sectionProgression,
       ),
-      getGamification: new GetGamificationService(gamification, clock, adultJourney),
+      getGamification: new GetGamificationService(
+        gamification,
+        clock,
+        kidsJourneyQuery,
+        kidsJourneyProfiles,
+        adultJourney,
+      ),
       getChallenge: new GetChallengeService(gamification, challengeConfig, clock),
       getStudioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
       getMissions,
@@ -635,6 +678,7 @@ export function buildApp(
         new AccessCheckService(entitlements, clock),
         learningRepository,
         clock,
+        kidsJourneyProfiles,
         hub,
       ),
       parentReportPrefs: new ParentReportPrefsService(parentReports, clock),
@@ -649,6 +693,7 @@ export function buildApp(
         room,
         hub,
         clock,
+        kidsJourneyProfiles,
         adultProfileRepository,
         adultJourney,
       ),
@@ -673,7 +718,13 @@ export function buildApp(
           authGateway,
           avatars: avatarsByProfiles,
           accessCheck,
-          gamification: new GetGamificationService(gamification, clock, adultJourney),
+          gamification: new GetGamificationService(
+            gamification,
+            clock,
+            kidsJourneyQuery,
+            kidsJourneyProfiles,
+            adultJourney,
+          ),
           studioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
           creations,
           creationDownload: new GetCreationDownloadService(creations),
@@ -692,7 +743,13 @@ export function buildApp(
         narrations: new DrizzlePensaNarrationsRepository(repo),
         rewards: new DrizzlePensaRewardsRepository(repo.db, awardGamification),
         accessCheck,
-        getGamification: new GetGamificationService(gamification, clock, adultJourney),
+        getGamification: new GetGamificationService(
+          gamification,
+          clock,
+          kidsJourneyQuery,
+          kidsJourneyProfiles,
+          adultJourney,
+        ),
         credits: aiCredits,
         internalToken: opts.internalToken,
       }
@@ -762,7 +819,12 @@ export function buildApp(
         new InMemoryToolUsageRepository(pensa, creations, studioSubmissions, courses),
         hub,
       ),
-      profilesOverview: new GetProfilesOverviewService(gamification, studioSubmissions, clock),
+      profilesOverview: new GetProfilesOverviewService(
+        gamification,
+        studioSubmissions,
+        clock,
+        kidsJourneyProfiles,
+      ),
       getMemberActivity: new GetMemberActivityService(
         progress,
         positions,
@@ -771,7 +833,13 @@ export function buildApp(
       ),
       listMemberCertificates: new ListMemberCertificatesService(certificates),
       listMemberRatings: new ListMemberRatingsService(ratings),
-      getGamification: new GetGamificationService(gamification, clock, adultJourney),
+      getGamification: new GetGamificationService(
+        gamification,
+        clock,
+        kidsJourneyQuery,
+        kidsJourneyProfiles,
+        adultJourney,
+      ),
       ranking,
       analytics: new GetCourseAnalyticsService(new InMemoryAnalyticsRepository(courses, progress)),
       aiUsageStats: new GetAiUsageStatsService(aiUsage, clock),
@@ -847,6 +915,9 @@ export function buildApp(
   })
 
   return {
+    kidsJourneySnapshots,
+    kidsJourneyProfiles,
+    kidsJourneyQuery,
     adultJourney,
     adultJourneyRepository,
     adultProfile,

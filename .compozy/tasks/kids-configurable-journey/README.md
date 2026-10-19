@@ -1,6 +1,18 @@
 # Jornada Kids configurável
 
-Status: contrato, seed e persistência canônicos estão escritos e em verificação no worktree isolado, fora da composição/consumidores. O usuário determinou um modelo Kids único com seed persistido; admissão Auth, serviços integrados e consumidores ainda faltam. Nenhuma política custom foi ativada na plataforma.
+Status em 19/10/2026: implementação em andamento no worktree isolado. O contrato, seed persistido, preservação, admissão Auth, leitores canônicos, composição e editor administrativos estão escritos; vários consumidores já foram migrados e testados em lotes. O editor tem testes focados e tipos verificados; sua integração ainda está pendente. Consumidores restantes e integração/rollout ainda faltam. Nenhuma política custom foi ativada na plataforma.
+
+O caminho Kids usa uma política canônica com oito postos/49 posições e direitos permanentes de posto, ferramentas e acesso pedagógico. Licenças, matrícula, paletas e contexto de aula continuam separados. Auth pending→Members→ready, captura da coorte e publicação com baseline/CAS têm provas próprias em `_evidence.md`; essas provas não substituem ativação integrada ou validação em staging.
+
+Os últimos lotes de apresentação qualificados são P6A (timeline/recompensas), P6B (mapa/agrupamento/trilha por tierAccess) e P6C (celebrações por capacidades reais). O recibo P6C captura **59 testes/193 asserções, Kids TSC EXIT0** e o negativo anterior de uma fixture desatualizada. Seu snapshot tem SHA `20e4aa4872ce590ebea943812bf2db4d248df8d8b430cdcae2176e58407301a9`.
+
+D1 e o cartão de recompensa foram qualificados no snapshot delta `badge-reward-qualified`: **59 testes/253 asserções**, Biome4/0 e Kids TSC0. Ausência visual de posto não vira Faísca, e a recompensa informa o posto exigido pelo servidor; conquistas e currículo permanecem separados. O caso público é defesa interna: a rota atual exige posto não nulo. D2 transporta resolvedCourseId da mesma captura e oferece requisitos fora da trilha; Core68/2833 e UI70/225 passaram, com Core/Members/Kids tipos0. O transporte BFF Admin passou fixture7/171, wrapper e pós-formatação8/172, Biome11/0; Admin TSC0. Composição Members e allowlist/RBAC gateway também passaram nos gates locais (52/323 gateway,19/116 Members,tipos0); qualificação integrada do editor e JWT/forwarding/DB, bootstrap operacional, retenção, SQL novo, SDK e integração final continuam pendentes.
+
+## Editor Admin C
+
+Editor Admin C: sete avanços e acesso por etapa em painéis separados, comparação do servidor, motivo, preparação retomável por URL e publicação manual com versão/três hashes da mesma preparação. Matriz UI/contratos20/97; matriz afetada Admin30/140 e Members13/98; Biome13/0; Admin/Members TSC EXIT0. Os wrappers isolados da matriz têm filhos próprios (editor12/64 e BFF7/171); não somar seus números como testes novos. Testes isolam navegação/API e não comprovam JWT, banco ou navegador real. A permissão visual vem da mesma guarda de escrita do Members e não substitui sua revalidação em cada operação.
+
+## Histórico dos checkpoints de fundação
 
 Checkpoint canônico `e8be66021` sobre remoto `2e76fb448`, rebase sem conflitos; range-diff confirma seis commits Kids equivalentes e retirada somente do companion guard já publicado. Backup anterior `backup/kids-journey-canonical-before-2e76-a4e4babb5`. Core canônico: **58/0/2.763** focados após RED/GREEN de entrada preservada→expansão e **TSC EXIT0**. Persistência/0136 regenerada: primeira matriz real **25/1/105**, achado de ordenação INSERT/UPSERT corrigido na fronteira; foco veteran **1/0/7**. Auth+XP sem Gamma/earned teve RED causal→GREEN2/9 com owner capturado e conflitos tardios.
 
@@ -26,7 +38,7 @@ Replays históricos por snapshot MVCC são uma alternativa ainda não aprovada n
 
 ## Limites desta entrega
 
-Foram feitas leituras de código, regras de package e contratos existentes, testes focados T1/T2, TSC core e SQL T2 em bancos descartáveis da stack QA owned pelo root. Não houve consulta a dados reais, contagem de alunos, benchmark, build, browser, operação Docker ou suíte global. Cenários T3+ continuam verificações futuras obrigatórias. O checkout Python foi lido para compatibilidade e dependências já existentes: autorização/runtime/linguagem e níveis Python permanecem separados da jornada; nenhum arquivo daquele checkout foi alterado.
+Foram feitas leituras de código, regras de package e contratos existentes, testes focados T1/T2, TSC core e SQL T2 em bancos descartáveis da stack QA owned pelo root. Não houve consulta a dados reais, contagem de alunos, benchmark, build, browser, operação Docker ou suíte global. Os gates de cada lote T3+ estão discriminados em `_evidence.md`; os cenários integrados/operacionais ainda pendentes continuam obrigatórios. O checkout Python foi lido para compatibilidade e dependências já existentes: autorização/runtime/linguagem e níveis Python permanecem separados da jornada; nenhum arquivo daquele checkout foi alterado.
 
 Validação T1 intermediária antes do rebase: **50 testes/2.716 asserções**, **TSC core EXIT0**. T2: **8 unitários/17 asserções**, **20 SQL Kids/69 asserções**, **3 SQL purge/24 asserções**, todos sem falhas/skips; regressões lifetime **RED 6 falhas→GREEN 6/11**. **TSC completo Members EXIT0** com Node24/TS5.9.3, Core/Members Zod4.3.6 e Studio4.5.4 legítimos, incluindo guard fixture companion `a85bcf327`. Migration gerada0136 e Biome focado limpos. Isso prova o checkpoint intermediário, não o modelo canônico/integração futuros. Ver `_test-plan.md`.
 

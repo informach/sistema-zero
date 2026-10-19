@@ -16,6 +16,7 @@ import {
   kidsCourseLockAtLevel,
   kidsFoundationCourse,
   kidsFoundationRequirements,
+  kidsRequirementCourseId,
   projectKidsCourseAccess,
 } from './kids-validation'
 
@@ -29,17 +30,22 @@ export function projectKidsJourney(input: KidsJourneyProjectionInput): KidsJourn
   const readiness = analyzeKidsJourneyReadiness(input)
   let previousComplete = true
   const advances = steps.map((step, index) => {
-    const requirements = step.requirements.map((requirement, requirementIndex) => ({
-      requirement,
-      state: kidsRequirementSatisfied(requirement, input.milestones)
+    const requirements = step.requirements.map((requirement, requirementIndex) => {
+      const state = kidsRequirementSatisfied(requirement, input.milestones)
         ? ('satisfied' as const)
         : input.catalog === null ||
             readiness.issues.some(
               (issue) => issue.level === step.level && issue.requirementIndex === requirementIndex,
             )
           ? ('unavailable' as const)
-          : ('pending' as const),
-    }))
+          : ('pending' as const)
+      return {
+        requirement,
+        state,
+        resolvedCourseId:
+          state === 'unavailable' ? null : kidsRequirementCourseId(requirement, input.catalog),
+      }
+    })
     const alreadyEarned = index + 1 <= floor
     const available = alreadyEarned || (!paused && previousComplete)
     const completed =
@@ -67,6 +73,7 @@ export function projectKidsJourney(input: KidsJourneyProjectionInput): KidsJourn
     audience: 'kids',
     policyVersion: input.policyVersion,
     mode: policy.mode,
+    tierAccess: policy.tierAccess.map((rule) => ({ ...rule, foundation: { ...rule.foundation } })),
     earned: {
       level,
       capabilities: KIDS_CREATOR_CAPABILITIES.filter((capability) => earned.has(capability)),
@@ -88,36 +95,61 @@ export function projectKidsJourney(input: KidsJourneyProjectionInput): KidsJourn
   }
 }
 
+/** One projection/readiness pass for a catalog batch, shared with the single-course resolver. */
+export function resolveKidsJourneyCourseLocks(
+  input: Omit<KidsJourneyProjectionInput, 'catalog'> & {
+    catalog: readonly KidsJourneyCourseFact[]
+    courses: readonly KidsJourneyCourseFact[]
+  },
+): Map<string, JourneyCourseLock> {
+  if (input.catalog === null) throw new Error('O catálogo da jornada está indisponível.')
+  const policy = KidsJourneyPolicySchema.parse(input.policy)
+  const view = projectKidsJourney({ ...input, policy })
+  const foundations = new Map<string, { available: boolean; satisfied: boolean }>()
+  return new Map(
+    input.courses.map((course): [string, JourneyCourseLock] => {
+      if (
+        course.audience !== 'kids' ||
+        course.modality !== 'recorded' ||
+        course.graduationOnly ||
+        !course.tier
+      )
+        return [course.id, { locked: false }]
+      let foundation = foundations.get(course.tier)
+      if (!foundation) {
+        const base = kidsFoundationCourse(input.catalog, course.tier)
+        foundation = {
+          available: Boolean(base),
+          satisfied: base
+            ? kidsFoundationRequirements(policy, base).every((requirement) =>
+                kidsRequirementSatisfied(requirement, input.milestones),
+              )
+            : false,
+        }
+        foundations.set(course.tier, foundation)
+      }
+      return [
+        course.id,
+        kidsCourseLockAtLevel(
+          policy,
+          view.earned.level,
+          course,
+          foundation.available,
+          foundation.satisfied,
+          view.earned.courseAccess,
+        ),
+      ]
+    }),
+  )
+}
+
 export function resolveKidsJourneyCourseLock(
   input: Omit<KidsJourneyProjectionInput, 'catalog'> & {
     catalog: readonly KidsJourneyCourseFact[]
     course: KidsJourneyCourseFact
   },
 ): JourneyCourseLock {
-  if (input.catalog === null) throw new Error('O catálogo da jornada está indisponível.')
-  if (
-    input.course.audience !== 'kids' ||
-    input.course.modality !== 'recorded' ||
-    input.course.graduationOnly ||
-    !input.course.tier
-  )
-    return { locked: false }
-  const policy = KidsJourneyPolicySchema.parse(input.policy)
-  const foundation = kidsFoundationCourse(input.catalog, input.course.tier)
-  const view = projectKidsJourney({ ...input, policy })
-  const satisfied = foundation
-    ? kidsFoundationRequirements(policy, foundation).every((requirement) =>
-        kidsRequirementSatisfied(requirement, input.milestones),
-      )
-    : false
-  return kidsCourseLockAtLevel(
-    policy,
-    view.earned.level,
-    input.course,
-    Boolean(foundation),
-    satisfied,
-    view.earned.courseAccess,
-  )
+  return resolveKidsJourneyCourseLocks({ ...input, courses: [input.course] }).get(input.course.id)!
 }
 
 /** A read-only preview carries the current policy's virtual baseline into the proposed one. */

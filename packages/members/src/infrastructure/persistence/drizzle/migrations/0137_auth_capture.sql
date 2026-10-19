@@ -1,0 +1,2 @@
+ALTER TABLE "members"."kids_journey_preparations" ADD COLUMN "auth_capture" jsonb;--> statement-breakpoint
+ALTER TABLE "members"."kids_journey_preparations" ADD CONSTRAINT "kids_journey_preparations_auth_capture_check" CHECK ("members"."kids_journey_preparations"."auth_capture" is null or jsonb_typeof("members"."kids_journey_preparations"."auth_capture") = 'object');

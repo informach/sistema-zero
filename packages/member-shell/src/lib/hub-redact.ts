@@ -82,7 +82,7 @@ export function attachAdultPublicIdentities(
 /** Avatar+nível de um autor (do members em lote) para o `attachAuthorAvatars`. */
 export interface AuthorAvatarInfo {
   photoUrl: string | null
-  level: string
+  level: string | null
 }
 
 /**

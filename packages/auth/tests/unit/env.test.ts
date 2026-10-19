@@ -17,9 +17,14 @@ const PROD_BASE: Record<string, string> = {
   COMMUNITY_URL: 'https://comunidade.example.com',
   MEMBERS_BASE_URL: 'http://members.railway.internal:3004',
   MEMBERS_INTERNAL_TOKEN: 'token-interno-members-de-producao',
+  MEMBERS_PROFILE_ADMISSION_TOKEN: 'profile-admission-token-for-tests',
 }
 
 describe('loadEnv', () => {
+  test('produção exige a credencial específica de admissão, além do token interno geral', () => {
+    const { MEMBERS_PROFILE_ADMISSION_TOKEN: _omitted, ...rest } = PROD_BASE
+    expect(() => loadEnv(rest)).toThrow(/MEMBERS_PROFILE_ADMISSION_TOKEN/)
+  })
   test('defaults: HOST dual-stack e cooldowns de 60s', () => {
     const env = loadEnv(BASE)
     expect(env.HOST).toBe('::')

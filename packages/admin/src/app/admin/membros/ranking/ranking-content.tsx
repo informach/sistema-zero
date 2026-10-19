@@ -166,7 +166,7 @@ function RankingRow({ item, kids }: { item: RankingListRow; kids: boolean }) {
           </span>
         </Link>
       </TableCell>
-      <TableCell>{STUDENT_RANK_LABELS[item.levelSlug] ?? item.levelSlug}</TableCell>
+      <TableCell>{item.levelSlug === null ? 'Indisponível' : STUDENT_RANK_LABELS[item.levelSlug] ?? item.levelSlug}</TableCell>
       <TableCell className="font-medium tabular-nums">
         {item.xp.toLocaleString('pt-BR')} XP
       </TableCell>

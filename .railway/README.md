@@ -52,3 +52,21 @@ node scripts/ci/railway-config.mjs apply staging /tmp/railway-staging-plan.json
 Guarde os planos fora da pasta `.railway/`, pois ela é fixada por hash. O apply recusa estado remoto alterado ou árvore diferente. Se isso ocorrer antes do merge, reexecute o job de plano do PR. Depois do merge, investigue o drift e abra um novo PR para gerar um plano atualizado; não desative a verificação nem passe `--confirm-destructive` para contorná-la.
 
 Referências: [IaC Railway](https://docs.railway.com/infrastructure-as-code), [Wait for CI](https://docs.railway.com/deployments/github-autodeploys#wait-for-ci).
+
+
+## Jornada Kids — credencial de admissão
+
+Auth e Members precisam do mesmo `MEMBERS_PROFILE_ADMISSION_TOKEN`, dedicado ao initializer privado
+Auth→Members. Os nomes estão em `variables.ts`; os valores devem ser provisionados no ambiente antes
+do rollout. Nenhuma credencial foi criada, consultada ou aplicada por esta implementação. Não reutilizar
+`MEMBERS_INTERNAL_TOKEN`, não publicar o valor no browser e não registrar headers/body com o segredo.
+Os dois serviços recusam boot de produção sem essa configuração; o initializer também nega token
+não configurado/ausente/incorreto fora de produção. Erro remoto mantém o mesmo perfil pending e job
+para retry durável, sem nova cobrança/ID nem fallback de concessão.
+
+A ativação depende do runbook da jornada: provisionar seed V0, retirar criadores Auth antigos,
+capturar todos os perfis anteriores (inclusive arquivados e sem XP), materializar baseline e publicar V1
+antes de liberar o tráfego migrado. As migrations Auth preservam existentes ready; somente futuros
+nascem pending. Não habilitar rollout parcial só porque migrations, token e processos iniciaram.
+CI habilita as suites SQL Kids e Auth admission com URLs explícitas em bancos descartáveis separados;
+Auth usa um banco novo para provar a expansão sobre perfis reais anteriores à migration0023.

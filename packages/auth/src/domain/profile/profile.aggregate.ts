@@ -3,6 +3,7 @@ import { saoPauloDayKey } from '@sistemazero/core/time'
 import { ProfileAgeRestrictedError, VoiceInputSupportCannotEnableError } from './profile.errors'
 
 export type ProfileStatus = 'active' | 'archived'
+export type ProfileAdmissionState = 'pending' | 'ready'
 
 /**
  * Quem mudou a fala da criança: os responsáveis (sessão da conta) ou a equipe de suporte
@@ -44,6 +45,8 @@ export interface ProfileSnapshot {
    */
   voiceInputEnabledAt: Date | null
   status: ProfileStatus
+  /** Durable Members admission, independent of archival and parental consent. */
+  admissionState: ProfileAdmissionState
   sortOrder: number
   createdAt: Date
   updatedAt: Date
@@ -93,6 +96,7 @@ export class ProfileAggregate {
       voiceInputEnabled: false,
       voiceInputEnabledAt: null,
       status: 'active',
+      admissionState: 'pending',
       sortOrder: 0,
       createdAt: now,
       updatedAt: now,
@@ -139,6 +143,13 @@ export class ProfileAggregate {
   }
   get isArchived(): boolean {
     return this.props.status === 'archived'
+  }
+  get admissionState(): ProfileAdmissionState {
+    return this.props.admissionState
+  }
+  /** Every session/public selector uses this condition; pending never authorizes a child. */
+  get isSelectable(): boolean {
+    return this.props.status === 'active' && this.props.admissionState === 'ready'
   }
 
   /** Pertence a esta conta? Ownership — a aplicação rejeita o que não for do ator. */

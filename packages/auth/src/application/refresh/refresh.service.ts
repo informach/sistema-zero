@@ -114,7 +114,7 @@ export class RefreshService {
     let profileSession: { profileId: string; claim: ProfileClaim } | null = null
     if (record.activeProfileId) {
       const profile = await this.profiles.findById(record.activeProfileId)
-      if (profile?.belongsTo(user.id) && !profile.isArchived) {
+      if (profile?.belongsTo(user.id) && profile.isSelectable) {
         // Re-deriva a flag a cada rotação → o pai liga/desliga e a próxima carga reflete.
         profileSession = {
           profileId: profile.id,

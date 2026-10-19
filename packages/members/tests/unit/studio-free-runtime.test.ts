@@ -1,6 +1,11 @@
 import { expect, test } from 'bun:test'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
-import { creatorJourneyLevel, type JourneyLevelSlug } from '@sistemazero/core/journey'
+import {
+  initialKidsJourneyPolicy,
+  KIDS_CREATOR_CAPABILITIES,
+  type KidsCreatorCapability,
+  projectKidsJourney,
+} from '@sistemazero/core/journey'
 import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python-pro-execution'
 import type { StudioFreeRuntimeRequest } from '@sistemazero/core/studio/runtime-authorization'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
@@ -9,7 +14,7 @@ import { capturePythonProRevisionPayload } from '../../../studio/src/state/pytho
 import { AuthorizeFreeRuntimeService } from '../../src/application/studio/authorize-free-runtime.service'
 import { FreeStudioAccessService } from '../../src/application/studio/free-studio-access.service'
 import { StudioPythonBuilderPolicy } from '../../src/application/studio-pro/python-builder-policy'
-import { emptyQualifyingByTier } from '../../src/domain/gamification/levels'
+import { KidsJourneyUnavailableError } from '../../src/domain/kids-journey/kids-journey.errors'
 import { createStudioRuntimeHosts } from '../../src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../src/domain/studio/runtime-policy'
 import { authoringFixture } from '../fakes/studio-authoring-policy'
@@ -26,7 +31,8 @@ async function setup(kind: 'classic' | 'pro' = 'classic') {
   }
   const state = {
     owned: true,
-    level: 'coder' as JourneyLevelSlug,
+    capabilities: ['studio'] as KidsCreatorCapability[],
+    policyAvailable: true,
     blocks: [SERVER_BLOCK_CATALOG[0]!.type],
     frozen: [] as string[],
     reads: [] as { port: string; id: string; audience?: string }[],
@@ -46,13 +52,6 @@ async function setup(kind: 'classic' | 'pro' = 'classic') {
       },
     },
     {
-      async listQualifyingJourneySlots(id, audience) {
-        state.reads.push({ port: 'level', id, audience })
-        return Object.assign(
-          emptyQualifyingByTier(),
-          creatorJourneyLevel(state.level).requiredSlots,
-        )
-      },
       async listStudioUnlocksByCourse(id, audience) {
         state.reads.push({ port: 'palette', id, audience })
         return [{ courseId: 'current', blocks: state.blocks }]
@@ -62,6 +61,36 @@ async function setup(kind: 'classic' | 'pro' = 'classic') {
       async listGrants(id, audience) {
         state.reads.push({ port: 'frozen', id, audience })
         return [{ courseId: 'old', blocks: state.frozen }]
+      },
+    },
+    {
+      async get(owner) {
+        state.reads.push({ port: 'journey', id: owner.userId, audience: 'kids' })
+        if (!state.policyAvailable) throw new KidsJourneyUnavailableError()
+        return projectKidsJourney({
+          policy: initialKidsJourneyPolicy(),
+          policyVersion: 1,
+          catalog: [],
+          milestones: [],
+          earned: {
+            level: 'noob',
+            capabilities: [...state.capabilities],
+            courseAccess: { entry: [], expanded: [], reward: [] },
+          },
+        })
+      },
+      async staffPreview() {
+        state.reads.push({ port: 'staff-preview', id: actor.accountId, audience: 'kids' })
+        if (!state.policyAvailable) throw new KidsJourneyUnavailableError()
+        return {
+          audience: 'kids' as const,
+          kind: 'staff-preview' as const,
+          policyVersion: 1,
+          mode: 'active' as const,
+          tierAccess: initialKidsJourneyPolicy().tierAccess,
+          capabilities: [...KIDS_CREATOR_CAPABILITIES],
+          readiness: { status: 'ready' as const, horizon: 'god' as const, issues: [] },
+        }
       },
     },
   )
@@ -113,32 +142,32 @@ test('free Classic uses account ownership and profile achievement, without trans
   expect(f.project).toEqual(before)
 })
 
-test('each operation rechecks product, qualified level and known current or frozen palette', async () => {
+test('each operation rechecks product, persisted capabilities and known current or frozen palette', async () => {
   const f = await setup()
   await f.service.execute(f.actor, f.request)
   f.state.owned = false
   await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('acesso ao Estúdio')
   f.state.owned = true
-  f.state.level = 'noob'
+  f.state.capabilities = []
   await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('nível')
-  f.state.level = 'coder'
+  f.state.capabilities = ['studio']
   f.state.blocks = ['unknown-js', 'py_print']
   await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('curso')
   f.state.frozen = [SERVER_BLOCK_CATALOG[0]!.type]
   expect((await f.service.execute(f.actor, f.request)).operation).toBe('execute')
 })
 
-test('free Pro keeps its own level gate and does not inherit contextual Pro access', async () => {
+test('free Pro keeps its own capability gate and does not inherit contextual Pro access', async () => {
   const f = await setup('pro')
   await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('Pro')
-  f.state.level = 'god'
+  f.state.capabilities = ['studio', 'bridge', 'pro']
   expect((await f.service.options(f.actor)).canCreatePro).toBe(true)
   expect((await f.service.execute(f.actor, f.request)).curation.allowedModes).toEqual(['code'])
 })
 
-test('builder Python shares fresh Complete Studio product/Pro level/catalog policy for analysis and execution', async () => {
+test('builder Python shares fresh Complete Studio product/Pro capability/catalog policy for analysis and execution', async () => {
   const f = await setup('pro')
-  f.state.level = 'god'
+  f.state.capabilities = ['studio', 'bridge', 'pro']
   const payload = await capturePythonProRevisionPayload(f.project)
   const prepared = await prepareStudioPythonProExecution(payload.base, payload.binaries)
   if (prepared.base.version !== 2) throw new Error('Expected canonical Python revision')
@@ -147,14 +176,14 @@ test('builder Python shares fresh Complete Studio product/Pro level/catalog poli
   await policy.execute(f.actor, prepared.base, prepared.metadata, 'analyze', signal)
   await policy.execute(f.actor, prepared.base, prepared.metadata, 'execute', signal)
   expect(f.state.reads.filter(({ port }) => port === 'product')).toHaveLength(2)
-  expect(f.state.reads.filter(({ port }) => port === 'level')).toHaveLength(2)
+  expect(f.state.reads.filter(({ port }) => port === 'journey')).toHaveLength(2)
   expect(f.state.reads.some(({ port }) => port === 'palette' || port === 'frozen')).toBe(false)
   f.state.owned = false
   await expect(
     policy.execute(f.actor, prepared.base, prepared.metadata, 'execute', signal),
   ).rejects.toThrow('acesso')
   f.state.owned = true
-  f.state.level = 'coder'
+  f.state.capabilities = ['studio']
   await expect(
     policy.execute(f.actor, prepared.base, prepared.metadata, 'analyze', signal),
   ).rejects.toThrow('Pro')
@@ -162,7 +191,7 @@ test('builder Python shares fresh Complete Studio product/Pro level/catalog poli
 
 test('builder Python denies missing execution configuration, mismatched metadata and unapproved releases', async () => {
   const f = await setup('pro')
-  f.state.level = 'god'
+  f.state.capabilities = ['studio', 'bridge', 'pro']
   const payload = await capturePythonProRevisionPayload(f.project)
   const prepared = await prepareStudioPythonProExecution(payload.base, payload.binaries)
   if (prepared.base.version !== 2) throw new Error('Expected canonical Python revision')
@@ -199,9 +228,9 @@ test('builder Python denies missing execution configuration, mismatched metadata
 test('active staff bypasses achievement gates, while support cannot execute even as staff', async () => {
   const f = await setup('pro')
   f.state.owned = false
-  const staff = { ...f.actor, privileged: true }
+  const staff = { ...f.actor, userId: f.actor.accountId, privileged: true }
   expect((await f.service.execute(staff, f.request)).projectId).toBe(f.project.id)
-  expect(f.state.reads).toEqual([])
+  expect(f.state.reads.map(({ port }) => port)).toEqual(['staff-preview'])
   await expect(f.service.execute({ ...staff, readOnly: true }, f.request)).rejects.toThrow(
     'suporte',
   )
@@ -210,12 +239,12 @@ test('active staff bypasses achievement gates, while support cannot execute even
 
 test('resuming an eligible Pro retains its existing gate even without a known curriculum palette', async () => {
   const f = await setup('pro')
-  f.state.level = 'god'
+  f.state.capabilities = ['studio', 'bridge', 'pro']
   f.state.blocks = ['removed-legacy-block']
   expect((await f.service.execute(f.actor, f.request)).projectId).toBe(f.project.id)
   expect(f.state.reads.some(({ port }) => port === 'palette' || port === 'frozen')).toBe(false)
   await expect(f.service.options(f.actor)).rejects.toThrow('curso')
-  f.state.level = 'coder'
+  f.state.capabilities = ['studio']
   await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('Pro')
 })
 
@@ -279,4 +308,27 @@ test('retired releases retain existing project execution while revoked releases 
     if (status === 'revoked') await expect(service.execute(f.actor, f.request)).rejects.toThrow()
     else expect((await service.execute(f.actor, f.request)).releaseStatus).toBe('retired')
   }
+})
+
+test('configured capabilities authorize independently of displayed rank and keep Bridge distinct from Pro', async () => {
+  const f = await setup()
+  f.state.capabilities = ['studio', 'bridge']
+  const options = await f.service.options(f.actor)
+  expect(options.canCreatePro).toBe(false)
+  expect(options.pythonCuration.allowedModes).toEqual(['blocks', 'bridge'])
+  f.state.capabilities = ['studio', 'pro']
+  const proOptions = await f.service.options(f.actor)
+  expect(proOptions.canCreatePro).toBe(true)
+  expect(proOptions.pythonCuration.allowedModes).toEqual(['blocks'])
+})
+
+test('unavailable policy denies new child and staff runtime operations without fabricating a rank', async () => {
+  const f = await setup()
+  f.state.policyAvailable = false
+  await expect(f.service.options(f.actor)).rejects.toBeInstanceOf(KidsJourneyUnavailableError)
+  await expect(
+    f.service.options({ ...f.actor, userId: f.actor.accountId, privileged: true }),
+  ).rejects.toBeInstanceOf(KidsJourneyUnavailableError)
+  await expect(f.service.options({ ...f.actor, privileged: true })).rejects.toThrow('perfil')
+  expect(f.state.reads.some(({ port }) => port === 'palette' || port === 'frozen')).toBe(false)
 })

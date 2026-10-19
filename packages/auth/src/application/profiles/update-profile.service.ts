@@ -5,6 +5,8 @@ import { type ProfileView, toProfileView } from '../mappers/profile-view'
 import { assertMayEnableVoiceInput, voiceInputActor } from './voice-input.policy'
 
 export interface UpdateProfileDetailsCommand {
+  /** True only for the child's profile session, captured by the authenticated HTTP boundary. */
+  profileSession?: boolean
   accountUserId: string
   profileId: string
   name?: string
@@ -47,41 +49,42 @@ export class UpdateProfileDetailsService {
   ) {}
 
   async execute(cmd: UpdateProfileDetailsCommand): Promise<ProfileView> {
-    const profile = await this.profiles.findById(cmd.profileId)
-    if (!profile?.belongsTo(cmd.accountUserId) || profile.isArchived) {
-      throw new ProfileNotFoundError()
-    }
-    // Fala: só a passagem de DESLIGADA para LIGADA é sensível. Reenviar `true` com ela já
-    // ligada (formulário dos pais trocando só o nome) e desligar seguem livres.
-    if (cmd.voiceInputEnabled === true && !profile.voiceInputEnabled) {
-      assertMayEnableVoiceInput({
-        supportSession: Boolean(cmd.impersonatorId),
-        parentAuthRecent: cmd.parentAuthRecent,
-      })
-    }
-    // ⚠️ A exigência vale para a MUDANÇA, não para o campo no corpo: o formulário dos pais
-    // reenvia nascimento e perfil público ao trocar só o nome, e isso não pede login de novo.
-    const sensitiveChange =
-      (cmd.birthDate !== undefined && (cmd.birthDate?.trim() || null) !== profile.birthDate) ||
-      (cmd.publicProfileEnabled !== undefined &&
-        cmd.publicProfileEnabled !== profile.publicProfileEnabled)
-    if (sensitiveChange && cmd.parentAuthRecent === false)
-      throw new ParentReauthenticationRequiredError()
-    const now = this.clock()
-    profile.updateDetails({ name: cmd.name, avatarUrl: cmd.avatarUrl, whatsapp: cmd.whatsapp }, now)
-    // birthDate tem caminho próprio (autorização parent-only na rota; `undefined` = não mexe).
-    if (cmd.birthDate !== undefined) profile.setBirthDate(cmd.birthDate, now)
-    // Perfil público: idem (parent-only na rota).
-    if (cmd.publicProfileEnabled !== undefined) {
-      profile.setPublicProfileEnabled(cmd.publicProfileEnabled, now)
-    }
-    // Fala: caminho próprio (ligar carimba o consentimento; desligar zera). A mudança efetiva
-    // vai para a trilha na mesma transação do UPDATE; reenviar o mesmo valor não registra nada.
-    if (cmd.voiceInputEnabled !== undefined) {
-      profile.setVoiceInputEnabled(cmd.voiceInputEnabled, voiceInputActor(cmd.impersonatorId), now)
-    }
-    const ok = await this.profiles.update(profile)
-    if (!ok) throw new ProfileNotFoundError()
+    // Capture caller-owned values before any asynchronous lock acquisition.
+    const input = { ...cmd }
+    const now = new Date(this.clock().getTime())
+    const profile = await this.profiles.editDetails(
+      { profileId: input.profileId, accountUserId: input.accountUserId },
+      (current) => {
+        if (input.profileSession && current.admissionState !== 'ready')
+          throw new ProfileNotFoundError()
+        if (input.voiceInputEnabled === true && !current.voiceInputEnabled) {
+          assertMayEnableVoiceInput({
+            supportSession: Boolean(input.impersonatorId),
+            parentAuthRecent: input.parentAuthRecent,
+          })
+        }
+        const sensitiveChange =
+          (input.birthDate !== undefined &&
+            (input.birthDate?.trim() || null) !== current.birthDate) ||
+          (input.publicProfileEnabled !== undefined &&
+            input.publicProfileEnabled !== current.publicProfileEnabled)
+        if (sensitiveChange && input.parentAuthRecent === false)
+          throw new ParentReauthenticationRequiredError()
+        return {
+          changes: {
+            name: input.name,
+            avatarUrl: input.avatarUrl,
+            whatsapp: input.whatsapp,
+            birthDate: input.birthDate,
+            publicProfileEnabled: input.publicProfileEnabled,
+            voiceInputEnabled: input.voiceInputEnabled,
+          },
+          voiceActor: voiceInputActor(input.impersonatorId),
+          now,
+        }
+      },
+    )
+    if (!profile) throw new ProfileNotFoundError()
     return toProfileView(profile)
   }
 }

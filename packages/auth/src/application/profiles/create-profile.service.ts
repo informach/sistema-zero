@@ -1,12 +1,20 @@
+import { createHash } from 'node:crypto'
 import { ForbiddenError } from '@sistemazero/core/http'
 import type { ProfileAllowanceGateway } from '../../domain/ports/profile-allowance-gateway.port'
 import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
 import { ProfileAggregate } from '../../domain/profile/profile.aggregate'
-import { ProfileLimitReachedError } from '../../domain/profile/profile.errors'
+import {
+  ProfileCreationConflictError,
+  ProfileLimitReachedError,
+  ProfileNotFoundError,
+} from '../../domain/profile/profile.errors'
 import { type ProfileView, toProfileView } from '../mappers/profile-view'
+import type { ProfileAdmissionService } from './profile-admission.service'
 import { assertMayEnableVoiceInput, voiceInputActor } from './voice-input.policy'
 
 export interface CreateProfileCommand {
+  /** Stable per parent submission; retries reuse the same child ID and durable job. */
+  requestId: string
   /** Conta do responsável (x-auth-user-id) — dona do perfil. */
   accountUserId: string
   /**
@@ -59,9 +67,11 @@ export class CreateProfileService {
     private readonly allowance: ProfileAllowanceGateway,
     private readonly newId: () => string,
     private readonly clock: () => Date,
+    private readonly admission: Pick<ProfileAdmissionService, 'tryProfile'>,
   ) {}
 
-  async execute(cmd: CreateProfileCommand): Promise<ProfileView> {
+  async execute(input: CreateProfileCommand): Promise<ProfileView> {
+    const cmd = { ...input }
     // Antes de tudo (sem S2S nem insert): criar com a fala LIGADA é o mesmo consentimento
     // sensível do PATCH.
     if (cmd.voiceInputEnabled === true) {
@@ -94,15 +104,46 @@ export class CreateProfileService {
         this.clock(),
       )
     }
+    const requestHash = createHash('sha256')
+      .update(
+        JSON.stringify({
+          name: profile.name,
+          avatarUrl: profile.avatarUrl,
+          whatsapp: profile.whatsapp,
+          birthDate: profile.birthDate,
+          publicProfileEnabled: profile.publicProfileEnabled,
+          voiceInputEnabled: profile.voiceInputEnabled,
+        }),
+      )
+      .digest('hex')
+    const existing = await this.profiles.findByCreationRequest(cmd.accountUserId, cmd.requestId)
+    if (existing) {
+      if (existing.requestHash !== requestHash) throw new ProfileCreationConflictError()
+      return this.finish(existing.profile)
+    }
     const maxProfiles = cmd.privileged
       ? UNLIMITED_PROFILES
       : (await this.allowance.getAllowance(cmd.accountUserId)).maxProfiles
     if (maxProfiles <= 0) throw new ProfileLimitReachedError()
-    const result = await this.profiles.createWithinLimit(profile, maxProfiles)
+    const result = await this.profiles.createWithinLimit(profile, maxProfiles, {
+      requestId: cmd.requestId,
+      requestHash,
+    })
     if (result.outcome === 'account_inactive') {
       throw new ForbiddenError('A conta não pode mais criar perfis')
     }
     if (result.outcome === 'limit_reached') throw new ProfileLimitReachedError()
-    return toProfileView(result.profile)
+    if (result.outcome === 'request_conflict') throw new ProfileCreationConflictError()
+    return this.finish(result.profile)
+  }
+
+  private async finish(profile: ProfileAggregate): Promise<ProfileView> {
+    const id = profile.id
+    const accountUserId = profile.accountUserId
+    if (profile.isArchived) throw new ProfileNotFoundError()
+    if (!profile.isSelectable) await this.admission.tryProfile(id, accountUserId)
+    const current = await this.profiles.findById(id)
+    if (!current?.belongsTo(accountUserId) || current.isArchived) throw new ProfileNotFoundError()
+    return toProfileView(current)
   }
 }

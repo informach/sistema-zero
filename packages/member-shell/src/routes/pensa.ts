@@ -26,7 +26,7 @@ import { isPrivilegedRole } from '../lib/studio-tier'
 import { hasAdultCapability } from '../server/adult-capabilities'
 import type { MembersClient } from '../server/clients'
 import { signCreationDownload } from '../server/creation-download'
-import { hasAiAppsLevel } from '../server/creative-apps-access'
+import { readKidsCapabilities } from '../server/creative-apps-access'
 import { loadPensaContext, type PensaContextMembers } from '../server/pensa/context'
 import { PensaUnavailable } from '../server/pensa/errors'
 import { workPensa } from '../server/pensa/planning'
@@ -217,8 +217,11 @@ export function createPensaRoutes({
             ),
           )
         if (request.method !== 'POST') return error(405, 'Ação indisponível.')
-        if (audience === 'kids' && !(await hasAiAppsLevel(members, user.role)))
-          return error(403, 'O Pensa abre no nível Inventor(a).', 'CAREER_LEVEL_REQUIRED')
+        if (audience === 'kids') {
+          const capability = await readKidsCapabilities(members, ['pensa', 'ai'])
+          if (capability === 'unavailable') return error(503, 'Não consegui conferir sua jornada agora.', 'JOURNEY_UNAVAILABLE')
+          if (capability !== 'allowed') return error(403, 'O Pensa ainda não está liberado na sua jornada.', 'JOURNEY_CAPABILITY_REQUIRED')
+        }
         const parsed = PensaCreateProjectRequestSchema.parse(body)
         const refusal = pensaNarrativeRefusal(parsed.message)
         if (refusal) return error(422, refusal, 'PENSA_MESSAGE_REVIEW')
@@ -354,8 +357,11 @@ export function createPensaRoutes({
             'O Zappy está descansando. Sua ideia continua guardada.',
             'AI_UNAVAILABLE',
           )
-        if (audience === 'kids' && !(await hasAiAppsLevel(members, user.role)))
-          return error(403, 'O Pensa abre no nível Inventor(a).', 'CAREER_LEVEL_REQUIRED')
+        if (audience === 'kids') {
+          const capability = await readKidsCapabilities(members, ['pensa', 'ai'])
+          if (capability === 'unavailable') return error(503, 'Não consegui conferir sua jornada agora.', 'JOURNEY_UNAVAILABLE')
+          if (capability !== 'allowed') return error(403, 'O Pensa ainda não está liberado na sua jornada.', 'JOURNEY_CAPABILITY_REQUIRED')
+        }
         const input = PensaMessageRequestSchema.parse(body)
         const refusal = pensaNarrativeRefusal(input.message)
         if (refusal) return error(422, refusal, 'PENSA_MESSAGE_REVIEW')

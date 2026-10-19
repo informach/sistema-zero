@@ -1,3 +1,4 @@
+import { kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { redirect } from 'next/navigation'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
@@ -20,7 +21,7 @@ const ID_RE = /^[A-Za-z0-9_-]{1,64}$/
  * — para o WebContainer bootar sem afrouxar a segurança do resto do app kids.
  *
  * Gate defensivo (URL direta): mesmo dos 3 estados do `/estudio` (indisponível /
- * bloqueado / ok) + **exige a capacidade PRO** (`tier.pro` = Lenda/admin). Sem ela,
+ * bloqueado / ok) + **exige a capacidade PRO** da política persistida. Sem ela,
  * volta pro `/estudio`. O editor pesado só carrega no cliente (`StudioProClient`).
  */
 export default async function EstudioProPage({
@@ -46,18 +47,21 @@ export default async function EstudioProPage({
   if (res.status !== 200 || gam?.status !== 200) {
     return <ToolRouteRecado screen={KidsStudioUnavailable} />
   }
-  const levelSlug = gam.body?.level?.slug
+  const journey = kidsJourneyAccess(gam.body)
+  if (!journey) return <ToolRouteRecado screen={KidsStudioUnavailable} />
   const access = resolveStudioProAccess({
     session,
     studioAccess: res.body?.access?.['estudio-completo'] === true,
-    levelSlug,
+    journey,
   })
+  if (!access.allowed && access.code === 'JOURNEY_UNAVAILABLE')
+    return <ToolRouteRecado screen={KidsStudioUnavailable} />
   if (!access.allowed && access.code === 'STUDIO_ACCESS_REQUIRED') {
     return <ToolRouteRecado screen={KidsLockedStudio} />
   }
   // A página é protegida pelo proxy, mas mantém o redirect defensivo para URL direta.
   if (!access.allowed) redirect('/estudio')
-  const services = await readServices(session, levelSlug)
+  const services = await readServices(session, journey)
 
   return (
     <StudioProClient
@@ -66,8 +70,8 @@ export default async function EstudioProPage({
       taskId={taskId}
       pintaOwned={res.body?.access?.pinta === true}
       moldaOwned={res.body?.access?.molda === true}
-      // Mesma política do /estudio: equipe sempre, aluno a partir do degrau
-      // mínimo da jornada (Inventor). Aqui o rank já foi buscado p/ o gate Pro.
+      // A mesma view canônica já lida para Pro fornece a capacidade de IA,
+      // separada das ferramentas e do currículo.
       {...services}
     />
   )

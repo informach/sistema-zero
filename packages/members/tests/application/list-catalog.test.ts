@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { KidsJourneyQueryService } from '../../src/application/kids-journey/kids-journey-query.service'
 import { ListCatalogService } from '../../src/application/list-catalog/list-catalog.service'
 import type { Course, CourseStatus } from '../../src/domain/course/course'
 import {
@@ -7,6 +8,7 @@ import {
   InMemoryEntitlementRepository,
   InMemoryGamificationRepository,
 } from '../fakes/in-memory'
+import { InMemoryKidsJourneySnapshots } from '../fakes/kids-journey-in-memory'
 import { grantLifetime } from '../helpers'
 
 const NOW = new Date('2026-06-02T12:00:00.000Z')
@@ -40,7 +42,13 @@ function build() {
   const courses = new InMemoryCourseRepository()
   const entitlements = new InMemoryEntitlementRepository()
   const gamification = new InMemoryGamificationRepository({ entitlements, courses })
-  const service = new ListCatalogService(courses, entitlements, gamification, clock)
+  const service = new ListCatalogService(
+    courses,
+    entitlements,
+    gamification,
+    clock,
+    new KidsJourneyQueryService(new InMemoryKidsJourneySnapshots(courses, gamification)),
+  )
   return { courses, entitlements, gamification, service }
 }
 
@@ -103,19 +111,19 @@ describe('ListCatalogService (catálogo "Todos os cursos")', () => {
 
   test('expõe os campos do card (título/subtítulo/capa) sem progresso', async () => {
     const { courses, entitlements, service } = build()
-    courses.courses.push(
-      makeCourse({
-        slug: 'curso',
-        title: 'Curso',
-        subtitle: 'Sub',
-        coverImageUrl: 'https://cdn.example.com/capa.webp',
-      }),
-    )
+    const publishedCourse = makeCourse({
+      slug: 'curso',
+      title: 'Curso',
+      subtitle: 'Sub',
+      coverImageUrl: 'https://cdn.example.com/capa.webp',
+    })
+    courses.courses.push(publishedCourse)
     const userId = randomUUID()
     grantLifetime(entitlements, { userId, courseRef: 'curso' })
 
     const [view] = await service.execute(userId)
     expect(view).toEqual({
+      courseId: publishedCourse.id,
       courseSlug: 'curso',
       title: 'Curso',
       subtitle: 'Sub',

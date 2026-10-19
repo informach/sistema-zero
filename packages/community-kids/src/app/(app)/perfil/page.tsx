@@ -1,5 +1,9 @@
 import { PalettePicker } from '@sistemazero/member-shell/components/palette-picker'
 import { isReadonlyImpersonation } from '@sistemazero/member-shell/lib/act'
+import {
+  isKidsStaffPreview,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { paletteValueOf } from '@sistemazero/member-shell/lib/palette-cookie'
 import { drawersForBlocks } from '@sistemazero/member-shell/server/studio-unlocks'
 import { ChevronRight, type LucideIcon, Smile, Sofa, UserRound } from 'lucide-react'
@@ -15,14 +19,13 @@ import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { MyTools } from '@/components/kids/my-tools'
 import { StreakProtection } from '@/components/kids/streak-protection'
 import { PALETTE_COOKIE } from '@/lib/cookies'
-import { nextLevelHintWithin } from '@/lib/journey-horizon'
+import { canonicalJourneyProgress } from '@/lib/journey-presentation'
 import { canOpenFreeStudio } from '@/lib/studio-cta'
 import {
   checkStudioAccessReadonly,
   getAvatarReadonly,
   getGamificationReadonly,
   getStudioUnlocksReadonly,
-  listCatalog,
 } from '@/server/members'
 import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
@@ -49,23 +52,18 @@ export default async function ProfilePage() {
   // com o motivo, em vez de deixar a pessoa clicar num 403.
   const readOnly = isReadonlyImpersonation(session)
 
-  const [profileRes, gam, avatarRes, showcaseRes, catalogRes, unlocksRes, studioRes] =
-    await Promise.all([
-      // O PRÓPRIO perfil pelo `/auth/me` da sessão de perfil: a lista da família
-      // (`/auth/profiles`) é da área dos pais e o Gateway a recusa para o aluno.
-      shell.auth.getMyProfileReadonly(),
-      getGamificationReadonly({ withRanking: true }),
-      getAvatarReadonly(),
-      // Jogos publicados + jogadas (linha da jornada) — best-effort, some no erro.
-      shell.hub.myShowcaseStatsReadonly().catch(() => null),
-      // Catálogo: define até onde a escada da jornada é desenhada e limita o contador
-      // ao que EXISTE (horizonte). Best-effort — sem ele a escada cai no comportamento
-      // antigo (os 8 postos), que é o estado final de qualquer forma.
-      listCatalog().catch(() => null),
-      // Ferramentas conquistadas nos cursos (currículo) + posse do Estúdio p/ o atalho.
-      getStudioUnlocksReadonly().catch(() => null),
-      checkStudioAccessReadonly().catch(() => null),
-    ])
+  const [profileRes, gam, avatarRes, showcaseRes, unlocksRes, studioRes] = await Promise.all([
+    // O PRÓPRIO perfil pelo `/auth/me` da sessão de perfil: a lista da família
+    // (`/auth/profiles`) é da área dos pais e o Gateway a recusa para o aluno.
+    shell.auth.getMyProfileReadonly(),
+    getGamificationReadonly({ withRanking: true }),
+    getAvatarReadonly(),
+    // Jogos publicados + jogadas (linha da jornada) — best-effort, some no erro.
+    shell.hub.myShowcaseStatsReadonly().catch(() => null),
+    // Ferramentas conquistadas nos cursos (currículo) + posse do Estúdio p/ o atalho.
+    getStudioUnlocksReadonly().catch(() => null),
+    checkStudioAccessReadonly().catch(() => null),
+  ])
   const mine = profileRes.status === 200 ? profileRes.body.profile : null
   const profile = mine?.id === session.id ? mine : null
   // Sessão da conta (sem perfil) ou perfil sumido → volta à grade de seleção.
@@ -74,9 +72,9 @@ export default async function ProfilePage() {
   const avatarPhotoUrl =
     avatarRes.status === 200 && avatarRes.body ? (avatarRes.body.photoUrl ?? null) : null
   const showcaseStats = showcaseRes?.status === 200 ? (showcaseRes.body ?? null) : null
-  // `null` = catálogo DESCONHECIDO (≠ vazio): a escada não encolhe por soluço de rede.
-  const courses = catalogRes?.status === 200 ? (catalogRes.body?.courses ?? []) : null
-  const levelHint = nextLevelHintWithin(gamification?.level, courses)
+  const journey = kidsJourneyAccess(gamification)
+  const levelHint =
+    journey && !isKidsStaffPreview(journey) ? canonicalJourneyProgress(journey).hint : null
   // Gavetas conquistadas: a cara visível do currículo (cada curso concluído + publicado
   // entrega os blocos que ensinou). Sem nenhuma, a seção some.
   const drawers = drawersForBlocks(
@@ -87,12 +85,7 @@ export default async function ProfilePage() {
   // decide se o ATALHO aparece (Faísca com o produto ainda não abre o Estúdio livre).
   const ownsStudio =
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true
-  const studioFree = canOpenFreeStudio(
-    ownsStudio,
-    gamification?.level?.slug,
-    session.role,
-    unlocksRes,
-  )
+  const studioFree = canOpenFreeStudio(ownsStudio, kidsJourneyAccess(gamification), unlocksRes)
 
   // "Minhas ferramentas" some sem gaveta nenhuma (ver `MyTools`), então a faixa menta só
   // existe quando há jornada OU ferramenta de verdade para mostrar.
@@ -125,11 +118,7 @@ export default async function ProfilePage() {
       {gamification || showTools ? (
         <KidsBand tone="menta">
           {gamification ? (
-            <JourneyTimeline
-              gamification={gamification}
-              courses={courses}
-              showcaseStats={showcaseStats}
-            />
+            <JourneyTimeline gamification={gamification} showcaseStats={showcaseStats} />
           ) : null}
           {showTools ? (
             <MyTools

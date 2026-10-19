@@ -12,6 +12,19 @@ T1 foi iniciado antecipadamente por instrução explícita do root em 18/10/2026
 
 **Novo escopo obrigatório do usuário:** um modelo canônico, seed persistido e todos os consumidores migrados, sem modo legado/fallback normal/dupla autorização. T1/T2 abaixo registram checkpoints intermediários, não o contrato final. T1R/T2R são pré-requisitos de T3 e do merge. Cleanup somente da jornada Kids; não tocar compatibilidade JSv2, Adult, snapshots/paletas, ownership, runtime/catalog ou migrations de outros sistemas.
 
+## Ponto atual para execução (19/10/2026)
+
+Este arquivo preserva o plano e recibos intermediários; frases sobre composição ausente em T1/T2 descrevem aqueles checkpoints. O estado atual está em `_evidence.md` e nos snapshots dos lotes. Core/seed, persistência, admissão e vários consumidores estão escritos; a jornada completa não foi entregue.
+
+- P6C qualificado: celebrações por view/capabilities, focado59/193 e Kids TSC0; snapshot265 SHA20e4aa4872ce590ebea943812bf2db4d248df8d8b430cdcae2176e58407301a9.
+- D1 qualificado na fixture atual: posto visual ausente/desconhecido; GREEN mínimo conjunto9/47, matriz59/253, Biome4/0 e Kids TSC0; snapshot delta badge-reward-qualified.
+- D2 qualificado após RED: resolvedCourseId readonly pela mesma captura/matcher, null sem dívida histórica; curso necessário fora da trilha e agrupamento de apresentação por identidade, mantendo todos os marcos. Core68/2833 e UI70/225, Biome4+5/0; Core/Members/Kids tipos0. Negativo de tipo da fixture e revalidação7/28 preservados; integração pendente.
+- Cartão de recompensa: RED real 2pass/2fail/21, texto ajustado ao requiredLevel canônico; GREEN/matriz/tipos qualificados junto a D1. Preservados direitos reward independentes de entry e currículo.
+- Admin A transporte qualificado (dois helpers, sete handlers, fixture isolada): fixture7/171, pós-formatação8/172, Biome11/0 e Admin TSC0.
+- Admin B composição Members/allowlist gateway qualificadas após RED0/2 e0/3; matrizes52/323 e19/116, Biome6/0, Gateway/Members TSC0. Negativo de tipo em fixture e revalidação3/27 preservados. JWT/forwarding/DB integrados pendentes.
+- Editor Admin C escrito com DTO validado, painéis separados de avanço/tierAccess, comparação e preparação manual/retomável. Focados20/97, matriz Admin30/140 e Members13/98, Biome13/0 e Admin/Members TSC0. Navegador real/integrado pendentes. RED de funcionalidade ausente foi module missing; RED comportamental posterior reproduziu erro de paginação do histórico na área geral, corrigido para erro local.
+- Tela423 qualificada: RED0/2/5→GREEN2/10, matriz36/106, Biome4/0, Kids TSC0. Mensagem usa requiredLevel existente e não inventa Mural para foundation. Quatro arquivos no snapshot próprio; sem mudança de gates/grants.
+- Depois: qualificação integrada do editor/Admin, cleanup restante comprovado, retenção, bootstrap/admission integrado, SQL/SDK/gates globais e conciliação da base sob coordenação do root. Sem merge/push/deploy próprio.
 ## Restrições globais
 
 - Default: 8 postos, 49 posições (1+8×6), complete+showcase por slot, mesmos portões e grants curriculares.
@@ -44,24 +57,35 @@ T1 foi iniciado antecipadamente por instrução explícita do root em 18/10/2026
 
 **Modificar:** `packages/core/src/journey/index.ts`; preservar `catalog.ts`/`state.ts` como fontes do legado.
 
-**Consome:** `CREATOR_JOURNEY_LEVELS`, `JOURNEY_LEVEL_SLUGS`, `journeySlotsForTier`, `CREATIVE_TOOL_LEVELS`, `MOLDA_TOOL_BAND_LEVELS`, `computeJourneyLevelSlug` e `resolveJourneyCourseLock` existentes.
+**Consome:** metadata estrutural dos oito postos/sete etapas e limites de posições. O motor
+anterior é oráculo somente de testes/migração, nunca fallback ou fonte normal do Kids.
 
-**Produz:** tipos e cinco funções públicas da techspec; `legacyKidsJourneyPolicy`, `projectKidsJourney`, `validateKidsJourneyPolicy`, `analyzeKidsJourneyReadiness`, `compareKidsJourney`.
+**Produz:** schemas/tipos de uma configuração única `{schemaVersion, mode:active|paused,
+steps, tierAccess}`, `initialKidsJourneyPolicy`, `projectKidsJourney`, validadores/prontidão,
+comparação sem escrita e resolvers singular/batch de acesso.
 
-- [x] Escrever teste de paridade para estado vazio, cada fronteira de posto, cada slot faltante, slots fora de ordem e curso apagado com snapshot. Oráculo = funções legadas; esperado fixo inclui 49/1/8 e os portões atuais para não validar duas cópias erradas.
-- [x] Implementar adapter legado derivado da tabela existente; não congelar apenas os IDs atuais do catálogo.
-- [x] Implementar schema estrito de legacy/configured/paused, sete avanços ordenados, requisitos/capacidades sem repetição e limites documentados.
-- [x] Implementar avaliação monotônica do piso conquistado, capacidades separadas e complete/showcase por curso.
-- [x] Implementar análise de ciclos jornada/base/reward e capacidade por ordem cumulativa; incompletude legada é warning distinto de novo ciclo inválido.
-- [x] Rodar em `packages/core`: `bun test tests/kids-journey-policy.test.ts tests/kids-journey-parity.test.ts tests/journey.test.ts tests/journey-state.test.ts`.
+- [x] Provar paridade dos oito postos/49 posições, cada fronteira e slot ausente, ordem e snapshots,
+  inclusive curso removido, catálogo incompleto, role reward/extra e formatura.
+- [x] Schema estrito: sete avanços ordenados, sete regras completas de acesso, requisitos e capacidades
+  sem repetição, dependências cumulativas e limites documentados.
+- [x] Piso permanente de posto/capacidades e 21 direitos entry/expanded/reward; expanded implica entry,
+  reward é independente. A mesma elegibilidade pura alimenta projeção e autorização.
+- [x] Pausa conserva a política canônica, congela posto/app capabilities e permite expansão pela
+  conclusão real da base sob posto congelado; não remove regras nem inventa showcase.
+- [x] `graduationOnly` distingue formatura de curso normal fora da escada. Formatura não pode ser
+  requisito para chegar ao topo, mas continua sem novo gate por posto no acesso.
+- [x] Readiness distingue ausência conhecida de base, catálogo indisponível, requisito explícito
+  circular e dependências inviáveis. Complete/showcase são critérios separados da paleta curricular.
+- [x] Resolver batch usa uma projeção por perfil e cache limitado por etapa; singular delega ao batch.
+- [x] Última matriz focada: **60 pass/0 fail/2772 asserções**, seis arquivos (ver `_evidence.md`).
 
-Primeira verificação (`286614934`): 44 testes, 0 falhas, 2.641 asserções; Biome focado limpo; TSC ainda não estava autorizado naquela janela. Após correções de revisão, a validação final tem **50 pass, 0 fail, 2.716 asserções**, matriz em 344 ms e **TSC completo core EXIT0** (Node 24.22.0/TS 5.9.3). Atualizar base e revalidar diferenças antes de integrar. Fixture adicional: `packages/core/tests/fixtures/kids-journey.ts`. O contrato puro também expõe `kidsJourneySteps`, schemas/tipos, helpers de requisito/base e `resolveKidsJourneyCourseLock`; nenhum chamador produtivo foi migrado.
+Histórico: T1 começou antes do checkpoint principal por instrução do root. As versões intermediárias
+legacy/configured e pausa aninhada foram protótipos locais, substituídos em T1R/T2R pelo contrato único;
+seus commits/recibos continuam como trilha de revisão, não como ABI ou requisito produtivo. O último
+TSC Core canônico aprovado antecede as novas edições de consumidores; nova integração será verificada.
 
-- [x] Corrigir pausa na revisão: reter política ativa em `paused.policy`, manter gates/base e interromper todos os ganhos, com regressões em `packages/core/tests/kids-journey-pause.test.ts`.
-- [x] Preservar `graduationOnly` no fato de curso e distinguir formatura de curso normal fora da escada em readiness; acesso legado continua sem gate novo.
-- [x] Repetir matriz completa na janela liberada pelo root, executar TSC core e concluir revisão final do recorte puro. Sem tarefas T2 iniciadas.
-
-**Aceite:** default e locks legados equivalentes nos casos de `_test-plan.md`; requisito vazio custom não sobe; pause não libera; prova de ordem sem união de marcos de cursos distintos.
+**Aceite:** seed e locks equivalentes ao oráculo nos casos de `_test-plan.md`; requisitos vazios não
+concedem avanços, pausa não libera tudo, marcos de cursos distintos não se somam para um requisito.
 
 ## T2 — Checkpoint intermediário de persistência/monotonicidade
 
@@ -98,6 +122,13 @@ Recorte T2 atual: port/repositório com snapshot read-only, freeze monotônico, 
 - [ ] Earned inclui 21 direitos bounded entry/expanded/reward; expanded implica entry, reward não. Baseline/award/pause preservam acesso antes liberalizado mesmo com política futura restritiva. Provar V1→offline→V2.
 - [ ] Coorte bootstrap captura Auth all (sem XP/arquivados) + históricos comprovados; admissão sempre persiste earned noob/[] e coorte recorrente captura todos earned, não só marcos.
 - [ ] Implementar Auth admissionState pending/ready separado do arquivamento, requestId idempotente/quota, S2S initializer específico sem RPC em TX, CAS ready sob lock local profile:<account> e worker retry durável/agendado. Inventariar todos criadores/seletores/backfill/refresh/study/impersonação/público/token, testar purge e ACK tardio. Rollout sem Auth antigo; existentes permanecem ready, não pending em massa.
+
+  Progresso intermediário Auth (não concluído): fonte do protocolo/worker/guarda/token dedicado e migrations0023/0024 escritas;
+  SQL causal RED6→GREEN10/32, units27/104, HTTP perfis/sessões/Kids36/164 e Adminprofiles5/14.
+  Edição agora usa patch explícito com autorização síncrona sobre estado fresh bloqueado; archive é operação separada.
+  Matriz Auth ampliada executada:19 pass/0 fail/77asserts, incluindo quota, purge, lease e coorte sem XP. Rereview de fonte do patch fresh/arquivo sem novo achado; Auth full types/regressão e integração de consumidores ainda pendentes.
+  CI recebe URLs SQL explícitas para Kids/Auth; binding de segredo real e rollout completo permanecem operacionais pendentes.
+
 - [ ] Seed completo versionado, slot-based49, gerado/conferido contra oráculo Kids congelado somente de testes/migração. Nenhuma importação desse oráculo no grafo produtivo Kids; helpers compartilhados ainda necessários a Adult preservados e testados.
 - [x] Provar paridade dos oito postos, prefixos/slots ausentes/ordem/snapshots, capacidades e locks de todas as combinações de base/role, inclusive catálogo incompleto e formatura sem novo gate. Congelar referência somente de testes ainda está no item de seed acima.
 - [x] Readiness usa o resolver único com acesso explícito; recusa auto-bloqueio avanço/reward/base. Omissão da base não inventa showcase por código.
@@ -120,11 +151,11 @@ Recorte T2 atual: port/repositório com snapshot read-only, freeze monotônico, 
 
 **Produz:** `KidsJourneyService` com `get/getMany`, `preview`, `prepare/advancePreparation/publish`, `policy/history`. GET pode reconciliar concessões; preview obrigatoriamente usa leituras/projeções sem escrita.
 
-- [ ] Escrever cenários reais SQL: veterano offline no legado; V1 liberaliza, perfil não visita, V2 restringe; nenhum dos dois perde ganho legítimo ao ativar.
+- [x] Provar SQL veterano inicial/offline e V1→V2 liberal→V3 restritiva sem visita, preservando posto/capacidades e21 direitos pedagógicos. Incluído na matriz44/206; coorte real/escala de produção não medida.
 - [ ] Bootstrap guarda configuração explícita initializing0, captura conquistas com o mesmo avaliador/hook, e publica1 somente após baseline real/CAS; autor system honesto e idempotência sem sobrescrever edição.
 - [ ] Implementar preparação com versão/hash/catálogo capturado/cursor/upperBound e batches limitados; um perfil por transação; status e retry idempotentes.
-- [ ] Integrar freeze do posto/capacidades com award de marco/replay na mesma transação e proteção da conta antes de owner/policy conforme prova de lock.
-- [ ] Implementar CAS final policy+histórico; revalidar draft/catalogHash/prontidão. Conflito deixa rascunho e grants já conquistados, sem publicar parcialmente.
+- [x] Integrar freeze do posto/capacidades com award de marco/replay na mesma transação e proteção da conta antes de owner/policy. RED1/5→GREEN6/30 e matriz44/206 reais qualificam o recorte; testes globais/rollout ainda pendentes.
+- [x] Implementar CAS final policy+histórico e fence de catálogo SHARE NOWAIT/READ COMMITTED. RED4→GREEN4, matriz44/206 com ordens invertidas/cascata e stale após commit; conflito preserva grants e não publica parcialmente.
 - [ ] Provar os cenários de award antes/durante/depois do ready, novos perfis abaixo do cursor, duas preparações e duas publicações concorrentes; usar barreiras de teste, não sleeps.
 - [ ] Medir lote/tempo/coorte representativa em staging autorizado; registrar medições. Se não houver DB/coorte, declarar pendente e não afirmar preservação SQL concluída.
 
@@ -140,7 +171,7 @@ Recorte T2 atual: port/repositório com snapshot read-only, freeze monotônico, 
 
 **Consome:** serviço T3.
 
-**Produz:** endpoints da techspec, `kidsJourney?` aditivo e posto/locks consistentes em self/público/pais/batch. `AdultJourneyView` mantém seu campo próprio.
+**Produz:** endpoints da techspec, `kidsJourney` canônico e posto/locks consistentes em self/público/pais/batch. Prévia de equipe usa `kidsPreview` e `level:null`, sem aluno virtual. `AdultJourneyView` mantém seu campo próprio.
 
 - [ ] Provar RBAC/origem interna, ausência de bypass por headers/profileId arbitrários e recusa staff/customer nas mutações globais.
 - [ ] Conectar getGamification e todos os consumidores individuais/batch ao mesmo resolver; preservar autorizadores e batch sem N+1.
@@ -148,6 +179,15 @@ Recorte T2 atual: port/repositório com snapshot read-only, freeze monotônico, 
 - [ ] Atualizar elegibilidade de missões por capacidade/posse e manter resgates já concluídos.
 - [ ] Acrescentar rotas específicas no gateway; provar que endpoint interno não ganha exposição por wildcard.
 - [ ] Rodar testes HTTP/unidade focados de jornada, acesso e batch encontrados pelo mapa antes de checks amplos coordenados.
+
+Progresso parcial T4: CheckAccess/catálogo/meus cursos, FreeRuntime, query/config/guardas/HTTP têm
+focados verdes. GetGamification Kids e Admin.inspect usam registro/projeção canônicos; missões e
+Pensa server usam capacidades. Focados novos25/154 + integração110/447 passaram; correções dos
+três tipos anteriores revalidadas22/82 + MembersTSC0 no snapshot139. Público/pais/avatar/ranking
+foram migrados em seguida: batch75/292, identidade Core61/2787 e admissão26/86 verdes. O TSC
+seguinte apontou um contrato nullable na Liga; correção revalidada20/73 + MembersTSC0.
+Os negativos permanecem preservados. `listOwners` interno bounded200 e compatibilidade hexadecimal ainda precisam prova SQL.
+BFF/UI/Admin completos pendentes; não marcar T4 completo nem expor publicação por esse checkpoint.
 
 **Aceite:** API e consumidores não contradizem a política; ambiente ao vivo/Adult não passa pelos portões Kids.
 
@@ -161,7 +201,7 @@ Recorte T2 atual: port/repositório com snapshot read-only, freeze monotônico, 
 
 **Consome:** KidsJourneyView e blocos curriculares.
 
-**Produz:** `kidsStudioTier(view, role, blocks): StudioTier`, helpers de capacidade por view e tradução Molda consistente. Consumidores Adult usam seu adapter Adult.
+**Produz:** `kidsStudioTier(view, blocks): StudioTier` (equipe somente por view explícita de preview persistido, não por role isolado), helpers de capacidade por view e tradução Molda consistente. Consumidores Adult usam seu adapter Adult.
 
 - [ ] Escrever matriz de capacidades em postos distintos para provar que o gate usa view, não constantes fixas de rank.
 - [ ] Adicionar adapter de tier; clássico sem paleta bloqueado, Pro com pro+studio pode abrir sem paleta; extensões continuam derivadas de blocos.
@@ -170,6 +210,14 @@ Recorte T2 atual: port/repositório com snapshot read-only, freeze monotônico, 
 - [ ] Atualizar checagem de remix no card e no clique pelo snapshot; jogo público existente continua independente do curso vivo.
 - [ ] Testar que aula/oficina com ambiente/blocos/Python próprios não ganha nem perde ferramenta global por causa do adapter. Testar JS e Python autorizados e linguagem incompatível no contrato real do checkpoint.
 - [ ] Provar que `routes/voice.ts` mantém opção/contexto dos pais para transcrição Kids, sem novo gate de posto; áudio gravado da aula permanece no player.
+
+Progresso de edição T5 (ainda não qualificado): adapter `kidsStudioTier` e leitura explícita
+Kids/preview/indisponível; entradas `/estudio` e `/estudio/pro`, serviços opcionais e gate de
+publicação Pro leem capacidades da view. Casos custom Noob-capaz/God-sem-capacidade, preview sem
+posto e falha de política passaram: shell43/245 e Kids14/26; MembersTSC0. Tipos/render das
+aplicações ainda pendentes. Fatos/contexto por participante Pensa e rank nullable foram migrados em seguida: focados shell46/126
+e Core83/2823 verdes; chamada SQL real e tipos pós-fatos ainda pendentes. Demais BFF, ferramentas
+e Mural continuam no inventário de migração.
 
 **Aceite:** UI e handlers têm o mesmo acesso efetivo; perfil de irmão não fornece paleta/capacidade; nenhuma falha libera por `undefined` ou `allowBlocks: []`.
 
@@ -222,3 +270,69 @@ Recorte T2 atual: port/repositório com snapshot read-only, freeze monotônico, 
 | K14 | T6 |
 | Verificação/rollout | T7 |
 | K15/K16, modelo único/seed/cleanup | T1R/T2R/T3/T4/T5/T6/T7 |
+
+
+## Recibo parcial de hosts e ferramentas após T5/T6
+
+Snapshot229 `hosts-capabilities-focused-checkpoint`, SHA789a235259c283b0e969912fcbe68d11043afc5cd39789985e9e6353c0ac02fd.
+Shell252/1267, Core86/2866, Kids51/168 e Members parental15/53 passaram. Zappy preserva
+RED1/3 e intermediária Shell248/4: fixtures incompletas foram corrigidas sem alterar asserts;
+preview próprio é readonly e não consulta currículo. Publicação Python/runtime permanece
+como antes e a fixture agora usa query canônica compartilhada entre BFF e runtime.
+
+Menu/Criar/ajuda foram editados para capacidades e currículo separado, com helper puro
+testado, mas composição/render real dessas páginas e tipos completos seguem pendentes.
+Progressão/recompensas/timeline e editor Admin ainda não migrados; não marcar T5/T6 completos.
+SDK host autorizado recebeu somente adaptação de fixture; smoke SDK real/QA types pendentes.
+
+
+P6A parcial: timeline/cartão/hints home-perfil e recompensa nova leem advances/earned/readiness
+da view persistida, sem contador fixo nem badge Noob por ausência/preview. RED6:1pass/5fail;
+GREEN6/20→10/32; matriz100/318 e Biome10/0 no snapshot237 SHA7efa3d058fed1aa01dec38061bd32ec73d334b5be0f50682f3c59a0d28088f51.
+Negativo intermediário98/2 e RED parcial formatter preservados. Earned Lenda/horizonte Faísca,
+capacidade removida da policy, marco misto e pausa cobertos. Tipos/páginas integradas pendentes.
+Próximo P6B: mapa/agrupamento/trilha/celebrações e tierAccess na view; Admin separado.
+
+
+P6B parcial: courseId e tierAccess readonly da mesma versão publicados nos DTOs. Agrupamento,
+mapa, trilha e breadcrumb canônicos; direito retido pode abrir trilha futura sem posto/check
+fictício. Indisponível e preview explícitos. Motores fixos desses caminhos só em tests/fixtures.
+RED mapa0/4 + HTTP0/3 preservados; guard de transporte RED1 e intermediária schema-readonly
+preservados; Kids119/357 + Shell117/674 + Members26/181 + Core40/2696; Biome37/0.
+Tipos/composição RSC ainda pendentes; próximas celebrações/Molda e auditoria de gates
+curriculares são fronteiras separadas. Admin/SQL/rollout e integração final não concluídos.
+
+P6B types: Core0, Members0 após expected courseId (RED3/1→GREEN4/9), Kids0 após6 diagnósticos.
+Ranking null RED confirmou5 badges indevidos→GREEN1/2 explícito; focados adicionais Kids19/85,
+Hub22/50, Core40/2696. Biome7 EXIT0 com1 aviso unused a remover na próxima edição Molda.
+Próximo lote P6B-C: celebrações por ganho real/view, sem festa extra ou currículo por slug;
+posterior requisito courseId sem tier deve aparecer como aventura necessária acessível na UI.
+
+P6B-C em validação: RED6 (2pass/4fail)→GREEN6/15; stale observation RED1→fix; matriz31/112
+pré-formatação e Biome10/0. View+caps delta+licença substituem moldaLevelGain/posto/blurbs;
+sem overlay extra, observação local bounded por perfil não é concessão. Tipos/focado final
+pendentes. Depois: unknown badge nos consumidores restantes e requisitos courseId fora de tier.
+
+P6B-C focado qualificado: final59/193 em8arquivos e Kids TSC incremental EXIT0, após único
+caller de teste do aviso adaptado ao contrato journey; negativo TSC54126 e asserts anteriores
+preservados. Biome fixture1/0. Celebrações usam view/capabilities reais e não inferem recursos
+por posto. Permanecem D (badge ausente/requisitos fora de tier), Admin, SQL novo/retention,
+composição e gates integrados; T5/T6 e a jornada completa continuam abertos.
+
+Registro intermediário D1, antes da revisão de contrato abaixo: RED2pass/3fail/15→GREEN5/22 da identidade visual ausente; houve proposta transitória de DTO nullable, retirada em seguida. Matriz/Biome/tipos pendentes. D2 resolvedCourseId nullable da mesma captura aprovado, ainda sem mudança produtiva/DTO; RED e consumidor fora de tier são lote separado.
+
+
+Revisão D1: retirada a ampliação nullable do DTO compartilhado; endpoint público Kids exige view/level e falha fechado. Caso público é defesa interna, agora usa level opcional ausente na fixture. Logs anteriores preservados; novo gate pendente. Fonte produtiva D1 somente level-info.ts.
+
+
+Admin A separado: nove arquivos de transporte BFF e dois de teste foram escritos, sem execução/qualificação. Caminhos fechados, IDs canônicos, gateway existente, JSON limitado e no-store. Members mounting/RBAC/editor continuam pendentes; não marcar T4 completo. Nenhuma fonte D1/D2 adicional mudou.
+
+## Cleanup1 após Editor Admin C (focados e tipos verdes)
+
+- [x] Inventariar consumidores produtivos antes de remover exportações antigas.
+- [x] Retirar resolvedor Kids antigo e tabela rank→faixa Molda de src; oráculo somente em fixture.
+- [x] Manter o cálculo Adult e vocabulário estrutural, sem tocar runtime/JS/paletas/ownership.
+- [x] Reexecutar paridade e focados: Core47/2710, Kids18/83, Adult9/33; Biome11/0.
+- [x] Atualizar documentação normativa que ainda aceitava perda de acesso ao publicar base.
+- [x] Qualificar Core→Members→Kids TSC em janela coordenada; logs vazios/EXIT0 e recibo específico.
+- [ ] Conferir integração nativa/Admin/JWT/banco e os demais gates T7; a jornada continua aberta.

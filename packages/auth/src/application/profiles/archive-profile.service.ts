@@ -21,12 +21,17 @@ export class ArchiveProfileService {
   ) {}
 
   async execute(cmd: ArchiveProfileCommand): Promise<void> {
-    const profile = await this.profiles.findById(cmd.profileId)
-    if (!profile?.belongsTo(cmd.accountUserId)) throw new ProfileNotFoundError()
+    const input = { ...cmd }
+    const now = new Date(this.clock().getTime())
+    const profile = await this.profiles.findById(input.profileId)
+    if (!profile?.belongsTo(input.accountUserId)) throw new ProfileNotFoundError()
     if (profile.isArchived) return
     // Arquivar encerra o acesso da criança: no Kids exige o responsável com login recente.
-    if (cmd.parentAuthRecent === false) throw new ParentReauthenticationRequiredError()
-    profile.archive(this.clock())
-    await this.profiles.update(profile)
+    if (input.parentAuthRecent === false) throw new ParentReauthenticationRequiredError()
+    const archived = await this.profiles.archiveOwned(
+      { profileId: input.profileId, accountUserId: input.accountUserId },
+      now,
+    )
+    if (!archived) throw new ProfileNotFoundError()
   }
 }

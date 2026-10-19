@@ -1,13 +1,13 @@
 /**
  * As FAMÍLIAS de ferramentas da oficina e as faixas em que elas se liberam.
  *
- * O Molda não conhece jornada. O host (o kids) traduz o posto da criança numa lista de famílias
+ * O Molda não conhece jornada. O host (o kids) traduz capacidades conquistadas numa lista de famílias
  * liberadas e passa em `MoldaHostAdapter.toolAccess`; aqui mora só o vocabulário, como dado
  * puro, sem nenhum import, para o host poder ler pelo subpath `@sistemazero/molda/tools` sem
  * trazer React, Three ou IndexedDB junto (`src/assets/purity.test.ts` cobra isso).
  *
  * ⚠️ Os nomes das faixas (`MOLDA_TOOL_BANDS`) são o contrato com o core
- * (`MOLDA_TOOL_BAND_LEVELS`, em `packages/core/src/journey/state.ts`). O kids tem um teste que
+ * (`KIDS_MOLDA_BAND_CAPABILITIES`, em `packages/core/src/journey/kids-policy.ts`). O kids tem um teste que
  * confere os dois lados. Família nova entra aqui com a faixa dela, e só.
  *
  * ⚠️ Trancar tira a AUTORIA, nunca a leitura: uma criação que já usa uma família trancada abre,

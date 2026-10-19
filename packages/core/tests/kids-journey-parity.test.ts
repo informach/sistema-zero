@@ -4,11 +4,11 @@ import {
   computeJourneyLevelSlug,
   type JOURNEY_COURSE_TIERS,
   type QualifiedJourneySlots,
-  resolveJourneyCourseLock,
 } from '../src/journey/catalog'
 import { projectKidsJourney, resolveKidsJourneyCourseLock } from '../src/journey/kids-projection'
 import { initialKidsJourneyPolicy } from '../src/journey/kids-seed'
 import { kidsJourneyFacts, kidsJourneyInput, kidsMilestones } from './fixtures/kids-journey'
+import { resolveJourneyCourseLock } from './fixtures/legacy-kids-course-lock'
 
 describe('Kids default preserves the legacy journey', () => {
   test('keeps 49 incremental positions and the seven fixed advances', () => {

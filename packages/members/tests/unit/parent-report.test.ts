@@ -1,3 +1,6 @@
+import { KidsJourneyProfilesService } from '../../src/application/kids-journey/kids-journey-profiles.service'
+import { KidsJourneyQueryService } from '../../src/application/kids-journey/kids-journey-query.service'
+import { InMemoryKidsJourneySnapshots } from '../fakes/kids-journey-in-memory'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { AccessCheckService } from '../../src/application/access-check/access-check.service'
@@ -58,6 +61,9 @@ function buildSender(now: Date) {
       return null
     },
   }
+  const kidsSnapshots = new InMemoryKidsJourneySnapshots(courses, gamification)
+  kidsSnapshots.owners.set(CHILD, ACCOUNT)
+  const kidsProfiles = new KidsJourneyProfilesService(kidsSnapshots, new KidsJourneyQueryService(kidsSnapshots))
   const childrenStats = new GetChildrenStatsService(
     gamification,
     courses,
@@ -66,6 +72,7 @@ function buildSender(now: Date) {
     new AccessCheckService(new InMemoryEntitlementRepository(), clock),
     learning,
     clock,
+    kidsProfiles,
     hub,
   )
   const reports = new InMemoryParentReportRepository()

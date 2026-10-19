@@ -179,6 +179,23 @@ function requirementCourses(
   )
 }
 
+/** Identity uses the same candidate matching as readiness, never a second slot resolver. */
+export function kidsRequirementCourseId(
+  requirement: KidsRequirement,
+  catalog: readonly KidsJourneyCourseFact[] | null,
+): string | null {
+  if (catalog === null) return null
+  const candidates = requirementCourses(requirement, catalog)
+  if (candidates.length !== 1) return null
+  const course = candidates[0]!
+  return course.audience === 'kids' &&
+    course.modality === 'recorded' &&
+    course.status === 'published' &&
+    !course.graduationOnly
+    ? course.id
+    : null
+}
+
 function courseIssue(
   course: KidsJourneyCourseFact,
   requirement: KidsRequirement,

@@ -1,5 +1,20 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Jornada Kids canônica (implementação isolada, 19/10/2026)
+
+`/admin/professor/jornada-kids` lê somente a política persistida. Os oito nomes/ordem são
+metadata; requisitos, ferramentas e tierAccess vêm do registro. Postos e acesso às etapas
+têm painéis separados. Initializing/erro não cria seed ou Faísca no cliente. A permissão visual
+`permissions.canEdit` vem da mesma guarda de mutação do Members; getSession/papel isolado não
+prova conta própria. Todas as escritas seguem passando pelo BFF/gateway e são reautorizadas.
+
+Comparar chama o backend e identifica a simulação de novo aluno; não é relatório da coorte.
+Preparar exige motivo; ID fica no URL para retomar. Retomada não faz advance/publish. Avanço
+de lote é manual e publicação envia versão/três hashes da mesma preparação ready, sem ator
+do navegador ou retry invisível. Histórico tem erro próprio. Editor tem DOM/API e tipos locais
+qualificados; navegador real e integração JWT/banco ainda pendentes. Consulte os recibos em
+`.compozy/tasks/kids-configurable-journey/` antes de declarar rollout pronto.
+
 ## Autoria do Estúdio em duas linguagens (18/10/2026)
 
 O projeto inicial e o gabarito usam `EditableStudioProject`; JavaScript permanece o padrão. A escolha de ambiente, extensões e tipo vem das opções autorizadas, com troca explícita que preserva o projeto quando cancelada ou recusada. Python tem nível e paleta próprios; não traduzir a curadoria JavaScript por nome.

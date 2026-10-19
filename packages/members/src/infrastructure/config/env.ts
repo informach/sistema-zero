@@ -111,6 +111,8 @@ const EnvSchema = z
       .string()
       .min(16, 'INTERNAL_API_TOKEN deve ter ao menos 16 caracteres')
       .optional(),
+    // Dedicated Auth→Members admission credential; missing always denies this private route.
+    MEMBERS_PROFILE_ADMISSION_TOKEN: z.string().min(16).optional(),
 
     // Carência (dias) somada ao fim do ciclo da assinatura ao calcular `expiresAt`.
     SUBSCRIPTION_GRACE_DAYS: z.coerce.number().int().nonnegative().default(3),
@@ -328,6 +330,10 @@ const EnvSchema = z
     message:
       'INTERNAL_API_TOKEN é obrigatório em produção (defesa em profundidade da API do aluno)',
     path: ['INTERNAL_API_TOKEN'],
+  })
+  .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.MEMBERS_PROFILE_ADMISSION_TOKEN), {
+    message: 'MEMBERS_PROFILE_ADMISSION_TOKEN é obrigatório em produção para a admissão Kids',
+    path: ['MEMBERS_PROFILE_ADMISSION_TOKEN'],
   })
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.CATALOG_INTERNAL_TOKEN), {
     message:

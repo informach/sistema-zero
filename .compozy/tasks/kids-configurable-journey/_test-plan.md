@@ -129,7 +129,7 @@ Também verificar migration aditiva em banco novo, execução conjunta com purge
 
 | ID | Caso | Resultado |
 |---|---|---|
-| H01 | Customer/staff/sem origem interna em policy/preview/prepare/publish/history | Recusa conforme autenticação/RBAC; esconder menu não é a proteção. |
+| H01 | Sem origem interna/customer em rotas globais; staff em prepare/advance/publish | Recusa. Staff ativo pode ler e simular; somente admin/superadmin próprios podem alterar. Esconder menu não é a proteção. |
 | H02 | Admin/superadmin autenticado | Pode operar política; autor/data derivados do servidor; campos spoofados não gravam. |
 | H03 | Perfil de irmão/outra conta em consulta, preview ou participante Pensa | Autorização atual aplicada; nunca herda capacidades por matrícula da família. |
 | H04 | Preview repetido e depois comparar tabelas/ledger | Nenhum grant, baseline, XP, progresso, consumo de IA ou auditoria de publicação criada. |
@@ -192,3 +192,45 @@ Checklist de liberação:
 - [ ] Tempo/carga de baseline e preview registrados em dados representativos.
 - [ ] Schema/readers/hooks implantados antes da ativação custom; rollback preserva grants/histórico.
 - [ ] Root revisou evidências e autorizou o próximo passo de publicação no fluxo principal.
+
+## Lotes de apresentação C/D — prova e pendências atuais
+
+P6C qualificado no snapshot SHA20e4aa4872ce590ebea943812bf2db4d248df8d8b430cdcae2176e58407301a9:
+59 testes/193 asserções e Kids TSC EXIT0. Negativos anteriores permanecem em `_evidence.md`.
+Este resultado não cobre os lotes seguintes nem a composição administrativa.
+
+| ID | Caso | Resultado esperado / evidência |
+|---|---|---|
+| U11 | Capacidade Molda concedida em posto custom, removida de posto fixo ou produto ausente | Anúncio vem do delta real de capabilities e da licença; sem promessa fixa por slug. P6C focado aprovado. |
+| U12 | Complete-only, primeira visita, troca de perfil e view antiga depois de posto maior | Copy não afirma publicação; sem festa retrospectiva, regressão do observado ou mistura entre perfis. P6C focado aprovado. |
+| U13 | Aviso, guia e conquista na mesma visita | Aparecem em sequência sem perder conquista. O teste existente entrou na matriz final59; fixture adaptada para journey. |
+| U14 | Metadata ausente/desconhecida, menu sem gamification e oito postos explícitos | Posto indisponível para ausência; oito nomes preservados. D1 qualificado em matriz59/253 e Kids tipos0. |
+| U15 | Render público com level ausente na estrutura web opcional | Defesa interna não fabrica Faísca. A rota pública atual exige view/level; não interpretar a fixture como prova de resposta null da rota. Fixture atual qualificada. |
+| U16 | Slot único, requisito course fora de tier, ambiguidade e catálogo indisponível | resolvedCourseId vem da mesma captura; apenas candidato único identificado. D2 RED0/5→GREEN5/18 e matrizCore68/2833; Core/Members/Kids tipos0. |
+| U17 | Histórico satisfeito sem curso na captura de catálogo | Estado continua satisfied, sem dívida nova por identidade null. Prova incluída no Core D2. |
+| U18 | Curso necessário fora de agrupamento, pausa e preview da equipe | Criança encontra curso real por ID e marco honesto; matrícula/careerLock mantidos, pausa sem promessa de promoção e equipe sem tarefas virtuais. Controles7/28 e matrizUI70/225; Core/Members/Kids tipos0. |
+| U19 | Reward por completedAt custom e tela423 | Card e recado nomeiam requiredLevel real; ausência não fabrica Faísca. Reward preservado e known-missing-open não implicam entry. Card59/253 e tela42336/106, Kids tipos0. |
+| U20 | Foundation complete-only e mensagem423 | Resolver abre com complete sem showcase; recado não impõe Mural por regra fixa. Não altera selos/concessões curriculares. Prova incluída em tela423. |
+
+Gates seguintes devem registrar separadamente RED, correção, GREEN, formatação, matriz afetada e
+tipos. A matriz de um lote anterior não qualifica novo DTO ou fixture alterada posteriormente.
+O host é compartilhado: aguardar janela explícita do root antes de SQL/TSC/browser e de qualquer
+subprocesso HTTP/SDK; durante desempenho, até unidades curtas aguardam coordenação.
+
+## Editor Admin C — casos locais executados, integração ainda aberta
+
+| Caso | Prova local |
+|---|---|
+| Oito postos/sete avanços; Faísca sem ferramentas globais iniciais | Formulário5/19, sem importar seed em produção. |
+| Marco/ferramentas e tierAccess editados separadamente; curso ausente não é descartado | Controles reais DOM, readonly de equipe e pausa retendo regra. |
+| Comparação mode-only e simulação honestamente rotulada | Fluxo de UI real/compare Core, sem escrita antes do botão. |
+| Prepare sem ator; URL retomável; advance manual; publish três hashes/version | Filho editor12/64, sem concessão no cliente. |
+| Initializing/falha/refetch malformado não fabricam política/Noob | Dados anteriores retidos, novas operações bloqueadas. |
+| Preview velho/edição/conflict/busy/ready semcohortHash | Sem retry ou publicação fictícia; rascunho/candidato conservados. |
+| Troca de plataforma durante resposta pendente | Resposta velha ignorada, sem repovoar tela adulta. |
+| Paginação do histórico falha sem apagar dados/edição | RED causal11/1→GREEN; erro fica na seção correspondente. |
+| Papel/perfil/conta/contexto/impersonação para canEdit | Members13/98 inclui guardas da rota e composição. |
+
+Matriz afetada Admin30/140, Members13/98, Biome13/0, Admin/Members tipos0. Faltam navegador
+real/CSS, JWT/S2S/DB/BFF integrado, bootstrap/retention e staging; não marcar esses gates como
+passados usando a fixture de fetch. Snapshots e logs próprios preservam negativas e fonte.

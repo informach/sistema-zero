@@ -46,7 +46,7 @@ export function ProfileClient({
   ranking: RankingInfo | null
   level: StudentLevelView | null
   /** Frase do próximo marco, JÁ limitada ao catálogo (montada no servidor com
-   *  `nextLevelHintWithin` — a mesma do mapa, para os dois números nunca divergirem). */
+   *  `canonicalJourneyProgress` — a mesma do mapa, para os dois números nunca divergirem). */
   levelHint: string | null
   avatarPhotoUrl: string | null
 }) {
@@ -132,7 +132,13 @@ function IdentityCard({
             <p className="sz-display min-w-0 break-words text-[2rem] md:text-[2.25rem]">
               {profile.name}
             </p>
-            <LevelBadge levelSlug={level?.slug} variant="destaque" />
+            {level ? (
+              <LevelBadge levelSlug={level.slug} variant="destaque" />
+            ) : (
+              <span role="status" className="text-sm">
+                Não foi possível consultar sua jornada agora.
+              </span>
+            )}
           </div>
           {profile.whatsapp ? (
             <p className="kids-marca-suave mt-1 truncate font-semibold text-sm">

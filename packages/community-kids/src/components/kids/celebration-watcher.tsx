@@ -1,9 +1,14 @@
 'use client'
 
+import {
+  KIDS_CREATOR_CAPABILITIES,
+  type KidsCreatorCapability,
+  type KidsJourneyView,
+} from '@sistemazero/core/journey'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
-
 import { useEffect, useState } from 'react'
-import { isLevelUp } from '@/lib/level-info'
+import { isLevelUp, LEVEL_ORDER } from '@/lib/level-info'
+import { moldaCapabilitiesGain } from '@/lib/molda-level-gain'
 import {
   diffDrawerSnapshots,
   isDrawerSnapshotList,
@@ -64,6 +69,12 @@ function detectLevelUp(profileKey: string, levelSlug: string | undefined): Stude
   try {
     const key = `sz:kids:level:${profileKey}`
     const seen = localStorage.getItem(key)
+    if (
+      seen &&
+      LEVEL_ORDER.indexOf(seen as StudentLevelSlug) >
+        LEVEL_ORDER.indexOf(levelSlug as StudentLevelSlug)
+    )
+      return null
     const result = isLevelUp(seen, levelSlug) ? (levelSlug as StudentLevelSlug) : null
     try {
       localStorage.setItem(key, levelSlug)
@@ -76,39 +87,91 @@ function detectLevelUp(profileKey: string, levelSlug: string | undefined): Stude
   }
 }
 
+/** UI-only observation; it never grants resources or treats an unknown snapshot as empty. */
+function detectMoldaGain(
+  profileKey: string,
+  capabilities: readonly KidsCreatorCapability[],
+  ownsMolda: boolean | null,
+): string | null {
+  try {
+    const key = `sz:kids:capabilities:${profileKey}`
+    const raw = localStorage.getItem(key)
+    let before: readonly KidsCreatorCapability[] | null = null
+    if (raw) {
+      try {
+        const parsed: unknown = JSON.parse(raw)
+        if (
+          parsed &&
+          typeof parsed === 'object' &&
+          'version' in parsed &&
+          parsed.version === 1 &&
+          'capabilities' in parsed &&
+          Array.isArray(parsed.capabilities) &&
+          parsed.capabilities.length <= KIDS_CREATOR_CAPABILITIES.length &&
+          parsed.capabilities.every((capability) =>
+            KIDS_CREATOR_CAPABILITIES.includes(capability),
+          ) &&
+          new Set(parsed.capabilities).size === parsed.capabilities.length
+        )
+          before = parsed.capabilities
+      } catch {
+        /* Unknown storage version/data is a first observation, never a grant. */
+      }
+    }
+    const current = KIDS_CREATOR_CAPABILITIES.filter(
+      (capability) => before?.includes(capability) || capabilities.includes(capability),
+    )
+    const gain = before && ownsMolda === true ? moldaCapabilitiesGain(before, current) : null
+    // These are pedagogical rights observed in a valid view, independent of the purchased product.
+    try {
+      localStorage.setItem(key, JSON.stringify({ version: 1, capabilities: current }))
+    } catch {
+      /* Privacy/quota cannot create a fake gain. */
+    }
+    return gain
+  } catch {
+    return null
+  }
+}
+
 /**
  * Funde as conquistas do nível e das ferramentas em um único overlay. A revisão curta
  * chega no chrome; os ids só são buscados quando ela muda.
  */
 export function CelebrationWatcher({
-  levelSlug,
+  journey,
   toolsRevision,
   ownsStudio,
-  moldaGain = null,
+  ownsMolda = null,
   profileKey,
 }: {
-  levelSlug?: string
+  journey: KidsJourneyView | null
   toolsRevision: string | null
   /** `null` = consulta desconhecida; `false` = produto não adquirido. */
   ownsStudio: boolean | null
-  /**
-   * O que o Molda ganhou no posto ATUAL (`moldaLevelGain`), já filtrado pelo servidor: só chega
-   * para quem tem o produto e só nos postos em que uma faixa abre. `null` = nada a dizer.
-   */
-  moldaGain?: string | null
+  /** Product ownership is distinct from pedagogical capability acquisition. */
+  ownsMolda?: boolean | null
   profileKey: string
 }) {
   const [levelUp, setLevelUp] = useState<StudentLevelSlug | null>(null)
   const [toolsGain, setToolsGain] = useState<ToolsGain | null>(null)
+  const [moldaGain, setMoldaGain] = useState<string | null>(null)
   const { noticePending, guideOpen } = useChildOverlayState()
+  const levelSlug = journey?.earned?.level
+  const capabilitiesRevision = journey?.earned?.capabilities.join(',') ?? null
 
   useEffect(() => {
-    if (noticePending) return
+    if (noticePending || !levelSlug || capabilitiesRevision === null) return
     let cancelled = false
     const controller = new AbortController()
 
     void (async () => {
       const nextLevel = detectLevelUp(profileKey, levelSlug)
+      const nextMolda = detectMoldaGain(
+        profileKey,
+        capabilitiesRevision ? (capabilitiesRevision.split(',') as KidsCreatorCapability[]) : [],
+        ownsMolda,
+      )
       let gain: ToolsGain | null = null
       try {
         gain = await detectToolsGain(profileKey, toolsRevision, ownsStudio, controller.signal)
@@ -119,6 +182,7 @@ export function CelebrationWatcher({
 
       if (nextLevel) {
         setLevelUp(nextLevel)
+        setMoldaGain(nextMolda)
         setToolsGain(gain)
       } else if (gain) {
         setToolsGain(gain)
@@ -129,7 +193,15 @@ export function CelebrationWatcher({
       cancelled = true
       controller.abort()
     }
-  }, [levelSlug, ownsStudio, profileKey, toolsRevision, noticePending])
+  }, [
+    levelSlug,
+    capabilitiesRevision,
+    ownsStudio,
+    ownsMolda,
+    profileKey,
+    toolsRevision,
+    noticePending,
+  ])
 
   if (noticePending || guideOpen) return null
 
@@ -138,9 +210,10 @@ export function CelebrationWatcher({
       <LevelUpCelebration
         level={levelUp}
         tools={toolsGain}
-        molda={levelUp === levelSlug ? moldaGain : null}
+        molda={moldaGain}
         onClose={() => {
           setLevelUp(null)
+          setMoldaGain(null)
           setToolsGain(null)
         }}
       />

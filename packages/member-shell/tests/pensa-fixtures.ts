@@ -1,3 +1,9 @@
+import type {
+  JourneyLevelSlug,
+  KidsCreatorCapability,
+  KidsJourneyView,
+} from '@sistemazero/core/journey'
+import { initialKidsJourneyPolicy } from '@sistemazero/core/journey'
 import {
   type PensaActor,
   PensaCapabilitiesSchema,
@@ -206,6 +212,33 @@ export function pensaWork(context = pensaContext()): PensaOperationWork {
   }
 }
 
+export function pensaKidsJourney(
+  level: JourneyLevelSlug = 'god',
+  capabilities: KidsCreatorCapability[] = [
+    'studio',
+    'pinta',
+    'bridge',
+    'pro',
+    'ai',
+    'pensa',
+    'molda',
+    'molda-intermediate',
+    'molda-professional',
+  ],
+): KidsJourneyView {
+  return {
+    audience: 'kids',
+    policyVersion: 2,
+    mode: 'active',
+    tierAccess: initialKidsJourneyPolicy().tierAccess,
+    earned: { level, capabilities, courseAccess: { entry: [], expanded: [], reward: [] } },
+    nextLevel: null,
+    missing: [],
+    advances: [],
+    readiness: { status: 'incomplete', horizon: 'noob', issues: [] },
+  }
+}
+
 export function pensaContextMembers(context = pensaContext()): PensaContextMembers {
   return {
     pensaTeamCapabilities: async () => ({
@@ -214,6 +247,7 @@ export function pensaContextMembers(context = pensaContext()): PensaContextMembe
         code: {
           profileId: PENSA_ACTOR.profileId,
           level: 'god',
+          kidsJourney: pensaKidsJourney(),
           blocks: context.capabilities.participants[0]?.blockIds ?? [],
           access: { studio: true, pinta: true, molda: false },
           creations: { pinta: [], molda: [] },
@@ -239,9 +273,11 @@ export function pensaNarrationMembers(context = pensaContext()): PrivateNarratio
       status: 200,
       body: { access: { 'estudio-completo': true } },
     }),
-    getGamification: async () => {
-      throw new Error('Privileged voice tests do not request rank')
-    },
+    getGamification: () =>
+      Promise.resolve({
+        status: 200,
+        body: { kidsJourney: pensaKidsJourney() },
+      }) as unknown as ReturnType<PrivateNarrationMembers['getGamification']>,
     zappyHistory: async () => ({ status: 200, body: { messages: [], nextCursor: null } }),
     pensaMissionContext: async () => ({
       status: 200,

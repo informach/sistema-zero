@@ -1,6 +1,6 @@
 # Techspec — política própria de Jornada Kids
 
-Status: T1/T2 são checkpoints intermediários preservados em Git. Contrato/seed e persistência canônicos estão no checkpoint `e8be66021` sobre remoto `2e76fb448`, fora da composição; SQL30 com fila/drain e TSC Core/Members passaram antes desse rebase equivalente. A orientação explícita do usuário exige um único modelo Kids, seed persistido e cleanup dos seus caminhos antigos antes de merge. Admissão Auth e consumidores ainda não foram implementados. Companion guard já publicado foi retirado, sem alterar a fixture remota.
+Status em 19/10/2026: contrato, seed persistido, preservação, admissão Auth e leitores canônicos estão implementados no worktree isolado; vários consumidores de ferramentas e apresentação foram migrados e verificados em lotes. P6C tem 59 testes/193 asserções e Kids TSC EXIT0 no snapshot 20e4aa4872ce590ebea943812bf2db4d248df8d8b430cdcae2176e58407301a9. D1 (metadata ausente) e cartão de recompensa estão qualificados em matriz59/253, Biome4/0 e Kids TSC0; D2 (identidade resolvida por requisito) e consumidor fora da trilha passaram nos focados Core68/2833 e UI70/225, com Core/Members/Kids tipos0, conforme evidências ao fim. O transporte BFF Admin passou fixture7/171 e pós-formatação8/172, Biome11/0; Admin TSC0; composição Members e allowlist gateway passaram nas matrizes locais e tipos0; editor tem UI/contratos e tipos locais qualificados; autorização integrada segue pendente. Rollout integrado, retenção e gates restantes continuam pendentes. Base isolada 2e76fb448, sem rebase/cutover até coordenação do root; não há política custom ativada. Recibos T1/T2 antigos são históricos; ver README e _evidence.md para distinguir fonte escrita de prova executada.
 
 ## Arquitetura e alternativas
 
@@ -187,6 +187,7 @@ interface KidsJourneyView {
   audience: 'kids'
   policyVersion: number
   mode: 'active' | 'paused'
+  tierAccess: readonly KidsTierAccess[] // cópia da mesma versão publicada; somente leitura
   earned: KidsJourneyEarned
   nextLevel: JourneyLevelSlug | null
   missing: readonly KidsRequirement[]
@@ -243,7 +244,7 @@ A inicialização usa o namespace advisory estável: ausência de linha não é 
 
 Persistir seed completo como initializing V0; preparar baseline real com o mesmo avaliador; hook protege perfis/commits novos; revalidar hashes, fence e CAS e publicar V1 com revisão seed/system. Só então expor a primeira política publicada. Antes do provisionamento, operações dependentes ficam indisponíveis; depois dele, ausência com histórico é invariante, nunca reseed/reset. Init repetido não altera política editada. Capturar catálogo/coorte e hashes.
 
-Catálogo incompleto não apaga slots futuros nem impede seed estruturalmente válido que reproduz o produto atual. Readiness distingue pendências herdadas de novo ciclo inválido; falha de leitura não vira catálogo vazio. Preservar checkpoint/backup T2, rebase remoto e regenerar a 0136 ainda não publicada com snapshot/journal coerentes, sem traduzir JSON antigo de teste. Recriar somente QA owned, sem clientes e sem FORCE, para o novo hash.
+Catálogo incompleto não apaga slots futuros nem impede seed estruturalmente válido que reproduz o produto atual. Readiness distingue pendências herdadas de novo ciclo inválido; falha de leitura não vira catálogo vazio. Preservar checkpoint/backup T2, rebase remoto e regenerar a 0136 ainda não publicada com snapshot/journal coerentes, sem traduzir JSON antigo de teste. A regeneração local deve ser comprovada em banco QA próprio novo, com guard de prefixo/loopback; o harness atual não permite DROP/FORCE nem clientes alheios. Não reescrever migrations já publicadas.
 
 Restaurar consiste em publicar cópia de uma política antiga como nova revisão, com CAS e baseline. Não apagar grants ou reduzir números de versão em rollback operacional.
 
@@ -261,7 +262,7 @@ Preparação proposta, a provar com Postgres:
 
 O hook de award deve ser instalado em todas as instâncias escritoras antes de permitir a primeira preparação custom. Precisa executar na MESMA transação do marco, inclusive replay do evento. Não transformar falha de freeze em rollback da aula fora do contrato atual de gamificação: o award continua fail-open para conclusão didática; o replay/reconciliação conserva a recuperação. Se o award inteiro falhou, não alegar que há um marco que não foi gravado.
 
-Ordem de locks proposta para provar: conta/cerca → owner/gamification → política compartilhada (inclusive v0) → cursor da preparação, quando houver. A publicação adquire política exclusiva antes da preparação e não percorre contas nessa transação. Reservar uma chamada de processamento, se necessário, usa lease em transação curta; não manter o lock da preparação enquanto espera por conta/política. O processamento de baseline usa uma transação por perfil, evitando segurar locks de várias famílias durante um lote. Revisar callers de award e purge para não introduzir inversão; o código atual de award começa em `gamification:<userId>` e precisará acomodar a proteção da conta nas operações Kids pertinentes.
+Ordem de locks proposta para provar: conta/cerca → owner/gamification → política compartilhada (inclusive v0) → cursor da preparação, quando houver. A publicação final usa TX READ COMMITTED e, como primeira operação, LOCK TABLE SHARE NOWAIT em courses/lessons/lesson_blocks; depois adquire política exclusiva e preparação, sem percorrer contas. Hash, CAS e commit usam a mesma conexão. Conflito55P03 aborta e libera a TX antes de devolver erro compreensível ao autor, sem retry automático nem mudança de estado. O catálogo fica coerente no instante do commit; alterações posteriores continuam legítimas. Preview permanece RR read-only separado. Reservar uma chamada de processamento, se necessário, usa lease em transação curta; não manter o lock da preparação enquanto espera por conta/política. O processamento de baseline usa uma transação por perfil, evitando segurar locks de várias famílias durante um lote. Revisar callers de award e purge para não introduzir inversão; o código atual de award começa em `gamification:<userId>` e precisará acomodar a proteção da conta nas operações Kids pertinentes.
 
 Jobs não concluem ignorando linhas com owner não resolvido. Auditoria local deve medir legados sem vínculo/snapshot; falha operacional permanece visível e impede publicar uma preparação que não provou preservação. Isso não afirma que tais linhas existam no banco real.
 
@@ -279,7 +280,13 @@ Purge Members remove earned e pares de preparação. Cursor/bounds remanescentes
 
 Rollout inicial suspende criação/import/backfill e retira instâncias Auth antigas de create. Provisionar seedV0 e capturar pares existentes antes de habilitar somente criadores pending. Perfis antigos active/archived permanecem ready: não mudar todos para pending. Baseline completo precede V1/exposição do novo modelo. Captura usa keyset UUID/upperBound e pares owner imutáveis, copiados/hash na preparação; exclusão precisa receipt/fence, não skip silencioso. Não há lock PG compartilhado Auth/Members nem 2PC.
 
-Inventário obrigatório: CreateProfileService/profile.repository; backfill-default-profiles SQL direto; select-profile/refresh/change-impersonation-mode/study-access/get-own-profile/get-public-profile/update-profile; listas active/batch/search/admin/internal ownership/recipients e emissores de token/browser/desktop. RegisterService cria somente conta/tokens; não foi encontrado import/restore produtivo de perfil (restore do aggregate hidrata registro). Se surgir novo criador/restauração, usar mesma admissão. Scheduler real e handlers de retry serão fechados na implementação Auth, com teste do agendamento, não só retry manual.
+Inventário obrigatório: CreateProfileService/profile.repository; backfill-default-profiles SQL direto; select-profile/refresh/change-impersonation-mode/study-access/get-own-profile/get-public-profile/update-profile; listas active/batch/search/admin/internal ownership/recipients e emissores de token/browser/desktop. RegisterService cria somente conta/tokens; não foi encontrado import/restore produtivo de perfil (restore do aggregate hidrata registro). Se surgir novo criador/restauração, usar mesma admissão. Worker Auth agendado processa até20 jobs, um por vez, com lease/nextAttempt persistidos e drain no shutdown; sua implementação e testes focados estão em WIP, sem rollout. Backfill foi migrado para o mesmo CreateProfileService/idempotência; não foi executado.
+
+### Retomada da coorte Auth
+
+`authCapture:null` significa captura autoritativa ainda desconhecida; `{upperBound:null,cursor:null}` significa coorte conhecida vazia. A migration0137 adiciona esse envelope à preparação sem alterar0136. Cada página Auth possui limite200; a orquestração Members solicita no máximo20 owners por avanço. Cada owner é copiado junto com CAS do cursor em sua própria transação, sob fence/owner→policy→preparation. Interrupção no meio da página retoma do último cursor persistido com o mesmo preparationId. Seal exige o cursor exato confirmado como done pelo Auth; falha HTTP/configuração nunca vira coorte vazia.
+
+A rota interna Auth exige credencial S2S e inclui todos os perfis, inclusive archived/pending, conta bloqueada e sem XP. O limite UUID é de trabalho, não um snapshot MVCC entre chamadas. IDs novos aleatórios abaixo do cursor ou acima do upperBound são cobertos pela admissão universal: permanecem pending e sem seleção até existir o registro Members/earned; após isso a publicação recorrente os inclui ou initialize congela a versão vigente sob o mesmo lock de política. Esse argumento exige retirar os criadores antigos antes de iniciar a captura, conforme rollout acima.
 
 ### Baseline versus MVCC
 
@@ -318,7 +325,7 @@ Preparação progride por chamadas limitadas do painel e retoma ao reabrir. Não
 | Público/avatar/pais/admin | Usar projeção batch do mesmo serviço; não rodar `computeStudentLevel` independente nem produzir N+1. Respeitar autorizações atuais antes de carregar fatos. |
 | Listagem e `CheckAccessService` | Compartilhar resolução de trava usando política/posto/base milestone. Manter checagem de matrícula e modalidade. |
 | Missões | Usar capacidades/acesso efetivo para elegibilidade de criação; não reembaralhar missões já atribuídas nem invalidar resgates concluídos. |
-| Member-shell | Adicionar `kidsStudioTier(view, role, blocks)` no server de unlocks; inferir modos pelo view. Blocos→extensões continua server-only. Migrar gates de IA/Pensa/Pro e narração para capability resolvida. |
+| Member-shell | Adicionar `kidsStudioTier(view, blocks)` no server de unlocks; inferir modos pelo view. Blocos→extensões continua server-only. Migrar gates de IA/Pensa/Pro e narração para capability resolvida. |
 | Kids UI | Menu, locks, recompensas e horizonte recebem a mesma view canônica. Não usar adapters antigos nem derivar requisitos de `LEVEL_STUDY`/remaining fixo. |
 | Pensa | Transportar KidsJourneyView/capacidades de cada participante no contrato interno e usar na montagem do contexto; bloco/extension/grants continuam individuais. |
 | Molda | Converter capacidades/faixas em famílias. Faltando view, retornar estado indisponível; nunca `undefined` liberador por erro. |
@@ -340,3 +347,105 @@ XP/moedas/streak/badges; snapshots/blocos/extensões por curso; runtime/catalog 
 ## Validação e implantação
 
 Testes unitários de paridade/algoritmo, HTTP de RBAC/escopo/preview, SQL real de baseline/CAS/concorrência/purge e UI como descritos em `_test-plan.md`. Exigir `typecheck`, testes e Biome dos packages alterados antes de entrega; coordenar as execuções pesadas com a tarefa Python. Ativação depende de medir preparação/preview no conjunto representativo de staging e registrar resultados sem prometer escala não medida.
+
+
+## Operação inicial e superfície Admin em implementação
+
+O comando `journey:bootstrap` é explícito e separado do startup/GET: `initialize` provisionaV0
+idempotente e devolve preparationId; `advance --preparation <uuid> --steps <1..20>` realiza somente
+passos limitados e retoma os cursores persistidos; `publish` exige ready/expectedVersion0 e actor system.
+A publicação por Admin recusa preparações de bootstrap. O CLI exige `--confirm-rollout-order`,
+um reconhecimento operacional da ordem de retirada dos criadores antigos e instalação do hook;
+ele não alega detectar remotamente todas as instâncias Auth. O CLI ainda não foi executado; as provas SQL usam somente bancos QA owned.
+
+A rota Admin projetada exige token interno configurado, conta ativa e papel administrativo. Staff pode
+ler/visualizar preview, mas mutações globais exigem admin/superadmin sem sessão de perfil, contextoKids
+ou impersonação. ActorId vem da identidade confiável, nunca do body. Preview expõe simulação de novo
+aluno e amostra explicitamente rotulada de até20 perfis; não afirma ser contagem da coorte inteira,
+não grava earned/preparação e mostra before/after.mode mesmo que changes esteja vazio. Criar preparação
+registra motivo; avançar faz até20 operações CAS individuais por chamada. Rotas e UI ainda não montadas:
+o hook/transações e consumers precisam ser qualificados antes da exposição.
+
+
+### Prévia própria de equipe
+
+Staff/admin/superadmin já possuem acesso pleno pedagógico aos editores; isso foi verificado em
+FreeStudioAccessService, resolveStudioTier, creative-apps-access, Pensa, Molda e Zappy. O endpoint
+separado `GET /members/journey/kids/staff-preview` reutiliza isPrivilegedActor e exige tokenS2S,
+statusactive e conta própria, sem profile/accountheader, student, impersonação ou suporte.
+Contexto parent sem perfil é permitido somente para equipe ativa; não concede privilégio por si.
+Retorno tem kind, policyVersion/mode, tierAccess da mesma configuração, capacidades existentes e readiness, sem level/earned/progresso.
+Política persistida published é obrigatória; initializing/ausência/corrupção são indisponibilidade.
+Não é chamado por get/getMany de crianças, award ou freeze; suas negativas foram cobertas nos24units.
+Rotas/callers de equipe ainda precisam ser montados/migrados antes da integração.
+
+
+### P6B — agrupamento e identidade do curso na apresentação
+
+CatalogCourseView/MyCourseView transportam courseId canônico, além do slug de navegação.
+A view da criança e a prévia própria autorizada transportam os sete tierAccess da MESMA
+versão publicada. Não é um editor nem fonte paralela: o DTO é cópia readonly das regras da
+policy persistida. O schema compartilhado valida as sete etapas, unicidade e ordem dos gates;
+ausência/malformação é indisponibilidade, nunca seed automática.
+
+Agrupamento e breadcrumb usam opensAt; vários tiers podem aparecer na mesma trilha.
+Os limites estruturais de posições permanecem 1+6×8. Graduação lenda continua metadata
+curricular fora dos requisitos; não cria gate novo. Contadores de aventura são marcos
+curriculares separados do requisito complete/showcase do avanço.
+
+O mapa conserva identidades conquistadas e seu check. Um curso com hasAccess e careerLock
+aberto pode tornar a trilha futura navegável, inclusive acima do horizonte, sem marcar o
+posto futuro conquistado. A página calcula somente os oito destinos acessíveis no servidor;
+não envia todo o catálogo ao mapa cliente para reavaliar gates. Policy indisponível exibe
+estado explícito; prévia de equipe é separada, sem rank/progresso fictício. Course breadcrumb
+pode voltar ao mapa quando a policy está indisponível, sem inventar Faísca.
+
+LEVEL_TIER/LEVEL_STUDY, horizonte calculado pelo catálogo da UI e copy fixa de recompensas
+saíram destes caminhos produtivos. Referência anterior vive apenas em tests/fixtures.
+Celebrações por banda Molda ainda são lote separado; não considerar cleanup integral concluído.
+
+### D2 — identidade avaliada e consumidores qualificados
+
+Cada requirement da projeção de avanço transporta resolvedCourseId:string|null readonly,
+resolvido usando a mesma captura de catálogo do avaliador. Preenchimento apenas para candidato
+único; catálogo indisponível, curso ausente ou seleção ambígua devolvem null. A UI não resolve
+slots novamente a partir de outro RPC. satisfied histórico permanece satisfeito com null:
+identidade indisponível não cria dívida nem retira posto/direito. Requisito por curso explícito
+fora da escada precisa poder aparecer como aventura necessária, ligado por ID canônico e
+respeitando matrícula/careerLock; não se infere conclusão/publicação do catálogo da tela.
+
+D2 permanece separado de D1: RED de slot único, course explícito, ambiguidade e histórico
+precedeu a alteração do DTO; a prova de consumidor sem tier e alias precedeu a mudança de UI.
+Política, currículo e licença continuam autoridades distintas. Trata-se de projeção de leitura,
+não de persistir nova regra nem congelar IDs atuais no seed.
+
+O matcher da readiness também resolve a identidade; curso não elegível/publicado não vira ação.
+O contador agrupa por identidade somente na apresentação, preservando marcos/estados do DTO.
+CatalogPage une IDs com a lista atual de cursos e oferece uma seção suplementar para requisitos
+fora da trilha, reutilizando os gates de matrícula/careerLock do cartão. Pausa e preview da
+equipe não mostram tarefas de promoção. Core68/2833 e UI70/225 passaram; Core/Members/Kids tipos0.
+
+
+
+
+## Editor Admin C — contrato de apresentação implementado
+
+O cliente valida DTO web com policy Core; datas permanecem ISO string. Exige permissions.canEdit
+booleana do servidor e não deriva permissão de papel isolado/getSession. Initializing(version0)
+não habilita formulário nem bootstrap; published exige versão positiva/policy válida. Não importa
+seed no funcionamento normal. Sete avanços e sete regras tierAccess são editados separadamente;
+ordem/nomes/limites estruturais ficam fixos. Erros de dependências e de percurso ficam explícitos.
+
+Cada edição invalida a comparação. Preview é somente backend, exibe transição de modo mesmo
+sem diffs de requisitos, e marca novo aluno como simulação. Error/unavailable do percurso impede
+preparar; warnings de catálogo futuro não viram bloqueio genérico. Motivo é obrigatório. Prepare
+leva apenas expectedVersion/policy/reason; retomada usa UUID do URL e confere identidade/candidato.
+Não há advance/publish automático. Candidato fica readonly até voltar explicitamente à edição;
+isso não apaga a preparação durável. Publish usa version/draftHash/catalogHash/cohortHash da
+mesma preparação pronta. O CAS e o fence de catálogo do servidor permanecem a autoridade final.
+
+Geração de carga impede resposta antiga de trocar plataforma ou repovoar tela errada. Operação
+síncrona protege duplo clique antes do commit React. Falha/refetch mantém dados consultáveis,
+bloqueia novas operações e não fabrica posto; histórico tem falha própria, sem invalidar edição.
+As provas e limites do lote estão em _evidence.md. UI DOM/API isolada e tipos não equivalem a
+integração de autenticação/banco ou validação visual em navegador.

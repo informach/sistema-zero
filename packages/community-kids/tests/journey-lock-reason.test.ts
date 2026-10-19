@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { journeyLockReason } from '../src/components/kids/kids-locked-course'
+import { journeyLockLevel, journeyLockReason } from '../src/components/kids/kids-locked-course'
 
 describe('journeyLockReason (motivo do 423 de curso travado pela jornada)', () => {
   test('extrai os três motivos conhecidos do envelope do members', () => {
@@ -16,4 +16,19 @@ describe('journeyLockReason (motivo do 423 de curso travado pela jornada)', () =
     expect(journeyLockReason(null)).toBeUndefined()
     expect(journeyLockReason(undefined)).toBeUndefined()
   })
+})
+
+test('journeyLockLevel transports only a known server-provided identity, without inferring a default', () => {
+  expect(journeyLockLevel({ careerLock: { requiredLevel: 'god' } })).toBe('god')
+  expect(journeyLockLevel({ careerLock: { requiredLevel: 'hacker' } })).toBe('hacker')
+  for (const body of [
+    null,
+    undefined,
+    {},
+    { careerLock: {} },
+    { careerLock: { requiredLevel: 'unknown' } },
+    { careerLock: { requiredLevel: 'constructor' } },
+    { careerLock: { requiredLevel: 1 } },
+  ])
+    expect(journeyLockLevel(body)).toBeUndefined()
 })

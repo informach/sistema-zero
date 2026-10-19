@@ -72,6 +72,7 @@ import {
   resolveAdultLearnerId,
   resolveStudentName,
   resolveStudioFreeActor,
+  resolveKidsStaffPreviewActor,
   resolveUserId,
 } from '../auth'
 import {
@@ -499,6 +500,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/gamification/me',
         async ({ headers, query }) => {
           const userId = resolveUserId(headers)
+          if (query.audience === 'kids' && isPrivilegedActor(headers)) resolveKidsStaffPreviewActor(headers)
           // XP/streak/badges pelo PERFIL (userId); a coorte do ranking pela CONTA.
           return deps.getGamification.execute(userId, resolveAccountId(headers), {
             audience: query.audience ?? 'adult',
@@ -559,13 +561,13 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       // (resolveAccountId); equipe (privileged) vê todas as missões gated.
       .get(
         '/gamification/missions/me',
-        async ({ headers, query }) =>
-          deps.getMissions.execute(
-            resolveUserId(headers),
-            resolveAccountId(headers),
-            query.audience ?? 'kids',
-            isPrivilegedActor(headers),
-          ),
+        async ({ headers, query }) => {
+          const audience = query.audience ?? 'kids'
+          if (audience === 'kids' && isPrivilegedActor(headers)) resolveKidsStaffPreviewActor(headers)
+          return deps.getMissions.execute(
+            resolveUserId(headers), resolveAccountId(headers), audience, isPrivilegedActor(headers),
+          )
+        },
         { query: AudienceQuery },
       )
       // Resgata o prêmio (XP+moedas) de uma missão concluída (idempotente; 409 se não concluiu).
@@ -775,12 +777,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/internal/device-avatars',
         async ({ headers, body }) => {
           assertMemberShellConsumer(headers['x-consumer-id'])
-          const avatars = await deps.getAvatarsByProfiles.execute(body.profileIds, 'kids')
-          return {
-            photos: Object.fromEntries(
-              Object.entries(avatars).map(([id, view]) => [id, view.photoUrl]),
-            ),
-          }
+          return { photos: await deps.getAvatarsByProfiles.photos(body.profileIds, 'kids') }
         },
         {
           body: t.Object({

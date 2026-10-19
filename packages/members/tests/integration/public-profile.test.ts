@@ -16,9 +16,16 @@ const completeAsTarget = (app: App, lessonId: string) =>
     }),
   )
 
+/** Admitted Auth profile without activity; arbitrary unknown IDs stay unavailable. */
+function publicFixture() {
+  const ctx = buildApp()
+  ctx.kidsJourneySnapshots.owners.set(TARGET, TARGET)
+  return ctx
+}
+
 describe('Perfil público (GET /members/profiles/:id/public)', () => {
   test('xp + conquistas QUE TEM (não o catálogo) + avatar default + ranking; quarto null', async () => {
-    const { app, courses, entitlements } = buildApp()
+    const { app, courses, entitlements } = publicFixture()
     const course = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
     grantLifetime(entitlements, { userId: TARGET, courseRef: course.slug })
     await completeAsTarget(app, course.lessonIds[0]) // +10 XP kids + badge first-lesson
@@ -35,7 +42,7 @@ describe('Perfil público (GET /members/profiles/:id/public)', () => {
   })
 
   test('perfil sem atividade → zeros, sem conquistas, sem ranking, avatar default', async () => {
-    const { app } = buildApp()
+    const { app } = publicFixture()
     const body = await readJson(await getPublic(app, TARGET))
     expect(body.xp).toBe(0)
     expect(body.badges).toEqual([])
@@ -45,7 +52,7 @@ describe('Perfil público (GET /members/profiles/:id/public)', () => {
   })
 
   test('jogos publicados no Mural vêm do hub (com capa e link de jogar)', async () => {
-    const { app, hubGamesByAuthor } = buildApp()
+    const { app, hubGamesByAuthor } = publicFixture()
     hubGamesByAuthor.set(TARGET, [
       {
         title: 'Nave',
@@ -68,13 +75,13 @@ describe('Perfil público (GET /members/profiles/:id/public)', () => {
   })
 
   test('hub indisponível → games vazio (best-effort, não derruba o perfil)', async () => {
-    const { app } = buildApp()
+    const { app } = publicFixture()
     const body = await readJson(await getPublic(app, TARGET))
     expect(body.games).toEqual([])
   })
 
   test('id inválido (não uuid) → 400 na borda', async () => {
-    const { app } = buildApp()
+    const { app } = publicFixture()
     const res = await app.handle(new Request('http://localhost/members/profiles/nao-uuid/public'))
     expect(res.status).toBe(400)
   })

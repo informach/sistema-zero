@@ -1,5 +1,5 @@
 import { afterEach, expect, mock, spyOn, test } from 'bun:test'
-import { creatorJourneyLevel } from '@sistemazero/core/journey'
+import { initialKidsJourneyPolicy } from '@sistemazero/core/journey'
 import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
 import type {
   StudioFreeRuntimeRequest,
@@ -13,7 +13,8 @@ import { AuthorizeLessonRuntimeService } from '../../members/src/application/stu
 import { AuthorizeLivePublicationRuntimeService } from '../../members/src/application/studio/authorize-live-publication-runtime.service'
 import { AuthorizePublicRuntimeService } from '../../members/src/application/studio/authorize-public-runtime.service'
 import { FreeStudioAccessService } from '../../members/src/application/studio/free-studio-access.service'
-import { emptyQualifyingByTier } from '../../members/src/domain/gamification/levels'
+import { KidsJourneyQueryService } from '../../members/src/application/kids-journey/kids-journey-query.service'
+import type { KidsJourneySnapshot } from '../../members/src/domain/ports/kids-journey-repository.port'
 import { createStudioRuntimeHosts } from '../../members/src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../members/src/domain/studio/runtime-policy'
 import { authoringFixture } from '../../members/tests/fakes/studio-authoring-policy'
@@ -69,6 +70,21 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
     liveRevision: 3,
     hubFirstFailure: false,
   }
+  // Admitted owner + published seed are shared by BFF and runtime authorization.
+  const kidsJourney = new KidsJourneyQueryService({
+  async readSnapshot(owners): Promise<KidsJourneySnapshot> {
+    return {
+      policy: { phase: 'published', version: 1, policy: initialKidsJourneyPolicy(), updatedAt: new Date(0) },
+      catalog: [],
+      profiles: new Map(owners.filter((owner) =>
+        owner.userId === actor.userId && owner.accountId === actor.accountId,
+      ).map((owner) => [owner.userId, {
+        ...owner, registered: true, milestones: [],
+        earned: { level: context === 'free' ? 'god' : 'noob', capabilities: [], courseAccess: { entry: [], expanded: [], reward: [] } },
+      }])),
+    }
+  },
+})
   const free = new AuthorizeFreeRuntimeService(
     new FreeStudioAccessService(
       {
@@ -82,9 +98,6 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
         },
       },
       {
-        async listQualifyingJourneySlots() {
-          return Object.assign(emptyQualifyingByTier(), creatorJourneyLevel('god').requiredSlots)
-        },
         async listStudioUnlocksByCourse() {
           return [{ courseId: 'course', blocks: [SERVER_BLOCK_CATALOG[0]!.type] }]
         },
@@ -94,6 +107,7 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
           return []
         },
       },
+      kidsJourney,
     ),
     policy,
     f.policy,
@@ -189,7 +203,8 @@ async function fixture(kind: 'classic' | 'pro', context: 'free' | 'lesson' | 'li
     members: {
       getGamification: async () => ({
         status: 200,
-        body: { level: { slug: context === 'free' ? 'god' : 'noob' } },
+        body: { level: { slug: context === 'free' ? 'god' : 'noob' },
+          kidsJourney: await kidsJourney.get({ userId: actor.userId, accountId: actor.accountId }) },
       }),
       checkStudioAccess: async () => ({
         status: 200,

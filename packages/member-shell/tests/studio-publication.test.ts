@@ -1,5 +1,7 @@
 import { afterEach, expect, mock, spyOn, test } from 'bun:test'
 import { createHash } from 'node:crypto'
+import type { KidsCreatorCapability } from '@sistemazero/core/journey'
+import { initialKidsJourneyPolicy } from '@sistemazero/core/journey'
 import { STUDIO_PRO_TEMPLATE_IDS, type StudioProPublication } from '@sistemazero/core/studio'
 import { createBlankProjectSnapshot } from '@sistemazero/studio/blank-project'
 
@@ -20,6 +22,9 @@ function fixture(
     compiled?: boolean
     entitled?: boolean
     level?: string
+    capabilities?: KidsCreatorCapability[]
+    missingJourney?: boolean
+    role?: string
     journeyStatus?: number
     templateId?: string
     hubFirstFailure?: boolean
@@ -149,7 +154,7 @@ function fixture(
     media: {
       requireUploadSession: async () => ({
         id: owner,
-        role: 'student',
+        role: options.role ?? 'student',
         activeProfile: { accountId: owner },
       }),
     },
@@ -161,7 +166,28 @@ function fixture(
       }),
       getGamification: async () => ({
         status: options.journeyStatus ?? 200,
-        body: { level: { slug: options.level ?? 'god' } },
+        body: {
+          level: { slug: options.level ?? 'god' },
+          ...(options.missingJourney
+            ? {}
+            : {
+                kidsJourney: {
+                  audience: 'kids',
+                  policyVersion: 2,
+                  mode: 'active',
+                  tierAccess: initialKidsJourneyPolicy().tierAccess,
+                  earned: {
+                    level: options.level ?? 'god',
+                    capabilities: options.capabilities ?? ['studio', 'pro'],
+                    courseAccess: { entry: [], expanded: [], reward: [] },
+                  },
+                  nextLevel: null,
+                  missing: [],
+                  advances: [],
+                  readiness: { status: 'incomplete', horizon: 'noob', issues: [] },
+                },
+              }),
+        },
       }),
       checkStudioAccess: async () => ({
         status: 200,
@@ -289,7 +315,10 @@ test('a lost Hub response retries the same permanent publication without compili
 })
 
 test('Pro publication enforces the journey on the server before compiling or creating a post', async () => {
-  for (const options of [{ level: 'hacker' }, { journeyStatus: 503 }]) {
+  for (const options of [
+    { level: 'god', capabilities: [] as KidsCreatorCapability[] },
+    { journeyStatus: 503 },
+  ]) {
     const f = fixture(options)
     expect((await f.publish()).status).toBe(options.journeyStatus ? 503 : 403)
     expect(f.builds()).toBe(0)
@@ -345,4 +374,17 @@ test('the runtime visibility callback requires its bearer, checks the Hub and ne
       await f.routes.studioPublicationAuthorize.POST(request('Bearer runtime-secret-fixture'))
     ).json(),
   ).toEqual({ visible: false })
+})
+
+test('Pro publication follows custom capabilities even at Noob, while a team role cannot bypass missing policy', async () => {
+  const lowRank = fixture({ level: 'noob', capabilities: ['studio', 'pro'] })
+  expect((await lowRank.publish()).status).toBe(200)
+  expect(lowRank.builds()).toBe(1)
+  mock.restore()
+  const unavailable = fixture({ role: 'staff', missingJourney: true })
+  const response = await unavailable.publish()
+  expect(response.status).toBe(503)
+  expect(await response.json()).toMatchObject({ error: { code: 'JOURNEY_UNAVAILABLE' } })
+  expect(unavailable.builds()).toBe(0)
+  expect(unavailable.hubCalls()).toBe(0)
 })

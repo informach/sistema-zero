@@ -393,3 +393,14 @@ e de forma fail-closed pelo auth antes de a capacidade ser alterada.
 - [ ] Sem `any` novo; entradas validadas com Zod; sem `: Elysia` em retornos.
 - [ ] Estado mutável novo foi para o `GatewayStore` (não variável de módulo) — continua stateless?
 - [ ] Mudou contrato de porta/config/comando? Atualizou este `CLAUDE.md`.
+
+## Configuração canônica da jornada Kids (19/10/2026)
+
+Sete rotas exatas sob `/members/admin/journey/kids`: GET de policy/histórico/preparação e
+POST preview permitem equipe ativa (superadmin/admin/staff). POST preparations, advance e
+publish permitem admin/superadmin ativos. Todos usam JWT e o transporte interno Members;
+POST limita o corpo a 512 KiB. Não há wildcard de concessão, endpoint de bootstrap público
+nem reutilização da política adulta. Members revalida a identidade própria administrativa
+antes das mutações (sem perfil/contexto/impersonação) e persiste ator/motivo/versão no fluxo
+canônico de preparação/publicação. O teste de configuração/stage não substitui a prova
+integrada de JWT, forwarding e banco; rollout depende dos gates e seed persistida.

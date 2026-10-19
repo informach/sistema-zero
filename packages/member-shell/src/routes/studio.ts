@@ -31,7 +31,8 @@ import { z } from 'zod'
 import { getEnv } from '../lib/env'
 import { UGC_IMAGE_INPUT_MIME } from '../lib/hub-attachments'
 import { verifyCleanupSignature } from '../lib/studio-cleanup'
-import { isPrivilegedRole, resolveStudioTier } from '../lib/studio-tier'
+import { hasKidsCapability, kidsJourneyAccess } from '../lib/kids-journey-access'
+import { isPrivilegedRole } from '../lib/studio-tier'
 import type { HubClient, MembersClient } from '../server/clients'
 import { optimizeImage } from '../server/image-optimizer'
 import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
@@ -342,14 +343,17 @@ export function createStudioRoutes(deps: {
   }
 
   async function proPublicationAccess(user: { role: string }): Promise<NextResponse | null> {
-    if (isPrivilegedRole(user.role)) return null
+    if (audience === 'adult' && isPrivilegedRole(user.role)) return null
     const progress = await members.getGamification()
     if (progress.status !== 200 || !progress.body)
+      return NextResponse.json({ error: { code: 'JOURNEY_UNAVAILABLE' } }, { status: 503 })
+    const kids = audience === 'kids' ? kidsJourneyAccess(progress.body) : null
+    if (audience === 'kids' && !kids)
       return NextResponse.json({ error: { code: 'JOURNEY_UNAVAILABLE' } }, { status: 503 })
     const pro =
       audience === 'adult'
         ? progress.body.journey?.capabilities.includes('pro') === true
-        : resolveStudioTier(progress.body.level?.slug, user.role).pro
+        : kids !== null && hasKidsCapability(kids, 'studio') && hasKidsCapability(kids, 'pro')
     if (!pro) return NextResponse.json({ error: { code: 'FORBIDDEN_MODE' } }, { status: 403 })
     return null
   }

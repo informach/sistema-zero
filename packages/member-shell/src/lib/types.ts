@@ -158,6 +158,8 @@ export interface CourseMilestonesView {
  * "Todos os cursos" da plataforma com a flag de acesso do aluno.
  */
 export interface CatalogCourseView {
+  /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
+  courseId: string
   courseSlug: string
   title: string
   subtitle: string | null
@@ -264,6 +266,8 @@ export interface CertificateValidationView {
 
 /** Item de `GET /members/courses` → `{ courses: MyCourseView[] }`. */
 export interface MyCourseView {
+  /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
+  courseId: string
   courseSlug: string
   title: string
   subtitle: string | null
@@ -842,7 +846,8 @@ export interface ProfileAvatarView {
   /** Foto do avatar 3D (`null` = boneco padrão). */
   photoUrl: string | null
   /** Slug do nível p/ a aura. */
-  level: StudentLevelSlug
+  level: StudentLevelSlug | null
+  journeyUnavailable?: true
 }
 
 /** Resposta de `GET /members/avatars` — mapa profileId → avatar+nível. */
@@ -865,6 +870,8 @@ export interface HubMyThreadView {
 /** `GET /members/gamification/me` — widgets (sidebar/home) e vitrine do perfil. */
 export interface GamificationMeView {
   journey?: import('@sistemazero/core/journey').AdultJourneyView
+  kidsJourney?: import('@sistemazero/core/journey').KidsJourneyView
+  kidsPreview?: import('@sistemazero/core/journey').KidsJourneyStaffPreview
   xp: number
   /** Revisão curta das ferramentas conquistadas; presente na vitrine kids. */
   studioUnlockRevision?: string
@@ -889,9 +896,9 @@ export interface GamificationMeView {
   /** Catálogo COMPLETO na ordem do members — bloqueada tem `unlockedAt: null`. */
   badges: { slug: string; unlockedAt: string | null }[]
   /**
-   * Nível do aluno (rank). Opcional p/ tolerar members antigo — a UI cai em `noob`.
+   * Posto derivado da política persistida. null é prévia de equipe, nunca criança Noob.
    */
-  level?: StudentLevelView
+  level: StudentLevelView | null
   /**
    * Colocação no ranking de XP da VITRINE do app (rankings adult/kids são
    * separados). Presente só quando pedido com `withRanking` (página de perfil).
@@ -906,7 +913,8 @@ export interface RankingEntryView {
   isMe: boolean
   firstName: string | null
   photoUrl: string | null
-  levelSlug: StudentLevelSlug
+  levelSlug: StudentLevelSlug | null
+  journeyUnavailable?: true
   /** Presente somente quando o perfil kids é público por opt-in dos pais. */
   profileId?: string
 }
@@ -990,8 +998,9 @@ export interface LeagueEntryView {
   isMe: boolean
   /** Foto do avatar 3D (`null`/ausente → boneco padrão). */
   photoUrl?: string | null
-  /** Slug do nível p/ a aura (ausente → Noob/Faísca). */
-  levelSlug?: StudentLevelSlug
+  /** Posto canônico; null quando a jornada Kids está indisponível. */
+  levelSlug?: StudentLevelSlug | null
+  journeyUnavailable?: true
   /** 1º nome do colega (só a vitrine kids revela; ausente → "Colega"). */
   firstName?: string | null
   /** id do perfil — SÓ quando público (opt-in) → link p/ `/crianca/[id]`. */
@@ -1824,9 +1833,11 @@ export interface PensaTeamCapabilitiesView {
   /** Quem PROGRAMA: o jogo mora no Estúdio dela, então a paleta e o inventário são os dela. */
   code: {
     profileId: string
-    /** Slug do posto; `null` = o members não conseguiu calcular. */
+    /** Posto do perfil; null somente para preview explícito da própria equipe. */
     level: string | null
     journey?: import('@sistemazero/core/journey').AdultJourneyView
+    kidsJourney?: import('@sistemazero/core/journey').KidsJourneyView
+    kidsPreview?: import('@sistemazero/core/journey').KidsJourneyStaffPreview
     /** Os blocos que ela conquistou nos cursos (a paleta do Estúdio livre dela). */
     blocks: string[]
     /** Posse pela CONTA dela (a chave-mestra não conta). */
@@ -1839,6 +1850,8 @@ export interface PensaTeamCapabilitiesView {
     profileId: string
     level: string | null
     journey?: import('@sistemazero/core/journey').AdultJourneyView
+    kidsJourney?: import('@sistemazero/core/journey').KidsJourneyView
+    kidsPreview?: import('@sistemazero/core/journey').KidsJourneyStaffPreview
     access: { pinta: boolean; molda: boolean }
   }>
 }

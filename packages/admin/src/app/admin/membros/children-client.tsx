@@ -149,7 +149,7 @@ export function ChildrenClient() {
                       {child.overview ? (
                         <>
                           <div className="text-sm">
-                            {STUDENT_RANK_LABELS[child.overview.levelSlug] ??
+                            {child.overview.levelSlug === null ? 'Indisponível' : STUDENT_RANK_LABELS[child.overview.levelSlug] ??
                               child.overview.levelSlug}
                           </div>
                           <div className="text-muted-foreground text-xs">

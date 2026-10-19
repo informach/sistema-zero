@@ -1,11 +1,7 @@
 import 'server-only'
 import { createHash } from 'node:crypto'
 import { classifyPintaPaletteLibraryCreation } from '@sistemazero/core/creations'
-import {
-  creativeToolAvailability,
-  journeyLevelAtLeast,
-  MOLDA_TOOL_BAND_LEVELS,
-} from '@sistemazero/core/journey'
+import { KIDS_MOLDA_BAND_CAPABILITIES } from '@sistemazero/core/journey'
 import {
   type PensaActor,
   type PensaAssetSlot,
@@ -20,12 +16,12 @@ import {
 import type { MoldaAssetKind } from '@sistemazero/molda/assets'
 import { MOLDA_TOOL_FAMILIES } from '@sistemazero/molda/tools'
 import type { PintaAssetKind } from '@sistemazero/pinta/assets'
+import { hasKidsCapability, isKidsStaffPreview, kidsJourneyAccess, type KidsJourneyAccess } from '../../lib/kids-journey-access'
 import { isPrivilegedRole } from '../../lib/studio-tier'
 import type { CreationIndexView, SessionUser } from '../../lib/types'
 import type { MembersClient } from '../clients'
 import type { r2ReadCreationJson } from '../r2'
-import { adultStudioTier, earnedStudioTier } from '../studio-unlocks'
-import { isStudioZappyAllowed } from '../zappy-access'
+import { adultStudioTier, kidsStudioTier } from '../studio-unlocks'
 import { PENSA_CATALOG_VERSION, pensaCatalog } from './catalog'
 import { PensaUnavailable } from './errors'
 import { inspectPensaGame } from './inspection'
@@ -92,12 +88,16 @@ export type PensaContextMembers = Pick<
 
 export async function loadPensaContext(
   members: PensaContextMembers,
-  user: SessionUser,
-  actor: PensaActor,
+  inputUser: SessionUser,
+  inputActor: PensaActor,
   projectId: string,
   query: string,
   readGame?: typeof r2ReadCreationJson,
 ) {
+  const actor = { ...inputActor }
+  const user = { id: inputUser.id, role: inputUser.role, status: inputUser.status,
+    hasProfile: Boolean(inputUser.activeProfile), impersonating: Boolean(inputUser.act),
+    kidsKind: inputUser.kids?.kind }
   const response = await members.pensaTeamCapabilities(actor, projectId).catch(() => {
     throw new PensaUnavailable(
       'Não consegui conferir os recursos do projeto. Sua ideia está guardada. Tente de novo.',
@@ -125,48 +125,46 @@ export async function loadPensaContext(
     : null
   const authoring = inspection?.authoring ?? view.studioAuthoring
   const isPrivileged = (profileId: string) => profileId === user.id && isPrivilegedRole(user.role)
-  const available = (
-    tool: 'pinta' | 'molda' | 'estudio-completo',
-    owned: boolean,
-    rank: string,
-    profileId: string,
-  ) =>
-    adult
-      ? Boolean(
-          owned &&
-            participantJourney(profileId)?.capabilities.includes(
-              tool === 'estudio-completo' ? 'studio' : tool,
-            ),
-        )
-      : creativeToolAvailability({
-          tool,
-          owned,
-          level: rank,
-          privileged: isPrivileged(profileId),
-        }) === 'available'
-  if (!facts.code.level)
-    throw new PensaUnavailable('Não consegui conferir os recursos de quem programa. Tente de novo.')
-  if (adult && !facts.code.journey)
+  const ownTeamPreview = actor.privileged && actor.profileId === actor.accountId &&
+    actor.profileId === user.id && user.status === 'active' && !user.hasProfile && !user.impersonating &&
+    user.kidsKind !== 'student' &&
+    isPrivilegedRole(user.role)
+  const kidsByProfile = new Map<string, KidsJourneyAccess>()
+  if (!adult) {
+    for (const person of [facts.code, ...facts.art]) {
+      if (kidsByProfile.has(person.profileId)) continue
+      const journey = kidsJourneyAccess(person)
+      if (!journey || (isKidsStaffPreview(journey)
+        ? !ownTeamPreview || person.profileId !== actor.profileId || person.level !== null
+        : person.level !== journey.earned.level))
+        throw new PensaUnavailable('Não consegui conferir a jornada de uma pessoa da equipe. Tente de novo.')
+      kidsByProfile.set(person.profileId, journey)
+    }
+  }
+  const participantKids = (profileId: string) => {
+    const journey = kidsByProfile.get(profileId)
+    if (!journey) throw new PensaUnavailable('A jornada deste participante está indisponível.')
+    return journey
+  }
+  const available = (tool: 'pinta' | 'molda' | 'estudio-completo', owned: boolean, profileId: string) => {
+    const capability = tool === 'estudio-completo' ? 'studio' : tool
+    if (adult) return Boolean(owned && participantJourney(profileId)?.capabilities.includes(capability))
+    const journey = participantKids(profileId)
+    return (owned || isKidsStaffPreview(journey)) && hasKidsCapability(journey, capability)
+  }
+  if (adult && (!facts.code.level || !facts.code.journey))
     throw new PensaUnavailable('A jornada adulta está indisponível.')
-  const tier =
-    adult && facts.code.journey
-      ? adultStudioTier(
-          facts.code.journey,
-          isPrivileged(facts.code.profileId) ? user.role : undefined,
-          facts.code.blocks,
-        )
-      : earnedStudioTier(
-          facts.code.level,
-          isPrivileged(facts.code.profileId) ? user.role : undefined,
-          facts.code.blocks,
-        )
+  const tier = adult && facts.code.journey
+    ? adultStudioTier(facts.code.journey,
+      isPrivileged(facts.code.profileId) ? user.role : undefined, facts.code.blocks)
+    : kidsStudioTier(participantKids(facts.code.profileId), facts.code.blocks)
   const catalog = pensaCatalog(tier, '3d')
-  const moldaTools = (rank: string, profileId: string) =>
-    MOLDA_TOOL_FAMILIES.filter((tool) =>
-      adult
-        ? participantJourney(profileId)?.capabilities.includes('molda')
-        : isPrivileged(profileId) || journeyLevelAtLeast(rank, MOLDA_TOOL_BAND_LEVELS[tool.band]),
+  const moldaTools = (profileId: string) => {
+    return MOLDA_TOOL_FAMILIES.filter((tool) => adult
+      ? participantJourney(profileId)?.capabilities.includes('molda')
+      : hasKidsCapability(participantKids(profileId), KIDS_MOLDA_BAND_CAPABILITIES[tool.band])
     ).map((tool) => tool.id)
+  }
   const code: PensaParticipantCapabilities = {
     profileId: facts.code.profileId,
     rank: facts.code.level,
@@ -174,12 +172,11 @@ export async function loadPensaContext(
       available(
         'estudio-completo',
         facts.code.access.studio,
-        facts.code.level,
         facts.code.profileId,
       ) && (authoring === 'code' ? tier.pro : tier.hasPalette),
     studioAuthoring: authoring,
-    pinta: available('pinta', facts.code.access.pinta, facts.code.level, facts.code.profileId),
-    molda: available('molda', facts.code.access.molda, facts.code.level, facts.code.profileId),
+    pinta: available('pinta', facts.code.access.pinta, facts.code.profileId),
+    molda: available('molda', facts.code.access.molda, facts.code.profileId),
     dimensions:
       authoring === 'code' ||
       tier.allowedExtensions.includes('game-3d') ||
@@ -189,18 +186,15 @@ export async function loadPensaContext(
         : ['2d'],
     blockIds: catalog.blocks.map((block) => block.type).sort(),
     extensionIds: [...tier.allowedExtensions].sort(),
-    moldaTools: moldaTools(facts.code.level, facts.code.profileId),
+    moldaTools: moldaTools(facts.code.profileId),
     tutor: adult
       ? facts.code.journey?.capabilities.includes('ai') === true
-      : isStudioZappyAllowed(
-          facts.code.profileId === user.id ? user : { role: '' },
-          facts.code.level,
-        ),
+      : hasKidsCapability(participantKids(facts.code.profileId), 'ai'),
   }
   const participants = new Map<string, PensaParticipantCapabilities>([[code.profileId, code]])
   for (const artist of facts.art) {
     if (artist.profileId === code.profileId) continue
-    if (!artist.level)
+    if (adult && !artist.level)
       throw new PensaUnavailable(
         'Não consegui conferir os recursos de uma pessoa das artes. Tente de novo.',
       )
@@ -209,12 +203,12 @@ export async function loadPensaContext(
       rank: artist.level,
       studio: false,
       studioAuthoring: authoring,
-      pinta: available('pinta', artist.access.pinta, artist.level, artist.profileId),
-      molda: available('molda', artist.access.molda, artist.level, artist.profileId),
+      pinta: available('pinta', artist.access.pinta, artist.profileId),
+      molda: available('molda', artist.access.molda, artist.profileId),
       dimensions: [],
       blockIds: [],
       extensionIds: [],
-      moldaTools: moldaTools(artist.level, artist.profileId),
+      moldaTools: moldaTools(artist.profileId),
       tutor: false,
     })
   }

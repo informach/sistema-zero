@@ -20,9 +20,11 @@ import { ChangeImpersonationModeService } from './application/impersonation/chan
 import { CreateImpersonationTokenService } from './application/impersonation/create-impersonation-token.service'
 import { ExchangeImpersonationTokenService } from './application/impersonation/exchange-impersonation-token.service'
 import { ImpersonationSessionValidator } from './application/impersonation/impersonation-session-validator'
+import { ReadProfileCohortService } from './application/internal/read-profile-cohort.service'
 import { WriteAuditLogService } from './application/internal/write-audit-log/write-audit-log.service'
 import { LoginService } from './application/login/login.service'
 import { LogoutService } from './application/logout/logout.service'
+import { ProfileAdmissionWorker } from './application/maintenance/profile-admission-worker'
 import { purgeExpiredRecords } from './application/maintenance/purge-expired'
 import { ChangeMyPasswordService } from './application/me/change-password.service'
 import { UpdateProfileService } from './application/me/update-profile.service'
@@ -37,6 +39,7 @@ import { CreateProfileService } from './application/profiles/create-profile.serv
 import { ExitProfileSessionService } from './application/profiles/exit-profile-session.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { ListProfilesService } from './application/profiles/list-profiles.service'
+import { ProfileAdmissionService } from './application/profiles/profile-admission.service'
 import { SelectProfileService } from './application/profiles/select-profile.service'
 import { UpdateProfileDetailsService } from './application/profiles/update-profile.service'
 import { RefreshService } from './application/refresh/refresh.service'
@@ -46,6 +49,7 @@ import { StudyAccessService } from './application/study-access/study-access.serv
 import { AuthTokenService } from './application/tokens/auth-token.service'
 import type { Env } from './infrastructure/config/env'
 import { createMembersAllowanceGateway } from './infrastructure/gateways/members-allowance.gateway'
+import { createMembersProfileJourneyGateway } from './infrastructure/gateways/members-profile-journey.gateway'
 import {
   createGatewayMessagingClient,
   createNullMessagingClient,
@@ -60,6 +64,8 @@ import { DrizzleImpersonationTokenRepository } from './infrastructure/persistenc
 import { DrizzleOtpCodeRepository } from './infrastructure/persistence/drizzle/otp-code.repository'
 import { DrizzlePasswordResetTokenRepository } from './infrastructure/persistence/drizzle/password-reset-token.repository'
 import { DrizzleProfileRepository } from './infrastructure/persistence/drizzle/profile.repository'
+import { DrizzleProfileAdmissionRepository } from './infrastructure/persistence/drizzle/profile-admission.repository'
+import { DrizzleProfileCohortRepository } from './infrastructure/persistence/drizzle/profile-cohort.repository'
 import { DrizzleRefreshTokenRepository } from './infrastructure/persistence/drizzle/refresh-token.repository'
 import { DrizzleStudyAccessRepository } from './infrastructure/persistence/drizzle/study-access.repository'
 import { DrizzleUserRepository } from './infrastructure/persistence/drizzle/user.repository'
@@ -326,12 +332,24 @@ export async function createApplication(env: Env): Promise<Application> {
     logger,
   )
   // Perfis (estilo Netflix) gerenciados pelo responsável.
+  const profileAdmission = new ProfileAdmissionService(
+    new DrizzleProfileAdmissionRepository(db),
+    createMembersProfileJourneyGateway({
+      baseUrl: env.MEMBERS_BASE_URL,
+      admissionToken: env.MEMBERS_PROFILE_ADMISSION_TOKEN,
+      timeoutMs: env.MEMBERS_REQUEST_TIMEOUT_MS,
+    }),
+    () => new Date(),
+    logger,
+  )
+  const profileAdmissionWorker = new ProfileAdmissionWorker(profileAdmission, logger)
   const listProfiles = new ListProfilesService(profilesRepo)
   const createProfile = new CreateProfileService(
     profilesRepo,
     profileAllowance,
     () => randomUUID(),
     () => new Date(),
+    profileAdmission,
   )
   const updateProfileDetails = new UpdateProfileDetailsService(profilesRepo, () => new Date())
   const archiveProfile = new ArchiveProfileService(profilesRepo, () => new Date())
@@ -418,6 +436,7 @@ export async function createApplication(env: Env): Promise<Application> {
     // Report dos pais (S2S members): identidade mínima em lote.
     users,
     profilesRepo,
+    readProfileCohort: new ReadProfileCohortService(new DrizzleProfileCohortRepository(db)),
     profiles: {
       listProfiles,
       createProfile,
@@ -470,6 +489,7 @@ export async function createApplication(env: Env): Promise<Application> {
   return {
     logger,
     async start() {
+      profileAdmissionWorker.start()
       const purgeSafely = () =>
         runPurgeCycle().catch((error) =>
           logger.error('tokens.purge.failed', {
@@ -488,6 +508,7 @@ export async function createApplication(env: Env): Promise<Application> {
     async stop() {
       if (purgeTimer) clearInterval(purgeTimer)
       await server.stop()
+      await profileAdmissionWorker.stop()
       await connection.close()
       logger.info('app.stopped')
     },

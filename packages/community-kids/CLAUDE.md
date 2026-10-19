@@ -1,5 +1,20 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Jornada canônica (implementação isolada, 19/10/2026)
+
+Mapa, trilha, requisitos, ferramentas e celebrações Kids leem a mesma view de política/earned
+do Members. Nomes/ordem dos oito postos são metadata; requisitos e acesso por tier não são
+deduzidos do slug. Direito de curso preservado pode abrir aventura antes do rank da trilha,
+sem conceder o posto. Requisitos fora da trilha usam resolvedCourseId da mesma captura; null
+não cria dívida sobre marco histórico satisfeito. Não fazer outra busca por slot para autorizá-lo.
+
+Unavailable/initializing são estados explícitos, sem default Faísca, coleção vazia de conquistas
+ou promessa de ferramenta fixa. Posto ausente tem metadata neutra. Anúncios usam capacidades
+reais e licença; selos de curso e paleta curricular mantêm seu critério próprio. Preview da equipe
+é somente leitura, sem posto/earned fictícios ou tarefas para aluno. Preservar gates JS/Python e
+projetos existentes. Veja docs/jornada-do-criador.md e os recibos de cada lote antes de alterar
+comportamento; a integração e o rollout ainda não estão qualificados.
+
 ## Objetivos da parte (18/10/2026)
 
 [`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). O cartão é do member-shell (ver lá); aqui ele veste a pele da casa pelos ganchos

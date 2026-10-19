@@ -1,4 +1,10 @@
 import { describe, expect, mock, test } from 'bun:test'
+import {
+  initialKidsJourneyPolicy,
+  KIDS_CREATOR_CAPABILITIES,
+  type KidsJourneyStaffPreview,
+} from '@sistemazero/core/journey'
+import { pensaKidsJourney } from './pensa-fixtures'
 
 mock.module('server-only', () => ({}))
 
@@ -16,8 +22,8 @@ const {
   validatedStudioZappyResponse,
 } = await import('../src/server/zappy-ai')
 const { isStudioZappyAllowed } = await import('../src/server/zappy-access')
-const { resolveStudioTier } = await import('../src/lib/studio-tier')
-const { earnedStudioTier } = await import('../src/server/studio-unlocks')
+const { resolveStudioTier } = await import('./fixtures/legacy-studio-tier')
+const { earnedStudioTier } = await import('./fixtures/legacy-studio-tier')
 const { SERVER_BLOCK_CATALOG } = await import('@sistemazero/studio/server-catalog')
 const { isZappySelfHarmText, redactZappyPii, redactZappySensitiveText } = await import(
   '../src/server/zappy-safety'
@@ -350,7 +356,13 @@ describe('política normal e Pro em todas as respostas', () => {
   test('Pro bypasses unavailable block unlocks, while classic still requires them', async () => {
     const unlocks = mock(async () => ({ status: 503 }))
     const routes = createStudioZappyRoutes({
-      members: members({ getStudioUnlocks: unlocks }) as never,
+      members: members({
+        getStudioUnlocks: unlocks,
+        getGamification: async () => ({
+          status: 200,
+          body: { level: { slug: 'god' }, kidsJourney: pensaKidsJourney() },
+        }),
+      }) as never,
       session: { getSession: async () => ({ ...STAFF, role: 'student' }) } as never,
     })
     const raw = await request('Abra o Pensa').json()
@@ -621,32 +633,27 @@ describe('política normal e Pro em todas as respostas', () => {
 
 describe('Acesso ao Zappy', () => {
   const KID = { ...STAFF, role: 'student', activeProfile: { accountId: 'account-1' } }
-
-  test('equipe entra para QA sem rank', () => {
-    expect(isStudioZappyAllowed(STAFF, undefined)).toBe(true)
+  test('role de equipe não substitui a política; preview explícito continua sem rank', () => {
+    expect(isStudioZappyAllowed(STAFF, null)).toBe(false)
+    expect(
+      isStudioZappyAllowed(STAFF, {
+        audience: 'kids',
+        kind: 'staff-preview',
+        policyVersion: 2,
+        mode: 'active',
+        tierAccess: initialKidsJourneyPolicy().tierAccess,
+        capabilities: ['ai'],
+        readiness: { status: 'ready', horizon: null, issues: [] },
+      }),
+    ).toBe(true)
   })
-
-  test('sem sessão não entra, mesmo no topo da jornada', () => {
-    expect(isStudioZappyAllowed(null, 'god')).toBe(false)
+  test('sem sessão não entra; capacidades custom não são inferidas do posto', () => {
+    expect(isStudioZappyAllowed(null, pensaKidsJourney())).toBe(false)
+    expect(isStudioZappyAllowed(KID, pensaKidsJourney('noob', ['ai']))).toBe(true)
+    expect(isStudioZappyAllowed(KID, pensaKidsJourney('god', []))).toBe(false)
   })
-
-  test('abaixo de Inventor não entra; de Inventor para cima, entra', () => {
-    expect(isStudioZappyAllowed(KID, 'noob')).toBe(false)
-    expect(isStudioZappyAllowed(KID, 'coder')).toBe(false)
-    expect(isStudioZappyAllowed(KID, 'hacker')).toBe(true)
-    expect(isStudioZappyAllowed(KID, 'explorer')).toBe(true)
-    expect(isStudioZappyAllowed(KID, 'god')).toBe(true)
-  })
-
-  test('sem rank (members fora) ou slug desconhecido REPROVA — fail-closed', () => {
-    expect(isStudioZappyAllowed(KID, undefined)).toBe(false)
+  test('ausência de policy não cria Noob nem libera ferramenta', () => {
     expect(isStudioZappyAllowed(KID, null)).toBe(false)
-    expect(isStudioZappyAllowed(KID, 'nivel-que-nao-existe')).toBe(false)
-  })
-
-  test('não existe escotilha por conta nem degrau configurável', () => {
-    expect(isStudioZappyAllowed(KID, 'noob')).toBe(false)
-    expect(isStudioZappyAllowed(KID, 'coder')).toBe(false)
   })
 })
 
@@ -671,13 +678,28 @@ function request(question: string, extensions: string[] = []) {
   })
 }
 
+function staffJourneyPreview(): KidsJourneyStaffPreview {
+  return {
+    audience: 'kids',
+    kind: 'staff-preview',
+    policyVersion: 2,
+    mode: 'active',
+    tierAccess: initialKidsJourneyPolicy().tierAccess,
+    capabilities: [...KIDS_CREATOR_CAPABILITIES],
+    readiness: { status: 'incomplete', horizon: 'noob', issues: [] },
+  }
+}
+
 function members(overrides: Record<string, unknown> = {}) {
   return {
     checkStudioAccess: async () => ({
       status: 200,
       body: { access: { 'estudio-completo': true } },
     }),
-    getGamification: async () => ({ status: 200, body: { level: { slug: 'god' } } }),
+    getGamification: async () => ({
+      status: 200,
+      body: { level: null, kidsPreview: staffJourneyPreview() },
+    }),
     getStudioUnlocks: async () => ({
       status: 200,
       body: { blocks: ['sz_g2d_setup_stage', 'sz_g2d_on_key'] },
@@ -1279,7 +1301,13 @@ describe('BFF do Zappy', () => {
   // A criança comum (não equipe): o tutor usa os blocos que os cursos dela deram.
   const INVENTOR = { ...STAFF, role: 'student', activeProfile: { accountId: 'account-1' } }
   const inventor = {
-    getGamification: async () => ({ status: 200, body: { level: { slug: 'hacker' } } }),
+    getGamification: async () => ({
+      status: 200,
+      body: {
+        level: { slug: 'hacker' },
+        kidsJourney: pensaKidsJourney('hacker', ['studio', 'pinta', 'ai', 'pensa']),
+      },
+    }),
   }
 
   test('extensão conquistada acima do nível do posto é aceita (a mesma régua da paleta)', async () => {
@@ -1295,6 +1323,47 @@ describe('BFF do Zappy', () => {
     } as never)
     const response = await routes.studioZappyMessage.POST(request('Planeje meu jogo', ['game-3d']))
     expect(response.status).toBe(200)
+  })
+
+  test.each([
+    'staff',
+    'admin',
+    'student',
+  ])('a view de aluno mantém a paleta curricular mesmo com role %s', async (role) => {
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => ({ ...INVENTOR, role }) },
+      members: members({ ...inventor }),
+    } as never)
+    const response = await routes.studioZappyMessage.POST(request('Planeje meu jogo'))
+    expect(response.status).toBe(200)
+  })
+
+  test('role de equipe com view de aluno não converte falha da paleta em bloqueio normal', async () => {
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => ({ ...INVENTOR, role: 'staff' }) },
+      members: members({
+        ...inventor,
+        getStudioUnlocks: async () => ({ status: 503, body: null }),
+      }),
+    } as never)
+    const response = await routes.studioZappyMessage.POST(request('Dúvida'))
+    expect(response.status).toBe(503)
+    expect(await response.json()).toMatchObject({ error: { code: 'ZAPPY_UNAVAILABLE' } })
+  })
+
+  test('preview próprio de equipe não consulta nem reconcilia currículo de aluno', async () => {
+    let curriculumReads = 0
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => STAFF },
+      members: members({
+        getStudioUnlocks: async () => {
+          curriculumReads++
+          throw new Error('Preview cannot reconcile student grants')
+        },
+      }),
+    } as never)
+    expect((await routes.studioZappyMessage.POST(request('Planeje meu jogo'))).status).toBe(200)
+    expect(curriculumReads).toBe(0)
   })
 
   test('sem bloco conquistado o tutor não abre; blocos indisponíveis = tente de novo', async () => {

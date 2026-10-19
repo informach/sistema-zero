@@ -361,6 +361,7 @@ export class DrizzleStudyAccessRepository implements StudyAccessRepository {
           eq(studyGrants.accountUserId, accountUserId),
           eq(profiles.accountUserId, accountUserId),
           eq(profiles.status, 'active'),
+          eq(profiles.admissionState, 'ready'),
           eq(studyDevices.id, claim.deviceId),
           eq(studyDevices.accountUserId, accountUserId),
           eq(studyDevices.activeSessionId, claim.sessionId),
@@ -487,6 +488,7 @@ async function activeProfile(
         eq(profiles.id, profileId),
         eq(profiles.accountUserId, accountUserId),
         eq(profiles.status, 'active'),
+        eq(profiles.admissionState, 'ready'),
         eq(users.status, 'active'),
       ),
     )
@@ -513,6 +515,7 @@ async function familyHasLiveGrant(
         isNull(studyGrants.revokedAt),
         gt(studyGrants.expiresAt, now),
         eq(profiles.status, 'active'),
+        eq(profiles.admissionState, 'ready'),
         eq(users.status, 'active'),
       ),
     )

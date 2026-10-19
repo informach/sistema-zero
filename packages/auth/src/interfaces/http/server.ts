@@ -20,6 +20,7 @@ import type { GetOwnProfileService } from '../../application/get-me/get-own-prof
 import type { ChangeImpersonationModeService } from '../../application/impersonation/change-impersonation-mode.service'
 import type { CreateImpersonationTokenService } from '../../application/impersonation/create-impersonation-token.service'
 import type { ExchangeImpersonationTokenService } from '../../application/impersonation/exchange-impersonation-token.service'
+import type { ReadProfileCohortService } from '../../application/internal/read-profile-cohort.service'
 import type { WriteAuditLogService } from '../../application/internal/write-audit-log/write-audit-log.service'
 import type { LoginService } from '../../application/login/login.service'
 import type { LogoutService } from '../../application/logout/logout.service'
@@ -49,6 +50,7 @@ import { desktopRoutes } from './routes/desktop.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { impersonationRoutes } from './routes/impersonation.routes'
 import { internalRoutes } from './routes/internal.routes'
+import { profileCohortRoutes } from './routes/profile-cohort.routes'
 import { type ProfilesRoutesDeps, profilesRoutes } from './routes/profiles.routes'
 import { staffRoutes } from './routes/staff.routes'
 import { studyAccessRoutes } from './routes/study-access.routes'
@@ -97,6 +99,7 @@ export interface HttpDeps {
   /** Report dos pais (S2S members): identidade mínima em lote (users/emails + profiles/batch). */
   users: UserRepository
   profilesRepo: ProfileRepository
+  readProfileCohort: ReadProfileCohortService
   /** Gerenciamento de perfis (estilo Netflix) pelo responsável. */
   profiles: ProfilesRoutesDeps
 }
@@ -190,6 +193,12 @@ export function createServer(deps: HttpDeps) {
         resetPasswordWithOtp: deps.resetPasswordWithOtp,
         updateProfile: deps.updateProfile,
         changeMyPassword: deps.changeMyPassword,
+      }),
+    )
+    .use(
+      profileCohortRoutes({
+        read: deps.readProfileCohort,
+        internalToken: deps.env.AUTH_INTERNAL_TOKEN,
       }),
     )
     .use(

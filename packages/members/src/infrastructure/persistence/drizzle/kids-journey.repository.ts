@@ -1,3 +1,4 @@
+import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import { createHash, randomUUID } from 'node:crypto'
 import { ForbiddenError } from '@sistemazero/core/http'
 import {
@@ -18,6 +19,10 @@ import { and, asc, desc, eq, exists, gt, inArray, lt, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { COURSE_LEVELS, COURSE_TRACKS } from '../../../domain/course/course'
 import {
+  KidsJourneyInitializingError,
+  KidsJourneyUnavailableError,
+} from '../../../domain/kids-journey/kids-journey.errors'
+import {
   KIDS_JOURNEY_PREPARATION_STATUSES,
   type KidsJourneyCatalogCourse,
   type KidsJourneyOwner,
@@ -28,6 +33,7 @@ import {
   type KidsJourneySnapshot,
 } from '../../../domain/ports/kids-journey-repository.port'
 import type { Database } from './db'
+import { withKidsJourneyCatalogPublicationFence } from './kids-journey-catalog-fence'
 import { type KidsJourneyEventFact, kidsMilestonesFromEvents } from './kids-journey-facts'
 import { lockLearningOwner } from './learning-owner-lock'
 import { lessonContentAvailable } from './lesson-availability'
@@ -46,14 +52,24 @@ import {
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 type PreparationRow = typeof kidsJourneyPreparations.$inferSelect
-const OwnerSchema = z.strictObject({ userId: z.uuid(), accountId: z.uuid() })
+const OwnerSchema = z.strictObject({ userId: IdentityUuidSchema, accountId: IdentityUuidSchema })
+const captureUuid = IdentityUuidSchema
+const AuthCaptureSchema = z
+  .strictObject({ upperBound: captureUuid.nullable(), cursor: captureUuid.nullable() })
+  .refine(
+    (capture) =>
+      capture.upperBound === null
+        ? capture.cursor === null
+        : capture.cursor === null || capture.cursor <= capture.upperBound,
+    'Auth capture cursor exceeds its work bound',
+  )
 const EarnedSchema = KidsJourneyEarnedSchema
 const ActorSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('system') }),
-  z.strictObject({ kind: z.literal('user'), id: z.uuid() }),
+  z.strictObject({ kind: z.literal('user'), id: IdentityUuidSchema }),
 ])
 const CatalogCourseSchema = z.strictObject({
-  id: z.uuid(),
+  id: IdentityUuidSchema,
   graduationOnly: z.boolean(),
   audience: z.enum(['kids', 'adult']),
   modality: z.enum(['recorded', 'live']),
@@ -105,16 +121,20 @@ async function readPolicy(
   allowInitializing = false,
 ): Promise<KidsJourneyPolicyRecord> {
   const [row] = await tx.select().from(kidsJourneyPolicy).where(eq(kidsJourneyPolicy.id, 'kids'))
-  if (!row) throw new Error('A política Kids não foi provisionada.')
+  if (!row) throw new KidsJourneyUnavailableError()
   if (
     (row.phase !== 'published' || row.version < 1) &&
     (!allowInitializing || row.phase !== 'initializing' || row.version !== 0)
   )
-    throw new Error('A política Kids ainda não está publicada.')
+    throw row.phase === 'initializing'
+      ? new KidsJourneyInitializingError()
+      : new KidsJourneyUnavailableError()
+  const parsed = KidsJourneyPolicySchema.safeParse(row.policy)
+  if (!parsed.success) throw new KidsJourneyUnavailableError(parsed.error)
   return {
     phase: row.phase,
     version: row.version,
-    policy: KidsJourneyPolicySchema.parse(row.policy),
+    policy: parsed.data,
     updatedAt: row.updatedAt,
   }
 }
@@ -187,23 +207,18 @@ async function readOwnedEarned(
       throw new Error('Kids journey profile belongs to another account')
   }
   return new Map(
-    owners.map((owner) => {
-      const earned = earnedById.get(owner.userId)
-      return [
-        owner.userId,
-        earned
-          ? orderedEarned({
-              level: earned.level,
-              capabilities: earned.capabilities,
-              courseAccess: {
-                entry: earned.entryTiers,
-                expanded: earned.expandedTiers,
-                reward: earned.rewardTiers,
-              },
-            })
-          : emptyEarned(),
-      ] as const
-    }),
+    earnedRows.map((earned) => [
+      earned.userId,
+      orderedEarned({
+        level: earned.level,
+        capabilities: earned.capabilities,
+        courseAccess: {
+          entry: earned.entryTiers,
+          expanded: earned.expandedTiers,
+          reward: earned.rewardTiers,
+        },
+      }),
+    ]),
   )
 }
 
@@ -241,7 +256,8 @@ async function readProfiles(
         {
           ...owner,
           milestones: milestones.get(owner.userId) ?? [],
-          earned: earnedById.get(owner.userId)!,
+          registered: earnedById.has(owner.userId),
+          earned: earnedById.get(owner.userId) ?? emptyEarned(),
         },
       ]
     }),
@@ -343,6 +359,7 @@ async function nextCohortOwner(
 function preparation(row: PreparationRow): KidsJourneyPreparation {
   return {
     ...row,
+    authCapture: AuthCaptureSchema.nullable().parse(row.authCapture),
     sourcePolicy: KidsJourneyPolicySchema.parse(row.sourcePolicy),
     candidatePolicy: KidsJourneyPolicySchema.parse(row.candidatePolicy),
     catalog: CatalogSchema.parse(row.catalog),
@@ -455,6 +472,44 @@ async function nextMemberOwner(tx: Transaction, current: KidsJourneyPreparation)
   }
 }
 
+/** Shared projection/materialization for admission and a committed course milestone. */
+async function reconcileProfile(
+  tx: Transaction,
+  owner: KidsJourneyOwner,
+  policy: KidsJourneyPolicyRecord,
+): Promise<void> {
+  const catalog = await readCatalog(tx)
+  const profile = (await readProfiles(tx, [owner], catalog)).get(owner.userId)!
+  const view = projectKidsJourney({
+    policy: policy.policy,
+    policyVersion: policy.version,
+    catalog,
+    earned: profile.earned,
+    milestones: profile.milestones,
+  })
+  await saveEarned(tx, owner, policy.version, view.earned)
+}
+
+/**
+ * Called BEFORE inserting a Kids course milestone, on the award's own connection/TX.
+ * Hold account/fence → owner → gamification → shared policy until ledger+earned commit.
+ * The returned reconciliation also runs on replay; it does not start another transaction.
+ * V0 is the explicit persisted seed during controlled bootstrap, never a missing-policy fallback.
+ */
+export async function beginKidsJourneyMilestone(
+  tx: Transaction,
+  inputOwner: KidsJourneyOwner,
+): Promise<() => Promise<void>> {
+  const owner = OwnerSchema.parse(inputOwner)
+  await lockLearningOwner(tx, owner)
+  await tx.execute(
+    sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${owner.userId}`}, 0))`,
+  )
+  await lockPolicy(tx)
+  const policy = await readPolicy(tx, true)
+  return () => reconcileProfile(tx, owner, policy)
+}
+
 export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
   constructor(private readonly db: Database) {}
 
@@ -510,53 +565,87 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
     })
   }
 
-  async appendSeedOwners(id: string, inputOwners: readonly KidsJourneyOwner[]) {
-    const owners = z.array(OwnerSchema).max(200).parse(inputOwners)
-    for (const owner of owners) {
-      const accepted = await this.db.transaction(async (tx) => {
-        let deleted = false
-        try {
-          await lockLearningOwner(tx, owner)
-        } catch (error) {
-          if (error instanceof ForbiddenError) deleted = true
-          else throw error
-        }
-        await lockPolicy(tx)
-        const source = await readPolicy(tx, true)
-        const [row] = await tx
-          .select()
-          .from(kidsJourneyPreparations)
-          .where(eq(kidsJourneyPreparations.id, id))
-          .for('update')
-        if (
-          row?.origin !== 'seed' ||
-          row.status !== 'capturing' ||
-          row.captureStage !== 'auth' ||
-          source.phase !== 'initializing'
-        )
-          return false
-        if (!deleted) {
-          await readOwnedEarned(tx, [owner])
-          await insertCohortOwner(tx, id, owner.userId, owner.accountId)
-        }
-        await tx
-          .update(kidsJourneyPreparations)
-          .set({
-            captureCursor:
-              row.captureCursor && row.captureCursor > owner.userId
-                ? row.captureCursor
-                : owner.userId,
-            updatedAt: new Date(),
-          })
-          .where(eq(kidsJourneyPreparations.id, id))
-        return true
-      })
-      if (!accepted) return false
-    }
-    return true
+  async startSeedOwnerCapture(id: string, upperBoundInput: string | null) {
+    const upperBound = captureUuid.nullable().parse(upperBoundInput)
+    return this.db.transaction(async (tx) => {
+      await lockPolicy(tx)
+      const source = await readPolicy(tx, true)
+      const [row] = await tx
+        .select()
+        .from(kidsJourneyPreparations)
+        .where(eq(kidsJourneyPreparations.id, id))
+        .for('update')
+      if (
+        source.phase !== 'initializing' ||
+        row?.origin !== 'seed' ||
+        row.status !== 'capturing' ||
+        row.captureStage !== 'auth'
+      )
+        return null
+      if (row.authCapture !== null) return preparation(row)
+      const [updated] = await tx
+        .update(kidsJourneyPreparations)
+        .set({ authCapture: { upperBound, cursor: null }, updatedAt: new Date() })
+        .where(eq(kidsJourneyPreparations.id, id))
+        .returning()
+      return preparation(updated!)
+    })
   }
 
-  async sealSeedOwners(id: string) {
+  async appendSeedOwner(input: Parameters<KidsJourneyRepository['appendSeedOwner']>[0]) {
+    const preparationId = captureUuid.parse(input.preparationId)
+    const expectedCursor = captureUuid.nullable().parse(input.expectedCursor)
+    const parsedOwner = OwnerSchema.parse(input.owner)
+    const owner = {
+      userId: parsedOwner.userId.toLowerCase(),
+      accountId: parsedOwner.accountId.toLowerCase(),
+    }
+    return this.db.transaction(async (tx) => {
+      let deleted = false
+      try {
+        await lockLearningOwner(tx, owner)
+      } catch (error) {
+        if (error instanceof ForbiddenError) deleted = true
+        else throw error
+      }
+      await lockPolicy(tx)
+      const source = await readPolicy(tx, true)
+      const [row] = await tx
+        .select()
+        .from(kidsJourneyPreparations)
+        .where(eq(kidsJourneyPreparations.id, preparationId))
+        .for('update')
+      if (
+        source.phase !== 'initializing' ||
+        row?.origin !== 'seed' ||
+        row.status !== 'capturing' ||
+        row.captureStage !== 'auth'
+      )
+        return null
+      const capture = AuthCaptureSchema.nullable().parse(row.authCapture)
+      if (
+        !capture ||
+        capture.upperBound === null ||
+        capture.cursor !== expectedCursor ||
+        owner.userId > capture.upperBound ||
+        (capture.cursor !== null && owner.userId <= capture.cursor)
+      )
+        return null
+      if (!deleted) {
+        await readOwnedEarned(tx, [owner])
+        await insertCohortOwner(tx, preparationId, owner.userId, owner.accountId)
+      }
+      const [updated] = await tx
+        .update(kidsJourneyPreparations)
+        .set({ authCapture: { ...capture, cursor: owner.userId }, updatedAt: new Date() })
+        .where(eq(kidsJourneyPreparations.id, preparationId))
+        .returning()
+      return preparation(updated!)
+    })
+  }
+
+  async sealSeedOwners(id: string, cursorInput: string | null) {
+    const expectedCursor = captureUuid.nullable().parse(cursorInput)
     return this.db.transaction(async (tx) => {
       await lockPolicy(tx)
       if ((await readPolicy(tx, true)).phase !== 'initializing') return null
@@ -567,6 +656,8 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
         .for('update')
       if (row?.origin !== 'seed' || row.status !== 'capturing') return null
       if (row.captureStage !== 'auth') return preparation(row)
+      const authCapture = AuthCaptureSchema.nullable().parse(row.authCapture)
+      if (!authCapture || authCapture.cursor !== expectedCursor) return null
       const [last] = await tx.execute<{ userId: string }>(
         sql`select user_id as "userId" from ${memberCohortCandidates(null, null, true)} cohort order by user_id desc limit 1`,
       )
@@ -700,18 +791,19 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
       await lockPolicy(tx)
       const policy = await readPolicy(tx, true)
       if (policy.phase !== 'published') return null
-      const catalog = await readCatalog(tx)
-      const profile = (await readProfiles(tx, [owner], catalog)).get(owner.userId)!
-      const view = projectKidsJourney({
-        policy: policy.policy,
-        policyVersion: policy.version,
-        catalog,
-        earned: profile.earned,
-        milestones: profile.milestones,
-      })
-      await saveEarned(tx, owner, policy.version, view.earned)
+      await reconcileProfile(tx, owner, policy)
       return policy
     })
+  }
+
+  async listOwners(inputProfileIds: readonly string[]): Promise<readonly KidsJourneyOwner[]> {
+    const profileIds = z.array(IdentityUuidSchema).max(200).parse(inputProfileIds)
+    if (!profileIds.length) return []
+    return this.db
+      .select({ userId: kidsJourneyEarned.userId, accountId: kidsJourneyEarned.accountId })
+      .from(kidsJourneyEarned)
+      .where(inArray(kidsJourneyEarned.userId, profileIds))
+      .orderBy(asc(kidsJourneyEarned.userId))
   }
 
   async readSnapshot(owners: readonly KidsJourneyOwner[]): Promise<KidsJourneySnapshot> {
@@ -754,7 +846,7 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
       await lockPolicy(tx)
       const currentPolicy = await readPolicy(tx, true)
       if (currentPolicy.version !== expectedVersion) return 'conflict' as const
-      const frozen = (await readOwnedEarned(tx, [owner])).get(owner.userId)!
+      const frozen = (await readOwnedEarned(tx, [owner])).get(owner.userId) ?? emptyEarned()
       // Pause freezes rank/apps; a real base completion may still expand lesson access.
       let nextEarned = parsed
       if (currentPolicy.policy.mode === 'paused') {
@@ -890,7 +982,7 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
     const { preparationId, expectedVersion, draftHash, catalogHash, cohortHash } = input
     const actor = ActorSchema.parse(input.actor)
     const actorId = actor.kind === 'user' ? actor.id : null
-    return this.db.transaction(async (tx) => {
+    return withKidsJourneyCatalogPublicationFence(this.db, async (tx) => {
       await lockPolicy(tx, true)
       const source = await readPolicy(tx, true)
       const [row] = await tx

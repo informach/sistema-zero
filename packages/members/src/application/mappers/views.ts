@@ -195,6 +195,8 @@ export interface LessonCompleteView extends CourseProgressView {
 /** Perfil de gamificação do aluno (widgets/perfil — `GET /members/gamification/me`). */
 export interface GamificationMeView {
   journey?: import('@sistemazero/core/journey').AdultJourneyView
+  kidsJourney?: import('@sistemazero/core/journey').KidsJourneyView
+  kidsPreview?: import('@sistemazero/core/journey').KidsJourneyStaffPreview
   xp: number
   /** Revisão curta das ferramentas do Estúdio; presente na vitrine kids. */
   studioUnlockRevision?: string
@@ -223,7 +225,8 @@ export interface GamificationMeView {
    * (por dificuldade). Derivado dos cursos qualificados (concluído + publicado no
    * Mural). Rótulo/cor/ícone são apresentação e vivem no app.
    */
-  level: StudentLevel
+  /** null only for an explicit own-account staff preview, never a missing child policy. */
+  level: StudentLevel | null
   /**
    * Colocação no ranking de XP da VITRINE pedida (`?ranking=true` junto do
    * `?audience=`) — XP/perfil/coorte são por audiência, então os rankings
@@ -239,7 +242,9 @@ export interface RankingEntryView {
   isMe: boolean
   firstName: string | null
   photoUrl: string | null
-  levelSlug: StudentLevelSlug
+  levelSlug: StudentLevelSlug | null
+  /** Rank enrichment unavailable; never a replacement Noob. */
+  journeyUnavailable?: true
   /** Só existe quando o perfil kids aceitou ser público. */
   profileId?: string
 }
@@ -262,7 +267,9 @@ export interface AdminRankingEntryView {
   xp: number
   lastActivityDate: string | null
   photoUrl: string | null
-  levelSlug: StudentLevelSlug
+  levelSlug: StudentLevelSlug | null
+  /** Rank enrichment unavailable; never a replacement Noob. */
+  journeyUnavailable?: true
 }
 
 /** Página interna; `totalMatches` permite paginar buscas sem alterar a posição global. */
@@ -356,8 +363,9 @@ export interface LeagueEntryView {
   isMe: boolean
   /** Foto do avatar 3D (`null`/ausente → boneco padrão). */
   photoUrl?: string | null
-  /** Slug do nível p/ a aura (ausente → Noob/Faísca). */
-  levelSlug?: StudentLevelSlug
+  /** Posto canônico; null quando a jornada Kids está indisponível. */
+  levelSlug?: StudentLevelSlug | null
+  journeyUnavailable?: true
   /** 1º nome do colega (só a vitrine kids revela; ausente → "Colega"). */
   firstName?: string | null
   /** id do perfil — SÓ quando público (opt-in) → link p/ `/crianca/[id]`. */
@@ -442,6 +450,8 @@ export interface AvatarStateView {
 }
 
 export interface MyCourseView {
+  /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
+  courseId: string
   courseSlug: string
   title: string
   subtitle: string | null
@@ -474,6 +484,7 @@ export function toMyCourseView(
   milestones: CourseMilestonesView = { completed: false, showcased: false },
 ): MyCourseView {
   return {
+    courseId: course.id,
     courseSlug: course.slug,
     title: course.title,
     subtitle: course.subtitle,
@@ -496,6 +507,8 @@ export function toMyCourseView(
  * com a flag de acesso do aluno. Sem progresso (isso é da home/detalhe).
  */
 export interface CatalogCourseView {
+  /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
+  courseId: string
   courseSlug: string
   title: string
   subtitle: string | null
@@ -527,6 +540,7 @@ export function toCatalogCourseView(
   milestones: CourseMilestonesView = { completed: false, showcased: false },
 ): CatalogCourseView {
   return {
+    courseId: course.id,
     courseSlug: course.slug,
     title: course.title,
     subtitle: course.subtitle,
@@ -585,7 +599,7 @@ export function resolveSalesPageUrl(course: Course): string | null {
  * a paleta do aluno passa a ser a UNIÃO dos cursos que ele já conquistou, em vez de
  * um conjunto fixo por nível. Lista vazia/ausente = este curso não libera nada. Sem
  * reserva desde 02/10/2026: quem não conquistou bloco nenhum tem o Estúdio livre trancado
- * (`resolveStudioTier`/`earnedStudioTier` no member-shell).
+ * (`kidsStudioTier`/`adultStudioTier` no member-shell).
  * Tolerante a lixo: só strings não-vazias entram, e a ordem é preservada sem repetir.
  */
 export function resolveStudioUnlockBlocks(course: Course): string[] {

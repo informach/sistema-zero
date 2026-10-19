@@ -17,7 +17,7 @@ export function KidsJourneyLockedStudio({ reason = 'level' }: { reason?: 'level'
       art={<KidsMascot expression="sleeping" className="kid-float size-24" />}
       chip="Próxima conquista"
       chipIcon={Sparkles}
-      title={semBlocos ? 'Suas ferramentas vêm das aventuras' : 'Acenda sua Faísca primeiro!'}
+      title={semBlocos ? 'Suas ferramentas vêm das aventuras' : 'Continue sua jornada de criação'}
       actions={
         <Link href="/cursos" className="sz-btn-gradient">
           <BookOpen className="size-4" aria-hidden /> Ir para as aventuras
@@ -32,8 +32,8 @@ export function KidsJourneyLockedStudio({ reason = 'level' }: { reason?: 'level'
         </p>
       ) : (
         <p>
-          Termine a sua primeira aventura e publique o projeto no Mural. Depois disso, o Estúdio
-          livre abre com as ferramentas que você já aprendeu a usar.
+          O Estúdio livre abre quando esta conquista estiver liberada na sua jornada. Veja as
+          próximas aventuras para continuar.
         </p>
       )}
     </KidsRecado>

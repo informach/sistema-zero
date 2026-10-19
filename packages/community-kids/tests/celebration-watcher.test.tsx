@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test'
 import { render, screen, waitFor } from '@testing-library/react'
 import { CelebrationWatcher } from '../src/components/kids/celebration-watcher'
 import type { DrawerSnapshot } from '../src/lib/tools-gain'
+import { kidsView } from './kids-journey-fixtures'
 
 const PERFIL = 'perfil-1'
 const levelKey = `sz:kids:level:${PERFIL}`
@@ -50,7 +51,7 @@ describe('CelebrationWatcher', () => {
     const fetchSpy = respondWith(sprites)
     render(
       <CelebrationWatcher
-        levelSlug="coder"
+        journey={kidsView(['studio', 'pinta'], 'coder')}
         toolsRevision={REV_1}
         ownsStudio={true}
         profileKey={PERFIL}
@@ -71,7 +72,7 @@ describe('CelebrationWatcher', () => {
     const fetchSpy = respondWith(sprites)
     render(
       <CelebrationWatcher
-        levelSlug="coder"
+        journey={kidsView(['studio', 'pinta'], 'coder')}
         toolsRevision={REV_1}
         ownsStudio={true}
         profileKey={PERFIL}
@@ -87,7 +88,7 @@ describe('CelebrationWatcher', () => {
     respondWith(spritesMaisColisoes)
     render(
       <CelebrationWatcher
-        levelSlug="coder"
+        journey={kidsView(['studio', 'pinta'], 'coder')}
         toolsRevision={REV_2}
         ownsStudio={true}
         profileKey={PERFIL}
@@ -104,7 +105,7 @@ describe('CelebrationWatcher', () => {
     respondWith(spritesMaisColisoes)
     render(
       <CelebrationWatcher
-        levelSlug="hacker"
+        journey={kidsView(['studio', 'pinta'], 'hacker')}
         toolsRevision={REV_2}
         ownsStudio={true}
         profileKey={PERFIL}
@@ -124,7 +125,7 @@ describe('CelebrationWatcher', () => {
     restores.push(() => fetchSpy.mockRestore())
     render(
       <CelebrationWatcher
-        levelSlug="hacker"
+        journey={kidsView(['studio', 'pinta'], 'hacker')}
         toolsRevision={REV_2}
         ownsStudio={true}
         profileKey={PERFIL}
@@ -146,7 +147,7 @@ describe('CelebrationWatcher', () => {
 
     render(
       <CelebrationWatcher
-        levelSlug="hacker"
+        journey={kidsView(['studio', 'pinta'], 'hacker')}
         toolsRevision={REV_2}
         ownsStudio={true}
         profileKey={PERFIL}
@@ -161,7 +162,7 @@ describe('CelebrationWatcher', () => {
     const fetchSpy = respondWith([])
     render(
       <CelebrationWatcher
-        levelSlug="coder"
+        journey={kidsView(['studio', 'pinta'], 'coder')}
         toolsRevision={REV_2}
         ownsStudio={null}
         profileKey={PERFIL}
@@ -177,7 +178,7 @@ describe('CelebrationWatcher', () => {
     const fetchSpy = respondWith([])
     render(
       <CelebrationWatcher
-        levelSlug="coder"
+        journey={kidsView(['studio', 'pinta'], 'coder')}
         toolsRevision={REV_2}
         ownsStudio={false}
         profileKey={PERFIL}
@@ -193,7 +194,7 @@ describe('CelebrationWatcher', () => {
     const fetchSpy = respondWith([])
     render(
       <CelebrationWatcher
-        levelSlug="coder"
+        journey={kidsView(['studio', 'pinta'], 'coder')}
         toolsRevision={null}
         ownsStudio={true}
         profileKey={PERFIL}
@@ -209,7 +210,7 @@ describe('CelebrationWatcher', () => {
     respondWith(sprites)
     render(
       <CelebrationWatcher
-        levelSlug="coder"
+        journey={kidsView(['studio', 'pinta'], 'coder')}
         toolsRevision={REV_1}
         ownsStudio={true}
         profileKey="perfil-2"
@@ -225,18 +226,23 @@ describe('CelebrationWatcher', () => {
 })
 
 describe('CelebrationWatcher — a linha do Molda', () => {
-  // A frase chega pronta do servidor (`moldaLevelGain`, só com a posse do produto e só nos
-  // postos em que uma faixa abre): o watcher só a mostra na comemoração do posto dela.
-  const GAIN = 'chegaram a malha, as camadas de pintura e a pintura que se mexe.'
+  // Actual observed capability delta is separate from confirmed product ownership.
+  const capabilitiesKey = `sz:kids:capabilities:${PERFIL}`
+  const rememberBasic = () =>
+    localStorage.setItem(
+      capabilitiesKey,
+      JSON.stringify({ version: 1, capabilities: ['studio', 'pinta', 'molda'] }),
+    )
 
-  it('subiu para o posto e o servidor mandou a frase: "No Molda"', async () => {
+  it('subiu para o posto com faixa nova e produto confirmado: "No Molda"', async () => {
     localStorage.setItem(levelKey, 'elite')
+    rememberBasic()
     render(
       <CelebrationWatcher
-        levelSlug="architect"
+        journey={kidsView(['studio', 'pinta', 'molda', 'molda-intermediate'], 'architect')}
         toolsRevision={null}
         ownsStudio={false}
-        moldaGain={GAIN}
+        ownsMolda={true}
         profileKey={PERFIL}
       />,
     )
@@ -245,15 +251,16 @@ describe('CelebrationWatcher — a linha do Molda', () => {
     expect(screen.getByText(/chegaram a malha/)).toBeDefined()
   })
 
-  it('sem a frase (sem o produto, sem saber ou posto sem faixa), a comemoração não fala do Molda', async () => {
-    for (const moldaGain of [null, undefined]) {
+  it('sem produto confirmado (não adquirido ou consulta desconhecida), a comemoração não fala do Molda', async () => {
+    for (const ownsMolda of [false, null]) {
       localStorage.setItem(levelKey, 'elite')
+      rememberBasic()
       const view = render(
         <CelebrationWatcher
-          levelSlug="architect"
+          journey={kidsView(['studio', 'pinta', 'molda', 'molda-intermediate'], 'architect')}
           toolsRevision={null}
           ownsStudio={false}
-          moldaGain={moldaGain}
+          ownsMolda={ownsMolda}
           profileKey={PERFIL}
         />,
       )
@@ -267,10 +274,10 @@ describe('CelebrationWatcher — a linha do Molda', () => {
     localStorage.setItem(levelKey, 'architect')
     render(
       <CelebrationWatcher
-        levelSlug="architect"
+        journey={kidsView(['studio', 'pinta', 'molda', 'molda-intermediate'], 'architect')}
         toolsRevision={null}
         ownsStudio={false}
-        moldaGain={GAIN}
+        ownsMolda={true}
         profileKey={PERFIL}
       />,
     )

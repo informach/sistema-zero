@@ -1,6 +1,7 @@
 import type { AdultJourneyView } from '@sistemazero/core/journey'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
-import { isPrivilegedRole, resolveStudioTier, type StudioTier } from '../lib/studio-tier'
+import { hasKidsCapability, isKidsStaffPreview, type KidsJourneyAccess } from '../lib/kids-journey-access'
+import { isPrivilegedRole, type StudioTier } from '../lib/studio-tier'
 
 /**
  * Deriva as EXTENSÕES a partir dos blocos conquistados.
@@ -66,24 +67,32 @@ export function adultStudioTier(
 }
 
 /**
- * O Estúdio livre de quem tem estes blocos conquistados. É a régua ÚNICA da paleta, do Zappy e
- * do Pensa: os três precisam oferecer exatamente os mesmos blocos e extensões.
- *
- * ⚠️ O `hasPalette` daqui só conta os blocos que o catálogo CONHECE: um currículo antigo com ids
- * que saíram do Studio daria `true` no `resolveStudioTier` (que só olha o tamanho da lista) e o
- * editor abriria com a caixa vazia. A lista em si (`allowBlocks`) segue como veio.
+ * Kids modes come only from the persisted policy/earned view. Curriculum blocks remain the
+ * complete learner palette; the maximum catalog level is geometry, not a rank-based grant.
+ * Only an explicit own-account staff preview omits the palette restriction.
  */
-export function earnedStudioTier(
-  levelSlug: string | undefined,
-  role: string | undefined,
-  blocks: readonly string[],
-): StudioTier {
-  const tier = resolveStudioTier(levelSlug, role, {
-    blocks,
-    extensions: extensionsForBlocks(blocks),
-  })
-  if (!tier.allowBlocks) return tier
-  return { ...tier, hasPalette: tier.allowBlocks.some((type) => KNOWN_BLOCKS.has(type)) }
+export function kidsStudioTier(view: KidsJourneyAccess, blocks: readonly string[]): StudioTier {
+  const preview = isKidsStaffPreview(view)
+  const palette = [...new Set(blocks.filter((type) => KNOWN_BLOCKS.has(type)))]
+  const studio = hasKidsCapability(view, 'studio')
+  const bridge = studio && hasKidsCapability(view, 'bridge')
+  const pro = studio && hasKidsCapability(view, 'pro')
+  return {
+    freeStudio: studio,
+    level: 'avancado-3d',
+    ...(preview ? {} : { allowBlocks: palette }),
+    hasPalette: preview || palette.length > 0,
+    allowedExtensions: preview
+      ? [...new Set(EXTENSION_BY_BLOCK.values())]
+      : extensionsForBlocks(palette),
+    initialExtensions: [],
+    allowedModes: bridge ? ['blocks', 'bridge'] : ['blocks'],
+    allowLevelReveal: false,
+    bridge,
+    pro,
+    canCreateProProject: pro,
+    canPromoteToPro: pro,
+  }
 }
 
 /** Uma "gaveta" da caixa de ferramentas, do jeito que a criança a vê na paleta. */

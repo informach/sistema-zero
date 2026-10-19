@@ -16,6 +16,14 @@ export class ProfileLimitReachedError extends DomainError {
   }
 }
 
+/** A creation request ID cannot be reused for another child/body. */
+export class ProfileCreationConflictError extends DomainError {
+  readonly code = 'PROFILE_CREATION_CONFLICT'
+  constructor() {
+    super('Esta tentativa de criação já foi usada com outros dados. Reabra o formulário.')
+  }
+}
+
 /**
  * A equipe de suporte tentou LIGAR a fala da criança: só os responsáveis consentem. → 403.
  * Guarda do agregado (defesa em profundidade): a régua da aplicação já recusa antes, com

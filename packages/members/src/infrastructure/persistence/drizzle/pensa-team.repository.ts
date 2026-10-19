@@ -77,7 +77,8 @@ export class DrizzlePensaTeamRepository implements PensaTeamRepository {
     }
   }
 
-  async context(actor: P.PensaActor, id: string): Promise<PensaTeamFacts> {
+  async context(inputActor: P.PensaActor, id: string): Promise<PensaTeamFacts> {
+    const actor = { ...inputActor }
     const state = await this.store.get(actor, id)
     const creations =
       state.project.audience === 'adult' ? this.deps.adultCreations : this.deps.creations
@@ -94,8 +95,10 @@ export class DrizzlePensaTeamRepository implements PensaTeamRepository {
     const info = async (profileId: string) => {
       const accountId = accountOf(profileId)
       if (!accountId) pensaError('RESOURCES_CHANGED', 'Esta pessoa saiu da equipe.')
+      const ownPreview = state.project.audience === 'kids' && actor.privileged &&
+        actor.profileId === actor.accountId && profileId === actor.profileId && accountId === actor.accountId
       const [level, access] = await Promise.all([
-        this.deps.gamification.execute(profileId, accountId, { audience: state.project.audience }),
+        this.deps.gamification.execute(profileId, accountId, { audience: state.project.audience, privileged: ownPreview }),
         this.deps.accessCheck.execute(
           accountId,
           ['estudio-completo', 'pinta', 'molda'].map((ref) =>
@@ -103,14 +106,19 @@ export class DrizzlePensaTeamRepository implements PensaTeamRepository {
           ),
         ),
       ])
+      if (state.project.audience === 'adult' ? !level.level :
+        (!level.kidsJourney && !level.kidsPreview) ||
+        (level.kidsPreview && !ownPreview) || (!level.kidsPreview && !level.level))
+        pensaError('RESOURCES_UNAVAILABLE', 'A jornada deste participante ainda não está disponível.')
+      const preview = Boolean(level.kidsPreview)
       const owns = (ref: string) =>
         access.grants.includes(creativeToolAccessRef(ref, state.project.audience)) ||
         access.communities.includes(creativeToolAccessRef(ref, state.project.audience))
       return {
         profileId,
-        level: level.level.slug,
-        ...(state.project.audience === 'adult' ? { journey: level.journey } : {}),
-        access: { studio: owns('estudio-completo'), pinta: owns('pinta'), molda: owns('molda') },
+        level: level.level?.slug ?? null,
+        ...(state.project.audience === 'adult' ? { journey: level.journey } : { kidsJourney: level.kidsJourney, kidsPreview: level.kidsPreview }),
+        access: { studio: preview || owns('estudio-completo'), pinta: preview || owns('pinta'), molda: preview || owns('molda') },
       }
     }
     const programmer = state.team.programmerProfileId

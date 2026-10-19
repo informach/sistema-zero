@@ -1,13 +1,13 @@
 import type { CourseAudience, ModuleWithLessons } from '../../domain/course/course'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
-import { emptyQualifyingByTier } from '../../domain/gamification/levels'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import { computeProgress, resolveContinueLesson } from '../../domain/progress/progress'
-import { journeyLocksForCourses } from '../journey-course-locking/journey-course-locking'
+import { journeyLockViews } from '../journey-course-locking/journey-course-locking'
+import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
 import { lockedLessonSetForCourse } from '../lesson-locking/lesson-locking'
 import { type MyCourseView, toMyCourseView } from '../mappers/views'
 
@@ -28,6 +28,7 @@ export class ListMyCoursesService {
     private readonly positions: VideoPositionRepository,
     private readonly gamification: GamificationRepository,
     private readonly clock: () => Date,
+    private readonly kidsJourney: Pick<KidsJourneyQueryService, 'courseState'>,
   ) {}
 
   async execute(
@@ -76,18 +77,13 @@ export class ListMyCoursesService {
       }
     }
 
-    // ⚠️ Os MARCOS não seguem o `!privileged` do `qualified`: aquele é uma TRAVA
-    // (equipe passa por cima), estes são o histórico do próprio ator — esconder
-    // deles só apagaria o selo de quem testa a vitrine. Kids porque o Mural é kids.
-    const journeyState =
-      audience === 'kids' ? await this.gamification.listJourneyCourseState(userId, audience) : null
-    const qualified = journeyState && !privileged ? journeyState.qualified : emptyQualifyingByTier()
-    const milestones = journeyState?.milestones ?? new Map()
-    const journeyLocks = journeyLocksForCourses(
-      courses,
-      qualified,
-      audience === 'kids' && !privileged,
-    )
+    const journeyState = audience === 'kids' && !privileged
+      ? await this.kidsJourney.courseState({ userId, accountId: accountId ?? userId }, courses.map((course) => course.id))
+      : null
+    // Team bypass retains its actual ledger badges, without the previous qualification engine.
+    const milestones = journeyState?.milestones ?? (audience === 'kids' && privileged
+      ? await this.gamification.listCourseMilestones(userId, audience) : new Map())
+    const journeyLocks = journeyLockViews(courses, journeyState?.locks ?? null)
 
     // Contagens em LOTE (3 queries) em vez de 3 por curso (evita N+1). Numerador
     // e denominador sobre o MESMO conjunto (aulas publicadas) — sem inflar.

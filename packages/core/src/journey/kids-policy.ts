@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { IdentityUuidSchema } from '../identity'
 import {
   type COURSE_JOURNEY_ROLES,
   JOURNEY_COURSE_TIERS,
@@ -22,6 +23,13 @@ export const KIDS_CREATOR_CAPABILITIES = [
   'molda-professional',
 ] as const
 export type KidsCreatorCapability = (typeof KIDS_CREATOR_CAPABILITIES)[number]
+/** Tool operation vocabulary only; the policy decides when each capability is earned. */
+export const KIDS_MOLDA_BAND_CAPABILITIES = {
+  basic: 'molda',
+  intermediate: 'molda-intermediate',
+  professional: 'molda-professional',
+} as const satisfies Record<string, KidsCreatorCapability>
+
 export const KIDS_JOURNEY_ADVANCES = JOURNEY_LEVEL_SLUGS.slice(1) as readonly Exclude<
   JourneyLevelSlug,
   'noob'
@@ -41,7 +49,11 @@ export const KidsRequirementSchema = z.discriminatedUnion('kind', [
       if (requirement.slot > journeySlotsForTier(requirement.tier))
         context.addIssue({ code: 'custom', path: ['slot'], message: 'Posição fora da etapa.' })
     }),
-  z.strictObject({ kind: z.literal('course'), courseId: z.uuid(), milestone: MilestoneSchema }),
+  z.strictObject({
+    kind: z.literal('course'),
+    courseId: IdentityUuidSchema,
+    milestone: MilestoneSchema,
+  }),
 ])
 export type KidsRequirement = z.infer<typeof KidsRequirementSchema>
 export type KidsMilestone = z.infer<typeof MilestoneSchema>
@@ -94,29 +106,32 @@ const TierAccessSchema = z
   .readonly()
 export type KidsTierAccess = z.infer<typeof TierAccessSchema>
 
+/** Shared transport validation for the exact published access rules, without inventing steps. */
+export const KidsJourneyTierAccessSchema = z
+  .array(TierAccessSchema)
+  .length(JOURNEY_COURSE_TIERS.length)
+  .superRefine((rules, context) => {
+    if (new Set(rules.map((rule) => rule.tier)).size !== JOURNEY_COURSE_TIERS.length)
+      context.addIssue({ code: 'custom', message: 'Configure cada etapa uma única vez.' })
+    rules.forEach((rule, index) => {
+      if (!journeyLevelAtLeast(rule.completedAt, rule.opensAt))
+        context.addIssue({
+          code: 'custom',
+          path: [index, 'completedAt'],
+          message: 'A revisão não pode preceder a entrada na etapa.',
+        })
+    })
+  })
+  .readonly()
+
 export const KidsJourneyPolicySchema = z
   .strictObject({
     schemaVersion: z.literal(1),
     mode: z.enum(['active', 'paused']),
     steps: z.array(StepSchema).length(KIDS_JOURNEY_ADVANCES.length).readonly(),
-    tierAccess: z.array(TierAccessSchema).length(JOURNEY_COURSE_TIERS.length).readonly(),
+    tierAccess: KidsJourneyTierAccessSchema,
   })
   .superRefine((policy, context) => {
-    const tiers = new Set(policy.tierAccess.map((rule) => rule.tier))
-    if (tiers.size !== JOURNEY_COURSE_TIERS.length)
-      context.addIssue({
-        code: 'custom',
-        path: ['tierAccess'],
-        message: 'Configure cada etapa uma única vez.',
-      })
-    policy.tierAccess.forEach((rule, index) => {
-      if (!journeyLevelAtLeast(rule.completedAt, rule.opensAt))
-        context.addIssue({
-          code: 'custom',
-          path: ['tierAccess', index, 'completedAt'],
-          message: 'A revisão não pode preceder a entrada na etapa.',
-        })
-    })
     const earned = new Set<KidsCreatorCapability>()
     policy.steps.forEach((step, index) => {
       if (step.level !== KIDS_JOURNEY_ADVANCES[index])
@@ -269,6 +284,8 @@ export interface KidsJourneyAdvanceView {
   requirements: readonly {
     requirement: KidsRequirement
     state: 'satisfied' | 'pending' | 'unavailable'
+    /** Unique eligible catalog identity from this projection; null never creates historical debt. */
+    readonly resolvedCourseId: string | null
   }[]
   capabilities: readonly KidsCreatorCapability[]
 }
@@ -276,10 +293,23 @@ export interface KidsJourneyView {
   audience: 'kids'
   policyVersion: number
   mode: KidsJourneyPolicy['mode']
+  /** Read-only access rules from this exact published policy version, never rank constants. */
+  tierAccess: readonly KidsTierAccess[]
   earned: KidsJourneyEarned
   nextLevel: JourneyLevelSlug | null
   missing: readonly KidsRequirement[]
   advances: readonly KidsJourneyAdvanceView[]
+  readiness: KidsJourneyReadiness
+}
+/** Explicit team inspection; no student rank, earned rights or progress is simulated. */
+export interface KidsJourneyStaffPreview {
+  audience: 'kids'
+  kind: 'staff-preview'
+  policyVersion: number
+  mode: KidsJourneyPolicy['mode']
+  /** Read-only access rules from this exact published policy version, never rank constants. */
+  tierAccess: readonly KidsTierAccess[]
+  capabilities: readonly KidsCreatorCapability[]
   readiness: KidsJourneyReadiness
 }
 export interface KidsJourneyStepChange {

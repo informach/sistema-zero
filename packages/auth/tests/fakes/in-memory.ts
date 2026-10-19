@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { type KidsSessionClaim, sameKidsSession } from '@sistemazero/core/security'
 import type {
@@ -24,9 +25,17 @@ import type {
   PasswordResetTokenRecord,
   PasswordResetTokenRepository,
 } from '../../src/domain/ports/password-reset-token-repository.port'
+import type {
+  ProfileAdmissionFailure,
+  ProfileAdmissionJob,
+  ProfileAdmissionRepository,
+} from '../../src/domain/ports/profile-admission-repository.port'
 import type { ProfileAllowanceGateway } from '../../src/domain/ports/profile-allowance-gateway.port'
+import type { ProfileJourneyGateway } from '../../src/domain/ports/profile-journey-gateway.port'
 import type {
   CreateProfileOutcome,
+  ProfileCreationRequest,
+  ProfileOwner,
   ProfileRepository,
   ProfileWithAccountRow,
   SearchProfilesFilter,
@@ -42,6 +51,12 @@ import {
   type ProfileSnapshot,
   type VoiceInputConsentChange,
 } from '../../src/domain/profile/profile.aggregate'
+import {
+  applyProfileDetails,
+  type ProfileDetailsDecision,
+  type ProfileDetailsState,
+  profileDetailsState,
+} from '../../src/domain/profile/profile-details'
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
 import { EmailAlreadyInUseError } from '../../src/domain/user/user.errors'
 
@@ -555,8 +570,22 @@ export interface StoredVoiceInputEvent extends VoiceInputConsentChange {
 }
 
 /** Repositório de perfis em memória (espelha o create atômico sob teto). */
-export class InMemoryProfileRepository implements ProfileRepository {
+interface StoredAdmission {
+  profileId: string
+  accountUserId: string
+  requestId: string
+  requestHash: string
+  status: 'pending' | 'completed' | 'cancelled'
+  attempts: number
+  nextAttemptAt: Date
+  leaseId: string | null
+  leaseUntil: Date | null
+  lastErrorCode: ProfileAdmissionFailure | null
+}
+
+export class InMemoryProfileRepository implements ProfileRepository, ProfileAdmissionRepository {
   readonly byId = new Map<string, ProfileSnapshot>()
+  readonly admissionJobs = new Map<string, StoredAdmission>()
   /** Trilha append-only do consentimento da fala (espelha a gravação junto com o perfil). */
   readonly voiceInputEvents: StoredVoiceInputEvent[] = []
 
@@ -568,7 +597,7 @@ export class InMemoryProfileRepository implements ProfileRepository {
   ): Promise<{ items: ProfileWithAccountRow[]; total: number }> {
     const q = filter.q?.trim().toLowerCase()
     const matched = [...this.byId.values()]
-      .filter((p) => p.status === 'active')
+      .filter((p) => p.status === 'active' && p.admissionState === 'ready')
       .map((p): ProfileWithAccountRow => {
         const account = this.accounts?.byId.get(p.accountUserId)
         return {
@@ -606,11 +635,15 @@ export class InMemoryProfileRepository implements ProfileRepository {
     }
   }
 
-  async listActiveByAccount(accountUserId: string): Promise<ProfileAggregate[]> {
+  async listForParent(accountUserId: string): Promise<ProfileAggregate[]> {
     return [...this.byId.values()]
       .filter((p) => p.accountUserId === accountUserId && p.status === 'active')
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((p) => ProfileAggregate.restore({ ...p }))
+  }
+
+  async listActiveByAccount(accountUserId: string): Promise<ProfileAggregate[]> {
+    return (await this.listForParent(accountUserId)).filter((profile) => profile.isSelectable)
   }
 
   async findById(id: string): Promise<ProfileAggregate | null> {
@@ -618,25 +651,50 @@ export class InMemoryProfileRepository implements ProfileRepository {
     return p ? ProfileAggregate.restore({ ...p }) : null
   }
 
+  async findByCreationRequest(accountUserId: string, requestId: string) {
+    if (!this.accountActive(accountUserId)) return null
+    const request = [...this.admissionJobs.values()].find(
+      (job) => job.accountUserId === accountUserId && job.requestId === requestId,
+    )
+    const profile = request ? this.byId.get(request.profileId) : undefined
+    return profile && profile.accountUserId === accountUserId
+      ? { profile: ProfileAggregate.restore({ ...profile }), requestHash: request!.requestHash }
+      : null
+  }
+
   async listByIds(ids: string[]): Promise<ProfileAggregate[]> {
     return ids
       .map((id) => this.byId.get(id))
-      .filter((p): p is ProfileSnapshot => p !== undefined)
+      .filter((p): p is ProfileSnapshot => p !== undefined && p.admissionState === 'ready')
       .map((p) => ProfileAggregate.restore({ ...p }))
   }
 
   async listActiveByIds(ids: string[]): Promise<ProfileAggregate[]> {
     return ids
       .map((id) => this.byId.get(id))
-      .filter((p): p is ProfileSnapshot => p !== undefined && p.status === 'active')
+      .filter(
+        (p): p is ProfileSnapshot =>
+          p !== undefined && p.status === 'active' && p.admissionState === 'ready',
+      )
       .map((p) => ProfileAggregate.restore({ ...p }))
   }
 
   async createWithinLimit(
     profile: ProfileAggregate,
     maxProfiles: number,
+    request: ProfileCreationRequest,
   ): Promise<CreateProfileOutcome> {
     const s = profile.toSnapshot()
+    if (!this.accountActive(s.accountUserId)) return { outcome: 'account_inactive' }
+    const existing = [...this.admissionJobs.values()].find(
+      (job) => job.accountUserId === s.accountUserId && job.requestId === request.requestId,
+    )
+    if (existing) {
+      if (existing.requestHash !== request.requestHash) return { outcome: 'request_conflict' }
+      const stored = this.byId.get(existing.profileId)
+      if (!stored) throw new Error('Admission job without profile')
+      return { outcome: 'reused', profile: ProfileAggregate.restore({ ...stored }) }
+    }
     // Single-thread no JS → a contagem + insert já são atômicas (espelha o lock).
     const active = [...this.byId.values()].filter(
       (p) => p.accountUserId === s.accountUserId && p.status === 'active',
@@ -645,6 +703,18 @@ export class InMemoryProfileRepository implements ProfileRepository {
     const maxOrder = active.reduce((mx, p) => Math.max(mx, p.sortOrder), -1)
     const stored: ProfileSnapshot = { ...s, sortOrder: maxOrder + 1 }
     this.byId.set(stored.id, stored)
+    this.admissionJobs.set(stored.id, {
+      profileId: s.id,
+      accountUserId: s.accountUserId,
+      requestId: request.requestId,
+      requestHash: request.requestHash,
+      status: 'pending',
+      attempts: 0,
+      nextAttemptAt: s.createdAt,
+      leaseId: null,
+      leaseUntil: null,
+      lastErrorCode: null,
+    })
     const change = profile.voiceInputChange
     if (change)
       this.voiceInputEvents.push({ ...change, profileId: s.id, accountUserId: s.accountUserId })
@@ -652,28 +722,48 @@ export class InMemoryProfileRepository implements ProfileRepository {
     return { outcome: 'created', profile: ProfileAggregate.restore({ ...stored }) }
   }
 
-  async update(profile: ProfileAggregate): Promise<boolean> {
-    const s = profile.toSnapshot()
-    const current = this.byId.get(s.id)
-    if (!current) return false
-    // Espelha o adapter: as colunas da fala só mudam junto com a linha da trilha, e só se o
-    // valor guardado ainda é o outro (duplo clique não grava duas vezes).
-    const change = profile.voiceInputChange
-    const flips = change !== null && current.voiceInputEnabled !== change.enabled
-    this.byId.set(
-      s.id,
-      flips
-        ? { ...s }
-        : {
-            ...s,
-            voiceInputEnabled: current.voiceInputEnabled,
-            voiceInputEnabledAt: current.voiceInputEnabledAt,
-          },
+  async editDetails(
+    owner: ProfileOwner,
+    decide: (current: ProfileDetailsState) => ProfileDetailsDecision,
+  ): Promise<ProfileAggregate | null> {
+    const current = this.byId.get(owner.profileId)
+    if (
+      !current ||
+      current.accountUserId !== owner.accountUserId ||
+      current.status !== 'active' ||
+      !this.accountActive(owner.accountUserId)
     )
-    if (flips && change) {
-      this.voiceInputEvents.push({ ...change, profileId: s.id, accountUserId: s.accountUserId })
+      return null
+    const profile = ProfileAggregate.restore(structuredClone(current))
+    const decision = structuredClone(decide(profileDetailsState(profile)))
+    applyProfileDetails(profile, decision)
+    const state = profile.toSnapshot()
+    this.byId.set(state.id, structuredClone(state))
+    const consent = profile.voiceInputChange
+    if (consent)
+      this.voiceInputEvents.push({
+        ...consent,
+        profileId: state.id,
+        accountUserId: state.accountUserId,
+      })
+    return ProfileAggregate.restore(structuredClone(state))
+  }
+
+  async archiveOwned(owner: ProfileOwner, now: Date): Promise<boolean> {
+    const current = this.byId.get(owner.profileId)
+    if (
+      !current ||
+      current.accountUserId !== owner.accountUserId ||
+      !this.accountActive(owner.accountUserId)
+    )
+      return false
+    this.byId.set(current.id, { ...current, status: 'archived', updatedAt: new Date(now) })
+    const job = this.admissionJobs.get(current.id)
+    if (job?.status === 'pending') {
+      job.status = 'cancelled'
+      job.leaseId = null
+      job.leaseUntil = null
     }
-    profile.markVoiceInputChangeSaved()
     return true
   }
 
@@ -681,6 +771,106 @@ export class InMemoryProfileRepository implements ProfileRepository {
   seed(profile: ProfileAggregate): void {
     const s = profile.toSnapshot()
     this.byId.set(s.id, { ...s })
+  }
+
+  /** Existing profile fixture, corresponding to the expand migration's preserved ready rows. */
+  seedReady(profile: ProfileAggregate): void {
+    this.seed(ProfileAggregate.restore({ ...profile.toSnapshot(), admissionState: 'ready' }))
+  }
+
+  private accountActive(accountUserId: string): boolean {
+    return !this.accounts || this.accounts.byId.get(accountUserId)?.status === 'active'
+  }
+
+  async claimPending(now: Date, leaseUntil: Date, limit: number): Promise<ProfileAdmissionJob[]> {
+    const jobs: ProfileAdmissionJob[] = []
+    const candidates = [...this.admissionJobs.values()].sort(
+      (a, b) => a.nextAttemptAt.getTime() - b.nextAttemptAt.getTime(),
+    )
+    for (const candidate of candidates) {
+      if (jobs.length >= limit) break
+      const claimed = await this.claimProfile(
+        candidate.profileId,
+        candidate.accountUserId,
+        now,
+        leaseUntil,
+      )
+      if (claimed) jobs.push(claimed)
+    }
+    return jobs
+  }
+
+  async claimProfile(profileId: string, accountUserId: string, now: Date, leaseUntil: Date) {
+    const job = this.admissionJobs.get(profileId)
+    const profile = this.byId.get(profileId)
+    if (
+      !job ||
+      !profile ||
+      job.accountUserId !== accountUserId ||
+      profile.accountUserId !== accountUserId ||
+      !this.accountActive(accountUserId) ||
+      profile.status !== 'active' ||
+      profile.admissionState !== 'pending' ||
+      job.status !== 'pending' ||
+      job.nextAttemptAt > now ||
+      (job.leaseUntil !== null && job.leaseUntil > now)
+    )
+      return null
+    job.leaseId = randomUUID()
+    job.leaseUntil = new Date(leaseUntil)
+    job.attempts++
+    return { profileId, accountUserId, leaseId: job.leaseId, attempts: job.attempts }
+  }
+
+  async complete(claim: ProfileAdmissionJob): Promise<'ready' | 'cancelled' | 'lost'> {
+    const job = this.admissionJobs.get(claim.profileId)
+    const profile = this.byId.get(claim.profileId)
+    if (
+      !job ||
+      !profile ||
+      job.status !== 'pending' ||
+      job.leaseId !== claim.leaseId ||
+      job.accountUserId !== claim.accountUserId ||
+      profile.accountUserId !== claim.accountUserId ||
+      profile.admissionState !== 'pending'
+    )
+      return 'lost'
+    const ready = this.accountActive(claim.accountUserId) && profile.status === 'active'
+    if (ready) this.byId.set(profile.id, { ...profile, admissionState: 'ready' })
+    job.status = ready ? 'completed' : 'cancelled'
+    job.leaseId = null
+    job.leaseUntil = null
+    return ready ? 'ready' : 'cancelled'
+  }
+
+  async retry(
+    claim: ProfileAdmissionJob,
+    _: Date,
+    nextAttemptAt: Date,
+    failure: ProfileAdmissionFailure,
+  ): Promise<boolean> {
+    const job = this.admissionJobs.get(claim.profileId)
+    if (
+      !job ||
+      job.accountUserId !== claim.accountUserId ||
+      job.status !== 'pending' ||
+      job.leaseId !== claim.leaseId
+    )
+      return false
+    job.leaseId = null
+    job.leaseUntil = null
+    job.nextAttemptAt = new Date(nextAttemptAt)
+    job.lastErrorCode = failure
+    return true
+  }
+}
+
+export class FakeProfileJourneyGateway implements ProfileJourneyGateway {
+  result: 'admitted' | 'not_ready' = 'admitted'
+  readonly calls: { profileId: string; accountUserId: string }[] = []
+  async initialize(owner: { profileId: string; accountUserId: string }) {
+    this.calls.push({ ...owner })
+    return this.result
   }
 }
 

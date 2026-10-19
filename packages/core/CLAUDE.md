@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/core
 
+## Jornada Kids canônica (implementação isolada, 19/10/2026)
+
+Requisitos, capacidades e tierAccess normais vêm da política persistida e do earned; não usar
+CREATOR_JOURNEY_LEVELS como autorizador Kids. A tabela fixa ainda serve ao relatório Adult.
+Nomes/ordem/limites de 49 posições são metadata estrutural, não requisitos dinâmicos. Seed é artefato de
+provisionamento, sem fallback leitor. Posto/capacidades e 21 direitos por etapa são monotônicos;
+expanded implica entry, reward não. Pausa retém a regra e congela novos postos/ferramentas.
+
+O resolvedor Kids antigo e a tabela rank→faixa Molda sem consumidor produtivo foram movidos
+para fixtures de teste, conservando a prova de paridade. MoldaToolBand continua vocabulário
+estrutural; KIDS_MOLDA_BAND_CAPABILITIES traduz capacidade em faixa. Currículo, matrícula,
+paletas e JS/Python mantêm seus contratos. Não remover helpers Adult ou migrar documentos de
+projeto sob o pretexto de limpar a jornada. Gates/rollout integrados continuam pendentes.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/API que encostar aqui — não confie só na
 > memória. Para pesquisa e padrões, use o **MCP do Octocode**.
@@ -16,25 +30,28 @@ Guia operacional deste package. Leia antes de editar.
 > palpite, pistas e pergunta final continuam anexados à experimentação. Menções a
 > demonstração ou pergunta curta nas notas históricas abaixo não descrevem mais o contrato.
 
-## Jornada Kids configurável — núcleo puro antecipado (18/10/2026)
+## Jornada Kids configurável — núcleo canônico (18/10/2026)
 
-`journey/kids-policy.ts`, `kids-projection.ts` e `kids-validation.ts` definem a política Kids própria,
-schemas, avanço/capacidades permanentes, simulação sem escrita e prontidão. Nenhum consumidor foi
-migrado nesta fase. O default deriva dos 8 postos/49 slots atuais; Adult continua independente.
-Posto, ferramenta global, licença, paleta curricular e linguagem/runtime são conceitos separados.
-Pausa retém a política ativa em `paused.policy` (legacy/configured, sem nesting) e interrompe novos
-ganhos; não descarta requisitos de base nem troca complete-only por showcase. Seu view mantém os
-avanços retidos, mas os não conquistados não ficam disponíveis para avanço durante pausa.
-`resolveKidsJourneyCourseLock` exige catálogo conhecido: erro de carga não é base ausente.
-Requisitos de slot preservam o retrato do curso antigo; requisito por courseId não herda outro
-ocupante da posição. Pro depende de Estúdio, sem dependência técnica da Ponte.
-`KidsJourneyCourseFact.graduationOnly` deriva de `course.level === 'lenda'`: formatura não é
-requisito para chegar ao topo, mas mantém o acesso legado por matrícula sem gate novo. Um curso
-normal fora da escada também pode ter `tier: null`, portanto não inferir formatura desse campo.
-Teste focado: `tests/kids-journey-policy.test.ts`, `tests/kids-journey-parity.test.ts` e
-`tests/kids-journey-pause.test.ts`, junto de
-`journey.test.ts`/`journey-state.test.ts`. Baseline/SQL/consumidores e atualização da base ao
-checkpoint conciliado ainda são necessários antes de integrar/ativar.
+`journey/kids-policy.ts`, `kids-projection.ts` e `kids-validation.ts` definem uma única
+política Kids versionada: `active`/`paused`, sete avanços e sete regras de acesso às etapas.
+O seed persistido reproduz os oito postos/49 posições; não existe modo/fallback legado no
+leitor normal. O oráculo anterior fica nos testes de paridade. Adult continua independente.
+Posto, capacidade global, licença, paleta curricular e linguagem/runtime são conceitos separados.
+
+Pausa retém requisitos e regras de base, congela posto/app capabilities e admite expansão
+pedagógica pela conclusão real da base sob posto congelado. Earned preserva entry/expanded/reward
+por etapa: expanded implica entry; reward não implica entry. A mesma elegibilidade pura alimenta
+projeção/congelamento e autorização. `resolveKidsJourneyCourseLocks` processa um lote com uma
+projeção e cache limitado por etapa; o resolver singular delega ao lote.
+
+Catálogo desconhecido nunca equivale a base ausente. Requisitos de slot preservam o retrato do
+curso histórico; requisito por courseId não herda outro ocupante da posição. Pro depende de
+Estúdio, sem dependência técnica da Ponte. `KidsJourneyCourseFact.graduationOnly` deriva de
+`course.level === 'lenda'`: formatura não pode ser requisito para chegar ao topo, mas mantém
+acesso por matrícula sem novo gate. Curso normal fora da escada também pode ter `tier: null`.
+
+Focados atuais: canonical/policy/parity/pause/journey/journey-state, 60 testes/2772 asserções.
+Novos consumidores Members estão em migração isolada; isso não qualifica a integração completa.
 
 ## Objetivos que RODAM o jogo (18/10/2026)
 
@@ -163,7 +180,7 @@ por conveniência, mas prefira o subpath. Os subpaths são declarados no campo `
 | `/time` | calendário civil compartilhado, sem converter data de negócio em instante UTC | `sao-paulo` |
 | `/learning/scene` | as **45** cenas de aula: ações, catálogo, motor, avaliação, **elenco** (`cast`: nomes E figura, `actorFigure`), **cenário** (`cenario`: qual JOGO a cena retrata — o fundo, o chão e o elenco de fábrica), **caso e missão** (`setup`) e o que a cena diz de si (`readout`). ⚠️ Cena nova: checklist em "Cenas de aula" abaixo (o TS reprova o que faltar, o palco do member-shell incluído) | `actions` · `state` · `engine` · `nucleo` · `atelie` · `pistas` · `pilha` · `catalog` · `evaluate` · `readout` · `cast` · `cenario` · `questions` · `session` · `index` |
 | `/creations` | contratos puros de identidade/armazenamento compartilhados por apps e serviços | `object-deletion` · `pinta-palette-library` · `storage-keys` |
-| `/journey` | a **Jornada do Criador** (antes "Carreira", renomeada em 22/09/2026): catálogo dos 8 postos, os 7 degraus e as **49 posições** (1 na entrada + 8 × 6), a política de trava pedagógica (`resolveJourneyCourseLock`) e o estado de um curso na jornada. ⚠️ Os nomes internos dizem `journey`; os CAMPOS de rede seguem `careerSlot`/`careerLock` e as colunas seguem `career_slot` — contrato antigo, mantido de propósito (ver `docs/jornada-do-criador.md`) | `catalog` · `state` · `index` |
+| `/journey` | **Jornada do Criador**: identidades estruturais dos oito postos/sete etapas/49 posições, contrato Kids canônico e projeção da política publicada (`resolveKidsJourneyCourseLock`), capacidades e estado curricular do curso. O resolvedor Kids antigo existe só em fixture de teste. Campos de curso `careerSlot`/`careerLock` e coluna `career_slot` continuam sendo contratos curriculares legítimos (ver `docs/jornada-do-criador.md`) | `catalog` · `kids-policy` · `kids-projection` · `kids-validation` · `kids-tools` · `kids-seed` · `adult-policy` · `state` · `index` |
 
 ## Cenas de aula (`src/learning/scene/`)
 

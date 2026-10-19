@@ -5,8 +5,13 @@ import { type ProfileView, toProfileView } from '../mappers/profile-view'
 export class ListProfilesService {
   constructor(private readonly profiles: ProfileRepository) {}
 
-  async execute(accountUserId: string): Promise<{ profiles: ProfileView[] }> {
-    const list = await this.profiles.listActiveByAccount(accountUserId)
+  async execute(
+    accountUserId: string,
+    options: { includePending: boolean },
+  ): Promise<{ profiles: ProfileView[] }> {
+    const list = options.includePending
+      ? await this.profiles.listForParent(accountUserId)
+      : await this.profiles.listActiveByAccount(accountUserId)
     return { profiles: list.map(toProfileView) }
   }
 }

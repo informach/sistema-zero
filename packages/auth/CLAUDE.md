@@ -1,5 +1,35 @@
 # CLAUDE.md — @sistemazero/auth
 
+## Admissão de perfis Kids (implementação em andamento, 18/10/2026)
+
+`profiles.admissionState: pending|ready` é separado de `active|archived`. As migrations geradas
+`0023_profile_admission_expand`/`0024_profile_admission_pending` preservam todos os existentes
+como ready e mudam somente o default futuro para pending. Não foram aplicadas em ambiente real
+por esta frente. Criação usa requestId estável por submissão, hash dos dados normalizados e
+perfil+consentimento+job `profile_admissions` na mesma TX. Pending conta no teto; retry não cria
+irmão nem replica consentimento. A grade parental pode exibi-lo; seletores/sessões/público/
+ownership/estudo exigem active+ready.
+
+Auth chama somente o initializer privado Members com owner capturado. `MEMBERS_PROFILE_ADMISSION_TOKEN`
+é uma credencial dedicada, igual nos dois serviços, exigida em produção; não reutilizar o token
+interno geral nem expor no browser. Ausência nega a rota também em dev. RPC nunca ocorre em TX.
+ACK ready disputa lock LOCAL `profile:<account>` e linhas account→profile→job, revalidando owner,
+conta ativa, perfil ativo/pending e lease atual; não exige a política ainda na mesma versão porque
+Members já materializou direitos permanentes. O worker limita cada ciclo, reclama um job por vez,
+tem retry durável/lease e drena chamada ativa no stop.
+
+Edição usa `editDetails(owner, decide)` com decisão síncrona sobre estado fresh sob os locks locais
+account→profile; grava somente os campos fornecidos. Não existe `update(snapshot)` de perfil.
+`archiveOwned` altera apenas o ciclo de vida e cancela o job pendente na mesma transação.
+Nenhuma edição escreve admissionState; voz sem mudança preserva revogação/data/trilha.
+SQL causal teve RED6→GREEN10/32 asserções em banco QA novo5434; expand/default foram exercitadas
+sobre perfis ativos e arquivados reais anteriores à0023. Claim usa alias não qualificado em
+FOR UPDATE OF (PostgreSQL recusa a relação schema-qualified). Types e regressão completa Auth
+continuam pendentes; o recorte ainda não habilita o rollout.
+Clientes/requestId, retry parental, backfill e rollout completo devem acompanhar o contrato; não
+habilitar tráfego parcialmente. Captura inicial suspende criadores antigos e preserva coorte Auth
+completa (inclusive sem XP e arquivados), sem lock crossDB/2PC.
+
 ## Operações da equipe no TUI (15/10/2026)
 
 `POST /auth/staff/operations` é uma fachada de operações tipadas, com JWT + refresh vigente da mesma conta. Revalida família/linha, papel, estado e senha definida; não aceita Kids, perfil ou impersonação. Auditoria de intenção é durável antes de qualquer mutação. O schema compartilhado está em `@sistemazero/core/staff`. Mensageria é delegada por HMAC às rotas staff do messaging; demais leituras/resposta de helpdesk usam o Bearer no gateway. Studio build usa STUDIO_PRO_RUNTIME_URL/TOKEN somente no servidor. A rota tem teto de 2.032.768 bytes; o limite das outras rotas é preservado. O timeout de borda é 65 s para builds. Nunca registrar body desta rota: contém refreshToken. Testes em staff-operations.test.ts e staff-gateway.test.ts.

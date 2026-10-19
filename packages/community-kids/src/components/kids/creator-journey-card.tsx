@@ -1,8 +1,12 @@
+import {
+  isKidsStaffPreview,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { Flame, Gamepad2, Sparkles, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
-import { journeyRewardInfo } from '@/lib/journey-rewards'
-import { levelInfo } from '@/lib/level-info'
+import { canonicalJourneyProgress } from '@/lib/journey-presentation'
+import { journeyEarnedRewardInfo } from '@/lib/journey-rewards'
 import type { GamificationMeView } from '@/lib/types'
 import { AvatarWithAura } from './avatar-with-aura'
 import { LevelBadge } from './level-badge'
@@ -21,7 +25,7 @@ const AVATAR_CLARO = 'bg-[color-mix(in_oklab,var(--primary)_14%,var(--card))] te
 /**
  * Card "Jornada do Criador" da home (07/2026): UMA narrativa de progressão em
  * vez de números soltos — o selo do posto (o marco central: publicar jogos no Mural), a
- * frase do PRÓXIMO marco (`nextLevelHintWithin`, montada na página) e, como secundários,
+ * frase do PRÓXIMO marco (estados da view canônica) e, como secundários,
  * o fogo do streak e o XP. Substituiu o StreakCard (a mensagem do fogo do dia vive aqui
  * agora). `gamification` nulo → placeholder gentil (a home não "encolhe" em silêncio).
  *
@@ -32,22 +36,19 @@ const AVATAR_CLARO = 'bg-[color-mix(in_oklab,var(--primary)_14%,var(--card))] te
  */
 export function CreatorJourneyCard({
   gamification,
-  levelHint = null,
   avatarPhotoUrl = null,
   name = null,
   showcaseStats = null,
 }: {
   gamification: GamificationMeView | null
-  /** Frase do próximo marco, JÁ limitada ao catálogo (`nextLevelHintWithin`, montada no
-   *  servidor). `null` = topo da jornada OU em dia; nos dois casos cai no `blurb`. */
-  levelHint?: string | null
   avatarPhotoUrl?: string | null
   /** Nome da criança: a inicial vira o avatar enquanto não há foto. */
   name?: string | null
   /** Jogos publicados no Mural + soma das jogadas (best-effort; null = linha some). */
   showcaseStats?: { published: number; plays: number } | null
 }) {
-  if (!gamification) {
+  const journey = kidsJourneyAccess(gamification)
+  if (!gamification || !journey || isKidsStaffPreview(journey)) {
     return (
       <section
         aria-label="Minha jornada de criador"
@@ -61,19 +62,22 @@ export function CreatorJourneyCard({
           label="Seu avatar"
         />
         <div className="min-w-0 flex-1">
-          <p className="sz-display text-xl md:text-2xl">Sua jornada está guardada!</p>
+          <p className="sz-display text-xl md:text-2xl">
+            {journey ? 'Prévia da equipe' : 'Sua jornada está guardada!'}
+          </p>
           <p className="mt-1 font-medium text-[0.9375rem] text-muted-foreground">
-            Não consegui ver o seu progresso agora, mas nada se perdeu. Pode continuar criando!
+            {journey
+              ? 'Ferramentas da equipe, sem simular o posto ou as conquistas de uma criança.'
+              : 'Não foi possível consultar sua jornada agora. Suas conquistas continuam guardadas.'}
           </p>
         </div>
       </section>
     )
   }
 
-  const { streak, xp, level, ranking } = gamification
-  const info = levelInfo(level?.slug)
-  const reward = journeyRewardInfo(level?.slug)
-  const hint = levelHint
+  const { streak, xp, ranking } = gamification
+  const reward = journeyEarnedRewardInfo(journey)
+  const hint = canonicalJourneyProgress(journey).hint
   const days = streak.current === 1 ? 'dia' : 'dias'
   const streakMessage = streak.activeToday
     ? 'Fogo de hoje garantido. Continue assim!'
@@ -102,7 +106,7 @@ export function CreatorJourneyCard({
           Jornada do Criador
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2.5">
-          <LevelBadge levelSlug={level?.slug} size="sm" variant="destaque" />
+          <LevelBadge levelSlug={journey.earned.level} size="sm" variant="destaque" />
           {ranking ? (
             <span className="inline-flex items-center gap-1 font-semibold text-muted-foreground text-xs">
               <Trophy className="size-3.5" aria-hidden />
@@ -110,11 +114,19 @@ export function CreatorJourneyCard({
             </span>
           ) : null}
         </div>
-        <p className="mt-2.5 font-extrabold text-[0.9375rem] leading-snug">{hint ?? info.blurb}</p>
-        <p className="mt-1.5 text-[0.8125rem]">
-          <span className="font-extrabold text-primary">Você liberou:</span>{' '}
-          <span className="text-muted-foreground">{reward.title}</span>
+        <p className="mt-2.5 font-extrabold text-[0.9375rem] leading-snug">
+          {hint ?? 'Seu posto e suas conquistas continuam com você.'}
         </p>
+        {reward.title ? (
+          <p className="mt-1.5 text-[0.8125rem]">
+            <span className="font-extrabold text-primary">Conquistas guardadas:</span>{' '}
+            <span className="text-muted-foreground">{reward.title}</span>
+          </p>
+        ) : (
+          <p className="mt-1.5 text-muted-foreground text-[0.8125rem]">
+            Sua jornada começa nas aventuras.
+          </p>
+        )}
         <p className="mt-2.5 flex items-center gap-2 font-medium text-[0.8125rem] text-muted-foreground">
           <Flame className={cn('size-4 shrink-0', flameClass)} aria-hidden />
           {streakMessage}

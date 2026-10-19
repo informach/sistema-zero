@@ -2801,6 +2801,19 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       .map((b) => ({ badgeSlug: b.badgeSlug, unlockedAt: b.unlockedAt }))
   }
 
+  async listCourseMilestones(userId: string, audience: CourseAudience): Promise<Map<string, CourseMilestones>> {
+    const milestones = new Map<string, CourseMilestones>()
+    for (const event of this.events) {
+      if (event.userId !== userId || event.audience !== audience) continue
+      if (event.sourceType !== 'course_complete' && event.sourceType !== 'course_showcased') continue
+      const value = milestones.get(event.sourceId) ?? { completed: false, showcased: false }
+      if (event.sourceType === 'course_complete') value.completed = true
+      else value.showcased = true
+      milestones.set(event.sourceId, value)
+    }
+    return milestones
+  }
+
   /** Mirror do SQL: cursos com AMBOS os marcos (complete ∩ showcased) por DEGRAU (nível×eixo). */
   async listQualifyingJourneySlots(
     userId: string,

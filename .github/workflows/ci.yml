@@ -253,6 +253,8 @@ jobs:
           STUDIO_REVIEW_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_pro_review
           STUDIO_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_ci
           ZAPPY_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_zappy_135
+          KIDS_JOURNEY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_ci
+          KIDS_JOURNEY_PURGE_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_purge_ci
 
       - name: Pensa integrado com API e PostgreSQL reais
         working-directory: packages/pensa
@@ -301,6 +303,8 @@ jobs:
           DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review_tests
           MARKETING_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review_tests
           TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review_tests
+          # Fresh database is created by the guarded harness to exercise pre-existing profiles before 0023.
+          PROFILE_ADMISSION_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/kids_journey_auth_admission_ci
 
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck

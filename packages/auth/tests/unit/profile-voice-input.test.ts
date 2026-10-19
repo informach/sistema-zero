@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { ForbiddenError } from '@sistemazero/core/http'
 import { CreateProfileService } from '../../src/application/profiles/create-profile.service'
+import { ProfileAdmissionService } from '../../src/application/profiles/profile-admission.service'
 import { UpdateProfileDetailsService } from '../../src/application/profiles/update-profile.service'
 import {
   assertMayEnableVoiceInput,
@@ -10,7 +11,12 @@ import {
 import { ProfileAggregate, type VoiceInputActor } from '../../src/domain/profile/profile.aggregate'
 import { VoiceInputSupportCannotEnableError } from '../../src/domain/profile/profile.errors'
 import { ParentReauthenticationRequiredError } from '../../src/domain/study-access/errors'
-import { FakeProfileAllowanceGateway, InMemoryProfileRepository } from '../fakes/in-memory'
+import {
+  FakeProfileAllowanceGateway,
+  FakeProfileJourneyGateway,
+  InMemoryProfileRepository,
+  silentLogger,
+} from '../fakes/in-memory'
 
 const T0 = new Date('2026-10-14T12:00:00.000Z')
 const T1 = new Date('2026-10-14T13:00:00.000Z')
@@ -139,7 +145,13 @@ describe('fala da criança: serviços de perfil', () => {
     const profiles = new InMemoryProfileRepository()
     const allowance = new FakeProfileAllowanceGateway()
     allowance.maxProfiles = 5
-    const create = new CreateProfileService(profiles, allowance, randomUUID, () => T0)
+    const admission = new ProfileAdmissionService(
+      profiles,
+      new FakeProfileJourneyGateway(),
+      () => T0,
+      silentLogger,
+    )
+    const create = new CreateProfileService(profiles, allowance, randomUUID, () => T0, admission)
     const update = new UpdateProfileDetailsService(profiles, () => T1)
     return { profiles, allowance, create, update }
   }
@@ -148,6 +160,7 @@ describe('fala da criança: serviços de perfil', () => {
     const { profiles, allowance, create } = services()
     await expect(
       create.execute({
+        requestId: randomUUID(),
         accountUserId: ACCOUNT,
         name: 'Sofia',
         voiceInputEnabled: true,
@@ -163,6 +176,7 @@ describe('fala da criança: serviços de perfil', () => {
     const { profiles, create } = services()
     await expect(
       create.execute({
+        requestId: randomUUID(),
         accountUserId: ACCOUNT,
         name: 'Sofia',
         voiceInputEnabled: true,
@@ -177,6 +191,7 @@ describe('fala da criança: serviços de perfil', () => {
     const { profiles, create } = services()
     for (const voiceInputEnabled of [false, undefined]) {
       const view = await create.execute({
+        requestId: randomUUID(),
         accountUserId: ACCOUNT,
         name: 'Sofia',
         voiceInputEnabled,
@@ -192,6 +207,7 @@ describe('fala da criança: serviços de perfil', () => {
   test('criar com a fala ligada e login recente grava o consentimento e a 1ª linha da trilha', async () => {
     const { profiles, create } = services()
     const view = await create.execute({
+      requestId: randomUUID(),
       accountUserId: ACCOUNT,
       name: 'Sofia',
       voiceInputEnabled: true,
@@ -217,7 +233,7 @@ describe('fala da criança: serviços de perfil', () => {
     const { profiles, update } = services()
     const profile = newProfile()
     profile.setVoiceInputEnabled(true, PARENT, T0)
-    profiles.seed(profile)
+    profiles.seedReady(profile)
     const base = { accountUserId: ACCOUNT, profileId: profile.id }
 
     // Reenviar ligada com login antigo e pelo suporte não é ligar: passa, sem linha na trilha.
@@ -263,7 +279,7 @@ describe('fala da criança: serviços de perfil', () => {
   test('editar: desligar já desligada ou mexer só no nome não grava linha', async () => {
     const { profiles, update } = services()
     const profile = newProfile()
-    profiles.seed(profile)
+    profiles.seedReady(profile)
     const base = { accountUserId: ACCOUNT, profileId: profile.id }
 
     await update.execute({ ...base, voiceInputEnabled: false })
@@ -276,19 +292,19 @@ describe('fala da criança: serviços de perfil', () => {
   })
 
   test('edição defasada não desfaz o "desligar" gravado no meio do caminho', async () => {
-    const { profiles } = services()
+    const { profiles, update } = services()
     const profile = newProfile()
     profile.setVoiceInputEnabled(true, PARENT, T0)
-    profiles.seed(profile)
+    profiles.seedReady(profile)
 
-    // Duas requisições leem o perfil ligado; a 1ª desliga, a 2ª só troca o nome.
-    const turnsOff = await profiles.findById(profile.id)
-    const renames = await profiles.findById(profile.id)
-    if (!turnsOff || !renames) throw new Error('perfil não encontrado')
-    turnsOff.setVoiceInputEnabled(false, PARENT, T1)
-    expect(await profiles.update(turnsOff)).toBe(true)
-    renames.updateDetails({ name: 'Sofia Maria' }, T1)
-    expect(await profiles.update(renames)).toBe(true)
+    // A form captured earlier contains only the requested name, never a voice snapshot.
+    const rename = { accountUserId: ACCOUNT, profileId: profile.id, name: 'Sofia Maria' }
+    await update.execute({
+      accountUserId: ACCOUNT,
+      profileId: profile.id,
+      voiceInputEnabled: false,
+    })
+    await update.execute(rename)
 
     expect(profiles.byId.get(profile.id)?.voiceInputEnabled).toBe(false)
     expect(profiles.byId.get(profile.id)?.name).toBe('Sofia Maria')

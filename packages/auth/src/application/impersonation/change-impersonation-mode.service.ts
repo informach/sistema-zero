@@ -64,7 +64,7 @@ export class ChangeImpersonationModeService {
     let profile: IssueContext['profile'] = null
     if (record.activeProfileId) {
       const active = await this.profiles.findById(record.activeProfileId)
-      if (!active?.belongsTo(target.id) || active.isArchived) {
+      if (!active?.belongsTo(target.id) || !active.isSelectable) {
         await this.refreshTokens.revokeFamily(record.familyId)
         throw new InvalidRefreshTokenError()
       }

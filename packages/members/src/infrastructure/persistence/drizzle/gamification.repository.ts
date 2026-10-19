@@ -73,6 +73,7 @@ import {
 } from '../../../domain/ports/gamification-repository.port'
 import { TROPHY_FOR_BADGE, TROPHY_SHELF_ITEM_ID } from '../../../domain/room/room-catalog'
 import type { Database } from './db'
+import { beginKidsJourneyMilestone } from './kids-journey.repository'
 import { contentMissionOpportunities } from './mission-opportunities'
 import {
   avatarInventory,
@@ -135,16 +136,14 @@ function activeAudienceAccessPredicate(audience: CourseAudience, now: Date) {
 export class DrizzleGamificationRepository implements GamificationRepository {
   constructor(private readonly db: Database) {}
 
-  async award(input: AwardInput): Promise<AwardResult> {
+  async award(inputValue: AwardInput): Promise<AwardResult> {
+    // Capture the command before any lock wait; caller-owned objects cannot redirect a locked award.
+    const input: AwardInput = {
+      ...inputValue,
+      now: new Date(inputValue.now),
+      events: inputValue.events.map((event) => ({ ...event })),
+    }
     return this.db.transaction(async (tx) => {
-      // Serializa o award POR ALUNO: dois completes simultâneos não correm no
-      // read-then-upsert do perfil. Namespace 'gamification:' distinto do lock
-      // de quiz ('userId:blockId') — o espaço de advisory locks é global ao
-      // banco compartilhado. Solta sozinho no commit/rollback.
-      await tx.execute(
-        sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${input.userId}`}, 0))`,
-      )
-
       // SNAPSHOT do degrau dos MARCOS de curso (course_complete/course_showcased):
       // resolve `courses.level`+`courses.track` AGORA (1 query) p/ congelar o degrau
       // no ledger — o rank do aluno deixa de depender do curso ao vivo, então
@@ -194,6 +193,16 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       )
       const courseMarcoIds = requestedMarcoIds.filter((id) => !liveCourseIds.has(id))
 
+      // Metadata above is read-only. Acquire ownership before gamification/policy and BEFORE
+      // the ledger writes. Live-only events keep their existing path and never depend on Kids policy.
+      const reconcileKidsJourney = input.audience === 'kids' && courseMarcoIds.length > 0
+        ? await beginKidsJourneyMilestone(tx, { userId: input.userId, accountId: input.accountId })
+        : null
+      // Serialize other awards per learner without adding Kids policy to Adult/ordinary XP.
+      if (!reconcileKidsJourney) await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${input.userId}`}, 0))`,
+      )
+
       // Ledger idempotente: só os eventos realmente NOVOS voltam do RETURNING.
       const newEvents =
         events.length > 0
@@ -229,6 +238,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         const grants = await eligibleStudioGrants(tx, input.userId, input.audience, courseMarcoIds)
         await new DrizzleStudioUnlockRepository(tx).saveGrants(input.userId, input.audience, grants)
       }
+
+      // Same TX and shared version as the milestone, including a deduplicated replay.
+      // Live milestones were filtered above and must not create Kids journey concessions.
+      if (reconcileKidsJourney && courseMarcoIds.length > 0) await reconcileKidsJourney()
 
       // Todas as badges são DERIVADAS do estado (ledger/streak) — sem candidatas
       // do caller (o dedupe do user_badges torna o re-check inócuo).
@@ -932,6 +945,21 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       if (!slots.includes(slot)) slots.push(slot)
     }
     return result
+  }
+
+  async listCourseMilestones(userId: string, audience: CourseAudience): Promise<Map<string, CourseMilestones>> {
+    const events = await this.db.select({ courseId: xpEvents.sourceId, type: xpEvents.sourceType }).from(xpEvents).where(and(
+      eq(xpEvents.userId, userId), eq(xpEvents.audience, audience),
+      inArray(xpEvents.sourceType, ['course_complete', 'course_showcased']),
+    ))
+    const milestones = new Map<string, CourseMilestones>()
+    for (const event of events) {
+      const value = milestones.get(event.courseId) ?? { completed: false, showcased: false }
+      if (event.type === 'course_complete') value.completed = true
+      if (event.type === 'course_showcased') value.showcased = true
+      milestones.set(event.courseId, value)
+    }
+    return milestones
   }
 
   /** Uma consulta, um snapshot: a trava e os selos nunca observam versões diferentes do ledger. */

@@ -24,8 +24,8 @@ export interface NavChild {
   icon: LucideIcon
   /**
    * Ferramenta de criação que este link abre. O menu só a oferece quando a criança
-   * PODE abrir (posse + posto), pela mesma régua da página de destino
-   * (`creativeToolAvailability`). Ausente = link incondicional.
+   * PODE abrir (posse + capacidades da política), pela mesma régua da página de destino
+   * (`getCreativeTools`). Ausente = link incondicional.
    */
   tool?: CreativeToolId
 }
@@ -133,8 +133,8 @@ export function navMatch(item: NavItem): string[] {
 }
 
 /**
- * Os destinos da seção que ESTA criança pode abrir. A régua de posse/posto é a mesma da
- * página de destino (`creativeToolAvailability`, resolvida no servidor): o menu não pode
+ * Os destinos da seção que ESTA criança pode abrir. A régua de posse/capacidades é a mesma da
+ * página de destino (`getCreativeTools`, resolvida no servidor): o menu não pode
  * oferecer uma porta trancada. `tools === null` (a consulta falhou) mostra TODOS — um
  * soluço de rede não encolhe o menu na cara dela.
  */

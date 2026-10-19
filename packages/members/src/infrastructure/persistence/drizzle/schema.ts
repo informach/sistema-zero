@@ -62,6 +62,7 @@ import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
 import type { LiveRecordingSegmentTime } from '../../../domain/live/recording-chapters'
 import type {
+  KidsJourneyAuthCapture,
   KidsJourneyCatalogCourse,
   KidsJourneyPreparationStatus,
 } from '../../../domain/ports/kids-journey-repository.port'
@@ -2816,6 +2817,7 @@ export const kidsJourneyPreparations = members.table(
     origin: text('origin').$type<'seed' | 'configuration'>().notNull(),
     captureStage: text('capture_stage').$type<'auth' | 'members' | 'hashing' | 'done'>().notNull(),
     captureCursor: uuid('capture_cursor'),
+    authCapture: jsonb('auth_capture').$type<KidsJourneyAuthCapture>(),
     catalog: jsonb('catalog').$type<readonly KidsJourneyCatalogCourse[]>().notNull(),
     cursor: uuid('cursor'),
     upperBound: uuid('upper_bound'),
@@ -2844,6 +2846,10 @@ export const kidsJourneyPreparations = members.table(
       sql`${t.draftHash} ~ '^[a-f0-9]{64}$' and ${t.catalogHash} ~ '^[a-f0-9]{64}$'`,
     ),
     check('kids_journey_preparations_catalog_check', sql`jsonb_typeof(${t.catalog}) = 'array'`),
+    check(
+      'kids_journey_preparations_auth_capture_check',
+      sql`${t.authCapture} is null or jsonb_typeof(${t.authCapture}) = 'object'`,
+    ),
     check(
       'kids_journey_preparations_actor_check',
       sql`(${t.actorKind} = 'system' and ${t.actorId} is null and ${t.origin} = 'seed' and ${t.expectedVersion} = 0) or (${t.actorKind} = 'user' and ${t.actorId} is not null and ${t.origin} = 'configuration' and ${t.expectedVersion} >= 1)`,

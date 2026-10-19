@@ -60,7 +60,8 @@ export interface AdminRankingEntryRaw {
   xp: number
   lastActivityDate: string | null
   photoUrl: string | null
-  levelSlug: string
+  levelSlug: string | null
+  journeyUnavailable?: true
 }
 
 export interface AdminRankingPageRaw {
@@ -134,7 +135,8 @@ export function getMember(
 export interface ProfileOverviewView {
   profileId: string
   xp: number
-  levelSlug: string
+  levelSlug: string | null
+  journeyUnavailable?: true
   streakCurrent: number
   lastActivityDate: string | null
   pendingSubmissions: number
