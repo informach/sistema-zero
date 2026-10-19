@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { studioPythonExecutionRevision } from '@sistemazero/core/studio/python-execution-content'
 import { StudioPythonInputReferenceSchema } from '@sistemazero/core/studio/python-validation-input'
 import validation from '../runtime/validation-profile.json' with { type: 'json' }
+import { storePythonRuntimeConfiguration } from '../src/python-configuration-storage'
 import { memoryArtifactBucket } from './artifact-bucket'
 import { pythonDistributionFixture } from './python-distribution-fixture'
 import { pythonInputFixture } from './python-input-fixture'
@@ -118,7 +119,7 @@ function setup(
     },
     INTERNAL_TOKEN: TOKEN,
     PRO_ARTIFACTS: memoryArtifactBucket().bucket,
-    STUDIO_PYTHON_DISTRIBUTIONS_JSON: undefined,
+    STUDIO_PYTHON_DISTRIBUTIONS_SHA256: undefined,
   }
   return {
     handler: createStudioRuntimeHandler(factory),
@@ -235,14 +236,19 @@ test('default handler wires only configured approved Python distributions and in
   }
   const request = () => new Request(`${f.url}frame.html`)
   expect((await execute(context, request())).status).toBe(404)
-  const configuration = (status: 'active' | 'retired' | 'revoked') =>
-    JSON.stringify({
-      version: 1,
-      parentOrigins: ['https://app.example'],
-      deployments: [{ status, deployment: f.deployment }],
-    })
+  const configuration = async (status: 'active' | 'retired' | 'revoked') =>
+    (
+      await storePythonRuntimeConfiguration({
+        bucket: f.bucket,
+        configuration: {
+          version: 1,
+          parentOrigins: ['https://app.example'],
+          deployments: [{ status, deployment: f.deployment }],
+        },
+      })
+    ).sha256
   for (const status of ['active', 'retired'] as const) {
-    context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = configuration(status)
+    context.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = await configuration(status)
     const response = await execute(context, request())
     expect(response.status).toBe(200)
     expect(await response.text()).toBe(new TextDecoder().decode(f.contents.get('frame.html')))
@@ -254,17 +260,19 @@ test('default handler wires only configured approved Python distributions and in
         .find((directive) => directive.startsWith('frame-ancestors ')),
     ).toBe("frame-ancestors 'self' https://app.example")
   }
-  context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = configuration('revoked')
+  context.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = await configuration('revoked')
   expect((await execute(context, request())).status).toBe(404)
-  context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = '{invalid'
+  context.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = '{invalid'
   expect((await execute(context, request())).status).toBe(404)
-  context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = configuration('active')
+  context.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = await configuration('active')
   expect((await execute(context, request())).status).toBe(200)
   expect(context.factoryCalls()).toBe(0)
 })
 
 test('Python internal routes authenticate before reading metadata or binary bodies', async () => {
   const context = setup()
+  context.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = 'a'.repeat(64)
+  const get = spyOn(context.env.PRO_ARTIFACTS, 'get')
   for (const path of ['inputs', `files/${'a'.repeat(64)}`, 'inspect', 'inputs/remove']) {
     let reads = 0
     const response = await execute(
@@ -285,6 +293,63 @@ test('Python internal routes authenticate before reading metadata or binary bodi
     expect(reads).toBe(0)
   }
   expect(context.factoryCalls()).toBe(0)
+  expect(get).not.toHaveBeenCalled()
+  get.mockRestore()
+})
+
+test('JavaScript and health routes never load a configured Python catalog', async () => {
+  const context = setup()
+  context.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = 'a'.repeat(64)
+  const get = spyOn(context.env.PRO_ARTIFACTS, 'get')
+  try {
+    expect((await execute(context, new Request('https://runtime.test/healthz'))).status).toBe(200)
+    expect((await execute(context, request(validBody))).status).toBe(200)
+    expect(get).not.toHaveBeenCalled()
+  } finally {
+    get.mockRestore()
+  }
+})
+
+test('public Python serving rejects digest/bucket changes or cancellation during catalog and artifact awaits', async () => {
+  for (const stage of ['catalog', 'artifact']) {
+    for (const change of ['digest', 'bucket', 'abort']) {
+      const f = await pythonDistributionFixture()
+      await f.store()
+      const catalog = await storePythonRuntimeConfiguration({
+        bucket: f.bucket,
+        configuration: {
+          version: 1,
+          parentOrigins: ['https://app.example'],
+          deployments: [{ status: 'active', deployment: f.deployment }],
+        },
+      })
+      const context = setup()
+      const controller = new AbortController()
+      const reads: string[] = []
+      context.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = catalog.sha256
+      context.env.PRO_ARTIFACTS = {
+        ...context.env.PRO_ARTIFACTS,
+        async get(key) {
+          reads.push(key)
+          const object = await f.bucket.get(key)
+          if (key === (stage === 'catalog' ? catalog.key : `${f.prefix}files/frame.html`)) {
+            if (change === 'digest') context.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = '0'.repeat(64)
+            if (change === 'bucket') context.env.PRO_ARTIFACTS = { ...context.env.PRO_ARTIFACTS }
+            if (change === 'abort') controller.abort(new Error('request retired'))
+          }
+          return object ? { ...object, etag: 'fixture', text: async () => '' } : null
+        },
+      }
+      const response = await execute(
+        context,
+        new Request(`${f.url}frame.html`, { signal: controller.signal }),
+      )
+      expect(response.status).toBe(404)
+      expect(context.factoryCalls()).toBe(0)
+      if (stage === 'catalog') expect(reads).toEqual([catalog.key])
+      else expect(f.counts().cancellations).toBeGreaterThanOrEqual(2)
+    }
+  }
 })
 
 test('default Python input handler uses approved config, private storage and stable owner quotas', async () => {
@@ -339,11 +404,16 @@ test('default Python input handler uses approved config, private storage and sta
         : null
     },
   }
-  context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = JSON.stringify({
-    version: 1,
-    parentOrigins: ['https://app.example'],
-    deployments: [{ status: 'active', deployment: runtime.deployment }],
-  })
+  context.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = (
+    await storePythonRuntimeConfiguration({
+      bucket: runtime.bucket,
+      configuration: {
+        version: 1,
+        parentOrigins: ['https://app.example'],
+        deployments: [{ status: 'active', deployment: runtime.deployment }],
+      },
+    })
+  ).sha256
   const input = structuredClone(f.request)
   input.snapshot.configuration.runtime = {
     profileId: runtime.deployment.release.profileId,
@@ -375,9 +445,9 @@ test('default Python input handler uses approved config, private storage and sta
   expect(reference.owner).toBe(input.owner)
   expect(quotas).toEqual([`python-job-${input.owner}`])
   expect(context.factoryCalls()).toBe(0)
-  const configured = context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON
+  const configured = context.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256
   for (const configuration of [undefined, '{malformed', configured]) {
-    context.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = configuration
+    context.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = configuration
     const removed = await execute(
       context,
       new Request('https://runtime.test/v1/python/inputs/remove', {

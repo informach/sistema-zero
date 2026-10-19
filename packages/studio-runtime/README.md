@@ -4,7 +4,7 @@ Compilador isolado dos projetos Pro do Sistema Zero. Um BFF autorizado envia a �
 
 ## Ambientes e capacidade
 
-O runtime Python usa a variável de implantação `STUDIO_PYTHON_DISTRIBUTIONS_JSON`, com o contrato `StudioPythonRuntimeConfigurationSchema` do Core:
+O runtime Python usa `STUDIO_PYTHON_DISTRIBUTIONS_SHA256`, um SHA256 hexadecimal de 64 caracteres que fixa o objeto privado `runtime-configs/<SHA>.json` no binding R2 `PRO_ARTIFACTS`. O JSON segue `StudioPythonRuntimeConfigurationSchema` do Core:
 
 ```json
 {
@@ -18,13 +18,15 @@ O runtime Python usa a variável de implantação `STUDIO_PYTHON_DISTRIBUTIONS_J
 
 Os textos entre `<...>` são marcadores explicativos; a configuração real contém os objetos completos gerados pelo empacotador. Informe todas as origens qualificadas do editor, autoria, aulas/salas e página pública. Mantenha a mesma seleção e os mesmos estados de release na política de autoria do Members. `active` permite a distribuição aprovada; `retired` conserva projetos existentes; `revoked` recusa arquivos e metadata. A política de autoria decide separadamente quais releases permitem criar novos projetos.
 
-Envie os bytes da distribuição pelo procedimento confiável `storePythonRuntimeDistribution`, que verifica hashes e grava o marcador de conclusão por último. Um marcador no bucket não aprova uma distribuição. Ausência ou erro na variável mantém as rotas Python indisponíveis e preserva o fluxo JavaScript. A factory padrão lê a configuração; não é necessário um handler alternativo. Staging recebe o funcionamento normal para validação, sem flag temporária adicional; a distribuição e seus serviços precisam estar configurados e íntegros. Em produção, promova a release somente depois da qualificação completa. Essa variável não concede instalação PyPI, acesso ao Estúdio Pro nem autorização contextual de execução.
+Envie os bytes pelo procedimento confiável `storePythonRuntimeDistribution`, que verifica hashes e grava `complete.json` depois dos arquivos. Em seguida, grave o catálogo com `storePythonRuntimeConfiguration`, usando checksum SHA256 nativo e criação condicional; o comando de promoção coordena essa ordem. Nem o marcador nem o catálogo no bucket aprovam uma distribuição: a aprovação exige o SHA implantado no Worker. Ausência ou erro nessa referência mantém as rotas Python indisponíveis e preserva o fluxo JavaScript. A factory padrão lê a configuração; não é necessário um handler alternativo. Staging recebe o funcionamento normal para validação, sem flag temporária adicional; a distribuição e seus serviços precisam estar configurados e íntegros. Em produção, promova a release somente depois da qualificação completa. Essa variável não concede instalação PyPI, acesso ao Estúdio Pro nem autorização contextual de execução.
+
+O catálogo completo excede o [limite de 5KB por variável Cloudflare](https://developers.cloudflare.com/workers/platform/limits/#environment-variables), por isso não há variável JSON inline nem fragmentação em múltiplas variáveis. A leitura R2 ocorre somente em caminhos Python, limita o objeto a 2MB/10 segundos e verifica tamanho, checksum nativo, SHA dos bytes, schema e manifestos. O cache guarda até oito catálogos por identidade de bucket e compartilha leituras do mesmo SHA; falhas são removidas para permitir recuperação. Cancelar um solicitante não encerra os demais; o último cancelamento retira a leitura e descarta corpos tardios. Ingress e coordenador conferem novamente SHA e bindings após operações assíncronas. Mudar status/origens produz outro catálogo e outro SHA; mantenha objetos antigos para projetos existentes e rollback, sem reativar releases revogadas por acidente.
 
 Staging usa `bun run deploy:staging`, Worker `sistemazero-studio-runtime-staging` e bucket privado `sistemazero-studio-artifacts-staging`. O token `INTERNAL_TOKEN` é exclusivo desse ambiente e deve corresponder a `STUDIO_PRO_RUNTIME_TOKEN` em Kids, Admin, Auth e Members no Railway. As URLs de autorização e limpeza apontam para o Kids de staging.
 
 A configuração principal é a de produção, com Worker `sistemazero-studio-runtime` e bucket `sistemazero-studio-artifacts`. Promova o runtime junto da aplicação que entende artefatos; a aplicação anterior espera HTML inline. Preparar o bucket e as variáveis não exige substituir o runtime ativo antes dessa promoção.
 
-A imagem com Chromium exige `standard-1` (4 GiB de memória e 8 GB de disco). Na validação remota de 15/10/2026, `lite` falhou ao descompactar a imagem no disco de 2 GB. O limite de 50 instâncias permanece. A regra existente expira `previews/` após dois dias. Antes de ativar os inputs Python, configure também as duas regras de um dia descritas abaixo. `published/`, `publications/` e `runtimes/` não têm expiração por idade.
+A imagem com Chromium exige `standard-1` (4 GiB de memória e 8 GB de disco). Na validação remota de 15/10/2026, `lite` falhou ao descompactar a imagem no disco de 2 GB. O limite de 50 instâncias permanece. A regra existente expira `previews/` após dois dias. Antes de ativar os inputs Python, configure também as duas regras de um dia descritas abaixo. `published/`, `publications/`, `runtimes/` e `runtime-configs/` não têm expiração por idade.
 
 Depois do deploy, aguarde o provisionamento dos contêineres e valide uma compilação com `validate: true`; `/healthz` sozinho não comprova que a imagem está pronta.
 
@@ -121,7 +123,9 @@ com 3 s de prazo. Falha do próprio protocolo é falha do executor, nunca "não 
 antes de ligar os objetivos de execução no Members.
 ## Inspeção Python interna
 
-As rotas abaixo exigem `Authorization: Bearer <INTERNAL_TOKEN>` antes da leitura do corpo. Não são chamadas diretamente pelo navegador. Precisam de `STUDIO_PYTHON_DISTRIBUTIONS_JSON`, `PYTHON_INPUTS` privado, `PythonInspectionJobs` e `PYTHON_UPLOAD_RATE_LIMITER`. Wrangler liga inputs e previews ao bucket privado de artefatos com prefixos separados. Isso não aprova releases nem configura a origem pública do serviço. Os consumidores completos do estúdio ainda estão em integração.
+As rotas abaixo exigem `Authorization: Bearer <INTERNAL_TOKEN>` antes da leitura do corpo ou do catálogo. Não são chamadas diretamente pelo navegador. Precisam de `STUDIO_PYTHON_DISTRIBUTIONS_SHA256`, catálogo íntegro em `PRO_ARTIFACTS`, `PYTHON_INPUTS` privado, `PythonInspectionJobs` e `PYTHON_UPLOAD_RATE_LIMITER`. Wrangler liga inputs e previews ao bucket privado de artefatos com prefixos separados. Isso não aprova releases nem configura a origem pública do serviço. Os consumidores completos do estúdio ainda estão em integração.
+
+As rotas de retirada de inputs/previews conservam autenticação e coordenação próprias e continuam disponíveis quando o catálogo é retirado ou fica inválido, permitindo encerrar trabalho e limpar recursos.
 
 - `POST /v1/python/inputs`: recebe `StudioPythonInputOpenSchema` (metadata, owner opaco derivado pelo BFF, executionId e requestId UUID). Retorna `{ok:true,input:<StudioPythonInputReference>}`. Até 2 MB de metadata; os arquivos mantêm o limite agregado de 32 MiB do contrato Python. Não há bytes/base64, URLs ou chaves de bucket no JSON.
 - `POST /v1/python/files/<sha256>`: recebe bytes binários originais no corpo, com a referência JSON em `X-Studio-Python-Input` (até 2048 bytes UTF-8). Só aceita hashes e tamanhos registrados; verifica o stream e o checksum R2. Não executa código.
@@ -146,7 +150,7 @@ Nos aplicativos Community e Community Kids, o shell compartilhado seleciona o ex
 
 Members também precisa do par `STUDIO_PYTHON_RUNTIME_URL`/`STUDIO_PYTHON_RUNTIME_TOKEN` para sua política e validação. Mantenha a mesma origem do compilador nos consumidores e na política de hosts. O serviço de linguagem é separado do compilador; sua ausência não autoriza ignorar Pyright. A configuração não concede acesso ao produto, ao nível Pro, a uma release nem às extensões: a política atual é reavaliada ao criar, validar, renovar, abrir a prévia e aplicar a proposta. A indisponibilidade de um serviço Python não desativa o provedor JavaScript configurado. A habilitação remota permanece sujeita à qualificação e à implantação próprias do ambiente.
 
-Exige `PYTHON_PREVIEWS`, uma release aprovada que inclua `standalone.mjs`, o coordenador e `STUDIO_PYTHON_PREVIEW_ORIGIN` com a origem HTTPS real do serviço (HTTP apenas em loopback). A origem deve ser distinta dos aplicativos e estar acessível pelo navegador. Configure-a explicitamente por ambiente; o código não adivinha domínios. Os aplicativos autorizados continuam definidos em `STUDIO_PYTHON_DISTRIBUTIONS_JSON.parentOrigins`.
+Exige `PYTHON_PREVIEWS`, uma release aprovada que inclua `standalone.mjs`, o coordenador e `STUDIO_PYTHON_PREVIEW_ORIGIN` com a origem HTTPS real do serviço (HTTP apenas em loopback). A origem deve ser distinta dos aplicativos e estar acessível pelo navegador. Configure-a explicitamente por ambiente; o código não adivinha domínios. Os aplicativos autorizados continuam definidos em `parentOrigins` do catálogo fixado por `STUDIO_PYTHON_DISTRIBUTIONS_SHA256`.
 
 O produtor usa os mesmos arquivos verificados e a mesma revisão da validação. Aguarda a destruição confirmada do sandbox antes de armazenar o preview. Grava `python-preview-records/<id>.json` primeiro para permitir a coleta de uploads incompletos; arquivos ficam em `python-previews/<id>/files/` e o marcador completo é o último write. O runtime/WASM compartilhado não é copiado. Projeto, payload, relatório, captura e launcher têm cotas independentes das cotas JavaScript; nenhuma cota JavaScript aumenta.
 
@@ -301,3 +305,77 @@ Testes de contrato usam armazenamento/CAS em memória; provas de player usam Rea
 ### CSP dos aplicativos que incorporam Python
 
 Admin, comunidade adulta e Kids precisam configurar, antes do build Next, `STUDIO_PYTHON_FRAME_ORIGINS` como uma lista JSON das origens públicas exatas dos runtimes aprovados em `STUDIO_RUNTIME_HOSTS_JSON` do Members. Exemplo: `["https://python-runtime.exemplo.com"]`. A allowlist acrescenta somente `frame-src` e `connect-src`, para o iframe isolado e o carregamento autenticado por hash dos recursos imutáveis; não concede autorização de execução nem libera scripts arbitrários. Não use tokens, credenciais, curingas ou caminhos. HTTPS é obrigatório em produção; localhost HTTP só em desenvolvimento. Alterações exigem novo build para atualizar os headers. A URL privada do executor e o serviço de análise continuam configurações independentes.
+
+### Preparação e upload imutável Python para staging
+
+O comando `scripts/promote-python-runtime.ts` consome uma distribuição **já construída e qualificada**. `prepare` é inteiramente offline: não importa Wrangler, não resolve credenciais, não reconstrói e não baixa artefatos. `upload` usa o binding R2 nativo remoto, com a configuração isolada do bucket `sistemazero-studio-artifacts-staging`; nunca instala um endpoint de upload. Nenhuma fase altera variáveis remotas, ativa catálogo ou implanta aplicações.
+
+O input público tem este formato (substitua conta, diretório e origens pelos valores reais de staging; o SHA identifica a distribuição J-CI qualificada):
+
+```json
+{
+  "version": 1,
+  "environment": "staging",
+  "target": {
+    "accountId": "00000000000000000000000000000000",
+    "bucketName": "sistemazero-studio-artifacts-staging",
+    "runtimeOrigin": "https://python-runtime.staging.example",
+    "parentOrigins": [
+      "https://admin-staging-f8fe.up.railway.app",
+      "https://community-staging-66f2.up.railway.app",
+      "https://community-kids-staging.up.railway.app"
+    ]
+  },
+  "distribution": {
+    "directory": "./distributions/996e6097c599d21c5d92fc7e9f03145f155d080a2d83f6d4aaa6a25785c0afd7",
+    "sha256": "996e6097c599d21c5d92fc7e9f03145f155d080a2d83f6d4aaa6a25785c0afd7"
+  },
+  "release": {
+    "profileId": "python-browser",
+    "releaseId": "2026-10-19-1",
+    "capabilities": ["edit", "execute", "publish", "export-source", "python-repl", "assist"]
+  },
+  "baseline": {
+    "worker": null,
+    "members": null,
+    "hosts": [],
+    "previewOrigin": null,
+    "frameOrigins": { "admin": [], "community": [], "community-kids": [] }
+  }
+}
+```
+
+`distribution.directory` é absoluto ou relativo ao **arquivo de input**. A lista de capacidades deve corresponder à qualificação e aos serviços a implantar; não concede permissões de usuário. A identidade permanente não deve conter identificadores de QA/probe e não muda entre ambientes ao promover os mesmos bytes. O SHA da distribuição é o SHA do JSON canônico de `distribution.json`, não o SHA do arquivo formatado. O manifesto da release contém também identidade e capacidades e recebe **outro SHA**.
+
+`baseline` precisa conter os snapshots públicos anteriores: `worker` é o JSON completo do objeto R2 identificado pelo SHA atualmente implantado em `STUDIO_PYTHON_DISTRIBUTIONS_SHA256`; `members`, o de `STUDIO_AUTHORING_POLICY_JSON`; `hosts`, o de `STUDIO_RUNTIME_HOSTS_JSON`; `previewOrigin`, o valor de `STUDIO_PYTHON_PREVIEW_ORIGIN`; cada lista em `frameOrigins` vem de `STUDIO_PYTHON_FRAME_ORIGINS` do aplicativo correspondente. Verifique o SHA dos bytes do snapshot Worker antes de usá-lo. `null` e listas vazias só representam ausência previamente conferida. Não substituir configurações existentes pelo exemplo vazio e não incluir `.env`, tokens ou outras variáveis no input.
+
+Da raiz do repositório:
+
+```text
+bun packages/studio-runtime/scripts/promote-python-runtime.ts prepare --input staging-promotion-input.json --out staging-promotion-plan.json
+bun packages/studio-runtime/scripts/promote-python-runtime.ts upload --plan staging-promotion-plan.json --expect-plan-sha256 SHA_EXATO_DO_RECIBO_PREPARE
+```
+
+`prepare` recusa symlinks/junctions, escape de diretório, hashes/tamanhos diferentes, gzip incompatível, identidade já vinculada a outros bytes e configurações inconsistentes. A saída é criada exclusivamente: repetir aceita somente o mesmo plano. O plano inclui `baselineSha256`, `configurationSha256`, `authoringCatalogSha256`, `planSha256`, os dois manifestos e o prefixo `runtimes/<SHA-da-release>/`. `workerCatalog` fixa SHA, chave R2 e tamanho do JSON canônico de `configuration.worker`; `workerBindings` contém somente SHA e origem de preview, com limite de 5KB por valor. Blocos, dependências e categorias vêm dos codecs Programação/Turtle do código atual. Alterar o catálogo ou qualquer campo derivado exige preparar outro plano; os planos antigos que usavam JSON inline são históricos e não passam na revalidação atual.
+
+`upload` revalida todo o plano e os arquivos **antes de conectar**, depois revalida os bytes durante a gravação. A autenticação Cloudflare é fornecida ao processo pelo ambiente operacional normal do Wrangler, sem passar tokens nos argumentos ou no plano. O proxy tem somente um binding R2 `remote: true`, sem persistência local nem arquivos de variáveis; é encerrado também em caso de erro. O armazenamento aplica SHA256 nativo e `onlyIf.etagDoesNotMatch: '*'`: arquivos da distribuição → `complete.json` → catálogo imutável. Conflitos exigem tamanho/checksum idênticos; para o catálogo, também leitura e SHA dos bytes. Falhas preservam os objetos já existentes; repetir completa um upload parcial. Se só o catálogo falhar, a distribuição completa permanece e a nova tentativa acrescenta apenas esse objeto. O recibo inclui o descriptor `workerCatalog`, hashes, prefixo e contagem/bytes dos arquivos, sem credenciais. Não usar `r2PutObject`, metadata autoral ou ETag como substituto do checksum nativo.
+
+Após revisar o plano, a aplicação operacional altera **somente** as variáveis abaixo, preservando todas as demais:
+
+| Campo do plano | Destino |
+| --- | --- |
+| `workerBindings.STUDIO_PYTHON_DISTRIBUTIONS_SHA256` | Worker: `STUDIO_PYTHON_DISTRIBUTIONS_SHA256` |
+| `workerBindings.STUDIO_PYTHON_PREVIEW_ORIGIN` | Worker: `STUDIO_PYTHON_PREVIEW_ORIGIN` |
+| JSON de `configuration.members` | Members: `STUDIO_AUTHORING_POLICY_JSON` |
+| JSON de `configuration.hosts` | Members: `STUDIO_RUNTIME_HOSTS_JSON` |
+| JSON de cada `configuration.frameOrigins[aplicativo]` | Admin, Community e Kids: `STUDIO_PYTHON_FRAME_ORIGINS` antes do build |
+
+Conferir novamente o baseline remoto antes dessa aplicação; se mudou, regenerar o plano. Esse hash documenta uma precondição, **não oferece CAS ou transação entre Railway e Cloudflare**. O comando existente `scripts/ci/railway-config.mjs` gerencia build/deploy/source e não aplica essas variáveis. A sequência é: upload e prova de integridade no R2 real → Worker/configuração e serviços Python → builds dos aplicativos com CSP → Members com catálogo/hosts por último. As URLs e segredos dos serviços de execução/análise continuam pré-requisitos separados; não aparecem no pacote público.
+
+JavaScript continua padrão, sem flag temporária. Python torna-se opção pelo catálogo ativo; projetos Python vazios continuam sem extensões instaladas. Turtle aprovado não significa Turtle obrigatório. O comando preserva releases, origens e estados anteriores (`active`, `retired`, `revoked`) e não reativa uma release. Rollback não remove objetos/referências de projetos existentes. O código pode ser integrado antes desse lote de infraestrutura, mantendo Python indisponível por ausência de configuração.
+
+Os testes locais `bun test ./packages/studio-runtime/tests/python-promotion.test.ts` validam plano, CLI e armazenamento com transporte em memória, sem conectar R2. O typecheck canônico da raiz é `bun run --filter @sistemazero/studio-runtime typecheck`: cobre os projetos de tipos de produção e testes, incluindo fixtures SDK e scripts importados pelos testes. Verificações limitadas a arquivos não substituem esse comando.
+
+Em 19/10/2026, `.cache/studio-python-l0/staging-python-distribution-upload-r2-receipt.json` registrou upload real **sem ativação** do plano `9dba63e7123b8592466689f7ed7051c9e69faf036516e0280d29828caf43e62f`: distribuição J-CI `996e6097…`, release permanente `562047803…` e catálogo `40ce822a…` de 12.857 bytes. Os hashes completos estão no [plano de promoção](../../docs/superpowers/plans/2026-10-19-studio-python-runtime-promotion.md). O recibo confirma a gravação; leitura independente/replay e entrega pelo Worker implantado continuam gates próprios.
+
+A prova local SDK `inspection-sdk/3e962322-4064-4935-8d36-c589bf8f5c23` passou com R2, ingress e InspectionJob reais, Turtle, preview e retirada persistente após reset. Usou release/catálogo de QA e fingerprint anterior `85b1ed90…`, por isso permanece preliminar para a imagem atual: repetir nominal/cancelamento após regenerar o perfil e reconstruir a imagem. O upload e a prova local não ativam Python nem substituem implantação Worker/serviços, CSP dos aplicativos e catálogo Members por último.

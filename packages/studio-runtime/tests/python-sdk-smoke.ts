@@ -8,6 +8,7 @@ import { verifyStudioPythonDeployment } from '@sistemazero/core/studio/python-ru
 import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import { buildPythonRuntimeDistribution } from '../../studio/scripts/build-python-runtime'
 import { sha256 } from '../src/artifacts'
+import { describePythonRuntimeConfiguration } from '../src/python-configuration-storage'
 import { preparePythonSdkLinux, stopPythonSdkLinux } from './fixtures/prepare-python-sdk-linux'
 
 // Explicit integration command. Uses local workerd/R2/Docker and the SDK RPC transport;
@@ -94,6 +95,12 @@ const worker = path.resolve(import.meta.dirname, 'fixtures/python-sdk-worker.ts'
 const config = path.join(directory, 'wrangler.json')
 const internalToken = crypto.randomUUID()
 const proofToken = crypto.randomUUID()
+const runtimeConfiguration = {
+  version: 1,
+  parentOrigins: ['https://kids.test'],
+  deployments: [{ status: 'active', deployment: { release, distribution: build.manifest } }],
+}
+const runtimeCatalog = await describePythonRuntimeConfiguration(runtimeConfiguration)
 await writeFile(
   config,
   JSON.stringify({
@@ -129,11 +136,7 @@ await writeFile(
       PROOF_TOKEN: proofToken,
       PROOF_CANCEL: String(cancelDuringExec),
       PROOF_PREVIEW: String(preview),
-      STUDIO_PYTHON_DISTRIBUTIONS_JSON: JSON.stringify({
-        version: 1,
-        parentOrigins: ['https://kids.test'],
-        deployments: [{ status: 'active', deployment: { release, distribution: build.manifest } }],
-      }),
+      STUDIO_PYTHON_DISTRIBUTIONS_SHA256: runtimeCatalog.sha256,
     },
   }),
 )
@@ -237,6 +240,7 @@ await writeFile(
   JSON.stringify({
     runtimeDirectory: build.directory,
     runtimeFiles: build.manifest.files,
+    runtimeConfiguration,
     marker: deployment.marker,
     internalToken,
     proofToken,

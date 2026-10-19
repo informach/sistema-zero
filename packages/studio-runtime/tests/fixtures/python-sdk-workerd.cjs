@@ -72,6 +72,15 @@ async function main() {
       signal: AbortSignal.any([lifetime.signal, AbortSignal.timeout(300_000)]),
     })
     assert.equal(health.status, 200, await health.text())
+    // Local fixture needs the pinned manifest to verify each seed file. Production promotion
+    // writes this catalog after complete.json; this harness exposes neither until seeding ends.
+    const catalog = await fetch(`${origin}/__proof/configuration`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${seed.proofToken}` },
+      body: JSON.stringify(seed.runtimeConfiguration),
+      signal: AbortSignal.any([lifetime.signal, AbortSignal.timeout(60_000)]),
+    })
+    assert.equal(catalog.status, 200, await catalog.text())
     console.error(JSON.stringify({ phase: 'runtime-seed', files: seed.runtimeFiles.length }))
     for (const file of [...seed.runtimeFiles, { path: 'complete.json' }]) {
       console.error(JSON.stringify({ phase: 'runtime-file', path: file.path }))

@@ -57,8 +57,8 @@ import {
   retirePublicationReservation,
   servePublishedArtifact,
 } from './publications'
-import { createConfiguredPythonRuntime } from './python-configuration'
-import type { PythonDistributionRegistry, PythonDistributionServer } from './python-distributions'
+import { createPythonRuntimeConfigurationLoader } from './python-configuration-storage'
+import type { PythonDistributionServer } from './python-distributions'
 import type { PythonInputGcBucket } from './python-input-gc'
 import { collectStoredPythonInputGarbage } from './python-input-maintenance'
 import { type PythonInputBucket, PythonInputError } from './python-inputs'
@@ -100,8 +100,8 @@ export interface Env {
   PUBLICATION_AUTHORIZATION_ADULT_URL?: string
   PUBLICATION_CLEANUP_URL?: string
   PUBLICATION_CLEANUP_ADULT_URL?: string
-  /** Trusted deployment JSON. Missing leaves Python unavailable and preserves JavaScript. */
-  STUDIO_PYTHON_DISTRIBUTIONS_JSON?: string
+  /** Pinned immutable R2 catalog. Missing leaves Python unavailable and preserves JavaScript. */
+  STUDIO_PYTHON_DISTRIBUTIONS_SHA256?: string
   /** Private temporary input bucket; absence keeps new S2S Python operations unavailable. */
   PYTHON_INPUTS?: PythonInputBucket & Pick<PythonInputGcBucket, 'list'>
   PYTHON_UPLOAD_RATE_LIMITER?: RateLimitBinding
@@ -119,14 +119,7 @@ export function createStudioRuntimeHandler(
   sandboxFactory: typeof getSandbox = getSandbox,
   pythonDistributions?: PythonDistributionServer,
 ): ExportedHandler<Env> {
-  let configuredPython:
-    | { configuration: string; registry: Promise<PythonDistributionRegistry> }
-    | undefined
-  const pythonRegistry = (configuration: string) => {
-    if (configuredPython?.configuration !== configuration)
-      configuredPython = { configuration, registry: createConfiguredPythonRuntime(configuration) }
-    return configuredPython.registry
-  }
+  const pythonRegistry = createPythonRuntimeConfigurationLoader()
   let authorization:
     | { endpointsKey: string; token: string; check: (playId: string) => Promise<boolean> }
     | undefined
@@ -169,7 +162,7 @@ export function createStudioRuntimeHandler(
     async fetch(request: Request, env: Env): Promise<Response> {
       const url = new URL(request.url)
       if (url.pathname.startsWith('/v1/python-previews/')) {
-        const configuration = env.STUDIO_PYTHON_DISTRIBUTIONS_JSON
+        const configuration = env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256
         const bucket = env.PYTHON_PREVIEWS
         const origin = env.STUDIO_PYTHON_PREVIEW_ORIGIN
         const runtimeBucket = env.PRO_ARTIFACTS
@@ -177,8 +170,9 @@ export function createStudioRuntimeHandler(
         if (!configuration || !bucket || !origin || !jobs || url.origin !== origin)
           return unavailableArtifact()
         const assertCurrent = () => {
+          request.signal.throwIfAborted()
           if (
-            env.STUDIO_PYTHON_DISTRIBUTIONS_JSON !== configuration ||
+            env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 !== configuration ||
             env.PYTHON_PREVIEWS !== bucket ||
             env.STUDIO_PYTHON_PREVIEW_ORIGIN !== origin ||
             env.PRO_ARTIFACTS !== runtimeBucket ||
@@ -187,7 +181,10 @@ export function createStudioRuntimeHandler(
             throw new Error('A configuração do preview Python mudou.')
         }
         try {
-          const registry = await pythonRegistry(configuration)
+          const registry = await pythonRegistry(runtimeBucket, configuration, {
+            signal: request.signal,
+            assertCurrent,
+          })
           assertCurrent()
           return await servePythonPreview(request, {
             bucket,
@@ -219,13 +216,27 @@ export function createStudioRuntimeHandler(
         url.pathname.startsWith('/v1/runtime-deployments/')
       ) {
         if (pythonDistributions) return pythonDistributions(request, env.PRO_ARTIFACTS)
-        const configuration = env.STUDIO_PYTHON_DISTRIBUTIONS_JSON
+        const configuration = env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256
+        const runtimeBucket = env.PRO_ARTIFACTS
         if (!configuration) return unavailableArtifact()
+        const assertCurrent = () => {
+          request.signal.throwIfAborted()
+          if (
+            env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 !== configuration ||
+            env.PRO_ARTIFACTS !== runtimeBucket
+          )
+            throw new Error('A configuração da distribuição Python mudou.')
+        }
         try {
-          const { serve: server } = await pythonRegistry(configuration)
-          if (env.STUDIO_PYTHON_DISTRIBUTIONS_JSON !== configuration) return unavailableArtifact()
-          const response = await server(request, env.PRO_ARTIFACTS)
-          if (env.STUDIO_PYTHON_DISTRIBUTIONS_JSON !== configuration) {
+          const { serve: server } = await pythonRegistry(runtimeBucket, configuration, {
+            signal: request.signal,
+            assertCurrent,
+          })
+          assertCurrent()
+          const response = await server(request, runtimeBucket)
+          try {
+            assertCurrent()
+          } catch {
             await response.body?.cancel()
             return unavailableArtifact()
           }
@@ -238,7 +249,7 @@ export function createStudioRuntimeHandler(
         // Authentication precedes reading either JSON metadata or learner binary streams.
         if (!isAuthorized(request, env.INTERNAL_TOKEN))
           return json({ ok: false, code: 'INVALID_REQUEST', message: 'Não autorizado.' }, 401)
-        const configuration = env.STUDIO_PYTHON_DISTRIBUTIONS_JSON
+        const configuration = env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256
         const bucket = env.PYTHON_INPUTS
         const uploadLimiter = env.PYTHON_UPLOAD_RATE_LIMITER
         const jobs = env.PythonInspectionJobs
@@ -287,8 +298,9 @@ export function createStudioRuntimeHandler(
         const previewBucket = env.PYTHON_PREVIEWS
         const previewOrigin = env.STUDIO_PYTHON_PREVIEW_ORIGIN
         const assertCurrent = () => {
+          request.signal.throwIfAborted()
           if (
-            env.STUDIO_PYTHON_DISTRIBUTIONS_JSON !== configuration ||
+            env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 !== configuration ||
             env.INTERNAL_TOKEN !== token ||
             env.PYTHON_INPUTS !== bucket ||
             env.PRO_ARTIFACTS !== runtimeBucket ||
@@ -302,7 +314,10 @@ export function createStudioRuntimeHandler(
             throw new PythonInputError(409, 'A configuração Python mudou. Tente novamente.')
         }
         try {
-          const registry = await pythonRegistry(configuration)
+          const registry = await pythonRegistry(runtimeBucket, configuration, {
+            signal: request.signal,
+            assertCurrent,
+          })
           assertCurrent()
           const invokeJob = async (raw: unknown, mode: 'inspect' | 'validate') => {
             const input =

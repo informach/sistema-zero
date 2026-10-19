@@ -1,11 +1,17 @@
+import { readJsonBodyWithLimit } from '@sistemazero/core/http'
 import { studioPythonInspectionJobId } from '@sistemazero/core/studio/python-inspection-job'
 import {
-  StudioPythonRuntimeConfigurationSchema,
   studioPythonRuntimePrefix,
   verifyStudioPythonDeployment,
 } from '@sistemazero/core/studio/python-runtime-distribution'
 import { StudioPythonInputReferenceSchema } from '@sistemazero/core/studio/python-validation-input'
 import { createStudioRuntimeHandler, type Env, ProBuildSandbox } from '../../src/index'
+import { PYTHON_CONFIGURATION_MAX_BYTES } from '../../src/python-configuration'
+import {
+  describePythonRuntimeConfiguration,
+  readPythonRuntimeConfiguration,
+  storePythonRuntimeConfiguration,
+} from '../../src/python-configuration-storage'
 import type { PythonInspectionSandbox } from '../../src/python-inspection'
 import { PythonInspectionJob } from '../../src/python-inspection-job'
 import { createPythonJobStateStore } from '../../src/python-job-state'
@@ -129,6 +135,25 @@ export default {
         ? new Response(object.body, { headers: { 'Content-Type': 'application/json' } })
         : new Response(null, { status: 404 })
     }
+    if (url.pathname === '/__proof/configuration') {
+      if (
+        request.method !== 'PUT' ||
+        request.headers.get('Authorization') !== `Bearer ${env.PROOF_TOKEN}` ||
+        !request.body ||
+        url.search
+      )
+        return new Response(null, { status: 403 })
+      const configuration = await readJsonBodyWithLimit(
+        request,
+        PYTHON_CONFIGURATION_MAX_BYTES,
+        request.signal,
+      )
+      const descriptor = await describePythonRuntimeConfiguration(configuration)
+      if (descriptor.sha256 !== env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256)
+        return new Response(null, { status: 409 })
+      await storePythonRuntimeConfiguration({ bucket: env.PRO_ARTIFACTS, configuration })
+      return Response.json({ seeded: descriptor.key })
+    }
     if (url.pathname.startsWith('/__proof/runtime/')) {
       if (
         request.method !== 'PUT' ||
@@ -137,8 +162,10 @@ export default {
         url.search
       )
         return new Response(null, { status: 403 })
-      const config = StudioPythonRuntimeConfigurationSchema.parse(
-        JSON.parse(env.STUDIO_PYTHON_DISTRIBUTIONS_JSON ?? ''),
+      const config = await readPythonRuntimeConfiguration(
+        env.PRO_ARTIFACTS,
+        env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 ?? '',
+        request.signal,
       )
       const selected = config.deployments[0]
       if (!selected || config.deployments.length !== 1) throw new Error('Invalid proof seed')

@@ -16,8 +16,12 @@ mock.module('@cloudflare/sandbox', () => ({
     throw new Error('The controller model must not invoke the real SDK')
   },
 }))
-mock.module('../../src/python-configuration', () => ({
-  createConfiguredPythonRuntime: async () => ({}),
+let readConfiguration = async () => ({})
+mock.module('../../src/python-configuration-storage', () => ({
+  createPythonRuntimeConfigurationLoader:
+    () =>
+    (...args) =>
+      readConfiguration(...args),
 }))
 mock.module('../../src/python-r2-inputs', () => ({
   createPythonR2InputStorage: (bucket) => bucket,
@@ -37,6 +41,7 @@ function gate() {
   return { promise, resolve }
 }
 function fixture(expiresIn = 900_000) {
+  readConfiguration = async () => ({})
   const db = new Database(':memory:')
   const sql = {
     exec(query, ...bindings) {
@@ -80,7 +85,7 @@ function fixture(expiresIn = 900_000) {
     }
   }
   const job = new Probe(ctx, {
-    STUDIO_PYTHON_DISTRIBUTIONS_JSON: 'controlled-configuration',
+    STUDIO_PYTHON_DISTRIBUTIONS_SHA256: 'd'.repeat(64),
     PYTHON_INPUTS: {},
     PRO_ARTIFACTS: {},
     ProBuildSandbox: {},
@@ -111,6 +116,37 @@ function fixture(expiresIn = 900_000) {
     },
   }
 }
+test('catalog wait cannot admit an SDK after digest/bucket withdrawal or cancellation', async () => {
+  for (const change of ['digest', 'bucket', 'cancel']) {
+    const f = fixture()
+    const entered = gate(),
+      release = gate()
+    readConfiguration = async () => {
+      entered.resolve()
+      await release.promise
+      return {}
+    }
+    handler = () => {
+      throw new Error('Withdrawn configuration cannot invoke the handler')
+    }
+    try {
+      const pending = f.job.validate({ version: 1, input: f.input, recipe: { version: 1 } })
+      await entered.promise
+      if (change === 'digest') f.job.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = 'e'.repeat(64)
+      if (change === 'bucket') f.job.env.PRO_ARTIFACTS = {}
+      if (change === 'cancel') await f.job.cancel(f.input)
+      release.resolve()
+      expect((await pending).status).toBe(change === 'cancel' ? 408 : 503)
+      expect(f.creates).toBe(0)
+      expect(f.store.read().cleanupConfirmed).toBe(true)
+      expect(f.store.read().status).toBe(change === 'cancel' ? 'cancelled' : 'failed')
+    } finally {
+      release.resolve()
+      f.db.close()
+    }
+  }
+})
+
 test('validation admission captures immutable recipe and rejects mode/recipe changes for the same input', async () => {
   const started = gate(),
     reply = gate()
@@ -216,7 +252,7 @@ test('a withdrawn owner fence after SDK creation still confirms cleanup and bloc
   const f = fixture()
   handler = async (_request, options) => {
     options.createSandbox()
-    f.job.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON = 'withdrawn'
+    f.job.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = 'e'.repeat(64)
     return Response.json({ ok: true, report: 'late' })
   }
   try {

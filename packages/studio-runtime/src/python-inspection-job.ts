@@ -20,7 +20,7 @@ import {
 } from '@sistemazero/core/studio/python-validation-input'
 import validationProfile from '../runtime/validation-profile.json' with { type: 'json' }
 import type { Env } from './index'
-import { createConfiguredPythonRuntime } from './python-configuration'
+import { createPythonRuntimeConfigurationLoader } from './python-configuration-storage'
 import type { PythonInspectionSandbox } from './python-inspection'
 import { createPythonJobStateStore } from './python-job-state'
 import { createPythonR2InputStorage } from './python-r2-inputs'
@@ -45,6 +45,7 @@ const unavailable = (): PythonInspectionJobResponse => ({
  */
 export class PythonInspectionJob extends DurableObject<Env> {
   private readonly store = createPythonJobStateStore(this.ctx.storage.sql)
+  private readonly pythonRegistry = createPythonRuntimeConfigurationLoader()
   private controller?: AbortController
   private sdk?: PythonInspectionSandbox
   private destruction?: Promise<void>
@@ -181,7 +182,7 @@ export class PythonInspectionJob extends DurableObject<Env> {
     let outcome = unavailable()
     try {
       await this.ctx.storage.setAlarm(state.deadline)
-      const configuration = this.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON
+      const configuration = this.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256
       const bucket = this.env.PYTHON_INPUTS
       const runtimeBucket = this.env.PRO_ARTIFACTS
       const namespace = this.env.ProBuildSandbox
@@ -194,7 +195,7 @@ export class PythonInspectionJob extends DurableObject<Env> {
         if (
           current.status !== 'running' ||
           Date.now() >= current.deadline ||
-          this.env.STUDIO_PYTHON_DISTRIBUTIONS_JSON !== configuration ||
+          this.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 !== configuration ||
           this.env.PYTHON_INPUTS !== bucket ||
           this.env.PRO_ARTIFACTS !== runtimeBucket ||
           this.env.ProBuildSandbox !== namespace ||
@@ -204,7 +205,10 @@ export class PythonInspectionJob extends DurableObject<Env> {
           throw new Error('O job Python foi retirado.')
       }
       check()
-      const registry = await createConfiguredPythonRuntime(configuration)
+      const registry = await this.pythonRegistry(runtimeBucket, configuration, {
+        signal,
+        assertCurrent: check,
+      })
       check()
       const validation = state.operation
       const response = await handlePythonRequest(
