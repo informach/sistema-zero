@@ -1,10 +1,10 @@
 ---
 import { quizDefinition } from '../../../analytics/quiz-definition'
-import ComunidadeQuizLayout from '../../../components/funnel/ComunidadeQuizLayout.astro'
 import DesafioQuizLayout from '../../../components/funnel/DesafioQuizLayout.astro'
+import QuizConversaLayout from '../../../components/funnel/QuizConversaLayout.astro'
 import { QUIZ_ENTRY } from '../../../funnels/comunidade-dos-criadores/quiz/entry-copy'
 import { DESAFIO_QUIZ_ENTRY } from '../../../funnels/desafio-primeiro-jogo/quiz/entry-copy'
-import { getFunnel, quizHeadlineId } from '../../../funnels/registry'
+import { getFunnel, getFunnelByKey, quizHeadlineId } from '../../../funnels/registry'
 import ComunidadeQuiz from '../../../islands/ComunidadeQuiz'
 import DesafioQuiz from '../../../islands/DesafioQuiz'
 import Quiz from '../../../islands/Quiz'
@@ -28,6 +28,9 @@ const quizDefinitionId = quizDefinition(f)!.id
 // Teste A/B da manchete (quizzes que declaram `headlines`): `?manchete=<id>` mostra a
 // alternativa; o resto, a padrão.
 const headline = quizHeadlineId(quiz, Astro.url.searchParams.get('manchete'))
+// Kids, 18 ou mais: a saída leva ao quiz adulto quando o funil adulto está registrado.
+const adulto = getFunnelByKey('pro/comunidade-dos-criadores')
+const adultQuizPath = adulto?.steps.quiz ? `${adulto.basePath}/quiz` : undefined
 // Ao concluir: vai ao diagnóstico (se o funil tiver) ou direto à oferta.
 const donePath = f.steps.resultado ? `${f.basePath}/resultado` : `${f.basePath}/oferta`
 
@@ -46,10 +49,10 @@ const q1Images =
     <noscript><p class="wrap cq-panel">Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </DesafioQuizLayout>
 ) : quiz.presentation === 'comunidade' ? (
-  <ComunidadeQuizLayout title={`${QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={QUIZ_ENTRY.description} imagesBase={f.imagesBase} ogImage={new URL(`${f.imagesBase}/zappy-happy.webp`, Astro.site ?? Astro.url).toString()}>
-    <ComunidadeQuiz client:load funnel={f.key} basePath={f.basePath} imagesBase={f.imagesBase} quizDefinitionId={quizDefinitionId} headline={headline} />
-    <noscript><p class="wrap cq-panel">Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
-  </ComunidadeQuizLayout>
+  <QuizConversaLayout title={`${QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={QUIZ_ENTRY.description} ogImage={new URL(`${f.imagesBase}/zappy-happy.webp`, Astro.site ?? Astro.url).toString()} tema="kids">
+    <ComunidadeQuiz client:load funnel={f.key} basePath={f.basePath} imagesBase={f.imagesBase} quizDefinitionId={quizDefinitionId} headline={headline} adultQuizPath={adultQuizPath} />
+    <noscript><p>Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
+  </QuizConversaLayout>
 ) : (<BaseLayout
   title={`Quiz | ${f.productName}`}
   description={f.seoDescription}

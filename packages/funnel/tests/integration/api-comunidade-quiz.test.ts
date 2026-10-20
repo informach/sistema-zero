@@ -11,7 +11,8 @@ const funnel = 'kids/comunidade-dos-criadores'
 const fixture = (): QuizAnswers => ({
   _quiz_version: QUIZ_VERSION,
   _quiz_revision: 9,
-  crianca: 'filho_9_11',
+  genero: 'filho',
+  idade: '9_12',
   tempo_tela: '2_4h',
   computador: 'sim',
   cena: 'B',
@@ -35,7 +36,7 @@ const request = (method: string, body: Record<string, unknown>, id?: string) =>
 async function setup(answers: QuizAnswers = {}) {
   const fake = createFakeRepo()
   const { id } = await fake.repo.createLead(funnel)
-  await fake.repo.updateLead(id, { quizAnswers: answers, perfilResultado: 'criacao-de-jogos' })
+  await fake.repo.updateLead(id, { quizAnswers: answers, perfilResultado: '9a17-jogos' })
   return { ...fake, id, deps: { repo: fake.repo, secureCookie: false } }
 }
 
@@ -43,6 +44,7 @@ describe('API do quiz da Comunidade', () => {
   test.each([
     'comunidade-orientacao-v3',
     'comunidade-orientacao-v4',
+    'comunidade-orientacao-v5',
   ])('%s inicia novo lead sem reinterpretar nem apagar respostas', async (version) => {
     const oldAnswers = { ...fixture(), _quiz_version: version }
     const { deps, id, repo } = await setup(oldAnswers)
@@ -56,10 +58,10 @@ describe('API do quiz da Comunidade', () => {
   // Uma aba aberta antes do deploy grava num lead de outra versão: o `applyAnswer` tomaria as
   // respostas antigas por vazias e apagaria o lead (com a 1ª pergunta) ou travaria o pai.
   test.each([
-    ['crianca', 'filho_9_11'],
+    ['genero', 'filha'],
     ['quando_trava', 'tenta'],
-  ])('a aba antiga não grava em lead v4 (%s): pede para retomar', async (key, value) => {
-    const oldAnswers = { ...fixture(), _quiz_version: 'comunidade-orientacao-v4' }
+  ])('a aba antiga não grava em lead v5 (%s): pede para retomar', async (key, value) => {
+    const oldAnswers = { ...fixture(), _quiz_version: 'comunidade-orientacao-v5' }
     const { deps, id, repo } = await setup(oldAnswers)
     const response = await patchLead(
       request('PATCH', { key, value, funnel, revision: 9 }, id),
@@ -104,7 +106,7 @@ describe('API do quiz da Comunidade', () => {
   })
   test('exige cookie, funil, revisão e pergunta ativa', async () => {
     const { deps, id } = await setup()
-    const body = { key: 'crianca', value: 'filha_12_14', funnel, revision: 0 }
+    const body = { key: 'genero', value: 'filha', funnel, revision: 0 }
     expect((await patchLead(request('PATCH', body), deps)).status).toBe(401)
     expect(
       (
@@ -135,7 +137,7 @@ describe('API do quiz da Comunidade', () => {
     const lead = await repo.getLead(id)
     expect(lead?.quizAnswers?.ferramenta).toBeUndefined()
     expect(lead?.quizAnswers?.garantia).toBe('recorrer')
-    expect(lead?.perfilResultado).toBe('formacao-tecnologica')
+    expect(lead?.perfilResultado).toBe('9a17-programacao')
   })
   test('perfil novo com pergunta extra fica incompleto até ela ser respondida', async () => {
     const { deps, id, repo } = await setup(fixture())
@@ -153,7 +155,7 @@ describe('API do quiz da Comunidade', () => {
       deps,
     )
     expect((await done.json()).complete).toBe(true)
-    expect((await repo.getLead(id))?.perfilResultado).toBe('habilidades-escolares')
+    expect((await repo.getLead(id))?.perfilResultado).toBe('9a17-escola')
   })
   test('a manchete exibida vai na atribuição do lead (teste A/B)', async () => {
     const fake = createFakeRepo()
@@ -196,9 +198,10 @@ describe('API do quiz da Comunidade', () => {
     expect(events.find((e) => e.eventName === 'quiz_feedback')?.metadata).toMatchObject({
       feedback: 'nao_representa',
       revision: 9,
-      perfil: 'criacao-de-jogos',
+      perfil: '9a17-jogos',
+      ramo: '9a17',
     })
-    expect((await repo.getLead(id))?.perfilResultado).toBe('criacao-de-jogos')
+    expect((await repo.getLead(id))?.perfilResultado).toBe('9a17-jogos')
     await repo.updateLead(id, { quizAnswers: {} })
     expect(
       (await quizFeedback(request('POST', { feedback: 'sim', revision: 0 }, id), deps)).status,
@@ -213,5 +216,37 @@ describe('API do quiz da Comunidade', () => {
     expect(next.answers).toEqual({})
     expect(res.headers.get('set-cookie')).toContain(`${LEAD_COOKIE}=${next.id}`)
     expect((await repo.getLead(id))?.quizAnswers).toEqual(fixture())
+  })
+  test('a idade abre o ramo: o servidor grava a entrada no ramo uma vez por lead', async () => {
+    const { deps, id, events, repo } = await setup()
+    const salvar = async (key: string, value: string) => {
+      const revision = Number((await repo.getLead(id))?.quizAnswers?._quiz_revision ?? 0)
+      return patchLead(request('PATCH', { key, value, funnel, revision }, id), deps)
+    }
+    expect((await salvar('genero', 'filha')).status).toBe(200)
+    expect(events.some((e) => e.eventName.startsWith('entrou_ramo_'))).toBe(false)
+    expect((await salvar('idade', 'menos_9')).status).toBe(200)
+    expect((await salvar('idade', '9_12')).status).toBe(200)
+    expect((await salvar('idade', 'menos_9')).status).toBe(200)
+    const ramos = events.filter((e) => e.eventName.startsWith('entrou_ramo_'))
+    expect(ramos.map((e) => e.eventName)).toEqual(['entrou_ramo_m9', 'entrou_ramo_9a17'])
+    // A posição gravada é a da lista ativa do percurso, e a pergunta do ramo leva o ramo.
+    expect((await salvar('m9_leitura', 'nao_le')).status).toBe(200)
+    const resposta = events.filter((e) => e.eventName === 'respondeu_comunidade_v6_m9_leitura')
+    expect(resposta.at(-1)?.metadata).toMatchObject({ revision: expect.any(Number) })
+  })
+  test('18 ou mais: a entrada no ramo de saída é gravada e o quiz não completa', async () => {
+    const { deps, id, events, repo } = await setup()
+    await patchLead(
+      request('PATCH', { key: 'genero', value: 'filho', funnel, revision: 0 }, id),
+      deps,
+    )
+    const res = await patchLead(
+      request('PATCH', { key: 'idade', value: '18_mais', funnel, revision: 1 }, id),
+      deps,
+    )
+    expect((await res.json()).complete).toBe(false)
+    expect(events.map((e) => e.eventName)).toContain('entrou_ramo_adulto')
+    expect((await repo.getLead(id))?.perfilResultado).toBeNull()
   })
 })

@@ -4,13 +4,16 @@ import { join } from 'node:path'
 import {
   ARQUIVOS_ESPELHO,
   espelhoDaPagina,
+  espelhoDoModulo,
+  MODULOS_ESPELHO,
   PASTA_ESPELHO,
 } from '../../scripts/espelho-copy-comunidade'
 import {
+  COMUNIDADE_OFERTAS_ANTIGAS,
   COMUNIDADE_PAGES,
   comunidadeOfferPath,
-  isComunidadePage,
-  isComunidadeProfile,
+  isComunidadeOfertaAntiga,
+  isComunidadeSubpagina,
 } from '../../src/funnels/comunidade-dos-criadores/oferta'
 import {
   ENFASE_NUMA_LINHA,
@@ -21,11 +24,15 @@ import {
 import { comDestaques } from '../../src/funnels/comunidade-dos-criadores/oferta/destacar'
 import { DESTAQUES } from '../../src/funnels/comunidade-dos-criadores/oferta/destaques'
 import { calcularEconomiaAnual } from '../../src/funnels/comunidade-dos-criadores/oferta/economia'
-import { RELATOS } from '../../src/funnels/comunidade-dos-criadores/oferta/relatos'
+import {
+  PAGINA_9A17,
+  RELATOS_9A17,
+} from '../../src/funnels/comunidade-dos-criadores/oferta/pagina-9a17'
+import { PAGINA_MENOR9 } from '../../src/funnels/comunidade-dos-criadores/oferta/pagina-menor9'
+import { RELATOS, RELATOS_RESERVA } from '../../src/funnels/comunidade-dos-criadores/oferta/relatos'
 import {
   FAQ,
   FAQ_EXTRA,
-  FOUNDER_COM_ESCOLA,
   FOUNDER_SEM_RELATO,
   SHARED_COPY,
 } from '../../src/funnels/comunidade-dos-criadores/oferta/shared'
@@ -43,50 +50,73 @@ import {
 const SRC = join(import.meta.dir, '..', '..', 'src')
 const source = (...parts: string[]) => readFileSync(join(SRC, ...parts), 'utf8')
 const raw = source('components', 'funnel', 'oferta', 'ComunidadeOfertaBody.astro')
+const raw917 = source('components', 'funnel', 'oferta', 'Comunidade917Body.astro')
+const rawMenor9 = source('components', 'funnel', 'oferta', 'ComunidadeMenor9Body.astro')
 const publicCopy = JSON.stringify({
   pages: COMUNIDADE_PAGES,
+  pagina917: PAGINA_9A17,
+  paginaMenor9: PAGINA_MENOR9,
   shared: SHARED_COPY,
   faq: FAQ,
   extra: FAQ_EXTRA,
   relatos: RELATOS,
 })
+/** Os ids de relato citados num módulo de copy (`id: 'AV08'` ou `RELATOS.AV10`). */
+const relatosNoModulo = (...partes: string[]) =>
+  new Set(
+    [
+      ...source(...partes).matchAll(
+        /(?:id: '|relato: '|RELATOS\.|legendaDoRelato\(')((?:AV|N)\d+)/g,
+      ),
+    ].map((m) => m[1] as RelatoId),
+  )
 
-// Contratos editoriais e comerciais dos perfis e variantes. Verificação do HTML,
-// âncoras, imagens carregadas, responsividade e modal complementa estes testes no navegador.
-describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
-  test('mantém os quatro perfis com variantes editoriais de endereço próprio', () => {
-    expect(comunidadeOfferPath('tempo-de-tela')).toBe('/kids/comunidade-dos-criadores/oferta')
-    for (const profile of [
+// Contratos editoriais e comerciais das páginas de oferta Kids (20/10/2026): 9 a 17 em `/oferta`,
+// "criar junto" (menor de 9) e a continuidade. O HTML, as âncoras e a responsividade ficam nos
+// testes de navegador.
+describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
+  test('três endereços; as cinco páginas de perfil de antes redirecionam para a de 9 a 17', () => {
+    expect(comunidadeOfferPath('9a17')).toBe('/kids/comunidade-dos-criadores/oferta')
+    expect(comunidadeOfferPath('criar-junto')).toBe(
+      '/kids/comunidade-dos-criadores/oferta/criar-junto',
+    )
+    expect(comunidadeOfferPath('continuar')).toBe('/kids/comunidade-dos-criadores/oferta/continuar')
+    for (const id of ['criar-junto', 'continuar']) expect(isComunidadeSubpagina(id)).toBe(true)
+    for (const value of [undefined, '', '9a17', 'tempo-de-tela', 'toString', '__proto__'])
+      expect(isComunidadeSubpagina(value)).toBe(false)
+    expect([...COMUNIDADE_OFERTAS_ANTIGAS].sort()).toEqual([
       'criacao-de-jogos',
       'expressao-visual',
       'formacao-tecnologica',
-    ] as const) {
-      expect(comunidadeOfferPath(profile)).toBe(`/kids/comunidade-dos-criadores/oferta/${profile}`)
-      expect(isComunidadeProfile(profile)).toBe(true)
-    }
-    for (const value of [undefined, '', 'toString', '__proto__', 'adultos']) {
-      expect(isComunidadeProfile(value)).toBe(false)
-    }
-    expect(new Set(Object.values(COMUNIDADE_PAGES).map((page) => page.seoTitle)).size).toBe(6)
-    expect(Object.keys(COMUNIDADE_PAGES).filter(isComunidadeProfile)).toHaveLength(4)
+      'habilidades-escolares',
+      'tempo-de-tela',
+    ])
+    for (const id of COMUNIDADE_OFERTAS_ANTIGAS) expect(isComunidadeOfertaAntiga(id)).toBe(true)
+    expect(isComunidadeOfertaAntiga('continuar')).toBe(false)
+    const rota = source('pages', '[audience]', '[produto]', 'oferta', '[perfilOferta].astro')
+    expect(rota).toContain(
+      `Astro.redirect(\`/kids/comunidade-dos-criadores/oferta${'$'}{Astro.url.search}\`, 301)`,
+    )
+    // O corpo é escolhido pela chave do funil: um funil novo nunca cai na página do Desafio.
+    const despacho = source('components', 'funnel', 'OfertaPage.astro')
+    expect(despacho).toContain('Funil sem corpo de oferta declarado')
+    expect(despacho).toContain("comunidadePage === 'criar-junto'")
   })
 
-  test('habilidades escolares tem rota própria e não vira perfil de quiz', () => {
-    expect(isComunidadePage('habilidades-escolares')).toBe(true)
-    expect(isComunidadeProfile('habilidades-escolares')).toBe(false)
-    expect(comunidadeOfferPath('habilidades-escolares')).toBe(
-      '/kids/comunidade-dos-criadores/oferta/habilidades-escolares',
-    )
-    const page = COMUNIDADE_PAGES['habilidades-escolares']
-    expect(page.tourAfterSection).toBe(page.sections[0]?.id)
-    expect(page.offer).toBeUndefined()
-    const ids = page.faqGroups.flatMap((group) => group.questions)
-    expect(new Set(ids).size).toBe(ids.length)
-    expect([...ids].sort()).toEqual(Object.keys(page.faq ?? {}).sort())
-    expect(Object.keys(page.faqVisuals ?? {}).sort()).toEqual([...ids].sort())
-    for (const id of Object.keys(FAQ)) expect(ids).toContain(id)
-    for (const id of Object.values(page.faqVisuals ?? {}).flat())
-      expect(id in COMUNIDADE_VISUALS || id in PENDING_VISUALS).toBe(true)
+  test('as páginas novas: sem "Jogue um jogo", sem preço escrito à mão, termos da oferta', () => {
+    for (const [nome, modulo] of [
+      ['9a17', PAGINA_9A17],
+      ['criar-junto', PAGINA_MENOR9],
+    ] as const) {
+      const texto = JSON.stringify(modulo)
+      expect([nome, /jogue um jogo/i.test(texto)]).toEqual([nome, false])
+      expect([nome, /R\$\s*\d/.test(texto)]).toEqual([nome, false])
+      expect([nome, /[—–]/.test(texto)]).toEqual([nome, false])
+      expect([nome, /mesmo que|sem precisar|em preparação/i.test(texto)]).toEqual([nome, false])
+      expect([nome, texto.includes('/kids/comunidade-dos-criadores/termos')]).toEqual([nome, true])
+      expect([nome, texto.includes('/privacidade')]).toEqual([nome, true])
+    }
+    expect(PAGINA_9A17.seoTitle).not.toBe(PAGINA_MENOR9.seoTitle)
   })
 
   test('o tour configurado tem destino único e os CTAs apontam para seções existentes', () => {
@@ -107,26 +137,9 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
     }
   })
 
-  test('cada perfil tem todas as respostas comuns, sem duplicação, com uma prioridade própria', () => {
-    // Proposta de 16/10/2026: 26 respostas comuns; Roblox, Desafio e desenho só onde importam.
-    const questions = Object.keys(FAQ)
-    expect(questions).toHaveLength(26)
-    const permitidas = new Set([...questions, ...Object.keys(FAQ_EXTRA)])
-    const priorities = new Set<string>()
-    for (const page of Object.values(COMUNIDADE_PAGES).filter((page) =>
-      isComunidadeProfile(page.id),
-    )) {
-      const ids = page.faqGroups.flatMap((group) => group.questions)
-      for (const id of questions) expect([page.id, ids.includes(id)]).toEqual([page.id, true])
-      for (const id of ids) expect([page.id, id, permitidas.has(id)]).toEqual([page.id, id, true])
-      expect(new Set(ids).size).toBe(ids.length)
-      priorities.add(ids.slice(0, 6).join(','))
-      expect(page.hero.title).toContain(page.emphasis)
-      expect(page.faqTitle).toBe('Mais sobre a experiência do seu filho')
-      expect(page.sections.length).toBeGreaterThanOrEqual(7)
-      expect(new Set(page.sections.map((section) => section.id)).size).toBe(page.sections.length)
-    }
-    expect(priorities.size).toBe(4)
+  test('as respostas comuns da continuidade', () => {
+    // Proposta de 16/10/2026: 26 respostas comuns; a continuidade escolhe as dela.
+    expect(Object.keys(FAQ)).toHaveLength(26)
     expect(FAQ.programacao.question).not.toContain('desenhar')
     expect(FAQ.desenho.question).not.toContain('programar')
     expect(FAQ.ia.paragraphs.join(' ')).toContain('Pensa')
@@ -152,9 +165,6 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
   })
 
   test('continuidade tem endereço próprio, sem a variante por origem', () => {
-    expect(comunidadeOfferPath('continuar')).toBe('/kids/comunidade-dos-criadores/oferta/continuar')
-    expect(isComunidadePage('continuar')).toBe(true)
-    expect(isComunidadeProfile('continuar')).toBe(false)
     expect(raw).not.toContain('posDesafio')
     expect(source('server', 'offer-page.ts')).not.toContain("searchParams.get('origem')")
     const page = COMUNIDADE_PAGES.continuar
@@ -173,6 +183,10 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
     for (const [id, arquivo] of Object.entries(ARQUIVOS_ESPELHO)) {
       const doc = readFileSync(join(PASTA_ESPELHO, arquivo), 'utf8').replaceAll('\r\n', '\n')
       expect(doc).toBe(espelhoDaPagina(COMUNIDADE_PAGES[id as ComunidadePageId]))
+    }
+    for (const { arquivo, modulo } of Object.values(MODULOS_ESPELHO)) {
+      const doc = readFileSync(join(PASTA_ESPELHO, arquivo), 'utf8').replaceAll('\r\n', '\n')
+      expect([arquivo, doc]).toEqual([arquivo, espelhoDoModulo(modulo)])
     }
   })
 
@@ -201,6 +215,18 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
   })
 
   test('preços vêm do catálogo e cada plano mantém sua seleção no pré-checkout', () => {
+    for (const corpo of [raw917, rawMenor9]) {
+      expect(corpo).toContain('plans?.main.intervalMonths === n')
+      expect(corpo).toContain('mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents')
+      expect(corpo).toContain('anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents')
+      expect(corpo).toContain('calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)')
+      expect(corpo).toContain('data-checkout-oferta={mensal?.slug}')
+      expect(corpo).toContain('data-checkout-oferta={anual?.slug}')
+      expect(corpo.match(/data-checkout-cta/g)).toHaveLength(2)
+      expect(corpo).toContain('<PreCheckoutModal')
+      // O rodapé leva ao Termo da oferta (`termosHref={`${f.basePath}/termos`}`).
+      expect(corpo).toContain(`termosHref={\`${'$'}{f.basePath}/termos\`}`)
+    }
     expect(raw).toContain('plans?.main.intervalMonths === n')
     expect(raw).toContain('mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents')
     expect(raw).toContain('anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents')
@@ -331,9 +357,7 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
   })
 
   test('nenhuma demonstração se repete no corpo de uma página', () => {
-    // A única repetição pensada: na D a tela da aprendizagem do herói volta em "o que você
-    // acompanha", ao lado do parágrafo que ela demonstra.
-    const permitidas: Record<string, string[]> = { 'formacao-tecnologica': ['aprendizagem'] }
+    const permitidas: Record<string, string[]> = {}
     for (const page of Object.values(COMUNIDADE_PAGES)) {
       const telas = [
         page.heroVisual,
@@ -368,7 +392,7 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
     }
     textos.set(
       'origem',
-      [SHARED_COPY.founder, FOUNDER_SEM_RELATO, FOUNDER_COM_ESCOLA].map((founder) =>
+      [SHARED_COPY.founder, FOUNDER_SEM_RELATO].map((founder) =>
         founder.groups.flatMap((group) => group.paragraphs),
       ),
     )
@@ -435,22 +459,40 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
         if (section.layout === 'band') expect(section.falas ?? []).toEqual([])
       }
     }
-    // Toda fala guardada aparece em alguma página (como carta ou citada numa dúvida), e o convite
-    // final, que o corpo monta sem relatos, não declara falas que nunca apareceriam.
-    const citadas = new Set<string>(
-      Object.values(COMUNIDADE_PAGES).flatMap((page) => [
+    // Toda fala guardada aparece em alguma página (continuidade, 9 a 17, criar junto, cartas do
+    // resultado do quiz ou citada numa dúvida) ou está na reserva, com o motivo. O convite final,
+    // que o corpo monta sem relatos, não declara falas.
+    const citadas = new Set<string>([
+      ...Object.values(COMUNIDADE_PAGES).flatMap((page) => [
         ...page.sections.flatMap((section) => section.falas ?? []),
         ...(page.showFounder === false ? [] : ((page.founder ?? SHARED_COPY.founder).falas ?? [])),
         ...((page.offer ?? SHARED_COPY.offer).falas ?? []),
       ]),
-    )
+      ...RELATOS_9A17,
+      ...relatosNoModulo('funnels', 'comunidade-dos-criadores', 'oferta', 'pagina-menor9.ts'),
+      ...relatosNoModulo('funnels', 'comunidade-dos-criadores', 'quiz', 'result-copy-9a17.ts'),
+      ...relatosNoModulo('funnels', 'comunidade-dos-criadores', 'quiz', 'result-copy-m9.ts'),
+    ])
+    for (const id of relatosNoModulo(
+      'funnels',
+      'comunidade-dos-criadores',
+      'oferta',
+      'pagina-menor9.ts',
+    ))
+      expect([id, id in RELATOS]).toEqual([id, true])
+    for (const id of RELATOS_9A17) expect([id, id in RELATOS]).toEqual([id, true])
     const duvidas = JSON.stringify([
       FAQ,
       FAQ_EXTRA,
       ...Object.values(COMUNIDADE_PAGES).map((page) => page.faq),
     ])
-    for (const [id, relato] of Object.entries(RELATOS))
-      expect([id, citadas.has(id) || duvidas.includes(relato.fala)]).toEqual([id, true])
+    for (const [id, relato] of Object.entries(RELATOS)) {
+      const citada = citadas.has(id) || duvidas.includes(relato.fala)
+      const reserva = id in RELATOS_RESERVA
+      // Citada e na reserva ao mesmo tempo seria uma reserva esquecida.
+      expect([id, citada !== reserva]).toEqual([id, true])
+    }
+    for (const motivo of Object.values(RELATOS_RESERVA)) expect(motivo?.length).toBeGreaterThan(20)
     for (const page of Object.values(COMUNIDADE_PAGES))
       expect([page.id, page.closing.falas ?? []]).toEqual([page.id, []])
   })

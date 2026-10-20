@@ -18,17 +18,31 @@ const body = readFileSync(
 // O layout saiu do <style> do body para um arquivo próprio (01/10/2026): continua prefixado por `.cdc`.
 const layoutCss = readFileSync(join(SRC, 'styles', 'comunidade-oferta.css'), 'utf8')
 const semComentarios = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '')
+/**
+ * As páginas e o resultado de 20/10/2026, cada um com o seu prefixo: a mesma regra de tokens.
+ * `resultado-conversa.css` e `quiz-spin.css` também desenham o tema adulto, pelos tokens `--cda-*`
+ * do theme-arcade.
+ */
+const novos = {
+  'comunidade-917.css': '.c917',
+  'comunidade-menor9.css': '.cm9',
+  'resultado-conversa.css': '.rc',
+  'quiz-spin.css': '.qz',
+} as const
+const novosCss = Object.fromEntries(
+  Object.keys(novos).map((nome) => [nome, readFileSync(join(SRC, 'styles', nome), 'utf8')]),
+) as Record<keyof typeof novos, string>
 
 describe('Comunidade: o CSS da oferta só fala por tokens', () => {
   test('nenhuma cor própria: sem hexadecimal, rgb(), hsl() ou oklch()', () => {
-    for (const css of [semComentarios(receitas), semComentarios(layoutCss)]) {
+    for (const css of [receitas, layoutCss, ...Object.values(novosCss)].map(semComentarios)) {
       expect(css).not.toMatch(/#[0-9a-f]{3,8}\b/i)
       expect(css).not.toMatch(/\b(rgba?|hsla?|oklch|oklab)\(/)
     }
   })
 
   test('color-mix sempre em oklab, e nunca !important', () => {
-    for (const css of [semComentarios(receitas), semComentarios(layoutCss)]) {
+    for (const css of [receitas, layoutCss, ...Object.values(novosCss)].map(semComentarios)) {
       for (const [mix] of css.matchAll(/color-mix\([^)]*\)/g)) expect(mix).toContain('in oklab')
       expect(css).not.toContain('!important')
     }
@@ -63,6 +77,15 @@ describe('Comunidade: o CSS da oferta só fala por tokens', () => {
     expect(semComentarios(layoutCss)).not.toContain('var(--sz-')
     // Os blocos de `@media` só agrupam regras já prefixadas: nenhum seletor nu dentro deles.
     expect(layoutCss).not.toMatch(/@media[^{]*\{\s*[a-z]/)
+    for (const [nome, prefixo] of Object.entries(novos)) {
+      const css = novosCss[nome as keyof typeof novos]
+      for (const sel of seletores(css))
+        for (const parte of sel.split(','))
+          expect([nome, parte.trim().startsWith(prefixo)]).toEqual([nome, true])
+      expect([nome, semComentarios(css).includes('var(--sz-')]).toEqual([nome, false])
+      expect([nome, /@media[^{]*\{\s*[a-z]/.test(css)]).toEqual([nome, false])
+      expect([nome, css.includes('overflow-x: hidden')]).toEqual([nome, false])
+    }
   })
 
   test('o body importa as receitas e o layout carrega a Baloo 800 (os títulos são 800)', () => {

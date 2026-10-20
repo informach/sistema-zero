@@ -1,28 +1,47 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import type { SelecaoStep } from '../content/quiz-config'
 import {
   activeCommunitySteps,
   answerList,
   childGender,
+  communityBranch,
   completesQuiz,
+  isAdultExit,
   isCommunityQuizComplete,
-  isOutsideCommunityAge,
   QUIZ_VERSION,
-  quizRevision,
   stepOnScreen,
   validChoice,
 } from '../funnels/comunidade-dos-criadores/quiz/engine'
 import {
+  ADULT_EXIT,
   QUIZ_ENTRY,
   QUIZ_HEADLINES,
-  type QuizHeadlineId,
   quizHeadlineId,
+  STAGE_LABELS,
 } from '../funnels/comunidade-dos-criadores/quiz/entry-copy'
 import { flexionar } from '../funnels/comunidade-dos-criadores/quiz/genero'
-import { COMMUNITY_QUESTIONS } from '../funnels/comunidade-dos-criadores/quiz/questions'
-import { ApiError, apiPatch, apiPost } from '../lib/api-fetch'
-import { leadAttributionFromLocation } from '../lib/lead-attribution'
-import type { QuizAnswers, QuizAnswerValue } from '../lib/quiz-types'
+import { GENERO_STEP, IDADE_STEP } from '../funnels/comunidade-dos-criadores/quiz/questions'
+import type { QuizAnswerValue } from '../lib/quiz-types'
+import {
+  INTRO,
+  orderedOptions,
+  REVIEW,
+  type SpinEngine,
+  useSpinQuiz,
+} from './spin-quiz/useSpinQuiz'
+
+// Quiz v6 da Comunidade Kids (20/10/2026, Canvas de 19/10): filho ou filha em duas cartas na
+// entrada, a idade em três cartas e as perguntas do ramo, uma por tela. Tocar numa opção já grava
+// e segue. O ramo menor de 9 ganha a pele pastel; 18 ou mais termina na saída para o quiz adulto.
+
+const EXIT = 'saida-adulto'
+const ENGINE: SpinEngine = {
+  version: QUIZ_VERSION,
+  activeSteps: activeCommunitySteps,
+  validChoice,
+  isComplete: isCommunityQuizComplete,
+  exitCursor: (answers) => (isAdultExit(answers) ? EXIT : null),
+}
 
 interface Props {
   funnel: string
@@ -31,67 +50,41 @@ interface Props {
   quizDefinitionId?: string
   /** Variante da manchete resolvida no servidor (`?manchete=`); vai na atribuição do lead. */
   headline?: string
+  /** O quiz adulto, quando o funil adulto está no ar; sem ele, a saída volta à página inicial. */
+  adultQuizPath?: string
+  /** Para onde "Sair" leva (a bio). */
+  exitPath?: string
 }
-interface Session {
-  id: string
-  answers: QuizAnswers
-  sessionToken: string
-}
-// SPIN em três etapas: a rotina (situação), o que acontece em casa (problema e implicação) e o
-// que a família quer ver (necessidade e diagnóstico final).
-const stages = [
-  ['rotina', 'A rotina'],
-  ['casa', 'O que acontece em casa'],
-  ['desejo', 'O que você quer'],
-] as const
 
-/** O chip de cada etapa: o mesmo desenho dos capítulos da oferta (ícone e cor de unidade). */
-const STAGE_CHIP = {
-  rotina: { cor: 'cor-azul', icone: 'schedule', texto: 'A rotina dele' },
-  casa: { cor: 'cor-rosa', icone: 'home', texto: 'O que acontece em casa' },
-  desejo: { cor: 'cor-verde', icone: 'favorite', texto: 'O que você quer' },
-} as const
-
-const FIRST_STEP = COMMUNITY_QUESTIONS[0]!
-
-function Eyebrow({ icon, children }: { icon: string; children: string }) {
+function Topo({ imagesBase, exitPath }: { imagesBase: string; exitPath: string }) {
   return (
-    <span className="kof-eyebrow">
-      <span className="material-symbols-rounded" aria-hidden="true">
-        {icon}
-      </span>
-      {children}
-    </span>
+    <header className="qz-topo">
+      <img
+        className="qz-logo"
+        src={`${imagesBase}/logo-kids-claro.svg`}
+        alt="Sistema Zero Kids"
+        width="287"
+        height="22"
+      />
+      <a className="qz-sair" href={exitPath}>
+        {QUIZ_ENTRY.sair}
+      </a>
+    </header>
   )
 }
 
-/** A manchete com o trecho em destaque (o mesmo `<em>` das ofertas). */
-function Headline({ id }: { id: QuizHeadlineId }) {
+/** A manchete com o trecho em destaque. */
+function Manchete({ id }: { id: keyof typeof QUIZ_HEADLINES }) {
   const { title, emphasis } = QUIZ_HEADLINES[id]
   const at = title.indexOf(emphasis)
-  if (at < 0) return <h1 className="kof-display">{title}</h1>
+  if (at < 0) return <h1 className="qz-manchete">{title}</h1>
   return (
-    <h1 className="kof-display">
+    <h1 className="qz-manchete">
       {title.slice(0, at)}
       <em>{emphasis}</em>
       {title.slice(at + emphasis.length)}
     </h1>
   )
-}
-
-/** Stable within a lead, including refreshes; ordering never changes the decision. */
-export function orderedOptions(step: SelecaoStep, seed: string): SelecaoStep['opcoes'] {
-  if (!step.shuffle) return step.opcoes
-  const movable = step.opcoes.filter((o) => !step.fixedLast?.includes(o.value))
-  let hash = 2166136261
-  for (const char of `${seed}:${step.key}`)
-    hash = Math.imul(hash ^ char.charCodeAt(0), 16777619) >>> 0
-  for (let i = movable.length - 1; i > 0; i--) {
-    hash = (Math.imul(hash, 1664525) + 1013904223) >>> 0
-    const j = hash % (i + 1)
-    ;[movable[i], movable[j]] = [movable[j]!, movable[i]!]
-  }
-  return [...movable, ...step.opcoes.filter((o) => step.fixedLast?.includes(o.value))]
 }
 
 export default function ComunidadeQuiz({
@@ -100,505 +93,321 @@ export default function ComunidadeQuiz({
   imagesBase,
   quizDefinitionId,
   headline: headlineParam,
+  adultQuizPath,
+  exitPath = '/',
 }: Props) {
   const headline = quizHeadlineId(headlineParam)
-  const [session, setSession] = useState<Session | null>(null)
-  const [cursor, setCursor] = useState('intro')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const [conflict, setConflict] = useState(false)
-  const [updated, setUpdated] = useState(false)
-  const locked = useRef(false)
+  const quiz = useSpinQuiz({ funnel, basePath, quizDefinitionId, headline, engine: ENGINE })
+  const { current, steps, cursor, busy, error, conflict, updated, session } = quiz
   const heading = useRef<HTMLHeadingElement>(null)
-  const answers = session?.answers ?? {}
-  const current = answers._quiz_version === QUIZ_VERSION ? answers : {}
-  const steps = activeCommunitySteps(current)
-  const step = steps.find((s) => s.key === cursor)
-  const complete = isCommunityQuizComplete(current)
-  const firstMissing = steps.find((s) => !validChoice(s, current[s.key]))?.key ?? FIRST_STEP.key
   const genero = childGender(current)
-  // A variante da manchete viaja na atribuição (first-touch) para o teste A/B do /admin.
-  const attribution = () => ({
-    ...(leadAttributionFromLocation(window.location) ?? { landingPath: window.location.pathname }),
-    quizHeadline: headline,
-  })
-
-  const receive = useCallback((data: Session, restart = false, navigate = true) => {
-    setSession(data)
-    setError('')
-    setConflict(false)
-    if (!navigate) return
-    const a = data.answers._quiz_version === QUIZ_VERSION ? data.answers : {}
-    const hash = window.location.hash.slice(1)
-    if (restart) setCursor('intro')
-    else if (hash === 'rever') setCursor('review')
-    else if (activeCommunitySteps(a).some((s) => s.key === hash)) setCursor(hash)
-    else if (isOutsideCommunityAge(a)) setCursor('age')
-    else setCursor('intro')
-  }, [])
-
-  async function load(restart = false) {
-    if (locked.current) return
-    locked.current = true
-    setBusy(true)
-    setError('')
-    try {
-      const data = await apiPost<Session>('/api/leads', {
-        funnel,
-        restartQuiz: restart,
-        quizDefinitionId,
-        attribution: attribution(),
-      })
-      if (restart)
-        window.history.replaceState(null, '', window.location.pathname + window.location.search)
-      receive(data, restart)
-    } catch (err) {
-      if (err instanceof ApiError && err.code === 'QUIZ_UPDATED') setUpdated(true)
-      setError('Não foi possível abrir suas respostas. Confira a conexão e tente novamente.')
-    } finally {
-      locked.current = false
-      setBusy(false)
-    }
-  }
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: a sessão abre uma vez por funil; a atribuição é lida da URL nesse momento.
-  useEffect(() => {
-    let active = true
-    apiPost<Session>('/api/leads', { funnel, quizDefinitionId, attribution: attribution() })
-      .then((data) => {
-        if (!active) return
-        receive(data)
-        // "Responder pensando em outra criança" no resultado chega aqui: a sessão nova nasce com
-        // a definição do quiz e a manchete (o resultado não conhece nenhuma das duas).
-        if (window.location.hash === '#outra-crianca') void load(true)
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && err.code === 'QUIZ_UPDATED') setUpdated(true)
-        if (active) setError('Não foi possível abrir o quiz. Confira a conexão e tente novamente.')
-      })
-    return () => {
-      active = false
-    }
-  }, [funnel, receive, quizDefinitionId])
+  const branch = communityBranch(current)
+  const pele = branch === 'm9' ? 'qz--m9' : 'qz--kids'
 
   useEffect(() => {
-    if (cursor !== 'intro') heading.current?.focus()
+    if (cursor !== INTRO) heading.current?.focus()
   }, [cursor])
 
-  function go(key: string) {
-    setError('')
-    setCursor(key)
-  }
-
-  async function save(key: string, value: QuizAnswerValue) {
-    if (locked.current || !session) return
-    locked.current = true
-    setBusy(true)
-    setError('')
-    try {
-      const data = await apiPatch<{ answers: QuizAnswers; complete: boolean }>('/api/leads', {
-        quizDefinitionId,
-        key,
-        value,
-        revision: quizRevision(answers),
-        sessionToken: session.sessionToken,
-        funnel,
-      })
-      setSession({ ...session, answers: data.answers })
-      window.history.replaceState(null, '', window.location.pathname + window.location.search)
-      if (isOutsideCommunityAge(data.answers)) setCursor('age')
-      else if (data.complete) window.location.assign(`${basePath}/resultado`)
-      else {
-        const next = activeCommunitySteps(data.answers).find(
-          (s) => !validChoice(s, data.answers[s.key]),
-        )
-        setCursor(next?.key ?? 'review')
-      }
-    } catch (err) {
-      if (err instanceof ApiError && err.code === 'QUIZ_UPDATED') setUpdated(true)
-      const stale = err instanceof ApiError && [401, 404, 409].includes(err.status)
-      setConflict(stale)
-      setError(
-        stale
-          ? 'As respostas desta sessão mudaram. Retome o que está salvo antes de continuar.'
-          : 'Não conseguimos salvar esta resposta. Sua escolha continua aqui. Tente novamente.',
-      )
-    } finally {
-      locked.current = false
-      setBusy(false)
-    }
-  }
-
   const errorView = error && (
-    <div className="cq-error" role="alert">
+    <div className="qz-erro" role="alert">
       <p>{updated ? 'O quiz foi atualizado. Atualize a página para continuar.' : error}</p>
-      {updated && (
-        <button className="cq-link" type="button" onClick={() => window.location.reload()}>
+      {updated ? (
+        <button className="qz-link" type="button" onClick={() => window.location.reload()}>
           Atualizar página
         </button>
-      )}
-      {!updated && (!session || conflict) && (
-        <button className="cq-link" type="button" disabled={busy} onClick={() => void load()}>
-          Retomar respostas salvas
-        </button>
+      ) : (
+        (!session || conflict) && (
+          <button
+            className="qz-link"
+            type="button"
+            disabled={busy}
+            onClick={() => void quiz.load()}
+          >
+            Retomar respostas salvas
+          </button>
+        )
       )}
     </div>
   )
-  if (cursor === 'intro') {
-    const started = quizRevision(current) > 0
-    return (
-      <main id="quiz" className="wrap cq-intro">
-        <div className="cq-intro-copy">
-          <Eyebrow icon="family_star">{QUIZ_ENTRY.eyebrow}</Eyebrow>
-          <Headline id={headline} />
-          <p className="kof-lead">{QUIZ_ENTRY.description}</p>
-          {errorView}
-          {started ? (
-            <div className="cq-actions">
-              <button
-                className="kof-btn kof-btn--grande"
-                type="button"
-                disabled={busy}
-                onClick={() =>
-                  complete ? window.location.assign(`${basePath}/resultado`) : go(firstMissing)
-                }
-              >
-                {complete ? 'Ver meu resultado' : 'Continuar de onde parei'}
-                <span aria-hidden="true">→</span>
-              </button>
-              <button className="cq-link" type="button" onClick={() => go('review')}>
-                Rever respostas
-              </button>
-            </div>
-          ) : (
-            // A P1 fica na própria entrada: clicar na criança e na idade já começa o quiz.
-            <section
-              className="cq-p1"
-              aria-labelledby="titulo-p1"
-              data-analytics-question={FIRST_STEP.key}
-              data-analytics-quiz={quizDefinitionId}
-              data-analytics-attempt={session?.id}
-              data-analytics-position={1}
+
+  const shell = (content: React.ReactNode) => (
+    <div className={`qz ${pele}`}>
+      <div className="qz-tela">
+        <Topo imagesBase={imagesBase} exitPath={exitPath} />
+        {content}
+      </div>
+    </div>
+  )
+
+  if (cursor === INTRO) {
+    const started = quiz.revision > 0
+    return shell(
+      <main id="quiz" className="qz-corpo qz-entrada">
+        <span className="qz-selo">{QUIZ_ENTRY.eyebrow}</span>
+        <Manchete id={headline} />
+        <p className="qz-descricao">{QUIZ_ENTRY.description}</p>
+        {errorView}
+        {started ? (
+          <div className="qz-acoes">
+            <button
+              className="qz-botao"
+              type="button"
+              disabled={busy}
+              onClick={() =>
+                quiz.complete
+                  ? window.location.assign(quiz.resultPath)
+                  : quiz.go(isAdultExit(current) ? EXIT : (quiz.firstMissing ?? GENERO_STEP.key))
+              }
             >
-              <h2 id="titulo-p1" className="kof-display">
-                {FIRST_STEP.titulo}
-              </h2>
-              <p className="cq-description">{FIRST_STEP.subtitulo}</p>
-              <ul className="cq-p1-opcoes">
-                {FIRST_STEP.opcoes.map((o) => (
-                  <li key={o.value}>
-                    <button
-                      className="cq-option"
-                      type="button"
-                      disabled={!session || busy}
-                      onClick={() => void save(FIRST_STEP.key, o.value)}
-                    >
-                      <span>{o.label}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              {!session && !error && <p className="cq-note">Preparando o quiz…</p>}
-            </section>
-          )}
-          <p className="cq-note">{QUIZ_ENTRY.note}</p>
-        </div>
-        <div className="cq-hero-art">
-          <Eyebrow icon="visibility">{QUIZ_ENTRY.lookAtTitle}</Eyebrow>
-          <ul className="cq-possibilities cq-possibilities--curtas">
-            {QUIZ_ENTRY.lookAt.map((item) => (
-              <li key={item.icon}>
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  {item.icon}
-                </span>
-                <div>
-                  <strong>{item.title}</strong>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <img
-            className="cq-mascot"
-            src={`${imagesBase}/zappy-happy.webp`}
-            alt=""
-            width="300"
-            height="300"
-          />
-        </div>
-      </main>
+              {quiz.complete ? 'Ver meu resultado' : 'Continuar de onde parei'}
+            </button>
+            <button className="qz-link" type="button" onClick={() => quiz.go(REVIEW)}>
+              Rever respostas
+            </button>
+          </div>
+        ) : (
+          <section
+            className="qz-genero"
+            aria-labelledby="qz-genero-titulo"
+            data-analytics-question={GENERO_STEP.key}
+            data-analytics-quiz={quizDefinitionId}
+            data-analytics-attempt={session?.id}
+            data-analytics-position={1}
+          >
+            <h2 id="qz-genero-titulo" className="qz-pergunta-entrada">
+              {GENERO_STEP.titulo}
+            </h2>
+            <p className="qz-ajuda">{GENERO_STEP.subtitulo}</p>
+            <div className="qz-cartas-genero">
+              {GENERO_STEP.opcoes.map((o) => (
+                <button
+                  key={o.value}
+                  type="button"
+                  className={`qz-carta-genero qz-carta-genero--${o.value}`}
+                  disabled={!session || busy}
+                  onClick={() => void quiz.save(GENERO_STEP.key, o.value)}
+                >
+                  {o.image && <img src={o.image} alt="" width="120" height="160" />}
+                  <strong>{o.label}</strong>
+                </button>
+              ))}
+            </div>
+            {!session && !error && <p className="qz-nota">Preparando o quiz…</p>}
+          </section>
+        )}
+        <p className="qz-nota">{QUIZ_ENTRY.note}</p>
+      </main>,
     )
   }
 
-  if (cursor === 'age')
-    return (
-      <main id="quiz" className="wrap cq-flow">
-        <div className="cq-panel">
-          <Eyebrow icon="cake">Sobre a faixa de idade</Eyebrow>
-          <h1 ref={heading} tabIndex={-1} className="kof-display">
-            Esta orientação foi pensada para famílias com crianças de 9 a 14 anos.
-          </h1>
-          <p>
-            As perguntas e o resultado deste quiz partem do que costuma acontecer com crianças de 9
-            a 14 anos, e para outra idade a orientação não seria certa. Se a idade foi marcada por
-            engano, é só corrigir. Se há outra criança nessa faixa em casa, você pode responder
-            pensando nela.
-          </p>
-          {errorView}
-          <div className="cq-actions">
-            <button className="cq-link" type="button" onClick={() => go(FIRST_STEP.key)}>
-              Corrigir a idade
-            </button>
-            <button
-              className="cq-link"
-              type="button"
-              disabled={busy}
-              onClick={() => void load(true)}
-            >
-              Responder pensando em outra criança
-            </button>
-          </div>
+  if (cursor === EXIT)
+    return shell(
+      <main id="quiz" className="qz-corpo">
+        <h1 ref={heading} tabIndex={-1} className="qz-titulo">
+          {ADULT_EXIT.title}
+        </h1>
+        <p className="qz-descricao">{ADULT_EXIT.text}</p>
+        {errorView}
+        <div className="qz-acoes">
+          <a
+            className="qz-botao"
+            href={adultQuizPath ?? exitPath}
+            data-analytics-id="quiz-kids-saida-adulto"
+          >
+            {adultQuizPath ? ADULT_EXIT.action : ADULT_EXIT.fallbackAction}
+          </a>
+          <button className="qz-link" type="button" onClick={() => quiz.go(IDADE_STEP.key)}>
+            {ADULT_EXIT.fix}
+          </button>
         </div>
-      </main>
+      </main>,
     )
 
-  if (cursor === 'review')
-    return (
-      <main id="quiz" className="wrap cq-flow">
-        <div className="cq-panel">
-          <Eyebrow icon="checklist">Suas respostas</Eyebrow>
-          <h1 ref={heading} tabIndex={-1} className="kof-display">
-            O que você gostaria de ajustar?
-          </h1>
-          <p>Você pode rever qualquer resposta. O resultado muda com o que ficar salvo.</p>
-          <ol className="cq-review">
-            {steps.map((raw) => {
-              const s = stepOnScreen(raw, current)
-              return (
-                <li key={s.key}>
-                  <div>
-                    <strong>{s.titulo}</strong>
-                    <p>
-                      {s.opcoes
-                        .filter(
-                          (o) =>
-                            answerList(current[s.key]).includes(o.value) ||
-                            current[s.key] === o.value,
-                        )
-                        .map((o) => o.label)
-                        .join(' · ') || 'Ainda sem resposta'}
-                    </p>
-                  </div>
-                  <button
-                    className="cq-link"
-                    type="button"
-                    onClick={() => go(s.key)}
-                    aria-label={`Editar: ${s.titulo}`}
-                  >
-                    Editar
-                  </button>
-                </li>
+  if (cursor === REVIEW)
+    return shell(
+      <main id="quiz" className="qz-corpo">
+        <h1 ref={heading} tabIndex={-1} className="qz-titulo">
+          Suas respostas
+        </h1>
+        <p className="qz-descricao">
+          Você pode mudar qualquer resposta. O resultado acompanha o que ficar salvo.
+        </p>
+        <ol className="qz-revisao">
+          {steps.map((raw) => {
+            const s = stepOnScreen(raw, current)
+            const escolhidas = s.opcoes
+              .filter(
+                (o) => answerList(current[s.key]).includes(o.value) || current[s.key] === o.value,
               )
-            })}
-          </ol>
-          {errorView}
-          <div className="cq-actions">
-            {complete ? (
-              <a className="kof-btn" href={`${basePath}/resultado`}>
-                Voltar ao resultado
-              </a>
-            ) : (
-              <button className="kof-btn" type="button" onClick={() => go(firstMissing)}>
-                Continuar o quiz
-              </button>
-            )}
+              .map((o) => o.label)
+              .join(' · ')
+            return (
+              <li key={s.key}>
+                <div>
+                  <strong>{s.titulo}</strong>
+                  <p>{escolhidas || 'Ainda sem resposta'}</p>
+                </div>
+                <button
+                  className="qz-link"
+                  type="button"
+                  onClick={() => quiz.go(s.key)}
+                  aria-label={`Mudar: ${s.titulo}`}
+                >
+                  Mudar
+                </button>
+              </li>
+            )
+          })}
+        </ol>
+        {errorView}
+        <div className="qz-acoes">
+          {quiz.complete ? (
+            <a className="qz-botao" href={quiz.resultPath}>
+              Voltar ao resultado
+            </a>
+          ) : (
             <button
-              className="cq-link"
+              className="qz-botao"
               type="button"
-              disabled={busy}
-              onClick={() => void load(true)}
+              onClick={() =>
+                quiz.go(isAdultExit(current) ? EXIT : (quiz.firstMissing ?? GENERO_STEP.key))
+              }
             >
-              Responder pensando em outra criança
+              Continuar o quiz
             </button>
-          </div>
+          )}
+          <button
+            className="qz-link"
+            type="button"
+            disabled={busy}
+            onClick={() => void quiz.load(true)}
+          >
+            Responder pensando em outra criança
+          </button>
         </div>
-      </main>
+      </main>,
     )
 
+  const step = steps.find((s) => s.key === cursor)
   if (!step) return null
   const shown = stepOnScreen(step, current)
   const position = steps.findIndex((s) => s.key === step.key)
-  const stageIndex = stages.findIndex(([id]) => id === step.etapa)
-  const chip = STAGE_CHIP[step.etapa as keyof typeof STAGE_CHIP] ?? STAGE_CHIP.rotina
-  return (
+  // A carta de filho ou filha fica fora da contagem: a idade é a primeira pergunta.
+  const total = branch === '9a17' || branch === 'm9' ? steps.length - 1 : 10
+  const numero = Math.max(position, 1)
+  const etapa =
+    step.key === IDADE_STEP.key
+      ? flexionar(QUIZ_ENTRY.sobre, genero)
+      : flexionar(
+          STAGE_LABELS[branch === 'm9' ? 'm9' : '9a17'][
+            step.etapa as 'rotina' | 'casa' | 'desejo'
+          ] ?? '',
+          genero,
+        )
+  const voltar = position <= 1 ? INTRO : (steps[position - 1]?.key ?? INTRO)
+  return shell(
     <main
       id="quiz"
-      className="wrap cq-flow"
+      className="qz-corpo"
       data-analytics-question={step.key}
       data-analytics-quiz={quizDefinitionId}
       data-analytics-attempt={session?.id}
-      data-analytics-position={steps.indexOf(step) + 1}
+      data-analytics-position={position + 1}
     >
-      <ol className="cq-stages" aria-label="Etapas do quiz">
-        {stages.map(([id, title], i) => (
-          <li
-            key={id}
-            aria-current={step.etapa === id ? 'step' : undefined}
-            data-estado={i < stageIndex ? 'feita' : i === stageIndex ? 'atual' : 'depois'}
-          >
-            <span>
-              {i < stageIndex ? (
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  check
-                </span>
-              ) : (
-                i + 1
-              )}
-            </span>
-            {title}
-            {i < stageIndex && <span className="sr-only"> (concluída)</span>}
-          </li>
-        ))}
-      </ol>
-      <div className={`cq-panel ${chip.cor}`}>
-        <span className="cap-chip">
-          <span className="material-symbols-rounded cap-chip-icone" aria-hidden="true">
-            {chip.icone}
+      <div className="qz-progresso">
+        <div className="qz-progresso-linha">
+          <span>
+            {numero} de {total}
           </span>
-          <span className="cap-chip-texto">{flexionar(chip.texto, genero)}</span>
-        </span>
-        <h1 className="kof-display" ref={heading} tabIndex={-1}>
-          {shown.titulo}
-        </h1>
-        {shown.subtitulo && (
-          <p id="question-help" className="cq-description">
-            {shown.subtitulo}
-          </p>
-        )}
-        <Question
-          key={`${step.key}:${session?.id}:${quizRevision(answers)}`}
-          step={shown}
-          value={current[step.key]}
-          seed={session?.id ?? ''}
-          busy={busy}
-          blocked={conflict}
-          labelFor={(value) =>
-            completesQuiz(current, step.key, value) ? 'Ver o resultado' : 'Continuar'
-          }
-          onSave={(value) => save(step.key, value)}
-        />
-        {errorView}
-        <div className="cq-question-nav">
-          <button
-            className="cq-link"
-            type="button"
-            disabled={busy}
-            onClick={() => go(steps[position - 1]?.key ?? 'intro')}
-          >
-            ← Voltar
-          </button>
-          <button className="cq-link" type="button" disabled={busy} onClick={() => go('review')}>
-            Rever respostas
-          </button>
+          <span className="qz-etapa">{etapa}</span>
+        </div>
+        <div
+          className="qz-barra"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-valuenow={numero}
+          aria-label={`Pergunta ${numero} de ${total}`}
+        >
+          <span style={{ width: `${Math.round((numero / total) * 100)}%` }} />
         </div>
       </div>
-      <p className="cq-note cq-save-note">
-        Você pode retomar suas respostas neste navegador, voltar e ajustar.
-      </p>
-    </main>
+      <h1 className="qz-titulo" ref={heading} tabIndex={-1}>
+        {shown.titulo}
+      </h1>
+      {shown.subtitulo && <p className="qz-ajuda">{shown.subtitulo}</p>}
+      <Opcoes
+        step={shown}
+        value={current[step.key]}
+        seed={session?.id ?? ''}
+        disabled={busy || conflict}
+        completa={(value) => completesQuiz(current, step.key, value)}
+        onEscolha={(value) => void quiz.save(step.key, value)}
+      />
+      {errorView}
+      <div className="qz-rodape">
+        <button className="qz-link" type="button" disabled={busy} onClick={() => quiz.go(voltar)}>
+          <span aria-hidden="true">←</span> {QUIZ_ENTRY.voltar}
+        </button>
+        <span>{busy ? 'Salvando…' : QUIZ_ENTRY.tocar}</span>
+      </div>
+    </main>,
   )
 }
 
-function Question({
+/**
+ * As opções como botões: tocar numa grava e segue. A da idade vira três cartas grandes, e "18 ou
+ * mais" fica como link pequeno embaixo delas.
+ */
+function Opcoes({
   step,
   value,
   seed,
-  busy,
-  blocked,
-  labelFor,
-  onSave,
+  disabled,
+  completa,
+  onEscolha,
 }: {
   step: SelecaoStep
   value?: QuizAnswerValue
   seed: string
-  busy: boolean
-  blocked: boolean
-  /** O rótulo do botão pela resposta escolhida: "Ver o resultado" quando ela completa o quiz. */
-  labelFor: (value: QuizAnswerValue) => string
-  onSave: (value: QuizAnswerValue) => Promise<void>
+  disabled: boolean
+  /** Se esta opção termina o quiz (o leitor de tela ouve "e ver o resultado"). */
+  completa: (value: string) => boolean
+  onEscolha: (value: string) => void
 }) {
-  const [selected, setSelected] = useState<string[]>(
-    Array.isArray(value) ? value : typeof value === 'string' ? [value] : [],
-  )
-  const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
-  function choose(value: string) {
-    setError('')
-    setNotice('')
-    if (!step.multiple) {
-      setSelected([value])
-      return
-    }
-    if (selected.includes(value)) {
-      setSelected(selected.filter((v) => v !== value))
-      return
-    }
-    if (step.exclusive?.includes(value)) {
-      if (selected.length) setNotice('Esta opção substituiu as outras escolhas.')
-      setSelected([value])
-      return
-    }
-    const next = [...selected.filter((v) => !step.exclusive?.includes(v)), value]
-    if (next.length > (step.maxSelections ?? 4)) {
-      setError(`Escolha até ${step.maxSelections} opções. Desmarque uma para trocar.`)
-      return
-    }
-    setSelected(next)
-  }
+  const idade = step.key === IDADE_STEP.key
+  const opcoes = orderedOptions(step, seed)
+  const principais = idade ? opcoes.filter((o) => o.value !== '18_mais') : opcoes
+  const adulto = idade ? opcoes.find((o) => o.value === '18_mais') : undefined
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault()
-        const answer = step.multiple ? selected : (selected[0] ?? '')
-        if (!validChoice(step, answer)) {
-          setError('Escolha uma resposta para continuar.')
-          return
-        }
-        void onSave(answer)
-      }}
-    >
-      <fieldset
-        className="cq-options"
-        disabled={busy || blocked}
-        aria-describedby={step.subtitulo ? 'question-help' : undefined}
-      >
-        <legend className="sr-only">{step.titulo}</legend>
-        {orderedOptions(step, seed).map((option) => (
-          <label className="cq-option" key={option.value}>
-            <input
-              type={step.multiple ? 'checkbox' : 'radio'}
-              name={step.key}
-              value={option.value}
-              checked={selected.includes(option.value)}
-              onChange={() => choose(option.value)}
-            />
-            <span>{option.label}</span>
-          </label>
+    <div className="qz-opcoes-bloco">
+      <ul className={idade ? 'qz-opcoes qz-opcoes--cartas' : 'qz-opcoes'}>
+        {principais.map((o) => (
+          <li key={o.value}>
+            <button
+              type="button"
+              className="qz-opcao"
+              aria-pressed={value === o.value}
+              disabled={disabled}
+              onClick={() => onEscolha(o.value)}
+            >
+              {!idade && <span className="qz-marca" aria-hidden="true" />}
+              <span>{o.label}</span>
+              {completa(o.value) && <span className="sr-only"> e ver o resultado</span>}
+            </button>
+          </li>
         ))}
-      </fieldset>
-      <div aria-live="polite">{notice && <p className="cq-note">{notice}</p>}</div>
-      {error && (
-        <p className="cq-error" role="alert">
-          {error}
-        </p>
+      </ul>
+      {adulto && (
+        <button
+          type="button"
+          className="qz-link qz-link--centro"
+          disabled={disabled}
+          onClick={() => onEscolha(adulto.value)}
+        >
+          {adulto.label}
+        </button>
       )}
-      <button
-        type="submit"
-        className="kof-btn kof-btn--grande cq-continue"
-        disabled={busy || blocked}
-      >
-        {busy ? 'Salvando…' : labelFor(step.multiple ? selected : (selected[0] ?? ''))}
-        <span aria-hidden="true">→</span>
-      </button>
-    </form>
+    </div>
   )
 }

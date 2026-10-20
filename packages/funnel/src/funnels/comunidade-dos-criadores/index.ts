@@ -12,10 +12,20 @@
 import { TERMOS_COMUNIDADE_KIDS } from '../../content/legal/termos-comunidade-kids'
 import type { FunnelDef } from '../registry'
 import { COMUNIDADE_LANDING, COMUNIDADE_OBRIGADO, COMUNIDADE_PRODUTO } from './content'
-import { PAGE_A } from './oferta/tempo-de-tela'
+import { PAGINA_9A17 } from './oferta/pagina-9a17'
 import { COMMUNITY_QUIZ } from './quiz'
-import { PROFILE_IDS } from './quiz/engine'
-import { PROFILE_LABELS } from './quiz/result-copy'
+import { PROFILE_IDS, PROFILE_IDS_M9 } from './quiz/engine'
+import { PROFILE_LABELS_9A17 } from './quiz/result-copy-9a17'
+import { PROFILE_LABELS_M9 } from './quiz/result-copy-m9'
+
+/** Os perfis da v5 (até 20/10/2026): a aba Perfis os mostra quando há leads com eles. */
+const PERFIS_V5: Record<string, string> = {
+  'tempo-de-tela': 'Tempo de tela',
+  'criacao-de-jogos': 'Criação de jogos',
+  'expressao-visual': 'Desenho e personagens',
+  'formacao-tecnologica': 'Programação',
+  'habilidades-escolares': 'Habilidades escolares',
+}
 
 export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   audience: 'kids',
@@ -28,8 +38,9 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   // Capa dedicada (card do checkout + og:image + JSON-LD): a arte "Corre, Dino!".
   checkoutImage: 'checkout-capa.webp',
   byline: 'Helena e Júlio · Sistema Zero',
-  seoTitle: PAGE_A.seoTitle,
-  seoDescription: PAGE_A.description,
+  // SEO da página principal (9 a 17 anos, `/oferta`).
+  seoTitle: PAGINA_9A17.seoTitle,
+  seoDescription: PAGINA_9A17.description,
   theme: 'kids',
   // Assinatura: sem o disclaimer de acesso vitalício no rodapé.
   lifetimeAccess: false,
@@ -44,12 +55,21 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
     result: {
       profiles: {},
       fecho: '',
-      perfilLabels: Object.fromEntries(
-        Object.entries(PROFILE_IDS).map(([id, slug]) => [
-          slug,
-          PROFILE_LABELS[id as keyof typeof PROFILE_IDS],
-        ]),
-      ),
+      perfilLabels: {
+        ...Object.fromEntries(
+          Object.entries(PROFILE_IDS).map(([id, slug]) => [
+            slug,
+            PROFILE_LABELS_9A17[id as keyof typeof PROFILE_IDS],
+          ]),
+        ),
+        ...Object.fromEntries(
+          Object.entries(PROFILE_IDS_M9).map(([id, slug]) => [
+            slug,
+            PROFILE_LABELS_M9[id as keyof typeof PROFILE_IDS_M9],
+          ]),
+        ),
+      },
+      legacyPerfilLabels: PERFIS_V5,
     },
   },
 }

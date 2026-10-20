@@ -1,0 +1,90 @@
+---
+// O resultado em conversa (Canvas de 19/10/2026: QuizMenorResultado, QuizMenor9Resultado e
+// QuizAdultoResultado). Desenha o `ResultadoConversa` que o funil montou: a carta com os trechos
+// devolvidos em destaque, uma tela real, um relato, o botão para a oferta, a assinatura e a pergunta
+// "Esse resultado parece com você?". Os estilos ficam em `resultado-conversa.css` (prefixo `.rc`);
+// as cores vêm dos tokens do tema da página (`--kof-*` no Kids, `--cda-*` no adulto).
+// Os tokens dos dois temas: `--kof-*` (Kids) e `--cda-*` (adulto), cada um sob a classe do <html>.
+import '../../../styles/kids-oferta.css'
+import '../../../styles/theme-arcade.css'
+import '../../../styles/resultado-conversa.css'
+import { type ResultadoConversa, trechosConversa } from '../../../content/resultado-conversa'
+import QuizResultadoFeedback from '../../../islands/QuizResultadoFeedback'
+
+interface Props {
+  resultado: ResultadoConversa
+  /** O endereço do quiz com a manchete que a pessoa viu (links de rever e de reiniciar). */
+  quizPath: string
+  revision: number
+  sessionToken: string
+  /** Kids: o link para responder pensando em outra criança. */
+  restartLabel?: string
+}
+const { resultado: r, quizPath, revision, sessionToken, restartLabel } = Astro.props
+const logo =
+  r.tema === 'adulto'
+    ? { src: '/logo_dark.svg', alt: 'Sistema Zero', largura: 211, altura: 18 }
+    : {
+        src: '/img/comunidade-dos-criadores/logo-kids-claro.svg',
+        alt: 'Sistema Zero Kids',
+        largura: 287,
+        altura: 22,
+      }
+---
+
+<div class={`rc rc--${r.tema}`} data-quiz-profile={r.perfil}>
+  <a href="#resultado" class="rc-pular">Pular para o resultado</a>
+  <header class="rc-topo">
+    <div class="rc-topo-in">
+      <img src={logo.src} alt={logo.alt} width={logo.largura} height={logo.altura} class="rc-logo" />
+      <span class="rc-topo-rotulo">Seu resultado</span>
+    </div>
+  </header>
+  <main id="resultado" class="rc-carta">
+    <span class="rc-selo">Seu resultado</span>
+    {r.aviso && <p class="rc-aviso">{r.aviso}</p>}
+    <h1 class="rc-titulo">{r.titulo}</h1>
+    {
+      r.blocos.map((b) =>
+        b.tipo === 'h' ? (
+          <h2 class="rc-h">{b.texto}</h2>
+        ) : b.tipo === 'p' ? (
+          <p class="rc-p">
+            {trechosConversa(b.texto).map((t) => (t.marcado ? <mark>{t.texto}</mark> : t.texto))}
+          </p>
+        ) : b.tipo === 'img' ? (
+          <figure class="rc-tela">
+            <img src={b.src} alt="" width={b.largura} height={b.altura} loading="lazy" decoding="async" />
+            <figcaption>{b.legenda}</figcaption>
+          </figure>
+        ) : b.tipo === 'relato' ? (
+          <figure class="rc-relato">
+            {b.foto && <img src={b.foto} alt="" width="56" height="56" loading="lazy" decoding="async" />}
+            <span class="rc-relato-texto">
+              <blockquote>{`"${b.texto}"`}</blockquote>
+              <figcaption>{b.autor}</figcaption>
+            </span>
+          </figure>
+        ) : (
+          <div class="rc-cta">
+            <p>{b.texto}</p>
+            <div>
+              <a class="rc-botao" href={b.href} data-quiz-offer data-analytics-id="resultado-oferta">
+                {b.rotulo}
+              </a>
+            </div>
+            <span class="rc-cta-nota">O preço e os planos aparecem na próxima página.</span>
+          </div>
+        ),
+      )
+    }
+    <p class="rc-assinatura">{r.assinatura}</p>
+    <QuizResultadoFeedback
+      client:visible
+      revision={revision}
+      quizPath={quizPath}
+      sessionToken={sessionToken}
+      restartLabel={restartLabel}
+    />
+  </main>
+</div>

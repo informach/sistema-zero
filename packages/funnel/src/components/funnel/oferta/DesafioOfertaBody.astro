@@ -153,6 +153,6 @@ const faqVisuals: Record<string, string> = {
     </main>
     <ComunidadeImageZoom/>
   </div>
-  <Footer audience="kids" vitalicio={false}/>
+  <Footer audience="kids" vitalicio={false} termosHref={`${f.basePath}/termos`}/>
   <PreCheckoutModal client:load basePath={f.basePath} funnel={f.key} couponCode={checkoutCouponCode}/>
 </BaseLayout>

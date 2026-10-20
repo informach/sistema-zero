@@ -199,3 +199,21 @@ export const RELATOS: Record<RelatoId, Relato> = {
     retrato: 'relato-fernando.webp',
   },
 }
+
+/**
+ * Falas autorizadas que ficaram sem lugar nas páginas e nas cartas de 20/10/2026 (9 a 17, criar
+ * junto, continuidade e resultados do quiz). Ficam guardadas para anúncios, e-mails e próximas
+ * versões; o teste de copy exige que toda fala esteja numa página ou aqui, com o motivo.
+ */
+export const RELATOS_RESERVA: Partial<Record<RelatoId, string>> = {
+  AV06: 'A alegria do Fernando ao criar: as páginas novas usam falas de responsáveis nesse ponto.',
+  AV07: 'O Jeffrey sobre expressar as ideias: a carta do perfil C usa a fala dele sobre os personagens.',
+  N1: 'O Rafael contando o que aprendeu: a página de 9 a 17 usa o Daniel em outros trechos.',
+  N5: 'Teoria na prática: a carta do perfil D usa a fala do Jeffrey sobre as etapas do jogo.',
+  N9: 'A independência do Fernando: a página de 9 a 17 cita a Flávia na dúvida sobre fazer sozinho.',
+  N11: 'Prática e foco na escola: a carta do perfil F usa a fala do Daniel sobre lógica e matemática.',
+  N12: 'O Jeffrey cobrando o horário do curso: guardada para anúncios sobre motivação.',
+  N13: 'Pai e filho que jogam e criam: guardada para a comunicação com pais que também jogam.',
+  N14: 'A comparação com cursos gratuitos: guardada para anúncios e para a página adulta futura.',
+  N16: 'O Jeffrey sobre fazer os próprios jogos: a página de 9 a 17 usa a fala mais completa dele.',
+}

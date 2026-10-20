@@ -1,13 +1,10 @@
 ---
-import ComunidadeQuizLayout from '../../../components/funnel/ComunidadeQuizLayout.astro'
-import ComunidadeResultado from '../../../components/funnel/ComunidadeResultado.astro'
 import DesafioQuizLayout from '../../../components/funnel/DesafioQuizLayout.astro'
 import DesafioResultado from '../../../components/funnel/DesafioResultado.astro'
-import { quizRevision } from '../../../funnels/comunidade-dos-criadores/quiz/engine'
-import { buildCommunityResult } from '../../../funnels/comunidade-dos-criadores/quiz/result'
+import ResultadoConversa from '../../../components/funnel/resultado/ResultadoConversa.astro'
 import { buildDesafioResult } from '../../../funnels/desafio-primeiro-jogo/quiz/result'
 import { leadBelongsToFunnel } from '../../../funnels/lead-scope'
-import { getFunnel, isQuizComplete } from '../../../funnels/registry'
+import { getFunnel, isQuizComplete, quizPathWithHeadline } from '../../../funnels/registry'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { funnelLinkWithAttribution } from '../../../lib/lead-attribution'
 import { getLeadId } from '../../../lib/lead-session'
@@ -48,31 +45,24 @@ const leadQuizUrl =
     : quizUrl
 if (!isQuizComplete(quiz, answers)) return Astro.redirect(leadQuizUrl)
 
-const communityResult = quiz.presentation === 'comunidade' ? buildCommunityResult(answers) : null
+const revision = typeof answers._quiz_revision === 'number' ? answers._quiz_revision : 0
+// Resultado em conversa (Comunidade Kids e adulta): a carta montada pelo funil.
+const conversa = quiz.conversa ? quiz.conversa(answers) : null
 const desafioResult = quiz.presentation === 'desafio' ? buildDesafioResult(answers) : null
 if (quiz.presentation === 'desafio' && !desafioResult) return Astro.redirect(quizUrl)
 const desafioPrice = desafioResult ? await desafioQuizPrice(f) : null
-if (quiz.presentation === 'comunidade' && !communityResult) return Astro.redirect(leadQuizUrl)
+if (quiz.conversa && !conversa) return Astro.redirect(leadQuizUrl)
 
 await repo.insertEvent(
   lead.id,
   'viu_resultado',
   'resultado',
-  communityResult
-    ? {
-        quiz_version: answers._quiz_version,
-        revision: quizRevision(answers),
-        perfil_principal: communityResult.decision.profile,
-        perfil_secundario: communityResult.decision.secondary,
-        pontos: communityResult.decision.scores,
-        estado: communityResult.decision.state,
-        adequacao: communityResult.decision.adequacy,
-        destino: communityResult.offerPath,
-      }
+  conversa
+    ? conversa.evento
     : desafioResult
       ? {
           quiz_version: answers._quiz_version,
-          revision: quizRevision(answers),
+          revision,
           perfil_principal: desafioResult.decision.principal,
           estado: desafioResult.decision.state,
           adequacao: desafioResult.decision.adequacy,
@@ -80,7 +70,7 @@ await repo.insertEvent(
           destino: desafioResult.decision.offerPath,
         }
       : undefined,
-  desafioResult ? `${lead.id}:desafio-result:${quizRevision(answers)}` : undefined,
+  desafioResult ? `${lead.id}:desafio-result:${revision}` : undefined,
 )
 
 // Perfil: usa o persistido (se válido p/ este funil) ou roda o motor do funil agora
@@ -88,11 +78,11 @@ await repo.insertEvent(
 const stored =
   lead.perfilResultado && lead.perfilResultado in result.profiles ? lead.perfilResultado : null
 const perfil = stored ?? quiz.computePerfil(answers)
-if (!communityResult && !desafioResult && !stored)
+if (!conversa && !desafioResult && !stored)
   await repo.updateLead(lead.id, { perfilResultado: perfil })
 
 const bloco = perfil ? result.profiles[perfil] : undefined
-if (!communityResult && !desafioResult && !bloco) return Astro.redirect(quizUrl)
+if (!conversa && !desafioResult && !bloco) return Astro.redirect(quizUrl)
 const rc = (s: string) => (result.renderCorpo ? result.renderCorpo(s, answers) : s)
 // Resultado em blocos (`secoes`) quando o funil os define; senão, corpo corrido (fallback).
 // Seção que resolve vazia (ex.: bloco de custo condicional omitido) é descartada.
@@ -113,10 +103,10 @@ const fecho = rc(result.fecho)
   <DesafioQuizLayout title="Seu primeiro passo com jogos | Sistema Zero" description={f.seoDescription} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} showExperienceLink>
     <DesafioResultado result={desafioResult} basePath={f.basePath} priceLabel={desafioPrice}/>
   </DesafioQuizLayout>
-) : communityResult ? (
-  <ComunidadeQuizLayout title="Seu ponto de partida | Sistema Zero" description={f.seoDescription} imagesBase={f.imagesBase} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}>
-    <ComunidadeResultado result={communityResult} imagesBase={f.imagesBase} basePath={f.basePath} funnel={f.key} revision={quizRevision(answers)} sessionToken={quizSessionToken(lead.id)} headline={lead.attribution?.quizHeadline} />
-  </ComunidadeQuizLayout>
+) : conversa ? (
+  <BaseLayout title="Seu resultado | Sistema Zero" description={f.seoDescription} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} noindex={true} htmlClass={f.theme ? `theme-${f.theme}` : undefined}>
+    <ResultadoConversa resultado={conversa} quizPath={quizPathWithHeadline(f.basePath, quiz, headline)} revision={revision} sessionToken={quizSessionToken(lead.id)} restartLabel={f.audience === 'kids' ? 'Responder pensando em outra criança' : undefined} />
+  </BaseLayout>
 ) : bloco && (<BaseLayout
   title={`Seu mapa de criação | ${f.productName}`}
   description={f.seoDescription}

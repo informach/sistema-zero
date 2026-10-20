@@ -11,8 +11,6 @@ const FUNDADORES_ABERTURA = [
   'O André sempre gostou muito de jogar e de assistir a vídeos de jogos. Em vez de brigar com esse interesse, decidimos aproveitá-lo: passamos a usar uma parte do tempo que ele já ficava na tela para ensiná-lo a criar os próprios jogos.',
   'Para um jogo funcionar, ele precisava pensar no que vem primeiro, testar e ajustar quando algo dava errado. Foi nesse processo que vimos o André se interessar cada vez mais por aprender. Depois, ele chamava a gente para jogar e contava como tinha feito.',
 ]
-const FUNDADORES_ESCOLA =
-  'Nesse período, também percebemos mudanças na escola. Ele passou a se envolver mais nas aulas e a se concentrar melhor, e as notas melhoraram. Desde o segundo ano, tem ficado entre os cinco primeiros da turma, na maioria das vezes em primeiro lugar, e conquistou medalhas em olimpíadas de matemática. Contamos isso como pais, pelo que vimos no André.'
 const FUNDADORES_FECHO =
   'Essa experiência nos deu vontade de ajudar outras famílias a usar uma parte do tempo de tela para aprender criando, e foi assim que nasceu a Comunidade dos Criadores. Hoje somos nós que preparamos as aulas, usando o que sabemos de programação para ensinar as crianças a fazer os próprios jogos.'
 
@@ -32,11 +30,6 @@ const fundadores = (paragraphs: string[], falas: ComunidadeSection['falas']) =>
 const FOUNDER = fundadores([...FUNDADORES_ABERTURA, FUNDADORES_FECHO], ['AV04'])
 /** Páginas em que a fala do André já está na faixa de relatos (B e E). */
 export const FOUNDER_SEM_RELATO = fundadores([...FUNDADORES_ABERTURA, FUNDADORES_FECHO], [])
-/** Página F: com as mudanças que os pais perceberam na escola, contadas como relato deles. */
-export const FOUNDER_COM_ESCOLA = fundadores(
-  [...FUNDADORES_ABERTURA, FUNDADORES_ESCOLA, FUNDADORES_FECHO],
-  ['AV04'],
-)
 
 export const SHARED_COPY = {
   founder: FOUNDER,

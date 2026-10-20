@@ -1,0 +1,467 @@
+---
+// Página para responsáveis de crianças menores de 9 anos, que criam o jogo junto com o adulto.
+// Porte do desenho aprovado (docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/canvas/
+// PaginaMenor9.html). Toda a copy vem de `oferta/pagina-menor9.ts`; as receitas visuais ficam em
+// kids-oferta.css e o layout (`.cm9`), em comunidade-menor9.css (o componente não tem folha própria).
+import '../../../styles/kids-oferta.css'
+import '../../../styles/comunidade-menor9.css'
+import { COMUNIDADE_PRECO_FALLBACK } from '../../../funnels/comunidade-dos-criadores/content'
+import { calcularEconomiaAnual } from '../../../funnels/comunidade-dos-criadores/oferta/economia'
+import {
+  type ImagemMenor9,
+  PAGINA_MENOR9,
+} from '../../../funnels/comunidade-dos-criadores/oferta/pagina-menor9'
+import { RELATOS } from '../../../funnels/comunidade-dos-criadores/oferta/relatos'
+import type { FunnelDef } from '../../../funnels/registry'
+import PreCheckoutModal from '../../../islands/PreCheckoutModal'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { formatBRLFromCents, formatBRLFromCents2 } from '../../../lib/money'
+import { funnelOgImage } from '../../../lib/seo'
+import type { OfferPlans } from '../../../server/catalog'
+import Footer from '../../Footer.astro'
+import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+
+interface Props {
+  f: FunnelDef
+  productName: string
+  priceLabel: string
+  priceLabelShort: string
+  priceReais: string
+  imagesBase: string
+  perfil: string | null
+  quer?: string | null
+  ofertaUrl: string
+  plans: OfferPlans | null
+}
+const { f, productName, imagesBase, ofertaUrl, plans } = Astro.props
+const P = PAGINA_MENOR9
+const img = (file: string) => `${imagesBase}/${file}`
+const srcset = (imagem: ImagemMenor9) =>
+  imagem.retina ? `${img(imagem.arquivo)} 1x, ${img(imagem.retina)} 2x` : undefined
+
+if (!P.heroi.titulo.includes(P.heroi.enfase)) throw new Error('Ênfase fora do título do herói')
+const [tituloInicio = '', tituloFim = ''] = P.heroi.titulo.split(P.heroi.enfase)
+
+// Preços AO VIVO, como na ComunidadeOfertaBody: a resolução por intervalo conserva qual oferta é a
+// principal e qual é a irmã; sem catálogo, vale o fallback da Comunidade (nunca o do NCI).
+const byInterval = (n: number) =>
+  plans?.main.intervalMonths === n
+    ? plans.main
+    : plans?.alt?.intervalMonths === n
+      ? plans.alt
+      : null
+const mensal = byInterval(1)
+const anual = byInterval(12)
+const mensalCents = mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents
+const anualCents = anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents
+// A economia só existe com os DOIS preços ao vivo; sem economia, o selo do anual sai.
+const economiaAnualCents = calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)
+// "Menos de X por dia": a mensalidade dividida por 30, levada aos 10 centavos SEGUINTES
+// (9700 centavos → 323,33 → 330 centavos). Estritamente acima da conta exata, para o "menos de" valer
+// também quando ela fecha num múltiplo de 10 centavos.
+const precoDiaCents = (Math.floor(mensalCents / 300) + 1) * 10
+const PRECOS: Record<string, string> = {
+  '{{preco_mensal}}': formatBRLFromCents(mensalCents),
+  '{{preco_anual}}': formatBRLFromCents(anualCents),
+  '{{equivalente_mensal_anual}}': formatBRLFromCents2(Math.round(anualCents / 12)),
+  '{{economia_anual}}': formatBRLFromCents(economiaAnualCents),
+  '{{preco_dia}}': formatBRLFromCents2(precoDiaCents),
+}
+const preencher = (texto: string) =>
+  texto.replace(/\{\{\w+\}\}/g, (marcador) => {
+    const valor = PRECOS[marcador]
+    if (valor === undefined) throw new Error(`Marcador de preço desconhecido: ${marcador}`)
+    return valor
+  })
+const priceReais = ((plans?.main.priceCents ?? mensalCents) / 100).toFixed(2)
+
+const relato = RELATOS[P.sessao.relato.id]
+const ONDA_DESCE = 'M0 30 C 240 0 480 60 720 30 S 1200 0 1440 30 V60 H0 Z'
+const ONDA_SOBE = 'M0 30 C 240 60 480 0 720 30 S 1200 60 1440 30 V60 H0 Z'
+const ESTRELA = 'M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7.1-.6z'
+const CORACAO =
+  'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z'
+const CORES_DOS_PASSOS = ['amarelo', 'rosa', 'azul', 'lilas', 'laranja']
+const CORES_DEPOIS = ['amarelo', 'rosa', 'azul', 'menta']
+---
+
+<BaseLayout title={P.seoTitle} description={P.description} canonical={ofertaUrl} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} htmlClass="theme-kids">
+  <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={ofertaUrl} image={img(P.capa)} />
+  <link slot="head" rel="preload" as="image" href={img(P.heroi.ilustracao.arquivo)} fetchpriority="high" />
+  <div class="cm9">
+    <a class="cm9-pular" href="#conteudo">{P.topo.pular}</a>
+    <header class="cm9-topo">
+      <div class="cm9-wrap cm9-topo__barra">
+        <a class="cm9-marca" href="#topo" aria-label={P.topo.logoLabel}>
+          <img src={img(P.topo.logo.arquivo)} alt={P.topo.logo.alt} width={P.topo.logo.largura} height={P.topo.logo.altura} decoding="async" />
+        </a>
+        <nav class="cm9-topo__nav" aria-label={P.topo.navLabel}>
+          <a class="cm9-topo__link" href="#sessao">{P.topo.linkSessao}</a>
+          <a class="cm9-cta cm9-cta--topo" href="#planos">{P.topo.cta}</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <section class="cm9-sec cm9-sec--creme" aria-labelledby="cm9-titulo">
+        <div class="cm9-wrap cm9-heroi">
+          <div class="cm9-heroi__texto">
+            <span class="cm9-selo">
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d={CORACAO}></path></svg>
+              <span>{P.heroi.selo}</span>
+            </span>
+            <h1 id="cm9-titulo" class="cm9-h1">{tituloInicio}<span class="cm9-enfase">{P.heroi.enfase}<svg class="cm9-enfase__onda" aria-hidden="true" viewBox="0 0 300 20" preserveAspectRatio="none"><path d="M3 13 C 60 4, 120 18, 180 9 S 270 5, 297 12" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"></path></svg></span>{tituloFim}</h1>
+            <p class="cm9-lead">{P.heroi.texto}</p>
+            <ul class="cm9-beneficios">
+              <li>
+                <span class="cm9-bolinha cm9-fundo--rosa" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d={CORACAO}></path></svg></span>
+                <span>{P.heroi.beneficios[0]}</span>
+              </li>
+              <li>
+                <span class="cm9-bolinha cm9-fundo--amarelo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d={ESTRELA}></path></svg></span>
+                <span>{P.heroi.beneficios[1]}</span>
+              </li>
+              <li>
+                <span class="cm9-bolinha cm9-fundo--menta" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg></span>
+                <span>{P.heroi.beneficios[2]}</span>
+              </li>
+            </ul>
+            <div class="cm9-acao">
+              <a class="cm9-cta cm9-cta--grande" href="#planos">{P.heroi.cta}</a>
+              <span class="cm9-nota">{P.heroi.garantia}</span>
+            </div>
+            <span class="cm9-requisitos">{P.heroi.requisitos}</span>
+          </div>
+          <div class="cm9-heroi__arte">
+            <div class="cm9-heroi__mancha" aria-hidden="true"></div>
+            <div class="cm9-heroi__circulo cm9-heroi__circulo--azul" aria-hidden="true"></div>
+            <div class="cm9-heroi__circulo cm9-heroi__circulo--menta" aria-hidden="true"></div>
+            <svg class="cm9-estrela cm9-estrela--rosa" aria-hidden="true" width="44" height="44" viewBox="0 0 24 24"><path d={ESTRELA} stroke-width="1.5" stroke-linejoin="round"></path></svg>
+            <svg class="cm9-estrela cm9-estrela--branca" aria-hidden="true" width="32" height="32" viewBox="0 0 24 24"><path d={ESTRELA} stroke-width="1.5" stroke-linejoin="round"></path></svg>
+            <img class="cm9-heroi__ilustra" src={img(P.heroi.ilustracao.arquivo)} alt={P.heroi.ilustracao.alt} width={P.heroi.ilustracao.largura} height={P.heroi.ilustracao.altura} loading="eager" decoding="async" fetchpriority="high" />
+            <div class="cm9-balao">
+              <p class="cm9-balao__fala">
+                <svg class="cm9-balao__icone" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M19 5a10 10 0 0 1 0 14"></path></svg>
+                <span>{P.heroi.balao}</span>
+              </p>
+              <img class="cm9-balao__zappy" src={img(P.heroi.zappy.arquivo)} alt={P.heroi.zappy.alt} width={P.heroi.zappy.largura} height={P.heroi.zappy.altura} loading="lazy" decoding="async" />
+            </div>
+          </div>
+        </div>
+        <svg class="cm9-onda cm9-onda--branco" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_DESCE} fill="currentColor"></path></svg>
+      </section>
+
+      <section class="cm9-sec cm9-sec--branco" aria-labelledby="cm9-problema">
+        <div class="cm9-wrap cm9-corpo cm9-problema">
+          <div class="cm9-problema__texto">
+            <h2 id="cm9-problema" class="cm9-h2">{P.problema.titulo}</h2>
+            <p class="cm9-texto">{P.problema.texto}</p>
+          </div>
+          <p class="cm9-problema__destaque">{P.problema.destaque}</p>
+        </div>
+        <svg class="cm9-onda cm9-onda--amarelo-fundo" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_SOBE} fill="currentColor"></path></svg>
+      </section>
+
+      <section class="cm9-sec cm9-sec--amarelo-fundo" aria-labelledby="cm9-juntos">
+        <div class="cm9-wrap cm9-corpo cm9-pilha">
+          <div class="cm9-cabeca">
+            <h2 id="cm9-juntos" class="cm9-h2">{P.juntos.titulo}</h2>
+            <p class="cm9-texto">{P.juntos.texto}</p>
+          </div>
+          <ul class="cm9-grade">
+            {P.juntos.cartas.map((carta) => (
+              <li class="cm9-carta">
+                <h3 class="cm9-carta__titulo">{carta.titulo}</h3>
+                <p class="cm9-carta__texto">{carta.texto}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <svg class="cm9-onda cm9-onda--branco" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_DESCE} fill="currentColor"></path></svg>
+      </section>
+
+      <section class="cm9-sec cm9-sec--branco" aria-labelledby="cm9-papeis">
+        <div class="cm9-wrap cm9-corpo cm9-pilha cm9-pilha--larga">
+          <div class="cm9-cabeca cm9-cabeca--larga">
+            <h2 id="cm9-papeis" class="cm9-h2 cm9-h2--m">{P.papeis.titulo}</h2>
+            <p class="cm9-texto">{P.papeis.texto}</p>
+          </div>
+          <ul class="cm9-grade cm9-grade--papeis">
+            <li class="cm9-papel cm9-papel--rosa">
+              <span class="cm9-papel__icone" aria-hidden="true"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d={ESTRELA}></path></svg></span>
+              <h3 class="cm9-papel__titulo">{P.papeis.cartas[0].titulo}</h3>
+              <p class="cm9-papel__texto">{P.papeis.cartas[0].texto}</p>
+            </li>
+            <li class="cm9-papel cm9-papel--azul">
+              <span class="cm9-papel__icone" aria-hidden="true"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"></path><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"></path></svg></span>
+              <h3 class="cm9-papel__titulo">{P.papeis.cartas[1].titulo}</h3>
+              <p class="cm9-papel__texto">{P.papeis.cartas[1].texto}</p>
+            </li>
+            <li class="cm9-papel cm9-papel--menta">
+              <img class="cm9-papel__zappy" src={img(P.papeis.zappy.arquivo)} alt={P.papeis.zappy.alt} width={P.papeis.zappy.largura} height={P.papeis.zappy.altura} loading="lazy" decoding="async" />
+              <h3 class="cm9-papel__titulo">{P.papeis.cartas[2].titulo}</h3>
+              <p class="cm9-papel__texto">{P.papeis.cartas[2].texto}</p>
+            </li>
+          </ul>
+        </div>
+        <svg class="cm9-onda cm9-onda--menta" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_SOBE} fill="currentColor"></path></svg>
+      </section>
+
+      <section id="sessao" class="cm9-sec cm9-sec--menta" aria-labelledby="cm9-sessao">
+        <div class="cm9-wrap cm9-corpo cm9-pilha cm9-pilha--sessao">
+          <div class="cm9-sessao">
+            <div class="cm9-sessao__texto">
+              <h2 id="cm9-sessao" class="cm9-h2 cm9-h2--m">{P.sessao.titulo}</h2>
+              <p class="cm9-texto">{P.sessao.texto}</p>
+              <ol class="cm9-passos">
+                {P.sessao.passos.map((passo, index) => (
+                  <li class="cm9-passo">
+                    <span class={`cm9-passo__num cm9-fundo--${CORES_DOS_PASSOS[index % CORES_DOS_PASSOS.length]}`} aria-hidden="true">{index + 1}</span>
+                    <span class="cm9-passo__texto"><strong>{passo.destaque}</strong> {passo.texto}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <div class="cm9-sessao__telas">
+              {P.sessao.telas.map((tela, index) => (
+                <figure class:list={['cm9-polaroide', { 'cm9-polaroide--direita': index % 2 === 1 }]}>
+                  <img src={img(tela.imagem.arquivo)} srcset={srcset(tela.imagem)} alt={tela.imagem.alt} width={tela.imagem.largura} height={tela.imagem.altura} loading="lazy" decoding="async" />
+                  <figcaption>{tela.legenda}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+          <div class="cm9-relato" data-relato={P.sessao.relato.id}>
+            <img class="cm9-relato__retrato" src={img(P.sessao.relato.retrato.arquivo)} alt={P.sessao.relato.retrato.alt} width={P.sessao.relato.retrato.largura} height={P.sessao.relato.retrato.altura} loading="lazy" decoding="async" />
+            <div class="cm9-relato__texto">
+              <p class="cm9-relato__intro">{P.sessao.relato.intro}</p>
+              <figure class="cm9-relato__citacao">
+                <blockquote class="cm9-relato__fala"><p>"{relato.fala}"</p></blockquote>
+                <figcaption class="cm9-relato__legenda">{P.sessao.relato.legenda}</figcaption>
+              </figure>
+            </div>
+          </div>
+          <div class="cm9-acao cm9-acao--linha">
+            <a class="cm9-cta" href="#planos">{P.sessao.cta}</a>
+            <span class="cm9-nota">{P.sessao.garantia}</span>
+          </div>
+        </div>
+        <svg class="cm9-onda cm9-onda--amarelo" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_DESCE} fill="currentColor"></path></svg>
+      </section>
+
+      <section class="cm9-sec cm9-sec--amarelo" aria-labelledby="cm9-seu-papel">
+        <div class="cm9-wrap cm9-corpo cm9-corpo--justo cm9-pilha cm9-pilha--justa">
+          <div class="cm9-cabeca cm9-cabeca--justa">
+            <h2 id="cm9-seu-papel" class="cm9-h2 cm9-h2--p">{P.seuPapel.titulo}</h2>
+            <p class="cm9-texto cm9-texto--tinta">{P.seuPapel.texto}</p>
+          </div>
+          <ul class="cm9-grade cm9-grade--cuidados">
+            {P.seuPapel.cuidados.map((cuidado) => (
+              <li class="cm9-carta cm9-carta--cuidado">
+                <h3 class="cm9-carta__titulo">{cuidado.titulo}</h3>
+                <p class="cm9-carta__texto">{cuidado.texto}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <svg class="cm9-onda cm9-onda--branco" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_SOBE} fill="currentColor"></path></svg>
+      </section>
+
+      <section class="cm9-sec cm9-sec--branco" aria-labelledby="cm9-pecas">
+        <div class="cm9-wrap cm9-corpo cm9-pilha cm9-pilha--larga">
+          <div class="cm9-cabeca cm9-cabeca--larga">
+            <h2 id="cm9-pecas" class="cm9-h2 cm9-h2--m">{P.pecas.titulo}</h2>
+            <p class="cm9-texto">{P.pecas.texto}</p>
+          </div>
+          <ul class="cm9-grade cm9-grade--papeis">
+            <li class="cm9-papel cm9-papel--rosa">
+              <span class="cm9-papel__icone" aria-hidden="true"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2"></rect><rect x="13" y="3" width="8" height="8" rx="2"></rect><rect x="3" y="13" width="8" height="8" rx="2"></rect><path d="M17 14v6M14 17h6"></path></svg></span>
+              <h3 class="cm9-papel__titulo">{P.pecas.cartas[0].titulo}</h3>
+              <p class="cm9-papel__texto">{P.pecas.cartas[0].texto}</p>
+            </li>
+            <li class="cm9-papel cm9-papel--azul">
+              <span class="cm9-papel__icone" aria-hidden="true"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 12-8.5 8.5a2.12 2.12 0 1 1-3-3L12 9"></path><path d="M17.64 15 22 10.64"></path><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91"></path></svg></span>
+              <h3 class="cm9-papel__titulo">{P.pecas.cartas[1].titulo}</h3>
+              <p class="cm9-papel__texto">{P.pecas.cartas[1].texto}</p>
+            </li>
+            <li class="cm9-papel cm9-papel--menta">
+              <span class="cm9-papel__icone" aria-hidden="true"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"></path><path d="M16 7h6v6"></path></svg></span>
+              <h3 class="cm9-papel__titulo">{P.pecas.cartas[2].titulo}</h3>
+              <p class="cm9-papel__texto">{P.pecas.cartas[2].texto}</p>
+            </li>
+          </ul>
+          <div class="cm9-pecas">
+            <figure class="cm9-jornada">
+              <img src={img(P.pecas.jornada.imagem.arquivo)} srcset={srcset(P.pecas.jornada.imagem)} alt={P.pecas.jornada.imagem.alt} width={P.pecas.jornada.imagem.largura} height={P.pecas.jornada.imagem.altura} loading="lazy" decoding="async" />
+              <figcaption><strong>{P.pecas.jornada.legenda.destaque}</strong> {P.pecas.jornada.legenda.texto}</figcaption>
+            </figure>
+            <div class="cm9-pecas__lado">
+              <p class="cm9-pecas__texto"><strong>{P.pecas.proximos.destaque}</strong> {P.pecas.proximos.texto}</p>
+              <ul class="cm9-jogos">
+                {P.pecas.jogos.map((jogo) => (
+                  <li>
+                    <figure class="cm9-jogo">
+                      <img src={img(jogo.imagem.arquivo)} alt={jogo.imagem.alt} width={jogo.imagem.largura} height={jogo.imagem.altura} loading="lazy" decoding="async" />
+                      <figcaption>{jogo.legenda}</figcaption>
+                    </figure>
+                  </li>
+                ))}
+              </ul>
+              <p class="cm9-continua"><strong>{P.pecas.continuidade.destaque}</strong> {P.pecas.continuidade.texto}</p>
+            </div>
+          </div>
+          <div class="cm9-fundadores">
+            <img src={img(P.pecas.fundadores.imagem.arquivo)} alt={P.pecas.fundadores.imagem.alt} width={P.pecas.fundadores.imagem.largura} height={P.pecas.fundadores.imagem.altura} loading="lazy" decoding="async" />
+            <p>{P.pecas.fundadores.texto}</p>
+          </div>
+        </div>
+        <svg class="cm9-onda cm9-onda--rosa" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_DESCE} fill="currentColor"></path></svg>
+      </section>
+
+      <section class="cm9-sec cm9-sec--rosa" aria-labelledby="cm9-seguranca">
+        <div class="cm9-wrap cm9-corpo cm9-corpo--justo cm9-pilha cm9-pilha--justa">
+          <div class="cm9-cabeca cm9-cabeca--justa">
+            <h2 id="cm9-seguranca" class="cm9-h2 cm9-h2--p">{P.seguranca.titulo}</h2>
+            <p class="cm9-texto">{P.seguranca.texto}</p>
+          </div>
+          <ul class="cm9-grade cm9-grade--regras">
+            {P.seguranca.regras.map((regra) => (
+              <li class="cm9-carta cm9-carta--regra">
+                <h3 class="cm9-carta__titulo">{regra.titulo}</h3>
+                <p class="cm9-carta__texto">{regra.texto}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <svg class="cm9-onda cm9-onda--laranja" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_SOBE} fill="currentColor"></path></svg>
+      </section>
+
+      <section id="planos" class="cm9-sec cm9-sec--laranja" aria-labelledby="cm9-planos">
+        <div class="cm9-wrap cm9-corpo cm9-corpo--planos cm9-pilha">
+          <div class="cm9-cabeca">
+            <h2 id="cm9-planos" class="cm9-h2 cm9-h2--planos">{P.planos.titulo}</h2>
+            <p class="cm9-texto cm9-texto--tinta">{P.planos.texto}</p>
+            <p class="cm9-texto cm9-texto--forte">{P.planos.destaque}</p>
+          </div>
+          <div class="cm9-planos">
+            <article class="cm9-plano" aria-labelledby="cm9-plano-mensal">
+              <h3 id="cm9-plano-mensal" class="cm9-plano__nome">{P.planos.mensal.nome}</h3>
+              <p class="cm9-plano__preco">{preencher(P.planos.mensal.preco)}<span>{P.planos.mensal.periodo}</span></p>
+              <p class="cm9-plano__texto">{preencher(P.planos.mensal.texto)}</p>
+              <button type="button" class="cm9-plano__botao" data-checkout-cta data-checkout-oferta={mensal?.slug}>{P.planos.mensal.cta}</button>
+              <p class="cm9-plano__nota">{P.planos.mensal.nota}</p>
+            </article>
+            <article class="cm9-plano cm9-plano--anual" aria-labelledby="cm9-plano-anual">
+              {economiaAnualCents > 0 && <p class="cm9-plano__selo">{preencher(P.planos.anual.selo)}</p>}
+              <h3 id="cm9-plano-anual" class="cm9-plano__nome">{P.planos.anual.nome}</h3>
+              <p class="cm9-plano__preco">{preencher(P.planos.anual.preco)}<span>{P.planos.anual.periodo}</span></p>
+              <p class="cm9-plano__texto">{preencher(P.planos.anual.texto)}</p>
+              <button type="button" class="cm9-plano__botao cm9-plano__botao--escuro" data-checkout-cta data-checkout-oferta={anual?.slug}>{P.planos.anual.cta}</button>
+              <p class="cm9-plano__nota">{P.planos.anual.nota}</p>
+            </article>
+          </div>
+          <div class="cm9-depois">
+            <div class="cm9-depois__passos">
+              <h3 class="cm9-depois__titulo">{P.planos.depois.titulo}</h3>
+              <ol>
+                {P.planos.depois.passos.map((passo, index) => (
+                  <li>
+                    <span class={`cm9-depois__num cm9-fundo--${CORES_DEPOIS[index % CORES_DEPOIS.length]}`} aria-hidden="true">{index + 1}</span>
+                    <span>{passo}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <p class="cm9-garantia">
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+              <span><strong>{P.planos.garantia.destaque}</strong> {P.planos.garantia.texto}</span>
+            </p>
+          </div>
+        </div>
+        <svg class="cm9-onda cm9-onda--creme" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_DESCE} fill="currentColor"></path></svg>
+      </section>
+
+      <section class="cm9-sec cm9-sec--creme" aria-labelledby="cm9-duvidas">
+        <div class="cm9-wrap cm9-wrap--estreita cm9-corpo cm9-corpo--planos cm9-duvidas">
+          <h2 id="cm9-duvidas" class="cm9-h2 cm9-h2--p">{P.duvidas.titulo}</h2>
+          {P.duvidas.itens.map((duvida) => (
+            <details class="cm9-duvida">
+              <summary>{duvida.pergunta}</summary>
+              <p>{duvida.resposta}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section class="cm9-sec cm9-sec--azul" aria-labelledby="cm9-fim">
+        <div class="cm9-wrap cm9-wrap--media cm9-fim">
+          <div class="cm9-fim__texto">
+            <h2 id="cm9-fim" class="cm9-h2 cm9-h2--fim">{P.fechamento.titulo}</h2>
+            <a class="cm9-cta cm9-cta--grande" href="#planos">{P.fechamento.cta}</a>
+            <span class="cm9-nota">{P.fechamento.garantia}</span>
+          </div>
+          <img class="cm9-fim__zappy" src={img(P.fechamento.zappy.arquivo)} alt={P.fechamento.zappy.alt} width={P.fechamento.zappy.largura} height={P.fechamento.zappy.altura} loading="lazy" decoding="async" />
+        </div>
+      </section>
+    </main>
+
+    <div class="cm9-faixa">
+      <div class="cm9-wrap cm9-faixa__corpo">
+        <img src={img(P.rodape.logo.arquivo)} alt={P.rodape.logo.alt} width={P.rodape.logo.largura} height={P.rodape.logo.altura} loading="lazy" decoding="async" />
+        <span>{P.rodape.aviso}</span>
+        <span class="cm9-faixa__links">
+          <a href={P.rodape.termos.href}>{P.rodape.termos.label}</a>
+          <a href={P.rodape.privacidade.href}>{P.rodape.privacidade.label}</a>
+        </span>
+      </div>
+    </div>
+
+    <div class="kof-mobar cm9-barra" data-mobar aria-hidden="true">
+      <p class="kof-mobar__preco"><strong>{preencher(P.barra.preco)}</strong>{preencher(P.barra.alternativa)}</p>
+      <a class="cm9-cta cm9-cta--barra" href="#planos" tabindex="-1">{P.barra.cta}</a>
+    </div>
+  </div>
+  <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} />
+</BaseLayout>
+
+<script>
+  // A barra fixa do celular, a mesma da ComunidadeOfertaBody: aparece depois da dobra e some
+  // quando os planos ou o rodapé entram na tela. Sem JS ela nasce escondida e `aria-hidden`.
+  const barra = document.querySelector<HTMLElement>('[data-mobar]')
+  const planos = document.getElementById('planos')
+  const rodape = document.querySelector('footer')
+  if (barra && planos && 'IntersectionObserver' in window) {
+    const link = barra.querySelector('a')
+    let planosAVista = false
+    let rodapeAVista = false
+    let roladoAlemDaDobra = false
+    let ultimo: boolean | null = null
+    const aplicar = () => {
+      const mostra = roladoAlemDaDobra && !planosAVista && !rodapeAVista
+      if (mostra === ultimo) return
+      ultimo = mostra
+      barra.classList.toggle('is-visible', mostra)
+      barra.setAttribute('aria-hidden', mostra ? 'false' : 'true')
+      link?.setAttribute('tabindex', mostra ? '0' : '-1')
+    }
+    new IntersectionObserver(
+      ([e]) => {
+        planosAVista = Boolean(e?.isIntersecting)
+        aplicar()
+      },
+      { rootMargin: '0px 0px -40% 0px' },
+    ).observe(planos)
+    if (rodape)
+      new IntersectionObserver(([e]) => {
+        rodapeAVista = Boolean(e?.isIntersecting)
+        aplicar()
+      }).observe(rodape)
+    const aoRolar = () => {
+      roladoAlemDaDobra = window.scrollY > window.innerHeight * 0.9
+      aplicar()
+    }
+    window.addEventListener('scroll', aoRolar, { passive: true })
+    aoRolar()
+  }
+</script>

@@ -1,30 +1,45 @@
 ---
 import { COMUNIDADE_DOS_CRIADORES } from '../../funnels/comunidade-dos-criadores'
-import type { ComunidadePageId } from '../../funnels/comunidade-dos-criadores/oferta/types'
+import type { ComunidadeOfertaId } from '../../funnels/comunidade-dos-criadores/oferta/types'
+import { DESAFIO_PRIMEIRO_JOGO } from '../../funnels/desafio-primeiro-jogo'
 import type { DesafioOfferId } from '../../funnels/desafio-primeiro-jogo/offer'
 import type { OfferPageData } from '../../server/offer-page'
+import Comunidade917Body from './oferta/Comunidade917Body.astro'
+import ComunidadeMenor9Body from './oferta/ComunidadeMenor9Body.astro'
 import ComunidadeOfertaBody from './oferta/ComunidadeOfertaBody.astro'
 import DesafioOfertaBody from './oferta/DesafioOfertaBody.astro'
 import NoComandoOfertaBody from './oferta/NoComandoOfertaBody.astro'
 
+// Cada funil tem o seu corpo de oferta, escolhido pela CHAVE do funil (nunca por exclusão: um funil
+// novo sem corpo declarado falha alto em vez de cair na página de outro produto).
 interface Props extends OfferPageData {
-  comunidadeProfile?: ComunidadePageId
+  /** Comunidade Kids: a página 9 a 17 (`/oferta`), a "criar junto" ou a de continuidade. */
+  comunidadePage?: ComunidadeOfertaId
   desafioProfile?: DesafioOfferId
 }
-const {
-  bodyProps,
-  plans,
-  comunidadeProfile = 'tempo-de-tela',
-  desafioProfile = 'primeiro-jogo',
-} = Astro.props
+const { bodyProps, plans, comunidadePage = '9a17', desafioProfile = 'primeiro-jogo' } = Astro.props
 const { f } = bodyProps
+const corpo = f.content.sales
+  ? 'sales'
+  : f.key === COMUNIDADE_DOS_CRIADORES.key
+    ? 'comunidade'
+    : f.key === DESAFIO_PRIMEIRO_JOGO.key
+      ? 'desafio'
+      : null
+if (!corpo) throw new Error(`Funil sem corpo de oferta declarado: ${f.key}`)
 ---
 
 {
-  f.content.sales ? (
+  corpo === 'sales' ? (
     <NoComandoOfertaBody {...bodyProps} />
-  ) : f.key === COMUNIDADE_DOS_CRIADORES.key ? (
-    <ComunidadeOfertaBody {...bodyProps} plans={plans} profile={comunidadeProfile} />
+  ) : corpo === 'comunidade' ? (
+    comunidadePage === 'criar-junto' ? (
+      <ComunidadeMenor9Body {...bodyProps} plans={plans} />
+    ) : comunidadePage === 'continuar' ? (
+      <ComunidadeOfertaBody {...bodyProps} plans={plans} profile="continuar" />
+    ) : (
+      <Comunidade917Body {...bodyProps} plans={plans} />
+    )
   ) : (
     <DesafioOfertaBody {...bodyProps} profile={desafioProfile} />
   )

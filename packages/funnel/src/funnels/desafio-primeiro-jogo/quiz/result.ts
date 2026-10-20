@@ -211,7 +211,7 @@ export function buildDesafioResult(answers: QuizAnswers) {
       !decision.unmet.includes('formato') &&
       !decision.unmet.includes('computador')
         ? {
-            href: '/kids/comunidade-dos-criadores/oferta/expressao-visual',
+            href: '/kids/comunidade-dos-criadores/oferta',
             label: 'Conhecer desenho ligado a projetos interativos na Comunidade',
           }
         : null,

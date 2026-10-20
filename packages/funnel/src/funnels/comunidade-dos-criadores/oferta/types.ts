@@ -1,11 +1,12 @@
-export type ComunidadeProfile =
-  | 'tempo-de-tela'
-  | 'criacao-de-jogos'
-  | 'expressao-visual'
-  | 'formacao-tecnologica'
+/**
+ * As páginas de oferta da Comunidade Kids (20/10/2026): `9a17` em `/oferta`, `criar-junto` (menor
+ * de 9, criando com o responsável) e `continuar` (quem veio do Desafio). As cinco páginas de perfil
+ * de antes redirecionam para `/oferta` (`COMUNIDADE_OFERTAS_ANTIGAS`).
+ */
+export type ComunidadeOfertaId = '9a17' | 'criar-junto' | 'continuar'
 
-/** Variantes editoriais e de relacionamento não acrescentam perfis ao quiz. */
-export type ComunidadePageId = ComunidadeProfile | 'continuar' | 'habilidades-escolares'
+/** As páginas montadas pelo motor de seções (`ComunidadeOfertaBody`): hoje só a de continuidade. */
+export type ComunidadePageId = 'continuar'
 
 export interface ComunidadeAction {
   label: string

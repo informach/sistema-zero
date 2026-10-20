@@ -50,7 +50,7 @@ interface Props {
   plans: OfferPlans | null
   profile?: ComunidadePageId
 }
-const { f, productName, imagesBase, ofertaUrl, plans, profile = 'tempo-de-tela' } = Astro.props
+const { f, productName, imagesBase, ofertaUrl, plans, profile = 'continuar' } = Astro.props
 const page = COMUNIDADE_PAGES[profile]
 const img = (file: string) => `${imagesBase}/${file}`
 const heroVisual = visualDe(page.heroVisual)
@@ -336,7 +336,7 @@ const faqVisuals = (id: string) =>
     </div>
     <ComunidadeImageZoom />
   </div>
-  <Footer audience={f.audience} vitalicio={f.lifetimeAccess} />
+  <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
   <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} continuidade={profile === 'continuar'} />
 </BaseLayout>
 

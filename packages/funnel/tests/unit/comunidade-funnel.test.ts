@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { COMUNIDADE_DOS_CRIADORES } from '../../src/funnels/comunidade-dos-criadores'
 import { COMUNIDADE_PRECO_FALLBACK } from '../../src/funnels/comunidade-dos-criadores/content'
-import { PAGE_A } from '../../src/funnels/comunidade-dos-criadores/oferta/tempo-de-tela'
+import { PAGINA_9A17 } from '../../src/funnels/comunidade-dos-criadores/oferta/pagina-9a17'
 import { FUNNELS, getFunnel, getFunnelByKey, isFunnelKey } from '../../src/funnels/registry'
 
 // Funil de ASSINATURA com quiz: o def precisa manter os invariantes que dirigem
@@ -50,14 +50,13 @@ describe('registro do funil Comunidade dos Criadores', () => {
     expect(o.passos.map((p) => p.titulo)).toContain('Mostre a Jornada do Criador')
   })
 
-  test('metadados espelham a página padrão, sem preço estático', () => {
+  test('metadados espelham a página principal (9 a 17), sem preço estático', () => {
     const f = COMUNIDADE_DOS_CRIADORES
-    expect(f.content.landing.h1).toBe(PAGE_A.hero.title)
-    expect(f.seoTitle).toBe(PAGE_A.seoTitle)
-    expect(f.seoDescription).toBe(PAGE_A.description)
+    expect(f.content.landing.h1).toBe(`${PAGINA_9A17.hero.title}${PAGINA_9A17.hero.destaque}`)
+    expect(f.seoTitle).toBe(PAGINA_9A17.seoTitle)
+    expect(f.seoDescription).toBe(PAGINA_9A17.description)
     expect(f.seoTitle).not.toMatch(/—|·/)
-    expect(f.seoDescription).toMatch(/aulas guiadas/i)
-    expect(f.seoDescription).not.toContain('parte do tempo digital')
+    expect(f.seoTitle).toContain('9 a 17')
     // Preço é dinâmico no catálogo: nunca fixo em metadado estático.
     expect(f.seoDescription).not.toContain('R$')
   })

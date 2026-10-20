@@ -1,11 +1,15 @@
-// Quiz v5 (16/10/2026), tráfego frio em SPIN. Proposta aprovada em
-// docs/marketing/kids/comunidade-dos-criadores/quiz/revisao-copy-2026-10-16.md; espelho gerado em
-// docs/marketing/kids/comunidade-dos-criadores/copy/quiz-comunidade.md.
+// Quiz v6 (20/10/2026), proposta aprovada no Canvas de 19/10 (fonte:
+// docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/quiz-dados.json, chave `kids`).
+//
+// A entrada pergunta filho ou filha em duas cartas e, na tela seguinte, a idade em três cartas. A
+// idade decide o caminho sem avisar ninguém: de 9 a 17, as perguntas da v5 com as opções na voz dos
+// pais (ramo `9a17`, mesmas chaves e letras da v5); com menos de 9, o ramo de criar junto (`m9`,
+// chaves com prefixo `m9_`); 18 ou mais encerra com a saída para o quiz adulto (ramo `adulto`, sem
+// perguntas).
 //
 // Regras da copy (decisão da dona): as perguntas falam só da criança e da casa. Nenhuma tela antes
-// do resultado cita a Comunidade, aula, curso, plataforma ou preço, nem apresenta a criação de
-// jogos como solução ("jogo" só aparece quando descreve a família). O texto é escrito no
-// masculino; `paraFeminino` (genero.ts) troca para "ela" quando a P1 é "Filha".
+// do resultado cita a Comunidade, aula, curso, plataforma ou preço. O texto é escrito no masculino;
+// `paraFeminino` (genero.ts) troca para "ela" quando a entrada é "Na minha filha".
 import type { Opcao, SelecaoStep } from '../../../content/quiz-config'
 
 const opcoes = (pares: ReadonlyArray<readonly [string, string]>): Opcao[] =>
@@ -22,8 +26,8 @@ const pergunta = (
 ): SelecaoStep => ({
   id,
   key,
-  lastStep: `comunidade_v5_${key}`,
-  eventName: `respondeu_comunidade_v5_${key}`,
+  lastStep: `comunidade_v6_${key}`,
+  eventName: `respondeu_comunidade_v6_${key}`,
   tipo: 'selecao',
   etapa,
   rotuloCurto,
@@ -32,30 +36,73 @@ const pergunta = (
   ...extra,
 })
 
-/** Opções que somam pontos para um perfil (P4, I7, N8 e P10): o valor é a letra do perfil. */
+/** Os ramos da v6 (id → rótulo do /admin), na ordem do Performance. */
+export const BRANCHES = {
+  '9a17': '9 a 17 anos',
+  m9: 'Menor de 9',
+  adulto: '18 ou mais',
+} as const
+export type CommunityBranch = keyof typeof BRANCHES
+
+// ---------------------------------------------------------------------------------------------
+// Entrada: filho ou filha (cartas com desenho) e a idade (cartas; 18 ou mais é um link pequeno).
+// ---------------------------------------------------------------------------------------------
+
+export const GENERO_STEP = pergunta(
+  1,
+  'genero',
+  'rotina',
+  'Filho ou filha',
+  'Em quem você está pensando?',
+  [],
+  {
+    subtitulo: 'Uma criança de cada vez.',
+    cartas: true,
+    // Duas cartas grandes com desenho: filho e filha não diferem só por uma letra numa lista.
+    opcoes: [
+      {
+        value: 'filho',
+        label: 'No meu filho',
+        image: '/img/comunidade-dos-criadores/dede-fala.webp',
+      },
+      {
+        value: 'filha',
+        label: 'Na minha filha',
+        image: '/img/comunidade-dos-criadores/debinha-fala.webp',
+      },
+    ],
+  },
+)
+
+/** A idade: as três faixas viram cartas; `18_mais` é o link pequeno embaixo delas. */
+export const IDADE_STEP = pergunta(
+  2,
+  'idade',
+  'rotina',
+  'Idade',
+  'Quantos anos ele tem?',
+  [
+    ['menos_9', 'Menos de 9'],
+    ['9_12', 'De 9 a 12'],
+    ['13_17', 'De 13 a 17'],
+    ['18_mais', 'Ele tem 18 anos ou mais'],
+  ],
+  { cartas: true },
+)
+
+// ---------------------------------------------------------------------------------------------
+// Ramo 9 a 17: as perguntas da v5, na mesma ordem e com a mesma função, e as opções na voz dos pais.
+// ---------------------------------------------------------------------------------------------
+
+/** As perguntas que somam pontos no ramo 9 a 17 (o valor é a letra do perfil). */
 export const PERGUNTAS_DE_PERFIL = ['cena', 'preocupacao', 'cena_desejada', 'sintese'] as const
 
-export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
-  // P1. Segmentação, na própria tela de entrada: filho ou filha e a faixa de idade.
-  pergunta(
-    1,
-    'crianca',
-    'rotina',
-    'Criança e idade',
-    'Em quem você está pensando?',
-    [
-      ['filho_9_11', 'Filho de 9 a 11 anos'],
-      ['filha_9_11', 'Filha de 9 a 11 anos'],
-      ['filho_12_14', 'Filho de 12 a 14 anos'],
-      ['filha_12_14', 'Filha de 12 a 14 anos'],
-      ['menos_9', 'Menos de 9 anos'],
-      ['15_mais', '15 anos ou mais'],
-    ],
-    { subtitulo: 'Responda pensando em uma criança de cada vez.' },
-  ),
+const ramo917 = { ramo: '9a17' } as const
+
+export const QUESTIONS_9A17: SelecaoStep[] = [
   // S2. Situação: o dado da calculadora (I6).
   pergunta(
-    2,
+    3,
     'tempo_tela',
     'rotina',
     'Tempo de tela',
@@ -66,11 +113,11 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       ['2_4h', 'De 2 a 4 horas'],
       ['mais_4h', 'Mais de 4 horas'],
     ],
-    { subtitulo: 'Some celular, computador, tablet e videogame. Vale uma estimativa.' },
+    { ...ramo917, subtitulo: 'Some celular, computador, tablet e videogame. Vale uma estimativa.' },
   ),
   // S3. Situação: o computador (vira condição no resultado quando falta).
   pergunta(
-    3,
+    4,
     'computador',
     'rotina',
     'Computador',
@@ -81,34 +128,28 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       ['celular_tablet', 'Por enquanto, só celular ou tablet'],
       ['verificar', 'Ainda preciso ver'],
     ],
-    { subtitulo: 'Pode ser o da família.' },
+    { ...ramo917, subtitulo: 'Pode ser o da família.' },
   ),
   // P4. Problema: a cena de casa (3 pontos para o perfil).
   pergunta(
-    4,
+    5,
     'cena',
     'casa',
     'Cena de casa',
-    'Qual destas cenas mais acontece aí em casa?',
+    'Qual destas frases parece mais com a sua casa?',
     [
-      [
-        'A',
-        'Ele passa horas em jogos e vídeos, e no fim do dia não sobra nada que ele tenha feito',
-      ],
-      ['B', 'Ele inventa jogos e regras o tempo todo, mas as ideias ficam na conversa ou no papel'],
-      ['C', 'Ele desenha personagens o tempo todo, e os desenhos ficam guardados no caderno'],
-      [
-        'D',
-        'Ele quer saber como os jogos e os programas funcionam, e eu não sei por onde começar a ensinar',
-      ],
-      ['F', 'Na lição, ele repete o exemplo, mas trava quando a pergunta muda'],
-      ['nenhum', 'Nenhuma dessas parece com a nossa casa'],
+      ['A', 'Ele vive no jogo e no vídeo, e não faz nada com isso'],
+      ['B', 'Ele inventa jogo o tempo todo, mas fica só na conversa'],
+      ['C', 'Ele desenha personagem o tempo todo, e fica no caderno'],
+      ['D', 'Ele quer saber como os jogos são feitos, e eu não sei ensinar'],
+      ['F', 'Na lição, ele copia o exemplo e trava quando a pergunta muda'],
+      ['nenhum', 'Nenhuma dessas'],
     ],
-    { shuffle: true, fixedLast: ['nenhum'] },
+    { ...ramo917, shuffle: true, fixedLast: ['nenhum'] },
   ),
   // P5. Problema: o que ele faz quando trava.
   pergunta(
-    5,
+    6,
     'quando_trava',
     'casa',
     'Quando trava',
@@ -120,11 +161,11 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       ['procura', 'Procura um vídeo ou um exemplo'],
       ['nao_reparou', 'Ainda não reparei'],
     ],
-    { shuffle: true, fixedLast: ['nao_reparou'] },
+    { ...ramo917, shuffle: true, fixedLast: ['nao_reparou'] },
   ),
   // I6. Implicação: a calculadora. O título na tela é montado com a S2 (`stepOnScreen`, engine.ts).
   pergunta(
-    6,
+    7,
     'tempo_criacao',
     'casa',
     'Calculadora do tempo de tela',
@@ -135,78 +176,79 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       ['boa_parte', 'Boa parte'],
       ['nao_sei', 'Não sei dizer'],
     ],
+    ramo917,
   ),
   // I7. Implicação: o que preocupa (2 pontos).
   pergunta(
-    7,
+    8,
     'preocupacao',
     'casa',
     'Preocupação',
-    'Se nada mudar no próximo ano, o que mais preocupa você?',
+    'Se nada mudar no próximo ano, o que mais preocupa?',
     [
-      ['A', 'Que a tela continue sendo só para assistir e jogar'],
-      ['B', 'Que a vontade de criar jogos passe antes de ele fazer o primeiro'],
-      ['C', 'Que os desenhos continuem guardados na gaveta'],
-      ['D', 'Que a curiosidade dele sobre os programas passe antes de ele entender como funcionam'],
-      ['F', 'Que a dificuldade na escola vire desânimo com os estudos'],
-      ['nenhum', 'Nada me preocupa; quero aproveitar o interesse dele'],
+      ['A', 'A tela continuar só para assistir e jogar'],
+      ['B', 'A vontade de criar passar antes de ele fazer um jogo'],
+      ['C', 'Os desenhos ficarem na gaveta'],
+      ['D', 'A curiosidade dele passar em branco'],
+      ['F', 'A dificuldade na escola virar desânimo'],
+      ['nenhum', 'Nada, quero aproveitar o interesse dele'],
     ],
-    { shuffle: true, fixedLast: ['nenhum'] },
+    { ...ramo917, shuffle: true, fixedLast: ['nenhum'] },
   ),
-  // N8. Necessidade: visualização profunda (2 pontos). Sem opção neutra: sempre há um perfil.
+  // N8. Necessidade: a cena desejada (2 pontos). Sem opção neutra: sempre há um perfil.
   pergunta(
-    8,
+    9,
     'cena_desejada',
     'desejo',
     'Cena desejada',
-    'Imagine que, daqui a três meses, alguma coisa mudou aí em casa. Qual cena você gostaria de ver primeiro?',
+    'Daqui a três meses, qual cena você gostaria de ver?',
     [
-      ['A', 'Ele me chamando para ver uma coisa que ele mesmo fez no computador'],
+      ['A', 'Ele me chamando: olha o que eu fiz'],
       ['B', 'Um amigo jogando um jogo que ele inventou'],
       ['C', 'O personagem que ele desenhou se mexendo na tela'],
-      ['D', 'Ele me explicando como um programa funciona por dentro'],
-      ['F', 'Ele explicando uma conta com as próprias palavras'],
+      ['D', 'Ele me explicando como um jogo funciona por dentro'],
+      ['F', 'Ele explicando uma conta com as palavras dele'],
     ],
-    { shuffle: true },
+    { ...ramo917, shuffle: true },
   ),
   // N9. Necessidade: o que precisa estar garantido (a objeção; "ao vivo" vira condição).
   pergunta(
-    9,
+    10,
     'garantia',
     'desejo',
     'O que precisa estar garantido',
-    'Para uma atividade nova dar certo aí em casa, o que precisa estar garantido?',
+    'Para dar certo aí em casa, o que precisa estar garantido?',
     [
-      ['sozinho', 'Que ele consiga aprender sozinho, porque eu não entendo do assunto'],
-      ['recorrer', 'Que ele tenha a quem recorrer quando travar'],
-      ['acompanhar', 'Que eu consiga acompanhar o que ele aprende'],
-      ['tempo_tela', 'Que caiba no tempo de tela que já combinamos'],
-      ['orcamento', 'Que o valor caiba no orçamento da família'],
-      ['ao_vivo', 'Que tenha um professor ao vivo acompanhando'],
+      ['sozinho', 'Ele conseguir sozinho, porque eu não entendo disso'],
+      ['recorrer', 'Ter a quem recorrer quando travar'],
+      ['acompanhar', 'Eu conseguir acompanhar'],
+      ['tempo_tela', 'Caber no tempo de tela combinado'],
+      ['orcamento', 'Caber no orçamento'],
+      ['ao_vivo', 'Ter professor ao vivo'],
     ],
-    { shuffle: true, fixedLast: ['ao_vivo'] },
+    { ...ramo917, shuffle: true, fixedLast: ['ao_vivo'] },
   ),
-  // P10. Diagnóstico final (3 pontos; "ainda quero conhecer" não soma).
+  // P10. Diagnóstico final (3 pontos; "ainda estou conhecendo" não soma).
   pergunta(
-    10,
+    11,
     'sintese',
     'desejo',
     'Frase-síntese',
-    'Juntando tudo o que você respondeu, qual destas frases mais parece com o que você quer para ele?',
+    'Juntando tudo, o que você quer para ele?',
     [
-      ['A', 'Que o tempo de tela deixe alguma coisa feita por ele'],
+      ['A', 'Que o tempo de tela sirva para alguma coisa'],
       ['B', 'Que as ideias de jogo dele saiam do papel'],
-      ['C', 'Que os personagens que ele desenha ganhem movimento e história'],
-      ['D', 'Que ele entenda como os programas funcionam e aprenda a programar'],
-      ['F', 'Que ele entenda o que estuda e use isso na prática'],
-      ['conhecer', 'Ainda quero conhecer as possibilidades'],
+      ['C', 'Que os desenhos dele ganhem vida'],
+      ['D', 'Que ele aprenda a programar de verdade'],
+      ['F', 'Que ele entenda o que estuda e use na prática'],
+      ['conhecer', 'Ainda estou conhecendo'],
     ],
-    { shuffle: true, fixedLast: ['conhecer'] },
+    { ...ramo917, shuffle: true, fixedLast: ['conhecer'] },
   ),
   // Condicionais: só quando o perfil somado é B, C ou F. Evitam vender a quem precisa de
   // Roblox, de uma atividade só de desenho ou de reforço da série.
   pergunta(
-    11,
+    12,
     'ferramenta',
     'desejo',
     'Ferramenta (perfil B)',
@@ -218,10 +260,10 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       ['pode_outra', 'Qualquer ferramenta serve, se ele gostar'],
       ['conversar', 'Ainda vou conversar com ele'],
     ],
-    { condicional: true },
+    { ...ramo917, condicional: true },
   ),
   pergunta(
-    12,
+    13,
     'desenho',
     'desejo',
     'Desenhos (perfil C)',
@@ -231,10 +273,10 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       ['so_desenho', 'Que ele desenhe melhor, com traço e técnica'],
       ['nao_sei', 'Ainda não sei'],
     ],
-    { condicional: true },
+    { ...ramo917, condicional: true },
   ),
   pergunta(
-    13,
+    14,
     'escola',
     'desejo',
     'Escola (perfil F)',
@@ -247,8 +289,155 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       ['vai_bem', 'Ele vai bem; quero que use na prática o que aprende'],
       ['reforco', 'Ele precisa recuperar matéria atrasada da série'],
     ],
-    { condicional: true },
+    { ...ramo917, condicional: true },
   ),
+]
+
+// ---------------------------------------------------------------------------------------------
+// Ramo menor de 9: criar junto. Oito perguntas, na pele pastel; o adulto senta ao lado.
+// ---------------------------------------------------------------------------------------------
+
+/** As perguntas que somam pontos no ramo menor de 9. */
+export const PERGUNTAS_DE_PERFIL_M9 = [
+  'm9_cena',
+  'm9_preocupacao',
+  'm9_cena_desejada',
+  'm9_sintese',
+] as const
+
+const ramoM9 = { ramo: 'm9' } as const
+
+export const QUESTIONS_M9: SelecaoStep[] = [
+  // S2. A leitura define o papel do adulto na sessão (não pontua).
+  pergunta(
+    15,
+    'm9_leitura',
+    'rotina',
+    'Leitura',
+    'Ele já lê?',
+    [
+      ['nao_le', 'Ainda não'],
+      ['comecando', 'Está começando'],
+      ['prefere', 'Lê, mas prefere que eu leia'],
+      ['le_sozinho', 'Lê sozinho'],
+    ],
+    ramoM9,
+  ),
+  // S3. Computador: tablet não serve para criar, e é o aparelho mais comum nessa idade.
+  pergunta(
+    16,
+    'm9_computador',
+    'rotina',
+    'Computador',
+    'Vocês têm computador em casa?',
+    [
+      ['sim', 'Sim, podemos usar'],
+      ['organizar', 'Sim, mas preciso organizar horário'],
+      ['celular_tablet', 'Só celular ou tablet'],
+      ['verificar', 'Ainda vou ver'],
+    ],
+    ramoM9,
+  ),
+  // S4. O tempo real a dois evita vender uma rotina que a família não tem (não pontua).
+  pergunta(
+    17,
+    'm9_tempo_juntos',
+    'rotina',
+    'Tempo juntos',
+    'Por semana, quanto tempo vocês conseguem sentar juntos no computador?',
+    [
+      ['uma_vez', 'Uns 20 minutos, uma vez'],
+      ['duas_tres', 'Duas ou três vezes, de 20 a 30 minutos'],
+      ['mais', 'Mais do que isso'],
+      ['nao_sei', 'Ainda não sei'],
+    ],
+    { ...ramoM9, subtitulo: 'Chute.' },
+  ),
+  // P5. A cena de casa (3 pontos). O irmão não pontua e ganha uma frase própria.
+  pergunta(
+    18,
+    'm9_cena',
+    'casa',
+    'Frase que parece com ele',
+    'Qual destas frases parece mais com ele?',
+    [
+      ['A', 'Só fica no joguinho pronto do tablet'],
+      ['B', 'Inventa brincadeira e personagem o tempo todo'],
+      ['D', 'Quer saber como tudo funciona e apertar tudo'],
+      ['irmao', 'Quer fazer o que o irmão mais velho faz'],
+      ['nenhum', 'Nenhuma dessas'],
+    ],
+    { ...ramoM9, shuffle: true, fixedLast: ['nenhum'] },
+  ),
+  // I6. O custo de não mudar (2 pontos).
+  pergunta(
+    19,
+    'm9_preocupacao',
+    'casa',
+    'Preocupação',
+    'Se nada mudar, o que mais preocupa?',
+    [
+      ['A', 'A tela continuar só para assistir e jogar'],
+      ['B', 'As ideias dele ficarem só na brincadeira'],
+      ['D', 'A curiosidade dele passar em branco'],
+      ['nenhum', 'Nada, quero aproveitar a fase'],
+    ],
+    { ...ramoM9, shuffle: true, fixedLast: ['nenhum'] },
+  ),
+  // N7. A cena daqui a três meses (2 pontos; `A2`, os avós, soma para A).
+  pergunta(
+    20,
+    'm9_cena_desejada',
+    'desejo',
+    'Cena desejada',
+    'Daqui a três meses, qual cena você gostaria de ver?',
+    [
+      ['A', 'Ele me chamando para ver o que a gente fez'],
+      ['B', 'O personagem dele aparecendo na tela'],
+      ['D', 'Ele me explicando o que cada botão faz'],
+      ['A2', 'Os avós jogando um jogo nosso'],
+    ],
+    { ...ramoM9, shuffle: true },
+  ),
+  // N8. A objeção principal: duas respostas pedem uma conversa honesta.
+  pergunta(
+    21,
+    'm9_garantia',
+    'desejo',
+    'O que precisa estar garantido',
+    'Para dar certo aí em casa, o que precisa estar garantido?',
+    [
+      ['conduzir', 'Eu conseguir conduzir sem saber programar'],
+      ['curto', 'Caber em sessões curtas'],
+      ['seguro', 'Ser um lugar seguro'],
+      ['orcamento', 'Caber no orçamento'],
+      ['sozinho', 'Ele conseguir sozinho, não tenho tempo'],
+      ['ao_vivo', 'Ter professor ao vivo'],
+    ],
+    { ...ramoM9, shuffle: true, fixedLast: ['ao_vivo'] },
+  ),
+  // P9. A frase-síntese e o desempate (3 pontos; "ainda estou conhecendo" não soma).
+  pergunta(
+    22,
+    'm9_sintese',
+    'desejo',
+    'Frase-síntese',
+    'Juntando tudo, o que você quer?',
+    [
+      ['A', 'Um tempo de tela nosso, com alguma coisa feita no fim'],
+      ['B', 'As ideias dele virando um jogo'],
+      ['D', 'Ele entender, brincando, como as coisas funcionam'],
+      ['conhecer', 'Ainda estou conhecendo'],
+    ],
+    { ...ramoM9, shuffle: true, fixedLast: ['conhecer'] },
+  ),
+]
+
+export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
+  GENERO_STEP,
+  IDADE_STEP,
+  ...QUESTIONS_9A17,
+  ...QUESTIONS_M9,
 ]
 
 /**

@@ -8,6 +8,8 @@
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { COMUNIDADE_PAGES } from '../src/funnels/comunidade-dos-criadores/oferta'
+import { PAGINA_9A17 } from '../src/funnels/comunidade-dos-criadores/oferta/pagina-9a17'
+import { PAGINA_MENOR9 } from '../src/funnels/comunidade-dos-criadores/oferta/pagina-menor9'
 import { RELATOS } from '../src/funnels/comunidade-dos-criadores/oferta/relatos'
 import { FAQ, FAQ_EXTRA, SHARED_COPY } from '../src/funnels/comunidade-dos-criadores/oferta/shared'
 import type {
@@ -29,13 +31,59 @@ export const PASTA_ESPELHO = join(
   'copy',
 )
 
+/** As páginas do motor de seções (hoje só a de continuidade). */
 export const ARQUIVOS_ESPELHO: Record<ComunidadePageId, string> = {
-  'tempo-de-tela': 'pagina-a-tempo-de-tela.md',
-  'criacao-de-jogos': 'pagina-b-criacao-de-jogos.md',
-  'expressao-visual': 'pagina-c-expressao-visual.md',
-  'formacao-tecnologica': 'pagina-d-formacao-tecnologica.md',
   continuar: 'pagina-e-continuidade.md',
-  'habilidades-escolares': 'pagina-f-habilidades-escolares.md',
+}
+
+/**
+ * As páginas de corpo próprio (20/10/2026): a copy é um módulo tipado, e o espelho lista os textos
+ * na ordem do módulo, que é a ordem da página.
+ */
+export const MODULOS_ESPELHO: Record<string, { arquivo: string; modulo: object }> = {
+  '9a17': { arquivo: 'pagina-9-a-17.md', modulo: PAGINA_9A17 },
+  'criar-junto': { arquivo: 'pagina-menor-9.md', modulo: PAGINA_MENOR9 },
+}
+
+/** Chaves técnicas do módulo que não são texto da página. */
+const CHAVES_TECNICAS = new Set([
+  'file',
+  'arquivo',
+  'capa',
+  'width',
+  'height',
+  'id',
+  'href',
+  'retina',
+  'cor',
+  'icone',
+])
+
+/**
+ * O Markdown de uma página de corpo próprio: cada texto do módulo, na ordem, com o caminho da chave
+ * para quem revisa achar onde ele está. Imagens aparecem pelo texto alternativo.
+ */
+export function espelhoDoModulo(modulo: object): string {
+  const b: string[] = []
+  const visita = (valor: unknown, caminho: string) => {
+    if (typeof valor === 'string') {
+      b.push(`**${caminho}**: ${valor}`)
+      return
+    }
+    if (Array.isArray(valor)) {
+      valor.forEach((item, i) => {
+        visita(item, `${caminho}[${i}]`)
+      })
+      return
+    }
+    if (valor && typeof valor === 'object')
+      for (const [chave, item] of Object.entries(valor)) {
+        if (CHAVES_TECNICAS.has(chave)) continue
+        visita(item, caminho ? `${caminho}.${chave}` : chave)
+      }
+  }
+  visita(modulo, '')
+  return `${CABECALHO}\n\n${b.join('\n\n')}\n`
 }
 
 const CABECALHO =
@@ -108,6 +156,10 @@ if (import.meta.main) {
       join(PASTA_ESPELHO, arquivo),
       espelhoDaPagina(COMUNIDADE_PAGES[id as ComunidadePageId]),
     )
+    console.log(arquivo)
+  }
+  for (const { arquivo, modulo } of Object.values(MODULOS_ESPELHO)) {
+    writeFileSync(join(PASTA_ESPELHO, arquivo), espelhoDoModulo(modulo))
     console.log(arquivo)
   }
 }

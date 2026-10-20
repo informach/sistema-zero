@@ -12,6 +12,7 @@ import type { HeroVariacao } from '../content/hero-perfil'
 import type { LegalDoc } from '../content/legal'
 import type { QuizStep } from '../content/quiz-config'
 import type { ResultProfile } from '../content/result-profiles'
+import type { ResultadoConversa } from '../content/resultado-conversa'
 import type { SalesSections } from '../content/sales-sections'
 import type { QuizAnswers, QuizAnswerValue } from '../lib/quiz-types'
 
@@ -74,6 +75,11 @@ export interface FunnelQuiz {
    * ramo, o servidor grava o evento `entrou_ramo_<id>`, a primeira etapa do ramo no /admin.
    */
   branchOf?: (answers: QuizAnswers) => string | null
+  /**
+   * O resultado em conversa (Comunidade Kids e adulta): a carta montada pelas respostas, ou null
+   * quando o quiz não tem resultado para elas. A /resultado desenha com `ResultadoConversa`.
+   */
+  conversa?: (answers: QuizAnswers) => ResultadoConversa | null
 }
 
 /** Evento de servidor gravado quando o lead entra num ramo do quiz (etapa do /admin). */

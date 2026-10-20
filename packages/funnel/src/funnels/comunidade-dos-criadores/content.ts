@@ -1,12 +1,10 @@
-// Conteúdo do funil "Comunidade dos Criadores" (kids, assinatura mensal/anual).
-// As quatro copies vivem em oferta/, renderizadas pelo ComunidadeOfertaBody.
-// Aqui ficam os
-// conteúdos consumidos pelas etapas COMPARTILHADAS (obrigado) + os obrigatórios
-// pelo tipo FunnelContent (copy/landing — este funil não tem quiz, então a
-// landing nunca renderiza; os valores espelham o hero por consistência).
+// Conteúdo do funil "Comunidade dos Criadores" (kids, assinatura mensal/anual). As páginas de
+// oferta vivem em oferta/ (9 a 17, criar junto e continuidade). Aqui ficam os conteúdos das etapas
+// COMPARTILHADAS (obrigado) e os obrigatórios pelo tipo FunnelContent (copy/landing: a landing
+// genérica nunca renderiza neste funil; os valores espelham o herói da página de 9 a 17).
 
 import type { FunnelCopy, FunnelLanding, FunnelObrigado } from '../registry'
-import { PAGE_A } from './oferta/tempo-de-tela'
+import { PAGINA_9A17 } from './oferta/pagina-9a17'
 
 export const COMUNIDADE_PRODUTO: FunnelCopy = {
   nome: 'Comunidade dos Criadores',
@@ -15,10 +13,10 @@ export const COMUNIDADE_PRODUTO: FunnelCopy = {
   artigo: 'a',
 }
 
-// Exigida pelo tipo FunnelContent; a /quiz deste funil é 404 (steps.quiz=false).
+// Exigida pelo tipo FunnelContent (o quiz deste funil tem entrada própria).
 export const COMUNIDADE_LANDING: FunnelLanding = {
-  h1: PAGE_A.hero.title,
-  subtitulo: PAGE_A.hero.description,
+  h1: `${PAGINA_9A17.hero.title}${PAGINA_9A17.hero.destaque}`,
+  subtitulo: PAGINA_9A17.hero.description,
   tempo: '',
 }
 
