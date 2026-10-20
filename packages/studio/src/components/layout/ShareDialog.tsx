@@ -300,10 +300,9 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         if (!current()) return
       }
       pendingPublish.current = null
-      if (adapter.onPublished) {
-        adapter.onPublished(res ?? {})
-        onClose()
-      } else setResult(res ?? {})
+      adapter.onPublished?.(res ?? {})
+      if (adapter.onPublished && !adapter.showPublishedScreen) onClose()
+      else setResult(res ?? {})
     } catch (error) {
       if (current()) setErrorMsg(error instanceof Error ? error.message : String(error))
     } finally {

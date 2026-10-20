@@ -132,6 +132,12 @@ export interface StudioShareAdapter {
    * overlay do Zappy no kids, com o "Jogar"). Ausente (ex.: Estúdio Completo) → tela padrão.
    */
   onPublished?(result: StudioShareResult): void
+  /**
+   * Com `onPublished`, mostra a tela de sucesso do próprio dialog em vez de fechar (o host é
+   * avisado, mas não tem comemoração própria). É o caso da aula da comunidade adulta: sem isso,
+   * Publicar fechava a janela em silêncio e a pessoa nunca via o link do jogo.
+   */
+  showPublishedScreen?: boolean
 }
 
 // Contexto INTERNO: `null` = sem adapter → o botão
