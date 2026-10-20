@@ -148,6 +148,8 @@ export type PacmanScenario =
   | 'death'
   | 'victory-near-end'
   | 'defeat-near-end'
+  | 'geometry'
+  | 'ai'
 
 /** Explicit instrumented cases never count as full natural victory/defeat or baseline performance. */
 export async function preparePacmanScenario(
@@ -156,13 +158,29 @@ export async function preparePacmanScenario(
   seed = 2026,
 ) {
   assert(
-    ['observe', 'pellet', 'power', 'death', 'victory-near-end', 'defeat-near-end'].includes(
-      scenario,
-    ),
+    [
+      'observe',
+      'pellet',
+      'power',
+      'death',
+      'victory-near-end',
+      'defeat-near-end',
+      'geometry',
+      'ai',
+    ].includes(scenario),
   )
   assert(Number.isSafeInteger(seed))
-  const source = await readFile(resolve(import.meta.dirname, 'pacman_observer.py'), 'utf8')
-  const marker = 'CONFIG = {"scenario": "observe", "seed": 2026}'
+  const functional = scenario === 'geometry' || scenario === 'ai'
+  const source = await readFile(
+    resolve(
+      import.meta.dirname,
+      functional ? 'pacman_functional_observer.py' : 'pacman_observer.py',
+    ),
+    'utf8',
+  )
+  const marker = functional
+    ? 'CONFIG = {"scenario": "geometry", "seed": 2026}'
+    : 'CONFIG = {"scenario": "observe", "seed": 2026}'
   assert.equal(source.split(marker).length, 2)
   const content = source.replace(marker, `CONFIG = ${JSON.stringify({ scenario, seed })}`)
   const candidate = structuredClone(project)

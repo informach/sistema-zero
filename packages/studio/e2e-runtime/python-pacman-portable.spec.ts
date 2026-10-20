@@ -114,12 +114,17 @@ for (const scenario of [
   'death',
   'victory-near-end',
   'defeat-near-end',
+  'geometry',
+  'ai',
 ] as const satisfies readonly PacmanScenario[]) {
   test(`portable Pac-Man instrumented ${scenario} preserves authored rules`, async ({
     page,
     request,
   }, info) => {
-    const baseline = await preparePacmanQualification(request)
+    const baseline = await preparePacmanQualification(
+      request,
+      process.env.SZ_PACMAN_QA_DISTRIBUTION,
+    )
     const fixture = await preparePacmanScenario(baseline.project, scenario)
     await info.attach('game-source-identity', {
       body: JSON.stringify({ ...baseline.evidence, scenario: fixture.evidence }),
@@ -129,6 +134,11 @@ for (const scenario of [
     await page.route('**/project/pacmanPortable', (route) =>
       route.fulfill({ json: fixture.project }),
     )
+    const browserErrors: string[] = []
+    page.on('pageerror', (error) => browserErrors.push(String(error)))
+    page.on('console', (message) => {
+      if (message.type() === 'error') browserErrors.push(message.text())
+    })
     await page.goto('/provider')
     const cdp = await page.context().newCDPSession(page)
     let primary: unknown
@@ -140,64 +150,107 @@ for (const scenario of [
         frame.style.cssText = 'width:1100px;height:900px;border:0'
       })
       await page.getByRole('button', { name: 'Jogar', exact: true }).click()
-      const before = Snapshot.parse((await waitForObservation(cdp, 'before', 1)).value)
-      const afterEvent = await waitForObservation(cdp, 'after', 1)
-      const after = Snapshot.parse(afterEvent.value)
-      expect(before.player.lives).toBe(3)
-      expect(after.enemies).toHaveLength(7)
-      if (scenario === 'pellet') {
-        expect(after.player.score - before.player.score).toBe(2)
-        expect(after.pellets).toBe(before.pellets - 1)
-      } else if (scenario === 'power') {
-        expect(after.player.score - before.player.score).toBe(50)
-        expect(after.power).toBe(before.power - 1)
-        expect(after.player.speed).toBe(before.player.speed + 3)
-        expect(after.timersScheduled['3000']).toBe(1)
-        // Observe the real callback's result, beyond merely recording a scheduled timer.
-        const reset = await waitForObservation(cdp, 'after', 250)
-        expect(reset.clock - afterEvent.clock).toBeGreaterThanOrEqual(3)
-        expect(Snapshot.parse(reset.value).player.speed).toBe(before.player.speed)
-      } else if (scenario === 'death' || scenario === 'defeat-near-end') {
-        expect(after.player.lives).toBe(scenario === 'death' ? 2 : 0)
-        expect(after.player.position).not.toEqual(before.player.position)
-        if (scenario === 'defeat-near-end') {
-          expect(after.player.visible).toBe(false)
-          expect(after.player.state).toBe('stop')
-          expect(after.timersScheduled['3000']).toBe(1)
-        }
-      } else if (scenario === 'victory-near-end') {
-        expect(after.pellets + after.power).toBe(0)
-        expect(after.player.state).toBe('stop')
-        expect(after.enemies.every((enemy) => !enemy.visible && enemy.state === 'stop')).toBe(true)
-        expect(after.timersScheduled['3000']).toBe(1)
+      if (scenario === 'geometry' || scenario === 'ai') {
+        const expectedCount = scenario === 'geometry' ? 32 : 10
+        const manifest = z
+          .object({ cases: z.array(z.object({ name: z.string() })) })
+          .parse((await waitForObservation(cdp, 'case-manifest')).value)
+        const completed = z
+          .object({ count: z.number().int(), closedByQA: z.literal(true) })
+          .parse((await waitForObservation(cdp, 'functional-complete')).value)
+        expect(manifest.cases).toHaveLength(expectedCount)
+        expect(completed.count).toBe(expectedCount)
+        const passed = (await observations(cdp))
+          .filter((item) => item.event === 'case-passed')
+          .map((item) => z.object({ name: z.string() }).parse(item.value).name)
+        expect(passed).toEqual(manifest.cases.map((item) => item.name))
+        expect(new Set(passed).size).toBe(expectedCount)
+        await expect
+          .poll(() => evaluate(cdp, `globalThis.providerProbe.read('audio').status`))
+          .toBe('completed')
+        const consoleEvents = z
+          .array(z.object({ omittedChars: z.number(), omittedLines: z.number() }))
+          .parse(
+            await evaluate(
+              cdp,
+              `globalThis.providerProbe.read('audio').events.filter(e=>e.type==='console')`,
+            ),
+          )
+        expect(
+          consoleEvents.every((item) => item.omittedChars === 0 && item.omittedLines === 0),
+        ).toBe(true)
+        const events = z
+          .array(z.object({ sequence: z.number().int().positive() }))
+          .parse(await evaluate(cdp, `globalThis.providerProbe.read('audio').events`))
+        expect(events.length).toBeLessThan(2048)
+        expect(
+          events.every(
+            (item, index) => index === 0 || item.sequence === events[index - 1]!.sequence + 1,
+          ),
+        ).toBe(true)
       } else {
-        // Bindings become active at the author's real 2500ms timer; no clock replacement.
-        await waitForObservation(cdp, 'after', 200)
-        const frame = page.frames().find((item) => item.url().includes('/frame.html'))
-        if (!frame) throw new Error('Missing protected Python frame')
-        for (const [key, heading] of [
-          ['Left', 180],
-          ['Up', 90],
-          ['Right', 0],
-          ['Down', 270],
-        ] as const) {
-          await frame.locator('canvas').press(`Arrow${key}`)
-          await expect
-            .poll(async () =>
-              (await observations(cdp)).some((item) => {
-                if (item.event !== 'key') return false
-                const value = z
-                  .object({ key: z.string(), heading: z.number(), state: z.string() })
-                  .parse(item.value)
-                return value.key === key && value.heading === heading && value.state === 'move'
-              }),
-            )
-            .toBe(true)
+        const before = Snapshot.parse((await waitForObservation(cdp, 'before', 1)).value)
+        const afterEvent = await waitForObservation(cdp, 'after', 1)
+        const after = Snapshot.parse(afterEvent.value)
+        expect(before.player.lives).toBe(3)
+        expect(after.enemies).toHaveLength(7)
+        if (scenario === 'pellet') {
+          expect(after.player.score - before.player.score).toBe(2)
+          expect(after.pellets).toBe(before.pellets - 1)
+        } else if (scenario === 'power') {
+          expect(after.player.score - before.player.score).toBe(50)
+          expect(after.power).toBe(before.power - 1)
+          expect(after.player.speed).toBe(before.player.speed + 3)
+          expect(after.timersScheduled['3000']).toBe(1)
+          // Observe the real callback's result, beyond merely recording a scheduled timer.
+          const reset = await waitForObservation(cdp, 'after', 250)
+          expect(reset.clock - afterEvent.clock).toBeGreaterThanOrEqual(3)
+          expect(Snapshot.parse(reset.value).player.speed).toBe(before.player.speed)
+        } else if (scenario === 'death' || scenario === 'defeat-near-end') {
+          expect(after.player.lives).toBe(scenario === 'death' ? 2 : 0)
+          expect(after.player.position).not.toEqual(before.player.position)
+          if (scenario === 'defeat-near-end') {
+            expect(after.player.visible).toBe(false)
+            expect(after.player.state).toBe('stop')
+            expect(after.timersScheduled['3000']).toBe(1)
+          }
+        } else if (scenario === 'victory-near-end') {
+          expect(after.pellets + after.power).toBe(0)
+          expect(after.player.state).toBe('stop')
+          expect(after.enemies.every((enemy) => !enemy.visible && enemy.state === 'stop')).toBe(
+            true,
+          )
+          expect(after.timersScheduled['3000']).toBe(1)
+        } else {
+          // Bindings become active at the author's real 2500ms timer; no clock replacement.
+          await waitForObservation(cdp, 'after', 200)
+          const frame = page.frames().find((item) => item.url().includes('/frame.html'))
+          if (!frame) throw new Error('Missing protected Python frame')
+          for (const [key, heading] of [
+            ['Left', 180],
+            ['Up', 90],
+            ['Right', 0],
+            ['Down', 270],
+          ] as const) {
+            await frame.locator('canvas').press(`Arrow${key}`)
+            await expect
+              .poll(async () =>
+                (await observations(cdp)).some((item) => {
+                  if (item.event !== 'key') return false
+                  const value = z
+                    .object({ key: z.string(), heading: z.number(), state: z.string() })
+                    .parse(item.value)
+                  return value.key === key && value.heading === heading && value.state === 'move'
+                }),
+              )
+              .toBe(true)
+          }
         }
       }
       expect(await evaluate(cdp, `globalThis.providerProbe.read('audio').status`)).not.toBe(
         'failed',
       )
+      expect(browserErrors).toEqual([])
     } catch (error) {
       primary = error
     }

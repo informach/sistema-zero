@@ -32,3 +32,22 @@ Estado: inventário, variante e primeiro recorte nativo registrados; execução 
 Em 20/10, o exportador canônico gerou o ZIP da variante 1.1.0 com 42 arquivos, incluindo 23 arquivos Python, quatro GIFs e cinco WAVs, sem aumentar cotas. O projeto foi vinculado à distribuição local de QA a8a6 e à sua release verificada; não se tratou de ativação hospedada. O preflight compilou os 23 arquivos e conferiu todo o inventário. Os nove recursos têm exatamente os hashes da prova nativa anterior de GIF/PCM; essa evidência foi reaproveitada pelos bytes, sem alegar nova decodificação. Recibos `space-arena-canonical-r2/{receipt,preflight}.json`, SHA `df6d6812…` e `bc5ddb73…`. Uma primeira preparação recusou corretamente a identidade de runtime cujo lock de dependências ainda apontava para a fixture; esse negativo permanece em `space-arena-canonical-r1/`, sem alteração do guard produtivo.
 
 O primeiro smoke nativo Q01 terminou antes da partida pelo deadline de QA de 12 s. A fonte desenha o splash com animação padrão antes de chamar tracer(0). O negativo foi preservado e repetido no orçamento de 30 s previsto no plano desse recorte, sem mudar o código, os timers, a renderização ou os sons. A repetição observou 15,156 s até o update explícito anterior à criação dos objetos do jogo, splash e três frames reais em playing; terminou naturalmente em 15,774 s, sem deadline externo ou sinal. Pools completos: 25 inimigos, 30 mísseis, 20 estrelas, cinco powerups e 30/20 partículas. O início usou a chamada QA do callback autoral registrado para S, sem alegar teclado físico. Turtle/Tk oficial e sz_audio instalado no venv já existente, com sete arquivos e dependências conferidos, backend WASAPI. Map0, Destroy1, áudio liberado, árvore inalterada e temporários removidos. Recibo `space-arena-canonical-r3/native-smoke.json`, SHA `b0b1124a…`; supervisor `4ae57921…`. O runner passou review independente antes da execução inicial; o adendo observou o custo da inicialização e usou o orçamento já previsto. Isso não aprova performance, instalação fresca, navegador, controles completos, os outros cenários Q02–Q10, partida de dez minutos ou 30 reinícios.
+
+Em 20/10, os cenários funcionais curtos Q02–Q07 passaram no CPython 3.14.2/Tk
+oficial com WASAPI, usando o mesmo ZIP canônico. Q02 verificou callbacks autorais,
+releases, aceleração/inércia e três tiros/recoil; Q03–Q07 acrescentaram bordas,
+dano/reset declarado, mísseis/score, pickups/penalidade, IA/câmera/radar e partículas/
+clear. Todos preservaram os pools e observaram Map0/Destroy1, áudio/temporário
+liberados e árvore exportada inalterada, sem deadline ou sinal. O primeiro Q03
+falhou por uma fixture que restaurava saúde sem reativar o inimigo morto no choque
+anterior; negativo preservado, causa reproduzida e fixture corrigida explicitamente,
+sem alteração do jogo. A repetição Q03 e Q04–Q07 passaram em janela coordenada de
+140,808 s, com START/END e os cinco PIDs encerrados. Q02 permanece vinculado aos
+bytes anteriores do observer. Recibos próprios do worktree de jogos:
+`games-functional-r1/native-window-r1.json` SHA `a7928813…` e
+`native-window-r2-verification.json` SHA `75512906…`.
+[Cenários, identidades, incidente do guard temporal e limites](2026-10-20-reference-games-functional-qualification.md).
+São fixtures declaradas no loop real e invocações QA dos bindings; não comprovam
+teclado físico/foco, inspeção raster completa, replay BGM120s/pausa, Pro/publicação,
+browser final, instalação em máquina limpa, desempenho, partida completa ou
+30 reinícios. S01–S10 e o aceite integral continuam abertos, sujeitos ao review.
