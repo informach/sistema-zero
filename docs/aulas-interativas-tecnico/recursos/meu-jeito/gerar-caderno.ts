@@ -1,6 +1,8 @@
 /**
  * Caderno derivado da mesma fonte das aulas; CSS e fontes do Cadê Todo Mundo. Para a criança, o
  * caderno é o Mapa da Aventura e fala de fase e parte (vocabulário da aventura, 06/10/2026).
+ * Com `--adulto`, o mesmo caderno sai como Caderno do Aluno, com o texto de `_caderno.json`
+ * (ver `../caderno-adulto.ts`); `--coletar` atualiza essa lista de textos.
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -15,10 +17,15 @@ import { renderProjectToPreviewDocAsync } from '../../../../packages/studio/src/
 import type { Block } from '../../qa/corre-dino-projetos-qa'
 import { aulasMeuJeito, falasSecao } from '../../qa/gerar-meu-jeito'
 import { etapasMeuJeito, projetoMeuJeito } from '../../qa/meu-jeito-etapas'
+import { criarTradutor } from '../caderno-adulto'
 import { naveQuadro, pedraQuadro, svgSheet } from './artes-referencia'
 
+const tradutor = criarTradutor('o-jogo-do-meu-jeito')
+const t = tradutor.t
+
 const root = resolve(import.meta.dir, '../../../..')
-const out = resolve(root, 'tmp/pdfs/meu-jeito')
+const pastaTemporaria = `tmp/pdfs/meu-jeito${tradutor.adulto ? '-adulto' : ''}`
+const out = resolve(root, pastaTemporaria)
 mkdirSync(out, { recursive: true })
 const reference = readFileSync(
   resolve(import.meta.dir, '../cade-todo-mundo/caderno-do-aluno.template.html'),
@@ -57,7 +64,7 @@ function block(type: string, label: string, children = '') {
   const color = blockColor(type)
   return `<div class="block" data-block-type="${type}" style="background-color:${color}">${label}${children ? `<div class="event-body">${children}</div>` : ''}</div>`
 }
-const former = '<div class="former">Blocos que você já montou nas fases anteriores</div>'
+const former = `<div class="former">${escapeHtml(t('Blocos que você já montou nas fases anteriores'))}</div>`
 const start = (body: string) => block('sz_frame_start', 'Ao iniciar', body)
 // Os valores vêm dos programas originais, e os rótulos e cores das definições do Estúdio.
 // Os trechos omitidos são indicados, sem fingir que o diagrama é o projeto inteiro.
@@ -137,14 +144,17 @@ function render(node: Block): string {
 
 const piece = (n: number, type: string, predicate?: (b: Block) => boolean) =>
   render(pick(n, type, predicate))
-const figure = (body: string, size: number, label: string) =>
-  `<figure class="art-frame"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" role="img" aria-label="${label}">${body}</svg><figcaption>${label}</figcaption></figure>`
+// Legendas, notas e cartões passam por `t()`; as artes (só desenho) e os blocos ficam iguais.
+const figure = (body: string, size: number, kids: string) => {
+  const label = escapeHtml(t(kids))
+  return `<figure class="art-frame"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" role="img" aria-label="${label}">${body}</svg><figcaption>${label}</figcaption></figure>`
+}
 const pair = (name: 'nave' | 'asteroide') =>
-  `<div class="art-pair">${[0, 1].map((i) => figure(name === 'nave' ? naveQuadro(i) : pedraQuadro(i), name === 'nave' ? 32 : 64, `Quadro ${i + 1}`)).join('')}</div><p class="small">O corpo fica no lugar. Compare o fogo${name === 'asteroide' ? ' e as crateras' : ''}. Este desenho é uma referência; escolha suas cores e formas.</p>`
+  `<div class="art-pair">${[0, 1].map((i) => figure(name === 'nave' ? naveQuadro(i) : pedraQuadro(i), name === 'nave' ? 32 : 64, `Quadro ${i + 1}`)).join('')}</div><p class="small">${escapeHtml(t(`O corpo fica no lugar. Compare o fogo${name === 'asteroide' ? ' e as crateras' : ''}. Este desenho é uma referência; escolha suas cores e formas.`))}</p>`
 const sheet = (name: 'nave' | 'asteroide') =>
-  `<div class="sheet">${svgSheet(name)}</div><p class="small">Folha ${name === 'nave' ? '64 × 32' : '128 × 64'}: dois quadros de ${name === 'nave' ? '32 × 32' : '64 × 64'}. No bloco, a contagem dos quadros começa em 0.</p>`
+  `<div class="sheet">${svgSheet(name)}</div><p class="small">${escapeHtml(t(`Folha ${name === 'nave' ? '64 × 32' : '128 × 64'}: dois quadros de ${name === 'nave' ? '32 × 32' : '64 × 64'}. No bloco, a contagem dos quadros começa em 0.`))}</p>`
 const cards = (items: string[]) =>
-  `<div class="flow">${items.map((s, i) => `<div><span>${i + 1}</span><p>${s}</p></div>`).join('')}</div>`
+  `<div class="flow">${items.map((s, i) => `<div><span>${i + 1}</span><p>${escapeHtml(t(s))}</p></div>`).join('')}</div>`
 const diagrams: string[][] = [
   [
     cards([
@@ -200,10 +210,10 @@ const diagrams: string[][] = [
 const chapters = aulasMeuJeito.map((lesson, i) => {
   const chunks: string[] = []
   for (const section of lesson.sections) {
-    const heading = `<h3 class="section-head">${escapeHtml(section.title)}</h3>`
+    const heading = `<h3 class="section-head">${escapeHtml(t(section.title))}</h3>`
     if (section.questions) {
       chunks.push(
-        `${heading}<div class="note">${escapeHtml(section.bridge)} As perguntas ficam na fase.</div>`,
+        `${heading}<div class="note">${escapeHtml(t(section.bridge))} ${escapeHtml(t('As perguntas ficam na fase.'))}</div>`,
       )
       continue
     }
@@ -212,9 +222,11 @@ const chapters = aulasMeuJeito.map((lesson, i) => {
     // resto usa a fala do Mapa (`falasSecao(…, 'mapa')`): sem os parágrafos do narrador no jogo
     // pronto, sem os chamados de atenção, que apontam para o vídeo, e com um fecho que não manda
     // pausar nem voltar a "esta aba", que o PDF não tem.
-    const speech = section.activity
-      ? [section.activity.instructions, 'Quando terminar os testes, clique em Próxima parte.']
-      : falasSecao(section, 'mapa')
+    const speech = (
+      section.activity
+        ? [section.activity.instructions, 'Quando terminar os testes, clique em Próxima parte.']
+        : falasSecao(section, 'mapa')
+    ).map((paragraph) => t(paragraph))
     // Mantenha a abertura junto da primeira ação e a saída junto do último teste.
     // Cada passo conserva seu parágrafo e número, mesmo quando ocupa a mesma página.
     for (let p = 0; p < speech.length; ) {
@@ -233,30 +245,58 @@ const chapters = aulasMeuJeito.map((lesson, i) => {
     }
   }
   return {
-    title: lesson.title,
-    label: `Fase ${i + 1}`,
+    title: t(lesson.title),
+    label: t(`Fase ${i + 1}`),
     chunks,
     diagrams: diagrams[i]!.map(
       (d) =>
-        `<div class="blocks">${d}</div><p class="small">Compare com a sua criação.${d.includes('data-block-type') ? ' Os blocos destes desenhos têm os mesmos nomes, valores e cores do Estúdio, e os que você já montou nas fases anteriores aparecem resumidos.' : ''}</p>`,
+        `<div class="blocks">${d}</div><p class="small">${escapeHtml(t('Compare com a sua criação.'))}${d.includes('data-block-type') ? ` ${escapeHtml(t('Os blocos destes desenhos têm os mesmos nomes, valores e cores do Estúdio, e os que você já montou nas fases anteriores aparecem resumidos.'))}` : ''}</p>`,
     ),
   }
 })
 const data = JSON.stringify(chapters).replaceAll('<', '\u003c')
-const zappy = `data:image/webp;base64,${readFileSync(resolve(root, 'packages/community-kids/public/zappy/happy.webp')).toString('base64')}`
-const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>O Jogo do Meu Jeito · Mapa da Aventura</title><style>${css}
+// O que a página monta no navegador também passa por `t()`. Os textos entram já escapados nos
+// literais do script, como estavam escritos no kids, para o HTML kids sair igual.
+const ui = {
+  titulo: t('O Jogo do Meu Jeito · Mapa da Aventura'),
+  alt: t('O jogo O Jogo do Meu Jeito em funcionamento'),
+  selo: t('Mapa da Aventura'),
+  capa: t('Desenhe, anime e coloque suas criações no jogo.'),
+  capaFim: t('Do seu desenho à sua versão jogável.'),
+  continuacao: t('continuação'),
+  rodape: t('O Jogo do Meu Jeito | Mapa da Aventura'),
+  percurso: t('Seu percurso'),
+  percursoTitulo: t('Seu desenho dentro do jogo'),
+  abertura: t(
+    'Este é o seu Mapa da Aventura! Consulte quando precisar de um passo, um valor ou um teste: leia aqui na fase ou baixe para guardar.',
+  ),
+  nota: t(
+    'Continue no seu cartão do Estúdio e nas suas artes do Pinta. As imagens deste mapa são exemplos: as cores e as formas das suas artes são escolha sua. Só os nomes, os tamanhos e as animações precisam combinar com os blocos, porque é por eles que o jogo encontra as suas artes. No fim de cada fase, você envia as suas criações para a equipe: clique em Escolher no Pinta ou em Escolher no Estúdio, selecione o que você fez e clique em Enviar (1). O número mostra quantas criações você marcou.',
+  ),
+  confira: t('Referências para conferir'),
+  confiraRotulo: t('referências'),
+}
+if (tradutor.concluir()) process.exit(0)
+/** Texto num literal '…' do script: HTML escapado e aspas e barras protegidas. */
+const js = (s: string) =>
+  escapeHtml(s).replaceAll('\\', '\\\\').replaceAll("'", "\\'").replaceAll('\n', '\\n')
+// O adulto não tem mascote: a capa sai sem o Zappy.
+const zappy = tradutor.adulto
+  ? ''
+  : `<img class="zappy" src="data:image/webp;base64,${readFileSync(resolve(root, 'packages/community-kids/public/zappy/happy.webp')).toString('base64')}" alt="Zappy">`
+const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${escapeHtml(ui.titulo)}</title><style>${css}
 .art-pair{display:flex;gap:8mm}.art-frame{margin:0;flex:1;text-align:center}.art-frame svg{width:60mm;height:60mm;background:#f5f1ff;border:1px solid #ddd6ee;border-radius:10px}.art-frame figcaption{font:700 11pt Nunito;margin-top:4mm}.sheet svg{width:125mm;height:auto;background:#f5f1ff;border:1px solid #ddd6ee;border-radius:10px}.flow{display:grid;gap:4mm}.flow>div{display:flex;gap:4mm;align-items:center;border:1px solid #dbd3ef;border-radius:12px;padding:4mm;background:#f8f5ff}.flow span{font:800 18pt Nunito;color:#7655b5}.flow p{margin:0;font-size:12pt}.content{padding-top:4mm}.content>.entry{margin-bottom:4mm}.content .section-head{margin-top:2mm}.content .step{font-size:11pt}.content .blocks{margin:0;display:grid;gap:10px}.former{font:700 10pt Nunito;color:#585a7a;padding:7px;background:#f2f3fa;border-radius:6px}.branch{font:800 10pt Nunito;color:#1f2042;padding:6px}.field{white-space:normal}.value-block{display:inline-block;border-radius:12px;padding:3px 8px;color:#fff;font-weight:800;line-height:1.6}.value-block .field{padding:1px 5px;font-size:inherit}.cover-art{height:48%;background:#07162e;display:flex;align-items:center}.cover-art img{width:100%;height:auto!important;object-fit:contain!important}.cover h1{font-size:38pt}.cover .cover-bottom{margin-top:10mm}.lesson-title{font-size:24pt;margin-top:3mm}.index{display:grid;gap:12px;margin-top:6mm}.index p{font-size:11pt}.diagram-page .content .block{font-size:9.5pt}.diagram-page .event-body{gap:5px;padding:6px;margin-top:6px}
-</style></head><body><section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="jogo.png" alt="O jogo O Jogo do Meu Jeito em funcionamento"></div><div class="cover-copy"><span class="badge">Mapa da Aventura</span><h1>O jogo<br><em>do meu jeito</em></h1><p>Desenhe, anime e coloque suas criações no jogo.</p><div class="cover-bottom">Do seu desenho à sua versão jogável.</div></div><img class="zappy" src="${zappy}" alt="Zappy"></section>
+</style></head><body><section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="jogo.png" alt="${escapeHtml(ui.alt)}"></div><div class="cover-copy"><span class="badge">${escapeHtml(ui.selo)}</span><h1>O jogo<br><em>do meu jeito</em></h1><p>${escapeHtml(ui.capa)}</p><div class="cover-bottom">${escapeHtml(ui.capaFim)}</div></div>${zappy}</section>
 <script>const chapters=${data};
-function page(chapter, more=false, diagram=false){const p=document.createElement('section');p.className='page'+(diagram?' diagram-page':'');p.dataset.id=chapter.label; p.innerHTML='<div class="inner"><div class="kicker">'+chapter.label+(more?' · continuação':'')+'</div><h2 class="lesson-title">'+chapter.title+'</h2><div class="content"></div></div><div class="page-no"><span class="brand">O Jogo do Meu Jeito | Mapa da Aventura</span><span class="count"></span></div>';document.body.append(p);return p;}
-async function layout(){await document.fonts.ready;const index=page({label:'Seu percurso',title:'Seu desenho dentro do jogo'});const content=index.querySelector('.content');content.innerHTML='<p class="lead">Este é o seu Mapa da Aventura! Consulte quando precisar de um passo, um valor ou um teste: leia aqui na fase ou baixe para guardar.</p><div class="index">'+chapters.map(c=>'<p><strong>'+c.label+'.</strong> '+c.title+'</p>').join('')+'</div><div class="note" style="margin-top:6mm">Continue no seu cartão do Estúdio e nas suas artes do Pinta. As imagens deste mapa são exemplos: as cores e as formas das suas artes são escolha sua. Só os nomes, os tamanhos e as animações precisam combinar com os blocos, porque é por eles que o jogo encontra as suas artes. No fim de cada fase, você envia as suas criações para a equipe: clique em Escolher no Pinta ou em Escolher no Estúdio, selecione o que você fez e clique em Enviar (1). O número mostra quantas criações você marcou.</div>';
+function page(chapter, more=false, diagram=false){const p=document.createElement('section');p.className='page'+(diagram?' diagram-page':'');p.dataset.id=chapter.label; p.innerHTML='<div class="inner"><div class="kicker">'+chapter.label+(more?' · ${js(ui.continuacao)}':'')+'</div><h2 class="lesson-title">'+chapter.title+'</h2><div class="content"></div></div><div class="page-no"><span class="brand">${js(ui.rodape)}</span><span class="count"></span></div>';document.body.append(p);return p;}
+async function layout(){await document.fonts.ready;const index=page({label:'${js(ui.percurso)}',title:'${js(ui.percursoTitulo)}'});const content=index.querySelector('.content');content.innerHTML='<p class="lead">${js(ui.abertura)}</p><div class="index">'+chapters.map(c=>'<p><strong>'+c.label+'.</strong> '+c.title+'</p>').join('')+'</div><div class="note" style="margin-top:6mm">${js(ui.nota)}</div>';
 for(const chapter of chapters){let sheet=page(chapter);for(const chunk of chapter.chunks){const node=document.createElement('div');node.className='entry';node.innerHTML=chunk;sheet.querySelector('.content').append(node);const limit=sheet.querySelector('.page-no').getBoundingClientRect().top-24;if(node.getBoundingClientRect().bottom>limit){node.remove();sheet=page(chapter,true);sheet.querySelector('.content').append(node);}}
 
-for(const fragment of chapter.diagrams){const diagram=document.createElement('div');diagram.className='entry';diagram.innerHTML='<h3 class="section-head">Referências para conferir</h3>'+fragment;sheet.classList.add('diagram-page');sheet.querySelector('.content').append(diagram);if(diagram.getBoundingClientRect().bottom>sheet.querySelector('.page-no').getBoundingClientRect().top-24){diagram.remove();if(!sheet.querySelector('.blocks'))sheet.classList.remove('diagram-page');sheet=page({label:chapter.label+' · referências',title:chapter.title},false,true);sheet.querySelector('.content').append(diagram);}}}
+for(const fragment of chapter.diagrams){const diagram=document.createElement('div');diagram.className='entry';diagram.innerHTML='<h3 class="section-head">${js(ui.confira)}</h3>'+fragment;sheet.classList.add('diagram-page');sheet.querySelector('.content').append(diagram);if(diagram.getBoundingClientRect().bottom>sheet.querySelector('.page-no').getBoundingClientRect().top-24){diagram.remove();if(!sheet.querySelector('.blocks'))sheet.classList.remove('diagram-page');sheet=page({label:chapter.label+' · ${js(ui.confiraRotulo)}',title:chapter.title},false,true);sheet.querySelector('.content').append(diagram);}}}
 const pages=[...document.querySelectorAll('.page')];pages.forEach((p,i)=>{const c=p.querySelector('.count');if(c)c.textContent=(i+1)+' / '+pages.length});window.cadernoPronto=true;}
 layout();</script></body></html>`
 writeFileSync(resolve(out, 'caderno.html'), html)
 writeFileSync(resolve(out, 'cores-estudio.json'), JSON.stringify(colors, null, 2))
 const project = projetoMeuJeito(8)
 writeFileSync(resolve(out, 'jogo.html'), await renderProjectToPreviewDocAsync(project))
-console.log('Caderno e jogo de referência preparados em tmp/pdfs/meu-jeito.')
+console.log(`Caderno e jogo de referência preparados em ${pastaTemporaria}.`)

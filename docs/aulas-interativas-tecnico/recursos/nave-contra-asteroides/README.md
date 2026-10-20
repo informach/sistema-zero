@@ -13,6 +13,7 @@ python docs/aulas-interativas-tecnico/recursos/nave-contra-asteroides/gerar-mate
 ```
 
 Requer Bun, Python com Playwright e Chrome ou Edge instalado. HTML, captura, PDF temporário e relatório de limites ficam em `tmp/pdfs/nave-contra-asteroides/`. A saída é [nave-contra-asteroides-caderno.pdf](../../../aulas-interativas/kids/nave-contra-asteroides/mapa-da-aventura.pdf).
+Com `--adulto`, o mesmo comando gera o Caderno do Aluno da versão adulta em [caderno-do-aluno.pdf](../../../aulas-interativas/adulto/nave-contra-asteroides/caderno-do-aluno.pdf), com o texto de `qa/adulto/traducoes/nave-contra-asteroides/_caderno.json` e as mesmas verificações (pasta temporária `tmp/pdfs/nave-contra-asteroides-adulto/`). Quando o caderno kids muda, rode antes `bun docs/aulas-interativas-tecnico/recursos/nave-contra-asteroides/gerar-caderno.ts --coletar` e escreva a versão adulta dos textos novos ([Diretrizes da versão adulta](../../DIRETRIZES-ADULTO.md#caderno-do-aluno)).
 
 O gerador espera as fontes, pagina o conteúdo sem cortar parágrafos, confere imagens, cores e limites antes de substituir o PDF. A inspeção visual do PDF continua necessária, especialmente após mudar texto ou esquemas.
 

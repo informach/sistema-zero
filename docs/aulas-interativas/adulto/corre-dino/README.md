@@ -9,7 +9,7 @@ Materiais do curso para consulta, gravação e importação.
 | Título, descrições, módulos e aulas | [Módulos](modulos.md) |
 | Blocos do projeto | [JSON dos blocos](blocos.json) |
 | Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |
-| Caderno do Aluno para consultar ou anexar | Ainda em produção na versão adulta |
+| Caderno do Aluno para consultar ou anexar | [PDF do caderno](caderno-do-aluno.pdf) |
 
 Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as orientações; **roteiro** traz as falas e a direção dos vídeos; **manifesto** é o JSON para importar no Admin.
 

@@ -2,6 +2,9 @@
 
 Requer Bun, Python com Playwright e Chrome ou Edge. Usa fontes e arte locais.
 Confere os limites antes de substituir o PDF. Não gera mapa para responsáveis.
+
+Com --adulto, gera o Caderno do Aluno da versão adulta (do Farol ou, com cade-todo-mundo, do
+Cadê), com o texto de qa/adulto/traducoes/<curso>/_caderno.json, em docs/aulas-interativas/adulto.
 """
 from pathlib import Path
 import json
@@ -12,9 +15,11 @@ import sys
 
 from playwright.sync_api import sync_playwright
 
+ADULTO = "--adulto" in sys.argv
 ROOT = Path(__file__).resolve().parents[4]
-WORK = ROOT / "tmp" / "pdfs" / "desafio-farol"
-OUTPUT = ROOT / "docs/aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf"
+WORK = ROOT / "tmp" / "pdfs" / ("desafio-farol-adulto" if ADULTO else "desafio-farol")
+OUTPUT = ROOT / ("docs/aulas-interativas/adulto/desafio-primeiro-jogo/caderno-do-aluno.pdf" if ADULTO
+                 else "docs/aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf")
 
 
 def main():
@@ -22,14 +27,15 @@ def main():
     cade = len(sys.argv) > 1 and sys.argv[1] == "cade-todo-mundo"
     generator = Path(__file__).with_name("gerar-caderno.ts")
     if cade:
-        WORK = ROOT / "tmp" / "pdfs" / "cade-todo-mundo"
-        OUTPUT = ROOT / "docs/aulas-interativas/kids/cade-todo-mundo/mapa-da-aventura.pdf"
+        WORK = ROOT / "tmp" / "pdfs" / ("cade-todo-mundo-adulto" if ADULTO else "cade-todo-mundo")
+        OUTPUT = ROOT / ("docs/aulas-interativas/adulto/cade-todo-mundo/caderno-do-aluno.pdf" if ADULTO
+                         else "docs/aulas-interativas/kids/cade-todo-mundo/mapa-da-aventura.pdf")
         generator = Path(__file__).parent.parent / "cade-todo-mundo" / "gerar-caderno.ts"
     bun = shutil.which("bun")
     if not bun:
         raise RuntimeError("Bun não encontrado.")
-    subprocess.run([bun, str(generator)] + (["--html-only"] if cade else []),
-                   cwd=ROOT, check=True, timeout=60)
+    flags = (["--html-only"] if cade else []) + (["--adulto"] if ADULTO else [])
+    subprocess.run([bun, str(generator), *flags], cwd=ROOT, check=True, timeout=60)
     html = WORK / "caderno.html"
     if not html.exists():
         raise RuntimeError("O gerador não produziu o HTML do caderno.")

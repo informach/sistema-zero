@@ -14,7 +14,7 @@ Os cursos são os mesmos para crianças e adultos, em duas versões: `kids/` fal
 
 ## Adulto
 
-Gerada a partir do Kids pelo `qa/adulto/gerar-adulto.ts`: não edite estes arquivos à mão, edite a tradução em [`qa/adulto/traducoes/`](../aulas-interativas-tecnico/qa/adulto/traducoes) e gere de novo ([Diretrizes da versão adulta](../aulas-interativas-tecnico/DIRETRIZES-ADULTO.md)). Cada curso adulto é outro curso no Admin, com público Adulto, o slug abaixo e as aulas com os mesmos `lessonSlug` do kids (o import confere o slug da aula). Ao importar, confira o curso de destino: a opção de vincular ao destino aberto aceita um manifesto do outro público sem avisar. O Caderno do Aluno adulto (o PDF) ainda está em produção: não anexe o Mapa da Aventura do Kids. Os vídeos adultos ainda não foram gravados.
+Gerada a partir do Kids pelo `qa/adulto/gerar-adulto.ts`: não edite estes arquivos à mão, edite a tradução em [`qa/adulto/traducoes/`](../aulas-interativas-tecnico/qa/adulto/traducoes) e gere de novo ([Diretrizes da versão adulta](../aulas-interativas-tecnico/DIRETRIZES-ADULTO.md)). Cada curso adulto é outro curso no Admin, com público Adulto, o slug abaixo e as aulas com os mesmos `lessonSlug` do kids (o import confere o slug da aula). Ao importar, confira o curso de destino: a opção de vincular ao destino aberto aceita um manifesto do outro público sem avisar. Cada curso adulto tem o seu Caderno do Aluno (`caderno-do-aluno.pdf`): anexe esse PDF, nunca o Mapa da Aventura do Kids. Os vídeos adultos ainda não foram gravados.
 
 | Curso | Aulas e materiais | Módulos | Blocos | Projeto final | Slug no Admin |
 | --- | --- | --- | --- | --- | --- |

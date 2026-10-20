@@ -1,19 +1,26 @@
-"""Gera o caderno, captura o jogo de referência e confere o PDF antes de substituir a saída."""
+"""Gera o caderno, captura o jogo de referência e confere o PDF antes de substituir a saída.
+
+Com --adulto, gera o Caderno do Aluno da versão adulta (texto de qa/adulto/traducoes/o-jogo-do-meu-jeito/_caderno.json).
+"""
 from pathlib import Path
 import json
 import shutil
 import subprocess
+import sys
 from playwright.sync_api import sync_playwright
 
+ADULTO = '--adulto' in sys.argv
 ROOT = Path(__file__).resolve().parents[4]
-WORK = ROOT / 'tmp/pdfs/meu-jeito'
-OUTPUT = ROOT / 'docs/aulas-interativas/kids/o-jogo-do-meu-jeito/mapa-da-aventura.pdf'
+WORK = ROOT / ('tmp/pdfs/meu-jeito-adulto' if ADULTO else 'tmp/pdfs/meu-jeito')
+OUTPUT = ROOT / ('docs/aulas-interativas/adulto/o-jogo-do-meu-jeito/caderno-do-aluno.pdf' if ADULTO
+                 else 'docs/aulas-interativas/kids/o-jogo-do-meu-jeito/mapa-da-aventura.pdf')
 
 def main():
     bun = shutil.which('bun')
     if not bun:
         raise RuntimeError('Bun não encontrado.')
-    subprocess.run([bun, str(Path(__file__).with_name('gerar-caderno.ts'))], cwd=ROOT, check=True, timeout=60)
+    flags = ['--adulto'] if ADULTO else []
+    subprocess.run([bun, str(Path(__file__).with_name('gerar-caderno.ts')), *flags], cwd=ROOT, check=True, timeout=60)
     browser_path = next((p for p in [
         Path('C:/Program Files/Google/Chrome/Application/chrome.exe'),
         Path('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'),

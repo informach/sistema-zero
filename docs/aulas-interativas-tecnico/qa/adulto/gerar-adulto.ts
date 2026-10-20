@@ -17,6 +17,7 @@ import {
   arquivosPorGrupo,
   caminhoTraducao,
   cursos,
+  GRUPO_DO_CADERNO,
   gravarCurso,
   lerTraducao,
   Pendencias,
@@ -83,7 +84,11 @@ for (const { prefixo, pasta } of escolhidos) {
     continue
   }
   if (revisar) {
-    for (const [grupo] of grupos) {
+    // O caderno não é um grupo de arquivos das aulas, mas a tradução dele passa pela mesma régua.
+    const comCaderno = [...grupos.map(([grupo]) => grupo)]
+    if ((!grupoFiltro || grupoFiltro === GRUPO_DO_CADERNO) && lerTraducao(pasta, GRUPO_DO_CADERNO))
+      comCaderno.push(GRUPO_DO_CADERNO)
+    for (const grupo of comCaderno) {
       const trechos = lerTraducao(pasta, grupo)?.trechos ?? []
       const pendentes = trechos.filter((t) => t.adulto === null).length
       const problemas = trechos.flatMap((t, i) =>

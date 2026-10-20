@@ -1,4 +1,9 @@
-/** Prepara o caderno do Farol com o CSS e as fontes do Cadê Todo Mundo. */
+/**
+ * Prepara o caderno do Farol com o CSS e as fontes do Cadê Todo Mundo. Com `--adulto`, o mesmo
+ * caderno sai como Caderno do Aluno, com o texto de
+ * `qa/adulto/traducoes/desafio-primeiro-jogo/_caderno.json` (ver `../caderno-adulto.ts`);
+ * `--coletar` atualiza essa lista de textos.
+ */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
@@ -18,6 +23,7 @@ import { VALUE_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/val
 import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensions/game-2d/blocks'
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
+import { criarTradutor } from '../caderno-adulto'
 
 /**
  * Todo texto que a criança lê mora em `caderno-conteudo.json` (13/10/2026), inclusive o índice,
@@ -48,6 +54,8 @@ type ContentPage = {
   lit?: boolean
   items: Item[]
 }
+const tradutor = criarTradutor('desafio-primeiro-jogo')
+const t = tradutor.t
 const root = resolve(import.meta.dir, '../../../..')
 const pages = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'caderno-conteudo.json'), 'utf8'),
@@ -61,7 +69,6 @@ if (!baseCss) throw new Error('CSS do caderno de referência não encontrado.')
 const fonts = `@font-face{font-family:Nunito;src:url(data:font/woff2;base64,${nunito.base64}) format('woff2');font-weight:400 800}
 @font-face{font-family:'Baloo 2';src:url(data:font/woff2;base64,${baloo.base64}) format('woff2');font-weight:400 800}`
 const css = baseCss.replace('/* {{FONT_FACES}} */', fonts)
-const zappy = `data:image/webp;base64,${readFileSync(resolve(root, 'packages/community-kids/public/zappy/happy.webp')).toString('base64')}`
 function sprite(
   name: FarolAssetName,
   { x, y, w, h }: { x: number; y: number; w: number; h: number },
@@ -96,7 +103,7 @@ const valueBlock = (type: string, body: string) =>
 const block = (type: string, text: string) =>
   `<div class="block" ${colorAttributes(type)}>${text}</div>`
 const prepared = (text: string) =>
-  `<div class="prepared">${text} <span>(já vêm no projeto)</span></div>`
+  `<div class="prepared">${t(text)} <span>${t('(já vêm no projeto)')}</span></div>`
 const areaTypes: Record<string, string> = {
   'Ao iniciar': 'sz_frame_start',
   'Quando acontecer': 'sz_frame_events',
@@ -115,7 +122,7 @@ const nested = (type: string, title: string, body: string, doLabel = '') =>
     ? `<div class="block" ${colorAttributes(type)}>${title}<div class="do-row"><span class="do-label">${doLabel}</span><div class="event-body">${body}</div></div></div>`
     : `<div class="block" ${colorAttributes(type)}>${title}<div class="event-body">${body}</div></div>`
 const diagram = (title: string, body: string) =>
-  `<div class="blocks"><h3>${title}</h3>${body}<p class="diagram-note">Esquema dos encaixes, com as cores dos blocos do Estúdio.</p></div>`
+  `<div class="blocks"><h3>${title}</h3>${body}<p class="diagram-note">${t('Esquema dos encaixes, com as cores dos blocos do Estúdio.')}</p></div>`
 const assign = (name: string, value: string) =>
   block(
     'sz_js_var_assign',
@@ -195,23 +202,23 @@ const drawings: Record<string, string> = {
   'sem-chave': overlap(
     'farol',
     ifTemChave(
-      '<div class="branch-label">então · quando temChave é verdadeiro</div>' +
-        '<div class="empty-slot">vazio por enquanto: você completa na próxima parte</div>' +
-        '<div class="branch-label">senão · quando temChave é falso</div>' +
+      `<div class="branch-label">${t('então · quando temChave é verdadeiro')}</div>` +
+        `<div class="empty-slot">${t('vazio por enquanto: você completa na próxima parte')}</div>` +
+        `<div class="branch-label">${t('senão · quando temChave é falso')}</div>` +
         message('A porta não abriu. Falta a chave.'),
     ),
   ),
   porta: overlap(
     'farol',
     ifTemChave(
-      '<div class="branch-label">então · quando temChave é verdadeiro</div>' +
+      `<div class="branch-label">${t('então · quando temChave é verdadeiro')}</div>` +
         assign('ganhou', 'verdadeiro') +
         block(
           'sz_g2d_set_image',
           `Trocar imagem do sprite ${field('farol')} para ${field('farol-listrado-aceso')}`,
         ) +
         message('Você acendeu o farol! Olhe o barco chegando.') +
-        '<div class="branch-label">senão · quando temChave é falso</div>' +
+        `<div class="branch-label">${t('senão · quando temChave é falso')}</div>` +
         message('A porta não abriu. Falta a chave.'),
     ),
   ),
@@ -235,26 +242,28 @@ function gallery(category: string | undefined): string {
 }
 function renderItem(item: Item): string {
   if (item.kind === 'gallery')
-    return `${item.title ? `<h3>${item.title}</h3>` : ''}${gallery(item.category)}`
+    return `${item.title ? `<h3>${t(item.title)}</h3>` : ''}${gallery(item.category)}`
   if (item.kind === 'drawing') {
     const drawing = drawings[item.name ?? '']
     if (!drawing) throw new Error(`Desenho desconhecido: ${item.name}`)
-    return diagram(item.title ?? '', drawing)
+    return diagram(t(item.title ?? ''), drawing)
   }
-  if (item.kind === 'text') return `<p class="body-text">${item.text}</p>`
-  if (item.kind === 'note') return `<div class="note">${item.text}</div>`
+  const text = t(item.text ?? '')
+  if (item.kind === 'text') return `<p class="body-text">${text}</p>`
+  if (item.kind === 'note') return `<div class="note">${text}</div>`
   if (item.kind === 'activity')
-    return `<div class="soft-box activity"><span class="pill pill--experience">${item.pill}</span><p>${item.text}</p></div>`
+    return `<div class="soft-box activity"><span class="pill pill--experience">${t(item.pill ?? '')}</span><p>${text}</p></div>`
   if (item.kind === 'step') {
+    // O número do passo vem do kids; o título passa por `t()` sem ele.
     const match = item.title?.match(/^(\d+)\.\s*(.*)$/)
     return match
-      ? `<div class="step"><span class="number">${match[1]}</span><div><h3>${match[2]}</h3><p>${item.text}</p></div></div>`
-      : `<div class="text-section"><h3>${item.title}</h3><p>${item.text}</p></div>`
+      ? `<div class="step"><span class="number">${match[1]}</span><div><h3>${t(match[2] ?? '')}</h3><p>${text}</p></div></div>`
+      : `<div class="text-section"><h3>${t(item.title ?? '')}</h3><p>${text}</p></div>`
   }
   if (item.kind === 'delivery')
-    return `<div class="check"><span class="pill pill--test">Confira antes de enviar</span><p>Funcionou? Clique em <strong>Verificar esta parte</strong>. Se faltar alguma coisa, corrija os blocos e clique novamente.</p><p>Quando aparecer <strong>Objetivo cumprido!</strong>, clique em <strong>Enviar meu projeto</strong> e confirme em <strong>Enviar</strong>. Quando aparecer <strong>Projeto enviado!</strong>, clique em <strong>${item.finish}</strong>.</p></div>`
+    return `<div class="check"><span class="pill pill--test">${t('Confira antes de enviar')}</span><p>${t('Funcionou? Clique em <strong>Verificar esta parte</strong>. Se faltar alguma coisa, corrija os blocos e clique novamente.')}</p><p>${t(`Quando aparecer <strong>Objetivo cumprido!</strong>, clique em <strong>Enviar meu projeto</strong> e confirme em <strong>Enviar</strong>. Quando aparecer <strong>Projeto enviado!</strong>, clique em <strong>${item.finish}</strong>.`)}</p></div>`
   if (item.kind === 'box')
-    return `<div class="soft-box box-${item.tone ?? 'note'}"><h3>${item.title}</h3><p>${item.text}</p></div>`
+    return `<div class="soft-box box-${item.tone ?? 'note'}"><h3>${t(item.title ?? '')}</h3><p>${text}</p></div>`
   throw new Error(`Item desconhecido no caderno: ${item.kind}`)
 }
 type Sheet = {
@@ -268,10 +277,11 @@ type Sheet = {
 }
 const sheets: Sheet[] = pages.map((page) => ({
   id: page.id,
+  // O tema segue o kicker kids: o texto adulto não muda as cores da página.
   theme: page.kicker.startsWith('Dia 2') ? 'lesson-two' : 'lesson-one',
-  kicker: page.kicker,
-  title: page.title,
-  subtitle: page.subtitle,
+  kicker: t(page.kicker),
+  title: t(page.title),
+  subtitle: t(page.subtitle),
   body: page.items.map(renderItem).join(''),
   lit: page.lit === true,
 }))
@@ -290,11 +300,25 @@ for (const sheet of sheets) {
   sheet.body = withPages(sheet.body)
 }
 const total = sheets.length + 1
-const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="${scene(true)}" alt="Ilustração da aventura com o farol aceso"></div><div class="cover-copy"><span class="badge">Mapa da Aventura</span><h1>A Chave<br>do <em>Farol</em></h1><p>Todos os passos para construir as regras da sua aventura.</p><div class="cover-bottom">Do primeiro movimento<br>à luz que guia o barco.</div></div><img class="zappy" src="${zappy}" alt="Zappy feliz"></section>`
+const ui = {
+  titulo: t('Mapa da Aventura - A Chave do Farol'),
+  selo: t('Mapa da Aventura'),
+  capaAlt: t('Ilustração da aventura com o farol aceso'),
+  capa: t('Todos os passos para construir as regras da sua aventura.'),
+  capaFim: t('Do primeiro movimento<br>à luz que guia o barco.'),
+  cenaAlt: t('Ilustração do jogo A Chave do Farol'),
+  rodape: t('A Chave do Farol | Mapa da Aventura'),
+}
+if (tradutor.concluir()) process.exit(0)
+// O adulto não tem mascote: a capa sai sem o Zappy.
+const zappy = tradutor.adulto
+  ? ''
+  : `<img class="zappy" src="data:image/webp;base64,${readFileSync(resolve(root, 'packages/community-kids/public/zappy/happy.webp')).toString('base64')}" alt="Zappy feliz">`
+const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="${scene(true)}" alt="${ui.capaAlt}"></div><div class="cover-copy"><span class="badge">${ui.selo}</span><h1>A Chave<br>do <em>Farol</em></h1><p>${ui.capa}</p><div class="cover-bottom">${ui.capaFim}</div></div>${zappy}</section>`
 const body = sheets
   .map(
     (sheet, index) =>
-      `<section class="page ${sheet.theme}" data-id="${sheet.id}"><div class="inner"><div class="lesson-hero"><img class="scene" src="${scene(sheet.lit)}" alt="Ilustração do jogo A Chave do Farol"><div class="lesson-hero-text"><div class="kicker">${sheet.kicker}</div><h2>${sheet.title}</h2><p>${sheet.subtitle}</p></div></div><div class="content">${sheet.body}</div></div><div class="page-no"><span class="brand">A Chave do Farol | Mapa da Aventura</span><span>${index + 2} / ${total}</span></div></section>`,
+      `<section class="page ${sheet.theme}" data-id="${sheet.id}"><div class="inner"><div class="lesson-hero"><img class="scene" src="${scene(sheet.lit)}" alt="${ui.cenaAlt}"><div class="lesson-hero-text"><div class="kicker">${sheet.kicker}</div><h2>${sheet.title}</h2><p>${sheet.subtitle}</p></div></div><div class="content">${sheet.body}</div></div><div class="page-no"><span class="brand">${ui.rodape}</span><span>${index + 2} / ${total}</span></div></section>`,
   )
   .join('\n')
 // Estilo só do Farol. O CSS de referência (Cadê) não muda por causa dele.
@@ -354,13 +378,14 @@ const extraCss = `
 .farol-pair .farol-option { border: 0; padding: 1mm; }
 .farol-pair img { height: 27mm; }
 `
-const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Mapa da Aventura - A Chave do Farol</title><style>${css}\n${extraCss}</style></head><body>${cover}${body}</body></html>`
+const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${ui.titulo}</title><style>${css}\n${extraCss}</style></head><body>${cover}${body}</body></html>`
 if (html.includes('{{')) throw new Error('Campo do caderno sem preencher.')
-const out = resolve(root, 'tmp/pdfs/desafio-farol')
+const pasta = `tmp/pdfs/desafio-farol${tradutor.adulto ? '-adulto' : ''}`
+const out = resolve(root, pasta)
 mkdirSync(out, { recursive: true })
 writeFileSync(resolve(out, 'caderno.html'), html)
 writeFileSync(
   resolve(out, 'cores-estudio.json'),
   JSON.stringify(Object.fromEntries(usedColors), null, 2),
 )
-console.log(`${total} páginas preparadas em tmp/pdfs/desafio-farol/caderno.html`)
+console.log(`${total} páginas preparadas em ${pasta}/caderno.html`)

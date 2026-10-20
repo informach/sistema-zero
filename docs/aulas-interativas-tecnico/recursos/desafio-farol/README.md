@@ -23,6 +23,8 @@ O mapa para responsáveis foi retirado por orientação de 03/10/2026. A revisã
 
 O mesmo verificador pode gerar o caderno do Cadê Todo Mundo com `python docs/aulas-interativas-tecnico/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo`: cores oficiais e verificação de limites.
 
+Com `--adulto` (também depois de `cade-todo-mundo`), o mesmo comando gera o Caderno do Aluno da versão adulta em `docs/aulas-interativas/adulto/<curso>/caderno-do-aluno.pdf`, com o texto de `qa/adulto/traducoes/<curso>/_caderno.json` e as mesmas verificações (pasta temporária com o sufixo `-adulto`). Quando o caderno kids muda, rode antes o `gerar-caderno.ts` do curso com `--coletar` e escreva a versão adulta dos textos novos ([Diretrizes da versão adulta](../../DIRETRIZES-ADULTO.md#caderno-do-aluno)).
+
 ## Artes e personalização · 06/10/2026
 
 O catálogo compartilhado em `packages/studio/src/arte/farol-assets.ts` reúne oito personagens, quatro cenários, quatro barcos, três chaves e quatro pares de faróis. Os SVGs nativos ficam em `packages/studio/src/arte/assets/farol/`. O cenário composto antigo continua como referência; o jogo usa cenários sem os sprites desenhados no fundo.

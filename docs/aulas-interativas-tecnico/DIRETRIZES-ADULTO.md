@@ -128,3 +128,15 @@ bun test docs/aulas-interativas-tecnico/qa/adulto                          # con
 ```
 
 Quando o kids muda, rode `--preparar`: o trecho alterado volta como `null` e precisa de nova versão adulta. Assim a versão adulta nunca fica com uma frase antiga sem ninguém perceber. O curso adulto é outro curso no Admin, com público Adulto e o slug do kids seguido de `-adulto`.
+
+### Caderno do Aluno
+
+O PDF adulto sai do mesmo gerador do Mapa da Aventura (`recursos/<curso>/gerar-caderno.ts`, com `recursos/caderno-adulto.ts`): a estrutura, os encaixes e as cores dos blocos são os mesmos, e todo texto impresso passa pela tradução em `qa/adulto/traducoes/<curso>/_caderno.json`. Os passos repetem as aulas, então a versão adulta de cada passo usa as mesmas palavras da aula adulta. Trocas próprias do caderno: "Mapa da Aventura" vira Caderno do Aluno, "Fase N" vira "Aula N", a capa sai sem o Zappy.
+
+```powershell
+bun docs/aulas-interativas-tecnico/recursos/<pasta>/gerar-caderno.ts --coletar                # textos novos do caderno viram null
+bun docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts --revisar <curso> _caderno         # pendentes e palavras do Kids
+python -X utf8 docs/aulas-interativas-tecnico/recursos/<pasta>/gerar-materiais.py --adulto      # grava adulto/<curso>/caderno-do-aluno.pdf
+```
+
+Quando o caderno kids muda, rode `--coletar` antes de gerar o adulto: sem a versão adulta de algum texto, o `--adulto` para. O Cadê Todo Mundo? sai pelo verificador do Desafio: `recursos/desafio-farol/gerar-materiais.py cade-todo-mundo --adulto`.

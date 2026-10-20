@@ -2,11 +2,13 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { isLearningManifest } from '../../../../packages/core/src/learning'
+import { traduzirHtml } from '../../recursos/caderno-adulto'
 import { PASTA_CURSOS_ADULTO } from '../caminhos'
 import {
   arquivosPorGrupo,
   cursos,
   divergencias,
+  GRUPO_DO_CADERNO,
   gerarCurso,
   lerTraducao,
   manifestoAdulto,
@@ -150,9 +152,30 @@ describe('a camada de tradução', () => {
   })
 })
 
+describe('o caderno adulto', () => {
+  test('o texto de um HTML pronto passa inteiro pela tradução, menos estilos e scripts', () => {
+    const html =
+      '<style>p{color:red}</style><span class="badge">Mapa</span><p>Clique em <strong>Ok</strong>.</p><img alt="Jogo"><div>Solto <em>junto</em></div>'
+    expect(traduzirHtml(html, (s) => `[${s}]`)).toBe(
+      '<style>p{color:red}</style><span class="badge">[Mapa]</span><p>[Clique em <strong>Ok</strong>.]</p><img alt="[Jogo]"><div>[Solto] <em>[junto]</em></div>',
+    )
+  })
+})
+
 describe.each(cursos())('versão adulta de $pasta', ({ prefixo, pasta }) => {
   test('todo trecho tem versão adulta', () => {
     expect(() => gerarCurso(prefixo, pasta)).not.toThrow()
+  })
+
+  test('o Caderno do Aluno adulto tem versão adulta de todo texto, sem palavras do Kids', () => {
+    const caderno = lerTraducao(pasta, GRUPO_DO_CADERNO)
+    expect(caderno?.trechos.length ?? 0).toBeGreaterThan(0)
+    const problemas = (caderno?.trechos ?? []).flatMap((t) =>
+      t.adulto === null || !t.adulto.trim()
+        ? [`pendente: ${t.kids.slice(0, 60)}`]
+        : palavrasDoKids(t.adulto).map((p) => `${p}: ${t.adulto?.slice(0, 60)}`),
+    )
+    expect(problemas).toEqual([])
   })
 
   test('os arquivos adultos estão em dia com o kids e com a tradução', () => {

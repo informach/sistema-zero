@@ -45,7 +45,7 @@
     {
       "onde": "README.md",
       "kids": "| Material | Arquivo |\n| --- | --- |\n| Título, descrições, módulos e aulas | [Módulos](modulos.md) |\n| Blocos do projeto | [JSON dos blocos](blocos.json) |\n| Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |\n| Mapa da Aventura para consultar ou anexar | [PDF do mapa](mapa-da-aventura.pdf) |",
-      "adulto": "| Material | Arquivo |\n| --- | --- |\n| Título, descrições, módulos e aulas | [Módulos](modulos.md) |\n| Blocos do projeto | [JSON dos blocos](blocos.json) |\n| Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |\n| Caderno do Aluno para consultar ou anexar | Ainda em produção na versão adulta |"
+      "adulto": "| Material | Arquivo |\n| --- | --- |\n| Título, descrições, módulos e aulas | [Módulos](modulos.md) |\n| Blocos do projeto | [JSON dos blocos](blocos.json) |\n| Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |\n| Caderno do Aluno para consultar ou anexar | [PDF do caderno](caderno-do-aluno.pdf) |"
     },
     {
       "onde": "README.md",
