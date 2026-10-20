@@ -1,0 +1,1083 @@
+{
+  "adulto": {
+    "versao": "comunidade-adulto-v1",
+    "funil": "pro/comunidade-dos-criadores",
+    "entrada": {
+      "eyebrow": "Para quem tem 18 anos ou mais",
+      "manchetes": {
+        "padrao": [
+          "Você sempre quis fazer um jogo. Em 3 minutos, veja o que está te travando e por onde começar.",
+          "o que está te travando e por onde começar"
+        ],
+        "ideia": [
+          "Aquela ideia de jogo que está na sua cabeça há anos. Em 3 minutos, veja o que falta para ela sair de lá.",
+          "o que falta para ela sair de lá"
+        ]
+      },
+      "descricao": "Responda sobre como você joga e o que já tentou. O resultado aparece na hora, sem cadastro.",
+      "botao": "Começar",
+      "menor": "Tenho menos de 18 anos",
+      "nota": "Uma orientação do Sistema Zero. Dá para responder pelo celular."
+    },
+    "etapas": {
+      "rotina": "SUA ROTINA",
+      "trava": "O QUE TRAVA",
+      "quer": "O QUE VOCÊ QUER"
+    },
+    "perguntas": [
+      {
+        "id": "P1",
+        "key": "idade",
+        "spin": "Segmentação (na entrada)",
+        "etapa": "rotina",
+        "titulo": "Botão Começar, com o aviso de 18 anos ou mais, e o link Tenho menos de 18 anos",
+        "sub": null,
+        "opcoes": [
+          [
+            "18_mais",
+            "Começar"
+          ],
+          [
+            "menos_18",
+            "Tenho menos de 18 anos"
+          ]
+        ],
+        "porque": "A entrada precisa ter uma coisa só: o motivo de responder. O portão de idade vira um toque, sem lista de faixas, porque faixa de idade não muda nada no texto (a nostalgia é pela cultura de jogo, não pela época).",
+        "uso": "Menos de 18 encerra com a tela de saída, que aponta o quiz infantil com o responsável. Nada mais é gravado sobre idade."
+      },
+      {
+        "id": "S2",
+        "key": "tempo_jogo",
+        "spin": "Situação",
+        "etapa": "rotina",
+        "titulo": "Numa semana normal, quanto você joga?",
+        "sub": "Computador, console e celular, tudo junto. Chute.",
+        "opcoes": [
+          [
+            "menos_3",
+            "Menos de 3 horas"
+          ],
+          [
+            "3_7",
+            "De 3 a 7 horas"
+          ],
+          [
+            "7_14",
+            "De 7 a 14 horas"
+          ],
+          [
+            "mais_14",
+            "Mais de 14 horas"
+          ]
+        ],
+        "porque": "O dado da calculadora. Fala do que a pessoa já faz, sem julgar.",
+        "uso": "Monta o título da calculadora (× 52, em faixa) e a primeira linha do resultado."
+      },
+      {
+        "id": "S3",
+        "key": "computador",
+        "spin": "Situação",
+        "etapa": "rotina",
+        "titulo": "Você tem computador com mouse e teclado?",
+        "sub": null,
+        "opcoes": [
+          [
+            "meu",
+            "Tenho o meu"
+          ],
+          [
+            "compartilhado",
+            "Uso um compartilhado"
+          ],
+          [
+            "celular_tablet",
+            "Só celular ou tablet"
+          ],
+          [
+            "verificar",
+            "Ainda vou ver"
+          ]
+        ],
+        "porque": "Requisito real. Perguntar cedo evita vender para quem não tem como usar.",
+        "uso": "Só celular ou tablet vira condição não atendida e troca o botão. Compartilhado e ainda vou ver viram uma frase no resultado."
+      },
+      {
+        "id": "S4",
+        "key": "programacao",
+        "spin": "Situação",
+        "etapa": "rotina",
+        "titulo": "Você já programou?",
+        "sub": null,
+        "opcoes": [
+          [
+            "nunca",
+            "Nunca"
+          ],
+          [
+            "um_pouco",
+            "Um pouco, sozinho"
+          ],
+          [
+            "estudei",
+            "Estudei ou trabalho com isso"
+          ]
+        ],
+        "porque": "Calibra a promessa das três fases e a objeção do bloco de criança, sem medir nível.",
+        "uso": "Só muda uma frase do resultado: blocos primeiro para quem nunca programou; Ponte e código logo para quem já programa. Não pontua."
+      },
+      {
+        "id": "P5",
+        "key": "cena",
+        "spin": "Problema",
+        "etapa": "trava",
+        "titulo": "Qual destas frases parece mais com você?",
+        "sub": null,
+        "shuffle": true,
+        "opcoes": [
+          [
+            "A",
+            "Jogo há anos e nunca fiz nada além de jogar"
+          ],
+          [
+            "B",
+            "Tenho uma ideia de jogo há anos e nunca comecei"
+          ],
+          [
+            "D",
+            "Jogo e fico pensando em como fizeram aquilo"
+          ],
+          [
+            "nenhum",
+            "Nenhuma dessas"
+          ]
+        ],
+        "porque": "A cena, na frase que a pessoa diria. Vale mais porque é a mais concreta.",
+        "uso": "3 pontos para o perfil (A horas livres, B ideia, D por dentro). Abre o resultado quando a pessoa a escolheu."
+      },
+      {
+        "id": "P6",
+        "key": "tentativa",
+        "spin": "Problema",
+        "etapa": "trava",
+        "titulo": "Você já tentou fazer um jogo?",
+        "sub": null,
+        "shuffle": true,
+        "opcoes": [
+          [
+            "vontade",
+            "Nunca tentei, ficou só na vontade"
+          ],
+          [
+            "perdi",
+            "Abri um programa e fechei no mesmo dia"
+          ],
+          [
+            "tutorial",
+            "Segui um tutorial, mas não passou dali"
+          ],
+          [
+            "sonhos",
+            "Comecei um projeto grande e parei no meio"
+          ],
+          [
+            "terminei",
+            "Já terminei um jogo pequeno"
+          ],
+          [
+            "nao_apareceu",
+            "Nunca pensei nisso"
+          ]
+        ],
+        "porque": "O problema nas palavras de quem viveu: o programa que intimida, o tutorial que não vira nada, o projeto grande demais.",
+        "uso": "Escolhe o parágrafo do porquê e o do que muda (um primeiro jogo pequeno de propósito). Não pontua."
+      },
+      {
+        "id": "I6",
+        "key": "tempo_criacao",
+        "spin": "Implicação",
+        "etapa": "trava",
+        "titulo": "De 7 a 14 horas por semana dão entre 364 e 728 horas por ano. Quanto disso virou alguma coisa sua?",
+        "sub": "O título repete a resposta da S2, como a calculadora da v5.",
+        "opcoes": [
+          [
+            "quase_nada",
+            "Quase nada"
+          ],
+          [
+            "um_pouco",
+            "Um pouco"
+          ],
+          [
+            "boa_parte",
+            "Boa parte"
+          ],
+          [
+            "nao_sei",
+            "Não sei"
+          ]
+        ],
+        "porque": "A implicação com número: a pessoa vê o tamanho do tempo que já investe.",
+        "uso": "Entra no argumento do perfil A e na abertura de todos. Boa parte muda o título do A."
+      },
+      {
+        "id": "I7",
+        "key": "preocupacao",
+        "spin": "Implicação",
+        "etapa": "trava",
+        "titulo": "Se nada mudar no próximo ano, o que mais incomoda?",
+        "sub": null,
+        "shuffle": true,
+        "opcoes": [
+          [
+            "A",
+            "Continuar só jogando"
+          ],
+          [
+            "B",
+            "A ideia continuar na gaveta"
+          ],
+          [
+            "D",
+            "Continuar sem entender como se faz"
+          ],
+          [
+            "nenhum",
+            "Nada, está bom assim"
+          ]
+        ],
+        "porque": "Projeta o custo de não mudar, em quatro palavras.",
+        "uso": "2 pontos; vira uma frase do resultado e pode abrir o porquê quando a cena foi neutra."
+      },
+      {
+        "id": "N8",
+        "key": "cena_desejada",
+        "spin": "Necessidade",
+        "etapa": "quer",
+        "titulo": "Daqui a três meses, qual cena você gostaria de ver?",
+        "sub": null,
+        "shuffle": true,
+        "opcoes": [
+          [
+            "A",
+            "Uma noite livre que termina com uma fase pronta, feita por mim"
+          ],
+          [
+            "B",
+            "Um amigo jogando uma fase que eu inventei"
+          ],
+          [
+            "D",
+            "Eu explicando para alguém como um jogo funciona por dentro"
+          ]
+        ],
+        "porque": "A visualização do resultado, sem opção neutra: sempre sai um perfil.",
+        "uso": "2 pontos; a frase volta no resultado ligando a cena ao jogo publicado."
+      },
+      {
+        "id": "N9",
+        "key": "garantia",
+        "spin": "Necessidade",
+        "etapa": "quer",
+        "titulo": "Para dar certo na sua rotina, o que precisa estar garantido?",
+        "sub": null,
+        "shuffle": true,
+        "opcoes": [
+          [
+            "sozinho",
+            "Aprender sozinho, no meu horário"
+          ],
+          [
+            "recorrer",
+            "Ter a quem recorrer quando travar"
+          ],
+          [
+            "tempo",
+            "Caber em poucas horas por semana"
+          ],
+          [
+            "orcamento",
+            "Caber no meu orçamento"
+          ],
+          [
+            "ao_vivo",
+            "Ter aula ao vivo"
+          ],
+          [
+            "carreira",
+            "Servir para trabalhar com jogos"
+          ]
+        ],
+        "porque": "A objeção principal, dita pela pessoa. Duas respostas são condições que a oferta não atende.",
+        "uso": "Escolhe a frase do próximo passo. Aula ao vivo e trabalhar com jogos viram condições não atendidas, com a explicação honesta da página."
+      },
+      {
+        "id": "P10",
+        "key": "sintese",
+        "spin": "Diagnóstico",
+        "etapa": "quer",
+        "titulo": "Juntando tudo, o que você quer?",
+        "sub": null,
+        "shuffle": true,
+        "opcoes": [
+          [
+            "A",
+            "Que o meu tempo de jogo renda alguma coisa minha"
+          ],
+          [
+            "B",
+            "Tirar a ideia da gaveta e fazer o jogo"
+          ],
+          [
+            "D",
+            "Entender como um jogo é feito e aprender a programar"
+          ],
+          [
+            "conhecer",
+            "Ainda estou conhecendo"
+          ]
+        ],
+        "porque": "A frase-síntese: a pessoa escolhe o próprio diagnóstico.",
+        "uso": "3 pontos e o desempate. Ainda estou conhecendo não soma. Abre a condicional do perfil."
+      },
+      {
+        "id": "C11",
+        "key": "ferramenta",
+        "spin": "Condicional (perfil B)",
+        "etapa": "quer",
+        "titulo": "O jogo precisa ser numa ferramenta específica?",
+        "sub": null,
+        "opcoes": [
+          [
+            "unity",
+            "Unity"
+          ],
+          [
+            "unreal",
+            "Unreal"
+          ],
+          [
+            "roblox",
+            "Roblox"
+          ],
+          [
+            "outra",
+            "Outra"
+          ],
+          [
+            "qualquer",
+            "Qualquer uma, se eu terminar"
+          ],
+          [
+            "nao_pensei",
+            "Não pensei nisso"
+          ]
+        ],
+        "porque": "Quem tem uma ideia pode ter uma engine em mente; a página diz que não ensina Unity nem Unreal.",
+        "uso": "Unity, Unreal, Roblox e outra viram condição não atendida (A ferramenta é o Estúdio). Não pensei nisso vira uma frase."
+      },
+      {
+        "id": "C12",
+        "key": "codigo",
+        "spin": "Condicional (perfil D)",
+        "etapa": "quer",
+        "titulo": "Para você, aprender a programar é…",
+        "sub": null,
+        "opcoes": [
+          [
+            "codigo_ja",
+            "Escrever código desde o primeiro dia"
+          ],
+          [
+            "logica",
+            "Entender a lógica primeiro"
+          ],
+          [
+            "tanto_faz",
+            "Tanto faz, quero ver funcionando"
+          ]
+        ],
+        "porque": "Quem quer código no primeiro dia precisa saber que a fase 1 é com blocos. Melhor saber antes de assinar.",
+        "uso": "Código desde o primeiro dia vira uma frase honesta no resultado, com as três fases."
+      }
+    ],
+    "calculadora": {
+      "menos_3": "Menos de 3 horas por semana dão até 156 horas",
+      "3_7": "De 3 a 7 horas por semana dão entre 156 e 364 horas",
+      "7_14": "De 7 a 14 horas por semana dão entre 364 e 728 horas",
+      "mais_14": "Mais de 14 horas por semana dão mais de 728 horas"
+    },
+    "perfis": {
+      "A": {
+        "nome": "Horas livres",
+        "titulo": "Você joga há anos. O que falta é uma noite de jogo que termine com alguma coisa sua",
+        "cta": "Ver como a noite de jogo vira uma fase pronta"
+      },
+      "B": {
+        "nome": "Ideia",
+        "titulo": "A sua ideia de jogo já existe. O que falta é um começo pequeno",
+        "cta": "Ver como a ideia sai da gaveta"
+      },
+      "D": {
+        "nome": "Por dentro",
+        "titulo": "Você quer ver como um jogo é feito por dentro. O que falta é alguma coisa para apertar e testar",
+        "cta": "Ver o caminho para entender um jogo por dentro"
+      }
+    }
+  },
+  "kids": {
+    "versao": "comunidade-orientacao-v6",
+    "funil": "kids/comunidade-dos-criadores",
+    "entrada": {
+      "eyebrow": "Para mães, pais e responsáveis",
+      "manchetes": {
+        "padrao": [
+          "Seu filho vive no jogo. Em 3 minutos, veja como usar isso para ele aprender de verdade.",
+          "veja como usar isso para ele aprender de verdade"
+        ],
+        "tela": [
+          "Seu filho passa horas na tela. Em 3 minutos, veja o que faria esse tempo render alguma coisa.",
+          "render alguma coisa"
+        ]
+      },
+      "descricao": "Responda sobre a rotina dele. O resultado aparece na hora, sem cadastro.",
+      "nota": "Uma orientação do Sistema Zero Kids. Dá para responder pelo celular."
+    },
+    "p1": [
+      {
+        "id": "P1a",
+        "key": "genero",
+        "spin": "Segmentação (na entrada)",
+        "titulo": "Em quem você está pensando?",
+        "sub": "Uma criança de cada vez.",
+        "opcoes": [
+          [
+            "filho",
+            "No meu filho"
+          ],
+          [
+            "filha",
+            "Na minha filha"
+          ]
+        ],
+        "porque": "Duas cartas grandes, com desenho, em vez de uma lista em que filho e filha diferem por uma letra. Quem bate o olho não erra.",
+        "uso": "Todo o texto seguinte fala ele ou ela (genero.ts)."
+      },
+      {
+        "id": "P1b",
+        "key": "idade",
+        "spin": "Segmentação",
+        "titulo": "Quantos anos ela tem?",
+        "sub": null,
+        "opcoes": [
+          [
+            "menos_9",
+            "Menos de 9"
+          ],
+          [
+            "9_12",
+            "De 9 a 12"
+          ],
+          [
+            "13_17",
+            "De 13 a 17"
+          ],
+          [
+            "18_mais",
+            "18 ou mais"
+          ]
+        ],
+        "porque": "A faixa decide o caminho e é a mesma das páginas de oferta. Três cartas grandes; 18 ou mais é um link pequeno embaixo.",
+        "uso": "Menos de 9 abre o ramo criar junto; 9 a 12 e 13 a 17 seguem as dez perguntas; 18 ou mais encerra com a saída para o quiz adulto. Nada diz ao pai que o caminho mudou: o quiz só segue."
+      }
+    ],
+    "ramo_9_17": {
+      "resumo": "As dez perguntas da v5 continuam na mesma ordem e com a mesma função (tempo de tela, computador, cena de casa, quando trava, calculadora, preocupação, cena desejada, o que precisa estar garantido, frase-síntese) e a condicional dos perfis B, C e F. O que muda: o destino é a página única de 9 a 17, e as opções ganham a voz dos pais, mais curtas, como abaixo.",
+      "ajustes": [
+        "A faixa 13 a 17 entra na entrada e no resultado (a v5 parava em 14).",
+        "O perfil F (escola) deixa de ter página própria, decisão de 19/10: o resultado faz a ponte da escola com o jogo e a página de 9 a 17 leva a fala do Daniel.",
+        "As opções abaixo substituem as da v5 com a mesma letra de perfil; a lógica não muda."
+      ],
+      "opcoes_voz": [
+        [
+          "P4 · cena de casa",
+          "Qual destas frases parece mais com a sua casa?",
+          [
+            [
+              "A",
+              "Ele vive no jogo e no vídeo, e não faz nada com isso"
+            ],
+            [
+              "B",
+              "Ele inventa jogo o tempo todo, mas fica só na conversa"
+            ],
+            [
+              "C",
+              "Ele desenha personagem o tempo todo, e fica no caderno"
+            ],
+            [
+              "D",
+              "Ele quer saber como os jogos são feitos, e eu não sei ensinar"
+            ],
+            [
+              "F",
+              "Na lição, ele copia o exemplo e trava quando a pergunta muda"
+            ],
+            [
+              "nenhum",
+              "Nenhuma dessas"
+            ]
+          ]
+        ],
+        [
+          "I7 · preocupação",
+          "Se nada mudar no próximo ano, o que mais preocupa?",
+          [
+            [
+              "A",
+              "A tela continuar só para assistir e jogar"
+            ],
+            [
+              "B",
+              "A vontade de criar passar antes de ele fazer um jogo"
+            ],
+            [
+              "C",
+              "Os desenhos ficarem na gaveta"
+            ],
+            [
+              "D",
+              "A curiosidade dele passar em branco"
+            ],
+            [
+              "F",
+              "A dificuldade na escola virar desânimo"
+            ],
+            [
+              "nenhum",
+              "Nada, quero aproveitar o interesse dele"
+            ]
+          ]
+        ],
+        [
+          "N8 · cena desejada",
+          "Daqui a três meses, qual cena você gostaria de ver?",
+          [
+            [
+              "A",
+              "Ele me chamando: olha o que eu fiz"
+            ],
+            [
+              "B",
+              "Um amigo jogando um jogo que ele inventou"
+            ],
+            [
+              "C",
+              "O personagem que ele desenhou se mexendo na tela"
+            ],
+            [
+              "D",
+              "Ele me explicando como um jogo funciona por dentro"
+            ],
+            [
+              "F",
+              "Ele explicando uma conta com as palavras dele"
+            ]
+          ]
+        ],
+        [
+          "N9 · garantia",
+          "Para dar certo aí em casa, o que precisa estar garantido?",
+          [
+            [
+              "sozinho",
+              "Ele conseguir sozinho, porque eu não entendo disso"
+            ],
+            [
+              "recorrer",
+              "Ter a quem recorrer quando travar"
+            ],
+            [
+              "acompanhar",
+              "Eu conseguir acompanhar"
+            ],
+            [
+              "tempo_tela",
+              "Caber no tempo de tela combinado"
+            ],
+            [
+              "orcamento",
+              "Caber no orçamento"
+            ],
+            [
+              "ao_vivo",
+              "Ter professor ao vivo"
+            ]
+          ]
+        ],
+        [
+          "P10 · síntese",
+          "Juntando tudo, o que você quer para ele?",
+          [
+            [
+              "A",
+              "Que o tempo de tela sirva para alguma coisa"
+            ],
+            [
+              "B",
+              "Que as ideias de jogo dele saiam do papel"
+            ],
+            [
+              "C",
+              "Que os desenhos dele ganhem vida"
+            ],
+            [
+              "D",
+              "Que ele aprenda a programar de verdade"
+            ],
+            [
+              "F",
+              "Que ele entenda o que estuda e use na prática"
+            ],
+            [
+              "conhecer",
+              "Ainda estou conhecendo"
+            ]
+          ]
+        ]
+      ]
+    },
+    "etapas9": {
+      "rotina": "A rotina dele",
+      "casa": "A cena de casa",
+      "desejo": "O que você quer"
+    },
+    "etapas_m9": {
+      "rotina": "A rotina de vocês",
+      "casa": "A cena de casa",
+      "desejo": "O que você quer"
+    },
+    "ramo_menor_9": [
+      {
+        "id": "S2",
+        "key": "leitura",
+        "spin": "Situação",
+        "etapa": "rotina",
+        "titulo": "Ela já lê?",
+        "sub": null,
+        "opcoes": [
+          [
+            "nao_le",
+            "Ainda não"
+          ],
+          [
+            "comecando",
+            "Está começando"
+          ],
+          [
+            "prefere",
+            "Lê, mas prefere que eu leia"
+          ],
+          [
+            "le_sozinha",
+            "Lê sozinha"
+          ]
+        ],
+        "porque": "A leitura define o papel do adulto na sessão.",
+        "uso": "Personaliza o resultado (você lê os blocos; o botão Ouvir lê as falas). Lê sozinha ganha a frase de que ela pode passar a criar sozinha mais cedo. Não pontua."
+      },
+      {
+        "id": "S3",
+        "key": "computador",
+        "spin": "Situação",
+        "etapa": "rotina",
+        "titulo": "Vocês têm computador em casa?",
+        "sub": null,
+        "opcoes": [
+          [
+            "sim",
+            "Sim, podemos usar"
+          ],
+          [
+            "organizar",
+            "Sim, mas preciso organizar horário"
+          ],
+          [
+            "celular_tablet",
+            "Só celular ou tablet"
+          ],
+          [
+            "verificar",
+            "Ainda vou ver"
+          ]
+        ],
+        "porque": "Requisito real: tablet não serve para criar, e é o aparelho mais comum nessa idade.",
+        "uso": "Só celular ou tablet vira condição não atendida; as outras duas viram uma frase."
+      },
+      {
+        "id": "S4",
+        "key": "tempo_juntos",
+        "spin": "Situação",
+        "etapa": "rotina",
+        "titulo": "Por semana, quanto tempo vocês conseguem sentar juntos no computador?",
+        "sub": "Chute.",
+        "opcoes": [
+          [
+            "uma_vez",
+            "Uns 20 minutos, uma vez"
+          ],
+          [
+            "duas_tres",
+            "Duas ou três vezes, de 20 a 30 minutos"
+          ],
+          [
+            "mais",
+            "Mais do que isso"
+          ],
+          [
+            "nao_sei",
+            "Ainda não sei"
+          ]
+        ],
+        "porque": "O produto pede o adulto ao lado. Perguntar o tempo real evita vender uma rotina que a família não tem.",
+        "uso": "Entra no resultado como expectativa honesta: sessões curtas, o projeto espera. Não pontua."
+      },
+      {
+        "id": "P5",
+        "key": "cena",
+        "spin": "Problema",
+        "etapa": "casa",
+        "titulo": "Qual destas frases parece mais com ela?",
+        "sub": null,
+        "shuffle": true,
+        "opcoes": [
+          [
+            "A",
+            "Só fica no joguinho pronto do tablet"
+          ],
+          [
+            "B",
+            "Inventa brincadeira e personagem o tempo todo"
+          ],
+          [
+            "D",
+            "Quer saber como tudo funciona e apertar tudo"
+          ],
+          [
+            "irmao",
+            "Quer fazer o que o irmão mais velho faz"
+          ],
+          [
+            "nenhum",
+            "Nenhuma dessas"
+          ]
+        ],
+        "porque": "A cena de casa, na frase que a mãe diria, com as três motivações que a página responde.",
+        "uso": "3 pontos (A tempo a dois, B ideias dela, D curiosidade). O irmão não pontua e ganha uma frase: a assinatura tem dois perfis."
+      },
+      {
+        "id": "I6",
+        "key": "preocupacao",
+        "spin": "Implicação",
+        "etapa": "casa",
+        "titulo": "Se nada mudar, o que mais preocupa?",
+        "sub": null,
+        "shuffle": true,
+        "opcoes": [
+          [
+            "A",
+            "A tela continuar só para assistir e jogar"
+          ],
+          [
+            "B",
+            "As ideias dela ficarem só na brincadeira"
+          ],
+          [
+            "D",
+            "A curiosidade dela passar em branco"
+          ],
+          [
+            "nenhum",
+            "Nada, quero aproveitar a fase"
+          ]
+        ],
+        "porque": "O custo de não mudar, na idade em que a curiosidade está no auge.",
+        "uso": "2 pontos para o perfil."
+      },
+      {
+        "id": "N7",
+        "key": "cena_desejada",
+        "spin": "Necessidade",
+        "etapa": "desejo",
+        "titulo": "Daqui a três meses, qual cena você gostaria de ver?",
+        "sub": null,
+        "shuffle": true,
+        "opcoes": [
+          [
+            "A",
+            "Ela me chamando para ver o que a gente fez"
+          ],
+          [
+            "B",
+            "O personagem dela aparecendo na tela"
+          ],
+          [
+            "D",
+            "Ela me explicando o que cada botão faz"
+          ],
+          [
+            "A2",
+            "Os avós jogando um jogo nosso"
+          ]
+        ],
+        "porque": "A visualização do resultado, sem opção neutra. A cena dos avós é a que a página promete.",
+        "uso": "2 pontos (A2 soma para A). A frase volta no resultado."
+      },
+      {
+        "id": "N8",
+        "key": "garantia",
+        "spin": "Necessidade",
+        "etapa": "desejo",
+        "titulo": "Para dar certo aí em casa, o que precisa estar garantido?",
+        "sub": null,
+        "shuffle": true,
+        "opcoes": [
+          [
+            "conduzir",
+            "Eu conseguir conduzir sem saber programar"
+          ],
+          [
+            "curto",
+            "Caber em sessões curtas"
+          ],
+          [
+            "seguro",
+            "Ser um lugar seguro"
+          ],
+          [
+            "orcamento",
+            "Caber no orçamento"
+          ],
+          [
+            "sozinha",
+            "Ela conseguir sozinha, não tenho tempo"
+          ],
+          [
+            "ao_vivo",
+            "Ter professor ao vivo"
+          ]
+        ],
+        "porque": "A objeção principal. Duas respostas pedem uma conversa honesta: nessa idade a plataforma pede um adulto ao lado, e não há professor ao vivo.",
+        "uso": "Escolhe a frase do próximo passo. Ela sozinha vira uma frase honesta; professor ao vivo vira condição não atendida."
+      },
+      {
+        "id": "P9",
+        "key": "sintese",
+        "spin": "Diagnóstico",
+        "etapa": "desejo",
+        "titulo": "Juntando tudo, o que você quer?",
+        "sub": null,
+        "shuffle": true,
+        "opcoes": [
+          [
+            "A",
+            "Um tempo de tela nosso, com alguma coisa feita no fim"
+          ],
+          [
+            "B",
+            "As ideias dela virando um jogo"
+          ],
+          [
+            "D",
+            "Ela entender, brincando, como as coisas funcionam"
+          ],
+          [
+            "conhecer",
+            "Ainda estou conhecendo"
+          ]
+        ],
+        "porque": "A frase-síntese e o desempate.",
+        "uso": "3 pontos; Ainda estou conhecendo não soma."
+      }
+    ],
+    "perfis_m9": {
+      "A": {
+        "nome": "Tempo a dois",
+        "titulo": "No joguinho do tablet, ela só aperta o que aparece. O que falta é um tempo de tela que seja de vocês dois",
+        "cta": "Ver como criar o primeiro jogo de vocês"
+      },
+      "B": {
+        "nome": "Ideias dela",
+        "titulo": "As brincadeiras dela já têm personagem, regra e fim. O que falta é um lugar para elas aparecerem",
+        "cta": "Ver as ideias dela virando jogo"
+      },
+      "D": {
+        "nome": "Curiosidade",
+        "titulo": "Ela quer apertar tudo e saber como funciona. O que falta é um lugar em que apertar faz alguma coisa acontecer",
+        "cta": "Ver como a curiosidade dela vira jogo"
+      }
+    }
+  },
+  "voz": {
+    "adulto": {
+      "quem": "Adulto de 18 anos ou mais que cresceu jogando, sem formação em programação e com pouco tempo. Hobby, não carreira.",
+      "fala": [
+        "Sempre quis fazer um jogo.",
+        "Tenho uma ideia de jogo há anos.",
+        "Abri a Unity e fechei no mesmo dia.",
+        "Fico preso em tutorial.",
+        "Começo e não termino.",
+        "Não tenho tempo.",
+        "Não sou programador.",
+        "Será que é tarde para começar?",
+        "Jogo desde criança.",
+        "Queria entender como eles fazem isso."
+      ],
+      "sente": [
+        "Vergonha de nunca ter começado.",
+        "Sensação de atraso, comparando com quem começou aos 15.",
+        "Cansaço à noite depois do trabalho.",
+        "Medo de perder tempo num projeto grande demais."
+      ],
+      "quer": [
+        "Terminar um jogo, mesmo pequeno, e mostrar.",
+        "Ver o próprio nome num jogo.",
+        "Entender como um jogo funciona por dentro.",
+        "Uma hora livre que rende alguma coisa.",
+        "Gente que curte o mesmo."
+      ],
+      "teme": [
+        "Curso de criança.",
+        "Promessa de carreira que ele não quer.",
+        "Ter que aprender uma engine profissional.",
+        "Pagar e largar."
+      ],
+      "usa": [
+        "jogo",
+        "fase",
+        "chefe",
+        "tela de título",
+        "mandar o link",
+        "engine",
+        "tutorial",
+        "hobby"
+      ],
+      "evita": [
+        "lúdico",
+        "gamificação",
+        "jornada de aprendizagem",
+        "desenvolvedor",
+        "portfólio",
+        "aluno"
+      ],
+      "fontes": "Pesquisa dos três públicos (seção 5: r/godot, r/GameDevelopment, TabNews, gamedev.net, itch.io; fontes estrangeiras marcadas). Não há relato brasileiro autorizado de adulto: a voz vem de fóruns e precisa do piloto."
+    },
+    "pais917": {
+      "quem": "Mãe ou pai de criança ou adolescente de 9 a 17 anos que vive no jogo e no vídeo. Quem decide é o adulto; quem usa é o filho.",
+      "fala": [
+        "Só mais uma partida.",
+        "Ele passa o dia inteiro no videogame.",
+        "Ele sabe o nome de todos os youtubers de jogo.",
+        "Ele mais assistia, não desenvolvia nada.",
+        "Nada funciona, ele diz, e fecha o notebook.",
+        "Pai, deu ruim.",
+        "Cursos gratuitos é pouquinha coisa, aulinha experimental.",
+        "Eu não entendo nada disso.",
+        "A gente queria um curso que ele começasse, se interessasse e não quisesse parar.",
+        "Ele me mostra os jogos que ele criou."
+      ],
+      "sente": [
+        "Culpa de ligar a tela para conseguir trabalhar.",
+        "Briga na hora de parar.",
+        "Dúvida: ele está só jogando ou aprendendo alguma coisa.",
+        "Medo de forçar e ele perder o interesse.",
+        "Medo de pagar por meses e ele largar.",
+        "Não sei qual curso é bom; não entendo para avaliar."
+      ],
+      "quer": [
+        "Ouvir: olha o que eu fiz.",
+        "Que ele faça alguma coisa com tanto tempo de tela.",
+        "Que ele se interesse e não queira parar.",
+        "Ter assunto com ele.",
+        "Um investimento, como natação ou inglês.",
+        "Que ele aprenda programação, que é o futuro, sem promessa de emprego."
+      ],
+      "teme": [
+        "Chat com estranho.",
+        "Infantil demais para o de 15.",
+        "Difícil demais para o de 9.",
+        "Ter que sentar junto todo dia.",
+        "Mais tempo de tela."
+      ],
+      "usa": [
+        "videogame",
+        "celular",
+        "tela",
+        "joguinho",
+        "curso",
+        "aula",
+        "professor",
+        "ele me mostra",
+        "largar",
+        "aprofundar"
+      ],
+      "evita": [
+        "lógica computacional",
+        "pensamento computacional",
+        "competências",
+        "gamificação",
+        "autonomia",
+        "protagonismo"
+      ],
+      "fontes": "Relatos autorizados (Daniel, Flávia, Harle, Rafael, Fernando, Jeffrey), 30 dores e 30 desejos do Instagram (D01 a W30), fóruns brasileiros lidos em 01/10."
+    },
+    "paisMenor9": {
+      "quem": "Mãe ou pai de criança menor de 9 anos, que ainda lê pouco e usa o tablet. Quem cria junto é o adulto.",
+      "fala": [
+        "Ela só fica no tablet.",
+        "Ela inventa cada brincadeira.",
+        "Ela quer apertar tudo.",
+        "Ela ainda não lê.",
+        "Não tenho tempo de sentar junto.",
+        "No tablet não dá?",
+        "Tem app grátis para isso.",
+        "É seguro?",
+        "Ela é muito nova para isso?"
+      ],
+      "sente": [
+        "Culpa pelo tablet como babá.",
+        "Dúvida sobre o próprio papel: ensinar, ajudar ou só olhar.",
+        "Medo de forçar.",
+        "Vontade de aproveitar a fase."
+      ],
+      "quer": [
+        "Um tempo com ela que não seja só desenho na TV.",
+        "Ver a cara dela quando o personagem aparece.",
+        "Mostrar para os avós.",
+        "Uma coisa que cresça com ela."
+      ],
+      "teme": [
+        "Comunidade pública com criança pequena.",
+        "Curso para criança maior.",
+        "Ter que saber programar.",
+        "Sessão longa demais."
+      ],
+      "usa": [
+        "joguinho",
+        "tablet",
+        "brincadeira",
+        "personagem",
+        "bichinho",
+        "sentar junto",
+        "ela me mostra"
+      ],
+      "evita": [
+        "alfabetização",
+        "letramento",
+        "co-criação",
+        "mediação",
+        "estímulo cognitivo"
+      ],
+      "fontes": "Pesquisa dos três públicos (seção 2) e inferência a partir dos pais de 9 a 17. Lacuna: não há relato brasileiro autorizado de pai de criança de 5 a 8 anos criando junto; a voz precisa de entrevista."
+    }
+  }
+}

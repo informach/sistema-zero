@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Página da bio do Instagram</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&amp;family=Nunito:wght@400;600;700;800&amp;family=Baloo+2:wght@800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<main style="min-height:100vh;box-sizing:border-box;padding:48px 20px 40px;display:flex;justify-content:center;background:radial-gradient(60% 45% at 50% -8%, #DCE4FF 0%, transparent 72%), radial-gradient(38% 40% at 100% 100%, #D6F3E3 0%, transparent 72%), #F4F6FB;color:#121A30;font-family:'Nunito',system-ui,sans-serif">
+  <div style="width:100%;max-width:440px;display:flex;flex-direction:column;gap:30px">
+    <header style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
+      <img src="/img/comunidade-dos-criadores/helena-julio-perfil.webp" alt="Helena e Júlio" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #FFFFFF;box-shadow:0 6px 18px rgba(18,26,48,0.14)">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <strong style="font-size:19px">Helena e Júlio</strong>
+        <span style="font-size:15px;color:#46536E">A gente ensina a fazer jogos</span>
+      </div>
+      <h1 style="margin:8px 0 0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:clamp(2.1rem,9vw,2.8rem);line-height:1.02">Criar jogos não tem idade.</h1>
+      <p style="margin:0;font-size:17px;color:#2A3550;line-height:1.5">Diga para quem é, e em 3 minutos a gente mostra por onde começar.</p>
+    </header>
+
+    <nav style="display:flex;flex-direction:column;gap:14px" aria-label="Para quem é">
+      <a href="#quiz-adulto" style="text-decoration:none;color:#FFFFFF;background:#0B0E1A;border:3px solid #0B0E1A;border-radius:22px;padding:22px 22px;display:flex;align-items:center;gap:16px;box-shadow:6px 6px 0 #FFC02E">
+        <span style="display:flex;flex-direction:column;gap:6px;flex:1 1 auto;min-width:0">
+          <strong style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:26px;line-height:1.05">É para mim</strong>
+          <span style="font-size:16px;color:#C9D1E6;line-height:1.4">Tenho 18 anos ou mais e sempre quis fazer um jogo.</span>
+        </span><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </a>
+      <a href="#quiz-infantil" style="text-decoration:none;color:#121A30;background:#FFFFFF;border:3px solid #121A30;border-radius:22px;padding:22px 22px;display:flex;align-items:center;gap:16px;box-shadow:6px 6px 0 #1B5CF3">
+        <span style="display:flex;flex-direction:column;gap:6px;flex:1 1 auto;min-width:0">
+          <strong style="font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:27px;line-height:1.05">É para meu filho ou filha</strong>
+          <span style="font-size:16px;color:#2A3550;line-height:1.4">De 9 a 17 anos, ou menor de 9 criando comigo.</span>
+        </span><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </a>
+    </nav>
+
+    <footer style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:8px">
+      <img src="/logo_white.svg" alt="Sistema Zero" style="width:110px;height:auto;opacity:0.85">
+      <p style="margin:0;text-align:center;font-size:12px;color:#46536E"><a href="#privacidade" style="color:#46536E">Privacidade</a> · <a href="#termos" style="color:#46536E">Termos de uso</a></p>
+    </footer>
+  </div>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

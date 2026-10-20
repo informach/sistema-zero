@@ -1,0 +1,352 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 5600,
+      "title": "Análise e estratégia",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Pagina917.dc.html": {
+      "expand": "fill",
+      "h": 8000,
+      "title": "Página 2 · Filho ou filha de 9 a 17 anos",
+      "w": 1440,
+      "x": 1990,
+      "y": 7700
+    },
+    "Pagina917Celular.dc.html": {
+      "h": 8000,
+      "title": "Página 2 · no celular",
+      "w": 390,
+      "x": 3510,
+      "y": 7700
+    },
+    "PaginaAdulto.dc.html": {
+      "expand": "fill",
+      "h": 8000,
+      "title": "Página 1 · Adulto que cria para si",
+      "w": 1440,
+      "x": 0,
+      "y": 7700
+    },
+    "PaginaAdultoCelular.dc.html": {
+      "h": 8000,
+      "title": "Página 1 · no celular",
+      "w": 390,
+      "x": 1520,
+      "y": 7700
+    },
+    "PaginaMenor9.dc.html": {
+      "expand": "fill",
+      "h": 8000,
+      "title": "Página 3 · Criança menor de 9, criando junto",
+      "w": 1440,
+      "x": 3980,
+      "y": 7700
+    },
+    "PaginaMenor9Celular.dc.html": {
+      "h": 8000,
+      "title": "Página 3 · no celular",
+      "w": 390,
+      "x": 5500,
+      "y": 7700
+    },
+    "Publicos.dc.html": {
+      "expand": "fill",
+      "h": 7200,
+      "title": "Os 3 públicos: dores, desejos, objeções e argumentos",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "QuizAdultoResultado.dc.html": {
+      "expand": "fill",
+      "h": 2720,
+      "title": "Quiz adulto · resultado (perfil B, a ideia)",
+      "w": 1440,
+      "x": 0,
+      "y": 21720
+    },
+    "QuizAdultoResultadoCelular.dc.html": {
+      "h": 3830,
+      "title": "Quiz adulto · resultado no celular",
+      "w": 390,
+      "x": 1520,
+      "y": 21720
+    },
+    "QuizAdultoTelas.dc.html": {
+      "expand": "fill",
+      "h": 4160,
+      "title": "Quiz adulto · telas",
+      "w": 1440,
+      "x": 3040,
+      "y": 16600
+    },
+    "QuizMenor9Resultado.dc.html": {
+      "expand": "fill",
+      "h": 2620,
+      "title": "Quiz infantil · resultado menor de 9 (perfil B, filha)",
+      "w": 1440,
+      "x": 3980,
+      "y": 21720
+    },
+    "QuizMenor9ResultadoCelular.dc.html": {
+      "h": 3610,
+      "title": "Quiz infantil · resultado menor de 9 no celular",
+      "w": 390,
+      "x": 5500,
+      "y": 21720
+    },
+    "QuizMenorResultado.dc.html": {
+      "expand": "fill",
+      "h": 2620,
+      "title": "Quiz infantil · resultado 9 a 17 (perfil B, filha de 13 a 17)",
+      "w": 1440,
+      "x": 1990,
+      "y": 21720
+    },
+    "QuizMenorResultadoCelular.dc.html": {
+      "h": 3730,
+      "title": "Quiz infantil · resultado 9 a 17 no celular",
+      "w": 390,
+      "x": 3510,
+      "y": 21720
+    },
+    "QuizMenorTelas.dc.html": {
+      "expand": "fill",
+      "h": 4200,
+      "title": "Quiz infantil · telas (9 a 17 e menor de 9)",
+      "w": 1440,
+      "x": 4560,
+      "y": 16600
+    },
+    "QuizPlano.dc.html": {
+      "expand": "fill",
+      "h": 3940,
+      "title": "Quizzes · estratégia 1 de 2 (método, mapa, quiz adulto)",
+      "w": 1440,
+      "x": 0,
+      "y": 16600
+    },
+    "QuizPlanoInfantil.dc.html": {
+      "expand": "fill",
+      "h": 5020,
+      "title": "Quizzes · estratégia 2 de 2 (quiz infantil, resultado, código, decisões)",
+      "w": 1440,
+      "x": 1520,
+      "y": 16600
+    },
+    "VozDosPublicos.dc.html": {
+      "expand": "fill",
+      "h": 1760,
+      "title": "A voz de cada público: como a pessoa fala, o que sente, o que evita",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "TermosPrivacidade.dc.html": {
+      "x": 3040,
+      "y": 1860,
+      "w": 1440,
+      "h": 3380,
+      "title": "Termos, privacidade e nome da área adulta · proposta",
+      "expand": "fill"
+    },
+    "PaginaBio.dc.html": {
+      "x": 0,
+      "y": 26350,
+      "w": 1440,
+      "h": 900,
+      "title": "Página da bio do Instagram · proposta",
+      "expand": "fill"
+    },
+    "PaginaBioCelular.dc.html": {
+      "x": 1520,
+      "y": 26350,
+      "w": 390,
+      "h": 900,
+      "title": "Página da bio · no celular"
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-19T19:10:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "celular": {
+      "fill": "teal",
+      "text": "Os quadros de celular mostram a mesma página em 390 px, até 8.000 px de altura. Para rolar até o fim no celular, abra a versão de computador em tela cheia: o layout se ajusta à largura do aparelho.",
+      "w": 440,
+      "x": 5970,
+      "y": 9620
+    },
+    "colchetes": {
+      "fill": "orange",
+      "text": "Não restam colchetes nas páginas: o rodapé já usa a razão social e o CNPJ do funil atual. Modo Criador é uma sugestão de nome para a comunidade adulta. As outras pendências, como os Termos por público e o produto adulto no catálogo, estão no quadro Análise e estratégia, na seção Antes de publicar.",
+      "w": 440,
+      "x": 5970,
+      "y": 7700
+    },
+    "fotos": {
+      "text": "Fotos vindas do Instagram (destaque Quem somos): Helena e Júlio em casa nas páginas 2 e 3, e gravando aula na página do adulto. O retrato da Débora é a foto real enviada pela família, só reenquadrada no rosto. As fotos dos fundadores são as reais do Instagram, confirmadas pela dona em 19/10. Outras peças que dá para aproveitar depois: a cena da família no notebook (Da nossa casa para outras famílias) e as fotos reais do André com as medalhas.",
+      "w": 440,
+      "x": 5970,
+      "y": 12180
+    },
+    "lightcopy": {
+      "fill": "gray",
+      "text": "Light Copy conferida nas 3 páginas: sem travessão, exclamação, pergunta no gancho, 'não é X, é Y', 'mesmo que' ou 'sem precisar'. Uma antítese por página, no máximo. Perguntas aparecem só no FAQ. Nada de 100% seguro, carreira garantida, notas ou idade de quem lê.",
+      "w": 440,
+      "x": 5970,
+      "y": 10260
+    },
+    "mecanismo": {
+      "fill": "red",
+      "text": "Mecanismo da plataforma, integrado em 19/10 à noite nas 3 páginas e nos 3 resultados: a pessoa faz os cursos; cada curso deixa na caixa de ferramentas as peças (blocos) que ensinou; concluir e publicar sobe de posto e abre a ferramenta seguinte (Construtor: Estúdio livre e Pinta; Inventor: Pensa e ajuda do Zappy; Explorador: Molda e 3D; Gênio: Ponte; Lenda: código); com o que aprendeu, ela cria os próprios jogos em Meus Jogos, dentro da plataforma; quanto mais cursos, mais peças e jogos mais complexos; a liberação é progressiva de propósito. No 9 a 17 virou uma seção própria (Como funciona · no Estúdio dele), com a tela da Jornada e a tela Meus Jogos e o relato do Jeffrey como prova. No menor de 9 e no adulto, as seções de Jornada e de etapas foram reescritas em volta disso. Capturas que ainda faltam: Minhas ferramentas (as gavetas conquistadas, no perfil da criança) e a jornada adulta com as 7 etapas reais; a prévia adulta atual mostra 3 etapas de teste e por isso ficou fora. Revisão da noite: a seção do adulto virou três passos, a escada das 7 etapas com o que cada uma libera (nomes e liberações conforme o seed da jornada adulta de 19/10; se a configuração no Admin mudar, atualizar) e as três fases; Pensa e Zappy apresentados pela função, sem falar em IA. A auditoria das 243 afirmações está em ofertas-3-publicos/auditoria-afirmacoes.md; o que era editorial foi aplicado, o que depende de decisão (idades 9 a 17 e menor de 9 nos Termos e no quiz, nome e preço da área adulta, tela de título com o nome, fotos dos fundadores) ficou para a dona.",
+      "w": 440,
+      "x": 5970,
+      "y": 14100
+    },
+    "postos": {
+      "fill": "red",
+      "text": "Decidido em 19/10: as páginas descrevem o caminho completo, com as três fases (blocos, Ponte e código), porque a publicação em produção acontece junto com os cursos de todas as fases. Se algum curso atrasar, rever os trechos de Jornada e de código antes de publicar.",
+      "w": 440,
+      "x": 5970,
+      "y": 8980
+    },
+    "prova": {
+      "fill": "green",
+      "text": "Provas: só relatos reais com autorização e resultado concreto (regra 11 da Light Copy). A fala da Débora entra na página do menor de 9, com o retrato real e a identificação de aluna, como decidido para o Instagram; o parentesco aparece na faixa dos fundadores da mesma página. Idade confirmada pela dona em 19/10: 7 anos. Não existe relato de adulto, então essa página se apoia em demonstração e na trajetória dos fundadores. A fala do André aparece só na seção dos fundadores, onde o parentesco fica claro.",
+      "w": 440,
+      "x": 5970,
+      "y": 8340
+    },
+    "quiz": {
+      "fill": "blue",
+      "text": "Proposta de 19/10 para os dois quizzes, revisada no mesmo dia pela voz dos públicos. Método SPIN com resultado-ponte, como a v5 aprovada em 16/10. O quiz adulto é novo (pro/modo-criador); o infantil sobe para a v6 com a entrada por filho ou filha, depois a idade, e o ramo do menor de 9. Entradas mais curtas, com a motivação da pessoa na manchete e um botão; cada pergunta e cada opção é uma frase que a pessoa diria; o resultado virou uma conversa, com as respostas marcadas no texto, em vez de tópicos. A régua de cada frase está no quadro A voz de cada público, ao lado dos 3 públicos.",
+      "w": 440,
+      "x": 6080,
+      "y": 16600
+    },
+    "quiz2": {
+      "text": "Os três resultados mostram o perfil B (a ideia) com respostas de exemplo. Os outros perfis trocam o título, o porquê, o que muda e o botão; a estrutura é a mesma. As telas dos quadros de telas mostram uma opção marcada só na S3 do adulto, para registrar o estado.",
+      "w": 440,
+      "x": 6080,
+      "y": 21720
+    },
+    "review": {
+      "fill": "blue",
+      "text": "Review de 19/10 aplicado: barra fixa de compra no celular (aparece só abaixo de 760 px, em tela cheia), garantia embaixo de cada botão, passos do que acontece depois de assinar ao lado dos planos, preço por dia, botões Jogue um jogo feito aqui e por um aluno (destino a definir), objeção e se ele largar no FAQ, tela de título com SEU NOME no adulto, print do modo Ponte no topo de 9 a 17, fundadores em faixa própria, alternativas no FAQ, etapas do adulto fundidas nas 3 fases.",
+      "w": 440,
+      "x": 5970,
+      "y": 11540
+    },
+    "review2": {
+      "fill": "blue",
+      "text": "Review 2 de 19/10 aplicado: os jogos reais entram nas três páginas (faixa dos clássicos no adulto, faixa dos primeiros jogos no 9 a 17, farol, nave e dino no menor de 9); a aula adulta da Nave substitui o Criar no Como funciona; exemplos e cartões de regras amarrados aos jogos; telas maiores e botão Verificar esta parte no 9 a 17; falas de Daniel, Harle e Flávia; FAQs de desenhar, jogo próprio, mesma plataforma, 5 anos; página do menor de 9 falando sempre ela. Pendências novas estão no quadro Análise e estratégia.",
+      "w": 440,
+      "x": 5970,
+      "y": 12820
+    },
+    "review3": {
+      "fill": "blue",
+      "text": "Review 3 de 19/10 aplicado nas 3 páginas, pela voz dos públicos: a dor de 9 a 17 passa a ser a frase que o pai pensa (se ele usasse esse tempo para aprender alguma coisa), os cartões de o que muda viram cenas de casa (em vez de só jogar, ele faz; o jogo que ele inventa no jantar vira jogo de verdade; quando dá errado, ele tenta de novo), a página do menor de 9 fala da menina que inventa cada brincadeira e diz fui eu que fiz, e a do adulto abre com a engine fechada no mesmo dia. FAQ nova em cada página: não entendo de programação, app grátis, tenho mais de 30 anos.",
+      "w": 440,
+      "x": 5970,
+      "y": 13460
+    },
+    "telas": {
+      "fill": "purple",
+      "text": "As telas da página do adulto são prévias da área adulta com dados de teste. Trocar por capturas de produção antes de publicar.",
+      "w": 440,
+      "x": 5970,
+      "y": 10900
+    },
+    "titulo1": {
+      "kind": "title1",
+      "maxW": 2960,
+      "text": "Análise, posicionamento e públicos",
+      "w": 240,
+      "x": 0,
+      "y": -320
+    },
+    "titulo2": {
+      "kind": "title1",
+      "maxW": 5890,
+      "text": "As 3 páginas de oferta, com a versão de celular ao lado",
+      "w": 240,
+      "x": 0,
+      "y": 7380
+    },
+    "titulo3": {
+      "kind": "title1",
+      "maxW": 5890,
+      "text": "Os dois quizzes: estratégia, telas e resultados",
+      "w": 240,
+      "x": 0,
+      "y": 16280
+    },
+    "voz": {
+      "text": "Quadro novo de 19/10: a voz de cada público, montada com as falas reais dos relatos, os comentários do Instagram, a pesquisa de públicos e as buscas de hoje. É a régua usada para reescrever as páginas e os quizzes: toda frase tem que ser algo que a pessoa diria, e não a descrição tecnicamente correta do produto. O que ainda falta: entrevistas com pais de menores de 9 e com adultos que nunca programaram, antes de fechar a copy de produção.",
+      "w": 440,
+      "x": 4560,
+      "y": 0
+    },
+    "legal": {
+      "x": 4560,
+      "y": 1860,
+      "w": 440,
+      "fill": "yellow",
+      "text": "Proposta de 19/10, à noite, a pedido da dona: um Termo por oferta (Desafio, Comunidade Kids, Comunidade adultos), uma Política de Privacidade única com capítulos por público, e o nome da área adulta. Recomendação: Comunidade dos Criadores para os dois, com Kids como qualificador. Decidido no mesmo dia: o nome na tela de título é legítimo (a pessoa escreve o próprio nome num texto de HUD), e as páginas voltaram a dizer isso. Não é texto jurídico pronto: a redação final pede revisão de quem assina por ela."
+    },
+    "titulo4": {
+      "x": 0,
+      "y": 26030,
+      "kind": "title1",
+      "maxW": 5890,
+      "w": 240,
+      "text": "A página da bio do Instagram: uma decisão só"
+    },
+    "bio": {
+      "x": 1990,
+      "y": 26350,
+      "w": 440,
+      "fill": "yellow",
+      "text": "Proposta de 19/10 para a raiz do funil, o link da bio. A página de hoje tem logo Kids, avatar, título longo, parágrafo, chip 9 a 14, três botões, vitrine de três telas com o Zappy e links legais: dez coisas para uma decisão. A proposta tem seis: a foto real de Helena e Júlio (a mesma da bio atual), uma linha de quem são, o posicionamento Criar jogos não tem idade, a frase que explica o que acontece ao tocar, e os dois caminhos: É para mim (18 ou mais, quiz adulto, cartão escuro no estilo da página adulta) e É para meu filho ou filha (9 a 17 ou menor de 9 criando junto, quiz infantil, cartão branco no estilo Kids). A linha \"já conhece\" saiu da bio em 19/10, porque só servia a um dos três públicos, e não entrou no quiz: decisão da dona, nenhuma tela antes do resultado cita oferta, senão o quiz perde o sentido para quem não conhece. Quem já conhece toca no mesmo cartão e chega à oferta pelo resultado, ou pelos links que já tem. O Desafio continua acessível pela página de planos. Sem telas, sem Zappy, sem chip de idade. Implementação: src/pages/index.astro e content/home-comunidade.ts; os cartões levam data-analytics-id (bio-quiz-adulto, bio-quiz-infantil) e o link do quiz adulto depende do nome da área (pro/comunidade-dos-criadores ou pro/modo-criador). Links legais: Termos e Política conforme o quadro de Termos."
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Publicos.dc.html",
+    "VozDosPublicos.dc.html",
+    "TermosPrivacidade.dc.html",
+    "PaginaAdulto.dc.html",
+    "PaginaAdultoCelular.dc.html",
+    "Pagina917.dc.html",
+    "Pagina917Celular.dc.html",
+    "PaginaMenor9.dc.html",
+    "PaginaMenor9Celular.dc.html",
+    "QuizPlano.dc.html",
+    "QuizPlanoInfantil.dc.html",
+    "QuizAdultoTelas.dc.html",
+    "QuizMenorTelas.dc.html",
+    "QuizAdultoResultado.dc.html",
+    "QuizAdultoResultadoCelular.dc.html",
+    "QuizMenorResultado.dc.html",
+    "QuizMenorResultadoCelular.dc.html",
+    "QuizMenor9Resultado.dc.html",
+    "QuizMenor9ResultadoCelular.dc.html",
+    "PaginaBio.dc.html",
+    "PaginaBioCelular.dc.html"
+  ],
+  "pages": [],
+  "title": "Três páginas de oferta · proposta"
+}
