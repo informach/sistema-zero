@@ -24,6 +24,7 @@
       "!output/instagram",
       "!docs/marketing/**/instagram/producao",
       "!docs/marketing/**/instagram/historico",
+      "!docs/marketing/comunidade-dos-criadores/proposta-2026-10-19",
       "!**/.agents",
       "!**/.claude",
       "!.audits"
