@@ -23,5 +23,24 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-railway
+      - name: Conferir integridade e identidade da chave CI sem revelar a chave
+        shell: bash
+        run: |
+          set -euo pipefail
+          identity="$RUNNER_TEMP/railway-ci-probe-key"
+          public="$RUNNER_TEMP/railway-ci-probe-key.pub"
+          trap 'rm -f "$identity" "$public"' EXIT
+          printf '%s' "$RAILWAY_SSH_PRIVATE_KEY" > "$identity"
+          chmod 600 "$identity"
+          if ! ssh-keygen -y -P '' -f "$identity" > "$public" 2>/dev/null; then
+            echo '{"kind":"railway-ci-identity","status":"private-key-unreadable"}'
+            exit 1
+          fi
+          fingerprint="$(ssh-keygen -lf "$public" | awk '{print $2}')"
+          if [ "$fingerprint" != 'SHA256:yCNyn11FXb3L9Zo/rubhAJBtZT803B5v8jOeUybi/54' ]; then
+            echo '{"kind":"railway-ci-identity","status":"unexpected-public-key"}'
+            exit 1
+          fi
+          echo '{"kind":"railway-ci-identity","status":"matches-documented-key"}'
       - name: Provar o deployment atual sem alterar serviços
         run: node scripts/ci/kids-journey-rollout.mjs preflight "$GITHUB_SHA"
