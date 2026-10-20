@@ -259,7 +259,7 @@ function ProtectedPythonCandidate({
             : status === 'expired'
               ? 'A prévia venceu. Renove a prévia na proposta.'
               : incompatible
-                ? 'Esta prévia precisa ser atualizada. Continue em Jogo atual ou peça ajuda ao professor. Seu código está preservado.'
+                ? 'Esta prévia precisa ser atualizada. Continue em Jogo atual ou peça ajuda à equipe. Seu código está preservado.'
                 : 'Não foi possível abrir esta prévia. Consulte a proposta e tente novamente.'}
         </p>
       )}

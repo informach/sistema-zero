@@ -153,6 +153,7 @@ test('legacy selected preview cannot invoke authorization or attach an old launc
   expect(f.calls()).toBe(0)
   expect(f.stores.project.getState().project).toBe(f.f.project)
   expect(screen.getByRole('status').textContent).toContain('Continue em Jogo atual')
+  expect(screen.getByRole('status').textContent).toContain('peça ajuda à equipe')
 })
 
 test('forged selected support cannot mount an authorized historical reference', async () => {

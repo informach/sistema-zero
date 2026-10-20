@@ -136,10 +136,14 @@ export default defineConfig({
               // shared by every editor mode and absent from the project list; its separate
               // Studio/IR counterpart retains automatic splitting. Resolve the package rather
               // than depending on an installer store layout or repeating Core's version.
+              // The catalog's provided-module schemas and text renderers belong to this same
+              // boundary; splitting them with projectFactory creates a chunk initialization cycle.
+              // Material metadata, byte manifests and bounded GLB facts share the asset boundary.
+              // Keep Pro examples/operations, renderers and Python payloads outside it.
               name: 'studio-editor-contracts',
               test: new RegExp(
                 [
-                  /(?:[\\/]src[\\/](?:monaco[\\/]modelPaths|core[\\/](?:assetBinary|project|blankProject|projectAssets|proPaths|proAssetPaths|proProject)|creations[\\/]content-fingerprint|preview[\\/](?:limits|scriptIntegrity|types)|studio[\\/](?:observation|code-observation|pro-runtime|pro-revision|runtime-environment|layoutContext|portable-path|python-learning|python-source-positions|python-material-policy)|state[\\/]pythonProjectLayout|runtime[\\/]types|hooks[\\/](?:useMeasuredWidth|useDebounced)|components[\\/](?:layout[\\/](?:TabStrip|layoutBreakpoints)|preview[\\/]playerOriginAdapter|assets[\\/]has3DConsumer))\.tsx?$|[\\/]core[\\/]src[\\/]studio[\\/](?:project-identity|project-environment|runtime-catalog|python-preview-input|python-preview-reference|pro-artifact)\.ts$|[\\/]studio[\\/]src[\\/]runtime[\\/]python[\\/]turtle[\\/]contract\.ts$|[\\/]zustand[\\/]esm[\\/](?:vanilla|react)[\\/]shallow\.mjs$)/
+                  /(?:[\\/]src[\\/](?:monaco[\\/]modelPaths|core[\\/](?:assetBinary|project|blankProject|projectAssets|pintaImageAsset|proAssets|proModelMetadata|proPaths|proAssetPaths|proProject)|creations[\\/]content-fingerprint|preview[\\/](?:limits|scriptIntegrity|types)|studio[\\/](?:observation|code-observation|pro-runtime|pro-revision|runtime-environment|examples-visibility|layoutContext|portable-path|python-learning|python-source-positions|python-material-policy)|state[\\/]pythonProjectLayout|runtime[\\/]types|hooks[\\/](?:useMeasuredWidth|useDebounced)|components[\\/](?:layout[\\/](?:TabStrip|layoutBreakpoints)|preview[\\/]playerOriginAdapter|assets[\\/]has3DConsumer))\.tsx?$|[\\/]core[\\/]src[\\/]studio[\\/](?:project-identity|pinta-image|project-environment|runtime-catalog|python-provided-modules|python-provided-modules-render|python-preview-input|python-preview-reference|pro-artifact)\.ts$|[\\/]studio[\\/]src[\\/]runtime[\\/]python[\\/]turtle[\\/]contract\.ts$|[\\/]zustand[\\/]esm[\\/](?:vanilla|react)[\\/]shallow\.mjs$)/
                     .source,
                   coreZodModules.source,
                 ].join('|'),
