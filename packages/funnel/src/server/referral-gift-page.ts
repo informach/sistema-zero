@@ -1,15 +1,29 @@
-import type { ReferralGiftView } from '@sistemazero/core/referrals'
+import {
+  type GiftAudience,
+  isGiftAudience,
+  type ReferralGiftView,
+} from '@sistemazero/core/referrals'
 import type { GatewayClient } from '../lib/gateway-client'
+
+/** O presente resolvido, com o público sempre preenchido (a página escolhe o corpo por ele). */
+export type ResolvedGiftView = ReferralGiftView & { audience: GiftAudience }
 
 export type ReferralGiftPage =
   | {
       kind: 'ready' | 'preparing' | 'scheduled' | 'paused' | 'ended'
       referrerName: string
-      gift: ReferralGiftView
+      audience: GiftAudience
+      gift: ResolvedGiftView
     }
   | { kind: 'not_found' | 'unavailable' }
 
-/** Never expose the claim form without an explicit availability confirmation. */
+/**
+ * Never expose the claim form without an explicit availability confirmation.
+ *
+ * O público vem do código (20/10/2026): ausente = `kids` (respostas anteriores ao presente
+ * adulto); um valor desconhecido falha fechado, porque abrir a página do público errado
+ * mostraria o curso e o cadastro de outro produto.
+ */
 export async function resolveReferralGiftPage(
   gateway: Pick<GatewayClient, 'resolveReferralCode'>,
   code: string,
@@ -21,7 +35,9 @@ export async function resolveReferralGiftPage(
   if (result.status !== 200) return { kind: 'unavailable' }
 
   const body = legacyGiftView(result.body as Partial<ReferralGiftView> | null)
+  const audience: unknown = body?.audience ?? 'kids'
   if (
+    !isGiftAudience(audience) ||
     body?.code !== code ||
     typeof body?.displayName !== 'string' ||
     !body.displayName.trim() ||
@@ -45,7 +61,8 @@ export async function resolveReferralGiftPage(
   return {
     kind: body.state === 'active' ? (body.giftAvailable ? 'ready' : 'preparing') : body.state,
     referrerName: body.displayName.trim(),
-    gift: body as ReferralGiftView,
+    audience,
+    gift: { ...(body as ReferralGiftView), audience },
   }
 }
 

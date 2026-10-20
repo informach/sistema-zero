@@ -1,6 +1,10 @@
 import type { CampaignAuditView, CampaignInput, CampaignView } from '@sistemazero/core/referrals'
 import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm'
-import { CampaignConflictError, type CampaignRecord } from '../../../domain/campaign'
+import {
+  CampaignAudienceLockedError,
+  CampaignConflictError,
+  type CampaignRecord,
+} from '../../../domain/campaign'
 import type { CampaignRepository } from '../../../domain/ports/campaign-repository.port'
 import type { Database } from './db'
 import { escapeLike, isUniqueViolation } from './pg-errors'
@@ -25,6 +29,7 @@ function values(input: CampaignInput) {
     startsAt: new Date(input.startsAt),
     endsAt: new Date(input.endsAt),
     channel: input.channel,
+    audience: input.audience ?? 'kids',
   }
 }
 
@@ -45,6 +50,8 @@ export class DrizzleCampaignRepository implements CampaignRepository {
           ownerKind: 'campaign',
           campaignId: campaign.id,
           displayName: input.publicTitle,
+          // O código espelha o público da campanha (leituras por código não dependem do JOIN).
+          audience: campaign.audience,
         })
         await tx.insert(campaignHistory).values({
           campaignId: campaign.id,
@@ -70,18 +77,36 @@ export class DrizzleCampaignRepository implements CampaignRepository {
       const [previous] = await tx.select().from(campaigns).where(eq(campaigns.id, id)).for('update')
       if (!previous) return null
       if (previous.updatedAt.toISOString() !== expectedUpdatedAt) throw new CampaignConflictError()
+      // Conferido de novo sob o lock: o serviço já recusou, mas a publicação pode ter
+      // acontecido entre a leitura dele e esta transação.
+      const audience = input.audience ?? previous.audience
+      if (previous.status !== 'draft' && audience !== previous.audience)
+        throw new CampaignAudienceLockedError()
       const [code] = await tx.select().from(codes).where(eq(codes.campaignId, id))
       if (!code) return null
+      if (audience !== previous.audience) {
+        // Rascunho que já foi publicado (active → draft) pode ter resgates: o público deles
+        // não muda, então o da campanha também não.
+        const [used] = await tx
+          .select({ id: scholarshipRedemptions.id })
+          .from(scholarshipRedemptions)
+          .where(eq(scholarshipRedemptions.codeId, code.id))
+          .limit(1)
+        if (used) throw new CampaignAudienceLockedError()
+      }
       const [updated] = await tx
         .update(campaigns)
         .set({
-          ...values(input),
+          ...values({ ...input, audience }),
           updatedAt: new Date(Math.max(Date.now(), previous.updatedAt.getTime() + 1)),
         })
         .where(eq(campaigns.id, id))
         .returning()
       if (!updated) return null
-      await tx.update(codes).set({ displayName: input.publicTitle }).where(eq(codes.campaignId, id))
+      await tx
+        .update(codes)
+        .set({ displayName: input.publicTitle, audience: updated.audience })
+        .where(eq(codes.campaignId, id))
       const before = {
         ...record(previous, code.code),
         startsAt: previous.startsAt.toISOString(),

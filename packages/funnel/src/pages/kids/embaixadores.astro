@@ -1,22 +1,27 @@
 ---
+// Página pública do programa de embaixadores. Desde 20/10/2026 o embaixador dá o presente a uma
+// família (Kids) ou a um adulto, cada um com o próprio link; a experiência detalhada abaixo é a do
+// presente Kids, que a família convidada vê.
 import ComunidadeSection from '../../components/funnel/oferta/ComunidadeSection.astro'
 import ComunidadeVisual from '../../components/funnel/oferta/ComunidadeVisual.astro'
 import EmbaixadorDuvidas from '../../components/referrals/EmbaixadorDuvidas.astro'
 import PresenteDuvidas from '../../components/referrals/PresenteDuvidas.astro'
 import PresenteExperiencia from '../../components/referrals/PresenteExperiencia.astro'
-import PresenteLayout from '../../components/referrals/PresenteLayout.astro'
+import ProgramaLayout from '../../components/referrals/ProgramaLayout.astro'
 import { AMBASSADOR_SECTIONS } from '../../content/presente'
 import { getEnv } from '../../lib/env'
 export const prerender = false
-const parentUrl = `${getEnv().KIDS_COMMUNITY_URL.replace(/\/$/, '')}/pais/conta#embaixador`
-const action = { href: parentUrl, label: 'Entrar na minha conta de responsável' }
+const env = getEnv()
+const parentUrl = `${env.KIDS_COMMUNITY_URL.replace(/\/$/, '')}/pais/conta#embaixador`
+// A seção Embaixador de Meu perfil no app adulto (`AmbassadorSection`, `id="embaixador"`).
+const adultUrl = `${env.COMMUNITY_URL.replace(/\/$/, '')}/perfil#embaixador`
 ---
-<PresenteLayout title="Seja embaixador do Sistema Zero" description="Ofereça a outra família um começo para criar com tecnologia: sete dias gratuitos do Cadê Todo Mundo?." action={{ href: '#participar', label: 'Quero participar' }} noindex={false}>
-  <section class="hero section"><div class="wrap hero-grid"><div class="hero-copy"><span class="kof-eyebrow">Embaixadores do Sistema Zero</span><h1 class="kof-display">Ofereça a outra família um começo para <em>criar com tecnologia.</em></h1><p class="kof-lead">Talvez você conheça uma criança que adore jogos e queira descobrir como eles funcionam. Pelo seu convite, a família dela recebe sete dias do Cadê Todo Mundo?, um curso para montar as regras de uma brincadeira de procurar personagens.</p><div class="gift-prose"><p>Você recebe um link próprio. A página mostra a experiência e orienta o responsável a começar com a criança, gratuitamente, sem cartão e sem assinatura automática.</p></div><div class="hero-actions"><a class="kof-btn kof-btn--grande" href="#participar">Quero fazer esse convite</a><a class="kof-link" href="#experiencia">Conhecer o presente</a></div></div><ComunidadeVisual visual="aula-estudio" imagesBase="/img/comunidade-dos-criadores" eager /></div></section>
+<ProgramaLayout title="Seja embaixador | Sistema Zero" description="Dê 7 dias no Sistema Zero, sem custo para quem recebe, a uma família com criança de 9 a 14 anos ou a um adulto que quer criar o próprio jogo." action={{ href: '#participar', label: 'Quero participar' }} noindex={false}>
+  <section class="hero section"><div class="wrap hero-grid"><div class="hero-copy"><span class="kof-eyebrow">Embaixadores do Sistema Zero</span><h1 class="kof-display">Dê um primeiro jogo de presente a uma família <em>ou a um adulto.</em></h1><p class="kof-lead">Talvez você conheça uma criança de 9 a 14 anos que adora jogos e quer descobrir como eles funcionam. Ou um adulto que cresceu jogando e sempre quis fazer o próprio jogo. Pelo seu convite, a pessoa recebe 7 dias do Cadê Todo Mundo e do Mural, na versão do público dela.</p><div class="gift-prose"><p>Você recebe um link para cada público. Cada link leva a uma página feita para quem recebe e orienta o cadastro: no Kids, o responsável começa com a criança; no adulto, a própria pessoa se cadastra. É gratuito, sem cartão e sem assinatura automática.</p></div><div class="hero-actions"><a class="kof-btn kof-btn--grande" href="#participar">Quero fazer esse convite</a><a class="kof-link" href="#experiencia">Conhecer o presente Kids</a></div></div><ComunidadeVisual visual="aula-estudio" imagesBase="/img/comunidade-dos-criadores" eager /></div></section>
   {AMBASSADOR_SECTIONS.map((section, index) => <ComunidadeSection section={section} index={index} imagesBase="/img/comunidade-dos-criadores" />)}
-  <PresenteExperiencia ambassador action={{ href: '#participar', label: 'Quero participar como embaixador' }} />
-  <section id="participar" class="section cor-azul fundo-alt"><div class="wrap gift-form-wrap"><span class="kof-eyebrow">Para responsáveis por alunos</span><h2 class="kof-h2">Seu convite começa na Área dos pais.</h2><div class="gift-prose"><p>Entre na sua conta de responsável, abra a Área dos pais, clique em Conta e procure o cartão Seja um embaixador do Sistema Zero. Ao participar, você recebe seu link público do presente e o acesso ao painel para compartilhar e acompanhar os resgates. Não é necessário criar outra conta.</p><p>Quem já participa encontra o painel no mesmo cartão ou no e-mail com o link pessoal. Não compartilhe esse endereço privado: o convite da outra família tem um link próprio dentro do painel.</p><p>Se uma família que resgatou pelo seu link contratar uma oferta elegível da Comunidade, pode haver um bônus de indicação após a garantia e a conferência da compra. O painel informa o valor vigente e permite cadastrar sua chave Pix. O curso gratuito por si só não gera bônus, e não há promessa de renda.</p></div><a class="kof-btn" href={action.href}>{action.label}</a></div></section>
+  <PresenteExperiencia action={{ href: '#participar', label: 'Quero participar como embaixador' }} />
+  <section id="participar" class="section cor-azul fundo-alt"><div class="wrap gift-form-wrap"><span class="kof-eyebrow">Para quem já tem conta</span><h2 class="kof-h2">O seu convite começa na sua conta.</h2><div class="gift-prose"><p>No app adulto, abra Meu perfil e a seção Embaixador. Na área Kids, entre como responsável, abra a Área dos pais, clique em Conta e procure o cartão Seja um embaixador do Sistema Zero. Ao participar, você recebe os seus links públicos do presente e o acesso ao painel para compartilhar e acompanhar os resgates. Não é preciso criar outra conta.</p><p>Quem já participa encontra o painel no mesmo lugar ou no e-mail com o link pessoal. Não compartilhe esse endereço privado: o convite de quem recebe tem um link próprio dentro do painel.</p><p>Se alguém que resgatou pelo seu link contratar uma oferta elegível da Comunidade dos Criadores, Kids ou adulta, pode haver um bônus de indicação após a garantia e a conferência da compra. O painel informa o valor vigente e permite cadastrar a sua chave Pix. O curso gratuito por si só não gera bônus, e não há promessa de renda.</p></div><div class="hero-actions"><a class="kof-btn" href={adultUrl}>Entrar no app adulto</a><a class="kof-btn" href={parentUrl}>Entrar na Área dos pais</a></div></div></section>
   <EmbaixadorDuvidas />
-  <PresenteDuvidas ambassador />
-  <div class="wrap gift-cta"><a class="kof-btn" href={action.href}>Participar pela Área dos pais</a><p>O cadastro e o convite são feitos pelo adulto responsável.</p></div>
-</PresenteLayout>
+  <PresenteDuvidas />
+  <div class="wrap gift-cta"><a class="kof-btn" href="#participar">Quero participar</a><p>O cadastro de quem recebe é feito pela própria pessoa ou, no Kids, pelo responsável.</p></div>
+</ProgramaLayout>

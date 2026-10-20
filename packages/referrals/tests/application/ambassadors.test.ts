@@ -3,7 +3,7 @@ import { AmbassadorAdminService } from '../../src/application/ambassadors/ambass
 import type { SendEmailInput } from '../../src/domain/ports/gateway.port'
 import { FakeReferralsGateway, InMemoryReferralRepository, silentLogger } from '../fakes/in-memory'
 
-const OPTS = { funnelPublicUrl: 'https://sistemazero.com.br' }
+const OPTS = { funnelPublicUrl: 'https://sistemazero.com.br', adultGiftEnabled: true }
 
 describe('AmbassadorAdminService', () => {
   let repo: InMemoryReferralRepository
@@ -83,6 +83,7 @@ describe('AmbassadorAdminService', () => {
     const created = await service.create({ name: 'Vó Cida', email: 'cida@example.com' })
     if (created.kind !== 'created') throw new Error('setup')
     await repo.insertRedemption({
+      audience: 'kids',
       codeId: repo.codes[0]!.id,
       email: 'p@example.com',
       name: 'Paula',

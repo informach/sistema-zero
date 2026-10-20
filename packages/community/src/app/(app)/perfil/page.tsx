@@ -4,6 +4,7 @@ import { paletteValueOf } from '@sistemazero/member-shell/lib/palette-cookie'
 import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { cookies } from 'next/headers'
 import { PageBody } from '@/components/community/page'
+import { AmbassadorSection } from '@/components/community/profile/ambassador-section'
 import { AvatarSection } from '@/components/community/profile/avatar-section'
 import { ProfileNav } from '@/components/community/profile/profile-nav'
 import { PublicProfileSettings } from '@/components/community/public-profile-settings'
@@ -11,6 +12,7 @@ import { PersonAvatar } from '@/components/community/user-menu'
 import { PALETTE_COOKIE } from '@/lib/cookies'
 import { getMeReadonly } from '@/server/auth'
 import { getAvatarReadonly } from '@/server/members'
+import { isOwnAdultAccountSession } from '@/server/own-account'
 import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
 import { PasswordSection, PersonalDataSection } from './profile-client'
@@ -46,11 +48,21 @@ export default async function ProfilePage() {
     status === 200 && body?.user ? body.user : session ? { ...session, phone: undefined } : null
 
   if (!user) return null
-  const [preferences, progress, avatar] = await Promise.all([
+  const [preferences, progress, avatar, ambassador] = await Promise.all([
     shell.members.getAdultProfileReadonly().catch(() => null),
     shell.members.getGamificationReadonly().catch(() => null),
     getAvatarReadonly().catch(() => null),
+    // Embaixador (20/10/2026): best effort, como o cartão do Kids. Sem resposta do serviço, a
+    // seção e o atalho somem; o resto do perfil segue igual. Só a conta adulta própria lê: numa
+    // sessão de suporte a resposta traria o `pageUrl`, a capability-URL que troca a chave Pix.
+    isOwnAdultAccountSession(session)
+      ? shell.members.getAmbassadorEnrollmentReadonly().catch(() => null)
+      : null,
   ])
+  const ambassadorView =
+    ambassador?.status === 200 && ambassador.body && typeof ambassador.body.enrolled === 'boolean'
+      ? ambassador.body
+      : null
   const aiAvailable = progress?.body?.journey?.capabilities.includes('ai') === true
   const pensaUnlocked = progress?.body?.journey?.capabilities.includes('pensa') === true
   // Ler o saldo não consome crédito; só vale a ida quando a seção aparece.
@@ -86,7 +98,7 @@ export default async function ProfilePage() {
         </div>
       </section>
       <PageBody className="lg:flex-row lg:items-start lg:gap-8">
-        <ProfileNav showAi={aiAvailable} />
+        <ProfileNav showAi={aiAvailable} showAmbassador={ambassadorView !== null} />
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <AvatarSection user={person} />
           <PersonalDataSection user={user} readOnly={readOnly} />
@@ -127,6 +139,7 @@ export default async function ProfilePage() {
                 : null
             }
           />
+          {ambassadorView ? <AmbassadorSection initial={ambassadorView} /> : null}
           <PasswordSection impersonating={Boolean(session?.act)} />
         </div>
       </PageBody>

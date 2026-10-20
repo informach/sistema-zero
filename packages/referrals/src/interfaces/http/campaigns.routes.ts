@@ -18,6 +18,8 @@ const campaignBody = t.Object({
     t.Literal('ended'),
   ]),
   channel: t.String({ maxLength: 100 }),
+  /** Ausente = `kids` na criação; na edição e na duplicata mantém o público gravado. */
+  audience: t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')])),
 })
 const idParams = t.Object({ id: t.String({ format: 'uuid' }) })
 const campaignUpdateBody = t.Object({

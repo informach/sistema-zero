@@ -1,5 +1,41 @@
 # CLAUDE.md — @sistemazero/members
 
+## Presente adulto: curso + Mural adulto de 7 dias (20/10/2026)
+
+O presente (bolsa do @sistemazero/referrals) ganhou público: `kids` (o de sempre) ou `adult`
+(curso `cade-todo-mundo-adulto` + Mural adulto por 7 dias). Sem migration.
+
+- **Contrato (campo opcional, ausente = `kids`, chamadas antigas idênticas):**
+  `GET /members/webhooks/gift-course/:slug?audience=kids|adult` (`isPublishedGiftCourse`:
+  publicado + gravado + da audiência pedida; valor inválido → 400) e `audience` em
+  `POST /members/webhooks/grant-manual` nos modos `course` (`requirePublishedAudience`; curso de
+  outro público → 503 `COURSE_UNAVAILABLE`) e `mural_trial`. Respostas inalteradas. O HMAC assina o
+  pathname sem a query (régua do gateway).
+- **`mural_trial` adulto = as MESMAS guardas do Kids** (`sourceId` `scholarship:`, matrícula manual
+  ativa do curso da mesma origem, mesmo `expiresAt`, no máximo 7 dias), mas o curso precisa ser
+  adulto e a matrícula precisa ter nascido do presente adulto (`snapshot.giftAudience='adult'`;
+  snapshot sem o campo só vale para o Kids). Concede `adult-mural-dos-criadores` (sentinel `…0004`) até `expiresAt` + a visita
+  PERMANENTE `adult-mural-dos-criadores-visitante` (sentinel `…0005`), num `saveMany`
+  idempotente. Constantes em `domain/entitlement/mural-visitor.ts` (`MURAL_GIFT_ACCESS`,
+  derivadas de `creatorCommunityAccessRef`). Pedir o Mural Kids com curso adulto (ou o inverso) é
+  409. Presente Kids e adulto da mesma conta convivem (sentinels e `sourceId` distintos).
+- **Depois dos 7 dias, paridade com o Kids:** o jogo publicado fica na Mostra e o `/jogar` segue
+  abrindo (o Hub nunca olhou o acesso do autor); a visita adulta lê a Mostra sem interagir (Hub
+  `readConfig`, ver o CLAUDE.md do hub). A assinatura adulta NÃO ganhou visita permanente (o Kids
+  ganha pelo `subscription-visitor`): fora do escopo do presente.
+- **Público no snapshot:** o curso concedido pelo S2S grava `snapshot.giftAudience`
+  (`EntitlementSnapshot.giftAudience?`). Avisos de fim do presente leem o público do RESGATE
+  (qualquer linha do mesmo `source_id` com `giftAudience='adult'` ou chave do Mural adulto); linha
+  antiga sem nada disso é Kids.
+- **Avisos:** adulto manda `gift-expiry-2d-adult` (`nome`,`data`,`link`) e `gift-expired-adult`
+  (`nome`,`link`), link `accessEndedLink(…, 'adult', 'fim-do-presente', '2-dias'|'no-dia')`
+  (`/pro/comunidade-dos-criadores/oferta/continuar` + as mesmas UTMs), nome reserva `Aluno(a)`.
+  "Acesso mais forte" adulto = `all_courses`, assinatura `comunidade-dos-criadores-adulto-*` ou o
+  mesmo curso/Mural por outra via; Kids continua exatamente como antes (as chaves Kids e adultas
+  não se seguram entre si). Os templates são do Messaging (agente de referrals).
+- Testes: `tests/integration/adult-gift.test.ts`, `tests/unit/access-ended-messages.test.ts`,
+  `tests/db/access-ended-messages.repository.test.ts` ("presente adulto…").
+
 ## Jornada Kids configurável — modelo canônico isolado (18/10/2026)
 
 `kids-journey-repository.port.ts` e o adapter Drizzle adicionam snapshot read-only/batch,
@@ -170,7 +206,8 @@ e toda ferramenta caía no "Não consegui verificar agora…". Regra atual, numa
     a matrícula segue `status='active'`; `gift-expired` (`nome`,`link`) quando venceu nas últimas
     72 h. Um e-mail por resgate (curso
     + Mural temporário). Pula quem tem acesso mais forte e duradouro (chave-mestra Kids,
-    assinatura Kids ou o mesmo curso por outra via).
+    assinatura Kids ou o mesmo curso por outra via). Presente adulto: templates `-adult` e régua
+    adulta (ver "Presente adulto" no topo).
   - Assinatura da Comunidade (`subscription_id` + snapshot `offerSlug` em
     `COMMUNITY_SUBSCRIPTION_OFFER_SLUGS`): `status='expired'` com `updated_at` nas últimas 72 h
     (nunca avisa vencimentos antigos quando o job estreia), um e-mail por conta + assinatura,
@@ -1435,8 +1472,9 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   concessão manual S2S SEM pagamento. `GrantManualWebhookBody` aceita a oferta legada
   `{userId, mode:'offer', offerRef, expiresAt?, sourceId?}` ou o presente novo
   `{userId, mode:'course', courseRef, expiresAt?, sourceId?}`; os demais modos seguem
-  SÓ no admin JWT. No braço S2S de curso, o members exige curso kids `published`
-  (caso contrário, 503 `COURSE_UNAVAILABLE` sem marcar a entrega). A leitura assinada
+  SÓ no admin JWT. No braço S2S de curso, o members exige curso `published` da audiência
+  pedida (`audience`, padrão `kids`; ver "Presente adulto" no topo) (caso contrário, 503
+  `COURSE_UNAVAILABLE` sem marcar a entrega). A leitura assinada
   `GET /members/webhooks/gift-course/:slug` devolve `{available:boolean}` com a mesma
   regra, para o referrals bloquear o resgate antes de criar conta. Reusa o
   `GrantManualEntitlementService`, que ganhou `sourceId?` em TODOS os

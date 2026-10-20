@@ -1,5 +1,275 @@
 import type { ComunidadeSection } from '../funnels/comunidade-dos-criadores/oferta/types'
 
+/**
+ * Copy da página de recebimento do presente Kids (`/bolsa/<codigo>` com o público `kids`), revista
+ * no Canvas "Presente Kids e adulto · proposta" (quadro RecebimentoKids, aprovado em 20/10/2026).
+ * `PresenteOferta.astro` renderiza todo texto visível a partir daqui. `{{nome}}` é quem deu o
+ * presente (o embaixador ou o nome da campanha) e `{{data}}` uma data de Brasília.
+ */
+export interface ImagemPresente {
+  src: string
+  alt: string
+  width: number
+  height: number
+}
+
+/** Os estados da página sem formulário, com a etiqueta, o título e o texto de cada um. */
+export interface EstadoPresente {
+  etiqueta: string
+  titulo: string
+  texto: string
+}
+
+export interface EstadosPresente {
+  preparing: EstadoPresente
+  scheduled: EstadoPresente
+  paused: EstadoPresente
+  ended: EstadoPresente
+  /** O título do encerramento sem a data (convite pessoal, que não tem fim de campanha). */
+  endedSemData: string
+  retomar: { botao: string; texto: string }
+  naoEncontrado: EstadoPresente
+  foraDoAr: EstadoPresente
+  contato: string
+}
+
+const IMG_KIDS = '/img/comunidade-dos-criadores'
+
+export const PRESENTE_KIDS = {
+  seoTitle: 'Presente Cadê Todo Mundo | Sistema Zero',
+  description:
+    'Em 7 dias, seu filho faz um jogo de procurar personagens funcionar, com a explicação ao lado. Presente gratuito para crianças de 9 a 14 anos, sem cartão.',
+  previaTitle: 'Prévia da campanha | Sistema Zero',
+  pular: 'Ir para o conteúdo',
+  topo: {
+    logo: {
+      src: `${IMG_KIDS}/logo-kids-claro.svg`,
+      alt: 'Sistema Zero Kids',
+      width: 287,
+      height: 22,
+    } satisfies ImagemPresente,
+    marcaAria: 'Sistema Zero Kids, voltar ao topo',
+    navAria: 'Atalhos da página',
+    links: [
+      { href: '#jogo', label: 'O que ele faz' },
+      { href: '#duvidas', label: 'Antes de começar' },
+    ],
+    cta: 'Quero o presente',
+  },
+  origem: {
+    pessoal: 'Um presente de {{nome}} para a sua família',
+    evento: 'Um presente de {{nome}} para continuar em casa',
+    campanha: '{{nome}}',
+  },
+  previa:
+    'Prévia da campanha. Esta página demonstra a apresentação e não aceita cadastros. O link público da campanha respeita o estado e as datas configurados no Admin.',
+  hero: {
+    titulo: {
+      antes: 'Em 7 dias, seu filho faz um jogo de procurar personagens ',
+      destaque: 'funcionar.',
+    },
+    texto:
+      'No Cadê Todo Mundo, o jardim e os personagens já estão prontos. Seu filho acompanha a orientação, monta as regras que fazem os esconderijos sumirem e cada achado entrar na contagem. Depois, testa e vê o resultado no próprio jogo.',
+    beneficios: [
+      'Um primeiro projeto, com a explicação ao lado da atividade',
+      '7 dias de curso e de Mural, contados do cadastro',
+      'Gratuito, sem cartão e sem assinatura automática',
+    ],
+    cta: 'Quero o presente para meu filho',
+    link: 'Ver o que ele vai fazer',
+    requisitos:
+      'Para crianças de 9 a 14 anos · Computador com mouse e teclado · O cadastro pode ser feito pelo celular',
+    prazoCampanha:
+      'Novos cadastros até {{data}} (Brasília). Esse prazo é da campanha; cada família aceita tem os próprios 7 dias de curso.',
+    figura: {
+      rotulo: 'O jogo do presente',
+      imagem: {
+        src: `${IMG_KIDS}/jogo-cade.webp`,
+        alt: 'Cadê Todo Mundo: o jardim com o arbusto, a pedra, as flores e o contador de achados',
+        width: 1264,
+        height: 723,
+      } satisfies ImagemPresente,
+      zappy: {
+        src: `${IMG_KIDS}/zappy-fala.webp`,
+        alt: '',
+        width: 360,
+        height: 458,
+      } satisfies ImagemPresente,
+      destaque: 'O Zappy acompanha as fases.',
+      legenda: ' Ele fala o que fazer em cada passo, e seu filho confere se a regra funcionou.',
+    },
+  },
+  jogo: {
+    etiqueta: 'O que ele faz',
+    titulo: 'O personagem aparece quando a regra que ele montou funciona',
+    paragrafos: [
+      'Primeiro, ele explora a brincadeira de procurar quem está escondido no jardim. Depois, conhece a regra por trás dela: quando alguém toca no esconderijo, ele precisa sumir para revelar quem estava ali.',
+      'Ele monta o comando, testa e observa. Se o esconderijo continua no lugar, há algo para conferir. Quando a regra funciona, o personagem aparece. Mais adiante, ele faz o jogo contar cada achado.',
+    ],
+    nota: 'Em casa, peça para ele mostrar o que mudou e qual comando fez isso acontecer. Os dois conseguem ver a resposta no jogo.',
+    imagem: {
+      src: `${IMG_KIDS}/tela-regra-ligada.webp`,
+      alt: 'Fase do Cadê Todo Mundo: o toque no arbusto revela o coelho, com o Zappy explicando ao lado',
+      width: 1280,
+      height: 800,
+    } satisfies ImagemPresente,
+  },
+  aula: {
+    etiqueta: 'Como é uma aula',
+    titulo: 'A explicação fica ao lado do que ele está construindo',
+    imagem: {
+      src: `${IMG_KIDS}/tela-aula-estudio.webp`,
+      alt: 'Aula com o vídeo da orientação ao lado do Estúdio',
+      width: 1280,
+      height: 800,
+    } satisfies ImagemPresente,
+    passos: [
+      { titulo: 'Ver', texto: 'Ele assiste a um passo da orientação e pausa quando quiser.' },
+      { titulo: 'Fazer', texto: 'Faz a mesma ação no projeto, com os blocos ao lado do vídeo.' },
+      {
+        titulo: 'Conferir',
+        texto: 'Testa no jogo. Se algo não saiu, volta à explicação antes de seguir.',
+      },
+    ],
+    nota: 'As aulas são gravadas, sem horário de turma. Use um momento do tempo de computador que vocês já permitem e acompanhe o primeiro acesso para ver de que ajuda ele precisa.',
+  },
+  mural: {
+    etiqueta: 'O Mural dos Criadores',
+    titulo: 'Ele publica o jogo e manda o link para a família jogar',
+    paragrafos: [
+      'Nos 7 dias, ele publica no Mural o jogo que fez no curso. A aula 2 ensina o caminho. O link abre o jogo sem conta, para você, os avós e os amigos.',
+      'Ele também joga os jogos de outras crianças, comenta e reage. Ao cumprir as atividades de conclusão, recebe o certificado do curso.',
+    ],
+    imagem: {
+      src: `${IMG_KIDS}/tela-jogo-publicado.webp`,
+      alt: 'Página de um jogo publicado no Mural, aberta sem conta',
+      width: 1280,
+      height: 800,
+    } satisfies ImagemPresente,
+  },
+  plataforma: {
+    etiqueta: 'A plataforma por trás do presente',
+    titulo: 'O Cadê Todo Mundo é o primeiro projeto de uma plataforma inteira',
+    paragrafos: [
+      'No Sistema Zero Kids, os cursos seguem em sequência, cada um com um jogo. O Estúdio é onde as crianças montam os próprios jogos, o Mural mostra o que elas publicam, o Clube junta quem está criando e a equipe responde as dúvidas nos Recados. Cada curso concluído e publicado leva a um posto novo da Jornada do Criador.',
+      'O presente inclui o curso e o Mural por 7 dias. O resto faz parte da Comunidade dos Criadores, uma assinatura à parte, que vocês decidem depois, se quiserem.',
+    ],
+    imagem: {
+      src: `${IMG_KIDS}/familia-helena-julio-kids.webp`,
+      alt: 'Helena e Júlio, criadores do Sistema Zero, na foto e como personagens da plataforma',
+      width: 880,
+      height: 1019,
+    } satisfies ImagemPresente,
+  },
+  condicoes: {
+    etiqueta: 'O presente da sua família',
+    titulo: 'Um começo concreto, com condições claras',
+    cartoes: [
+      {
+        titulo: 'O curso por 7 dias',
+        texto: 'O Cadê Todo Mundo inteiro, contado a partir do cadastro.',
+      },
+      {
+        titulo: 'O Mural por 7 dias',
+        texto:
+          'Publicar, comentar e reagir. Depois, a conta continua vendo e jogando, e o link do jogo publicado segue no ar.',
+      },
+      {
+        titulo: 'Nenhum pagamento',
+        texto: 'Sem cartão. Quando os 7 dias terminam, nenhuma cobrança começa.',
+      },
+    ],
+    cta: 'Liberar o presente para minha família',
+  },
+  duvidas: {
+    titulo: 'Antes de começar com seu filho',
+    itens: [
+      {
+        pergunta: 'Ele precisa saber programar?',
+        resposta: 'Não. O curso começa com blocos, e cada parte é conferida antes da próxima.',
+      },
+      {
+        pergunta: 'Para qual idade é o presente?',
+        resposta: 'Para crianças e adolescentes de 9 a 14 anos que estão começando.',
+      },
+      {
+        pergunta: 'Funciona no celular ou no tablet?',
+        resposta:
+          'As atividades pedem um computador com internet, mouse e teclado. O cadastro pode ser feito pelo celular.',
+      },
+      {
+        pergunta: 'Quando os 7 dias começam?',
+        resposta:
+          'No cadastro. Escolha um momento em que ele possa usar o computador nos dias seguintes.',
+      },
+      {
+        pergunta: 'E se ele travar numa parte?',
+        resposta:
+          'Cada fase tem a explicação ao lado e o botão Preciso de ajuda, que leva a dúvida para a equipe nos Recados.',
+      },
+      {
+        pergunta: 'Posso resgatar mais de um presente?',
+        resposta:
+          'Cada e-mail resgata um presente Kids. Se você também receber um presente adulto, para criar o seu próprio jogo, pode usar o mesmo e-mail nele.',
+      },
+    ],
+  },
+  resgatar: {
+    etiqueta: 'O primeiro passo é do responsável',
+    titulo: 'Libere o presente e combine o primeiro momento com ele',
+    texto:
+      'Você cadastra a sua conta com os seus dados. Depois, já na plataforma, cria o perfil do seu filho e abre o curso no computador.',
+    previa:
+      'O formulário aparece no link público quando a campanha estiver aberta e o curso disponível. Nesta prévia, nenhum acesso é criado.',
+  },
+  barra: { titulo: 'Presente de 7 dias', texto: 'Sem cartão', cta: 'Quero o presente' },
+  estados: {
+    preparing: {
+      etiqueta: 'Cadastro ainda fechado',
+      titulo: 'O cadastro por este link ainda não abriu',
+      texto:
+        'Guarde esta página e volte em alguns dias. O presente vale 7 dias contados do cadastro, então nada se perde enquanto isso.',
+    },
+    scheduled: {
+      etiqueta: 'Cadastro ainda fechado',
+      titulo: 'O cadastro por este link abre em {{data}}',
+      texto:
+        'Guarde esta página e volte a partir dessa data. O presente vale 7 dias contados do cadastro.',
+    },
+    paused: {
+      etiqueta: 'Campanha pausada',
+      titulo: 'Os cadastros por este link estão pausados',
+      texto:
+        'Quem começou o cadastro antes pode retomar com o mesmo e-mail. Quem já recebeu o presente mantém o prazo informado no cadastro.',
+    },
+    ended: {
+      etiqueta: 'Campanha encerrada',
+      titulo: 'Os cadastros por este link terminaram em {{data}}',
+      texto:
+        'Quem começou o cadastro antes pode retomar com o mesmo e-mail. Quem recebeu o presente dentro do período mantém os 7 dias contados do cadastro.',
+    },
+    endedSemData: 'Os cadastros por este link terminaram',
+    retomar: {
+      botao: 'Já comecei o cadastro',
+      texto:
+        'Reenvie com o mesmo e-mail para retomar um cadastro aceito antes. Isso não abre um novo acesso nem reinicia o prazo.',
+    },
+    naoEncontrado: {
+      etiqueta: 'Link inválido',
+      titulo: 'Este convite não está disponível',
+      texto:
+        'Confira se o link foi copiado por inteiro. Se alguém mandou o convite para você, peça o link de novo.',
+    },
+    foraDoAr: {
+      etiqueta: 'Tente de novo',
+      titulo: 'Não conseguimos abrir o seu convite agora',
+      texto:
+        'Recarregue a página em alguns instantes. Isso não cria um cadastro nem começa o prazo do curso.',
+    },
+    contato: 'Falar com a equipe',
+  } satisfies EstadosPresente,
+}
+
 const section = (
   id: string,
   eyebrow: string,
@@ -21,9 +291,9 @@ export const GIFT_SECTIONS = [
   section(
     'experiencia',
     'Um jogo que ele ajuda a fazer funcionar',
-    'O personagem apareceu. O que seu filho fez para isso acontecer?',
+    'O personagem aparece quando a regra que seu filho montou funciona.',
     [
-      'No Cadê Todo Mundo?, seu filho começa explorando uma brincadeira de procurar personagens escondidos em um jardim. Depois, conhece uma das regras por trás dela: quando alguém toca no esconderijo, ele precisa desaparecer para revelar quem estava ali.',
+      'No Cadê Todo Mundo, seu filho começa explorando uma brincadeira de procurar personagens escondidos em um jardim. Depois, conhece uma das regras por trás dela: quando alguém toca no esconderijo, ele precisa desaparecer para revelar quem estava ali.',
       'A criança monta o comando, testa e observa. Se o esconderijo continua no lugar, há algo para conferir. Quando a regra funciona, o personagem aparece. Mais adiante, ela trabalha a contagem para o jogo registrar cada achado.',
       'Em casa, você pode pedir: “Me mostra o que mudou? Qual comando fez isso acontecer?”. A aprendizagem ganha um exemplo que os dois conseguem ver no jogo.',
     ],
@@ -75,7 +345,7 @@ export const GIFT_SECTIONS = [
     'Um jogo para compartilhar',
     'Ele cria o jogo. Depois, pode convidar a família para jogar.',
     [
-      'Durante os sete dias, seu filho pode publicar no Mural dos Criadores o jogo que fez no Cadê Todo Mundo?, seguindo as orientações e atividades do curso. A aula 2 ensina esse caminho. Depois de publicar, ele recebe um link para convidar você, os avós ou os amigos para jogar, sem que eles precisem de uma conta.',
+      'Durante os sete dias, seu filho pode publicar no Mural dos Criadores o jogo que fez no Cadê Todo Mundo, seguindo as orientações e atividades do curso. A aula 2 ensina esse caminho. Depois de publicar, ele recebe um link para convidar você, os avós ou os amigos para jogar, sem que eles precisem de uma conta.',
       'Nesse período, ele também pode conhecer os jogos de outras crianças, jogar, comentar e reagir. Você pode acompanhar esse momento: pedir que ele mostre uma regra que criou, experimentar o jogo e conversar sobre o que achou interessante em outra criação.',
       'Quando os sete dias terminam, o curso e as ações de publicar, comentar e reagir deixam de estar liberados por este convite. Sua conta continua podendo ver e jogar no Mural enquanto existir. O link do jogo que ele já publicou continua funcionando enquanto a publicação estiver disponível.',
       'O print mostra o Mural da plataforma. Fazer cópias dos jogos e usar ferramentas de criação livre depende dos acessos e das etapas da Comunidade; esses recursos não fazem parte do presente.',
@@ -87,7 +357,7 @@ export const GIFT_SECTIONS = [
     'Conheça nosso jeito de ensinar',
     'É gratuito para sua família experimentar de verdade.',
     [
-      'O Sistema Zero é uma plataforma de aprendizagem criativa. Crianças acompanham orientações, fazem atividades e testam suas ideias. Este convite oferece um começo concreto: o curso Cadê Todo Mundo? e a participação no Mural por sete dias, com visita ao Mural depois desse prazo.',
+      'O Sistema Zero é uma plataforma de aprendizagem criativa. Crianças acompanham orientações, fazem atividades e testam suas ideias. Este convite oferece um começo concreto: o curso Cadê Todo Mundo e a participação no Mural por sete dias, com visita ao Mural depois desse prazo.',
       'Queremos que você veja como seu filho participa dessa experiência antes de decidir se deseja continuar. O cadastro não pede cartão e não cria uma assinatura. Ao fim dos sete dias, o curso deixa de estar disponível por este presente; não começa uma cobrança.',
       'Se depois vocês quiserem seguir, existe a Comunidade dos Criadores, que reúne os outros cursos, as ferramentas de criação, o Clube, o Mural e as dúvidas respondidas pela equipe nos Recados. Essa assinatura é uma escolha separada do responsável. Você pode conhecer o presente agora sem assumir esse compromisso.',
     ],
@@ -111,7 +381,7 @@ export const GIFT_FAQ = [
     visual: 'aula',
     paragraphs: [
       'Não. Neste projeto, o jardim e os personagens já estão preparados. O trabalho da criança é montar e testar as regras que fazem a brincadeira funcionar.',
-      'Assim, ela pode se concentrar na programação sem precisar desenhar antes. O presente não é um curso de desenho e não libera o Pinta para uso livre.',
+      'Assim, ela pode se concentrar na programação, sem desenhar antes. O presente não é um curso de desenho e não libera o Pinta para uso livre.',
     ],
   },
   {
@@ -119,7 +389,7 @@ export const GIFT_FAQ = [
     question: 'Como saber se meu filho está pronto para experimentar?',
     visual: 'aula',
     paragraphs: [
-      'O Cadê Todo Mundo? é apresentado para crianças e adolescentes de 9 a 14 anos que estão começando. Além da idade, observe se seu filho consegue acompanhar uma instrução curta e usar mouse e teclado, sozinho ou com sua ajuda.',
+      'O Cadê Todo Mundo é apresentado para crianças e adolescentes de 9 a 14 anos que estão começando. Além da idade, observe se seu filho consegue acompanhar uma instrução curta e usar mouse e teclado, sozinho ou com sua ajuda.',
       'Se ele ainda precisa de companhia para ler ou encontrar os controles, reserve esse primeiro momento para fazerem juntos. Não é preciso chegar com experiência em criação de jogos.',
     ],
   },
@@ -158,7 +428,7 @@ export const GIFT_FAQ = [
     visual: 'pausa',
     paragraphs: [
       'O prazo começa no cadastro aceito por este link, não no primeiro vídeo assistido. Depois da liberação, a confirmação mostra a data e a hora de vencimento. Criar ou recuperar a senha mais tarde não reinicia esse prazo.',
-      'Se o convite faz parte de uma campanha, a data de encerramento dela é o limite para novos cadastros. Quem se cadastra dentro do prazo mantém seus sete dias, mesmo que a campanha termine no dia seguinte.',
+      'Se o convite faz parte de uma campanha, a data de encerramento dela é o limite para novos cadastros. Quem se cadastra dentro do prazo mantém os sete dias, ainda que a campanha termine no dia seguinte.',
     ],
   },
   {
@@ -175,8 +445,8 @@ export const GIFT_FAQ = [
     question: 'Meu filho pode publicar o jogo dele e compartilhar com a família?',
     visual: 'mural',
     paragraphs: [
-      'Sim. Durante os sete dias do presente, ele pode publicar o jogo que está criando no Cadê Todo Mundo?, cumprindo as atividades e seguindo a orientação da aula 2. A publicação faz parte dessa experiência de criar algo que outras pessoas podem jogar.',
-      'Depois de publicar, vocês podem compartilhar o link com familiares e amigos. Quem recebe abre o jogo no navegador, sem precisar se cadastrar. Nesse período, seu filho também pode comentar e reagir às criações no Mural.',
+      'Sim. Durante os sete dias do presente, ele pode publicar o jogo que está criando no Cadê Todo Mundo, cumprindo as atividades e seguindo a orientação da aula 2. A publicação faz parte dessa experiência de criar algo que outras pessoas podem jogar.',
+      'Depois de publicar, vocês podem compartilhar o link com familiares e amigos. Quem recebe abre o jogo no navegador, sem cadastro. Nesse período, seu filho também pode comentar e reagir às criações no Mural.',
       'O fim dos sete dias encerra a participação liberada pelo convite, mas não faz o link do jogo publicado vencer. Vocês continuam podendo jogar e compartilhar esse link enquanto a publicação estiver disponível.',
     ],
   },
@@ -195,39 +465,43 @@ export const GIFT_FAQ = [
     visual: null,
     paragraphs: [
       'Se você tem conta e ainda não resgatou o presente, use o mesmo e-mail no cadastro. O acesso será associado à conta existente, e você entra com sua senha de sempre.',
-      'Há um resgate por e-mail, considerando todos os links de convite e campanhas. Usar outro link não concede um novo período nem muda a origem do primeiro cadastro. Se o processo ficou incompleto, repetir o envio com o mesmo e-mail permite retomá-lo sem reiniciar os sete dias.',
+      'Cada e-mail resgata um presente Kids, considerando todos os links de convite e campanhas. Usar outro link Kids não concede um novo período nem muda a origem do primeiro cadastro. O presente adulto é separado: o mesmo e-mail pode recebê-lo para a própria pessoa criar o jogo dela. Se o processo ficou incompleto, repetir o envio com o mesmo e-mail permite retomá-lo sem reiniciar os sete dias.',
     ],
   },
 ]
 
+/**
+ * As seções da página pública do programa (`/kids/embaixadores`). Desde 20/10/2026 o embaixador dá
+ * o presente a uma família (Kids) ou a um adulto, cada um com o próprio link.
+ */
 export const AMBASSADOR_SECTIONS = [
   section(
     'indicar',
     'Uma indicação que você consegue explicar',
-    'Você conhece uma família que gostaria de experimentar isso?',
+    'Um presente para uma família ou para um adulto que quer criar o próprio jogo.',
     [
-      'Talvez seja o responsável por uma criança que adora jogos e pergunta como eles são feitos. Ou alguém que procura uma atividade de aprendizagem para parte do tempo de computador do filho. Seu convite pode oferecer um primeiro passo com uma tarefa concreta.',
-      'Pelo seu link, a família recebe sete dias de Cadê Todo Mundo?, sem custo e sem cartão. A página apresenta a experiência e orienta o responsável a fazer o cadastro. Você não precisa cadastrar a criança de outra pessoa nem explicar sozinho todos os detalhes.',
+      'Talvez seja o responsável por uma criança de 9 a 14 anos que adora jogos e pergunta como eles são feitos. Ou um adulto que cresceu jogando e sempre quis saber como um jogo funciona por dentro. Seu convite oferece um primeiro passo com uma tarefa concreta.',
+      'Pelo seu link, a pessoa recebe 7 dias do Cadê Todo Mundo e do Mural, sem custo e sem cartão: a família recebe a versão Kids, e o adulto, a versão adulta. Cada link leva a uma página feita para quem recebe, que explica o presente e orienta o cadastro. Você não cadastra ninguém nem precisa explicar sozinho todos os detalhes.',
     ],
     ['aula-estudio'],
   ),
   section(
     'compartilhar',
     'Do seu convite ao primeiro acesso',
-    'Você envia o link. O responsável escolhe quando começar.',
+    'Você escolhe o público e envia o link. Quem recebe escolhe quando começar.',
     [
-      'Compartilhe o link público do presente com uma família para quem ele faça sentido. Pode mandar uma mensagem pessoal contando por que lembrou daquela criança. Avise que ela precisará de um computador e que os sete dias começam no cadastro, para o adulto escolher um bom momento.',
-      'O responsável abre a página, conhece o curso e usa os próprios dados para liberar o acesso. Depois, entra na plataforma com o filho. O seu painel registra os resgates concluídos; ele não expõe o nome ou os dados das crianças convidadas.',
+      'No seu painel, escolha para quem é o presente e mande o link com uma mensagem sua, contando por que lembrou daquela pessoa. Avise que o curso pede um computador com mouse e teclado e que os 7 dias começam no cadastro.',
+      'No Kids, o responsável abre a página e faz o cadastro com os próprios dados; depois entra na plataforma com o filho. No presente adulto, a própria pessoa se cadastra. O seu painel conta os resgates concluídos, sem mostrar nomes nem dados de quem recebeu.',
     ],
     ['pausa'],
   ),
   section(
     'condicoes',
     'Um convite claro desde o começo',
-    'A família recebe um presente. Continuar é uma escolha dela.',
+    'Quem recebe ganha um presente. Continuar é uma escolha dela.',
     [
-      'Durante os sete dias contados do cadastro, a criança pode fazer o curso, publicar o jogo que criou nele, comentar e reagir no Mural. Depois, continua podendo ver e jogar enquanto a conta existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível. Outros cursos, ferramentas de criação livre e cópias de jogos não fazem parte do presente.',
-      'Não há cartão nem assinatura automática. Se a família quiser conhecer a Comunidade dos Criadores depois, decide por conta própria. Essa clareza ajuda você a indicar com confiança e a família a saber exatamente o que está recebendo.',
+      'Durante os 7 dias contados do cadastro, quem recebe faz o curso, publica o jogo que criou nele, comenta e reage no Mural do seu público. Depois, o link do jogo publicado continua funcionando enquanto a publicação estiver disponível. Outros cursos, ferramentas de criação livre e cópias de jogos não fazem parte do presente.',
+      'Não há cartão nem assinatura automática. Se a família ou o adulto quiser conhecer a Comunidade dos Criadores depois, decide por conta própria. Essa clareza ajuda você a indicar com confiança e quem recebe a saber exatamente o que está ganhando.',
     ],
     ['mural'],
   ),

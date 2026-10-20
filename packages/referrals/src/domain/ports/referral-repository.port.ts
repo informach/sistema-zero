@@ -1,4 +1,4 @@
-import type { GiftAttribution, GiftSource } from '@sistemazero/core/referrals'
+import type { GiftAttribution, GiftAudience, GiftSource } from '@sistemazero/core/referrals'
 
 export type AmbassadorStatus = 'active' | 'disabled'
 export type CodeOwnerKind = 'ambassador' | 'account' | 'campaign'
@@ -30,12 +30,16 @@ export interface CodeRecord {
   displayName: string
   ownerEmail: string | null
   status: string
+  /** Público do presente que o código entrega (campanha espelha a campanha). */
+  audience: GiftAudience
 }
 
 export interface RedemptionRecord {
   id: string
   codeId: string
   email: string
+  /** Público do presente resgatado; históricos são `kids`. */
+  audience: GiftAudience
   name: string
   phone: string | null
   sourceSnapshot?: GiftSource | null
@@ -214,15 +218,30 @@ export interface ReferralRepository {
   // ── Códigos ───────────────────────────────────────────────────────────────
   findCodeByCode(code: string): Promise<CodeRecord | null>
   findCodeById(id: string): Promise<CodeRecord | null>
+  /** Todos os códigos do embaixador (um por público). */
+  listCodesByAmbassador(ambassadorId: string): Promise<CodeRecord[]>
+  /**
+   * Código do embaixador para o público, criado se faltar. Idempotente e seguro em
+   * corrida: o UNIQUE parcial (ambassador_id, audience) decide, e quem perde relê o
+   * vencedor. `code_collision` = o código sorteado já existe (re-sortear).
+   */
+  ensureAmbassadorCode(input: {
+    ambassadorId: string
+    audience: GiftAudience
+    code: string
+  }): Promise<
+    { kind: 'ok'; code: CodeRecord; created: boolean } | { kind: 'code_collision' } | null
+  >
 
   // ── Resgates de bolsa ─────────────────────────────────────────────────────
   /**
-   * Claim da bolsa: `INSERT ... ON CONFLICT (email) DO NOTHING`. `created:false`
-   * devolve a linha EXISTENTE (retomada ou 409 — decisão do serviço).
+   * Claim da bolsa: `INSERT ... ON CONFLICT (email, audience) DO NOTHING`. `created:false`
+   * devolve a linha EXISTENTE daquele público (retomada ou 409 — decisão do serviço).
    */
   insertRedemption(input: {
     codeId: string
     email: string
+    audience: GiftAudience
     name: string
     phone: string | null
     sourceSnapshot?: GiftSource
@@ -248,7 +267,8 @@ export interface ReferralRepository {
   /** Libera o claim SÓ quando nada foi emitido (falha na emissão do token). */
   releaseRedemptionWelcome(id: string): Promise<void>
   markWelcomeAccepted(id: string, when: Date): Promise<void>
-  findRedemptionByEmail(email: string): Promise<RedemptionRecord | null>
+  /** Resgate do e-mail NAQUELE público (o mesmo e-mail pode ter um Kids e um adulto). */
+  findRedemptionByEmail(email: string, audience: GiftAudience): Promise<RedemptionRecord | null>
   listRedemptionsByCode(codeId: string, limit: number): Promise<RedemptionRecord[]>
 
   // ── Convites ──────────────────────────────────────────────────────────────
@@ -266,10 +286,13 @@ export interface ReferralRepository {
   markInviteFailed(id: string): Promise<void>
 
   // ── Conversões (bolsista → assinatura da Comunidade) ─────────────────────
-  /** Resgate + o CODE dele (owner_email alimenta o anti-autoindicação). */
-  findRedemptionWithCodeByEmail(
+  /**
+   * Resgates do e-mail (até um por público) + o CODE de cada um (owner_email alimenta o
+   * anti-autoindicação). O serviço escolhe o resgate pelo público da oferta paga.
+   */
+  listRedemptionsWithCodeByEmail(
     email: string,
-  ): Promise<{ redemption: RedemptionRecord; code: CodeRecord } | null>
+  ): Promise<{ redemption: RedemptionRecord; code: CodeRecord }[]>
   /**
    * `ON CONFLICT DO NOTHING` nas DUAS uniques (redemption_id = "só a primeira
    * cobrança"; payment_id = re-entrega) — conflito devolve `created: false`.

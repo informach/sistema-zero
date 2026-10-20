@@ -1,0 +1,233 @@
+---
+// Corpo da página de recebimento do presente ADULTO (Canvas "Presente Kids e adulto · proposta",
+// RecebimentoAdulto, 20/10/2026). Toda a copy vem de `PRESENTE_ADULTO` (content/presente-adulto.ts);
+// o layout é o da oferta adulta (`.cda`) com as peças de presente-adulto.css. Quem lê e quem usa é a
+// mesma pessoa, com 18 anos ou mais, e o cadastro é com os dados dela.
+import type { ReferralGiftView } from '@sistemazero/core/referrals'
+import type { EstadoPresente } from '../../content/presente'
+import { PRESENTE_ADULTO as P } from '../../content/presente-adulto'
+import { dataBrasilia } from '../../content/presente-resgate'
+import BolsaResgate from '../../islands/BolsaResgate'
+import type { ReferralGiftPage } from '../../server/referral-gift-page'
+
+interface Props {
+  gift: ReferralGiftView
+  kind: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable'>
+  /** Base do app adulto (`COMMUNITY_URL`), sem a barra final. */
+  communityUrl: string
+  preview?: boolean
+}
+const { gift, kind, communityUrl, preview = false } = Astro.props
+const ready = kind === 'ready' && !preview
+const campaign = gift.source.kind === 'campaign'
+const nome = gift.source.name
+const origem = (
+  !campaign
+    ? P.origem.pessoal
+    : gift.source.context === 'event'
+      ? P.origem.evento
+      : P.origem.campanha
+).replace('{{nome}}', nome.toLocaleUpperCase('pt-BR'))
+const dia = (iso: string | null) => (iso ? dataBrasilia(iso, false) : '')
+const estado: EstadoPresente | null =
+  kind === 'ready'
+    ? null
+    : {
+        ...P.estados[kind],
+        titulo:
+          kind === 'ended' && !gift.endsAt
+            ? P.estados.endedSemData
+            : P.estados[kind].titulo.replace(
+                '{{data}}',
+                dia(kind === 'scheduled' ? gift.startsAt : gift.endsAt),
+              ),
+      }
+const corDoEstado = kind === 'paused' || kind === 'ended' ? 'rosa' : 'azul'
+const podeRetomar = !preview && (kind === 'ended' || kind === 'paused')
+const tela = P.hero.tela
+---
+{preview && <div class="cda-wrap"><p class="pa-previa" role="status">{P.previa}</p></div>}
+<section class="cda-secao cda-hero pa-hero" aria-labelledby="pa-titulo">
+  <div class="cda-wrap cda-hero__grade">
+    <div class="cda-hero__texto">
+      <p class="cda-rotulo cor-verde">{origem}</p>
+      {campaign && gift.source.description && <p class="cda-hero__lead">{gift.source.description}</p>}
+      <h1 id="pa-titulo" class="cda-h1">{P.hero.titulo.antes}<span class="cda-destaque">{P.hero.titulo.destaque}</span></h1>
+      <p class="cda-hero__lead">{P.hero.texto}</p>
+      <ul class="cda-checks">
+        {P.hero.beneficios.map((beneficio) => (
+          <li>
+            <svg class="cda-check" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></svg>
+            <span>{beneficio}</span>
+          </li>
+        ))}
+      </ul>
+      {ready && (
+        <div class="cda-acao">
+          <a class="cda-btn cda-btn--grande" href="#resgatar">{P.hero.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+          <a class="pa-link" href="#jogo">{P.hero.link}</a>
+        </div>
+      )}
+      {estado && !preview && (
+        <div class:list={['pa-estado', `cor-${corDoEstado}`]} role="status">
+          <span class="pa-estado__selo">{estado.etiqueta}</span>
+          <h2 class="pa-estado__titulo">{estado.titulo}</h2>
+          <p class="cda-suave">{estado.texto}</p>
+          {podeRetomar && <a class="pa-link" href="#retomar">{P.estados.retomar.botao}</a>}
+        </div>
+      )}
+      <ul class="cda-requisitos">
+        {P.hero.requisitos.map((item) => <li class={`cor-${item.cor}`}><span class="cda-quadradinho" aria-hidden="true"></span>{item.texto}</li>)}
+      </ul>
+      {campaign && gift.endsAt && kind !== 'ended' && <p class="pa-prazo">{P.hero.prazoCampanha.replace('{{data}}', dataBrasilia(gift.endsAt))}</p>}
+    </div>
+    <figure class="pa-monitor">
+      <div class="cda-monitor__moldura">
+        <div class="cda-monitor__barra">
+          <span>{tela.rotulo}</span>
+          <span class="cda-coracoes" aria-hidden="true">
+            {[0, 1, 2].map(() => <svg width="21" height="18" viewBox="0 0 7 6" shape-rendering="crispEdges"><rect x="1" y="0" width="2" height="1"></rect><rect x="4" y="0" width="2" height="1"></rect><rect x="0" y="1" width="7" height="2"></rect><rect x="1" y="3" width="5" height="1"></rect><rect x="2" y="4" width="3" height="1"></rect><rect x="3" y="5" width="1" height="1"></rect></svg>)}
+          </span>
+        </div>
+        <div class="pa-monitor__tela">
+          <img src={tela.imagem.src} alt={tela.imagem.alt} width={tela.imagem.width} height={tela.imagem.height} loading="eager" decoding="async" fetchpriority="high" />
+        </div>
+        <p class="pa-monitor__start"><span class="cda-pisca">{tela.start}</span></p>
+      </div>
+      <figcaption class="cda-legenda">{tela.legenda}</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="jogo" class="cda-secao cda-secao--fundo-2" aria-labelledby="pa-jogo">
+  <div class="cda-wrap cda-coluna cda-coluna--larga">
+    <div class="cda-cabeca cda-cabeca--larga">
+      <p class="cda-rotulo cor-azul">{P.jogo.rotulo}</p>
+      <h2 id="pa-jogo" class="cda-h2">{P.jogo.titulo}</h2>
+      <p class="cda-suave">{P.jogo.texto}</p>
+    </div>
+    <div class="pa-linha">
+      <figure class="pa-figura cor-azul">
+        <img src={P.jogo.imagem.src} alt={P.jogo.imagem.alt} width={P.jogo.imagem.width} height={P.jogo.imagem.height} loading="lazy" decoding="async" />
+        <figcaption class="cda-legenda">{P.jogo.legenda}</figcaption>
+      </figure>
+      <ul class="pa-passos">
+        {P.jogo.passos.map((passo) => (
+          <li>
+            <span class={`cda-rotulo cda-rotulo--13 cor-${passo.cor}`}>{passo.rotulo}</span>
+            <strong>{passo.texto}</strong>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="cda-secao" aria-labelledby="pa-aula">
+  <div class="cda-wrap cda-dupla">
+    <div class="pa-texto">
+      <p class="cda-rotulo cor-amarelo">{P.aula.rotulo}</p>
+      <h2 id="pa-aula" class="cda-h2">{P.aula.titulo}</h2>
+      {P.aula.paragrafos.map((paragrafo) => <p class="cda-suave">{paragrafo}</p>)}
+    </div>
+    <figure class="pa-figura cor-amarelo">
+      <img src={P.aula.imagem.src} alt={P.aula.imagem.alt} width={P.aula.imagem.width} height={P.aula.imagem.height} loading="lazy" decoding="async" />
+      <figcaption class="cda-legenda">{P.aula.legenda}</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="cda-secao cda-secao--fundo-2" aria-labelledby="pa-mural">
+  <div class="cda-wrap cda-dupla">
+    <figure class="pa-figura pa-figura--mural cor-rosa">
+      <img src={P.mural.imagem.src} alt={P.mural.imagem.alt} width={P.mural.imagem.width} height={P.mural.imagem.height} loading="lazy" decoding="async" />
+      <figcaption class="cda-legenda">{P.mural.legenda}</figcaption>
+    </figure>
+    <div class="pa-texto">
+      <p class="cda-rotulo cor-rosa">{P.mural.rotulo}</p>
+      <h2 id="pa-mural" class="cda-h2">{P.mural.titulo}</h2>
+      {P.mural.paragrafos.map((paragrafo) => <p class="cda-suave">{paragrafo}</p>)}
+    </div>
+  </div>
+</section>
+
+<section class="cda-secao" aria-labelledby="pa-depois">
+  <div class="cda-wrap cda-dupla">
+    <div class="pa-texto pa-texto--largo">
+      <p class="cda-rotulo cor-verde">{P.depois.rotulo}</p>
+      <h2 id="pa-depois" class="cda-h2">{P.depois.titulo}</h2>
+      {P.depois.paragrafos.map((paragrafo) => <p class="cda-suave">{paragrafo}</p>)}
+    </div>
+    <figure class="pa-figura pa-figura--estreita pa-figura--foto cor-verde">
+      <img src={P.depois.imagem.src} alt={P.depois.imagem.alt} width={P.depois.imagem.width} height={P.depois.imagem.height} loading="lazy" decoding="async" />
+      <figcaption class="cda-legenda">{P.depois.legenda}</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="cda-secao cda-secao--fundo-2" aria-labelledby="pa-condicoes">
+  <div class="cda-wrap cda-coluna">
+    <div class="cda-cabeca cda-cabeca--larga">
+      <p class="cda-rotulo cor-amarelo">{P.condicoes.rotulo}</p>
+      <h2 id="pa-condicoes" class="cda-h2">{P.condicoes.titulo}</h2>
+    </div>
+    <div class="pa-cartoes">
+      {P.condicoes.cartoes.map((cartao) => (
+        <article class={`pa-cartao cor-${cartao.cor}`}>
+          <h3 class="cda-rotulo">{cartao.rotulo}</h3>
+          <p>{cartao.texto}</p>
+        </article>
+      ))}
+    </div>
+    <p class="pa-nota">{P.condicoes.nota}</p>
+    {ready && <a class="cda-btn cda-btn--grande pa-cta" href="#resgatar">{P.condicoes.cta}</a>}
+  </div>
+</section>
+
+<section id="duvidas" class="cda-secao" aria-labelledby="pa-duvidas">
+  <div class="cda-wrap cda-coluna">
+    <h2 id="pa-duvidas" class="cda-h2">{P.duvidas.titulo}</h2>
+    <div class="pa-duvidas">
+      {P.duvidas.itens.map((item, index) => (
+        <details class="cda-duvida pa-duvida" open={index === 0}>
+          <summary>{item.pergunta}</summary>
+          <p>{item.resposta}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section id="resgatar" class="cda-secao cda-secao--grade" aria-labelledby="pa-resgatar">
+  <div class="cda-wrap cda-dupla cda-dupla--oferta">
+    <div class="pa-texto">
+      <p class="cda-rotulo cor-verde">{P.resgatar.rotulo}</p>
+      <h2 id="pa-resgatar" class="cda-h2">{P.resgatar.titulo}</h2>
+      <p class="cda-suave">{P.resgatar.texto}</p>
+    </div>
+    <div class="pa-form">
+      {ready ? (
+        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" />
+      ) : preview ? (
+        <div class="pa-estado cor-verde"><p class="cda-suave">{P.resgatar.previa}</p></div>
+      ) : (
+        <div class="cda-coluna">
+          {estado && (
+            <div class:list={['pa-estado', `cor-${corDoEstado}`]}>
+              <span class="pa-estado__selo">{estado.etiqueta}</span>
+              <h3 class="pa-estado__titulo">{estado.titulo}</h3>
+              <p class="cda-suave">{estado.texto}</p>
+            </div>
+          )}
+          {podeRetomar && (
+            <details id="retomar" class="pa-retomar">
+              <summary>{P.estados.retomar.botao}</summary>
+              <p class="cda-suave">{P.estados.retomar.texto}</p>
+              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" retryOnly />
+            </details>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+</section>

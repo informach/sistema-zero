@@ -90,9 +90,11 @@ export function createReferralsGatewayClient(opts: GatewayClientOptions): Referr
   }
 
   return {
-    async getGiftAvailability(courseRef: string): Promise<GatewayResult> {
+    async getGiftAvailability(courseRef, audience): Promise<GatewayResult> {
       const path = `/members/webhooks/gift-course/${encodeURIComponent(courseRef)}`
-      return requestJson(`${opts.baseUrl}${path}`, {
+      // A query fica FORA do path assinado (o gateway confere o pathname).
+      const query = audience === 'adult' ? '?audience=adult' : ''
+      return requestJson(`${opts.baseUrl}${path}${query}`, {
         method: 'GET',
         headers: buildHeaders('GET', path, ''),
       })

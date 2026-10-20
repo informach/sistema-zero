@@ -4,7 +4,11 @@ import type { SendEmailInput } from '../../src/domain/ports/gateway.port'
 import { FakeReferralsGateway, InMemoryReferralRepository, silentLogger } from '../fakes/in-memory'
 
 const TOKEN = 't'.repeat(43)
-const OPTS = { funnelPublicUrl: 'https://sistemazero.com.br', dailyLimit: 3 }
+const OPTS = {
+  funnelPublicUrl: 'https://sistemazero.com.br',
+  dailyLimit: 3,
+  adultGiftEnabled: true,
+}
 
 describe('CreateInviteService', () => {
   let repo: InMemoryReferralRepository
@@ -59,6 +63,7 @@ describe('CreateInviteService', () => {
 
   test('bolsa CONCLUÍDA → already_redeemed', async () => {
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: repo.codes[0]!.id,
       email: 'paula@example.com',
       name: 'Paula',
@@ -70,6 +75,7 @@ describe('CreateInviteService', () => {
 
   test('resgate PENDENTE não barra o convite (o link é o empurrão da retomada)', async () => {
     await repo.insertRedemption({
+      audience: 'kids',
       codeId: repo.codes[0]!.id,
       email: 'paula@example.com',
       name: 'Paula',

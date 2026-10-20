@@ -73,6 +73,7 @@ describe('RecordConversionService', () => {
     })
     if (created.kind !== 'created') throw new Error('seed falhou')
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: created.code.id,
       email: 'paula@example.com',
       name: 'Paula Prado',
@@ -214,6 +215,7 @@ describe('RecordConversionService', () => {
     })
     if (created.kind !== 'created') throw new Error('seed falhou')
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: created.code.id,
       email: 'paula@example.com',
       name: 'Paula Prado',
@@ -358,6 +360,7 @@ describe('SweepConversionsService', () => {
     })
     if (created.kind !== 'created') throw new Error('seed falhou')
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: created.code.id,
       email: 'paula@example.com',
       name: 'Paula',
@@ -412,6 +415,7 @@ describe('SweepConversionsService', () => {
     })
     if (created.kind !== 'created') throw new Error('seed falhou')
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: created.code.id,
       email: 'p@x.com',
       name: 'P',
@@ -455,6 +459,7 @@ describe('SweepConversionsService', () => {
     })
     if (created.kind !== 'created') throw new Error('seed falhou')
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: created.code.id,
       email: 'p@x.com',
       name: 'P',

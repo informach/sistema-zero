@@ -1,10 +1,13 @@
 ---
+// Corpo da página de recebimento do presente KIDS (Canvas "Presente Kids e adulto · proposta",
+// RecebimentoKids, 20/10/2026). Toda a copy vem de `PRESENTE_KIDS` (content/presente.ts); o layout
+// é o da página de 9 a 17 (`.c917`) com as peças de presente-kids.css. Quem lê é o responsável;
+// quem usa é a criança de 9 a 14 anos.
 import type { ReferralGiftView } from '@sistemazero/core/referrals'
+import { type EstadoPresente, PRESENTE_KIDS as P } from '../../content/presente'
+import { dataBrasilia } from '../../content/presente-resgate'
 import BolsaResgate from '../../islands/BolsaResgate'
 import type { ReferralGiftPage } from '../../server/referral-gift-page'
-import ComunidadeVisual from '../funnel/oferta/ComunidadeVisual.astro'
-import PresenteDuvidas from './PresenteDuvidas.astro'
-import PresenteExperiencia from './PresenteExperiencia.astro'
 
 interface Props {
   gift: ReferralGiftView
@@ -15,58 +18,200 @@ interface Props {
 const { gift, kind, communityUrl, preview = false } = Astro.props
 const ready = kind === 'ready' && !preview
 const campaign = gift.source.kind === 'campaign'
-const date = (value: string | null) =>
-  value
-    ? new Date(value).toLocaleString('pt-BR', {
-        timeZone: 'America/Sao_Paulo',
-        dateStyle: 'long',
-        timeStyle: 'short',
-      })
-    : ''
-const context = campaign
-  ? gift.source.context === 'event'
-    ? `Um convite de ${gift.source.name} para continuar a experiência em casa`
-    : gift.source.name
-  : `Um convite de ${gift.source.name} para sua família`
-const states = {
-  preparing: [
-    'Este presente está sendo preparado.',
-    'O curso ainda não está disponível para novos cadastros. Guarde seu link e volte em breve.',
-  ],
-  scheduled: [
-    'Os cadastros ainda não começaram.',
-    `Este convite estará aberto a partir de ${date(gift.startsAt)} (horário de Brasília).`,
-  ],
-  paused: [
-    'Novos cadastros estão pausados.',
-    'Quem já recebeu o presente mantém o prazo informado no cadastro. Você pode entrar na sua conta para continuar.',
-  ],
-  ended: [
-    'Esta campanha foi encerrada.',
-    'O prazo para novos cadastros terminou. Se você recebeu o presente dentro do período, seus sete dias continuam contando a partir do seu cadastro.',
-  ],
-}
-const status = kind === 'ready' ? null : states[kind]
+const nome = gift.source.name
+const origem = (
+  !campaign
+    ? P.origem.pessoal
+    : gift.source.context === 'event'
+      ? P.origem.evento
+      : P.origem.campanha
+).replace('{{nome}}', nome)
+const dia = (iso: string | null) => (iso ? dataBrasilia(iso, false) : '')
+const estado: EstadoPresente | null =
+  kind === 'ready'
+    ? null
+    : {
+        ...P.estados[kind],
+        titulo:
+          kind === 'ended' && !gift.endsAt
+            ? P.estados.endedSemData
+            : P.estados[kind].titulo.replace(
+                '{{data}}',
+                dia(kind === 'scheduled' ? gift.startsAt : gift.endsAt),
+              ),
+      }
+const corDoEstado = kind === 'paused' || kind === 'ended' ? 'rosa' : 'azul-claro'
+const podeRetomar = !preview && (kind === 'ended' || kind === 'paused')
+const check = '<path d="M20 6 9 17l-5-5"></path>'
+const CORES_CHECKS = ['verde', 'amarelo', 'azul-claro']
+const CORES_PASSOS = ['azul', 'amarelo', 'verde']
+const CORES_CONDICOES = ['azul', 'rosa', 'verde']
 ---
-{preview && <div class="wrap gift-note" role="status"><strong>Prévia da campanha.</strong> Esta página demonstra a apresentação e não aceita cadastros. O link público da campanha respeita o estado e as datas configurados no admin.</div>}
-<section class="hero section" aria-labelledby="hero-title"><div class="wrap hero-grid">
-  <div class="hero-copy">
-    <span class="kof-eyebrow">Cadê Todo Mundo? · Curso gratuito</span>
-    <p class="gift-private">{context}</p>
-    {campaign && gift.source.description && <p class="kof-lead">{gift.source.description}</p>}
-    <h1 id="hero-title" class="kof-display">Seu filho pode aprender a fazer um jogo de procurar personagens <em>funcionar.</em></h1>
-    <p class="kof-lead">O jardim e os personagens já estão preparados. Seu filho acompanha a orientação e monta as regras que fazem os esconderijos sumirem e cada descoberta entrar na contagem. Depois, testa e vê o resultado na própria brincadeira.</p>
-    <ul class="hero-benefits"><li><span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">stadia_controller</span></span><span>Um primeiro projeto, com orientação e atividade juntas.</span></li><li><span class="kof-ladrilho kof-ladrilho--verde" aria-hidden="true"><span class="material-symbols-rounded">schedule</span></span><span>Sete dias de acesso, a partir do cadastro.</span></li><li><span class="kof-ladrilho kof-ladrilho--rosa" aria-hidden="true"><span class="material-symbols-rounded">redeem</span></span><span>Gratuito, sem cartão e sem assinatura automática.</span></li></ul>
-    {ready && <div class="hero-actions"><a class="kof-btn kof-btn--grande" href="#resgatar">Quero o acesso gratuito</a><a class="kof-link" href="#experiencia">Ver o que meu filho vai fazer</a></div>}
-    <div class="gift-prose"><p>Para crianças e adolescentes de 9 a 14 anos que estão começando. Para as atividades, use um <strong>computador com internet, mouse e teclado</strong>. O cadastro pode ser feito pelo celular.</p>{campaign && gift.endsAt && <p><strong>Novos cadastros até {date(gift.endsAt)} (Brasília).</strong> Esse prazo é da campanha; cada família aceita tem seus próprios sete dias de curso.</p>}</div>
-    {status && <div class="gift-status" role="status"><h2>{status[0]}</h2><p>{status[1]}</p><a class="kof-link" href={`${communityUrl}/login`}>Já tenho acesso: entrar na plataforma</a></div>}
+{preview && <div class="c9-wrap"><p class="pk-previa" role="status">{P.previa}</p></div>}
+<section class="c9-sec c9-heroi" aria-labelledby="pk-titulo">
+  <div class="c9-wrap c9-heroi__grade">
+    <div class="c9-heroi__texto">
+      <span class="c9-selo pk-origem">{origem}</span>
+      {campaign && gift.source.description && <p class="c9-heroi__lead">{gift.source.description}</p>}
+      <h1 id="pk-titulo" class="c9-h1">{P.hero.titulo.antes}<span class="c9-h1__destaque pk-destaque">{P.hero.titulo.destaque}</span></h1>
+      <p class="c9-heroi__lead">{P.hero.texto}</p>
+      <ul class="c9-checks">
+        {P.hero.beneficios.map((beneficio, index) => (
+          <li>
+            <span class:list={['c9-ladrilho', `c9-cor--${CORES_CHECKS[index]}`]} aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" set:html={check} />
+            </span>
+            <span>{beneficio}</span>
+          </li>
+        ))}
+      </ul>
+      {ready && (
+        <div class="c9-acao">
+          <a class="c9-btn c9-btn--grande" href="#resgatar">{P.hero.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+          <a class="pk-link" href="#jogo">{P.hero.link}</a>
+        </div>
+      )}
+      {estado && !preview && (
+        <div class:list={['pk-estado', `c9-cor--${corDoEstado}`]} role="status">
+          <span class="c9-tag">{estado.etiqueta}</span>
+          <h2 class="pk-estado__titulo">{estado.titulo}</h2>
+          <p class="c9-p">{estado.texto}</p>
+          {podeRetomar && <a class="pk-link" href="#retomar">{P.estados.retomar.botao}</a>}
+        </div>
+      )}
+      <span class="c9-heroi__requisitos">{P.hero.requisitos}</span>
+      {campaign && gift.endsAt && kind !== 'ended' && <p class="pk-prazo">{P.hero.prazoCampanha.replace('{{data}}', dataBrasilia(gift.endsAt))}</p>}
+    </div>
+    <div class="pk-heroi__visual">
+      <figure class="pk-figura">
+        <span class="pk-figura__rotulo">{P.hero.figura.rotulo}</span>
+        <img src={P.hero.figura.imagem.src} alt={P.hero.figura.imagem.alt} width={P.hero.figura.imagem.width} height={P.hero.figura.imagem.height} loading="eager" decoding="async" fetchpriority="high" />
+        <figcaption>
+          <img src={P.hero.figura.zappy.src} alt={P.hero.figura.zappy.alt} width={P.hero.figura.zappy.width} height={P.hero.figura.zappy.height} loading="lazy" decoding="async" />
+          <span><strong class="pk-figura__destaque">{P.hero.figura.destaque}</strong>{P.hero.figura.legenda}</span>
+        </figcaption>
+      </figure>
+    </div>
   </div>
-  <ComunidadeVisual visual="aula-estudio" imagesBase="/img/comunidade-dos-criadores" eager />
-</div></section>
-<PresenteExperiencia action={ready ? { href: '#resgatar', label: 'Quero experimentar com meu filho' } : undefined} />
-<section class="section cor-verde fundo-alt"><div class="wrap gift-form-wrap"><span class="kof-eyebrow">O presente da sua família</span><h2 class="kof-h2">Um começo concreto. Condições claras.</h2><div class="gift-prose"><p><strong>Cadê Todo Mundo? por sete dias:</strong> aulas gravadas, atividades guiadas e certificado ao cumprir os requisitos de conclusão. O prazo começa no cadastro aceito pelo link.</p><p><strong>Participação no Mural por sete dias:</strong> publicar o jogo do curso, comentar, reagir e jogar. Depois desse prazo, sua conta continua podendo ver e jogar enquanto existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível. Cópias de projetos não fazem parte do presente.</p><p><strong>Sem pagamento:</strong> não há cartão nem cobrança automática. Os demais cursos e as ferramentas de criação livre fazem parte da assinatura da Comunidade dos Criadores. Contratar essa assinatura depois é uma escolha sua, separada deste presente.</p></div>{ready && <a class="kof-btn" href="#resgatar">Liberar o presente para minha família</a>}</div></section>
-<PresenteDuvidas />
-<section id="resgatar" class="section cor-azul"><div class="wrap gift-form-wrap"><span class="kof-eyebrow">O primeiro passo é do responsável</span><h2 class="kof-h2">Vamos experimentar juntos?</h2><div class="gift-prose"><p>Separe um momento em que seu filho possa usar o computador. Você cadastra sua conta com seus próprios dados, entra na plataforma e acompanha o começo com ele. Os sete dias contam a partir deste cadastro.</p></div>
-  {ready ? <div class="gift-interactive"><BolsaResgate client:load code={gift.code} referrerName={gift.source.name} communityUrl={communityUrl} /></div> : preview ? <div class="gift-note">O formulário aparecerá no link público quando a campanha estiver aberta e o curso disponível. Nesta prévia, nenhum acesso é criado.</div> : <div class="gift-note"><p>{status?.[0]} {status?.[1]}</p></div>}
-  {!preview && (kind === 'ended' || kind === 'paused') && <details class="gift-private"><summary>Já comecei o cadastro, mas a liberação ficou incompleta</summary><p>Reenvie com o mesmo e-mail para retomar um cadastro aceito anteriormente. Isso não abre um novo acesso nem reinicia o prazo.</p><div class="gift-interactive"><BolsaResgate client:load code={gift.code} referrerName={gift.source.name} communityUrl={communityUrl} retryOnly /></div></details>}
-</div></section>
+</section>
+
+<section id="jogo" class="c9-sec c9-sec--branco" aria-labelledby="pk-jogo">
+  <div class="c9-wrap c9-lado">
+    <div class="c9-pilha c9-gap-14 c9-b440">
+      <span class="c9-tag pk-cor--azul-fundo">{P.jogo.etiqueta}</span>
+      <h2 id="pk-jogo" class="c9-h2">{P.jogo.titulo}</h2>
+      {P.jogo.paragrafos.map((paragrafo) => <p class="c9-p">{paragrafo}</p>)}
+      <p class="pk-nota">{P.jogo.nota}</p>
+    </div>
+    <img class="pk-tela c9-cor--azul" src={P.jogo.imagem.src} alt={P.jogo.imagem.alt} width={P.jogo.imagem.width} height={P.jogo.imagem.height} loading="lazy" decoding="async" />
+  </div>
+</section>
+
+<section class="c9-sec c9-sec--chao" aria-labelledby="pk-aula">
+  <div class="c9-wrap c9-pilha c9-gap-26">
+    <div class="c9-cabeca">
+      <span class="c9-tag c9-cor--branco">{P.aula.etiqueta}</span>
+      <h2 id="pk-aula" class="c9-h2">{P.aula.titulo}</h2>
+    </div>
+    <div class="c9-lado pk-lado-24">
+      <img class="pk-tela pk-tela--larga c9-cor--verde" src={P.aula.imagem.src} alt={P.aula.imagem.alt} width={P.aula.imagem.width} height={P.aula.imagem.height} loading="lazy" decoding="async" />
+      <div class="pk-passos">
+        {P.aula.passos.map((passo, index) => (
+          <article class:list={['c9-cartao', `c9-cor--${CORES_PASSOS[index]}`]}>
+            <h3 class="c9-cartao__titulo">{passo.titulo}</h3>
+            <p class="c9-cartao__texto">{passo.texto}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+    <p class="c9-p pk-texto-largo">{P.aula.nota}</p>
+  </div>
+</section>
+
+<section class="c9-sec c9-sec--branco" aria-labelledby="pk-mural">
+  <div class="c9-wrap c9-lado">
+    <img class="pk-tela pk-tela--topo c9-cor--rosa" src={P.mural.imagem.src} alt={P.mural.imagem.alt} width={P.mural.imagem.width} height={P.mural.imagem.height} loading="lazy" decoding="async" />
+    <div class="c9-pilha c9-gap-14 c9-b440">
+      <span class="c9-tag pk-cor--rosa-fundo">{P.mural.etiqueta}</span>
+      <h2 id="pk-mural" class="c9-h2">{P.mural.titulo}</h2>
+      {P.mural.paragrafos.map((paragrafo) => <p class="c9-p">{paragrafo}</p>)}
+    </div>
+  </div>
+</section>
+
+<section class="c9-sec c9-sec--navy" aria-labelledby="pk-plataforma">
+  <div class="c9-wrap c9-lado">
+    <div class="c9-pilha c9-gap-14 c9-b520">
+      <span class="c9-tag c9-cor--amarelo">{P.plataforma.etiqueta}</span>
+      <h2 id="pk-plataforma" class="c9-h2">{P.plataforma.titulo}</h2>
+      {P.plataforma.paragrafos.map((paragrafo) => <p class="c9-p">{paragrafo}</p>)}
+    </div>
+    <img class="pk-foto" src={P.plataforma.imagem.src} alt={P.plataforma.imagem.alt} width={P.plataforma.imagem.width} height={P.plataforma.imagem.height} loading="lazy" decoding="async" />
+  </div>
+</section>
+
+<section class="c9-sec c9-sec--creme" aria-labelledby="pk-condicoes">
+  <div class="c9-wrap c9-pilha c9-gap-26">
+    <div class="c9-cabeca">
+      <span class="c9-tag c9-cor--branco">{P.condicoes.etiqueta}</span>
+      <h2 id="pk-condicoes" class="c9-h2">{P.condicoes.titulo}</h2>
+    </div>
+    <div class="c9-grade c9-min-300 c9-grade--20">
+      {P.condicoes.cartoes.map((cartao, index) => (
+        <article class:list={['c9-cartao', `c9-cor--${CORES_CONDICOES[index]}`]}>
+          <h3 class="c9-cartao__titulo">{cartao.titulo}</h3>
+          <p class="c9-cartao__texto">{cartao.texto}</p>
+        </article>
+      ))}
+    </div>
+    {ready && <a class="c9-btn c9-btn--grande pk-cta" href="#resgatar">{P.condicoes.cta}</a>}
+  </div>
+</section>
+
+<section id="duvidas" class="c9-sec c9-sec--branco" aria-labelledby="pk-duvidas">
+  <div class="c9-wrap c9-pilha c9-gap-20">
+    <h2 id="pk-duvidas" class="c9-h2">{P.duvidas.titulo}</h2>
+    <div class="c9-grade c9-min-440 c9-grade--14 pk-duvidas">
+      {P.duvidas.itens.map((item, index) => (
+        <details class="c9-duvida pk-duvida" open={index === 0}>
+          <summary>{item.pergunta}</summary>
+          <p>{item.resposta}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section id="resgatar" class="c9-sec pk-pontilhado" aria-labelledby="pk-resgatar">
+  <div class="c9-wrap c9-lado c9-lado--topo">
+    <div class="c9-pilha c9-gap-14 c9-b420">
+      <span class="c9-tag c9-cor--amarelo">{P.resgatar.etiqueta}</span>
+      <h2 id="pk-resgatar" class="c9-h2">{P.resgatar.titulo}</h2>
+      <p class="c9-p">{P.resgatar.texto}</p>
+    </div>
+    <div class="pk-form">
+      {ready ? (
+        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" />
+      ) : preview ? (
+        <div class="pk-estado c9-cor--verde"><p class="c9-p">{P.resgatar.previa}</p></div>
+      ) : (
+        <div class="c9-pilha c9-gap-16">
+          {estado && (
+            <div class:list={['pk-estado', `c9-cor--${corDoEstado}`]}>
+              <span class="c9-tag">{estado.etiqueta}</span>
+              <h3 class="pk-estado__titulo">{estado.titulo}</h3>
+              <p class="c9-p">{estado.texto}</p>
+            </div>
+          )}
+          {podeRetomar && (
+            <details id="retomar" class="pk-retomar">
+              <summary>{P.estados.retomar.botao}</summary>
+              <p>{P.estados.retomar.texto}</p>
+              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" retryOnly />
+            </details>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+</section>

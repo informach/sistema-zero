@@ -295,6 +295,44 @@ volta da foto. Prancha "Perfil público e a cor da etapa" e "Jornada adulta" no 
 - A jornada é cadastrada no Admin; o script `journey:seed-adult` do members faz o cadastro inicial.
 - Testes: `tests/journey-stage.test.ts`.
 
+## Embaixador em Meu perfil (20/10/2026)
+
+O presente agora tem dois públicos (Kids e adulto) e o adulto também pode ser embaixador. Canvas
+"Presente Kids e adulto", prancha "Cadastro de embaixador".
+
+- ⚠️ **Regra da dona:** dentro da comunidade vale a identidade DESTE app. A seção
+  (`components/community/profile/ambassador-section.tsx`) usa `sz-card`, `sz-h3`,
+  `sz-btn`/`sz-btn-outline`, `sz-link` e texto apagado; a cara arcade da oferta adulta fica só no
+  funil. Atalho "Embaixador" no `ProfileNav`, antes de "Senha" (`showAmbassador`).
+- **Estados** (a lógica do cartão da área dos pais do Kids, na voz de "você"): sem cadastro (texto
+  dos dois presentes, valor do bônus vindo de `bonus.amountCents`, nunca cravado, termos e "Quero ser
+  embaixador(a)"); cadastrado (resgates, aviso de chave Pix, "Copiar link para um adulto",
+  "Copiar link para uma família" com o `shareUrl` antigo de reserva, "Abrir minha página");
+  pausado e `emailPending` (recado com o Atendimento, `/ajuda#atendimento`, sem links). Falha ao
+  copiar mostra o link para copiar à mão.
+- **Dados:** `perfil/page.tsx` lê no servidor com `shell.members.getAmbassadorEnrollmentReadonly()`,
+  SÓ quando `isOwnAdultAccountSession(session)`; sem resposta 200, a seção e o atalho somem (best
+  effort). O cadastro vai por **`api/embaixador`** (`shell.routes.ambassadorMe`), GET e POST
+  embrulhados com **`requireOwnAdultAccount`** (`server/own-account.ts`): sem sessão 401; claim
+  `kids` ou `activeProfile` 403 `OWN_ACCOUNT_REQUIRED`; QUALQUER sessão de suporte (`act`, em
+  qualquer modo, também na leitura) 403 `IMPERSONATION_FORBIDDEN`. ⚠️⚠️ A leitura também fecha
+  (review de 20/10/2026): a resposta traz o `pageUrl`, a capability-URL da página do embaixador,
+  que troca a chave Pix (`/ambassadors/by-token/:token/pix` no referrals). Aberta ao suporte, ela
+  deixava a equipe desviar o bônus. É a mesma régua do Kids, onde o `requireParentGateAccountOnly`
+  já recusa toda sessão de suporte. Numa sessão de suporte a seção e o atalho não aparecem.
+- Teste: `tests/ambassador-section.test.tsx` (estados, a rota de verdade com o shell falso e a régua
+  da página).
+- **Visitante do Mural adulto:** o presente adulto deixa a chave permanente
+  `adult-mural-dos-criadores-visitante`; depois dos 7 dias o hub devolve `canInteract: false` no
+  `mural-dos-criadores-adulto` (e recusa escrita com 403). Como no Kids, o `space-view-client.tsx`
+  esconde reagir (a `ReactionBar` vira só contagem), comentar, "Novo tópico" e remix, e mostra o
+  `ReadOnlyNote` ("Você pode ver e jogar o Mural. Para publicar, comentar e reagir, a Comunidade dos
+  Criadores abre tudo de novo." + "Ver como continuar", `comunidadeAdultoContinuarUrl('mural-visitante')`)
+  na grade e na conversa. O cabeçalho da página (`mural-dos-criadores-adulto/page.tsx`) lê o espaço
+  no servidor (`shell.hub.getSpaceReadonly`) e, quando o hub diz `canInteract: false`
+  (`lib/mural-visitor.ts`), tira "Publicar um jogo meu" e o "comente" da frase de abertura; com o
+  hub fora, a página segue como sempre (o hub decide no clique). Teste: `tests/mural-visitor.test.tsx`.
+
 ## Entradas para a oferta de continuidade (20/10/2026)
 
 A página pública `…/pro/comunidade-dos-criadores/oferta/continuar` agora tem links vindos do app.

@@ -112,3 +112,43 @@ describe('Comunidade: contraste dos pares novos da oferta', () => {
     }
   })
 })
+
+/**
+ * O presente Kids e adulto (20/10/2026): os pares que o formulário e os estados põem em contato. O
+ * Kids lê a paleta da plataforma; o adulto, os tokens `--cda-*` do theme-arcade.css.
+ */
+describe('Presente: contraste do formulário e dos estados nos dois temas', () => {
+  const arcadeCss = readFileSync(
+    join(import.meta.dir, '..', '..', 'src', 'styles', 'theme-arcade.css'),
+    'utf8',
+  )
+  const arcade = new Map<string, string>()
+  for (const [, nome, hex] of arcadeCss.matchAll(/--cda-([\w-]+):\s*(#[0-9a-f]{6})\b/gi))
+    if (nome && hex) arcade.set(nome, hex.toLowerCase())
+  const a = (nome: string) => {
+    const hex = arcade.get(nome)
+    if (!hex) throw new Error(`O tema arcade não tem --cda-${nome}`)
+    return hex
+  }
+  const azulFundo = mixOklab(t('blue'), t('card'), 0.1)
+  const kids: [string, string, string][] = [
+    ['erro: vermelho no cartão branco', t('red'), t('card')],
+    ['aviso do responsável: tinta no azul a 10%', t('ink'), azulFundo],
+    ['já resgatado: tinta no creme', t('ink'), t('yellow-surface')],
+    ['botão: branco no azul', t('card'), t('blue')],
+    ['nota do formulário: tinta suave no cartão', t('ink-muted'), t('card')],
+    ['link dos Termos: ação no cartão', t('action'), t('card')],
+  ]
+  const adulto: [string, string, string][] = [
+    ['erro: rosa na carta', a('rosa'), a('carta')],
+    ['nota do formulário: texto de apoio na carta', a('texto-apoio'), a('carta')],
+    ['link dos Termos: azul na carta', a('azul'), a('carta')],
+    ['botão: fundo no amarelo', a('fundo'), a('amarelo')],
+    ['legenda das telas: legenda no fundo', a('legenda'), a('fundo-2')],
+    ['selo do estado: fundo no rosa', a('fundo'), a('rosa')],
+  ]
+  for (const [nome, frente, fundo] of [...kids, ...adulto])
+    test(`${nome} ≥ 4,5`, () => {
+      expect(contrast(frente, fundo)).toBeGreaterThanOrEqual(4.5)
+    })
+})

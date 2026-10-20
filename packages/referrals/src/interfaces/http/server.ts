@@ -7,7 +7,11 @@ import type { AmbassadorAdminService } from '../../application/ambassadors/ambas
 import type { CampaignAdminService } from '../../application/campaigns/campaign-admin.service'
 import type { CreateInviteService } from '../../application/invites/create-invite.service'
 import type { RedeemScholarshipService } from '../../application/redeem-scholarship/redeem-scholarship.service'
-import { CampaignConflictError, CampaignValidationError } from '../../domain/campaign'
+import {
+  CampaignAudienceLockedError,
+  CampaignConflictError,
+  CampaignValidationError,
+} from '../../domain/campaign'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 import { adminRoutes } from './admin.routes'
 import { campaignsRoutes } from './campaigns.routes'
@@ -52,6 +56,10 @@ export function createServer(deps: HttpDeps) {
         if (error instanceof CampaignConflictError) {
           set.status = 409
           return envelope('CAMPAIGN_CHANGED', error.message)
+        }
+        if (error instanceof CampaignAudienceLockedError) {
+          set.status = 409
+          return envelope('CAMPAIGN_AUDIENCE_LOCKED', error.message)
         }
         if (error instanceof CampaignValidationError) {
           set.status = 400
@@ -101,6 +109,7 @@ export function createServer(deps: HttpDeps) {
           invite: deps.invite,
           funnelPublicUrl: deps.funnelPublicUrl,
           campaigns: deps.campaigns,
+          ambassadors: deps.ambassadors,
           bonusAmountCents: deps.bonusAmountCents,
           internalToken: deps.internalToken,
         }),

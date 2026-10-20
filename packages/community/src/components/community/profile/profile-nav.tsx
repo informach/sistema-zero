@@ -1,6 +1,14 @@
 'use client'
 
-import { type LucideIcon, Palette, ShieldCheck, Sparkles, UserRound, Users } from 'lucide-react'
+import {
+  Gift,
+  type LucideIcon,
+  Palette,
+  ShieldCheck,
+  Sparkles,
+  UserRound,
+  Users,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/cn'
 
@@ -10,15 +18,26 @@ const SECTIONS: readonly { id: string; label: string; icon: LucideIcon }[] = [
   { id: 'cor', label: 'Cor da plataforma', icon: Palette },
   { id: 'identidade', label: 'Na comunidade', icon: Users },
   { id: 'creditos', label: 'Créditos e voz', icon: Sparkles },
+  { id: 'embaixador', label: 'Embaixador', icon: Gift },
   { id: 'senha', label: 'Senha', icon: ShieldCheck },
 ]
 
 /**
  * Os atalhos para cada seção do perfil: coluna fixa ao lado no computador, faixa que rola de lado no
- * celular. A seção à vista fica marcada (o link ganha `aria-current`).
+ * celular. A seção à vista fica marcada (o link ganha `aria-current`). "Créditos e voz" e
+ * "Embaixador" só aparecem quando a página monta a seção (`showAi`, `showAmbassador`).
  */
-export function ProfileNav({ showAi }: { showAi: boolean }) {
-  const items = SECTIONS.filter((section) => showAi || section.id !== 'creditos')
+export function ProfileNav({
+  showAi,
+  showAmbassador = false,
+}: {
+  showAi: boolean
+  showAmbassador?: boolean
+}) {
+  const items = SECTIONS.filter(
+    (section) =>
+      (showAi || section.id !== 'creditos') && (showAmbassador || section.id !== 'embaixador'),
+  )
   const [active, setActive] = useState(items[0]?.id ?? '')
 
   useEffect(() => {

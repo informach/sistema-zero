@@ -89,6 +89,12 @@ export interface GiftLifecycleEntitlement {
   sourceId: string
   expiresAt: Date
   messageKind: GiftLifecycleKind
+  /**
+   * Público do presente (20/10/2026), igual em todas as linhas do resgate: `adult` quando o curso
+   * presenteado gravou `giftAudience: 'adult'` no snapshot ou o resgate tem as chaves do Mural
+   * adulto; resgates antigos são `kids`. Escolhe template, link e o "acesso mais forte".
+   */
+  audience: 'kids' | 'adult'
 }
 
 /** Uma matrícula de assinatura da Comunidade que acabou de vencer. */
@@ -106,7 +112,9 @@ export interface AccessEndedMessagesRepository {
    * Presentes de 7 dias com aviso devido e ainda não enviado: `gift_expiry_2d` quando faltam
    * até 2 dias no calendário de São Paulo e a matrícula segue `active` (revogada ou vencida
    * antes da hora não recebe "vai terminar"); `gift_expired` quando venceu há no máximo `window`
-   * ms (nunca avisa presentes antigos). Pula quem tem acesso mais forte e duradouro.
+   * ms (nunca avisa presentes antigos). Pula quem tem acesso mais forte e duradouro do mesmo
+   * público: Kids = `all_kids_courses`, assinatura Kids ou o mesmo curso/Mural; adulto =
+   * `all_courses`, assinatura adulta ou o mesmo curso/Mural.
    */
   listGiftLifecycleEntitlements(
     now: Date,

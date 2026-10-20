@@ -1,0 +1,53 @@
+---
+// Layout da página de recebimento do presente ADULTO (`/bolsa/<codigo>` com o público `adult` e a
+// prévia do Admin com `?audience=adult`). Canvas "Presente Kids e adulto · proposta"
+// (RecebimentoAdulto, 20/10/2026), no tema arcade da oferta adulta: tokens e fontes do
+// theme-arcade.css, layout de comunidade-adulto.css (`.cda`) e as peças do presente em
+// presente-adulto.css. O rodapé institucional é o do público pro, com o Termo adulto.
+import atkinsonCorpo from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff2?url'
+import bricolageTitulo from '@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff2?url'
+import silkscreenPixel from '@fontsource/silkscreen/files/silkscreen-latin-400-normal.woff2?url'
+import '../../styles/comunidade-adulto.css'
+import '../../styles/presente-adulto.css'
+import { PRESENTE_ADULTO as P } from '../../content/presente-adulto'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import Footer from '../Footer.astro'
+
+interface Props {
+  title: string
+  description: string
+  /** Com o formulário aberto: o botão do topo e a barra fixa levam a ele. */
+  ready?: boolean
+}
+const { title, description, ready = false } = Astro.props
+---
+<BaseLayout title={title} description={description} noindex htmlClass="theme-arcade">
+  {[bricolageTitulo, atkinsonCorpo, silkscreenPixel].map((href) => <link slot="head" rel="preload" as="font" href={href} type="font/woff2" crossorigin="anonymous" />)}
+  <div class="cda pa-corpo">
+    <a class="cda-pular" href="#conteudo">{P.pular}</a>
+    <header class="cda-topo">
+      <div class="cda-wrap cda-topo__linha">
+        <a class="cda-topo__marca" href="#topo" aria-label={P.topo.marcaAria}>
+          <img src="/logo_dark.svg" alt={P.topo.logoAlt} width="515" height="44" decoding="async" />
+          <span class="cda-topo__selo">{P.topo.selo}</span>
+        </a>
+        <nav class="cda-topo__nav" aria-label={P.topo.navAria}>
+          {P.topo.links.map((link) => <a class="cda-topo__link" href={link.href}>{link.label}</a>)}
+          {ready && <a class="cda-btn cda-btn--compacta pa-topo-cta" href="#resgatar">{P.topo.cta}</a>}
+        </nav>
+      </div>
+    </header>
+    <main id="conteudo"><slot /></main>
+    {ready && (
+      <div class="cda-barra" data-presente-barra aria-hidden="true">
+        <p class="cda-barra__preco"><strong>{P.barra.titulo}</strong><span>{P.barra.texto}</span></p>
+        <a class="cda-btn cda-btn--barra" href="#resgatar" tabindex="-1">{P.barra.cta}</a>
+      </div>
+    )}
+  </div>
+  <Footer audience="pro" termosHref={P.legal.termos.href} />
+</BaseLayout>
+<script>
+  import { ligarBarraFixa } from '../../lib/barra-fixa'
+  ligarBarraFixa('[data-presente-barra]', 'resgatar')
+</script>

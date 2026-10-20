@@ -20,7 +20,7 @@ describe.skipIf(!url)('fim do acesso: consultas no Postgres real', () => {
   const NOW = new Date('2031-03-10T15:00:00Z') // 12:00 em São Paulo
   const HOUR = 3_600_000
   const WINDOW = ACCESS_ENDED_WINDOW_MS
-  const users: string[] = Array.from({ length: 18 }, () => randomUUID())
+  const users: string[] = Array.from({ length: 30 }, () => randomUUID())
   const mine = new Set(users)
   const u = (index: number) => users[index] as string
 
@@ -76,6 +76,7 @@ describe.skipIf(!url)('fim do acesso: consultas no Postgres real', () => {
     expiresAt?: Date | null
     updatedAt?: Date
     offerSlug?: string
+    snapshot?: Record<string, unknown>
   }) {
     const id = randomUUID()
     await conn.sql`insert into members.entitlements
@@ -85,7 +86,7 @@ describe.skipIf(!url)('fim do acesso: consultas no Postgres real', () => {
         ${row.accessType ?? 'course'}, ${row.courseRef ?? null}, ${row.status ?? 'active'},
         ${row.subscriptionId ?? null}, ${row.expiresAt?.toISOString() ?? null},
         ${(row.updatedAt ?? NOW).toISOString()},
-        ${JSON.stringify(row.offerSlug ? { offerSlug: row.offerSlug } : {})}::jsonb)`
+        ${JSON.stringify({ ...(row.offerSlug ? { offerSlug: row.offerSlug } : {}), ...row.snapshot })}::jsonb)`
     return id
   }
   const giftRow = (userId: string, source: string, expiresAt: Date | null, courseRef: string) =>
@@ -142,6 +143,8 @@ describe.skipIf(!url)('fim do acesso: consultas no Postgres real', () => {
       ].sort(),
     )
     expect(listed.find((row) => row.id === course)?.sourceId).toBe('scholarship:a')
+    // Resgates antigos (sem giftAudience nem chave do Mural adulto) continuam Kids.
+    expect(listed.every((row) => row.audience === 'kids')).toBe(true)
 
     // Dedupe por matrícula + vencimento + tipo; no dia do vencimento, o aviso seguinte aparece.
     for (const row of listed)
@@ -173,6 +176,102 @@ describe.skipIf(!url)('fim do acesso: consultas no Postgres real', () => {
       mine.has(row.userId),
     )
     expect(limited.map((row) => row.userId)).toEqual([u(0), u(0)])
+  })
+
+  test('presente adulto: público pelo resgate e acesso mais forte do próprio público', async () => {
+    const twoDays = new Date('2031-03-12T14:00:00Z')
+    const adultGift = async (
+      userId: string,
+      source: string,
+      opts: { withSnapshot?: boolean; withMural?: boolean } = {},
+    ) => {
+      const { withSnapshot = true, withMural = true } = opts
+      const ids = [
+        await insert({
+          userId,
+          sourceKind: 'manual',
+          sourceId: `scholarship:${source}`,
+          courseRef: 'cade-todo-mundo-adulto',
+          accessType: 'course',
+          expiresAt: twoDays,
+          snapshot: withSnapshot ? { giftAudience: 'adult' } : {},
+        }),
+      ]
+      if (withMural) {
+        ids.push(
+          await insert({
+            userId,
+            sourceKind: 'manual',
+            sourceId: `scholarship:${source}`,
+            courseRef: 'adult-mural-dos-criadores',
+            accessType: 'community',
+            expiresAt: twoDays,
+          }),
+        )
+        await insert({
+          userId,
+          sourceKind: 'manual',
+          sourceId: `scholarship:${source}`,
+          courseRef: 'adult-mural-dos-criadores-visitante',
+          accessType: 'community',
+          expiresAt: null,
+        })
+      }
+      return ids
+    }
+    const plain = await adultGift(u(18), 'ad-a')
+    // Só a chave do Mural adulto basta (curso sem snapshot do público); só o snapshot também.
+    const muralOnly = await adultGift(u(19), 'ad-b', { withSnapshot: false })
+    const snapshotOnly = await adultGift(u(27), 'ad-c', { withMural: false })
+    // Acesso mais forte ADULTO: chave-mestra adulta, assinatura adulta, o mesmo curso por outra via.
+    await adultGift(u(20), 'ad-d')
+    await insert({ userId: u(20), accessType: 'all_courses', sourceId: 'pay-d' })
+    await adultGift(u(22), 'ad-e')
+    await insert({
+      userId: u(22),
+      subscriptionId: 'sub-ad-e',
+      sourceKind: 'subscription',
+      sourceId: 'sub-ad-e',
+      accessType: 'community',
+      courseRef: 'adult-clube-dos-criadores',
+      offerSlug: 'comunidade-dos-criadores-adulto-mensal',
+      expiresAt: new Date('2031-04-10T00:00:00Z'),
+    })
+    await adultGift(u(25), 'ad-f')
+    await insert({ userId: u(25), courseRef: 'cade-todo-mundo-adulto', sourceId: 'pay-f' })
+    // O acesso Kids não segura o presente adulto…
+    const kidsMaster = await adultGift(u(21), 'ad-g')
+    await insert({ userId: u(21), accessType: 'all_kids_courses', sourceId: 'pay-g' })
+    const kidsSubscription = await adultGift(u(23), 'ad-h')
+    await insert({
+      userId: u(23),
+      subscriptionId: 'sub-ad-h',
+      sourceKind: 'subscription',
+      sourceId: 'sub-ad-h',
+      offerSlug: 'comunidade-dos-criadores-mensal',
+      expiresAt: new Date('2031-04-10T00:00:00Z'),
+    })
+    // …e o adulto não segura o presente Kids (régua Kids intocada).
+    const kidsGift = await giftRow(u(24), 'kd-i', twoDays, 'cade-todo-mundo')
+    await insert({ userId: u(24), accessType: 'all_courses', sourceId: 'pay-i' })
+    await insert({
+      userId: u(24),
+      subscriptionId: 'sub-kd-i',
+      sourceKind: 'subscription',
+      sourceId: 'sub-kd-i',
+      offerSlug: 'comunidade-dos-criadores-adulto-anual',
+      expiresAt: new Date('2031-04-10T00:00:00Z'),
+    })
+
+    const listed = (await repo.listGiftLifecycleEntitlements(NOW, WINDOW, 50)).filter((row) =>
+      mine.has(row.userId),
+    )
+    const byId = new Map(listed.map((row) => [row.id, row]))
+    const adultIds = [...plain, ...muralOnly, ...snapshotOnly, ...kidsMaster, ...kidsSubscription]
+    expect(new Set(byId.keys())).toEqual(new Set([...adultIds, kidsGift]))
+    expect(adultIds.every((id) => byId.get(id)?.audience === 'adult')).toBe(true)
+    expect(adultIds.every((id) => byId.get(id)?.messageKind === 'gift_expiry_2d')).toBe(true)
+    expect(byId.get(kidsGift)?.audience).toBe('kids')
   })
 
   test('assinatura: só Comunidade vencida agora, por audiência, sem outro acesso ativo', async () => {

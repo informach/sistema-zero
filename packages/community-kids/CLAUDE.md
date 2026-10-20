@@ -851,6 +851,14 @@ Shim `app/api/parents/embaixador/route.ts` = `requireParentGateAccountOnly(shell
 ambassadorMe.GET/POST)` — mesma régua estrita do children-stats (sessão de perfil é RECUSADA).
 Tipos no member-shell (`AmbassadorEnrollmentView`); gestão completa (bônus, Pix, jornada) vive no
 ADMIN e na página do embaixador no funil.
+**Presente Kids e adulto (20/10/2026):** o cartão (hoje em `app/pais/_components/ambassador-card.tsx`)
+conta os DOIS presentes (uma família com criança de 9 a 14 anos ou um adulto que quer criar o
+próprio jogo) e, cadastrado, oferece "Copiar link para uma família" (`shareUrls.kids`, com o
+`shareUrl` antigo como reserva) e "Copiar link para um adulto" (`shareUrls.adult`; some sem ele),
+mais "Abrir minha página". ⚠️ Regra da dona: o DESENHO não muda (faixa `--band-lilas`, ícone em
+cartão branco, `sz-display`, `PRIMARY_ACTION`/`SECONDARY_ACTION`); a cara da oferta adulta fica no
+funil. Os toasts perderam o "!" e o nome do curso saiu do cartão. Testes:
+`tests/ambassador-card.test.tsx` (estados) e `tests/ambassador-copy.test.ts` (copy e desenho).
 A Área dos Pais também tem o **Atendimento**, hoje em `/pais/ajuda/atendimento` (era `/responsavel/ajuda`, que
 virou redirecionamento em 11/10/2026; FORA do layout e da navegação infantil). Essa página exige sessão da CONTA no RSC;
 os três BFFs `/api/helpdesk/portal/*` repetem a proteção com

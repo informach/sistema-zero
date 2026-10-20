@@ -1,5 +1,9 @@
 import { and, asc, eq, gte, isNull, lte, sql } from 'drizzle-orm'
 import {
+  ADULT_MURAL_FULL_REF,
+  ADULT_MURAL_VISITOR_REF,
+} from '../../../domain/entitlement/mural-visitor'
+import {
   type AccessEndedKind,
   type AccessEndedMessagesRepository,
   COMMUNITY_SUBSCRIPTION_OFFER_SLUGS,
@@ -258,11 +262,27 @@ export class DrizzleRenewalReminderRepository
     const sinceIso = new Date(now.getTime() - windowMs).toISOString()
     // O limite conta PRESENTES (conta + resgate + vencimento): o curso e o Mural temporário do
     // mesmo resgate saem juntos no mesmo ciclo, um e-mail só.
+    const list = (slugs: readonly string[]) =>
+      sql.join(
+        slugs.map((slug) => sql`${slug}`),
+        sql`, `,
+      )
+    const kidsSubscriptions = list(COMMUNITY_SUBSCRIPTION_OFFER_SLUGS.kids)
+    const adultSubscriptions = list(COMMUNITY_SUBSCRIPTION_OFFER_SLUGS.adult)
+    const adultMuralRefs = list([ADULT_MURAL_FULL_REF, ADULT_MURAL_VISITOR_REF])
     const rows = await this.db.execute(sql`
-      with eligible as (
+      with gifts as (
         select e.id, e.user_id, e.source_id, e.expires_at,
           case when e.expires_at <= ${nowIso}::timestamptz then 'gift_expired' else 'gift_expiry_2d' end
-            as message_kind
+            as message_kind,
+          -- O público é do RESGATE inteiro (curso + Mural do mesmo source_id), lido de dados
+          -- imutáveis: o snapshot do curso presenteado (giftAudience) ou as chaves do Mural adulto.
+          -- Linha antiga sem nenhum dos dois é Kids.
+          case when exists (
+            select 1 from members.entitlements g
+             where g.user_id = e.user_id and g.source_id = e.source_id
+               and (g.snapshot ->> 'giftAudience' = 'adult' or g.course_ref in (${adultMuralRefs}))
+          ) then 'adult' else 'kids' end as audience
           from members.entitlements e
          where e.source_kind = 'manual'
            and e.source_id like 'scholarship:%'
@@ -279,15 +299,17 @@ export class DrizzleRenewalReminderRepository
                  - (${nowIso}::timestamptz at time zone 'America/Sao_Paulo')::date <= 2
              )
            )
-           and not exists (
+      ), eligible as (
+        select e.* from gifts e
+         where not exists (
              select 1 from members.entitlement_lifecycle_messages_sent sent
               where sent.entitlement_id = e.id
                 and sent.expires_on = (e.expires_at at time zone 'UTC')::date
-                and sent.message_kind =
-                  case when e.expires_at <= ${nowIso}::timestamptz then 'gift_expired' else 'gift_expiry_2d' end
+                and sent.message_kind = e.message_kind
            )
-           -- Acesso mais forte e duradouro (assinatura, chave-mestra Kids ou o mesmo curso por
-           -- outra via) torna o fim do presente irrelevante. Mesma régua do Desafio.
+           -- Acesso mais forte e duradouro DO MESMO PÚBLICO (chave-mestra, assinatura da Comunidade
+           -- ou o mesmo curso/Mural por outra via) torna o fim do presente irrelevante. Mesma régua
+           -- do Desafio; o adulto espelha o Kids com as chaves adultas.
            and not exists (
              select 1 from members.entitlements stronger
               where stronger.user_id = e.user_id
@@ -296,13 +318,12 @@ export class DrizzleRenewalReminderRepository
                 and (stronger.expires_at is null or stronger.expires_at > ${nowIso}::timestamptz)
                 and (stronger.expires_at is null or stronger.expires_at > e.expires_at)
                 and (
-                  stronger.access_type = 'all_kids_courses'
-                  or stronger.snapshot ->> 'offerSlug' in (
-                    ${sql.join(
-                      COMMUNITY_SUBSCRIPTION_OFFER_SLUGS.kids.map((slug) => sql`${slug}`),
-                      sql`, `,
-                    )}
-                  )
+                  (e.audience = 'kids' and (
+                    stronger.access_type = 'all_kids_courses'
+                    or stronger.snapshot ->> 'offerSlug' in (${kidsSubscriptions})))
+                  or (e.audience = 'adult' and (
+                    stronger.access_type = 'all_courses'
+                    or stronger.snapshot ->> 'offerSlug' in (${adultSubscriptions})))
                   or stronger.course_ref in (
                     select gift.course_ref from members.entitlements gift
                      where gift.user_id = e.user_id and gift.source_id = e.source_id
@@ -330,6 +351,7 @@ export class DrizzleRenewalReminderRepository
           sourceId: String(row.source_id),
           expiresAt: new Date(row.expires_at as string),
           messageKind: kind as GiftLifecycleKind,
+          audience: row.audience === 'adult' ? ('adult' as const) : ('kids' as const),
         },
       ]
     })

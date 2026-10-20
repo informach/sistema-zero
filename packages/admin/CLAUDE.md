@@ -1819,4 +1819,20 @@ A rota `/admin/embaixadores` usa `ConvitesClient`: campanhas na aba inicial; o p
 
 Datas do formulário são explicitamente de Brasília (`campaign-dates.ts`). Título público difere de nome interno. Código não muda após criar; duplicar exige outro. Prévia é somente leitura no funil. O QR é gerado localmente pelo member-shell com o link público retornado pelo serviço; jamais usar a capability privada do embaixador. Migração e pendências em `docs/marketing/kids/cade-todo-mundo/implementacao.md`.
 
+**Público do presente (20/10/2026):** cada campanha é `audience: 'kids' | 'adult'` (contrato do
+`@sistemazero/core/referrals`; ausente = Kids). O editor tem o grupo "Público do presente" (dois
+cartões de rádio com o texto do Canvas "Presente Kids e adulto") e trava fora do rascunho pelo
+status GRAVADO (o referrals responde 409 `CAMPAIGN_AUDIENCE_LOCKED`, que vira
+`AUDIENCE_LOCKED_MESSAGE`); o corpo leva sempre o `audience`, para o PATCH nunca trocar por
+omissão. A lista tem a coluna Público (badge), o detalhe mostra o badge e "Pessoa" no lugar de
+"Responsável" nas adultas, duplicar leva o público junto e a prévia (`previewUrl`) manda
+`audience`. O BFF repassa o corpo inteiro e o QR já sai certo (o público vem do código).
+**Aviso do curso adulto:** com o público Adulto, o editor consulta a lista de Cursos que o painel já
+tem (`/api/members/courses?q=cade-todo-mundo-adulto&audience=adult`) e, se o slug exato não está
+`published`, mostra `ADULT_COURSE_UNPUBLISHED_MESSAGE` (`role="status"`). É a mesma régua do
+`isPublishedGiftCourse` do members. Falha da consulta (403 de papel, members fora) não mostra nada.
+⚠️ Limite conhecido: o slug é o PADRÃO do referrals (`ADULT_GIFT_COURSE_SLUG`); se a env
+`SCHOLARSHIP_ADULT_COURSE_SLUG` for trocada lá, troque aqui também. Testes:
+`tests/campaign-audience.test.tsx` e a guarda de copy em `tests/ambassador-copy.test.ts`.
+
 Edição envia `expectedUpdatedAt` da versão exibida: o serviço recusa outra aba desatualizada com 409. Não reenviar automaticamente com versão nova, pois isso apagaria a proteção de conflito. Lista/detalhe ignoram respostas antigas; falha limpa resultados e oferece atualização. Regressão em `tests/campaigns-client.test.tsx`.

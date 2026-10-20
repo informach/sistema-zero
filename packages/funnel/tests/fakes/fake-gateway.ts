@@ -1,3 +1,4 @@
+import type { GiftAudience } from '@sistemazero/core/referrals'
 import type {
   AuthTokens,
   AuthUser,
@@ -53,7 +54,10 @@ export interface FakeGatewayState {
     messages: Array<{ input: SendMessageInput; idempotencyKey: string }>
     resolveCode: string[]
     ambassadorByToken: string[]
-    invites: Array<{ token: string; input: { name: string; email: string } }>
+    invites: Array<{
+      token: string
+      input: { name: string; email: string; audience?: GiftAudience }
+    }>
     redemptions: Array<{ input: { code: string; name: string; email: string; phone?: string } }>
     pixUpdates: Array<{ token: string; pixKey: string }>
   }
@@ -136,7 +140,13 @@ export function createFakeGateway(): FakeGatewayState {
   let sendMessageStatus = 202
   let referralCodeResult: { status: number; body: unknown } = {
     status: 200,
-    body: { code: 'vo-x7k2', ownerKind: 'ambassador', displayName: 'Vó Cida', giftAvailable: true },
+    body: {
+      code: 'vo-x7k2',
+      ownerKind: 'ambassador',
+      displayName: 'Vó Cida',
+      giftAvailable: true,
+      audience: 'kids',
+    },
   }
   let ambassadorResult: { status: number; body: unknown } = {
     status: 200,
@@ -144,6 +154,10 @@ export function createFakeGateway(): FakeGatewayState {
       name: 'Vó Cida',
       code: 'vo-x7k2',
       shareUrl: 'https://sistemazero.com.br/bolsa/vo-x7k2',
+      shareUrls: {
+        kids: 'https://sistemazero.com.br/bolsa/vo-x7k2',
+        adult: 'https://sistemazero.com.br/bolsa/vo-a9x4',
+      },
       stats: { redemptionsCompleted: 2, invitesSent: 5 },
     },
   }

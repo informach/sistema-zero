@@ -1326,8 +1326,11 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   }
 
   /**
-   * Embaixador da Bolsa do Primeiro Jogo (auto-cadastro do responsável). Tela
-   * EXCLUSIVA dos pais — o shim do KIDS gateia com `requireParentGateAccountOnly`.
+   * Embaixador do presente (auto-cadastro). O corpo do referrals passa INTEIRO: `shareUrls`
+   * (`{ kids, adult }`, 20/10/2026) e o `shareUrl` antigo (Kids) chegam ao cartão como vieram.
+   * Quem pode chamar é decidido no shim de cada app: o Kids gateia com
+   * `requireParentGateAccountOnly`; o adulto com `requireOwnAdultAccount` (sem perfil, e GET e
+   * POST recusam qualquer sessão de suporte: o `pageUrl` troca a chave Pix).
    */
   const ambassadorMe = {
     GET: async () => {

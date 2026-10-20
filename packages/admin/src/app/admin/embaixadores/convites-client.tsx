@@ -1,11 +1,14 @@
 'use client'
 
-import type {
-  CampaignDetailView,
-  CampaignInput,
-  CampaignState,
-  CampaignView,
+import {
+  type CampaignDetailView,
+  type CampaignInput,
+  type CampaignState,
+  type CampaignView,
+  type GiftAudience,
+  isGiftAudience,
 } from '@sistemazero/core/referrals'
+import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -24,12 +27,91 @@ const labels: Record<CampaignState, string> = {
   paused: 'Pausada',
   ended: 'Encerrada',
 }
+/**
+ * Público do presente (20/10/2026). O texto de cada cartão é o do Canvas "Presente Kids e adulto":
+ * define a página, o curso, o Mural e os e-mails de quem se cadastra pelo link.
+ */
+const AUDIENCES: readonly { value: GiftAudience; label: string; hint: string }[] = [
+  {
+    value: 'kids',
+    label: 'Kids',
+    hint: 'Família com criança de 9 a 14 anos. Cadê Todo Mundo e Mural Kids.',
+  },
+  {
+    value: 'adult',
+    label: 'Adulto',
+    hint: '18 anos ou mais. Cadê Todo Mundo na versão adulta e Mural adulto.',
+  },
+]
+const AUDIENCE_HELP =
+  'Define a página, o curso, o Mural e os e-mails de quem se cadastrar pelo link. Depois que a campanha sai do rascunho, o público não muda: para trocar, duplique a campanha.'
+export const AUDIENCE_LOCKED_MESSAGE =
+  'O público só muda enquanto a campanha está em rascunho. Para trocar, duplique a campanha como nova edição.'
+/**
+ * Curso do presente adulto (padrão do referrals, `SCHOLARSHIP_ADULT_COURSE_SLUG`). Enquanto ele não
+ * estiver publicado na plataforma adulta, o referrals responde `giftAvailable: false` e o link
+ * adulto não entrega o presente. O editor confere pela lista de cursos que o painel já tem.
+ */
+export const ADULT_GIFT_COURSE_SLUG = 'cade-todo-mundo-adulto'
+export const ADULT_COURSE_UNPUBLISHED_MESSAGE =
+  'O curso Cadê Todo Mundo na versão adulta (cade-todo-mundo-adulto) ainda não está publicado. Até ele ser publicado em Cursos, o link desta campanha mostra o presente como indisponível.'
+type CourseCheck = 'published' | 'unpublished' | 'unknown'
+/**
+ * Lê `/api/members/courses` (a mesma lista de Cursos do painel) e procura o slug exato. Qualquer
+ * falha (sem permissão, members fora, resposta torta) é `unknown` e não mostra aviso: o aviso só
+ * aparece quando a lista DIZ que o curso não está publicado. `fetch` direto e não `apiGet`, para
+ * um 401 desta consulta lateral não tirar a pessoa do editor.
+ */
+function useAdultGiftCourse(enabled: boolean): CourseCheck {
+  const [check, setCheck] = useState<CourseCheck>('unknown')
+  useEffect(() => {
+    if (!enabled) return
+    const controller = new AbortController()
+    const params = new URLSearchParams({
+      q: ADULT_GIFT_COURSE_SLUG,
+      audience: 'adult',
+      limit: '20',
+    })
+    fetch(`/api/members/courses?${params}`, {
+      cache: 'no-store',
+      headers: { accept: 'application/json' },
+      signal: controller.signal,
+    })
+      .then(async (res) => {
+        if (!res.ok) return 'unknown' as const
+        const body = (await res.json().catch(() => null)) as {
+          items?: { slug?: unknown; status?: unknown }[]
+        } | null
+        if (!Array.isArray(body?.items)) return 'unknown' as const
+        const course = body.items.find((item) => item.slug === ADULT_GIFT_COURSE_SLUG)
+        return course?.status === 'published' ? ('published' as const) : ('unpublished' as const)
+      })
+      .then((next) => {
+        if (!controller.signal.aborted) setCheck(next)
+      })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [enabled])
+  return enabled ? check : 'unknown'
+}
+/** Campanha anterior a 20/10/2026 (ou serviço antigo) chega sem `audience`: é Kids. */
+const audienceOf = (value: { audience?: unknown }): GiftAudience =>
+  isGiftAudience(value.audience) ? value.audience : 'kids'
+function AudienceBadge({ audience }: { audience: GiftAudience }) {
+  return (
+    <Badge variant={audience === 'adult' ? 'outline' : 'default'}>
+      {audience === 'adult' ? 'Adulto' : 'Kids'}
+    </Badge>
+  )
+}
 const dateLabel = (value: string) =>
   new Date(value).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
 const message = (err: unknown) =>
-  err && typeof err === 'object' && 'message' in err
-    ? String(err.message)
-    : 'Não foi possível concluir. Tente novamente.'
+  err && typeof err === 'object' && 'code' in err && err.code === 'CAMPAIGN_AUDIENCE_LOCKED'
+    ? AUDIENCE_LOCKED_MESSAGE
+    : err && typeof err === 'object' && 'message' in err
+      ? String(err.message)
+      : 'Não foi possível concluir. Tente novamente.'
 type Editing = {
   value: CampaignInput
   id?: string
@@ -44,6 +126,7 @@ const empty = (): CampaignInput => ({
   code: '',
   channel: '',
   status: 'draft',
+  audience: 'kids',
   startsAt: new Date().toISOString(),
   endsAt: new Date(Date.now() + 7 * 86_400_000).toISOString(),
 })
@@ -127,8 +210,9 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
         <div>
           <h1 className="text-2xl font-bold">Campanhas de presente</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Anúncios, palestras e outras ações do Sistema Zero. Cada campanha tem seu link e seu
-            prazo para novos cadastros. O convidado recebe sete dias de curso a partir do cadastro.
+            Anúncios, palestras e outras ações do Sistema Zero. Cada campanha tem seu link, seu
+            público e seu prazo para novos cadastros. Quem se cadastra recebe 7 dias de curso e de
+            Mural, contados do cadastro.
           </p>
         </div>
         {canWrite && <Button onClick={() => setEditing({ value: empty() })}>Nova campanha</Button>}
@@ -169,6 +253,7 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
             <tr>
               {[
                 'Campanha',
+                'Público',
                 'Estado',
                 'Inscrições até (Brasília)',
                 'Resgates',
@@ -184,7 +269,7 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="p-6" role="status">
+                <td colSpan={7} className="p-6" role="status">
                   Carregando campanhas…
                 </td>
               </tr>
@@ -194,6 +279,9 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
                   <td className="p-4">
                     <strong>{item.name}</strong>
                     <p className="mt-1 text-xs text-muted-foreground">{item.code}</p>
+                  </td>
+                  <td className="p-4">
+                    <AudienceBadge audience={audienceOf(item)} />
                   </td>
                   <td className="p-4">{labels[item.state]}</td>
                   <td className="p-4">{dateLabel(item.endsAt)}</td>
@@ -226,7 +314,7 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
             )}
             {!loading && !error && items.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-6">
+                <td colSpan={7} className="p-6">
                   Nenhuma campanha encontrada. Crie uma campanha para divulgar o presente com um
                   link próprio.
                 </td>
@@ -255,7 +343,7 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
       <p className="text-xs text-muted-foreground">
         Resgates são cadastros com os acessos concedidos. Conversões são as primeiras compras
         elegíveis da Comunidade após o presente, excluindo estornos. Campanhas não geram bônus Pix.
-        Esses números contam contas de responsáveis, não crianças.
+        Nas campanhas Kids, esses números contam contas de responsáveis, não crianças.
       </p>
       {editing && (
         <CampaignEditor
@@ -279,10 +367,11 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
           className="max-w-4xl"
         >
           <div className="space-y-6">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-md bg-muted px-3 py-2 text-sm">
                 {labels[detail.campaign.state]}
               </span>
+              <AudienceBadge audience={audienceOf(detail.campaign)} />
               {canWrite && (
                 <>
                   <Button
@@ -304,9 +393,12 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
                       setEditing({
                         id: detail.campaign.id,
                         duplicate: true,
+                        // O público viaja com a edição nova (`...detail.campaign`): duplicar é o
+                        // jeito de trocar de público, e o editor deixa mudar no rascunho.
                         value: {
                           ...detail.campaign,
-                          name: `${detail.campaign.name} — nova edição`.slice(0, 120),
+                          audience: audienceOf(detail.campaign),
+                          name: `${detail.campaign.name} · nova edição`.slice(0, 120),
                           code: '',
                           status: 'draft',
                           startsAt: empty().startsAt,
@@ -393,7 +485,9 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
                 <table className="w-full text-left text-sm">
                   <thead>
                     <tr>
-                      <th className="p-2">Responsável</th>
+                      <th className="p-2">
+                        {audienceOf(detail.campaign) === 'adult' ? 'Pessoa' : 'Responsável'}
+                      </th>
                       <th className="p-2">Situação</th>
                       <th className="p-2">Curso até</th>
                       <th className="p-2">Origem de mídia</th>
@@ -410,7 +504,9 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
                               className="mt-1 inline-block text-xs underline"
                               href={`/admin/membros/${encodeURIComponent(row.userId)}`}
                             >
-                              Ver conta e progresso dos perfis
+                              {audienceOf(detail.campaign) === 'adult'
+                                ? 'Ver conta e progresso'
+                                : 'Ver conta e progresso dos perfis'}
                             </a>
                           )}
                         </td>
@@ -480,9 +576,11 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
   )
 }
 
-function previewUrl(campaign: CampaignView) {
+export function previewUrl(campaign: CampaignView) {
   const url = new URL('/bolsa/previa', campaign.shareUrl)
   url.search = new URLSearchParams({
+    // A prévia escolhe a página Kids ou adulta pelo público (o funil trata ausente como Kids).
+    audience: audienceOf(campaign),
     title: campaign.publicTitle,
     description: campaign.description,
     context: campaign.context,
@@ -502,6 +600,14 @@ function CampaignEditor({
   onSaved: (value: CampaignView) => void
 }) {
   const [value, setValue] = useState(editing.value)
+  // O público trava fora do rascunho (o referrals responde 409 `CAMPAIGN_AUDIENCE_LOCKED`). Vale o
+  // estado GRAVADO da campanha, não o do formulário: publicar e trocar o público no mesmo envio
+  // também é recusado.
+  const audienceLocked = Boolean(
+    editing.id && !editing.duplicate && editing.value.status !== 'draft',
+  )
+  const audience = audienceOf(value)
+  const adultCourse = useAdultGiftCourse(audience === 'adult')
   const [start, setStart] = useState(campaignLocalDate(value.startsAt))
   const [end, setEnd] = useState(campaignLocalDate(value.endsAt))
   const [saving, setSaving] = useState(false)
@@ -521,6 +627,8 @@ function CampaignEditor({
         code: value.code,
         channel: value.channel,
         status: value.status,
+        // Sempre explícito: um PATCH sem o campo não pode virar Kids por omissão.
+        audience,
         startsAt: campaignIsoDate(start),
         endsAt: campaignIsoDate(end),
       }
@@ -565,8 +673,43 @@ function CampaignEditor({
         }}
       >
         <fieldset disabled={saving} className="min-w-0 space-y-4">
+          <fieldset className="min-w-0 space-y-2" aria-describedby="campaign-audience-help">
+            <legend className="mb-1 text-sm font-semibold">Público do presente</legend>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {AUDIENCES.map((option) => (
+                <label
+                  key={option.value}
+                  className="flex min-h-11 cursor-pointer flex-col gap-1 rounded-lg border p-3 text-sm has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/30 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-70 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
+                >
+                  <span className="flex items-center gap-2 font-semibold">
+                    <input
+                      type="radio"
+                      name="campaign-audience"
+                      value={option.value}
+                      checked={audience === option.value}
+                      disabled={audienceLocked}
+                      onChange={() => change('audience', option.value)}
+                    />
+                    {option.label}
+                  </span>
+                  <span className="text-muted-foreground">{option.hint}</span>
+                </label>
+              ))}
+            </div>
+            <p id="campaign-audience-help" className="text-sm text-muted-foreground">
+              {AUDIENCE_HELP}
+            </p>
+            {adultCourse === 'unpublished' ? (
+              <p
+                role="status"
+                className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
+              >
+                {ADULT_COURSE_UNPUBLISHED_MESSAGE}
+              </p>
+            ) : null}
+          </fieldset>
           <p className="text-sm text-muted-foreground">
-            O nome é interno. O título e a apresentação aparecem para as famílias. O código
+            O nome é interno. O título e a apresentação aparecem para quem recebe o link. O código
             permanece fixo depois de criado.
           </p>
           {(
@@ -575,7 +718,7 @@ function CampaignEditor({
               { key: 'publicTitle', label: 'Título público', max: 160 },
               {
                 key: 'code',
-                label: 'Código do link (4–32 letras minúsculas, números e hífens)',
+                label: 'Código do link (4 a 32 letras minúsculas, números e hífens)',
                 max: 32,
               },
               { key: 'channel', label: 'Canal de divulgação (interno)', max: 100 },
@@ -655,9 +798,9 @@ function CampaignEditor({
             </label>
           </div>
           <p className="text-sm text-muted-foreground">
-            O prazo acima controla novos cadastros. Cada cadastro aceito preserva seus sete dias de
-            curso, mesmo se a campanha for encerrada depois. O link pode ser encaminhado; não valida
-            presença no evento. Não há bônus Pix para campanhas.
+            O prazo acima controla novos cadastros. Cada cadastro aceito mantém os 7 dias de curso e
+            de Mural, mesmo se a campanha for encerrada depois. O link pode ser encaminhado e não
+            confere presença no evento. Campanhas não geram bônus Pix.
           </p>
           {error && (
             <p role="alert" className="text-sm text-destructive">

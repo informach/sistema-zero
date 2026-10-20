@@ -201,6 +201,13 @@ const DEVICE_ALREADY_READY =
 const PARENT_SIGN_IN_HELP =
   'Não lembra a senha? Na entrada dos responsáveis, receba um código no seu e-mail ou use “Esqueci minha senha”.'
 
+// ── Presente adulto (20/10/2026) ──────────────────────────────────────────────
+/** O que o presente adulto libera, com o prazo (`validade`, fuso de Brasília). */
+const ADULT_GIFT =
+  'o <strong>Cadê Todo Mundo</strong>, na versão adulta, e o <strong>Mural adulto</strong>, até <strong>{{validade}} (horário de Brasília)</strong>.'
+const adultGiftOrigin = (campaign: boolean) =>
+  campaign ? 'da campanha <strong>{{campanha}}</strong>' : 'de <strong>{{indicador}}</strong>'
+
 // ── Templates ─────────────────────────────────────────────────────────────────
 
 const seeds = [
@@ -777,6 +784,54 @@ const seeds = [
       footerNote: 'Você recebeu este e-mail porque recebeu um presente de 7 dias na sua conta.',
     }),
   },
+  // Fim do presente ADULTO (20/10/2026), enviados pelo MEMBERS no mesmo ciclo do Kids, com as
+  // MESMAS variáveis de `gift-expiry-2d` e `gift-expired` (contrato: não renomear sem mudar o
+  // chamador). O `link` é o da continuidade adulta, com as UTMs. Copy do Canvas aprovado
+  // ("Presente Kids e adulto", quadro E-mails). O Canvas prevê um segundo botão para Cursos no
+  // e-mail de 2 dias; sem variável para o app adulto, o e-mail leva só o `link` recebido.
+  {
+    key: 'gift-expiry-2d-adult',
+    channel: 'email' as const,
+    name: 'Presente adulto: faltam 2 dias (e-mail)',
+    subject: '{{nome}}, o presente de 7 dias termina em {{data}}',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'Os seus projetos continuam guardados na conta depois do fim.',
+      title: 'O presente de 7 dias termina em {{data}}',
+      content: [
+        p(
+          'O acesso de presente ao <strong>Cadê Todo Mundo</strong> e ao <strong>Mural adulto</strong> termina em <strong>{{data}}</strong>.',
+        ),
+        p(
+          'Se ainda falta uma parte do jogo, estes dois dias servem para terminar e publicar. Depois do fim, os seus projetos continuam guardados na conta. Para seguir com os próximos cursos, a assinatura usa este mesmo e-mail.',
+        ),
+        ctaButton('Ver como continuar na Comunidade', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque recebeu um presente de 7 dias na sua conta.',
+    }),
+  },
+  {
+    key: 'gift-expired-adult',
+    channel: 'email' as const,
+    name: 'Presente adulto: terminou (e-mail)',
+    subject: 'O presente de 7 dias terminou, {{nome}}',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'Os projetos e o progresso no curso continuam na sua conta.',
+      title: 'O presente de 7 dias terminou',
+      content: [
+        p('O que você fez continua na conta: os projetos e o progresso no curso.'),
+        p(
+          'Com a assinatura da Comunidade dos Criadores, você segue de onde parou, com os próximos cursos, o Estúdio e o Mural. São 7 etapas, e cada uma põe ferramentas novas no seu Estúdio.',
+        ),
+        ctaButton('Ver como continuar', '{{link}}'),
+        small('7 dias de garantia na assinatura. Cancele quando quiser.'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque recebeu um presente de 7 dias na sua conta.',
+    }),
+  },
   {
     key: 'subscription-ended-kids',
     channel: 'email' as const,
@@ -966,25 +1021,27 @@ const seeds = [
     key: 'referrals-ambassador-link',
     channel: 'email' as const,
     name: 'Página do embaixador (e-mail)',
-    subject: 'Sua página de embaixador do Sistema Zero está pronta, {{nome}}!',
+    // Os DOIS presentes (20/10/2026): Kids, com o cadastro do responsável, e adulto, com o
+    // cadastro da própria pessoa. A página mostra um link para cada um.
+    subject: 'Sua página de embaixador do Sistema Zero está pronta, {{nome}}',
     variables: ['nome', 'link'],
     body: emailLayout({
-      preheader: 'Convide famílias para criar um jogo com o curso Cadê Todo Mundo?.',
-      title: 'Sua página de embaixador está pronta, {{nome}} 🎁',
+      preheader: 'Presenteie crianças e adultos que você conhece com 7 dias de curso e de Mural.',
+      title: 'Sua página de embaixador está pronta, {{nome}}',
       content: [
         p(
-          'Você agora é embaixador(a) do <strong>Sistema Zero</strong> e pode presentear crianças que você conhece com acesso ao curso <strong>Cadê Todo Mundo?</strong>, sem custo para a família indicada.',
+          'Você agora é embaixador(a) do <strong>Sistema Zero</strong> e pode dar dois presentes, sem custo para quem recebe: o curso <strong>Cadê Todo Mundo?</strong> para crianças, com o cadastro feito pelo responsável, e a versão adulta do curso para adultos, com o cadastro da própria pessoa.',
         ),
         p(
-          'Para novos resgates, a família tem 7 dias de acesso ao curso a partir do cadastro pelo link.',
+          'Cada presente vale 7 dias a partir do cadastro pelo link, com o curso e a participação no Mural.',
         ),
         p(
-          'Na sua página você encontra o seu link de bolsa para compartilhar e também pode enviar convites por e-mail. Tudo pronto, sem burocracia:',
+          'Na sua página você encontra um link para cada presente e também pode enviar convites por e-mail.',
         ),
         ctaButton('Abrir minha página', '{{link}}'),
         divider,
         small(
-          'Guarde este e-mail: o link acima é a sua chave de acesso à página (não precisa de senha). Se suspeitar que ele vazou, fale com a gente para gerar outro.',
+          'Guarde este e-mail: o link acima é a sua chave de acesso à página, sem senha. Se suspeitar que ele vazou, fale com a gente para gerar outro.',
         ),
         fallbackLink('{{link}}'),
       ].join('\n'),
@@ -1281,26 +1338,106 @@ const seeds = [
         : 'Você recebeu este e-mail porque resgatou um presente por indicação.',
     }),
   })),
+  // ── Presente ADULTO (20/10/2026) — e-mail só, consumer `referrals` ─────────────
+  // Copy do Canvas aprovado ("Presente Kids e adulto", quadro E-mails). O adulto faz o próprio
+  // cadastro e vai para o app adulto; o presente é a versão adulta do Cadê Todo Mundo e o
+  // Mural adulto por 7 dias. CONTRATO: convite `nome`+`indicador`+`link` (link = /bolsa/<código
+  // adulto>); boas-vindas por indicação `nome`+`indicador`+`validade`+`link`; por campanha
+  // `nome`+`campanha`+`validade`+`link`. `validade` chega formatada (fuso de Brasília). Link:
+  // conta nova = `<app adulto>/redefinir-senha?token=`; conta existente = `<app adulto>/cursos`.
+  {
+    key: 'referrals-scholarship-invite-adult',
+    channel: 'email' as const,
+    name: 'Presente adulto: convite do embaixador (e-mail)',
+    subject: '{{indicador}} deu a você 7 dias para fazer o seu primeiro jogo',
+    variables: ['nome', 'indicador', 'link'],
+    body: emailLayout({
+      preheader: 'O presente não pede cartão e não cria assinatura. Os 7 dias começam no cadastro.',
+      title: '{{indicador}} deu a você 7 dias para fazer o seu primeiro jogo',
+      content: [
+        p('Oi, {{nome}}.'),
+        p(
+          '<strong>{{indicador}}</strong> lembrou de você e deu 7 dias no Sistema Zero, sem custo. No <strong>Cadê Todo Mundo</strong>, o jardim e os personagens já estão prontos, e você monta as regras que fazem o jogo responder, no navegador do computador.',
+        ),
+        p(
+          'Nesses dias, você também publica o jogo no <strong>Mural adulto</strong> e manda o link para quem quiser. O presente não pede cartão e não cria assinatura. Os 7 dias começam no cadastro.',
+        ),
+        ctaButton('Ver o meu presente', '{{link}}'),
+        divider,
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este convite porque {{indicador}} indicou o seu e-mail. Ele não é reenviado.',
+    }),
+  },
+  ...[
+    { key: 'referrals-scholarship-welcome-adult', campaign: false, newAccount: true },
+    { key: 'referrals-scholarship-existing-adult', campaign: false, newAccount: false },
+    { key: 'referrals-campaign-welcome-adult', campaign: true, newAccount: true },
+    { key: 'referrals-campaign-existing-adult', campaign: true, newAccount: false },
+  ].map(({ key, campaign, newAccount }) => ({
+    key,
+    channel: 'email' as const,
+    name: `Presente adulto: boas-vindas (${campaign ? 'campanha' : 'indicação'}, conta ${newAccount ? 'nova' : 'existente'})`,
+    subject: newAccount
+      ? 'Seu curso e o Mural adulto estão liberados, {{nome}}'
+      : 'Um presente novo na sua conta, {{nome}}',
+    variables: campaign
+      ? ['nome', 'campanha', 'validade', 'link']
+      : ['nome', 'indicador', 'validade', 'link'],
+    body: emailLayout({
+      preheader: newAccount
+        ? 'Crie a sua senha e abra o curso no navegador do computador.'
+        : 'Entre com o e-mail e a senha que você já usa.',
+      title: newAccount
+        ? 'Seu curso e o Mural adulto estão liberados, {{nome}}'
+        : 'Um presente novo na sua conta, {{nome}}',
+      content: [
+        p(
+          newAccount
+            ? `O presente ${adultGiftOrigin(campaign)} está na sua conta: ${ADULT_GIFT}`
+            : `O presente ${adultGiftOrigin(campaign)} entrou na conta que você já tem: ${ADULT_GIFT}`,
+        ),
+        p(
+          newAccount
+            ? 'Para entrar pela primeira vez, crie a sua senha pelo botão abaixo. Depois, abra o curso no navegador do computador. Uma das aulas mostra como publicar o jogo no Mural.'
+            : 'Entre com o e-mail e a senha que você já usa e abra o curso no navegador do computador.',
+        ),
+        ctaButton(newAccount ? 'Criar minha senha' : 'Abrir meus cursos', '{{link}}'),
+        divider,
+        ...(newAccount
+          ? [
+              small(
+                'Se o botão não abrir, use Esqueci minha senha na tela de entrada, com este mesmo e-mail.',
+              ),
+            ]
+          : []),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: campaign
+        ? 'Você recebeu este e-mail porque se cadastrou nesta campanha.'
+        : 'Você recebeu este e-mail porque resgatou um presente por indicação.',
+    }),
+  })),
   {
     key: 'referrals-bonus-eligible',
     channel: 'email' as const,
     name: 'Bônus do embaixador liberado (e-mail)',
-    subject: 'Boa notícia, {{nome}}: seu bônus de embaixador liberou! 🎉',
+    // Vale para os dois presentes (Kids e adulto): quem assinou pode ser a família ou o adulto.
+    subject: 'Seu bônus de embaixador foi liberado, {{nome}}',
     variables: ['nome', 'valor', 'link'],
     body: emailLayout({
-      preheader: 'Uma família que você indicou assinou a Comunidade dos Criadores.',
-      title: 'Seu bônus liberou, {{nome}} 🎉',
+      preheader: 'Uma pessoa que recebeu o seu presente assinou a Comunidade dos Criadores.',
+      title: 'Seu bônus foi liberado, {{nome}}',
       content: [
         p(
-          'Uma família que ganhou a bolsa com o seu link deu o próximo passo e assinou a <strong>Comunidade dos Criadores</strong>. O período de garantia passou e o seu bônus de <strong>{{valor}}</strong> está liberado.',
+          'Uma pessoa que recebeu o presente pelo seu link assinou a <strong>Comunidade dos Criadores</strong>. O período de garantia passou e o seu bônus de <strong>{{valor}}</strong> está liberado.',
         ),
-        p(
-          'Para receber, é só cadastrar (ou conferir) a sua chave Pix na sua página de embaixador:',
-        ),
+        p('Para receber, cadastre ou confira a sua chave Pix na sua página de embaixador.'),
         ctaButton('Abrir minha página', '{{link}}'),
         divider,
         small(
-          'O bônus é um agradecimento único por indicação que virar assinatura. A gente paga por Pix, direto na chave que você cadastrar, normalmente em poucos dias. Não é salário nem renda garantida, e não cria vínculo com a plataforma.',
+          'O bônus é um agradecimento único por indicação que virar assinatura. O pagamento é por Pix, na chave que você cadastrar, normalmente em poucos dias. Ele não é salário nem renda garantida e não cria vínculo com a plataforma.',
         ),
         fallbackLink('{{link}}'),
       ].join('\n'),
