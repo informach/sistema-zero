@@ -51,7 +51,7 @@ describe('fim do acesso e perfil que fez 18 anos (20/10/2026)', () => {
       'gift-expired': [
         "subject: 'O presente do curso terminou, {{nome}}'",
         'O que foi feito continua na conta: o perfil da criança, os projetos e os jogos publicados no Mural.',
-        'Com a assinatura, a criança segue de onde parou e continua nos próximos cursos.',
+        'Com a assinatura, a criança segue de onde parou, faz os próximos cursos e cria jogos cada vez maiores.',
         'Ver como continuar',
       ],
       // Copy do Canvas aprovado (presente adulto, quadro E-mails).
@@ -64,7 +64,7 @@ describe('fim do acesso e perfil que fez 18 anos (20/10/2026)', () => {
       'gift-expired-adult': [
         "subject: 'O presente de 7 dias terminou, {{nome}}'",
         'O que você fez continua na conta: os projetos e o progresso no curso.',
-        'Com a assinatura da Comunidade dos Criadores, você segue de onde parou, com os próximos cursos, o Estúdio e o Mural. São 7 etapas, e cada uma põe ferramentas novas no seu Estúdio.',
+        'Com a assinatura da Comunidade dos Criadores, você segue de onde parou, com os próximos cursos, o Estúdio e o Mural. Cada curso ensina uma parte nova, e os seus jogos ficam maiores, até o jogo com a sua ideia. São 7 etapas, e cada uma libera blocos ou ferramentas novas no Estúdio.',
         'Ver como continuar',
         '7 dias de garantia na assinatura. Cancele quando quiser.',
       ],

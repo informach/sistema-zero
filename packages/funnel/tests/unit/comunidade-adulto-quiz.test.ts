@@ -509,19 +509,19 @@ describe('Quiz adulto v1: o resultado em conversa', () => {
       {
         tipo: 'p',
         texto:
-          'De 7 a 14 horas por semana dão entre 364 e 728 horas por ano jogando, e você disse que [[quase nada disso virou alguma coisa sua]]. Vontade você tem, porque já tentou. O que trava é o ponto de partida. A ideia costuma ser grande, com mundo, história e dezenas de fases, e o programa que você abriu foi feito para estúdios: dezenas de janelas e nenhum próximo passo claro. Com o trabalho, a família e o cansaço da noite, o projeto fica para depois, e a ideia volta para onde estava. É isso que incomoda você: [[ela continuar na gaveta]].',
+          'De 7 a 14 horas por semana dão entre 364 e 728 horas por ano jogando, e você disse que [[quase nada disso virou alguma coisa criada por você]]. Vontade você tem, porque já tentou. O que trava é o ponto de partida. A ideia costuma ser grande, com mundo, história e dezenas de fases, e o programa que você abriu foi feito para empresas de jogos: dezenas de janelas e nenhum próximo passo claro. Com o trabalho, a família e o cansaço da noite, o projeto fica para depois, e a ideia continua só na cabeça. É isso que incomoda você: [[ela continuar na gaveta]].',
       },
       { tipo: 'h', texto: 'O que muda quando o primeiro jogo é pequeno' },
       {
         tipo: 'p',
         texto:
-          'Fazer um jogo é escrever as regras da ideia em blocos: quando o jogador tocar aqui, acontece isso. Quando o primeiro jogo é pequeno de propósito, você termina, publica e mostra. É esse jogo pronto que tira a ideia grande da gaveta, uma fase de cada vez. A cena que você quer ver, [[um amigo jogando uma fase que você inventou]], é exatamente onde isso termina: um jogo que funciona na mão de outra pessoa, com um link que abre no celular.',
+          'Fazer um jogo é montar as regras da ideia com blocos: quando o jogador tocar aqui, acontece isso. Quando o primeiro jogo é pequeno de propósito, você termina, publica e mostra. Depois vêm jogos maiores, e cada um ensina uma parte nova. É assim que a ideia grande vira jogo, uma fase de cada vez. A cena que você quer ver, [[um amigo jogando uma fase que você inventou]], é exatamente onde isso termina: um jogo que funciona na mão de outra pessoa, com um link que abre no celular.',
       },
       { tipo: 'h', texto: 'Onde isso acontece' },
       {
         tipo: 'p',
         texto:
-          'A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos, com as aulas, o Estúdio, o Mural, o Clube e a ajuda da equipe no mesmo lugar. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural. Os blocos que cada curso ensina ficam na sua caixa de ferramentas, e o Estúdio livre abre logo na primeira etapa: é lá, com o que você já sabe usar, que a sua ideia vira projeto, uma fase de cada vez. Os primeiros cursos são clássicos: uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. Como você [[nunca programou]], a primeira fase tira a digitação do caminho: você monta a lógica em blocos e vê cada regra funcionar. A Ponte e o código chegam depois, quando a base estiver firme.',
+          'A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos, com as aulas, o Estúdio, o Mural, o Clube e a ajuda da equipe no mesmo lugar. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural. Os blocos que cada curso ensina continuam no seu Estúdio, e o Estúdio livre, onde você cria o que quiser, abre logo na primeira etapa: é lá, com o que você já sabe usar, que a sua ideia vira projeto, uma fase de cada vez. Mais adiante, o Pensa ajuda a dividir a ideia em partes. Os primeiros cursos são clássicos: uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. Como você [[nunca programou]], na primeira fase você não digita código: monta cada regra com blocos e vê funcionar. A Ponte e o código chegam depois, quando você já souber montar.',
       },
       {
         tipo: 'img',
@@ -540,13 +540,13 @@ describe('Quiz adulto v1: o resultado em conversa', () => {
       {
         tipo: 'p',
         texto:
-          'Você precisa [[aprender sozinho, no seu horário]]. As aulas são gravadas, o vídeo fica ao lado do editor e o projeto fica salvo na sua conta: você para hoje e continua amanhã do mesmo ponto. E você [[usa um computador compartilhado]]: como as aulas são gravadas, basta combinar um horário em que o computador esteja livre. Você disse também que [[qualquer ferramenta serve, se conseguir terminar]]. É por aí que a gente começa.',
+          'Você precisa [[aprender sozinho, no seu horário]]. As aulas são gravadas, o vídeo fica ao lado do Estúdio, onde você monta o jogo, e o projeto fica salvo na sua conta: você para hoje e continua amanhã do mesmo ponto. E você [[usa um computador compartilhado]]: como as aulas são gravadas, basta combinar um horário em que o computador esteja livre. Você disse também que [[qualquer ferramenta serve, se conseguir terminar]]. É por aí que a gente começa.',
       },
       {
         tipo: 'cta',
         texto:
-          'Na próxima página, você vê a aula da Nave por dentro, os clássicos que vêm primeiro, as três fases até o código e os dois planos.',
-        rotulo: 'Ver como a ideia sai da gaveta',
+          'Na próxima página, você vê como é a aula da Nave Contra Asteroides, os primeiros jogos, o caminho dos blocos ao código até o jogo com a sua ideia e os dois planos.',
+        rotulo: 'Ver como a ideia vira jogo',
         href: '/pro/comunidade-dos-criadores/oferta',
       },
     ])

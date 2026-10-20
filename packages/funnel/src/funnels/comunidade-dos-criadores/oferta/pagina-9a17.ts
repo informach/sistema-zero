@@ -68,11 +68,11 @@ export const PAGINA_9A17 = {
     title: 'Seu filho conhece os jogos de cor. Imagine ele dizendo: ',
     destaque: 'esse aqui fui eu que fiz.',
     description:
-      'Nas aulas, ele aprende fazendo jogos completos, numa plataforma feita para crianças e adolescentes. Cada curso que termina abre peças novas no Estúdio dele, onde ele faz o jogo que inventou. O jogo vai para o Mural, onde a turma joga e comenta. No Clube, ele troca ideias com outros criadores, e a equipe responde quando ele trava. Você acompanha pela sua área, e não precisa entender de programação para isso.',
+      'Nas aulas, ele começa pelo Cadê Todo Mundo, um jogo completo, e segue para os próximos, numa plataforma feita para crianças e adolescentes. Cada curso que ele termina libera peças novas no Estúdio, a área onde ele monta os jogos. Com elas, os jogos ficam maiores, até o jogo que ele mesmo inventou. O jogo vai para o Mural, onde outros alunos jogam e comentam. No Clube, ele troca ideias com outros criadores, e a equipe responde quando ele trava. Você acompanha pela sua área, e não precisa entender de programação para isso.',
     benefits: [
-      'Um jogo inventado por ele, com as regras dele',
-      'Um jogo dele para mostrar quando você chega em casa',
-      'Depois das primeiras aulas, ele faz sozinho e chama você para ver',
+      'Um jogo pronto já no primeiro curso, o Cadê Todo Mundo, para mostrar quando você chega em casa',
+      'Depois, os próximos: cada curso ensina uma parte nova, como placar, vidas e personagens desenhados por ele',
+      'Até o jogo que ele inventou, com as regras dele: ele monta sozinho no Estúdio livre e chama você para ver',
     ],
     requirements:
       'Para quem lê com autonomia · Computador com internet, mouse e teclado · Até 2 perfis',
@@ -104,7 +104,7 @@ export const PAGINA_9A17 = {
 
   muda: {
     eyebrow: 'O que muda',
-    title: 'Quando ele encontra esse caminho, o jogo muda de lado',
+    title: 'Quando ele aprende a criar jogos, ele para de só jogar e começa a fazer os seus.',
     paragraph:
       'Ele passa a decidir como o jogo funciona, e você começa a ver isso aparecer no dia a dia.',
     cards: [
@@ -193,11 +193,11 @@ export const PAGINA_9A17 = {
     ],
     nota: {
       strong: 'Nas primeiras aulas do Cadê Todo Mundo,',
-      text: ' ele faz o esconderijo sumir ao toque e o jogo contar cada bichinho encontrado. É a primeira regra do jogo que passa a ser dele.',
+      text: ' ele faz o esconderijo sumir ao toque e o jogo contar cada bichinho encontrado. É a primeira regra do jogo decidida por ele.',
     } satisfies Destaque917,
     jogosTitle: 'Os jogos que ele vai fazer primeiro',
     jogosParagraph:
-      'Um projeto de cada vez, nesta ordem. Cada um deixa na caixa de ferramentas dele as peças que ensinou, e pode ir para o Mural com um link para mostrar.',
+      'Um projeto de cada vez, nesta ordem. As peças que cada jogo ensina ficam com ele para os próximos jogos, e cada jogo pode ir para o Mural com um link para mostrar.',
     jogos: [
       {
         imagem: {
@@ -254,21 +254,21 @@ export const PAGINA_9A17 = {
   estudio: {
     eyebrow: 'Como funciona · no Estúdio dele',
     title:
-      'Cada curso que ele termina vira ferramenta no Estúdio dele. E é lá que ele faz os jogos que inventa',
+      'Cada curso que ele termina libera peças novas no Estúdio dele. É lá que ele faz os jogos que inventa',
     paragraph:
-      'As aulas ensinam com um jogo completo. O que fica para ele é a caixa de ferramentas, e ela cresce curso a curso, de propósito.',
+      'Cada curso ensina com um jogo completo. As peças que ele aprendeu continuam no Estúdio, e a lista cresce a cada curso.',
     passos: [
       {
         title: 'Termina um curso, ganha as peças',
-        text: 'Os blocos que a aula ensinou ficam para sempre na caixa dele: Colisões, Som, Aparência. Concluir e publicar os cursos de um degrau sobe de posto na Jornada do Criador.',
+        text: 'Os blocos que a aula ensinou, como Colisões, Som e Aparência, ficam no Estúdio dele para sempre. Quando ele conclui e publica os cursos de um posto, sobe para o próximo posto da Jornada do Criador, o caminho de níveis da plataforma.',
       },
       {
         title: 'Sobe de posto, abre a ferramenta',
-        text: 'No Construtor, logo depois de A Chave do Farol, o Estúdio livre e o Pinta abrem para as ideias dele. Depois vêm o Pensa, que divide a ideia do jogo em missões, a ajuda do Zappy, que olha os blocos e diz o que conferir, o Molda para 3D, a Ponte e o código.',
+        text: 'No posto Construtor, logo depois de A Chave do Farol, abrem o Estúdio livre, para criar o que quiser, e o Pinta, para desenhar. Depois vêm o Pensa, que divide a ideia do jogo em missões, e a ajuda do Zappy, que olha os blocos e diz o que conferir. Por fim chegam o Molda, para criar em 3D, a Ponte, que mostra os blocos ao lado do código, e o código.',
       },
       {
         title: 'Faz o jogo dele com o que já sabe',
-        text: 'Em Meus Jogos, ele começa um projeto do zero com as peças que conquistou. Cada curso novo põe peças novas na caixa, e o jogo que ele consegue fazer cresce junto.',
+        text: 'Em Meus Jogos, ele começa um projeto do zero com as peças que conquistou. A cada curso, ele ganha peças novas e consegue fazer jogos maiores.',
       },
     ] satisfies readonly Cartao917[],
     telas: [
@@ -295,7 +295,7 @@ export const PAGINA_9A17 = {
     ] satisfies ReadonlyArray<{ imagem: Imagem917 } & Destaque917>,
     nota: {
       strong: 'Por que nessa ordem.',
-      text: ' A caixa inteira no primeiro dia é o jeito mais rápido de ele fechar o programa: dezenas de peças e nenhuma que ele saiba usar. Aqui cada peça chega quando ele já sabe o que fazer com ela. Ele aprende de verdade, em vez de só apertar o que aparece, e o jogo dele fica maior a cada curso.',
+      text: ' Todas as peças no primeiro dia é o jeito mais rápido de ele fechar o programa: dezenas de peças e nenhuma que ele saiba usar. Aqui cada peça chega quando ele já sabe o que fazer com ela. Ele aprende de verdade, em vez de só apertar o que aparece, e o jogo dele fica maior a cada curso.',
     } satisfies Destaque917,
     relato: {
       id: 'N18',
@@ -498,7 +498,7 @@ export const PAGINA_9A17 = {
     {
       question: 'Meu filho tem 15 anos. Não vai achar infantil?',
       answer:
-        'As instruções têm o Zappy, o mascote da plataforma, e uma linguagem de aventura. Mas o que ele faz é jogo de verdade: regras, personagens, publicação e, mais adiante, código, como no print do topo desta página. Os 7 dias de garantia servem justamente para ele testar com você.',
+        'As instruções têm o Zappy, o mascote da plataforma, e uma linguagem de aventura. Mas o que ele faz é jogo de verdade: regras, personagens, publicação e, mais adiante, código. Os 7 dias de garantia servem justamente para ele testar com você.',
     },
     {
       question: 'Ele pode fazer o jogo dele desde o primeiro dia?',
@@ -512,7 +512,7 @@ export const PAGINA_9A17 = {
     },
     {
       question: 'Ele consegue fazer sozinho?',
-      answer: `Se ele lê com autonomia e usa mouse e teclado, consegue. O vídeo fica ao lado do editor, o botão Ouvir lê as instruções e cada parte pode ser conferida antes de seguir. Nas primeiras aulas, vale sentar junto. A ${legendaDoRelato('AV10')}, conta: "${FLAVIA.fala}"`,
+      answer: `Se ele lê com autonomia e usa mouse e teclado, consegue. O vídeo fica ao lado do Estúdio, onde ele monta o jogo, o botão Ouvir lê as instruções e cada parte pode ser conferida antes de seguir. Nas primeiras aulas, vale sentar junto. A ${legendaDoRelato('AV10')}, conta: "${FLAVIA.fala}"`,
     },
     {
       question: 'Eu não entendo nada de programação. Consigo ajudar?',

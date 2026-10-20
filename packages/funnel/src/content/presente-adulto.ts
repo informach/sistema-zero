@@ -43,7 +43,7 @@ export const PRESENTE_ADULTO = {
     texto:
       'O Cadê Todo Mundo começa com o jardim e os personagens prontos. Você monta as regras que fazem os esconderijos sumirem e o placar contar cada achado, testa e vê o jogo responder. O projeto é pequeno de propósito, para você chegar ao fim.',
     beneficios: [
-      'Um jogo completo, com a aula ao lado da atividade.',
+      'Um jogo completo, com o vídeo da aula ao lado de onde você monta.',
       '7 dias de curso e de Mural adulto, contados do cadastro.',
       'Gratuito, sem cartão e sem assinatura automática.',
     ],
@@ -70,7 +70,7 @@ export const PRESENTE_ADULTO = {
   },
   jogo: {
     rotulo: 'O QUE VOCÊ FAZ',
-    titulo: 'Você aprende a regra que faz um jogo responder',
+    titulo: 'Você aprende a montar a regra que faz o jogo reagir ao toque',
     texto:
       'O começo é entender o que acontece quando alguém toca num esconderijo: ele precisa sumir para revelar quem estava ali. Você monta o comando com blocos, testa e observa. Se o esconderijo não sai do lugar, há algo para conferir. Quando funciona, o personagem aparece.',
     imagem: {
@@ -117,9 +117,10 @@ export const PRESENTE_ADULTO = {
   },
   depois: {
     rotulo: 'DEPOIS DOS 7 DIAS',
-    titulo: 'O presente é a fase 1. A Comunidade dos Criadores é o jogo inteiro.',
+    titulo:
+      'No presente, você faz o primeiro jogo. Na Comunidade dos Criadores, você segue criando outros, cada vez maiores.',
     paragrafos: [
-      'Na assinatura, os cursos vão do primeiro jogo ao código. O Estúdio, o Pinta e o Molda cobrem regras, arte e 3D. O Mural, o Clube e o Desafio do mês juntam gente que também está criando, e os tutoriais e os Recados ajudam quando você trava. São 7 etapas, e cada uma põe ferramentas novas no seu Estúdio.',
+      'Na assinatura, cada curso ensina uma parte nova, do primeiro jogo ao código. Com o Estúdio, o Pinta e o Molda, você faz as regras, os desenhos e o 3D. No Estúdio livre, você monta o jogo com a sua ideia, e mais adiante o Pensa ajuda a dividi-la em partes. O Mural, o Clube e o Desafio do mês juntam gente que também está criando. Os tutoriais e os Recados ajudam quando você trava. São 7 etapas, e cada uma libera blocos ou ferramentas novas no Estúdio.',
       'Os seus projetos ficam guardados na conta. Se quiser seguir, a assinatura começa quando você decidir.',
     ],
     imagem: {
@@ -130,7 +131,7 @@ export const PRESENTE_ADULTO = {
   },
   condicoes: {
     rotulo: 'O SEU PRESENTE',
-    titulo: 'Um começo concreto, com regras claras',
+    titulo: 'O que o presente inclui',
     cartoes: [
       {
         cor: 'azul',
@@ -148,7 +149,7 @@ export const PRESENTE_ADULTO = {
         texto: 'Quando os 7 dias terminam, nenhuma cobrança começa.',
       },
     ] satisfies { cor: CorAdulto; rotulo: string; texto: string }[],
-    nota: 'Quando os 7 dias terminam, o curso e o Mural fecham para este presente e os projetos ficam guardados na conta. O link do jogo que você publicou continua funcionando enquanto a publicação estiver disponível. Outros cursos, o Estúdio livre e as cópias de jogos fazem parte da assinatura.',
+    nota: 'Quando os 7 dias terminam, o curso e o Mural fecham para este presente e os projetos ficam guardados na conta. O link do jogo que você publicou continua funcionando enquanto a publicação estiver disponível. Outros cursos, o Estúdio livre e a opção de fazer a sua versão de um jogo do Mural fazem parte da assinatura.',
     cta: 'Liberar o meu presente',
   },
   duvidas: {

@@ -14,7 +14,7 @@ _Para quem tem 18 anos ou mais_
 
 **Manchete com `?manchete=ideia`** (Ideia: a ideia de jogo guardada há anos):
 
-# Aquela ideia de jogo que está na sua cabeça há anos. Em 3 minutos, veja o que falta para ela sair de lá.
+# Aquela ideia de jogo que está na sua cabeça há anos. Em 3 minutos, veja o que falta para ela virar um jogo.
 
 Responda sobre como você joga e o que já tentou. O resultado aparece na hora, sem cadastro.
 
@@ -84,7 +84,7 @@ _Etapa: O QUE TRAVA. Chave `tentativa`. No /admin: Já tentou._
 - `terminei`: Já terminei um jogo pequeno
 - `nao_apareceu`: Nunca pensei nisso
 
-### Quanto das suas horas de jogo virou alguma coisa sua?
+### Quanto das suas horas de jogo virou alguma coisa criada por você?
 
 _Etapa: O QUE TRAVA. Chave `tempo_criacao`. No /admin: Calculadora._
 
@@ -127,7 +127,7 @@ _Etapa: O QUE VOCÊ QUER. Chave `garantia`. No /admin: O que precisa estar garan
 
 _Etapa: O QUE VOCÊ QUER. Chave `sintese`. No /admin: Frase-síntese._
 
-- `A`: Que o meu tempo de jogo renda alguma coisa minha
+- `A`: Que o meu tempo de jogo vire alguma coisa feita por mim
 - `B`: Tirar a ideia da gaveta e fazer o jogo
 - `D`: Entender como um jogo é feito e aprender a programar
 - `conhecer`: Ainda estou conhecendo

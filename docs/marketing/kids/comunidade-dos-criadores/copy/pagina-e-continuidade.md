@@ -26,11 +26,11 @@
 
 **hero.eyebrow**: Para quem já começou no Sistema Zero Kids
 
-**hero.title**: O que seu filho começou está guardado. Agora ele segue até o 
+**hero.title**: O que seu filho começou está guardado. Agora ele faz os próximos jogos, cada vez maiores, até o 
 
-**hero.destaque**: jogo que ele inventa.
+**hero.destaque**: jogo que ele inventar.
 
-**hero.description**: Assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. Com a assinatura, ele volta a ter os outros cursos, as ferramentas que a Jornada vai liberando, o Mural para publicar, o Clube e as dúvidas respondidas pela equipe nos Recados. Cada curso concluído põe peças novas na caixa dele, e concluir e publicar os cursos de um degrau leva a um posto novo da Jornada, com ferramentas para os jogos dele. Você segue acompanhando pela sua área.
+**hero.description**: Assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. Com a assinatura, ele volta a ter os outros cursos, as ferramentas que a Jornada vai liberando, o Mural para publicar, o Clube e as dúvidas respondidas pela equipe nos Recados. Cada curso concluído ensina peças novas para os jogos dele. Quando ele conclui e publica os cursos de um posto, sobe para o próximo posto da Jornada do Criador, que libera ferramentas novas. Você segue acompanhando pela sua área.
 
 **hero.benefits[0]**: Continua no mesmo perfil, com tudo o que já fez
 
@@ -136,9 +136,9 @@
 
 **jornada.eyebrow**: A Jornada do Criador
 
-**jornada.title**: Depois de A Chave do Farol, cada posto põe algo novo na caixa dele
+**jornada.title**: Depois de A Chave do Farol, cada posto libera ferramentas ou peças novas para os jogos dele
 
-**jornada.paragraph**: Para subir de posto, ele conclui e publica no Mural os cursos de cada degrau. A ordem é de propósito: ele nunca fica diante de uma ferramenta que ainda não sabe usar. O tempo de cada posto depende do ritmo dele.
+**jornada.paragraph**: Para subir de posto, ele conclui e publica no Mural os cursos de cada posto. A ordem é de propósito: ele nunca fica diante de uma ferramenta que ainda não sabe usar. O tempo de cada posto depende do ritmo dele.
 
 **jornada.postoLabel**: Posto
 
@@ -164,7 +164,7 @@
 
 **jornada.postos[4].nome**: Mestre dos Jogos
 
-**jornada.postos[4].libera**: Mais cursos e peças na caixa
+**jornada.postos[4].libera**: Mais cursos e peças novas
 
 **jornada.postos[5].nome**: Arquiteto de Mundos
 
@@ -180,9 +180,9 @@
 
 **relatos.eyebrow**: Quem seguiu criando
 
-**relatos.title**: Depois do primeiro jogo, eles quiseram inventar, mudar e mostrar
+**relatos.title**: Depois de terminar um jogo, eles quiseram inventar, mudar e mostrar
 
-**relatos.paragraph**: Um aluno e dois pais contam o que veio depois do primeiro jogo.
+**relatos.paragraph**: Um aluno e dois pais contam o que veio depois do jogo terminado.
 
 **planos.title**: Escolham o plano, e ele continua no mesmo perfil
 
@@ -278,7 +278,7 @@
 
 **faq[8].answer**: Na sua área, em Conta e depois em Minhas compras, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e os jogos publicados continuam no Mural.
 
-**closing.title**: Peça para ele contar o que mudaria no primeiro jogo. É por aí que começa o próximo.
+**closing.title**: Peça para ele contar o que mudaria no jogo que já fez. Essa ideia pode virar o próximo jogo dele.
 
 **closing.zappy.alt**: 
 

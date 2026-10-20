@@ -18,8 +18,8 @@ export const QUIZ_HEADLINES = {
   ideia: {
     label: 'Ideia: a ideia de jogo guardada há anos',
     title:
-      'Aquela ideia de jogo que está na sua cabeça há anos. Em 3 minutos, veja o que falta para ela sair de lá.',
-    emphasis: 'o que falta para ela sair de lá',
+      'Aquela ideia de jogo que está na sua cabeça há anos. Em 3 minutos, veja o que falta para ela virar um jogo.',
+    emphasis: 'o que falta para ela virar um jogo',
   },
 } as const
 export type QuizHeadlineId = keyof typeof QUIZ_HEADLINES
