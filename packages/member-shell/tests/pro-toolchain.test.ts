@@ -150,14 +150,11 @@ test('lessons prepare only after enrollment, block and editable Pro baseline che
 })
 test('client preparation uses the existing context and closed header, with no AI or replacement manifest', async () => {
   const captured: { headers?: Headers; body?: Record<string, unknown> } = {}
-  const fn = Object.assign(
-    async (_url: RequestInfo | URL, init?: RequestInit) => {
-      captured.headers = new Headers(init?.headers)
-      captured.body = JSON.parse(String(init?.body))
-      return Response.json({ packageLock: 'canonical-lock' })
-    },
-    { preconnect: fetch.preconnect },
-  )
+  const fn = async (_url: RequestInfo | URL, init?: RequestInit) => {
+    captured.headers = new Headers(init?.headers)
+    captured.body = JSON.parse(String(init?.body))
+    return Response.json({ packageLock: 'canonical-lock' })
+  }
   const prepare = createProToolchainPreparer('/api/studio/pro-runtime/build', fn, {
     courseSlug: 'curso',
     lessonId: 'aula',

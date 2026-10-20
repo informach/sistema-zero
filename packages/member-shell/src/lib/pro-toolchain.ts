@@ -4,7 +4,7 @@ import type { PrepareProDependencies } from '@sistemazero/studio'
 /** Transport only; authorization and canonical lock generation stay on the existing BFF. */
 export function createProToolchainPreparer(
   url: string,
-  fetchImpl: typeof fetch,
+  fetchImpl: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
   context: Record<string, string> = {},
 ): PrepareProDependencies {
   return async ({ project, signal }) => {
