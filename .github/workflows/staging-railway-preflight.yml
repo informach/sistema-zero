@@ -30,10 +30,28 @@ jobs:
           identity="$RUNNER_TEMP/railway-ci-probe-key"
           public="$RUNNER_TEMP/railway-ci-probe-key.pub"
           trap 'rm -f "$identity" "$public"' EXIT
+          node <<'NODE'
+          const key = process.env.RAILWAY_SSH_PRIVATE_KEY ?? ''
+          console.log(JSON.stringify({
+            kind: 'railway-ci-identity-format',
+            opensshHeader: key.startsWith('-----BEGIN OPENSSH PRIVATE KEY-----'),
+            opensshFooter: key.trimEnd().endsWith('-----END OPENSSH PRIVATE KEY-----'),
+            lineCount: key.split('\n').length,
+            literalBackslashN: key.includes('\\n'),
+            carriageReturns: key.includes('\r'),
+            finalNewline: key.endsWith('\n'),
+            bom: key.charCodeAt(0) === 0xfeff,
+          }))
+          NODE
           printf '%s' "$RAILWAY_SSH_PRIVATE_KEY" > "$identity"
           chmod 600 "$identity"
           if ! ssh-keygen -y -P '' -f "$identity" > "$public" 2>/dev/null; then
-            echo '{"kind":"railway-ci-identity","status":"private-key-unreadable"}'
+            printf '\n' >> "$identity"
+            if ssh-keygen -y -P '' -f "$identity" > "$public" 2>/dev/null; then
+              echo '{"kind":"railway-ci-identity","status":"missing-final-newline"}'
+            else
+              echo '{"kind":"railway-ci-identity","status":"private-key-unreadable"}'
+            fi
             exit 1
           fi
           fingerprint="$(ssh-keygen -lf "$public" | awk '{print $2}')"
