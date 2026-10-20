@@ -26,7 +26,7 @@ function charge(patch: Partial<ResolvedCharge> = {}): ResolvedCharge {
 }
 
 describe('snapshot imutável da oferta comprada', () => {
-  test('congela prazo fixo de 30 dias e versão dos termos kids', () => {
+  test('congela prazo fixo de 30 dias e a versão do Termo do Desafio', () => {
     expect(
       createPurchasedOfferSnapshot(charge(), {
         termsVersion: termsVersionForFunnel('kids/desafio-primeiro-jogo'),
@@ -46,7 +46,7 @@ describe('snapshot imutável da oferta comprada', () => {
       chargedPriceCents: 6700,
       currency: 'BRL',
       guaranteeDays: 7,
-      termsVersion: 'kids-2026-09-16',
+      termsVersion: 'desafio-2026-10-20',
     })
   })
 

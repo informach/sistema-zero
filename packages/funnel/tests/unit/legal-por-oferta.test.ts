@@ -1,0 +1,47 @@
+import { describe, expect, test } from 'bun:test'
+import { PRIVACIDADE } from '../../src/content/legal/privacidade'
+import { FUNNELS } from '../../src/funnels/registry'
+import { termsVersionForFunnel } from '../../src/server/purchased-offer-snapshot'
+
+describe('um Termo por oferta e uma Política de Privacidade', () => {
+  const funis = Object.values(FUNNELS)
+
+  test('cada funil tem o seu Termo e a sua versão, sem repetir entre ofertas', () => {
+    const versoes = funis.map((f) => f.legal.termsVersion)
+    const titulos = funis.map((f) => f.legal.termos.titulo)
+    expect(new Set(versoes).size).toBe(funis.length)
+    expect(new Set(titulos).size).toBe(funis.length)
+    for (const f of funis) expect(f.legal.termos.secoes.length).toBeGreaterThan(5)
+  })
+
+  test('a versão gravada na compra vem do funil do lead', () => {
+    expect(termsVersionForFunnel('kids/desafio-primeiro-jogo')).toBe('desafio-2026-10-20')
+    expect(termsVersionForFunnel('kids/comunidade-dos-criadores')).toBe(
+      'comunidade-kids-2026-10-20',
+    )
+    // O Termo do NCI não mudou: a versão de junho continua valendo, também para lead sem funil.
+    expect(termsVersionForFunnel('pro/no-comando-da-ia')).toBe('pro-2026-06-04')
+    expect(termsVersionForFunnel(null)).toBe('pro-2026-06-04')
+  })
+
+  test('os Termos apontam para a Política única, que tem os capítulos dos dois públicos', () => {
+    const texto = (doc: { secoes: { paragrafos: string[]; bullets?: string[] }[] }) =>
+      doc.secoes.flatMap((s) => [...s.paragrafos, ...(s.bullets ?? [])]).join(' ')
+    for (const f of funis.filter((f) => f.key !== 'pro/no-comando-da-ia'))
+      expect(texto(f.legal.termos)).toContain('/privacidade')
+    const titulos = PRIVACIDADE.secoes.map((s) => s.titulo).join(' | ')
+    expect(titulos).toContain('Crianças e adolescentes')
+    expect(titulos).toContain('Adultos')
+  })
+
+  test('Light Copy nos textos novos: sem travessão e sem exclamação', () => {
+    const docs = [PRIVACIDADE, ...funis.map((f) => f.legal.termos)].filter(
+      (d) => d.atualizadoEm === '20 de outubro de 2026',
+    )
+    expect(docs.length).toBeGreaterThanOrEqual(3)
+    for (const doc of docs) {
+      const corpo = JSON.stringify(doc).replaceAll('Informach — Núcleo', 'Informach Núcleo')
+      expect(corpo).not.toMatch(/[—–!]/)
+    }
+  })
+})

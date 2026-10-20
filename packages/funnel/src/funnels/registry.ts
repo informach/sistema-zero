@@ -9,6 +9,7 @@
 
 import type { ZodType } from 'zod'
 import type { HeroVariacao } from '../content/hero-perfil'
+import type { LegalDoc } from '../content/legal'
 import type { QuizStep } from '../content/quiz-config'
 import type { ResultProfile } from '../content/result-profiles'
 import type { SalesSections } from '../content/sales-sections'
@@ -175,6 +176,16 @@ export interface FunnelOfferContract {
   guaranteeDays: number | null
 }
 
+/** O Termo de Uso da oferta do funil (um por oferta) e a versão gravada em cada compra. */
+export interface FunnelLegal {
+  termos: LegalDoc
+  /**
+   * Versão aceita no checkout, congelada no snapshot da compra (`termsVersion`). Mudou o texto do
+   * Termo? Suba a versão (ex.: a data), senão uma compra nova grava a versão antiga.
+   */
+  termsVersion: string
+}
+
 export interface FunnelDef {
   audience: Audience
   /** Slug do produto (kebab-case), 2º segmento da URL. */
@@ -212,6 +223,8 @@ export interface FunnelDef {
    */
   offerContract?: FunnelOfferContract
   steps: FunnelSteps
+  /** Termo de Uso da oferta, em `${basePath}/termos`. A Política de Privacidade é única. */
+  legal: FunnelLegal
   content: FunnelContent
   /** Oferta de upsell (pós-compra), quando `steps.upsell`. */
   upsell?: FunnelExtraOffer

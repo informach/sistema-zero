@@ -1,3 +1,4 @@
+import { TERMOS_DESAFIO } from '../../content/legal/termos-desafio'
 import type { FunnelDef } from '../registry'
 import { DESAFIO_LANDING, DESAFIO_OBRIGADO, DESAFIO_PRODUTO } from './content'
 import { DESAFIO_PERFIL_LABELS, DESAFIO_QUIZ } from './quiz/definition'
@@ -25,6 +26,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
     guaranteeDays: 7,
   },
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
+  legal: { termos: TERMOS_DESAFIO, termsVersion: 'desafio-2026-10-20' },
   content: {
     copy: DESAFIO_PRODUTO,
     landing: DESAFIO_LANDING,

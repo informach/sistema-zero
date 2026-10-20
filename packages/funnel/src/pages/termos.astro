@@ -1,0 +1,55 @@
+---
+import Footer from '../components/Footer.astro'
+import { FUNNELS } from '../funnels/registry'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+// Índice dos Termos de Uso: um por oferta (20/10/2026). `/pro/termos` e `/termos-de-uso` chegam
+// aqui por redirecionamento. SSR pelo mesmo motivo das outras páginas legais (security headers).
+export const prerender = false
+
+const termos = Object.values(FUNNELS).map((f) => ({
+  href: `${f.basePath}/termos`,
+  titulo: f.legal.termos.titulo,
+  descricao: f.legal.termos.descricao,
+  atualizadoEm: f.legal.termos.atualizadoEm,
+}))
+
+Astro.response.headers.set('cache-control', 'public, max-age=300, stale-while-revalidate=3600')
+---
+
+<BaseLayout
+  title="Termos de Uso | Sistema Zero"
+  description="Os Termos de Uso de cada oferta do Sistema Zero e a Política de Privacidade."
+>
+  <main class="mx-auto max-w-3xl px-4 pb-16 pt-10 sm:pt-14">
+    <a href="/" class="text-sm text-muted transition hover:text-lime">← Voltar</a>
+    <h1 class="mt-6 text-3xl font-extrabold leading-tight sm:text-4xl">Termos de Uso</h1>
+    <p class="mt-3 leading-relaxed text-muted">
+      Cada oferta do Sistema Zero tem o seu Termo de Uso, com as condições de contratação,
+      pagamento, acesso e garantia daquela compra. A Política de Privacidade é uma só para todas.
+    </p>
+    <ul class="mt-8 flex flex-col gap-4">
+      {
+        termos.map((t) => (
+          <li class="rounded-2xl border border-line p-5">
+            <a href={t.href} class="text-lg font-bold text-ink transition hover:text-lime">
+              {t.titulo}
+            </a>
+            <p class="mt-2 text-sm leading-relaxed text-muted">{t.descricao}</p>
+            <p class="mt-2 text-xs text-muted">Última atualização: {t.atualizadoEm}</p>
+          </li>
+        ))
+      }
+      <li class="rounded-2xl border border-line p-5">
+        <a href="/privacidade" class="text-lg font-bold text-ink transition hover:text-lime">
+          Política de Privacidade
+        </a>
+        <p class="mt-2 text-sm leading-relaxed text-muted">
+          Como tratamos os dados de quem compra, de quem usa a plataforma e das crianças e
+          adolescentes, em todas as ofertas.
+        </p>
+      </li>
+    </ul>
+  </main>
+  <Footer />
+</BaseLayout>

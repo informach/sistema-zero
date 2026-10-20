@@ -17,8 +17,16 @@ import { join, relative } from 'node:path'
 
 const SRC = join(import.meta.dir, '..', '..', 'src')
 
-/** O texto jurídico usa "carreira" no sentido de profissão. É o único lugar. */
-const ALLOWLIST = ['content/legal-kids.ts']
+/**
+ * O texto jurídico usa "carreira" no sentido de profissão: o aviso legal kids e os Termos de cada
+ * oferta (desde 20/10/2026, um por oferta), na cláusula que nega a promessa de carreira.
+ */
+const ALLOWLIST = [
+  'content/legal-kids.ts',
+  'content/legal/termos-desafio.ts',
+  'content/legal/termos-comunidade-kids.ts',
+  'content/legal/termos-comunidade-adulto.ts',
+]
 
 const EXTENSOES = ['.astro', '.ts', '.tsx', '.md', '.mdx']
 

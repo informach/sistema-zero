@@ -9,6 +9,7 @@
 // a página se auto-normaliza por `billingIntervalMonths`, mas o preço estrutural
 // (JSON-LD/og) passa a ser o anual — preferir a mensal como principal.
 
+import { TERMOS_COMUNIDADE_KIDS } from '../../content/legal/termos-comunidade-kids'
 import type { FunnelDef } from '../registry'
 import { COMUNIDADE_LANDING, COMUNIDADE_OBRIGADO, COMUNIDADE_PRODUTO } from './content'
 import { PAGE_A } from './oferta/tempo-de-tela'
@@ -33,6 +34,7 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   // Assinatura: sem o disclaimer de acesso vitalício no rodapé.
   lifetimeAccess: false,
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
+  legal: { termos: TERMOS_COMUNIDADE_KIDS, termsVersion: 'comunidade-kids-2026-10-20' },
   content: {
     copy: COMUNIDADE_PRODUTO,
     landing: COMUNIDADE_LANDING,

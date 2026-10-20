@@ -2,17 +2,19 @@
 // Rodapé institucional ÚNICO dos funis, em duas colunas: os links legais à
 // esquerda e a marca (Sistema Zero) à direita, com os disclaimers logo abaixo
 // dela (o aviso fica perto da marca, não solto no fim da página). A linha de
-// copyright fecha. Links e aviso variam por público (`audience`): no kids
-// apontam para /kids/termos|privacidade e exibem o aviso legal infantil
-// (ECA/CONANDA/LGPD).
+// copyright fecha. A Política de Privacidade é única (/privacidade); o Termo é o
+// da oferta da página (`termosHref`, um por oferta) ou o índice /termos. No kids,
+// o rodapé exibe o aviso legal infantil (ECA/CONANDA/LGPD).
 import { AVISO_LEGAL_KIDS } from '../content/legal-kids'
 
 interface Props {
   audience?: 'pro' | 'kids'
   /** Oferta vitalícia → exibe o disclaimer do acesso vitalício (por funil, não por público). */
   vitalicio?: boolean
+  /** O Termo da oferta da página (`${f.basePath}/termos`). Ausente: o índice dos Termos. */
+  termosHref?: string
 }
-const { audience = 'pro', vitalicio = false } = Astro.props
+const { audience = 'pro', vitalicio = false, termosHref = '/termos' } = Astro.props
 const ano = new Date().getFullYear()
 ---
 
@@ -23,12 +25,12 @@ const ano = new Date().getFullYear()
         <p class="text-sm font-bold text-ink">Recursos</p>
         <ul class="mt-3 flex flex-col gap-2 text-sm">
           <li>
-            <a href={`/${audience}/privacidade`} class="text-muted transition hover:text-lime">
+            <a href="/privacidade" class="text-muted transition hover:text-lime">
               Política de Privacidade
             </a>
           </li>
           <li>
-            <a href={`/${audience}/termos`} class="text-muted transition hover:text-lime">
+            <a href={termosHref} class="text-muted transition hover:text-lime">
               Termos de Uso
             </a>
           </li>

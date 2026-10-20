@@ -1,0 +1,26 @@
+---
+import Footer from '../../../components/Footer.astro'
+import LegalDocument from '../../../components/LegalDocument.astro'
+import { getFunnel } from '../../../funnels/registry'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+
+// O Termo de Uso da oferta do funil (um por oferta, 20/10/2026). SSR de propósito: pré-renderizada
+// não passa pela middleware e ficaria sem security headers. Conteúdo estático: cache curto.
+export const prerender = false
+
+const f = getFunnel(Astro.params.audience, Astro.params.produto)
+if (!f) return new Response(null, { status: 404 })
+const doc = f.legal.termos
+const areaLabel = f.audience === 'kids' ? 'Sistema Zero Kids' : 'Sistema Zero'
+
+Astro.response.headers.set('cache-control', 'public, max-age=300, stale-while-revalidate=3600')
+---
+
+<BaseLayout
+  title={`${doc.titulo} | ${areaLabel}`}
+  description={doc.descricao}
+  htmlClass={f.theme ? `theme-${f.theme}` : undefined}
+>
+  <LegalDocument doc={doc} voltarHref={`${f.basePath}/oferta`} />
+  <Footer audience={f.audience} termosHref={`${f.basePath}/termos`} />
+</BaseLayout>

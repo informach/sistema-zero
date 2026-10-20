@@ -254,7 +254,7 @@ const faqVisuals = (id: string) =>
             <div class="guarantee-texto">
               <ComunidadeProsa paragraphs={offer.guarantee.paragraphs} />
             </div>
-            <a href="/kids/termos" class="kof-link kof-link--inline">Consultar os termos da assinatura</a>
+            <a href={`${f.basePath}/termos`} class="kof-link kof-link--inline">Consultar os termos da assinatura</a>
           </div>
           <p id="contratacao" class="checkout-note kof-carta kof-carta--fio">{offer.checkout}</p>
         </div>
@@ -297,7 +297,7 @@ const faqVisuals = (id: string) =>
                         <div class:list={['resposta', { 'resposta--visual': visuals.length > 0 }]}>
                           <div class="resposta-texto">
                             <ComunidadeProsa paragraphs={answer.paragraphs} />
-                            {id === 'reembolso' && <a href="/kids/termos" class="kof-link kof-link--inline">Ver o canal e as condições nos termos da assinatura</a>}
+                            {id === 'reembolso' && <a href={`${f.basePath}/termos`} class="kof-link kof-link--inline">Ver o canal e as condições nos termos da assinatura</a>}
                           </div>
                           {visuals.length > 0 && (
                             <div class="resposta-visuais">{visuals.map((visual) => <ComunidadeVisual visual={visual} imagesBase={imagesBase} variant="plana" />)}</div>

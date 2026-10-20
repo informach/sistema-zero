@@ -2,6 +2,7 @@
 import '../../styles/kids-oferta.css'
 import '../../styles/comunidade-oferta.css'
 import '../../styles/presente.css'
+import { DESAFIO_PRIMEIRO_JOGO } from '../../funnels/desafio-primeiro-jogo'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import Footer from '../Footer.astro'
 
@@ -25,7 +26,7 @@ const { title, description, action, canonical, noindex = true } = Astro.props
     <main id="conteudo"><slot /></main>
     <dialog class="zoom" data-gift-zoom aria-label="Imagem ampliada"><form method="dialog"><button class="zoom-fechar" aria-label="Fechar a imagem ampliada"><span class="material-symbols-rounded" aria-hidden="true">close</span></button></form><img alt="" decoding="async" /></dialog>
   </div>
-  <Footer audience="kids" />
+  <Footer audience="kids" termosHref={`${DESAFIO_PRIMEIRO_JOGO.basePath}/termos`} />
 </BaseLayout>
 <script>
   const zoom = document.querySelector<HTMLDialogElement>('[data-gift-zoom]')

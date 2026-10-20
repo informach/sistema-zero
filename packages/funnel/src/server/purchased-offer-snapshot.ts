@@ -1,3 +1,4 @@
+import { DEFAULT_FUNNEL, getFunnelByKey } from '../funnels/registry'
 import type {
   CatalogAccessDurationUnit,
   CatalogAccessMode,
@@ -30,8 +31,9 @@ export class InvalidPurchasedOfferSnapshotError extends Error {
   }
 }
 
+/** A versão do Termo da oferta do funil; lead legado sem funil é do NCI (`DEFAULT_FUNNEL`). */
 export function termsVersionForFunnel(funnel: string | null): string {
-  return funnel?.startsWith('kids/') ? 'kids-2026-09-16' : 'pro-2026-06-04'
+  return (getFunnelByKey(funnel) ?? DEFAULT_FUNNEL).legal.termsVersion
 }
 
 /**

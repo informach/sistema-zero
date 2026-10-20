@@ -233,7 +233,7 @@ describe('POST /api/checkout/pix', () => {
       listPriceCents: 6700,
       discountCents: 0,
       chargedPriceCents: 6700,
-      termsVersion: 'kids-2026-09-16',
+      termsVersion: 'desafio-2026-10-20',
     } satisfies Partial<PurchasedOfferSnapshotV1>)
 
     gw.setStatus('PAID')

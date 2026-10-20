@@ -4,6 +4,7 @@
 
 import { LANDING, PRODUTO } from '../../content/copy'
 import { HERO_PADRAO, HERO_PARAGRAFO_COMUM, HERO_POR_PERFIL } from '../../content/hero-perfil'
+import { TERMOS } from '../../content/legal'
 import { QUIZ_STEPS, TOTAL_PERGUNTAS } from '../../content/quiz-config'
 import { FECHO_COMPARTILHADO, RESULT_PROFILES } from '../../content/result-profiles'
 import { SALES } from '../../content/sales-sections'
@@ -55,6 +56,8 @@ export const NO_COMANDO_DA_IA: FunnelDef = {
     'Um guia direto para tirar sua ideia do papel com IA sem virar refém dela. Aprenda a comandar a IA com o método Z.E.R.O.',
   lifetimeAccess: true,
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
+  // O Termo do NCI não mudou em 20/10/2026: a versão continua a de junho.
+  legal: { termos: TERMOS, termsVersion: 'pro-2026-06-04' },
   content: {
     copy: PRODUTO,
     landing: LANDING,

@@ -344,11 +344,11 @@ export default function BolsaResgate({
       </p>
       <p className="text-center text-xs text-muted">
         Ao continuar, você confirma que é o responsável pela criança e aceita os{' '}
-        <a href="/kids/termos" className="underline">
+        <a href="/kids/comunidade-dos-criadores/termos" className="underline">
           Termos de Uso
         </a>
         . Veja como tratamos seus dados na{' '}
-        <a href="/kids/privacidade" className="underline">
+        <a href="/privacidade" className="underline">
           Política de Privacidade
         </a>
         .
