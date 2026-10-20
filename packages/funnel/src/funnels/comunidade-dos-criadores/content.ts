@@ -3,7 +3,7 @@
 // COMPARTILHADAS (obrigado) e os obrigatórios pelo tipo FunnelContent (copy/landing: a landing
 // genérica nunca renderiza neste funil; os valores espelham o herói da página de 9 a 17).
 
-import type { FunnelCopy, FunnelLanding, FunnelObrigado } from '../registry'
+import type { FunnelCheckoutIntro, FunnelCopy, FunnelLanding, FunnelObrigado } from '../registry'
 import { PAGINA_9A17 } from './oferta/pagina-9a17'
 
 export const COMUNIDADE_PRODUTO: FunnelCopy = {
@@ -32,8 +32,13 @@ export const COMUNIDADE_PRECO_FALLBACK = { mensalCents: 9_700, anualCents: 79_70
 // renovação": o lembrete só existe para o anual à vista (renewal-reminder); o
 // cartão recorrente não recebe aviso prévio.
 export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
+  titulo: 'Sua assinatura está confirmada.',
   intro:
     'Seu filho pode começar por um projeto guiado ou continuar do ponto em que está na Jornada do Criador.',
+  acesso:
+    'Se já tem conta, entre com seu acesso habitual. No primeiro acesso, siga as instruções enviadas ao e-mail da compra.',
+  passosTitulo: 'O próximo passo para criar com seu filho',
+  botao: 'Entrar na Comunidade →',
   entrega: [
     'Desafio do Primeiro Jogo e acesso aos cursos publicados durante a assinatura',
     'Estúdio, Pinta, Pensa e Molda, com liberação por progresso e disponibilidade dos cursos necessários',
@@ -68,5 +73,14 @@ export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
       texto:
         'Perfis e assinatura ficam na sua área. Por ali, você também controla a próxima renovação e pode cancelar quando quiser; o acesso continua até o fim do período já pago.',
     },
+  ],
+}
+
+// Abertura do checkout (acima do card do produto).
+export const COMUNIDADE_CHECKOUT: FunnelCheckoutIntro = {
+  titulo: 'Confirme sua assinatura da Comunidade dos Criadores',
+  paragrafos: [
+    'Projetos guiados e ferramentas de criação liberadas ao longo da Jornada, para até dois perfis de criança. Confira o plano, o valor e a renovação antes de pagar.',
+    'Preencha os dados do responsável. Após a aprovação, abra o perfil do seu filho ou crie um novo. Ele pode começar pela atividade de entrada ou continuar do ponto em que está.',
   ],
 }

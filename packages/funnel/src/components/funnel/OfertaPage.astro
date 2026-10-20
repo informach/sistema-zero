@@ -1,10 +1,12 @@
 ---
+import { COMUNIDADE_ADULTO } from '../../funnels/comunidade-adulto'
 import { COMUNIDADE_DOS_CRIADORES } from '../../funnels/comunidade-dos-criadores'
 import type { ComunidadeOfertaId } from '../../funnels/comunidade-dos-criadores/oferta/types'
 import { DESAFIO_PRIMEIRO_JOGO } from '../../funnels/desafio-primeiro-jogo'
 import type { DesafioOfferId } from '../../funnels/desafio-primeiro-jogo/offer'
 import type { OfferPageData } from '../../server/offer-page'
 import Comunidade917Body from './oferta/Comunidade917Body.astro'
+import ComunidadeAdultoOfertaBody from './oferta/ComunidadeAdultoOfertaBody.astro'
 import ComunidadeMenor9Body from './oferta/ComunidadeMenor9Body.astro'
 import ComunidadeOfertaBody from './oferta/ComunidadeOfertaBody.astro'
 import DesafioOfertaBody from './oferta/DesafioOfertaBody.astro'
@@ -23,9 +25,11 @@ const corpo = f.content.sales
   ? 'sales'
   : f.key === COMUNIDADE_DOS_CRIADORES.key
     ? 'comunidade'
-    : f.key === DESAFIO_PRIMEIRO_JOGO.key
-      ? 'desafio'
-      : null
+    : f.key === COMUNIDADE_ADULTO.key
+      ? 'comunidade-adulto'
+      : f.key === DESAFIO_PRIMEIRO_JOGO.key
+        ? 'desafio'
+        : null
 if (!corpo) throw new Error(`Funil sem corpo de oferta declarado: ${f.key}`)
 ---
 
@@ -40,6 +44,8 @@ if (!corpo) throw new Error(`Funil sem corpo de oferta declarado: ${f.key}`)
     ) : (
       <Comunidade917Body {...bodyProps} plans={plans} />
     )
+  ) : corpo === 'comunidade-adulto' ? (
+    <ComunidadeAdultoOfertaBody {...bodyProps} plans={plans} />
   ) : (
     <DesafioOfertaBody {...bodyProps} profile={desafioProfile} />
   )

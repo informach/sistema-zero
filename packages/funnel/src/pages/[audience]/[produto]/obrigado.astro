@@ -40,14 +40,13 @@ const accessEnd =
     : null
 const buyerEmail = paymentContext?.email ?? lead?.email ?? null
 const isTimedChallenge = f.key === 'kids/desafio-primeiro-jogo' && fixedAccess !== null
-const isCommunity = f.key === 'kids/comunidade-dos-criadores'
 
 // CTA p/ a área de membros (mesma base do link do e-mail de boas-vindas). Por
 // audiência: o funil kids leva ao app KIDS, não ao community adulto.
 const communityUrl = f.audience === 'kids' ? env.KIDS_COMMUNITY_URL : env.COMMUNITY_URL
 
 // O que a compra entrega + próximos passos vêm do conteúdo do funil.
-const { entrega, passos } = f.content.obrigado
+const { entrega, passos, titulo, acesso, passosTitulo, botao } = f.content.obrigado
 // Frase de abertura por funil (kids fala da criança; default = NCI "assumir o comando").
 const introObrigado = f.content.obrigado.intro ?? 'Obrigado por assumir o comando.'
 const productName = f.productName
@@ -59,9 +58,7 @@ const pageTitle = approved
 const confirmationTitle = approved
   ? isTimedChallenge
     ? 'Pagamento aprovado. O próximo passo é conhecer o Farol.'
-    : isCommunity
-      ? 'Sua assinatura está confirmada.'
-      : 'Pagamento confirmado!'
+    : (titulo ?? 'Pagamento confirmado!')
   : 'Pagamento ainda aguardando confirmação.'
 ---
 
@@ -105,8 +102,8 @@ const confirmationTitle = approved
                 Seu acesso vai até <strong class="text-ink">{formatSaoPauloDateTime(accessEnd)}</strong>.
                 {buyerEmail ? <> Confira as instruções de acesso em <strong class="text-ink">{buyerEmail}</strong>.</> : ' Confira as instruções no e-mail da compra.'} Se já tem conta, use seu acesso habitual. No primeiro acesso, siga as instruções para criar sua senha.
               </>
-            ) : isCommunity ? (
-              <>{introObrigado} Se já tem conta, entre com seu acesso habitual. No primeiro acesso, siga as instruções enviadas ao e-mail da compra.</>
+            ) : acesso ? (
+              <>{introObrigado} {acesso}</>
             ) : (
               <>{introObrigado} O seu acesso {acessoArtigo} <strong class="text-ink">{productName}</strong> está a caminho do seu e-mail.</>
             )
@@ -130,7 +127,7 @@ const confirmationTitle = approved
           </div>
           <img
             src={`${f.imagesBase}/${f.checkoutImage ?? 'produto-capa.webp'}`}
-            alt={isCommunity ? `Capa da ${productName}` : `Capa do curso ${productName}`}
+            alt={f.content.copy.artigo === 'a' ? `Capa da ${productName}` : `Capa do curso ${productName}`}
             width="112"
             height="112"
             class:list={[
@@ -176,9 +173,7 @@ const confirmationTitle = approved
         {
           isTimedChallenge
             ? 'O primeiro caminho dentro da plataforma'
-            : isCommunity
-              ? 'O próximo passo para criar com seu filho'
-              : 'Como acessar'
+            : (passosTitulo ?? 'Como acessar')
         }
       </h2>
       <ol class="mt-6 flex flex-col gap-3">
@@ -204,9 +199,7 @@ const confirmationTitle = approved
           <a href={communityUrl} class="btn btn-primary mt-8 w-full">
             {isTimedChallenge
               ? 'Entrar e conhecer A Chave do Farol →'
-              : isCommunity
-                ? 'Entrar na Comunidade →'
-                : 'Ir para a área de membros →'}
+              : (botao ?? 'Ir para a área de membros →')}
           </a>
         )
       }
@@ -222,7 +215,7 @@ const confirmationTitle = approved
       </p>
     </section>
   </main>
-  <Footer audience={f.audience} vitalicio={f.lifetimeAccess ?? false} />
+  <Footer audience={f.audience} vitalicio={f.lifetimeAccess ?? false} termosHref={`${f.basePath}/termos`} />
 </BaseLayout>
 
 <style>

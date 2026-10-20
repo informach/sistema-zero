@@ -17,6 +17,11 @@ export interface PreCheckoutModalProps {
   couponCode?: string | null
   /** Convite para continuar usando a conta que a família já conhece. */
   continuidade?: boolean
+  /**
+   * Oferta de assinatura (mensal ou anual): o texto fala do plano e da renovação, e o rodapé não
+   * promete Pix, que não vale no mensal. A Comunidade Kids já é tratada pela chave do funil.
+   */
+  assinatura?: boolean
 }
 
 export default function PreCheckoutModal({
@@ -24,6 +29,7 @@ export default function PreCheckoutModal({
   funnel,
   couponCode,
   continuidade = false,
+  assinatura = false,
 }: PreCheckoutModalProps) {
   const [open, setOpen] = useState(false)
   // Oferta ESCOLHIDA no CTA que abriu o modal (`data-checkout-oferta="<slug>"`,
@@ -48,6 +54,7 @@ export default function PreCheckoutModal({
   const isKids = funnel.startsWith('kids/')
   const isChallenge = funnel === 'kids/desafio-primeiro-jogo'
   const isCommunity = funnel === 'kids/comunidade-dos-criadores'
+  const isSubscription = isCommunity || assinatura
 
   // Garante o lead (mesmo p/ quem cai direto na oferta) e marca viu_pagina_vendas
   // com o perfil que veio na URL (`?perfil=`), quando válido.
@@ -233,7 +240,7 @@ export default function PreCheckoutModal({
                 <p className="mt-1 text-sm text-muted">
                   {isChallenge
                     ? 'Confirme os dados do responsável. Na próxima tela, você revisa o valor, aplica o cupom se tiver um e escolhe como pagar.'
-                    : isCommunity
+                    : isSubscription
                       ? 'Na próxima tela, você confere o plano escolhido, o valor e como funciona a renovação antes de pagar.'
                       : isKids
                         ? 'Confirme os dados do responsável para ir ao pagamento seguro.'
@@ -343,7 +350,7 @@ export default function PreCheckoutModal({
                   ? 'Aguarde…'
                   : isChallenge
                     ? 'Continuar para o pagamento'
-                    : isCommunity
+                    : isSubscription
                       ? 'Continuar para o pagamento'
                       : 'Ir pro pagamento seguro →'}
               </button>
@@ -357,7 +364,7 @@ export default function PreCheckoutModal({
               <p className="text-center text-xs text-muted">
                 {isChallenge
                   ? 'Compra única por Pix ou cartão, sem renovação automática e com garantia de 7 dias.'
-                  : isCommunity
+                  : isSubscription
                     ? 'Assinatura mensal ou anual, com 7 dias de garantia. As formas de pagamento aparecem na próxima tela.'
                     : 'Pagamento via Pix ou cartão de crédito, com garantia de 7 dias.'}
               </p>

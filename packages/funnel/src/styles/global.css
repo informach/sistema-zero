@@ -2,6 +2,9 @@
 /* Primitivos da marca kids (--sz-kids-*) — fonte da verdade da paleta da linha
    kids, compartilhada com a comunidade kids. O bloco `.theme-kids` aponta p/ eles. */
 @import "@sistemazero/ui/theme-kids.css";
+/* Tokens e fontes do tema arcade (área adulta da Comunidade dos Criadores). O bloco
+   `.theme-arcade` mais abaixo faz o mapeamento semântico, como o `.theme-kids`. */
+@import "./theme-arcade.css";
 
 /* Componentes compartilhados (@sistemazero/ui) usados APENAS no /admin — o scanner
    do Tailwind v4 precisa ver as classes deles. */
@@ -193,6 +196,30 @@
   --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --radius-btn: 16px;
   --radius-card: 16px;
+}
+/* ── Tema ARCADE (área adulta da Comunidade dos Criadores, 20/10/2026) ───────
+   Re-skin das páginas compartilhadas (checkout, obrigado, pré-checkout) do funil
+   `pro/comunidade-dos-criadores` (`theme: 'arcade'`). Os valores moram em
+   `theme-arcade.css` (`--cda-*`); aqui só o mapeamento semântico e as receitas
+   do desenho: cantos retos, sombra dura e o CTA amarelo. */
+.theme-arcade {
+  --color-bg: var(--cda-fundo);
+  --color-card: var(--cda-carta);
+  --color-card-2: var(--cda-fundo-2);
+  --color-lime: var(--cda-amarelo);
+  --color-lime-strong: var(--cda-dourado);
+  --color-cyan: var(--cda-verde);
+  --color-ink: var(--cda-texto);
+  --color-muted: var(--cda-texto-apoio);
+  --color-line: var(--cda-linha-forte);
+  --font-sans: var(--cda-corpo);
+  --radius-btn: 0;
+  --radius-card: 0;
+}
+.theme-arcade h1,
+.theme-arcade h2,
+.theme-arcade h3 {
+  font-family: var(--cda-titulo);
 }
 .theme-kids h1,
 .theme-kids h2,
@@ -554,4 +581,32 @@ a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
 }
 .scrollbar-subtle:hover::-webkit-scrollbar-thumb {
   background: color-mix(in oklch, var(--foreground) 18%, transparent);
+}
+
+/* Receitas do tema arcade (cantos retos, sombra dura, CTA amarelo). Ficam no fim do arquivo,
+   depois das regras base `.btn-primary`/`.card`, para a especificidade crescer na ordem. */
+.theme-arcade .btn-primary {
+  background: var(--cda-amarelo);
+  color: var(--cda-fundo);
+  border: 3px solid var(--cda-fundo);
+  box-shadow: 5px 5px 0 var(--cda-rosa);
+}
+.theme-arcade .btn-primary:hover {
+  filter: none;
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0 var(--cda-rosa);
+}
+.theme-arcade .btn-primary:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0 var(--cda-rosa);
+}
+.theme-arcade .card {
+  /* Fora de camada, vence os `rounded-*` do Tailwind: no arcade os cantos são retos. */
+  border-radius: 0;
+  border: 3px solid var(--cda-linha-forte);
+  box-shadow: 4px 4px 0 var(--cda-linha-forte);
+}
+.theme-arcade :where(a, button, summary, input, select):focus-visible {
+  outline: 3px solid var(--cda-amarelo);
+  outline-offset: 3px;
 }

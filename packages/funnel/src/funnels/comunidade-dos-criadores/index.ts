@@ -11,7 +11,12 @@
 
 import { TERMOS_COMUNIDADE_KIDS } from '../../content/legal/termos-comunidade-kids'
 import type { FunnelDef } from '../registry'
-import { COMUNIDADE_LANDING, COMUNIDADE_OBRIGADO, COMUNIDADE_PRODUTO } from './content'
+import {
+  COMUNIDADE_CHECKOUT,
+  COMUNIDADE_LANDING,
+  COMUNIDADE_OBRIGADO,
+  COMUNIDADE_PRODUTO,
+} from './content'
 import { PAGINA_9A17 } from './oferta/pagina-9a17'
 import { COMMUNITY_QUIZ } from './quiz'
 import { PROFILE_IDS, PROFILE_IDS_M9 } from './quiz/engine'
@@ -51,6 +56,7 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
     landing: COMUNIDADE_LANDING,
     // sem `sales`: a página de vendas tem layout próprio (ComunidadeOfertaBody.astro).
     obrigado: COMUNIDADE_OBRIGADO,
+    checkout: COMUNIDADE_CHECKOUT,
     quiz: COMMUNITY_QUIZ,
     result: {
       profiles: {},

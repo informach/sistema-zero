@@ -4,9 +4,9 @@
 // devolvidos em destaque, uma tela real, um relato, o botão para a oferta, a assinatura e a pergunta
 // "Esse resultado parece com você?". Os estilos ficam em `resultado-conversa.css` (prefixo `.rc`);
 // as cores vêm dos tokens do tema da página (`--kof-*` no Kids, `--cda-*` no adulto).
-// Os tokens dos dois temas: `--kof-*` (Kids) e `--cda-*` (adulto), cada um sob a classe do <html>.
+// Os tokens dos dois temas: `--kof-*` (Kids, de kids-oferta.css) e `--cda-*` (adulto, de
+// theme-arcade.css, que o global.css importa), cada um sob a classe do <html>.
 import '../../../styles/kids-oferta.css'
-import '../../../styles/theme-arcade.css'
 import '../../../styles/resultado-conversa.css'
 import { type ResultadoConversa, trechosConversa } from '../../../content/resultado-conversa'
 import QuizResultadoFeedback from '../../../islands/QuizResultadoFeedback'

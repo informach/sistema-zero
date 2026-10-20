@@ -163,6 +163,21 @@
   font-size: 0.8125rem;
   color: var(--qz-suave);
 }
+/* Adulto: a marca do Sistema Zero e o selo de HUD com o nome da Comunidade (Canvas). */
+.qz .qz-marca-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.qz--adulto .qz-marca-nome {
+  padding: 3px 6px;
+  background: var(--cda-verde);
+  color: var(--cda-fundo);
+  font-family: var(--cda-pixel);
+  font-size: 0.6875rem;
+  line-height: 1.2;
+}
 .qz .qz-corpo {
   flex: 1 1 auto;
   display: flex;
@@ -202,6 +217,21 @@
   font-size: 0.9375rem;
   color: var(--qz-tinta);
   opacity: 0.88;
+}
+.qz .qz-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.qz .qz-chip {
+  padding: 4px 8px;
+  border: 2px solid var(--qz-trilho);
+  color: var(--qz-suave);
+  font-family: var(--qz-rotulo);
+  font-size: 0.6875rem;
+}
+.qz--adulto .qz-chip {
+  border-color: var(--cda-linha-forte);
 }
 .qz .qz-pergunta-entrada {
   margin-top: 8px;
@@ -400,6 +430,14 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+/* O botão desce para o pé da tela (entrada adulta e saída de menor de 18, como no Canvas). */
+.qz .qz-acoes--fim {
+  margin-top: auto;
+  padding-top: 12px;
+}
+.qz .qz-acoes--fim ~ .qz-nota {
+  margin-top: 0;
 }
 .qz .qz-botao {
   display: flex;

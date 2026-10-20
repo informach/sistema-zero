@@ -9,6 +9,10 @@ import {
   PASTA_ESPELHO,
 } from '../../scripts/espelho-copy-comunidade'
 import {
+  COMUNIDADE_CHECKOUT,
+  COMUNIDADE_OBRIGADO,
+} from '../../src/funnels/comunidade-dos-criadores/content'
+import {
   COMUNIDADE_OFERTAS_ANTIGAS,
   COMUNIDADE_PAGES,
   comunidadeOfferPath,
@@ -503,10 +507,14 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     const thanks = source('pages', '[audience]', '[produto]', 'obrigado.astro')
     expect(pre).toContain('Informe os dados do responsável')
     expect(pre).toContain('Continuar para o pagamento')
-    expect(checkout).toContain('Confirme sua assinatura da Comunidade dos Criadores')
-    expect(checkout).not.toContain('pelas atividades enviadas')
-    expect(thanks).toContain('Sua assinatura está confirmada.')
-    expect(thanks).toContain('Se já tem conta, entre com seu acesso habitual')
+    // Os textos do checkout e do obrigado vêm do conteúdo do funil; as páginas só os desenham.
+    expect(COMUNIDADE_CHECKOUT.titulo).toBe('Confirme sua assinatura da Comunidade dos Criadores')
+    expect(checkout).toContain('{intro.titulo}')
+    expect(COMUNIDADE_CHECKOUT.paragrafos.join(' ')).not.toContain('pelas atividades enviadas')
+    expect(COMUNIDADE_OBRIGADO.titulo).toBe('Sua assinatura está confirmada.')
+    expect(COMUNIDADE_OBRIGADO.acesso).toContain('Se já tem conta, entre com seu acesso habitual')
+    expect(thanks).toContain("(titulo ?? 'Pagamento confirmado!')")
+    expect(thanks).toContain('{introObrigado} {acesso}')
     expect(thanks).toContain('approved && (')
     expect(thanks).toContain('Pagamento ainda aguardando confirmação.')
   })

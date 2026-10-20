@@ -1,6 +1,6 @@
 import { TERMOS_DESAFIO } from '../../content/legal/termos-desafio'
 import type { FunnelDef } from '../registry'
-import { DESAFIO_LANDING, DESAFIO_OBRIGADO, DESAFIO_PRODUTO } from './content'
+import { DESAFIO_CHECKOUT, DESAFIO_LANDING, DESAFIO_OBRIGADO, DESAFIO_PRODUTO } from './content'
 import { DESAFIO_PERFIL_LABELS, DESAFIO_QUIZ } from './quiz/definition'
 
 export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
@@ -31,6 +31,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
     copy: DESAFIO_PRODUTO,
     landing: DESAFIO_LANDING,
     obrigado: DESAFIO_OBRIGADO,
+    checkout: DESAFIO_CHECKOUT,
     quiz: DESAFIO_QUIZ,
     result: { profiles: {}, fecho: '', perfilLabels: DESAFIO_PERFIL_LABELS },
   },

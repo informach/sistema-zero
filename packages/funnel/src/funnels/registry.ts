@@ -18,6 +18,7 @@ import type { QuizAnswers, QuizAnswerValue } from '../lib/quiz-types'
 
 export type { QuizAnswers } from '../lib/quiz-types'
 
+import { COMUNIDADE_ADULTO } from './comunidade-adulto'
 import { COMUNIDADE_DOS_CRIADORES } from './comunidade-dos-criadores'
 import { DESAFIO_PRIMEIRO_JOGO } from './desafio-primeiro-jogo'
 import { NO_COMANDO_DA_IA } from './no-comando-da-ia'
@@ -137,8 +138,24 @@ export interface FunnelObrigado {
    * "Obrigado por assumir o comando." (NCI). Por funil: o Desafio fala da criança.
    */
   intro?: string
+  /** Título da confirmação aprovada. Ausente → "Pagamento confirmado!". */
+  titulo?: string
+  /**
+   * Frase depois da `intro` na confirmação aprovada. Ausente → "O seu acesso ao <produto> está a
+   * caminho do seu e-mail."
+   */
+  acesso?: string
+  /** Título da lista de passos. Ausente → "Como acessar". */
+  passosTitulo?: string
+  /** Rótulo do botão para a área de membros. Ausente → "Ir para a área de membros →". */
+  botao?: string
   entrega: string[]
   passos: FunnelObrigadoPasso[]
+}
+/** Abertura do checkout acima do card do produto (o título vira o h1 da página). */
+export interface FunnelCheckoutIntro {
+  titulo: string
+  paragrafos: string[]
 }
 
 export interface FunnelContent {
@@ -149,6 +166,8 @@ export interface FunnelContent {
   sales?: SalesSections
   /** Conteúdo da /obrigado. */
   obrigado: FunnelObrigado
+  /** Abertura do checkout (opcional: sem ela, o card do produto é o h1 da página). */
+  checkout?: FunnelCheckoutIntro
   /** Quiz (opcional — funil sem quiz entra direto na oferta). */
   quiz?: FunnelQuiz
   /** Hero da oferta por perfil (só faz sentido com quiz). */
@@ -249,6 +268,8 @@ export function funnelKey(audience: string, produto: string): string {
  */
 export const FUNNELS: Record<string, FunnelDef> = {
   [NO_COMANDO_DA_IA.key]: NO_COMANDO_DA_IA,
+  // DEPOIS do NCI: a landing /pro redireciona ao PRIMEIRO funil pro do map.
+  [COMUNIDADE_ADULTO.key]: COMUNIDADE_ADULTO,
   [DESAFIO_PRIMEIRO_JOGO.key]: DESAFIO_PRIMEIRO_JOGO,
   // DEPOIS do Desafio: a landing /kids redireciona ao PRIMEIRO funil kids do map
   // ([audience]/index.astro) — a ordem preserva o destino atual do tráfego.

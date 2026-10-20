@@ -39,6 +39,7 @@ export default defineConfig({
       customPages: [
         `${site}/como-funciona/`,
         `${site}/pro/no-comando-da-ia/oferta`,
+        `${site}/pro/comunidade-dos-criadores/oferta`,
         `${site}/kids/desafio-primeiro-jogo/oferta`,
         `${site}/kids/desafio-primeiro-jogo/oferta/tempo-de-tela`,
         `${site}/kids/desafio-primeiro-jogo/oferta/iniciacao-tecnologica`,
@@ -52,6 +53,7 @@ export default defineConfig({
         `${site}/pro/no-comando-da-ia/termos`,
         `${site}/kids/desafio-primeiro-jogo/termos`,
         `${site}/kids/comunidade-dos-criadores/termos`,
+        `${site}/pro/comunidade-dos-criadores/termos`,
       ],
       // Mantém no sitemap só as páginas indexáveis (exclui as noindex/privadas).
       filter: (page) =>

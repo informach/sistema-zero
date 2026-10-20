@@ -28,6 +28,8 @@ const novos = {
   'comunidade-menor9.css': '.cm9',
   'resultado-conversa.css': '.rc',
   'quiz-spin.css': '.qz',
+  // A página adulta (arcade): as cores moram só nos tokens `--cda-*` do theme-arcade.css.
+  'comunidade-adulto.css': '.cda',
 } as const
 const novosCss = Object.fromEntries(
   Object.keys(novos).map((nome) => [nome, readFileSync(join(SRC, 'styles', nome), 'utf8')]),
@@ -79,9 +81,13 @@ describe('Comunidade: o CSS da oferta só fala por tokens', () => {
     expect(layoutCss).not.toMatch(/@media[^{]*\{\s*[a-z]/)
     for (const [nome, prefixo] of Object.entries(novos)) {
       const css = novosCss[nome as keyof typeof novos]
+      // Os passos de um @keyframes (`0%`, `to`) não são seletores; o nome dele leva o prefixo.
       for (const sel of seletores(css))
         for (const parte of sel.split(','))
-          expect([nome, parte.trim().startsWith(prefixo)]).toEqual([nome, true])
+          if (!/^(from|to|[\d.]+%)$/.test(parte.trim()))
+            expect([nome, parte.trim().startsWith(prefixo)]).toEqual([nome, true])
+      for (const [, animacao] of css.matchAll(/@keyframes\s+([\w-]+)/g))
+        expect([nome, animacao?.startsWith(prefixo.slice(1))]).toEqual([nome, true])
       expect([nome, semComentarios(css).includes('var(--sz-')]).toEqual([nome, false])
       expect([nome, /@media[^{]*\{\s*[a-z]/.test(css)]).toEqual([nome, false])
       expect([nome, css.includes('overflow-x: hidden')]).toEqual([nome, false])
