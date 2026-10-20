@@ -116,10 +116,10 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
       destaque: 'o seu jogo.',
     },
     texto:
-      'Quem já tem conta continua nela, com o mesmo e-mail: os projetos em Meus Jogos, os jogos publicados e o progresso nos cursos ficam lá. Com a assinatura, os cursos abrem na sua conta. Cada etapa concluída põe blocos novos na sua paleta, e algumas abrem uma ferramenta nova no Estúdio. Se você criava na Comunidade Kids ou acompanha alguém lá, o seu caso está logo abaixo.',
+      'Quem já tem conta continua nela, com o mesmo e-mail: os projetos em Meus Jogos, os jogos publicados e o progresso nos cursos ficam lá. Com a assinatura, a plataforma abre de novo na sua conta: os cursos, o Estúdio livre e as ferramentas da sua etapa, o Mural, o Clube e os Recados. Cada etapa concluída põe blocos novos na sua paleta, e algumas abrem uma ferramenta nova no Estúdio. Se você criava na Comunidade Kids ou acompanha alguém lá, o seu caso está logo abaixo.',
     beneficios: [
       'Quem já tem conta continua nela, com o mesmo e-mail.',
-      'Todos os cursos adultos, os de hoje e os que entrarem.',
+      'Cursos, ferramentas, Mural, Clube e Recados na mesma conta.',
       '7 dias de garantia para testar a próxima fase.',
     ],
     cta: CTA_CONTINUAR,
@@ -207,7 +207,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
         'Publicar e fazer a sua versão dos jogos no Mural',
         'O Clube e o Desafio do mês',
         'Os tutoriais e os Recados, para quando travar',
-        'O Pensa e o Zappy nas etapas avançadas, com limite mensal',
+        'O Pensa e o Zappy nas etapas avançadas, com créditos por dia e por mês',
       ],
     },
     escada: { ...PAGINA_ADULTO.etapas.escada, titulo: 'As 7 etapas da área adulta' },
@@ -253,7 +253,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
       {
         pergunta: 'Já tenho No Comando da IA. A Comunidade está incluída?',
         resposta:
-          'Não. A Comunidade dos Criadores é uma assinatura à parte, com os cursos e as ferramentas de criação de jogos. No Comando da IA continua na sua conta, do jeito que está.',
+          'Não. A Comunidade dos Criadores é uma assinatura à parte, com os cursos, as ferramentas de criação de jogos, o Mural e o Clube. No Comando da IA continua na sua conta, do jeito que está.',
       },
       {
         pergunta: 'Usava a Comunidade Kids e fiz 18 anos. Levo meus jogos?',

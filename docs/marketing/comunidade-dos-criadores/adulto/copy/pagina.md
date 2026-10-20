@@ -226,7 +226,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **etapas.passos[1].titulo**: Sobe de etapa, abre a ferramenta
 
-**etapas.passos[1].texto**: O Estúdio livre e o Pinta abrem assim que você conclui a primeira etapa. Depois chegam o Molda, para criar em três dimensões; a Ponte entre blocos e código; o Pensa, que conversa sobre a ideia do seu jogo e a organiza em tarefas; o Zappy no Estúdio, o tutor virtual que olha os seus blocos e diz o que conferir, sem mexer no projeto; e, por fim, o Estúdio Pro, em código.
+**etapas.passos[1].texto**: O Estúdio livre e o Pinta abrem assim que você conclui a primeira etapa. Depois chegam o Molda, para criar em três dimensões; a Ponte entre blocos e código; o Pensa, que conversa sobre a ideia do seu jogo e a divide em missões; o Zappy, o tutor do Estúdio, que olha os seus blocos e diz o que conferir, sem mexer neles; e, por fim, o Estúdio Pro, em código, onde o Zappy também pode propor uma mudança, que só entra no jogo quando você revisa e aperta Aplicar alterações.
 
 **etapas.passos[2].rotulo**: PASSO 3
 
@@ -370,7 +370,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **comunidade.ajuda.titulo**: E quando você travar, tem ajuda
 
-**comunidade.ajuda.texto**: As dúvidas vão para a equipe pelos Recados, o canal de mensagens da plataforma. Nas etapas avançadas, o Zappy, o tutor virtual do Estúdio, olha os seus blocos e diz o que conferir; quem decide e monta continua sendo você.
+**comunidade.ajuda.texto**: As dúvidas são respondidas pela equipe nos Recados, o canal de mensagens da plataforma. Nas etapas avançadas, o Zappy, o tutor do Estúdio, olha os seus blocos e diz o que conferir; quem decide e monta continua sendo você.
 
 **paraQuem.titulo**: Para você decidir com calma, vale saber para quem isso foi feito
 
@@ -386,7 +386,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **paraQuem.nao.rotulo**: AINDA NÃO É PARA VOCÊ SE
 
-**paraQuem.nao.itens[0]**: quer um curso para trabalhar com jogos ou montar portfólio;
+**paraQuem.nao.itens[0]**: quer se preparar para trabalhar com jogos ou montar portfólio;
 
 **paraQuem.nao.itens[1]**: precisa de professor ao vivo toda semana;
 
@@ -406,7 +406,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **oferta.titulo**: Tudo o que você precisa para tirar o jogo da cabeça fica num lugar só
 
-**oferta.texto**: Os cursos levam você do primeiro jogo ao código, as ferramentas cobrem regras, arte e 3D, e o Mural coloca o seu jogo no celular de quem você quiser. Os cursos lançados durante a assinatura entram sem custo extra, e os dois planos dão acesso a tudo: muda só a forma de pagar.
+**oferta.texto**: Os cursos levam você do primeiro jogo ao código, o Estúdio, o Pinta e o Molda cobrem regras, arte e 3D, e o Mural coloca o seu jogo no celular de quem você quiser. O Clube e o Desafio do mês juntam gente que também está criando, e os tutoriais e os Recados ajudam quando você trava. As etapas decidem a ordem, para cada ferramenta chegar quando você tem base para usar. Os cursos lançados durante a assinatura entram sem custo extra, e os dois planos dão acesso a tudo: muda só a forma de pagar.
 
 **oferta.depois.rotulo**: O QUE ACONTECE DEPOIS DE ASSINAR
 
@@ -508,11 +508,11 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **duvidas.itens[9].pergunta**: O Pensa e o Zappy custam à parte?
 
-**duvidas.itens[9].resposta**: Não. A assinatura inclui um limite mensal de uso dos dois, que você acompanha no seu perfil. O Pinta e o Molda não entram nesse limite.
+**duvidas.itens[9].resposta**: Não. A assinatura inclui créditos para os dois, com limite por dia e por mês, que você acompanha no seu perfil. A descrição automática ao publicar no Mural usa os mesmos créditos. O Pinta e o Molda não gastam créditos.
 
 **duvidas.itens[10].pergunta**: Tem aula ao vivo?
 
-**duvidas.itens[10].resposta**: As aulas são gravadas para caber no seu horário, e as dúvidas vão para a equipe pelos Recados.
+**duvidas.itens[10].resposta**: As aulas são gravadas para caber no seu horário, e as dúvidas são respondidas pela equipe nos Recados.
 
 **duvidas.itens[11].pergunta**: Posso cancelar quando quiser?
 

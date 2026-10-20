@@ -92,5 +92,5 @@ export const INCLUDED = [
   'Experimento da porta: comparar o jogo com e sem a chave.',
   'Caderno do Aluno, tutoriais do Como Fazer e ajuda por mensagens.',
   'Verificação das etapas, envio do projeto e orientação de publicação.',
-  '30 dias de curso e Mural completo. Depois, Mural visitante para ver e jogar.',
+  '30 dias de acesso a tudo isso, com o Mural completo. Depois, Mural visitante para ver e jogar.',
 ]

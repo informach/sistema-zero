@@ -45,7 +45,7 @@ const CAPABILITY_LABELS: Record<AdultCreatorCapability, string> = {
   molda: 'Molda',
   bridge: 'Ponte',
   pro: 'Pro',
-  ai: 'IA',
+  ai: 'Zappy',
   pensa: 'Pensa',
 }
 
@@ -56,7 +56,7 @@ const CAPABILITY_PHRASES: Record<AdultCreatorCapability, string> = {
   molda: 'o Molda, a oficina 3D',
   bridge: 'a Ponte entre blocos e código',
   pro: 'o Estúdio Pro, com código',
-  ai: 'o assistente de IA',
+  ai: 'o tutor Zappy no Estúdio',
   pensa: 'o Pensa',
 }
 const capabilityPhrase = (capability: AdultCreatorCapability) => CAPABILITY_PHRASES[capability]

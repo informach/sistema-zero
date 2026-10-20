@@ -277,8 +277,9 @@
   transform: translate(2px, 2px);
   box-shadow: none;
 }
+/* A nota de rodapé fica logo abaixo das ações (no pé da tela ela deixava um vão sob as cartas). */
 .qz .qz-nota {
-  margin-top: auto;
+  margin-top: 8px;
   font-size: 0.75rem;
   color: var(--qz-suave);
 }
@@ -400,8 +401,9 @@
 }
 
 /* ── Rodapé, botões e links ──────────────────────────────────────────────────── */
+/* O rodapé segue as opções (no pé da tela ele abria o mesmo vão da entrada nas telas altas). */
 .qz .qz-rodape {
-  margin-top: auto;
+  margin-top: 8px;
   padding-top: 14px;
   display: flex;
   justify-content: space-between;
@@ -416,13 +418,12 @@
   flex-direction: column;
   gap: 12px;
 }
-/* O botão desce para o pé da tela (entrada adulta e saída de menor de 18, como no Canvas). */
+/* O botão principal de uma tela sem opções (entrada adulta e saída de menor de 18) segue o texto,
+ * com um respiro a mais. Ele não desce mais para o pé da tela: o quadro do Canvas tinha 720 px e o
+ * vão ficava curto, mas numa tela de 900 px o `margin-top: auto` abria 330 a 380 px vazios entre os
+ * chips e o "Começar" (relato da dona, 20/10/2026). */
 .qz .qz-acoes--fim {
-  margin-top: auto;
-  padding-top: 12px;
-}
-.qz .qz-acoes--fim ~ .qz-nota {
-  margin-top: 0;
+  margin-top: 16px;
 }
 .qz .qz-botao {
   display: flex;
@@ -521,6 +522,11 @@
   }
   .qz .qz-corpo {
     padding-bottom: 40px;
+  }
+  /* A entrada (adulta e Kids) fica no meio da altura, com o topo onde está: o bloco inteiro desce
+   * junto, então o botão continua logo abaixo dos chips. No celular ela segue o topo. */
+  .qz .qz-entrada {
+    justify-content: center;
   }
 }
 

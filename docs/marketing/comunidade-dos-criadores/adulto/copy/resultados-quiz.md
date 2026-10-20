@@ -22,7 +22,7 @@ Quem passou horas jogando já conhece as regras de um jogo por dentro: pular na 
 
 #### Onde isso acontece
 
-A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural. Os blocos que cada curso ensina ficam na sua caixa de ferramentas, e o Estúdio livre abre logo na primeira etapa: é lá, com o que você já sabe usar, que as próximas noites livres viram jogos seus. Os primeiros cursos são clássicos: uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. Como você **nunca programou**, a primeira fase tira a digitação do caminho: você monta a lógica em blocos e vê cada regra funcionar. A Ponte e o código chegam depois, quando a base estiver firme.
+A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos, com as aulas, o Estúdio, o Mural, o Clube e a ajuda da equipe no mesmo lugar. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural. Os blocos que cada curso ensina ficam na sua caixa de ferramentas, e o Estúdio livre abre logo na primeira etapa: é lá, com o que você já sabe usar, que as próximas noites livres viram jogos seus. Os primeiros cursos são clássicos: uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. Como você **nunca programou**, a primeira fase tira a digitação do caminho: você monta a lógica em blocos e vê cada regra funcionar. A Ponte e o código chegam depois, quando a base estiver firme.
 
 _[Tela: O Mural, onde ficam os jogos publicados: prévia da área adulta com dados de teste]_
 
@@ -56,7 +56,7 @@ Fazer um jogo é escrever as regras da ideia em blocos: quando o jogador tocar a
 
 #### Onde isso acontece
 
-A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural. Os blocos que cada curso ensina ficam na sua caixa de ferramentas, e o Estúdio livre abre logo na primeira etapa: é lá, com o que você já sabe usar, que a sua ideia vira projeto, uma fase de cada vez. Os primeiros cursos são clássicos: uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. Como você **nunca programou**, a primeira fase tira a digitação do caminho: você monta a lógica em blocos e vê cada regra funcionar. A Ponte e o código chegam depois, quando a base estiver firme.
+A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos, com as aulas, o Estúdio, o Mural, o Clube e a ajuda da equipe no mesmo lugar. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural. Os blocos que cada curso ensina ficam na sua caixa de ferramentas, e o Estúdio livre abre logo na primeira etapa: é lá, com o que você já sabe usar, que a sua ideia vira projeto, uma fase de cada vez. Os primeiros cursos são clássicos: uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. Como você **nunca programou**, a primeira fase tira a digitação do caminho: você monta a lógica em blocos e vê cada regra funcionar. A Ponte e o código chegam depois, quando a base estiver firme.
 
 _[Tela: A aula da Nave Contra Asteroides: prévia com dados de teste: vídeo de um lado, Estúdio do outro e o botão de rodar o jogo]_
 
@@ -90,7 +90,7 @@ Por dentro, um jogo é um conjunto de regras: quando apertar a tecla, o personag
 
 #### Onde isso acontece
 
-A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural. Os blocos que cada curso ensina ficam na sua caixa de ferramentas, e o Estúdio livre abre logo na primeira etapa: é lá, com o que você já sabe usar, que dá para inventar as suas regras e ver como cada uma muda o jogo. Os primeiros cursos são clássicos: uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. Como você **nunca programou**, a primeira fase tira a digitação do caminho: você monta a lógica em blocos e vê cada regra funcionar. A Ponte e o código chegam depois, quando a base estiver firme.
+A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos, com as aulas, o Estúdio, o Mural, o Clube e a ajuda da equipe no mesmo lugar. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural. Os blocos que cada curso ensina ficam na sua caixa de ferramentas, e o Estúdio livre abre logo na primeira etapa: é lá, com o que você já sabe usar, que dá para inventar as suas regras e ver como cada uma muda o jogo. Os primeiros cursos são clássicos: uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. Como você **nunca programou**, a primeira fase tira a digitação do caminho: você monta a lógica em blocos e vê cada regra funcionar. A Ponte e o código chegam depois, quando a base estiver firme.
 
 _[Tela: Um jogo de arena em pixel art, com energia, tempo e adversários contados na tela: prévia ilustrativa, com dados fictícios]_
 

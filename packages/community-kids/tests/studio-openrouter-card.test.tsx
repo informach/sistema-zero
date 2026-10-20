@@ -40,7 +40,8 @@ test('parent explicitly selects external funding and saves decimal USD limits wi
     externalDailyLimitMicroUsd: 250_000,
     externalMonthlyLimitMicroUsd: 5_000_000,
   })
-  expect(screen.getByText(/Zappy do Estúdio/)).toBeTruthy()
+  expect(screen.getByRole('heading', { name: 'Assistentes no Estúdio' })).toBeTruthy()
+  expect(screen.getByText(/seu próprio saldo no OpenRouter/)).toBeTruthy()
   expect(document.querySelector('input[type="password"]')).toBeNull()
 })
 test('disabled external integration still lets the responsible adult choose included funding', async () => {

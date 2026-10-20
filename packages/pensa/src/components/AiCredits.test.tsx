@@ -16,9 +16,9 @@ const transport: PensaTransport = {
   request: async <T,>() => ({ credits: CREDITS }) as T,
 }
 
-test('o medidor fala com a criança por padrão e em pedidos na comunidade adulta', async () => {
+test('o medidor fala com a criança por padrão e em créditos na comunidade adulta', async () => {
   const kids = renderHook(() => usePensaCredits(transport))
   await waitFor(() => expect(kids.result.current.inline).toBe('✨ 13 ideias hoje'))
   const adult = renderHook(() => usePensaCredits(transport, undefined, undefined, 'adult'))
-  await waitFor(() => expect(adult.result.current.inline).toBe('13 pedidos hoje'))
+  await waitFor(() => expect(adult.result.current.inline).toBe('13 créditos hoje'))
 })

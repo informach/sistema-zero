@@ -552,9 +552,9 @@ export function CustomerHelpdeskPortal({
         {feedback}
         <p role="status" className="text-sm text-muted-foreground">
           {detail.ticket.assistantState === 'thinking'
-            ? 'O assistente de IA está consultando a base de conhecimento.'
+            ? 'O assistente está consultando a base de conhecimento.'
             : detail.ticket.assistantState === 'waiting_customer'
-              ? 'O assistente de IA respondeu. A resposta ajudou?'
+              ? 'O assistente respondeu. A resposta ajudou?'
               : (detail.ticket.handoffMessage ??
                 (detail.ticket.assistantState === 'resolved'
                   ? 'Chamado resolvido.'

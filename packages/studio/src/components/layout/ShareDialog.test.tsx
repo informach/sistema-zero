@@ -333,7 +333,7 @@ describe('ShareDialog', () => {
     // Geração automática na abertura = 1ª. O botão tem aria-label ESTÁVEL.
     await screen.findByDisplayValue('Um jogo de nave que desvia de asteroides.')
     const btn = () =>
-      screen.getByRole('button', { name: 'Gerar resumo com a IA' }) as HTMLButtonElement
+      screen.getByRole('button', { name: 'Gerar resumo com o Zappy' }) as HTMLButtonElement
 
     await waitFor(() => expect(btn().disabled).toBe(false)) // auto-gen terminou
     fireEvent.click(btn()) // 2ª
@@ -378,7 +378,7 @@ describe('ShareDialog', () => {
 
     await screen.findByDisplayValue('Resumo definido pelo professor.')
     // Sem IA: o botão "Gerar/Regerar" não existe e a auto-geração não roda.
-    expect(screen.queryByRole('button', { name: 'Gerar resumo com a IA' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Gerar resumo com o Zappy' })).toBeNull()
     expect(adapter.generateDescription).toBeUndefined()
 
     fireEvent.click(screen.getByRole('button', { name: 'Gerar capa' }))

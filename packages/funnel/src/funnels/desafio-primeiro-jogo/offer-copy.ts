@@ -61,7 +61,7 @@ export const DESAFIO_SECTIONS = {
     title: 'Uma compra para conhecer essa experiência',
     paragraphs: [
       'Desafio do Primeiro Jogo: {{preco}}, pagamento único.',
-      'Os 30 dias começam na aprovação do pagamento e incluem curso e Mural completo. A compra não se transforma em assinatura. Depois, o acesso permanece como visitante do Mural.',
+      'Os 30 dias começam na aprovação do pagamento e incluem as aulas do Farol, o Estúdio da aula, a ajuda por mensagens e o Mural completo. A compra não se transforma em assinatura. Depois, o acesso permanece como visitante do Mural.',
       'Você tem a garantia de sete dias prevista no checkout para conhecer a experiência e solicitar reembolso conforme as condições informadas. A garantia não altera a contagem dos 30 dias.',
     ],
   },
@@ -69,7 +69,7 @@ export const DESAFIO_SECTIONS = {
     title: 'Um primeiro jogo para conhecer nosso jeito de aprender',
     paragraphs: [
       'Escolher uma atividade fica mais concreto quando vocês conseguem vivê-la. No Desafio, seu filho entra na plataforma da Comunidade dos Criadores, acompanha uma aula e coloca a mão na construção de um jogo. Você pode observar o que desperta a curiosidade dele, como lida com uma parte que não funciona e de que ajuda precisa.',
-      'Essa primeira experiência dá a vocês algo para considerar além da apresentação de uma página: como foi aprender por aqui, na rotina da sua família. Se quiserem continuar, a Comunidade dos Criadores reúne outros cursos e ferramentas de criação, com liberações conforme a Jornada. O Desafio inclui o curso do Farol e o Mural pelo prazo informado; os demais recursos fazem parte da assinatura.',
+      'Essa primeira experiência dá a vocês algo para considerar além da apresentação de uma página: como foi aprender por aqui, na rotina da sua família. Se quiserem continuar, a Comunidade dos Criadores junta os outros cursos, as ferramentas de criação liberadas conforme a Jornada, o Clube e o Mural. O Desafio inclui o curso do Farol, a ajuda por mensagens e o Mural pelo prazo informado; os demais recursos fazem parte da assinatura.',
       'A continuidade é uma escolha de vocês, com uma contratação separada. Vocês seguem na mesma conta, com o que foi registrado no perfil. Quem já quer conhecer o conjunto pode ir direto aos planos da Comunidade; o Desafio é uma opção para experimentar primeiro.',
     ],
   },
@@ -77,7 +77,7 @@ export const DESAFIO_SECTIONS = {
     title: 'O primeiro convite pode ser para conhecer a aventura',
     paragraphs: [
       'Mostre o Farol ao seu filho e conversem sobre o que ele gostaria de experimentar. Se fizer sentido para vocês, o Desafio oferece a orientação para construir as regras, testar o jogo e aprender a mostrá-lo.',
-      '{{preco}} uma vez. Curso e Mural completo por 30 dias; depois, Mural visitante. Para crianças e adolescentes de 9 a 14 anos, no computador.',
+      '{{preco}} uma vez. Inclui, por 30 dias, o projeto guiado, a ajuda por mensagens e o Mural completo; depois, Mural visitante. Para crianças e adolescentes de 9 a 14 anos, no computador.',
     ],
   },
 }
@@ -157,9 +157,9 @@ export const DESAFIO_FAQ = [
   },
   {
     id: 'duvida-11',
-    title: 'A inteligência artificial cria o jogo pela criança?',
+    title: 'Algum assistente virtual monta o jogo pela criança?',
     paragraphs: [
-      'No Desafio, seu filho monta as regras com blocos, executa o jogo e confere o resultado. Por exemplo, precisa programar o que a porta faz com e sem a chave, e testar as duas situações. A explicação ajuda a construir essa resposta, mas não toma a decisão por ele. Quando você pede que mostre por que a porta abriu, a conversa é sobre uma regra que ele trabalhou. Os recursos de inteligência artificial da Comunidade pertencem a outra oferta; eles não são uma ferramenta que cria o Farol pela criança neste curso.',
+      'No Desafio, seu filho monta as regras com blocos, executa o jogo e confere o resultado. Por exemplo, precisa programar o que a porta faz com e sem a chave, e testar as duas situações. A explicação ajuda a construir essa resposta, mas não toma a decisão por ele. Quando você pede que mostre por que a porta abriu, a conversa é sobre uma regra que ele trabalhou. O Pensa e a ajuda do Zappy funcionam com inteligência artificial. Eles fazem parte da assinatura, abrem no posto Inventor e não entram no Desafio.',
     ],
   },
   {
@@ -195,7 +195,7 @@ export const DESAFIO_FAQ = [
     title: 'Posso ir direto para a Comunidade?',
     paragraphs: [
       'Sim. A Comunidade inclui o Desafio enquanto a assinatura estiver ativa, além dos demais recursos do plano. O Desafio avulso é uma opção para conhecer nosso jeito de aprender primeiro: seu filho experimenta uma construção guiada, e vocês observam como a plataforma funciona na rotina da família antes de escolher a continuidade.',
-      'Você pode contratar a Comunidade diretamente se já quiser seguir com o conjunto. Se já tiver acesso ao Desafio incluído na sua conta, entre por ela para evitar comprar o mesmo curso outra vez.',
+      'Você pode contratar a Comunidade diretamente se já quiser seguir com o conjunto. Se já tiver acesso ao Desafio incluído na sua conta, entre por ela para evitar comprar o mesmo acesso outra vez.',
     ],
   },
   {
@@ -203,7 +203,7 @@ export const DESAFIO_FAQ = [
     title: 'Meu filho já fez o Cadê Todo Mundo. Precisa fazer este também?',
     paragraphs: [
       'Não existe essa obrigação. No Cadê Todo Mundo, ele trabalhou a reação ao toque e a contagem dos personagens encontrados. No Farol, o projeto muda: ele monta o movimento, faz o jogo guardar que a chave foi recolhida e programa uma porta que responde a essa informação.',
-      'É outra experiência guiada para quem quer conhecer esse projeto. Se vocês já gostaram da plataforma e querem continuar com o conjunto de cursos e ferramentas, podem conhecer a Comunidade diretamente. O Desafio não precisa ser uma compra intermediária. Confira na sua conta o que já está incluído antes de contratar um acesso avulso.',
+      'É outra experiência guiada para quem quer conhecer esse projeto. Se vocês já gostaram da plataforma e querem continuar com o conjunto, com os outros cursos, as ferramentas, o Clube e o Mural, podem conhecer a Comunidade diretamente. O Desafio não precisa ser uma compra intermediária. Confira na sua conta o que já está incluído antes de contratar um acesso avulso.',
     ],
   },
   {

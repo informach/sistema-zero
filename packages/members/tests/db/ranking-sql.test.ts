@@ -292,7 +292,8 @@ async function ensureTables(conn: DbConnection) {
   for (const column of [
     'version integer not null default 0',
     'user_id uuid not null',
-    'product_id uuid not null',
+    // Com default: o banco é compartilhado e outros arquivos inserem sem `product_id`.
+    'product_id uuid not null default gen_random_uuid()',
     "product_kind text not null default 'course'",
     "access_type text not null default 'course'",
     'course_ref text',

@@ -24,7 +24,7 @@ export function ZappyCredits({
     return (
       <div className="border-sz-border border-b px-4 py-1.5 text-xs text-sz-fg-mute">
         {adulto
-          ? 'Fonte no Estúdio: a sua conexão OpenRouter. O Pensa usa os pedidos da sua conta.'
+          ? 'Fonte no Estúdio: a sua conexão OpenRouter. O Pensa usa os créditos da sua conta.'
           : 'Fonte no Estúdio: OpenRouter do responsável. O Pensa usa a franquia da família.'}
       </div>
     )
@@ -42,7 +42,7 @@ export function ZappyCredits({
       </span>
       <p className="text-xs text-sz-fg-mute">
         {adulto
-          ? 'Vale para o Pensa e o tutor do Estúdio.'
+          ? 'Vale para o Zappy e o Pensa.'
           : 'Franquia da família, compartilhada entre Pensa e Zappy no Estúdio.'}
       </p>
     </div>

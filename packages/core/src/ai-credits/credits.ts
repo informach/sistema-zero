@@ -1,5 +1,5 @@
 /**
- * Quanto ainda resta da ajuda de IA — a MESMA forma que o members devolve.
+ * Quanto ainda resta dos créditos do Zappy e do Pensa — a MESMA forma que o members devolve.
  *
  * A quota é da CONTA (a família): os perfis das crianças dividem o mesmo bolso.
  * Por isso a copy sempre menciona a família — a criança que fica sem porque o
@@ -116,23 +116,30 @@ function quandoVolta(view: AiCreditsView, scope: AiCreditsScope): string {
 }
 
 /**
- * Para quem a frase fala. `kids` (o padrão) conta à criança que o bolso é da família; `adult`
- * (comunidade adulta, 18/10/2026) fala com o dono da conta: "pedidos", sem família e sem emoji.
- * O cálculo é o mesmo nos dois.
+ * Para quem a frase fala. `kids` (o padrão) conta à criança que o bolso é da família, em
+ * "ideias"; `adult` (comunidade adulta, 18/10/2026) fala com o dono da conta: "créditos", sem
+ * família e sem emoji. O cálculo é o mesmo nos dois.
+ *
+ * Vocabulário (20/10/2026, pedido da dona): a tela nomeia o RECURSO (o Zappy, o Pensa, os
+ * créditos), nunca "IA" solta. É a mesma régua do painel de créditos de Meu perfil
+ * (`community/.../ai-credits-panel.tsx`), que repete o aviso de esgotado com estas palavras.
  */
 export interface AiCreditsCopyOptions {
   audience?: 'kids' | 'adult'
 }
 
-const PEDIDOS = (n: number) => (n === 1 ? 'pedido' : 'pedidos')
+const CREDITOS = (n: number) => (n === 1 ? 'crédito' : 'créditos')
+
+/** O rótulo do leitor de tela nomeia quem gasta os créditos (no Kids, "Ajuda do Zappy"). */
+const ROTULO_ADULTO = 'Zappy e Pensa'
 
 function resolveAdultAiCredits(view: AiCreditsView): AiCreditsMeter {
   if (view.unlimited) {
     return {
       state: 'unlimited',
       remaining: Number.POSITIVE_INFINITY,
-      inline: 'Pedidos sem limite',
-      ariaLabel: 'Ajuda da IA: pedidos sem limite.',
+      inline: 'Créditos sem limite',
+      ariaLabel: `${ROTULO_ADULTO}: créditos sem limite.`,
       exhausted: '',
       renews: '',
     }
@@ -143,25 +150,26 @@ function resolveAdultAiCredits(view: AiCreditsView): AiCreditsMeter {
   const quando = scope === 'day' ? 'hoje' : 'este mês'
   const volta = quandoVolta(view, scope)
   if (remaining <= 0) {
-    const titulo = scope === 'day' ? 'Os pedidos de hoje acabaram' : 'Os pedidos deste mês acabaram'
+    const titulo =
+      scope === 'day' ? 'Os créditos de hoje acabaram' : 'Os créditos deste mês acabaram'
     return {
       state: 'exhausted',
       scope,
       remaining: 0,
       inline: titulo,
-      ariaLabel: `Ajuda da IA: ${titulo.toLowerCase()}. ${volta}`,
-      exhausted: `${titulo}. As ferramentas continuam abertas, só sem a ajuda da IA até renovar.`,
+      ariaLabel: `${ROTULO_ADULTO}: ${titulo.toLowerCase()}. ${volta}`,
+      exhausted: `${titulo}. As ferramentas continuam abertas, só sem o Zappy e o Pensa até renovar.`,
       renews: volta,
     }
   }
   const low = remaining <= aiCreditsLowThreshold(scope, limit)
-  const contagem = `${remaining} ${PEDIDOS(remaining)} ${quando}`
+  const contagem = `${remaining} ${CREDITOS(remaining)} ${quando}`
   return {
     state: low ? 'low' : 'plenty',
     scope,
     remaining,
     inline: low ? `Só ${contagem}. ${volta}` : contagem,
-    ariaLabel: `Ajuda da IA: ${contagem}.`,
+    ariaLabel: `${ROTULO_ADULTO}: ${contagem}.`,
     exhausted: '',
     renews: volta,
   }

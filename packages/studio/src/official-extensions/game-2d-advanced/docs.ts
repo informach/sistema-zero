@@ -708,8 +708,8 @@ teclado, sem mais nada.
 **Fazer … ser controlado pelo computador** vai no LUGAR do "Lutador" daquele
 lutador: trocar um pelo outro é a diferença entre jogar sozinho e chamar um
 amigo. No fácil ele quase não defende; no difícil defende quase sempre, mantém a
-distância, espera você errar e usa o especial na hora. Quer a SUA IA? "distância
-entre", "sorte de %" e "o estado de" estão no geral.
+distância, espera você errar e usa o especial na hora. Para montar o SEU jeito de o
+computador lutar, use "distância entre", "sorte de %" e "o estado de", que estão no geral.
 
 ### 🥊 golpes & combo
 
@@ -733,7 +733,7 @@ soco encaixa). Cada golpe machuca um pouco menos (senão mataria de uma vez).
   durar exatamente o golpe. Você não acerta número nenhum.
 - **Fazer … dar o golpe** vai com "se a tecla foi apertada". A tecla é sua, e é
   isso que deixa você ter dois botões, o especial e o combo.
-- **o combo de** e **o especial de** contam para o placar e para a sua IA.
+- **o combo de** e **o especial de** contam para o placar e para o computador que você montar.
 
 ## 🧙 Kit RPG
 

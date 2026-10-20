@@ -181,10 +181,45 @@ a plataforma já faz.
   (`max-w-6xl`) à **aula** e à **sala ao vivo**, que são componentes do Kids e mantêm o layout.
 - **Aula**: mesmo layout do player compartilhado; muda só a pele (rodapé com botões de 56 px,
   chips das atividades com fundo, a letra maior pela raiz). Nada de regra nova no member-shell.
-- **Consumo de IA**: o texto adulto mora no `core` (`resolveAiCredits(view, { audience: 'adult' })`
-  — "pedidos", sem o tom infantil) e chega ao Pensa e ao tutor do Estúdio pelo `audience`. O
-  cartão do consumo fica em **Meu perfil** (seção "IA e voz"), como o cartão da área dos pais no
-  Kids; a página Criar só aponta para lá.
+- **Créditos do Zappy e do Pensa**: o cálculo mora no `core` (`resolveAiCredits(view, { audience:
+  'adult' })`) e chega ao Pensa e ao Zappy do Estúdio pelo `audience`. O cartão fica em **Meu
+  perfil** (seção "Créditos e voz", âncora `#creditos`), como o cartão da área dos pais no Kids; a
+  página Criar só aponta para lá ("Quanto resta de créditos"). ⚠️ O painel (`ai-credits-panel.tsx`)
+  conta em "créditos" e escreve o aviso de esgotado ele mesmo; o `meter` do core também fala em
+  "créditos" e "o Zappy e o Pensa" (ver §Vocabulário).
+
+## Vocabulário: o recurso tem nome, sem "IA" solta (20/10/2026)
+
+Pedido dela: a comunidade falava muito "IA". A tela nomeia o RECURSO, com o mesmo vocabulário do
+Kids:
+
+- **o Zappy**: o tutor do Estúdio (o painel do Estúdio já se chama assim nos dois apps). Na primeira
+  menção de uma tela, "o Zappy, o tutor do Estúdio"; numa lista, "o tutor Zappy no Estúdio".
+- **o Pensa**: planeja o jogo com a pessoa e divide o trabalho em missões.
+- **créditos**: o que o Zappy e o Pensa gastam. `CREDIT_USES` do painel diz tudo o que gasta:
+  "Cada pergunta ao Zappy ou pedido ao Pensa usa um crédito. A descrição automática ao publicar no
+  Mural também usa, assim como construir com o Zappy no modo Pro." (a descrição, `server/openrouter.ts`,
+  e o "Construir" do Pro, `server/studio-builder.ts`, reservam do mesmo total no member-shell).
+  "Créditos do Zappy e do Pensa", "Quanto resta de créditos", "Não gasta créditos" (Pinta e Molda).
+- **assistente virtual** (decisão dela, 20/10/2026), nunca "assistente automático".
+- Painel esgotado: a frase "as ferramentas continuam abertas, só sem o Zappy e o Pensa até renovar"
+  aparece UMA vez (no aviso; o parágrafo fixo a omite nesse estado).
+- Subtítulo de "Créditos e voz": "O Zappy, o tutor do Estúdio, e o Pensa já estão liberados na sua
+  jornada. Aqui você vê quantos créditos restam." só com a capacidade `pensa` também liberada
+  (`ai.pensaUnlocked`, lido em `perfil/page.tsx`); sem ela, a frase cita só o Zappy. A seção em si
+  aparece com a capacidade `ai`. Testes: `tests/credits-copy.test.tsx`.
+- A capacidade `ai` da jornada aparece como **"Zappy"** (Seu progresso) e "o tutor Zappy no
+  Estúdio" (o que a etapa libera); o selo do Criar diz "Zappy liberado na sua jornada".
+- **"IA" fica só em dois lugares**: o aviso de transparência `AI_DISCLOSURE` do painel de créditos
+  ("O Zappy e o Pensa são assistentes virtuais, feitos com inteligência artificial. Quem responde
+  não é uma pessoa da equipe.") e o nome do curso **No Comando da IA** (produto). No atendimento
+  compartilhado (member-shell), o autor da resposta automática segue "Assistente de IA".
+- Guarda: **`tests/copy-sem-ia.test.ts`** lê o texto de tela deste `src/` e do member-shell pelo
+  parser (a máquina `copy-scan` do Kids, importada só leitura) e reprova "IA"/"inteligência
+  artificial" fora da lista `PERMITIDOS` (trecho exato, uma vez por arquivo, com motivo).
+- O `core` (`resolveAiCredits`: "créditos", "Zappy e Pensa: …" no `ariaLabel`) e o `studio`
+  (`ProBuilderPanel`: "passos do Zappy"; `ZappyCredits`: "Vale para o Zappy e o Pensa"; `ShareDialog`:
+  "Gerar resumo com o Zappy") seguem o mesmo vocabulário desde 20/10/2026.
 
 ## Entrada, páginas públicas, perfil público e Ajuda (19/10/2026)
 
@@ -285,7 +320,7 @@ A URL é a constante `COMUNIDADE_ADULTO_CONTINUAR_URL` de **`member-shell/lib/ad
     você avança nas etapas da jornada.", e a segunda frase só quando há etapa atual. Etapa abaixo
     do piso da jornada (aparece concluída sem ter entregado a capacidade) cai na frase sem etapa:
     nada de "mais adiante".
-  - `advanced` (Pensa sem IA): "O Pensa abre depois que você conclui um curso avançado da
+  - `advanced` (Pensa sem a capacidade `ai`): "O Pensa abre depois que você conclui um curso avançado da
     jornada." `journey` e `advanced` levam à etapa atual ("Ver os cursos da etapa") ou a
     `/progresso` ("Ver a sua jornada"). O "Por quê" do `/criar` para `journey` também não diz
     "mais adiante" ("abre conforme você avança nas etapas da jornada.").
@@ -485,7 +520,7 @@ src/
       cursos/[slug]/aulas/[lessonId]/  Player (blocos + anexos + concluir + prev/next + outline
                                        + classificação do curso na sidebar — ver Contratos)
       perfil/               Avatar 3D (foto do editor, sem upload) + nome/telefone + cor + identidade
-                            na comunidade + IA e voz (`#ia`) + trocar senha (e-mail IMUTÁVEL)
+                            na comunidade + Créditos e voz (`#creditos`) + trocar senha (e-mail IMUTÁVEL)
       compras/              Tabela paginada + dialog de detalhe
     api/
       healthz/route.ts      liveness puro p/ o healthcheck do Railway (sem auth/upstream)
@@ -548,7 +583,7 @@ src/
 | `bun run dev` | Next dev server :3007 (Turbopack) |
 | `bun run build` / `start` | build (**`next build`** — Turbopack) + produção |
 | `bun run typecheck` | `tsc --noEmit` |
-| `bun test` | testes (watermark · markdown · download-mime · refresh · csrf · cookies · sentry · watermark-queue · ebook-prefs · tool-lock · continuity — rode com **sandbox off**, gotcha do monorepo) |
+| `bun test` | testes (watermark · markdown · download-mime · refresh · csrf · cookies · sentry · watermark-queue · ebook-prefs · tool-lock · continuity · copy-sem-ia — rode com **sandbox off**, gotcha do monorepo) |
 | `bun run check` / `check:fix` | Biome |
 
 Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.

@@ -21,7 +21,7 @@ import type {
   StudioTutorLessonReference,
 } from '../../studio/tutor'
 import { StudioTutorProvider, useStudioTutor } from '../../studio/tutor'
-import { ZappyPanel } from './ZappyPanel'
+import { ZAPPY_KIDS_DISCLOSURE, ZappyPanel } from './ZappyPanel'
 
 const WIDE: StudioLayout = { width: 1000, isNarrow: false, isCompact: false }
 
@@ -1003,11 +1003,21 @@ describe('ZappyPanel', () => {
     expect(view.queryByText(/ajuda da família acabou/i)).toBeNull()
   })
 
-  it('na comunidade adulta o medidor fala em pedidos da conta, sem a família', async () => {
+  it('na comunidade adulta o medidor fala em créditos do Zappy e do Pensa, sem a família', async () => {
     const view = render(renderPanel(silentAdapter(), { audience: 'adult', credits: CREDITS }))
-    expect(await view.findByText('13 pedidos hoje')).toBeTruthy()
-    expect(view.getByText('Vale para o Pensa e o tutor do Estúdio.')).toBeTruthy()
+    expect(await view.findByText('13 créditos hoje')).toBeTruthy()
+    expect(view.getByText('Vale para o Zappy e o Pensa.')).toBeTruthy()
     expect(view.queryByText(/família|responsável|ideias/i)).toBeNull()
+    // A frase de transparência do painel é da criança; o adulto tem a dele em Meu perfil.
+    expect(view.queryByText(ZAPPY_KIDS_DISCLOSURE)).toBeNull()
+  })
+
+  it('a criança lê, no painel, que o Zappy é um assistente virtual (sem "IA")', async () => {
+    const view = render(renderPanel(silentAdapter(), { credits: CREDITS }))
+    expect(
+      await view.findByText('O Zappy é um assistente virtual, não uma pessoa da equipe.'),
+    ).toBeTruthy()
+    expect(ZAPPY_KIDS_DISCLOSURE).not.toMatch(/\bIAs?\b|intelig[êe]ncia artificial|!|\u2014/)
   })
 
   it('na comunidade adulta a fonte OpenRouter é a conexão da própria pessoa', async () => {
@@ -1020,7 +1030,7 @@ describe('ZappyPanel', () => {
     await waitFor(() =>
       expect(
         view.queryByText(
-          'Fonte no Estúdio: a sua conexão OpenRouter. O Pensa usa os pedidos da sua conta.',
+          'Fonte no Estúdio: a sua conexão OpenRouter. O Pensa usa os créditos da sua conta.',
         ),
       ).not.toBeNull(),
     )

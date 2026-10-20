@@ -408,7 +408,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
         rotulo: 'PASSO 2',
         titulo: 'Sobe de etapa, abre a ferramenta',
         texto:
-          'O Estúdio livre e o Pinta abrem assim que você conclui a primeira etapa. Depois chegam o Molda, para criar em três dimensões; a Ponte entre blocos e código; o Pensa, que conversa sobre a ideia do seu jogo e a organiza em tarefas; o Zappy no Estúdio, o tutor virtual que olha os seus blocos e diz o que conferir, sem mexer no projeto; e, por fim, o Estúdio Pro, em código.',
+          'O Estúdio livre e o Pinta abrem assim que você conclui a primeira etapa. Depois chegam o Molda, para criar em três dimensões; a Ponte entre blocos e código; o Pensa, que conversa sobre a ideia do seu jogo e a divide em missões; o Zappy, o tutor do Estúdio, que olha os seus blocos e diz o que conferir, sem mexer neles; e, por fim, o Estúdio Pro, em código, onde o Zappy também pode propor uma mudança, que só entra no jogo quando você revisa e aperta Aplicar alterações.',
       },
       {
         cor: 'rosa',
@@ -574,7 +574,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
     ajuda: {
       titulo: 'E quando você travar, tem ajuda',
       texto:
-        'As dúvidas vão para a equipe pelos Recados, o canal de mensagens da plataforma. Nas etapas avançadas, o Zappy, o tutor virtual do Estúdio, olha os seus blocos e diz o que conferir; quem decide e monta continua sendo você.',
+        'As dúvidas são respondidas pela equipe nos Recados, o canal de mensagens da plataforma. Nas etapas avançadas, o Zappy, o tutor do Estúdio, olha os seus blocos e diz o que conferir; quem decide e monta continua sendo você.',
     },
   },
   paraQuem: {
@@ -591,7 +591,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
     nao: {
       rotulo: 'AINDA NÃO É PARA VOCÊ SE',
       itens: [
-        'quer um curso para trabalhar com jogos ou montar portfólio;',
+        'quer se preparar para trabalhar com jogos ou montar portfólio;',
         'precisa de professor ao vivo toda semana;',
         'quer criar pelo celular ou pelo tablet;',
         'procura aprender uma engine específica, como Unity ou Unreal.',
@@ -614,7 +614,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
     rotulo: 'INSERT COIN',
     titulo: 'Tudo o que você precisa para tirar o jogo da cabeça fica num lugar só',
     texto:
-      'Os cursos levam você do primeiro jogo ao código, as ferramentas cobrem regras, arte e 3D, e o Mural coloca o seu jogo no celular de quem você quiser. Os cursos lançados durante a assinatura entram sem custo extra, e os dois planos dão acesso a tudo: muda só a forma de pagar.',
+      'Os cursos levam você do primeiro jogo ao código, o Estúdio, o Pinta e o Molda cobrem regras, arte e 3D, e o Mural coloca o seu jogo no celular de quem você quiser. O Clube e o Desafio do mês juntam gente que também está criando, e os tutoriais e os Recados ajudam quando você trava. As etapas decidem a ordem, para cada ferramenta chegar quando você tem base para usar. Os cursos lançados durante a assinatura entram sem custo extra, e os dois planos dão acesso a tudo: muda só a forma de pagar.',
     depois: {
       rotulo: 'O QUE ACONTECE DEPOIS DE ASSINAR',
       passos: [
@@ -714,12 +714,12 @@ export const PAGINA_ADULTO: PaginaAdulto = {
       {
         pergunta: 'O Pensa e o Zappy custam à parte?',
         resposta:
-          'Não. A assinatura inclui um limite mensal de uso dos dois, que você acompanha no seu perfil. O Pinta e o Molda não entram nesse limite.',
+          'Não. A assinatura inclui créditos para os dois, com limite por dia e por mês, que você acompanha no seu perfil. A descrição automática ao publicar no Mural usa os mesmos créditos. O Pinta e o Molda não gastam créditos.',
       },
       {
         pergunta: 'Tem aula ao vivo?',
         resposta:
-          'As aulas são gravadas para caber no seu horário, e as dúvidas vão para a equipe pelos Recados.',
+          'As aulas são gravadas para caber no seu horário, e as dúvidas são respondidas pela equipe nos Recados.',
       },
       {
         pergunta: 'Posso cancelar quando quiser?',

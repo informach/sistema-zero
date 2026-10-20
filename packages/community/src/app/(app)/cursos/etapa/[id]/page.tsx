@@ -27,7 +27,7 @@ const CAPABILITIES: Record<AdultCreatorCapability, string> = {
   molda: 'o Molda, a oficina 3D',
   bridge: 'a Ponte entre blocos e código',
   pro: 'o Estúdio Pro, com código',
-  ai: 'o assistente de IA',
+  ai: 'o tutor Zappy no Estúdio',
   pensa: 'o Pensa',
 }
 

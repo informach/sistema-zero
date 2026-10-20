@@ -210,7 +210,7 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise:
       'O Pong feito só com o núcleo Canvas 2D: classes Paddle e Ball, deltaTime e rebote por ângulo.',
     scenario:
-      'Mover a raquete com as setas, rebater a bola com ângulo pelo ponto de contato, marcar até cinco contra a IA do computador e apertar Enter para recomeçar.',
+      'Mover a raquete com as setas, rebater a bola com ângulo pelo ponto de contato, marcar até cinco contra o computador e apertar Enter para recomeçar.',
     interactions: ['arrows'],
   },
   {

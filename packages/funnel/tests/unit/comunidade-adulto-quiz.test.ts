@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { lintLightCopy } from '@sistemazero/marketing-contracts'
 import {
@@ -337,6 +337,19 @@ describe('Quiz adulto v1: perguntas e entrada', () => {
     )
     for (const h of Object.values(QUIZ_HEADLINES)) expect(h.title).toContain(h.emphasis)
   })
+  test('o botão, a nota e o rodapé seguem o conteúdo, sem o vão até o pé da tela', () => {
+    // 20/10/2026: com `margin-top: auto` numa coluna de altura cheia, a entrada abria 330 a 380 px
+    // vazios entre os chips e o "Começar" (e o mesmo vão antes do "Voltar" nas perguntas).
+    const css = readFileSync(join(import.meta.dir, '../../src/styles/quiz-spin.css'), 'utf8')
+    for (const seletor of ['.qz-acoes--fim', '.qz-nota', '.qz-rodape']) {
+      const regra = css.match(new RegExp(`\\.qz ${seletor.replace('.', '\\.')} \\{([^}]*)\\}`))
+      expect(regra?.[1]).toBeDefined()
+      expect(regra?.[1]).not.toMatch(/margin-top:\s*auto/)
+    }
+    // No computador a entrada inteira fica no meio da altura (o bloco desce junto, sem vão).
+    const computador = css.slice(css.indexOf('@media (min-width: 640px)'))
+    expect(computador).toMatch(/\.qz \.qz-entrada \{\s*justify-content: center;/)
+  })
 })
 
 describe('Quiz adulto v1: o motor', () => {
@@ -508,7 +521,7 @@ describe('Quiz adulto v1: o resultado em conversa', () => {
       {
         tipo: 'p',
         texto:
-          'A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural. Os blocos que cada curso ensina ficam na sua caixa de ferramentas, e o Estúdio livre abre logo na primeira etapa: é lá, com o que você já sabe usar, que a sua ideia vira projeto, uma fase de cada vez. Os primeiros cursos são clássicos: uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. Como você [[nunca programou]], a primeira fase tira a digitação do caminho: você monta a lógica em blocos e vê cada regra funcionar. A Ponte e o código chegam depois, quando a base estiver firme.',
+          'A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos, com as aulas, o Estúdio, o Mural, o Clube e a ajuda da equipe no mesmo lugar. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural. Os blocos que cada curso ensina ficam na sua caixa de ferramentas, e o Estúdio livre abre logo na primeira etapa: é lá, com o que você já sabe usar, que a sua ideia vira projeto, uma fase de cada vez. Os primeiros cursos são clássicos: uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. Como você [[nunca programou]], a primeira fase tira a digitação do caminho: você monta a lógica em blocos e vê cada regra funcionar. A Ponte e o código chegam depois, quando a base estiver firme.',
       },
       {
         tipo: 'img',

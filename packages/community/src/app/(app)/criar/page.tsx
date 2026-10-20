@@ -33,7 +33,7 @@ interface Tool {
   /** Cor de identidade da ferramenta (fixa: não segue a cor escolhida no perfil). */
   color: string
   description: string
-  /** O texto do cartão quando a IA já está liberada na jornada. */
+  /** O texto do cartão quando o Zappy e o Pensa já estão liberados na jornada. */
   aiNote: string
   usesAi: boolean
 }
@@ -47,7 +47,7 @@ const TOOLS: readonly Tool[] = [
     icon: LayoutDashboard,
     color: 'var(--sz-community-blue)',
     description: 'Crie e programe seus jogos com os blocos que conquistou nos cursos.',
-    aiNote: 'Com o tutor de IA no canto da tela.',
+    aiNote: 'Com o Zappy, o tutor, no canto da tela.',
     usesAi: true,
   },
   {
@@ -58,7 +58,7 @@ const TOOLS: readonly Tool[] = [
     icon: Palette,
     color: 'var(--sz-community-pink)',
     description: 'Desenhe personagens, cenários e imagens para seus jogos.',
-    aiNote: 'Não usa a ajuda da IA.',
+    aiNote: 'Não gasta créditos.',
     usesAi: false,
   },
   {
@@ -69,7 +69,7 @@ const TOOLS: readonly Tool[] = [
     icon: Box,
     color: 'var(--sz-community-orange)',
     description: 'Crie modelos, texturas e ambientes 3D.',
-    aiNote: 'Não usa a ajuda da IA.',
+    aiNote: 'Não gasta créditos.',
     usesAi: false,
   },
   {
@@ -80,12 +80,12 @@ const TOOLS: readonly Tool[] = [
     icon: Lightbulb,
     color: 'var(--sz-community-purple)',
     description: 'Planeje seus jogos com assistência, disponível após a formação avançada.',
-    aiNote: 'Planeja o seu jogo com a ajuda da IA.',
+    aiNote: 'Planeja o seu jogo com você e divide o trabalho em missões.',
     usesAi: true,
   },
 ]
 
-/** Com a IA liberada, a ordem do quadro põe lado a lado as duas que usam a ajuda da IA. */
+/** Com o Zappy liberado, a ordem do quadro põe lado a lado as duas que gastam créditos. */
 const AI_ORDER: readonly Capability[] = ['studio', 'pensa', 'pinta', 'molda']
 
 type ToolStatus =
@@ -202,7 +202,7 @@ function ToolCard({ tool, status }: { tool: Tool; status: ToolStatus }) {
   )
 }
 
-/** O cartão compacto do quadro "Criar com a IA liberada": quatro colunas e o atalho do consumo. */
+/** O cartão compacto do quadro "Criar com o Zappy liberado": quatro colunas e o atalho dos créditos. */
 function ToolCardCompact({ tool, status }: { tool: Tool; status: ToolStatus }) {
   const available = status.kind === 'available'
   return (
@@ -226,11 +226,11 @@ function ToolCardCompact({ tool, status }: { tool: Tool; status: ToolStatus }) {
       </p>
       {available && tool.usesAi ? (
         <Link
-          href="/perfil#ia"
+          href="/perfil#creditos"
           prefetch={false}
           className="sz-link inline-flex min-h-[2.4rem] items-center self-start text-[0.85rem]"
         >
-          Quanto resta da ajuda da IA
+          Quanto resta de créditos
         </Link>
       ) : null}
       <ToolAction tool={tool} status={status} small />
@@ -262,7 +262,7 @@ export default async function CreatePage() {
               Ferramentas da sua conta
               <span className="sz-chip sz-chip-ok font-sans">
                 <Sparkles aria-hidden />
-                IA liberada na sua jornada
+                Zappy liberado na sua jornada
               </span>
             </span>
           ) : (
@@ -272,7 +272,7 @@ export default async function CreatePage() {
         title="Criar"
         lead={
           aiUnlocked
-            ? 'Suas ferramentas e seus projetos, guardados na sua conta. O Pensa e o tutor do Estúdio usam a ajuda da IA; quanto resta fica em Meu perfil.'
+            ? 'Suas ferramentas e seus projetos, guardados na sua conta. O Zappy, o tutor do Estúdio, e o Pensa usam créditos; quanto resta fica em Meu perfil.'
             : 'Suas ferramentas e seus projetos, guardados na sua conta. Abra de qualquer computador e continue de onde parou.'
         }
       />

@@ -21,7 +21,7 @@ const CHECKBOX =
   'mt-0.5 size-[1.4rem] shrink-0 cursor-pointer accent-primary disabled:cursor-not-allowed'
 
 /**
- * "Identidade na comunidade" e "IA e voz" (direção de arte de 18/10/2026). As duas seções gravam o
+ * "Identidade na comunidade" e "Créditos e voz" (direção de arte de 18/10/2026). As duas seções gravam o
  * MESMO registro (`/api/members/adult/profile`), então dividem o estado salvo: cada botão envia só
  * o que a sua seção mudou sobre a última versão salva, e salvar uma nunca desfaz a outra.
  */
@@ -34,8 +34,11 @@ export function PublicProfileSettings({
   initial: AdultProfilePreferences | null
   viewerId: string
   readOnly: boolean
-  /** Presente só quando a etapa de IA está liberada na jornada. */
-  ai: { credits: AiCreditsView | null; voiceConfigured: boolean } | null
+  /**
+   * Presente só com a capacidade `ai` da jornada (ela libera o Zappy). `pensaUnlocked`: a jornada
+   * também liberou o Pensa (capacidade `pensa`); sem ela, a frase não promete o Pensa.
+   */
+  ai: { credits: AiCreditsView | null; voiceConfigured: boolean; pensaUnlocked: boolean } | null
 }) {
   const [saved, setSaved] = useState(initial)
   const [identity, setIdentity] = useState(
@@ -171,16 +174,18 @@ export function PublicProfileSettings({
 
       {ai ? (
         <section
-          id="ia"
-          aria-labelledby="perfil-ia"
+          id="creditos"
+          aria-labelledby="perfil-creditos"
           className="sz-card flex scroll-mt-28 flex-col gap-6 p-6 md:p-8"
         >
           <div className="flex flex-col gap-1.5">
-            <h2 id="perfil-ia" className="sz-h3">
-              IA e voz
+            <h2 id="perfil-creditos" className="sz-h3">
+              Créditos e voz
             </h2>
             <p className="text-[0.9rem] text-muted-foreground">
-              A ajuda da IA do Pensa e do tutor do Estúdio, liberada na sua jornada.
+              {ai.pensaUnlocked
+                ? 'O Zappy, o tutor do Estúdio, e o Pensa já estão liberados na sua jornada. Aqui você vê quantos créditos restam.'
+                : 'O Zappy, o tutor do Estúdio, já está liberado na sua jornada. Aqui você vê quantos créditos restam.'}
             </p>
           </div>
           <AiCreditsPanel credits={ai.credits} />
@@ -218,7 +223,7 @@ export function PublicProfileSettings({
                       onChange={(event) => setVoiceEnabled(event.target.checked)}
                     />
                     <span className="flex flex-col gap-1">
-                      <strong>Usar voz no Pensa e no tutor</strong>
+                      <strong>Usar voz no Pensa e no Zappy</strong>
                       <span className="text-[0.9rem] text-muted-foreground">
                         Você confere o texto antes de enviar e pode desligar quando quiser. Na
                         primeira vez, o navegador pede licença para usar o microfone.

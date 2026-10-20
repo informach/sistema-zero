@@ -1,4 +1,5 @@
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
+import { addColumnsWithDefaults } from './additive-columns'
 
 /** Additive union for the shared SQL test database; no production database is selected here. */
 export async function prepareContentReadinessTables(conn: DbConnection): Promise<void> {
@@ -63,8 +64,6 @@ export async function prepareContentReadinessTables(conn: DbConnection): Promise
   }
   for (const [table, columns] of Object.entries(definitions)) {
     await conn.sql.unsafe(`create table if not exists members.${table} (${columns.join(', ')})`)
-    for (const column of columns.slice(1)) {
-      await conn.sql.unsafe(`alter table members.${table} add column if not exists ${column}`)
-    }
+    await addColumnsWithDefaults(conn, table, columns.slice(1))
   }
 }

@@ -102,7 +102,7 @@ export const CORE_EXAMPLE_SUMMARIES: readonly CoreExampleSummary[] = [
   {
     name: 'Pong (na mão)',
     description:
-      'O Pong clássico só com blocos do núcleo Canvas 2D (sem extensão): classes Paddle e Ball, laço com deltaTime, rebote com ângulo pelo ponto de contato, uma IA de raquete para o computador e placar até 5. Mova com as setas; Enter recomeça. Abra a Ponte para ver o código.',
+      'O Pong clássico só com blocos do núcleo Canvas 2D (sem extensão): classes Paddle e Ball, laço com deltaTime, rebote com ângulo pelo ponto de contato, o computador controlando a outra raquete e placar até 5. Mova com as setas; Enter recomeça. Abra a Ponte para ver o código.',
     experience: 'game',
   },
   {

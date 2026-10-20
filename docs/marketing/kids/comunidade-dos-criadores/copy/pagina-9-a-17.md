@@ -2,7 +2,7 @@
 
 **seoTitle**: Comunidade dos Criadores para 9 a 17 anos | Sistema Zero
 
-**description**: Comunidade dos Criadores, de 9 a 17 anos. Nas aulas, ele aprende fazendo jogos completos. Cada curso que termina libera ferramentas no Estúdio dele, e é lá que ele faz os jogos que inventa e manda o link para os amigos jogarem no celular.
+**description**: Comunidade dos Criadores, de 9 a 17 anos: aulas, Estúdio e ferramentas de criação, Mural e Clube com moderação, e dúvidas respondidas pela equipe nos Recados, numa plataforma só. Ele aprende criando jogos e manda o link para os amigos jogarem no celular.
 
 **cta**: Ver os planos para meu filho
 
@@ -28,7 +28,7 @@
 
 **hero.destaque**: esse aqui fui eu que fiz.
 
-**hero.description**: Nas aulas, ele aprende fazendo jogos completos. Cada curso que termina libera ferramentas no Estúdio dele, e é lá que ele faz os jogos que inventa e manda o link para os amigos jogarem no celular. Você acompanha pela sua área, e não precisa entender de programação para isso.
+**hero.description**: Nas aulas, ele aprende fazendo jogos completos, numa plataforma feita para crianças e adolescentes. Cada curso que termina abre peças novas no Estúdio dele, onde ele faz o jogo que inventou. O jogo vai para o Mural, onde a turma joga e comenta. No Clube, ele troca ideias com outros criadores, e a equipe responde quando ele trava. Você acompanha pela sua área, e não precisa entender de programação para isso.
 
 **hero.benefits[0]**: Um jogo inventado por ele, com as regras dele
 
@@ -54,7 +54,7 @@
 
 **caso.paragraph**: Muita família passa por isso. Você procura curso de programação para criança e esbarra sempre nas mesmas coisas: o horário não encaixa, o gratuito é uma aula experimental que para ali, o pago pesa no orçamento e é difícil avaliar antes de começar. Ele tenta sozinho pelo YouTube, trava e larga. E fica a dúvida que ninguém responde: se ele está só jogando ou aprendendo alguma coisa.
 
-**caso.callout**: Interesse ele tem de sobra. O que falta é um curso que ele comece, se interesse e não queira parar.
+**caso.callout**: Interesse ele tem de sobra. Falta um lugar onde ele aprenda, crie o próprio jogo, mostre aos amigos e tenha ajuda quando travar. Com tudo no mesmo lugar, ele começa e quer continuar.
 
 **muda.eyebrow**: O que muda
 
@@ -176,7 +176,7 @@
 
 **estudio.passos[1].title**: Sobe de posto, abre a ferramenta
 
-**estudio.passos[1].text**: No Construtor, logo depois de A Chave do Farol, o Estúdio livre e o Pinta abrem para as ideias dele. Depois vêm o Pensa e a ajuda do Zappy, o Molda para 3D, a Ponte e o código.
+**estudio.passos[1].text**: No Construtor, logo depois de A Chave do Farol, o Estúdio livre e o Pinta abrem para as ideias dele. Depois vêm o Pensa, que divide a ideia do jogo em missões, a ajuda do Zappy, que olha os blocos e diz o que conferir, o Molda para 3D, a Ponte e o código.
 
 **estudio.passos[2].title**: Faz o jogo dele com o que já sabe
 
@@ -318,17 +318,17 @@
 
 **planos.title**: Para começar, escolha o plano que cabe na rotina de vocês
 
-**planos.paragraph**: Os dois planos dão acesso a tudo. Os cursos novos entram assim que são lançados, e os postos da Jornada vão abrindo ferramentas novas. A diferença está só na forma de pagar.
+**planos.paragraph**: Os dois planos dão acesso a tudo o que está na lista abaixo, e os cursos novos entram assim que são lançados. A diferença está só na forma de pagar.
 
 **planos.inclui[0]**: Todos os cursos publicados e os lançados durante a assinatura
 
 **planos.inclui[1]**: O Desafio do Primeiro Jogo incluído
 
-**planos.inclui[2]**: Estúdio livre, Pinta, Molda e Pensa, liberados posto a posto pela Jornada
+**planos.inclui[2]**: Estúdio livre, Pinta, Pensa, a ajuda do Zappy e Molda, liberados posto a posto pela Jornada
 
-**planos.inclui[3]**: Mural e Clube dos Criadores
+**planos.inclui[3]**: Mural e Clube dos Criadores, com moderação
 
-**planos.inclui[4]**: Dúvidas por escrito com a equipe, nos Recados
+**planos.inclui[4]**: Dúvidas respondidas pela equipe nos Recados
 
 **planos.inclui[5]**: Até 2 perfis e a área do responsável
 
@@ -400,29 +400,33 @@
 
 **faq[5].answer**: Não. Os cenários e os personagens das aulas vêm prontos. O Pinta, o editor de desenho, e o Molda, o de 3D, chegam pela Jornada para quando ele quiser criar os seus.
 
-**faq[6].question**: Ele já usa Scratch, Roblox Studio ou tutoriais do YouTube. Qual é a diferença?
+**faq[6].question**: O Pensa e o Zappy fazem o jogo por ele?
 
-**faq[6].answer**: Scratch e Roblox Studio são grátis e ótimos para quem já sabe por onde começar, e o YouTube ensina um passo solto. Aqui ele tem aulas em português, um projeto de cada vez, a sequência que continua de um projeto para o próximo e um espaço só de alunos, com o caminho dos blocos até o código. Para quem precisa de professor ao lado em horário fixo, uma escola ao vivo pesa a favor.
+**faq[6].answer**: Não. O Pensa conversa sobre a ideia do jogo e a divide em missões. No Estúdio de blocos, a ajuda do Zappy olha o projeto e diz o que conferir, sem mexer em nada. Os dois são assistentes virtuais, funcionam com inteligência artificial e abrem no posto Inventor. Mais adiante, no Estúdio Pro, em código, o Zappy também pode propor uma mudança no jogo: ela só entra no projeto quando ele revisa e aperta Aplicar alterações, e dá para desfazer. Os créditos, usados também na descrição automática ao publicar no Mural, têm limite por dia e por mês, num só total para a família, e você acompanha na sua área. Quem decide e monta o jogo continua sendo ele.
 
-**faq[7].question**: Que computador precisa?
+**faq[7].question**: Ele já usa Scratch, Roblox Studio ou tutoriais do YouTube. Qual é a diferença?
 
-**faq[7].answer**: Um computador com internet, navegador atualizado, mouse e teclado. Pode ser o da família. Tudo roda no navegador, sem instalar nada. Celular e tablet não servem para criar, só para jogar o que ele publicou.
+**faq[7].answer**: Scratch e Roblox Studio são grátis e ótimos para quem já sabe por onde começar, e o YouTube ensina um passo solto. Aqui ficam juntos as aulas em português, um projeto de cada vez, as ferramentas que abrem conforme ele avança e um espaço só de alunos, com moderação. E o caminho segue dos blocos até o código. Para quem precisa de professor ao lado em horário fixo, uma escola ao vivo pesa a favor.
 
-**faq[8].question**: Vai aumentar o tempo de tela?
+**faq[8].question**: Que computador precisa?
 
-**faq[8].answer**: Os combinados continuam com a família. A ideia é trocar uma parte do tempo de assistir por tempo de criar, e ele pode parar quando quiser e continuar de onde parou.
+**faq[8].answer**: Um computador com internet, navegador atualizado, mouse e teclado. Pode ser o da família. Tudo roda no navegador, sem instalar nada. Celular e tablet não servem para criar, só para jogar o que ele publicou.
 
-**faq[9].question**: Tem aula ao vivo?
+**faq[9].question**: Vai aumentar o tempo de tela?
 
-**faq[9].answer**: As aulas são gravadas, e as dúvidas vão por escrito para a equipe nos Recados, o canal de mensagens da plataforma.
+**faq[9].answer**: Os combinados continuam com a família. A ideia é trocar uma parte do tempo de assistir por tempo de criar, e ele pode parar quando quiser e continuar de onde parou.
 
-**faq[10].question**: Tenho dois filhos de idades diferentes.
+**faq[10].question**: Tem aula ao vivo?
 
-**faq[10].answer**: A assinatura tem até 2 perfis, cada um com seus jogos, seu progresso e sua Jornada. Se o mais novo ainda não lê sozinho, ele cria junto com você.
+**faq[10].answer**: As aulas são gravadas, e as dúvidas são respondidas por escrito pela equipe nos Recados, o canal de mensagens da plataforma.
 
-**faq[11].question**: Como cancelo? O que acontece com os jogos?
+**faq[11].question**: Tenho dois filhos de idades diferentes.
 
-**faq[11].answer**: Na sua área, em Conta e depois em Minhas compras, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e os jogos publicados continuam no Mural.
+**faq[11].answer**: A assinatura tem até 2 perfis, cada um com seus jogos, seu progresso e sua Jornada. Se o mais novo ainda não lê sozinho, ele cria junto com você.
+
+**faq[12].question**: Como cancelo? O que acontece com os jogos?
+
+**faq[12].answer**: Na sua área, em Conta e depois em Minhas compras, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e os jogos publicados continuam no Mural.
 
 **closing.title**: A próxima partida em casa pode ser num jogo feito por ele
 

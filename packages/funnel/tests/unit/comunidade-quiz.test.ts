@@ -413,7 +413,16 @@ describe('Comunidade v6: o resultado em conversa', () => {
     const meus = r.blocos.flatMap((b) =>
       b.tipo === 'p' || b.tipo === 'h' ? [{ tipo: b.tipo, texto: b.texto }] : [],
     )
-    expect(meus).toEqual(canvas.textos)
+    // 20/10/2026 (pedido da dona): a abertura da Comunidade passou a nomear a solução inteira
+    // (aulas, ferramentas, Mural, Clube e ajuda da equipe). O resto da carta segue o Canvas.
+    const ABERTURA_DO_CANVAS =
+      'A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos.'
+    expect(canvas.textos.some((t) => t.texto.includes(ABERTURA_DO_CANVAS))).toBe(true)
+    const esperado = canvas.textos.map((t) => ({
+      ...t,
+      texto: t.texto.replace(ABERTURA_DO_CANVAS, COPY9.COMMUNITY_OPENING),
+    }))
+    expect(meus).toEqual(esperado)
     expect(cta(r)).toMatchObject(canvas.botao)
     expect(r.tema).toBe('kids')
     expect(r.destino).toBe('/kids/comunidade-dos-criadores/oferta')

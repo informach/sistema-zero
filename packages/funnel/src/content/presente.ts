@@ -45,7 +45,7 @@ export const GIFT_SECTIONS = [
     'A explicação fica ao lado do que seu filho está construindo.',
     [
       'Na tela da aula, seu filho encontra o vídeo com a orientação e a atividade para colocar a ideia em prática. Ele pode assistir a um passo, pausar e fazer a ação no projeto. Se não entendeu um detalhe, volta à explicação antes de continuar.',
-      'A orientação e o trabalho ficam juntos. Você consegue olhar a tela com ele e entender o que está tentando fazer; ele consegue comparar o que ouviu com o que aconteceu na própria atividade. O curso usa o Estúdio dentro desse projeto guiado — o presente não libera o editor para criar projetos livres.',
+      'A orientação e o trabalho ficam juntos. Você consegue olhar a tela com ele e entender o que está tentando fazer; ele consegue comparar o que ouviu com o que aconteceu na própria atividade. O curso usa o Estúdio dentro desse projeto guiado, e o presente não libera o editor para criar projetos livres.',
     ],
     ['aula-estudio'],
   ),
@@ -89,7 +89,7 @@ export const GIFT_SECTIONS = [
     [
       'O Sistema Zero é uma plataforma de aprendizagem criativa. Crianças acompanham orientações, fazem atividades e testam suas ideias. Este convite oferece um começo concreto: o curso Cadê Todo Mundo? e a participação no Mural por sete dias, com visita ao Mural depois desse prazo.',
       'Queremos que você veja como seu filho participa dessa experiência antes de decidir se deseja continuar. O cadastro não pede cartão e não cria uma assinatura. Ao fim dos sete dias, o curso deixa de estar disponível por este presente; não começa uma cobrança.',
-      'Se depois vocês quiserem seguir com outros cursos e recursos, existe a Comunidade dos Criadores. Essa assinatura é uma escolha separada do responsável. Você pode conhecer o presente agora sem assumir esse compromisso.',
+      'Se depois vocês quiserem seguir, existe a Comunidade dos Criadores, que reúne os outros cursos, as ferramentas de criação, o Clube, o Mural e as dúvidas respondidas pela equipe nos Recados. Essa assinatura é uma escolha separada do responsável. Você pode conhecer o presente agora sem assumir esse compromisso.',
     ],
     [],
   ),
@@ -186,7 +186,7 @@ export const GIFT_FAQ = [
     visual: 'mural',
     paragraphs: [
       'Depois dos sete dias, sua conta continua podendo ver e jogar os jogos disponíveis no Mural dos Criadores enquanto ela existir. Publicar, comentar e reagir ficam liberados pelo convite somente durante os sete dias. Se seu filho publicou o jogo nesse período, o link continua funcionando enquanto a publicação estiver disponível, para vocês e para quem receber o link.',
-      'Para continuar publicando, comentando e reagindo depois desse prazo, existe a assinatura da Comunidade dos Criadores, contratada separadamente. Ela também oferece outros cursos e ferramentas de criação, conforme os acessos e as etapas da plataforma.',
+      'Para continuar publicando, comentando e reagindo depois desse prazo, existe a assinatura da Comunidade dos Criadores, contratada separadamente. Nela, seu filho segue com outros cursos, as ferramentas de criação liberadas pela Jornada, o Clube e as dúvidas respondidas pela equipe nos Recados.',
     ],
   },
   {

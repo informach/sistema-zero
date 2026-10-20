@@ -35,6 +35,12 @@ import { useTutorCredits } from './useTutorCredits'
 import { ZappyCredits } from './ZappyCredits'
 
 const MAX_QUESTION_CHARS = 1_000
+
+/**
+ * A única frase do painel, na tela da criança, que diz o que o Zappy é (decisão da dona,
+ * 20/10/2026). Sem a palavra "IA": o recurso tem nome. Exportada para o teste travar o texto.
+ */
+export const ZAPPY_KIDS_DISCLOSURE = 'O Zappy é um assistente virtual, não uma pessoa da equipe.'
 const ProBuilderPanel = lazy(() => import('./ProBuilderPanel'))
 
 function friendlyError(error: unknown): string {
@@ -713,6 +719,16 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
         </button>
       </header>
 
+      {config?.audience !== 'adult' ? (
+        // Transparência para a CRIANÇA (decisão da dona, 20/10/2026): uma frase curta, sem
+        // "IA", dizendo que quem responde não é gente. O aviso completo, com "inteligência
+        // artificial", é dos pais (`ai-credits-card.tsx` do Kids); no adulto, o painel de
+        // créditos de Meu perfil.
+        <p className="border-sz-border border-b px-4 py-1.5 text-xs text-sz-fg-mute">
+          {ZAPPY_KIDS_DISCLOSURE}
+        </p>
+      ) : null}
+
       {/* ⚠️ O botão "Perguntar" NÃO é desabilitado quando o saldo zera: o servidor
           é a autoridade, e um saldo velho numa aba aberta desde ontem trancaria a
           criança de graça. O aviso explica; a recusa real vem do BFF. */}
@@ -1077,7 +1093,7 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
                 onClick={() => {
                   pendingAttemptRef.current = null
                   setError(
-                    'O próximo envio será um novo pedido com o código e as notas atuais e poderá usar mais IA.',
+                    `O próximo envio será um novo pedido com o código e as notas atuais e pode gastar mais ${config?.audience === 'adult' ? 'créditos' : 'ideias'}.`,
                   )
                 }}
               >

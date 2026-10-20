@@ -22,7 +22,7 @@ Quando ele cria o próprio jogo, passa para o outro lado da tela. Decide quanto 
 
 #### Onde isso acontece
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Os cursos são projetos de jogo, e a aula mostra cada passo ao lado do editor. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para as ideias dele. O jogo publicado vai para o Mural dos Criadores, com um link para a família jogar.
+A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Os cursos são projetos de jogo, e a aula mostra cada passo ao lado do editor. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para as ideias dele. O jogo publicado vai para o Mural dos Criadores, com um link para a família jogar.
 
 _[Tela: A aula com o vídeo e a fala do Zappy de um lado e a atividade no Estúdio do outro]_
 
@@ -58,7 +58,7 @@ Criar um jogo é escrever as regras da ideia: quando o jogador tocar no esconder
 
 #### Onde isso acontece
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Cada curso é um jogo completo, e ele começa jogando a versão pronta para saber aonde vai chegar: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para as ideias dele, com as peças dos cursos que ele terminou. Cada curso novo põe peças novas na caixa, e o jogo que ele consegue fazer cresce junto.
+A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Cada curso é um jogo completo, e ele começa jogando a versão pronta para saber aonde vai chegar: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para as ideias dele, com as peças dos cursos que ele terminou. Cada curso novo põe peças novas na caixa, e o jogo que ele consegue fazer cresce junto.
 
 _[Tela: O Estúdio com os blocos do jardim e o jogo rodando ao lado]_
 
@@ -94,7 +94,7 @@ Num jogo, o personagem desenhado anda, pula e reage, e quem decide como é seu f
 
 #### Onde isso acontece
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Os cursos começam com personagens preparados, para ele aprender primeiro as regras. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Pinta, o editor de desenhos da plataforma, abre junto com o Estúdio livre: ele desenha o personagem e traz o desenho para o jogo.
+A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Os cursos começam com personagens preparados, para ele aprender primeiro as regras. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Pinta, o editor de desenhos da plataforma, abre junto com o Estúdio livre: ele desenha o personagem e traz o desenho para o jogo.
 
 _[Tela: A janela Trazer do Pinta, dentro do Estúdio, com o cavaleiro desenhado pronto para o jogo]_
 
@@ -130,7 +130,7 @@ Programar faz sentido quando cada comando tem um efeito que ele vê e testa. Num
 
 #### Onde isso acontece
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Ele aprende a programar montando jogos. A aula mostra o passo ao lado do editor, e as falas do Zappy, o mascote das aulas, explicam o que fazer; o botão Ouvir lê em voz alta. Os cursos seguem esta ordem: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. A Jornada do Criador mostra em que ponto ele está e o que vem depois, dos blocos até o código.
+A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Ele aprende a programar montando jogos. A aula mostra o passo ao lado do editor, e as falas do Zappy, o mascote das aulas, explicam o que fazer; o botão Ouvir lê em voz alta. Os cursos seguem esta ordem: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. A Jornada do Criador mostra em que ponto ele está e o que vem depois, dos blocos até o código.
 
 _[Tela: O Estúdio com os blocos de um lado e o jogo rodando do outro]_
 
@@ -166,7 +166,7 @@ No jogo, o número faz alguma coisa. Um comando manda o personagem andar cinco p
 
 #### Onde isso acontece
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Ali, a aula liga o que ele viu no jogo ao que o comando significa. No jogo do jardim, do curso Cadê Todo Mundo, cada personagem encontrado soma um no contador, e é ele quem monta essa regra.
+A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Ali, a aula liga o que ele viu no jogo ao que o comando significa. No jogo do jardim, do curso Cadê Todo Mundo, cada personagem encontrado soma um no contador, e é ele quem monta essa regra.
 
 _[Tela: O contador de achados muda quando um personagem é encontrado]_
 

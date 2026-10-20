@@ -53,6 +53,16 @@ acesso por matrícula sem novo gate. Curso normal fora da escada também pode te
 Focados atuais: canonical/policy/parity/pause/journey/journey-state, 60 testes/2772 asserções.
 Novos consumidores Members estão em migração isolada; isso não qualifica a integração completa.
 
+## Créditos do Zappy e do Pensa: o recurso tem nome (20/10/2026)
+
+`ai-credits/credits.ts` (`resolveAiCredits`) é o medidor dos dois apps. Pedido da dona: a tela
+nomeia o RECURSO, nunca "IA" solta. Kids (padrão) conta **ideias** ("✨ 13 ideias hoje", rótulo
+"Ajuda do Zappy: …"). Adulto (`audience: 'adult'`) conta **créditos**: "13 créditos hoje",
+"Créditos sem limite", "Os créditos de hoje acabaram", leitor de tela "Zappy e Pensa: …" e o
+esgotado "… só sem o Zappy e o Pensa até renovar." (a mesma frase do painel de Meu perfil da
+comunidade). Teste: `credits.test.ts` reprova "IA"/"pedido" em toda frase adulta. ⚠️ O
+`pensa/src/components/AiCredits.test.tsx` (outro pacote) fixa a unidade adulta.
+
 ## Posição na jornada adulta (19/10/2026)
 
 `adultJourneyPosition(view)` (`journey/adult-policy.ts`): a etapa atual é a primeira não concluída
