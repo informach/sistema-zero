@@ -47,6 +47,7 @@ function isSensitiveKeyName(value: string): boolean {
 interface SensitiveBinding {
   index: number
   valueStart: number
+  kind: 'assignment' | 'property'
 }
 
 /** Python/TypeScript annotations may precede the assignment. Never inspect beyond
@@ -83,7 +84,13 @@ function annotatedValueStart(text: string, from: number): number | undefined {
       continue
     }
     if (depth === 0 && (character === ',' || character === ';')) return
-    if (depth === 0 && character === '=' && text[index + 1] !== '>' && text[index + 1] !== '=') {
+    if (
+      depth === 0 &&
+      character === '=' &&
+      !/[=!<>:+*/%&|^~?-]/.test(text[index - 1] ?? '') &&
+      text[index + 1] !== '>' &&
+      text[index + 1] !== '='
+    ) {
       let start = index + 1
       while (text[start] === ' ' || text[start] === '\t') start++
       return start
@@ -100,7 +107,11 @@ function nextSensitiveBinding(line: string, from: number): SensitiveBinding | nu
     match = ASSIGNMENT_PREFIX_RE.exec(line)
   ) {
     if (isSensitiveKeyName(match[1] ?? '')) {
-      assignment = { index: match.index, valueStart: ASSIGNMENT_PREFIX_RE.lastIndex }
+      assignment = {
+        index: match.index,
+        valueStart: ASSIGNMENT_PREFIX_RE.lastIndex,
+        kind: 'assignment',
+      }
       break
     }
   }
@@ -109,10 +120,13 @@ function nextSensitiveBinding(line: string, from: number): SensitiveBinding | nu
   PROPERTY_PREFIX_RE.lastIndex = from
   for (let match = PROPERTY_PREFIX_RE.exec(line); match; match = PROPERTY_PREFIX_RE.exec(line)) {
     if (isSensitiveKeyName(match[2] ?? '')) {
+      const annotated = match[1]
+        ? undefined
+        : annotatedValueStart(line, PROPERTY_PREFIX_RE.lastIndex)
       property = {
         index: match.index,
-        valueStart:
-          annotatedValueStart(line, PROPERTY_PREFIX_RE.lastIndex) ?? PROPERTY_PREFIX_RE.lastIndex,
+        valueStart: annotated ?? PROPERTY_PREFIX_RE.lastIndex,
+        kind: annotated !== undefined ? 'assignment' : 'property',
       }
       break
     }
@@ -123,16 +137,65 @@ function nextSensitiveBinding(line: string, from: number): SensitiveBinding | nu
   return assignment.index <= property.index ? assignment : property
 }
 
-function closingQuoteAt(line: string, quote: string, from: number): number {
-  for (let index = from; index < line.length; index += 1) {
-    if (!line.startsWith(quote, index)) continue
-    let slashCount = 0
-    for (let previous = index - 1; previous >= 0 && line[previous] === '\\'; previous -= 1) {
-      slashCount += 1
+/** Find the complete binding value, including Python adjacent strings and bracketed
+ * continuations. This is a privacy boundary, not a parser or a source rewrite. */
+function sensitiveValueEnd(
+  text: string,
+  from: number,
+  syntax: 'javascript' | 'python',
+  kind: SensitiveBinding['kind'],
+): number {
+  let depth = 0
+  let quote: string | undefined
+  let sawValue = false
+  for (let index = from; index < text.length; index++) {
+    const character = text[index]!
+    if (quote) {
+      if (character === '\\') index++
+      else if (text.startsWith(quote, index)) {
+        index += quote.length - 1
+        quote = undefined
+      }
+      continue
     }
-    if (slashCount % 2 === 0) return index
+    if (!sawValue && /\s/.test(character) && syntax === 'javascript') continue
+    if (syntax === 'javascript' && text.startsWith('/*', index)) {
+      const closing = text.indexOf('*/', index + 2)
+      if (closing < 0) return text.length
+      index = closing + 1
+      continue
+    }
+    if (syntax === 'javascript' && text.startsWith('//', index)) {
+      while (index < text.length && text[index] !== '\r' && text[index] !== '\n') index++
+      index--
+      continue
+    }
+    sawValue = true
+    if (character === '"' || character === "'" || character === '`') {
+      quote =
+        character !== '`' && text.startsWith(character.repeat(3), index)
+          ? character.repeat(3)
+          : character
+      index += quote.length - 1
+    } else if (syntax === 'python' && character === '#') {
+      // A comment cannot close an enclosing expression or reveal the next line.
+      if (depth === 0) return index
+      while (index < text.length && text[index] !== '\r' && text[index] !== '\n') index++
+      index--
+    } else if (character === '\\' && /[\r\n]/.test(text[index + 1] ?? '')) {
+      index += text[index + 1] === '\r' && text[index + 2] === '\n' ? 2 : 1
+    } else if ('([{'.includes(character)) depth++
+    else if (')]}'.includes(character)) {
+      if (depth === 0) return index
+      depth--
+    } else if (
+      depth === 0 &&
+      (/[;\r\n]/.test(character) ||
+        (character === ',' && (syntax === 'javascript' || kind === 'property')))
+    )
+      return index
   }
-  return -1
+  return text.length
 }
 
 function redactedQuotedContent(content: string): string {
@@ -141,35 +204,24 @@ function redactedQuotedContent(content: string): string {
   return `[segredo removido]${content.slice(firstLineBreak).replace(/[^\r\n]/g, ' ')}`
 }
 
-function redactKeyedSecrets(value: string, markSecret: () => void): string {
+function redactKeyedSecrets(
+  value: string,
+  markSecret: () => void,
+  syntax: 'javascript' | 'python',
+): string {
   let text = value
   let cursor = 0
   while (cursor < text.length) {
     const binding = nextSensitiveBinding(text, cursor)
     if (!binding) break
-    const prefix = text.slice(binding.valueStart).match(/^[rRuUbBfFtT]{1,2}(?=["'])/)?.[0] ?? ''
-    const quoteStart = binding.valueStart + prefix.length
-    const firstQuote = text[quoteStart]
-    const quote =
-      firstQuote && firstQuote !== '`' && text.startsWith(firstQuote.repeat(3), quoteStart)
-        ? firstQuote.repeat(3)
-        : firstQuote
-    if (quote && (quote[0] === '"' || quote[0] === "'" || quote === '`')) {
-      const closing = closingQuoteAt(text, quote, quoteStart + quote.length)
-      const contentEnd = closing >= 0 ? closing : text.length
-      const redacted = redactedQuotedContent(text.slice(quoteStart + quote.length, contentEnd))
-      text = `${text.slice(0, quoteStart)}${quote}${redacted}${closing >= 0 ? quote : ''}${closing >= 0 ? text.slice(closing + quote.length) : ''}`
-      cursor = quoteStart + quote.length + redacted.length + (closing >= 0 ? quote.length : 0)
-    } else {
-      const delimiter = text.slice(binding.valueStart).search(/[\s,;}]/)
-      const valueEnd = delimiter < 0 ? text.length : binding.valueStart + delimiter
-      if (valueEnd === binding.valueStart) {
-        cursor = binding.valueStart + 1
-        continue
-      }
-      text = `${text.slice(0, binding.valueStart)}[segredo removido]${text.slice(valueEnd)}`
-      cursor = binding.valueStart + '[segredo removido]'.length
+    const valueEnd = sensitiveValueEnd(text, binding.valueStart, syntax, binding.kind)
+    if (valueEnd === binding.valueStart) {
+      cursor = binding.valueStart + 1
+      continue
     }
+    const redacted = redactedQuotedContent(text.slice(binding.valueStart, valueEnd))
+    text = `${text.slice(0, binding.valueStart)}${redacted}${text.slice(valueEnd)}`
+    cursor = binding.valueStart + redacted.length
     markSecret()
   }
   return text
@@ -188,7 +240,10 @@ export function isStudioTutorSensitivePath(path: string): boolean {
 }
 
 /** Redação conservadora e estável: remove valores, mas preserva linhas e indentação. */
-export function redactStudioTutorSecrets(value: string): {
+export function redactStudioTutorSecrets(
+  value: string,
+  syntax: 'javascript' | 'python' = 'javascript',
+): {
   text: string
   hadSecret: boolean
 } {
@@ -196,7 +251,7 @@ export function redactStudioTutorSecrets(value: string): {
   const markSecret = () => {
     hadSecret = true
   }
-  let text = redactKeyedSecrets(value, markSecret)
+  let text = redactKeyedSecrets(value, markSecret, syntax)
   text = text.replace(URL_CREDENTIALS_RE, (_match, scheme: string) => {
     hadSecret = true
     return `${scheme}[segredo removido]@`

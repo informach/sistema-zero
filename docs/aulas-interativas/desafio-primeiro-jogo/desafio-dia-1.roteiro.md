@@ -13,7 +13,7 @@ Seis seções, seis vídeos. Como na Aula 1 do Cadê Todo Mundo?, o dia começa 
 
 - **Seções 1 e 2:** o jogo pronto é uma atividade separada do projeto que a pessoa vai construir. Não gravar uma partida resolvida, tour da plataforma nem tutorial do leitor. Conferir o PDF anexado antes de gravar a seção 2.
 - **Seções 3 e 5:** a mesma experiência `lighthouse-walk`, com metas diferentes. O vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas.
-- **Seções 4 e 6:** o mesmo projeto. O cenário, os desenhos, o desenho de cada quadro e a regra do barco já vêm preparados; o projeto inicial ainda não tem controles nem movimento. A seção 4 verifica sem enviar, e a seção 6 verifica e envia. O movimento permanece em 3; a escolha de velocidade saiu do curso em 06/10/2026. Mostrar cada gesto no ritmo da fala, com pausa para acompanhar. Não fazer outra demonstração do jogo completo nem tour de abas, divisória ou ampliação.
+- **Seções 4 e 6:** o mesmo projeto. O cenário, os desenhos, o desenho de cada quadro e a regra do barco já vêm preparados; o projeto inicial ainda não tem controles nem movimento. A seção 4 verifica sem enviar, e a seção 6 verifica e envia. Usar 3 na demonstração, sem torná-lo resposta obrigatória: outro tamanho de passo pode funcionar, desde que cada seta mova o personagem na direção dela. A escolha de velocidade saiu como seção dedicada em 06/10/2026. Mostrar cada gesto no ritmo da fala, com pausa para acompanhar. Não fazer outra demonstração do jogo completo nem tour de abas, divisória ou ampliação.
 
 O botão atual se chama **Próxima parte**, e a última seção termina em **Concluir fase**.
 
@@ -167,11 +167,27 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Repare que o bloco chega com o nome heroi, mas o sprite do seu jogo se chama personagem. Por isso, clique em heroi e escolha personagem na lista. A velocidade já vem em 3; deixe assim."
 
-**Na tela:** testar uma seta da tela. No computador, clicar dentro do jogo e testar uma seta do teclado. Pausar para a pessoa testar. Depois clicar em **Verificar esta parte**, mostrar o resultado real e apontar **Próxima parte**. O envio não faz parte desta seção.
+**Inserção para edição, 20/10/2026:** conservar a fala e a âncora acima como montagem da demonstração. Inserir a fala abaixo depois de “A velocidade já vem em 3; deixe assim.”, antes do teste. Não informa gravação ou edição concluída.
+
+**Na tela:** manter o campo de velocidade visível, sem apresentar o número da demonstração como resposta obrigatória.
+
+**Professora:**
+
+> "Esse 3 é o tamanho do passo que eu estou usando na demonstração. Você pode escolher outro. O que importa é o personagem andar na direção de cada seta e ficar parado quando você solta."
+
+**Na tela:** testar as quatro setas da tela, uma de cada vez. No computador, clicar dentro do jogo e testar direita, esquerda, cima e baixo no teclado. Soltar as setas e mostrar o personagem parado. Usar gestos curtos, antes de chegar à borda; o limite só será montado na parte 6. Pausar para a pessoa testar. Depois clicar em **Verificar esta parte**, mostrar o resultado real e apontar **Próxima parte**. O envio não faz parte desta seção.
 
 **Professora:**
 
 > "Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!"
+
+**Inserção para edição, 20/10/2026:** depois da fala anterior, antes da entrada F1P4-R02, mostrar os quatro gestos e completar:
+
+**Na tela:** demonstrar cada direção com um gesto curto e soltar a seta ao terminar; mostrar a parada antes da entrada do avatar.
+
+**Professora:**
+
+> "Teste uma de cada vez: direita, esquerda, cima e baixo. Depois solte as setas. Sem nenhuma seta segurada, o personagem fica parado."
 
 **Na tela:** **F1P4-R02** · Terminar o teste de movimento antes da entrada. Debinha comemora o resultado da demonstração; não afirmar que todos os jogos já funcionam.
 
@@ -191,7 +207,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Ponte do Zappy na página (não gravar):** Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
-**Conferência de produção:** a seção exige o vídeo e a aprovação de dois critérios: as quatro direções e o movimento dentro de A cada quadro do jogo. Não exigir teclado de quem só tem toque, nem toque de quem só tem teclado.
+**Conferência de produção:** a seção exige o vídeo, dois critérios de montagem (controles de quatro direções e movimento dentro de A cada quadro do jogo) e quatro critérios observados, um para cada direção. O teste observa o personagem parado antes da seta, sem comparar cor, arte, posição inicial ou tamanho de passo com a demonstração. Não exigir teclado de quem só tem toque, nem toque de quem só tem teclado.
 
 ## Seção 5. Até onde ele pode ir?
 

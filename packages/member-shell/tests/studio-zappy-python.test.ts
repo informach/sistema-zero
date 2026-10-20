@@ -318,6 +318,33 @@ test('Python prompt budgets sanitize source, preserve approved catalog only and 
   expect(prompt.system).toContain('Pyright')
 })
 
+test('Python BFF masks complete credential expressions using Python syntax before model serialization', async () => {
+  for (const kind of ['classic', 'pro'] as const) {
+    const f = await pythonZappyFixture(kind)
+    const path = f.project.python.entrypoint
+    const content =
+      'password = (\n "family-private-marker"\n)\napi_key = 123 // int("other-private-marker")\nauth_token = "prefix", "tuple-private-marker"\nprint("public value")'
+    const source = [{ path, content }]
+    const context = {
+      ...f.input.context,
+      ...(kind === 'pro'
+        ? { code: source }
+        : { python: { activeFile: path, workspace: 'ready' as const, source } }),
+    }
+    const prompt = buildStudioZappyPrompt({
+      context,
+      tier: resolveStudioTier('hacker', 'user'),
+      question: 'Me explique a ordem',
+      pythonCatalog: describePythonCatalog(),
+    })
+    expect(prompt.user).not.toContain('family-private-marker')
+    expect(prompt.user).not.toContain('other-private-marker')
+    expect(prompt.user).not.toContain('tuple-private-marker')
+    expect(prompt.user).toContain('public value')
+    expect(source[0]!.content).toBe(content)
+  }
+})
+
 test('Python memory accepts its own language and cannot reuse JavaScript or ambiguous legacy advice', async () => {
   const f = await pythonZappyFixture('pro')
   const prompt = buildStudioZappyPrompt({

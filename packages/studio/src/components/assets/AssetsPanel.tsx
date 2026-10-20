@@ -388,6 +388,12 @@ export function AssetsPanel({
    */
   const repairPersonalRecord = async (asset: ProjectAsset, target: EditTarget) => {
     if (await getPersonalAsset(target.id, { namespace: personalNamespace })) return
+    // A selected PNG is not the canonical drawing/spritesheet. Recreating that record
+    // from this frame would send the derivative into JavaScript projects on the next sync.
+    if (asset.pintaImage) {
+      setError('A imagem foi mantida. Para atualizar, recupere o desenho original no Pinta.')
+      return
+    }
     const result = await savePersonalAsset(
       {
         id: target.id,

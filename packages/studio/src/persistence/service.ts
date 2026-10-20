@@ -2,7 +2,10 @@
 // núcleo e não pode arrastar Blockly (workspaceState → buildIR → blockly/core).
 import { isBlocksStateEmpty } from '../blockly/blocksStateShape'
 import { isPythonProject, type EditableStudioProject as Project } from '../core/editableProject'
-import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
+import {
+  hasStaleJavaScriptBridgeBlocks,
+  snapshotProjectWithCurrentAuthority,
+} from '../state/bridgeAuthority'
 import { flushProjectOperations, registerProjectPersistence } from '../state/projectOperations'
 import { installLocalRevision, readLocalRevision } from '../state/projectStorageRevision'
 import type { BlocksHydrationStatus, ProjectStoreApi } from '../state/projectStore'
@@ -377,7 +380,7 @@ export function createPersistenceService(
     // A partição existente pertence aos blocos antigos: o texto da Ponte foi
     // editado depois. Não a restaura por cima do código novo; o reverse-parse
     // produzirá uma partição coerente e então retirará esta marca.
-    if (project.bridgeCodeAhead === true) {
+    if (hasStaleJavaScriptBridgeBlocks(project)) {
       setHydrationStatus(project.id, 'discarded')
       return
     }
@@ -403,7 +406,7 @@ export function createPersistenceService(
           blocksHydrationById.delete(project.id)
           return
         }
-        if (current.project.bridgeCodeAhead === true) {
+        if (hasStaleJavaScriptBridgeBlocks(current.project)) {
           setHydrationStatus(project.id, 'discarded')
           return
         }

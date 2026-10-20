@@ -90,7 +90,11 @@ export function buildPythonZappyPrompt(
     .filter((file) => isStudioTutorSourcePath(file.path) && !isStudioTutorSensitivePath(file.path))
     .slice(0, 8)
     .map((file) =>
-      sanitizeStudioTutorExcerpt(file, (content) => redactZappySensitiveText(content).text, 4000),
+      sanitizeStudioTutorExcerpt(
+        file,
+        (content) => redactZappySensitiveText(content, 'python').text,
+        4000,
+      ),
     )
   const diagnostics = original.pro?.diagnostics
     ?.filter(

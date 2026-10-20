@@ -37,8 +37,10 @@ export async function buildPythonWebFiles(
           (part) => part.toLowerCase().startsWith('.env') || isStudioTutorSensitivePath(part),
         ) ||
       (file.kind === 'source' &&
-        redactStudioTutorSecrets(new TextDecoder('utf-8', { fatal: true }).decode(file.bytes))
-          .hadSecret)
+        redactStudioTutorSecrets(
+          new TextDecoder('utf-8', { fatal: true }).decode(file.bytes),
+          /\.pyi?$/i.test(file.path) ? 'python' : 'javascript',
+        ).hadSecret)
     )
       throw new Error(
         `Revise ${file.path}: o pacote web não pode incluir arquivos ou valores identificados como secretos.`,

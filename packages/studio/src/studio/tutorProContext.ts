@@ -51,6 +51,7 @@ export function createStudioTutorExcerpts(
   const original = file.content.replace(/\r\n|\r/g, '\n')
   const sanitized = redactStudioTutorSecrets(
     original.replace(/data:[^\s"')]+/gi, '[asset removido]'),
+    /\.pyi?$/i.test(file.path) ? 'python' : 'javascript',
   ).text
   const lines = sanitized.split('\n')
   const mapping = studioTutorLineCount(original) === lines.length ? 'lines' : 'file'

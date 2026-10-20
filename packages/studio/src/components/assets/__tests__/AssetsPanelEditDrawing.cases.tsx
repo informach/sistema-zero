@@ -60,6 +60,8 @@ const { getPersonalAsset, savePersonalAsset, setPersonalAssetsNamespace } = awai
 const { releaseDrawingSyncProfile } = await import('../../../asset-library/personalSync')
 const { setStorageNamespace } = await import('../../../state/persistence')
 const { useProjectStore } = await import('../../../state/projectStore')
+const { documentFixture } = await import('../../../state/fixtures/projectDocuments')
+const { refinePythonProjectDocument } = await import('../../../state/pythonProjectValidation')
 const { StudioEditCreationProvider } = await import('../../../studio/edit-creation')
 const { StudioEditDrawingProvider } = await import('../../../studio/edit-drawing')
 const { StudioMoldaLibraryProvider } = await import('../../../studio/molda-library')
@@ -230,6 +232,58 @@ describe('AssetsPanel — "✏️ Editar" nos assets que vieram do Pinta e do Mo
       expect(repaired?.name).toMatch(/^heroi/)
     })
   })
+
+  for (const kind of ['classic', 'pro'] as const) {
+    it(`${kind}: editing a captured Python frame never repairs the canonical personal drawing with derived bytes`, async () => {
+      const dataUrl =
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII='
+      const bytes = Uint8Array.from(atob(dataUrl.split(',')[1]!), (char) => char.charCodeAt(0))
+      const sha256 = Array.from(
+        new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)),
+        (byte) => byte.toString(16).padStart(2, '0'),
+      ).join('')
+      const project = await refinePythonProjectDocument({
+        ...documentFixture('python', kind),
+        assets: [
+          {
+            id: 'captured',
+            name: 'quadro',
+            kind: 'image',
+            source: 'library',
+            libId: 'personal:absent-source',
+            libOrigin: 'pinta',
+            dataUrl,
+            width: 1,
+            height: 1,
+            proPath: 'assets/quadro.png',
+            pintaImage: {
+              recipe: {
+                version: 1,
+                algorithm: 'pinta-image-1',
+                drawingId: 'absent-source',
+                selection: { kind: 'frame', animationId: 'andar', frameIndex: 1 },
+                scale: 1,
+              },
+              provenance: { sourceSha256: 'a'.repeat(64), dependencies: [] },
+              output: { mime: 'image/png', width: 1, height: 1, bytes: bytes.length, sha256 },
+            },
+          },
+        ],
+      })
+      useProjectStore.setState({ project, isDirty: false, saveError: null })
+      const open = mock(() => {})
+      renderPanel(open)
+      // Let the initial failed recipe inspection finish before exercising the edit intent.
+      await screen.findByRole('alert')
+      fireEvent.click(await screen.findByRole('button', { name: 'Editar quadro no Pinta' }))
+      expect(open).toHaveBeenCalledWith('absent-source')
+      await screen.findByText(
+        'A imagem foi mantida. Para atualizar, recupere o desenho original no Pinta.',
+      )
+      expect(await getPersonalAsset('absent-source')).toBeNull()
+      expect(useProjectStore.getState().project).toBe(project)
+    })
+  }
 
   it('abre o app de forma SÍNCRONA dentro do clique (o WebKit bloqueia popup aberto depois de um await)', async () => {
     seedProjectWithDrawingAsset('personal:sumiu', { libOrigin: 'pinta', libRevision: 77 })

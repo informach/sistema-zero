@@ -42,13 +42,16 @@ export function redactZappyPii(value: string): { text: string; hadPii: boolean }
   return { text: valueAfter, hadPii }
 }
 
-export function redactZappySensitiveText(value: string): {
+export function redactZappySensitiveText(
+  value: string,
+  syntax: 'javascript' | 'python' = 'javascript',
+): {
   text: string
   hadPii: boolean
   hadSecret: boolean
 } {
   const pii = redactZappyPii(value)
-  const secret = redactStudioTutorSecrets(pii.text)
+  const secret = redactStudioTutorSecrets(pii.text, syntax)
   return { text: secret.text, hadPii: pii.hadPii, hadSecret: secret.hadSecret }
 }
 
