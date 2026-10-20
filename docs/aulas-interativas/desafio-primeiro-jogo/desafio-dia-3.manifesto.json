@@ -6359,7 +6359,7 @@
           },
           {
             "id": "encontro-chave",
-            "label": "No encontro com a chave, retire a chave antes de mudar temChave e o aviso.",
+            "label": "No encontro com a chave, retire a chave e atualize temChave e o aviso.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
@@ -6373,8 +6373,7 @@
                   "blockType": "sz_g2d_destroy_sprite",
                   "fields": {
                     "SPRITE": "chave"
-                  },
-                  "beforeBlock": "sz_js_var_assign"
+                  }
                 }
               }
             }
@@ -6593,7 +6592,7 @@
           },
           {
             "id": "encontro-chave",
-            "label": "No encontro com a chave, retire a chave antes de mudar temChave e o aviso.",
+            "label": "No encontro com a chave, retire a chave e atualize temChave e o aviso.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
@@ -6607,8 +6606,7 @@
                   "blockType": "sz_g2d_destroy_sprite",
                   "fields": {
                     "SPRITE": "chave"
-                  },
-                  "beforeBlock": "sz_js_var_assign"
+                  }
                 }
               }
             }
@@ -6749,7 +6747,7 @@
           },
           {
             "id": "encontro-farol",
-            "label": "No encontro com o farol, mude ganhou para verdadeiro e depois troque a imagem, dentro de então.",
+            "label": "No encontro com o farol, registre a vitória dentro de então, quando temChave for verdadeiro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
@@ -6775,8 +6773,7 @@
                       },
                       "inputs": {
                         "VALUE": true
-                      },
-                      "beforeBlock": "sz_g2d_set_image"
+                      }
                     }
                   }
                 }

@@ -7291,7 +7291,7 @@
           },
           {
             "id": "encontro-chave",
-            "label": "No encontro com a chave, retire a chave antes de mudar temChave.",
+            "label": "No encontro com a chave, retire a chave e mude temChave.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
@@ -7305,8 +7305,7 @@
                   "blockType": "sz_g2d_destroy_sprite",
                   "fields": {
                     "SPRITE": "chave"
-                  },
-                  "beforeBlock": "sz_js_var_assign"
+                  }
                 }
               }
             }
@@ -7443,7 +7442,7 @@
           },
           {
             "id": "encontro-chave",
-            "label": "No encontro com a chave, retire a chave antes de mudar temChave e o aviso.",
+            "label": "No encontro com a chave, retire a chave e atualize temChave e o aviso.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
@@ -7457,8 +7456,7 @@
                   "blockType": "sz_g2d_destroy_sprite",
                   "fields": {
                     "SPRITE": "chave"
-                  },
-                  "beforeBlock": "sz_js_var_assign"
+                  }
                 }
               }
             }

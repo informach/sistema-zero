@@ -80,7 +80,7 @@ O projeto do Dia 1 ainda não tem a área **Quando acontecer**: o Estúdio só c
 
 - **Intenção:** aplicação (`application`), com verificação e sem envio.
 - **Por que existe:** aplicar a memória vista na experiência: temChave começa em falso e vira verdadeiro no encontro.
-- **Conclui quando:** vídeo e aprovação de sete critérios: movimento, retirada, temChave em falso e verdadeiro no encontro, depois da retirada.
+- **Conclui quando:** vídeo e aprovação de sete critérios: movimento, retirada e temChave começando em falso e mudando para verdadeiro no encontro. A montagem mantém a ordem ensinada; a verificação também aceita guardar a coleta antes de retirar a chave no mesmo encontro.
 - **Blocos:** `video-d2-guardar`, `ponte-d2-guardar`; Estúdio pela `workspaceKey: projeto`.
 
 **Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.

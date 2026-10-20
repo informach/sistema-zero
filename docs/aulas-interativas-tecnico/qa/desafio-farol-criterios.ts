@@ -95,12 +95,11 @@ export const coleta: SectionProjectCheck[] = [
   }),
   check(
     'encontro-chave',
-    // A ordem é a que o Dia 2 ensina; o texto diz QUAL ordem, porque o jogo funciona com as duas.
-    'No encontro com a chave, retire a chave antes de mudar temChave e o aviso.',
+    // A montagem conserva a ordem gravada; a avaliação aceita ações equivalentes no encontro.
+    'No encontro com a chave, retire a chave e atualize temChave e o aviso.',
     noEncontro('chave', {
       blockType: 'sz_g2d_destroy_sprite',
       fields: { SPRITE: 'chave' },
-      beforeBlock: 'sz_js_var_assign',
     }),
   ),
   check(
@@ -137,7 +136,7 @@ export const coletaGuardada: SectionProjectCheck[] = [
   // Mesma regra, sem cobrar o aviso que só é montado na seção seguinte.
   {
     ...porId('encontro-chave'),
-    label: 'No encontro com a chave, retire a chave antes de mudar temChave.',
+    label: 'No encontro com a chave, retire a chave e mude temChave.',
   },
   porId('recolher'),
   porId('lembrar'),
@@ -164,12 +163,11 @@ export const portaCompleta: SectionProjectCheck[] = [
   ...portaSemChave,
   check(
     'encontro-farol',
-    'No encontro com o farol, mude ganhou para verdadeiro e depois troque a imagem, dentro de então.',
+    'No encontro com o farol, registre a vitória dentro de então, quando temChave for verdadeiro.',
     naResposta('THEN', {
       blockType: 'sz_js_var_assign',
       fields: { NAME: 'ganhou' },
       inputs: { VALUE: true },
-      beforeBlock: 'sz_g2d_set_image',
     }),
   ),
   check(

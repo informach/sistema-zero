@@ -97,7 +97,7 @@ Criar evento separado personagem/farol (o bloco chega com jogador e inimigo) e S
 
 **Ponte do Zappy na página (não gravar):** Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
-Retomar o mesmo Se, preservando o aviso em senão. Dizer de saída que a resposta com a chave tem três blocos e completar o então: ganhou verdadeiro, imagem farol-listrado-aceso (o Trocar imagem chega com heroi nos dois nomes) e aviso de chegada. Não criar outro evento, outra condição ou cópia do projeto. A verificação não exige a frase do exemplo.
+Retomar o mesmo Se, preservando o aviso em senão. Dizer de saída que a resposta com a chave tem três blocos e completar o então: ganhou verdadeiro, imagem farol-listrado-aceso (o Trocar imagem chega com heroi nos dois nomes) e aviso de chegada. Não criar outro evento, outra condição ou cópia do projeto. A verificação não exige a frase do exemplo nem a ordem entre registrar a vitória e trocar a imagem dentro do mesmo então; a montagem mantém a ordem gravada.
 
 Testar o percurso contínuo: Atualizar, visitar a porta do farol sem chave, afastar, buscar a chave e voltar até a porta do farol na mesma partida. Ver o barco entrar (ele chega em cerca de 1 segundo). Atualizar depois da vitória, conferir a chave de volta e ir até a porta do farol sem recolhê-la. Conferir as mensagens e a luz nos três momentos. Terminar em **Verificar esta parte → Objetivo cumprido! → Próxima parte**. O Estúdio salva automaticamente; o envio fica no fim da parte 7.
 
