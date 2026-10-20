@@ -333,8 +333,11 @@ async function verifyQaPythonMetadataWithContext(
     wire.hash !== profile.distributionSha256 ||
     verified.distributionSha256 !== profile.distributionSha256 ||
     verified.release.manifestSha256 !== profile.releaseManifestSha256 ||
-    verified.release.profileId !== 'python-probe' ||
-    verified.release.releaseId !== 'probe-1' ||
+    // Historical profiles keep their fixed identity. Approved-final already binds the
+    // complete canonical manifest (including profile/release IDs) by its reviewed SHA.
+    (!context.approval &&
+      (verified.release.profileId !== 'python-probe' ||
+        verified.release.releaseId !== 'probe-1')) ||
     wire.storagePrefix !== studioPythonRuntimePrefix(verified.release.manifestSha256)
   )
     throw new Error('A distribuição/release de QA não corresponde ao perfil aprovado.')

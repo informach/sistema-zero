@@ -1,10 +1,12 @@
 import { createHash } from 'node:crypto'
-import { resolve } from 'node:path'
+import { readFile, stat } from 'node:fs/promises'
+import { isAbsolute, resolve } from 'node:path'
 import { canonicalJson } from '../../packages/core/src/creations/content-fingerprint'
 import {
   StudioPythonDistributionSchema,
   studioPythonRuntimePrefix,
   studioPythonRuntimeRoute,
+  verifyStudioPythonDeployment,
 } from '../../packages/core/src/studio/python-runtime-distribution'
 import { createStudioRuntimeRelease } from '../../packages/core/src/studio/runtime-catalog'
 import { buildPythonRuntimeDistribution } from '../../packages/studio/scripts/build-python-runtime'
@@ -44,6 +46,19 @@ async function prepareDistribution() {
   // These are host-only qualification inputs; projects and HTTP cannot select a directory.
   return { directory: resolve(directory), hash, manifest }
 }
+const releaseFile = process.env.PYTHON_PROBE_RELEASE_FILE
+const expectedRelease = process.env.PYTHON_PROBE_RELEASE_MANIFEST_SHA256
+if (releaseFile !== undefined || expectedRelease !== undefined) {
+  if (
+    !releaseFile ||
+    !isAbsolute(releaseFile) ||
+    !expectedRelease ||
+    !/^[a-f0-9]{64}$/.test(expectedRelease) ||
+    !process.env.PYTHON_PROBE_DISTRIBUTION_DIRECTORY ||
+    !process.env.PYTHON_PROBE_DISTRIBUTION_SHA256
+  )
+    throw new Error('A release explícita exige arquivo absoluto, SHA e distribuição pré-compilada.')
+}
 const distribution = await prepareDistribution()
 const hostPort = Number(process.env.PYTHON_PROBE_PORT ?? '5297')
 const extraParentsRaw = JSON.parse(process.env.PYTHON_PROBE_PARENT_ORIGINS_JSON ?? '[]') as unknown
@@ -64,26 +79,46 @@ if (
   throw new Error('Origens adicionais da prova Python precisam ser loopback e exatas.')
 const extraParentOrigins = extraParentsRaw as string[]
 // Real build bytes, test-only approval. Product catalog activation remains a separate gate.
-const release = await createStudioRuntimeRelease({
-  manifestVersion: 1,
-  profileId: 'python-probe',
-  releaseId: 'probe-1',
-  programmingLanguage: 'python',
-  kinds: ['classic', 'pro'],
-  modes: ['blocks', 'bridge', 'code'],
-  capabilities: ['edit', 'export-source', 'execute', 'python-repl'],
-  extensions: [{ id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] }],
-  sourceTargets: ['browser', 'desktop'],
-  requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
-  artifacts: distribution.manifest.files.map(({ path, sha256 }) => ({ path, sha256 })),
-  python: {
-    version: distribution.manifest.pythonVersion,
-    packages: [],
-    ...(distribution.manifest.providedModules === undefined
-      ? {}
-      : { providedModules: distribution.manifest.providedModules }),
-  },
-})
+async function prepareRelease() {
+  // Host-only input; an explicit candidate never falls back to the legacy release.
+  // Its approval and catalog activation remain separate from this integrity check.
+  if (releaseFile !== undefined && expectedRelease !== undefined) {
+    const info = await stat(releaseFile)
+    if (!info.isFile() || info.size > 2_000_000)
+      throw new Error('O arquivo de release QA excede o contrato de metadados.')
+    const bytes = await readFile(releaseFile)
+    if (bytes.byteLength > 2_000_000)
+      throw new Error('O arquivo de release QA cresceu durante a leitura.')
+    const verified = await verifyStudioPythonDeployment({
+      release: JSON.parse(bytes.toString('utf8')),
+      distribution: distribution.manifest,
+    })
+    if (verified.release.manifestSha256 !== expectedRelease)
+      throw new Error('A release QA não corresponde ao SHA explícito.')
+    return verified.release
+  }
+  return createStudioRuntimeRelease({
+    manifestVersion: 1,
+    profileId: 'python-probe',
+    releaseId: 'probe-1',
+    programmingLanguage: 'python',
+    kinds: ['classic', 'pro'],
+    modes: ['blocks', 'bridge', 'code'],
+    capabilities: ['edit', 'export-source', 'execute', 'python-repl'],
+    extensions: [{ id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] }],
+    sourceTargets: ['browser', 'desktop'],
+    requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
+    artifacts: distribution.manifest.files.map(({ path, sha256 }) => ({ path, sha256 })),
+    python: {
+      version: distribution.manifest.pythonVersion,
+      packages: [],
+      ...(distribution.manifest.providedModules === undefined
+        ? {}
+        : { providedModules: distribution.manifest.providedModules }),
+    },
+  })
+}
+const release = await prepareRelease()
 const deployment = { release, distribution: distribution.manifest }
 async function qualifiedProject(name: string) {
   const project = await runtimeFixtureProject(name)
