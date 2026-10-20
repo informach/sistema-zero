@@ -128,6 +128,13 @@ export default defineConfig({
           includeDependenciesRecursively: false,
           groups: [
             {
+              // Rolldown 1.2 separates tiny contracts shared by the project list and editor
+              // into individual initial requests. These modules already load on the list;
+              // keep their shared boundary together without pulling editor-only modules in.
+              name: 'studio-initial-contracts',
+              test: /(?:[\\/]core[\\/]src[\\/]studio[\\/](?:pro-templates|project-format|project-json|runtime-identity)\.ts$|[\\/]studio[\\/]src[\\/](?:components[\\/]code[\\/]pro-templates[\\/]index|state[\\/](?:projectStorageRuntime|idbTransaction|bridgeAuthority|projectOperations|projectStorageRevision|projectStorageKeys|projectStorageRecords|projectSummary)|core[\\/](?:projectDocumentGuards|projectDocument|editableProject|modes)|persistence[\\/]service|blockly[\\/]blocksStateShape)\.ts$|[\\/]node_modules[\\/](?:idb-keyval[\\/]dist[\\/]index\.js|zustand[\\/]esm[\\/](?:vanilla|react|index)\.mjs)$)/,
+            },
+            {
               // Editor models, material/factory leaves, UI contexts and canonical runtime/preview
               // metadata share this boundary. Stores, validators and migrations keep their own
               // splitting; initial format/JSON/guard contracts must never be selected here.
