@@ -70,10 +70,12 @@ const p4 = t.Object({
   ...base(),
   inputBlocks: t.Optional(t.Never()),
   inputBlocksAll: t.Optional(t.Never()),
+  beforePattern: t.Optional(t.Never()),
 })
 const nested = <T extends ReturnType<typeof pattern>>(child: T) =>
   t.Object({
     ...base(),
+    beforePattern: t.Optional(child),
     inputBlocks: t.Optional(
       t.Record(t.String({ minLength: 1, maxLength: 200 }), child, { maxProperties: 20 }),
     ),
@@ -91,6 +93,7 @@ const p1 = nested(p2)
 export const ProjectBlockRelationshipsSchema = {
   count: t.Optional(t.Integer({ minimum: 0, maximum: 200_000 })),
   beforeBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+  beforePattern: t.Optional(p1),
   inputBlocks: t.Optional(
     t.Record(t.String({ minLength: 1, maxLength: 200 }), p1, { maxProperties: 20 }),
   ),

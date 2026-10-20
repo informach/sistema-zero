@@ -79,7 +79,7 @@ export function ProjectPatternEditor({
   const sockets = model.inputs(block)
   return (
     <div className="space-y-2">
-      {depth > 0 && block.connections.previous !== undefined && (
+      {depth > 0 && block.connections.previous !== undefined && !pattern.beforePattern && (
         <label className="block text-sm">
           Antes de qual comando neste mesmo espaço?
           <Select
@@ -98,6 +98,21 @@ export function ProjectPatternEditor({
               ))}
           </Select>
         </label>
+      )}
+      {pattern.beforePattern && depth < 4 && (
+        <fieldset className="ml-2 space-y-2 border-l pl-3">
+          <legend className="text-sm">Antes deste comando na mesma sequência</legend>
+          <p className="text-sm">
+            {model.available.find((entry) => entry.type === pattern.beforePattern?.blockType)
+              ?.label ?? `Peça indisponível: ${pattern.beforePattern.blockType}`}
+          </p>
+          <ProjectPatternEditor
+            pattern={pattern.beforePattern}
+            model={model}
+            depth={depth + 1}
+            onChange={(updated) => onChange({ ...pattern, beforePattern: updated })}
+          />
+        </fieldset>
       )}
       {depth > 0 &&
         block.parameters.map((parameter) => {

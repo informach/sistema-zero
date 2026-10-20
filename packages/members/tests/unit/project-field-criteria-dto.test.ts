@@ -48,6 +48,21 @@ const composed: SectionStructureRule = {
     ],
   },
 }
+const ordered: SectionStructureRule = {
+  type: 'usesBlock',
+  blockType: 'sz_js_if_else',
+  inputBlocks: { COND: { blockType: 'sz_val_variable', fields: { NAME: 'vida' } } },
+  beforePattern: {
+    blockType: 'sz_js_if_else',
+    inputBlocks: { COND: { blockType: 'sz_val_variable', fields: { NAME: 'pontos' } } },
+  },
+}
+const { type: _orderedType, ...orderedPattern } = ordered
+const nestedOrder: SectionStructureRule = {
+  type: 'usesBlock',
+  blockType: 'sz_g2d_update_each_frame',
+  inputBlocksAll: { BODY: [orderedPattern] },
+}
 const request = (body: unknown, method = 'POST') =>
   new Request('http://members.test/', {
     method,
@@ -57,7 +72,7 @@ const request = (body: unknown, method = 'POST') =>
 
 test('real HTTP normalization and draft edits retain every new criterion at top level and in sockets', async () => {
   const app = new Elysia().post('/', ({ body }) => body, { body: SectionRule })
-  for (const rule of [range, text, nested, composed]) {
+  for (const rule of [range, text, nested, composed, ordered, nestedOrder]) {
     const response = await app.handle(request(rule))
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual(rule)
@@ -67,7 +82,7 @@ test('real HTTP normalization and draft edits retain every new criterion at top 
     completion: {
       version: 1 as const,
       blockIds: [],
-      projectChecks: [range, text, nested, composed].map((rule, i) => ({
+      projectChecks: [range, text, nested, composed, ordered, nestedOrder].map((rule, i) => ({
         id: `check${i}`,
         label: 'Conferir',
         rule,
@@ -137,6 +152,9 @@ test('HTTP rejects malformed raw maps instead of erasing a bound or text restric
     { inputBlocksAll: {} },
     { inputBlocksAll: { BODY: [] } },
     { inputBlocksAll: { BODY: Array.from({ length: 21 }, () => ({ blockType: 'x' })) } },
+    { beforePattern: null },
+    { beforePattern: [] },
+    { beforePattern: { blockType: 1 } },
   ]
   for (const fields of invalid) {
     for (const rule of [
@@ -235,4 +253,32 @@ test('mixed AND socket depths cannot lose their deepest condition in HTTP normal
       )
     ).status,
   ).toBe(422)
+})
+
+test('beforePattern survives all permitted HTTP depths and rejects a fifth edge without stripping', async () => {
+  const app = new Elysia().post('/', ({ body }) => body, { body: SectionRule })
+  let pattern: Record<string, unknown> = { blockType: 'sz_js_if_else' }
+  for (let i = 0; i < 4; i++) pattern = { blockType: 'sz_js_if_else', beforePattern: pattern }
+  const valid = { ...pattern, type: 'usesBlock' }
+  const response = await app.handle(request(valid))
+  expect(response.status).toBe(200)
+  expect(await response.json()).toEqual(valid)
+  expect(
+    (
+      await app.handle(
+        request({ type: 'usesBlock', blockType: 'sz_js_if_else', beforePattern: pattern }),
+      )
+    ).status,
+  ).toBe(422)
+  const conflict = { ...ordered, beforeBlock: 'sz_js_if_else' }
+  const retained = await app.handle(request(conflict))
+  expect(retained.status).toBe(200)
+  expect(await retained.json()).toEqual(conflict)
+  expect(
+    isSectionCompletion({
+      version: 1,
+      blockIds: [],
+      projectChecks: [{ id: 'order', label: 'Ordem', rule: conflict }],
+    }),
+  ).toBe(false)
 })

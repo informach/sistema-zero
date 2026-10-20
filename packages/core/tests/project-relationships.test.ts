@@ -14,6 +14,127 @@ const project = (block: unknown) => ({
   blocksState: { blocks: { blocks: [node('sz_frame_loops', { CHILDREN: { block } })] } },
 })
 
+test('beforePattern identifies the complete later sibling, never an unrelated if or another branch', () => {
+  const victory = node('if', { COND: { block: node('variable', {}, { NAME: 'pontos' }) } })
+  const defeat = node('if', { COND: { block: node('variable', {}, { NAME: 'vida' }) } })
+  const rule: SectionStructureRule = {
+    type: 'usesBlock',
+    blockType: 'if',
+    inputBlocks: { COND: { blockType: 'variable', fields: { NAME: 'vida' } } },
+    beforePattern: {
+      blockType: 'if',
+      inputBlocks: { COND: { blockType: 'variable', fields: { NAME: 'pontos' } } },
+    },
+  }
+  expect(evaluateProjectStructure(rule, project({ ...defeat, next: { block: victory } }))).toBe(
+    true,
+  )
+  expect(
+    evaluateProjectStructure(
+      rule,
+      project({ ...victory, next: { block: { ...defeat, next: { block: node('if') } } } }),
+    ),
+  ).toBe(false)
+  expect(
+    evaluateProjectStructure(
+      rule,
+      project({ ...defeat, next: { block: { ...victory, disabled: true } } }),
+    ),
+  ).toBe(false)
+  expect(
+    evaluateProjectStructure(
+      rule,
+      project(node('if', { THEN: { block: defeat }, ELSE: { block: victory } })),
+    ),
+  ).toBe(false)
+  expect(
+    evaluateProjectStructure(
+      rule,
+      project({ ...defeat, next: { block: node('if', { THEN: { block: victory } }) } }),
+    ),
+  ).toBe(false)
+  expect(
+    evaluateProjectStructure(
+      rule,
+      project({
+        ...defeat,
+        next: { block: { ...node('noop'), disabled: true, next: { block: victory } } },
+      }),
+    ),
+  ).toBe(true)
+})
+
+test('beforePattern shares recursive budgets and is exclusive with beforeBlock', () => {
+  const leaf: ProjectBlockPattern = { blockType: 'x' }
+  expect(isProjectBlockPattern({ ...leaf, beforeBlock: 'y', beforePattern: leaf })).toBe(false)
+  expect(isProjectBlockPattern({ ...leaf, beforePattern: null })).toBe(false)
+  let nested = leaf
+  for (let depth = 0; depth < 4; depth++) nested = { blockType: 'x', beforePattern: nested }
+  expect(isProjectBlockPattern(nested)).toBe(true)
+  expect(isProjectBlockPattern({ blockType: 'x', inputBlocks: { BODY: nested } })).toBe(false)
+  const twenty = Array.from({ length: 20 }, () => leaf)
+  const full = {
+    blockType: 'x',
+    inputBlocksAll: { A: twenty, B: twenty, C: twenty, D: [leaf, leaf] },
+    beforePattern: leaf,
+  }
+  expect(isProjectBlockPattern(full)).toBe(true)
+  expect(
+    isProjectBlockPattern({
+      ...full,
+      inputBlocksAll: { ...full.inputBlocksAll, D: [leaf, leaf, leaf] },
+    }),
+  ).toBe(false)
+})
+
+test('blank beforePattern stays an editorial draft and prevents publication', () => {
+  const completion = {
+    version: 1 as const,
+    blockIds: [],
+    projectChecks: [
+      {
+        id: 'order',
+        label: 'Ordem',
+        rule: { type: 'usesBlock' as const, blockType: 'if', beforePattern: { blockType: '' } },
+      },
+    ],
+  }
+  expect(isSectionCompletion(completion)).toBe(true)
+  const section = {
+    ...defaultLessonSection('section', 'Montar', ['studio']),
+    workspaceBlockId: 'studio',
+    completion,
+  }
+  expect(
+    sectionCompletionIssues(
+      [section],
+      [{ id: 'studio', content: { kind: 'studio', purpose: 'experiment' } }],
+    ).some((issue) => issue.message.includes('Preencha o objetivo')),
+  ).toBe(true)
+})
+
+test('beforePattern searches spend the same bounded evaluation budget as AND sockets', () => {
+  const rule: SectionStructureRule = {
+    type: 'usesBlock',
+    blockType: 'event',
+    inputBlocksAll: {
+      BODY: Array.from({ length: 20 }, () => ({
+        blockType: 'begin',
+        beforePattern: { blockType: 'end' },
+      })),
+    },
+  }
+  const event = (chain: unknown) => project(node('event', { BODY: { block: chain } }))
+  expect(
+    evaluateProjectStructure(rule, event({ ...node('begin'), next: { block: node('end') } })),
+  ).toBe(true)
+  let chain: unknown = node('end')
+  for (let i = 0; i < 6000; i++) chain = { ...node('middle'), next: { block: chain } }
+  expect(evaluateProjectStructure(rule, event({ ...node('begin'), next: { block: chain } }))).toBe(
+    false,
+  )
+})
+
 test('correlated alternatives match a complete pair on the same block, never the cross product', () => {
   const rule: SectionStructureRule = {
     type: 'usesBlock',

@@ -35,6 +35,8 @@ export interface ProjectBlockPattern {
   inputs?: Record<string, string | number | boolean>
   /** A later enabled sibling in this same statement chain, never another branch. */
   beforeBlock?: string
+  /** A complete later enabled sibling in this same chain; exclusive with beforeBlock. */
+  beforePattern?: ProjectBlockPattern
   /** Match an active child in this named input, keeping all conditions on that same child. */
   inputBlocks?: Record<string, ProjectBlockPattern>
   /** Every pattern matches the same socket chain. This does not require distinct occurrences. */
@@ -272,6 +274,9 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
   function valid(v: unknown, depth: number): boolean {
     if (!record(v) || !blockName(v.blockType) || depth > 4 || --remaining < 0) return false
     if (v.beforeBlock !== undefined && !label(v.beforeBlock)) return false
+    if (v.beforePattern !== undefined) {
+      if (v.beforeBlock !== undefined || !valid(v.beforePattern, depth + 1)) return false
+    }
     if (
       ![v.fields, v.inputs].every(
         (values) =>
@@ -379,6 +384,7 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
 function hasBlankBlockType(pattern: ProjectBlockPattern): boolean {
   return (
     !label(pattern.blockType) ||
+    (pattern.beforePattern !== undefined && hasBlankBlockType(pattern.beforePattern)) ||
     Object.values(pattern.inputBlocks ?? {}).some(hasBlankBlockType) ||
     Object.values(pattern.inputBlocksAll ?? {}).some((patterns) => patterns.some(hasBlankBlockType))
   )

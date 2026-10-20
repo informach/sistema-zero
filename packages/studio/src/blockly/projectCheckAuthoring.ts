@@ -559,6 +559,28 @@ export function projectCheckAuthoring(workspace: unknown) {
       )
         errors.push('A ordem precisa comparar dois comandos compatíveis na mesma sequência.')
     }
+    if (rule.beforePattern) {
+      const following = byType.get(rule.beforePattern.blockType)
+      if (
+        !following ||
+        block.connections.previous === undefined ||
+        following.connections.previous === undefined ||
+        !compatible(block.connections.previous, following.connections.previous) ||
+        !areas({ type: 'usesBlock', blockType: following.type }).some(
+          (area) => validAreas.includes(area) && (!rule.area || area === rule.area),
+        )
+      )
+        errors.push('A ordem precisa comparar dois comandos compatíveis na mesma sequência.')
+      else
+        errors.push(
+          ...issues({
+            type: 'usesBlock',
+            ...rule.beforePattern,
+            area: rule.area,
+            withinBlock: rule.withinBlock,
+          }).map((error) => `Comando posterior: ${error}`),
+        )
+    }
     if (!validAreas.length || (rule.area && !validAreas.includes(rule.area)))
       errors.push(
         'O bloco não pode ser encaixado na área ou no contêiner escolhido com os blocos disponíveis nesta aula.',

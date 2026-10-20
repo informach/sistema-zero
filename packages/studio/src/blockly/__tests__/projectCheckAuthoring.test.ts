@@ -38,6 +38,32 @@ const solutionExamples = (solution: object) => ({
 })
 
 describe('objective authoring uses the actual workspace contracts', () => {
+  test('beforePattern validates the complete later command and its real sibling connection', () => {
+    const model = projectCheckAuthoring({})
+    const rule: Extract<SectionStructureRule, { type: 'usesBlock' }> = {
+      type: 'usesBlock',
+      blockType: 'sz_js_if_else',
+      area: 'loops',
+      inputBlocks: { COND: { blockType: 'sz_val_variable', fields: { NAME: 'vida' } } },
+      beforePattern: {
+        blockType: 'sz_js_if_else',
+        inputBlocks: { COND: { blockType: 'sz_val_variable', fields: { NAME: 'pontos' } } },
+      },
+    }
+    expect(model.issues(rule)).toEqual([])
+    for (const beforePattern of [
+      { blockType: 'sz_val_number' },
+      { blockType: 'not_available' },
+      { blockType: 'sz_js_if_else', fields: { MISSING: 'value' } },
+      {
+        blockType: 'sz_js_if_else',
+        inputBlocks: { COND: { blockType: 'sz_val_variable', fields: { MISSING: 'value' } } },
+      },
+    ])
+      expect(model.issues({ ...rule, beforePattern }).length).toBeGreaterThan(0)
+    expect(model.issues({ ...rule, beforeBlock: 'sz_js_if_else' }).length).toBeGreaterThan(0)
+    expect(model.issues({ ...rule, blockType: 'sz_val_number' }).length).toBeGreaterThan(0)
+  })
   test('complete field pairs and same-socket AND validate real fields, connections and every child', () => {
     const model = projectCheckAuthoring({
       initialProject: { installedExtensions: [{ id: 'game-2d' }] },

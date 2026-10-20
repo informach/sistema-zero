@@ -11,6 +11,64 @@ const { ProjectPatternEditor } = await import('../src/components/editor/project-
 const { ProjectRuleEditor } = await import('../src/components/editor/project-rule-editor')
 
 for (const depth of ['top', 'nested'] as const) {
+  test(`${depth} editor describes the complete later pattern and preserves it on another edit`, async () => {
+    const container = document.createElement('div')
+    document.body.append(container)
+    const root = createRoot(container)
+    const model = projectCheckAuthoring({})
+    let value: Extract<SectionStructureRule, { type: 'usesBlock' }> = {
+      type: 'usesBlock',
+      blockType: 'sz_js_var_assign',
+      fields: { NAME: 'vida' },
+      beforePattern: { blockType: 'sz_js_var_assign', fields: { NAME: 'pontos' } },
+    }
+    const before = structuredClone(value)
+    const update = (next: ProjectBlockPattern) => {
+      value = { ...value, ...next }
+      render()
+    }
+    const render = () =>
+      root.render(
+        depth === 'top' ? (
+          <ProjectRuleEditor rule={value} workspace={{}} onChange={update} />
+        ) : (
+          <ProjectPatternEditor pattern={value} model={model} depth={1} onChange={update} />
+        ),
+      )
+    try {
+      await act(async () => render())
+      expect(container.textContent).toContain('Antes deste comando na mesma sequência')
+      const fieldset = [...container.querySelectorAll('fieldset')].find(
+        (item) =>
+          item.querySelector('legend')?.textContent === 'Antes deste comando na mesma sequência',
+      )
+      expect(fieldset?.querySelector('input')?.value).toBe('pontos')
+      const parameter = model.available
+        .find((block) => block.type === value.blockType)
+        ?.parameters.find((parameter) => parameter.name === 'NAME')
+      if (!parameter) throw new Error('Real name parameter missing')
+      const input = [...container.querySelectorAll('label')]
+        .find((label) => !fieldset?.contains(label) && label.textContent?.includes(parameter.label))
+        ?.querySelector('input')
+      if (!input) throw new Error('Actual current-command field missing')
+      await act(async () => {
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+        if (!setter) throw new Error('Native input setter missing')
+        setter.call(input, 'minhaVida')
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+      expect(value.fields?.NAME).toBe('minhaVida')
+      expect(value.beforePattern).toEqual(before.beforePattern)
+      expect(value.beforeBlock).toBeUndefined()
+      expect(model.issues(value)).toEqual([])
+    } finally {
+      await act(async () => root.unmount())
+      container.remove()
+    }
+  })
+}
+
+for (const depth of ['top', 'nested'] as const) {
   test(`${depth} editor displays flexible criteria and preserves them when another field changes`, async () => {
     const container = document.createElement('div')
     document.body.append(container)

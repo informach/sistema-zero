@@ -140,7 +140,7 @@ export function ProjectRuleEditor({
           }
         />
       </label>
-      {selected?.connections.previous !== undefined && (
+      {selected?.connections.previous !== undefined && !rule.beforePattern && (
         <label className="block text-sm">
           Deve vir antes de
           <Select

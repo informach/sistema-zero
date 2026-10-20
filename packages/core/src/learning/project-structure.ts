@@ -109,6 +109,8 @@ function matchesBlock(
     const inputs = record(node.inputs) ? node.inputs : {}
     return (
       (!pattern.beforeBlock || follows(node, pattern.beforeBlock)) &&
+      (!pattern.beforePattern ||
+        chainMatches(pattern.beforePattern, record(node.next) ? node.next.block : undefined)) &&
       Object.entries(pattern.fields ?? {}).every(
         ([key, value]) => Object.hasOwn(fields, key) && String(fields[key]) === String(value),
       ) &&
