@@ -7192,10 +7192,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_g2d_destroy_sprite",
@@ -7296,17 +7302,34 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_destroy_sprite",
-                  "fields": {
-                    "SPRITE": "chave"
-                  }
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
                 }
+              ],
+              "inputBlocksAll": {
+                "BODY": [
+                  {
+                    "blockType": "sz_g2d_destroy_sprite",
+                    "fields": {
+                      "SPRITE": "chave"
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "temChave"
+                    },
+                    "inputs": {
+                      "VALUE": true
+                    }
+                  }
+                ]
               }
             }
           },
@@ -7317,10 +7340,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_g2d_destroy_sprite",
@@ -7338,10 +7367,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_var_assign",
@@ -7447,17 +7482,45 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_destroy_sprite",
-                  "fields": {
-                    "SPRITE": "chave"
-                  }
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
                 }
+              ],
+              "inputBlocksAll": {
+                "BODY": [
+                  {
+                    "blockType": "sz_g2d_destroy_sprite",
+                    "fields": {
+                      "SPRITE": "chave"
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "temChave"
+                    },
+                    "inputs": {
+                      "VALUE": true
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "aviso"
+                    },
+                    "inputBlocks": {
+                      "VALUE": {
+                        "blockType": "sz_val_text"
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
@@ -7468,10 +7531,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_g2d_destroy_sprite",
@@ -7489,10 +7558,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_var_assign",
@@ -7513,10 +7588,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_var_assign",

@@ -67,6 +67,63 @@ describe('Farol: conservar o que já foi construído e verificar o encaixe real'
   test.each([
     'dia-2',
     'dia-3',
+  ] as const)('%s aceita inverter o par do encontro sem trocar as ações dos sprites', (day) => {
+    const ir = finalIR()
+    for (const event of ir.behavior.events) {
+      if (event.type === 'g2d:onOverlap') [event.aVar, event.bVar] = [event.bVar, event.aVar]
+    }
+    collectedKeyOpensLighthouse(ir)
+    expect(evaluate(day, ir).every((item) => item.passed)).toBe(true)
+  })
+
+  test('não confunde os dois nomes do encontro com personagem encontrando a si mesmo', () => {
+    const ir = finalIR()
+    const event = ir.behavior.events.find(
+      (item) => item.type === 'g2d:onOverlap' && item.bVar === 'chave',
+    )
+    if (event?.type !== 'g2d:onOverlap') throw new Error('Coleta ausente')
+    event.bVar = 'personagem'
+    expect(evaluate('dia-2', ir).every((item) => item.passed)).toBe(false)
+  })
+
+  test.each([
+    'dia-2',
+    'dia-3',
+  ] as const)('%s recusa retirada e memória separadas em eventos que deixam de disparar após a chave sair', (day) => {
+    const ir = finalIR()
+    ir.behavior.events = ir.behavior.events.flatMap((event) => {
+      if (event.type !== 'g2d:onOverlap' || event.bVar !== 'chave') return [event]
+      return [
+        { ...event, body: event.body.filter((item) => item.type === 'g2d:destroySprite') },
+        { ...event, body: event.body.filter((item) => item.type !== 'g2d:destroySprite') },
+      ]
+    })
+    const project = montarProjetoFarol('concluido')
+    const game = exampleHarness({
+      name: project.name,
+      experience: 'game',
+      ir,
+      assets: project.assets,
+    })
+    const [actor, key, tower, boat] = game.sprites
+    if (!actor || !key || !tower || !boat) throw new Error('Objetos ausentes')
+    const dark = (tower as typeof tower & { image: unknown }).image
+    actor.x = key.x
+    actor.y = key.y
+    game.nextFrame()
+    expect((key as typeof key & { image: unknown }).image).toBeNull()
+    actor.x = FAROL_LAYOUT.personagemNaPorta.x
+    actor.y = FAROL_LAYOUT.personagemNaPorta.y
+    game.nextFrame()
+    expect((tower as typeof tower & { image: unknown }).image).toBe(dark)
+    expect(boat.x).toBe(FAROL_LAYOUT.barco.x)
+    expect(game.errors).toEqual([])
+    expect(evaluate(day, ir).every((item) => item.passed)).toBe(false)
+  })
+
+  test.each([
+    'dia-2',
+    'dia-3',
   ] as const)('%s aceita guardar a coleta antes de retirar a chave no mesmo encontro', (day) => {
     const ir = finalIR()
     const event = ir.behavior.events.find(

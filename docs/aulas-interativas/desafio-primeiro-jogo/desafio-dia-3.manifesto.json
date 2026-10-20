@@ -6364,17 +6364,45 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_destroy_sprite",
-                  "fields": {
-                    "SPRITE": "chave"
-                  }
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
                 }
+              ],
+              "inputBlocksAll": {
+                "BODY": [
+                  {
+                    "blockType": "sz_g2d_destroy_sprite",
+                    "fields": {
+                      "SPRITE": "chave"
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "temChave"
+                    },
+                    "inputs": {
+                      "VALUE": true
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "aviso"
+                    },
+                    "inputBlocks": {
+                      "VALUE": {
+                        "blockType": "sz_val_text"
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
@@ -6385,10 +6413,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_g2d_destroy_sprite",
@@ -6406,10 +6440,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_var_assign",
@@ -6430,10 +6470,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_var_assign",
@@ -6456,10 +6502,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "farol"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -6482,10 +6534,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "farol"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -6597,17 +6655,45 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_destroy_sprite",
-                  "fields": {
-                    "SPRITE": "chave"
-                  }
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
                 }
+              ],
+              "inputBlocksAll": {
+                "BODY": [
+                  {
+                    "blockType": "sz_g2d_destroy_sprite",
+                    "fields": {
+                      "SPRITE": "chave"
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "temChave"
+                    },
+                    "inputs": {
+                      "VALUE": true
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "aviso"
+                    },
+                    "inputBlocks": {
+                      "VALUE": {
+                        "blockType": "sz_val_text"
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
@@ -6618,10 +6704,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_g2d_destroy_sprite",
@@ -6639,10 +6731,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_var_assign",
@@ -6663,10 +6761,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "chave"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_var_assign",
@@ -6689,10 +6793,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "farol"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -6715,10 +6825,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "farol"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -6747,15 +6863,21 @@
           },
           {
             "id": "encontro-farol",
-            "label": "No encontro com o farol, registre a vitória dentro de então, quando temChave for verdadeiro.",
+            "label": "No mesmo então de temChave, registre a vitória, acenda o farol e atualize o aviso.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "farol"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -6765,16 +6887,46 @@
                       "fields": {
                         "NAME": "temChave"
                       }
-                    },
-                    "THEN": {
-                      "blockType": "sz_js_var_assign",
-                      "fields": {
-                        "NAME": "ganhou"
-                      },
-                      "inputs": {
-                        "VALUE": true
-                      }
                     }
+                  },
+                  "inputBlocksAll": {
+                    "THEN": [
+                      {
+                        "blockType": "sz_js_var_assign",
+                        "fields": {
+                          "NAME": "ganhou"
+                        },
+                        "inputs": {
+                          "VALUE": true
+                        }
+                      },
+                      {
+                        "blockType": "sz_g2d_set_image",
+                        "fields": {
+                          "SPRITE": "farol"
+                        },
+                        "fieldOptions": {
+                          "IMAGE": [
+                            "farol-listrado-aceso",
+                            "farol-de-pedra-aceso",
+                            "farol-de-madeira-aceso",
+                            "farol-colorido-aceso",
+                            "farol-aceso"
+                          ]
+                        }
+                      },
+                      {
+                        "blockType": "sz_js_var_assign",
+                        "fields": {
+                          "NAME": "aviso"
+                        },
+                        "inputBlocks": {
+                          "VALUE": {
+                            "blockType": "sz_val_text"
+                          }
+                        }
+                      }
+                    ]
                   }
                 }
               }
@@ -6787,10 +6939,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "farol"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -6828,10 +6986,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "farol"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -6863,10 +7027,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "farol"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -6916,10 +7086,16 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "fields": {
-                "A": "personagem",
-                "B": "farol"
-              },
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",

@@ -11,25 +11,41 @@ const check = (id: string, label: string, rule: SectionStructureRule): SectionPr
   label,
   rule,
 })
-const noEncontro = (target: string, body: ProjectBlockPattern): SectionStructureRule => ({
+const noEncontro = (
+  target: string,
+  body: ProjectBlockPattern | ProjectBlockPattern[],
+): SectionStructureRule => ({
   type: 'usesBlock',
   blockType: 'sz_g2d_on_overlap',
   area: 'events',
-  fields: { A: 'personagem', B: target },
-  inputBlocks: { BODY: body },
+  fieldAlternatives: [
+    { A: 'personagem', B: target },
+    { A: target, B: 'personagem' },
+  ],
+  ...(Array.isArray(body) ? { inputBlocksAll: { BODY: body } } : { inputBlocks: { BODY: body } }),
 })
-const naResposta = (branch: 'THEN' | 'ELSE', action: ProjectBlockPattern) =>
+const naResposta = (branch: 'THEN' | 'ELSE', action: ProjectBlockPattern | ProjectBlockPattern[]) =>
   noEncontro('farol', {
     blockType: 'sz_js_if_else',
     inputBlocks: {
       COND: { blockType: 'sz_val_variable', fields: { NAME: 'temChave' } },
-      [branch]: action,
+      ...(!Array.isArray(action) ? { [branch]: action } : {}),
     },
+    ...(Array.isArray(action) ? { inputBlocksAll: { [branch]: action } } : {}),
   })
 const aviso: ProjectBlockPattern = {
   blockType: 'sz_js_var_assign',
   fields: { NAME: 'aviso' },
   inputBlocks: { VALUE: { blockType: 'sz_val_text' } },
+}
+const guardarColeta: ProjectBlockPattern = {
+  blockType: 'sz_js_var_assign',
+  fields: { NAME: 'temChave' },
+  inputs: { VALUE: true },
+}
+const retirarChave: ProjectBlockPattern = {
+  blockType: 'sz_g2d_destroy_sprite',
+  fields: { SPRITE: 'chave' },
 }
 
 export const movimento: SectionProjectCheck[] = [
@@ -97,10 +113,7 @@ export const coleta: SectionProjectCheck[] = [
     'encontro-chave',
     // A montagem conserva a ordem gravada; a avaliação aceita ações equivalentes no encontro.
     'No encontro com a chave, retire a chave e atualize temChave e o aviso.',
-    noEncontro('chave', {
-      blockType: 'sz_g2d_destroy_sprite',
-      fields: { SPRITE: 'chave' },
-    }),
+    noEncontro('chave', [retirarChave, guardarColeta, aviso]),
   ),
   check(
     'recolher',
@@ -133,10 +146,11 @@ export const chaveRecolhida: SectionProjectCheck[] = [...movimento, porId('recol
 export const coletaGuardada: SectionProjectCheck[] = [
   ...movimento,
   porId('memoria'),
-  // Mesma regra, sem cobrar o aviso que só é montado na seção seguinte.
+  // Exige coleta e memória no mesmo evento; o aviso só é montado na seção seguinte.
   {
     ...porId('encontro-chave'),
     label: 'No encontro com a chave, retire a chave e mude temChave.',
+    rule: noEncontro('chave', [retirarChave, guardarColeta]),
   },
   porId('recolher'),
   porId('lembrar'),
@@ -163,12 +177,20 @@ export const portaCompleta: SectionProjectCheck[] = [
   ...portaSemChave,
   check(
     'encontro-farol',
-    'No encontro com o farol, registre a vitória dentro de então, quando temChave for verdadeiro.',
-    naResposta('THEN', {
-      blockType: 'sz_js_var_assign',
-      fields: { NAME: 'ganhou' },
-      inputs: { VALUE: true },
-    }),
+    'No mesmo então de temChave, registre a vitória, acenda o farol e atualize o aviso.',
+    naResposta('THEN', [
+      {
+        blockType: 'sz_js_var_assign',
+        fields: { NAME: 'ganhou' },
+        inputs: { VALUE: true },
+      },
+      {
+        blockType: 'sz_g2d_set_image',
+        fields: { SPRITE: 'farol' },
+        fieldOptions: { IMAGE: [...FAROL_FAROIS.map(({ aceso }) => aceso), 'farol-aceso'] },
+      },
+      aviso,
+    ]),
   ),
   check(
     'acender',
