@@ -124,7 +124,7 @@ Comandos reproduzíveis estão na [organização do curso](../modulos-desafio-pr
 6. **Autonomia e autoria:** observar se o aluno retoma um encaixe pelo material, testa novamente após corrigir e reconhece quais regras montou. Publicar e conseguir abrir o próprio jogo são parte do ensaio, não prova de domínio de todos os conceitos.
 7. **Aplicação no admin:** reconciliar vídeos, anexos, seções aposentadas e progresso antes de aplicar os manifestos. Não substituir mídia existente cegamente por `plannedVideo`.
 
-Não houve importação no admin, gravação ou publicação nesta revisão. O [caderno atualizado](../../aulas-interativas/desafio-primeiro-jogo/mapa-da-aventura.pdf) e as fontes locais estão prontos para a conferência editorial e a preparação dessas etapas.
+Não houve importação no admin, gravação ou publicação nesta revisão. O [caderno atualizado](../../aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf) e as fontes locais estão prontos para a conferência editorial e a preparação dessas etapas.
 
 ## Complemento após a conferência do responsável
 

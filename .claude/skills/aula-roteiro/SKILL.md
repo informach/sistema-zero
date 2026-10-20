@@ -16,7 +16,7 @@ Leia `docs/aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md` inteiro antes de
 
 ## Aplicar ao curso
 
-1. Ler `modulos-*.md` e o trio da aula em `docs/aulas-interativas/<curso>/`: proposta, manifesto e `{slug}.roteiro.md`. Conferir gerador em `qa/` e caderno em `recursos/`.
+1. Ler `modulos-*.md` e o trio da aula em `docs/aulas-interativas/kids/<curso>/`: proposta, manifesto e `{slug}.roteiro.md`. Conferir gerador em `qa/` e caderno em `recursos/`. A versão adulta (`docs/aulas-interativas/adulto/<curso>/`) é gerada a partir do kids: não a edite à mão (ver `DIRETRIZES-ADULTO.md`).
 2. Registrar conhecimentos prévios, partes preparadas, autoria da pessoa, ferramentas disponíveis, conquistas, experiências, distribuição dos quizzes e critérios. Adaptar conforme o curso e as instruções do usuário.
 3. Conferir rótulos, paletas, valores e ações no código. Referências exportadas ajudam, mas não substituem essa conferência.
 4. Escrever contexto, tarefa, passos completos, teste e saída conforme as Diretrizes. Registrar também as falas do Zappy na página, distinguindo-as da narração gravada.
@@ -27,6 +27,7 @@ O formato vigente é o trio de Markdown e manifesto, não `roteiro.yaml` nem um 
 ## Conferir e entregar
 
 - Rodar geradores e os validadores de manifesto, roteiro e Como Fazer para os materiais alterados; executar os testes do curso e dos fluxos modificados.
+- Depois de mudar o kids, rodar `bun docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts --preparar`, escrever a versão adulta dos trechos que voltaram como pendentes e gerar de novo; o teste `qa/adulto` falha enquanto o adulto estiver atrasado.
 - Conferir as cores oficiais dos blocos e a diagramação dos PDFs renderizados.
 - Usar o checklist das Diretrizes; verificar a correspondência entre a ação pedida e o funcionamento real.
 - Separar cada **Na tela:** da fala com linha em branco; fala em citação. Quando houver avatar,

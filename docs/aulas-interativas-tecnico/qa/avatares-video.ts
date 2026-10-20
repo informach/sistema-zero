@@ -26,7 +26,7 @@ export function avatarDaAula(index: number): 'Debinha' | 'Dedé' {
 }
 
 export function orientacaoAvatares(index: number): string {
-  return `**Vozes e edição:** Professora conduz; ${avatarDaAula(index)} é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).`
+  return `**Vozes e edição:** Professora conduz; ${avatarDaAula(index)} é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).`
 }
 
 function dividirFala(section: SecaoComAvatar, speech: string[]) {

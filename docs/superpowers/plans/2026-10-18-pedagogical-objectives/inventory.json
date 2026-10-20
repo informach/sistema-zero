@@ -27,7 +27,7 @@
       "course": "cade-todo-mundo",
       "lesson": "aula-1",
       "title": "O primeiro achado",
-      "path": "docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json",
+      "path": "docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json",
       "sha256": "3dfefa00b23f53dc6e3a8bc894cb42c247347d04769dd26e69d4dae7e691be59",
       "studioBlocks": [
         {
@@ -115,7 +115,7 @@
       "course": "cade-todo-mundo",
       "lesson": "aula-2",
       "title": "Complete a busca",
-      "path": "docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json",
+      "path": "docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json",
       "sha256": "490b5c507bfa70ee7d04efa5f0a00c679b25cb5d3467bf35641a1cf8f06afb4e",
       "studioBlocks": [
         {
@@ -231,7 +231,7 @@
       "course": "cade-todo-mundo",
       "lesson": "certificado",
       "title": "Seu certificado",
-      "path": "docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json",
+      "path": "docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json",
       "sha256": "c5491d020fd4dafa70c66c86ea959fad78818230f171ae242fbd1b1132d0f598",
       "studioBlocks": [],
       "sections": [
@@ -267,7 +267,7 @@
       "course": "corre-dino",
       "lesson": "aula-01",
       "title": "Prepare a tela e crie o Dino",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-01.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-01.manifesto.json",
       "sha256": "3c6be84d8b719711fcc2ef8d5854810bf2b2ecac431a47f5998a5ed2bfe05398",
       "studioBlocks": [
         {
@@ -554,7 +554,7 @@
       "course": "corre-dino",
       "lesson": "aula-02",
       "title": "Mostre o Dino e a floresta",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-02.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-02.manifesto.json",
       "sha256": "a40135f18d51321c92e557e4c3ce5236589944035226dcd25024f80f0004363d",
       "studioBlocks": [
         {
@@ -894,7 +894,7 @@
       "course": "corre-dino",
       "lesson": "aula-03",
       "title": "Faça o Dino cair e pular",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-03.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-03.manifesto.json",
       "sha256": "9f2592355f398e19d70b202ebce0d8356d7245d7593f5148548366d3b49a9e38",
       "studioBlocks": [
         {
@@ -1121,7 +1121,7 @@
       "course": "corre-dino",
       "lesson": "aula-04",
       "title": "Toque um som em cada pulo",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-04.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-04.manifesto.json",
       "sha256": "20b25d1a57fd9a8f5aaedcf400e3ba72859436609444598c471a2231bbd0a022",
       "studioBlocks": [
         {
@@ -1293,7 +1293,7 @@
       "course": "corre-dino",
       "lesson": "aula-05",
       "title": "Faça os cactos entrar na pista",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-05.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-05.manifesto.json",
       "sha256": "bea75d568d2fd2ac4087931040a56c30305e70d64f64df6df7925701786a9462",
       "studioBlocks": [
         {
@@ -1619,7 +1619,7 @@
       "course": "corre-dino",
       "lesson": "aula-06",
       "title": "Retire os cactos que saíram",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-06.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-06.manifesto.json",
       "sha256": "f0e87ad87923f9377a1342964f5c3d1837b1c26a902db7e890c8a863b526e60b",
       "studioBlocks": [
         {
@@ -1777,7 +1777,7 @@
       "course": "corre-dino",
       "lesson": "aula-07",
       "title": "Separe a abertura da partida",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-07.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-07.manifesto.json",
       "sha256": "c4cf5ef501e26cf7fdc7b0852ac699e5366a656214f50aae01ef75395deec64f",
       "studioBlocks": [
         {
@@ -2399,7 +2399,7 @@
       "course": "corre-dino",
       "lesson": "aula-08",
       "title": "Comece por tecla ou toque",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-08.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-08.manifesto.json",
       "sha256": "28b4a710fc0d8e58ee1e9b416dad486ca07c6a4e96fd8eb15d118fb1776cd4e4",
       "studioBlocks": [
         {
@@ -2682,7 +2682,7 @@
       "course": "corre-dino",
       "lesson": "aula-09",
       "title": "Termine e recomece a corrida",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-09.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-09.manifesto.json",
       "sha256": "49762cae88e809d7915abe313ec53ccda1b2e22528ba44d6e27f90d23fc1cec2",
       "studioBlocks": [
         {
@@ -3123,7 +3123,7 @@
       "course": "corre-dino",
       "lesson": "aula-10",
       "title": "Ajuste a área da batida",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-10.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-10.manifesto.json",
       "sha256": "3d25b6d290c8d4d5e76fbb6ff158278767087ff64c8729a3d4488601e38a5d88",
       "studioBlocks": [
         {
@@ -3333,7 +3333,7 @@
       "course": "corre-dino",
       "lesson": "aula-11",
       "title": "Conte e mostre os pontos",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-11.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-11.manifesto.json",
       "sha256": "fd8aebc7f9a6d56da53c5c4a9cfb847f89583113dc344314110be61d3ff86173",
       "studioBlocks": [
         {
@@ -3733,7 +3733,7 @@
       "course": "corre-dino",
       "lesson": "aula-12",
       "title": "Varie o lugar e a velocidade dos cactos",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-12.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-12.manifesto.json",
       "sha256": "981f479055b20e438d5e5b96fd219f123fd1e03f76c4d8657ace1b7c9d057f29",
       "studioBlocks": [
         {
@@ -4024,7 +4024,7 @@
       "course": "corre-dino",
       "lesson": "aula-13",
       "title": "Aumente a dificuldade com um limite",
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-13.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-13.manifesto.json",
       "sha256": "f57bd90e97bbfda0dc709f440176879b53f1feaa5e1b65968ce84d62972a63e0",
       "studioBlocks": [
         {
@@ -4556,7 +4556,7 @@
       "course": "desafio-primeiro-jogo",
       "lesson": "certificado",
       "title": "Seu certificado",
-      "path": "docs/aulas-interativas/desafio-primeiro-jogo/desafio-certificado.manifesto.json",
+      "path": "docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-certificado.manifesto.json",
       "sha256": "c07530b1ac0361786a1e8209652e1fcd142ed4983e16ed1edd841887b6a6341f",
       "studioBlocks": [],
       "sections": [
@@ -4592,7 +4592,7 @@
       "course": "desafio-primeiro-jogo",
       "lesson": "dia-1",
       "title": "O personagem ganha movimento",
-      "path": "docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json",
+      "path": "docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json",
       "sha256": "82644a74f436ada09aa7dff6e460be087b93bb114f8fc42478a3535bfe660c99",
       "studioBlocks": [
         {
@@ -4768,7 +4768,7 @@
       "course": "desafio-primeiro-jogo",
       "lesson": "dia-2",
       "title": "A chave muda a aventura",
-      "path": "docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.manifesto.json",
+      "path": "docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-2.manifesto.json",
       "sha256": "7ce465bf343e42d4572b98f097c4831859f86e1a9bc55a840fc41357c2a46280",
       "studioBlocks": [
         {
@@ -5196,7 +5196,7 @@
       "course": "desafio-primeiro-jogo",
       "lesson": "dia-3",
       "title": "A luz do farol",
-      "path": "docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.manifesto.json",
+      "path": "docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.manifesto.json",
       "sha256": "b67c84807fa73de735091e44d3bf86e2e0df35d197dadcbb4ffb29b7f6e20ed5",
       "studioBlocks": [
         {
@@ -5951,7 +5951,7 @@
       "course": "nave-contra-asteroides",
       "lesson": "chuva-de-asteroides",
       "title": "Faça os asteroides cair",
-      "path": "docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.manifesto.json",
+      "path": "docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.manifesto.json",
       "sha256": "edfe24816e72ca97ec626209586e03afd3e718e2a7ea56c322145cdcf7efd972",
       "studioBlocks": [
         {
@@ -6262,7 +6262,7 @@
       "course": "nave-contra-asteroides",
       "lesson": "comecar-partida",
       "title": "Comece a partida com Enter",
-      "path": "docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-comecar-partida.manifesto.json",
+      "path": "docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-comecar-partida.manifesto.json",
       "sha256": "f0b5eedb832a8545dd7598cf9ade1473b0533cf3b61787ea2ebc0e80be0d234e",
       "studioBlocks": [
         {
@@ -6827,7 +6827,7 @@
       "course": "nave-contra-asteroides",
       "lesson": "dia-1",
       "title": "Mova a nave pelo espaço",
-      "path": "docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-1.manifesto.json",
+      "path": "docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-1.manifesto.json",
       "sha256": "cf0d575ae7949236e7dcaa74f5c6bd2bfcb6a9bc519b86fd19e1c7ca56b374fc",
       "studioBlocks": [
         {
@@ -7180,7 +7180,7 @@
       "course": "nave-contra-asteroides",
       "lesson": "dia-2",
       "title": "Faça a nave atirar",
-      "path": "docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-2.manifesto.json",
+      "path": "docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-2.manifesto.json",
       "sha256": "dbaf018a03b44cccb8c99d57e3e8f1521712eeffcb27e4a31ecdfa0e3086a4d6",
       "studioBlocks": [
         {
@@ -7595,7 +7595,7 @@
       "course": "nave-contra-asteroides",
       "lesson": "dia-3",
       "title": "Faça o tiro acertar o asteroide",
-      "path": "docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-3.manifesto.json",
+      "path": "docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-3.manifesto.json",
       "sha256": "4647b1de305076dce1f9249cf0213528462f140b2aeb1d3cd1e0515fc1291ab2",
       "studioBlocks": [
         {
@@ -8049,7 +8049,7 @@
       "course": "nave-contra-asteroides",
       "lesson": "dia-4",
       "title": "Dê três vidas à nave",
-      "path": "docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-4.manifesto.json",
+      "path": "docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-4.manifesto.json",
       "sha256": "9dc2ba3a7db99ea3dd1a417324b8e9279dc14ee1dfa5879456663aa87556f093",
       "studioBlocks": [
         {
@@ -8551,7 +8551,7 @@
       "course": "nave-contra-asteroides",
       "lesson": "dia-5",
       "title": "Termine e recomece a partida",
-      "path": "docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-5.manifesto.json",
+      "path": "docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-5.manifesto.json",
       "sha256": "1609804f9e944f88432071b06e0a709a5c01f9e75c5ddb069fa560335931d6cb",
       "studioBlocks": [
         {
@@ -9557,7 +9557,7 @@
       "course": "nave-contra-asteroides",
       "lesson": "pontos",
       "title": "Conte os acertos",
-      "path": "docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-pontos.manifesto.json",
+      "path": "docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-pontos.manifesto.json",
       "sha256": "b2e7e1f3847c7ae8d6f98f8f536164c0f61137de97498bd70501163c51ee5c48",
       "studioBlocks": [
         {
@@ -9681,7 +9681,7 @@
       "course": "nave-contra-asteroides",
       "lesson": "primeira-nave",
       "title": "Faça a nave aparecer",
-      "path": "docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.manifesto.json",
+      "path": "docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.manifesto.json",
       "sha256": "ef891d59d24bb9cb5a64debd5489f12b6133b1a99d17d1c4a83dbde8b8364cdf",
       "studioBlocks": [
         {
@@ -9940,7 +9940,7 @@
       "course": "o-jogo-do-meu-jeito",
       "lesson": "aula-01",
       "title": "Guarde uma cópia para criar do seu jeito",
-      "path": "docs/aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-01.manifesto.json",
+      "path": "docs/aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-01.manifesto.json",
       "sha256": "a938b6909cc14e09f47d8ff2ef6b7e4865223b57bc98530f223b8be8e80831c6",
       "studioBlocks": [
         {
@@ -10052,7 +10052,7 @@
       "course": "o-jogo-do-meu-jeito",
       "lesson": "aula-02",
       "title": "Desenhe sua nave em pixel art",
-      "path": "docs/aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-02.manifesto.json",
+      "path": "docs/aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-02.manifesto.json",
       "sha256": "8649bfd2f94c36000b959cefc3de8d783f111cb7c97991e5c3ef2456373cb79d",
       "studioBlocks": [],
       "sections": [
@@ -10166,7 +10166,7 @@
       "course": "o-jogo-do-meu-jeito",
       "lesson": "aula-03",
       "title": "Faça o motor da nave pulsar",
-      "path": "docs/aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-03.manifesto.json",
+      "path": "docs/aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-03.manifesto.json",
       "sha256": "60310417f0f914bd0bf65ed01e5ae2103b5cf29d9a23365d53f4e4498247181f",
       "studioBlocks": [],
       "sections": [
@@ -10267,7 +10267,7 @@
       "course": "o-jogo-do-meu-jeito",
       "lesson": "aula-04",
       "title": "Desenhe um asteroide com formas",
-      "path": "docs/aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-04.manifesto.json",
+      "path": "docs/aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-04.manifesto.json",
       "sha256": "9790778dd1502ea579c5f174f41c061d2742f4fb3b9293fd90b69ac38e1a353c",
       "studioBlocks": [],
       "sections": [
@@ -10355,7 +10355,7 @@
       "course": "o-jogo-do-meu-jeito",
       "lesson": "aula-05",
       "title": "Anime as chamas e as crateras",
-      "path": "docs/aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-05.manifesto.json",
+      "path": "docs/aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-05.manifesto.json",
       "sha256": "9fbb22a58abe93440fb0da61387dd2da5832725550725716f1a4f96e87bc0520",
       "studioBlocks": [],
       "sections": [
@@ -10469,7 +10469,7 @@
       "course": "o-jogo-do-meu-jeito",
       "lesson": "aula-06",
       "title": "Coloque sua nave animada no jogo",
-      "path": "docs/aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-06.manifesto.json",
+      "path": "docs/aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-06.manifesto.json",
       "sha256": "2c09c7a8a48e252efdb2b0429aaeda70b7709910c0c1d1f53718d65815015511",
       "studioBlocks": [
         {
@@ -10581,7 +10581,7 @@
       "course": "o-jogo-do-meu-jeito",
       "lesson": "aula-07",
       "title": "Faça suas pedras nascerem animadas",
-      "path": "docs/aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-07.manifesto.json",
+      "path": "docs/aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-07.manifesto.json",
       "sha256": "b8956e4231a658348b6305ffa6a58b86639ea5a172515570c7e1a9864d151dea",
       "studioBlocks": [
         {
@@ -10680,7 +10680,7 @@
       "course": "o-jogo-do-meu-jeito",
       "lesson": "aula-08",
       "title": "Teste e compartilhe sua versão",
-      "path": "docs/aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-08.manifesto.json",
+      "path": "docs/aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-08.manifesto.json",
       "sha256": "2fcbbe373bfe2283db5e294b294462a1e4d8969bedb4c9e53233482c9cd1ad94",
       "studioBlocks": [
         {

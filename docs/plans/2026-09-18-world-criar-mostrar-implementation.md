@@ -232,10 +232,10 @@ git commit -m "feat(kids): separar criar e mostrar o Dino"
 - Modify: `packages/admin/src/components/editor/scene-action-editor.tsx:20-48`
 - Modify: `packages/admin/tests/learning-builder.test.tsx`
 - Modify: `packages/admin/tests/scene-authoring-rules.test.ts`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo-v6/dia-1/manifesto.json`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo-v6/dia-1/roteiro.md`
-- Modify: `docs/aulas-interativas/corre-dino-v6/aula-01/manifesto.json`
-- Modify: `docs/aulas-interativas/corre-dino-v6/aula-01/roteiro.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo-v6/dia-1/manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo-v6/dia-1/roteiro.md`
+- Modify: `docs/aulas-interativas/kids/corre-dino-v6/aula-01/manifesto.json`
+- Modify: `docs/aulas-interativas/kids/corre-dino-v6/aula-01/roteiro.md`
 - Modify: `docs/aulas-interativas-tecnico/qa/desafio-aulas-00-02.ts`
 - Modify: `docs/aulas-interativas-tecnico/qa/revisao-editorial-aula-01.ts`
 - Create: `docs/plans/2026-09-18-world-criar-mostrar-design.md`
@@ -310,7 +310,7 @@ rg -n "Crie o Dino e ligue o desenho|cria o Dino com o desenho desligado|Ligar o
 Classify remaining matches: they may only describe unrelated real programming blocks, never the `world` experience. Commit exact files from this task:
 
 ```powershell
-git add packages/admin/src/components/editor/scene-action-editor.tsx packages/admin/tests/learning-builder.test.tsx packages/admin/tests/scene-authoring-rules.test.ts docs/aulas-interativas/desafio-primeiro-jogo-v6/dia-1/manifesto.json docs/aulas-interativas/desafio-primeiro-jogo-v6/dia-1/roteiro.md docs/aulas-interativas/corre-dino-v6/aula-01/manifesto.json docs/aulas-interativas/corre-dino-v6/aula-01/roteiro.md docs/aulas-interativas-tecnico/qa/desafio-aulas-00-02.ts docs/aulas-interativas-tecnico/qa/revisao-editorial-aula-01.ts docs/plans/2026-09-18-world-criar-mostrar-design.md docs/plans/2026-09-18-world-criar-mostrar-implementation.md
+git add packages/admin/src/components/editor/scene-action-editor.tsx packages/admin/tests/learning-builder.test.tsx packages/admin/tests/scene-authoring-rules.test.ts docs/aulas-interativas/kids/desafio-primeiro-jogo-v6/dia-1/manifesto.json docs/aulas-interativas/kids/desafio-primeiro-jogo-v6/dia-1/roteiro.md docs/aulas-interativas/kids/corre-dino-v6/aula-01/manifesto.json docs/aulas-interativas/kids/corre-dino-v6/aula-01/roteiro.md docs/aulas-interativas-tecnico/qa/desafio-aulas-00-02.ts docs/aulas-interativas-tecnico/qa/revisao-editorial-aula-01.ts docs/plans/2026-09-18-world-criar-mostrar-design.md docs/plans/2026-09-18-world-criar-mostrar-implementation.md
 git commit -m "docs(lessons): alinhar criação e exibição do Dino"
 ```
 

@@ -35,6 +35,7 @@ export const fieldTextSchema = () =>
   t
     .Transform(t.Unknown())
     .Decode((value) => {
+      // Preserve containsAll groups unchanged; the core checks phrase sizes and bounded AND/OR.
       const pattern = { blockType: '', fieldText: value }
       if (!isProjectBlockPattern(pattern))
         throw new ValidationError('O critério de texto do campo é inválido.')

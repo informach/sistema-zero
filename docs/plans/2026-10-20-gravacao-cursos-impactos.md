@@ -17,7 +17,7 @@ Adicionar Python não exige refazer todas as aulas JavaScript. JavaScript contin
 | Jornada configurável | Regras administráveis com configuração inicial preservando as regras existentes | Não exige, por si só, refazer uma aula de programação; conferir gravações que explicam navegação e liberação |
 | Admin de aulas | Linguagem, tipo de projeto, curadoria e objetivos | Tutoriais de autoria/configuração, separados da demonstração para a criança |
 
-## Lote pedagógico Farol
+## Lote pedagógico Farol inicial (histórico)
 
 O lote de nove arquivos integrado em `1389d1b4f` alterou o Dia 1 do Desafio Primeiro Jogo/Farol, seção `andar` ("Faça seu personagem andar"). O roteiro, seu resumo, a fonte de conteúdo e o manifesto desse dia foram atualizados juntos.
 
@@ -27,7 +27,13 @@ Esse lote não reescreveu os Dias 2/3, as seções de borda/entrega nem todos os
 
 ## Revisão pedagógica dos cursos
 
-O inventário das 37 aulas e a validação técnica dos manifestos não concluem a revisão pedagógica. A revisão efetiva dos critérios e dos trechos de conferência está em andamento na sessão pedagógica. Ela precisa distinguir os valores da demonstração das condições necessárias para cumprir o objetivo, preservando direção, eventos, estado e contagens relevantes. As falas e a montagem existentes continuam sendo a referência; não há autorização para reescrita geral.
+O inventário e a validação técnica não substituem a revisão dos objetivos. A conciliação atual reúne a revisão das 37 aulas Kids e das 37 versões Adulto. Os arquivos Kids ficam agora em `docs/aulas-interativas/kids/`; os adultos, em `docs/aulas-interativas/adulto/`. As traduções adultas são mantidas pelo gerador canônico, com os mesmos projetos e critérios dos Kids.
+
+Os critérios compartilhados passaram a representar intervalos numéricos, textos não vazios, alternativas correlacionadas no mesmo bloco, comandos no mesmo encaixe e ordem relativa ao comando específico. Isso permite aceitar valores coerentes sem exigir os números ou a arte da demonstração. Mantêm-se as dependências ensinadas: sinal da velocidade, objeto/grupo correto, estado, evento e prioridade entre derrota e vitória. A geometria base de cada jogo continua sendo a ensinada quando outras partes dependem dela. Esses critérios estruturais não executam expressões Python/JavaScript arbitrárias; verificações de comportamento são indicadas separadamente.
+
+Na conferência independente da integração, as 2.423 linhas citadas dos 37 roteiros Kids são idênticas à referência `89aa5acc4`; as 2.187 linhas citadas dos 37 roteiros Adulto são idênticas à referência `ae2c1c021`. As notas acrescentadas sobre a lista de objetivos e a resposta do servidor são orientações da equipe, explicitamente marcadas para não gravar. Esse lote não exige regravar todas as falas.
+
+As provas locais da versão conciliada incluem os 74 manifestos válidos, os 203 clipes Kids conferidos pelo validador de roteiros e a suíte dos cursos. Isso não comprova importação/publicação desses arquivos no Admin nem o percurso do aluno no ambiente implantado. O review final ainda pode corrigir um critério sem modificar a narração; registrar essa correção antes do fechamento do lote.
 
 Ainda não há liberação geral para gravação: registrar o resultado por aula e validar o percurso correspondente em staging. O seletor administrativo já integrado ao Git também não comprova que a nova versão foi implantada no site.
 

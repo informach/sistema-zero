@@ -1,0 +1,91 @@
+{
+  "curso": "nave-contra-asteroides",
+  "grupo": "_curso",
+  "trechos": [
+    {
+      "onde": "modulos.md",
+      "kids": "# Nave Contra Asteroides",
+      "adulto": "# Nave Contra Asteroides"
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Título do curso:** Nave Contra Asteroides",
+      "adulto": "**Título do curso:** Nave Contra Asteroides"
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Descrição curta:** Monte um jogo de nave com tiros, asteroides, pontos, três vidas e uma partida que você pode recomeçar.",
+      "adulto": "**Descrição curta:** Monte um jogo de nave com tiros, asteroides, pontos, três vidas e uma partida que você pode recomeçar."
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Descrição longa:** Primeiro, jogue uma versão pronta para conhecer a nave e os controles. Depois, construa seu jogo em nove fases: faça a nave aparecer e se mover, programe os tiros, crie os asteroides e os acertos, conte pontos e cuide das vidas. No final, coloque as telas de abertura, vitória e derrota e programe Enter para jogar outra vez. Cada fase traz os passos de montagem, testes no jogo e orientações para corrigir o que não funcionar. Você pode consultar o Mapa da Aventura sempre que precisar e compartilhar seu jogo no Mural quando quiser.",
+      "adulto": "**Descrição longa:** Primeiro, jogue uma versão pronta para conhecer a nave e os controles. Depois, construa seu jogo em nove aulas: faça a nave aparecer e se mover, programe os tiros, crie os asteroides e os acertos, conte pontos e cuide das vidas. No final, coloque as telas de abertura, vitória e derrota e programe Enter para jogar outra vez. Cada aula traz os passos de montagem, testes no jogo e orientações para corrigir o que não funcionar. Você pode consultar o caderno do curso sempre que precisar e publicar seu jogo no Mural quando quiser."
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "## Módulo 1 · A nave e seus controles",
+      "adulto": "## Módulo 1 · A nave e seus controles"
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Resumo:** Faça a nave aparecer, mova com as setas e programe os tiros para sair dela.",
+      "adulto": "**Resumo:** Faça a nave aparecer, mova com as setas e programe os tiros para sair dela."
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "- [Faça a nave aparecer](nave-contra-asteroides-primeira-nave.md)\n- [Mova a nave pelo espaço](nave-contra-asteroides-dia-1.md)\n- [Faça a nave atirar](nave-contra-asteroides-dia-2.md)",
+      "adulto": "- [Faça a nave aparecer](nave-contra-asteroides-primeira-nave.md)\n- [Mova a nave pelo espaço](nave-contra-asteroides-dia-1.md)\n- [Faça a nave atirar](nave-contra-asteroides-dia-2.md)"
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "## Módulo 2 · Asteroides, pontos e vidas",
+      "adulto": "## Módulo 2 · Asteroides, pontos e vidas"
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Resumo:** Coloque as pedras no jogo, programe os acertos, conte pontos e dê três vidas à nave.",
+      "adulto": "**Resumo:** Coloque as pedras no jogo, programe os acertos, conte pontos e dê três vidas à nave."
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "- [Faça os asteroides cair](nave-contra-asteroides-chuva-de-asteroides.md)\n- [Faça o tiro acertar o asteroide](nave-contra-asteroides-dia-3.md)\n- [Conte os acertos](nave-contra-asteroides-pontos.md)\n- [Dê três vidas à nave](nave-contra-asteroides-dia-4.md)",
+      "adulto": "- [Faça os asteroides cair](nave-contra-asteroides-chuva-de-asteroides.md)\n- [Faça o tiro acertar o asteroide](nave-contra-asteroides-dia-3.md)\n- [Conte os acertos](nave-contra-asteroides-pontos.md)\n- [Dê três vidas à nave](nave-contra-asteroides-dia-4.md)"
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "## Módulo 3 · Uma partida completa",
+      "adulto": "## Módulo 3 · Uma partida completa"
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Resumo:** Faça o jogo esperar Enter, reconhecer vitória e derrota e preparar uma nova partida.",
+      "adulto": "**Resumo:** Faça o jogo esperar Enter, reconhecer vitória e derrota e preparar uma nova partida."
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "- [Comece a partida com Enter](nave-contra-asteroides-comecar-partida.md)\n- [Termine e recomece a partida](nave-contra-asteroides-dia-5.md)",
+      "adulto": "- [Comece a partida com Enter](nave-contra-asteroides-comecar-partida.md)\n- [Termine e recomece a partida](nave-contra-asteroides-dia-5.md)"
+    },
+    {
+      "onde": "README.md",
+      "kids": "Materiais do curso para consulta, gravação e importação.",
+      "adulto": "Materiais do curso para consulta, gravação e importação."
+    },
+    {
+      "onde": "README.md",
+      "kids": "| Material | Arquivo |\n| --- | --- |\n| Título, descrições, módulos e aulas | [Módulos](modulos.md) |\n| Blocos do projeto | [JSON dos blocos](blocos.json) |\n| Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |\n| Mapa da Aventura para consultar ou anexar | [PDF do mapa](mapa-da-aventura.pdf) |",
+      "adulto": "| Material | Arquivo |\n| --- | --- |\n| Título, descrições, módulos e aulas | [Módulos](modulos.md) |\n| Blocos do projeto | [JSON dos blocos](blocos.json) |\n| Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |\n| Caderno do Aluno para consultar ou anexar | [PDF do caderno](caderno-do-aluno.pdf) |"
+    },
+    {
+      "onde": "README.md",
+      "kids": "Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as orientações; **roteiro** traz as falas e a direção dos vídeos; **manifesto** é o JSON para importar no Admin.",
+      "adulto": "Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as orientações; **roteiro** traz as falas e a direção dos vídeos; **manifesto** é o JSON para importar no Admin."
+    },
+    {
+      "onde": "README.md",
+      "kids": "| Aula | Conteúdo | Roteiro | Manifesto |\n| --- | --- | --- | --- |\n| Faça a nave aparecer | [Abrir](nave-contra-asteroides-primeira-nave.md) | [Abrir](nave-contra-asteroides-primeira-nave.roteiro.md) | [JSON](nave-contra-asteroides-primeira-nave.manifesto.json) |\n| Mova a nave pelo espaço | [Abrir](nave-contra-asteroides-dia-1.md) | [Abrir](nave-contra-asteroides-dia-1.roteiro.md) | [JSON](nave-contra-asteroides-dia-1.manifesto.json) |\n| Faça a nave atirar | [Abrir](nave-contra-asteroides-dia-2.md) | [Abrir](nave-contra-asteroides-dia-2.roteiro.md) | [JSON](nave-contra-asteroides-dia-2.manifesto.json) |\n| Faça os asteroides cair | [Abrir](nave-contra-asteroides-chuva-de-asteroides.md) | [Abrir](nave-contra-asteroides-chuva-de-asteroides.roteiro.md) | [JSON](nave-contra-asteroides-chuva-de-asteroides.manifesto.json) |\n| Faça o tiro acertar o asteroide | [Abrir](nave-contra-asteroides-dia-3.md) | [Abrir](nave-contra-asteroides-dia-3.roteiro.md) | [JSON](nave-contra-asteroides-dia-3.manifesto.json) |\n| Conte os acertos | [Abrir](nave-contra-asteroides-pontos.md) | [Abrir](nave-contra-asteroides-pontos.roteiro.md) | [JSON](nave-contra-asteroides-pontos.manifesto.json) |\n| Dê três vidas à nave | [Abrir](nave-contra-asteroides-dia-4.md) | [Abrir](nave-contra-asteroides-dia-4.roteiro.md) | [JSON](nave-contra-asteroides-dia-4.manifesto.json) |\n| Comece a partida com Enter | [Abrir](nave-contra-asteroides-comecar-partida.md) | [Abrir](nave-contra-asteroides-comecar-partida.roteiro.md) | [JSON](nave-contra-asteroides-comecar-partida.manifesto.json) |\n| Termine e recomece a partida | [Abrir](nave-contra-asteroides-dia-5.md) | [Abrir](nave-contra-asteroides-dia-5.roteiro.md) | [JSON](nave-contra-asteroides-dia-5.manifesto.json) |",
+      "adulto": "| Aula | Conteúdo | Roteiro | Manifesto |\n| --- | --- | --- | --- |\n| Faça a nave aparecer | [Abrir](nave-contra-asteroides-primeira-nave.md) | [Abrir](nave-contra-asteroides-primeira-nave.roteiro.md) | [JSON](nave-contra-asteroides-primeira-nave.manifesto.json) |\n| Mova a nave pelo espaço | [Abrir](nave-contra-asteroides-dia-1.md) | [Abrir](nave-contra-asteroides-dia-1.roteiro.md) | [JSON](nave-contra-asteroides-dia-1.manifesto.json) |\n| Faça a nave atirar | [Abrir](nave-contra-asteroides-dia-2.md) | [Abrir](nave-contra-asteroides-dia-2.roteiro.md) | [JSON](nave-contra-asteroides-dia-2.manifesto.json) |\n| Faça os asteroides cair | [Abrir](nave-contra-asteroides-chuva-de-asteroides.md) | [Abrir](nave-contra-asteroides-chuva-de-asteroides.roteiro.md) | [JSON](nave-contra-asteroides-chuva-de-asteroides.manifesto.json) |\n| Faça o tiro acertar o asteroide | [Abrir](nave-contra-asteroides-dia-3.md) | [Abrir](nave-contra-asteroides-dia-3.roteiro.md) | [JSON](nave-contra-asteroides-dia-3.manifesto.json) |\n| Conte os acertos | [Abrir](nave-contra-asteroides-pontos.md) | [Abrir](nave-contra-asteroides-pontos.roteiro.md) | [JSON](nave-contra-asteroides-pontos.manifesto.json) |\n| Dê três vidas à nave | [Abrir](nave-contra-asteroides-dia-4.md) | [Abrir](nave-contra-asteroides-dia-4.roteiro.md) | [JSON](nave-contra-asteroides-dia-4.manifesto.json) |\n| Comece a partida com Enter | [Abrir](nave-contra-asteroides-comecar-partida.md) | [Abrir](nave-contra-asteroides-comecar-partida.roteiro.md) | [JSON](nave-contra-asteroides-comecar-partida.manifesto.json) |\n| Termine e recomece a partida | [Abrir](nave-contra-asteroides-dia-5.md) | [Abrir](nave-contra-asteroides-dia-5.roteiro.md) | [JSON](nave-contra-asteroides-dia-5.manifesto.json) |"
+    }
+  ]
+}

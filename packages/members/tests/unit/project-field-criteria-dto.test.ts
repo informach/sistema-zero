@@ -19,7 +19,12 @@ const range: SectionStructureRule = {
 const text: SectionStructureRule = {
   type: 'usesBlock',
   blockType: 'sz_g2d_set_stage_description',
-  fieldText: { DESCRIPTION: { nonBlank: true } },
+  fieldText: {
+    DESCRIPTION: {
+      nonBlank: true,
+      containsAll: [['setas', 'flechas'], ['espaço', 'barra de espaço'], ['reiniciar']],
+    },
+  },
 }
 const nested: SectionStructureRule = {
   type: 'usesBlock',
@@ -63,6 +68,13 @@ const nestedOrder: SectionStructureRule = {
   blockType: 'sz_g2d_update_each_frame',
   inputBlocksAll: { BODY: [orderedPattern] },
 }
+const nestedText: SectionStructureRule = {
+  type: 'usesBlock',
+  blockType: 'sz_g2d_update_each_frame',
+  inputBlocksAll: {
+    BODY: [{ blockType: 'sz_g2d_set_stage_description', fieldText: text.fieldText }],
+  },
+}
 const request = (body: unknown, method = 'POST') =>
   new Request('http://members.test/', {
     method,
@@ -72,7 +84,7 @@ const request = (body: unknown, method = 'POST') =>
 
 test('real HTTP normalization and draft edits retain every new criterion at top level and in sockets', async () => {
   const app = new Elysia().post('/', ({ body }) => body, { body: SectionRule })
-  for (const rule of [range, text, nested, composed, ordered, nestedOrder]) {
+  for (const rule of [range, text, nested, composed, ordered, nestedOrder, nestedText]) {
     const response = await app.handle(request(rule))
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual(rule)
@@ -82,11 +94,13 @@ test('real HTTP normalization and draft edits retain every new criterion at top 
     completion: {
       version: 1 as const,
       blockIds: [],
-      projectChecks: [range, text, nested, composed, ordered, nestedOrder].map((rule, i) => ({
-        id: `check${i}`,
-        label: 'Conferir',
-        rule,
-      })),
+      projectChecks: [range, text, nested, composed, ordered, nestedOrder, nestedText].map(
+        (rule, i) => ({
+          id: `check${i}`,
+          label: 'Conferir',
+          rule,
+        }),
+      ),
     },
   }
   let document: LessonDraftDocument = {
@@ -155,6 +169,11 @@ test('HTTP rejects malformed raw maps instead of erasing a bound or text restric
     { beforePattern: null },
     { beforePattern: [] },
     { beforePattern: { blockType: 1 } },
+    { fieldText: { TEXT: { nonBlank: true, containsAll: [] } } },
+    { fieldText: { TEXT: { nonBlank: true, containsAll: [[]] } } },
+    { fieldText: { TEXT: { nonBlank: true, containsAll: [['.*']] } } },
+    { fieldText: { TEXT: { nonBlank: true, containsAll: [['x'.repeat(121)]] } } },
+    { fieldText: { TEXT: { nonBlank: true, containsAll: [['pular']], containsAny: ['algo'] } } },
   ]
   for (const fields of invalid) {
     for (const rule of [

@@ -91,10 +91,7 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": [
-                "once",
-                "always"
-              ],
+              "goals": ["once", "always"],
               "goalCopy": {
                 "once": {
                   "label": "Em Ao iniciar, a nave se moveu uma vez e parou",
@@ -107,10 +104,7 @@
               },
               "preset": {
                 "id": "duas-caixas-nave",
-                "areas": [
-                  "start",
-                  "loop"
-                ],
+                "areas": ["start", "loop"],
                 "cards": [
                   {
                     "id": "move",
@@ -244,11 +238,7 @@
                   "y": 40
                 }
               ],
-              "goals": [
-                "right",
-                "down",
-                "origin"
-              ]
+              "goals": ["right", "down", "origin"]
             }
           }
         },
@@ -421,11 +411,7 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": [
-                "frozen",
-                "trail",
-                "moving"
-              ]
+              "goals": ["frozen", "trail", "moving"]
             }
           },
           "semPerguntaFinal": true
@@ -631,12 +617,7 @@
             "scene": "lighthouse-walk",
             "cenario": "nave",
             "setup": {
-              "goals": [
-                "still-without-arrow",
-                "moves-each-frame",
-                "step-speed-3",
-                "step-speed-1"
-              ]
+              "goals": ["still-without-arrow", "moves-each-frame", "step-speed-3", "step-speed-1"]
             }
           }
         },
@@ -769,10 +750,7 @@
             "scene": "lighthouse-walk",
             "cenario": "nave",
             "setup": {
-              "goals": [
-                "left-the-screen",
-                "stayed-inside"
-              ]
+              "goals": ["left-the-screen", "stayed-inside"]
             }
           }
         },
@@ -894,11 +872,7 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": [
-                "front",
-                "covered",
-                "back-in-front"
-              ]
+              "goals": ["front", "covered", "back-in-front"]
             }
           }
         },
@@ -995,9 +969,7 @@
                 "label": "Aumentar a velocidade da nave."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "O fundo de estrelas cobre a tela inteira. Desenhando o fundo primeiro e a nave depois, a nave fica visível na frente."
           },
           {
@@ -1017,9 +989,7 @@
                 "label": "Para fazer as estrelas pararem."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O movimento pode levar a nave além da borda. O limite corrige a posição antes de o desenho mostrar o resultado."
           }
         ],
@@ -1296,16 +1266,8 @@
         "fixed-vs-read antes da origem do tiro",
         "Comparar número fixo e posição atual da nave."
       ],
-      [
-        "Velocidade vertical",
-        "velocity antes de vx e vy",
-        "Observar o sinal e a mudança do y."
-      ],
-      [
-        "Grupo e limpeza",
-        "cleanup antes da retirada",
-        "Distinguir sair da tela de sair do grupo."
-      ]
+      ["Velocidade vertical", "velocity antes de vx e vy", "Observar o sinal e a mudança do y."],
+      ["Grupo e limpeza", "cleanup antes da retirada", "Distinguir sair da tela de sair do grupo."]
     ],
     "sections": [
       {
@@ -1345,11 +1307,7 @@
             "setup": {
               "preset": {
                 "id": "tres-caixas-tiro",
-                "areas": [
-                  "start",
-                  "loop",
-                  "event"
-                ],
+                "areas": ["start", "loop", "event"],
                 "cards": [
                   {
                     "id": "paint",
@@ -1373,11 +1331,7 @@
                   }
                 ]
               },
-              "goals": [
-                "on-event",
-                "key-fires",
-                "flood"
-              ]
+              "goals": ["on-event", "key-fires", "flood"]
             }
           },
           "semPerguntaFinal": true
@@ -1419,11 +1373,7 @@
             "scene": "fixed-vs-read",
             "cenario": "nave",
             "setup": {
-              "goals": [
-                "same-spot",
-                "follows",
-                "box-marks"
-              ]
+              "goals": ["same-spot", "follows", "box-marks"]
             }
           },
           "semPerguntaFinal": true
@@ -1482,10 +1432,7 @@
                   "vy": 0
                 }
               ],
-              "goals": [
-                "up",
-                "down"
-              ]
+              "goals": ["up", "down"]
             }
           },
           "semPerguntaFinal": true
@@ -1798,10 +1745,7 @@
                 "exit": "top",
                 "incoming": false
               },
-              "goals": [
-                "invisible-stored",
-                "rule-removes"
-              ]
+              "goals": ["invisible-stored", "rule-removes"]
             }
           },
           "semPerguntaFinal": true
@@ -2151,11 +2095,7 @@
               "preset": {
                 "id": "pedra-quadros",
                 "unit": "frames",
-                "intervals": [
-                  20,
-                  40,
-                  80
-                ],
+                "intervals": [20, 40, 80],
                 "falling": true
               }
             }
@@ -2654,11 +2594,7 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": [
-                "whole-group",
-                "just-the-pair",
-                "others-stay"
-              ]
+              "goals": ["whole-group", "just-the-pair", "others-stay"]
             }
           },
           "semPerguntaFinal": true
@@ -2835,9 +2771,7 @@
                 "label": "O tiro e o asteroide envolvidos naquele acerto."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "Os apelidos tiro e asteroide apontam para os dois objetos da colisão. Os demais objetos dos grupos continuam no jogo."
           },
           {
@@ -2857,9 +2791,7 @@
                 "label": "Se o som está mais alto."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O número 400 não acompanha o movimento. O bloco o centro x do sprite nave lê a posição atual a cada disparo."
           }
         ],
@@ -3323,11 +3255,7 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": [
-                "stored",
-                "changed-hidden",
-                "shown"
-              ]
+              "goals": ["stored", "changed-hidden", "shown"]
             }
           },
           "semPerguntaFinal": true
@@ -3558,10 +3486,7 @@
             "setup": {
               "preset": {
                 "id": "uma-ficha-vidas",
-                "areas": [
-                  "start",
-                  "loop"
-                ],
+                "areas": ["start", "loop"],
                 "cards": [
                   {
                     "id": "lives",
@@ -3581,10 +3506,7 @@
                   "pedido": "Depois de testar Ao iniciar, ponha Dar três vidas à nave em Enquanto estiver rodando e comece o jogo."
                 }
               },
-              "goals": [
-                "once",
-                "lives-loop"
-              ]
+              "goals": ["once", "lives-loop"]
             }
           },
           "semPerguntaFinal": true
@@ -3721,11 +3643,7 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": [
-                "no-shield",
-                "window",
-                "expires"
-              ]
+              "goals": ["no-shield", "window", "expires"]
             }
           },
           "semPerguntaFinal": true
@@ -3891,9 +3809,7 @@
                 "label": "Solto no começo de A cada quadro do jogo."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "A soma fica dentro da colisão para acompanhar os acertos. Solta em cada quadro, ela aumentaria sem depender de um tiro acertar."
           },
           {
@@ -3913,9 +3829,7 @@
                 "label": "Não diminui outra vida enquanto a proteção está ativa."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "A proteção impede um novo dano durante os 45 quadros. Depois que esse tempo termina, uma nova batida pode tirar outra vida."
           }
         ],
@@ -4415,11 +4329,7 @@
                 "waitingSeconds": 4,
                 "moment": "screen"
               },
-              "goals": [
-                "outside",
-                "waiting",
-                "playing"
-              ],
+              "goals": ["outside", "waiting", "playing"],
               "goalCopy": {
                 "outside": {
                   "label": "Sem a pergunta, as pedras nasceram antes de começar"
@@ -5345,7 +5255,6 @@
                 },
                 "THEN": {
                   "blockType": "sz_js_if_else",
-                  "beforeBlock": "sz_js_if_else",
                   "inputBlocks": {
                     "COND": {
                       "blockType": "sz_val_compare",
@@ -5371,6 +5280,23 @@
                       "blockType": "sz_g2d_set_scene",
                       "fields": {
                         "SCENE": "vitoria"
+                      }
+                    }
+                  },
+                  "beforePattern": {
+                    "blockType": "sz_js_if_else",
+                    "inputBlocks": {
+                      "COND": {
+                        "blockType": "sz_g2d_health_depleted",
+                        "fields": {
+                          "SPRITE": "nave"
+                        }
+                      },
+                      "THEN": {
+                        "blockType": "sz_g2d_set_scene",
+                        "fields": {
+                          "SCENE": "fim"
+                        }
                       }
                     }
                   }
@@ -5665,10 +5591,7 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": [
-                "screen-only",
-                "back-to-menu"
-              ],
+              "goals": ["screen-only", "back-to-menu"],
               "goalCopy": {
                 "screen-only": {
                   "label": "Mudando só o momento, as pedras da partida anterior continuaram caindo",
@@ -5803,9 +5726,7 @@
                 "label": "A tela de vitória."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Reiniciar executa Ao iniciar novamente, que define inicio. O próximo Enter muda de inicio para jogando."
           },
           {
@@ -5825,9 +5746,7 @@
                 "label": "Para dar pontos sem acertar."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "A condição controla se o criador pode agir. A contagem do intervalo e a permissão para criar pedras são coisas diferentes."
           },
           {
@@ -5847,9 +5766,7 @@
                 "label": "Pontos ficar maior ou igual ao alvo de 26."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "A comparação usa o valor atual de pontos e a constante alvo. Quando pontos chega a 26, a condição pode mudar o estado para vitoria."
           }
         ],
@@ -6222,7 +6139,6 @@
                 },
                 "THEN": {
                   "blockType": "sz_js_if_else",
-                  "beforeBlock": "sz_js_if_else",
                   "inputBlocks": {
                     "COND": {
                       "blockType": "sz_val_compare",
@@ -6248,6 +6164,23 @@
                       "blockType": "sz_g2d_set_scene",
                       "fields": {
                         "SCENE": "vitoria"
+                      }
+                    }
+                  },
+                  "beforePattern": {
+                    "blockType": "sz_js_if_else",
+                    "inputBlocks": {
+                      "COND": {
+                        "blockType": "sz_g2d_health_depleted",
+                        "fields": {
+                          "SPRITE": "nave"
+                        }
+                      },
+                      "THEN": {
+                        "blockType": "sz_g2d_set_scene",
+                        "fields": {
+                          "SCENE": "fim"
+                        }
                       }
                     }
                   }

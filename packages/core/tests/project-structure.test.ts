@@ -104,6 +104,93 @@ test('nonblank text requires an actual string, not a truthy or coerced field', (
     ).toBe(false)
 })
 
+test('explicit text terms require every group with word boundaries, case and accent normalization', () => {
+  const rule: SectionStructureRule = {
+    type: 'usesBlock',
+    blockType: 'description',
+    fieldText: {
+      DESCRIPTION: {
+        nonBlank: true,
+        containsAll: [
+          ['setas', 'flechas'],
+          ['espaço', 'barra de espaço'],
+          ['reiniciar', 'recomeçar'],
+        ],
+      },
+    },
+  }
+  const check = (value: unknown) =>
+    evaluateProjectStructure(rule, project({ type: 'description', fields: { DESCRIPTION: value } }))
+  for (const text of [
+    'SETAS movem; ESPAÇO pula; reiniciar.',
+    'Use flechas. Barra-de-espaço pula! RECOMEÇAR.',
+    'Setas; espac\u0327o; reiniciar',
+  ])
+    expect(check(text)).toBe(true)
+  for (const text of [
+    '',
+    ' ',
+    'Minha fase favorita',
+    'setas e espaço',
+    'setas espaçosos reiniciar',
+    'setas espaço recomeçaremos',
+    'flechas espaço não há o terceiro termo',
+    123,
+    null,
+  ])
+    expect(check(text)).toBe(false)
+  // This is a term check, not interpretation of prose or negation.
+  expect(check('Não use setas, espaço nem reiniciar.')).toBe(true)
+  const phrase: SectionStructureRule = {
+    ...rule,
+    fieldText: { DESCRIPTION: { nonBlank: true, containsAll: [['pressione r'], ['tecla 2']] } },
+  }
+  expect(
+    evaluateProjectStructure(
+      phrase,
+      project({ type: 'description', fields: { DESCRIPTION: 'PRESSIONE R; tecla-2.' } }),
+    ),
+  ).toBe(true)
+  expect(
+    evaluateProjectStructure(
+      phrase,
+      project({ type: 'description', fields: { DESCRIPTION: 'pressione rapidamente; tecla 20.' } }),
+    ),
+  ).toBe(false)
+})
+
+test('explicit text term groups reject malformed, empty or unbounded alternatives', () => {
+  const valid = (containsAll: unknown) =>
+    isProjectBlockPattern({
+      blockType: 'description',
+      fieldText: { DESCRIPTION: { nonBlank: true, containsAll } },
+    })
+  expect(valid([['pular'], ['tecla 2', 'espaço']])).toBe(true)
+  expect(valid([['x'.repeat(120)]])).toBe(true)
+  for (const terms of [
+    null,
+    {},
+    [],
+    [[]],
+    [['']],
+    [['  ']],
+    [['---']],
+    [['🙂']],
+    [['\u0301']],
+    [[1]],
+    [['x'.repeat(121)]],
+    Array.from({ length: 11 }, () => ['pular']),
+    [Array.from({ length: 11 }, () => 'pular')],
+  ])
+    expect(valid(terms)).toBe(false)
+  expect(
+    isProjectBlockPattern({
+      blockType: 'description',
+      fieldText: { DESCRIPTION: { nonBlank: true, containsAll: [['pular']], regex: '.*' } },
+    }),
+  ).toBe(false)
+})
+
 test('ranges and text remain on the same enabled block and recursive input branch', () => {
   const child: ProjectBlockPattern = {
     blockType: 'move',

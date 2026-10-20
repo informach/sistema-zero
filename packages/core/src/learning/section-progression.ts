@@ -21,6 +21,23 @@ export interface ProjectFieldRange {
   maxExclusive?: true
 }
 
+export interface ProjectFieldText {
+  nonBlank: true
+  /** Every group requires one of its explicit phrases; this is not semantic analysis. */
+  containsAll?: string[][]
+}
+
+/** Words only: punctuation separates phrases, and accents/case do not prescribe spelling. */
+export function normalizeProjectFieldText(value: string): string {
+  return (
+    value
+      .normalize('NFKD')
+      .replace(/\p{M}/gu, '')
+      .toLowerCase()
+      .match(/[\p{L}\p{N}]+/gu) ?? []
+  ).join(' ')
+}
+
 export interface ProjectBlockPattern {
   blockType: string
   fields?: Record<string, string | number | boolean>
@@ -29,7 +46,7 @@ export interface ProjectBlockPattern {
   /** Finite numeric bounds on a field; an exclusive bound requires its endpoint. */
   fieldRanges?: Record<string, ProjectFieldRange>
   /** Accept the learner's own nonblank text without prescribing its contents. */
-  fieldText?: Record<string, { nonBlank: true }>
+  fieldText?: Record<string, ProjectFieldText>
   /** One complete field map must match; keys are identical in every alternative. */
   fieldAlternatives?: Record<string, string | number | boolean>[]
   inputs?: Record<string, string | number | boolean>
@@ -269,6 +286,36 @@ export function isProjectFieldRange(value: unknown): value is ProjectFieldRange 
   )
 }
 
+export function isProjectFieldText(value: unknown): value is ProjectFieldText {
+  if (
+    !record(value) ||
+    !Object.hasOwn(value, 'nonBlank') ||
+    value.nonBlank !== true ||
+    Object.keys(value).some((key) => key !== 'nonBlank' && key !== 'containsAll')
+  )
+    return false
+  const groups = value.containsAll
+  return (
+    groups === undefined ||
+    (Array.isArray(groups) &&
+      groups.length >= 1 &&
+      groups.length <= 10 &&
+      groups.every(
+        (alternatives) =>
+          Array.isArray(alternatives) &&
+          alternatives.length >= 1 &&
+          alternatives.length <= 10 &&
+          alternatives.every(
+            (phrase) =>
+              typeof phrase === 'string' &&
+              phrase.length >= 1 &&
+              phrase.length <= 120 &&
+              normalizeProjectFieldText(phrase).length > 0,
+          ),
+      ))
+  )
+}
+
 export function isProjectBlockPattern(value: unknown): value is ProjectBlockPattern {
   let remaining = 64
   function valid(v: unknown, depth: number): boolean {
@@ -340,17 +387,7 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
       return false
     if (record(v.fieldRanges) && !Object.values(v.fieldRanges).every(isProjectFieldRange))
       return false
-    if (
-      record(v.fieldText) &&
-      !Object.values(v.fieldText).every(
-        (text) =>
-          record(text) &&
-          Object.keys(text).length === 1 &&
-          Object.hasOwn(text, 'nonBlank') &&
-          text.nonBlank === true,
-      )
-    )
-      return false
+    if (record(v.fieldText) && !Object.values(v.fieldText).every(isProjectFieldText)) return false
     const constrainedInputs = new Set(record(v.inputs) ? Object.keys(v.inputs) : [])
     for (const kind of ['inputBlocks', 'inputBlocksAll'] as const) {
       const sockets = v[kind]

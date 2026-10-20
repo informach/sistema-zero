@@ -1,0 +1,776 @@
+{
+  "curso": "o-jogo-do-meu-jeito",
+  "grupo": "meu-jeito-aula-06",
+  "trechos": [
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "# O Jogo do Meu Jeito · Aula 6 · Coloque sua nave animada no jogo",
+      "adulto": "# O Jogo do Meu Jeito · Aula 6 · Coloque sua nave animada no jogo"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`. Consulte [o mapa do curso](modulos.md).",
+      "adulto": "Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`. Consulte [o mapa do curso](modulos.md)."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "## Resumo",
+      "adulto": "## Resumo"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "- Entrada: Cópia do jogo da aula 1 e duas artes animadas salvas no Pinta.\n- Resultado: Jogo com nave autoral animada e asteroides originais, mantendo as regras.\n- Seções: 7. Vídeos: 7.",
+      "adulto": "- Entrada: Cópia do jogo da aula 1 e duas artes animadas salvas no Pinta.\n- Resultado: Jogo com nave autoral animada e asteroides originais, mantendo as regras.\n- Seções: 7. Vídeos: 7."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
+      "adulto": "**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "## Diagnóstico e decisão",
+      "adulto": "## Diagnóstico e decisão"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganham resultados próprios. A troca do criador é feita numa mesma aplicação; não se transforma a exclusão do bloco em uma aula de erro fabricado. A folha entra no fim do Ao iniciar, como no programa de referência.",
+      "adulto": "Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganham resultados próprios. A troca do criador é feita numa mesma aplicação; não se transforma a exclusão do bloco em uma aula de erro fabricado. A folha entra no fim do Ao iniciar, como no programa de referência."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "## Triagem dos conceitos",
+      "adulto": "## Triagem dos conceitos"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Nomes de sprite e folha | Experiência unique-names antes dos novos blocos. | Evita apagar o nome procurado ou usar o mesmo nome para preparações diferentes. |\n| Folha, quadro e tamanho no jogo | Experiência sheet-vs-sprite antes da troca de criador. | Separa o recorte 32 × 32 do tamanho 54 × 54. |\n| Trazer arte, criar e animar | Aplicações separadas na mesma cópia. | Cada bloco ganha um propósito observável; regras anteriores continuam. |",
+      "adulto": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Nomes de sprite e folha | Experiência unique-names antes dos novos blocos. | Evita apagar o nome procurado ou usar o mesmo nome para preparações diferentes. |\n| Folha, quadro e tamanho no jogo | Experiência sheet-vs-sprite antes da troca de criador. | Separa o recorte 32 × 32 do tamanho 54 × 54. |\n| Trazer arte, criar e animar | Aplicações separadas na mesma cópia. | Cada bloco ganha um propósito observável; regras anteriores continuam. |"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "## Proposta final",
+      "adulto": "## Proposta final"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "### Seção 1. Separe os nomes que os blocos procuram",
+      "adulto": "### Seção 1. Separe os nomes que os blocos procuram"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Tarefa / Zappy na página:** Sua vez! Tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Tarefa / Recado na página:** Sua vez: tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Blocos na página:** video-nomes → fala-nomes → experimento-nomes.",
+      "adulto": "**Blocos na página:** video-nomes → fala-nomes → experimento-nomes."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "ID video-nomes-avatar-01. Professora até “Agora eu clico em Tirar este bloco. Tá vendo? Os três blocos ganham um ponto de exclamação, e o aviso diz que o nome nave ainda não foi criado neste jogo. É que os blocos procuram nave, e ninguém criou esse nome. Por isso, a prévia para na última versão que funcionava.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Os três blocos reclamaram juntos!”. Retomada da professora: “Eu clico em Pôr de volta, e os avisos somem.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "ID video-nomes-avatar-02. Professora até “cada um precisa de um nome só dele.”. Antes: Concluir os testes de nome ausente e repetido e a comparação com os jogadores; manter o aviso de nome repetido visível. Dedé: “A folha não pode se chamar nave também!”. Retomada da professora: “Por isso, eu escolho folha-nave.”. Depois: Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Experiência existente:** `unique-names`. Clique em Tempo para a nave voar na prévia. Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave. Sem palpite, pistas ou pergunta final.",
+      "adulto": "**Experiência existente:** `unique-names`. Clique em Tempo para a nave voar na prévia. Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave. Sem palpite, pistas ou pergunta final."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "### Seção 2. Traga seus desenhos para o projeto",
+      "adulto": "### Seção 2. Traga seus desenhos para o projeto"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Tarefa / Zappy na página:** Agora traga os seus desenhos para o jogo! Adicione nave e asteroide aos materiais da cópia do seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
+      "adulto": "**Tarefa / Recado na página:** Agora traga os seus desenhos para o jogo. Adicione nave e asteroide aos materiais da cópia do seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Blocos na página:** video-trazer-artes → fala-trazer-artes.",
+      "adulto": "**Blocos na página:** video-trazer-artes → fala-trazer-artes."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "ID video-trazer-artes-avatar-01. Professora até “Nos cartões nave e asteroide, clique em Adicionar ao projeto e confira a marca no projeto nos dois. Depois feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Já trouxe os desenhos. Eles já vão aparecer?”. Retomada da professora: “Agora clique na prévia e toque na tecla Enter para começar uma partida.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.",
+      "adulto": "**Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "### Seção 3. Separe o quadro do tamanho no jogo",
+      "adulto": "### Seção 3. Separe o quadro do tamanho no jogo"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Tarefa / Zappy na página:** Sua vez! Mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Tarefa / Recado na página:** Sua vez: mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Blocos na página:** video-recorte → fala-recorte → experimento-recorte.",
+      "adulto": "**Blocos na página:** video-recorte → fala-recorte → experimento-recorte."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "ID video-recorte-avatar-01. Professora até “São esses dois quadros que vão se revezar na animação.”. Antes: Concluir o recorte correto de 32 e comparar os quadros 1 e 2. Dedé: “Posso deixar a nave maior no jogo sem mudar o recorte?”. Retomada da professora: “Agora eu mudo tamanho no jogo para 80.”. Depois: Mudar somente tamanho no jogo para 80 e apontar o recorte ainda em 32 por 32.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Experiência existente:** `sheet-vs-sprite`. Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32. Sem palpite, pistas ou pergunta final.",
+      "adulto": "**Experiência existente:** `sheet-vs-sprite`. Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32. Sem palpite, pistas ou pergunta final."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "### Seção 4. Use sua imagem no criador da nave",
+      "adulto": "### Seção 4. Use sua imagem no criador da nave"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Tarefa / Zappy na página:** Agora use a sua imagem no criador da nave! Troque o criador por um sprite com imagem, conservando o nome nave. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
+      "adulto": "**Tarefa / Recado na página:** Agora use a sua imagem no criador da nave. Troque o criador por um sprite com imagem, conservando o nome nave. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Blocos na página:** video-trocar-nave → fala-trocar-nave.",
+      "adulto": "**Blocos na página:** video-trocar-nave → fala-trocar-nave."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "ID video-trocar-nave-avatar-01. Professora até “Para isso, troque o criador da nave. Em Ao iniciar, encontre Criar nave e leia o x e o y dele, porque o bloco novo vai usar os mesmos. Depois deixe à vista um espaço livre da área de blocos. Abra Jogo 2D, Sprites, Criar e trocar aparência e arraste Criar sprite em x y largura altura com imagem até esse espaço livre. Preencha nome nave, x 400, y 410, largura 54, altura 54 e imagem nave. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “O bloco novo já está preenchido. E o antigo?”. Retomada da professora: “Agora clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "ID video-trocar-nave-avatar-02. Professora até “Agora clique na prévia e comece uma partida de novo. Olha só: a sua nave aparece, com os dois desenhos espremidos, porque o criador está usando a folha inteira, como na experiência. E as setas continuam movendo a nave, porque o nome continua nave, e é por esse nome que os controles e as colisões procuram o sprite.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Eles andam, mas ainda estão espremidos!”. Retomada da professora: “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, com nome nave, x 400, y 410, largura 54, altura 54 e imagem nave, abaixo de Preparar o jogo em tela cheia e com os blocos de baixo ligados.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "### Seção 5. Prepare o recorte da nave",
+      "adulto": "### Seção 5. Prepare o recorte da nave"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Tarefa / Zappy na página:** Agora prepare o recorte da sua nave! Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
+      "adulto": "**Tarefa / Recado na página:** Agora prepare o recorte da sua nave. Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Blocos na página:** video-folha-nave → fala-folha-nave.",
+      "adulto": "**Blocos na página:** video-folha-nave → fala-folha-nave."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "ID video-folha-nave-avatar-01. Professora até “Agora abra Jogo 2D, Sprites, Animação e pegue Carregar folha de quadros da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Que nome eu dou para essa folha?”. Retomada da professora: “No nome da folha, escreva folha-nave, um nome só dela, como na experiência da primeira parte desta fase.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "### Seção 6. Ligue a animação voando",
+      "adulto": "### Seção 6. Ligue a animação voando"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Tarefa / Zappy na página:** Agora ligue a animação voando! Anime nave com folha-nave e confira os dois quadros no jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
+      "adulto": "**Tarefa / Recado na página:** Agora ligue a animação voando. Anime nave com folha-nave e confira os dois quadros no jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Blocos na página:** video-animar-nave → fala-animar-nave.",
+      "adulto": "**Blocos na página:** video-animar-nave → fala-animar-nave."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "ID video-animar-nave-avatar-01. Professora até “do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo.”. Antes: Concluir a escolha de voando e mostrar os campos preenchidos, sem alterar os números. Dedé: “No Pinta era um e dois. Por que aqui é zero e um?”. Retomada da professora: “O Pinta mostra os desenhos como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1.”. Depois: Apontar 0 e 1 no bloco durante a explicação; depois testar movimento, tiro e animação.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.",
+      "adulto": "**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "### Seção 7. Envie o jogo com sua nave",
+      "adulto": "### Seção 7. Envie o jogo com sua nave"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Tarefa / Zappy na página:** Hora de enviar o seu jogo com a sua nave! Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
+      "adulto": "**Tarefa / Recado na página:** Hora de enviar o seu jogo com a sua nave. Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.",
+      "adulto": "**Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.",
+      "adulto": "**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "## Continuidade e produção",
+      "adulto": "## Continuidade e produção"
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "Os oito slugs e a chave de entrega `entrega-galeria-v6` são preservados. Aula 5 recebe duas artes; as demais recebem um trabalho. A galeria guarda a cópia enviada. Não criar workspace embutido nem aplicar projectChecks a um projeto externo.",
+      "adulto": "Os oito slugs e a chave de entrega `entrega-galeria-v6` são preservados. Aula 5 recebe duas artes; as demais recebem um trabalho. A galeria guarda a cópia enviada. Não criar workspace embutido nem aplicar projectChecks a um projeto externo."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "O programa de referência permanece em `qa/meu-jeito-projetos-qa.ts`; as etapas e artes de demonstração ficam em `qa/meu-jeito-etapas.ts`. Usar Programação e Jogo 2D já trazidos com o projeto de Nave Contra Asteroides. Não acrescentar HTML/CSS nem instalar extensão em um projeto vazio só para cumprir uma tarefa.",
+      "adulto": "O programa de referência permanece em `qa/meu-jeito-projetos-qa.ts`; as etapas e artes de demonstração ficam em `qa/meu-jeito-etapas.ts`. Usar Programação e Jogo 2D já trazidos com o projeto de Nave Contra Asteroides. Não acrescentar HTML/CSS nem instalar extensão em um projeto vazio só para cumprir uma tarefa."
+    },
+    {
+      "onde": "meu-jeito-aula-06.md",
+      "kids": "A ordem vídeo → Zappy → atividade não configura sozinha o bloqueio: conferir videoBeforeActivity no curso durante a importação. Gravar os clipes, vincular o PDF, testar com perfil de aluno e ensaiar com crianças antes de declarar o percurso validado.",
+      "adulto": "A ordem vídeo → recado → atividade não configura sozinha o bloqueio: conferir videoBeforeActivity no curso adulto durante a importação. Gravar os clipes adultos, vincular o PDF do caderno do curso quando existir, testar com um perfil adulto e ensaiar com adultos antes de declarar o percurso validado."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "# Roteiro de gravação · O Jogo do Meu Jeito · Aula 6",
+      "adulto": "# Roteiro de gravação · O Jogo do Meu Jeito · Aula 6"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Coloque sua nave animada no jogo**",
+      "adulto": "**Coloque sua nave animada no jogo**"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "Fonte: `qa/meu-jeito.conteudo.json`. Gerado por `qa/gerar-meu-jeito.ts`. Revise a fonte e regenere proposta, roteiro e manifesto juntos.",
+      "adulto": "Fonte: `qa/meu-jeito.conteudo.json`. Gerado por `qa/gerar-meu-jeito.ts`. Revise a fonte e regenere proposta, roteiro e manifesto juntos."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "Entrada: Cópia do jogo da aula 1 e duas artes animadas salvas no Pinta. Saída: Jogo com nave autoral animada e asteroides originais, mantendo as regras.",
+      "adulto": "Entrada: Cópia do jogo da aula 1 e duas artes animadas salvas no Pinta. Saída: Jogo com nave autoral animada e asteroides originais, mantendo as regras."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.",
+      "adulto": "Retomar o trabalho de quem faz a aula na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto na página e não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de \"Olha aqui:\", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.",
+      "adulto": "Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de \"Olha aqui:\", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "Toda fala é uma conversa contínua com quem está fazendo a fase (Diretrizes, seção 6, revisão de 06/10/2026). Três vozes: \"você\" para o que é da pessoa e para as ações, \"a gente\" para pensar junto e convidar, \"eu\" só quando o narrador demonstra. As frases se ligam umas às outras (\"por isso\", \"mas\", \"é que\", \"agora que\", \"ou seja\"; sem \"então\", que é o nome de uma parte do bloco Se), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"), um chamado por momento importante. A aplicação que vem logo depois de uma experiência começa pela retomada, uma ponte de até umas 50 palavras: primeiro o problema no trabalho da pessoa, quando há o que testar (\"Tá vendo?\" com o porquê), depois a lembrança (\"Lembra da experiência da parte anterior?\", com o resultado numa frase) e um anúncio só, colado ao primeiro passo. Depois do teste da montagem, a conferência vem uma vez, como caminho da correção (\"Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …\"). A ponte do Zappy começa convidando (\"Sua vez!\" depois de uma demonstração; \"Agora…!\" ou \"Hora de…!\" antes de uma aplicação) e termina na ação real de saída.",
+      "adulto": "Toda fala é uma conversa contínua com quem está fazendo a aula (Diretrizes, seção 6, revisão de 06/10/2026; tom adulto em DIRETRIZES-ADULTO.md). Três vozes: \"você\" para o que é da pessoa e para as ações, \"a gente\" para pensar junto e convidar, \"eu\" só quando o narrador demonstra. As frases se ligam umas às outras (\"por isso\", \"mas\", \"é que\", \"agora que\", \"ou seja\"; sem \"então\", que é o nome de uma parte do bloco Se), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Percebe?\"), um chamado por momento importante. A aplicação que vem logo depois de uma experiência começa pela retomada, uma ponte de até umas 50 palavras: primeiro o problema no trabalho da pessoa, quando há o que testar (\"Percebe?\" com o porquê), depois a lembrança (\"Lembra da experiência da seção anterior?\", com o resultado numa frase) e um anúncio só, colado ao primeiro passo. Depois do teste da montagem, a conferência vem uma vez, como caminho da correção (\"Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …\"). O recado da página começa convidando (\"Sua vez:\" depois de uma demonstração; \"Agora…\" ou \"Hora de…\" antes de uma aplicação) e termina na ação real de saída."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos títulos, a criança ouve e lê fase, parte e Mapa da Aventura, e os botões pelo nome novo (Próxima parte, Concluir fase, Enviar (1), Recebido!). Quem recebe o envio e responde os recados é a equipe. Aula, seção e caderno ficam só nas notas da equipe.",
+      "adulto": "Vocabulário da versão adulta (20/10/2026): na narração, no recado da página e nos títulos, a pessoa ouve e lê aula, seção e caderno do curso, e os botões pelo nome da plataforma adulta (Próxima seção, Concluir aula, Enviar ao professor (1), Trabalho recebido pelo professor). Quem recebe o envio e responde os recados é o professor."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "## Seção 1. Separe os nomes que os blocos procuram",
+      "adulto": "## Seção 1. Separe os nomes que os blocos procuram"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "### Clipe `video-nomes` · Separe os nomes que os blocos procuram",
+      "adulto": "### Clipe `video-nomes` · Separe os nomes que os blocos procuram"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.",
+      "adulto": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase do time, o Zappy de técnico, com apito, chamando \"nave!\", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda \"nave? qual das duas?\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase do time, um técnico com apito chamando \"nave!\", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda \"nave? qual das duas?\". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+      "adulto": "**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Professora:**",
+      "adulto": "**Professora:**"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Esta é uma experiência para a gente entender por que cada coisa do jogo precisa de um nome só dela.\n>\n> Olha aqui: o bloco de cima cria o sprite nave, e três blocos procuram esse nome: Mover nave, Desenhar nave e Ler nave. Quando eu clico em Tempo, a nave voa na prévia.\n>\n> Agora eu clico em Tirar este bloco. Tá vendo? Os três blocos ganham um ponto de exclamação, e o aviso diz que o nome nave ainda não foi criado neste jogo. É que os blocos procuram nave, e ninguém criou esse nome. Por isso, a prévia para na última versão que funcionava.”",
+      "adulto": "> “Esta é uma experiência para a gente entender por que cada coisa do jogo precisa de um nome só dela.\n>\n> Olha aqui: o bloco de cima cria o sprite nave, e três blocos procuram esse nome: Mover nave, Desenhar nave e Ler nave. Quando eu clico em Tempo, a nave voa na prévia.\n>\n> Agora eu clico em Tirar este bloco. Percebe? Os três blocos ganham um ponto de exclamação, e o aviso diz que o nome nave ainda não foi criado neste jogo. É que os blocos procuram nave, e ninguém criou esse nome. Por isso, a prévia para na última versão que funcionava.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**ID de edição:** `video-nomes-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Dedé (avatar):**",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Os três blocos reclamaram juntos!”",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir os testes de nome ausente e repetido e a comparação com os jogadores; manter o aviso de nome repetido visível.",
+      "adulto": "**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Concluir os testes de nome ausente e repetido e a comparação com os jogadores; manter o aviso de nome repetido visível."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Eu clico em Pôr de volta, e os avisos somem. Depois, em Nome do bloco de baixo, eu escolho nave. Repare: aparece outro aviso, dizendo que o nome nave já foi criado neste trecho, e o Estúdio pede um nome diferente. Isso acontece porque, com dois blocos criando o mesmo nome, os outros blocos não sabem qual procurar.\n>\n> Sabe quando dois jogadores do mesmo time têm o mesmo nome? Se o técnico chama esse nome, os dois olham. Por isso, cada um ganha um jeito próprio de ser chamado, como o sobrenome ou um apelido. No seu jogo, a nave e a folha são os dois jogadores: cada um precisa de um nome só dele.”",
+      "adulto": "> “Eu clico em Pôr de volta, e os avisos somem. Depois, em Nome do bloco de baixo, eu escolho nave. Repare: aparece outro aviso, dizendo que o nome nave já foi criado neste trecho, e o Estúdio pede um nome diferente. Isso acontece porque, com dois blocos criando o mesmo nome, os outros blocos não sabem qual procurar.\n>\n> Sabe quando dois jogadores do mesmo time têm o mesmo nome? Se o técnico chama esse nome, os dois olham. Por isso, cada um ganha um jeito próprio de ser chamado, como o sobrenome ou um apelido. No seu jogo, a nave e a folha são os dois jogadores: cada um precisa de um nome só dele.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**ID de edição:** `video-nomes-avatar-02`.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “A folha não pode se chamar nave também!”",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite.",
+      "adulto": "**Na tela:** Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Por isso, eu escolho folha-nave. Olha só: os avisos somem, e a nave volta a voar na prévia, porque a folha ganhou um nome só dela, e a nave continua com o nome nave.\n>\n> Daqui a pouco, no seu jogo, a folha da nave vai se chamar folha-nave, e o sprite continua com o nome nave.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
+      "adulto": "> “Ou seja, a folha não pode se chamar nave também. Por isso, eu escolho folha-nave. Olha só: os avisos somem, e a nave volta a voar na prévia, porque a folha ganhou um nome só dela, e a nave continua com o nome nave.\n>\n> Daqui a pouco, no seu jogo, a folha da nave vai se chamar folha-nave, e o sprite continua com o nome nave.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Sua vez! Tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Sua vez: tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "## Seção 2. Traga seus desenhos para o projeto",
+      "adulto": "## Seção 2. Traga seus desenhos para o projeto"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "### Clipe `video-trazer-artes` · Traga seus desenhos para o projeto",
+      "adulto": "### Clipe `video-trazer-artes` · Traga seus desenhos para o projeto"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.",
+      "adulto": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Direção geral do clipe:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Lembra da experiência da parte anterior? Os blocos achavam a nave pelo nome, por isso o nome precisava estar certinho. Agora a gente vai trazer os seus desenhos para o jogo, com os nomes que você deu no Pinta: nave e asteroide.\n>\n> Clique em Abrir meu Estúdio nesta parte. Em Meus Jogos, abra o cartão que você nomeou e enviou na fase 1. Depois abra Mais opções, Materiais e Imagens. Na janela Materiais do jogo, clique em Trazer do Pinta.\n>\n> Nos cartões nave e asteroide, clique em Adicionar ao projeto e confira a marca no projeto nos dois. Depois feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.”",
+      "adulto": "> “Lembra da experiência da seção anterior? Os blocos achavam a nave pelo nome, por isso o nome precisava estar certo. Agora a gente vai trazer os seus desenhos para o jogo, com os nomes que você deu no Pinta: nave e asteroide.\n>\n> Clique em Abrir meu Estúdio nesta seção. Em Meus Jogos, abra o cartão que você nomeou e enviou na aula 1. Depois abra Mais opções, Materiais e Imagens. Na janela Materiais do jogo, clique em Trazer do Pinta.\n>\n> Nos cartões nave e asteroide, clique em Adicionar ao projeto e confira a marca no projeto nos dois. Depois feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**ID de edição:** `video-trazer-artes-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Já trouxe os desenhos. Eles já vão aparecer?”",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": "**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Agora clique na prévia e toque na tecla Enter para começar uma partida. Tá vendo? Os desenhos ainda são os antigos. As suas imagens já estão nos materiais, mas nenhum bloco mandou o jogo usar essas imagens ainda. É isso que a gente vai fazer nas próximas partes.\n>\n> Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”",
+      "adulto": "> “Os desenhos já estão no projeto, mas será que já aparecem? Clique na prévia e aperte Enter para começar uma partida. Percebe? Os desenhos ainda são os antigos. As suas imagens já estão nos materiais, mas nenhum bloco mandou o jogo usar essas imagens ainda. É isso que a gente vai fazer nas próximas seções.\n>\n> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Agora traga os seus desenhos para o jogo! Adicione nave e asteroide aos materiais da cópia do seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Agora traga os seus desenhos para o jogo. Adicione nave e asteroide aos materiais da cópia do seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "## Seção 3. Separe o quadro do tamanho no jogo",
+      "adulto": "## Seção 3. Separe o quadro do tamanho no jogo"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "### Clipe `video-recorte` · Separe o quadro do tamanho no jogo",
+      "adulto": "### Clipe `video-recorte` · Separe o quadro do tamanho no jogo"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase dos adesivos, o Zappy destacando um adesivo da nave de uma cartela com duas naves, com a legenda \"um quadro de cada vez\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase dos adesivos, uma mão destacando um adesivo da nave de uma cartela com duas naves, com a legenda \"um quadro de cada vez\". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Na tela:** Concluir o recorte correto de 32 e comparar os quadros 1 e 2.",
+      "adulto": "**Na tela:** Concluir o recorte correto de 32 e comparar os quadros 1 e 2."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Esta é uma experiência para a gente entender o recorte, que é o jeito de o jogo pegar um desenho da folha.\n>\n> Olha aqui: a folha tem 64 por 32, com a nave do quadro 1 e a do quadro 2 lado a lado. O jogo ainda está vazio, porque eu ainda não escolhi a Largura do recorte.\n>\n> Quando eu coloco Largura do recorte em 64, o jogo mostra a folha inteira, com as duas naves espremidas num quadrado só. Com 16, aparece só metade de uma nave, esticada. E, com 32, olha só: aparece uma nave inteira, porque o recorte ficou do tamanho de um quadro da folha.\n>\n> Sabe uma cartela de adesivos? Para colar um adesivo, você destaca só aquele, do tamanho dele. Se pegar a cartela inteira, vêm todos juntos. Se cortar no meio, sai meio adesivo. A Largura do recorte é o tamanho do adesivo que o jogo destaca da folha.\n>\n> Com 32, eu escolho o Quadro 1, e o jogo mostra a nave com o fogo pequeno. Depois escolho o Quadro 2, e aparece a nave com o fogo grande. São esses dois quadros que vão se revezar na animação.”",
+      "adulto": "> “Esta é uma experiência para a gente entender o recorte, que é o jeito de o jogo pegar um desenho da folha.\n>\n> Olha aqui: a folha tem 64 por 32, com a nave do quadro 1 e a do quadro 2 lado a lado. O jogo ainda está vazio, porque eu ainda não escolhi a Largura do recorte.\n>\n> Quando eu coloco Largura do recorte em 64, o jogo mostra a folha inteira, com as duas naves espremidas num quadrado só. Com 16, aparece só metade de uma nave, esticada. E, com 32, olha só: aparece uma nave inteira, porque o recorte ficou do tamanho de um quadro da folha.\n>\n> Sabe uma cartela de adesivos? Para colar um adesivo, você destaca só aquele, do tamanho dele. Se pegar a cartela inteira, vêm todos juntos. Se cortar no meio, sai meio adesivo. A Largura do recorte é o tamanho do adesivo que o jogo destaca da folha.\n>\n> Com 32, eu escolho o Quadro 1, e o jogo mostra a nave com o fogo pequeno. Depois escolho o Quadro 2, e aparece a nave com o fogo grande. São esses dois quadros que vão se revezar na animação.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**ID de edição:** `video-recorte-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Posso deixar a nave maior no jogo sem mudar o recorte?”",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Mudar somente tamanho no jogo para 80 e apontar o recorte ainda em 32 por 32.",
+      "adulto": "**Na tela:** Mudar somente tamanho no jogo para 80 e apontar o recorte ainda em 32 por 32."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Agora eu mudo tamanho no jogo para 80. Repare: a nave do jogo fica maior, e o recorte continua 32 por 32. É que o tamanho no jogo é outra escolha, por isso ele não muda o recorte da folha.\n>\n> No seu jogo vai ser assim: o recorte da folha-nave fica 32 por 32, e o tamanho da nave na tela vai ser 54 por 54, no criador.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
+      "adulto": "> “E para deixar a nave maior no jogo sem mudar o recorte? Eu mudo tamanho no jogo para 80. Repare: a nave do jogo fica maior, e o recorte continua 32 por 32. É que o tamanho no jogo é outra escolha, por isso ele não muda o recorte da folha.\n>\n> No seu jogo vai ser assim: o recorte da folha-nave fica 32 por 32, e o tamanho da nave na tela vai ser 54 por 54, no criador.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Sua vez! Mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Sua vez: mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "## Seção 4. Use sua imagem no criador da nave",
+      "adulto": "## Seção 4. Use sua imagem no criador da nave"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "### Clipe `video-trocar-nave` · Use sua imagem no criador da nave",
+      "adulto": "### Clipe `video-trocar-nave` · Use sua imagem no criador da nave"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.",
+      "adulto": "**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Direção geral do clipe:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista: primeiro o teste, com o resultado que o Percebe? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Clique na prévia e comece uma partida. Tá vendo? A nave é a de antes, porque Criar nave ainda não usa a sua imagem. Lembra da experiência da parte anterior? Com o recorte em 64, apareciam as duas naves espremidas. Agora a gente vai pôr a sua folha no jogo!\n>\n> Para isso, troque o criador da nave. Em Ao iniciar, encontre Criar nave e leia o x e o y dele, porque o bloco novo vai usar os mesmos. Depois deixe à vista um espaço livre da área de blocos. Abra Jogo 2D, Sprites, Criar e trocar aparência e arraste Criar sprite em x y largura altura com imagem até esse espaço livre. Preencha nome nave, x 400, y 410, largura 54, altura 54 e imagem nave. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.”",
+      "adulto": "> “Clique na prévia e comece uma partida. Percebe? A nave é a de antes, porque Criar nave ainda não usa a sua imagem. Lembra da experiência da seção anterior? Com o recorte em 64, apareciam as duas naves espremidas. Agora a gente vai pôr a sua folha no jogo.\n>\n> Para isso, troque o criador da nave. Em Ao iniciar, encontre Criar nave e leia o x e o y dele, porque o bloco novo vai usar os mesmos. Depois deixe à vista um espaço livre da área de blocos. Abra Jogo 2D, Sprites, Criar e trocar aparência e arraste Criar sprite em x y largura altura com imagem até esse espaço livre. Preencha nome nave, x 400, y 410, largura 54, altura 54 e imagem nave. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**ID de edição:** `video-trocar-nave-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “O bloco novo já está preenchido. E o antigo?”",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+      "adulto": "**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Agora clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco. Depois encaixe o novo criador no lugar dele, abaixo de Preparar o jogo em tela cheia e acima dos grupos. Se apagar outra peça sem querer, use Ctrl+Z para desfazer.\n>\n> Agora clique na prévia e comece uma partida de novo. Olha só: a sua nave aparece, com os dois desenhos espremidos, porque o criador está usando a folha inteira, como na experiência. E as setas continuam movendo a nave, porque o nome continua nave, e é por esse nome que os controles e as colisões procuram o sprite.”",
+      "adulto": "> “Com o bloco novo preenchido, falta tirar o antigo. Clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco. Depois encaixe o novo criador no lugar dele, abaixo de Preparar o jogo em tela cheia e acima dos grupos. Se apagar outra peça sem querer, use Ctrl+Z para desfazer.\n>\n> Agora clique na prévia e comece uma partida de novo. Olha só: a sua nave aparece, com os dois desenhos espremidos, porque o criador está usando a folha inteira, como na experiência. E as setas continuam movendo a nave, porque o nome continua nave, e é por esse nome que os controles e as colisões procuram o sprite.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**ID de edição:** `video-trocar-nave-avatar-02`.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Eles andam, mas ainda estão espremidos!”",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, com nome nave, x 400, y 410, largura 54, altura 54 e imagem nave, abaixo de Preparar o jogo em tela cheia e com os blocos de baixo ligados. Depois de corrigir, teste de novo. Na próxima parte, a gente vai recortar cada quadro.\n>\n> Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”",
+      "adulto": "> “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, com nome nave, x 400, y 410, largura 54, altura 54 e imagem nave, abaixo de Preparar o jogo em tela cheia e com os blocos de baixo ligados. Depois de corrigir, teste de novo. Na próxima seção, a gente vai recortar cada quadro.\n>\n> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Agora use a sua imagem no criador da nave! Troque o criador por um sprite com imagem, conservando o nome nave. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Agora use a sua imagem no criador da nave. Troque o criador por um sprite com imagem, conservando o nome nave. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "## Seção 5. Prepare o recorte da nave",
+      "adulto": "## Seção 5. Prepare o recorte da nave"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "### Clipe `video-folha-nave` · Prepare o recorte da nave",
+      "adulto": "### Clipe `video-folha-nave` · Prepare o recorte da nave"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Clique na prévia e comece uma partida. Tá vendo? Aparecem as duas naves espremidas, porque o criador usa a folha inteira. Lembra da experiência da terceira parte desta fase? Com o recorte de 32, apareceu uma nave inteira. Agora a gente vai recortar a folha da sua nave!\n>\n> A folha vai entrar no fim de Ao iniciar, por isso deixe primeiro esse lugar à vista. Se precisar, arraste um espaço vazio da área de blocos até encontrar o último bloco.\n>\n> Agora abra Jogo 2D, Sprites, Animação e pegue Carregar folha de quadros da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali.”",
+      "adulto": "> “Clique na prévia e comece uma partida. Percebe? Aparecem as duas naves espremidas, porque o criador usa a folha inteira. Lembra da experiência da terceira seção desta aula? Com o recorte de 32, apareceu uma nave inteira. Agora a gente vai recortar a folha da sua nave.\n>\n> A folha vai entrar no fim de Ao iniciar, por isso deixe primeiro esse lugar à vista. Se precisar, arraste um espaço vazio da área de blocos até encontrar o último bloco.\n>\n> Agora abra Jogo 2D, Sprites, Animação e pegue Carregar folha de quadros da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**ID de edição:** `video-folha-nave-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Que nome eu dou para essa folha?”",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “No nome da folha, escreva folha-nave, um nome só dela, como na experiência da primeira parte desta fase. Na imagem, escolha nave e deixe largura e altura dos quadros em 32.\n>\n> Confira o nome folha-nave e o recorte 32 por 32. Não troque o tamanho 54 por 54 no criador, porque aquele é o tamanho da nave na tela, e não o do recorte. Com isso, a folha está preparada. Para a nave animar, ainda falta ligar essa folha ao sprite, e é isso que você vai fazer na próxima parte.\n>\n> Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”",
+      "adulto": "> “No nome da folha, escreva folha-nave, um nome só dela, como na experiência da primeira seção desta aula. Na imagem, escolha nave e deixe largura e altura dos quadros em 32.\n>\n> Confira o nome folha-nave e o recorte 32 por 32. Não troque o tamanho 54 por 54 no criador, porque aquele é o tamanho da nave na tela, e não o do recorte. Com isso, a folha está preparada. Para a nave animar, ainda falta ligar essa folha ao sprite, e é isso que você vai fazer na próxima seção.\n>\n> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Agora prepare o recorte da sua nave! Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Agora prepare o recorte da sua nave. Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "## Seção 6. Ligue a animação voando",
+      "adulto": "## Seção 6. Ligue a animação voando"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "### Clipe `video-animar-nave` · Ligue a animação voando",
+      "adulto": "### Clipe `video-animar-nave` · Ligue a animação voando"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Direção geral do clipe:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Na tela:** Concluir a escolha de voando e mostrar os campos preenchidos, sem alterar os números.",
+      "adulto": "**Na tela:** Concluir a escolha de voando e mostrar os campos preenchidos, sem alterar os números."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Agora a gente vai mandar o jogo animar a sua nave. A animação vai logo abaixo de Carregar folha de quadros folha-nave, no fim de Ao iniciar, porque a folha precisa estar carregada antes de a nave usar os quadros dela. Por isso, deixe esse bloco à vista.\n>\n> Em Jogo 2D, Sprites, Animação, pegue Animar sprite com a folha na animação, do quadro ao a fps e encaixe logo abaixo de Carregar folha de quadros folha-nave.\n>\n> No sprite, escolha nave, e, na folha, escolha folha-nave. Depois clique em Escolher na animação e selecione voando. Repare nos valores que chegam preenchidos: do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo.”",
+      "adulto": "> “Agora a gente vai mandar o jogo animar a sua nave. A animação vai logo abaixo de Carregar folha de quadros folha-nave, no fim de Ao iniciar, porque a folha precisa estar carregada antes de a nave usar os quadros dela. Por isso, deixe esse bloco à vista.\n>\n> Em Jogo 2D, Sprites, Animação, pegue Animar sprite com a folha na animação, do quadro ao a fps e encaixe logo abaixo de Carregar folha de quadros folha-nave.\n>\n> No sprite, escolha nave, e, na folha, escolha folha-nave. Depois clique em Escolher na animação e selecione voando. Repare nos valores que chegam preenchidos: do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**ID de edição:** `video-animar-nave-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “No Pinta era um e dois. Por que aqui é zero e um?”",
+      "adulto": ""
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Apontar 0 e 1 no bloco durante a explicação; depois testar movimento, tiro e animação.",
+      "adulto": "**Na tela:** Apontar 0 e 1 no bloco durante a explicação; depois testar movimento, tiro e animação."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “O Pinta mostra os desenhos como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1.\n>\n> Agora clique na prévia e comece a partida com Enter. Mova a nave com as setas e atire com Espaço. Olha só: agora a nave aparece inteira, com o fogo pulsando.\n>\n> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite nave com a folha folha-nave na animação voando, do quadro 0 ao 1, a 8 fps, logo abaixo de Carregar folha de quadros folha-nave. Depois de corrigir, teste de novo. E, se voando não aparecer na lista, confira se a animação ficou guardada no Pinta e se a imagem foi trazida ao projeto antes de escolher de novo.\n>\n> Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”",
+      "adulto": "> “No Pinta, os desenhos aparecem como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1.\n>\n> Agora clique na prévia e comece a partida com Enter. Mova a nave com as setas e atire com a barra de espaço. Olha só: agora a nave aparece inteira, com o fogo pulsando.\n>\n> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite nave com a folha folha-nave na animação voando, do quadro 0 ao 1, a 8 fps, logo abaixo de Carregar folha de quadros folha-nave. Depois de corrigir, teste de novo. E, se voando não aparecer na lista, confira se a animação ficou guardada no Pinta e se a imagem foi trazida ao projeto antes de escolher de novo.\n>\n> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Agora ligue a animação voando! Anime nave com folha-nave e confira os dois quadros no jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Agora ligue a animação voando. Anime nave com folha-nave e confira os dois quadros no jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "## Seção 7. Envie o jogo com sua nave",
+      "adulto": "## Seção 7. Envie o jogo com sua nave"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "### Clipe `video-entrega` · Envie o jogo com sua nave",
+      "adulto": "### Clipe `video-entrega` · Envie o jogo com sua nave"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.",
+      "adulto": "**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada."
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "> “Hora de enviar o seu jogo com a sua nave! Antes, confira no seu jogo: a nave aparece inteira, com a sua imagem e a animação voando; as setas e o tiro funcionam; e as pedras continuam as originais por enquanto. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da fase só mostra o que já está guardado na sua conta.\n>\n> Agora volte para a aba da fase e clique em Escolher no Estúdio. Na janela Minhas criações do Estúdio, selecione o cartão do seu jogo. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.\n>\n> Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!\n>\n> Esse envio guarda uma cópia deste momento, e você continua criando no Estúdio. Por último, clique em Concluir fase.”",
+      "adulto": "> “Hora de enviar o seu jogo com a sua nave. Antes, confira no seu jogo: a nave aparece inteira, com a sua imagem e a animação voando; as setas e o tiro funcionam; e as pedras continuam as originais por enquanto. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da aula só mostra o que já está guardado na sua conta.\n>\n> Agora volte para a aba da aula e clique em Escolher no Estúdio. Na janela Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se o seu trabalho não aparecer, confira se ele ficou guardado na sua conta e clique em Atualizar galeria.\n>\n> Se quiser, escreva uma mensagem no campo Recado para o professor. Depois clique em Enviar ao professor (1) e espere aparecer Trabalho recebido pelo professor.\n>\n> Esse envio guarda uma cópia deste momento, e você continua criando no Estúdio. Por último, clique em Concluir aula.”"
+    },
+    {
+      "onde": "meu-jeito-aula-06.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Hora de enviar o seu jogo com a sua nave! Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
+      "adulto": "**Recado na página (não gravar):** Hora de enviar o seu jogo com a sua nave. Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Coloque sua nave animada no jogo",
+      "adulto": "Coloque sua nave animada no jogo"
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Título: Separe os nomes que os blocos procuram\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase do time, o Zappy de técnico, com apito, chamando \"nave!\", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda \"nave? qual das duas?\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-nomes-avatar-01. Professora até “Agora eu clico em Tirar este bloco. Tá vendo? Os três blocos ganham um ponto de exclamação, e o aviso diz que o nome nave ainda não foi criado neste jogo. É que os blocos procuram nave, e ninguém criou esse nome. Por isso, a prévia para na última versão que funcionava.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Os três blocos reclamaram juntos!”. Retomada da professora: “Eu clico em Pôr de volta, e os avisos somem.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-nomes-avatar-02. Professora até “cada um precisa de um nome só dele.”. Antes: Concluir os testes de nome ausente e repetido e a comparação com os jogadores; manter o aviso de nome repetido visível. Dedé: “A folha não pode se chamar nave também!”. Retomada da professora: “Por isso, eu escolho folha-nave.”. Depois: Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": "Título: Separe os nomes que os blocos procuram\n\nProduzir nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase do time, um técnico com apito chamando \"nave!\", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda \"nave? qual das duas?\". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Sua vez! Tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima parte.",
+      "adulto": "Sua vez: tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Separe os nomes que os blocos procuram",
+      "adulto": "Separe os nomes que os blocos procuram"
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Clique em Tempo para a nave voar na prévia. Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.",
+      "adulto": "Clique em Tempo para a nave voar na prévia. Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Título: Traga seus desenhos para o projeto\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-trazer-artes-avatar-01. Professora até “Nos cartões nave e asteroide, clique em Adicionar ao projeto e confira a marca no projeto nos dois. Depois feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Já trouxe os desenhos. Eles já vão aparecer?”. Retomada da professora: “Agora clique na prévia e toque na tecla Enter para começar uma partida.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": "Título: Traga seus desenhos para o projeto\n\nProduzir nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Agora traga os seus desenhos para o jogo! Adicione nave e asteroide aos materiais da cópia do seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
+      "adulto": "Agora traga os seus desenhos para o jogo. Adicione nave e asteroide aos materiais da cópia do seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Título: Separe o quadro do tamanho no jogo\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase dos adesivos, o Zappy destacando um adesivo da nave de uma cartela com duas naves, com a legenda \"um quadro de cada vez\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-recorte-avatar-01. Professora até “São esses dois quadros que vão se revezar na animação.”. Antes: Concluir o recorte correto de 32 e comparar os quadros 1 e 2. Dedé: “Posso deixar a nave maior no jogo sem mudar o recorte?”. Retomada da professora: “Agora eu mudo tamanho no jogo para 80.”. Depois: Mudar somente tamanho no jogo para 80 e apontar o recorte ainda em 32 por 32.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": "Título: Separe o quadro do tamanho no jogo\n\nProduzir nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase dos adesivos, uma mão destacando um adesivo da nave de uma cartela com duas naves, com a legenda \"um quadro de cada vez\". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Sua vez! Mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima parte.",
+      "adulto": "Sua vez: mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Separe o quadro do tamanho no jogo",
+      "adulto": "Separe o quadro do tamanho no jogo"
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32.",
+      "adulto": "Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Título: Use sua imagem no criador da nave\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-trocar-nave-avatar-01. Professora até “Para isso, troque o criador da nave. Em Ao iniciar, encontre Criar nave e leia o x e o y dele, porque o bloco novo vai usar os mesmos. Depois deixe à vista um espaço livre da área de blocos. Abra Jogo 2D, Sprites, Criar e trocar aparência e arraste Criar sprite em x y largura altura com imagem até esse espaço livre. Preencha nome nave, x 400, y 410, largura 54, altura 54 e imagem nave. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “O bloco novo já está preenchido. E o antigo?”. Retomada da professora: “Agora clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-trocar-nave-avatar-02. Professora até “Agora clique na prévia e comece uma partida de novo. Olha só: a sua nave aparece, com os dois desenhos espremidos, porque o criador está usando a folha inteira, como na experiência. E as setas continuam movendo a nave, porque o nome continua nave, e é por esse nome que os controles e as colisões procuram o sprite.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Eles andam, mas ainda estão espremidos!”. Retomada da professora: “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, com nome nave, x 400, y 410, largura 54, altura 54 e imagem nave, abaixo de Preparar o jogo em tela cheia e com os blocos de baixo ligados.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": "Título: Use sua imagem no criador da nave\n\nProduzir nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista: primeiro o teste, com o resultado que o Percebe? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Agora use a sua imagem no criador da nave! Troque o criador por um sprite com imagem, conservando o nome nave. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
+      "adulto": "Agora use a sua imagem no criador da nave. Troque o criador por um sprite com imagem, conservando o nome nave. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Título: Prepare o recorte da nave\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-folha-nave-avatar-01. Professora até “Agora abra Jogo 2D, Sprites, Animação e pegue Carregar folha de quadros da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Que nome eu dou para essa folha?”. Retomada da professora: “No nome da folha, escreva folha-nave, um nome só dela, como na experiência da primeira parte desta fase.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": "Título: Prepare o recorte da nave\n\nProduzir nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista: primeiro o teste, com o resultado que o Percebe? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Agora prepare o recorte da sua nave! Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
+      "adulto": "Agora prepare o recorte da sua nave. Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Título: Ligue a animação voando\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-animar-nave-avatar-01. Professora até “do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo.”. Antes: Concluir a escolha de voando e mostrar os campos preenchidos, sem alterar os números. Dedé: “No Pinta era um e dois. Por que aqui é zero e um?”. Retomada da professora: “O Pinta mostra os desenhos como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1.”. Depois: Apontar 0 e 1 no bloco durante a explicação; depois testar movimento, tiro e animação.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": "Título: Ligue a animação voando\n\nProduzir nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Agora ligue a animação voando! Anime nave com folha-nave e confira os dois quadros no jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
+      "adulto": "Agora ligue a animação voando. Anime nave com folha-nave e confira os dois quadros no jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Título: Envie o jogo com sua nave\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": "Título: Envie o jogo com sua nave\n\nProduzir nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Hora de enviar o seu jogo com a sua nave! Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
+      "adulto": "Hora de enviar o seu jogo com a sua nave. Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula."
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Traga seus desenhos para o projeto",
+      "adulto": "Traga seus desenhos para o projeto"
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Use sua imagem no criador da nave",
+      "adulto": "Use sua imagem no criador da nave"
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Prepare o recorte da nave",
+      "adulto": "Prepare o recorte da nave"
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Ligue a animação voando",
+      "adulto": "Ligue a animação voando"
+    },
+    {
+      "onde": "meu-jeito-aula-06.manifesto.json",
+      "kids": "Envie o jogo com sua nave",
+      "adulto": "Envie o jogo com sua nave"
+    }
+  ]
+}

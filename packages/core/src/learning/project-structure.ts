@@ -2,6 +2,7 @@ import { DomainError } from '../errors'
 import { isExecutionRule } from './project-execution'
 import {
   isProjectBlockPattern,
+  normalizeProjectFieldText,
   type ProjectBlockPattern,
   type ProjectFieldRange,
   type SectionStructureRule,
@@ -126,9 +127,15 @@ function matchesBlock(
       Object.entries(pattern.fieldRanges ?? {}).every(
         ([key, range]) => Object.hasOwn(fields, key) && inRange(fields[key], range),
       ) &&
-      Object.keys(pattern.fieldText ?? {}).every((key) => {
+      Object.entries(pattern.fieldText ?? {}).every(([key, criterion]) => {
         const value = fields[key]
-        return Object.hasOwn(fields, key) && typeof value === 'string' && value.trim().length > 0
+        if (!Object.hasOwn(fields, key) || typeof value !== 'string' || value.trim().length === 0)
+          return false
+        if (!criterion.containsAll) return true
+        const words = ` ${normalizeProjectFieldText(value)} `
+        return criterion.containsAll.every((group) =>
+          group.some((phrase) => words.includes(` ${normalizeProjectFieldText(phrase)} `)),
+        )
       }) &&
       Object.entries(pattern.inputs ?? {}).every(([key, value]) => {
         const actual = literal(child(inputs[key]))

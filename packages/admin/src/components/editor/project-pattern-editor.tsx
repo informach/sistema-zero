@@ -33,7 +33,11 @@ export function projectFieldConstraintText(
       bounds.push(`${range.maxExclusive ? 'menor que' : 'menor ou igual a'} ${range.max}`)
     return `Número ${bounds.join(' e ')}`
   }
-  return pattern.fieldText?.[name] ? 'Texto não vazio' : null
+  const text = pattern.fieldText?.[name]
+  if (!text) return null
+  return text.containsAll
+    ? `Texto não vazio; termos exigidos: ${text.containsAll.map((group) => `(${group.join(' OU ')})`).join(' E ')}`
+    : 'Texto não vazio'
 }
 
 function inputLabel(name: string) {

@@ -1,6 +1,6 @@
 {
   "component": "packages/community-kids/src/components/kids/course-trail.tsx",
-  "moduleSource": "docs/aulas-interativas/nave-contra-asteroides/modulos.md",
+  "moduleSource": "docs/aulas-interativas/kids/nave-contra-asteroides/modulos.md",
   "lessonSource": "docs/aulas-interativas-tecnico/qa/nave-contra-asteroides.conteudo.json",
   "mode": "Componente real renderizado com conteúdo do curso e progresso inicial de demonstração. Não é conta real; não comprova publicação no servidor.",
   "course": {

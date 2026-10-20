@@ -24,7 +24,7 @@
 
 **Files:**
 - Read: five `roteiro-aula-diaN-desafio-primeiro-jogo.md` files in the external source directory
-- Read: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-{1,2,3,4,5}.roteiro.md`
+- Read: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-{1,2,3,4,5}.roteiro.md`
 - Read: matching analyses and manifests
 
 **Interfaces:** Produces a per-day comparison of first-use context, analogy, Studio action and any old statement that must be corrected.
@@ -36,9 +36,9 @@
 ### Task 2: Repair Day 1's first-contact explanations
 
 **Files:**
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md`
-- Modify if needed: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.md`
-- Modify if needed: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md`
+- Modify if needed: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.md`
+- Modify if needed: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
 
 **Interfaces:** Produces a Section 2 that names and locates the Studio's two project areas before demonstrating a one-time action versus a repeated action.
 
@@ -50,7 +50,7 @@
 ### Task 3: Restore Days 2–3's narrative foundations
 
 **Files:**
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-{2,3}.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-{2,3}.roteiro.md`
 - Modify if needed: matching `.md` and `.manifesto.json`
 
 **Interfaces:** Day 2 introduces one nave versus many tiros before group, then event/position/velocity/cleanup; Day 3 reuses group before clock, random spawning and pair-specific collision.
@@ -63,7 +63,7 @@
 ### Task 4: Restore Days 4–5's narrative foundations
 
 **Files:**
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-{4,5}.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-{4,5}.roteiro.md`
 - Modify if needed: matching `.md` and `.manifesto.json`
 
 **Interfaces:** Day 4 distinguishes storing, incrementing and showing, then hearts/protection. Day 5 distinguishes fixed target, four screens, playable state, end states and restart.

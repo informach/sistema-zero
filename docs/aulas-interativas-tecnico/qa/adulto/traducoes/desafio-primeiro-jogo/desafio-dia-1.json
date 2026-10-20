@@ -1,0 +1,951 @@
+{
+  "curso": "desafio-primeiro-jogo",
+  "grupo": "desafio-dia-1",
+  "trechos": [
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "# A Chave do Farol · Dia 1 · O personagem ganha movimento",
+      "adulto": "# A Chave do Farol · Dia 1 · O personagem ganha movimento"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. andar: entrada sem movimento e solução que anda sem borda. borda: entrada que já anda e solução com limite. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.",
+      "adulto": "**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. andar: entrada sem movimento e solução que anda sem borda. borda: entrada que já anda e solução com limite. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Não informa gravação, publicação nem ensaio com adultos."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "## Resumo",
+      "adulto": "## Resumo"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "- Estado de entrada: primeiro contato com a aventura. No projeto, cenário, sprites, desenho por quadro e comportamento do barco preparados; sem controles nem movimento.\n- Vitória do dia: conhecer o jogo que vai programar, saber onde está o caderno e fazer o personagem andar em quatro direções sem sair da tela.\n- Seções: 6. Jogo pronto e caderno, como na Aula 1 do Cadê Todo Mundo?. Depois, dois pares de experiência e montagem: a cada quadro e limite da tela.\n- Clipes: 6.",
+      "adulto": "- Estado de entrada: primeiro contato com o jogo. No projeto, cenário, sprites, desenho por quadro e comportamento do barco preparados; sem controles nem movimento.\n- Vitória do dia: conhecer o jogo que vai programar, saber onde está o caderno e fazer o personagem andar em quatro direções sem sair da tela.\n- Seções: 6. Jogo pronto e caderno, como na Aula 1 do Cadê Todo Mundo?. Depois, dois pares de experiência e montagem: a cada quadro e limite da tela.\n- Clipes: 6."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Decisões de 05/10/2026:** uma ideia por seção, e cada conceito novo ganha uma experiência antes de virar bloco. A primeira versão do Dia 1 juntava controles, movimento a cada quadro, velocidade, limite e ordem num único vídeo de 5 a 6 minutos. Toda aula também termina numa ação prática. As duas seções da antiga aula de introdução (`boas-vindas`) passaram a abrir o Dia 1. Assim, o primeiro dia já termina com uma construção enviada. Essas duas seções mantiveram blocos e critérios; mudaram a aula em que ficam e a saída do caderno, que agora é **Próxima parte**. A divisão em ideias criou as outras seções, hoje quatro (`quadro`, `andar`, `limite` e `borda`, depois da retirada de `tanto` e `velocidade` registrada abaixo), e o critério intermediário `movimentoSemBorda`.",
+      "adulto": "**Decisões de 05/10/2026:** uma ideia por seção, e cada conceito novo ganha uma experiência antes de virar bloco. A primeira versão do Dia 1 juntava controles, movimento a cada quadro, velocidade, limite e ordem num único vídeo de 5 a 6 minutos. Toda aula também termina numa ação prática. As duas seções da antiga aula de introdução (`boas-vindas`) passaram a abrir o Dia 1. Assim, o primeiro dia já termina com uma construção enviada. Essas duas seções mantiveram blocos e critérios; mudaram a aula em que ficam e a saída do caderno, que agora é **Próxima seção**. A divisão em ideias criou as outras seções, hoje quatro (`quadro`, `andar`, `limite` e `borda`, depois da retirada de `tanto` e `velocidade` registrada abaixo), e o critério intermediário `movimentoSemBorda`."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"); as pontes do Zappy começam convidando (\"Sua vez!\", \"Hora de…\"). O caderno é apresentado como escolha: ler na aula ou baixar para guardar. Cada fala virou uma conversa contínua, com o porquê de cada resultado (as experiências ficaram um pouco mais longas). Saiu da montagem a frase solta \"O cenário e os desenhos já estão preparados\": o que vem pronto só entra na fala quando ajuda a ação, como os blocos que já estão em Ao iniciar. Essa revisão de fala antecedeu a retirada das seções de velocidade registrada abaixo.",
+      "adulto": "**Revisão de 06/10/2026:** todas as falas conversam com quem faz a aula e chamam a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Percebe?\"); os recados da página começam convidando (\"Sua vez:\", \"Hora de…\"). O caderno é apresentado como escolha: ler na aula ou baixar para guardar. Cada fala virou uma conversa contínua, com o porquê de cada resultado (as experiências ficaram um pouco mais longas). Saiu da montagem a frase solta \"O cenário e os desenhos já estão preparados\": o que vem pronto só entra na fala quando ajuda a ação, como os blocos que já estão em Ao iniciar. Essa revisão de fala antecedeu a retirada das seções de velocidade registrada abaixo."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Vocabulário da aventura, 06/10/2026:** no que a criança vê e ouve, aula virou fase, seção virou parte, o caderno virou Mapa da Aventura (a seção 2 se chama **Seu Mapa da Aventura**, e o material, **Mapa da Aventura: A Chave do Farol**) e professor virou equipe. As falas citam **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar meu projeto** e **Concluir fase**. Chaves, seções e critérios não mudaram. Na mesma noite, o botão de envio passou a dizer o que a criança envia (**Enviar meu projeto**), e quem recebe e responde passou a ser a equipe; o tutorial de ajuda virou **Como pedir ajuda à equipe**.",
+      "adulto": "**Vocabulário da versão adulta:** a tela adulta diz aula, seção, caderno do curso e professor. A seção 2 se chama **Seu caderno do curso**, e o material, **Caderno do curso: A Chave do Farol**. As falas citam **Próxima seção**, **Verificar esta etapa**, **Objetivo da etapa cumprido!**, **Enviar para o professor** e **Concluir aula**. Chaves, seções e critérios são os mesmos do kids. Quem recebe e responde o envio é o professor; o tutorial de ajuda é **Como pedir ajuda sem sair da aula**."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Full review de 06/10/2026:** \"então\" saiu de todas as falas como palavra de ligação (no Farol inteiro ele é o nome de um espaço do bloco Se); no lugar ficaram \"por isso\" ou duas frases. Três rótulos da ajuda da seção 2 não eram títulos de tutoriais que existem; agora os links usam exatamente os títulos de `docs/como-fazer/como-fazer.json`: **Como abrir o Mapa da Aventura e os materiais**, **Como abrir uma fase e trocar de parte**, **Como dar mais espaço ao jogo e à experiência**, **Como mostrar o menu e a lista de fases**, **Como continuar uma fase** e **Como pedir ajuda à equipe**. As pontes das experiências terminam em \"Quando terminar, clique em Próxima parte.\". Na experiência do quadro, \"Olha a regra aqui embaixo\" virou \"Olha a regra do movimento\", porque a posição muda com o tamanho da tela. Essa revisão de fala antecedeu a retirada das seções de velocidade registrada abaixo.",
+      "adulto": "**Full review de 06/10/2026:** \"então\" saiu de todas as falas como palavra de ligação (no Farol inteiro ele é o nome de um espaço do bloco Se); no lugar ficaram \"por isso\" ou duas frases. Os links da ajuda da seção 2 usam exatamente os títulos de `docs/como-fazer-adulto/como-fazer.json`: **Como baixar os materiais da aula**, **Como abrir uma aula e passar de seção**, **Como usar o Estúdio dentro da aula**, **Como andar pelo menu do alto**, **Como continuar o seu curso de onde parou** e **Como pedir ajuda sem sair da aula**. Os recados das experiências terminam em \"Quando terminar, clique em Próxima seção.\". Na experiência do quadro, \"Olha a regra aqui embaixo\" virou \"Olha a regra do movimento\", porque a posição muda com o tamanho da tela. Essa revisão de fala antecedeu a retirada das seções de velocidade registrada abaixo."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Personalização ampliada, 06/10/2026:** as seções `tanto` e `velocidade` foram retiradas por decisão do responsável. Seus vídeos, pontes e experiência estão em `retireBlockKeys`. A montagem manda manter a velocidade em 3, sem convite para escolher outro valor. A avaliação aceita outros valores coerentes com a direção pedida. A personalização se concentra no Dia 3: visuais, avisos e lugar da chave. As demais chaves e o progresso são preservados.",
+      "adulto": "**Personalização ampliada, 06/10/2026:** as seções `tanto` e `velocidade` foram retiradas por decisão do responsável. Seus vídeos, pontes e experiência estão em `retireBlockKeys`. A montagem manda manter a velocidade em 3, sem convite para escolher outro valor. A avaliação aceita outros valores coerentes com a direção pedida. A personalização se concentra no Dia 3: visuais, avisos e lugar da chave. As demais chaves e o progresso são preservados."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Revisão antes da gravação, 13/10/2026:** a fala diz o que chega no bloco e onde clicar (**Ativar controles clássicos** chega com **automáticos no celular**; **Mover sprite** e **Manter o sprite** chegam com **heroi**). A procura de **Enquanto estiver rodando** ganhou o socorro de arrastar um espaço vazio, e a área vem antes do bloco. As retomadas das partes 4 e 6 começam por um gesto da criança que mostra o que falta, e o fim do dia reconhece a conquista depois do envio. Na experiência do quadro, o vídeo aponta o **quadro** passando de 0 para 1 e o **+3** embaixo do personagem, e as descobertas dizem \"personagem\" (a palavra sprite só é explicada na parte 4). Na do limite, a comparação da janela explica a faixa **fora da tela** que a cena desenha, e o vídeo aponta na regra **Manter o sprite personagem dentro da tela** logo abaixo do bloco que move. No jogo pronto, o vídeo aponta o aviso do alto da tela. As listas de conferência ficaram curtas, as pontes das partes 4 e 6 terminam na saída e o critério das direções diz qual bloco usar. O roteiro ganhou as notas de gravação (aba nova depois do deploy, experiência sem progresso, envio sem envio anterior, selo **Guardado na sua conta** só quando aparece). As durações foram medidas de novo e subiram, sem acelerar.",
+      "adulto": "**Revisão antes da gravação, 13/10/2026:** a fala diz o que chega no bloco e onde clicar (**Ativar controles clássicos** chega com **automáticos no celular**; **Mover sprite** e **Manter o sprite** chegam com **heroi**). A procura de **Enquanto estiver rodando** ganhou o socorro de arrastar um espaço vazio, e a área vem antes do bloco. As retomadas das seções 4 e 6 começam por um gesto de quem faz a aula que mostra o que falta, e o fim do dia reconhece o resultado depois do envio. Na experiência do quadro, o vídeo aponta o **quadro** passando de 0 para 1 e o **+3** embaixo do personagem, e as descobertas dizem \"personagem\" (a palavra sprite só é explicada na seção 4). Na do limite, a comparação da janela explica a faixa **fora da tela** que a cena desenha, e o vídeo aponta na regra **Manter o sprite personagem dentro da tela** logo abaixo do bloco que move. No jogo pronto, o vídeo aponta o aviso do alto da tela. As listas de conferência ficaram curtas, os recados das seções 4 e 6 terminam na saída e o critério das direções diz qual bloco usar. O roteiro ganhou as notas de gravação (aba nova depois do deploy, experiência sem progresso, envio sem envio anterior, selo **Salvo na sua conta** só quando aparece). As durações foram medidas de novo e subiram, sem acelerar."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "## Vozes e produção · 10/10/2026",
+      "adulto": "## Vozes e gravação"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Debinha** participa em 8 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-1.roteiro.md) identifica **Professora**, **Debinha (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.",
+      "adulto": "Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "O vídeo do Mapa da Aventura continua só com a professora. As participações ajudam a descobrir os controles, a repetição dos quadros e o limite da tela.",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "| Entrada | Fala de Debinha |\n| --- | --- |\n| F1P1-D01 | “E como eu levo o personagem até a chave?” |\n| F1P3-D01 | “E se eu clicar em Rodar?” |\n| F1P4-D01 | “As setas apareceram, mas ele ainda não anda!” |\n| F1P5-D01 | “Como eu faço ele parar na borda?” |\n| F1P6-D01 | “E onde eu coloco esse limite?” |",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "As três entradas da revisão de ritmo (F1P4-R01, F1P4-R02 e F1P6-R01) estão na tabela do fim desta proposta. Na ordem de corte da parte 4: F1P4-R01, F1P4-D01, F1P4-R02.",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela foram revistas em 10/10/2026 com as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md#chave-do-farol).",
+      "adulto": "As durações da tabela cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Manter o passo a passo completo, sem cortes durante um arraste."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "## Triagem dos conceitos",
+      "adulto": "## Triagem dos conceitos"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "| O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |\n| --- | --- | --- | --- | --- | --- |\n| Qual jogo será criado | Não | Na partida pronta | Contexto do barco e do farol, seguido do convite para jogar | Antes da construção | Dar sentido ao projeto |\n| Mover o personagem na versão pronta | Não | Jogando | Setas na tela ou teclado | Na seção 1 | Entrar na aventura sem um tour |\n| Consultar o caderno | Operação de apoio | Material disponível | Vídeo curto e PDF opcional | Seção 2 | Permitir consulta durante a montagem |\n| Navegar e pedir ajuda | Interface | No Como Fazer | Links diretos opcionais | Quando necessário | Evitar aula de navegação antes da atividade |\n| Sprite | Vocabulário | Na identificação do personagem | Definição curta antes de nomear o bloco | Na montagem | Evitar termo desconhecido na instrução |\n| Controles e movimento | Não | No jogo | Setas aparecem; personagem se move depois do segundo bloco | Após cada montagem | Mostrar que os controles sozinhos não movem ninguém |\n| A cada quadro do jogo | Sim, em nível inicial | Na experiência `quadro` (cena `lighthouse-walk`) | Avançar quadro a quadro sem e com a seta, depois Rodar | Seção 3, antes da montagem `andar` | Ver a repetição antes de pôr o movimento dentro dela |\n| Borda e ordem | Relação concreta | Na experiência `limite` e depois no próprio jogo | Rodar sem e com Manter dentro da tela e apontar, na regra, o limite logo abaixo do movimento; no jogo, ver o personagem sair e pôr o limite logo abaixo do movimento | Seções 5 e 6 | Mover primeiro, conferir o limite depois |",
+      "adulto": "| O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |\n| --- | --- | --- | --- | --- | --- |\n| Qual jogo será criado | Não | Na partida pronta | Contexto do barco e do farol, seguido do convite para jogar | Antes da construção | Dar sentido ao projeto |\n| Mover o personagem na versão pronta | Não | Jogando | Setas na tela ou teclado | Na seção 1 | Entrar no jogo sem um tour |\n| Consultar o caderno | Operação de apoio | Material disponível | Vídeo curto e PDF opcional | Seção 2 | Permitir consulta durante a montagem |\n| Navegar e pedir ajuda | Interface | No Como Fazer | Links diretos opcionais | Quando necessário | Evitar aula de navegação antes da atividade |\n| Sprite | Vocabulário | Na identificação do personagem | Definição curta antes de nomear o bloco | Na montagem | Evitar termo desconhecido na instrução |\n| Controles e movimento | Não | No jogo | Setas aparecem; personagem se move depois do segundo bloco | Após cada montagem | Mostrar que os controles sozinhos não movem ninguém |\n| A cada quadro do jogo | Sim, em nível inicial | Na experiência `quadro` (cena `lighthouse-walk`) | Avançar quadro a quadro sem e com a seta, depois Rodar | Seção 3, antes da montagem `andar` | Ver a repetição antes de pôr o movimento dentro dela |\n| Borda e ordem | Relação concreta | Na experiência `limite` e depois no próprio jogo | Rodar sem e com Manter dentro da tela e apontar, na regra, o limite logo abaixo do movimento; no jogo, ver o personagem sair e pôr o limite logo abaixo do movimento | Seções 5 e 6 | Mover primeiro, conferir o limite depois |"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "## Diagnóstico do desenho atual",
+      "adulto": "## Diagnóstico do desenho atual"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "O tour foi retirado. O contexto inicial permanece: anunciar **A Chave do Farol**, situar o barco e o farol apagado e convidar a jogar, sem mostrar o trajeto resolvido. A ajuda inclui `plataforma-baixar-materiais` e identifica o Como Fazer como área de ajuda. Nenhum mapa foi acrescentado como material.",
+      "adulto": "O tour foi retirado. O contexto inicial permanece: anunciar **A Chave do Farol**, situar o barco e o farol apagado e convidar a jogar, sem mostrar o trajeto resolvido. A ajuda inclui `aula-baixar-materiais` e identifica o Como Fazer como área de ajuda. Nenhum mapa foi acrescentado como material."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "Os antigos vídeos `video-d1-chegada` e `video-d1-movimento` permanecem aposentados, com o contexto necessário incorporado à montagem. O review encontrou “sprite” no nome do bloco antes da definição; a explicação agora vem primeiro, também no caderno. O seletor de borda não tem campo ctx, e as instruções correspondem ao bloco atual. A velocidade 3 é o valor da demonstração; a magnitude pode variar, desde que o personagem se mova na direção pedida. Não há experiência nem montagem dedicada a comparar velocidades. Movimento e limite ficam dentro de **A cada quadro do jogo**.",
+      "adulto": "Os antigos vídeos `video-d1-chegada` e `video-d1-movimento` permanecem aposentados, com o contexto necessário incorporado à montagem. O review encontrou “sprite” no nome do bloco antes da definição; a explicação agora vem primeiro, também no caderno. O seletor de borda não tem campo ctx, e as instruções correspondem ao bloco atual. A velocidade 3 é o valor da demonstração; a magnitude pode variar, desde que o personagem se mova na direção pedida. Não há experiência nem montagem dedicada a comparar velocidades. Movimento e limite ficam dentro de **A cada quadro do jogo**."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "## Proposta final",
+      "adulto": "## Proposta final"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "### Seção 1. A Chave do Farol",
+      "adulto": "### Seção 1. A Chave do Farol"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "- **Intenção:** apresentação (`presentation`).\n- **Por que existe:** conhecer a aventura pela ação.\n- **Conclui quando:** vídeo e participação no jogo, sem exigir vitória.\n- **Blocos:** `video-intro-farol`, `ponte-intro-farol` e `jogo-pronto`.",
+      "adulto": "- **Intenção:** apresentação (`presentation`).\n- **Por que existe:** conhecer o jogo pela ação.\n- **Conclui quando:** vídeo e participação no jogo, sem exigir vitória.\n- **Blocos:** `video-intro-farol`, `ponte-intro-farol` e `jogo-pronto`."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Ponte do Zappy na página (não gravar):** Sua vez! Jogue a versão pronta: pegue a chave e leve o personagem até o farol. Depois, clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Sua vez: jogue a versão pronta, pegue a chave e leve o personagem até o farol. Depois, clique em Próxima seção."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "O vídeo é uma demonstração, como nas experiências: apresenta a aventura, mostra como se anda com um gesto só (\"Olha aqui: quando eu seguro a seta da tela para a direita…\"), sem resolver o caminho, e só no fim passa a vez. Antes de passar a vez, planta a surpresa do final (decisão do responsável, 07/10/2026): \"E tem uma coisa esperando por você lá no fim desta aventura: uma surpresa para deixar o jogo do seu jeito.\" Conta que a surpresa existe, sem dizer o que é; ela é lembrada uma vez no fim do Dia 2 e revelada em **Deixe o jogo com a sua cara**, no Dia 3.",
+      "adulto": "O vídeo é uma demonstração, como nas experiências: apresenta o jogo, mostra como se anda com um gesto só (\"Olha aqui: quando eu seguro a seta da tela para a direita…\"), sem resolver o caminho, e só no fim passa a vez. Antes de passar a vez, planta a surpresa do final (decisão do responsável, 07/10/2026): \"E tem uma coisa esperando por você lá no fim deste curso: uma surpresa para deixar o jogo do seu jeito.\" Conta que a surpresa existe, sem dizer o que é; ela é lembrada uma vez no fim do Dia 2 e revelada em **Deixe o jogo com a sua cara**, no Dia 3."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "### Seção 2. Seu Mapa da Aventura",
+      "adulto": "### Seção 2. Seu caderno do curso"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "- **Intenção:** material (`material`).\n- **Por que existe:** apresentar o apoio que acompanha as aulas.\n- **Conclui quando:** vídeo; leitura, impressão e download opcionais.\n- **Blocos:** `video-intro-caderno`, `ponte-intro-caderno` e `materiais-farol` com bookPreview: o único bloco de materiais da fase, com o PDF do Mapa (anexado no Admin), um recado curto e os seis links do Como Fazer (07/10/2026).",
+      "adulto": "- **Intenção:** material (`material`).\n- **Por que existe:** apresentar o apoio que acompanha as aulas.\n- **Conclui quando:** vídeo; leitura, impressão e download opcionais.\n- **Blocos:** `video-intro-caderno`, `ponte-intro-caderno` e `materiais-farol` com bookPreview: o único bloco de materiais da aula, com o PDF do caderno do curso (anexado no Admin), um recado curto e os seis links do Como Fazer (07/10/2026)."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Ponte do Zappy na página (não gravar):** Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Este é o seu caderno do curso. Quando precisar conferir um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "O vídeo chama a atenção para o caderno (\"Olha aqui: este é o seu Mapa da Aventura!\") e oferece as duas escolhas como convite: ler aqui mesmo ou clicar em **Baixar** para guardar o mapa e consultar onde quiser. A fala não diz que a pessoa não precisa baixar ou imprimir, porque soa como uma ordem para não fazer (ajuste do responsável, 06/10/2026).",
+      "adulto": "O vídeo chama a atenção para o caderno (\"Olha aqui: este é o seu caderno do curso.\") e oferece as duas escolhas como convite: ler aqui mesmo ou clicar em **Baixar** para guardar o caderno e consultar onde quiser. A fala não diz que a pessoa não precisa baixar ou imprimir, porque soa como uma ordem para não fazer (ajuste do responsável, 06/10/2026)."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "Anexar somente `docs/aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf` ao leitor. O caderno tem 29 páginas (27 até a revisão de 13/10/2026) e acompanha a memória, a montagem da porta em duas etapas, as galerias de personalização, a posição da chave, os testes, a publicação e o certificado. O mapa antigo para responsáveis não integra esta versão.",
+      "adulto": "Anexar ao leitor o PDF do caderno do curso adulto, ainda em produção; não anexar o PDF do kids. Como o do kids, de 29 páginas, ele deve acompanhar a memória, a montagem da porta em duas etapas, as galerias de personalização, a posição da chave, os testes, a publicação e o certificado."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "### Seção 3. Como o personagem anda",
+      "adulto": "### Seção 3. Como o personagem anda"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "- **Intenção:** exploração (`exploration`).\n- **Por que existe:** mostrar que o jogo repete a cada quadro e que, com a seta segurada, o personagem anda um pouco em cada repetição.\n- **Conclui quando:** vídeo e os dois testes da experiência.\n- **Blocos:** `video-d1-quadro`, `ponte-d1-quadro` e `experiencia-quadro` (cena `lighthouse-walk`, metas `still-without-arrow` e `moves-each-frame`).",
+      "adulto": "- **Intenção:** exploração (`exploration`).\n- **Por que existe:** mostrar que o jogo repete a cada quadro e que, com a seta segurada, o personagem anda um pouco em cada repetição.\n- **Conclui quando:** vídeo e os dois testes da experiência.\n- **Blocos:** `video-d1-quadro`, `ponte-d1-quadro` e `experiencia-quadro` (cena `lighthouse-walk`, metas `still-without-arrow` e `moves-each-frame`)."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Ponte do Zappy na página (não gravar):** Sua vez! Teste sem a seta e com a seta e repare no que acontece com o x. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Sua vez: teste sem a seta e com a seta e repare no que acontece com o x. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "### Seção 4. Faça o personagem andar",
+      "adulto": "### Seção 4. Faça o personagem andar"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "- **Intenção:** aplicação (`application`), com verificação e sem envio.\n- **Por que existe:** montar no jogo o que a experiência mostrou.\n- **Conclui quando:** vídeo e aprovação de seis critérios: dois de montagem (controles com quatro direções e movimento dentro de A cada quadro do jogo) e quatro de comportamento, um para cada direção.\n- **Blocos:** `video-d1-andar` e `ponte-d1-andar`; Estúdio pela `workspaceKey: projeto`. A ajuda opcional que ficava aqui (`ajuda-d1`) entrou no bloco do Mapa em 07/10/2026.",
+      "adulto": "- **Intenção:** aplicação (`application`), com verificação e sem envio.\n- **Por que existe:** montar no jogo o que a experiência mostrou.\n- **Conclui quando:** vídeo e aprovação de seis critérios: dois de montagem (controles com quatro direções e movimento dentro de A cada quadro do jogo) e quatro de comportamento, um para cada direção.\n- **Blocos:** `video-d1-andar` e `ponte-d1-andar`; Estúdio pela `workspaceKey: projeto`. A ajuda opcional que ficava aqui (`ajuda-d1`) entrou no bloco do caderno em 07/10/2026."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Ponte do Zappy na página (não gravar):** Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Hora de fazer o seu personagem andar. Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta etapa. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "Depois da retomada da experiência e antes de procurar **Ao iniciar**, apresentar os comandos como\ninstruções que dizem ao jogo o que fazer e que aparecem como bloquinhos. No \"Olha aqui: neste menu\",\napontar a paleta de comandos como o lugar de escolher os blocos, sem pegar nenhum ainda. Esta é a\nprimeira montagem do Desafio, que também recebe quem nunca programou; a fala completa está no roteiro.",
+      "adulto": "Depois da retomada da experiência e antes de procurar **Ao iniciar**, apresentar os comandos como\ninstruções que dizem ao jogo o que fazer e que aparecem como blocos de encaixar. No \"Olha aqui: neste menu\",\napontar a paleta de comandos como o lugar de escolher os blocos, sem pegar nenhum ainda. Esta é a\nprimeira montagem do Desafio, que também recebe quem nunca programou; a fala completa está no roteiro."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "Com o destino à vista antes de cada bloco: controles com só as quatro direções no fim de Ao iniciar; movimento dentro de **A cada quadro do jogo**, logo abaixo de Desenhar o cenário praia-tropical. Primeiro a área **Enquanto estiver rodando**, com o socorro de arrastar um espaço vazio, e depois o bloco dentro dela. A fala diz o que chega em cada bloco e onde clicar: **Ativar controles clássicos** chega com **automáticos no celular** (trocar para **só as quatro direções**) e **Mover sprite** chega com **heroi** (trocar para **personagem**).",
+      "adulto": "Com o destino à vista antes de cada bloco: controles com só as quatro direções no fim de Ao iniciar; movimento dentro de **A cada quadro do jogo**, logo abaixo de Desenhar o cenário praia-tropical. Primeiro a área **Enquanto estiver rodando**, com o socorro de arrastar um espaço vazio, e depois o bloco dentro dela. A fala diz o que chega em cada bloco e onde clicar: **Ativar controles clássicos** chega com **automáticos no celular** (trocar para **só as quatro direções**) e **Mover sprite** chega com **heroi** (trocar para **personagem**)."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Correção de montagem, 20/10/2026:** conservar a âncora “A velocidade já vem em 3; deixe assim.” e retirar a inserção que convidava a escolher outro tamanho de passo. Ensinar um comando por vez. Conservar o teste e a sequência já narrados; os quatro casos internos da avaliação não exigem novas falas. A avaliação continua aceitando outros valores coerentes, cores e imagens; não exigir velocidade literal 3. Preservar as falas já gravadas e as âncoras dos avatares; limitar eventual fala complementar ao fluxo de verificação que mudou, sem afirmar gravação ou publicação concluída.",
+      "adulto": "**Correção de montagem, 20/10/2026:** conservar a âncora “A velocidade já vem em 3; deixe assim.” e retirar a inserção que convidava a escolher outro tamanho de passo. Ensinar um comando por vez. Conservar o teste e a sequência já escritos; os quatro casos internos da avaliação não exigem novas falas. A avaliação continua aceitando outros valores coerentes, cores e imagens; não exigir velocidade literal 3. Limitar eventual fala complementar ao fluxo de verificação que mudou, sem afirmar gravação ou publicação concluída."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "### Seção 5. Até onde ele pode ir?",
+      "adulto": "### Seção 5. Até onde ele pode ir?"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "- **Intenção:** exploração (`exploration`).\n- **Por que existe:** ver o personagem sair da tela sem limite e ficar inteiro com o limite ligado, antes de montar o bloco.\n- **Conclui quando:** vídeo e os dois testes da experiência.\n- **Blocos:** `video-d1-limite`, `ponte-d1-limite` e `experiencia-limite` (metas `left-the-screen` e `stayed-inside`).",
+      "adulto": "- **Intenção:** exploração (`exploration`).\n- **Por que existe:** ver o personagem sair da tela sem limite e ficar inteiro com o limite ligado, antes de montar o bloco.\n- **Conclui quando:** vídeo e os dois testes da experiência.\n- **Blocos:** `video-d1-limite`, `ponte-d1-limite` e `experiencia-limite` (metas `left-the-screen` e `stayed-inside`)."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Ponte do Zappy na página (não gravar):** Sua vez! Teste sem o limite e com ele e repare no que acontece na borda. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Sua vez: teste sem o limite e com ele e repare no que acontece na borda. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "### Seção 6. Mantenha o personagem na tela",
+      "adulto": "### Seção 6. Mantenha o personagem na tela"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "- **Intenção:** construção e entrega (`delivery`).\n- **Por que existe:** completar o primeiro comportamento jogável e entregar o dia.\n- **Conclui quando:** vídeo, três critérios de projeto aprovados e envio confirmado.\n- **Blocos:** `video-d1-borda`, `ponte-d1-borda` e o Estúdio `projeto`.",
+      "adulto": "- **Intenção:** construção e entrega (`delivery`).\n- **Por que existe:** completar o primeiro comportamento jogável e entregar o dia.\n- **Conclui quando:** vídeo, três critérios de projeto aprovados e envio confirmado.\n- **Blocos:** `video-d1-borda`, `ponte-d1-borda` e o Estúdio `projeto`."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "**Ponte do Zappy na página (não gravar):** Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta parte. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.",
+      "adulto": "**Recado na página (não gravar):** Agora mantenha o personagem na tela. Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta etapa. Depois clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "Primeiro a pessoa vê o personagem sair pela beirada no próprio jogo. Depois, com o bloco de movimento à vista, encaixa **Manter o sprite dentro da tela** logo abaixo dele (o bloco chega com **heroi**: trocar para **personagem**): primeiro move, depois confere a borda. Testar as quatro bordas com o dispositivo disponível, sem exigir teclado e toque de quem só tem um deles. Terminar em **Verificar esta parte → Objetivo cumprido! → Enviar meu projeto → Enviar → Projeto enviado! → Concluir fase**, com o reconhecimento da conquista antes de **Concluir fase**.",
+      "adulto": "Primeiro a pessoa vê o personagem sair pela beirada no próprio jogo. Depois, com o bloco de movimento à vista, encaixa **Manter o sprite dentro da tela** logo abaixo dele (o bloco chega com **heroi**: trocar para **personagem**): primeiro move, depois confere a borda. Testar as quatro bordas com o dispositivo disponível, sem exigir teclado e toque de quem só tem um deles. Terminar em **Verificar esta etapa → Objetivo da etapa cumprido! → Enviar para o professor → Enviar → Projeto enviado ao professor → Concluir aula**, com um reconhecimento curto do resultado antes de **Concluir aula**."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "## Experiências e demonstrações desta aula",
+      "adulto": "## Experiências e demonstrações desta aula"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "- **Jogo pronto:** atividade project-play com a cópia concluída de A Chave do Farol, `completion: participation` e targets vazio. Deixa jogar por toque ou teclado. Experimentar basta; não exigir vencer. É uma atividade isolada, sem Estúdio de entrega, e não alimenta a cadeia de criação.\n- **Cena `lighthouse-walk`, cenário Farol:** criada em 05/10/2026 para o Dia 1. O personagem anda para a direita no mapa do farol. Os controles são Segurar a seta para a direita, Avançar 1 quadro, Rodar/Parar, Manter dentro da tela e Recomeçar. A mesma cena serve às duas experiências, cada uma com as metas do seu conceito (`setup.goals`); o controle de limite só aparece quando o caso cobra essa meta. Não se pedem metas nem controles de comparação de velocidades.\n- **Montagens:** o projeto é o mesmo nas seções 4 e 6. A prévia atualiza sozinha; Atualizar não é um passo a repetir a cada encaixe.",
+      "adulto": "- **Jogo pronto:** atividade project-play com a cópia concluída de A Chave do Farol, `completion: participation` e targets vazio. Deixa jogar por toque ou teclado. Experimentar basta; não exigir vencer. É uma atividade isolada, sem Estúdio de entrega, e não alimenta a cadeia de criação.\n- **Cena `lighthouse-walk`, cenário Farol:** criada em 05/10/2026 para o Dia 1. O personagem anda para a direita no mapa do farol. Os controles são Segurar a seta para a direita, Avançar 1 quadro, Rodar/Parar, Manter dentro da tela e Recomeçar. A mesma cena serve às duas experiências, cada uma com as metas do seu conceito (`setup.goals`); o controle de limite só aparece quando o caso cobra essa meta. Não se pedem metas nem controles de comparação de velocidades.\n- **Montagens:** o projeto é o mesmo nas seções 4 e 6. A prévia atualiza sozinha; Atualizar não é um passo a repetir a cada encaixe."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstração resolve o jogo pela pessoa.",
+      "adulto": "Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstração resolve o jogo pela pessoa."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "## Vídeos",
+      "adulto": "## Vídeos"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "| Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |\n| --- | --- | --- | --- | --- |\n| `video-intro-farol` | Jogo, contexto, demonstração de um gesto, sem resolver, o aviso da partida e a surpresa do final plantada | Versão pronta | 80 a 100 s | Gravar (se houver mídia antiga no Admin, substituir) |\n| `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 30 a 40 s | Gravar (se houver mídia antiga no Admin, substituir) |\n| `video-d1-quadro` | Experiência: sem a seta e com a seta, quadro a quadro | Cena nova | 100 a 120 s | Gravar |\n| `video-d1-andar` | Controles e movimento, teste e verificação | Projeto inicial | 5 a 6 min | Gravar |\n| `video-d1-limite` | Experiência: sem e com o limite, a faixa fora da tela e a ordem na regra | Cena nova | 75 a 95 s | Gravar |\n| `video-d1-borda` | Borda no jogo, limite, testes e entrega | Mesmo projeto | 150 a 190 s | Gravar (se houver mídia antiga no Admin, substituir) |",
+      "adulto": "| Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |\n| --- | --- | --- | --- | --- |\n| `video-intro-farol` | Jogo, contexto, demonstração de um gesto, sem resolver, o aviso da partida e a surpresa do final plantada | Versão pronta | 80 a 100 s | Gravar a versão adulta |\n| `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 30 a 40 s | Gravar a versão adulta |\n| `video-d1-quadro` | Experiência: sem a seta e com a seta, quadro a quadro | Cena nova | 100 a 120 s | Gravar a versão adulta |\n| `video-d1-andar` | Controles e movimento, teste e verificação | Projeto inicial | 5 a 6 min | Gravar a versão adulta |\n| `video-d1-limite` | Experiência: sem e com o limite, a faixa fora da tela e a ordem na regra | Cena nova | 75 a 95 s | Gravar a versão adulta |\n| `video-d1-borda` | Borda no jogo, limite, testes e entrega | Mesmo projeto | 150 a 190 s | Gravar a versão adulta |"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "## Continuidade",
+      "adulto": "## Continuidade"
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "Preservar as seções `apresentacao`, `caderno` e `borda` (agora a última, com a entrega), a chave `materiais-farol`, a chave `projeto` e a cadeia `desafio-primeiro-jogo`. Preservar também `quadro`, `andar` e `limite`. Retirar somente `tanto` e `velocidade`, com seus blocos aposentados explicitamente, sem apagar o progresso anterior. A pessoa programa as regras de movimento, não a arte nem o barco preparado.",
+      "adulto": "Preservar as seções `apresentacao`, `caderno` e `borda` (agora a última, com a entrega), a chave `materiais-farol`, a chave `projeto` e a cadeia `desafio-primeiro-jogo`. Preservar também `quadro`, `andar` e `limite`. Retirar somente `tanto` e `velocidade`, com seus blocos aposentados explicitamente, sem apagar o progresso anterior. A pessoa programa as regras de movimento, não a arte nem o barco preparado."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "Valores ensinados na montagem: controles com as quatro direções, personagem, velocidade 3 e movimento antes do limite de tela. Na avaliação, a magnitude pode variar, desde que respeite a direção pedida; zero não demonstra movimento. O Dia 2 assume esse trabalho enviado; a retomada preparada só é alternativa quando não há envio anterior.",
+      "adulto": "Valores ensinados na montagem: controles com as quatro direções, personagem, velocidade 3 e movimento antes do limite de tela. Na avaliação, a magnitude pode variar, desde que respeite a direção pedida; zero não demonstra movimento. O Dia 2 assume esse trabalho enviado; a retomada preparada só é alternativa quando não há envio anterior."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "No Admin, a aula antiga `boas-vindas` sai do curso sem apagar progresso nem certificados; ver [Atualização de aulas existentes](../../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md#atualização-de-aulas-existentes). Anexar o PDF antes de gravar a seção 2. Os links do Como Fazer abrem na mesma aba e voltam para a aula.",
+      "adulto": "No curso adulto, a aula antiga `boas-vindas` não entra; ver [Atualização de aulas existentes](../../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md#atualização-de-aulas-existentes). Anexar o PDF do caderno do curso antes de gravar a seção 2. Os links do Como Fazer abrem na mesma aba e voltam para a aula."
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "## Revisão de ritmo e entendimento · 10/10/2026",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "O roteiro tem 8 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.md",
+      "kids": "| Entrada | Depois da professora | Criança | Retomada da professora |\n| --- | --- | --- | --- |\n| F1P4-R01 | “Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.” | Debinha: “Primeiro eu preciso pôr as setas na tela!” | “As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.” |\n| F1P4-R02 | “Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!” | Debinha: “Foi! Agora ele anda!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar. E o bloco de movimento, com o sprite personagem, está dentro de A cada quadro do jogo. Depois de corrigir, teste de novo.” |\n| F1P6-R01 | “Agora teste as quatro direções até chegar às beiradas. Olha só: ele para em cada beirada e não sai mais da tela!” | Debinha: “Agora posso segurar a seta que ele não vai embora!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, o bloco que move o personagem vem antes, e logo abaixo dele está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo.” |",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "# Roteiro de gravação · A Chave do Farol · Dia 1",
+      "adulto": "# Roteiro de gravação · A Chave do Farol · Dia 1"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Vozes e produção · 10/10/2026:** **Professora** conduz; **Debinha (avatar)** participa em 8 entradas marcadas para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.",
+      "adulto": "**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada. As notas **Na tela** não são locução."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações foram revistas em 10/10/2026 com as novas falas: cada alvo cobre a fala estimada a 137 palavras por minuto, contando a criança, e, nas montagens, os gestos sem fala; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md#chave-do-farol).",
+      "adulto": "**Gravação:** não cobrir controles, blocos, mostradores ou resultados. As durações cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala; conferir a montagem final sem acelerar."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Antes de gravar, revisão de 13/10/2026:** antes de cada sessão de gravação, abrir a fase numa aba nova, depois do último deploy; uma aba aberta antes de um deploy pode recarregar a página no meio da tomada e mostrar um segundo **Atualizar**. Gravar cada experiência numa sessão sem progresso naquele bloco, para a tela mostrar o que a pessoa vai ver: na seção 3, quadro 0, x 208 e **Segurar a seta para a direita: desligado**, sem o controle **Manter dentro da tela**; na seção 5, quadro 0, x 208, a seta e **Manter dentro da tela** desligados e a terceira linha da regra com \"(desligado)\". Gravar o envio da seção 6 numa sessão sem envio anterior nesta fase; o **Recomeçar** do Estúdio não apaga o envio, então, para repetir a tomada, usar outro perfil de ensaio. Mostrar o selo **Guardado na sua conta** só quando ele aparecer de verdade. Confirmar em **Enviar** sem preencher o **Recado (opcional)**. Com as correções de clareza do mesmo dia, as durações foram medidas de novo: os seis alvos subiram para cobrir a fala nova a 137 palavras por minuto e os gestos, sem acelerar.",
+      "adulto": "**Antes de gravar:** antes de cada sessão de gravação, abrir a aula numa aba nova, depois do último deploy; uma aba aberta antes de um deploy pode recarregar a página no meio da tomada e mostrar um segundo **Atualizar**. Gravar cada experiência numa sessão sem progresso naquele bloco, para a tela mostrar o que a pessoa vai ver: na seção 3, quadro 0, x 208 e **Segurar a seta para a direita: desligado**, sem o controle **Manter dentro da tela**; na seção 5, quadro 0, x 208, a seta e **Manter dentro da tela** desligados e a terceira linha da regra com \"(desligado)\". Gravar o envio da seção 6 numa sessão sem envio anterior nesta aula; o **Recomeçar** do Estúdio não apaga o envio, então, para repetir a tomada, usar outro perfil de ensaio. Mostrar o selo **Salvo na sua conta** só quando ele aparecer de verdade. Confirmar em **Enviar** sem preencher o **Recado para o professor**."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "Seis seções, seis vídeos. Como na Aula 1 do Cadê Todo Mundo?, o dia começa pelo jogo pronto e pelo caderno. Depois, cada ideia tem sua seção: uma experiência mostra o conceito e a montagem seguinte o aplica no jogo (a cada quadro e o limite da tela). Até 05/10/2026, as duas primeiras seções formavam a aula separada de introdução, e as três ideias ficavam num só vídeo de montagem.",
+      "adulto": "Seis seções, seis vídeos. Como na Aula 1 do Cadê Todo Mundo?, o dia começa pelo jogo pronto e pelo caderno. Depois, cada ideia tem sua seção: uma experiência mostra o conceito e a montagem seguinte o aplica no jogo (a cada quadro e o limite da tela). Até 05/10/2026, as duas primeiras seções formavam a aula separada de introdução, e as três ideias ficavam num só vídeo de montagem."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "- **Seções 1 e 2:** o jogo pronto é uma atividade separada do projeto que a pessoa vai construir. Não gravar uma partida resolvida, tour da plataforma nem tutorial do leitor. Conferir o PDF anexado antes de gravar a seção 2.\n- **Seções 3 e 5:** a mesma experiência `lighthouse-walk`, com metas diferentes. O vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas.\n- **Seções 4 e 6:** o mesmo projeto. O cenário, os desenhos, o desenho de cada quadro e a regra do barco já vêm preparados; o projeto inicial ainda não tem controles nem movimento. A seção 4 verifica sem enviar, e a seção 6 verifica e envia. Mandar manter a velocidade em 3 na montagem, com um comando por vez. Na avaliação, aceitar outro tamanho de passo coerente com a direção pedida, sem exigir o número literal da demonstração. A escolha de velocidade saiu como seção dedicada em 06/10/2026. Mostrar cada gesto no ritmo da fala, com pausa para acompanhar. Não fazer outra demonstração do jogo completo nem tour de abas, divisória ou ampliação.",
+      "adulto": "- **Seções 1 e 2:** o jogo pronto é uma atividade separada do projeto que a pessoa vai construir. Não gravar uma partida resolvida, tour da plataforma nem tutorial do leitor. Conferir o PDF anexado antes de gravar a seção 2.\n- **Seções 3 e 5:** a mesma experiência `lighthouse-walk`, com metas diferentes. O vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas.\n- **Seções 4 e 6:** o mesmo projeto. O cenário, os desenhos, o desenho de cada quadro e a regra do barco já vêm preparados; o projeto inicial ainda não tem controles nem movimento. A seção 4 verifica sem enviar, e a seção 6 verifica e envia. Mandar manter a velocidade em 3 na montagem, com um comando por vez. Na avaliação, aceitar outro tamanho de passo coerente com a direção pedida, sem exigir o número literal da demonstração. A escolha de velocidade saiu como seção dedicada em 06/10/2026. Mostrar cada gesto no ritmo da fala, com pausa para acompanhar. Não fazer outra demonstração do jogo completo nem tour de abas, divisória ou ampliação."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "O botão atual se chama **Próxima parte**, e a última seção termina em **Concluir fase**.",
+      "adulto": "O botão atual se chama **Próxima seção**, e a última seção termina em **Concluir aula**."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"ou seja\", \"agora que\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"). Neste curso, \"então\" não serve de palavra de ligação: é o nome de um espaço do bloco Se. O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026).",
+      "adulto": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"ou seja\", \"agora que\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Percebe?\"). Neste curso, \"então\" não serve de palavra de ligação: é o nome de um espaço do bloco Se. O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026; tom adulto em DIRETRIZES-ADULTO.md)."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Ordem de cada encaixe:** primeiro o lugar de destino à vista, depois a categoria e o bloco, por último arrastar e soltar. Com o bloco preso no mouse, a criança não consegue mover o espaço dos blocos para procurar o lugar.",
+      "adulto": "**Ordem de cada encaixe:** primeiro o lugar de destino à vista, depois a categoria e o bloco, por último arrastar e soltar. Com o bloco preso no mouse, não dá para mover o espaço dos blocos para procurar o lugar."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "## Seção 1. A Chave do Farol",
+      "adulto": "## Seção 1. A Chave do Farol"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "### Vídeo `video-intro-farol` · Seu primeiro jogo: A Chave do Farol",
+      "adulto": "### Vídeo `video-intro-farol` · Seu primeiro jogo: A Chave do Farol"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Duração alvo:** 80 a 100 segundos.",
+      "adulto": "**Duração alvo:** 80 a 100 segundos."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar o personagem, a chave e o farol apagado quando forem citados. Manter a cena parada durante a pergunta da Debinha.",
+      "adulto": "**Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar o personagem, a chave e o farol apagado quando forem citados. Ainda não mover o personagem."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Professora:**",
+      "adulto": "**Professora:**"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Oi! Neste desafio, você vai programar o jogo A Chave do Farol. Antes de montar o seu, você vai jogar a versão pronta, para ver como o jogo funciona.\n>\n> A história é assim: um barco precisa chegar à costa, mas o farol está apagado, e sem a luz dele o barco não acha o caminho. Para acender o farol, o personagem precisa pegar a chave e levar até lá.\"",
+      "adulto": "> \"Oi! Neste desafio, você vai programar o jogo A Chave do Farol. Antes de montar o seu, você vai jogar a versão pronta, para ver como o jogo funciona.\n>\n> A história é assim: um barco precisa chegar à costa, mas o farol está apagado, e sem a luz dele o barco não acha o caminho. Para acender o farol, o personagem precisa pegar a chave e levar até lá.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** **F1P1-D01** · Debinha entra com o personagem e uma seta visíveis; ainda não mover o personagem.",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Debinha (avatar):**",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"E como eu levo o personagem até a chave?\"",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai. Demonstrar somente um pequeno movimento na seta, no ritmo da resposta. No \"repare neste aviso\", apontar a faixa escura no alto do jogo, com o aviso do começo da partida. Não revelar o percurso nem mostrar o barco chegando. No anúncio da surpresa, falar olhando para a câmera, com entusiasmo, sem mostrar a personalização. Depois passar a vez; o convite deve funcionar com o jogo ao lado ou abaixo do vídeo.",
+      "adulto": "**Na tela:** Demonstrar somente um pequeno movimento na seta, no ritmo da fala. No \"repare neste aviso\", apontar a faixa escura no alto do jogo, com o aviso do começo da partida. Não revelar o percurso nem mostrar o barco chegando. No anúncio da surpresa, falar olhando para a câmera, sem mostrar a personalização. Depois passar a vez; o convite deve funcionar com o jogo ao lado ou abaixo do vídeo."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Olha aqui: quando eu seguro a seta da tela para a direita, o personagem anda para a direita. E, no computador, também dá para clicar dentro do jogo e usar as setas do teclado. E repare neste aviso aqui em cima: ele diz o que você precisa fazer na partida.\n>\n> Já o caminho até a chave e depois até o farol, esse eu deixo para você descobrir.\n>\n> E tem uma coisa esperando por você lá no fim desta aventura: uma surpresa para deixar o jogo do seu jeito.\n>\n> Agora é a sua vez: jogue até o farol acender e o barco chegar. Quando terminar, clique em Próxima parte.\"",
+      "adulto": "> \"E como você leva o personagem até a chave? Olha aqui: quando eu seguro a seta da tela para a direita, o personagem anda para a direita. E, no computador, também dá para clicar dentro do jogo e usar as setas do teclado. E repare neste aviso aqui em cima: ele diz o que você precisa fazer na partida.\n>\n> Já o caminho até a chave e depois até o farol, esse eu deixo para você descobrir.\n>\n> E tem uma coisa esperando por você lá no fim deste curso: uma surpresa para deixar o jogo do seu jeito.\n>\n> Agora é a sua vez: jogue até o farol acender e o barco chegar. Quando terminar, clique em Próxima seção.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Conferência de produção:** o vídeo é uma demonstração: mostra como se anda com um gesto só, sem resolver o caminho, e só no fim passa a vez. Antes de passar a vez, a fala planta a surpresa do final (decisão do responsável, 07/10/2026): conta que existe, sem dizer o que é; a revelação é a seção Deixe o jogo com a sua cara, no Dia 3. A seção exige o vídeo e a participação no jogo pronto; vencer não é requisito técnico. A fala dá o objetivo completo para quem quiser terminar. Pausa, replay, ampliação e reinício ficam no Como Fazer.",
+      "adulto": "**Conferência de produção:** o vídeo é uma demonstração: mostra como se anda com um gesto só, sem resolver o caminho, e só no fim passa a vez. Antes de passar a vez, a fala planta a surpresa do final (decisão do responsável, 07/10/2026): conta que existe, sem dizer o que é; a revelação é a seção Deixe o jogo com a sua cara, no Dia 3. A seção exige o vídeo e a participação no jogo pronto; vencer não é requisito técnico. A fala dá o objetivo completo para quem quiser terminar. Pausa, replay, ampliação e reinício ficam no Como Fazer."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "## Seção 2. Seu Mapa da Aventura",
+      "adulto": "## Seção 2. Seu caderno do curso"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "### Vídeo `video-intro-caderno` · Seu Mapa da Aventura",
+      "adulto": "### Vídeo `video-intro-caderno` · Seu caderno do curso"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Duração alvo:** 30 a 40 segundos.",
+      "adulto": "**Duração alvo:** 30 a 40 segundos."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** capa e uma página de montagem do Mapa da Aventura, o caderno anexado a `materiais-farol`. No \"Olha aqui\", apontar o mapa. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão nem os controles do leitor. Não apresentar um mapa como material adicional nem simular arquivo disponível se o PDF ainda não estiver anexado. No fim, apontar **Próxima parte**.",
+      "adulto": "**Na tela:** capa e uma página de montagem do caderno do curso, o PDF anexado a `materiais-farol`. No \"Olha aqui\", apontar o caderno. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão nem os controles do leitor. Não apresentar outro material além do caderno nem simular arquivo disponível se o PDF ainda não estiver anexado. No fim, apontar **Próxima seção**."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Olha aqui: este é o seu Mapa da Aventura! Nele estão os passos para montar o seu jogo nos três dias, com os blocos que você vai usar e o lugar de cada um. Por isso, se você esquecer algum passo, é só voltar aqui e abrir o mapa.\n>\n> Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.\n>\n> Agora clique em Próxima parte.\"",
+      "adulto": "> \"Olha aqui: este é o seu caderno do curso. Nele estão os passos para montar o seu jogo nos três dias, com os blocos que você vai usar e o lugar de cada um. Por isso, se você esquecer algum passo, é só voltar aqui e abrir o caderno.\n>\n> Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o caderno e consultar onde quiser.\n>\n> Agora clique em Próxima seção.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Conferência de produção:** o caderno, que a criança vê como Mapa da Aventura, é consulta opcional, e a fala oferece as duas escolhas como convite: ler aqui mesmo ou baixar para guardar. A fala não diz que a pessoa não precisa baixar ou imprimir: quem ouve entende como uma ordem para não fazer. Só o vídeo é necessário para avançar. O tutorial de materiais ensina a folhear e a baixar o PDF.",
+      "adulto": "**Conferência de produção:** o caderno é consulta opcional, e a fala oferece as duas escolhas como convite: ler aqui mesmo ou baixar para guardar. A fala não diz que a pessoa não precisa baixar ou imprimir: quem ouve entende como uma ordem para não fazer. Só o vídeo é necessário para avançar. O tutorial de materiais ensina a folhear e a baixar o PDF."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "## Seção 3. Como o personagem anda",
+      "adulto": "## Seção 3. Como o personagem anda"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "### Vídeo `video-d1-quadro` · Como o personagem anda",
+      "adulto": "### Vídeo `video-d1-quadro` · Como o personagem anda"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Duração alvo:** 100 a 120 segundos.",
+      "adulto": "**Duração alvo:** 100 a 120 segundos."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** mostrar a experiência `lighthouse-walk` com a seta desligada. No \"repare neste x aqui\", apontar o **x** na faixa dos números da experiência. Fazer cada gesto no ritmo da fala: Avançar 1 quadro sem a seta (o quadro vai de 0 para 1 e o x fica igual; no \"Tá vendo?\", apontar o **quadro** e depois o **x**), ligar a seta e avançar alguns quadros (o x sobe 3 de cada vez; no \"como mostra o +3\", apontar o **+3** embaixo do personagem). Não clicar em Rodar antes da pergunta. No \"Olha a regra do movimento\", apontar a regra com o bloco que move o personagem dentro de A cada quadro do jogo. **Meme na comparação:** na frase do desenho animado, um bloquinho folheado (flipbook) em que o personagem dá um passinho em cada folha. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.",
+      "adulto": "**Na tela:** mostrar a experiência `lighthouse-walk` com a seta desligada. No \"repare neste x aqui\", apontar o **x** na faixa dos números da experiência. Fazer cada gesto no ritmo da fala: Avançar 1 quadro sem a seta (o quadro vai de 0 para 1 e o x fica igual; no \"Percebe?\", apontar o **quadro** e depois o **x**), ligar a seta e avançar alguns quadros (o x sobe 3 de cada vez; no \"como mostra o +3\", apontar o **+3** embaixo do personagem). Só clicar em Rodar depois de mostrar a regra. No \"Olha a regra do movimento\", apontar a regra com o bloco que move o personagem dentro de A cada quadro do jogo. **Meme na comparação:** na frase do desenho animado, um flipbook em que o personagem dá um passo curto em cada folha. Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Esta é uma experiência para a gente entender os quadros do jogo e como o personagem anda.\n>\n> Sabe desenho animado? Ele é feito de muitas imagens, uma depois da outra, passando bem rápido. O jogo funciona do mesmo jeito: mostra muitas imagens por segundo, e cada imagem é um quadro. E repare neste x aqui: ele mostra onde o personagem está. Quanto maior o x, mais para a direita ele fica.\n>\n> Olha aqui: com Segurar a seta para a direita desligado, eu clico em Avançar 1 quadro. Tá vendo? O quadro passou de 0 para 1, mas o x não muda, porque, sem a seta, o personagem fica parado.\n>\n> Agora eu ligo Segurar a seta para a direita e clico em Avançar 1 quadro algumas vezes. Repare: a cada quadro, o x aumenta 3, como mostra o +3 embaixo do personagem. É assim que ele anda: um passinho em cada quadro. E sabe por quê? Olha a regra do movimento: o bloco que move o personagem fica dentro de A cada quadro do jogo. Por isso, ele acontece de novo em todo quadro.\"",
+      "adulto": "> \"Esta é uma experiência para a gente entender os quadros do jogo e como o personagem anda.\n>\n> Sabe desenho animado? Ele é feito de muitas imagens, uma depois da outra, passando bem rápido. O jogo funciona do mesmo jeito: mostra muitas imagens por segundo, e cada imagem é um quadro. E repare neste x aqui: ele mostra onde o personagem está. Quanto maior o x, mais para a direita ele fica.\n>\n> Olha aqui: com Segurar a seta para a direita desligado, eu clico em Avançar 1 quadro. Percebe? O quadro passou de 0 para 1, mas o x não muda, porque, sem a seta, o personagem fica parado.\n>\n> Agora eu ligo Segurar a seta para a direita e clico em Avançar 1 quadro algumas vezes. Repare: a cada quadro, o x aumenta 3, como mostra o +3 embaixo do personagem. É assim que ele anda: um passo curto em cada quadro. E sabe por quê? Olha a regra do movimento: o bloco que move o personagem fica dentro de A cada quadro do jogo. Por isso, ele acontece de novo em todo quadro.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** **F1P3-D01** · Debinha entra depois dos avanços quadro a quadro. Manter o botão Rodar livre, sem acioná-lo ainda.",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"E se eu clicar em Rodar?\"",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai. Clicar em Rodar durante a resposta, mostrar os quadros em sequência e a saída da tela. Depois demonstrar Recomeçar e passar a vez.",
+      "adulto": "**Na tela:** Clicar em Rodar no ritmo da fala, mostrar os quadros em sequência e a saída da tela. Depois demonstrar Recomeçar e passar a vez."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Vamos ver. Quando eu clico em Rodar, os quadros passam bem rápido, e o personagem parece andar sozinho, como num desenho animado. Ele anda até sair da tela, e, para ver tudo de novo, eu clico em Recomeçar.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.\"",
+      "adulto": "> \"E se eu clicar em Rodar? Olha só: os quadros passam bem rápido, e o personagem parece andar sozinho, como num desenho animado. Ele anda até sair da tela, e, para ver tudo de novo, eu clico em Recomeçar.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.",
+      "adulto": "**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "## Seção 4. Faça o personagem andar",
+      "adulto": "## Seção 4. Faça o personagem andar"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "### Vídeo `video-d1-andar` · Faça o personagem andar",
+      "adulto": "### Vídeo `video-d1-andar` · Faça o personagem andar"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Duração alvo:** 5 a 6 minutos, incluindo encaixes, teste e verificação. Não acelerar os encaixes para caber na estimativa.",
+      "adulto": "**Duração alvo:** 5 a 6 minutos, incluindo encaixes, teste e verificação. Não acelerar os encaixes para caber na estimativa."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** abrir o projeto inicial da seção. Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema no jogo (clicar dentro do jogo e usar as setas do teclado; no \"Tá vendo?\", manter à vista o personagem parado e o canto de baixo sem setas), depois a lembrança da experiência e o anúncio da montagem. Apresentar os comandos como bloquinhos; no \"Olha aqui: neste menu\", apontar a paleta de comandos, sem pegar nenhum bloco ainda. Depois deixar à vista o fim da área **Ao iniciar**, com os blocos preparados; se for preciso, arrastar um espaço vazio entre os blocos. Só então abrir **Jogo 2D → Controles → Teclado, ações e toque**, arrastar **Ativar controles clássicos** até o fim de **Ao iniciar**, deixar à vista **automáticos no celular**, clicar nesse nome e escolher **só as quatro direções**. A Pré-visualização atualiza sozinha; aguardar a atualização sem recomendar Atualizar a cada encaixe.",
+      "adulto": "**Na tela:** abrir o projeto inicial da seção. Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema no jogo (clicar dentro do jogo e usar as setas do teclado; no \"Percebe?\", manter à vista o personagem parado e o canto de baixo sem setas), depois a lembrança da experiência e o anúncio da montagem. Apresentar os comandos como blocos de encaixar; no \"Olha aqui: neste menu\", apontar a paleta de comandos, sem pegar nenhum bloco ainda. Depois deixar à vista o fim da área **Ao iniciar**, com os blocos preparados; se for preciso, arrastar um espaço vazio entre os blocos. Só então abrir **Jogo 2D → Controles → Teclado, ações e toque**, arrastar **Ativar controles clássicos** até o fim de **Ao iniciar**, deixar à vista **automáticos no celular**, clicar nesse nome e escolher **só as quatro direções**. A Pré-visualização atualiza sozinha; aguardar a atualização sem recomendar Atualizar a cada encaixe."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Aqui no seu jogo, procure as setas na tela ou, no computador, clique no jogo e use as setas do teclado. Tá vendo? Não tem seta nenhuma, e o personagem não sai do lugar, porque faltam as setas e o movimento.\n>\n> Lembra da experiência da parte anterior? Com a seta segurada, ele andava a cada quadro. Agora a gente vai pôr as setas e o movimento no seu jogo!\n>\n> Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.\"",
+      "adulto": "> \"Aqui no seu jogo, procure as setas na tela ou, no computador, clique no jogo e use as setas do teclado. Percebe? Não tem seta nenhuma, e o personagem não sai do lugar, porque faltam as setas e o movimento.\n>\n> Lembra da experiência da seção anterior? Com a seta segurada, ele andava a cada quadro. Agora a gente vai pôr as setas e o movimento no seu jogo.\n>\n> Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como blocos de encaixar. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** **F1P4-R01** · Debinha entra depois da apresentação da paleta, com o personagem parado à vista. Ainda não pegar um bloco.",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Primeiro eu preciso pôr as setas na tela!\"",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai. Mostrar o destino dos controles em Ao iniciar antes de abrir a categoria. Depois de soltar o bloco, deixar **automáticos no celular** à vista antes do clique.",
+      "adulto": "**Na tela:** Mostrar o destino dos controles em Ao iniciar antes de abrir a categoria. Depois de soltar o bloco, deixar **automáticos no celular** à vista antes do clique."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.\n>\n> Agora abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Ativar controles clássicos.\n>\n> Arraste até o fim de Ao iniciar e solte logo abaixo do último bloco que já está lá.\n>\n> Repare que o bloco chega com automáticos no celular. Clique em automáticos no celular e escolha só as quatro direções, porque o seu personagem só precisa das setas. Depois espere o jogo atualizar. Olha só: as setas de cima, de baixo, da esquerda e da direita aparecem na tela! Segure uma delas.\"",
+      "adulto": "> \"Primeiro, as setas na tela. Elas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.\n>\n> Agora abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Ativar controles clássicos.\n>\n> Arraste até o fim de Ao iniciar e solte logo abaixo do último bloco que já está lá.\n>\n> Repare que o bloco chega com automáticos no celular. Clique em automáticos no celular e escolha só as quatro direções, porque o seu personagem só precisa das setas. Depois espere o jogo atualizar. Olha só: as setas de cima, de baixo, da esquerda e da direita aparecem na tela. Segure uma delas.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** **F1P4-D01** · Com apenas os controles montados, segurar uma seta da tela por um instante e mostrar que o personagem não sai do lugar; pausar para a pessoa testar. Debinha entra sem cobrir as setas ou o personagem; ainda não há bloco de movimento.",
+      "adulto": "**Na tela:** Com apenas os controles montados, segurar uma seta da tela por um instante e mostrar que o personagem não sai do lugar; pausar para a pessoa testar. Ainda não há bloco de movimento. Depois, apontar primeiro a área **Enquanto estiver rodando**, arrastando um espaço vazio entre os blocos se ela começar fora da tela; na frase seguinte, apontar o bloco **A cada quadro do jogo** e o **Desenhar o cenário praia-tropical** dentro dele. Só então abrir **Jogo 2D → Movimento → Movimentos prontos**, pegar **Mover sprite em 4 direções com setas, velocidade** e soltar logo depois de **Desenhar o cenário praia-tropical** quando aparecer o encaixe, antes dos blocos preparados do barco. Deixar **heroi** à vista antes do clique, clicar em **heroi**, escolher `personagem` na lista e manter a velocidade `3`."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"As setas apareceram, mas ele ainda não anda!\"",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai. Apontar primeiro a área **Enquanto estiver rodando**, arrastando um espaço vazio entre os blocos se ela começar fora da tela; na frase seguinte, apontar o bloco **A cada quadro do jogo** e o **Desenhar o cenário praia-tropical** dentro dele. Só então abrir **Jogo 2D → Movimento → Movimentos prontos**, pegar **Mover sprite em 4 direções com setas, velocidade** e soltar logo depois de **Desenhar o cenário praia-tropical** quando aparecer o encaixe, antes dos blocos preparados do barco. Deixar **heroi** à vista antes do clique, clicar em **heroi**, escolher `personagem` na lista e manter a velocidade `3`.",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"É que as setas sozinhas ainda não movem ninguém. A gente precisa dizer para o jogo quem elas vão mover, e esse alguém é o personagem. No jogo, o personagem é um sprite, que é um objeto do jogo que você pode programar.\n>\n> E, como você viu na experiência, o movimento tem que acontecer em todo quadro. Por isso, ele vai dentro do bloco A cada quadro do jogo, que fica na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Dentro dela, no bloco A cada quadro do jogo, deixe à vista o Desenhar o cenário praia tropical.\n>\n> Agora abra Jogo 2D, depois Movimento e depois Movimentos prontos, e pegue o bloco Mover sprite em 4 direções com setas.\n>\n> Arraste e solte logo abaixo de Desenhar o cenário praia tropical, quando aparecer o encaixe.\n>\n> Repare que o bloco chega com o nome heroi, mas o sprite do seu jogo se chama personagem. Por isso, clique em heroi e escolha personagem na lista. A velocidade já vem em 3; deixe assim.\"",
+      "adulto": "> \"Repare: as setas apareceram, mas ele ainda não anda. É que as setas sozinhas ainda não movem ninguém. A gente precisa dizer para o jogo quem elas vão mover, e esse alguém é o personagem. No jogo, o personagem é um sprite, que é um objeto do jogo que você pode programar.\n>\n> E, como você viu na experiência, o movimento tem que acontecer em todo quadro. Por isso, ele vai dentro do bloco A cada quadro do jogo, que fica na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Dentro dela, no bloco A cada quadro do jogo, deixe à vista o Desenhar o cenário praia tropical.\n>\n> Agora abra Jogo 2D, depois Movimento e depois Movimentos prontos, e pegue o bloco Mover sprite em 4 direções com setas.\n>\n> Arraste e solte logo abaixo de Desenhar o cenário praia tropical, quando aparecer o encaixe.\n>\n> Repare que o bloco chega com o nome heroi, mas o sprite do seu jogo se chama personagem. Por isso, clique em heroi e escolha personagem na lista. A velocidade já vem em 3; deixe assim.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Nota de edição, 20/10/2026 (não gravar):** conservar a âncora “A velocidade já vem em 3; deixe assim.” e seguir para o teste. Retirar a inserção proposta que convidava a escolher outro valor. A montagem ensina 3; a flexibilidade pertence à avaliação. Não informa gravação ou edição concluída.",
+      "adulto": "**Nota de edição, 20/10/2026 (não gravar):** conservar a âncora “A velocidade já vem em 3; deixe assim.” e seguir para o teste. Retirar a inserção proposta que convidava a escolher outro valor. A montagem ensina 3; a flexibilidade pertence à avaliação. Não informa gravação ou edição concluída."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** testar uma seta da tela. No computador, clicar dentro do jogo e testar uma seta do teclado. Pausar para a pessoa testar. Depois clicar em **Verificar esta parte**, mostrar o resultado real e apontar **Próxima parte**. O envio não faz parte desta seção.",
+      "adulto": "**Na tela:** testar uma seta da tela. No computador, clicar dentro do jogo e testar uma seta do teclado. Pausar para a pessoa testar. Depois clicar em **Verificar esta etapa**, mostrar o resultado real e apontar **Próxima seção**. O envio não faz parte desta seção."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!\"",
+      "adulto": "> \"Agora vamos testar. Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** **F1P4-R02** · Terminar o teste de movimento antes da entrada. Debinha comemora o resultado da demonstração; não afirmar que todos os jogos já funcionam.",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Foi! Agora ele anda!\"",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai. Retomar a orientação condicional para quem precisa conferir os blocos. No \"O Estúdio guarda seu jogo automaticamente\", mostrar o selo **Guardado na sua conta**, no cabeçalho do bloco **Seu projeto no Estúdio**, só depois de ele aparecer de verdade; não simular o selo na edição. No lugar do botão de envio, o Estúdio desta parte mostra \"Continue construindo. Você envia o projeto no fim da fase.\", que combina com a fala.",
+      "adulto": "**Na tela:** Retomar a orientação condicional para quem precisa conferir os blocos. No \"O Estúdio salva o seu jogo automaticamente\", mostrar o selo **Salvo na sua conta**, no cabeçalho do bloco **Atividade no Estúdio**, só depois de ele aparecer de verdade; não simular o selo na edição. No lugar do botão de envio, o Estúdio desta seção mostra \"Continue construindo. A entrega do projeto fica no fechamento.\", que combina com a fala."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar. E o bloco de movimento, com o sprite personagem, está dentro de A cada quadro do jogo. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.\n>\n> O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta fase. Quando aparecer Objetivo cumprido!, clique em Próxima parte.\"",
+      "adulto": "> \"Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar. E o bloco de movimento, com o sprite personagem, está dentro de A cada quadro do jogo. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.\n>\n> O Estúdio salva o seu jogo automaticamente enquanto você monta. Você só envia o seu projeto ao professor no fim desta aula. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Conferência de produção:** a seção exige o vídeo, dois critérios de montagem (controles de quatro direções e movimento dentro de A cada quadro do jogo) e quatro critérios observados, um para cada direção. O teste observa o personagem parado antes da seta, sem comparar cor, arte, posição inicial ou tamanho de passo com a demonstração. Não exigir teclado de quem só tem toque, nem toque de quem só tem teclado.",
+      "adulto": "**Conferência de produção:** a seção exige o vídeo, dois critérios de montagem (controles de quatro direções e movimento dentro de A cada quadro do jogo) e quatro critérios observados, um para cada direção. O teste observa o personagem parado antes da seta, sem comparar cor, arte, posição inicial ou tamanho de passo com a demonstração. Não exigir teclado de quem só tem toque, nem toque de quem só tem teclado."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "## Seção 5. Até onde ele pode ir?",
+      "adulto": "## Seção 5. Até onde ele pode ir?"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "### Vídeo `video-d1-limite` · Até onde ele pode ir?",
+      "adulto": "### Vídeo `video-d1-limite` · Até onde ele pode ir?"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Duração alvo:** 75 a 95 segundos.",
+      "adulto": "**Duração alvo:** 75 a 95 segundos."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** mostrar a mesma experiência com **Manter dentro da tela** desligado. No \"nesta faixa de fora da tela\", apontar a faixa à direita da borda, com o rótulo **fora da tela**. Ligar a seta e Rodar até o personagem sair pela borda; no \"Tá vendo?\", deixar ver a saída, com o personagem clarinho na faixa de fora. Não recomeçar nem ligar o limite antes da pergunta da Debinha.",
+      "adulto": "**Na tela:** mostrar a mesma experiência com **Manter dentro da tela** desligado. No \"nesta faixa de fora da tela\", apontar a faixa à direita da borda, com o rótulo **fora da tela**. Ligar a seta e Rodar até o personagem sair pela borda; no \"Percebe?\", deixar ver a saída, com o personagem em tom claro na faixa de fora. Não recomeçar nem ligar o limite antes da fala seguinte."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Esta é a mesma experiência, mas agora é para a gente entender o limite da tela.\n>\n> A tela do jogo é como uma janela: tudo o que passa da borda some de vista. Aqui na experiência, o que sai ainda aparece, clarinho, nesta faixa de fora da tela.\n>\n> Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. Tá vendo? O personagem chega na borda e continua andando até sair da tela, porque nada segura ele dentro da janela.\"",
+      "adulto": "> \"Esta é a mesma experiência, mas agora é para a gente entender o limite da tela.\n>\n> A tela do jogo é como uma janela: tudo o que passa da borda some de vista. Aqui na experiência, o que sai ainda aparece, em tom claro, nesta faixa de fora da tela.\n>\n> Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. Percebe? O personagem chega na borda e continua andando até sair da tela, porque nada segura ele dentro da janela.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** **F1P5-D01** · Debinha entra depois que o personagem sai pela borda, sem encobrir o controle Manter dentro da tela.",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Como eu faço ele parar na borda?\"",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai. Só agora recomeçar, ligar o limite e rodar de novo. Mostrar a parada na borda. No \"repare na regra do movimento\", apontar a terceira linha da regra, **Manter o sprite personagem dentro da tela**, que perdeu o \"(desligado)\", logo abaixo do bloco que move, sem cobrir o palco. Depois passar a vez. **Meme na comparação:** na frase da parede invisível, o personagem fazendo mímica com as mãos espalmadas numa parede invisível na borda da tela. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.",
+      "adulto": "**Na tela:** Só agora recomeçar, ligar o limite e rodar de novo. Mostrar a parada na borda. No \"repare na regra do movimento\", apontar a terceira linha da regra, **Manter o sprite personagem dentro da tela**, que perdeu o \"(desligado)\", logo abaixo do bloco que move, sem cobrir o palco. Depois passar a vez. **Meme na comparação:** na frase da parede invisível, o personagem fazendo mímica com as mãos espalmadas numa parede invisível na borda da tela. Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: dessa vez ele para na borda e fica inteiro na tela! É que Manter dentro da tela funciona como uma parede invisível na borda da janela. E repare na regra do movimento: Manter o sprite personagem dentro da tela fica logo abaixo do bloco que move, para conferir a borda logo depois que o personagem anda.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.\"",
+      "adulto": "> \"Para ele parar na borda, eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: dessa vez ele para na borda e fica inteiro na tela. É que Manter dentro da tela funciona como uma parede invisível na borda da janela. E repare na regra do movimento: Manter o sprite personagem dentro da tela fica logo abaixo do bloco que move, para conferir a borda logo depois que o personagem anda.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "## Seção 6. Mantenha o personagem na tela",
+      "adulto": "## Seção 6. Mantenha o personagem na tela"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "### Vídeo `video-d1-borda` · Mantenha o personagem na tela",
+      "adulto": "### Vídeo `video-d1-borda` · Mantenha o personagem na tela"
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Duração alvo:** 150 a 190 segundos, incluindo o encaixe, os testes e o envio.",
+      "adulto": "**Duração alvo:** 150 a 190 segundos, incluindo o encaixe, os testes e o envio."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema no projeto (levar o personagem até a beirada da direita, continuar segurando e soltar a seta quando parte dele já estiver fora da tela; no \"Tá vendo?\", manter essa parte cortada à vista), depois a lembrança e o anúncio. Pausar para a pessoa testar.",
+      "adulto": "**Na tela:** Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema no projeto (levar o personagem até a beirada da direita, continuar segurando e soltar a seta quando parte dele já estiver fora da tela; no \"Percebe?\", manter essa parte cortada à vista), depois a lembrança e o anúncio. Pausar para a pessoa testar."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Aqui no seu jogo, segure uma seta até o personagem chegar à beirada e continue segurando. Tá vendo? Ele passa da beirada e vai sumindo da tela, porque o seu jogo ainda não tem limite.\n>\n> Lembra da experiência da parte anterior? Com Manter dentro da tela ligado, ele parava na borda. Agora a gente vai pôr esse limite no seu jogo!\"",
+      "adulto": "> \"Aqui no seu jogo, segure uma seta até o personagem chegar à beirada e continue segurando. Percebe? Ele passa da beirada e vai sumindo da tela, porque o seu jogo ainda não tem limite.\n>\n> Lembra da experiência da seção anterior? Com Manter dentro da tela ligado, ele parava na borda. Agora a gente vai pôr esse limite no seu jogo.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** **F1P6-D01** · Debinha entra após a retomada, antes de abrir a paleta; o bloco de movimento fica visível.",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"E onde eu coloco esse limite?\"",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai. Deixar à vista o bloco de movimento dentro de **A cada quadro do jogo**. Só então abrir **Jogo 2D → Movimento → Bordas e rebatidas**, pegar **Manter o sprite dentro da tela** e soltar logo abaixo do bloco de movimento. Deixar **heroi** à vista antes do clique, clicar em **heroi** e escolher `personagem` na lista; este bloco só tem o seletor de sprite. Testar as quatro bordas com o dispositivo disponível.",
+      "adulto": "**Na tela:** Deixar à vista o bloco de movimento dentro de **A cada quadro do jogo**. Só então abrir **Jogo 2D → Movimento → Bordas e rebatidas**, pegar **Manter o sprite dentro da tela** e soltar logo abaixo do bloco de movimento. Deixar **heroi** à vista antes do clique, clicar em **heroi** e escolher `personagem` na lista; este bloco só tem o seletor de sprite. Testar as quatro bordas com o dispositivo disponível."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que ele precisa ser conferido em todo quadro, logo depois que o personagem anda. Deixe esse lugar à vista.\n>\n> Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela.\n>\n> Arraste e solte logo abaixo do bloco de movimento. Repare que esse bloco também chega com heroi: clique em heroi e escolha personagem.\n>\n> Agora teste as quatro direções até chegar às beiradas. Olha só: ele para em cada beirada e não sai mais da tela!\"",
+      "adulto": "> \"O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que ele precisa ser conferido em todo quadro, logo depois que o personagem anda. Deixe esse lugar à vista.\n>\n> Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela.\n>\n> Arraste e solte logo abaixo do bloco de movimento. Repare que esse bloco também chega com heroi: clique em heroi e escolha personagem.\n>\n> Agora teste as quatro direções até chegar às beiradas. Olha só: ele para em cada beirada e não sai mais da tela.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** **F1P6-R01** · Mostrar o personagem parando nas beiradas da direita, da esquerda e de baixo. A de baixo, pelo meio da tela, longe das setas, que ficam no canto de baixo à esquerda. Na beirada de cima, a faixa do aviso fica na frente da cabeça do personagem: não terminar o teste ali. Soltar a seta antes da fala da Debinha.",
+      "adulto": "**Na tela:** Mostrar o personagem parando nas beiradas da direita, da esquerda e de baixo. A de baixo, pelo meio da tela, longe das setas, que ficam no canto de baixo à esquerda. Na beirada de cima, a faixa do aviso fica na frente da cabeça do personagem: não terminar o teste ali. Soltar a seta e conferir os dois blocos na ordem indicada, mantendo os testes e o envio."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Agora posso segurar a seta que ele não vai embora!\"",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai. Conferir os dois blocos na ordem indicada, mantendo os testes e o envio.",
+      "adulto": ""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, o bloco que move o personagem vem antes, e logo abaixo dele está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo.\"",
+      "adulto": "> \"Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, o bloco que move o personagem vem antes, e logo abaixo dele está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Na tela:** clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Em caso de pendência, enquadrar o item a corrigir e verificar de novo. Clicar em **Enviar meu projeto**, confirmar em **Enviar** sem preencher o **Recado (opcional)** e aguardar **Projeto enviado!**. Na comemoração, falar com entusiasmo, sem pedir um novo teste. Apontar **Concluir fase**. Gravar numa sessão sem envio anterior nesta fase, para aparecerem **Enviar meu projeto**, **Enviar** e **Projeto enviado!**. Com um envio de ensaio, a tela mostra **Enviar de novo**, **Reenviar** e \"Projeto enviado! Foi em …\". O **Recomeçar** do Estúdio não apaga o envio: para repetir a tomada, usar outro perfil de ensaio.",
+      "adulto": "**Na tela:** clicar em **Verificar esta etapa** e mostrar **Objetivo da etapa cumprido!**. Em caso de pendência, enquadrar o item a corrigir e verificar de novo. Clicar em **Enviar para o professor**, confirmar em **Enviar** sem preencher o **Recado para o professor** e aguardar **Projeto enviado ao professor**. No reconhecimento do resultado, falar com naturalidade, sem pedir um novo teste. Apontar **Concluir aula**. Gravar numa sessão sem envio anterior nesta aula, para aparecerem **Enviar para o professor**, **Enviar** e **Projeto enviado ao professor**. Com um envio de ensaio, a tela mostra **Reenviar ao professor** e \"Projeto enviado ao professor em …\". O **Recomeçar** do Estúdio não apaga o envio: para repetir a tomada, usar outro perfil de ensaio."
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "> \"Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.\n>\n> Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.\n>\n> Pronto, você programou o movimento do seu personagem: agora ele anda pelo mapa e não sai da tela!\n>\n> Quando aparecer Projeto enviado!, clique em Concluir fase.\"",
+      "adulto": "> \"Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.\n>\n> Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar.\n>\n> Pronto: você programou o movimento do seu personagem. Agora ele anda pelo mapa e não sai da tela.\n>\n> Quando aparecer Projeto enviado ao professor, clique em Concluir aula.\""
+    },
+    {
+      "onde": "desafio-dia-1.roteiro.md",
+      "kids": "**Conferência de produção:** a seção exige o vídeo, os três critérios de projeto e o envio confirmado. A verificação depende do clique em **Verificar esta parte**; o envio não a executa sozinho. Manter o projeto da pessoa, sem abrir o Pinta ou o Estúdio completo.",
+      "adulto": "**Conferência de produção:** a seção exige o vídeo, os três critérios de projeto e o envio confirmado. A verificação depende do clique em **Verificar esta etapa**; o envio não a executa sozinho. Manter o projeto da pessoa, sem abrir o Pinta ou o Estúdio completo."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "O personagem ganha movimento",
+      "adulto": "O personagem ganha movimento"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Título: Seu primeiro jogo: A Chave do Farol\n\nAnunciar o jogo que será programado e o contexto do barco e do farol apagado. Demonstração na primeira pessoa com um gesto só (Olha aqui: quando eu seguro a seta da tela para a direita…), sem resolver o percurso, e o aviso no alto do jogo apontado como o lugar que diz o que fazer na partida. Antes de passar a vez, plantar a surpresa do final, sem dizer o que é (E tem uma coisa esperando por você lá no fim desta aventura: uma surpresa para deixar o jogo do seu jeito.); só no fim passar a vez: jogar até o farol acender e o barco chegar. Não fazer tour de interface. A participação permite avançar; vencer não é requisito. Participações de Debinha, na ordem de corte: F1P1-D01, depois de \"o personagem precisa pegar a chave e levar até lá.\", Debinha diz \"E como eu levo o personagem até a chave?\"; a professora retoma \"Olha aqui: quando eu seguro a seta da tela para a direita\". Quando a entrada vem depois de um gesto, concluir o gesto antes de Debinha entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Debinha entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": "Título: Seu primeiro jogo: A Chave do Farol\n\nAnunciar o jogo que será programado e o contexto do barco e do farol apagado. Demonstração na primeira pessoa com um gesto só (Olha aqui: quando eu seguro a seta da tela para a direita…), sem resolver o percurso, e o aviso no alto do jogo apontado como o lugar que diz o que fazer na partida. Antes de passar a vez, plantar a surpresa do final, sem dizer o que é (E tem uma coisa esperando por você lá no fim deste curso: uma surpresa para deixar o jogo do seu jeito.); só no fim passar a vez: jogar até o farol acender e o barco chegar. Não fazer tour de interface. A participação permite avançar; vencer não é requisito.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Sua vez! Jogue a versão pronta: pegue a chave e leve o personagem até o farol. Depois, clique em Próxima parte.",
+      "adulto": "Sua vez: jogue a versão pronta, pegue a chave e leve o personagem até o farol. Depois, clique em Próxima seção."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Jogue A Chave do Farol",
+      "adulto": "Jogue A Chave do Farol"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Segure as setas da tela ou, no computador, clique no jogo e use as setas do teclado. Pegue a chave e leve o personagem até o farol. Você pode seguir mesmo sem terminar a partida.",
+      "adulto": "Segure as setas da tela ou, no computador, clique no jogo e use as setas do teclado. Pegue a chave e leve o personagem até o farol. Você pode seguir mesmo sem terminar a partida."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Título: Seu Mapa da Aventura\n\nChamar a atenção para o caderno, que a criança conhece como Mapa da Aventura (Olha aqui: este é o seu Mapa da Aventura!), a consulta que acompanha as seções do curso: montagem, testes, publicação e certificado. Oferecer as duas escolhas como convite: ler aqui mesmo ou clicar em Baixar para guardar o mapa e consultar onde quiser. Não dizer que não precisa baixar ou imprimir: soa como uma ordem para não fazer. Apontar Baixar sem demonstrar o download. Não inventar material de mapa nem ensinar o leitor. A professora conduz este vídeo sem participação do avatar para manter a explicação direta.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": "Título: Seu caderno do curso\n\nChamar a atenção para o caderno (Olha aqui: este é o seu caderno do curso.), a consulta que acompanha as seções do curso: montagem, testes, publicação e certificado. Oferecer as duas escolhas como convite: ler aqui mesmo ou clicar em Baixar para guardar o caderno e consultar onde quiser. Não dizer que não precisa baixar ou imprimir: soa como uma ordem para não fazer. Apontar Baixar sem demonstrar o download. Não inventar outro material nem ensinar o leitor. A professora conduz este vídeo sozinha, para manter a explicação direta.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.",
+      "adulto": "Este é o seu caderno do curso. Quando precisar conferir um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Mapa da Aventura: A Chave do Farol",
+      "adulto": "Caderno do curso: A Chave do Farol"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Precisa de ajuda com a plataforma? Abra um destes passo a passo do Como fazer.",
+      "adulto": "Precisa de ajuda com a plataforma? Abra um destes passo a passo do Como fazer."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Como abrir o Mapa da Aventura e os materiais",
+      "adulto": "Como baixar os materiais da aula"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Como abrir uma fase e trocar de parte",
+      "adulto": "Como abrir uma aula e passar de seção"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Como dar mais espaço ao jogo e à experiência",
+      "adulto": "Como usar o Estúdio dentro da aula"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Como mostrar o menu e a lista de fases",
+      "adulto": "Como andar pelo menu do alto"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Como continuar uma fase",
+      "adulto": "Como continuar o seu curso de onde parou"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Como pedir ajuda à equipe",
+      "adulto": "Como pedir ajuda sem sair da aula"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Título: Como o personagem anda\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: o jogo é como um desenho animado, quadro a quadro. Fazer cada gesto no ritmo da fala, sem a seta (o quadro passa de 0 para 1 e o x fica igual) e com a seta (o x sobe 3 a cada quadro, como mostra o +3 embaixo do personagem), depois Rodar, nomeando o que aconteceu e por quê. Terminar com Agora é a sua vez e Próxima parte. Participações de Debinha, na ordem de corte: F1P3-D01, depois de \"Por isso, ele acontece de novo em todo quadro.\", Debinha diz \"E se eu clicar em Rodar?\"; a professora retoma \"Vamos ver. Quando eu clico em Rodar,\". Quando a entrada vem depois de um gesto, concluir o gesto antes de Debinha entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Debinha entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": "Título: Como o personagem anda\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: o jogo é como um desenho animado, quadro a quadro. Fazer cada gesto no ritmo da fala, sem a seta (o quadro passa de 0 para 1 e o x fica igual) e com a seta (o x sobe 3 a cada quadro, como mostra o +3 embaixo do personagem), depois Rodar, nomeando o que aconteceu e por quê. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Sua vez! Teste sem a seta e com a seta e repare no que acontece com o x. Quando terminar, clique em Próxima parte.",
+      "adulto": "Sua vez: teste sem a seta e com a seta e repare no que acontece com o x. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Como o personagem anda",
+      "adulto": "Como o personagem anda"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue Segurar a seta para a direita e clique em Avançar 1 quadro algumas vezes. Por último, clique em Rodar.",
+      "adulto": "Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue Segurar a seta para a direita e clique em Avançar 1 quadro algumas vezes. Por último, clique em Rodar."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Sem a seta, o personagem ficou parado",
+      "adulto": "Sem a seta, o personagem ficou parado"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Com a seta, o personagem andou a cada quadro",
+      "adulto": "Com a seta, o personagem andou a cada quadro"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Título: Faça o personagem andar\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (a criança procura as setas na tela ou usa as do teclado: não há setas e o personagem não sai do lugar), a lembrança da experiência (com a seta segurada, ele andava a cada quadro) e o anúncio da montagem. Antes de pedir para encontrar Ao iniciar, apresentar os comandos e os bloquinhos com a fala: \"Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.\" Apontar a paleta no \"Olha aqui: neste menu\", sem pegar nenhum bloco ainda. No projeto inicial, guiar com o destino à vista: controles com só as quatro direções no fim de Ao iniciar (o bloco chega com automáticos no celular: clicar nesse nome e trocar) e o movimento dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário praia-tropical, mandando manter a velocidade em 3, um comando por vez (o bloco chega com heroi: clicar em heroi e escolher personagem). Procurar primeiro a área Enquanto estiver rodando, com o socorro de arrastar um espaço vazio, e depois o bloco dentro dela. Conservar o teste e a sequência da fala existente, com tempo para acompanhar cada gesto, sem acrescentar uma narração de cada caso interno da avaliação. Preservar a âncora \"A velocidade já vem em 3; deixe assim.\", sem inserir convite para escolher outro valor. Para a equipe: a avaliação aceita cores, arte e outros tamanhos de passo coerentes com a direção; essa flexibilidade não vira escolha durante a montagem guiada; explicar que o Estúdio guarda o jogo automaticamente (mostrar o selo Guardado na sua conta só quando ele aparecer de verdade) e que o envio fica no fim da fase, Verificar esta parte, Objetivo cumprido! e Próxima parte, sem envio. Participações de Debinha, na ordem de corte: F1P4-R01, depois de \"Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.\", Debinha diz \"Primeiro eu preciso pôr as setas na tela!\"; a professora retoma \"As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.\". F1P4-D01, depois de \"Segure uma delas.\", Debinha diz \"As setas apareceram, mas ele ainda não anda!\"; a professora retoma \"É que as setas sozinhas ainda não movem ninguém.\". F1P4-R02, depois de \"Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!\", Debinha diz \"Foi! Agora ele anda!\"; a professora retoma \"Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar. E o bloco de movimento, com o sprite personagem, está dentro de A cada quadro do jogo. Depois de corrigir, teste de novo.\". As entradas -R vieram da revisão de ritmo de 10/10/2026: mostram uma consequência, fazem uma pergunta ou reagem ao teste, sem tirar passos da professora. Quando a entrada vem depois de um gesto, concluir o gesto antes de Debinha entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Debinha entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": "Título: Faça o personagem andar\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (a pessoa procura as setas na tela ou usa as do teclado: não há setas e o personagem não sai do lugar), a lembrança da experiência (com a seta segurada, ele andava a cada quadro) e o anúncio da montagem. Antes de pedir para encontrar Ao iniciar, apresentar os comandos e os blocos com a fala: \"Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como blocos de encaixar. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.\" Apontar a paleta no \"Olha aqui: neste menu\", sem pegar nenhum bloco ainda. No projeto inicial, guiar com o destino à vista: controles com só as quatro direções no fim de Ao iniciar (o bloco chega com automáticos no celular: clicar nesse nome e trocar) e o movimento dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário praia-tropical, mandando manter a velocidade em 3, um comando por vez (o bloco chega com heroi: clicar em heroi e escolher personagem). Procurar primeiro a área Enquanto estiver rodando, com o socorro de arrastar um espaço vazio, e depois o bloco dentro dela. Conservar o teste e a sequência da fala existente, com tempo para acompanhar cada gesto, sem acrescentar uma narração de cada caso interno da avaliação. Preservar a âncora \"A velocidade já vem em 3; deixe assim.\", sem inserir convite para escolher outro valor. Para a equipe: a avaliação aceita cores, arte e outros tamanhos de passo coerentes com a direção; essa flexibilidade não vira escolha durante a montagem guiada; explicar que o Estúdio salva o jogo automaticamente (mostrar o selo Salvo na sua conta só quando ele aparecer de verdade) e que o envio fica no fim da aula, Verificar esta etapa, Objetivo da etapa cumprido! e Próxima seção, sem envio.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+      "adulto": "Hora de fazer o seu personagem andar. Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta etapa. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Título: Até onde ele pode ir?\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a tela é uma janela, e o limite, uma parede invisível. Apontar a faixa fora da tela, onde a experiência ainda mostra, clarinho, o que saiu. Rodar sem o limite até o personagem sair e depois com Manter dentro da tela ligado; no fim, apontar na regra o bloco Manter o sprite personagem dentro da tela, logo abaixo do bloco que move. Terminar com Agora é a sua vez e Próxima parte. Participações de Debinha, na ordem de corte: F1P5-D01, depois de \"porque nada segura ele dentro da janela.\", Debinha diz \"Como eu faço ele parar na borda?\"; a professora retoma \"Agora eu clico em Recomeçar,\". Quando a entrada vem depois de um gesto, concluir o gesto antes de Debinha entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Debinha entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": "Título: Até onde ele pode ir?\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a tela é uma janela, e o limite, uma parede invisível. Apontar a faixa fora da tela, onde a experiência ainda mostra, em tom claro, o que saiu. Rodar sem o limite até o personagem sair e depois com Manter dentro da tela ligado; no fim, apontar na regra o bloco Manter o sprite personagem dentro da tela, logo abaixo do bloco que move. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Sua vez! Teste sem o limite e com ele e repare no que acontece na borda. Quando terminar, clique em Próxima parte.",
+      "adulto": "Sua vez: teste sem o limite e com ele e repare no que acontece na borda. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Até onde ele pode ir?",
+      "adulto": "Até onde ele pode ir?"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Veja o que acontece na borda. Depois clique em Recomeçar, ligue Manter dentro da tela e clique em Rodar de novo.",
+      "adulto": "Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Veja o que acontece na borda. Depois clique em Recomeçar, ligue Manter dentro da tela e clique em Rodar de novo."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Título: Mantenha o personagem na tela\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (o personagem sai pela beirada, porque ainda não há limite), a lembrança da experiência (com Manter dentro da tela ligado, ele parava na borda) e o anúncio; depois da pergunta da Debinha, o primeiro passo. Depois deixar à vista o bloco de movimento e encaixar Manter o sprite dentro da tela logo abaixo (o bloco chega com heroi: clicar em heroi e escolher personagem). Testar as beiradas, Verificar esta parte, Objetivo cumprido!, envio com confirmação, a comemoração do que a criança programou e Concluir fase. Gravar o envio numa sessão sem envio anterior nesta fase. Participações de Debinha, na ordem de corte: F1P6-D01, depois de \"Agora a gente vai pôr esse limite no seu jogo!\", Debinha diz \"E onde eu coloco esse limite?\"; a professora retoma \"O limite vai logo abaixo do bloco de movimento,\". F1P6-R01, depois de \"Agora teste as quatro direções até chegar às beiradas. Olha só: ele para em cada beirada e não sai mais da tela!\", Debinha diz \"Agora posso segurar a seta que ele não vai embora!\"; a professora retoma \"Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, o bloco que move o personagem vem antes, e logo abaixo dele está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo.\". As entradas -R vieram da revisão de ritmo de 10/10/2026: mostram uma consequência, fazem uma pergunta ou reagem ao teste, sem tirar passos da professora. Quando a entrada vem depois de um gesto, concluir o gesto antes de Debinha entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Debinha entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": "Título: Mantenha o personagem na tela\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (o personagem sai pela beirada, porque ainda não há limite), a lembrança da experiência (com Manter dentro da tela ligado, ele parava na borda) e o anúncio. Depois deixar à vista o bloco de movimento e encaixar Manter o sprite dentro da tela logo abaixo (o bloco chega com heroi: clicar em heroi e escolher personagem). Testar as beiradas, Verificar esta etapa, Objetivo da etapa cumprido!, envio com confirmação, um reconhecimento curto do que a pessoa programou e Concluir aula. Gravar o envio numa sessão sem envio anterior nesta aula.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta parte. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.",
+      "adulto": "Agora mantenha o personagem na tela. Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta etapa. Depois clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "A Chave do Farol",
+      "adulto": "A Chave do Farol"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Experimentar a aventura pronta antes de construir suas regras, sem exigir vitória.",
+      "adulto": "Experimentar o jogo pronto antes de construir suas regras, sem exigir vitória."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Seu Mapa da Aventura",
+      "adulto": "Seu caderno do curso"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Conhecer o caderno opcional que acompanha o conteúdo das aulas e a ajuda disponível.",
+      "adulto": "Conhecer o caderno opcional que acompanha o conteúdo das aulas e a ajuda disponível."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Ver que o jogo repete a cada quadro e que, com a seta, o personagem anda um pouco em cada repetição.",
+      "adulto": "Ver que o jogo repete a cada quadro e que, com a seta, o personagem anda um pouco em cada repetição."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Faça o personagem andar",
+      "adulto": "Faça o personagem andar"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Ativar as quatro setas e mover o personagem dentro de A cada quadro do jogo.",
+      "adulto": "Ativar as quatro setas e mover o personagem dentro de A cada quadro do jogo."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
+      "adulto": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Dentro de A cada quadro do jogo, mova o personagem.",
+      "adulto": "Dentro de A cada quadro do jogo, mova o personagem."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Com a seta para cima, o personagem sobe.",
+      "adulto": "Com a seta para cima, o personagem sobe."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Com a seta para baixo, o personagem desce.",
+      "adulto": "Com a seta para baixo, o personagem desce."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Com a seta para a esquerda, o personagem vai para a esquerda.",
+      "adulto": "Com a seta para a esquerda, o personagem vai para a esquerda."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Com a seta para a direita, o personagem vai para a direita.",
+      "adulto": "Com a seta para a direita, o personagem vai para a direita."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Ver o personagem sair da tela sem limite e ficar inteiro com o limite ligado.",
+      "adulto": "Ver o personagem sair da tela sem limite e ficar inteiro com o limite ligado."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Mantenha o personagem na tela",
+      "adulto": "Mantenha o personagem na tela"
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Manter o personagem dentro da tela, depois do movimento, e enviar a atividade.",
+      "adulto": "Manter o personagem dentro da tela, depois do movimento, e enviar a atividade."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.",
+      "adulto": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela."
+    },
+    {
+      "onde": "desafio-dia-1.manifesto.json",
+      "kids": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.",
+      "adulto": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela."
+    }
+  ]
+}

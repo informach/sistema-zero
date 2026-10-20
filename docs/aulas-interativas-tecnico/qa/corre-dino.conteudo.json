@@ -192,7 +192,7 @@
           },
           {
             "id": "tela",
-            "label": "Prepare a tela de 480 por 270 dentro de Ao iniciar.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 480 por 270 usado nesta aventura.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -236,27 +236,35 @@
         "checks": [
           {
             "id": "tela-antes-da-borda",
-            "label": "Prepare a tela de 480 por 270 antes de mostrar a borda.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 480 por 270 usado nesta aventura.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
               "area": "start",
+              "beforeBlock": "sz_g2d_stage_border",
               "inputs": {
                 "W": 480,
                 "H": 270
-              },
-              "beforeBlock": "sz_g2d_stage_border"
+              }
             }
           },
           {
             "id": "borda",
-            "label": "Coloque Mostrar a borda da tela em Ao iniciar, com espessura 4.",
+            "label": "Coloque a borda da tela com espessura positiva.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_stage_border",
               "area": "start",
-              "inputs": {
-                "WIDTH": 4
+              "inputBlocks": {
+                "WIDTH": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
               }
             }
           }
@@ -369,20 +377,28 @@
         "checks": [
           {
             "id": "borda-antes-do-dino",
-            "label": "Deixe o Criar dinossauro logo abaixo da borda da tela.",
+            "label": "Coloque a borda antes de criar o Dino, com espessura positiva.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_stage_border",
               "area": "start",
-              "inputs": {
-                "WIDTH": 4
-              },
-              "beforeBlock": "sz_g2d_create_dino"
+              "beforeBlock": "sz_g2d_create_dino",
+              "inputBlocks": {
+                "WIDTH": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
             "id": "dino",
-            "label": "Crie o dinossauro dino em Ao iniciar: x 110, y 150 e tamanho 64.",
+            "label": "Crie o dinossauro dino em Ao iniciar, com posição dentro da tela e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_dino",
@@ -390,10 +406,36 @@
               "fields": {
                 "NAME": "dino"
               },
-              "inputs": {
-                "X": 110,
-                "Y": 150,
-                "SIZE": 64
+              "inputBlocks": {
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 480,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 270,
+                      "maxExclusive": true
+                    }
+                  }
+                }
               }
             }
           }
@@ -431,34 +473,42 @@
           },
           {
             "id": "tela",
-            "label": "Prepare a tela de 480 por 270, antes da borda.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 480 por 270 usado nesta aventura.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
               "area": "start",
+              "beforeBlock": "sz_g2d_stage_border",
               "inputs": {
                 "W": 480,
                 "H": 270
-              },
-              "beforeBlock": "sz_g2d_stage_border"
+              }
             }
           },
           {
             "id": "borda",
-            "label": "Mostre a borda da tela com espessura 4, antes de criar o Dino.",
+            "label": "Coloque a borda da tela com espessura positiva.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_stage_border",
               "area": "start",
-              "inputs": {
-                "WIDTH": 4
-              },
-              "beforeBlock": "sz_g2d_create_dino"
+              "beforeBlock": "sz_g2d_create_dino",
+              "inputBlocks": {
+                "WIDTH": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
             "id": "dino",
-            "label": "Crie o dinossauro dino em Ao iniciar: x 110, y 150 e tamanho 64.",
+            "label": "Crie o dinossauro dino em Ao iniciar, com posição dentro da tela e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_dino",
@@ -466,10 +516,36 @@
               "fields": {
                 "NAME": "dino"
               },
-              "inputs": {
-                "X": 110,
-                "Y": 150,
-                "SIZE": 64
+              "inputBlocks": {
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 480,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 270,
+                      "maxExclusive": true
+                    }
+                  }
+                }
               }
             }
           }
@@ -752,16 +828,24 @@
           },
           {
             "id": "floresta",
-            "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
+            "label": "Desenhe a floresta em movimento antes do Dino.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_forest",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 5
-              },
-              "beforeBlock": "sz_g2d_draw_sprite"
+              "beforeBlock": "sz_g2d_draw_sprite",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -897,8 +981,10 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_set_stage_description",
               "area": "start",
-              "fields": {
-                "DESCRIPTION": "Corra com o dino e pule os cactos apertando espaço"
+              "fieldText": {
+                "DESCRIPTION": {
+                  "nonBlank": true
+                }
               }
             }
           }
@@ -951,16 +1037,24 @@
           },
           {
             "id": "floresta",
-            "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
+            "label": "Desenhe a floresta em movimento antes do Dino.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_forest",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 5
-              },
-              "beforeBlock": "sz_g2d_draw_sprite"
+              "beforeBlock": "sz_g2d_draw_sprite",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -1000,8 +1094,10 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_set_stage_description",
               "area": "start",
-              "fields": {
-                "DESCRIPTION": "Corra com o dino e pule os cactos apertando espaço"
+              "fieldText": {
+                "DESCRIPTION": {
+                  "nonBlank": true
+                }
               }
             }
           }
@@ -1136,10 +1232,18 @@
               "blockType": "sz_g2d_forest",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 5
-              },
-              "beforeBlock": "sz_g2d_apply_gravity"
+              "beforeBlock": "sz_g2d_apply_gravity",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -1231,10 +1335,18 @@
               "blockType": "sz_g2d_forest",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 5
-              },
-              "beforeBlock": "sz_g2d_apply_gravity"
+              "beforeBlock": "sz_g2d_apply_gravity",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -1398,16 +1510,24 @@
           },
           {
             "id": "floresta",
-            "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
+            "label": "Desenhe a floresta em movimento antes do Dino.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_forest",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 5
-              },
-              "beforeBlock": "sz_g2d_draw_sprite"
+              "beforeBlock": "sz_g2d_draw_sprite",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           }
         ],
@@ -1889,13 +2009,21 @@
           },
           {
             "id": "relogio-vazio",
-            "label": "Prepare o relógio de 1.4 segundo em Enquanto estiver rodando.",
+            "label": "Prepare um relógio com intervalo positivo em Enquanto estiver rodando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
               "area": "loops",
-              "inputs": {
-                "SECS": 1.4
+              "inputBlocks": {
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
               }
             }
           }
@@ -1972,25 +2100,53 @@
         "checks": [
           {
             "id": "relogio",
-            "label": "Crie um cacto em x 560, tamanho 44 e vx -5 a cada 1,4 s.",
+            "label": "Crie obstáculos no grupo cactos, pela direita e indo para a esquerda, em um relógio.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
               "area": "loops",
-              "inputs": {
-                "SECS": 1.4
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_g2d_spawn_obstacle",
                   "fields": {
-                    "GROUP": "cactos",
-                    "SHAPE": "cactus"
+                    "GROUP": "cactos"
                   },
-                  "inputs": {
-                    "X": 560,
-                    "VX": -5,
-                    "SIZE": 44
+                  "inputBlocks": {
+                    "X": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 480
+                        }
+                      }
+                    },
+                    "VX": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "max": 0,
+                          "maxExclusive": true
+                        }
+                      }
+                    },
+                    "SIZE": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    }
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
                   }
                 }
               }
@@ -2125,25 +2281,53 @@
           },
           {
             "id": "relogio",
-            "label": "Crie um cacto em x 560, tamanho 44 e vx -5 a cada 1,4 s.",
+            "label": "Crie obstáculos no grupo cactos, pela direita e indo para a esquerda, em um relógio.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
               "area": "loops",
-              "inputs": {
-                "SECS": 1.4
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_g2d_spawn_obstacle",
                   "fields": {
-                    "GROUP": "cactos",
-                    "SHAPE": "cactus"
+                    "GROUP": "cactos"
                   },
-                  "inputs": {
-                    "X": 560,
-                    "VX": -5,
-                    "SIZE": 44
+                  "inputBlocks": {
+                    "X": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 480
+                        }
+                      }
+                    },
+                    "VX": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "max": 0,
+                          "maxExclusive": true
+                        }
+                      }
+                    },
+                    "SIZE": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    }
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
                   }
                 }
               }
@@ -2187,16 +2371,24 @@
           },
           {
             "id": "floresta",
-            "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
+            "label": "Desenhe a floresta em movimento antes do Dino.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_forest",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 5
-              },
-              "beforeBlock": "sz_g2d_draw_sprite"
+              "beforeBlock": "sz_g2d_draw_sprite",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -2386,19 +2578,25 @@
           },
           {
             "id": "intervalo-cactos",
-            "label": "Mantenha a criação de cactos no relógio de 1.4 s.",
+            "label": "Mantenha a criação de cactos em um relógio com intervalo positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
               "area": "loops",
-              "inputs": {
-                "SECS": 1.4
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_g2d_spawn_obstacle",
                   "fields": {
                     "GROUP": "cactos"
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
                   }
                 }
               }
@@ -2524,19 +2722,25 @@
           },
           {
             "id": "intervalo-cactos",
-            "label": "Mantenha a criação de cactos no relógio de 1.4 s.",
+            "label": "Mantenha a criação de cactos em um relógio com intervalo positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
               "area": "loops",
-              "inputs": {
-                "SECS": 1.4
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_g2d_spawn_obstacle",
                   "fields": {
                     "GROUP": "cactos"
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
                   }
                 }
               }
@@ -2960,14 +3164,11 @@
         "checks": [
           {
             "id": "proteger-relogio",
-            "label": "No A cada 1,4 segundos, o No grupo criar obstáculo fica dentro de um Se o estado do jogo é jogando. Este passo não aparece na tela, e é este critério que confere por você.",
+            "label": "No relógio dos cactos, crie os obstáculos somente dentro de Se jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
               "area": "loops",
-              "inputs": {
-                "SECS": 1.4
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -2983,6 +3184,15 @@
                       "fields": {
                         "GROUP": "cactos"
                       }
+                    }
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
                     }
                   }
                 }
@@ -3278,14 +3488,11 @@
           },
           {
             "id": "proteger-relogio",
-            "label": "No A cada 1,4 segundos, o No grupo criar obstáculo fica dentro de um Se o estado do jogo é jogando. Este passo não aparece na tela, e é este critério que confere por você.",
+            "label": "No relógio dos cactos, crie os obstáculos somente dentro de Se jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
               "area": "loops",
-              "inputs": {
-                "SECS": 1.4
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -3301,6 +3508,15 @@
                       "fields": {
                         "GROUP": "cactos"
                       }
+                    }
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
                     }
                   }
                 }
@@ -3411,8 +3627,15 @@
                 },
                 "ELSEIF_THEN0": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte qualquer tecla ou toque na tela para começar"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -3553,8 +3776,15 @@
                 },
                 "ELSEIF_THEN0": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte qualquer tecla ou toque na tela para começar"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -3629,8 +3859,15 @@
                 },
                 "ELSEIF_THEN0": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte qualquer tecla ou toque na tela para começar"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -3675,14 +3912,11 @@
           },
           {
             "id": "proteger-relogio",
-            "label": "No A cada 1,4 segundos, o No grupo criar obstáculo continua dentro de um Se o estado do jogo é jogando.",
+            "label": "No relógio dos cactos, crie os obstáculos somente dentro de Se jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
               "area": "loops",
-              "inputs": {
-                "SECS": 1.4
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -3698,6 +3932,15 @@
                       "fields": {
                         "GROUP": "cactos"
                       }
+                    }
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
                     }
                   }
                 }
@@ -3956,29 +4199,34 @@
           },
           {
             "id": "tremida",
-            "label": "Use tremida 8 antes do som de derrota.",
+            "label": "Faça a tela tremer com intensidade positiva no efeito da batida.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_shake",
               "area": "loops",
               "withinBlock": "sz_g2d_on_sprite_group_overlap",
-              "inputs": {
-                "INTENSITY": 8
-              },
-              "beforeBlock": "sz_g2d_play_fx"
+              "beforeBlock": "sz_g2d_play_fx",
+              "inputBlocks": {
+                "INTENSITY": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
             "id": "derrota",
-            "label": "Toque o efeito derrota antes do Mudar o estado do jogo para fim.",
+            "label": "Toque um efeito no encerramento da partida.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_play_fx",
               "area": "loops",
               "withinBlock": "sz_g2d_on_sprite_group_overlap",
-              "fields": {
-                "FX": "gameover"
-              },
               "beforeBlock": "sz_g2d_set_scene"
             }
           }
@@ -4282,29 +4530,34 @@
           },
           {
             "id": "tremida",
-            "label": "Use tremida 8 antes do som de derrota.",
+            "label": "Faça a tela tremer com intensidade positiva no efeito da batida.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_shake",
               "area": "loops",
               "withinBlock": "sz_g2d_on_sprite_group_overlap",
-              "inputs": {
-                "INTENSITY": 8
-              },
-              "beforeBlock": "sz_g2d_play_fx"
+              "beforeBlock": "sz_g2d_play_fx",
+              "inputBlocks": {
+                "INTENSITY": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
             "id": "derrota",
-            "label": "Toque o efeito derrota antes do Mudar o estado do jogo para fim.",
+            "label": "Toque um efeito no encerramento da partida.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_play_fx",
               "area": "loops",
               "withinBlock": "sz_g2d_on_sprite_group_overlap",
-              "fields": {
-                "FX": "gameover"
-              },
               "beforeBlock": "sz_g2d_set_scene"
             }
           },
@@ -4522,6 +4775,17 @@
               "area": "start",
               "fields": {
                 "SPRITE": "dino"
+              },
+              "inputBlocks": {
+                "PERCENT": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 70,
+                      "max": 85
+                    }
+                  }
+                }
               }
             }
           },
@@ -4540,14 +4804,22 @@
           },
           {
             "id": "mesmo-desenho",
-            "label": "Crie o Dino com tamanho 64 antes do ajuste de colisão.",
+            "label": "Mantenha a criação do Dino e ajuste a área de colisão separadamente.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_dino",
               "area": "start",
               "beforeBlock": "sz_g2d_set_hitbox_scale",
-              "inputs": {
-                "SIZE": 64
+              "inputBlocks": {
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
               }
             }
           }
@@ -4583,6 +4855,17 @@
               "area": "start",
               "fields": {
                 "SPRITE": "dino"
+              },
+              "inputBlocks": {
+                "PERCENT": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 70,
+                      "max": 85
+                    }
+                  }
+                }
               }
             }
           },
@@ -4597,14 +4880,22 @@
           },
           {
             "id": "mesmo-desenho",
-            "label": "Crie o Dino com tamanho 64 antes do ajuste de colisão.",
+            "label": "Mantenha a criação do Dino e ajuste a área de colisão separadamente.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_dino",
               "area": "start",
               "beforeBlock": "sz_g2d_set_hitbox_scale",
-              "inputs": {
-                "SIZE": 64
+              "inputBlocks": {
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
               }
             }
           }
@@ -4637,6 +4928,17 @@
               "area": "start",
               "fields": {
                 "SPRITE": "dino"
+              },
+              "inputBlocks": {
+                "PERCENT": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 70,
+                      "max": 85
+                    }
+                  }
+                }
               }
             }
           },
@@ -4651,14 +4953,22 @@
           },
           {
             "id": "mesmo-desenho",
-            "label": "Crie o Dino com tamanho 64 antes do ajuste de colisão.",
+            "label": "Mantenha a criação do Dino e ajuste a área de colisão separadamente.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_dino",
               "area": "start",
               "beforeBlock": "sz_g2d_set_hitbox_scale",
-              "inputs": {
-                "SIZE": 64
+              "inputBlocks": {
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
               }
             }
           }
@@ -4825,15 +5135,36 @@
                 },
                 "THEN": {
                   "blockType": "sz_g2d_draw_score",
-                  "fields": {
-                    "LABEL": "Pontos:"
-                  },
                   "inputBlocks": {
                     "VALUE": {
                       "blockType": "sz_val_variable",
                       "fields": {
                         "NAME": "pontos"
                       }
+                    },
+                    "X": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "max": 480,
+                          "maxExclusive": true
+                        }
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 1,
+                          "max": 270
+                        }
+                      }
+                    }
+                  },
+                  "fieldText": {
+                    "LABEL": {
+                      "nonBlank": true
                     }
                   }
                 }
@@ -4936,6 +5267,15 @@
                       }
                     }
                   }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0.5,
+                      "max": 3
+                    }
+                  }
                 }
               }
             }
@@ -5009,8 +5349,10 @@
                       "inputBlocks": {
                         "ITEM0": {
                           "blockType": "sz_val_text",
-                          "fields": {
-                            "TEXT": "Você fez "
+                          "fieldText": {
+                            "TEXT": {
+                              "nonBlank": true
+                            }
                           }
                         },
                         "ITEM1": {
@@ -5021,8 +5363,10 @@
                         },
                         "ITEM2": {
                           "blockType": "sz_val_text",
-                          "fields": {
-                            "TEXT": " pontos. Tente bater essa marca!"
+                          "fieldText": {
+                            "TEXT": {
+                              "nonBlank": true
+                            }
                           }
                         }
                       }
@@ -5162,15 +5506,36 @@
                 },
                 "THEN": {
                   "blockType": "sz_g2d_draw_score",
-                  "fields": {
-                    "LABEL": "Pontos:"
-                  },
                   "inputBlocks": {
                     "VALUE": {
                       "blockType": "sz_val_variable",
                       "fields": {
                         "NAME": "pontos"
                       }
+                    },
+                    "X": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "max": 480,
+                          "maxExclusive": true
+                        }
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 1,
+                          "max": 270
+                        }
+                      }
+                    }
+                  },
+                  "fieldText": {
+                    "LABEL": {
+                      "nonBlank": true
                     }
                   }
                 }
@@ -5202,6 +5567,15 @@
                       }
                     }
                   }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0.5,
+                      "max": 3
+                    }
+                  }
                 }
               }
             }
@@ -5229,8 +5603,10 @@
                       "inputBlocks": {
                         "ITEM0": {
                           "blockType": "sz_val_text",
-                          "fields": {
-                            "TEXT": "Você fez "
+                          "fieldText": {
+                            "TEXT": {
+                              "nonBlank": true
+                            }
                           }
                         },
                         "ITEM1": {
@@ -5241,8 +5617,10 @@
                         },
                         "ITEM2": {
                           "blockType": "sz_val_text",
-                          "fields": {
-                            "TEXT": " pontos. Tente bater essa marca!"
+                          "fieldText": {
+                            "TEXT": {
+                              "nonBlank": true
+                            }
                           }
                         }
                       }
@@ -5393,7 +5771,7 @@
         "checks": [
           {
             "id": "sortear-x",
-            "label": "No x do cacto, encaixe um número de 500 a 560.",
+            "label": "Sorteie a posição de entrada dos cactos, a partir da direita da pista.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_obstacle",
@@ -5405,9 +5783,23 @@
               "inputBlocks": {
                 "X": {
                   "blockType": "sz_g2d_random_between",
-                  "inputs": {
-                    "MIN": 500,
-                    "MAX": 560
+                  "inputBlocks": {
+                    "MIN": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 480
+                        }
+                      }
+                    },
+                    "MAX": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 480
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -5420,9 +5812,6 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
               "area": "loops",
-              "inputs": {
-                "SECS": 1.4
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -5438,6 +5827,15 @@
                       "fields": {
                         "GROUP": "cactos"
                       }
+                    }
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
                     }
                   }
                 }
@@ -5481,7 +5879,7 @@
         "checks": [
           {
             "id": "sortear-x",
-            "label": "No x do cacto, encaixe um número de 500 a 560.",
+            "label": "Sorteie a posição de entrada dos cactos, a partir da direita da pista.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_obstacle",
@@ -5493,9 +5891,23 @@
               "inputBlocks": {
                 "X": {
                   "blockType": "sz_g2d_random_between",
-                  "inputs": {
-                    "MIN": 500,
-                    "MAX": 560
+                  "inputBlocks": {
+                    "MIN": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 480
+                        }
+                      }
+                    },
+                    "MAX": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 480
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -5503,7 +5915,7 @@
           },
           {
             "id": "sortear-v",
-            "label": "Na velocidade do cacto, use -5 menos um número de 0 a 1.",
+            "label": "Use uma base negativa menos uma variação não negativa na velocidade dos cactos.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_obstacle",
@@ -5515,15 +5927,36 @@
                   "fields": {
                     "OP": "-"
                   },
-                  "inputs": {
-                    "A": -5
-                  },
                   "inputBlocks": {
                     "B": {
                       "blockType": "sz_g2d_random_between",
-                      "inputs": {
-                        "MIN": 0,
-                        "MAX": 1
+                      "inputBlocks": {
+                        "MIN": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0
+                            }
+                          }
+                        },
+                        "MAX": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "A": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "max": 0,
+                          "maxExclusive": true
+                        }
                       }
                     }
                   }
@@ -5571,7 +6004,7 @@
         "checks": [
           {
             "id": "sortear-x",
-            "label": "No x do cacto, encaixe um número de 500 a 560.",
+            "label": "Sorteie a posição de entrada dos cactos, a partir da direita da pista.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_obstacle",
@@ -5583,9 +6016,23 @@
               "inputBlocks": {
                 "X": {
                   "blockType": "sz_g2d_random_between",
-                  "inputs": {
-                    "MIN": 500,
-                    "MAX": 560
+                  "inputBlocks": {
+                    "MIN": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 480
+                        }
+                      }
+                    },
+                    "MAX": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 480
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -5593,7 +6040,7 @@
           },
           {
             "id": "sortear-v",
-            "label": "Na velocidade do cacto, use -5 menos um número de 0 a 1.",
+            "label": "Use uma base negativa menos uma variação não negativa na velocidade dos cactos.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_obstacle",
@@ -5605,15 +6052,36 @@
                   "fields": {
                     "OP": "-"
                   },
-                  "inputs": {
-                    "A": -5
-                  },
                   "inputBlocks": {
                     "B": {
                       "blockType": "sz_g2d_random_between",
-                      "inputs": {
-                        "MIN": 0,
-                        "MAX": 1
+                      "inputBlocks": {
+                        "MIN": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0
+                            }
+                          }
+                        },
+                        "MAX": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "A": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "max": 0,
+                          "maxExclusive": true
+                        }
                       }
                     }
                   }
@@ -5628,9 +6096,6 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
               "area": "loops",
-              "inputs": {
-                "SECS": 1.4
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -5646,6 +6111,15 @@
                       "fields": {
                         "GROUP": "cactos"
                       }
+                    }
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
                     }
                   }
                 }
@@ -5825,7 +6299,7 @@
         "checks": [
           {
             "id": "velocidade-inicial",
-            "label": "No Ao iniciar, crie a variável velocidade com valor -5.",
+            "label": "Crie a variável velocidade com valor inicial negativo em Ao iniciar.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_var_create",
@@ -5833,14 +6307,22 @@
               "fields": {
                 "NAME": "velocidade"
               },
-              "inputs": {
-                "VALUE": -5
+              "inputBlocks": {
+                "VALUE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "max": 0,
+                      "maxExclusive": true
+                    }
+                  }
+                }
               }
             }
           },
           {
             "id": "usar-base",
-            "label": "No vx dos novos cactos, use o valor da variável velocidade menos um número de 0 a 1.",
+            "label": "No vx dos cactos, use velocidade menos uma variação não negativa sorteada.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_obstacle",
@@ -5860,9 +6342,24 @@
                     },
                     "B": {
                       "blockType": "sz_g2d_random_between",
-                      "inputs": {
-                        "MIN": 0,
-                        "MAX": 1
+                      "inputBlocks": {
+                        "MIN": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0
+                            }
+                          }
+                        },
+                        "MAX": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -5872,7 +6369,7 @@
           },
           {
             "id": "sortear-x",
-            "label": "No x do cacto, mantenha o sorteio de 500 a 560.",
+            "label": "Sorteie a posição de entrada dos cactos, a partir da direita da pista.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_obstacle",
@@ -5884,9 +6381,23 @@
               "inputBlocks": {
                 "X": {
                   "blockType": "sz_g2d_random_between",
-                  "inputs": {
-                    "MIN": 500,
-                    "MAX": 560
+                  "inputBlocks": {
+                    "MIN": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 480
+                        }
+                      }
+                    },
+                    "MAX": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 480
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -5920,14 +6431,11 @@
         "checks": [
           {
             "id": "relogio-dificuldade",
-            "label": "Prepare um relógio de 5 segundos com Se jogando.",
+            "label": "Prepare um relógio de 2 a 10 segundos com Se jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
               "area": "loops",
-              "inputs": {
-                "SECS": 5
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -5937,6 +6445,15 @@
                       "fields": {
                         "SCENE": "jogando"
                       }
+                    }
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 2,
+                      "max": 10
                     }
                   }
                 }
@@ -6002,6 +6519,15 @@
                               "fields": {
                                 "NAME": "velocidade"
                               }
+                            },
+                            "RIGHT": {
+                              "blockType": "sz_val_number",
+                              "fieldRanges": {
+                                "NUM": {
+                                  "min": -14,
+                                  "max": -7
+                                }
+                              }
                             }
                           }
                         },
@@ -6013,6 +6539,15 @@
                           }
                         }
                       }
+                    }
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 2,
+                      "max": 10
                     }
                   }
                 }
@@ -6067,8 +6602,28 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_set_stage_description",
               "area": "start",
-              "fields": {
-                "DESCRIPTION": "Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela"
+              "fieldText": {
+                "DESCRIPTION": {
+                  "nonBlank": true,
+                  "containsAll": [
+                    [
+                      "pular",
+                      "pule",
+                      "pulo",
+                      "saltar",
+                      "salte",
+                      "salto",
+                      "desvie",
+                      "desviar",
+                      "evite",
+                      "evitar"
+                    ],
+                    ["cacto", "cactos", "obstáculo", "obstáculos"],
+                    ["espaço", "space", "spacebar"],
+                    ["cima", "seta superior", "arrowup"],
+                    ["toque", "tocar", "tocando", "toques"]
+                  ]
+                }
               }
             }
           }
@@ -6158,7 +6713,7 @@
         "checks": [
           {
             "id": "velocidade-inicial",
-            "label": "No Ao iniciar, crie a variável velocidade com valor -5.",
+            "label": "Crie a variável velocidade com valor inicial negativo em Ao iniciar.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_var_create",
@@ -6166,14 +6721,22 @@
               "fields": {
                 "NAME": "velocidade"
               },
-              "inputs": {
-                "VALUE": -5
+              "inputBlocks": {
+                "VALUE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "max": 0,
+                      "maxExclusive": true
+                    }
+                  }
+                }
               }
             }
           },
           {
             "id": "usar-base",
-            "label": "No vx dos novos cactos, use o valor da variável velocidade menos um número de 0 a 1.",
+            "label": "No vx dos cactos, use velocidade menos uma variação não negativa sorteada.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_obstacle",
@@ -6193,9 +6756,24 @@
                     },
                     "B": {
                       "blockType": "sz_g2d_random_between",
-                      "inputs": {
-                        "MIN": 0,
-                        "MAX": 1
+                      "inputBlocks": {
+                        "MIN": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0
+                            }
+                          }
+                        },
+                        "MAX": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -6234,6 +6812,15 @@
                               "fields": {
                                 "NAME": "velocidade"
                               }
+                            },
+                            "RIGHT": {
+                              "blockType": "sz_val_number",
+                              "fieldRanges": {
+                                "NUM": {
+                                  "min": -14,
+                                  "max": -7
+                                }
+                              }
                             }
                           }
                         },
@@ -6245,6 +6832,15 @@
                           }
                         }
                       }
+                    }
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 2,
+                      "max": 10
                     }
                   }
                 }
@@ -6265,7 +6861,7 @@
           },
           {
             "id": "sortear-x",
-            "label": "No x do cacto, mantenha o sorteio de 500 a 560.",
+            "label": "Sorteie a posição de entrada dos cactos, a partir da direita da pista.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_obstacle",
@@ -6277,9 +6873,23 @@
               "inputBlocks": {
                 "X": {
                   "blockType": "sz_g2d_random_between",
-                  "inputs": {
-                    "MIN": 500,
-                    "MAX": 560
+                  "inputBlocks": {
+                    "MIN": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 480
+                        }
+                      }
+                    },
+                    "MAX": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 480
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -6292,9 +6902,6 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
               "area": "loops",
-              "inputs": {
-                "SECS": 1.4
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -6310,6 +6917,15 @@
                       "fields": {
                         "GROUP": "cactos"
                       }
+                    }
+                  }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
                     }
                   }
                 }
@@ -6365,6 +6981,15 @@
                       }
                     }
                   }
+                },
+                "SECS": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0.5,
+                      "max": 3
+                    }
+                  }
                 }
               }
             }
@@ -6385,8 +7010,28 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_set_stage_description",
               "area": "start",
-              "fields": {
-                "DESCRIPTION": "Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela"
+              "fieldText": {
+                "DESCRIPTION": {
+                  "nonBlank": true,
+                  "containsAll": [
+                    [
+                      "pular",
+                      "pule",
+                      "pulo",
+                      "saltar",
+                      "salte",
+                      "salto",
+                      "desvie",
+                      "desviar",
+                      "evite",
+                      "evitar"
+                    ],
+                    ["cacto", "cactos", "obstáculo", "obstáculos"],
+                    ["espaço", "space", "spacebar"],
+                    ["cima", "seta superior", "arrowup"],
+                    ["toque", "tocar", "tocando", "toques"]
+                  ]
+                }
               }
             }
           }

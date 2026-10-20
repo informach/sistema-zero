@@ -50,7 +50,10 @@ const pythonCsp = withStudioPythonCsp(
     // `data:` p/ o preview do Estúdio (bloco `studio`): o script.js do aluno é injetado
     // como `<script src="data:text/javascript;base64,…">` no iframe `srcdoc`, que HERDA
     // esta CSP (só RESTRINGE, nunca relaxa) — sem `data:`, o preview não executa o código.
-    `script-src 'self' 'unsafe-inline' data: https:${isDev ? " 'unsafe-eval'" : ''}`,
+    // Molda compila o Manifold em WASM neste documento. A navegação Next desde
+    // /criar conserva a CSP inicial; a permissão precisa existir na política base.
+    // Esta keyword permite apenas WASM, mantendo eval JavaScript restrito ao dev.
+    `script-src 'self' 'unsafe-inline' data: https: 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ''}`,
     "connect-src 'self' https:",
     "worker-src 'self' blob:",
     ...(isDev ? [] : ['upgrade-insecure-requests']),

@@ -13,7 +13,7 @@ import {
 
 import { cadeTodoMundo } from './quizzes-cursos-curtos'
 
-const DIR = resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo')
+const DIR = resolve(import.meta.dir, '../../aulas-interativas/kids/cade-todo-mundo')
 const CURSO = 'cade-todo-mundo'
 /** A reação precisa pertencer ao evento do grupo ensinado, com seu membro escolhido. */
 const noToqueDosEsconderijos = (body: ProjectBlockPattern): SectionStructureRule => ({
@@ -70,7 +70,7 @@ const comEnvioEmDia = <S extends { completion: object }>(s: S) => ({
 })
 const { blocks: allowed } = JSON.parse(
   readFileSync(
-    resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo/blocos.json'),
+    resolve(import.meta.dir, '../../aulas-interativas/kids/cade-todo-mundo/blocos.json'),
     'utf8',
   ),
 ) as { blocks: string[] }

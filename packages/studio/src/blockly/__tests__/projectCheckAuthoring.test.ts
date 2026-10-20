@@ -38,6 +38,39 @@ const solutionExamples = (solution: object) => ({
 })
 
 describe('objective authoring uses the actual workspace contracts', () => {
+  test('bounded explicit text terms remain available only for real free-text fields', () => {
+    const model = projectCheckAuthoring({
+      initialProject: { installedExtensions: [{ id: 'game-2d' }] },
+    })
+    const criterion = {
+      nonBlank: true as const,
+      containsAll: [['setas', 'flechas'], ['espaço'], ['reiniciar']],
+    }
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_set_stage_description',
+        fieldText: { DESCRIPTION: criterion },
+      }),
+    ).toEqual([])
+    for (const [blockType, field] of [
+      ['sz_val_number', 'NUM'],
+      ['sz_g2d_enable_classic_controls', 'MODE'],
+      ['sz_val_color', 'COLOR'],
+    ]) {
+      if (!blockType || !field) throw new Error('Missing real field fixture')
+      expect(
+        model.issues({ type: 'usesBlock', blockType, fieldText: { [field]: criterion } }).length,
+      ).toBeGreaterThan(0)
+    }
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_set_stage_description',
+        fieldText: { DESCRIPTION: { nonBlank: true, containsAll: [[]] } },
+      }).length,
+    ).toBeGreaterThan(0)
+  })
   test('beforePattern validates the complete later command and its real sibling connection', () => {
     const model = projectCheckAuthoring({})
     const rule: Extract<SectionStructureRule, { type: 'usesBlock' }> = {

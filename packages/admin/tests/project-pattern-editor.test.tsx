@@ -110,11 +110,17 @@ for (const depth of ['top', 'nested'] as const) {
             type: 'usesBlock' as const,
             blockType: 'sz_html_canvas',
             fields: { ID: 'tela' },
-            fieldText: { DESCRIPTION: { nonBlank: true as const } },
+            fieldText: {
+              DESCRIPTION: {
+                nonBlank: true as const,
+                containsAll: [['setas', 'flechas'], ['espaço'], ['reiniciar', 'recomeçar']],
+              },
+            },
           },
           name: 'ID',
           protectedName: 'DESCRIPTION',
-          summary: 'Texto não vazio',
+          summary:
+            'Texto não vazio; termos exigidos: (setas OU flechas) E (espaço) E (reiniciar OU recomeçar)',
         },
         {
           rule: {

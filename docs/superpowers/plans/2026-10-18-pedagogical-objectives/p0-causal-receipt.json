@@ -55,15 +55,15 @@
   },
   "sources": [
     {
-      "path": "docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json",
+      "path": "docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json",
       "sha256": "490b5c507bfa70ee7d04efa5f0a00c679b25cb5d3467bf35641a1cf8f06afb4e"
     },
     {
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-10.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-10.manifesto.json",
       "sha256": "3d25b6d290c8d4d5e76fbb6ff158278767087ff64c8729a3d4488601e38a5d88"
     },
     {
-      "path": "docs/aulas-interativas/corre-dino/corre-dino-aula-11.manifesto.json",
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-11.manifesto.json",
       "sha256": "fd8aebc7f9a6d56da53c5c4a9cfb847f89583113dc344314110be61d3ff86173"
     },
     {

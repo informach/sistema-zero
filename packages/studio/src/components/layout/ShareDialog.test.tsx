@@ -325,6 +325,30 @@ describe('ShareDialog', () => {
     expect(pubArg(adapter)?.description).toBe('Um jogo de nave que desvia de asteroides.')
   })
 
+  it('com onPublished, fecha e deixa o host comemorar; com showPublishedScreen, mostra o link', async () => {
+    for (const showPublishedScreen of [false, true]) {
+      seedProject()
+      const onPublished = mock(() => {})
+      const onClose = mock(() => {})
+      const adapter = makeAdapter({ onPublished, showPublishedScreen })
+      render(<ShareDialog open onClose={onClose} adapter={adapter} />)
+      await screen.findByDisplayValue('Um jogo de nave que desvia de asteroides.')
+      fireEvent.click(screen.getByRole('button', { name: 'Gerar capa' }))
+      const publicar = () => screen.getByRole('button', { name: 'Publicar' }) as HTMLButtonElement
+      await waitFor(() => expect(publicar().disabled).toBe(false))
+      fireEvent.click(publicar())
+      await waitFor(() => expect(onPublished).toHaveBeenCalledTimes(1))
+      if (showPublishedScreen) {
+        await screen.findByText('Copiar link')
+        expect(onClose).not.toHaveBeenCalled()
+      } else {
+        expect(onClose).toHaveBeenCalledTimes(1)
+        expect(screen.queryByText('Copiar link')).toBeNull()
+      }
+      cleanup()
+    }
+  })
+
   it('trava a IA em 3 gerações por abertura (automática + cliques)', async () => {
     seedProject()
     const adapter = makeAdapter()

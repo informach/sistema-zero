@@ -1,0 +1,1641 @@
+{
+  "curso": "nave-contra-asteroides",
+  "grupo": "_caderno",
+  "trechos": [
+    {
+      "onde": "caderno",
+      "kids": "Blocos que você já montou nas fases anteriores",
+      "adulto": "Blocos que você já montou nas aulas anteriores"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na colisão entre tiros e asteroides",
+      "adulto": "Na colisão entre tiros e asteroides"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No intervalo que já existe",
+      "adulto": "No intervalo que já existe"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Criar o asteroide com os valores da fase 4",
+      "adulto": "Criar o asteroide com os valores da aula 4"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Criar o tiro com os valores da fase 3",
+      "adulto": "Criar o tiro com os valores da aula 3"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Jogue antes de construir",
+      "adulto": "Jogue antes de construir"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Sua vez! Jogue a versão pronta: Enter começa a partida, as setas movem a nave e a barra de espaço atira. Quando terminar, clique em Próxima parte.",
+      "adulto": "Sua vez: jogue a versão pronta. Enter começa a partida, as setas movem a nave e a barra de espaço atira. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare uma vez e sempre",
+      "adulto": "Compare uma vez e sempre"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Nesta experiência, coloque Mover a nave um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a nave e o contador Ações feitas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a nave e o contador nas duas tentativas.",
+      "adulto": "Nesta experiência, coloque Mover a nave um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a nave e o contador Ações feitas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a nave e o contador nas duas tentativas."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Prepare a tela do jogo",
+      "adulto": "Prepare a tela do jogo"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe a prévia do seu jogo. Não aparece nada, porque ainda não tem nenhum bloco.",
+      "adulto": "Olhe a prévia do seu jogo. Não aparece nada, porque ainda não tem nenhum bloco."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? A peça em Ao iniciar agiu uma vez, e em Enquanto estiver rodando, o tempo todo. Agora a gente vai montar essas duas áreas no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? A peça em Ao iniciar agiu uma vez, e em Enquanto estiver rodando, o tempo todo. Agora a gente vai montar essas duas áreas no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Para começar, deixe à vista um lugar vazio do espaço dos blocos. Abra Áreas do projeto, pegue Ao iniciar e solte nesse lugar.",
+      "adulto": "Para começar, deixe à vista um lugar vazio do espaço dos blocos. Abra Áreas do projeto, pegue Ao iniciar e solte nesse lugar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista outro lugar vazio, ao lado de Ao iniciar. Ainda em Áreas do projeto, pegue Enquanto estiver rodando e solte nesse lugar, com um pouco de distância entre as duas áreas.",
+      "adulto": "Agora deixe à vista outro lugar vazio, ao lado de Ao iniciar. Ainda em Áreas do projeto, pegue Enquanto estiver rodando e solte nesse lugar, com um pouco de distância entre as duas áreas."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A tela do jogo só precisa ser preparada uma vez, quando o jogo começa. Por isso, ela vai dentro de Ao iniciar: deixe à vista o espaço de dentro dessa área. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste para dentro de Ao iniciar e solte quando aparecer o encaixe.",
+      "adulto": "A preparação fica separada do que acontece durante a partida: a tela do jogo só precisa ser preparada uma vez, quando o jogo começa. Por isso, ela vai dentro de Ao iniciar: deixe à vista o espaço de dentro dessa área. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste para dentro de Ao iniciar e solte quando aparecer o encaixe."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira os dois números do bloco: a largura mede a tela de um lado ao outro, e a altura, de cima até embaixo. Eles já vêm em 800 e 480, o tamanho certo para o seu jogo: é só manter.",
+      "adulto": "Confira os dois números do bloco: a largura mede a tela de um lado ao outro, e a altura, de cima até embaixo. Eles já vêm em 800 e 480, o tamanho certo para o seu jogo: é só manter."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O fundo também já vem escuro, no quadradinho de cor do bloco. Se quiser, escolha outra cor escura.",
+      "adulto": "O fundo também já vem escuro, no quadrado de cor do bloco. Se quiser, escolha outra cor escura."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora olhe a prévia: a tela do jogo aparece lisa, porque ainda não tem nada desenhado nela.",
+      "adulto": "Agora olhe a prévia: a tela do jogo aparece lisa, porque ainda não tem nada desenhado nela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar e Enquanto estiver rodando estão no espaço dos blocos, e dentro de Ao iniciar está Preparar o jogo em tela cheia, com largura 800 e altura 480. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar e Enquanto estiver rodando estão no espaço dos blocos, e dentro de Ao iniciar está Preparar o jogo em tela cheia, com largura 800 e altura 480. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta fase.",
+      "adulto": "O Estúdio salva o seu jogo automaticamente enquanto você monta. Você só envia para o professor no fim desta aula."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+      "adulto": "Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Escolha onde a nave aparece",
+      "adulto": "Escolha onde a nave aparece"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Aumente x sem mudar y e observe a nave. Depois aumente y sem mudar x. Por último, coloque x e y em zero e observe o canto da tela.",
+      "adulto": "Aumente x sem mudar y e observe a nave. Depois aumente y sem mudar x. Por último, coloque x e y em zero e observe o canto da tela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare criar e mostrar",
+      "adulto": "Compare criar e mostrar"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Nesta experiência, clique em Criar a nave. Compare os bastidores com a tela do jogo. Depois clique em Mostrar a nave na tela e compare os dois lugares novamente.",
+      "adulto": "Nesta experiência, clique em Criar a nave. Compare os bastidores com a tela do jogo. Depois clique em Mostrar a nave na tela e compare os dois lugares novamente."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Crie a nave nos bastidores",
+      "adulto": "Crie a nave nos bastidores"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? A nave criada ficou nos bastidores e só apareceu na tela depois de desenhada. No seu jogo, o desenho vem depois da próxima experiência, por isso a nave ainda não vai aparecer. Agora a gente vai criar a nave do seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? A nave criada ficou nos bastidores e só apareceu na tela depois de desenhada. No seu jogo, o desenho vem depois da próxima experiência, por isso a nave ainda não vai aparecer. Agora a gente vai criar a nave do seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A nave é criada uma vez, quando o jogo começa. Por isso, ela vai em Ao iniciar, logo abaixo do bloco que prepara a tela: deixe à vista o bloco Preparar o jogo em tela cheia, dentro de Ao iniciar. Se esse lugar não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ele aparecer.",
+      "adulto": "A nave é criada uma vez, quando o jogo começa. Por isso, ela vai em Ao iniciar, logo abaixo do bloco que prepara a tela: deixe à vista o bloco Preparar o jogo em tela cheia, dentro de Ao iniciar. Se esse lugar não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ele aparecer."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Kits prontos e depois Espaço, e pegue o bloco Criar nave. Arraste e solte logo abaixo de Preparar o jogo em tela cheia, quando aparecer o encaixe.",
+      "adulto": "Agora abra Jogo 2D, depois Kits prontos e depois Espaço, e pegue o bloco Criar nave. Arraste e solte logo abaixo de Preparar o jogo em tela cheia, quando aparecer o encaixe."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O bloco já chega com o nome nave. É por esse nome que os outros blocos vão encontrar a sua nave, por isso mantenha. Para a nave ficar perto da parte de baixo da tela, troque o x para 400 e o y para 410, e clique fora de cada campo para confirmar.",
+      "adulto": "Esse bloco tem vários campos. Cada campo diz uma coisa da nave: o nome, o lugar na tela e o tamanho. O bloco já chega com o nome nave. É por esse nome que os outros blocos vão encontrar a sua nave, por isso mantenha. Para a nave ficar perto da parte de baixo da tela, troque o x para 400 e o y para 410, e clique fora de cada campo para confirmar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A largura 54 e a altura 62 definem o tamanho da nave e já vêm certas: é só manter. E, se quiser, escolha as cores do corpo e das asas nos quadradinhos do bloco.",
+      "adulto": "A largura 54 e a altura 62 definem o tamanho da nave e já vêm certas: é só manter. E, se quiser, escolha as cores do corpo e das asas nos quadrados de cor do bloco."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: dentro de Ao iniciar, logo abaixo de Preparar o jogo em tela cheia, está Criar nave, com o nome nave, x 400, y 410, largura 54 e altura 62.",
+      "adulto": "Confira se ficou assim: dentro de Ao iniciar, logo abaixo de Preparar o jogo em tela cheia, está Criar nave, com o nome nave, x 400, y 410, largura 54 e altura 62."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe a tela do jogo: ela continua vazia, e é isso mesmo que tem que acontecer agora, porque a nave foi criada, mas ainda não foi desenhada.",
+      "adulto": "Olhe a tela do jogo: ela continua vazia, e é isso mesmo que tem que acontecer agora, porque a nave foi criada, mas ainda não foi desenhada."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare o desenho no começo e em cada quadro",
+      "adulto": "Compare o desenho no começo e em cada quadro"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, deixe Desenhar a nave em Só no começo. Clique em Avançar 1 quadro algumas vezes. Compare a imagem com o x mostrado na faixa. Troque para A cada quadro e avance alguns quadros novamente. Por último, ligue Limpar a tela antes e avance mais quadros. Compare os três jeitos.",
+      "adulto": "Na experiência, deixe Desenhar a nave em Só no começo. Clique em Avançar 1 quadro algumas vezes. Compare a imagem com o x mostrado na faixa. Troque para A cada quadro e avance alguns quadros novamente. Por último, ligue Limpar a tela antes e avance mais quadros. Compare os três jeitos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mostre a nave a cada quadro",
+      "adulto": "Mostre a nave a cada quadro"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe a tela do seu jogo. A nave não aparece, porque ela foi criada, mas ainda não foi desenhada.",
+      "adulto": "Olhe a tela do seu jogo. A nave não aparece, porque ela foi criada, mas ainda não foi desenhada."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Desenhada a cada quadro, a imagem da nave acompanhou o lugar dela. Agora a gente vai desenhar a nave do seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Desenhada a cada quadro, a imagem da nave acompanhou o lugar dela. Agora a gente vai desenhar a nave do seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O desenho vai dentro de uma repetição, que fica em Enquanto estiver rodando, a área das ações que continuam durante o jogo. Deixe à vista o espaço de dentro dessa área.",
+      "adulto": "O desenho vai dentro de uma repetição, que fica em Enquanto estiver rodando, a área das ações que continuam durante o jogo. Deixe à vista o espaço de dentro dessa área."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadro do jogo. Arraste para dentro de Enquanto estiver rodando e solte quando aparecer o encaixe. Esse bloco repete o que está dentro dele em cada quadro, enquanto o jogo continua.",
+      "adulto": "Agora abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadro do jogo. Arraste para dentro de Enquanto estiver rodando e solte quando aparecer o encaixe. Esse bloco repete o que está dentro dele em cada quadro, enquanto o jogo continua."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O desenho da nave vai dentro dessa repetição: deixe à vista o espaço de dentro de A cada quadro do jogo. No jogo, a nave é um sprite, que é um objeto do jogo que você pode programar. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro de A cada quadro do jogo.",
+      "adulto": "Agora falta dizer o que vai ser desenhado. O desenho da nave vai dentro dessa repetição: deixe à vista o espaço de dentro de A cada quadro do jogo. No jogo, a nave é um sprite, que é um objeto do jogo que você pode programar. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro de A cada quadro do jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "No nome do sprite, escolha nave.",
+      "adulto": "No nome do sprite, escolha nave."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A nave aparece perto da parte de baixo da tela! Ela fica parada, porque o seu jogo só desenha a nave e ainda não tem nada que a faça andar.",
+      "adulto": "A nave aparece perto da parte de baixo da tela. Ela fica parada, porque o seu jogo só desenha a nave e ainda não tem nada que a faça andar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de Ao iniciar está Criar nave, e dentro de Enquanto estiver rodando está A cada quadro do jogo, com Desenhar o sprite nave dentro dele. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo a nave não apareceu, volte aos blocos e confira se ficou assim: dentro de Ao iniciar está Criar nave, e dentro de Enquanto estiver rodando está A cada quadro do jogo, com Desenhar o sprite nave dentro dele. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.",
+      "adulto": "Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Faça a nave aparecer",
+      "adulto": "Faça a nave aparecer"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 1",
+      "adulto": "Aula 1"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se os blocos do seu jogo ficaram assim. As cores são as mesmas do Estúdio, e os passos desta fase trazem os caminhos, os valores e os testes completos.",
+      "adulto": "Confira se os blocos do seu jogo ficaram assim. As cores são as mesmas do Estúdio, e os passos desta aula trazem os caminhos, os valores e os testes completos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Observe o movimento quadro a quadro",
+      "adulto": "Observe o movimento quadro a quadro"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue a seta, escolha Velocidade 3 e avance alguns quadros, um de cada vez. Clique em Recomeçar, escolha Velocidade 1 e avance outros quadros com a seta ligada. Compare quanto o x muda em cada passo.",
+      "adulto": "Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue a seta, escolha Velocidade 3 e avance alguns quadros, um de cada vez. Clique em Recomeçar, escolha Velocidade 1 e avance outros quadros com a seta ligada. Compare quanto o x muda em cada passo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Faça a nave responder às setas",
+      "adulto": "Faça a nave responder às setas"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique no seu jogo e segure uma seta. A nave fica parada, porque ainda não tem a regra das setas.",
+      "adulto": "Clique no seu jogo e segure uma seta. A nave fica parada, porque ainda não tem a regra das setas."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? A nave só andava com a seta segurada, e a velocidade decidia o passo. Agora a gente vai pôr essa regra no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? A nave só andava com a seta segurada, e a velocidade decidia o passo. Agora a gente vai pôr essa regra no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A nave precisa andar em todo quadro, e antes de ser desenhada, para o desenho já mostrar o lugar novo. Por isso, o movimento vai no começo de A cada quadro do jogo, logo acima de Desenhar o sprite: deixe esse lugar à vista.",
+      "adulto": "A nave precisa andar em todo quadro, e antes de ser desenhada, para o desenho já mostrar o lugar novo. Por isso, o movimento vai no começo de A cada quadro do jogo, logo acima de Desenhar o sprite: deixe esse lugar à vista."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Movimento e depois Movimentos prontos, e pegue o bloco Mover o sprite com as setas, que tem as setas para a esquerda e para a direita. Arraste e solte no começo de A cada quadro do jogo, logo acima de Desenhar o sprite, quando aparecer o encaixe.",
+      "adulto": "Agora abra Jogo 2D, depois Movimento e depois Movimentos prontos, e pegue o bloco Mover o sprite com as setas, que tem as setas para a esquerda e para a direita. Arraste e solte no começo de A cada quadro do jogo, logo acima de Desenhar o sprite, quando aparecer o encaixe."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O nome do sprite já vem nave, por isso mantenha. Depois, troque a velocidade para 7, um passo maior do que os da experiência.",
+      "adulto": "O nome do sprite já vem nave, por isso mantenha. Depois, troque a velocidade para 7, um passo maior do que os da experiência."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste: clique na área do jogo e segure uma seta por um instante, sem chegar à borda. A nave anda! Mas vai aparecer um rastro, com várias naves, porque o jogo desenha a nave no lugar novo e ainda não apaga a imagem de antes. Isso a gente resolve na próxima parte.",
+      "adulto": "Agora teste: clique na área do jogo e segure uma seta por um instante, sem chegar à borda. A nave anda. Mas vai aparecer um rastro, com várias naves, porque o jogo desenha a nave no lugar novo e ainda não apaga a imagem de antes. Isso a gente resolve na próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Mover o sprite nave com as setas, com velocidade 7, e logo abaixo vem Desenhar o sprite nave. E clique na área do jogo antes de segurar a seta, porque é assim que o jogo recebe as teclas. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Mover o sprite nave com as setas, com velocidade 7, e logo abaixo vem Desenhar o sprite nave. E clique na área do jogo antes de segurar a seta, porque é assim que o jogo recebe as teclas. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Tire o rastro da nave",
+      "adulto": "Tire o rastro da nave"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique no seu jogo e segure uma seta. Fica um rastro de naves, porque nada apaga o desenho de antes.",
+      "adulto": "Clique no seu jogo e segure uma seta. Fica um rastro de naves, porque nada apaga o desenho de antes."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência do desenho a cada quadro, na primeira fase? Com a limpeza ligada, sobrava uma nave só. Agora a gente vai limpar a tela do seu jogo!",
+      "adulto": "Lembra da experiência do desenho a cada quadro, na primeira aula? Com a limpeza ligada, sobrava uma nave só. Agora a gente vai limpar a tela do seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A limpeza tem que acontecer no começo de cada quadro, antes de tudo. Por isso, deixe à vista o primeiro encaixe de A cada quadro do jogo, logo acima do bloco de movimento.",
+      "adulto": "A limpeza não apaga a sua nave, só o desenho anterior. A nave continua no jogo e vai ser desenhada de novo. A limpeza tem que acontecer no começo de cada quadro, antes de tudo. Por isso, deixe à vista o primeiro encaixe de A cada quadro do jogo, logo acima do bloco de movimento."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, e pegue o bloco Limpar a tela. Arraste e solte no começo de A cada quadro do jogo, logo acima do movimento, quando aparecer o encaixe.",
+      "adulto": "Agora abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, e pegue o bloco Limpar a tela. Arraste e solte no começo de A cada quadro do jogo, logo acima do movimento, quando aparecer o encaixe."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Teste a mesma seta de novo. Agora aparece uma nave só, porque a tela é limpa antes de cada desenho! E Limpar apaga só o desenho, e não a nave que foi criada.",
+      "adulto": "Teste a mesma seta de novo. Agora aparece uma nave só, porque a tela é limpa antes de cada desenho. E Limpar apaga só o desenho, e não a nave que foi criada."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo estão Limpar a tela, Mover o sprite nave com as setas e Desenhar o sprite nave, nessa ordem. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo estão Limpar a tela, Mover o sprite nave com as setas e Desenhar o sprite nave, nessa ordem. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Observe o que acontece na borda",
+      "adulto": "Observe o que acontece na borda"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Observe a nave chegar à borda e continuar até sair da tela. Clique em Recomeçar, ligue Manter dentro da tela e mantenha a seta ligada. Clique em Rodar e compare o que acontece na borda.",
+      "adulto": "Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Observe a nave chegar à borda e continuar até sair da tela. Clique em Recomeçar, ligue Manter dentro da tela e mantenha a seta ligada. Clique em Rodar e compare o que acontece na borda."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mantenha a nave na tela",
+      "adulto": "Mantenha a nave na tela"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique no seu jogo e segure uma seta até a borda. A nave sai da tela, porque ainda não tem limite.",
+      "adulto": "Clique no seu jogo e segure uma seta até a borda. A nave sai da tela, porque ainda não tem limite."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Com Manter dentro da tela ligado, a nave parava inteira na borda. Agora a gente vai pôr esse limite no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Com Manter dentro da tela ligado, a nave parava inteira na borda. Agora a gente vai pôr esse limite no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O limite é conferido em todo quadro, logo depois que a nave anda e antes de ela ser desenhada. Por isso, ele vai entre o movimento e o desenho: deixe à vista o espaço entre Mover o sprite com as setas e Desenhar o sprite, dentro de A cada quadro do jogo.",
+      "adulto": "O limite é conferido em todo quadro, logo depois que a nave anda e antes de ela ser desenhada. Por isso, ele vai entre o movimento e o desenho: deixe à vista o espaço entre Mover o sprite com as setas e Desenhar o sprite, dentro de A cada quadro do jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela. Arraste e solte entre Mover o sprite com as setas e Desenhar o sprite, quando aparecer o encaixe.",
+      "adulto": "Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela. Arraste e solte entre Mover o sprite com as setas e Desenhar o sprite, quando aparecer o encaixe."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O bloco chega com o nome heroi, que não é o da sua nave. Por isso, clique em heroi e escolha nave.",
+      "adulto": "O bloco chega com o nome heroi, que não é o da sua nave. Por isso, clique em heroi e escolha nave."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste: clique na área do jogo, segure a seta para a esquerda até chegar à borda e depois segure a seta para a direita até a outra borda. A nave para nos dois lados e continua inteira na tela!",
+      "adulto": "Agora teste: clique na área do jogo, segure a seta para a esquerda até chegar à borda e depois segure a seta para a direita até a outra borda. A nave para nos dois lados e continua inteira na tela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo estão Limpar a tela, Mover o sprite nave com as setas, Manter o sprite nave dentro da tela e Desenhar o sprite nave, nessa ordem. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo estão Limpar a tela, Mover o sprite nave com as setas, Manter o sprite nave dentro da tela e Desenhar o sprite nave, nessa ordem. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare a ordem dos desenhos",
+      "adulto": "Compare a ordem dos desenhos"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, use as setas na lista de desenhos para colocar o fundo de estrelas antes da nave. Observe a tela. Troque a ordem para desenhar a nave antes do fundo. Observe novamente e volte à primeira ordem.",
+      "adulto": "Na experiência, use as setas na lista de desenhos para colocar o fundo de estrelas antes da nave. Observe a tela. Troque a ordem para desenhar a nave antes do fundo. Observe novamente e volte à primeira ordem."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Coloque as estrelas atrás da nave",
+      "adulto": "Coloque as estrelas atrás da nave"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe o fundo do seu jogo. Ele é liso, porque o jogo ainda não desenha nenhuma estrela.",
+      "adulto": "Olhe o fundo do seu jogo. Ele é liso, porque o jogo ainda não desenha nenhuma estrela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? O fundo desenhado antes da nave ficava atrás dela, e a nave aparecia inteira. Agora a gente vai pôr um céu de estrelas no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? O fundo desenhado antes da nave ficava atrás dela, e a nave aparecia inteira. Agora a gente vai pôr um céu de estrelas no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Para começar, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave.",
+      "adulto": "Para começar, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Cenários e depois Fundos, e pegue o bloco Desenhar fundo de estrelas. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o sprite, quando aparecer o encaixe. A velocidade já vem em 1: mantenha.",
+      "adulto": "Agora abra Jogo 2D, depois Cenários e depois Fundos, e pegue o bloco Desenhar fundo de estrelas. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o sprite, quando aparecer o encaixe. A velocidade já vem em 1: mantenha."
+    },
+    {
+      "onde": "caderno",
+      "kids": "As estrelas cobriram a nave! Isso acontece porque elas foram desenhadas depois da nave, igualzinho ao que você viu na experiência. Mas o bloco da nave continua no projeto, e é só mudar a ordem.",
+      "adulto": "A nave sumiu, as estrelas cobriram a nave. Isso acontece porque elas foram desenhadas depois da nave, do mesmo jeito que você viu na experiência. Mas o bloco da nave continua no projeto, e é só mudar a ordem."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Solte qualquer peça que estiver segurando e deixe Limpar a tela à vista. Depois, arraste o bloco das estrelas e solte logo abaixo de Limpar a tela, antes do movimento. Agora a nave aparece de novo, na frente das estrelas, porque as estrelas passaram a ser desenhadas antes dela.",
+      "adulto": "Solte qualquer peça que estiver segurando e deixe Limpar a tela à vista. Depois, arraste o bloco das estrelas e solte logo abaixo de Limpar a tela, antes do movimento. Agora a nave aparece de novo, na frente das estrelas, porque as estrelas passaram a ser desenhadas antes dela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A limpeza continua no começo, mesmo com as estrelas: ela apaga o quadro anterior para o jogo desenhar o quadro novo.",
+      "adulto": "A limpeza continua no começo, mesmo com as estrelas: ela apaga o quadro anterior para o jogo desenhar o quadro novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Teste as setas mais uma vez. A nave precisa andar na frente das estrelas e parar nas duas bordas.",
+      "adulto": "Teste as setas mais uma vez. A nave precisa andar na frente das estrelas e parar nas duas bordas."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo estão Limpar a tela, Desenhar fundo de estrelas, Mover o sprite nave com as setas, Manter o sprite nave dentro da tela e Desenhar o sprite nave, nessa ordem. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo estão Limpar a tela, Desenhar fundo de estrelas, Mover o sprite nave com as setas, Manter o sprite nave dentro da tela e Desenhar o sprite nave, nessa ordem. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira o que você construiu",
+      "adulto": "Confira o que você construiu"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Hora de conferir o que você construiu! Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
+      "adulto": "Hora de lembrar o que você construiu. Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Você responde as perguntas na própria fase.",
+      "adulto": "Você responde as perguntas na própria aula."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Teste e envie sua nave",
+      "adulto": "Teste e envie sua nave"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste a sua nave antes de enviar. Clique na área do jogo e leve a nave até cada borda: ela tem que parar inteira na tela e continuar na frente das estrelas, porque o limite e a ordem dos desenhos estão funcionando juntos.",
+      "adulto": "Agora teste a sua nave antes de enviar. Clique na área do jogo e leve a nave até cada borda: ela tem que parar inteira na tela e continuar na frente das estrelas, porque o limite e a ordem dos desenhos estão funcionando juntos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, a sequência começa em Limpar a tela e termina em Desenhar o sprite nave, e os três blocos da nave usam o nome nave. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, a sequência começa em Limpar a tela e termina em Desenhar o sprite nave, e os três blocos da nave usam o nome nave. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mova a nave pelo espaço",
+      "adulto": "Mova a nave pelo espaço"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 2",
+      "adulto": "Aula 2"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare esperar a tecla e repetir tiros",
+      "adulto": "Compare esperar a tecla e repetir tiros"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Coloque Criar um tiro em Quando acontecer. Clique em Começar o jogo e espere o teste parar, sem clicar em Apertar a tecla. Observe o contador de tiros. Depois clique em Apertar a tecla e observe de novo. Leve Criar um tiro para Enquanto estiver rodando. Clique em Começar o jogo e espere o teste parar. Compare com o primeiro teste.",
+      "adulto": "Coloque Criar um tiro em Quando acontecer. Clique em Começar o jogo e espere o teste parar, sem clicar em Apertar a tecla. Observe o contador de tiros. Depois clique em Apertar a tecla e observe de novo. Leve Criar um tiro para Enquanto estiver rodando. Clique em Começar o jogo e espere o teste parar. Compare com o primeiro teste."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Faça o tiro acompanhar a nave",
+      "adulto": "Faça o tiro acompanhar a nave"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Com O número 400, atire, mude x da nave e atire de novo. Repita com O centro x da nave. Depois ligue Marcas da caixa e atire mais uma vez, mantendo O centro x da nave.",
+      "adulto": "Com O número 400, atire, mude x da nave e atire de novo. Repita com O centro x da nave. Depois ligue Marcas da caixa e atire mais uma vez, mantendo O centro x da nave."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare a direção do tiro",
+      "adulto": "Compare a direção do tiro"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, mantenha velocidade para o lado em 0. Coloque velocidade para baixo em -9 e clique em Avançar 1 quadro algumas vezes. Observe o tiro e o y. Troque velocidade para baixo para 9 e avance outros quadros. Compare a direção e o y nos dois testes.",
+      "adulto": "Na experiência, mantenha velocidade para o lado em 0. Coloque velocidade para baixo em -9 e clique em Avançar 1 quadro algumas vezes. Observe o tiro e o y. Troque velocidade para baixo para 9 e avance outros quadros. Compare a direção e o y nos dois testes."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Monte o disparo da barra de espaço",
+      "adulto": "Monte o disparo da barra de espaço"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique no seu jogo e toque na barra de espaço. Nada acontece, porque o jogo ainda não tem nada ligado a essa tecla.",
+      "adulto": "Clique no seu jogo e aperte a barra de espaço. Nada acontece, porque o jogo ainda não tem nada ligado a essa tecla."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra das três experiências desta fase? O tiro esperava a tecla, nascia na nave e subia. Agora a gente vai montar esse disparo no seu jogo!",
+      "adulto": "Lembra das três experiências desta aula? O tiro esperava a tecla, nascia na nave e subia. Agora a gente vai montar esse disparo no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Como vão ser muitos tiros, eles ficam juntos num grupo, que é um conjunto de objetos que o jogo move e desenha de uma vez. O grupo é criado uma vez só, quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista, logo depois de Criar nave.",
+      "adulto": "Como vão ser muitos tiros, eles ficam juntos num grupo, que é um conjunto de objetos que o jogo move e desenha de uma vez. O grupo é criado uma vez só, quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista, logo depois de Criar nave."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. O nome chega como asteroides, mas este grupo é o dos tiros. Troque asteroides por tiros e clique fora do campo.",
+      "adulto": "Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. O nome chega como asteroides, mas este grupo é o dos tiros. Troque asteroides por tiros e clique fora do campo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora o disparo. Tocar numa tecla é um evento, que é algo que acontece no jogo, e os blocos que ficam dentro de um evento só funcionam quando ele acontece. Os eventos ficam numa área própria, Quando acontecer, que o seu projeto ainda não tem. Para criar essa área, deixe à vista um lugar vazio do espaço dos blocos. Se não tiver nenhum à vista, é só arrastar um espaço vazio entre os blocos até aparecer um. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse lugar.",
+      "adulto": "Com o grupo dos tiros pronto, agora o disparo. Apertar uma tecla é um evento, que é algo que acontece no jogo, e os blocos que ficam dentro de um evento só funcionam quando ele acontece. Os eventos ficam numa área própria, Quando acontecer, que o seu projeto ainda não tem. Para criar essa área, deixe à vista um lugar vazio do espaço dos blocos. Se não tiver nenhum à vista, é só arrastar um espaço vazio entre os blocos até aparecer um. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse lugar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço de dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe. No menu da tecla, escolha barra de espaço.",
+      "adulto": "Deixe à vista o espaço de dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe. No menu da tecla, escolha barra de espaço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O tiro nasce dentro desse evento: deixe à vista o espaço vazio dentro de Quando apertar a tecla. Abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar tiro no grupo e solte nesse espaço. O grupo já vem tiros, e o raio já vem em 5, que é o tamanho do tiro: mantenha os dois. E escolha uma cor que apareça bem no fundo escuro.",
+      "adulto": "Agora o jogo sabe esperar a barra de espaço, e o tiro nasce dentro desse evento: deixe à vista o espaço vazio dentro de Quando apertar a tecla. Abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar tiro no grupo e solte nesse espaço. O grupo já vem tiros, e o raio já vem em 5, que é o tamanho do tiro: mantenha os dois. E escolha uma cor que apareça bem no fundo escuro."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora o lugar de onde o tiro sai: o x vai ler a posição da nave. Deixe à vista o número do campo x do tiro. Abra Jogo 2D, depois Movimento e depois Posição e tamanho, pegue o bloco o centro x do sprite e solte em cima desse número. Ele toma o lugar do número. Escolha nave.",
+      "adulto": "Agora o lugar de onde o tiro sai: o x vai ler a posição da nave. Deixe à vista o número do campo x do tiro. Abra Jogo 2D, depois Movimento e depois Posição e tamanho, pegue o bloco o centro x do sprite e solte em cima desse número. Ele toma o lugar do número. Escolha nave."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Faça o mesmo com o y: deixe à vista o número do campo y do tiro. Na mesma categoria Posição e tamanho, pegue o bloco a posição y do sprite, solte em cima desse número e escolha nave também.",
+      "adulto": "E a altura de onde sai o tiro? Faça o mesmo com o y: deixe à vista o número do campo y do tiro. Na mesma categoria Posição e tamanho, pegue o bloco a posição y do sprite, solte em cima desse número e escolha nave também."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Falta a direção. No bloco do tiro, vx é a velocidade para os lados e já vem em 0: mantenha. Já vy é a velocidade para baixo: troque para -9, com o sinal de menos, para o tiro subir.",
+      "adulto": "Falta a direção. No bloco do tiro, vx é a velocidade para os lados e já vem em 0: mantenha. Já vy é a velocidade para baixo: troque para -9, com o sinal de menos, para o tiro subir."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Por último, o som. Deixe à vista o encaixe logo abaixo de Criar tiro, ainda dentro da tecla. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte logo abaixo de Criar tiro. No menu, escolha tiro grande.",
+      "adulto": "Por último, o som. Deixe à vista o encaixe logo abaixo de Criar tiro, ainda dentro da tecla. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte logo abaixo de Criar tiro. No menu, escolha tiro grande."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites tiros. Em Quando acontecer, dentro de Quando apertar a tecla barra de espaço, vem primeiro Criar tiro no grupo tiros, com o centro x e a posição y da nave, raio 5, vx 0 e vy -9, e logo abaixo vem Tocar efeito tiro grande.",
+      "adulto": "Pronto, o disparo também tem som. Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites tiros. Em Quando acontecer, dentro de Quando apertar a tecla barra de espaço, vem primeiro Criar tiro no grupo tiros, com o centro x e a posição y da nave, raio 5, vx 0 e vy -9, e logo abaixo vem Tocar efeito tiro grande."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O tiro ainda não aparece na tela, porque o jogo ainda não move nem desenha o grupo tiros. Isso vem na próxima parte.",
+      "adulto": "O tiro ainda não aparece na tela, porque o jogo ainda não move nem desenha o grupo tiros. Isso vem na próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mova e desenhe os tiros",
+      "adulto": "Mova e desenhe os tiros"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique na área do seu jogo e toque na barra de espaço. Dá para ouvir o disparo, mas nenhum tiro aparece, porque o jogo já cria o tiro e ainda não manda mover nem desenhar o grupo. Agora vamos fazer esses tiros aparecerem e subirem.",
+      "adulto": "Clique na área do seu jogo e aperte a barra de espaço. Dá para ouvir o disparo, mas nenhum tiro aparece, porque o jogo já cria o tiro e ainda não manda mover nem desenhar o grupo. Agora vamos fazer esses tiros aparecerem e subirem."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Os tiros andam e aparecem em todo quadro, por isso os dois blocos vão no fim de A cada quadro do jogo, depois do desenho da nave. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave.",
+      "adulto": "Os tiros andam e aparecem em todo quadro, por isso os dois blocos vão no fim de A cada quadro do jogo, depois do desenho da nave. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Grupos e depois Movimento, e pegue o bloco Mover os sprites do grupo usando suas velocidades. Arraste e solte logo depois de Desenhar o sprite nave e escolha tiros. Esse bloco faz cada tiro andar com a velocidade que ele recebeu ao nascer, ou seja, vy -9, para cima.",
+      "adulto": "Agora abra Jogo 2D, depois Grupos e depois Movimento, e pegue o bloco Mover os sprites do grupo usando suas velocidades. Arraste e solte logo depois de Desenhar o sprite nave e escolha tiros. Esse bloco faz cada tiro andar com a velocidade que ele recebeu ao nascer, ou seja, vy -9, para cima."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o encaixe logo abaixo do movimento dos tiros. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe. Escolha tiros nesse bloco também.",
+      "adulto": "Os tiros já têm movimento, mas falta desenhar. Deixe à vista o encaixe logo abaixo do movimento dos tiros. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe. Escolha tiros nesse bloco também."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste: clique na área do jogo, toque na barra de espaço e solte. O tiro sai da nave e sobe! Depois, mova a nave para outro lugar e atire de novo. O tiro nasce na nave outra vez, porque o jogo lê a posição dela a cada disparo.",
+      "adulto": "Agora teste: clique na área do jogo, aperte a barra de espaço e solte. O tiro sai da nave e sobe. Depois, mova a nave para outro lugar e atire de novo. O tiro nasce na nave outra vez, porque o jogo lê a posição dela a cada disparo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, depois de Desenhar o sprite nave, estão Mover os sprites do grupo tiros e, logo abaixo, Desenhar o grupo tiros. E, no disparo da barra de espaço, o tiro nasce no grupo tiros, com vy -9. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, depois de Desenhar o sprite nave, estão Mover os sprites do grupo tiros e, logo abaixo, Desenhar o grupo tiros. E, no disparo da barra de espaço, o tiro nasce no grupo tiros, com vy -9. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O tiro saiu da tela. E do grupo?",
+      "adulto": "O tiro saiu da tela. E do grupo?"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Use Tempo para soltar o tempo se estiver parado. Com Tirar do grupo quem sair da tela desligado, deixe dois tiros saírem e observe o grupo. Depois ligue a regra, deixe o tempo passar novamente e compare.",
+      "adulto": "Use Tempo para soltar o tempo se estiver parado. Com Tirar do grupo quem sair da tela desligado, deixe dois tiros saírem e observe o grupo. Depois ligue a regra, deixe o tempo passar novamente e compare."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Retire os tiros que saíram",
+      "adulto": "Retire os tiros que saíram"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique no seu jogo e atire. Os tiros somem porque saíram da tela, mas isso não mostra se saíram do grupo.",
+      "adulto": "Clique no seu jogo e atire. Os tiros somem porque saíram da tela, mas isso não mostra se saíram do grupo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Ligada, a regra tirava do grupo quem saía da tela. Agora a gente vai pôr essa regra no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Ligada, a regra tirava do grupo quem saía da tela. Agora a gente vai pôr essa regra no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A limpeza acontece em todo quadro, depois que os tiros andam e antes de eles serem desenhados. Por isso, deixe à vista o espaço entre Mover os sprites do grupo tiros e Desenhar o grupo tiros, dentro de A cada quadro do jogo.",
+      "adulto": "A limpeza acontece em todo quadro, depois que os tiros andam e antes de eles serem desenhados. Por isso, deixe à vista o espaço entre Mover os sprites do grupo tiros e Desenhar o grupo tiros, dentro de A cada quadro do jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Grupos e depois Participação e limpeza, e pegue o bloco Tirar do grupo quem sair da tela. Arraste e solte entre Mover os sprites do grupo e Desenhar o grupo dos tiros, quando aparecer o encaixe.",
+      "adulto": "Agora abra Jogo 2D, depois Grupos e depois Participação e limpeza, e pegue o bloco Tirar do grupo quem sair da tela. Arraste e solte entre Mover os sprites do grupo e Desenhar o grupo dos tiros, quando aparecer o encaixe."
+    },
+    {
+      "onde": "caderno",
+      "kids": "No grupo, escolha tiros. O bloco também tem o campo chamado, que já vem com sprite: não mexa nele e deixe vazio o espaço de dentro do bloco, porque aqui ele só precisa tirar os tiros do grupo.",
+      "adulto": "No grupo, escolha tiros. O bloco também tem o campo chamado, que já vem com sprite: não mexa nele e deixe vazio o espaço de dentro do bloco, porque aqui ele só precisa tirar os tiros do grupo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: dentro de A cada quadro do jogo, a sequência dos tiros é Mover os sprites do grupo tiros, Tirar do grupo tiros quem sair da tela e Desenhar o grupo tiros, nessa ordem.",
+      "adulto": "Confira se ficou assim: dentro de A cada quadro do jogo, a sequência dos tiros é Mover os sprites do grupo tiros, Tirar do grupo tiros quem sair da tela e Desenhar o grupo tiros, nessa ordem."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste: clique na área do jogo, dispare algumas vezes, mude a nave de lugar e dispare de novo. Os tiros têm que nascer na nave e subir, como antes. A limpeza não aparece na tela: quem mostra que ela está lá é a ordem dos blocos que você acabou de conferir.",
+      "adulto": "Agora teste: clique na área do jogo, dispare algumas vezes, mude a nave de lugar e dispare de novo. Os tiros têm que nascer na nave e subir, como antes. A limpeza não aparece na tela: quem mostra que ela está lá é a ordem dos blocos que você acabou de conferir."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Faça a nave atirar",
+      "adulto": "Faça a nave atirar"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 3",
+      "adulto": "Aula 3"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare o intervalo entre as pedras",
+      "adulto": "Compare o intervalo entre as pedras"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para a caixa A cada 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros.",
+      "adulto": "Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para a caixa A cada 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Prepare a criação dos asteroides",
+      "adulto": "Prepare a criação dos asteroides"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique no seu jogo e espere um pouco. Nenhuma pedra aparece, porque o jogo ainda não cria pedras.",
+      "adulto": "Clique no seu jogo e espere um pouco. Nenhuma pedra aparece, porque o jogo ainda não cria pedras."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Com o relógio de 40 quadros, as pedras nasciam com espaço entre elas. Agora a gente vai preparar as pedras e o relógio no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Com o relógio de 40 quadros, as pedras nasciam com espaço entre elas. Agora a gente vai preparar as pedras e o relógio no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "As pedras também vão ser muitas, por isso ficam num grupo, criado uma vez quando o jogo começa. Deixe à vista o fim de Ao iniciar, logo depois de Criar grupo de sprites tiros.",
+      "adulto": "As pedras também vão ser muitas, por isso ficam num grupo, criado uma vez quando o jogo começa. Deixe à vista o fim de Ao iniciar, logo depois de Criar grupo de sprites tiros."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. O nome já vem asteroides, que é o nome certo para este grupo, por isso mantenha.",
+      "adulto": "Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. O nome já vem asteroides, que é o nome certo para este grupo, por isso mantenha."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora o relógio. Ele fica fora de A cada quadro do jogo, porque não é para criar uma pedra em todo quadro, e sim de tempos em tempos. Por isso, deixe à vista o espaço logo abaixo do bloco inteiro A cada quadro do jogo, ainda dentro de Enquanto estiver rodando.",
+      "adulto": "Agora o relógio, que decide quando nasce cada pedra. Ele fica fora de A cada quadro do jogo, porque não é para criar uma pedra em todo quadro, e sim de tempos em tempos. Por isso, deixe à vista o espaço logo abaixo do bloco inteiro A cada quadro do jogo, ainda dentro de Enquanto estiver rodando."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadros. Arraste e solte logo abaixo de A cada quadro do jogo, mas fora dele, ainda dentro de Enquanto estiver rodando. Os dois blocos ficam como vizinhos, um embaixo do outro.",
+      "adulto": "Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadros. Arraste e solte logo abaixo de A cada quadro do jogo, mas fora dele, ainda dentro de Enquanto estiver rodando. Os dois blocos ficam como vizinhos, um embaixo do outro."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O número do intervalo chega em 30. Troque por 40, porque o seu jogo vai criar uma pedra a cada 40 quadros. Assim, A cada quadro do jogo continua cuidando de cada imagem da partida, e A cada 40 quadros espera esse intervalo para fazer o que estiver dentro dele.",
+      "adulto": "O número do intervalo chega em 30. Troque por 40, porque o seu jogo vai criar uma pedra a cada 40 quadros. Assim, A cada quadro do jogo continua cuidando de cada imagem da partida, e A cada 40 quadros espera esse intervalo para fazer o que estiver dentro dele."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites asteroides, e, dentro de Enquanto estiver rodando, A cada 40 quadros está logo abaixo de A cada quadro do jogo, como vizinho, e não encaixado dentro dele. Por enquanto, nenhuma pedra cai, porque o relógio ainda está vazio.",
+      "adulto": "Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites asteroides, e, dentro de Enquanto estiver rodando, A cada 40 quadros está logo abaixo de A cada quadro do jogo, como vizinho, e não encaixado dentro dele. Por enquanto, nenhuma pedra cai, porque o relógio ainda está vazio."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Sorteie onde a pedra nasce",
+      "adulto": "Sorteie onde a pedra nasce"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, clique em Sortear lugar na régua de cima até observar pelo menos duas posições diferentes. As marcas mostram os lugares sorteados. Depois, deixe o tempo passar até uma pedra entrar pela parte de cima da tela.",
+      "adulto": "Na experiência, clique em Sortear lugar na régua de cima até observar pelo menos duas posições diferentes. As marcas mostram os lugares sorteados. Depois, deixe o tempo passar até uma pedra entrar pela parte de cima da tela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Crie e mostre as pedras caindo",
+      "adulto": "Crie e mostre as pedras caindo"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique no seu jogo e espere um pouco. Ainda não cai nenhuma pedra, porque o relógio está vazio.",
+      "adulto": "Clique no seu jogo e espere um pouco. Ainda não cai nenhuma pedra, porque o relógio está vazio."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Cada pedra nascia num lugar sorteado, acima da tela, e entrava caindo. Agora a gente vai pôr o asteroide no relógio do seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Cada pedra nascia num lugar sorteado, acima da tela, e entrava caindo. Agora a gente vai pôr o asteroide no relógio do seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço vazio dentro de A cada 40 quadros.",
+      "adulto": "Deixe à vista o espaço vazio dentro de A cada 40 quadros."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Kits prontos e depois Espaço, e pegue o bloco No grupo criar um asteroide. Arraste para dentro de A cada 40 quadros e solte quando aparecer o encaixe. O grupo já vem asteroides: mantenha.",
+      "adulto": "Agora abra Jogo 2D, depois Kits prontos e depois Espaço, e pegue o bloco No grupo criar um asteroide. Arraste para dentro de A cada 40 quadros e solte quando aparecer o encaixe. O grupo já vem asteroides: mantenha."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora o lugar onde a pedra nasce. Em vez de um número fixo no x, a pedra vai nascer num lugar sorteado, por isso deixe à vista o número do campo x do asteroide. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um x aleatório na tela e solte em cima desse número.",
+      "adulto": "Agora o lugar onde a pedra nasce. Em vez de um número fixo no x, a pedra vai nascer num lugar sorteado, por isso deixe à vista o número do campo x do asteroide. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um x aleatório na tela e solte em cima desse número."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Troque o y para -30, para a pedra nascer acima da tela. O tamanho já vem em 40: mantenha. O vx já vem em 0, por isso a pedra não anda para os lados. Troque o vy para 3: sem o sinal de menos, a pedra desce. Se quiser, escolha uma cor que apareça bem no fundo.",
+      "adulto": "Assim, as pedras não nascem sempre no mesmo lugar. Agora troque o y para -30, para a pedra nascer acima da tela. O tamanho já vem em 40: mantenha. O vx já vem em 0, por isso a pedra não anda para os lados. Troque o vy para 3: sem o sinal de menos, a pedra desce. Se quiser, escolha uma cor que apareça bem no fundo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora as pedras precisam andar, sair do grupo quando passarem da tela e aparecer, em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo tiros. Abra Jogo 2D, depois Grupos e depois Movimento, pegue o bloco Mover os sprites do grupo usando suas velocidades e solte nesse lugar. O grupo já vem asteroides, e nos dois próximos blocos também: é só manter.",
+      "adulto": "Agora as pedras precisam andar, sair do grupo quando passarem da tela e aparecer, em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo tiros. Abra Jogo 2D, depois Grupos e depois Movimento, pegue o bloco Mover os sprites do grupo usando suas velocidades e solte nesse lugar. O grupo já vem asteroides, e nos dois próximos blocos também: é só manter."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte nesse encaixe. Mantenha sprite no campo chamado e deixe o espaço de dentro vazio.",
+      "adulto": "Agora a limpeza, que tira do grupo as pedras que saem da tela. Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte nesse encaixe. Mantenha sprite no campo chamado e deixe o espaço de dentro vazio."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o encaixe logo abaixo da limpeza dos asteroides. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe.",
+      "adulto": "Deixe à vista o encaixe logo abaixo da limpeza dos asteroides. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora clique na área do jogo e espere. As pedras entram pela parte de cima e caem! Atire em uma delas. Por enquanto, o tiro atravessa a pedra, e isso é esperado, porque você ainda não programou o acerto.",
+      "adulto": "Agora clique na área do jogo e espere. As pedras entram pela parte de cima e caem. Atire em uma delas. Por enquanto, o tiro atravessa a pedra, e isso é esperado, porque você ainda não programou o acerto."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está No grupo asteroides criar um asteroide, com um x aleatório na tela, y -30, tamanho 40, vx 0 e vy 3. E, no fim de A cada quadro do jogo, estão Mover os sprites do grupo asteroides, Tirar do grupo asteroides quem sair da tela e Desenhar o grupo asteroides, nessa ordem. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está No grupo asteroides criar um asteroide, com um x aleatório na tela, y -30, tamanho 40, vx 0 e vy 3. E, no fim de A cada quadro do jogo, estão Mover os sprites do grupo asteroides, Tirar do grupo asteroides quem sair da tela e Desenhar o grupo asteroides, nessa ordem. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Teste e envie a sua chuva de pedras",
+      "adulto": "Teste e envie a sua chuva de pedras"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste o seu jogo inteiro. Clique na área do jogo e olhe as pedras: elas entram pela parte de cima, uma a cada 40 quadros, e caem sempre no mesmo ritmo, porque a velocidade de cada uma é vy 3.",
+      "adulto": "Agora teste o seu jogo inteiro. Clique na área do jogo e olhe as pedras: elas entram pela parte de cima, uma a cada 40 quadros, e caem sempre no mesmo ritmo, porque a velocidade de cada uma é vy 3."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Depois mova a nave e atire. As setas e os tiros precisam continuar funcionando como antes, agora com as pedras caindo. Por enquanto o tiro atravessa as pedras, e isso é esperado: o acerto vem na próxima fase.",
+      "adulto": "Depois mova a nave e atire. As setas e os tiros precisam continuar funcionando como antes, agora com as pedras caindo. Por enquanto o tiro atravessa as pedras, e isso é esperado: o acerto vem na próxima aula."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Faça os asteroides cair",
+      "adulto": "Faça os asteroides cair"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 4",
+      "adulto": "Aula 4"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Escolha quem sai no acerto",
+      "adulto": "Escolha quem sai no acerto"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Teste a colisão com tiros e asteroides, os grupos inteiros. Volte ao começo e repita com tiro e asteroide, os apelidos. Clique em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo.",
+      "adulto": "Teste a colisão com tiros e asteroides, os grupos inteiros. Volte ao começo e repita com tiro e asteroide, os apelidos. Clique em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Programe o acerto",
+      "adulto": "Programe o acerto"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique no seu jogo e atire numa pedra. O tiro atravessa a pedra, porque o acerto ainda não existe no jogo.",
+      "adulto": "Clique no seu jogo e atire numa pedra. O tiro atravessa a pedra, porque o acerto ainda não existe no jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Com os apelidos, saíam só o tiro e a pedra do encontro. Agora a gente vai programar esse acerto no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Com os apelidos, saíam só o tiro e a pedra do encontro. Agora a gente vai programar esse acerto no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O jogo confere os encontros em todo quadro, depois que tudo já andou e foi desenhado. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides.",
+      "adulto": "O jogo confere os encontros em todo quadro, depois que tudo já andou e foi desenhado. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada colisão entre os grupos. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides.",
+      "adulto": "Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada colisão entre os grupos. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira o que o bloco já traz: os grupos tiros e asteroides e, na linha de baixo, chamar os sprites de tiro e asteroide, que são os apelidos do tiro e da pedra daquele acerto. Confira se ficou tiros e asteroides nos grupos e tiro e asteroide nos apelidos, nessa ordem. Esses apelidos valem só dentro da colisão.",
+      "adulto": "Mas como o jogo sabe qual tiro acertou qual pedra? Confira o que o bloco já traz: os grupos tiros e asteroides e, na linha de baixo, chamar os sprites de tiro e asteroide, que são os apelidos do tiro e da pedra daquele acerto. Confira se ficou tiros e asteroides nos grupos e tiro e asteroide nos apelidos, nessa ordem. Esses apelidos valem só dentro da colisão."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora as ações do acerto, que vão dentro da colisão. Deixe à vista o espaço de dentro da colisão entre tiros e asteroides. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar o sprite do grupo e solte nesse espaço. Escolha tiro como sprite e tiros como grupo.",
+      "adulto": "Agora as ações do acerto, que vão dentro da colisão. Deixe à vista o espaço de dentro da colisão entre tiros e asteroides. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar o sprite do grupo e solte nesse espaço. Escolha tiro como sprite e tiros como grupo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o encaixe logo abaixo desse bloco. Na mesma categoria Participação e limpeza, pegue outro Tirar o sprite do grupo e solte nesse encaixe. Nesse segundo, o sprite já vem asteroide e o grupo já vem asteroides, que é o certo: mantenha os dois.",
+      "adulto": "Deixe à vista o encaixe logo abaixo desse bloco. Na mesma categoria Participação e limpeza, pegue outro Tirar o sprite do grupo e solte nesse encaixe. Nesse segundo, o sprite já vem asteroide e o grupo já vem asteroides, que é o certo: mantenha os dois."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o encaixe logo abaixo das duas retiradas, ainda dentro da colisão. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite e solte nesse encaixe. O sprite já vem asteroide, para a explosão sair no lugar da pedra: mantenha e escolha uma cor para a explosão.",
+      "adulto": "Deixe à vista o encaixe logo abaixo das duas retiradas, ainda dentro da colisão. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite e solte nesse encaixe. O sprite já vem asteroide, para a explosão sair no lugar da pedra: mantenha e escolha uma cor para a explosão."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito, solte nesse encaixe e escolha explosão no menu.",
+      "adulto": "Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito, solte nesse encaixe e escolha explosão no menu."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste: clique na área do jogo e atire até acertar uma pedra. O tiro e a pedra atingidos saem, aparece a explosão e os outros continuam!",
+      "adulto": "Agora teste: clique na área do jogo e atire até acertar uma pedra. O tiro e a pedra atingidos saem, aparece a explosão e os outros continuam."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo está a colisão entre tiros e asteroides, e dentro dela estão Tirar o sprite tiro do grupo tiros, Tirar o sprite asteroide do grupo asteroides, Soltar explosão no sprite asteroide e Tocar efeito explosão, nessa ordem. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo está a colisão entre tiros e asteroides, e dentro dela estão Tirar o sprite tiro do grupo tiros, Tirar o sprite asteroide do grupo asteroides, Soltar explosão no sprite asteroide e Tocar efeito explosão, nessa ordem. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Hora de conferir o que você construiu! Responda sobre o acerto e o lugar de onde o tiro sai, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
+      "adulto": "Hora de lembrar o que você construiu. Responda sobre o acerto e o lugar de onde o tiro sai, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira os acertos e envie",
+      "adulto": "Confira os acertos e envie"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste os acertos do seu jogo. Mova a nave, atire e confira se cada tiro nasce nela. Depois, acerte pedras em lugares diferentes da tela.",
+      "adulto": "Agora teste os acertos do seu jogo. Mova a nave, atire e confira se cada tiro nasce nela. Depois, acerte pedras em lugares diferentes da tela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira o que acontece em cada encontro: saem o tiro e a pedra envolvidos, aparece a explosão e o resto do jogo continua, porque os apelidos apontam só para quem se encontrou. Se alguma coisa falhar, confira os apelidos dentro da colisão antes de enviar.",
+      "adulto": "Confira o que acontece em cada encontro: saem o tiro e a pedra envolvidos, aparece a explosão e o resto do jogo continua, porque os apelidos apontam só para quem se encontrou. Se alguma coisa falhar, confira os apelidos dentro da colisão antes de enviar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Faça o tiro acertar o asteroide",
+      "adulto": "Faça o tiro acertar o asteroide"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 5",
+      "adulto": "Aula 5"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Guarde e mostre um número",
+      "adulto": "Guarde e mostre um número"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mude pontos para 1 e volte para 0 com Mostrar placar desligado. Some 1 duas vezes e observe o número guardado. Ligue Mostrar placar, compare e some 1 novamente.",
+      "adulto": "Mude pontos para 1 e volte para 0 com Mostrar placar desligado. Some 1 duas vezes e observe o número guardado. Ligue Mostrar placar, compare e some 1 novamente."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Some um ponto a cada acerto",
+      "adulto": "Some um ponto a cada acerto"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique no seu jogo e acerte uma pedra. Nenhum ponto aparece, porque o jogo ainda não conta os acertos.",
+      "adulto": "Clique no seu jogo e acerte uma pedra. Nenhum ponto aparece, porque o jogo ainda não conta os acertos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? A variável pontos guardava o número, e o placar mostrava esse número na tela. Agora a gente vai contar os pontos no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? A variável pontos guardava o número, e o placar mostrava esse número na tela. Agora a gente vai contar os pontos no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A variável nasce quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista.",
+      "adulto": "A variável nasce quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Programação e depois Variáveis, e pegue o bloco Criar variável com valor. Arraste e solte no fim de Ao iniciar. O nome chega como contador. Troque contador por pontos e clique fora do campo. O valor já vem em 0: mantenha, porque cada partida começa sem pontos.",
+      "adulto": "Agora abra Programação e depois Variáveis, e pegue o bloco Criar variável com valor. Arraste e solte no fim de Ao iniciar. O nome chega como contador. Troque contador por pontos e clique fora do campo. O valor já vem em 0: mantenha, porque cada partida começa sem pontos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O ponto só pode ser somado quando um tiro acerta uma pedra. Por isso, a soma vai dentro da colisão entre tiros e asteroides, no fim, logo depois de Tocar efeito explosão: deixe esse lugar à vista.",
+      "adulto": "E onde entra o bloco que soma? O ponto só pode ser somado quando um tiro acerta uma pedra. Por isso, a soma vai dentro da colisão entre tiros e asteroides, no fim, logo depois de Tocar efeito explosão: deixe esse lugar à vista."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Ainda em Programação e Variáveis, pegue o bloco Somar em variável e solte logo depois de Tocar efeito explosão, dentro da colisão. Escolha pontos. O número já vem em 1: mantenha, porque cada acerto vale um ponto.",
+      "adulto": "Ainda em Programação e Variáveis, pegue o bloco Somar em variável e solte logo depois de Tocar efeito explosão, dentro da colisão. Escolha pontos. O número já vem em 1: mantenha, porque cada acerto vale um ponto."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora o placar, que precisa aparecer em todo quadro, e não só no acerto. Por isso, ele fica fora da colisão: deixe à vista o encaixe logo depois do bloco inteiro da colisão, ainda dentro de A cada quadro do jogo.",
+      "adulto": "Agora o placar, que precisa aparecer em todo quadro, e não só no acerto. Por isso, ele fica fora da colisão: deixe à vista o encaixe logo depois do bloco inteiro da colisão, ainda dentro de A cada quadro do jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse encaixe. O texto já vem Pontos:, que é o que aparece antes do número: mantenha.",
+      "adulto": "Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse encaixe. O texto já vem Pontos:, que é o que aparece antes do número: mantenha."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O número do placar precisa ler o valor guardado em pontos. Deixe à vista o número do campo valor do placar. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima desse número e escolha pontos. Assim, o placar mostra o número que o jogo guardou, em vez de mostrar sempre o mesmo número.",
+      "adulto": "O número do placar precisa ler o valor guardado em pontos. Deixe à vista o número do campo valor do placar. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima desse número e escolha pontos. Assim, o placar mostra o número que o jogo guardou, em vez de mostrar sempre o mesmo número."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O placar já vem em x 12, y 30 e tamanho 24: mantenha. Escolha a cor branca, para aparecer no fundo escuro. Esses números só posicionam e dimensionam o texto, e não mudam a pontuação.",
+      "adulto": "O placar já vem em x 12, y 30 e tamanho 24: mantenha. Escolha a cor branca, para aparecer no fundo escuro. Esses números só posicionam e dimensionam o texto, e não mudam a pontuação."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste: clique na área do jogo e deixe um tiro passar sem acertar. O placar tem que ficar igual, porque nenhum tiro acertou. Depois, acerte uma pedra. Pontos vai para 1! E, se você acertar outra, o placar soma mais 1.",
+      "adulto": "Agora teste: clique na área do jogo e deixe um tiro passar sem acertar. O placar tem que ficar igual, porque nenhum tiro acertou. Depois, acerte uma pedra. Pontos vai para 1. E, se você acertar outra, o placar soma mais 1."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Criar variável pontos com valor 0. Dentro da colisão entre tiros e asteroides, depois de Tocar efeito explosão, está Somar 1 em variável pontos. E, logo depois da colisão, ainda dentro de A cada quadro do jogo, está Mostrar placar Pontos:, com o valor da variável pontos, em x 12, y 30 e tamanho 24. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Criar variável pontos com valor 0. Dentro da colisão entre tiros e asteroides, depois de Tocar efeito explosão, está Somar 1 em variável pontos. E, logo depois da colisão, ainda dentro de A cada quadro do jogo, está Mostrar placar Pontos:, com o valor da variável pontos, em x 12, y 30 e tamanho 24. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Conte os acertos",
+      "adulto": "Conte os acertos"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 6",
+      "adulto": "Aula 6"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare quando dar as vidas",
+      "adulto": "Compare quando dar as vidas"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, coloque Dar três vidas à nave em Ao iniciar. Clique em Começar o jogo, espere o teste parar e observe os corações depois das batidas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo, espere o teste parar e compare os corações.",
+      "adulto": "Na experiência, coloque Dar três vidas à nave em Ao iniciar. Clique em Começar o jogo, espere o teste parar e observe os corações depois das batidas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo, espere o teste parar e compare os corações."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Dê e mostre as três vidas",
+      "adulto": "Dê e mostre as três vidas"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe a tela do seu jogo. Não tem nenhum coração, porque a nave ainda não tem vidas.",
+      "adulto": "Olhe a tela do seu jogo. Não tem nenhum coração, porque a nave ainda não tem vidas."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Dadas em Ao iniciar, as vidas caíam a cada batida e não voltavam. Agora a gente vai dar três vidas à nave do seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Dadas em Ao iniciar, as vidas caíam a cada batida e não voltavam. Agora a gente vai dar três vidas à nave do seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "As vidas são dadas uma vez, quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista, logo depois de Criar variável pontos.",
+      "adulto": "As vidas são dadas uma vez, quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista, logo depois de Criar variável pontos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Vida e placar e depois Vida, e pegue o bloco Dar ao sprite de vida. Arraste e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas.",
+      "adulto": "Agora abra Jogo 2D, depois Vida e placar e depois Vida, e pegue o bloco Dar ao sprite de vida. Arraste e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora os corações, que precisam ser desenhados em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo depois do placar. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Desenhar as vidas do sprite e solte nesse lugar.",
+      "adulto": "E como ver quantas vidas a nave tem? Com os corações, que precisam ser desenhados em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo depois do placar. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Desenhar as vidas do sprite e solte nesse lugar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Escolha nave. O formato já vem corações, em x 12, y 48 e tamanho 22: mantenha. Depois, escolha vermelho.",
+      "adulto": "Escolha nave. O formato já vem corações, em x 12, y 48 e tamanho 22: mantenha. Depois, escolha vermelho."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Aparecem três corações na tela, logo abaixo do placar!",
+      "adulto": "Aparecem três corações na tela, logo abaixo do placar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Dar ao sprite nave 3 de vida, e, no fim de A cada quadro do jogo, depois do placar, está Desenhar as vidas do sprite nave como corações, em x 12, y 48 e tamanho 22. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Dar ao sprite nave 3 de vida, e, no fim de A cada quadro do jogo, depois do placar, está Desenhar as vidas do sprite nave como corações, em x 12, y 48 e tamanho 22. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare as batidas com proteção",
+      "adulto": "Compare as batidas com proteção"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Teste as três batidas com proteção de 0 quadros. Volte ao começo e repita com 45. Volte ao começo e repita com 15, observando quando a proteção acaba.",
+      "adulto": "Teste as três batidas com proteção de 0 quadros. Volte ao começo e repita com 45. Volte ao começo e repita com 15, observando quando a proteção acaba."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Programe as vidas e a batida",
+      "adulto": "Programe as vidas e a batida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique no seu jogo e deixe uma pedra bater na nave. Os corações continuam três, porque a batida ainda não existe no jogo.",
+      "adulto": "Clique no seu jogo e deixe uma pedra bater na nave. Os corações continuam três, porque a batida ainda não existe no jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Cada batida tirava uma vida e dava um tempo de proteção. Agora a gente vai programar essa batida no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Cada batida tirava uma vida e dava um tempo de proteção. Agora a gente vai programar essa batida no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O jogo confere a batida em todo quadro, antes de desenhar os corações, para eles já mostrarem a vida certa. Por isso, deixe à vista o espaço entre Mostrar placar e Desenhar as vidas do sprite, dentro de A cada quadro do jogo.",
+      "adulto": "O jogo confere a batida em todo quadro, antes de desenhar os corações, para eles já mostrarem a vida certa. Por isso, deixe à vista o espaço entre Mostrar placar e Desenhar as vidas do sprite, dentro de A cada quadro do jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada sprite do grupo que colidir com o sprite. Arraste e solte entre o placar e o desenho dos corações.",
+      "adulto": "Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada sprite do grupo que colidir com o sprite. Arraste e solte entre o placar e o desenho dos corações."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O bloco já chega com o grupo asteroides, o sprite nave e, na linha de baixo, chamar o sprite de inimigo. Inimigo é o apelido da pedra que bateu na nave. Confira se ficou asteroides, nave e inimigo.",
+      "adulto": "E qual pedra o jogo vai tirar? O bloco já chega com o grupo asteroides, o sprite nave e, na linha de baixo, chamar o sprite de inimigo. Inimigo é o apelido da pedra que bateu na nave. Confira se ficou asteroides, nave e inimigo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora as ações da batida, que vão dentro dessa colisão. Deixe à vista o espaço de dentro dela. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar o sprite do grupo e solte nesse espaço. Escolha inimigo como sprite e asteroides como grupo, porque quem sai do jogo é a pedra, e não a nave.",
+      "adulto": "Agora as ações da batida, que vão dentro dessa colisão. Deixe à vista o espaço de dentro dela. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar o sprite do grupo e solte nesse espaço. Escolha inimigo como sprite e asteroides como grupo, porque quem sai do jogo é a pedra, e não a nave."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o encaixe logo abaixo da retirada. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão.",
+      "adulto": "Deixe à vista o encaixe logo abaixo da retirada. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Machucar o sprite em e deixá-lo invencível por quadros e solte nesse encaixe. Escolha nave. O dano já vem em 1, e a proteção, em 45 quadros: mantenha, porque cada batida tira uma vida e depois dá esse respiro.",
+      "adulto": "Agora falta tirar a vida da nave. Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Machucar o sprite em e deixá-lo invencível por quadros e solte nesse encaixe. Escolha nave. O dano já vem em 1, e a proteção, em 45 quadros: mantenha, porque cada batida tira uma vida e depois dá esse respiro."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o encaixe logo abaixo do dano. Abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Tremer a tela com intensidade e solte nesse encaixe. A intensidade já vem em 8: mantenha.",
+      "adulto": "Deixe à vista o encaixe logo abaixo do dano. Abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Tremer a tela com intensidade e solte nesse encaixe. A intensidade já vem em 8: mantenha."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste: clique na área do jogo e deixe uma pedra atingir a nave. A pedra sai, a tela treme e um coração apaga! Espere a proteção acabar e deixe outra pedra bater, para ver outro coração apagar. Por enquanto, ficar sem vidas ainda não encerra a partida: o fim da partida vem mais adiante.",
+      "adulto": "Agora teste: clique na área do jogo e deixe uma pedra atingir a nave. A pedra sai, a tela treme e um coração apaga. Espere a proteção acabar e deixe outra pedra bater, para ver outro coração apagar. Por enquanto, ficar sem vidas ainda não encerra a partida: o fim da partida vem mais adiante."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: entre o placar e os corações está a colisão de asteroides com nave, com o apelido inimigo. Dentro dela vêm Tirar o sprite inimigo do grupo asteroides, Soltar explosão no sprite inimigo, Machucar o sprite nave em 1 e deixá-lo invencível por 45 quadros e Tremer a tela com intensidade 8, nessa ordem. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: entre o placar e os corações está a colisão de asteroides com nave, com o apelido inimigo. Dentro dela vêm Tirar o sprite inimigo do grupo asteroides, Soltar explosão no sprite inimigo, Machucar o sprite nave em 1 e deixá-lo invencível por 45 quadros e Tremer a tela com intensidade 8, nessa ordem. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Hora de conferir o que você construiu! Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
+      "adulto": "Hora de lembrar o que você construiu. Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Teste os pontos e as vidas",
+      "adulto": "Teste os pontos e as vidas"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste os pontos e as vidas do seu jogo. Faça um tiro errar: os pontos têm que ficar iguais. Depois, acerte uma pedra e confira se soma um ponto. Por último, deixe uma pedra bater na nave e confira se ela perde uma vida.",
+      "adulto": "Agora teste os pontos e as vidas do seu jogo. Faça um tiro errar: os pontos têm que ficar iguais. Depois, acerte uma pedra e confira se soma um ponto. Por último, deixe uma pedra bater na nave e confira se ela perde uma vida."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar variável pontos e Dar ao sprite nave 3 de vida estão em Ao iniciar, Somar 1 em pontos está na colisão do tiro, Machucar o sprite nave está na colisão da nave, e o placar e os corações estão fora das colisões, em A cada quadro do jogo. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar variável pontos e Dar ao sprite nave 3 de vida estão em Ao iniciar, Somar 1 em pontos está na colisão do tiro, Machucar o sprite nave está na colisão da nave, e o placar e os corações estão fora das colisões, em A cada quadro do jogo. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Dê três vidas à nave",
+      "adulto": "Dê três vidas à nave"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 7",
+      "adulto": "Aula 7"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Escolha quando o jogo pode agir",
+      "adulto": "Escolha quando o jogo pode agir"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Use Tempo para soltar o tempo se estiver parado. Na abertura, deixe Criar asteroide fora de Se o estado do jogo é jogando e observe o tempo e as pedras. Mova para dentro do Se e observe de novo sem começar. Depois toque na tela para começar e compare.",
+      "adulto": "Use Tempo para soltar o tempo se estiver parado. Na abertura, deixe Criar asteroide fora de Se o estado do jogo é jogando e observe o tempo e as pedras. Mova para dentro do Se e observe de novo sem começar. Depois toque na tela para começar e compare."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Separe a abertura da partida",
+      "adulto": "Separe a abertura da partida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe o seu jogo logo que ele abre. As pedras já caem, porque o jogo ainda não tem abertura.",
+      "adulto": "Olhe o seu jogo logo que ele abre. As pedras já caem, porque o jogo ainda não tem abertura."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Dentro do Se jogando, as pedras esperavam a partida começar. Agora a gente vai criar a abertura no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Dentro do Se jogando, as pedras esperavam a partida começar. Agora a gente vai criar a abertura no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Para começar, você vai tirar a sequência de dentro de A cada quadro do jogo, sem apagar nada. Deixe à vista um lugar livre do espaço dos blocos, perto de A cada quadro do jogo. Depois, pegue a sequência pelo primeiro bloco, Limpar a tela, e solte nesse lugar. Os blocos encaixados abaixo dele vão juntos. Não apague nem crie cópias, porque daqui a pouco essa sequência volta inteira para dentro do Se.",
+      "adulto": "Para começar, você vai tirar a sequência de dentro de A cada quadro do jogo, sem apagar nada. Deixe à vista um lugar livre do espaço dos blocos, perto de A cada quadro do jogo. Depois, pegue a sequência pelo primeiro bloco, Limpar a tela, e solte nesse lugar. Os blocos encaixados abaixo dele vão juntos. Não apague nem crie cópias, porque daqui a pouco essa sequência volta inteira para dentro do Se."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço de dentro de A cada quadro do jogo, que ficou vazio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte dentro de A cada quadro do jogo.",
+      "adulto": "Pronto: a sequência saiu inteira, sem apagar nada. Agora deixe à vista o espaço de dentro de A cada quadro do jogo, que ficou vazio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte dentro de A cada quadro do jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O Se vem com uma pergunta pronta: x maior que 0. Mas não é isso que o seu jogo precisa perguntar, por isso arraste essa pergunta para a lixeira do espaço dos blocos. O lugar ao lado de Se fica vazio, e é ali que vai a pergunta certa. Deixe esse lugar à vista.",
+      "adulto": "O Se vem com uma pergunta pronta: x maior que 0. Mas não é isso que o seu jogo precisa perguntar, por isso arraste essa pergunta para a lixeira do espaço dos blocos. O lugar ao lado de Se fica vazio, e é ali que vai a pergunta certa. Deixe esse lugar à vista."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é e solte no lugar vazio ao lado de Se. No menu desse bloco, escolha jogando. Assim, o Se pergunta se a partida já começou.",
+      "adulto": "Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é e solte no lugar vazio ao lado de Se. No menu desse bloco, escolha jogando. Assim, o Se pergunta se a partida já começou."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora devolva a sequência para dentro do Se: deixe à vista o espaço do então, pegue a sequência pelo primeiro bloco, Limpar a tela, e solte dentro do então. Confira se ela termina no desenho das vidas e se todos os blocos do meio continuam lá.",
+      "adulto": "Agora devolva a sequência para dentro do Se: deixe à vista o espaço do então, pegue a sequência pelo primeiro bloco, Limpar a tela, e solte dentro do então. Confira se ela termina no desenho das vidas e se todos os blocos do meio continuam lá. Assim, na abertura, ninguém perde vida, porque a partida ainda não começou."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora a abertura, que precisa de um ramo próprio no Se. Na linha de baixo do bloco Se, tem dois sinais de mais, um antes de senão se e outro antes de senão. Clique uma vez no primeiro +, o que fica antes de senão se.",
+      "adulto": "Agora a abertura, que precisa de um ramo próprio no Se. Na linha de baixo do bloco Se, tem dois sinais de mais, um antes de senão se e outro antes de senão. Clique uma vez no primeiro +, o que fica antes de senão se."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O ramo novo também chega com a pergunta x maior que 0. Arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de senão se. Abra de novo Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue outro o estado do jogo é, solte nesse lugar e deixe inicio no menu.",
+      "adulto": "O ramo novo também chega com a pergunta x maior que 0. Arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de senão se. Abra de novo Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue outro o estado do jogo é, solte nesse lugar e deixe inicio no menu."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço do então desse senão se. Na mesma categoria Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse espaço.",
+      "adulto": "Esse ramo inicio é a tela que quem abrir o seu jogo vai ver primeiro. Deixe à vista o espaço do então desse senão se. Na mesma categoria Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse espaço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O bloco já vem com o título Nave contra Asteroides e o subtítulo Destrua os asteroides! Mantenha os dois. A dica já vem Aperte Enter para começar: mantenha também, porque é ela que avisa quem joga como começar a partida. O fundo já vem escuro, e o texto aparece bem nele: é só manter.",
+      "adulto": "O bloco já vem com o título Nave contra Asteroides e o subtítulo Destrua os asteroides! Mantenha os dois. A dica já vem Aperte Enter para começar: mantenha também, porque é ela que avisa quem joga como começar a partida. O fundo já vem escuro, e o texto aparece bem nele: é só manter."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Falta dizer em que estado o jogo começa, e isso acontece uma vez, no fim de Ao iniciar: deixe esse lugar à vista. Ainda em Jogo 2D, Jogo e telas e Telas e partida, pegue o bloco Mudar o estado do jogo para, solte no fim de Ao iniciar e deixe inicio no menu.",
+      "adulto": "Falta dizer em que estado o jogo começa, e isso acontece uma vez, no fim de Ao iniciar: deixe esse lugar à vista. Ainda em Jogo 2D, Jogo e telas e Telas e partida, pegue o bloco Mudar o estado do jogo para, solte no fim de Ao iniciar e deixe inicio no menu."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A abertura aparece! Isso acontece porque o jogo começa em inicio, e o ramo de inicio mostra a tela. O Enter ainda não começa a partida, porque essa resposta vem em outra parte.",
+      "adulto": "A abertura aparece. Isso acontece porque o jogo começa em inicio, e o ramo de inicio mostra a tela. O Enter ainda não começa a partida, porque essa resposta vem em outra seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo está o Se com o estado do jogo é jogando, e dentro do então dele está a sequência inteira, de Limpar a tela até o desenho das vidas. No senão se, com o estado do jogo é inicio, está Mostrar tela. E, no fim de Ao iniciar, está Mudar o estado do jogo para inicio. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo está o Se com o estado do jogo é jogando, e dentro do então dele está a sequência inteira, de Limpar a tela até o desenho das vidas. No senão se, com o estado do jogo é inicio, está Mostrar tela. E, no fim de Ao iniciar, está Mudar o estado do jogo para inicio. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Espere a partida para criar pedras e tiros",
+      "adulto": "Espere a partida para criar pedras e tiros"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Com a abertura na tela, clique na área do jogo e toque na barra de espaço. O som do tiro toca antes de a partida começar. É que o relógio das pedras e o evento da barra de espaço ficam fora do Se que você montou. Agora vamos fazer essas duas ações esperarem a partida também.",
+      "adulto": "Com a abertura na tela, clique na área do jogo e aperte a barra de espaço. O som do tiro toca antes de a partida começar. É que o relógio das pedras e o evento da barra de espaço ficam fora do Se que você montou. Agora vamos fazer essas duas ações esperarem a partida também."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Comece pelas pedras. Deixe à vista o bloco A cada 40 quadros e um espaço livre perto dele. Pegue o bloco que cria asteroides, de dentro do relógio, e solte nesse espaço livre por enquanto.",
+      "adulto": "Comece pelas pedras. Deixe à vista o bloco A cada 40 quadros e um espaço livre perto dele. Pegue o bloco que cria asteroides, de dentro do relógio, e solte nesse espaço livre por enquanto."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço de dentro de A cada 40 quadros, que ficou vazio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte dentro do relógio. Ele chega de novo com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se.",
+      "adulto": "Deixe à vista o espaço de dentro de A cada 40 quadros, que ficou vazio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte dentro do relógio. Ele chega de novo com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando. Depois, leve o criador de asteroides para dentro do então desse Se. O intervalo continua 40, mas agora a pedra só é criada quando o estado é jogando.",
+      "adulto": "A pergunta é a mesma da partida. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando. Depois, leve o criador de asteroides para dentro do então desse Se. O intervalo continua 40, mas agora a pedra só é criada quando o estado é jogando."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora os tiros. Encontre o evento da barra de espaço, em Quando acontecer, e deixe à vista um espaço livre perto dele. Pegue a sequência pelo primeiro bloco, Criar tiro, e solte nesse espaço por enquanto. Tocar efeito vai junto, porque está encaixado logo abaixo.",
+      "adulto": "Agora os tiros. Encontre o evento da barra de espaço, em Quando acontecer, e deixe à vista um espaço livre perto dele. Pegue a sequência pelo primeiro bloco, Criar tiro, e solte nesse espaço por enquanto. Tocar efeito vai junto, porque está encaixado logo abaixo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço de dentro do evento da barra de espaço, que ficou vazio. Abra Programação e depois Lógica e Se, pegue outro Se e solte dentro do evento. Arraste a pergunta x maior que 0 para a lixeira e deixe à vista o lugar vazio ao lado de Se.",
+      "adulto": "Deixe à vista o espaço de dentro do evento da barra de espaço, que ficou vazio. Abra Programação e depois Lógica e Se, pegue outro Se e solte dentro do evento. Arraste a pergunta x maior que 0 para a lixeira e deixe à vista o lugar vazio ao lado de Se."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando. Depois, leve Criar tiro e Tocar efeito, juntos, para dentro do então, nessa ordem.",
+      "adulto": "Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando. Depois, leve Criar tiro e Tocar efeito, juntos, para dentro do então, nessa ordem."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste: clique na área do jogo e toque na barra de espaço com a abertura na tela. Dessa vez não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio.",
+      "adulto": "Agora teste: clique na área do jogo e aperte a barra de espaço com a abertura na tela. Dessa vez não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Já as pedras ficam escondidas atrás da tela de abertura, e olhar a imagem não prova nada sobre elas. Por isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está o Se jogando, com o criador de asteroides no então. E, dentro do evento da barra de espaço, está outro Se jogando, com Criar tiro e Tocar efeito no então.",
+      "adulto": "E as pedras? Para conferir se elas também esperam, a gente precisa olhar os blocos, porque elas ficam escondidas atrás da tela de abertura, e olhar a imagem não prova nada sobre elas. Por isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está o Se jogando, com o criador de asteroides no então. E, dentro do evento da barra de espaço, está outro Se jogando, com Criar tiro e Tocar efeito no então."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Use Enter para começar",
+      "adulto": "Use Enter para começar"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Primeiro, clique na área do jogo e toque em Enter. A abertura continua na tela, porque o seu jogo ainda não sabe o que fazer quando alguém toca nessa tecla. Agora programe o Enter para começar a partida.",
+      "adulto": "Primeiro, clique na área do jogo e aperte Enter. A abertura continua na tela, porque o seu jogo ainda não sabe o que fazer quando alguém aperta essa tecla. Agora programe o Enter para começar a partida."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O Enter é uma tecla, ou seja, um evento, igual à barra de espaço. Por isso, ele vai em Quando acontecer, abaixo do evento inteiro da barra de espaço: deixe esse lugar à vista.",
+      "adulto": "O Enter é uma tecla, ou seja, um evento, igual à barra de espaço. Por isso, ele vai em Quando acontecer, abaixo do evento inteiro da barra de espaço: deixe esse lugar à vista."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte abaixo do evento inteiro da barra de espaço, sem encaixar dentro dele. No menu da tecla, escolha Enter.",
+      "adulto": "Agora abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte abaixo do evento inteiro da barra de espaço, sem encaixar dentro dele. No menu da tecla, escolha Enter."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O Enter só pode começar a partida quando o jogo está na abertura, por isso dentro desse evento vai um Se. Deixe à vista o espaço de dentro do evento Enter. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço. Arraste a pergunta x maior que 0 para a lixeira e deixe à vista o lugar vazio ao lado de Se.",
+      "adulto": "O Enter só pode começar a partida quando o jogo está na abertura, por isso dentro desse evento vai um Se. Deixe à vista o espaço de dentro do evento Enter. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço. Arraste a pergunta x maior que 0 para a lixeira e deixe à vista o lugar vazio ao lado de Se."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e deixe inicio no menu.",
+      "adulto": "Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e deixe inicio no menu."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço do então desse Se. Na mesma categoria Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha jogando. Assim, o Enter começa a partida só quando o jogo está na abertura.",
+      "adulto": "Deixe à vista o espaço do então desse Se. Na mesma categoria Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha jogando. Assim, o Enter começa a partida só quando o jogo está na abertura."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste: clique na área do jogo e toque em Enter. A abertura some e a partida começa! Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas.",
+      "adulto": "Agora teste: clique na área do jogo e aperte Enter. A abertura some e a partida começa. Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora toque em Enter durante a partida. Ela continua, sem recomeçar, porque o Se só muda o estado quando ele é inicio. Por enquanto, ficar sem vidas ainda não muda de tela, porque você ainda não montou o encerramento.",
+      "adulto": "Agora aperte Enter durante a partida. Ela continua, sem recomeçar, porque o Se só muda o estado quando ele é inicio. Por enquanto, ficar sem vidas ainda não muda de tela, porque você ainda não montou o encerramento."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: em Quando acontecer, abaixo do evento da barra de espaço, está Quando apertar a tecla Enter. Dentro dele, o Se pergunta se o estado do jogo é inicio e, no então, está Mudar o estado do jogo para jogando. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: em Quando acontecer, abaixo do evento da barra de espaço, está Quando apertar a tecla Enter. Dentro dele, o Se pergunta se o estado do jogo é inicio e, no então, está Mudar o estado do jogo para jogando. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Comece a partida com Enter",
+      "adulto": "Comece a partida com Enter"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 8",
+      "adulto": "Aula 8"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Defina quando ganhar e perder",
+      "adulto": "Defina quando ganhar e perder"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu jogo, comece uma partida e deixe as vidas acabarem. A partida continua, porque você ainda não programou quando ela termina. Agora faça a partida acabar quando chegar a 26 pontos ou quando as vidas acabarem.",
+      "adulto": "No seu jogo, comece uma partida e deixe as vidas acabarem. A partida continua, porque você ainda não programou quando ela termina. Agora faça a partida acabar quando chegar a 26 pontos ou quando as vidas acabarem."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Primeiro, a meta. Os 26 pontos não mudam durante a partida, por isso a meta vai numa constante, que é um nome que guarda um valor que não muda. A constante é criada uma vez, quando o jogo começa, em Ao iniciar: deixe à vista o espaço entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio.",
+      "adulto": "Primeiro, a meta. Os 26 pontos não mudam durante a partida, por isso a meta vai numa constante, que é um nome que guarda um valor que não muda. A constante é criada uma vez, quando o jogo começa, em Ao iniciar: deixe à vista o espaço entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora abra Programação e depois Variáveis, e pegue o bloco Criar constante com valor. Arraste e solte entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio. O nome chega como PI: troque PI por alvo e o 0 do valor por 26.",
+      "adulto": "Agora abra Programação e depois Variáveis, e pegue o bloco Criar constante com valor. Arraste e solte entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio. O nome chega como PI: troque PI por alvo e o 0 do valor por 26."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora a pergunta da vitória, que o jogo faz em todo quadro, durante a partida. Ela vai no fim do então de Se o estado do jogo é jogando, dentro de A cada quadro do jogo, logo depois de Desenhar as vidas do sprite: deixe esse lugar à vista. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse lugar.",
+      "adulto": "Com a meta pronta, agora a pergunta da vitória, que o jogo faz em todo quadro, durante a partida. Ela vai no fim do então de Se o estado do jogo é jogando, dentro de A cada quadro do jogo, logo depois de Desenhar as vidas do sprite: deixe esse lugar à vista. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse lugar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Desta vez, a pergunta que vem no Se vai ser usada. Ela é uma comparação: um valor, um sinal e outro valor. No lado esquerdo, clique em x e escolha pontos. No sinal, clique em > e escolha ≥, que quer dizer maior ou igual.",
+      "adulto": "Desta vez, a pergunta que vem no Se vai ser usada. Ela é uma comparação: um valor, um sinal e outro valor. No lado esquerdo, clique em x e escolha pontos. No sinal, clique em > e escolha ≥, que quer dizer maior ou igual."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora o lado direito. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima do 0. Escolha alvo. Assim, a pergunta fica pontos maior ou igual a alvo, ou seja, a partida já chegou à meta?",
+      "adulto": "Agora o lado direito, que é onde vai a meta. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima do 0. Escolha alvo. Assim, a pergunta fica pontos maior ou igual a alvo, ou seja, a partida já chegou à meta?"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço do então dessa comparação. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro desse então e escolha vitoria.",
+      "adulto": "Deixe à vista o espaço do então dessa comparação. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro desse então e escolha vitoria."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora a derrota. Deixe à vista o encaixe logo abaixo do Se da vitória, ainda dentro de jogando. Abra Programação e depois Lógica e Se, pegue outro Se e solte nesse encaixe. Desta vez, a pergunta x maior que 0 não serve, por isso arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se.",
+      "adulto": "Pronto: chegou à meta, a partida vai para a vitória. Agora a derrota, para quando as vidas acabarem. Deixe à vista o encaixe logo abaixo do Se da vitória, ainda dentro de jogando. Abra Programação e depois Lógica e Se, pegue outro Se e solte nesse encaixe. Desta vez, a pergunta x maior que 0 não serve, por isso arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco as vidas do sprite acabaram?, solte nesse lugar e escolha nave. Depois, deixe à vista o então desse Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim.",
+      "adulto": "Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco as vidas do sprite acabaram?, solte nesse lugar e escolha nave. Depois, deixe à vista o então desse Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da derrota. Se as duas coisas acontecerem no mesmo quadro, a derrota vem por último, e é ela que vale.",
+      "adulto": "E se as duas coisas acontecerem juntas? A ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da derrota. Se as duas coisas acontecerem no mesmo quadro, a derrota vem por último, e é ela que vale."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: em Ao iniciar, entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio, está Criar constante alvo com valor 26. E, no fim de jogando, depois de Desenhar as vidas do sprite, estão o Se pontos ≥ alvo, que muda o estado para vitoria, e o Se as vidas do sprite nave acabaram?, que muda o estado para fim.",
+      "adulto": "Confira se ficou assim: em Ao iniciar, entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio, está Criar constante alvo com valor 26. E, no fim de jogando, depois de Desenhar as vidas do sprite, estão o Se pontos ≥ alvo, que muda o estado para vitoria, e o Se as vidas do sprite nave acabaram?, que muda o estado para fim."
+    },
+    {
+      "onde": "caderno",
+      "kids": "As telas da vitória e da derrota ainda não existem, por isso o jogo ainda não mostra esses finais. Desta vez, quem confere o que você montou é a verificação, e as telas vêm na próxima parte.",
+      "adulto": "Agora a partida já pode terminar com vitória ou com derrota. Mas as telas da vitória e da derrota ainda não existem, por isso o jogo ainda não mostra esses finais. Desta vez, quem confere o que você montou é a verificação, e as telas vêm na próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mostre a vitória e a derrota",
+      "adulto": "Mostre a vitória e a derrota"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Quando as vidas acabam, a partida para, mas nenhuma tela de fim aparece. É que o Se grande de A cada quadro do jogo só tem os ramos de jogando e de inicio, e nenhum para vitoria ou fim. Agora mostre uma tela para cada final.",
+      "adulto": "Quando as vidas acabam, a partida para, mas nenhuma tela de fim aparece. É que o Se grande de A cada quadro do jogo só tem os ramos de jogando e de inicio, e nenhum para vitoria ou fim. Agora mostre uma tela para cada final."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Encontre esse Se, dentro de A cada quadro do jogo. Na linha de baixo dele, clique uma vez no + que fica antes de senão se, para criar o ramo da vitória.",
+      "adulto": "Encontre esse Se, dentro de A cada quadro do jogo. Na linha de baixo dele, clique uma vez no + que fica antes de senão se, para criar o ramo da vitória."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado desse senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha vitoria.",
+      "adulto": "O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado desse senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha vitoria."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço do então do ramo vitoria. Na mesma categoria Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse espaço.",
+      "adulto": "Agora falta a tela de vitória. Deixe à vista o espaço do então do ramo vitoria. Na mesma categoria Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse espaço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora os textos da vitória: no título, escreva Você ganhou!, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.",
+      "adulto": "Agora os textos da vitória: no título, escreva Você ganhou!, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora a derrota, do mesmo jeito. Clique de novo no + que fica antes de senão se. O ramo novo também chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio. Na mesma categoria Telas e partida, pegue o estado do jogo é, solte nesse lugar e escolha fim.",
+      "adulto": "Agora a derrota, do mesmo jeito. Clique de novo no + que fica antes de senão se. O ramo novo também chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio. Na mesma categoria Telas e partida, pegue o estado do jogo é, solte nesse lugar e escolha fim."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço do então do ramo fim. Pegue outro Mostrar tela com título subtítulo dica fundo, na mesma categoria, e solte nesse espaço. No título, escreva Você perdeu, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro.",
+      "adulto": "Deixe à vista o espaço do então do ramo fim. Pegue outro Mostrar tela com título subtítulo dica fundo, na mesma categoria, e solte nesse espaço. No título, escreva Você perdeu, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste: clique na área do jogo, comece com Enter e deixe as vidas acabarem. Aparece a tela Você perdeu! Isso acontece porque a pergunta das vidas muda o estado para fim, e o ramo fim mostra essa tela. A dica já fala em voltar ao início, mas o Enter ainda não faz isso: essa resposta vem depois da próxima experiência.",
+      "adulto": "Agora teste: clique na área do jogo, comece com Enter e deixe as vidas acabarem. Aparece a tela Você perdeu. Isso acontece porque a pergunta das vidas muda o estado para fim, e o ramo fim mostra essa tela. A dica já fala em voltar ao início, mas o Enter ainda não faz isso: essa resposta vem depois da próxima experiência."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de jogando, a pergunta das vidas muda o estado para fim, e o Se grande tem os ramos jogando, inicio, vitoria e fim, nessa ordem. Os ramos vitoria e fim mostram as telas Você ganhou! e Você perdeu, com a dica Aperte Enter para voltar ao início. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de jogando, a pergunta das vidas muda o estado para fim, e o Se grande tem os ramos jogando, inicio, vitoria e fim, nessa ordem. Os ramos vitoria e fim mostram as telas Você ganhou! e Você perdeu, com a dica Aperte Enter para voltar ao início. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare voltar à abertura e reiniciar",
+      "adulto": "Compare voltar à abertura e reiniciar"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Escolha Mudar o estado do jogo para inicio. Comece, espere perder, volte à abertura e tente jogar de novo. No final, escolha Reiniciar o jogo, volte à abertura e comece outra partida para comparar.",
+      "adulto": "Escolha Mudar o estado do jogo para inicio. Comece, espere perder, volte à abertura e tente jogar de novo. No final, escolha Reiniciar o jogo, volte à abertura e comece outra partida para comparar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Faça Enter preparar outra partida",
+      "adulto": "Faça Enter preparar outra partida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu jogo, comece uma partida, perca e toque em Enter. Você perdeu continua na tela, porque o Enter só sabe começar a partida.",
+      "adulto": "No seu jogo, comece uma partida, perca e aperte Enter. Você perdeu continua na tela, porque o Enter só sabe começar a partida."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Reiniciar o jogo deixava tudo limpo para outra partida. Agora a gente vai ensinar isso ao Enter do seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Reiniciar o jogo deixava tudo limpo para outra partida. Agora a gente vai ensinar isso ao Enter do seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Encontre o evento Enter em Quando acontecer. A condição dentro dele já começa a partida quando o estado é inicio, e esse pedaço fica como está. Na linha de baixo do Se que está dentro do evento Enter, clique uma vez no + que fica antes de senão se.",
+      "adulto": "Encontre o evento Enter em Quando acontecer. A condição dentro dele já começa a partida quando o estado é inicio, e esse pedaço fica como está. Na linha de baixo do Se que está dentro do evento Enter, clique uma vez no + que fica antes de senão se."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha fim.",
+      "adulto": "Esse ramo novo vai perguntar se a partida acabou. Ele chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha fim."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço.",
+      "adulto": "Deixe à vista o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora a vitória, do mesmo jeito. Clique de novo no + que fica antes de senão se. Arraste a pergunta x maior que 0 do ramo novo para a lixeira e deixe à vista o lugar vazio. Na mesma categoria, pegue o estado do jogo é, solte nesse lugar e escolha vitoria. Depois, deixe à vista o então do ramo vitoria, pegue outro Reiniciar o jogo e solte nesse espaço.",
+      "adulto": "Depois de ganhar, também dá para jogar de novo. Por isso, agora a vitória, do mesmo jeito. Clique de novo no + que fica antes de senão se. Arraste a pergunta x maior que 0 do ramo novo para a lixeira e deixe à vista o lugar vazio. Na mesma categoria, pegue o estado do jogo é, solte nesse lugar e escolha vitoria. Depois, deixe à vista o então do ramo vitoria, pegue outro Reiniciar o jogo e solte nesse espaço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste: perca uma partida e toque em Enter. A abertura volta! Toque em Enter outra vez, porque é esse segundo Enter que começa a partida nova. O placar está em zero e os três corações voltaram, porque Reiniciar o jogo fez a preparação de novo.",
+      "adulto": "Agora teste: perca uma partida e aperte Enter. A abertura volta. Aperte Enter outra vez, porque é esse segundo Enter que começa a partida nova. O placar está em zero e os três corações voltaram, porque Reiniciar o jogo fez a preparação de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro do evento Enter, o Se tem três ramos. Em inicio, o Enter muda o estado para jogando. Em fim e em vitoria, o Enter reinicia o jogo. E Dar ao sprite nave 3 de vida continua em Ao iniciar. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro do evento Enter, o Se tem três ramos. Em inicio, o Enter muda o estado para jogando. Em fim e em vitoria, o Enter reinicia o jogo. E Dar ao sprite nave 3 de vida continua em Ao iniciar. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Hora de conferir o que você construiu! Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
+      "adulto": "Hora de lembrar o que você construiu. Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Teste o jogo completo e compartilhe",
+      "adulto": "Teste o jogo completo e compartilhe"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste o ciclo completo do seu jogo. Na abertura, clique na área do jogo e toque na barra de espaço. Não sai som de tiro, porque criar tiros e criar asteroides ficam dentro de Se jogando. Confira também nos blocos se os dois estão lá.",
+      "adulto": "Agora teste o ciclo completo do seu jogo. Na abertura, clique na área do jogo e aperte a barra de espaço. Não sai som de tiro, porque criar tiros e criar asteroides ficam dentro de Se jogando. Confira também nos blocos se os dois estão lá."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Toque em Enter, mova a nave e atire. Depois, deixe as três vidas acabarem e confira a tela Você perdeu. Toque em Enter para voltar à abertura e mais uma vez para começar, e confira se a partida nova começa com zero pontos e três corações.",
+      "adulto": "Aperte Enter, mova a nave e atire. Depois, deixe as três vidas acabarem e confira a tela Você perdeu. Aperte Enter para voltar à abertura e mais uma vez para começar, e confira se a partida nova começa com zero pontos e três corações."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Nessa nova partida, tente chegar a 26 pontos para ver a tela Você ganhou!. Se perder antes, recomece e tente de novo. Na vitória, toque na barra de espaço: não pode sair nenhum tiro. Toque em Enter para voltar à abertura e outra vez para jogar, e confira de novo os pontos e as vidas. Se algum final não funcionar, reveja a pergunta que muda o estado e o ramo que mostra aquela tela.",
+      "adulto": "Agora vá atrás da vitória: nessa nova partida, tente chegar a 26 pontos para ver a tela Você ganhou!. Se perder antes, recomece e tente de novo. Na vitória, aperte a barra de espaço: não pode sair nenhum tiro. Aperte Enter para voltar à abertura e outra vez para jogar, e confira de novo os pontos e as vidas. Se algum final não funcionar, reveja a pergunta que muda o estado e o ramo que mostra aquela tela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olha só o que você programou: os controles, os tiros, os acertos, os pontos, as vidas e as telas! É com essas regras que a sua nave enfrenta os asteroides do começo ao fim da partida.",
+      "adulto": "Olha só o que você programou: os controles, os tiros, os acertos, os pontos, as vidas e as telas. É com essas regras que a sua nave enfrenta os asteroides do começo ao fim da partida. Pronto: o seu jogo está completo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista! Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir fase.",
+      "adulto": "Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Agora, se quiser, você pode publicar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação. Quando aparecer Publicado!, o seu jogo já está no Mural dos Criadores. Agora qualquer pessoa pode jogar o jogo que você criou. Clique em Copiar link e mande para os amigos, para o grupo, para quem você quiser: quem receber joga direto, até no celular. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Termine e recomece a partida",
+      "adulto": "Termine e recomece a partida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 9",
+      "adulto": "Aula 9"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Nave Contra Asteroides · Mapa da Aventura",
+      "adulto": "Nave Contra Asteroides · Caderno do Aluno"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mapa da Aventura",
+      "adulto": "Caderno do Aluno"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Os passos para você construir, testar e recomeçar o seu jogo.",
+      "adulto": "Os passos para você construir, testar e recomeçar o seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Da primeira nave à partida completa.",
+      "adulto": "Da primeira nave à partida completa."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O jogo Nave Contra Asteroides em funcionamento",
+      "adulto": "O jogo Nave Contra Asteroides em funcionamento"
+    },
+    {
+      "onde": "caderno",
+      "kids": "continuação",
+      "adulto": "continuação"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Nave Contra Asteroides | Mapa da Aventura",
+      "adulto": "Nave Contra Asteroides | Caderno do Aluno"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Seu percurso",
+      "adulto": "Seu percurso"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Uma parte do jogo por fase",
+      "adulto": "Uma parte do jogo por aula"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Este é o seu Mapa da Aventura! Consulte quando precisar de um passo, um valor ou um teste: você pode ler aqui na fase ou baixar para guardar.",
+      "adulto": "Este é o seu caderno do curso. Consulte quando precisar de um passo, um valor ou um teste: você pode ler aqui na aula ou baixar para guardar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Em cada fase, você programa uma parte nova do seu jogo. Para isso, continue no projeto que você enviou na fase anterior.",
+      "adulto": "Em cada aula, você programa uma parte nova do seu jogo. Para isso, continue no projeto que você enviou na aula anterior."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira os encaixes",
+      "adulto": "Confira os encaixes"
+    },
+    {
+      "onde": "caderno",
+      "kids": "confira os encaixes",
+      "adulto": "confira os encaixes"
+    }
+  ]
+}

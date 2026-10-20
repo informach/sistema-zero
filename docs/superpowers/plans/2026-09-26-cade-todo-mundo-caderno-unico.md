@@ -89,13 +89,13 @@ expect(partirSecao({ blocks: [{ id: 'caderno', kind: 'materials', content: { kin
 
 **Files:**
 - Modify: `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts`
-- Regenerate: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json`
-- Regenerate: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json`
-- Modify: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md`
-- Modify: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md`
+- Regenerate: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json`
+- Regenerate: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md`
 - Modify: `docs/aulas-interativas-tecnico/recursos/cade-todo-mundo/caderno-do-aluno.template.html`
-- Regenerate locally: `docs/aulas-interativas/cade-todo-mundo/mapa-da-aventura.pdf` (não adicionar ao git se estiver ignorado)
-- Modify: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.md`, `cade-todo-mundo-aula-2.md`, `docs/aulas-interativas-tecnico/modulos-cade-todo-mundo.md`
+- Regenerate locally: `docs/aulas-interativas/kids/cade-todo-mundo/mapa-da-aventura.pdf` (não adicionar ao git se estiver ignorado)
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.md`, `cade-todo-mundo-aula-2.md`, `docs/aulas-interativas-tecnico/modulos-cade-todo-mundo.md`
 - Test: `docs/aulas-interativas-tecnico/qa/cade-todo-mundo-manifestos.test.ts`
 
 **Interfaces:**

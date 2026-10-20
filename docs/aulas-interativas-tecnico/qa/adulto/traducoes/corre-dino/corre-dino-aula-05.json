@@ -1,0 +1,777 @@
+{
+  "curso": "corre-dino",
+  "grupo": "corre-dino-aula-05",
+  "trechos": [
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "# Corre, Dino! · Aula 5 · Faça os cactos entrar na pista",
+      "adulto": "# Corre, Dino! · Aula 5 · Faça os cactos entrar na pista"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md).",
+      "adulto": "Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md)."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "## Resumo",
+      "adulto": "## Resumo"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "- Estado de entrada: Dino pulando com som diante da floresta.\n- Resultado da aula: Grupo cactos, nascimento a cada 1,4 segundo em x 560, tamanho 44 e vx -5; movimento e desenho em cada quadro.\n- Seções: 6. Vídeos: 6.",
+      "adulto": "- Estado de entrada: Dino pulando com som diante da floresta.\n- Resultado da aula: Grupo cactos, nascimento a cada 1,4 segundo em x 560, tamanho 44 e vx -5; movimento e desenho em cada quadro.\n- Seções: 6. Vídeos: 6."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
+      "adulto": "**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "## Diagnóstico e decisão",
+      "adulto": "## Diagnóstico e decisão"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "O intervalo e a direção da velocidade são observados antes dos blocos. Grupo e relógio são preparados numa seção; criação e depois atualização e desenho têm montagens próprias. A avalanche fica na experiência, sem exigir montar e desmontar uma regra errada no projeto.",
+      "adulto": "O intervalo e a direção da velocidade são observados antes dos blocos. Grupo e relógio são preparados numa seção; criação e depois atualização e desenho têm montagens próprias. A avalanche fica na experiência, sem exigir montar e desmontar uma regra errada no projeto."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "## Triagem dos conceitos",
+      "adulto": "## Triagem dos conceitos"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Grupo e intervalo | spawn antes da criação | Ver vários objetos nascerem com uma regra comum e comparar os ritmos. |\n| Velocidade e sinal | velocity antes de vx -5 | Relacionar o número à mudança do x. |\n| Nascer fora da tela | retoma coordenadas e tamanho | 560 fica além da largura 480; o nascimento entra depois pelo movimento. |",
+      "adulto": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Grupo e intervalo | spawn antes da criação | Ver vários objetos nascerem com uma regra comum e comparar os ritmos. |\n| Velocidade e sinal | velocity antes de vx -5 | Relacionar o número à mudança do x. |\n| Nascer fora da tela | retoma coordenadas e tamanho | 560 fica além da largura 480; o nascimento entra depois pelo movimento. |"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "## Proposta final",
+      "adulto": "## Proposta final"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "### Seção 1. Compare o intervalo entre cactos",
+      "adulto": "### Seção 1. Compare o intervalo entre cactos"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Tarefa:** Sua vez! Compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Tarefa:** Sua vez: compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Blocos na página:** video-espaco-e-tempo → fala-espaco-e-tempo → experiencia-ritmo.",
+      "adulto": "**Blocos na página:** video-espaco-e-tempo → fala-espaco-e-tempo → experiencia-ritmo."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Zappy na página (não gravar):** Sua vez! Compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Sua vez: compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "ID video-espaco-e-tempo-avatar-01. Professora até “Eles formam uma parede, e o Dino não teria como pular.”. Antes: Deixar o tempo parado com a parede de cactos visível. Debinha: “Como eu deixo um espaço entre eles?”. Retomada da professora: “Agora eu levo Criar cacto para o relógio e escolho 1,4 s.”. Depois: Mover Criar cacto para o relógio de 1,4 s; deixar os dois nascimentos acontecerem no tempo real.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Experiência existente:** `spawn`. Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe os cactos que nascem. Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.",
+      "adulto": "**Experiência existente:** `spawn`. Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe os cactos que nascem. Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "### Seção 2. Prepare o grupo e o relógio",
+      "adulto": "### Seção 2. Prepare o grupo e o relógio"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Tarefa:** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "**Tarefa:** Agora prepare o grupo e o relógio dos cactos. Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Blocos na página:** video-grupo-e-relogio → fala-grupo-e-relogio.",
+      "adulto": "**Blocos na página:** video-grupo-e-relogio → fala-grupo-e-relogio."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Zappy na página (não gravar):** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Agora prepare o grupo e o relógio dos cactos. Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "ID video-grupo-e-relogio-avatar-01. Professora até “O grupo é criado uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar dinossauro. Depois, abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar grupo de sprites e solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E como eu faço aparecer um cacto de cada vez?”. Retomada da professora: “Agora vem o relógio.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.",
+      "adulto": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "- Crie o grupo cactos em Ao iniciar.\n- Prepare um relógio com intervalo positivo em Enquanto estiver rodando.",
+      "adulto": "- Crie o grupo cactos em Ao iniciar.\n- Prepare um relógio com intervalo positivo em Enquanto estiver rodando."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "### Seção 3. Compare a direção da velocidade",
+      "adulto": "### Seção 3. Compare a direção da velocidade"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Tarefa:** Sua vez! Compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Tarefa:** Sua vez: compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Blocos na página:** video-numero-negativo → fala-numero-negativo → experiencia-velocidade.",
+      "adulto": "**Blocos na página:** video-numero-negativo → fala-numero-negativo → experiencia-velocidade."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Zappy na página (não gravar):** Sua vez! Compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Sua vez: compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "ID video-numero-negativo-avatar-01. Professora até “Em cada quadro, o jogo soma a velocidade ao x.”. Antes: Mostrar o cacto avançando para a direita com velocidade 5 e o x na faixa. Debinha: “E se eu quiser que o cacto vá para o outro lado?”. Retomada da professora: “Quando eu troco a velocidade para o lado por -5 e avanço, o x diminui 5 em cada quadro, e o cacto vai para a esquerda.”. Depois: Trocar para -5 e avançar os quadros; depois testar as duas velocidades em zero.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Experiência existente:** `velocity`. Na experiência, deixe a velocidade para baixo em 0. Escolha velocidade para o lado 5 e clique em Avançar 1 quadro algumas vezes. Observe o x. Troque a velocidade para o lado por -5 e avance mais alguns quadros. Compare a direção. Por último, deixe as duas velocidades em 0 e avance de novo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.",
+      "adulto": "**Experiência existente:** `velocity`. Na experiência, deixe a velocidade para baixo em 0. Escolha velocidade para o lado 5 e clique em Avançar 1 quadro algumas vezes. Observe o x. Troque a velocidade para o lado por -5 e avance mais alguns quadros. Compare a direção. Por último, deixe as duas velocidades em 0 e avance de novo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "### Seção 4. Crie os cactos no relógio",
+      "adulto": "### Seção 4. Crie os cactos no relógio"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Tarefa:** Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "**Tarefa:** Agora crie os cactos no relógio. Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Blocos na página:** video-criar-cactos → fala-criar-cactos.",
+      "adulto": "**Blocos na página:** video-criar-cactos → fala-criar-cactos."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Zappy na página (não gravar):** Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Agora crie os cactos no relógio. Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "ID video-criar-cactos-avatar-01. Professora até “Agora troque o x 400 por 560. Em vx, troque -3 por -5: o vx é a velocidade para o lado, a mesma da experiência. O tamanho já chega 44: mantenha. Repare no x: a tela do seu jogo tem largura 480, por isso o cacto que nasce em x 560 começa escondido, além da borda direita.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Ah, ele vai entrar pela beirada!”. Retomada da professora: “Confira se ficou assim: No grupo criar obstáculo está dentro do relógio de 1.4 segundo, com o grupo cactos, x 560, vx -5 e tamanho 44.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "- Crie obstáculos no grupo cactos, pela direita e indo para a esquerda, em um relógio.\n- Deixe a criação fora de A cada quadro.\n- Mantenha apenas um bloco de criação de cacto.",
+      "adulto": "- Crie obstáculos no grupo cactos, pela direita e indo para a esquerda, em um relógio.\n- Deixe a criação fora de A cada quadro.\n- Mantenha apenas um bloco de criação de cacto."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "### Seção 5. Mova e mostre o grupo de cactos",
+      "adulto": "### Seção 5. Mova e mostre o grupo de cactos"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Tarefa:** Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "**Tarefa:** Agora faça os cactos aparecerem e andarem. Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Blocos na página:** video-mover-e-desenhar → fala-mover-e-desenhar.",
+      "adulto": "**Blocos na página:** video-mover-e-desenhar → fala-mover-e-desenhar."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Zappy na página (não gravar):** Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Agora faça os cactos aparecerem e andarem. Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "ID video-mover-e-desenhar-avatar-01. Professora até “Agora deixe à vista o lugar logo abaixo de Mover os sprites do grupo. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte logo abaixo. Escolha cactos.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Agora quero ver os cactos chegando!”. Retomada da professora: “Agora espere alguns cactos nascerem.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "ID video-mover-e-desenhar-avatar-02. Professora até “Depois de corrigir, teste de novo.”. Antes: Concluir a montagem e os testes do movimento dos cactos; deixar um cacto atravessar o Dino sem mudar regras. Debinha: “O cacto passou pelo meu Dino!”. Retomada da professora: “Neste ponto, isso pode acontecer. Agora pule um deles.”. Depois: Retomar o teste de pulo e a explicação de que a batida ainda não foi programada.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "- Atualize o grupo cactos a cada quadro, antes de desenhá-lo.\n- Desenhe o grupo cactos a cada quadro.\n- Desenhe o Dino antes de atualizar e desenhar os cactos.",
+      "adulto": "- Atualize o grupo cactos a cada quadro, antes de desenhá-lo.\n- Desenhe o grupo cactos a cada quadro.\n- Desenhe o Dino antes de atualizar e desenhar os cactos."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "### Seção 6. Teste e envie seu jogo",
+      "adulto": "### Seção 6. Teste e envie seu jogo"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Tarefa:** Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
+      "adulto": "**Tarefa:** Hora de testar e enviar o seu jogo. Espere os cactos entrarem, pule um deles, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Blocos na página:** video-entrega → fala-entrega → projeto.",
+      "adulto": "**Blocos na página:** video-entrega → fala-entrega → projeto."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
+      "adulto": "**Recado na página (não gravar):** Hora de testar e enviar o seu jogo. Espere os cactos entrarem, pule um deles, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.",
+      "adulto": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com o envio em Enviar para o professor confirmado em Enviar."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "- Crie o grupo cactos em Ao iniciar.\n- Crie obstáculos no grupo cactos, pela direita e indo para a esquerda, em um relógio.\n- Atualize o grupo cactos a cada quadro, antes de desenhá-lo.\n- Desenhe o grupo cactos a cada quadro.\n- Mantenha apenas um bloco de criação de cacto.\n- Desenhe a floresta em movimento antes do Dino.\n- Desenhe o Dino antes de atualizar e desenhar os cactos.\n- Deixe a criação fora de A cada quadro.",
+      "adulto": "- Crie o grupo cactos em Ao iniciar.\n- Crie obstáculos no grupo cactos, pela direita e indo para a esquerda, em um relógio.\n- Atualize o grupo cactos a cada quadro, antes de desenhá-lo.\n- Desenhe o grupo cactos a cada quadro.\n- Mantenha apenas um bloco de criação de cacto.\n- Desenhe a floresta em movimento antes do Dino.\n- Desenhe o Dino antes de atualizar e desenhar os cactos.\n- Deixe a criação fora de A cada quadro."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "## Blocos disponíveis",
+      "adulto": "## Blocos disponíveis"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "| Bloco | Caminho na paleta |\n| --- | --- |\n| ⚡ Quando acontecer | 🗂️ Áreas do projeto |\n| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |\n| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |\n| Aplicar a gravidade do mundo ao sprite | Jogo 2D → Movimento → Velocidade e gravidade |\n| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |\n| Controlar o dinossauro , força do pulo | Jogo 2D → Kits prontos → Dino |\n| Criar dinossauro em x y tamanho cor | Jogo 2D → Kits prontos → Dino |\n| Criar grupo de sprites | Jogo 2D → Grupos → Criar e percorrer |\n| Desenhar o grupo | Jogo 2D → Grupos → Desenho e ordem |\n| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |\n| A cada segundos | Jogo 2D → Tempo → Quadros e intervalos |\n| Desenhar fundo de floresta (velocidade ) | Jogo 2D → Cenários → Fundos |\n| Quando o sprite pular | Jogo 2D → Controles → Teclado, ações e toque |\n| Tocar efeito | Jogo 2D → Som → Efeitos prontos |\n| Descrever o jogo para leitor de tela | Jogo 2D → Jogo e telas → Telas e partida |\n| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |\n| No grupo criar obstáculo em x tamanho com vx | Jogo 2D → Kits prontos → Dino |\n| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |\n| Mover os sprites do grupo usando suas velocidades | Jogo 2D → Grupos → Movimento |\n| Número | Programação → 🔣 Valores |",
+      "adulto": "| Bloco | Caminho na paleta |\n| --- | --- |\n| ⚡ Quando acontecer | 🗂️ Áreas do projeto |\n| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |\n| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |\n| Aplicar a gravidade do mundo ao sprite | Jogo 2D → Movimento → Velocidade e gravidade |\n| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |\n| Controlar o dinossauro , força do pulo | Jogo 2D → Kits prontos → Dino |\n| Criar dinossauro em x y tamanho cor | Jogo 2D → Kits prontos → Dino |\n| Criar grupo de sprites | Jogo 2D → Grupos → Criar e percorrer |\n| Desenhar o grupo | Jogo 2D → Grupos → Desenho e ordem |\n| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |\n| A cada segundos | Jogo 2D → Tempo → Quadros e intervalos |\n| Desenhar fundo de floresta (velocidade ) | Jogo 2D → Cenários → Fundos |\n| Quando o sprite pular | Jogo 2D → Controles → Teclado, ações e toque |\n| Tocar efeito | Jogo 2D → Som → Efeitos prontos |\n| Descrever o jogo para leitor de tela | Jogo 2D → Jogo e telas → Telas e partida |\n| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |\n| No grupo criar obstáculo em x tamanho com vx | Jogo 2D → Kits prontos → Dino |\n| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |\n| Mover os sprites do grupo usando suas velocidades | Jogo 2D → Grupos → Movimento |\n| Número | Programação → 🔣 Valores |"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "## Continuidade e produção",
+      "adulto": "## Continuidade e produção"
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "Aula 5 na cadeia `corre-dino`. Entrada: etapa 4; saída: etapa 5 de `qa/corre-dino-etapas.ts`. Os 13 marcos originais e o código do jogo permanecem preservados.",
+      "adulto": "Aula 5 na cadeia `corre-dino`. Entrada: etapa 4; saída: etapa 5 de `qa/corre-dino-etapas.ts`. Os 13 marcos originais e o código do jogo permanecem preservados."
+    },
+    {
+      "onde": "corre-dino-aula-05.md",
+      "kids": "A ordem vídeo → Zappy → atividade é editorial. Configurar videoBeforeActivity no curso e conferir com perfil de aluno; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos revisados, anexar o PDF quando aplicável e ensaiar com crianças antes de declarar o percurso validado.",
+      "adulto": "A ordem vídeo → recado → atividade é editorial. Configurar videoBeforeActivity no curso adulto e conferir com um perfil adulto; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos adultos, anexar o PDF do caderno do curso quando existir e ensaiar com adultos antes de declarar o percurso validado."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "# Roteiro de gravação · Corre, Dino! · Aula 5",
+      "adulto": "# Roteiro de gravação · Corre, Dino! · Aula 5"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Faça os cactos entrar na pista**",
+      "adulto": "**Faça os cactos entrar na pista**"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos.",
+      "adulto": "Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "Entrada: Dino pulando com som diante da floresta. Saída: Grupo cactos, nascimento a cada 1,4 segundo em x 560, tamanho 44 e vx -5; movimento e desenho em cada quadro.",
+      "adulto": "Entrada: Dino pulando com som diante da floresta. Saída: Grupo cactos, nascimento a cada 1,4 segundo em x 560, tamanho 44 e vx -5; movimento e desenho em cada quadro."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Verificação das partes (nota da equipe, não gravar):** mostrar a lista Objetivos desta parte e o resultado real de Verificar esta parte. Aguardar a resposta do servidor; corrigir os itens pendentes e verificar novamente. Se o projeto mudar depois da conferência, verificar de novo. Conservar os valores da montagem gravada; os critérios aceitam as alternativas previstas sem exigir cópia da aparência. Os testes narrados do jogo continuam necessários.",
+      "adulto": "**Verificação das seções (nota da equipe, não gravar):** mostrar a lista Objetivos desta etapa e o resultado real de Verificar esta etapa. Aguardar a resposta do servidor; corrigir os itens pendentes e verificar novamente. Se o projeto mudar depois da conferência, verificar de novo. Conservar os valores demonstrados na montagem; os critérios aceitam as alternativas previstas sem exigir cópia da aparência. Os testes narrados do jogo continuam necessários."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.",
+      "adulto": "Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"agora que\", \"ou seja\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"). Neste curso, \"então\" é o encaixe do bloco Se e não serve de palavra de ligação. A montagem que aplica uma experiência começa pela retomada no próprio jogo, e a ponte do Zappy convida e termina na ação de saída (Diretrizes, seção 6, revisão de 06/10/2026).",
+      "adulto": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"agora que\", \"ou seja\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Percebe?\"). Neste curso, \"então\" é o encaixe do bloco Se e não serve de palavra de ligação. A montagem que aplica uma experiência começa pela retomada no próprio jogo, e o recado da página convida e termina na ação de saída (Diretrizes, seção 6, revisão de 06/10/2026; tom adulto em DIRETRIZES-ADULTO.md)."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "## Seção 1. Compare o intervalo entre cactos",
+      "adulto": "## Seção 1. Compare o intervalo entre cactos"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "### Clipe `video-espaco-e-tempo` · Compare o intervalo entre cactos",
+      "adulto": "### Clipe `video-espaco-e-tempo` · Compare o intervalo entre cactos"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Criar cacto em A cada quadro. Clicar em Tempo, deixar passar cerca de um segundo e parar, com a parede de cactos e o número na faixa. Levar a peça para o relógio, escolher 1,4 s, clicar em Tempo e esperar dois nascimentos, com a comparação das duas tentativas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino e os cactos numa fila de escorregador, descendo um de cada vez. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Criar cacto em A cada quadro. Clicar em Tempo, deixar passar cerca de um segundo e parar, com a parede de cactos e o número na faixa. Levar a peça para o relógio, escolher 1,4 s, clicar em Tempo e esperar dois nascimentos, com a comparação das duas tentativas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino e os cactos numa catraca de metrô, passando um de cada vez. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Na tela:** Deixar o tempo parado com a parede de cactos visível.",
+      "adulto": "**Na tela:** Deixar o tempo parado com a parede de cactos visível."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Professora:**",
+      "adulto": "**Professora:**"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Esta é uma experiência para a gente entender como um relógio abre espaço entre os cactos.\n>\n> Olha aqui: com Criar cacto em A cada quadro, eu clico em Tempo e deixo passar um segundo. Nascem uns 30 cactos, um em cada quadro, colados uns nos outros. Eles formam uma parede, e o Dino não teria como pular.”",
+      "adulto": "> “Esta é uma experiência para a gente entender como um relógio abre espaço entre os cactos.\n>\n> Olha aqui: com Criar cacto em A cada quadro, eu clico em Tempo e deixo passar um segundo. Nascem uns 30 cactos, um em cada quadro, colados uns nos outros. Eles formam uma parede, e o Dino não teria como pular.”"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**ID de edição:** `video-espaco-e-tempo-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Debinha (avatar):**",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Como eu deixo um espaço entre eles?”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Mover Criar cacto para o relógio de 1,4 s; deixar os dois nascimentos acontecerem no tempo real.",
+      "adulto": "**Na tela:** Mover Criar cacto para o relógio de 1,4 s; deixar os dois nascimentos acontecerem no tempo real."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Agora eu levo Criar cacto para o relógio e escolho 1,4 s. Tudo recomeça do zero. Eu deixo passar uns três segundos, e nascem só dois cactos, com espaço entre eles. O relógio cria um cacto a cada 1,4 segundo, e não em todo quadro.\n>\n> É como a fila do escorregador. Se todo mundo desce junto, ninguém brinca. Se cada um desce na sua vez, sobra espaço. No seu jogo, você vai preparar um relógio de 1,4 segundo para criar os cactos.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
+      "adulto": "> “Para deixar espaço entre eles, eu levo Criar cacto para o relógio e escolho 1,4 s. Tudo recomeça do zero. Eu deixo passar uns três segundos, e nascem só dois cactos, com espaço entre eles. O relógio cria um cacto a cada 1,4 segundo, e não em todo quadro.\n>\n> É como a catraca do metrô. Se todo mundo tenta passar junto, ninguém passa. Se cada um passa na sua vez, sobra espaço. No seu jogo, você vai preparar um relógio de 1,4 segundo para criar os cactos.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "## Seção 2. Prepare o grupo e o relógio",
+      "adulto": "## Seção 2. Prepare o grupo e o relógio"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "### Clipe `video-grupo-e-relogio` · Prepare o grupo e o relógio",
+      "adulto": "### Clipe `video-grupo-e-relogio` · Prepare o grupo e o relógio"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta seção ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Próxima seção). Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+      "adulto": "**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Lembra da experiência da parte anterior? Com o relógio de 1,4 segundo, sobrava espaço entre os cactos. Agora a gente vai preparar o grupo e o relógio dos cactos!\n>\n> O grupo é criado uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar dinossauro. Depois, abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar grupo de sprites e solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.”",
+      "adulto": "> “Lembra da experiência da seção anterior? Com o relógio de 1,4 segundo, sobrava espaço entre os cactos. Agora a gente vai preparar o grupo e o relógio dos cactos.\n>\n> O grupo é criado uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar dinossauro. Depois, abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar grupo de sprites e solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.”"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**ID de edição:** `video-grupo-e-relogio-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “E como eu faço aparecer um cacto de cada vez?”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": "**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Agora vem o relógio. Ele fica em Enquanto estiver rodando, mas fora de A cada quadro do jogo, porque não pode criar um cacto em todo quadro. Deixe à vista um espaço dentro de Enquanto estiver rodando, abaixo de A cada quadro do jogo e fora dele. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos e solte nesse espaço. Troque o 2 por 1.4, ou seja, um segundo e quase meio.\n>\n> Confira se ficou assim: o grupo cactos está no fim de Ao iniciar, e o relógio de 1.4 segundo está em Enquanto estiver rodando, fora de A cada quadro do jogo. O relógio ainda está vazio, e por isso nenhum cacto aparece por enquanto.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": "> “Agora vem o relógio, que faz aparecer um cacto de cada vez. Ele fica em Enquanto estiver rodando, mas fora de A cada quadro do jogo, porque não pode criar um cacto em todo quadro. Deixe à vista um espaço dentro de Enquanto estiver rodando, abaixo de A cada quadro do jogo e fora dele. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos e solte nesse espaço. Troque o 2 por 1.4, ou seja, um segundo e quase meio.\n>\n> Confira se ficou assim: o grupo cactos está no fim de Ao iniciar, e o relógio de 1.4 segundo está em Enquanto estiver rodando, fora de A cada quadro do jogo. O relógio ainda está vazio, e por isso nenhum cacto aparece por enquanto.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "## Seção 3. Compare a direção da velocidade",
+      "adulto": "## Seção 3. Compare a direção da velocidade"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "### Clipe `video-numero-negativo` · Compare a direção da velocidade",
+      "adulto": "### Clipe `video-numero-negativo` · Compare a direção da velocidade"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o cacto parado em x 60 e as duas velocidades em 0. Escolher 5 na velocidade para o lado e clicar em Avançar 1 quadro algumas vezes, com o x à vista na faixa. Trocar para -5 e avançar. Deixar as duas em 0 e avançar de novo. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o cacto parado em x 60 e as duas velocidades em 0. Escolher 5 na velocidade para o lado e clicar em Avançar 1 quadro algumas vezes, com o x à vista na faixa. Trocar para -5 e avançar. Deixar as duas em 0 e avançar de novo. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Na tela:** Mostrar o cacto avançando para a direita com velocidade 5 e o x na faixa.",
+      "adulto": "**Na tela:** Mostrar o cacto avançando para a direita com velocidade 5 e o x na faixa."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Esta é uma experiência para a gente entender a velocidade e como o sinal do número escolhe a direção.\n>\n> Olha aqui: com a velocidade para baixo em 0 e a velocidade para o lado em 5, eu clico em Avançar 1 quadro. O x do cacto vai de 60 para 65: ele andou 5 para a direita. Em cada quadro, o jogo soma a velocidade ao x.”",
+      "adulto": "> “Esta é uma experiência para a gente entender a velocidade e como o sinal do número escolhe a direção.\n>\n> Olha aqui: com a velocidade para baixo em 0 e a velocidade para o lado em 5, eu clico em Avançar 1 quadro. O x do cacto vai de 60 para 65: ele andou 5 para a direita. Em cada quadro, o jogo soma a velocidade ao x.”"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**ID de edição:** `video-numero-negativo-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “E se eu quiser que o cacto vá para o outro lado?”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Trocar para -5 e avançar os quadros; depois testar as duas velocidades em zero.",
+      "adulto": "**Na tela:** Trocar para -5 e avançar os quadros; depois testar as duas velocidades em zero."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Quando eu troco a velocidade para o lado por -5 e avanço, o x diminui 5 em cada quadro, e o cacto vai para a esquerda. O sinal de menos inverte a direção.\n>\n> Com as duas velocidades em 0, eu avanço de novo, e o cacto fica parado: somar zero não muda nada. Os cactos do seu jogo vão nascer na direita, por isso vão usar velocidade -5 para atravessar a tela.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
+      "adulto": "> “E para o cacto ir para o outro lado? Quando eu troco a velocidade para o lado por -5 e avanço, o x diminui 5 em cada quadro, e o cacto vai para a esquerda. O sinal de menos inverte a direção.\n>\n> Com as duas velocidades em 0, eu avanço de novo, e o cacto fica parado: somar zero não muda nada. Os cactos do seu jogo vão nascer na direita, por isso vão usar velocidade -5 para atravessar a tela.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "## Seção 4. Crie os cactos no relógio",
+      "adulto": "## Seção 4. Crie os cactos no relógio"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "### Clipe `video-criar-cactos` · Crie os cactos no relógio",
+      "adulto": "### Clipe `video-criar-cactos` · Crie os cactos no relógio"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o relógio de 1.4 segundo vazio no projeto. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Percebe?”, apontar o relógio de 1.4 segundo vazio no projeto. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Próxima seção). Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “No seu projeto, olhe o relógio de 1.4 segundo. Tá vendo? Ele está vazio, por isso nenhum cacto nasce.\n>\n> Lembra da experiência da parte anterior? Com velocidade -5, o cacto andava para a esquerda. Agora a gente vai criar cactos que entram pela direita!\n>\n> Deixe à vista o espaço vazio dentro de A cada 1.4 segundos. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco No grupo criar obstáculo e solte dentro do relógio. Escolha o grupo cactos. A forma já chega como cacto: mantenha.\n>\n> Agora troque o x 400 por 560. Em vx, troque -3 por -5: o vx é a velocidade para o lado, a mesma da experiência. O tamanho já chega 44: mantenha. Repare no x: a tela do seu jogo tem largura 480, por isso o cacto que nasce em x 560 começa escondido, além da borda direita.”",
+      "adulto": "> “No seu projeto, olhe o relógio de 1.4 segundo. Percebe? Ele está vazio, por isso nenhum cacto nasce.\n>\n> Lembra da experiência da seção anterior? Com velocidade -5, o cacto andava para a esquerda. Agora a gente vai criar cactos que entram pela direita.\n>\n> Deixe à vista o espaço vazio dentro de A cada 1.4 segundos. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco No grupo criar obstáculo e solte dentro do relógio. Escolha o grupo cactos. A forma já chega como cacto: mantenha.\n>\n> Agora troque o x 400 por 560. Em vx, troque -3 por -5: o vx é a velocidade para o lado, a mesma da experiência. O tamanho já chega 44: mantenha. Repare no x: a tela do seu jogo tem largura 480, por isso o cacto que nasce em x 560 começa escondido, além da borda direita.”"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**ID de edição:** `video-criar-cactos-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Ah, ele vai entrar pela beirada!”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Confira se ficou assim: No grupo criar obstáculo está dentro do relógio de 1.4 segundo, com o grupo cactos, x 560, vx -5 e tamanho 44. Olhe a área do jogo: por enquanto, ela continua só com o Dino e a floresta. É que os cactos já nascem, mas o jogo ainda não manda mover nem desenhar esses cactos.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": "> “Ou seja, ele vai entrar pela beirada da tela. Confira se ficou assim: No grupo criar obstáculo está dentro do relógio de 1.4 segundo, com o grupo cactos, x 560, vx -5 e tamanho 44. Olhe a área do jogo: por enquanto, ela continua só com o Dino e a floresta. É que os cactos já nascem, mas o jogo ainda não manda mover nem desenhar esses cactos.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "## Seção 5. Mova e mostre o grupo de cactos",
+      "adulto": "## Seção 5. Mova e mostre o grupo de cactos"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "### Clipe `video-mover-e-desenhar` · Mova e mostre o grupo de cactos",
+      "adulto": "### Clipe `video-mover-e-desenhar` · Mova e mostre o grupo de cactos"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Próxima seção). Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Olhe a área do seu jogo. Tá vendo? Nenhum cacto aparece, porque o jogo ainda não move nem desenha o grupo.\n>\n> Lembra da experiência do relógio, na primeira parte desta fase? Os cactos nasciam um de cada vez. Agora a gente vai mover e desenhar os seus cactos!\n>\n> O movimento e o desenho dos cactos acontecem em todo quadro, depois do Dino. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite dino. Depois, abra Jogo 2D, depois Grupos e depois Movimento, pegue o bloco Mover os sprites do grupo e solte logo depois do Dino. Escolha cactos. Esse bloco usa a velocidade que cada cacto recebeu ao nascer.\n>\n> Agora deixe à vista o lugar logo abaixo de Mover os sprites do grupo. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte logo abaixo. Escolha cactos.”",
+      "adulto": "> “Olhe a área do seu jogo. Percebe? Nenhum cacto aparece, porque o jogo ainda não move nem desenha o grupo.\n>\n> Lembra da experiência do relógio, na primeira seção desta aula? Os cactos nasciam um de cada vez. Agora a gente vai mover e desenhar os seus cactos.\n>\n> O movimento e o desenho dos cactos acontecem em todo quadro, depois do Dino. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite dino. Depois, abra Jogo 2D, depois Grupos e depois Movimento, pegue o bloco Mover os sprites do grupo e solte logo depois do Dino. Escolha cactos. Esse bloco usa a velocidade que cada cacto recebeu ao nascer.\n>\n> Agora deixe à vista o lugar logo abaixo de Mover os sprites do grupo. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte logo abaixo. Escolha cactos.”"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**ID de edição:** `video-mover-e-desenhar-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Agora quero ver os cactos chegando!”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir a montagem e os testes do movimento dos cactos; deixar um cacto atravessar o Dino sem mudar regras.",
+      "adulto": "**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Agora espere alguns cactos nascerem. Olha só: eles entram pela direita e passam para a esquerda! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, a ordem é desenhar o Dino, mover os cactos e desenhar os cactos, com o grupo cactos. No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.”",
+      "adulto": "> “Agora espere alguns cactos nascerem. Olha só: eles entram pela direita e passam para a esquerda. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, a ordem é desenhar o Dino, mover os cactos e desenhar os cactos, com o grupo cactos. No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.”"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**ID de edição:** `video-mover-e-desenhar-avatar-02`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “O cacto passou pelo meu Dino!”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Retomar o teste de pulo e a explicação de que a batida ainda não foi programada.",
+      "adulto": "**Na tela:** Deixar os cactos atravessarem a tela e um deles passar pelo Dino, sem mudar regras. Depois, retomar o teste de pulo e a explicação de que a batida ainda não foi programada."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Neste ponto, isso pode acontecer. Agora pule um deles. Se um cacto atravessar o Dino, tudo bem, porque a batida ainda não foi programada.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": "> “Agora pule um deles. Repare: se um cacto atravessar o Dino, tudo bem. Neste ponto isso pode acontecer, porque a batida ainda não foi programada.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "## Seção 6. Teste e envie seu jogo",
+      "adulto": "## Seção 6. Teste e envie seu jogo"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "### Clipe `video-entrega` · Teste e envie seu jogo",
+      "adulto": "### Clipe `video-entrega` · Teste e envie seu jogo"
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": "**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "**Na tela:** Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Enviar meu projeto, Enviar, Projeto enviado! e Concluir fase).",
+      "adulto": "**Na tela:** Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Enviar para o professor, Enviar, Projeto enviado ao professor e Concluir aula)."
+    },
+    {
+      "onde": "corre-dino-aula-05.roteiro.md",
+      "kids": "> “Agora o seu Dino encontra cactos vindo da direita! Antes de enviar o seu projeto, espere pelo menos dois cactos nascerem e teste o pulo.\n>\n> Confira o relógio em 1.4 e, no bloco que cria os cactos, o x 560, o vx -5 e o tamanho 44. Repare que uma batida ainda não termina o jogo, porque essa regra ainda não existe. Nesta fase, o que importa é os cactos entrarem e andarem pela pista.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.”",
+      "adulto": "> “Agora o seu Dino encontra cactos vindo da direita. Antes de enviar o seu projeto, espere pelo menos dois cactos nascerem e teste o pulo.\n>\n> Confira o relógio em 1.4 e, no bloco que cria os cactos, o x 560, o vx -5 e o tamanho 44. Repare que uma batida ainda não termina o jogo, porque essa regra ainda não existe. Nesta aula, o que importa é os cactos entrarem e andarem pela pista.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula.”"
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Faça os cactos entrar na pista",
+      "adulto": "Faça os cactos entrar na pista"
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Título: Compare o intervalo entre cactos\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Criar cacto em A cada quadro. Clicar em Tempo, deixar passar cerca de um segundo e parar, com a parede de cactos e o número na faixa. Levar a peça para o relógio, escolher 1,4 s, clicar em Tempo e esperar dois nascimentos, com a comparação das duas tentativas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino e os cactos numa fila de escorregador, descendo um de cada vez. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-espaco-e-tempo-avatar-01. Professora até “Eles formam uma parede, e o Dino não teria como pular.”. Antes: Deixar o tempo parado com a parede de cactos visível. Debinha: “Como eu deixo um espaço entre eles?”. Retomada da professora: “Agora eu levo Criar cacto para o relógio e escolho 1,4 s.”. Depois: Mover Criar cacto para o relógio de 1,4 s; deixar os dois nascimentos acontecerem no tempo real.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Compare o intervalo entre cactos\n\nProduzir no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Criar cacto em A cada quadro. Clicar em Tempo, deixar passar cerca de um segundo e parar, com a parede de cactos e o número na faixa. Levar a peça para o relógio, escolher 1,4 s, clicar em Tempo e esperar dois nascimentos, com a comparação das duas tentativas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino e os cactos numa catraca de metrô, passando um de cada vez. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-05.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Sua vez! Compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima parte.",
+      "adulto": "Sua vez: compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Compare o intervalo entre cactos",
+      "adulto": "Compare o intervalo entre cactos"
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe os cactos que nascem. Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa.",
+      "adulto": "Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe os cactos que nascem. Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Título: Prepare o grupo e o relógio\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-grupo-e-relogio-avatar-01. Professora até “O grupo é criado uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar dinossauro. Depois, abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar grupo de sprites e solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E como eu faço aparecer um cacto de cada vez?”. Retomada da professora: “Agora vem o relógio.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Prepare o grupo e o relógio\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta seção ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-05.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "Agora prepare o grupo e o relógio dos cactos. Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Título: Compare a direção da velocidade\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o cacto parado em x 60 e as duas velocidades em 0. Escolher 5 na velocidade para o lado e clicar em Avançar 1 quadro algumas vezes, com o x à vista na faixa. Trocar para -5 e avançar. Deixar as duas em 0 e avançar de novo. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-numero-negativo-avatar-01. Professora até “Em cada quadro, o jogo soma a velocidade ao x.”. Antes: Mostrar o cacto avançando para a direita com velocidade 5 e o x na faixa. Debinha: “E se eu quiser que o cacto vá para o outro lado?”. Retomada da professora: “Quando eu troco a velocidade para o lado por -5 e avanço, o x diminui 5 em cada quadro, e o cacto vai para a esquerda.”. Depois: Trocar para -5 e avançar os quadros; depois testar as duas velocidades em zero.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Compare a direção da velocidade\n\nProduzir no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o cacto parado em x 60 e as duas velocidades em 0. Escolher 5 na velocidade para o lado e clicar em Avançar 1 quadro algumas vezes, com o x à vista na faixa. Trocar para -5 e avançar. Deixar as duas em 0 e avançar de novo. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-05.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Sua vez! Compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima parte.",
+      "adulto": "Sua vez: compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Compare a direção da velocidade",
+      "adulto": "Compare a direção da velocidade"
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Na experiência, deixe a velocidade para baixo em 0. Escolha velocidade para o lado 5 e clique em Avançar 1 quadro algumas vezes. Observe o x. Troque a velocidade para o lado por -5 e avance mais alguns quadros. Compare a direção. Por último, deixe as duas velocidades em 0 e avance de novo.",
+      "adulto": "Na experiência, deixe a velocidade para baixo em 0. Escolha velocidade para o lado 5 e clique em Avançar 1 quadro algumas vezes. Observe o x. Troque a velocidade para o lado por -5 e avance mais alguns quadros. Compare a direção. Por último, deixe as duas velocidades em 0 e avance de novo."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Título: Crie os cactos no relógio\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o relógio de 1.4 segundo vazio no projeto. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-criar-cactos-avatar-01. Professora até “Agora troque o x 400 por 560. Em vx, troque -3 por -5: o vx é a velocidade para o lado, a mesma da experiência. O tamanho já chega 44: mantenha. Repare no x: a tela do seu jogo tem largura 480, por isso o cacto que nasce em x 560 começa escondido, além da borda direita.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Ah, ele vai entrar pela beirada!”. Retomada da professora: “Confira se ficou assim: No grupo criar obstáculo está dentro do relógio de 1.4 segundo, com o grupo cactos, x 560, vx -5 e tamanho 44.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Crie os cactos no relógio\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Percebe?”, apontar o relógio de 1.4 segundo vazio no projeto. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-05.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "Agora crie os cactos no relógio. Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Título: Mova e mostre o grupo de cactos\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-mover-e-desenhar-avatar-01. Professora até “Agora deixe à vista o lugar logo abaixo de Mover os sprites do grupo. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte logo abaixo. Escolha cactos.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Agora quero ver os cactos chegando!”. Retomada da professora: “Agora espere alguns cactos nascerem.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-mover-e-desenhar-avatar-02. Professora até “Depois de corrigir, teste de novo.”. Antes: Concluir a montagem e os testes do movimento dos cactos; deixar um cacto atravessar o Dino sem mudar regras. Debinha: “O cacto passou pelo meu Dino!”. Retomada da professora: “Neste ponto, isso pode acontecer. Agora pule um deles.”. Depois: Retomar o teste de pulo e a explicação de que a batida ainda não foi programada.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Mova e mostre o grupo de cactos\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-05.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "Agora faça os cactos aparecerem e andarem. Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-05.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
+      "adulto": "Hora de testar e enviar o seu jogo. Espere os cactos entrarem, pule um deles, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Corre, Dino!",
+      "adulto": "Corre, Dino!"
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida.",
+      "adulto": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Prepare o grupo e o relógio",
+      "adulto": "Prepare o grupo e o relógio"
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Crie o grupo cactos em Ao iniciar.",
+      "adulto": "Crie o grupo cactos em Ao iniciar."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Prepare um relógio com intervalo positivo em Enquanto estiver rodando.",
+      "adulto": "Prepare um relógio com intervalo positivo em Enquanto estiver rodando."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Crie os cactos no relógio",
+      "adulto": "Crie os cactos no relógio"
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Crie obstáculos no grupo cactos, pela direita e indo para a esquerda, em um relógio.",
+      "adulto": "Crie obstáculos no grupo cactos, pela direita e indo para a esquerda, em um relógio."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Deixe a criação fora de A cada quadro.",
+      "adulto": "Deixe a criação fora de A cada quadro."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Mantenha apenas um bloco de criação de cacto.",
+      "adulto": "Mantenha apenas um bloco de criação de cacto."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Mova e mostre o grupo de cactos",
+      "adulto": "Mova e mostre o grupo de cactos"
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Atualize o grupo cactos a cada quadro, antes de desenhá-lo.",
+      "adulto": "Atualize o grupo cactos a cada quadro, antes de desenhá-lo."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Desenhe o grupo cactos a cada quadro.",
+      "adulto": "Desenhe o grupo cactos a cada quadro."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Desenhe o Dino antes de atualizar e desenhar os cactos.",
+      "adulto": "Desenhe o Dino antes de atualizar e desenhar os cactos."
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Teste e envie seu jogo",
+      "adulto": "Teste e envie seu jogo"
+    },
+    {
+      "onde": "corre-dino-aula-05.manifesto.json",
+      "kids": "Desenhe a floresta em movimento antes do Dino.",
+      "adulto": "Desenhe a floresta em movimento antes do Dino."
+    }
+  ],
+  "obsoletos": [
+    {
+      "kids": "- Crie o grupo cactos em Ao iniciar.\n- Prepare o relógio de 1.4 segundo em Enquanto estiver rodando.",
+      "adulto": "- Crie o grupo cactos em Ao iniciar.\n- Prepare o relógio de 1.4 segundo em Enquanto estiver rodando."
+    },
+    {
+      "kids": "- Crie um cacto em x 560, tamanho 44 e vx -5 a cada 1,4 s.\n- Deixe a criação fora de A cada quadro.\n- Mantenha apenas um bloco de criação de cacto.",
+      "adulto": "- Crie um cacto em x 560, tamanho 44 e vx -5 a cada 1,4 s.\n- Deixe a criação fora de A cada quadro.\n- Mantenha apenas um bloco de criação de cacto."
+    },
+    {
+      "kids": "- Crie o grupo cactos em Ao iniciar.\n- Crie um cacto em x 560, tamanho 44 e vx -5 a cada 1,4 s.\n- Atualize o grupo cactos a cada quadro, antes de desenhá-lo.\n- Desenhe o grupo cactos a cada quadro.\n- Mantenha apenas um bloco de criação de cacto.\n- Desenhe a floresta com velocidade 5 antes do Dino.\n- Desenhe o Dino antes de atualizar e desenhar os cactos.\n- Deixe a criação fora de A cada quadro.",
+      "adulto": "- Crie o grupo cactos em Ao iniciar.\n- Crie um cacto em x 560, tamanho 44 e vx -5 a cada 1,4 s.\n- Atualize o grupo cactos a cada quadro, antes de desenhá-lo.\n- Desenhe o grupo cactos a cada quadro.\n- Mantenha apenas um bloco de criação de cacto.\n- Desenhe a floresta com velocidade 5 antes do Dino.\n- Desenhe o Dino antes de atualizar e desenhar os cactos.\n- Deixe a criação fora de A cada quadro."
+    },
+    {
+      "kids": "Prepare o relógio de 1.4 segundo em Enquanto estiver rodando.",
+      "adulto": "Prepare o relógio de 1.4 segundo em Enquanto estiver rodando."
+    },
+    {
+      "kids": "Crie um cacto em x 560, tamanho 44 e vx -5 a cada 1,4 s.",
+      "adulto": "Crie um cacto em x 560, tamanho 44 e vx -5 a cada 1,4 s."
+    },
+    {
+      "kids": "Desenhe a floresta com velocidade 5 antes do Dino.",
+      "adulto": "Desenhe a floresta com velocidade 5 antes do Dino."
+    }
+  ]
+}

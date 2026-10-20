@@ -1,0 +1,621 @@
+{
+  "curso": "corre-dino",
+  "grupo": "corre-dino-aula-08",
+  "trechos": [
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "# Corre, Dino! · Aula 8 · Comece por tecla ou toque",
+      "adulto": "# Corre, Dino! · Aula 8 · Comece por tecla ou toque"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md).",
+      "adulto": "Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md)."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "## Resumo",
+      "adulto": "## Resumo"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "- Estado de entrada: Jogo esperando no estado inicio, com a floresta visível.\n- Resultado da aula: Tela de início e um evento de qualquer tecla ou toque que muda inicio para jogando.\n- Seções: 4. Vídeos: 4.",
+      "adulto": "- Estado de entrada: Jogo esperando no estado inicio, com a floresta visível.\n- Resultado da aula: Tela de início e um evento de qualquer tecla ou toque que muda inicio para jogando.\n- Seções: 4. Vídeos: 4."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
+      "adulto": "**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "## Diagnóstico e decisão",
+      "adulto": "## Diagnóstico e decisão"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "A condição da aula anterior é reaplicada ao ramo inicio. A experiência de controles vem antes do evento, e o evento final é montado diretamente. O convite escrito e os controles aceitos terminam coerentes.",
+      "adulto": "A condição da aula anterior é reaplicada ao ramo inicio. A experiência de controles vem antes do evento, e o evento final é montado diretamente. O convite escrito e os controles aceitos terminam coerentes."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "## Triagem dos conceitos",
+      "adulto": "## Triagem dos conceitos"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Ramos da condição | retoma o Se da aula 7 | Mostrar uma tela no estado inicio, sem executar a partida. |\n| Entrada ampla | controls antes do evento | Testar tecla e toque e comparar qual evento responde. |",
+      "adulto": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Ramos da condição | retoma o Se da aula 7 | Mostrar uma tela no estado inicio, sem executar a partida. |\n| Entrada ampla | controls antes do evento | Testar tecla e toque e comparar qual evento responde. |"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "## Proposta final",
+      "adulto": "## Proposta final"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "### Seção 1. Desenhe a tela de início",
+      "adulto": "### Seção 1. Desenhe a tela de início"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Tarefa:** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "**Tarefa:** Agora desenhe a tela de início do seu jogo. Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Blocos na página:** video-menu → fala-menu.",
+      "adulto": "**Blocos na página:** video-menu → fala-menu."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Zappy na página (não gravar):** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Agora desenhe a tela de início do seu jogo. Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "ID video-menu-avatar-01. Professora até “Deixe à vista o Se jogando, dentro de A cada quadro do jogo. Olha aqui, na linha de baixo do bloco: aparecem duas opções com um sinal de mais, senão se e senão. Clique uma vez no + ao lado de senão se, e o Se ganha um ramo novo, chamado senão se.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Quem abrir meu jogo vai encontrar essa tela primeiro!”. Retomada da professora: “O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "ID video-menu-avatar-02. Professora até “No título, escreva Corre, Dino! No subtítulo, escreva Pule os cactos! E, na dica, escreva Aperte qualquer tecla ou toque na tela para começar. O fundo já chega escuro, para o texto aparecer bem: mantenha ou escolha outra cor escura.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Agora quem abre o jogo vai saber como começar!”. Retomada da professora: “Agora olhe a área do jogo: a abertura aparece, porque o estado está em inicio!”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.",
+      "adulto": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "- No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.",
+      "adulto": "- No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "### Seção 2. Compare tecla e toque para começar",
+      "adulto": "### Seção 2. Compare tecla e toque para começar"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Tarefa:** Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Tarefa:** Sua vez: teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Blocos na página:** video-convite → fala-convite → experiencia-convite.",
+      "adulto": "**Blocos na página:** video-convite → fala-convite → experiencia-convite."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Zappy na página (não gravar):** Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Sua vez: teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "ID video-convite-avatar-01. Professora até “Quando eu clico em Apertar Enter, a partida começa.”. Antes: Terminar o teste com Enter; não trocar o evento antes da pergunta. Dedé: “E quem quiser começar pelo toque?”. Retomada da professora: “Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela.”. Depois: Voltar ao início, trocar o evento e testar toque e Enter, voltando ao início entre os testes.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Experiência existente:** `controls`. Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início. Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.",
+      "adulto": "**Experiência existente:** `controls`. Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início. Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "### Seção 3. Ligue a entrada ao início da partida",
+      "adulto": "### Seção 3. Ligue a entrada ao início da partida"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Tarefa:** Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "**Tarefa:** Agora faça a partida começar. Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Blocos na página:** video-entrada-ampla → fala-entrada-ampla.",
+      "adulto": "**Blocos na página:** video-entrada-ampla → fala-entrada-ampla."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Zappy na página (não gravar):** Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Agora faça a partida começar. Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "ID video-entrada-ampla-avatar-01. Professora até “pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.”. Antes: Concluir o encaixe do evento e soltar o mouse antes da entrada; mostrar o evento vazio. Dedé: “Mas eu também uso uma tecla para pular!”. Retomada da professora: “Só que esse evento também acontece no meio da partida, a cada pulo.”. Depois: Explicar por que o evento precisa perguntar o estado e montar o Se inicio, sem pular etapas.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "ID video-entrada-ampla-avatar-02. Professora até “Agora deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e mantenha inicio, que já vem escolhido.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “A tecla do pulo não vai começar a partida de novo!”. Retomada da professora: “Agora deixe à vista o espaço vazio do então desse Se.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "ID video-entrada-ampla-avatar-03. Professora até “Olha só: a abertura some, e o Dino aparece!”. Antes: Esperar o Dino aparecer depois da tecla, sem fazer o próximo salto durante a fala. Dedé: “Começou!”. Retomada da professora: “Depois, use a barra de espaço, a seta para cima e um toque na parte de cima da tela para conferir os pulos.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "- Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.\n- Use a entrada de qualquer tecla ou toque, sem um evento separado só para Enter.\n- A dica da tela de início passa a descrever os dois jeitos de começar.",
+      "adulto": "- Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.\n- Use a entrada de qualquer tecla ou toque, sem um evento separado só para Enter.\n- A dica da tela de início passa a descrever os dois jeitos de começar."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "### Seção 4. Teste e envie seu jogo",
+      "adulto": "### Seção 4. Teste e envie seu jogo"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Tarefa:** Hora de testar e enviar o seu jogo! Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
+      "adulto": "**Tarefa:** Hora de testar e enviar o seu jogo. Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Blocos na página:** video-entrega → fala-entrega → projeto.",
+      "adulto": "**Blocos na página:** video-entrega → fala-entrega → projeto."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
+      "adulto": "**Recado na página (não gravar):** Hora de testar e enviar o seu jogo. Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.",
+      "adulto": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com o envio em Enviar para o professor confirmado em Enviar."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "- No Ao iniciar, o jogo continua abrindo com Mudar o estado do jogo para inicio.\n- No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.\n- Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.\n- Use a entrada de qualquer tecla ou toque, sem um evento separado só para Enter.\n- No relógio dos cactos, crie os obstáculos somente dentro de Se jogando.",
+      "adulto": "- No Ao iniciar, o jogo continua abrindo com Mudar o estado do jogo para inicio.\n- No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.\n- Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.\n- Use a entrada de qualquer tecla ou toque, sem um evento separado só para Enter.\n- No relógio dos cactos, crie os obstáculos somente dentro de Se jogando."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "## Blocos disponíveis",
+      "adulto": "## Blocos disponíveis"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "| Bloco | Caminho na paleta |\n| --- | --- |\n| ⚡ Quando acontecer | 🗂️ Áreas do projeto |\n| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |\n| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |\n| Aplicar a gravidade do mundo ao sprite | Jogo 2D → Movimento → Velocidade e gravidade |\n| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |\n| Controlar o dinossauro , força do pulo | Jogo 2D → Kits prontos → Dino |\n| Criar dinossauro em x y tamanho cor | Jogo 2D → Kits prontos → Dino |\n| Criar grupo de sprites | Jogo 2D → Grupos → Criar e percorrer |\n| Desenhar o grupo | Jogo 2D → Grupos → Desenho e ordem |\n| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |\n| A cada segundos | Jogo 2D → Tempo → Quadros e intervalos |\n| Desenhar fundo de floresta (velocidade ) | Jogo 2D → Cenários → Fundos |\n| Quando apertar qualquer tecla ou tocar na tela | Jogo 2D → Controles → Teclado, ações e toque |\n| Quando o sprite pular | Jogo 2D → Controles → Teclado, ações e toque |\n| Quando apertar a tecla | Jogo 2D → Controles → Teclado, ações e toque |\n| Tocar efeito | Jogo 2D → Som → Efeitos prontos |\n| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D → Grupos → Participação e limpeza |\n| o estado do jogo é ? | Jogo 2D → Jogo e telas → Telas e partida |\n| Mudar o estado do jogo para | Jogo 2D → Jogo e telas → Telas e partida |\n| Descrever o jogo para leitor de tela | Jogo 2D → Jogo e telas → Telas e partida |\n| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |\n| Mostrar tela com título subtítulo dica fundo | Jogo 2D → Jogo e telas → Telas e partida |\n| No grupo criar obstáculo em x tamanho com vx | Jogo 2D → Kits prontos → Dino |\n| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |\n| Mover os sprites do grupo usando suas velocidades | Jogo 2D → Grupos → Movimento |\n| Condição se, senão se e senão | Programação → ❓ Lógica & Se |\n| Número | Programação → 🔣 Valores |\n| texto | Programação → 🔣 Valores |",
+      "adulto": "| Bloco | Caminho na paleta |\n| --- | --- |\n| ⚡ Quando acontecer | 🗂️ Áreas do projeto |\n| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |\n| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |\n| Aplicar a gravidade do mundo ao sprite | Jogo 2D → Movimento → Velocidade e gravidade |\n| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |\n| Controlar o dinossauro , força do pulo | Jogo 2D → Kits prontos → Dino |\n| Criar dinossauro em x y tamanho cor | Jogo 2D → Kits prontos → Dino |\n| Criar grupo de sprites | Jogo 2D → Grupos → Criar e percorrer |\n| Desenhar o grupo | Jogo 2D → Grupos → Desenho e ordem |\n| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |\n| A cada segundos | Jogo 2D → Tempo → Quadros e intervalos |\n| Desenhar fundo de floresta (velocidade ) | Jogo 2D → Cenários → Fundos |\n| Quando apertar qualquer tecla ou tocar na tela | Jogo 2D → Controles → Teclado, ações e toque |\n| Quando o sprite pular | Jogo 2D → Controles → Teclado, ações e toque |\n| Quando apertar a tecla | Jogo 2D → Controles → Teclado, ações e toque |\n| Tocar efeito | Jogo 2D → Som → Efeitos prontos |\n| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D → Grupos → Participação e limpeza |\n| o estado do jogo é ? | Jogo 2D → Jogo e telas → Telas e partida |\n| Mudar o estado do jogo para | Jogo 2D → Jogo e telas → Telas e partida |\n| Descrever o jogo para leitor de tela | Jogo 2D → Jogo e telas → Telas e partida |\n| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |\n| Mostrar tela com título subtítulo dica fundo | Jogo 2D → Jogo e telas → Telas e partida |\n| No grupo criar obstáculo em x tamanho com vx | Jogo 2D → Kits prontos → Dino |\n| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |\n| Mover os sprites do grupo usando suas velocidades | Jogo 2D → Grupos → Movimento |\n| Condição se, senão se e senão | Programação → ❓ Lógica & Se |\n| Número | Programação → 🔣 Valores |\n| texto | Programação → 🔣 Valores |"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "## Continuidade e produção",
+      "adulto": "## Continuidade e produção"
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "Aula 8 na cadeia `corre-dino`. Entrada: etapa 7; saída: etapa 8 de `qa/corre-dino-etapas.ts`. Os 13 marcos originais e o código do jogo permanecem preservados.",
+      "adulto": "Aula 8 na cadeia `corre-dino`. Entrada: etapa 7; saída: etapa 8 de `qa/corre-dino-etapas.ts`. Os 13 marcos originais e o código do jogo permanecem preservados."
+    },
+    {
+      "onde": "corre-dino-aula-08.md",
+      "kids": "A ordem vídeo → Zappy → atividade é editorial. Configurar videoBeforeActivity no curso e conferir com perfil de aluno; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos revisados, anexar o PDF quando aplicável e ensaiar com crianças antes de declarar o percurso validado.",
+      "adulto": "A ordem vídeo → recado → atividade é editorial. Configurar videoBeforeActivity no curso adulto e conferir com um perfil adulto; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos adultos, anexar o PDF do caderno do curso quando existir e ensaiar com adultos antes de declarar o percurso validado."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "# Roteiro de gravação · Corre, Dino! · Aula 8",
+      "adulto": "# Roteiro de gravação · Corre, Dino! · Aula 8"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Comece por tecla ou toque**",
+      "adulto": "**Comece por tecla ou toque**"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos.",
+      "adulto": "Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "Entrada: Jogo esperando no estado inicio, com a floresta visível. Saída: Tela de início e um evento de qualquer tecla ou toque que muda inicio para jogando.",
+      "adulto": "Entrada: Jogo esperando no estado inicio, com a floresta visível. Saída: Tela de início e um evento de qualquer tecla ou toque que muda inicio para jogando."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Verificação das partes (nota da equipe, não gravar):** mostrar a lista Objetivos desta parte e o resultado real de Verificar esta parte. Aguardar a resposta do servidor; corrigir os itens pendentes e verificar novamente. Se o projeto mudar depois da conferência, verificar de novo. Conservar os valores da montagem gravada; os critérios aceitam as alternativas previstas sem exigir cópia da aparência. Os testes narrados do jogo continuam necessários.",
+      "adulto": "**Verificação das seções (nota da equipe, não gravar):** mostrar a lista Objetivos desta etapa e o resultado real de Verificar esta etapa. Aguardar a resposta do servidor; corrigir os itens pendentes e verificar novamente. Se o projeto mudar depois da conferência, verificar de novo. Conservar os valores demonstrados na montagem; os critérios aceitam as alternativas previstas sem exigir cópia da aparência. Os testes narrados do jogo continuam necessários."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.",
+      "adulto": "Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"agora que\", \"ou seja\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"). Neste curso, \"então\" é o encaixe do bloco Se e não serve de palavra de ligação. A montagem que aplica uma experiência começa pela retomada no próprio jogo, e a ponte do Zappy convida e termina na ação de saída (Diretrizes, seção 6, revisão de 06/10/2026).",
+      "adulto": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"agora que\", \"ou seja\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Percebe?\"). Neste curso, \"então\" é o encaixe do bloco Se e não serve de palavra de ligação. A montagem que aplica uma experiência começa pela retomada no próprio jogo, e o recado da página convida e termina na ação de saída (Diretrizes, seção 6, revisão de 06/10/2026; tom adulto em DIRETRIZES-ADULTO.md)."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "## Seção 1. Desenhe a tela de início",
+      "adulto": "## Seção 1. Desenhe a tela de início"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "### Clipe `video-menu` · Desenhe a tela de início",
+      "adulto": "### Clipe `video-menu` · Desenhe a tela de início"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Próxima seção). Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+      "adulto": "**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Professora:**",
+      "adulto": "**Professora:**"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “O seu jogo já espera no estado inicio, mas quem abre o jogo ainda não sabe o que fazer. Primeiro, olhe a área do jogo. Tá vendo? Só a floresta aparece, porque o Se do quadro só tem uma resposta, para jogando. Por isso, vamos acrescentar outra resposta, para o estado inicio, que desenha a tela de abertura.\n>\n> Deixe à vista o Se jogando, dentro de A cada quadro do jogo. Olha aqui, na linha de baixo do bloco: aparecem duas opções com um sinal de mais, senão se e senão. Clique uma vez no + ao lado de senão se, e o Se ganha um ramo novo, chamado senão se.”",
+      "adulto": "> “O seu jogo já espera no estado inicio, mas quem abre o jogo ainda não sabe o que fazer. Primeiro, olhe a área do jogo. Percebe? Só a floresta aparece, porque o Se do quadro só tem uma resposta, para jogando. Por isso, vamos acrescentar outra resposta, para o estado inicio, que desenha a tela de abertura.\n>\n> Deixe à vista o Se jogando, dentro de A cada quadro do jogo. Olha aqui, na linha de baixo do bloco: aparecem duas opções com um sinal de mais, senão se e senão. Clique uma vez no + ao lado de senão se, e o Se ganha um ramo novo, chamado senão se.”"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**ID de edição:** `video-menu-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Dedé (avatar):**",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “Quem abrir meu jogo vai encontrar essa tela primeiro!”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+      "adulto": "**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ? e solte no lugar vazio da pergunta. Ele já chega com inicio: mantenha.\n>\n> Agora deixe à vista o espaço vazio dentro do ramo inicio. Na mesma categoria, Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse ramo.\n>\n> No título, escreva Corre, Dino! No subtítulo, escreva Pule os cactos! E, na dica, escreva Aperte qualquer tecla ou toque na tela para começar. O fundo já chega escuro, para o texto aparecer bem: mantenha ou escolha outra cor escura.”",
+      "adulto": "> “O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ? e solte no lugar vazio da pergunta. Ele já chega com inicio: mantenha.\n>\n> Agora deixe à vista o espaço vazio dentro do ramo inicio. Na mesma categoria, Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse ramo.\n>\n> No título, escreva Corre, Dino! No subtítulo, escreva Pule os cactos! E, na dica, escreva Aperte qualquer tecla ou toque na tela para começar. O fundo já chega escuro, para o texto aparecer bem: mantenha ou escolha outra cor escura.”"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**ID de edição:** `video-menu-avatar-02`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “Agora quem abre o jogo vai saber como começar!”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": "**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “Agora olhe a área do jogo: a abertura aparece, porque o estado está em inicio! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no ramo senão se o estado do jogo é inicio, está Mostrar tela, com o título, o subtítulo e a dica. Depois de corrigir, teste de novo.\n>\n> A abertura ainda não começa a partida com um toque ou uma tecla, porque, por enquanto, você só montou o desenho.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": "> “Agora olhe a área do jogo: a abertura aparece, porque o estado está em inicio. Assim, quem abre o jogo já sabe como começar. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no ramo senão se o estado do jogo é inicio, está Mostrar tela, com o título, o subtítulo e a dica. Depois de corrigir, teste de novo.\n>\n> A abertura ainda não começa a partida com um toque ou uma tecla, porque, por enquanto, você só montou o desenho.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "## Seção 2. Compare tecla e toque para começar",
+      "adulto": "## Seção 2. Compare tecla e toque para começar"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "### Clipe `video-convite` · Compare tecla e toque para começar",
+      "adulto": "### Clipe `video-convite` · Compare tecla e toque para começar"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Começar em Quando apertar a tecla. Tocar na tela e mostrar que nada muda. Clicar em Apertar Enter e mostrar a partida. Clicar em Voltar ao início, levar Começar para Quando apertar qualquer tecla ou tocar na tela e repetir o toque e o Enter, voltando ao início entre eles. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Começar em Quando apertar a tecla. Tocar na tela e mostrar que nada muda. Clicar em Apertar Enter e mostrar a partida. Clicar em Voltar ao início, levar Começar para Quando apertar qualquer tecla ou tocar na tela e repetir o toque e o Enter, voltando ao início entre eles. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Na tela:** Terminar o teste com Enter; não trocar o evento antes da pergunta.",
+      "adulto": "**Na tela:** Terminar o teste com Enter antes de trocar o evento."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “Esta é uma experiência para a gente entender os eventos que começam a partida, com tecla e também com toque.\n>\n> Olha aqui: com Começar em Quando apertar a tecla, eu toco na tela de início. Nada acontece, porque esse evento só escuta a tecla. Quando eu clico em Apertar Enter, a partida começa.”",
+      "adulto": "> “Esta é uma experiência para a gente entender os eventos que começam a partida, com tecla e também com toque.\n>\n> Olha aqui: com Começar em Quando apertar a tecla, eu toco na tela de início. Nada acontece, porque esse evento só escuta a tecla. Quando eu clico em Apertar Enter, a partida começa.”"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**ID de edição:** `video-convite-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “E quem quiser começar pelo toque?”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Voltar ao início, trocar o evento e testar toque e Enter, voltando ao início entre os testes.",
+      "adulto": "**Na tela:** Voltar ao início, trocar o evento e testar toque e Enter, voltando ao início entre os testes."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela. Agora, quando eu toco na tela de início, a partida começa. Volto ao início, clico em Apertar Enter, e ela começa também. Esse evento escuta os dois jeitos.\n>\n> Quem joga no celular não tem teclado, por isso precisa do toque. No seu jogo, você vai usar Quando apertar qualquer tecla ou tocar na tela para começar a partida.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
+      "adulto": "> “E para quem quiser começar pelo toque? Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela. Agora, quando eu toco na tela de início, a partida começa. Volto ao início, clico em Apertar Enter, e ela começa também. Esse evento escuta os dois jeitos.\n>\n> Quem joga no celular não tem teclado, por isso precisa do toque. No seu jogo, você vai usar Quando apertar qualquer tecla ou tocar na tela para começar a partida.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "## Seção 3. Ligue a entrada ao início da partida",
+      "adulto": "## Seção 3. Ligue a entrada ao início da partida"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "### Clipe `video-entrada-ampla` · Ligue a entrada ao início da partida",
+      "adulto": "### Clipe `video-entrada-ampla` · Ligue a entrada ao início da partida"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": "**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Atualizar e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Atualizar e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Próxima seção). Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Na tela:** Concluir o encaixe do evento e soltar o mouse antes da entrada; mostrar o evento vazio.",
+      "adulto": "**Na tela:** Concluir o encaixe do evento e soltar o mouse; mostrar o evento vazio antes de seguir."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “Aqui no seu jogo, toque na abertura. Tá vendo? Nada acontece, porque nenhum evento muda o estado.\n>\n> Lembra da experiência da parte anterior? Quando apertar qualquer tecla ou tocar na tela começou a partida dos dois jeitos. Agora a gente vai usar esse evento no seu jogo!\n>\n> Esse evento fica em Quando acontecer, junto do evento do pulo, mas separado dele. Deixe à vista um espaço vazio dentro de Quando acontecer. Depois, abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.”",
+      "adulto": "> “Aqui no seu jogo, toque na abertura. Percebe? Nada acontece, porque nenhum evento muda o estado.\n>\n> Lembra da experiência da seção anterior? Quando apertar qualquer tecla ou tocar na tela começou a partida dos dois jeitos. Agora a gente vai usar esse evento no seu jogo.\n>\n> Esse evento fica em Quando acontecer, junto do evento do pulo, mas separado dele. Deixe à vista um espaço vazio dentro de Quando acontecer. Depois, abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.”"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**ID de edição:** `video-entrada-ampla-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “Mas eu também uso uma tecla para pular!”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Explicar por que o evento precisa perguntar o estado e montar o Se inicio, sem pular etapas. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+      "adulto": "**Na tela:** Explicar por que o evento precisa perguntar o estado e montar o Se inicio, sem pular etapas. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “Só que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de agir. Deixe à vista o espaço vazio dentro do novo evento. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.\n>\n> Agora deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e mantenha inicio, que já vem escolhido.”",
+      "adulto": "> “Só que você também usa uma tecla para pular, e esse evento acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de agir. Deixe à vista o espaço vazio dentro do novo evento. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.\n>\n> Agora deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e mantenha inicio, que já vem escolhido.”"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**ID de edição:** `video-entrada-ampla-avatar-02`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “A tecla do pulo não vai começar a partida de novo!”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Esperar o Dino aparecer depois da tecla, sem fazer o próximo salto durante a fala.",
+      "adulto": "**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Esperar o Dino aparecer depois da tecla, sem fazer o próximo salto durante a fala."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “Agora deixe à vista o espaço vazio do então desse Se. Na mesma categoria, Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no então. Ele chega com inicio: troque por jogando.\n>\n> Agora clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque na barra de espaço. Olha só: a abertura some, e o Dino aparece!”",
+      "adulto": "> “Assim, a tecla do pulo não começa a partida de novo. Agora deixe à vista o espaço vazio do então desse Se. Na mesma categoria, Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no então. Ele chega com inicio: troque por jogando.\n>\n> Agora clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, aperte a barra de espaço. Olha só: a abertura some, e o Dino aparece.”"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**ID de edição:** `video-entrada-ampla-avatar-03`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “Começou!”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “Depois, use a barra de espaço, a seta para cima e um toque na parte de cima da tela para conferir os pulos. Durante a partida, o evento não muda o estado de novo, porque a pergunta só responde sim quando o estado é inicio.\n>\n> Para testar o toque desde a abertura, clique em Atualizar de novo e, desta vez, toque na abertura para começar.\n>\n> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um único evento de qualquer tecla ou toque, com o Se inicio e, no então, Mudar o estado do jogo para jogando. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": "> “Depois, use a barra de espaço, a seta para cima e um toque na parte de cima da tela para conferir os pulos. Durante a partida, o evento não muda o estado de novo, porque a pergunta só responde sim quando o estado é inicio.\n>\n> Para testar o toque desde a abertura, clique em Atualizar de novo e, desta vez, toque na abertura para começar.\n>\n> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um único evento de qualquer tecla ou toque, com o Se inicio e, no então, Mudar o estado do jogo para jogando. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "## Seção 4. Teste e envie seu jogo",
+      "adulto": "## Seção 4. Teste e envie seu jogo"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "### Clipe `video-entrega` · Teste e envie seu jogo",
+      "adulto": "### Clipe `video-entrega` · Teste e envie seu jogo"
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Enviar meu projeto, Enviar, Projeto enviado! e Concluir fase).",
+      "adulto": "**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Enviar para o professor, Enviar, Projeto enviado ao professor e Concluir aula)."
+    },
+    {
+      "onde": "corre-dino-aula-08.roteiro.md",
+      "kids": "> “Agora a sua abertura começa uma partida! Antes de enviar o seu projeto, confira o convite escrito e comece a partida por tecla e também por toque, sempre desde a abertura. Para começar por tecla, clique em Atualizar, a seta circular no alto da prévia do jogo, e use a tecla sem clicar no jogo. Para começar por toque, clique em Atualizar de novo e toque na abertura.\n>\n> Depois de começar, teste o pulo e espere os cactos entrarem. Confira também que a criação dos cactos continua protegida pelo Se jogando, no relógio. Se um cacto bater no Dino, nada acontece ainda, porque a derrota ainda não foi programada.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.”",
+      "adulto": "> “Agora a sua abertura começa uma partida. Antes de enviar o seu projeto, confira o convite escrito e comece a partida por tecla e também por toque, sempre desde a abertura. Para começar por tecla, clique em Atualizar, a seta circular no alto da prévia do jogo, e use a tecla sem clicar no jogo. Para começar por toque, clique em Atualizar de novo e toque na abertura.\n>\n> Depois de começar, teste o pulo e espere os cactos entrarem. Confira também que a criação dos cactos continua protegida pelo Se jogando, no relógio. Se um cacto bater no Dino, nada acontece ainda, porque a derrota ainda não foi programada.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula.”"
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Comece por tecla ou toque",
+      "adulto": "Comece por tecla ou toque"
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Título: Desenhe a tela de início\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-menu-avatar-01. Professora até “Deixe à vista o Se jogando, dentro de A cada quadro do jogo. Olha aqui, na linha de baixo do bloco: aparecem duas opções com um sinal de mais, senão se e senão. Clique uma vez no + ao lado de senão se, e o Se ganha um ramo novo, chamado senão se.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Quem abrir meu jogo vai encontrar essa tela primeiro!”. Retomada da professora: “O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-menu-avatar-02. Professora até “No título, escreva Corre, Dino! No subtítulo, escreva Pule os cactos! E, na dica, escreva Aperte qualquer tecla ou toque na tela para começar. O fundo já chega escuro, para o texto aparecer bem: mantenha ou escolha outra cor escura.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Agora quem abre o jogo vai saber como começar!”. Retomada da professora: “Agora olhe a área do jogo: a abertura aparece, porque o estado está em inicio!”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Desenhe a tela de início\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-08.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "Agora desenhe a tela de início do seu jogo. Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Título: Compare tecla e toque para começar\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Começar em Quando apertar a tecla. Tocar na tela e mostrar que nada muda. Clicar em Apertar Enter e mostrar a partida. Clicar em Voltar ao início, levar Começar para Quando apertar qualquer tecla ou tocar na tela e repetir o toque e o Enter, voltando ao início entre eles. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-convite-avatar-01. Professora até “Quando eu clico em Apertar Enter, a partida começa.”. Antes: Terminar o teste com Enter; não trocar o evento antes da pergunta. Dedé: “E quem quiser começar pelo toque?”. Retomada da professora: “Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela.”. Depois: Voltar ao início, trocar o evento e testar toque e Enter, voltando ao início entre os testes.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Compare tecla e toque para começar\n\nProduzir no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Começar em Quando apertar a tecla. Tocar na tela e mostrar que nada muda. Clicar em Apertar Enter e mostrar a partida. Clicar em Voltar ao início, levar Começar para Quando apertar qualquer tecla ou tocar na tela e repetir o toque e o Enter, voltando ao início entre eles. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-08.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte.",
+      "adulto": "Sua vez: teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Compare tecla e toque para começar",
+      "adulto": "Compare tecla e toque para começar"
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início. Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos.",
+      "adulto": "Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início. Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Título: Ligue a entrada ao início da partida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Atualizar e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-entrada-ampla-avatar-01. Professora até “pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.”. Antes: Concluir o encaixe do evento e soltar o mouse antes da entrada; mostrar o evento vazio. Dedé: “Mas eu também uso uma tecla para pular!”. Retomada da professora: “Só que esse evento também acontece no meio da partida, a cada pulo.”. Depois: Explicar por que o evento precisa perguntar o estado e montar o Se inicio, sem pular etapas.\n\nID video-entrada-ampla-avatar-02. Professora até “Agora deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e mantenha inicio, que já vem escolhido.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “A tecla do pulo não vai começar a partida de novo!”. Retomada da professora: “Agora deixe à vista o espaço vazio do então desse Se.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-entrada-ampla-avatar-03. Professora até “Olha só: a abertura some, e o Dino aparece!”. Antes: Esperar o Dino aparecer depois da tecla, sem fazer o próximo salto durante a fala. Dedé: “Começou!”. Retomada da professora: “Depois, use a barra de espaço, a seta para cima e um toque na parte de cima da tela para conferir os pulos.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Ligue a entrada ao início da partida\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Atualizar e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-08.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "Agora faça a partida começar. Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-08.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Hora de testar e enviar o seu jogo! Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
+      "adulto": "Hora de testar e enviar o seu jogo. Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Corre, Dino!",
+      "adulto": "Corre, Dino!"
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida.",
+      "adulto": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Desenhe a tela de início",
+      "adulto": "Desenhe a tela de início"
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.",
+      "adulto": "No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Ligue a entrada ao início da partida",
+      "adulto": "Ligue a entrada ao início da partida"
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.",
+      "adulto": "Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Use a entrada de qualquer tecla ou toque, sem um evento separado só para Enter.",
+      "adulto": "Use a entrada de qualquer tecla ou toque, sem um evento separado só para Enter."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "A dica da tela de início passa a descrever os dois jeitos de começar.",
+      "adulto": "A dica da tela de início passa a descrever os dois jeitos de começar."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "Teste e envie seu jogo",
+      "adulto": "Teste e envie seu jogo"
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "No Ao iniciar, o jogo continua abrindo com Mudar o estado do jogo para inicio.",
+      "adulto": "No Ao iniciar, o jogo continua abrindo com Mudar o estado do jogo para inicio."
+    },
+    {
+      "onde": "corre-dino-aula-08.manifesto.json",
+      "kids": "No relógio dos cactos, crie os obstáculos somente dentro de Se jogando.",
+      "adulto": "No relógio dos cactos, crie os obstáculos somente dentro de Se jogando."
+    }
+  ],
+  "obsoletos": [
+    {
+      "kids": "- No Ao iniciar, o jogo continua abrindo com Mudar o estado do jogo para inicio.\n- No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.\n- Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.\n- Use a entrada de qualquer tecla ou toque, sem um evento separado só para Enter.\n- No A cada 1,4 segundos, o No grupo criar obstáculo continua dentro de um Se o estado do jogo é jogando.",
+      "adulto": "- No Ao iniciar, o jogo continua abrindo com Mudar o estado do jogo para inicio.\n- No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.\n- Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.\n- Use a entrada de qualquer tecla ou toque, sem um evento separado só para Enter.\n- No A cada 1,4 segundos, o No grupo criar obstáculo continua dentro de um Se o estado do jogo é jogando."
+    },
+    {
+      "kids": "No A cada 1,4 segundos, o No grupo criar obstáculo continua dentro de um Se o estado do jogo é jogando.",
+      "adulto": "No A cada 1,4 segundos, o No grupo criar obstáculo continua dentro de um Se o estado do jogo é jogando."
+    }
+  ]
+}

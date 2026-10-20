@@ -51,7 +51,7 @@ import { ActorFigure } from '../src/components/scene-figures'
  * O `describe` final roda o conferente contra HTML adulterado: sem ele, um conferente que não
  * reprovasse nada deixaria todo o resto verde.
  *
- * ⚠️ Os elencos são os dos manifestos atuais (`docs/aulas-interativas/<curso>`), lidos pelo
+ * ⚠️ Os elencos são os dos manifestos atuais (`docs/aulas-interativas/kids/<curso>`), lidos pelo
  * caminho, mais as BORDAS que o editor deixa montar (um papel só, a pedra com o Dino declarado).
  */
 

@@ -56,7 +56,7 @@ export interface AulaDino {
   legacyKeys: string[]
   previousRetireKeys: string[]
 }
-const DIR = resolve(import.meta.dir, '../../aulas-interativas/corre-dino')
+const DIR = resolve(import.meta.dir, '../../aulas-interativas/kids/corre-dino')
 export const aulasDino = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'corre-dino.conteudo.json'), 'utf8'),
 ) as AulaDino[]
@@ -228,6 +228,8 @@ function roteiro(lesson: AulaDino, index: number) {
     '',
     `Entrada: ${lesson.entry} Saída: ${lesson.outcome}`,
     '',
+    '**Verificação das partes (nota da equipe, não gravar):** mostrar a lista Objetivos desta parte e o resultado real de Verificar esta parte. Aguardar a resposta do servidor; corrigir os itens pendentes e verificar novamente. Se o projeto mudar depois da conferência, verificar de novo. Conservar os valores da montagem gravada; os critérios aceitam as alternativas previstas sem exigir cópia da aparência. Os testes narrados do jogo continuam necessários.',
+    '',
     orientacaoAvatares(index),
     '',
     `${index === 0 ? 'Começar com o projeto vazio preparado para esta aula.' : 'Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo.'} Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.`,
@@ -316,7 +318,7 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
       )
     if (s.materials)
       lines.push(
-        'Anexar somente `docs/aulas-interativas/corre-dino/mapa-da-aventura.pdf` ao bloco caderno. Ler, baixar e imprimir são opcionais; não entram na conclusão.',
+        'Anexar somente `docs/aulas-interativas/kids/corre-dino/mapa-da-aventura.pdf` ao bloco caderno. Ler, baixar e imprimir são opcionais; não entram na conclusão.',
         '',
       )
     if (s.checks?.length)
