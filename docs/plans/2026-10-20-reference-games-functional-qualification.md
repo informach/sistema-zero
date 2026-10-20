@@ -147,7 +147,7 @@ bun test experiments/studio-python-runtime/qualification/pacman.test.ts
   python-pacman-portable.spec.ts --list
 ```
 
-**Pendente:** executar os 42 casos causais em runtime real; ampliar input/foco,
+**Pendente naquela preparação:** executar os 42 casos causais em runtime real; ampliar input/foco,
 clear/reset detalhado, fluxos Pro/Mural/exportação e os gates longos. Não somar
 esses 42 casos preparados aos resultados históricos já executados.
 
@@ -246,11 +246,11 @@ registradas, somando Q02 da primeira janela. Ainda não há aprovação de tecla
 físico/foco/repetição, raster/inspeção visual completa, acústica, música por 120 s,
 pausa integrada, saturação das velocidades máximas da IA, fluxos Pro/publicação,
 browser/runtime final, instalação em máquina limpa, desempenho, partida de dez
-minutos ou 30 reinícios. Os 42 casos novos de Pac-Man continuam preparados e
-não executados. O lote continua sujeito ao review do coordenador; a matriz
+minutos ou 30 reinícios. Naquela etapa os 42 casos novos de Pac-Man estavam
+preparados e não executados; a execução posterior está abaixo. O lote continua sujeito ao review do coordenador; a matriz
 S01–S10 e o aceite integral permanecem abertos.
 
-## Pac-Man: embedding nativo pronto, ainda sem execução gráfica
+## Pac-Man: preparação do embedding nativo anterior à execução gráfica
 
 `qualification/pacman_native.py` executa o mesmo observer de geometria/IA sobre
 o ZIP baseline canônico, com seus 32 arquivos intactos. O observer é compilado
@@ -301,6 +301,64 @@ node experiments/studio-python-runtime/qualification/run_pacman_native.mjs `
 Orçamento solicitado para os dois casos seriais: até 60 s, incluindo inspeção e
 cleanup entre eles, parando no primeiro negativo. Nenhum recurso é reservado
 durante preparação/review. Esses dois preflights e a paridade de fonte **não**
-executam ou aprovam os 42 casos geométricos/IA; a janela gráfica permanece pendente.
+executam ou aprovam os 42 casos geométricos/IA; naquela preparação a janela gráfica permanecia pendente.
 O remoto `2744bab0c` foi buscado e conferido sem merge/rebase/reset na branch;
 não houve delta nas receitas/corpus ou fontes Core/Runtime conferidas.
+
+## Pac-Man: 32 casos de geometria e dez de IA passaram no nativo
+
+Em 20/10, após o encerramento do TSC do Root, uma nova janela exclusiva permitiu
+iniciar até 18:37 UTC e terminar até 18:40 UTC, com teto próprio de 120 s.
+START foi registrado localmente e enviado às 18:34:12,448 UTC; END às
+18:34:49,492 UTC: **37,044 s de janela**, abaixo também do alvo de 60 s.
+Relógio e pins de fonte/venv/artefato foram reconferidos antes de cada filho.
+Os dois PIDs próprios 9364/15368 foram observados ausentes antes do END.
+Não houve browser, Docker, build, performance, retry ou mudança de código para
+esses resultados.
+
+- `geometry-r1`: **32 casos passaram** em 1,554 s de execução nativa. Para
+  jogador e primeiro inimigo: quatro faces, oito correções de alinhamento e
+  quatro bordas por ator, no loop original, com testemunhas before/after dos
+  métodos reais. Os sete inimigos permaneceram presentes e o jogador conservou
+  três vidas. A escolha de direção após parede foi válida nos casos dedicados.
+- `ai-r1`: **dez casos passaram** em 0,824 s: perseguição nos quatro rumos,
+  radar 149/150/151, alinhamento dentro/exatamente na fronteira de meia célula
+  e uma escolha aleatória válida. Seed 2026 fixada uma vez, sem busca/retry.
+- Ambos: CPython 3.14.2/Tk oficial e WASAPI, Map0/Destroy1, áudio liberado,
+  temporário ausente, árvore canônica de 32 arquivos inalterada e os cinco
+  imports do jogo exclusivamente no export. Foram observados 833 itens reais
+  de canvas antes do `bye` da QA; isso não comprova raster/visual responsivo.
+  Exit 0, sem erros, deadline cooperativo ou sinal externo. As configurações
+  tiveram exatamente os bytes usados pela preparação browser.
+
+**Limite das provas de borda:** o oráculo de wrap confere o resultado de `move`,
+e também preserva a correção de paredes posterior. Nas fixtures horizontais
+injetadas em y=0, o original vai para x=±500 e em seguida a parede daquela linha
+leva a x=±510; para os inimigos há novas escolhas de direção. Essa linha tem
+borda fechada no labirinto: não se afirma uma saída horizontal jogável ali, nem
+se classifica a consequência da posição sintética como defeito do adapter.
+Nas fixtures verticais, y=−425/365 permaneceu após a fase de paredes. Isso também
+não equivale a percorrer naturalmente todos os túneis numa partida completa.
+
+Agregado próprio `games-functional-r1/pacman-native-window-r1-verification.json`,
+SHA `eda68a03084497153129dcdc674d06e6dd1a2272ea645035f7b619d48c5bc50b`.
+Contém os dez hashes dos recibos/owners/logs dos dois processos, marcadores
+START/END e os dois recibos de clock/pins prévios. Recibo geometry SHA
+`d8d5a0564b9a884128097e8128dd20c8e784ab962526a87a2c4cb4502a5492b8`,
+supervisor `54479d26c2b53fec9a47da501284f0bd916a9527928bca345b1e779a54bdeb6f`.
+Recibo AI SHA `b432c863569d41c3ddb9141f6b2b3421ec7b98869067484b1ae5fa75db72e501`,
+supervisor `7fbb8d038dc081507bbe3d7b87dd33ac815464f3b723bd589540510f16959f2f`.
+Fonte de execução `3c99bb1565245fe801efc270f7f76a8b3b12057d`; runner SHA
+`d202778b1c450a03c5818d9dfbbe067ac443de22f305bd8e8d459dda24d925ac`,
+observer fonte SHA
+`fb56b424a7ea0a74d9cd6f5d085de282d4b55edcca27a8d3d12d400f19ab5a4e`.
+Os hashes configurados geometry/AI estão na preparação anterior e conferem.
+
+São **dois cenários com 42 casos causais**, não 42 partidas. As posições/estados
+são injetados explicitamente antes do timer autoral real de 2,5 s; não houve
+aceleração/interceptação de timers. O fechamento é da QA depois da última
+observação, e não vitória/derrota natural. P05/P08 ganham evidência nativa deste
+recorte; ainda faltam browser/runtime final, input/foco/repetição, raster/clear/
+reset detalhados, áudio/cancelamento/reinício, Pro/Mural e gates de desempenho/
+endurance. Recibos negativos anteriores permanecem preservados e o aceite
+integral P01–P16 continua aberto, sujeito ao review do coordenador.

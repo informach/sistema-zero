@@ -43,4 +43,24 @@ Recibos: `.cache/studio-python-l0/pacman-native-r1/verification.json` SHA93694bc
 
 O encerramento autoral foi verificado separadamente: dois cenários nativos executaram o timer real e fecharam a janela sem intervenção da QA. O primeiro caso Chrome na distribuição19de completou o jogo, mas registrou uma violação CSP no probe de validação; esse negativo permanece preservado. Após corrigir o bootstrap dos schemas e gerar a distribuição imutável43fa, vitória e derrota passaram uma vez em Chrome e Edge, com retorno após3,0029–3,0196s, WAVs esperados, mídia liberada, frame removido e console sem erros. Recibo `pacman-lifecycle-r2/verification-r2.json`, SHA9da78b1e. São estados próximos do fim injetados pelo observer, não partidas completas.
 
-P01–P16 ainda não têm aceite integral. Permanecem pendentes as quatro faces das paredes/bordas/alinhamento e perseguição, foco/repetição, renderização detalhada/clear/reset, cada efeito e seu ciclo de vida durante cancelamento/reinício, editor/salvar/reabrir, Mural/player, instalação desktop fresca e desempenho normativo/partida10min/30reinícios. Nenhuma dessas provas libera mídia do corpus para distribuição na galeria; o exemplo editorial tem recursos próprios e qualificação separada.
+Em 20/10, dois cenários novos passaram no CPython 3.14.2/Tk oficial com WASAPI:
+32 casos de geometria e dez de IA no loop original. Cobrem jogador/inimigo nas
+quatro faces, correções de alinhamento, wrap observado por fase, perseguição,
+fronteiras do radar/alinhamento e uma direção aleatória válida. São posições/
+estados explicitamente injetados, antes do timer autoral de 2,5 s; não são partidas
+completas nem prova de teclado físico. Os cinco módulos vieram do ZIP canônico
+baseline de 32 arquivos, cuja árvore permaneceu inalterada. Map0/Destroy1, áudio/
+temporário liberados e PIDs ausentes foram observados nos dois casos, sem deadline,
+sinal ou retry. START/END delimitam 37,044 s de janela coordenada. Agregado próprio
+do worktree de jogos: `games-functional-r1/pacman-native-window-r1-verification.json`,
+SHA `eda68a03…`. A fixture horizontal y=0 observa wrap para x=±500 seguido da
+correção autoral para ±510 numa borda fechada; não qualifica saída horizontal
+jogável ali. [Identidades, testemunhas e limites](2026-10-20-reference-games-functional-qualification.md).
+
+P01–P16 ainda não têm aceite integral. O novo recorte de paredes/bordas/alinhamento
+e perseguição permanece sem execução browser/runtime final. Continuam pendentes
+foco/repetição, renderização detalhada/clear/reset, cada efeito e seu ciclo de vida
+durante cancelamento/reinício, editor/salvar/reabrir, Mural/player, instalação
+desktop fresca e desempenho normativo/partida10min/30reinícios. Nenhuma dessas
+provas libera mídia do corpus para distribuição na galeria; o exemplo editorial
+tem recursos próprios e qualificação separada.
