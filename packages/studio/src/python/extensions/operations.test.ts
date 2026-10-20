@@ -8,7 +8,32 @@ import {
   listProSessionApplications,
   undoProApplication,
 } from '../../state/proRevision'
+import type { PythonAnalysisSession } from '../language/session'
+import type { PythonNode } from '../language/types'
 import { changePythonExtension, pythonExtensionInstallIssue } from './operations'
+
+function removalAnalysis(tree: PythonNode | null = { kind: 'Module', fields: { body: [] } }) {
+  return {
+    async run<T>(request: {
+      execute(parser: Pick<PythonAnalysisSession, 'parse' | 'render'>): Promise<T>
+    }) {
+      return request.execute({
+        parse: async (identity, source) => ({
+          version: 1,
+          language: 'python',
+          identity,
+          source,
+          tree,
+          tokens: [],
+          diagnostics: [],
+        }),
+        render: async () => {
+          throw new Error('Unexpected render')
+        },
+      })
+    },
+  }
+}
 
 describe('Python extension actions', () => {
   for (const kind of ['classic', 'pro'] as const) {
@@ -16,7 +41,7 @@ describe('Python extension actions', () => {
       const { project, environment } = await pythonEnvironmentFixture(kind)
       const store = createProjectStore()
       store.getState().setProject(project)
-      const source = '# Meu desenho 🐢\nimport turtle\nturtle.forward(123)\n'
+      const source = '# Meu programa 🐢\nprint(123)\n'
       store.getState().setPythonFile(project.python.entrypoint, source)
       const before = store.getState().project!
       if (!isPythonProject(before)) throw new Error('fixture')
@@ -45,9 +70,10 @@ describe('Python extension actions', () => {
       await changePythonExtension({
         store,
         expected: installed,
-        policy: () => ({ environment: null }),
+        policy: () => ({ environment }),
         extension: TURTLE_EXTENSION,
         action: 'remove',
+        analysis: removalAnalysis(),
       })
       const removed = store.getState().project!
       if (!isPythonProject(removed)) throw new Error('project')
@@ -130,6 +156,107 @@ describe('Python extension actions', () => {
       expect(store.getState().project).toBe(edited)
       expect(edited?.installedExtensions).toEqual([])
     })
+  }
+
+  for (const kind of ['classic', 'pro'] as const) {
+    test(`${kind}: known Turtle import refuses removal and preserves document/history`, async () => {
+      const { project, environment } = await pythonEnvironmentFixture(kind)
+      const store = createProjectStore()
+      store
+        .getState()
+        .setProject({ ...project, installedExtensions: [{ ...TURTLE_EXTENSION, installedAt: 1 }] })
+      store.getState().setPythonFile('main.py', '# desenho\nimport turtle as t\nt.forward(10)\n')
+      const expected = store.getState().project!
+      if (!isPythonProject(expected)) throw new Error('fixture')
+      const tree: PythonNode = {
+        kind: 'Module',
+        fields: {
+          body: [
+            {
+              kind: 'Import',
+              range: { start: 10, end: 28 },
+              fields: { names: [{ kind: 'alias', fields: { name: 'turtle', asname: 't' } }] },
+            },
+          ],
+        },
+      }
+      await expect(
+        changePythonExtension({
+          store,
+          expected,
+          policy: () => ({ environment }),
+          extension: TURTLE_EXTENSION,
+          action: 'remove',
+          analysis: removalAnalysis(tree),
+        }),
+      ).rejects.toThrow('main.py:2')
+      expect(store.getState().project).toBe(expected)
+      expect(listProSessionApplications(store, project.id)).toEqual([])
+    })
+
+    test(`${kind}: removal without analysis fails closed`, async () => {
+      const { project, environment } = await pythonEnvironmentFixture(kind)
+      const store = createProjectStore()
+      store
+        .getState()
+        .setProject({ ...project, installedExtensions: [{ ...TURTLE_EXTENSION, installedAt: 1 }] })
+      const expected = store.getState().project!
+      if (!isPythonProject(expected)) throw new Error('fixture')
+      await expect(
+        changePythonExtension({
+          store,
+          expected,
+          policy: () => ({ environment }),
+          extension: TURTLE_EXTENSION,
+          action: 'remove',
+        }),
+      ).rejects.toThrow('análise')
+      expect(store.getState().project).toBe(expected)
+    })
+
+    for (const invalidate of ['source ABA', 'policy', 'host callback'] as const) {
+      test(`${kind}: ${invalidate} during removal analysis refuses late publication`, async () => {
+        const { project, environment } = await pythonEnvironmentFixture(kind)
+        const store = createProjectStore()
+        store.getState().setProject({
+          ...project,
+          installedExtensions: [{ ...TURTLE_EXTENSION, installedAt: 1 }],
+        })
+        const expected = store.getState().project!
+        if (!isPythonProject(expected)) throw new Error('fixture')
+        const gate = Promise.withResolvers<void>()
+        const requested = Promise.withResolvers<void>()
+        let allowedIds: readonly string[] | undefined
+        let active = true
+        const outcome = changePythonExtension({
+          store,
+          expected,
+          policy: () => ({ environment, allowedIds }),
+          extension: TURTLE_EXTENSION,
+          action: 'remove',
+          analysis: {
+            async run<T>() {
+              requested.resolve()
+              await gate.promise
+              return [] as T
+            },
+          },
+          assertCurrent() {
+            if (!active) throw new Error('Contexto encerrado')
+          },
+        }).catch((error: unknown) => error)
+        await requested.promise
+        if (invalidate === 'source ABA') {
+          store.getState().setPythonFile('main.py', 'print(9)\n')
+          store.setState({ project: expected })
+        } else if (invalidate === 'policy') allowedIds = []
+        else active = false
+        gate.resolve()
+        expect(await outcome).toBeInstanceOf(Error)
+        expect(store.getState().project).toBe(expected)
+        expect(listProSessionApplications(store, project.id)).toEqual([])
+      })
+    }
   }
 
   test('Pro uses the shared configuration history and supports undo', async () => {

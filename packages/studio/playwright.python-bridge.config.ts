@@ -4,7 +4,7 @@ import editor, { pythonEditorWebServer } from './playwright.python-editor.config
 export default defineConfig({
   ...editor,
   testMatch:
-    /(?:bridge-workspace|source-editor|python-language|authoring-runtime|live-runtime|free-runtime|public-runtime|web-export)\.spec\.ts$/,
+    /(?:bridge-workspace|source-editor|python-language|authoring-runtime|live-runtime|free-runtime|public-runtime|web-export|extension-removal)\.spec\.ts$/,
   outputDir: '../../.cache/studio-python-bridge-results',
   webServer: [
     {

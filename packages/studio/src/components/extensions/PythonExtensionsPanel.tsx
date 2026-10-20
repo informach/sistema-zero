@@ -6,8 +6,10 @@ import {
   changePythonExtension,
   pythonExtensionInstallIssue,
 } from '../../python/extensions/operations'
+import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
+import { useStudioExecution } from '../../studio/observation'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 import type { ExtensionsPanelProps } from './ExtensionsPanel'
 
@@ -17,13 +19,27 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
   const store = useProjectStoreApi()
   const environment = useStudioRuntimeEnvironment()
   const allowedIds = useStudioConfig().learning.allowExtensions
-  const policyRef = useRef({ environment, allowedIds })
+  const execution = useStudioExecution()
+  const mount = useRef<HTMLDivElement>(null)
+  const operation = useRef<{ cancelled: boolean; dispose(): void } | null>(null)
+  const policyRef = useRef({ environment, allowedIds, writerEpoch: execution.writerEpoch })
   useLayoutEffect(() => {
-    policyRef.current = { environment, allowedIds }
-    return () => {
-      policyRef.current = { environment: null, allowedIds: [] }
+    policyRef.current = {
+      environment: open && execution.editingAccess === 'author' ? environment : null,
+      allowedIds,
+      writerEpoch: execution.writerEpoch,
     }
-  }, [environment, allowedIds])
+    setPending(false)
+    setError(null)
+    return () => {
+      if (operation.current) {
+        operation.current.cancelled = true
+        operation.current.dispose()
+        operation.current = null
+      }
+      policyRef.current = { environment: null, allowedIds: [], writerEpoch: execution.writerEpoch }
+    }
+  }, [environment, allowedIds, execution.writerEpoch, execution.editingAccess, open])
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [removal, setRemoval] = useState<{
@@ -48,25 +64,78 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
     extension: { id: string; version: string },
     action: 'install' | 'remove',
   ) {
+    if (operation.current) return
+    const owner = { cancelled: false, dispose() {} }
+    operation.current = owner
+    const policy = policyRef.current
+    let unsubscribe = () => {}
     setPending(true)
     setError(null)
     try {
+      let analysis:
+        | Pick<import('../../python/language/controller').PythonAnalysisController, 'run'>
+        | undefined
+      if (action === 'remove' && extension.id === TURTLE_EXTENSION.id) {
+        const { createPythonAnalysisController } = await import('../../python/language/controller')
+        if (owner.cancelled) throw new Error('O contexto da análise mudou. Tente novamente.')
+        const controller = createPythonAnalysisController({
+          project: () =>
+            !owner.cancelled &&
+            policyRef.current.environment === policy.environment &&
+            store.getState().editingAccess === 'author' &&
+            store.getState().project === expected
+              ? expected
+              : null,
+          environment: () => policyRef.current.environment,
+          writerEpoch: () => policyRef.current.writerEpoch ?? null,
+          mountFrame() {
+            if (owner.cancelled || !mount.current?.isConnected)
+              throw new Error('A análise Python foi encerrada.')
+            const frame = document.createElement('iframe')
+            frame.hidden = true
+            mount.current.append(frame)
+            return { frame, release: () => frame.remove() }
+          },
+        })
+        owner.dispose = () => controller.dispose()
+        unsubscribe = store.subscribe((state) => {
+          if (state.project !== expected || state.editingAccess !== 'author') {
+            owner.cancelled = true
+            owner.dispose()
+          }
+        })
+        analysis = controller
+      }
       await changePythonExtension({
         store,
         expected,
         extension,
         action,
         policy: () => policyRef.current,
+        analysis,
+        assertCurrent() {
+          if (operation.current !== owner || owner.cancelled)
+            throw new Error(
+              'O contexto da análise mudou. Tente novamente; seu código foi preservado.',
+            )
+        },
       })
-      setRemoval(null)
+      if (operation.current === owner) setRemoval(null)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível alterar a extensão.')
+      if (operation.current === owner && !owner.cancelled)
+        setError(cause instanceof Error ? cause.message : 'Não foi possível alterar a extensão.')
     } finally {
-      setPending(false)
+      unsubscribe()
+      owner.dispose()
+      if (operation.current === owner) {
+        operation.current = null
+        setPending(false)
+      }
     }
   }
   return (
     <>
+      <div ref={mount} hidden />
       <Modal
         open={open}
         onClose={() => !pending && onClose()}
@@ -140,7 +209,8 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
       >
         <p>
           Seu código continua salvo. Para executar os comandos desta extensão, você precisará
-          instalá-la novamente.
+          instalá-la novamente. Antes de remover, vamos conferir os imports Python. Se Turtle ainda
+          estiver em uso, indicaremos os arquivos e as linhas que precisam ser ajustados.
         </p>
         {error && (
           <p role="alert" className="mt-3 text-sm text-sz-error">
