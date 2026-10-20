@@ -22,6 +22,7 @@ import { buildCoreToolbox } from '../../../packages/studio/src/blockly/toolbox'
 import { buildWorkspaceStateFromIR } from '../../../packages/studio/src/blockly/workspaceState'
 import type { SZIRV2 } from '../../../packages/studio/src/ir/schema'
 import { gameTwoDToolboxCategory } from '../../../packages/studio/src/official-extensions/game-2d/blocks'
+import { farolDirecaoObservada } from './desafio-farol-direcao'
 import { montarProjetoFarol } from './desafio-farol-projeto'
 
 function manifesto(name: string): LearningManifest {
@@ -212,10 +213,12 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       expect(section.workspaceKey).toBe('projeto')
       expect(section.blockKeys).not.toContain('projeto')
     }
-    // O movimento é verificado antes do limite; a escolha de velocidade saiu do curso.
+    // A estrutura ensinada e as quatro direções são verificadas antes do limite de tela.
     for (const key of ['andar']) {
       const section = m.sections.find((item) => item.key === key)
-      expect(section?.completion?.projectChecks?.length, key).toBe(2)
+      const checks = section?.completion?.projectChecks ?? []
+      expect(checks.length, key).toBe(6)
+      expect(checks.slice(2), key).toEqual(farolDirecaoObservada('personagem'))
     }
     // Nenhum critério do curso exige um número de velocidade.
     for (const name of ['dia-1', 'dia-2', 'dia-3']) {

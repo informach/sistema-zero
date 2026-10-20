@@ -4,6 +4,7 @@ import type {
   SectionStructureRule,
 } from '../../../packages/core/src/learning/section-progression'
 import { FAROL_FAROIS } from '../../../packages/studio/src/arte/farol-assets'
+import { farolDirecaoObservada } from './desafio-farol-direcao'
 
 const check = (id: string, label: string, rule: SectionStructureRule): SectionProjectCheck => ({
   id,
@@ -79,6 +80,7 @@ export const movimentoSemBorda: SectionProjectCheck[] = [
       BODY: { blockType: 'sz_g2d_top_down', fields: { SPRITE: 'personagem' } },
     },
   }),
+  ...farolDirecaoObservada('personagem'),
 ]
 
 /** Cada entrega conserva também as regras essenciais dos dias anteriores. */
