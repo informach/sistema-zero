@@ -28,7 +28,7 @@ async function verify(files: Record<string, string>) {
 
 const files = {
   'package.json': JSON.stringify({
-    devDependencies: { vite: '8.0.16' },
+    devDependencies: { vite: '8.1.6' },
     dependencies: { three: '0.180.0' },
   }),
   'src/main.ts':
@@ -58,7 +58,7 @@ test('real remote typechecking resolves installed declarations and reports seman
 test('an installed but undeclared library cannot silently pass, and noCheck does not suppress evidence', async () => {
   const undeclared = await verify({
     ...files,
-    'package.json': '{"devDependencies":{"vite":"8.0.16"}}',
+    'package.json': '{"devDependencies":{"vite":"8.1.6"}}',
   })
   expect(undeclared.code).toBe(1)
   expect(undeclared.output).toContain('não está declarada')

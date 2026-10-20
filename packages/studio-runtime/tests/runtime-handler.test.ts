@@ -565,7 +565,7 @@ describe('handler do Studio Runtime', () => {
       })
     const body = {
       executionId: validBody.executionId,
-      packageJson: '{"devDependencies":{"vite":"8.0.16"}}',
+      packageJson: '{"devDependencies":{"vite":"8.1.6"}}',
     }
     expect((await execute(context, dependencies(body, 'wrong'))).status).toBe(401)
     const response = await execute(context, dependencies(body))
@@ -574,7 +574,7 @@ describe('handler do Studio Runtime', () => {
       JSON.parse(((await response.json()) as { packageLock: string }).packageLock).packages[
         'node_modules/vite'
       ].version,
-    ).toBe('8.0.16')
+    ).toBe('8.1.6')
     expect(
       (
         await execute(

@@ -15,6 +15,7 @@ import type { JSX } from 'react'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { EditableStudioProject as Project } from '../src/core/editableProject'
 import { DemoHostChrome, HOST_DEMO } from './hostChromeDemo'
+import { E2E_AUTOSAVE_MS } from './initialQuery'
 import moldaDemoAssets from './moldaDemoAssets.json'
 
 // Só para os e2e da gravação de SAÍDA (`?autosave-ms=600000`): segura o autosave do editor
@@ -22,8 +23,6 @@ import moldaDemoAssets from './moldaDemoAssets.json'
 // fica escondida, e não a do debounce, que no WebKit chegava antes do reload em metade das
 // rodadas. Lido uma vez, na carga, como o `?host=1`: a navegação da lista para o editor é por
 // `pushState` e o parâmetro some da URL, mas não daqui. Sem o parâmetro, nada muda.
-const E2E_AUTOSAVE_MS = Number(new URLSearchParams(window.location.search).get('autosave-ms'))
-
 const StudioEditor = lazy(async () => {
   if (E2E_AUTOSAVE_MS > 0) {
     // Pelo caminho RELATIVO, como o `hostChromeDemo.tsx`: é o mesmo módulo que o editor usa.
@@ -255,14 +254,16 @@ const tutorDemo: StudioTutorAdapter = {
 function EditorScreen({
   projectId,
   onExit,
+  demoMission,
 }: {
   projectId: string
   onExit: () => void
+  demoMission: string | null
 }): JSX.Element {
   const adapter = useMemo(() => createLocalPersistenceAdapter(), [])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
   const [guideCollapsed, setGuideCollapsed] = useState(false)
-  const [guideVisible, setGuideVisible] = useState(Boolean(tarefaDemo && tarefaDemo !== 'adiada'))
+  const [guideVisible, setGuideVisible] = useState(Boolean(demoMission && demoMission !== 'adiada'))
 
   // Adapter de COMPARTILHAR de DEMONSTRAÇÃO: liga o botão "Compartilhar" na Topbar
   // e simula o servidor (a IA e o publish são mockados; o PRINT é capturado de
@@ -372,13 +373,16 @@ function EditorScreen({
           ? {
               taskSession: {
                 ...taskSessionDemo,
+                onComplete: async () => {
+                  if (demoMission === 'falha') throw new Error('Falha de demonstração.')
+                },
                 collapsed: guideCollapsed,
                 onCollapsedChange: setGuideCollapsed,
               },
             }
           : {})}
       />
-      {tarefaDemo === 'adiada' ? (
+      {demoMission === 'adiada' ? (
         <button
           type="button"
           className="fixed bottom-2 left-2 z-[2000] rounded bg-sz-bg p-2 text-sz-fg"
@@ -396,7 +400,6 @@ function EditorScreen({
  * `?missao=adiada` permite anexar/remover a sessão no mesmo editor já aberto.
  * O host demonstra estado local; não envia progresso ao servidor.
  */
-const tarefaDemo = new URLSearchParams(window.location.search).get('missao')
 const taskSessionDemo: StudioTaskSession = {
   mission: {
     id: 'demo-mission',
@@ -438,9 +441,7 @@ const taskSessionDemo: StudioTaskSession = {
   collapsed: false,
   onCollapsedChange() {},
   nextMissionLabel: 'Continuar meu caminho',
-  async onComplete() {
-    if (tarefaDemo === 'falha') throw new Error('Falha de demonstração.')
-  },
+  async onComplete() {},
   async onReopen() {},
   async onNextMission() {},
   onNeedHelp() {},
@@ -479,7 +480,7 @@ function DualView(): JSX.Element {
   )
 }
 
-export function App(): JSX.Element {
+export function App({ demoMission }: { demoMission: string | null }): JSX.Element {
   const [view, setView] = useState<View>(() => parseViewFromLocation())
 
   const navigate = (next: View) => {
@@ -501,7 +502,11 @@ export function App(): JSX.Element {
   // (o dev server do Vite já envia COOP/COEP, exigidos pelo WebContainer).
   const screen =
     view.name === 'editor' ? (
-      <EditorScreen projectId={view.projectId} onExit={() => navigate({ name: 'list' })} />
+      <EditorScreen
+        projectId={view.projectId}
+        onExit={() => navigate({ name: 'list' })}
+        demoMission={demoMission}
+      />
     ) : (
       <ProjectList
         professional

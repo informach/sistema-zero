@@ -158,7 +158,7 @@ export function trustedPackageJson(
 ): string {
   const template = studioProTemplate(templateId)
   const dependencies: Record<string, string> = {}
-  const devDependencies: Record<string, string> = { vite: '8.0.16' }
+  const devDependencies: Record<string, string> = { vite: '8.1.6' }
   if (templateId === 'vanilla-vite' || template?.kitVersion) devDependencies.typescript = '5.9.3'
   if (template?.engine === 'phaser') dependencies.phaser = '3.90.0'
   if (templateId === 'react-ts') {

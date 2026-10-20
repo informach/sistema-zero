@@ -51,6 +51,7 @@ describe('contrato do executor Pro', () => {
   test('rejects unavailable libraries, versions and manifest installation features', () => {
     for (const manifest of [
       { dependencies: { mitt: '3.0.1' } },
+      { devDependencies: { vite: '8.0.16' } },
       { dependencies: { three: '0.179.0' } },
       { dependencies: { three: '^0.180.0' } },
       { dependencies: { three: 'https://elsewhere.test/three.tgz' } },
@@ -145,7 +146,7 @@ describe('contrato do executor Pro', () => {
     expect(dockerfile).toContain('COPY runtime/package-lock.json')
     expect(dockerfile).toContain('npm ci --ignore-scripts')
     expect(lockfile.lockfileVersion).toBeGreaterThanOrEqual(3)
-    expect(lockfile.packages[''].dependencies.vite).toBe('8.0.16')
+    expect(lockfile.packages[''].dependencies.vite).toBe('8.1.6')
     expect(versionAtLeast(lockfile.packages['node_modules/nanoid'].version, '3.3.17')).toBe(true)
     expect(versionAtLeast(lockfile.packages['node_modules/postcss'].version, '8.5.23')).toBe(true)
   })

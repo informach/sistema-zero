@@ -49,7 +49,7 @@ export async function createGameTree(template: StudioProTemplateMetadata): Promi
       : template.engine === 'three'
         ? { three: '0.180.0' }
         : {}
-  const devDependencies: Record<string, string> = { vite: '8.0.16', typescript: '5.9.3' }
+  const devDependencies: Record<string, string> = { vite: '8.1.6', typescript: '5.9.3' }
   if (template.engine === 'three') devDependencies['@types/three'] = '0.180.0'
   const sources: Record<string, string> = {
     'THIRD_PARTY_NOTICES.md': GAMEDEV_NOTICES,

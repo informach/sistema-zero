@@ -9,6 +9,7 @@ import { prepareRuntimeDependencyLock } from '../src/dependency-lock'
 test('dependency preparation uses the installed exact graph and rejects arbitrary versions, registries and workspaces', () => {
   for (const manifest of [
     { dependencies: { unknown: '1.0.0' } },
+    { devDependencies: { vite: '8.0.16' } },
     { dependencies: { three: 'latest' } },
     { dependencies: { three: 'https://untrusted.test/pkg.tgz' } },
     { dependencies: { three: '0.180.0' }, workspaces: ['../outside'] },
@@ -17,7 +18,7 @@ test('dependency preparation uses the installed exact graph and rejects arbitrar
   const packageJson = JSON.stringify({
     name: 'review-game',
     dependencies: { three: '^0.180.0' },
-    devDependencies: { vite: '8.0.16', '@types/three': '0.180.0', typescript: '5.9.3' },
+    devDependencies: { vite: '8.1.6', '@types/three': '0.180.0', typescript: '5.9.3' },
   })
   const lock = prepareRuntimeDependencyLock(packageJson),
     packages = JSON.parse(lock).packages

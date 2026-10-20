@@ -1,6 +1,6 @@
 /** Packages installed in the isolated, network-free build image. Versions are exact. */
 export const STUDIO_PRO_REMOTE_PACKAGES = {
-  vite: '8.0.16',
+  vite: '8.1.6',
   typescript: '5.9.3',
   '@vitejs/plugin-react': '6.0.2',
   react: '19.2.0',

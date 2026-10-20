@@ -10,7 +10,7 @@ import {
 
 export const WEB_CONTAINER_PACKAGE_DEPENDENCIES = {
   '@vitejs/plugin-react': '6.0.2',
-  vite: '8.0.16',
+  vite: '8.1.6',
   typescript: '5.9.3',
 } as const
 

@@ -19,7 +19,7 @@ for (const [id, engine] of [
       dependencies:
         engine === 'phaser' ? { phaser: '3.90.0' } : engine === 'three' ? { three: '0.180.0' } : {},
       devDependencies: {
-        vite: '8.0.16',
+        vite: '8.1.6',
         typescript: '5.9.3',
         ...(engine === 'three' ? { '@types/three': '0.180.0' } : {}),
       },

@@ -298,7 +298,6 @@ test.describe('Sistema Zero Studio — smoke', () => {
   test('Pensa: recolher e abrir preserva editor e histórico', async ({ page }, testInfo) => {
     test.setTimeout(60_000)
     await createProject(page, '/?missao=adiada')
-    await expect(page).toHaveURL(/[?&]missao=adiada(?:&|$)/)
     await expect(
       page.getByRole('button', { name: 'Mostrar missão de demonstração', exact: true }),
     ).toBeVisible()
@@ -384,7 +383,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
               request.onerror = () => reject(request.error)
             },
           )
-          return stored?.files?.['script.js'] ?? null
+          return stored?.files?.['script.js']?.replace(/\r\n/g, '\n') ?? null
         } finally {
           db.close()
         }

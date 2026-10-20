@@ -20,14 +20,14 @@
 
 ## Task 1: Fechar a revisão pedagógica e o lote de liberação
 
-**Files:** `docs/aulas-interativas-tecnico/qa/pedagogical-project-examples.test.ts`; manifesto e roteiros Farol já integrados.
+**Files:** fontes em `docs/aulas-interativas-tecnico/qa/`; cursos em `docs/aulas-interativas/kids/` e `docs/aulas-interativas/adulto/`; contratos compartilhados Core/Studio/Members/Admin; relatório `docs/aulas-interativas-tecnico/revisao-verificacao-2026-10-20.md`.
 
 - [x] Preservar as 86 falas Farol e o caderno original; integrar os ajustes mínimos.
 - [x] Separar no teste estrutural os critérios que exigem execução real, sem alterar o avaliador de produção.
-- [x] Executar a suíte dos cursos: 219 testes/23.819 asserções passaram em 20/10/2026.
-- [x] Validar os 37 manifestos canônicos, sem ativar os candidatos Cadê pendentes.
-- [ ] Concluir a revisão pedagógica efetiva das 37 aulas: critérios coerentes e trechos de conferência correspondentes, preservando falas e valores ensinados. Inventário e validação de arquivos não substituem esta revisão.
-- [ ] Integrar e verificar as correções justificadas pela revisão, incluindo os contratos compartilhados necessários para aceitar valores coerentes sem exigir os números da demonstração.
+- [x] Executar a suíte integrada dos cursos após o review: 384 testes/24.351 asserções passaram em 20/10/2026.
+- [x] Validar os 74 manifestos canônicos (37 Kids + 37 Adulto), sem ativar os candidatos Cadê pendentes.
+- [x] Revisar os objetivos e os trechos de conferência das 74 aulas, registrando a decisão por par no relatório. As 4.610 linhas citadas dos roteiros permanecem idênticas às referências; preservar os valores ensinados não exige copiar esses valores na avaliação.
+- [x] Integrar os contratos compartilhados e corrigir os achados do review: ações Farol no mesmo ramo, prioridade de derrota no Nave, ausência do medidor Dino independentemente da posição e termos dos controles na descrição final. Contratos compartilhados: 84 testes/516 asserções. Texto é conferido por termos explícitos, sem interpretação semântica.
 
 ## Task 2: Restringir a oferta de criação Python na interface
 
@@ -47,5 +47,7 @@
 
 - [ ] Concluir no CI os sete cenários JavaScript reais de edição/persistência/Pensa, preservando negativos locais anteriores e seus limites. O build local r4 excedeu o orçamento RSS e foi encerrado antes de qualquer teste; não conta como falha funcional nem como aceite.
 - [ ] Conferir o CI do commit que reúne este lote; corrigir falhas reais sem enfraquecer critérios.
+- [ ] Corrigir a dependência Vite apontada por `audit:image`, atualizar o perfil canônico e verificar a implantação coerente do Worker e da imagem antes de declarar o Pro validado.
+- [ ] Conferir a atualização de projetos Pro existentes: os arquivos e a exportação são preservados, mas um manifesto/lock com Vite 8.0.16 precisa ser atualizado para a revisão canônica 8.1.6 antes de compilar. O fluxo existente do Builder prepara manifest+lock juntos; ainda não há recuperação determinística gratuita para todos os hosts. Não tratar abertura/exportação como prova de compilação.
 - [ ] Revisar o lote completo, conciliar qualquer avanço remoto e integrar/push em staging.
 - [ ] Informar separadamente o estado da liberação JavaScript e o que continua pendente na homologação Python.

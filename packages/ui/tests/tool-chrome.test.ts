@@ -255,7 +255,7 @@ describe('tool-chrome.css: receitas', () => {
    * "totalmente fora da identidade visual da comunidade".
    */
   it('o guia divide a regra do cartão das galerias, em vez de copiá-la', () => {
-    // ⚠ Enquanto eram dois blocos byte a byte iguais, mudar um deixava o outro para trás em
+    // ! Enquanto eram dois blocos byte a byte iguais, mudar um deixava o outro para trás em
     // silêncio (achado do full review de 19/09/2026). Hoje o seletor é o mesmo bloco.
     const cartao = bloco('.sz-tool-card,')
     expect(cartao.seletor.split(',').map((parte) => parte.trim())).toEqual([
@@ -266,7 +266,7 @@ describe('tool-chrome.css: receitas', () => {
     expect(cartao.corpo).toContain('background: var(--sz-tool-surface)')
     // O título idem: o guia entra na regra do `.sz-tool-card-title`.
     expect(bloco('.sz-tool-card-title,').seletor).toContain('.sz-tool-guide__title')
-    // E não sobrou uma segunda regra de BASE só para o guia. ⚠ A asserção olha os seletores
+    // E não sobrou uma segunda regra de BASE só para o guia. ! A asserção olha os seletores
     // inteiros: um regex de texto casaria a própria regra compartilhada, que tem o guia numa
     // linha só dele depois da vírgula.
     const soDoGuia = [...semComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
@@ -276,7 +276,7 @@ describe('tool-chrome.css: receitas', () => {
   })
 
   it('o guia é CHAPADO: o relevo das galerias não o alcança', () => {
-    // ⚠️⚠️ A classe vive no SELETOR, nunca no corpo (que só tem declarações). A primeira versão
+    // !! A classe vive no SELETOR, nunca no corpo (que só tem declarações). A primeira versão
     // deste caso olhava o corpo e era verdadeira para sempre — provado no full review de
     // 19/09/2026 somando a classe do guia ao `:is()` do relevo sem o teste piscar. E são QUATRO
     // regras de relevo (base, hover, aperto, reduced-motion), não uma.
@@ -292,7 +292,7 @@ describe('tool-chrome.css: receitas', () => {
   /*
    * A MISSÃO DO PENSA nas oficinas (20/10/2026, desenho aprovado). Pedido dela: o painel
    * NUNCA cobre o Estúdio, o Pinta ou o Molda, nem aberto nem recolhido. Coluna própria à
-   * direita a partir de 1100px de oficina, faixa embaixo abaixo disso, trilho de 64px ou uma
+   * direita quando sobram 1024px para o editor, faixa embaixo abaixo disso, trilho de 64px ou uma
    * linha quando recolhido.
    */
   const regrasDaMissao = () =>
@@ -300,7 +300,9 @@ describe('tool-chrome.css: receitas', () => {
       .map(([, seletor = '', corpo = '']) => ({ seletor: seletor.trim(), corpo }))
       .filter(({ seletor }) => seletor.includes('sz-tool-mission'))
   const containerLarga = () => {
-    const i = semComentarios.indexOf('@container sz-mission (min-width: 68.75rem) {')
+    const i = semComentarios.indexOf(
+      '@container sz-mission (min-width: calc(1024px + 22.5rem + 0.75rem)) {',
+    )
     expect(i).toBeGreaterThan(-1)
     let profundidade = 0
     for (let j = semComentarios.indexOf('{', i); j < semComentarios.length; j++) {
@@ -311,7 +313,7 @@ describe('tool-chrome.css: receitas', () => {
     throw new Error('bloco @container sem fim')
   }
 
-  it('a oficina é o contêiner, e o painel fica EMBAIXO dela até 1100px', () => {
+  it('a oficina é o contêiner, e o painel fica EMBAIXO dela sem espaço para a coluna', () => {
     expect(bloco('.sz-tool-mission-layout.has-panel {').corpo).toContain(
       'container: sz-mission / inline-size',
     )
@@ -327,7 +329,7 @@ describe('tool-chrome.css: receitas', () => {
     expect(bloco('.sz-tool-mission-panel {').corpo).toContain('flex: none')
   })
 
-  it('a partir de 1100px de oficina o painel é uma coluna de 360px e recolhe para 64px', () => {
+  it('com espaço para preservar 1024px, o painel é uma coluna de 360px e recolhe para 64px', () => {
     const larga = containerLarga()
     expect(larga).toMatch(/\.has-panel > \.sz-tool-mission-layout__row \{\s*flex-direction: row;/)
     expect(larga).toMatch(/\.sz-tool-mission-panel \{[^}]*width: 22\.5rem/)
@@ -336,6 +338,27 @@ describe('tool-chrome.css: receitas', () => {
     )
     // O texto do trilho é vertical.
     expect(larga).toContain('writing-mode: vertical-rl')
+  })
+
+  it('o limiar da coluna reserva 1024px ao editor com fontes raiz de 12, 16 e 20px', () => {
+    const query =
+      /@container sz-mission \(min-width: calc\((\d+)px \+ ([\d.]+)rem \+ ([\d.]+)rem\)\)/.exec(
+        semComentarios,
+      )
+    expect(query).not.toBeNull()
+    const larga = containerLarga()
+    const width = /\.sz-tool-mission-panel \{[^}]*width: ([\d.]+)rem/.exec(larga)
+    const margin = /\.sz-tool-mission-panel \{[^}]*margin: 0\.75rem ([\d.]+)rem 0\.75rem 0/.exec(
+      larga,
+    )
+    expect(width).not.toBeNull()
+    expect(margin).not.toBeNull()
+    // Contrato geométrico da folha; identidade DOM continua sendo verificada no browser.
+    for (const fontSize of [12, 16, 20]) {
+      const threshold = Number(query?.[1]) + (Number(query?.[2]) + Number(query?.[3])) * fontSize
+      const panel = (Number(width?.[1]) + Number(margin?.[1])) * fontSize
+      expect(threshold - panel).toBeGreaterThanOrEqual(1024)
+    }
   })
 
   it('nada do painel flutua por cima da oficina', () => {
@@ -422,13 +445,13 @@ describe('tool-chrome.css: receitas', () => {
     const alerta = bloco('.sz-tool-guide__alert {')
     expect(alerta.corpo).toContain('var(--sz-tool-danger)')
     expect(alerta.corpo).toContain('border-radius: var(--sz-tool-radius-control)')
-    // ⚠️ A tinta leva um quinto da tinta de texto (o truque da barra do Pinta): o vermelho puro
+    // ! A tinta leva um quinto da tinta de texto (o truque da barra do Pinta): o vermelho puro
     // sobre o fundo rosado do próprio alerta deu 4,25:1 no ESCURO, abaixo do piso de 4,5.
     // Medido no playground depois da mistura: 6,31 no claro e 5,74 no escuro.
     expect(alerta.corpo).toContain(
       'color: color-mix(in oklab, var(--sz-tool-danger) 80%, var(--sz-tool-ink))',
     )
-    // ⚠️⚠️ E existe a variante de AVISO: vermelho o tempo todo, para uma criança de 8 anos, lê
+    // !! E existe a variante de AVISO: vermelho o tempo todo, para uma criança de 8 anos, lê
     // como "quebrou". Ela vem DEPOIS da base (mesma especificidade: quem decide é a ordem).
     expect(bloco('.sz-tool-guide__alert--warn {').corpo).toContain('var(--sz-tool-warn)')
     expect(semComentarios.indexOf('.sz-tool-guide__alert--warn')).toBeGreaterThan(
@@ -499,7 +522,7 @@ describe('os três guias do Pensa vestem a MESMA casca', () => {
    * comunidade". A regressão a evitar é a óbvia: alguém mexer em UM e deixar os outros dois
    * para trás. Classe sem receita não quebra teste nenhum — o painel só sai sem desenho —,
    * então a trava é ler os três como TEXTO.
-   * ⚠ O que ela vê é PRESENÇA, não divergência fina: um ganhar uma peça nova e os outros não
+   * ! O que ela vê é PRESENÇA, não divergência fina: um ganhar uma peça nova e os outros não
    * continua passando.
    */
   const GUIAS = [
@@ -530,10 +553,10 @@ describe('os três guias do Pensa vestem a MESMA casca', () => {
       const semComentario = texto
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/(^|[^:])\/\/.*$/gm, '$1')
-      // ⚠ Por LIMITE de palavra: `toContain('sz-tool-guide')` casaria `sz-tool-guideXYZ` e
+      // ! Por LIMITE de palavra: `toContain('sz-tool-guide')` casaria `sz-tool-guideXYZ` e
       // `--aside` sozinho (achado do full review de 19/09/2026).
       expect(semComentario).toContain('PensaMissionPanel')
-      // ⚠️⚠️ E a cor do recado vem da receita: um `text-*-danger` no consumidor desfaz a mistura
+      // !! E a cor do recado vem da receita: um `text-*-danger` no consumidor desfaz a mistura
       // que faz o alerta passar no contraste do tema escuro.
       for (const linha of semComentario.split('\n')) {
         if (!linha.includes('sz-tool-guide__alert')) continue
