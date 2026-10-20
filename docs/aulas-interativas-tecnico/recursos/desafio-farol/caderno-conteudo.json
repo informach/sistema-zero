@@ -93,7 +93,7 @@
       {
         "kind": "step",
         "title": "Teste no seu jogo",
-        "text": "Segure as quatro setas, uma de cada vez: direita, esquerda, cima e baixo. No computador, clique no jogo e use as setas do teclado. O personagem deve andar na direção de cada seta. Depois solte as setas: o personagem deve ficar parado.<br/>Se algo não funcionou no seu jogo, confira se ficou assim: <b>Ativar controles clássicos</b>, com <b>só as quatro direções</b>, no fim de Ao iniciar, e o bloco de movimento, com o sprite <b>personagem</b>, dentro de A cada quadro do jogo. Depois de corrigir, teste de novo."
+        "text": "Segure uma seta da tela ou, no computador, clique no jogo e use as setas do teclado. O personagem deve andar na direção da seta.<br/>Se algo não funcionou no seu jogo, confira se ficou assim: <b>Ativar controles clássicos</b>, com <b>só as quatro direções</b>, no fim de Ao iniciar, e o bloco de movimento, com o sprite <b>personagem</b>, dentro de A cada quadro do jogo. Depois de corrigir, teste de novo."
       },
       {
         "kind": "drawing",

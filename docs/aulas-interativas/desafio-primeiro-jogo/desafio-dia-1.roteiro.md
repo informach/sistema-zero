@@ -169,7 +169,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Nota de edição, 20/10/2026 (não gravar):** conservar a âncora “A velocidade já vem em 3; deixe assim.” e seguir para o teste. Retirar a inserção proposta que convidava a escolher outro valor. A montagem ensina 3; a flexibilidade pertence à avaliação. Não informa gravação ou edição concluída.
 
-**Na tela:** demonstrar uma seta da tela ou, no computador, clicar dentro do jogo e usar uma seta do teclado, no ritmo da fala existente. Pausar para a pessoa testar. Não acrescentar falas para cobrir cada caso interno da avaliação. Depois clicar em **Verificar esta parte**, mostrar o resultado real e apontar **Próxima parte**. O envio não faz parte desta seção.
+**Na tela:** testar uma seta da tela. No computador, clicar dentro do jogo e testar uma seta do teclado. Pausar para a pessoa testar. Depois clicar em **Verificar esta parte**, mostrar o resultado real e apontar **Próxima parte**. O envio não faz parte desta seção.
 
 **Professora:**
 

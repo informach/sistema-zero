@@ -316,6 +316,8 @@ versões ainda não confirmadas. A ordem completa está em [Avatares nos vídeos
 
 **Montagem concreta e avaliação flexível, 20/10/2026:** na montagem guiada, a professora mostra e manda usar um valor, uma cor ou uma imagem específicos, com um comando por vez. Se a velocidade já vem em 3, dizer “A velocidade já vem em 3; deixe assim.”; se precisa mudar, dizer “Coloque 3 na velocidade.” Não acrescentar “você pode escolher outro” nessa montagem. Dar cada gesto e cada teste separadamente, com tempo para acompanhar. As escolhas da seção de personalização continuam seguindo sua orientação própria. Essa precisão da fala não restringe a avaliação ao exemplo da professora.
 
+Ao melhorar os objetivos, preservar as falas gravadas, a sequência, a montagem e os valores ensinados. Só alterar o trecho de verificar objetivos quando o fluxo da tela mudou, com a âncora e a correção mínima registradas. Os casos internos do avaliador não precisam de narração adicional. Essa revisão não pede regravação geral nem revisão global da voz dos cursos.
+
 **Evidência e liberdade na avaliação, 19/10/2026:** uma solução privada é uma possibilidade de cumprir a parte,
 não um modelo visual obrigatório. Cores, imagens, mensagens e magnitude da velocidade são livres
 na avaliação, quando a intenção continua atendida. Um movimento pedido precisa acontecer na direção coerente:
