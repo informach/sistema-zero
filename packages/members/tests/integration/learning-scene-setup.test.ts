@@ -38,7 +38,7 @@ function blocoDoManifesto(caminho: string, chave: string): InteractiveBlock {
 function _blocosComCaso(): { onde: string; content: InteractiveBlock }[] {
   const arquivos = listarArquivosAulas()
     .filter((nome) => nome.endsWith('.manifesto.json'))
-    .map(caminhoAula)
+    .map((nome) => caminhoAula(nome))
   const achados: { onde: string; content: InteractiveBlock }[] = []
   const procurar = (valor: unknown, onde: string) => {
     if (!valor || typeof valor !== 'object') return

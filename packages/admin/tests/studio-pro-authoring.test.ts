@@ -59,10 +59,10 @@ describe('autoria do Estúdio Pro', () => {
 })
 
 test('Admin preparation reuses its authorized BFF with a closed operation, without triggering a build', async () => {
-  let operation: string | null = null
+  const observed: { operation: string | null } = { operation: null }
   const fetchImpl = Object.assign(
     async (_url: RequestInfo | URL, init?: RequestInit) => {
-      operation = new Headers(init?.headers).get('X-Studio-Pro-Operation')
+      observed.operation = new Headers(init?.headers).get('X-Studio-Pro-Operation')
       return Response.json({ packageLock: 'prepared-lock' })
     },
     { preconnect: fetch.preconnect },
@@ -76,5 +76,5 @@ test('Admin preparation reuses its authorized BFF with a closed operation, witho
       signal: new AbortController().signal,
     }),
   ).toBe('prepared-lock')
-  expect(operation).toBe('prepare-dependencies')
+  expect(observed.operation).toBe('prepare-dependencies')
 })

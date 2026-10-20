@@ -104,7 +104,12 @@ for (const depth of ['top', 'nested'] as const) {
         ),
       )
     try {
-      for (const example of [
+      const examples: {
+        rule: Extract<SectionStructureRule, { type: 'usesBlock' }>
+        name: string
+        protectedName: string
+        summary: string
+      }[] = [
         {
           rule: {
             type: 'usesBlock' as const,
@@ -133,7 +138,8 @@ for (const depth of ['top', 'nested'] as const) {
           protectedName: 'VALUE',
           summary: 'Número maior que 0 e menor ou igual a 1',
         },
-      ]) {
+      ]
+      for (const example of examples) {
         value = example.rule
         const before = structuredClone(value)
         await act(async () => render())
