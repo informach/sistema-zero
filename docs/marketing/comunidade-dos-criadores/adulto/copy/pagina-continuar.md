@@ -30,11 +30,11 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.titulo.destaque**: o seu jogo.
 
-**hero.texto**: Quem já tem conta continua nela, com o mesmo e-mail: os projetos em Meus Jogos, os jogos publicados e o progresso nos cursos ficam lá. Com a assinatura, os cursos abrem na sua conta. Cada etapa concluída põe blocos novos na sua paleta, e algumas abrem uma ferramenta nova no Estúdio. Se você criava na Comunidade Kids ou acompanha alguém lá, o seu caso está logo abaixo.
+**hero.texto**: Quem já tem conta continua nela, com o mesmo e-mail: os projetos em Meus Jogos, os jogos publicados e o progresso nos cursos ficam lá. Com a assinatura, a plataforma abre de novo na sua conta: os cursos, o Estúdio livre e as ferramentas da sua etapa, o Mural, o Clube e os Recados. Cada etapa concluída põe blocos novos na sua paleta, e algumas abrem uma ferramenta nova no Estúdio. Se você criava na Comunidade Kids ou acompanha alguém lá, o seu caso está logo abaixo.
 
 **hero.beneficios[0]**: Quem já tem conta continua nela, com o mesmo e-mail.
 
-**hero.beneficios[1]**: Todos os cursos adultos, os de hoje e os que entrarem.
+**hero.beneficios[1]**: Cursos, ferramentas, Mural, Clube e Recados na mesma conta.
 
 **hero.beneficios[2]**: 7 dias de garantia para testar a próxima fase.
 
@@ -152,7 +152,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **save.volta.itens[4]**: Os tutoriais e os Recados, para quando travar
 
-**save.volta.itens[5]**: O Pensa e o Zappy nas etapas avançadas, com limite mensal
+**save.volta.itens[5]**: O Pensa e o Zappy nas etapas avançadas, com créditos por dia e por mês
 
 **save.escada.titulo**: As 7 etapas da área adulta
 
@@ -316,7 +316,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **duvidas.itens[2].pergunta**: Já tenho No Comando da IA. A Comunidade está incluída?
 
-**duvidas.itens[2].resposta**: Não. A Comunidade dos Criadores é uma assinatura à parte, com os cursos e as ferramentas de criação de jogos. No Comando da IA continua na sua conta, do jeito que está.
+**duvidas.itens[2].resposta**: Não. A Comunidade dos Criadores é uma assinatura à parte, com os cursos, as ferramentas de criação de jogos, o Mural e o Clube. No Comando da IA continua na sua conta, do jeito que está.
 
 **duvidas.itens[3].pergunta**: Usava a Comunidade Kids e fiz 18 anos. Levo meus jogos?
 

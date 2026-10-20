@@ -718,6 +718,24 @@ em primeiro plano. Compartilhado pelos sinos do Kids e Adultos.
 `SectionProjectCheck` mostra cada objetivo e só atualiza progresso após resposta persistida.
 Não confundir estrutura verificada no servidor com execução comprovada do jogo.
 
+## O recurso tem nome, sem "IA" solta (20/10/2026)
+
+Pedido da dona para os dois apps: a tela diz **o Zappy** (o tutor do Estúdio; no Kids, também as
+falas das fases, que são da equipe e não gastam), **o Pensa**, **créditos** (o que os assistentes
+gastam: Zappy no Estúdio, Pensa, a descrição automática do Mural em `server/openrouter.ts` e o
+"Construir" do Pro) e **assistente virtual**, nunca "IA" solta. Aqui: "A conexão do Zappy precisa da
+atenção do responsável…" (`routes/studio-zappy.ts`), a recusa de reserva do "Construir"
+(`studioBuilderReservationDenied` em `server/studio-builder.ts`, aparece no `job.error` do painel do
+Pro): frase de gente por motivo (`Record<StudioAiDenial,…>`, nunca o código `cost-month`), "ideias"
+na criança e "créditos" no adulto, e o caminho por público (Kids: "Peça ao responsável para
+conferir os limites e a conexão na área da família."; adulto: "Veja quanto resta em Meu perfil." nos
+tetos de dia e mês, nada nos de gasto e conexão), testada em `tests/studio-builder.test.ts`; e
+"O assistente está consultando…/respondeu" no atendimento (`customer-helpdesk-portal.tsx`). O
+autor da resposta automática do atendimento segue **"Assistente de IA"** (`customer-helpdesk-content.tsx`):
+é o aviso de transparência, ao lado da equipe. Os guardas `copy-sem-ia` do Kids e do adulto varrem
+`components`, `lib`, `routes` e `server` deste pacote (texto de tela pelo parser; o `new Error` de
+`server/` e os prompts do modelo não contam). Vocabulário completo nos CLAUDE.md dos dois apps.
+
 ## O vocabulário das telas de aula: `LessonCopy` (06/10/2026)
 
 As telas de aula que os dois apps dividem falam a língua de cada app: no adulto curso, aula, seção e

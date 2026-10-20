@@ -292,6 +292,7 @@ async function ensureTables(conn: DbConnection) {
   for (const column of [
     'version integer not null default 0',
     'user_id uuid not null',
+    // Como no schema real: cada fixture fornece a identidade do seu produto.
     'product_id uuid not null',
     "product_kind text not null default 'course'",
     "access_type text not null default 'course'",

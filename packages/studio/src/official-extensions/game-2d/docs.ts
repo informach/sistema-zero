@@ -345,7 +345,7 @@ A categoria **Kits prontos > Gorilas** monta um jogo de artilharia por turnos (e
 
 ### Adicione um robô adversário
 
-- **O robô do gorila … joga na cidade … mirando no …**. Um lançador **computador (IA)**: ele simula vários arremessos, escolhe o melhor, "pensa" um instante e joga sozinho. Use no "a cada quadro", na vez do robô, passando o gorila INIMIGO. Dá pra fazer **1 jogador vs computador** (troque o ramo de um gorila por este bloco) ou **autoplay** (troque os dois). Veja o exemplo **"Guerra de Gorilas vs Robô"**.
+- **O robô do gorila … joga na cidade … mirando no …**. Um lançador do **computador**: ele simula vários arremessos, escolhe o melhor, "pensa" um instante e joga sozinho. Use no "a cada quadro", na vez do robô, passando o gorila INIMIGO. Dá pra fazer **1 jogador vs computador** (troque o ramo de um gorila por este bloco) ou **autoplay** (troque os dois). Veja o exemplo **"Guerra de Gorilas vs Robô"**.
 - **Mostrar ângulo e força da mira**. Escreve no canto o ângulo (graus) e a força do último arremesso; bom para ver o que o robô escolheu.
 
 ### Faça jogos parecidos sem os kits
@@ -448,7 +448,7 @@ calado.
 
 Tijolinhos que faltavam para montar mais tipos de jogo, em categorias novas e existentes:
 
-- **Movimento > Direção e distância**: **Apontar para** e **Mover na direção de** (perseguição/IA), **a distância entre** e
+- **Movimento > Direção e distância**: **Apontar para** e **Mover na direção de** (perseguição), **a distância entre** e
   **o ângulo até** dois sprites, **um número de … a …** (sorteia sempre um inteiro, incluindo as pontas) e
   **tem chance de … %?** (evento aleatório; valores abaixo de 0 nunca acontecem e acima de 100 sempre acontecem).
 - **Vida e placar > Vida**: use **Dar ao sprite … de vida** uma vez em **⚙️ Ao iniciar**. Durante a partida, **Mudar a vida** cura ou tira pontos; **Machucar o sprite … e deixá-lo invencível** é a opção segura para contatos repetidos. Pergunte **a vida do sprite**, **a vida máxima**, **ainda tem vida?**, **as vidas acabaram?** ou **o sprite está invencível?**. Combine a última pergunta com **não** para disparar tremor, explosão ou som somente quando o dano puder acontecer. Para o HUD, **Desenhar as vidas do sprite** lê a vida automaticamente e oferece **corações** ou **barra**. Uma vida nunca fica negativa nem passa do máximo.

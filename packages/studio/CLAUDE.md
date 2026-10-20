@@ -1,5 +1,19 @@
 # @sistemazero/studio
 
+## O recurso tem nome, sem "IA" solta (20/10/2026)
+
+Pedido da dona, o mesmo dos dois apps (vocabulário completo nos CLAUDE.md de `community` e
+`community-kids`): a tela diz **o Zappy**, **o Pensa** e **créditos** (no Kids, na tela da
+criança, **ideias**). Aqui: `ZappyCredits` adulto "Vale para o Zappy e o Pensa." e "O Pensa usa
+os créditos da sua conta."; `ProBuilderPanel` conta "passos do Zappy" (era "chamadas de IA") e
+diz "não gasta créditos/ideias" pela `audience`; `ZappyPanel` "pode gastar mais créditos/ideias";
+`ShareDialog` "Escrever com ajuda do Zappy" / "Gerar resumo com o Zappy" (quem escreve é o
+Zappy: a rota `/api/studio/describe` usa o modelo e os créditos dele). Transparência para a
+criança (decisão da dona): `ZAPPY_KIDS_DISCLOSURE` no topo do painel do Zappy, só fora do adulto:
+"O Zappy é um assistente virtual, não uma pessoa da equipe." A IA de jogo (o computador
+adversário) também saiu da tela: "computador", "robô adversário", "O jeito de lutar do chefe".
+Ficam com "IA" só os prompts do modelo (`ai.ts`) e o módulo legado `src/ai/` (sem consumidor vivo).
+
 ## JavaScript e Python no Estúdio (conciliação, 18/10/2026)
 
 `EditableStudioProject` representa as duas linguagens; `Project` continua sendo o tipo JavaScript legado. Projetos sem linguagem explícita continuam JavaScript. Documentos Python usam formato 3 e referência de runtime validada; não enviar seu código ao compilador JavaScript nem converter formatos por cast.

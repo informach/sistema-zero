@@ -1,5 +1,9 @@
 import 'server-only'
-import type { StudioAiActor, StudioAiRunRequest } from '@sistemazero/core/ai-credits'
+import type {
+  StudioAiActor,
+  StudioAiDenial,
+  StudioAiRunRequest,
+} from '@sistemazero/core/ai-credits'
 import { awaitWithSignal } from '@sistemazero/core/http'
 import {
   applyStudioProChange,
@@ -40,6 +44,41 @@ function javaScriptRuntime(input: StudioBuilderRuntimeOptions) {
   if (!input.runtimeUrl || !input.runtimeToken)
     throw new Error('O serviço JavaScript está indisponível neste ambiente.')
   return { runtimeUrl: input.runtimeUrl, runtimeToken: input.runtimeToken }
+}
+
+const RESERVATION_DENIED: Record<StudioAiDenial, (adult: boolean) => string> = {
+  // Na tela da criança os créditos se chamam ideias (o medidor do core); no adulto, créditos.
+  day: (adult) => (adult ? 'Os créditos de hoje acabaram.' : 'As ideias de hoje acabaram.'),
+  month: (adult) => (adult ? 'Os créditos deste mês acabaram.' : 'As ideias deste mês acabaram.'),
+  'cost-day': () => 'O limite de gasto de hoje foi atingido.',
+  'cost-month': () => 'O limite de gasto deste mês foi atingido.',
+  busy: () => 'Outra tarefa do Zappy ou do Pensa está em andamento. Tente novamente em instantes.',
+  connection: (adult) =>
+    adult
+      ? 'A sua conexão com o OpenRouter precisa de atenção.'
+      : 'A conexão com o OpenRouter precisa da atenção do responsável.',
+}
+
+/**
+ * A recusa da reserva em frase de gente (o painel do Pro mostra o `job.error`): nunca o código
+ * (`cost-month`), e o caminho certo para cada público. O adulto não tem "área da família": os
+ * créditos dele ficam em Meu perfil.
+ */
+export function studioBuilderReservationDenied(
+  scope: StudioAiDenial,
+  audience: StudioAiActor['audience'],
+): string {
+  const adult = audience === 'adult'
+  const motivo = (RESERVATION_DENIED[scope] ?? RESERVATION_DENIED.month)(adult)
+  const caminho =
+    scope === 'busy'
+      ? ''
+      : adult
+        ? scope === 'day' || scope === 'month'
+          ? ' Veja quanto resta em Meu perfil.'
+          : ''
+        : ' Peça ao responsável para conferir os limites e a conexão na área da família.'
+  return `Não foi possível começar a construção. ${motivo}${caminho}`
 }
 
 export function studioBuilderBudget(job: StudioProBuilderJob): StudioAiRunRequest {
@@ -162,7 +201,7 @@ export async function advanceStudioBuilder(
           'failed',
           job.result,
           reservation && !reservation.allowed
-            ? `Não foi possível reservar o uso de IA (${reservation.scope}). Confira os limites e a conexão na área da família.`
+            ? studioBuilderReservationDenied(reservation.scope, input.actor.audience)
             : 'O registro de consumo está indisponível. Nenhuma chamada ao modelo foi enviada.',
         )
       let policy: StudioPythonBuilderPolicyResult | undefined

@@ -2,7 +2,12 @@ import { afterEach, describe, expect, mock, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { FamilyAiCredits } from '../src/app/pais/_components/ai-credits-card'
+import {
+  AI_DISCLOSURE,
+  AiTransparencyNotice,
+  CREDIT_USES,
+  FamilyAiCredits,
+} from '../src/app/pais/_components/ai-credits-card'
 import { ChildProgress } from '../src/app/pais/_components/child-progress'
 import { ParentSubscriptions, PurchaseHistory } from '../src/app/pais/_components/purchase-history'
 import type { ChildrenStats } from '../src/app/pais/_components/use-children-stats'
@@ -165,7 +170,7 @@ describe('os cartões da conta', () => {
     await waitFor(() => expect((toggle as HTMLInputElement).checked).toBe(false))
   })
 
-  test('o uso da IA da família aparece com a barra do mês', async () => {
+  test('os créditos do Zappy e do Pensa da família aparecem com a barra do mês, o que gasta e as ideias', async () => {
     installFetch((path) => {
       if (path === '/api/parents/ai-credits')
         return Response.json({
@@ -184,6 +189,28 @@ describe('os cartões da conta', () => {
       await screen.findByRole('progressbar', { name: '36 de 100 usados neste mês' }),
     ).toBeTruthy()
     expect(screen.getByText(/Hoje: 3 de 10/)).toBeTruthy()
+    expect(
+      screen.getByRole('heading', { name: 'Créditos do Zappy e do Pensa neste mês' }),
+    ).toBeTruthy()
+    expect(screen.getByText(CREDIT_USES)).toBeTruthy()
+    expect(screen.getByText(/descrição automática ao publicar no Mural/)).toBeTruthy()
+    expect(screen.getByText('Na tela da criança, os créditos aparecem como ideias.')).toBeTruthy()
+    // O aviso de transparência mora FORA do cartão (que some em falha e para a equipe).
+    expect(screen.queryByText(AI_DISCLOSURE)).toBeNull()
+  })
+
+  test('o aviso de transparência aparece sozinho e a Conta o monta fora do cartão de créditos', () => {
+    render(<AiTransparencyNotice />)
+    expect(screen.getByRole('heading', { name: 'Quem responde à criança' })).toBeTruthy()
+    expect(screen.getByText(AI_DISCLOSURE)).toBeTruthy()
+    expect(AI_DISCLOSURE).toContain('assistentes virtuais')
+    expect(AI_DISCLOSURE).toContain('As falas do Zappy nas fases são escritas pela nossa equipe')
+    const conta = readFileSync(
+      join(import.meta.dir, '..', 'src', 'app', 'pais', 'conta', 'account-client.tsx'),
+      'utf8',
+    )
+    expect(conta).toContain('<FamilyAiCredits />')
+    expect(conta).toContain('<AiTransparencyNotice />')
   })
 
   test('pagina as compras e cancela a assinatura com confirmação', async () => {
@@ -344,7 +371,7 @@ describe('os cartões da conta', () => {
     )
     expect(await screen.findByText(/Nenhuma compra ainda/)).toBeTruthy()
     await waitFor(() => {
-      expect(screen.queryByRole('heading', { name: /Ajuda da IA neste mês/ })).toBeNull()
+      expect(screen.queryByRole('heading', { name: /Créditos do Zappy e do Pensa/ })).toBeNull()
       expect(screen.queryByRole('switch')).toBeNull()
     })
   })

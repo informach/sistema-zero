@@ -191,7 +191,7 @@ export const NEED_M9: Record<string, string> = {
   seguro:
     'Você precisa que [[seja um lugar seguro]]. O perfil público começa desligado, e só você pode ligar. O jogo público não mostra o nome dele, o microfone vem desligado e o Clube tem moderação, só com alunos.',
   orcamento:
-    'Você precisa que [[caiba no orçamento]]. Os dois planos têm até dois perfis de criança, cada um com o próprio progresso, e incluem os cursos publicados e os que forem lançados. E, se em sete dias vocês acharem que não é para ele, devolvemos o valor integral.',
+    'Você precisa que [[caiba no orçamento]]. Os dois planos têm até dois perfis de criança, cada um com o próprio progresso, e trazem os cursos publicados e os que forem lançados, o Estúdio e as ferramentas que a Jornada vai abrindo, o Mural, o Clube com moderação e a área do responsável. E, se em sete dias vocês acharem que não é para ele, devolvemos o valor integral.',
   sozinho:
     'Você disse que precisa que ele [[consiga sozinho, porque você não tem tempo]]. Nessa idade, a plataforma pede um adulto ao lado: é você quem lê os passos e ajuda com o mouse, em sessões curtas. Se esse tempo não existe agora, vale começar quando ele ler sozinho.',
   ao_vivo:

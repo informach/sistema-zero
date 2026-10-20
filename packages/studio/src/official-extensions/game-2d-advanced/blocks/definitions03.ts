@@ -46,7 +46,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'A IA do chefe: no turno daquele inimigo, roda os SEUS blocos (no lugar do ataque comum). Dentro, use "o inimigo usa o golpe" / "acerta todo o time" e leia "a vida de …" para mudar de fase.',
+      'O jeito de lutar do chefe: no turno daquele inimigo, roda os SEUS blocos (no lugar do ataque comum). Dentro, use "o inimigo usa o golpe" / "acerta todo o time" e leia "a vida de …" para mudar de fase.',
   },
 
   {

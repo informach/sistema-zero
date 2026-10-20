@@ -6,6 +6,7 @@ import {
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleGamificationRepository } from '../../src/infrastructure/persistence/drizzle/gamification.repository'
+import { addColumnsWithDefaults } from './additive-columns'
 import { prepareTestDatabase } from './test-database'
 
 /**
@@ -34,7 +35,7 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
     // O banco é compartilhado entre os arquivos de tests/db. A preparação aditiva
     // funciona tanto com as tabelas mínimas de outra suíte quanto com o schema completo.
     await conn.sql.unsafe('create table if not exists members.courses (id uuid primary key)')
-    for (const column of [
+    await addColumnsWithDefaults(conn, 'courses', [
       'version integer not null default 0',
       "slug text not null default ''",
       "title text not null default ''",
@@ -50,9 +51,7 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
       'metadata jsonb',
       'created_at timestamptz not null default now()',
       'updated_at timestamptz not null default now()',
-    ]) {
-      await conn.sql.unsafe(`alter table members.courses add column if not exists ${column}`)
-    }
+    ])
 
     await conn.sql.unsafe('create table if not exists members.xp_events (user_id uuid not null)')
     for (const column of [

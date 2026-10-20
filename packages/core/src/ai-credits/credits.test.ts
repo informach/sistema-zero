@@ -155,16 +155,16 @@ describe('helpers', () => {
 describe('resolveAiCredits — comunidade adulta', () => {
   const adulto = { audience: 'adult' } as const
 
-  test('o mesmo cálculo, com "pedidos" e sem família nem emoji', () => {
+  test('o mesmo cálculo, com "créditos" e sem família nem emoji', () => {
     const cheio = resolveAiCredits(view({ dayRemaining: 38 }), adulto)
     expect(cheio.state).toBe('plenty')
-    expect(cheio.inline).toBe('38 pedidos hoje')
-    expect(cheio.ariaLabel).toBe('Ajuda da IA: 38 pedidos hoje.')
+    expect(cheio.inline).toBe('38 créditos hoje')
+    expect(cheio.ariaLabel).toBe('Zappy e Pensa: 38 créditos hoje.')
     const pouco = resolveAiCredits(view({ dayRemaining: 3 }), adulto)
     expect(pouco.state).toBe('low')
-    expect(pouco.inline).toBe('Só 3 pedidos hoje. Amanhã de manhã tem mais.')
+    expect(pouco.inline).toBe('Só 3 créditos hoje. Amanhã de manhã tem mais.')
     const um = resolveAiCredits(view({ dayRemaining: 1 }), adulto)
-    expect(um.inline).toContain('1 pedido hoje')
+    expect(um.inline).toContain('1 crédito hoje')
     for (const meter of [cheio, pouco, um]) {
       expect(`${meter.inline}${meter.ariaLabel}${meter.exhausted}`).not.toMatch(/família|✨|⚠️/)
     }
@@ -173,18 +173,42 @@ describe('resolveAiCredits — comunidade adulta', () => {
   test('acabou: diz que a ferramenta continua aberta e quando volta, sem repetir', () => {
     const dia = resolveAiCredits(view({ dayRemaining: 0 }), adulto)
     expect(dia.state).toBe('exhausted')
-    expect(dia.inline).toBe('Os pedidos de hoje acabaram')
-    expect(dia.exhausted).toContain('continuam abertas')
+    expect(dia.inline).toBe('Os créditos de hoje acabaram')
+    expect(dia.exhausted).toBe(
+      'Os créditos de hoje acabaram. As ferramentas continuam abertas, só sem o Zappy e o Pensa até renovar.',
+    )
+    expect(dia.ariaLabel).toBe(
+      'Zappy e Pensa: os créditos de hoje acabaram. Amanhã de manhã tem mais.',
+    )
     expect(dia.exhausted).not.toContain('tem mais')
     expect(dia.renews).toBe('Amanhã de manhã tem mais.')
     const mes = resolveAiCredits(view({ dayRemaining: 9, monthRemaining: 0 }), adulto)
-    expect(mes.inline).toBe('Os pedidos deste mês acabaram')
+    expect(mes.inline).toBe('Os créditos deste mês acabaram')
     expect(mes.renews).toBe('Tem mais no dia 1º de setembro.')
   })
 
   test('equipe sem limite e "não sei" seguem as mesmas regras', () => {
-    expect(resolveAiCredits(view({ unlimited: true }), adulto).inline).toBe('Pedidos sem limite')
+    const semLimite = resolveAiCredits(view({ unlimited: true }), adulto)
+    expect(semLimite.inline).toBe('Créditos sem limite')
+    expect(semLimite.ariaLabel).toBe('Zappy e Pensa: créditos sem limite.')
     expect(resolveAiCredits(null, adulto).state).toBe('unknown')
+  })
+
+  test('nenhuma frase adulta diz "IA" nem "pedidos" (o recurso tem nome, 20/10/2026)', () => {
+    const casos = [
+      view({ dayRemaining: 38 }),
+      view({ dayRemaining: 3 }),
+      view({ dayRemaining: 0 }),
+      view({ dayRemaining: 9, monthRemaining: 0 }),
+      view({ unlimited: true }),
+    ]
+    for (const caso of casos) {
+      const meter = resolveAiCredits(caso, adulto)
+      const texto = `${meter.inline} ${meter.ariaLabel} ${meter.exhausted} ${meter.renews}`
+      expect(texto).not.toMatch(/\bIAs?\b|intelig[êe]ncia artificial|pedido/i)
+      // Anti-vácuo: o texto existe e fala de créditos.
+      expect(texto).toMatch(/crédito/)
+    }
   })
 
   test('sem a opção, a frase do Kids não muda', () => {

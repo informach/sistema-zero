@@ -123,11 +123,12 @@ export function StudioOpenRouterCard() {
   return (
     <section aria-labelledby="parents-openrouter" className="kids-carta flex flex-col gap-4 p-6">
       <h2 id="parents-openrouter" className="sz-display text-xl">
-        IA do Estúdio
+        Assistentes no Estúdio
       </h2>
       <p className="text-sm text-muted-foreground">
-        A franquia é compartilhada pela família. Você pode conectar sua conta OpenRouter para usar
-        seus próprios créditos no Zappy do Estúdio. As crianças não têm acesso à chave.
+        A franquia é compartilhada pela família. Você pode conectar uma conta OpenRouter e pagar os
+        assistentes do Estúdio com o seu próprio saldo no OpenRouter. As crianças não têm acesso à
+        chave.
       </p>
       {error && (
         <p role="alert" className="text-sm text-destructive">
@@ -141,7 +142,7 @@ export function StudioOpenRouterCard() {
       )}
       {costs && (
         <div className="space-y-3 text-sm">
-          <p>Uso de IA do Estúdio neste mês ({costs.month})</p>
+          <p>Uso dos assistentes no Estúdio neste mês ({costs.month})</p>
           {(['platform', 'openrouter'] as const).map((funding) => {
             const usage = costs[funding].month
             const money = (micro: number) =>

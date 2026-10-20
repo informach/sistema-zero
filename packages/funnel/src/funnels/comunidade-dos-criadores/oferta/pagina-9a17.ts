@@ -47,7 +47,7 @@ const FLAVIA = RELATOS.AV10
 export const PAGINA_9A17 = {
   seoTitle: 'Comunidade dos Criadores para 9 a 17 anos | Sistema Zero',
   description:
-    'Comunidade dos Criadores, de 9 a 17 anos. Nas aulas, ele aprende fazendo jogos completos. Cada curso que termina libera ferramentas no Estúdio dele, e é lá que ele faz os jogos que inventa e manda o link para os amigos jogarem no celular.',
+    'Comunidade dos Criadores, de 9 a 17 anos: aulas, Estúdio e ferramentas de criação, Mural e Clube com moderação, e dúvidas respondidas pela equipe nos Recados, numa plataforma só. Ele aprende criando jogos e manda o link para os amigos jogarem no celular.',
   cta: CTA_PLANOS,
   garantiaCurta: GARANTIA_CURTA,
 
@@ -68,7 +68,7 @@ export const PAGINA_9A17 = {
     title: 'Seu filho conhece os jogos de cor. Imagine ele dizendo: ',
     destaque: 'esse aqui fui eu que fiz.',
     description:
-      'Nas aulas, ele aprende fazendo jogos completos. Cada curso que termina libera ferramentas no Estúdio dele, e é lá que ele faz os jogos que inventa e manda o link para os amigos jogarem no celular. Você acompanha pela sua área, e não precisa entender de programação para isso.',
+      'Nas aulas, ele aprende fazendo jogos completos, numa plataforma feita para crianças e adolescentes. Cada curso que termina abre peças novas no Estúdio dele, onde ele faz o jogo que inventou. O jogo vai para o Mural, onde a turma joga e comenta. No Clube, ele troca ideias com outros criadores, e a equipe responde quando ele trava. Você acompanha pela sua área, e não precisa entender de programação para isso.',
     benefits: [
       'Um jogo inventado por ele, com as regras dele',
       'Um jogo dele para mostrar quando você chega em casa',
@@ -99,7 +99,7 @@ export const PAGINA_9A17 = {
     paragraph:
       'Muita família passa por isso. Você procura curso de programação para criança e esbarra sempre nas mesmas coisas: o horário não encaixa, o gratuito é uma aula experimental que para ali, o pago pesa no orçamento e é difícil avaliar antes de começar. Ele tenta sozinho pelo YouTube, trava e larga. E fica a dúvida que ninguém responde: se ele está só jogando ou aprendendo alguma coisa.',
     callout:
-      'Interesse ele tem de sobra. O que falta é um curso que ele comece, se interesse e não queira parar.',
+      'Interesse ele tem de sobra. Falta um lugar onde ele aprenda, crie o próprio jogo, mostre aos amigos e tenha ajuda quando travar. Com tudo no mesmo lugar, ele começa e quer continuar.',
   },
 
   muda: {
@@ -264,7 +264,7 @@ export const PAGINA_9A17 = {
       },
       {
         title: 'Sobe de posto, abre a ferramenta',
-        text: 'No Construtor, logo depois de A Chave do Farol, o Estúdio livre e o Pinta abrem para as ideias dele. Depois vêm o Pensa e a ajuda do Zappy, o Molda para 3D, a Ponte e o código.',
+        text: 'No Construtor, logo depois de A Chave do Farol, o Estúdio livre e o Pinta abrem para as ideias dele. Depois vêm o Pensa, que divide a ideia do jogo em missões, a ajuda do Zappy, que olha os blocos e diz o que conferir, o Molda para 3D, a Ponte e o código.',
       },
       {
         title: 'Faz o jogo dele com o que já sabe',
@@ -453,13 +453,13 @@ export const PAGINA_9A17 = {
   planos: {
     title: 'Para começar, escolha o plano que cabe na rotina de vocês',
     paragraph:
-      'Os dois planos dão acesso a tudo. Os cursos novos entram assim que são lançados, e os postos da Jornada vão abrindo ferramentas novas. A diferença está só na forma de pagar.',
+      'Os dois planos dão acesso a tudo o que está na lista abaixo, e os cursos novos entram assim que são lançados. A diferença está só na forma de pagar.',
     inclui: [
       'Todos os cursos publicados e os lançados durante a assinatura',
       'O Desafio do Primeiro Jogo incluído',
-      'Estúdio livre, Pinta, Molda e Pensa, liberados posto a posto pela Jornada',
-      'Mural e Clube dos Criadores',
-      'Dúvidas por escrito com a equipe, nos Recados',
+      'Estúdio livre, Pinta, Pensa, a ajuda do Zappy e Molda, liberados posto a posto pela Jornada',
+      'Mural e Clube dos Criadores, com moderação',
+      'Dúvidas respondidas pela equipe nos Recados',
       'Até 2 perfis e a área do responsável',
     ],
     incluiLabel: 'O que os dois planos incluem',
@@ -525,9 +525,14 @@ export const PAGINA_9A17 = {
         'Não. Os cenários e os personagens das aulas vêm prontos. O Pinta, o editor de desenho, e o Molda, o de 3D, chegam pela Jornada para quando ele quiser criar os seus.',
     },
     {
+      question: 'O Pensa e o Zappy fazem o jogo por ele?',
+      answer:
+        'Não. O Pensa conversa sobre a ideia do jogo e a divide em missões. No Estúdio de blocos, a ajuda do Zappy olha o projeto e diz o que conferir, sem mexer em nada. Os dois são assistentes virtuais, funcionam com inteligência artificial e abrem no posto Inventor. Mais adiante, no Estúdio Pro, em código, o Zappy também pode propor uma mudança no jogo: ela só entra no projeto quando ele revisa e aperta Aplicar alterações, e dá para desfazer. Os créditos, usados também na descrição automática ao publicar no Mural, têm limite por dia e por mês, num só total para a família, e você acompanha na sua área. Quem decide e monta o jogo continua sendo ele.',
+    },
+    {
       question: 'Ele já usa Scratch, Roblox Studio ou tutoriais do YouTube. Qual é a diferença?',
       answer:
-        'Scratch e Roblox Studio são grátis e ótimos para quem já sabe por onde começar, e o YouTube ensina um passo solto. Aqui ele tem aulas em português, um projeto de cada vez, a sequência que continua de um projeto para o próximo e um espaço só de alunos, com o caminho dos blocos até o código. Para quem precisa de professor ao lado em horário fixo, uma escola ao vivo pesa a favor.',
+        'Scratch e Roblox Studio são grátis e ótimos para quem já sabe por onde começar, e o YouTube ensina um passo solto. Aqui ficam juntos as aulas em português, um projeto de cada vez, as ferramentas que abrem conforme ele avança e um espaço só de alunos, com moderação. E o caminho segue dos blocos até o código. Para quem precisa de professor ao lado em horário fixo, uma escola ao vivo pesa a favor.',
     },
     {
       question: 'Que computador precisa?',
@@ -542,7 +547,7 @@ export const PAGINA_9A17 = {
     {
       question: 'Tem aula ao vivo?',
       answer:
-        'As aulas são gravadas, e as dúvidas vão por escrito para a equipe nos Recados, o canal de mensagens da plataforma.',
+        'As aulas são gravadas, e as dúvidas são respondidas por escrito pela equipe nos Recados, o canal de mensagens da plataforma.',
     },
     {
       question: 'Tenho dois filhos de idades diferentes.',

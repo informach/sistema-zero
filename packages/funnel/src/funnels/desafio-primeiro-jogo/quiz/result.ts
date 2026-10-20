@@ -81,7 +81,7 @@ export function buildDesafioResult(answers: QuizAnswers) {
     )
   else
     intro.push(
-      'Você ainda está procurando uma ideia para apresentar ao seu filho. Vale conhecer uma atividade concreta antes de decidir um curso por ele. A reação à proposta ajuda a escolher o próximo passo, sem funcionar como teste de capacidade.',
+      'Você ainda está procurando uma ideia para apresentar ao seu filho. Vale conhecer uma atividade concreta antes de escolher uma atividade por ele. A reação à proposta ajuda a escolher o próximo passo, sem funcionar como teste de capacidade.',
     )
   if (interests.includes('quer_criar'))
     intro.push(
@@ -189,7 +189,7 @@ export function buildDesafioResult(answers: QuizAnswers) {
     bridge: [
       format,
       experience,
-      'Enquanto ele experimenta, você pode observar o que desperta sua curiosidade, como acompanha a explicação e de que ajuda precisa. Assim, vocês conhecem a plataforma na rotina da família e têm essa experiência para decidir se querem continuar com os cursos e recursos da Comunidade dos Criadores. O Desafio é uma compra única para esse primeiro percurso; a assinatura é uma escolha separada.',
+      'Enquanto ele experimenta, você pode observar o que desperta sua curiosidade, como acompanha a explicação e de que ajuda precisa. Assim, vocês conhecem a plataforma na rotina da família e têm essa experiência para decidir se querem continuar na Comunidade dos Criadores, que reúne os outros cursos, as ferramentas de criação, o Clube e o Mural. O Desafio é uma compra única para esse primeiro percurso; a assinatura é uma escolha separada.',
     ],
     showBridge: !blocked,
     copyFirst: decision.next === 'conversar_com_filho',
@@ -199,7 +199,7 @@ export function buildDesafioResult(answers: QuizAnswers) {
           label: 'Conhecer a proposta da plataforma',
         }
       : blocked || decision.next === 'conferir_condicoes'
-        ? { href: `${DESAFIO_BASE}/oferta#requisitos`, label: 'Conferir as condições do curso' }
+        ? { href: `${DESAFIO_BASE}/oferta#requisitos`, label: 'Conferir as condições do Desafio' }
         : {
             href: decision.offerPath,
             label:

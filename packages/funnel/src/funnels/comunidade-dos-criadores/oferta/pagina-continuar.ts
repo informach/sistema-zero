@@ -60,10 +60,10 @@ export const PAGINA_CONTINUAR = {
     title: 'O que seu filho começou está guardado. Agora ele segue até o ',
     destaque: 'jogo que ele inventa.',
     description:
-      'Assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. A assinatura abre os outros cursos. Cada curso concluído põe peças novas na caixa dele, e concluir e publicar os cursos de um degrau leva a um posto novo da Jornada, com ferramentas para os jogos dele. Você segue acompanhando pela sua área.',
+      'Assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. Com a assinatura, ele volta a ter os outros cursos, as ferramentas que a Jornada vai liberando, o Mural para publicar, o Clube e as dúvidas respondidas pela equipe nos Recados. Cada curso concluído põe peças novas na caixa dele, e concluir e publicar os cursos de um degrau leva a um posto novo da Jornada, com ferramentas para os jogos dele. Você segue acompanhando pela sua área.',
     benefits: [
       'Continua no mesmo perfil, com tudo o que já fez',
-      'Todos os cursos, inclusive os lançados durante a assinatura',
+      'Todos os cursos, o Mural, o Clube e as dúvidas respondidas pela equipe',
       'Estúdio livre e Pinta depois de concluir e publicar A Chave do Farol',
     ],
     requirements: 'Mesmo e-mail da conta · Computador com mouse e teclado · Até 2 perfis',
@@ -179,9 +179,9 @@ export const PAGINA_CONTINUAR = {
       itens: [
         'Todos os cursos, inclusive o do Desafio',
         'Publicar, comentar e reagir no Mural',
-        'As ferramentas de cada posto: Estúdio livre, Pinta, Pensa e Molda',
+        'As ferramentas de cada posto: Estúdio livre, Pinta, Pensa, ajuda do Zappy e Molda',
         'O Clube dos Criadores, só de alunos',
-        'Dúvidas por escrito com a equipe, nos Recados',
+        'Dúvidas respondidas pela equipe nos Recados',
         'Até 2 perfis, cada um com seus jogos e sua Jornada',
       ],
     },
@@ -225,9 +225,9 @@ export const PAGINA_CONTINUAR = {
     inclui: [
       'Todos os cursos publicados e os lançados durante a assinatura',
       'O curso do Desafio do Primeiro Jogo incluído',
-      'Estúdio livre, Pinta, Molda e Pensa, liberados posto a posto pela Jornada',
-      'Mural e Clube dos Criadores',
-      'Dúvidas por escrito com a equipe, nos Recados',
+      'Estúdio livre, Pinta, Pensa, a ajuda do Zappy e Molda, liberados posto a posto pela Jornada',
+      'Mural e Clube dos Criadores, com moderação',
+      'Dúvidas respondidas pela equipe nos Recados',
       'Até 2 perfis e a área do responsável',
     ],
     incluiLabel: 'O que os dois planos incluem',
@@ -279,7 +279,8 @@ export const PAGINA_CONTINUAR = {
     },
     {
       question: 'O acesso dele acabou faz tempo. Ainda dá para continuar?',
-      answer: 'Dá. O que ele fez fica na conta, e a assinatura reabre os cursos no mesmo perfil.',
+      answer:
+        'Dá. O que ele fez fica na conta, e a assinatura reabre a plataforma no mesmo perfil: os cursos, as ferramentas do posto dele, o Mural, o Clube e os Recados.',
     },
     {
       question: 'E se ele travar no próximo curso?',

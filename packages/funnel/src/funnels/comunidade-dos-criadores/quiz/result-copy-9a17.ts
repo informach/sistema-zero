@@ -102,7 +102,7 @@ export interface Perfil917Copy {
 }
 
 export const COMMUNITY_OPENING =
-  'A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos.'
+  'A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar.'
 
 /** O que a próxima página mostra (a mesma página de 9 a 17 para todos os perfis). */
 export const NEXT_917 =
@@ -314,7 +314,7 @@ export const NEED_SENTENCE: Record<string, string> = {
   tempo_tela:
     'Você precisa que [[caiba no tempo de tela combinado]]. As aulas são gravadas: ele pausa hoje e continua amanhã do mesmo ponto, e o aviso Guardado na sua conta confirma que o projeto ficou salvo. Vocês continuam decidindo os dias e a duração.',
   orcamento:
-    'Você precisa que [[caiba no orçamento]]. Os dois planos têm até dois perfis de criança, cada um com o próprio progresso, e incluem os cursos publicados, os que forem lançados e as ferramentas que a Jornada vai abrindo. E, se em sete dias vocês acharem que não é para ele, devolvemos o valor integral.',
+    'Você precisa que [[caiba no orçamento]]. Os dois planos têm até dois perfis de criança, cada um com o próprio progresso, e dão acesso aos cursos publicados e aos que forem lançados, às ferramentas que a Jornada vai abrindo, ao Mural, ao Clube e às dúvidas respondidas pela equipe nos Recados. E, se em sete dias vocês acharem que não é para ele, devolvemos o valor integral.',
   ao_vivo:
     'Você disse que precisa de [[professor ao vivo]]. Aqui as aulas são gravadas e a plataforma orienta cada passo. As dúvidas vão por escrito para a equipe, e não há professor numa chamada. Se o ao vivo é indispensável, a Comunidade não atende esse ponto.',
 }

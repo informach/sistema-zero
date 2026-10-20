@@ -195,6 +195,17 @@ describe('builder review interface', () => {
     await ui.findByText('Proposta pronta para revisar', {}, { timeout: 4000 })
     expect(reads).toBe(2)
   })
+  it('names the resource instead of "IA" (the Zappy, ideas or credits)', async () => {
+    const f = await fixture()
+    const ui = render(<ProBuilderPanel adapter={f.adapter} projectId="builder-ui" draftOpen />)
+    await ui.findByText('Proposta pronta para revisar')
+    expect(ui.getByText(/1\/3 passos do Zappy/)).toBeDefined()
+    const text = ui.container.textContent ?? ''
+    // Anti-vácuo: o painel renderizou o formulário e a revisão.
+    expect(text).toContain('Preparar proposta')
+    expect(text).toContain('ideias da família')
+    expect(text).not.toMatch(/\bIAs?\b|intelig[êe]ncia artificial/)
+  })
   it('keeps the review mounted while the learner returns to the conversation', async () => {
     const f = await fixture()
     let reads = 0

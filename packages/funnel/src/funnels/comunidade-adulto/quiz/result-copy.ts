@@ -304,7 +304,7 @@ export const SECONDARY_TAIL: Record<AdultProfile, string> = {
 
 export const WHERE_HEADING = 'Onde isso acontece'
 export const WHERE_OPENING =
-  'A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural.'
+  'A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos, com as aulas, o Estúdio, o Mural, o Clube e a ajuda da equipe no mesmo lugar. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural.'
 export const WHERE_TOOLBOX =
   'Os blocos que cada curso ensina ficam na sua caixa de ferramentas, e o Estúdio livre abre logo na primeira etapa:'
 export const WHERE_STUDIO: Record<AdultProfile, string> = {
@@ -368,10 +368,10 @@ export const NEEDS_HEADING = 'Duas coisas que você disse e que importam'
 /** A N9. "Ter professor ao vivo" e "Servir para trabalhar com jogos": o que a página diz que não faz. */
 export const NEED: Record<string, string> = {
   sozinho: `Você precisa ${m(MARCAS.garantia.sozinho)}. As aulas são gravadas, o vídeo fica ao lado do editor e o projeto fica salvo na sua conta: você para hoje e continua amanhã do mesmo ponto.`,
-  recorrer: `Você precisa ${m(MARCAS.garantia.recorrer)}. As dúvidas vão para a equipe pelos Recados, o canal de mensagens da plataforma, e o botão Verificar esta etapa diz o que já está certo antes de você seguir.`,
+  recorrer: `Você precisa ${m(MARCAS.garantia.recorrer)}. As dúvidas são respondidas pela equipe nos Recados, o canal de mensagens da plataforma, e o botão Verificar esta etapa diz o que já está certo antes de você seguir.`,
   tempo: `Você precisa que ${m(MARCAS.garantia.tempo)}. Quem decide o ritmo é você: as aulas são gravadas, o projeto fica salvo e você continua de onde parou.`,
-  orcamento: `Você precisa que ${m(MARCAS.garantia.orcamento)}. Os dois planos dão acesso a tudo, e muda só a forma de pagar. Você tem 7 dias para testar: se não for para você, é só pedir o reembolso integral por e-mail dentro desse prazo.`,
-  ao_vivo: `Você precisa ${m(MARCAS.garantia.ao_vivo)}. Aqui as aulas são gravadas, para caber no seu horário, e as dúvidas vão para a equipe pelos Recados. Se o professor ao vivo for indispensável, este ainda não é o formato para você.`,
+  orcamento: `Você precisa que ${m(MARCAS.garantia.orcamento)}. Os dois planos dão acesso a tudo, dos cursos e ferramentas ao Mural, ao Clube e aos Recados, e muda só a forma de pagar. Você tem 7 dias para testar: se não for para você, é só pedir o reembolso integral por e-mail dentro desse prazo.`,
+  ao_vivo: `Você precisa ${m(MARCAS.garantia.ao_vivo)}. Aqui as aulas são gravadas, para caber no seu horário, e as dúvidas são respondidas pela equipe nos Recados. Se o professor ao vivo for indispensável, este ainda não é o formato para você.`,
   trabalho: `Você precisa que ${m(MARCAS.garantia.trabalho)}. Aqui a proposta é terminar o seu primeiro jogo nas horas livres, sem prometer uma profissão. Se o objetivo é trabalhar com jogos, este ainda não é o caminho para você.`,
 }
 

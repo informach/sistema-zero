@@ -178,7 +178,7 @@ de número, menu ⋯ acessível) em `app/pais/_components/parent-ui.tsx`.
   `tests/profile-allowance.test.ts`). O teto da conta é o MAIOR entre as matrículas, nunca a soma:
   o assinante no limite lia o convite para comprar o que já tem. No teto da Comunidade a frase
   manda ao Atendimento (`PARENT_SUPPORT_HREF`).
-- **Conta:** "Minhas compras" (assinatura + histórico), uso da IA, senha e o cartão de embaixador
+- **Conta:** "Minhas compras" (assinatura + histórico), créditos do Zappy e do Pensa, senha e o cartão de embaixador
   (`#embaixador`). ⚠️ O título "Minhas compras" é load-bearing: os Termos de Uso e as páginas de
   venda dizem que o cancelamento fica ali. Renomear exige mudar os Termos (versão nova).
 - **Endereços antigos:** `/responsavel` → `/pais/acompanhamento` e `/responsavel/ajuda` →
@@ -602,6 +602,43 @@ assere que LEU arquivos — guarda que não lê nada aprova tudo, em silêncio. 
 **`tests/copy-vocabulario.test.ts`** faz o mesmo com o JARGÃO ("curso-base", "Iniciante 2D"),
 que já tinha voltado duas vezes por componente novo; os dois dividem a máquina de estados em
 `tests/helpers/copy-scan.ts`. Desde 06/10/2026 o mesmo arquivo guarda o vocabulário da aventura (abaixo).
+
+## O recurso tem nome, sem "IA" solta (20/10/2026)
+
+Pedido dela (o mesmo da comunidade adulta, com o mesmo vocabulário): a tela nomeia o RECURSO, não
+a tecnologia.
+
+- **o Zappy**: o mascote que fala nas fases ("falas do Zappy") e a ajuda do Zappy no Estúdio.
+- **o Pensa**: planeja o jogo com a criança, em missões.
+- **créditos**: o que o Zappy no Estúdio e o Pensa gastam, da família inteira. ⚠️ As **falas do
+  Zappy nas fases** são escritas pela equipe e NÃO gastam crédito. Gastam: cada pergunta ao Zappy no
+  Estúdio, cada pedido ao Pensa, a descrição automática ao publicar no Mural (`server/openrouter.ts`
+  do member-shell) e o "Construir com Zappy" do modo Pro (`server/studio-builder.ts`). Na área dos
+  pais: "Créditos do Zappy e do Pensa neste mês" com `CREDIT_USES` e "Na tela da criança, os
+  créditos aparecem como ideias." (`ai-credits-card.tsx`); "Assistentes no Estúdio", "Uso dos
+  assistentes no Estúdio neste mês" e "pagar os assistentes do Estúdio com o seu próprio saldo no
+  OpenRouter" (`studio-openrouter-card.tsx`: o custo somado não é só do Zappy, e "créditos" é o
+  termo da franquia, não do saldo no OpenRouter); "Assinatura, compras, créditos do Zappy e do
+  Pensa, e a segurança da sua conta." (Conta). Na tela da criança o medidor do core segue contando
+  **ideias** ("✨ 13 ideias hoje"), que é a palavra dela.
+- **assistente virtual** (decisão dela, 20/10/2026), nunca "assistente automático".
+- **"IA" fica só no aviso de transparência aos pais**, `AI_DISCLOSURE` do `ai-credits-card.tsx`:
+  "A ajuda do Zappy no Estúdio e o Pensa são assistentes virtuais, feitos com inteligência
+  artificial. As falas do Zappy nas fases são escritas pela nossa equipe, e nos Recados quem
+  responde é a equipe." ⚠️ Ele mora no `AiTransparencyNotice` ("Quem responde à criança"), montado
+  na Conta ao lado do cartão de créditos e FORA dele: o cartão some quando a consulta falha e para
+  a equipe, e o aviso não pode sumir junto. No atendimento compartilhado (member-shell), o autor da
+  resposta automática segue "Assistente de IA".
+- O recado do Zappy quando a conexão da família falha diz "A conexão do Zappy precisa da atenção do
+  responsável…" (`routes/studio-zappy.ts` do member-shell). A recusa de reserva do "Construir" do
+  Pro vira frase de gente, sem o código do motivo (`studioBuilderReservationDenied`; na criança,
+  "As ideias de hoje acabaram. Peça ao responsável…").
+- Guarda: **`tests/copy-sem-ia.test.ts`** (mesma máquina `copy-scan`) varre o `src/` inteiro, a área
+  dos pais inclusive, e o member-shell que roda aqui; reprova "IA"/"inteligência artificial" fora da
+  lista `PERMITIDOS` (trecho exato, uma vez por arquivo, com motivo).
+- O `studio` segue o mesmo vocabulário desde 20/10/2026 (`ShareDialog`: "Escrever com ajuda do
+  Zappy"; `ProBuilderPanel`: "passos do Zappy" e "ideias da família"; `ZappyPanel`: "ideias"). O
+  painel do Zappy diz à criança: "O Zappy é um assistente virtual, não uma pessoa da equipe."
 
 ## A criança lê aventura, não escola (06/10/2026)
 

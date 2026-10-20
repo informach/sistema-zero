@@ -736,7 +736,7 @@ export function createStudioZappyRoutes(deps: {
           }
           if (quota.scope === 'connection') {
             response.text =
-              'A conexão de IA precisa da atenção do responsável. Ele pode conferir isso na área da família.'
+              'A conexão do Zappy precisa da atenção do responsável. Ele pode conferir isso na área da família.'
             return complete(response, 'error')
           }
           if (quota.scope === 'busy') {

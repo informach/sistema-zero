@@ -113,9 +113,17 @@ describe.skipIf(!url)('jornada adulta (Postgres real)', () => {
     const many = await repository.listReachedForUsers([reacher, userId, randomUUID()])
     expect([...many]).toEqual([[reacher, 5]])
     expect((await repository.listReachedForUsers([])).size).toBe(0)
-    // Conta cercada para exclusão (userId) também não ganha piso.
-    expect(await repository.freezeGranted(userId, 2, [], now, 2)).toBe(false)
-    expect(await repository.getReached(userId)).toBeNull()
+    // Conta cercada para exclusão também não ganha piso. Conta própria: o teste não depende
+    // da ordem dos outros deste arquivo.
+    const fenced = randomUUID()
+    await conn.sql`insert into members.account_deletion_fences (account_id, created_at)
+      values (${fenced}, ${now.toISOString()})`
+    try {
+      expect(await repository.freezeGranted(fenced, 2, [], now, 2)).toBe(false)
+      expect(await repository.getReached(fenced)).toBeNull()
+    } finally {
+      await conn.sql`delete from members.account_deletion_fences where account_id = ${fenced}`
+    }
   })
   test('seed automático: instâncias concorrentes gravam UMA vez e nunca sobrescrevem', async () => {
     await conn.sql`delete from members.adult_journey_policy`

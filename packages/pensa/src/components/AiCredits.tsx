@@ -2,7 +2,7 @@ import { type AiCreditsView, resolveAiCredits } from '@sistemazero/core/ai-credi
 import { useEffect, useState } from 'react'
 import type { PensaTransport } from '../core/types'
 
-/** `audience`: para quem a frase fala (no adulto, "pedidos" e sem a família). Padrão: kids. */
+/** `audience`: para quem a frase fala (no adulto, "créditos" e sem a família). Padrão: kids. */
 export function usePensaCredits(
   transport: PensaTransport,
   operationStatus?: string,
