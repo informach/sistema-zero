@@ -112,6 +112,12 @@ function matchesBlock(
       Object.entries(pattern.fields ?? {}).every(
         ([key, value]) => Object.hasOwn(fields, key) && String(fields[key]) === String(value),
       ) &&
+      (!pattern.fieldAlternatives ||
+        pattern.fieldAlternatives.some((alternative) =>
+          Object.entries(alternative).every(
+            ([key, value]) => Object.hasOwn(fields, key) && String(fields[key]) === String(value),
+          ),
+        )) &&
       Object.entries(pattern.fieldOptions ?? {}).every(
         ([key, options]) => Object.hasOwn(fields, key) && options.includes(String(fields[key])),
       ) &&
@@ -126,15 +132,22 @@ function matchesBlock(
         const actual = literal(child(inputs[key]))
         return actual !== undefined && String(actual) === String(value)
       }) &&
-      Object.entries(pattern.inputBlocks ?? {}).every(([key, expected]) => {
-        let current = child(inputs[key])
-        while (record(current) && spend()) {
-          if (patternMatches(expected, current)) return true
-          current = record(current.next) ? current.next.block : undefined
-        }
-        return false
+      Object.entries(pattern.inputBlocks ?? {}).every(([key, expected]) =>
+        chainMatches(expected, child(inputs[key])),
+      ) &&
+      Object.entries(pattern.inputBlocksAll ?? {}).every(([key, patterns]) => {
+        const head = child(inputs[key])
+        return patterns.every((expected) => chainMatches(expected, head))
       })
     )
+  }
+  function chainMatches(expected: ProjectBlockPattern, head: unknown): boolean {
+    let current = head
+    while (record(current) && spend()) {
+      if (patternMatches(expected, current)) return true
+      current = record(current.next) ? current.next.block : undefined
+    }
+    return false
   }
   let count = 0
   const stack: { node: unknown; area: string; ancestors: string[] }[] = []

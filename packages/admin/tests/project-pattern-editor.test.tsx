@@ -170,3 +170,75 @@ test('teacher adds, edits and removes a nested piece through actual catalog cont
     container.remove()
   }
 })
+
+test('editing one AND child preserves its siblings and correlated parent fields', async () => {
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  const workspace = { initialProject: { installedExtensions: [{ id: 'game-2d' }] } }
+  const model = projectCheckAuthoring(workspace)
+  let value: Extract<SectionStructureRule, { type: 'usesBlock' }> = {
+    type: 'usesBlock',
+    blockType: 'sz_g2d_on_overlap',
+    fieldAlternatives: [
+      { A: 'personagem', B: 'chave' },
+      { A: 'chave', B: 'personagem' },
+    ],
+    inputBlocksAll: {
+      BODY: [
+        { blockType: 'sz_g2d_destroy_sprite', fields: { SPRITE: 'chave' } },
+        { blockType: 'sz_js_var_assign', fields: { NAME: 'temChave' } },
+      ],
+    },
+  }
+  const before = structuredClone(value)
+  const render = () =>
+    root.render(
+      <ProjectRuleEditor
+        rule={value}
+        workspace={workspace}
+        onChange={(next) => {
+          value = next
+          render()
+        }}
+      />,
+    )
+  try {
+    await act(async () => render())
+    expect(container.textContent).toContain('A: personagem, B: chave OU A: chave, B: personagem')
+    expect(container.textContent).toContain('todas as peças no mesmo espaço')
+    for (const name of ['A', 'B']) {
+      const parameter = model.available
+        .find((entry) => entry.type === value.blockType)
+        ?.parameters.find((parameter) => parameter.name === name)
+      if (!parameter) throw new Error('Real pair field missing')
+      const label = [...container.querySelectorAll('label')].find(
+        (label) => label.firstChild?.textContent === parameter.label,
+      )
+      if (!label) throw new Error('Protected pair label missing')
+      expect(Boolean(label.querySelector('input,select'))).toBe(false)
+    }
+    const add = container.querySelector('select[aria-label="Adicionar espaço a conferir"]')
+    if (!add) throw new Error('Socket selector missing')
+    expect(Boolean(add.querySelector('option[value="BODY"]'))).toBe(false)
+    const nameInput = [...container.querySelectorAll('label')]
+      .find((label) => label.textContent?.includes('(NAME)'))
+      ?.querySelector('input')
+    if (!nameInput) throw new Error('Actual assign field missing')
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+      if (!setter) throw new Error('Native input setter missing')
+      setter.call(nameInput, 'minhaChave')
+      nameInput.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    expect(value.fieldAlternatives).toEqual(before.fieldAlternatives)
+    expect(value.fields).toBeUndefined()
+    expect(value.inputBlocks).toBeUndefined()
+    expect(value.inputBlocksAll?.BODY?.[0]).toEqual(before.inputBlocksAll?.BODY?.[0])
+    expect(value.inputBlocksAll?.BODY?.[1]?.fields?.NAME).toBe('minhaChave')
+    expect(model.issues(value)).toEqual([])
+  } finally {
+    await act(async () => root.unmount())
+    container.remove()
+  }
+})

@@ -28,6 +28,26 @@ const nested: SectionStructureRule = {
     SPEED: { blockType: 'sz_val_number', fieldRanges: { NUM: { max: 0, maxExclusive: true } } },
   },
 }
+const composed: SectionStructureRule = {
+  type: 'usesBlock',
+  blockType: 'sz_g2d_on_overlap',
+  fieldAlternatives: [
+    { A: 'personagem', B: 'chave' },
+    { A: 'chave', B: 'personagem' },
+  ],
+  inputBlocksAll: {
+    BODY: [
+      { blockType: 'sz_g2d_destroy_sprite', fields: { SPRITE: 'chave' } },
+      {
+        blockType: 'sz_js_var_assign',
+        fields: { NAME: 'temChave' },
+        inputBlocksAll: {
+          VALUE: [{ blockType: 'sz_val_bool', fieldAlternatives: [{ VALUE: 'true' }] }],
+        },
+      },
+    ],
+  },
+}
 const request = (body: unknown, method = 'POST') =>
   new Request('http://members.test/', {
     method,
@@ -37,7 +57,7 @@ const request = (body: unknown, method = 'POST') =>
 
 test('real HTTP normalization and draft edits retain every new criterion at top level and in sockets', async () => {
   const app = new Elysia().post('/', ({ body }) => body, { body: SectionRule })
-  for (const rule of [range, text, nested]) {
+  for (const rule of [range, text, nested, composed]) {
     const response = await app.handle(request(rule))
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual(rule)
@@ -47,7 +67,7 @@ test('real HTTP normalization and draft edits retain every new criterion at top 
     completion: {
       version: 1 as const,
       blockIds: [],
-      projectChecks: [range, text, nested].map((rule, i) => ({
+      projectChecks: [range, text, nested, composed].map((rule, i) => ({
         id: `check${i}`,
         label: 'Conferir',
         rule,
@@ -111,6 +131,12 @@ test('HTTP rejects malformed raw maps instead of erasing a bound or text restric
     { fieldText: { TEXT: { nonBlank: true, other: true } } },
     { fieldRanges: null },
     { fieldText: [] },
+    { fieldAlternatives: [] },
+    { fieldAlternatives: [{ A: 'p' }, { B: 'k' }] },
+    { fieldAlternatives: [{ A: {} }] },
+    { inputBlocksAll: {} },
+    { inputBlocksAll: { BODY: [] } },
+    { inputBlocksAll: { BODY: Array.from({ length: 21 }, () => ({ blockType: 'x' })) } },
   ]
   for (const fields of invalid) {
     for (const rule of [
@@ -155,6 +181,7 @@ test('draft schema cleanup retains strict Decode for malformed criteria', async 
     { body: DraftCommandSchema },
   )
   for (const rule of [
+    { ...composed, fieldAlternatives: [{ A: 'p' }, { B: 'k' }] },
     { ...range, fieldRanges: { NUM: { min: 0, minExlusive: true } } },
     {
       ...nested,
@@ -184,4 +211,28 @@ test('draft schema cleanup retains strict Decode for malformed criteria', async 
     expect([400, 422]).toContain(response.status)
   }
   expect(accepted).toBe(0)
+})
+
+test('mixed AND socket depths cannot lose their deepest condition in HTTP normalization', async () => {
+  const app = new Elysia().post('/', ({ body }) => body, { body: SectionRule })
+  let pattern: Record<string, unknown> = {
+    blockType: 'sz_val_number',
+    fieldRanges: { NUM: { min: 0 } },
+  }
+  for (let i = 0; i < 4; i++)
+    pattern =
+      i % 2
+        ? { blockType: 'x', inputBlocks: { BODY: pattern } }
+        : { blockType: 'x', inputBlocksAll: { BODY: [pattern] } }
+  const valid = { ...pattern, type: 'usesBlock' }
+  const response = await app.handle(request(valid))
+  expect(response.status).toBe(200)
+  expect(await response.json()).toEqual(valid)
+  expect(
+    (
+      await app.handle(
+        request({ type: 'usesBlock', blockType: 'x', inputBlocksAll: { BODY: [pattern] } }),
+      )
+    ).status,
+  ).toBe(422)
 })

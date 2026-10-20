@@ -41,6 +41,16 @@ export const fieldTextSchema = () =>
       return pattern.fieldText
     })
     .Encode((value) => value)
+export const fieldAlternativesSchema = () =>
+  t
+    .Transform(t.Unknown())
+    .Decode((value) => {
+      const pattern = { blockType: '', fieldAlternatives: value }
+      if (!isProjectBlockPattern(pattern))
+        throw new ValidationError('As combinações de campos são inválidas.')
+      return pattern.fieldAlternatives
+    })
+    .Encode((value) => value)
 const base = () => ({
   // Empty selections are valid drafts; publication requires a selected block.
   blockType: t.String({ maxLength: 200 }),
@@ -48,6 +58,7 @@ const base = () => ({
   fieldOptions: t.Optional(fieldOptionsSchema()),
   fieldRanges: t.Optional(fieldRangesSchema()),
   fieldText: t.Optional(fieldTextSchema()),
+  fieldAlternatives: t.Optional(fieldAlternativesSchema()),
   inputs: t.Optional(values()),
   beforeBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
 })
@@ -55,12 +66,23 @@ const base = () => ({
 const pattern = () => t.Object(base())
 // Declare this forbidden property explicitly: Elysia removes unknown properties
 // during normalization, which would otherwise silently weaken a deep criterion.
-const p4 = t.Object({ ...base(), inputBlocks: t.Optional(t.Never()) })
+const p4 = t.Object({
+  ...base(),
+  inputBlocks: t.Optional(t.Never()),
+  inputBlocksAll: t.Optional(t.Never()),
+})
 const nested = <T extends ReturnType<typeof pattern>>(child: T) =>
   t.Object({
     ...base(),
     inputBlocks: t.Optional(
       t.Record(t.String({ minLength: 1, maxLength: 200 }), child, { maxProperties: 20 }),
+    ),
+    inputBlocksAll: t.Optional(
+      t.Record(
+        t.String({ minLength: 1, maxLength: 200 }),
+        t.Array(child, { minItems: 1, maxItems: 20 }),
+        { minProperties: 1, maxProperties: 20 },
+      ),
     ),
   })
 const p3 = nested(p4)
@@ -71,5 +93,12 @@ export const ProjectBlockRelationshipsSchema = {
   beforeBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
   inputBlocks: t.Optional(
     t.Record(t.String({ minLength: 1, maxLength: 200 }), p1, { maxProperties: 20 }),
+  ),
+  inputBlocksAll: t.Optional(
+    t.Record(
+      t.String({ minLength: 1, maxLength: 200 }),
+      t.Array(p1, { minItems: 1, maxItems: 20 }),
+      { minProperties: 1, maxProperties: 20 },
+    ),
   ),
 }

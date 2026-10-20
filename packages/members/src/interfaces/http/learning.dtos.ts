@@ -32,6 +32,7 @@ import {
 } from '@sistemazero/core/learning/scene'
 import { getSchemaValidator, t } from 'elysia'
 import {
+  fieldAlternativesSchema,
   fieldOptionsSchema,
   fieldRangesSchema,
   fieldTextSchema,
@@ -778,6 +779,7 @@ function sectionRuleSchema(context: ExecutionStepValidationContext) {
       fieldOptions: t.Optional(fieldOptionsSchema()),
       fieldRanges: t.Optional(fieldRangesSchema()),
       fieldText: t.Optional(fieldTextSchema()),
+      fieldAlternatives: t.Optional(fieldAlternativesSchema()),
       inputs: t.Optional(
         t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
           maxProperties: 20,

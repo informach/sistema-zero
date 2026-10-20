@@ -571,6 +571,9 @@ export function projectCheckAuthoring(workspace: unknown) {
               values.map((value) => [name, value] as const),
             )
           : []),
+        ...(kind === 'fields'
+          ? (rule.fieldAlternatives ?? []).flatMap((alternative) => Object.entries(alternative))
+          : []),
       ]) {
         const parameter = block.parameters.find(
           (param) => param.kind === kind && param.name === name,
@@ -624,7 +627,12 @@ export function projectCheckAuthoring(workspace: unknown) {
       )
         errors.push(`O campo ${name} não aceita texto livre neste bloco.`)
     }
-    for (const [name, pattern] of Object.entries(rule.inputBlocks ?? {})) {
+    for (const [name, pattern] of [
+      ...Object.entries(rule.inputBlocks ?? {}),
+      ...Object.entries(rule.inputBlocksAll ?? {}).flatMap(([name, patterns]) =>
+        patterns.map((pattern) => [name, pattern] as const),
+      ),
+    ]) {
       const socket = projectCheckInputs(block).find((input) => input.name === name)
       const child = byType.get(pattern.blockType)
       const connector =

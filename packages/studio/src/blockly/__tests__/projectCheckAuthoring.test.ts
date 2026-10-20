@@ -38,6 +38,109 @@ const solutionExamples = (solution: object) => ({
 })
 
 describe('objective authoring uses the actual workspace contracts', () => {
+  test('complete field pairs and same-socket AND validate real fields, connections and every child', () => {
+    const model = projectCheckAuthoring({
+      initialProject: { installedExtensions: [{ id: 'game-2d' }] },
+    })
+    const rule: Extract<SectionStructureRule, { type: 'usesBlock' }> = {
+      type: 'usesBlock',
+      blockType: 'sz_g2d_on_overlap',
+      area: 'events',
+      fieldAlternatives: [
+        { A: 'personagem', B: 'chave' },
+        { A: 'chave', B: 'personagem' },
+      ],
+      inputBlocksAll: {
+        BODY: [
+          { blockType: 'sz_g2d_destroy_sprite', fields: { SPRITE: 'chave' } },
+          {
+            blockType: 'sz_js_var_assign',
+            fields: { NAME: 'temChave' },
+            inputBlocks: { VALUE: { blockType: 'sz_val_bool', fields: { VALUE: 'true' } } },
+          },
+        ],
+      },
+    }
+    expect(model.issues(rule)).toEqual([])
+    expect(
+      model.issues({ ...rule, fieldAlternatives: [{ A: 'personagem', MISSING: 'chave' }] }).length,
+    ).toBeGreaterThan(0)
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_enable_classic_controls',
+        fieldAlternatives: [{ MODE: 'directions' }, { MODE: 'invalid' }],
+      }).length,
+    ).toBeGreaterThan(0)
+    expect(
+      model.issues({
+        ...rule,
+        inputBlocksAll: { MISSING: [{ blockType: 'sz_g2d_destroy_sprite' }] },
+      }).length,
+    ).toBeGreaterThan(0)
+    expect(
+      model.issues({
+        ...rule,
+        inputBlocksAll: {
+          BODY: [{ blockType: 'sz_g2d_destroy_sprite' }, { blockType: 'sz_val_number' }],
+        },
+      }).length,
+    ).toBeGreaterThan(0)
+    expect(
+      model.issues({
+        ...rule,
+        inputBlocksAll: {
+          BODY: [
+            { blockType: 'sz_g2d_destroy_sprite' },
+            {
+              blockType: 'sz_js_var_assign',
+              inputBlocksAll: {
+                VALUE: [{ blockType: 'sz_val_number', fieldRanges: { MISSING: { min: 0 } } }],
+              },
+            },
+          ],
+        },
+      }).length,
+    ).toBeGreaterThan(0)
+    const event = (fields: object, body: unknown) => ({
+      type: rule.blockType,
+      fields,
+      inputs: { BODY: { block: body } },
+    })
+    const destroy = { type: 'sz_g2d_destroy_sprite', fields: { SPRITE: 'chave' } }
+    const assign = {
+      type: 'sz_js_var_assign',
+      fields: { NAME: 'temChave' },
+      inputs: { VALUE: { shadow: { type: 'sz_val_bool', fields: { VALUE: 'true' } } } },
+    }
+    const project = (block: unknown) => ({
+      blocksState: {
+        blocks: { blocks: [{ type: 'sz_frame_events', inputs: { CHILDREN: { block } } }] },
+      },
+    })
+    for (const fields of rule.fieldAlternatives ?? [])
+      expect(
+        evaluateStudioProjectStructure(
+          rule,
+          project(event(fields, { ...destroy, next: { block: assign } })),
+        ),
+      ).toBe(true)
+    expect(
+      evaluateStudioProjectStructure(
+        rule,
+        project({
+          ...event({ A: 'personagem', B: 'chave' }, destroy),
+          next: { block: event({ A: 'personagem', B: 'chave' }, assign) },
+        }),
+      ),
+    ).toBe(false)
+    expect(
+      evaluateStudioProjectStructure(
+        rule,
+        project(event({ A: 'chave', B: 'chave' }, { ...destroy, next: { block: assign } })),
+      ),
+    ).toBe(false)
+  })
   test('numeric ranges and free text require real fields and a realizable field domain', () => {
     const model = projectCheckAuthoring({
       initialProject: { installedExtensions: [{ id: 'game-2d' }] },

@@ -30,11 +30,15 @@ export interface ProjectBlockPattern {
   fieldRanges?: Record<string, ProjectFieldRange>
   /** Accept the learner's own nonblank text without prescribing its contents. */
   fieldText?: Record<string, { nonBlank: true }>
+  /** One complete field map must match; keys are identical in every alternative. */
+  fieldAlternatives?: Record<string, string | number | boolean>[]
   inputs?: Record<string, string | number | boolean>
   /** A later enabled sibling in this same statement chain, never another branch. */
   beforeBlock?: string
   /** Match an active child in this named input, keeping all conditions on that same child. */
   inputBlocks?: Record<string, ProjectBlockPattern>
+  /** Every pattern matches the same socket chain. This does not require distinct occurrences. */
+  inputBlocksAll?: Record<string, ProjectBlockPattern[]>
 }
 
 export type SectionStructureRule =
@@ -239,6 +243,10 @@ const label = (v: unknown): v is string =>
 
 /** Authors save half-filled objectives; an empty block type is the placeholder, not a broken draft. */
 const blockName = (v: unknown): v is string => typeof v === 'string' && v.length <= 200
+const fieldLiteral = (value: unknown) =>
+  typeof value === 'boolean' ||
+  (typeof value === 'number' && Number.isFinite(value)) ||
+  (typeof value === 'string' && value.length <= 200)
 
 export function isProjectFieldRange(value: unknown): value is ProjectFieldRange {
   if (
@@ -270,13 +278,7 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
           values === undefined ||
           (record(values) &&
             Object.keys(values).length <= 20 &&
-            Object.entries(values).every(
-              ([key, val]) =>
-                label(key) &&
-                (typeof val === 'boolean' ||
-                  (typeof val === 'number' && Number.isFinite(val)) ||
-                  (typeof val === 'string' && val.length <= 200)),
-            )),
+            Object.entries(values).every(([key, val]) => label(key) && fieldLiteral(val))),
       )
     )
       return false
@@ -287,6 +289,33 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
       for (const key of Object.keys(map)) {
         if (!label(key) || constrainedFields.has(key)) return false
         constrainedFields.add(key)
+      }
+    }
+    if (v.fieldAlternatives !== undefined) {
+      if (
+        !Array.isArray(v.fieldAlternatives) ||
+        !v.fieldAlternatives.length ||
+        v.fieldAlternatives.length > 10
+      )
+        return false
+      let names: string[] | undefined
+      for (const alternative of v.fieldAlternatives) {
+        if (!record(alternative)) return false
+        const keys = Object.keys(alternative)
+        if (
+          !keys.length ||
+          keys.length > 20 ||
+          !keys.every(
+            (key) => label(key) && !constrainedFields.has(key) && fieldLiteral(alternative[key]),
+          )
+        )
+          return false
+        if (
+          names &&
+          (keys.length !== names.length || !names.every((key) => Object.hasOwn(alternative, key)))
+        )
+          return false
+        names ??= keys
       }
     }
     if (
@@ -317,17 +346,31 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
       )
     )
       return false
-    return (
-      v.inputBlocks === undefined ||
-      (record(v.inputBlocks) &&
-        Object.keys(v.inputBlocks).length <= 20 &&
-        Object.entries(v.inputBlocks).every(
-          ([key, child]) =>
-            label(key) &&
-            !(record(v.inputs) && Object.hasOwn(v.inputs, key)) &&
-            valid(child, depth + 1),
-        ))
-    )
+    const constrainedInputs = new Set(record(v.inputs) ? Object.keys(v.inputs) : [])
+    for (const kind of ['inputBlocks', 'inputBlocksAll'] as const) {
+      const sockets = v[kind]
+      if (sockets === undefined) continue
+      if (
+        !record(sockets) ||
+        Object.keys(sockets).length > 20 ||
+        (kind === 'inputBlocksAll' && !Object.keys(sockets).length)
+      )
+        return false
+      for (const [key, child] of Object.entries(sockets)) {
+        if (!label(key) || constrainedInputs.has(key)) return false
+        constrainedInputs.add(key)
+        if (kind === 'inputBlocks') {
+          if (!valid(child, depth + 1)) return false
+        } else if (
+          !Array.isArray(child) ||
+          !child.length ||
+          child.length > 20 ||
+          !child.every((pattern) => valid(pattern, depth + 1))
+        )
+          return false
+      }
+    }
+    return true
   }
   return valid(value, 0)
 }
@@ -335,7 +378,9 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
 /** A placeholder still without a block, at the top or in any connected socket, is an editorial warning. */
 function hasBlankBlockType(pattern: ProjectBlockPattern): boolean {
   return (
-    !label(pattern.blockType) || Object.values(pattern.inputBlocks ?? {}).some(hasBlankBlockType)
+    !label(pattern.blockType) ||
+    Object.values(pattern.inputBlocks ?? {}).some(hasBlankBlockType) ||
+    Object.values(pattern.inputBlocksAll ?? {}).some((patterns) => patterns.some(hasBlankBlockType))
   )
 }
 

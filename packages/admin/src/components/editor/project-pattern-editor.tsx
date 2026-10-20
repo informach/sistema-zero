@@ -14,6 +14,14 @@ export function projectFieldConstraintText(
   pattern: ProjectBlockPattern,
   name: string,
 ): string | null {
+  if (pattern.fieldAlternatives?.some((alternative) => Object.hasOwn(alternative, name)))
+    return `Combinações aceitas (campos juntos): ${pattern.fieldAlternatives
+      .map((alternative) =>
+        Object.entries(alternative)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(', '),
+      )
+      .join(' OU ')}`
   const options = pattern.fieldOptions?.[name]
   if (options) return `Valores aceitos: ${options.join(', ')}`
   const range = pattern.fieldRanges?.[name]
@@ -130,7 +138,10 @@ export function ProjectPatternEditor({
                 <Input
                   type={parameter.numeric ? 'number' : 'text'}
                   value={value}
-                  disabled={Boolean(pattern.inputBlocks?.[parameter.name])}
+                  disabled={Boolean(
+                    pattern.inputBlocks?.[parameter.name] ||
+                      pattern.inputBlocksAll?.[parameter.name],
+                  )}
                   placeholder="Qualquer valor"
                   onChange={(event) => update(event.target.value)}
                 />
@@ -139,12 +150,53 @@ export function ProjectPatternEditor({
           )
         })}
       {depth < 4 && sockets.length > 0 && (
-        <details open={Boolean(Object.keys(pattern.inputBlocks ?? {}).length)}>
+        <details
+          open={Boolean(
+            Object.keys(pattern.inputBlocks ?? {}).length ||
+              Object.keys(pattern.inputBlocksAll ?? {}).length,
+          )}
+        >
           <summary className="cursor-pointer text-sm">Conferir peças conectadas</summary>
           <p className="text-xs text-muted-foreground">
             Escolha o espaço e a peça esperada nele. Em uma sequência, a peça pode estar em qualquer
             posição dentro desse espaço.
           </p>
+          {Object.entries(pattern.inputBlocksAll ?? {}).map(([name, checks]) => (
+            <fieldset key={`all:${name}`} className="ml-2 space-y-2 border-l pl-3">
+              <legend className="text-sm">
+                {inputLabel(name)} — todas as peças no mesmo espaço
+              </legend>
+              <p className="text-xs text-muted-foreground">
+                Cada critério deve aparecer nesta mesma sequência. Isso não exige ocorrências
+                diferentes.
+              </p>
+              {checks.map((check, index) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: Imported criteria have no IDs; this editor only edits fixed slots, never inserts, removes or reorders them.
+                <div key={`${name}:${index}`} className="space-y-2">
+                  <p className="text-sm">
+                    {model.available.find((entry) => entry.type === check.blockType)?.label ??
+                      `Peça indisponível: ${check.blockType}`}
+                  </p>
+                  <ProjectPatternEditor
+                    pattern={check}
+                    model={model}
+                    depth={depth + 1}
+                    onChange={(updated) =>
+                      onChange({
+                        ...pattern,
+                        inputBlocksAll: {
+                          ...pattern.inputBlocksAll,
+                          [name]: checks.map((existing, current) =>
+                            current === index ? updated : existing,
+                          ),
+                        },
+                      })
+                    }
+                  />
+                </div>
+              ))}
+            </fieldset>
+          ))}
           {sockets.map((socket) => {
             const child = pattern.inputBlocks?.[socket.name]
             const candidates = model.available.filter((entry) => {
@@ -220,6 +272,7 @@ export function ProjectPatternEditor({
               .filter(
                 (socket) =>
                   !pattern.inputBlocks?.[socket.name] &&
+                  !pattern.inputBlocksAll?.[socket.name] &&
                   pattern.inputs?.[socket.name] === undefined,
               )
               .map((socket) => (

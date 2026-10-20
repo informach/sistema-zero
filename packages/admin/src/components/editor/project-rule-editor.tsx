@@ -179,7 +179,10 @@ export function ProjectRuleEditor({
             </Select>
           ) : (
             <Input
-              disabled={Boolean(param.kind === 'inputs' && rule.inputBlocks?.[param.name])}
+              disabled={Boolean(
+                param.kind === 'inputs' &&
+                  (rule.inputBlocks?.[param.name] || rule.inputBlocksAll?.[param.name]),
+              )}
               type={param.numeric ? 'number' : 'text'}
               placeholder="Qualquer valor"
               value={String(rule[param.kind]?.[param.name] ?? '')}
