@@ -1,5 +1,7 @@
 'use client'
 
+import { createProToolchainPreparer } from '../../lib/pro-toolchain'
+import { sessionFetch } from '../../lib/session-fetch'
 import '@sistemazero/studio/styles.css'
 import type {
   EditableStudioProject as Project,
@@ -14,7 +16,7 @@ import type {
 } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   assertPensaJavaScriptProject,
   PensaProjectLanguageRefused,
@@ -120,6 +122,13 @@ function StudioProEditorSession({
   proRuntime,
   freeRuntime = false,
 }: Props) {
+  const prepareDependencies = useMemo(
+    () =>
+      freeRuntime
+        ? createProToolchainPreparer('/api/studio/pro-runtime/dependencies', sessionFetch)
+        : undefined,
+    [freeRuntime],
+  )
   const [mod, setMod] = useState<StudioProModule | null>(null)
   const [state, setState] = useState<Loaded>({ kind: 'loading' })
   const [loadAttempt, setLoadAttempt] = useState(0)
@@ -290,6 +299,7 @@ function StudioProEditorSession({
           onEditDrawing={onEditDrawing}
           onEditCreation={onEditCreation}
           runtimeEnvironment={runtimeEnvironment ?? free.environment}
+          prepareProDependencies={prepareDependencies}
           proRuntime={state.project.programmingLanguage === 'python' ? undefined : proRuntime}
           pythonLevel={
             state.project.programmingLanguage === 'python' && freeRuntime ? 3 : undefined

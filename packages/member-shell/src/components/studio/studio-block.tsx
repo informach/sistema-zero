@@ -3,6 +3,7 @@
 import { compareContentFingerprints } from '@sistemazero/core/creations'
 import { isStudioProArtifact } from '@sistemazero/core/studio'
 import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
+import { createProToolchainPreparer } from '../../lib/pro-toolchain'
 import { sessionFetch as fetch } from '../../lib/session-fetch'
 import { createStudioPublicationAdapter } from '../../lib/studio-publication-adapter'
 import { useLessonRuntime } from './use-lesson-runtime'
@@ -444,6 +445,11 @@ function LessonStudioBlockView({
     if (!isProLesson || !player?.courseSlug || !lessonId) return undefined
     return {
       limits: STUDIO_PRO_BUILD_LIMITS,
+      prepareDependencies: createProToolchainPreparer('/api/studio/pro-runtime/build', fetch, {
+        courseSlug: player.courseSlug,
+        lessonId,
+        blockId,
+      }),
       async build({ project, signal }) {
         const res = await fetch('/api/studio/pro-runtime/build', {
           method: 'POST',

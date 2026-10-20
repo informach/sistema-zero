@@ -8,7 +8,7 @@ import type { StudioLimits } from '../state/projectStore'
 import type { StudioFeatures } from './config'
 import type { StudioMoldaLibraryAdapter } from './molda-library'
 import type { StudioPintaLibraryAdapter } from './pinta-library'
-import type { StudioProRuntimeAdapter } from './pro-runtime'
+import type { PrepareProDependencies, StudioProRuntimeAdapter } from './pro-runtime'
 import type { StudioShareAdapter } from './share'
 import type { StudioTeamLibraryAdapter } from './team-library'
 import type { StudioTheme } from './theme'
@@ -152,6 +152,8 @@ export interface StudioCommonProps {
    * modo Pro usa o WebContainer local do Estúdio Completo.
    */
   proRuntime?: StudioProRuntimeAdapter
+  /** Canonical lock preparation for authenticated local WebContainer hosts. */
+  prepareProDependencies?: PrepareProDependencies
   /** Approved language catalog and providers, shared by editor and public player. */
   runtimeEnvironment?: import('../runtime/environment').StudioRuntimeEnvironment
   /**

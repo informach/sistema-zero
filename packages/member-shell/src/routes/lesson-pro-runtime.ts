@@ -12,7 +12,9 @@ import {
   buildStudioProProject,
   isProStudioProject,
   opaqueStudioRuntimeExecutionId,
+  prepareStudioProToolchain,
   proProjectTemplateId,
+  proRuntimeOperation,
   STUDIO_PRO_BUILD_LIMITS,
   StudioProRuntimeInputError,
   StudioProRuntimeUpstreamError,
@@ -41,6 +43,13 @@ export function createLessonProRuntimeBuild(deps: {
     const session = await owned(() => deps.getSession())
     if (!session?.id)
       return response({ error: { message: 'Entre novamente para continuar.' } }, 401)
+
+    let operation: ReturnType<typeof proRuntimeOperation>
+    try {
+      operation = proRuntimeOperation(request)
+    } catch {
+      return response({ error: { message: 'A operação Pro enviada é inválida.' } }, 400)
+    }
 
     // Atividade Pro é autorizada pela matrícula/leitura da aula abaixo. Produto e
     // tier Pro controlam apenas o Estúdio livre; exigir ambos aqui impediria o
@@ -138,6 +147,16 @@ export function createLessonProRuntimeBuild(deps: {
       blockId,
     )
     try {
+      if (operation === 'prepare-dependencies')
+        return response(
+          await prepareStudioProToolchain({
+            project: body.project,
+            executionId,
+            runtimeUrl,
+            runtimeToken,
+            signal,
+          }),
+        )
       const result = await buildStudioProProject({
         parentOrigin: new URL(request.url).origin,
         project: body.project,

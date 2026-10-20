@@ -159,6 +159,7 @@ function StudioCoreBody({
   onExit,
   onPromoteToPro,
   proRuntime,
+  prepareProDependencies,
   blockUnloadWhenDirty = true,
   className,
   style,
@@ -595,7 +596,10 @@ function StudioCoreBody({
   return (
     <StudioTutorProvider value={tutorValue}>
       <ProBuilderDeletionReconciler />
-      <StudioProRuntimeProvider value={proRuntimeValue}>
+      <StudioProRuntimeProvider
+        value={proRuntimeValue}
+        prepareDependencies={prepareProDependencies}
+      >
         <StudioShareProvider value={shareValue}>
           <StudioCloudSyncProvider value={cloudSyncValue}>
             <StudioEditDrawingProvider value={editDrawingValue}>

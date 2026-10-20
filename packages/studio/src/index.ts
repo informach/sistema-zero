@@ -153,6 +153,7 @@ export type {
 } from './studio/pinta-library'
 export { prefetchStudioModes } from './studio/prefetch'
 export type {
+  PrepareProDependencies,
   StudioProRuntimeAdapter,
   StudioProRuntimeBuildInput,
   StudioProRuntimeBuildResult,

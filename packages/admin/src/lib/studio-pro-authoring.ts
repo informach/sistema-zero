@@ -1,4 +1,5 @@
 import { isStudioProArtifact } from '@sistemazero/core/studio'
+import { createProToolchainPreparer } from '@sistemazero/member-shell/lib/pro-toolchain'
 import type { StudioProRuntimeAdapter } from '@sistemazero/studio'
 import { STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/studio'
 
@@ -14,6 +15,7 @@ export function createAdminProRuntimeAdapter(
 ): StudioProRuntimeAdapter {
   return {
     limits: STUDIO_PRO_BUILD_LIMITS,
+    prepareDependencies: createProToolchainPreparer('/api/studio/pro-runtime/build', fetchImpl),
     async build({ project, signal }) {
       const response = await fetchImpl('/api/studio/pro-runtime/build', {
         method: 'POST',

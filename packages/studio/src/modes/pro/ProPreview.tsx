@@ -1,15 +1,21 @@
+import { studioProDigest } from '@sistemazero/core/studio/pro-revision'
 import { buildProRuntimeBridgeScript } from '@sistemazero/core/studio/pro-runtime-bridge'
 import type { WebContainerProcess } from '@webcontainer/api'
-import { type JSX, type ReactNode, useEffect, useRef, useState } from 'react'
+import { type JSX, type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '#ui'
 import { canBootWebContainer } from '../../components/terminal/webContainerClient'
 import { javaScriptProject } from '../../core/editableProject'
+import { updateLegacyProToolchainManifest } from '../../core/proToolchain'
 import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { useLogsStore } from '../../state/logsStore'
-import { useProjectStore } from '../../state/projectStore'
+import { flushProjectOperations } from '../../state/projectOperations'
+import { PRO_APPLICATION_LIMITS } from '../../state/projectStorageCoordinator'
+import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { updateProToolchainBeforeExecution } from '../../state/proToolchainUpdate'
 import { useStudioConfig } from '../../studio/config'
 import { useProCandidatePreview } from '../../studio/pro-candidate-preview'
-import { useStudioProRuntime } from '../../studio/pro-runtime'
+import { useStudioProDependencies, useStudioProRuntime } from '../../studio/pro-runtime'
 import { ProArtifactPreview } from './ProArtifactPreview'
 import { useProWebContainer } from './ProWebContainerProvider'
 import { isProConsoleMessage } from './proConsoleBridge'
@@ -84,11 +90,13 @@ export function ProPreview(): JSX.Element {
         </div>
       )}
       <div className="min-h-0 flex-1">
-        {remoteRuntime ? (
-          <RemoteProPreview runtime={remoteRuntime} active={!candidateActive} />
-        ) : (
-          <WebContainerProPreview active={!candidateActive} />
-        )}
+        <ProToolchainGate active={!candidateActive}>
+          {remoteRuntime ? (
+            <RemoteProPreview runtime={remoteRuntime} active={!candidateActive} />
+          ) : (
+            <WebContainerProPreview active={!candidateActive} />
+          )}
+        </ProToolchainGate>
         {candidateActive && (
           <ProArtifactPreview
             artifact={candidate.artifact}
@@ -103,7 +111,115 @@ export function ProPreview(): JSX.Element {
   )
 }
 
+/** Never start npm or a remote build using the known retired toolchain. */
+function ProToolchainGate({ children, active }: { children: ReactNode; active: boolean }) {
+  const store = useProjectStoreApi()
+  const project = useProjectStore((s) => s.project)
+  const editingAccess = useProjectStore((s) => s.editingAccess)
+  const runtime = useStudioProRuntime()
+  const prepare = useStudioProDependencies()
+  const [attempt, setAttempt] = useState(0)
+  const scope = captureProjectStorageScope()
+  const history = useRef({ scope, projectId: project?.id, keys: new Set<string>() })
+  if (history.current.scope !== scope || history.current.projectId !== project?.id)
+    history.current = { scope, projectId: project?.id, keys: new Set<string>() }
+  const repaired = history.current.keys
+  const manifest = javaScriptProject(project)?.tree?.['package.json']
+  const lock = javaScriptProject(project)?.tree?.['package-lock.json']
+  const manifestText = manifest?.kind === 'file' ? manifest.content : null
+  const lockText = lock?.kind === 'file' ? lock.content : null
+  const sourceKey = useMemo(
+    () => JSON.stringify([manifestText, lockText]),
+    [manifestText, lockText],
+  )
+  const [failure, setFailure] = useState<{ project: typeof project; message: string } | null>(null)
+  let needsUpdate = false
+  let issue: string | null = null
+  try {
+    needsUpdate =
+      manifest?.kind === 'file' && updateLegacyProToolchainManifest(manifest.content) !== null
+  } catch (error) {
+    issue = error instanceof Error ? error.message : String(error)
+  }
+  // biome-ignore lint/correctness/useExhaustiveDependencies: attempt explicitly retries the unchanged source after failure or Undo.
+  useEffect(() => {
+    if (!active || !needsUpdate || issue || editingAccess !== 'author') return
+    const controller = new AbortController()
+    const signal = runtime?.signal
+      ? AbortSignal.any([controller.signal, runtime.signal])
+      : controller.signal
+    void (async () => {
+      const key = await studioProDigest(sourceKey)
+      signal.throwIfAborted()
+      if (repaired.has(key)) {
+        setFailure({
+          project,
+          message:
+            'O projeto mantém a versão anterior. Para executar, tente novamente a atualização segura.',
+        })
+        return
+      }
+      setFailure(null)
+      await updateProToolchainBeforeExecution(store, prepare, signal, undefined, () => {
+        repaired.add(key)
+        // Only compact digests, with the same bound as the existing recoverable history.
+        while (repaired.size > PRO_APPLICATION_LIMITS.operations) {
+          const oldest = repaired.values().next().value
+          if (oldest !== undefined) repaired.delete(oldest)
+        }
+      })
+    })().catch((error: unknown) => {
+      if (!controller.signal.aborted)
+        setFailure({ project, message: error instanceof Error ? error.message : String(error) })
+    })
+    return () => controller.abort()
+  }, [
+    active,
+    needsUpdate,
+    issue,
+    editingAccess,
+    project,
+    store,
+    prepare,
+    runtime?.signal,
+    attempt,
+    sourceKey,
+    repaired,
+  ])
+  if (!needsUpdate && !issue) return children
+  if (!active) return null
+  const error = issue ?? (failure?.project === project ? failure.message : null)
+  return (
+    <div
+      role={error ? 'alert' : 'status'}
+      className="grid h-full place-content-center gap-3 p-4 text-center text-sm"
+    >
+      <p>
+        {error ??
+          (editingAccess === 'author'
+            ? 'Preparando a atualização segura do ambiente Pro…'
+            : 'Aguarde a autoria para atualizar o ambiente Pro.')}
+      </p>
+      {error && (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            void studioProDigest(sourceKey).then((key) => {
+              repaired.delete(key)
+              setAttempt((value) => value + 1)
+            })
+          }}
+        >
+          Tentar novamente
+        </Button>
+      )}
+    </div>
+  )
+}
+
 function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.Element | null {
+  const store = useProjectStoreApi()
   const [started, setStarted] = useState(active)
   useEffect(() => {
     if (active) setStarted(true)
@@ -264,6 +380,8 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
       // npm install (NÃO-INTERATIVO → tem timeout; um install travado não pode
       // deixar o aluno preso para sempre).
       setPhase('installing')
+      await flushProjectOperations(store, projectId)
+      if (cancelled) return
       const install = await wc.spawn('npm', ['install'])
       installProcess = install
       if (cancelled) {
@@ -357,7 +475,7 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
       }
       cleanup()
     }
-  }, [projectId, attempt, ensureMounted, devScript, pushLog, installTimeoutMs, started])
+  }, [projectId, attempt, ensureMounted, devScript, pushLog, installTimeoutMs, started, store])
 
   // Recebe o console espelhado pelo bridge (postMessage do iframe do
   // dev-server) e o encaminha ao Console da IDE. Dupla validação: a ORIGEM tem

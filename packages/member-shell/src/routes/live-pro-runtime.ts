@@ -14,7 +14,9 @@ import {
   buildStudioProProject,
   isProStudioProject,
   opaqueStudioRuntimeExecutionId,
+  prepareStudioProToolchain,
   proProjectTemplateId,
+  proRuntimeOperation,
   StudioProRuntimeInputError,
   StudioProRuntimeUpstreamError,
   studioProRuntimePublicStatus,
@@ -52,6 +54,7 @@ export function createLiveProRuntimeBuild(deps: {
           'application/json'
       )
         return failure('Envie o contexto do projeto em JSON.', 415)
+      const operation = proRuntimeOperation(request)
       const parsed = StudioLiveProBuildRequestSchema.safeParse(
         await owned(() => readJsonBodyWithLimit(request, 4096)),
       )
@@ -100,15 +103,24 @@ export function createLiveProRuntimeBuild(deps: {
         String(before.workspaceRevision),
         before.projectSha256,
       )
-      const result = await buildStudioProProject({
-        parentOrigin: new URL(request.url).origin,
-        project: before.project,
-        templateId: before.templateId,
-        executionId,
-        runtimeUrl,
-        runtimeToken,
-        signal,
-      })
+      const result =
+        operation === 'prepare-dependencies'
+          ? await prepareStudioProToolchain({
+              project: before.project,
+              executionId,
+              runtimeUrl,
+              runtimeToken,
+              signal,
+            })
+          : await buildStudioProProject({
+              parentOrigin: new URL(request.url).origin,
+              project: before.project,
+              templateId: before.templateId,
+              executionId,
+              runtimeUrl,
+              runtimeToken,
+              signal,
+            })
       const after = await snapshot()
       if (
         before.projectSha256 !== after.projectSha256 ||

@@ -18,6 +18,7 @@ import {
 } from '@sistemazero/core/studio'
 import type { Project } from '@sistemazero/studio'
 import { buildProAssetBundle } from '@sistemazero/studio/pro-assets'
+import { updateLegacyProToolchainManifest } from '@sistemazero/studio/pro-toolchain'
 import { sanitizeProjectAssets } from '@sistemazero/studio/project'
 import { assertProjectContentPreserved } from '@sistemazero/studio/project-document'
 
@@ -83,6 +84,41 @@ export async function prepareStudioProDependencies(options: {
     )
   resolveStudioProRemoteDependencies(options.packageJson, result.packageLock)
   return result.packageLock
+}
+
+/** Closed operation discriminator on the existing authorized build endpoint. */
+export function proRuntimeOperation(request: Request): 'build' | 'prepare-dependencies' {
+  const operation = request.headers.get('X-Studio-Pro-Operation')
+  if (operation === null) return 'build'
+  if (operation === 'prepare-dependencies') return operation
+  throw new StudioProRuntimeInputError(400, 'A operação Pro enviada é inválida.')
+}
+
+/** The server derives the exact repair from the authorized source, never from a replacement manifest. */
+export async function prepareStudioProToolchain(options: {
+  project: Project
+  executionId: string
+  runtimeUrl: string
+  runtimeToken: string
+  signal?: AbortSignal
+}): Promise<{ packageLock: string }> {
+  const manifest = options.project.tree?.['package.json']
+  if (manifest?.kind !== 'file')
+    throw new StudioProRuntimeInputError(400, 'O projeto não contém package.json.')
+  let packageJson: string | null
+  try {
+    packageJson = updateLegacyProToolchainManifest(manifest.content)
+  } catch (error) {
+    throw new StudioProRuntimeInputError(
+      400,
+      error instanceof Error ? error.message : 'O package.json é inválido.',
+    )
+  }
+  if (!packageJson)
+    throw new StudioProRuntimeInputError(400, 'Este projeto não precisa desta atualização do Vite.')
+  const packageLock = await prepareStudioProDependencies({ ...options, packageJson })
+  options.signal?.throwIfAborted()
+  return { packageLock }
 }
 
 export { STUDIO_PRO_BUILD_LIMITS }

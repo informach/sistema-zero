@@ -1,6 +1,7 @@
 import { afterEach, expect, spyOn, test } from 'bun:test'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import type { StudioLiveProSnapshot } from '@sistemazero/core/studio/live-pro-runtime'
+import { prepareRuntimeDependencyLock } from '../../studio-runtime/src/dependency-lock'
 import { liveUpstreamPath } from '../src/lib/live-route-policy'
 import { createLiveProRuntimeBuild } from '../src/routes/live-pro-runtime'
 import type { GatewayResponse } from '../src/server/gateway'
@@ -214,4 +215,51 @@ test('the generic live proxy never forwards the private source-snapshot endpoint
       expect(
         liveUpstreamPath(scope, method, ['workspaces', crypto.randomUUID(), 'pro-build-snapshot']),
       ).toBeNull()
+})
+
+test('live preparation derives only the private source and rechecks authority before returning its canonical lock', async () => {
+  for (const revoked of [false, true]) {
+    const f = await fixture()
+    f.snapshot.project = {
+      ...f.snapshot.project,
+      tree: {
+        'package.json': {
+          kind: 'file',
+          content: JSON.stringify({ devDependencies: { vite: '8.0.16' } }),
+        },
+        'package-lock.json': { kind: 'file', content: '{}' },
+      },
+    }
+    f.snapshot.projectSha256 = await sha256Hex(canonicalJson(f.snapshot.project))
+    const fetch = spyOn(globalThis, 'fetch').mockImplementation(
+      fetchDouble(async (url, init) => {
+        expect(String(url)).toBe('https://runtime.example.test/v1/dependencies')
+        const body = JSON.parse(String(init?.body))
+        expect(JSON.parse(body.packageJson).devDependencies.vite).toBe('8.1.6')
+        if (revoked) f.deny(409)
+        return Response.json({ packageLock: prepareRuntimeDependencyLock(body.packageJson) })
+      }),
+    )
+    try {
+      const response = await f.send(f.body, { 'X-Studio-Pro-Operation': 'prepare-dependencies' })
+      expect(response.status).toBe(revoked ? 409 : 200)
+      const body = await response.json()
+      if (revoked) expect(body.packageLock).toBeUndefined()
+      else {
+        expect(Object.keys(body).sort()).toEqual(['packageLock', 'workspaceRevision'])
+        expect(body.workspaceRevision).toBe(3)
+        expect(JSON.parse(body.packageLock).packages['node_modules/vite'].version).toBe('8.1.6')
+      }
+      expect(f.calls).toHaveLength(2)
+      expect(fetch).toHaveBeenCalledTimes(1)
+    } finally {
+      fetch.mockRestore()
+    }
+  }
+})
+
+test('live preparation rejects an unknown operation before snapshot or runtime access', async () => {
+  const f = await fixture()
+  expect((await f.send(f.body, { 'X-Studio-Pro-Operation': 'install' })).status).toBe(400)
+  expect(f.calls).toHaveLength(0)
 })

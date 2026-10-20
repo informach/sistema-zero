@@ -287,3 +287,30 @@ test('remote adapter is present while blocked; lease renewal preserves it, epoch
     container.remove()
   }
 })
+
+test('dependency preparation uses only the confirmed journal context and rejects revocation before returning a lock', async () => {
+  for (const revoked of [false, true]) {
+    const f = fixture()
+    const request = intercept(async (_url, init) => {
+      expect(new Headers(init?.headers).get('X-Studio-Pro-Operation')).toBe('prepare-dependencies')
+      expect(JSON.parse(String(init?.body))).toEqual({
+        context: f.context,
+        expectedWorkspaceRevision: 0,
+      })
+      if (revoked) f.authority.abort()
+      return Response.json({ workspaceRevision: 0, packageLock: 'canonical-lock' })
+    })
+    try {
+      const pending = f.adapter().prepareDependencies!({
+        project: f.project,
+        packageJson: 'not-transmitted',
+        signal: new AbortController().signal,
+      })
+      if (revoked) await expect(pending).rejects.toThrow()
+      else expect(await pending).toBe('canonical-lock')
+      expect(request).toHaveBeenCalledTimes(1)
+    } finally {
+      request.mockRestore()
+    }
+  }
+})

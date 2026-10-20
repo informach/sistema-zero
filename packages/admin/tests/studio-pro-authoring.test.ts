@@ -57,3 +57,24 @@ describe('autoria do Estúdio Pro', () => {
     ).rejects.toThrow('Revise o código.\n\nsrc/main.ts: erro')
   })
 })
+
+test('Admin preparation reuses its authorized BFF with a closed operation, without triggering a build', async () => {
+  let operation: string | null = null
+  const fetchImpl = Object.assign(
+    async (_url: RequestInfo | URL, init?: RequestInit) => {
+      operation = new Headers(init?.headers).get('X-Studio-Pro-Operation')
+      return Response.json({ packageLock: 'prepared-lock' })
+    },
+    { preconnect: fetch.preconnect },
+  )
+  const adapter = createAdminProRuntimeAdapter(fetchImpl)
+  const project = await createProProject('legacy-admin', 'Antigo', 'vanilla-js')
+  expect(
+    await adapter.prepareDependencies!({
+      project,
+      packageJson: 'server-derives',
+      signal: new AbortController().signal,
+    }),
+  ).toBe('prepared-lock')
+  expect(operation).toBe('prepare-dependencies')
+})

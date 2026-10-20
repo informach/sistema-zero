@@ -1,11 +1,14 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import type { JSX } from 'react'
+import { type JSX, StrictMode } from 'react'
+import { prepareRuntimeDependencyLock } from '../../../../studio-runtime/src/dependency-lock'
+import { createEmptyProject } from '../../core/project'
+import { listProSessionApplications, undoProApplication } from '../../state/proRevision'
 import {
   StudioProCandidatePreviewProvider,
   useProCandidatePreview,
 } from '../../studio/pro-candidate-preview'
-import { StudioProRuntimeProvider } from '../../studio/pro-runtime'
+import { StudioProDependenciesProvider, StudioProRuntimeProvider } from '../../studio/pro-runtime'
 
 // mock.module NÃO é isolado por arquivo: captura o módulo real do provider e
 // restaura no afterAll para não vazar o stub do useProWebContainer.
@@ -68,7 +71,7 @@ mock.module('./ProWebContainerProvider', () => ({
 }))
 
 const { ProPreview } = await import('./ProPreview')
-const { useProjectStore } = await import('../../state/projectStore')
+const { useProjectStore, useProjectStoreApi } = await import('../../state/projectStore')
 const { useLogsStore } = await import('../../state/logsStore')
 const { resolveStudioConfig, resolvePreviewSecurity, resolveLearning, StudioConfigProvider } =
   await import('../../studio/config')
@@ -106,6 +109,99 @@ describe('ProPreview — install órfão no cancelamento', () => {
     fireServerReady = () => {}
     useProjectStore.setState({ project: null })
     useLogsStore.getState().clear()
+  })
+
+  it('repairs before remote execution, preserves Undo until explicit retry and survives StrictMode', async () => {
+    const project = {
+      ...createEmptyProject('old-pro', 'Antigo'),
+      kind: 'pro' as const,
+      mode: 'code' as const,
+      proMeta: { templateId: 'vanilla-vite' as const, devScript: 'dev' },
+      tree: {
+        'index.html': { kind: 'file' as const, content: '<main>Meu jogo</main>' },
+        'package.json': {
+          kind: 'file' as const,
+          content: JSON.stringify({
+            private: true,
+            scripts: { dev: 'vite' },
+            devDependencies: { vite: '8.0.16' },
+          }),
+        },
+        'package-lock.json': { kind: 'file' as const, content: '{}' },
+      },
+    }
+    useProjectStore.getState().setProject(project)
+    const prepare = mock(async ({ packageJson }: { packageJson: string }) =>
+      prepareRuntimeDependencyLock(packageJson),
+    )
+    const build = mock(async () => ({ html: '<main>Ambiente atualizado</main>' }))
+    const runtime = { build, prepareDependencies: prepare }
+    let store!: ReturnType<typeof useProjectStoreApi>
+    function Probe() {
+      store = useProjectStoreApi()
+      return <Harness />
+    }
+    const view = render(
+      <StrictMode>
+        <StudioProRuntimeProvider value={runtime}>
+          <Probe />
+        </StudioProRuntimeProvider>
+      </StrictMode>,
+    )
+    await waitFor(() =>
+      expect(view.container.querySelector('iframe')?.srcdoc).toContain('Ambiente atualizado'),
+    )
+    expect(installSpawned).toBe(false)
+    const beforeUndoCalls = prepare.mock.calls.length
+    const application = listProSessionApplications(store, project.id)[0]!
+    await act(async () => {
+      await undoProApplication(store, project.id, application.record.operationId)
+    })
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Tentar novamente' })).toBeTruthy(),
+    )
+    expect(useProjectStore.getState().project!.tree).toEqual(project.tree)
+    expect(view.container.querySelector('iframe')).toBeNull()
+    expect(prepare.mock.calls.length).toBe(beforeUndoCalls)
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    await waitFor(() =>
+      expect(view.container.querySelector('iframe')?.srcdoc).toContain('Ambiente atualizado'),
+    )
+    expect(prepare.mock.calls.length).toBe(beforeUndoCalls + 1)
+  })
+
+  it('blocks legacy local execution without a host and accepts the separate authenticated Full callback', async () => {
+    const project = {
+      ...createEmptyProject('old-full', 'Antigo'),
+      kind: 'pro' as const,
+      mode: 'code' as const,
+      proMeta: { templateId: 'vanilla-vite' as const, devScript: 'dev' },
+      tree: {
+        'package.json': {
+          kind: 'file' as const,
+          content: JSON.stringify({ devDependencies: { vite: '8.0.16' } }),
+        },
+        'index.html': { kind: 'file' as const, content: '<main>Meu jogo</main>' },
+      },
+    }
+    useProjectStore.getState().setProject(project)
+    const view = render(<Harness />)
+    await waitFor(() =>
+      expect(screen.getByText(/continua disponível para abrir e exportar/)).toBeTruthy(),
+    )
+    expect(installSpawned).toBe(false)
+    expect(mountAttempts).toBe(0)
+    view.unmount()
+    const prepare = mock(async ({ packageJson }: { packageJson: string }) =>
+      prepareRuntimeDependencyLock(packageJson),
+    )
+    render(
+      <StudioProDependenciesProvider value={prepare}>
+        <Harness />
+      </StudioProDependenciesProvider>,
+    )
+    await waitFor(() => expect(installSpawned).toBe(true))
+    expect(prepare).toHaveBeenCalledTimes(1)
   })
 
   it('uses the supplied remote executor without COEP or a WebContainer mount', async () => {
