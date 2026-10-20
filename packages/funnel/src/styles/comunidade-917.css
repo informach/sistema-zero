@@ -279,12 +279,14 @@
   line-height: 1.02;
   letter-spacing: -0.01em;
 }
+/* Bloco em linha, e não um trecho com o fundo em cada linha: o fundo de um trecho cobre a caixa
+   inteira da fonte, e a da Baloo 2 é bem mais alta que a linha de 1.02, então o rosa invadia a linha
+   de cima e o parágrafo de baixo. Aqui o fundo vai da primeira à última linha do destaque. */
 .c917 .c9-h1__destaque {
-  padding: 0 10px;
+  display: inline-block;
+  padding: 0.06em 10px 0.1em;
   border-radius: 12px;
   background: var(--c9-rosa);
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
 }
 .c917 .c9-h2 {
   font-size: clamp(1.9rem, 3.2vw, 2.6rem);

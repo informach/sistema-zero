@@ -1,6 +1,15 @@
 # Quiz da Comunidade: o diagnóstico que leva à oferta certa
 
-Versão vigente: 5 (`comunidade-orientacao-v5`), implementada em 16/10/2026. Entrada:
+> **Versão vigente: 6 (`comunidade-v6`), implementada em 20/10/2026** a partir do Canvas aprovado em
+> 19/10/2026 ([fonte e decisões](../../../comunidade-dos-criadores/proposta-2026-10-19/README.md),
+> [registro da implementação](../../../comunidade-dos-criadores/implementacao-2026-10-20.md)). A v6 tem
+> entrada com filho ou filha e a idade, um ramo de 9 a 17 anos (as chaves da v5) e um ramo do menor de
+> 9 criando com um adulto; "18 ou mais" leva ao quiz adulto. O resultado é uma carta. Texto completo
+> nos espelhos [das perguntas](../copy/quiz-comunidade.md) e [dos resultados](../copy/resultados-quiz.md).
+> O que segue descreve a v5 e fica como histórico das decisões que a v6 manteve (SPIN, nada de
+> produto antes do resultado, perfil por soma de pontos).
+
+Versão 5 (`comunidade-orientacao-v5`), implementada em 16/10/2026. Entrada:
 `/kids/comunidade-dos-criadores/quiz`; resultado: `/kids/comunidade-dos-criadores/resultado`.
 A [revisão de copy e a proposta da v5](revisao-copy-2026-10-16.md) explicam o porquê de cada
 mudança e registram as decisões da dona.

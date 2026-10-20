@@ -2,6 +2,11 @@ import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { lintLightCopy } from '@sistemazero/marketing-contracts'
+import {
+  ARQUIVOS_ESPELHO_ADULTO,
+  ESPELHOS_ADULTO,
+  PASTA_ESPELHO_ADULTO,
+} from '../../scripts/espelho-comunidade-adulto'
 import { TERMOS_COMUNIDADE_ADULTO } from '../../src/content/legal/termos-comunidade-adulto'
 import { COMUNIDADE_ADULTO } from '../../src/funnels/comunidade-adulto'
 import {
@@ -185,5 +190,16 @@ describe('etapas compartilhadas do funil adulto', () => {
     const bloco = global.slice(inicio, global.indexOf('\n}', inicio))
     for (const [, nome, valor] of bloco.matchAll(/^\s*(--color-[\w-]+):\s*([^;]+);/gm))
       expect([nome, valor]).toEqual([nome, expect.stringMatching(/^var\(--cda-[\w-]+\)$/)])
+  })
+})
+
+describe('o espelho editorial do funil adulto', () => {
+  test('pagina.md, quiz.md e resultados-quiz.md são exatamente o código', () => {
+    for (const [id, arquivo] of Object.entries(ARQUIVOS_ESPELHO_ADULTO)) {
+      const esperado = ESPELHOS_ADULTO[id as keyof typeof ESPELHOS_ADULTO]()
+      const atual = readFileSync(join(PASTA_ESPELHO_ADULTO, arquivo), 'utf8')
+      // Desatualizado: rode `bun scripts/espelho-comunidade-adulto.ts` em packages/funnel.
+      expect([arquivo, atual === esperado]).toEqual([arquivo, true])
+    }
   })
 })

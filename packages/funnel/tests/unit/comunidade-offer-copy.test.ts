@@ -514,7 +514,8 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     expect(COMUNIDADE_OBRIGADO.titulo).toBe('Sua assinatura está confirmada.')
     expect(COMUNIDADE_OBRIGADO.acesso).toContain('Se já tem conta, entre com seu acesso habitual')
     expect(thanks).toContain("(titulo ?? 'Pagamento confirmado!')")
-    expect(thanks).toContain('{introObrigado} {acesso}')
+    // Uma string só: entre duas expressões, o Astro descarta o espaço e as frases grudavam.
+    expect(thanks).toContain(`{\`${'$'}{introObrigado} ${'$'}{acesso}\`}`)
     expect(thanks).toContain('approved && (')
     expect(thanks).toContain('Pagamento ainda aguardando confirmação.')
   })

@@ -103,7 +103,7 @@ const confirmationTitle = approved
                 {buyerEmail ? <> Confira as instruções de acesso em <strong class="text-ink">{buyerEmail}</strong>.</> : ' Confira as instruções no e-mail da compra.'} Se já tem conta, use seu acesso habitual. No primeiro acesso, siga as instruções para criar sua senha.
               </>
             ) : acesso ? (
-              <>{introObrigado} {acesso}</>
+              <>{`${introObrigado} ${acesso}`}</>
             ) : (
               <>{introObrigado} O seu acesso {acessoArtigo} <strong class="text-ink">{productName}</strong> está a caminho do seu e-mail.</>
             )

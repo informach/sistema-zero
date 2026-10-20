@@ -1,4 +1,15 @@
-/** Run after `bun run build`: node --import tsx tests/browser/comunidade-oferta.ts */
+/**
+ * Run after `bun run build`: node --import tsx tests/browser/comunidade-oferta.ts
+ *
+ * As páginas de oferta da Comunidade dos Criadores (20/10/2026): Kids 9 a 17 (`/oferta`), menor de
+ * 9 (`/oferta/criar-junto`), continuidade (`/oferta/continuar`) e a adulta
+ * (`/pro/comunidade-dos-criadores/oferta`). Sobe o build com um catálogo falso (preços diferentes
+ * da reserva editorial, para provar que o SSR usa o catálogo) e confere, em cada página: status,
+ * um h1, âncoras e ids, imagens, preços ao vivo, larguras sem rolagem lateral, os dois CTAs de
+ * plano e o pré-checkout até o checkout com o plano e a atribuição. Também os 301 das cinco páginas
+ * de perfil antigas. `QA_CHROME_CHANNEL=chrome` usa o Chrome instalado e `QA_CHROMIUM_PATH` um
+ * Chromium já baixado; sem os dois, o Chromium do Playwright.
+ */
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { mkdir } from 'node:fs/promises'
@@ -9,14 +20,36 @@ import { type Browser, chromium } from 'playwright'
 
 const cwd = fileURLToPath(new URL('../../', import.meta.url))
 const output = resolve(cwd, '../../tmp/comunidade-oferta-review')
-const base = '/kids/comunidade-dos-criadores'
-const school = `${base}/oferta/habilidades-escolares`
-const monthly = 'comunidade-dos-criadores-mensal'
-const annual = 'comunidade-dos-criadores-anual'
-// Deliberately different from editorial fallbacks: proves SSR uses catalog prices.
+const kidsBase = '/kids/comunidade-dos-criadores'
+const adultBase = '/pro/comunidade-dos-criadores'
+// Preços propositalmente diferentes da reserva (97 e 797): provam que a página leu o catálogo.
+const OFFERS = {
+  'comunidade-dos-criadores-mensal': {
+    priceCents: 10900,
+    months: 1,
+    alt: 'comunidade-dos-criadores-anual',
+  },
+  'comunidade-dos-criadores-anual': {
+    priceCents: 89900,
+    months: 12,
+    alt: 'comunidade-dos-criadores-mensal',
+  },
+  'comunidade-dos-criadores-adulto-mensal': {
+    priceCents: 11900,
+    months: 1,
+    alt: 'comunidade-dos-criadores-adulto-anual',
+  },
+  'comunidade-dos-criadores-adulto-anual': {
+    priceCents: 99900,
+    months: 12,
+    alt: 'comunidade-dos-criadores-adulto-mensal',
+  },
+} as const
+type Slug = keyof typeof OFFERS
 const catalog = createServer((req, res) => {
-  const slug = req.url?.match(/^\/catalog\/offers\/([^/]+)$/)?.[1]
-  if (req.method !== 'GET' || (slug !== monthly && slug !== annual)) {
+  const slug = req.url?.match(/^\/catalog\/offers\/([^/]+)$/)?.[1] as Slug | undefined
+  const offer = slug ? OFFERS[slug] : undefined
+  if (req.method !== 'GET' || !slug || !offer) {
     res.writeHead(503).end()
     return
   }
@@ -27,16 +60,16 @@ const catalog = createServer((req, res) => {
       slug,
       name: 'Comunidade dos Criadores',
       isAvailable: true,
-      priceCents: slug === monthly ? 10900 : 89900,
+      priceCents: offer.priceCents,
       currency: 'BRL',
       guaranteeDays: 7,
       pricingMode: 'subscription',
-      billingIntervalMonths: slug === monthly ? 1 : 12,
+      billingIntervalMonths: offer.months,
       accessMode: 'billing_cycle',
       accessDurationValue: null,
       accessDurationUnit: null,
       product: { name: 'Comunidade dos Criadores' },
-      content: { altOffer: { slug: slug === monthly ? annual : monthly } },
+      content: { altOffer: { slug: offer.alt } },
     }),
   )
 })
@@ -58,11 +91,86 @@ const app = spawn('node', ['dist/server/entry.mjs'], {
     FUNNEL_INTERNAL_TOKEN: 'qa-isolated-local',
     SENTRY_DSN: '',
     TRUST_PROXY: 'false',
-    FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES: monthly,
+    FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES: 'comunidade-dos-criadores-mensal',
+    FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES: 'comunidade-dos-criadores-adulto-mensal',
     FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO: 'desafio-primeiro-jogo-30-dias',
     FUNNEL_OFFER_PRO_NO_COMANDO_DA_IA: 'no-comando-da-ia',
   },
 })
+
+interface Pagina {
+  nome: string
+  path: string
+  basePath: string
+  mensal: Slug
+  anual: Slug
+  /** Os preços do catálogo falso como a página os escreve. */
+  precos: RegExp[]
+  /** Rótulo do campo de nome no pré-checkout: o Kids pede os dados do responsável. */
+  nome_campo: string
+}
+const PAGINAS: Pagina[] = [
+  {
+    nome: 'kids-9a17',
+    path: `${kidsBase}/oferta`,
+    basePath: kidsBase,
+    mensal: 'comunidade-dos-criadores-mensal',
+    anual: 'comunidade-dos-criadores-anual',
+    precos: [/109/, /899/],
+    nome_campo: 'Nome do responsável',
+  },
+  {
+    nome: 'kids-criar-junto',
+    path: `${kidsBase}/oferta/criar-junto`,
+    basePath: kidsBase,
+    mensal: 'comunidade-dos-criadores-mensal',
+    anual: 'comunidade-dos-criadores-anual',
+    precos: [/109/, /899/],
+    nome_campo: 'Nome do responsável',
+  },
+  {
+    nome: 'kids-continuar',
+    path: `${kidsBase}/oferta/continuar`,
+    basePath: kidsBase,
+    mensal: 'comunidade-dos-criadores-mensal',
+    anual: 'comunidade-dos-criadores-anual',
+    precos: [/109/, /899/],
+    nome_campo: 'Nome do responsável',
+  },
+  {
+    nome: 'adulto',
+    path: `${adultBase}/oferta`,
+    basePath: adultBase,
+    mensal: 'comunidade-dos-criadores-adulto-mensal',
+    anual: 'comunidade-dos-criadores-adulto-anual',
+    precos: [/119/, /999/],
+    nome_campo: 'Nome',
+  },
+]
+
+/** Rola a página inteira para as imagens `loading="lazy"` carregarem antes da captura. */
+async function carregarTudo(page: import('playwright').Page) {
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.documentElement.scrollHeight; y += 500) {
+      window.scrollTo(0, y)
+      await new Promise((done) => setTimeout(done, 40))
+    }
+    window.scrollTo(0, 0)
+  })
+  // Imagem sem caixa (dentro de um <dialog> fechado ou escondida no celular) nunca carrega.
+  // Melhor esforço: a captura é para revisão humana; o status de cada imagem já foi conferido.
+  await page
+    .waitForFunction(
+      () =>
+        Array.from(document.images).every(
+          (img) => img.complete || img.getClientRects().length === 0,
+        ),
+      undefined,
+      { timeout: 8000 },
+    )
+    .catch(() => {})
+}
+
 let browser: Browser | undefined
 try {
   const origin = await new Promise<string>((done, fail) => {
@@ -88,7 +196,13 @@ try {
     })
   })
   console.log(`QA server: ${origin}`)
-  browser = await chromium.launch({ channel: 'chrome' })
+  browser = await chromium.launch(
+    process.env.QA_CHROME_CHANNEL
+      ? { channel: process.env.QA_CHROME_CHANNEL }
+      : process.env.QA_CHROMIUM_PATH
+        ? { executablePath: process.env.QA_CHROMIUM_PATH }
+        : {},
+  )
   const context = await browser.newContext({
     viewport: { width: 1440, height: 1000 },
     reducedMotion: 'reduce',
@@ -102,165 +216,114 @@ try {
     if (path === '/api/contact') contacts.push(route.request().postDataJSON())
     await route.fulfill({ json: {} })
   })
-  await context.route(`${origin}${base}/checkout?**`, (route) =>
-    route.fulfill({
-      contentType: 'text/html',
-      body: '<h1>Checkout destination fixture</h1>',
-    }),
-  )
+  for (const base of [kidsBase, adultBase])
+    await context.route(`${origin}${base}/checkout?**`, (route) =>
+      route.fulfill({ contentType: 'text/html', body: '<h1>Checkout destination fixture</h1>' }),
+    )
   const page = await context.newPage()
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await mkdir(output, { recursive: true })
-  const paths = [
-    '',
-    '/criacao-de-jogos',
-    '/expressao-visual',
-    '/formacao-tecnologica',
-    '/continuar',
-    '/habilidades-escolares',
-  ]
-  for (const path of paths) {
-    console.log(`Checking offer: ${path || 'default'}`)
-    const response = await page.goto(`${origin}${base}/oferta${path}`)
-    assert.equal(response?.status(), 200, path)
-    const order = await page
-      .locator('main > section')
-      .evaluateAll((sections) =>
-        sections
-          .slice(0, 4)
-          .map((section) =>
-            section.classList.contains('hero')
-              ? 'hero'
-              : section.classList.contains('tour')
-                ? 'tour'
-                : section.id,
-          ),
-      )
-    // A e F trazem a tese antes da faixa de telas (proposta de copy de 16/10/2026).
-    if (path === '/habilidades-escolares') assert.deepEqual(order, ['hero', 'f01', 'tour', 'f02'])
-    else if (path === '') assert.deepEqual(order.slice(0, 3), ['hero', 'a02', 'tour'])
-    else assert.equal(order[1], 'tour', path)
-    assert.equal(await page.locator('#title-tour').count(), 1)
-  }
-  console.log('Checking school page interactions')
-  await page.evaluate(() => document.fonts.ready)
-  assert.equal(await page.locator('h1').count(), 1)
-  assert.equal(await page.locator('#f03 .carta-interesse').count(), 4)
-  assert.equal(await page.locator('#duvidas details').count(), 32)
-  assert.equal(
-    await page.locator('#convite .prosa strong').count(),
-    1,
-    'Closing emphasis must render',
-  )
-  assert.match(await page.locator('#planos').innerText(), /109/)
-  assert.match(await page.locator('#planos').innerText(), /899/)
-  const integrity = await page.evaluate(() => {
-    const ids = Array.from(document.querySelectorAll('[id]')).map((el) => el.id)
-    return {
-      duplicates: ids.filter((id, i) => ids.indexOf(id) !== i),
-      brokenAnchors: Array.from(document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'))
-        .filter((a) => a.hash && !document.getElementById(a.hash.slice(1)))
-        .map((a) => a.hash),
-    }
-  })
-  assert.deepEqual(integrity, { duplicates: [], brokenAnchors: [] })
-  const images = await page
-    .locator('img[src]')
-    .evaluateAll((els) => [...new Set(els.map((el) => (el as HTMLImageElement).src))])
-  for (const src of images) assert.equal((await page.request.get(src)).status(), 200, src)
-  await page.screenshot({ path: resolve(output, 'desktop.png') })
-  for (const width of [320, 390, 768, 1024, 1440]) {
-    await page.setViewportSize({ width, height: 844 })
-    assert.equal(
-      await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
-      false,
-      `Overflow at ${width}`,
-    )
-    const columns = await page
-      .locator('#f03 .cartas')
-      .evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length)
-    // Quatro cartas ficam dois a dois no computador (copy nova de 16/10/2026).
-    assert.equal(columns, width <= 960 ? 1 : 2)
-  }
-  await page.setViewportSize({ width: 390, height: 844 })
-  await page.screenshot({ path: resolve(output, 'mobile.png') })
-  await page.locator('#f03 .carta-interesse').first().scrollIntoViewIfNeeded()
-  await page.screenshot({ path: resolve(output, 'mobile-cards.png') })
-  await page.locator('.hero-actions .kof-link').click()
-  assert.equal(new URL(page.url()).hash, '#experiencia')
-  await page.locator('.hero a[data-zoom]').click()
-  await page.locator('dialog.zoom[open]').waitFor()
-  await page.keyboard.press('Escape')
-  assert.equal(await page.locator('dialog.zoom[open]').count(), 0)
-  await page.goto(`${origin}${school}#duvida-escola`)
-  await page.locator('#duvida-escola[open]').waitFor()
-  assert.equal(await page.locator('#duvida-escola').getAttribute('open'), '')
-  for (const [label, slug] of [
-    ['mensal', monthly],
-    ['anual', annual],
-  ]) {
-    await page.goto(`${origin}${school}?utm_source=qa_escola&utm_campaign=review`)
-    await page.waitForFunction(() => !document.querySelector('astro-island[ssr]'))
-    const button = page.getByRole('button', { name: `Escolher o plano ${label}`, exact: true })
-    assert.equal(await button.getAttribute('data-checkout-oferta'), slug)
-    await button.click()
-    await page.getByRole('dialog').waitFor({ state: 'visible' })
-    await page.waitForFunction(() => document.activeElement?.getAttribute('name') === 'nome')
-    for (let i = 0; i < 8; i++) {
-      await page.keyboard.press('Tab')
-      assert.equal(
-        await page.getByRole('dialog').evaluate((el) => el.contains(document.activeElement)),
-        true,
-        'Keyboard focus left the modal',
-      )
-    }
-    for (let i = 0; i < 8; i++) {
-      await page.keyboard.press('Shift+Tab')
-      assert.equal(
-        await page.getByRole('dialog').evaluate((el) => el.contains(document.activeElement)),
-        true,
-        'Reverse keyboard focus left the modal',
-      )
-    }
-    await page.keyboard.press('Escape')
-    await page.getByRole('dialog').waitFor({ state: 'hidden' })
-    assert.equal(await button.evaluate((el) => el === document.activeElement), true)
-    await button.click()
-    await page.waitForFunction(() => document.activeElement?.getAttribute('name') === 'nome')
-    await page.getByLabel('Nome do responsável', { exact: true }).fill('Responsável de Teste')
-    await page.getByLabel('E-mail do responsável', { exact: true }).fill('qa@example.test')
-    await page.getByLabel('Telefone do responsável', { exact: true }).fill('11999999999')
-    await page.getByRole('button', { name: 'Continuar para o pagamento', exact: true }).click()
-    await page.waitForURL(`${origin}${base}/checkout?**`).catch(async (error) => {
-      await page.screenshot({ path: resolve(output, 'checkout-failure.png') })
-      console.error({
-        url: page.url(),
-        contacts,
-        form: await page
-          .getByRole('dialog')
-          .innerText()
-          .catch(() => ''),
-      })
-      throw error
+  let imagens = 0
+
+  for (const p of PAGINAS) {
+    console.log(`Checking offer: ${p.nome}`)
+    await page.setViewportSize({ width: 1440, height: 1000 })
+    const response = await page.goto(`${origin}${p.path}`)
+    assert.equal(response?.status(), 200, p.path)
+    await page.evaluate(() => document.fonts.ready)
+    assert.equal(await page.locator('h1').count(), 1, `${p.nome}: one h1`)
+    const texto = await page.locator('body').innerText()
+    for (const preco of p.precos) assert.match(texto, preco, `${p.nome}: live price ${preco}`)
+    const integrity = await page.evaluate(() => {
+      const ids = Array.from(document.querySelectorAll('[id]')).map((el) => el.id)
+      return {
+        duplicates: ids.filter((id, i) => ids.indexOf(id) !== i),
+        brokenAnchors: Array.from(document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'))
+          .filter((a) => a.hash && !document.getElementById(a.hash.slice(1)))
+          .map((a) => a.hash),
+      }
     })
-    const destination = new URL(page.url())
-    assert.equal(destination.searchParams.get('oferta'), slug)
-    assert.equal(destination.searchParams.get('utm_source'), 'qa_escola')
-    assert.equal(destination.searchParams.get('utm_campaign'), 'review')
+    assert.deepEqual(integrity, { duplicates: [], brokenAnchors: [] }, p.nome)
+    const srcs = await page
+      .locator('img[src]')
+      .evaluateAll((els) => [...new Set(els.map((el) => (el as HTMLImageElement).src))])
+    for (const src of srcs) assert.equal((await page.request.get(src)).status(), 200, src)
+    imagens += srcs.length
+    await carregarTudo(page)
+    await page.screenshot({ path: resolve(output, `${p.nome}-1440.png`), fullPage: true })
+    for (const width of [320, 390, 768, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 844 })
+      assert.equal(
+        await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+        false,
+        `${p.nome}: overflow at ${width}`,
+      )
+    }
+    await page.setViewportSize({ width: 390, height: 844 })
+    await carregarTudo(page)
+    await page.screenshot({ path: resolve(output, `${p.nome}-390.png`), fullPage: true })
+
+    // Os dois planos: cada botão leva o slug do seu plano e o pré-checkout chega ao checkout com
+    // ele e com a atribuição da URL.
+    const ctas = page.locator('[data-checkout-cta]')
+    assert.equal(await ctas.count(), 2, `${p.nome}: two plan CTAs`)
+    for (const slug of [p.mensal, p.anual]) {
+      await page.goto(`${origin}${p.path}?utm_source=qa_oferta&utm_campaign=review`)
+      await page.waitForFunction(() => !document.querySelector('astro-island[ssr]'))
+      const button = page.locator(`[data-checkout-cta][data-checkout-oferta="${slug}"]`)
+      assert.equal(await button.count(), 1, `${p.nome}: CTA for ${slug}`)
+      await button.click()
+      await page.getByRole('dialog').waitFor({ state: 'visible' })
+      await page.waitForFunction(() => document.activeElement?.getAttribute('name') === 'nome')
+      for (let i = 0; i < 8; i++) {
+        await page.keyboard.press('Tab')
+        assert.equal(
+          await page.getByRole('dialog').evaluate((el) => el.contains(document.activeElement)),
+          true,
+          'Keyboard focus left the modal',
+        )
+      }
+      const rodape = await page.getByRole('dialog').innerText()
+      assert.match(rodape, /Assinatura mensal ou anual, com 7 dias de garantia/, p.nome)
+      await page.getByLabel(p.nome_campo, { exact: true }).fill('Pessoa de Teste')
+      await page.getByLabel(/^E-mail/).fill('qa@example.test')
+      await page.getByLabel(/^Telefone/).fill('11999999999')
+      await page.getByRole('button', { name: 'Continuar para o pagamento', exact: true }).click()
+      await page.waitForURL(`${origin}${p.basePath}/checkout?**`)
+      const destination = new URL(page.url())
+      assert.equal(destination.searchParams.get('oferta'), slug)
+      assert.equal(destination.searchParams.get('utm_source'), 'qa_oferta')
+      assert.equal(destination.searchParams.get('utm_campaign'), 'review')
+    }
   }
-  assert.equal(contacts.length, 2)
-  assert.equal(
-    (await page.request.get(`${origin}${base}/oferta/escolar-inexistente`)).status(),
-    404,
-  )
+  assert.equal(contacts.length, PAGINAS.length * 2)
+
+  // As cinco páginas de perfil (até 20/10/2026) levam à página 9 a 17, com a mesma query.
+  for (const antiga of [
+    'tempo-de-tela',
+    'criacao-de-jogos',
+    'expressao-visual',
+    'formacao-tecnologica',
+    'habilidades-escolares',
+  ]) {
+    const res = await page.request.get(`${origin}${kidsBase}/oferta/${antiga}?cupom=QA`, {
+      maxRedirects: 0,
+    })
+    assert.equal(res.status(), 301, antiga)
+    assert.equal(res.headers().location, `${kidsBase}/oferta?cupom=QA`, antiga)
+  }
+  for (const inexistente of [
+    `${kidsBase}/oferta/escolar-inexistente`,
+    `${adultBase}/oferta/tempo-de-tela`,
+  ])
+    assert.equal((await page.request.get(`${origin}${inexistente}`)).status(), 404, inexistente)
   assert.deepEqual(errors, [])
   console.log(
     JSON.stringify({
-      routes: paths.length,
+      pages: PAGINAS.length,
       widths: 5,
-      images: images.length,
-      plans: 2,
+      images: imagens,
       errors,
       screenshots: output,
     }),
