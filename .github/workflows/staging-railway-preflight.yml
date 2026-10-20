@@ -43,15 +43,10 @@ jobs:
             bom: key.charCodeAt(0) === 0xfeff,
           }))
           NODE
-          printf '%s' "$RAILWAY_SSH_PRIVATE_KEY" > "$identity"
+          printf '%s\n' "$RAILWAY_SSH_PRIVATE_KEY" > "$identity"
           chmod 600 "$identity"
           if ! ssh-keygen -y -P '' -f "$identity" > "$public" 2>/dev/null; then
-            printf '\n' >> "$identity"
-            if ssh-keygen -y -P '' -f "$identity" > "$public" 2>/dev/null; then
-              echo '{"kind":"railway-ci-identity","status":"missing-final-newline"}'
-            else
-              echo '{"kind":"railway-ci-identity","status":"private-key-unreadable"}'
-            fi
+            echo '{"kind":"railway-ci-identity","status":"private-key-unreadable"}'
             exit 1
           fi
           fingerprint="$(ssh-keygen -lf "$public" | awk '{print $2}')"

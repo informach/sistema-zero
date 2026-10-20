@@ -205,7 +205,12 @@ export function prepareSsh(env) {
   }
   try {
     mkdirSync(sshDir, { recursive: true, mode: 0o700 })
-    writeFileSync(join(dir, 'identity'), env.RAILWAY_SSH_PRIVATE_KEY, { mode: 0o600 })
+    // The staging secret lacks the terminal newline. OpenSSH rejects that otherwise valid
+    // private key before it can authenticate.
+    const privateKey = env.RAILWAY_SSH_PRIVATE_KEY.endsWith('\n')
+      ? env.RAILWAY_SSH_PRIVATE_KEY
+      : `${env.RAILWAY_SSH_PRIVATE_KEY}\n`
+    writeFileSync(join(dir, 'identity'), privateKey, { mode: 0o600 })
     writeFileSync(join(dir, 'known_hosts'), env.RAILWAY_SSH_KNOWN_HOSTS, { mode: 0o600 })
     const quoted = join(dir, 'known_hosts').replaceAll('\\', '/').replaceAll('"', '\\"')
     writeFileSync(

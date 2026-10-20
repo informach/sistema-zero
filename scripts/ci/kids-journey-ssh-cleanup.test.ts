@@ -19,6 +19,7 @@ test.each([
   'prepare-fails',
   'dispose-fails',
   'success',
+  'success-with-newline',
 ])('SSH config/key cleanup: %s', (scenario) => {
   const directory = mkdtempSync(join(tmpdir(), 'sz-kids-ssh-proof-'))
   try {
@@ -38,8 +39,12 @@ test.each([
       syncBuiltinESMExports();
       const {prepareSsh}=await import(${JSON.stringify(new URL('./kids-journey-rollout.mjs', import.meta.url).href)});
       let caught=false,handle;
-      try {handle=prepareSsh({RAILWAY_TOKEN:'synthetic-api',RAILWAY_SSH_PRIVATE_KEY:'synthetic-key',RAILWAY_SSH_KNOWN_HOSTS:'ssh.railway.com ssh-ed25519 AAAA'});handle.dispose()}catch{caught=true}
-      assert.equal(caught,process.env.SCENARIO!=='success');
+      try {
+        handle=prepareSsh({RAILWAY_TOKEN:'synthetic-api',RAILWAY_SSH_PRIVATE_KEY:process.env.SCENARIO==='success-with-newline'?'synthetic-key\\n':'synthetic-key',RAILWAY_SSH_KNOWN_HOSTS:'ssh.railway.com ssh-ed25519 AAAA'});
+        assert.equal(fs.readFileSync(handle.identity,'utf8'),'synthetic-key\\n');
+        handle.dispose()
+      }catch{caught=true}
+      assert.equal(caught,process.env.SCENARIO==='prepare-fails'||process.env.SCENARIO==='dispose-fails');
       if(process.env.SCENARIO!=='dispose-fails')assert.equal(fs.readFileSync(config,'utf8'),'# original config\\n');
       assert.deepEqual(fs.readdirSync(process.env.TEMP).filter(name=>name.startsWith('sz-kids-rollout-')),[]);
     `
