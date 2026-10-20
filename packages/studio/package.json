@@ -62,7 +62,7 @@
   "scripts": {
     "dev": "vite --config playground/vite.config.ts",
     "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit",
-    "test": "bun test src",
+    "test": "node scripts/test-isolated.mjs",
     "gen:pro-kits": "bun scripts/gen-pro-kit-lock.ts && bun scripts/gen-pro-kit-sources.ts && bun scripts/gen-pro-kit-grid.ts",
     "check:pro-kits": "bun pro-kits/canvas-survival/scripts/generate-pack.ts --check && bun scripts/gen-pro-kit-lock.ts --check && bun scripts/gen-pro-kit-sources.ts --check && bun scripts/gen-pro-kit-grid.ts --check",
     "test:grid-games": "bun test ./pro-kits/grid-games/tests",
