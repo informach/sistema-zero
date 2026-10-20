@@ -22,6 +22,7 @@ import {
   type SceneComponentMode,
   type SceneComponentSelection,
 } from '../scene/meshComponents'
+import { unbackedMeshFaces } from '../scene/paintableInterior'
 import { requireScene } from '../scene/validation'
 import type { SceneRenderResource } from './sceneRenderResource'
 import type { SceneEdgeSegments } from './sceneVisibleEdges'
@@ -106,12 +107,17 @@ export class SceneComponentOverlay {
       this.clear()
       this.source = source.geometry
       const positions = source.geometry.getAttribute('position')
-      const backPositions = new Float32Array(positions.count * 3)
-      for (let i = 0; i < positions.count; i++)
-        backPositions.set([positions.getX(i), positions.getY(i), positions.getZ(i)], i * 3)
+      const unbacked = new Set(unbackedMeshFaces(mesh))
+      const backPositions: number[] = []
+      for (let triangle = 0; triangle < positions.count / 3; triangle++) {
+        const faceId = resource.componentFaceFor(source, triangle)
+        if (!faceId || !unbacked.has(faceId)) continue
+        for (let vertex = triangle * 3; vertex < triangle * 3 + 3; vertex++)
+          backPositions.push(positions.getX(vertex), positions.getY(vertex), positions.getZ(vertex))
+      }
       this.back = new BufferGeometry().setAttribute(
         'position',
-        new BufferAttribute(backPositions, 3),
+        new BufferAttribute(Float32Array.from(backPositions), 3),
       )
     }
     const edges = resource.edgePositionsFor(source)

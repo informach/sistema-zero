@@ -2,9 +2,16 @@ import { expect, test } from 'bun:test'
 import { LineSegments, Mesh, Points, Raycaster, Vector3 } from 'three'
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js'
 import { createModelAsset } from '../core/model'
-import { addSceneMirror, convertSceneNodesToMesh, setSceneNodeFlag } from '../scene/commands'
+import {
+  addSceneMirror,
+  addSceneShape,
+  convertSceneNodesToMesh,
+  setSceneNodeFlag,
+} from '../scene/commands'
 import { meshComponentEdges } from '../scene/meshComponents'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
+import { addScenePaintableInterior } from '../scene/paintableInterior'
+import { makeModel } from '../testing/fixtures'
 import { makeSceneWheelSelection } from '../testing/sceneWheelSelection'
 import { SceneComponentOverlay } from './SceneComponentOverlay'
 import { SceneRenderResource } from './sceneRenderResource'
@@ -23,6 +30,36 @@ function fixture() {
   if (mesh?.kind !== 'mesh') throw new Error('Missing mesh')
   return { document, nodeId, mesh }
 }
+
+test('a real inner face no longer receives the red missing-back overlay in Modelar', () => {
+  const empty = migrateLegacyModel(makeModel({ parts: [] })).document
+  const plane = addSceneShape(empty, 'plane', 'roof')
+  const node = plane.nodes.at(-1)!
+  if (node.kind !== 'mesh') throw new Error('Missing mesh')
+  const resource = new SceneRenderResource()
+  const overlay = new SceneComponentOverlay()
+  try {
+    resource.update(plane)
+    const original = plane.geometries.find((entry) => entry.id === node.geometryId)!
+    if (original.kind !== 'mesh') throw new Error('Missing mesh')
+    overlay.update(resource, original, { nodeId: node.id, mode: 'face', ids: [] })
+    const before = overlay.root.children[0]?.children[2]
+    if (!(before instanceof Mesh)) throw new Error('Missing back overlay')
+    expect(before.geometry.getAttribute('position').count).toBe(6)
+
+    const interior = addScenePaintableInterior(plane, node.id)
+    resource.update(interior)
+    const backed = interior.geometries.find((entry) => entry.id === node.geometryId)!
+    if (backed.kind !== 'mesh') throw new Error('Missing mesh')
+    overlay.update(resource, backed, { nodeId: node.id, mode: 'face', ids: [] })
+    const after = overlay.root.children[0]?.children[2]
+    if (!(after instanceof Mesh)) throw new Error('Missing back overlay')
+    expect(after.geometry.getAttribute('position').count).toBe(0)
+  } finally {
+    overlay.dispose()
+    resource.dispose()
+  }
+})
 
 test('a selected edge has its own thick yellow highlight, shared by mirrors and released on selection changes', () => {
   const f = fixture()

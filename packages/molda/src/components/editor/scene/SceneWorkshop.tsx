@@ -11,6 +11,7 @@ import type { ModelSceneNode, MoldaSceneDocument } from '../../../scene/document
 import { sceneToJson } from '../../../scene/documentJson'
 import { sceneMaterialImageBase } from '../../../scene/materialImages'
 import { transformPoint } from '../../../scene/matrix'
+import { hasScenePaintableInteriorGap } from '../../../scene/paintableInterior'
 import { sceneNodePivot, scenePivotRotation, setSceneAuthoringPivot } from '../../../scene/pivot'
 import { duplicateSceneNodesNearby } from '../../../scene/placement'
 import { SCENE_RIG_NORMALS } from '../../../scene/rigBuilder'
@@ -240,6 +241,12 @@ export function SceneWorkshop({
   // A face de perto redesenha quando a paleta ou a cor base mudam de verdade, não a cada render.
   const paintPalette = useMemo(() => scenePalette(document), [document])
   const paintData = workshop.paint.data
+  const paintInteriorAvailable = useMemo(
+    () =>
+      workshop.primary?.kind === 'mesh' &&
+      hasScenePaintableInteriorGap(document, workshop.primary.id),
+    [document, workshop.primary],
+  )
   const paintBase = useMemo(
     () =>
       paintData
@@ -988,6 +995,14 @@ export function SceneWorkshop({
                           ? {
                               apply: workshop.mapPaintUv,
                               disabled: !workshop.components.canEdit,
+                            }
+                          : null
+                      }
+                      interior={
+                        paintInteriorAvailable
+                          ? {
+                              apply: workshop.makePaintableInterior,
+                              disabled: !workshop.components.canEdit || workshop.paint.drawing,
                             }
                           : null
                       }

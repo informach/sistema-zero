@@ -13,6 +13,7 @@ import { SceneGraphError, selectSceneSubtrees } from '../../../scene/graph'
 import type { ScenePaintTarget } from '../../../scene/imagePaint'
 import type { AffineMatrix } from '../../../scene/matrix'
 import type { SceneMeasurementStep } from '../../../scene/measurementStep'
+import { addScenePaintableInterior } from '../../../scene/paintableInterior'
 import type { ScenePaintPreparationIssue } from '../../../scene/paintContact'
 import { scenePaintFaceIds } from '../../../scene/paintFaceSelection'
 import { ensureScenePaintSurface } from '../../../scene/paintSurface'
@@ -1064,6 +1065,17 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
           choosePaint(nodeId)
           paint.setGrid(true)
         }
+      })
+    },
+    makePaintableInterior: () => {
+      const nodeId = chosenRef.current.length === 1 ? chosenRef.current[0] : undefined
+      if (!nodeId || !brush) return
+      requestTransition(() => {
+        cancelPaint()
+        closePaint()
+        releasePrep()
+        const next = run((source) => addScenePaintableInterior(source, nodeId))
+        if (next) choosePaint(nodeId)
       })
     },
     paintColors: paintIndicators.colors,
