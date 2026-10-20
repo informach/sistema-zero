@@ -41,6 +41,46 @@ SQL opt-in em `tests/db/kids-journey.repository.test.ts` exige
 `KIDS_JOURNEY_TEST_DATABASE_URL` local com nome `kids_journey_*`; não usa `DATABASE_URL` como
 fallback. Aplica histórico real em banco descartável explícito. Skip não qualifica SQL.
 
+## Prévia da equipe no Kids também no perfil da PRÓPRIA conta (20/10/2026)
+
+O Kids obriga toda conta logada (equipe inclusive) a escolher um perfil antes da área de aprender
+(`requireProfileSelectPath` do member-shell), então a equipe em Pinta/Molda/Pensa/Estúdio está
+SEMPRE numa sessão de perfil da própria conta. O checkpoint de 19/10 recusava qualquer privilegiado
+com perfil (`Use a conta da equipe, sem perfil de aluno`): `gamification/me?audience=kids` dava 403
+e toda ferramenta caía no "Não consegui verificar agora…". Regra atual, numa fonte só
+(`resolveKidsStaffPreviewActor`, `interfaces/http/auth.ts`):
+- **Prévia (todas as capacidades, read-only como antes)** para `isPrivilegedActor` (papel
+  superadmin/admin/staff + status active, do gateway) **sem** `x-auth-impersonator-id`/
+  `x-auth-impersonation-mode`, em duas formas: a conta sozinha (sem headers de perfil; contexto
+  ausente ou `parent`) OU uma sessão de perfil (`x-auth-account-id` presente; contexto ausente ou
+  `student`). Headers de uma sessão de aluno da equipe (gateway, claims `kids.student` + `pfl`):
+  `x-auth-user-id`=perfil, `x-auth-account-id`=`pfl.accountId`, `x-auth-profile-name`,
+  `x-auth-profile-public`, `x-auth-user-role`/`-status` da CONTA, `x-auth-kids-context: student`,
+  sem e-mail/nome. "Própria conta" é por construção: o Auth assina `role`/`status` da conta dona do
+  `pfl.accountId` depois de `profile.belongsTo(account)` (`study-access.enter`/`select-profile`), e
+  todo `x-auth-*` é stripado da entrada.
+- **Suporte/impersonação continua recusado** (403), também dentro de um perfil: `act` carrega o papel
+  do ALVO e pode estar olhando a criança de um cliente, que precisa ver o estado real. Perfil com
+  contexto `parent`, `student` sem `x-auth-account-id`, ou nome/visibilidade de perfil sem conta →
+  403 (cabeçalhos inconsistentes).
+- Os serviços (`GetGamificationService`, `GetMissionsService`, `FreeStudioAccessService`) não recusam
+  mais `userId !== accountId` com `privileged`: quem admite é a borda HTTP. XP/streak/badges seguem
+  no PERFIL (`userId`), escritas de XP inalteradas (`privileged=true` gravado como antes), ranking
+  omitido, moedas ∞. Não-privilegiado: sem mudança.
+- **Pensa (contexto da equipe, `pensa-team.repository.ts`)**: a mesma regra, mas o `PensaActor` do
+  BFF (rota interna HMAC) não diz se há impersonação. Por isso o perfil da equipe só recebe a prévia
+  quando o member-shell AFIRMA `staffSession: 'own-account'` no corpo de
+  `POST /members/internal/pensa/projects/:id/context` (vira `{ownStaffProfile}` no
+  `PensaTeamService.context`/port). Sem a afirmação (BFF antigo, suporte) o perfil lê a jornada real,
+  como antes; a conta da equipe sem perfil segue com a prévia sem afirmação; colegas de equipe nunca
+  recebem a prévia. O member-shell envia o campo e aceita a prévia no perfil da própria conta
+  (`server/pensa/context.ts`, ver o CLAUDE.md de lá). Teste:
+  `tests/unit/pensa-team-staff-preview.test.ts`.
+- Testes: `tests/integration/kids-staff-profile-preview.test.ts`, `tests/unit/kids-journey-staff-preview.test.ts`,
+  os casos de equipe em `tests/{unit,integration}/studio-free-runtime.test.ts` e o adulto da equipe com
+  política vazia em `tests/integration/adult-staff-creative-tools.test.ts` (adulto não tem portão de
+  perfil e já funcionava; o teste trava isso).
+
 ## A etapa da jornada adulta nas listas e o seed inicial (19/10/2026)
 
 - **Posição na jornada** (`adultJourneyPosition`, core): a etapa atual é a PRIMEIRA não concluída;
@@ -61,10 +101,89 @@ fallback. Aplica histórico real em banco descartável explícito. Skip não qua
   Pinta; Inventor(a) → Molda; Arquiteto(a) de Mundos → Ponte, IA e Pensa (IA só depois de curso
   avançado, regra do `configure`); Gênio da Criação → Pro. Marco por curso, como o Kids: terminar
   E publicar no Mural no curso que tem a atividade de publicar (`listCourseIdsWithShowcaseBlock`),
-  senão só terminar; `--milestone=complete|showcase` força um só. **Mostra o plano e não grava**
+  senão só terminar; `--milestone=complete|showcase` força um só (com `--once` é ERRO explícito,
+  `parseAdultJourneySeedArgs`: o modo automático usa sempre o marco por curso). **Mostra o plano e não grava**
   sem `--apply`; com jornada já configurada, só troca com `--force`. Grava pela MESMA validação do
-  Admin (`configure` com a versão atual). ⚠️ Não rodar em staging/produção sem a confirmação da
-  dona. Testes: `tests/unit/adult-journey-seed.test.ts`.
+  Admin (`configure` com a versão atual). Testes: `tests/unit/adult-journey-seed.test.ts`.
+  ⚠️ **Seed automático, uma vez só (decisão da dona, 20/10/2026; substitui o "não rodar em
+  staging/produção sem confirmação"):** o boot do Members (`start()` no composition-root, sem
+  bloquear a subida) roda `runAdultJourneySeedOnce` (`adult-journey-seed-once.ts`; o mesmo
+  caminho de `journey:seed-adult -- --once`). Grava SÓ se `adult_journey_policy` não tem linha
+  (versão 0), pela validação do Admin, sob `pg_advisory_xact_lock('members-adult-journey-seed')`
+  + insert ON CONFLICT DO NOTHING (`AdultJourneyService.seedIfAbsent` →
+  `insertPolicyIfAbsent`); várias réplicas gravam uma vez. Política existente (Admin ou seed
+  anterior) → no-op para sempre, log `adult_journey_seed.skipped` com
+  `detail: 'política já configurada, seed ignorado'`; nunca usa `--force`. Sem curso no
+  primeiro nível, plano recusado ou erro → `adult_journey_seed.skipped` (warn, `reason`
+  `no-courses`/`invalid`/`error`), boot segue e tenta no próximo. Gravou →
+  `adult_journey_seed.applied` (etapas, `stoppedAt`, `excluded`). **Plano parcial é gravado**:
+  a política exige ao menos um curso por etapa e o seed para antes do primeiro nível vazio,
+  então não existe etapa vazia que se conclua sozinha; as ferramentas das etapas que faltam
+  (Ponte/IA/Pensa/Pro, Molda se parar antes de iniciante-3d) continuam fechadas, e o piso
+  (abaixo) segura quem terminou as etapas existentes quando a equipe completar no Admin. O
+  pre-deploy do Railway (`.railway/services/members.json`, fora do pacote) roda só `db:migrate`,
+  por isso o gatilho é o boot. Testes: `tests/unit/adult-journey-seed.test.ts` e
+  `tests/db/adult-journey.repository.test.ts` (concorrência e política do Admin intacta).
+- **Produto avulso fora do seed** (`ADULT_JOURNEY_STANDALONE_COURSE_SLUGS`, hoje
+  `no-comando-da-ia`): nunca vira requisito de etapa pelo seed (quem compra só o curso não pode
+  travar a etapa, e a assinatura não inclui o curso). Sai em `plan.excluded` e no dry-run como
+  "Excluídos". A equipe ainda pode pô-lo numa etapa pelo Admin, de propósito.
+
+## Piso da jornada adulta, fim do acesso e avisos de vencimento (20/10/2026)
+
+- **Piso (`adult_journey_reached`, migration `0138_adult_journey_reached`)**: `user_id` PK,
+  `position`, `policy_version`, `reached_at`, `updated_at`. `AdultJourneyService.get` sobe o piso
+  (upsert com `greatest`, só sobe) na MESMA transação/versão/cerca de exclusão do
+  `freezeGranted` (que ganhou o parâmetro `reachedPosition`). A leitura passa o piso a
+  `projectAdultJourney(..., frozen, reached)` (core): etapas abaixo dele aparecem concluídas sem
+  `missing`, a posição é `max(calculada, piso)` e o piso NÃO concede capacidade (etapa nova
+  inserida abaixo do piso não libera ferramenta). `positions()` (listas) lê os pisos em lote,
+  só leitura. Purga de conta apaga a tabela. Sem linha = sem piso (quem nunca abriu a jornada).
+- **Fim do acesso não tira conquista**: `tests/integration/journey-after-access-ends.test.ts`
+  (adulto: `expireLapsed` e webhook `expired` mantêm etapa, capacidades, piso e paleta
+  `/studio/unlocks`, e o upload do Estúdio volta a 403; Kids: posto e capacidades iguais depois
+  do vencimento) e `tests/db/journey-survives-access-end.test.ts` (SQL real de `expireLapsed`,
+  `expireBySubscriptionId` e `revokeBySubscriptionId`: `adult_journey_grants`,
+  `adult_journey_reached`, `kids_journey_earned` e `studio_block_grants` byte a byte iguais).
+- **Avisos de fim do acesso** (`SendAccessEndedMessagesService`, porta
+  `AccessEndedMessagesRepository` implementada por `DrizzleRenewalReminderRepository`; roda no
+  MESMO ciclo/advisory lock do lembrete anual e do Desafio; precisa de authGateway + GATEWAY_URL +
+  MEMBERS_HMAC_SECRET + FUNNEL_URL).
+  - **Quando roda:** um ciclo ~15 s depois do `start()` (`BOOT_CYCLE_DELAY_MS`, sem bloquear a
+    subida: primeiro a retenção com o `expireLapsed`, depois os avisos, que leem esse `expired`) e
+    a cada `RENEWAL_REMINDER_INTERVAL_MS` (6 h). Sem o ciclo de boot, deploys mais frequentes que
+    6 h nunca rodavam o job. Um ciclo por vez por réplica; `stop()` limpa os timers antes de
+    esperar o seed e os ciclos em voo.
+  - **Lock de SESSÃO** (`withSessionAdvisoryLock`, `infrastructure/persistence/drizzle/session-advisory-lock.ts`,
+    porte do Auth; chave `30792292938117749`) numa conexão reservada, não xact: os senders fazem
+    HTTP e a transação-portão ficava `idle in transaction`, derrubada pelo timeout de 30 s do pool.
+    Unlock + release em todos os caminhos (teste `tests/db/session-advisory-lock.test.ts`).
+  - **Janela de 72 h** (`ACCESS_ENDED_WINDOW_MS`) para `gift_expired` e `subscription_ended`:
+    cobre ciclos perdidos (deploys, serviço fora) e continua sem spam histórico na estreia; o
+    dedupe por matrícula + data + tipo impede reenvio. Dedupe em `entitlement_lifecycle_messages_sent` (kinds
+  `gift_expiry_2d`, `gift_expired`, `subscription_ended`), mark-after-send, idempotency key por
+  grupo. Links: `${FUNNEL_URL}/kids|pro/comunidade-dos-criadores/oferta/continuar` + UTMs
+  (`utm_source=email&utm_medium=email`, `utm_campaign=fim-do-presente` com `utm_content=2-dias`/
+  `no-dia`, ou `assinatura-encerrada`).
+  - Presente de 7 dias: `source_kind='manual'` + `source_id LIKE 'scholarship:%'` + validade.
+    `gift-expiry-2d` (`nome`,`data`,`link`) quando faltam até 2 dias no calendário de São Paulo e
+    a matrícula segue `status='active'`; `gift-expired` (`nome`,`link`) quando venceu nas últimas
+    72 h. Um e-mail por resgate (curso
+    + Mural temporário). Pula quem tem acesso mais forte e duradouro (chave-mestra Kids,
+    assinatura Kids ou o mesmo curso por outra via).
+  - Assinatura da Comunidade (`subscription_id` + snapshot `offerSlug` em
+    `COMMUNITY_SUBSCRIPTION_OFFER_SLUGS`): `status='expired'` com `updated_at` nas últimas 72 h
+    (nunca avisa vencimentos antigos quando o job estreia), um e-mail por conta + assinatura,
+    `subscription-ended-kids` ou `-adult` (`nome`,`link`), só sem outro acesso ativo à Comunidade
+    da mesma audiência (outra assinatura/renovação ou a chave-mestra da audiência). Cancelada
+    (`revoked`) não entra.
+  - Testes: `tests/unit/access-ended-messages.test.ts`, `tests/db/access-ended-messages.repository.test.ts`.
+- **`POST /members/webhooks/subscription` com `canceled` revoga na hora** (contrato antigo,
+  ver "Pendente"). Hoje nenhum serviço chama essa rota: o Payments entrega
+  `subscription.canceled` ao `webhook_url` do consumer dono (o funil, via gateway
+  `/webhooks/payments`), e o funil só trata `payment.paid`/`payment.failed`. O acesso termina
+  pela validade + carência (`expireLapsed`). Não ligar um chamador de `canceled` sem antes trocar
+  a revogação imediata por "mantém até `expires_at`".
 
 ## Contratos conciliados do Estúdio JS/Python (18/10/2026)
 
@@ -1497,8 +1616,8 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   (sem load-mutate-save por linha → sem lost-update sob corrida com renovação).
 - **Lembrete de RENOVAÇÃO do anual à vista (07/2026, migration `0042` =
   `renewal_reminders_sent(entitlement_id, expires_on)` PK composto):** job periódico
-  (`RENEWAL_REMINDER_INTERVAL_MS`, default 6h) sob advisory xact-lock PRÓPRIO
-  `30792292938117749` — matrícula ATIVA de compra por período (`source_kind='payment'`
+  (`RENEWAL_REMINDER_INTERVAL_MS`, default 6h, + um ciclo logo após o boot) sob advisory lock
+  de SESSÃO PRÓPRIO `30792292938117749` (conexão reservada; o ciclo faz HTTP) — matrícula ATIVA de compra por período (`source_kind='payment'`
   + `expires_at` + `subscription_id IS NULL`; assinatura recorrente fica FORA, a Efí
   renova sozinha) vencendo em ≤ `RENEWAL_REMINDER_DAYS_BEFORE` (7) dias → e-mail
   template `renewal-reminder` (via gateway, consumer HMAC `members` — mesmo
@@ -1524,7 +1643,8 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   nunca bloqueia acesso ou mensagem. O token deve ser o mesmo do Funnel e é opcional apenas quando
   a integração está deliberadamente desligada em desenvolvimento.
 - **Retenção de `processed_webhooks` roda SOZINHA** (06/2026): `setInterval` no
-  composition-root (`RETENTION_CLEANUP_INTERVAL_MS`, default 6h) chama
+  composition-root (`RETENTION_CLEANUP_INTERVAL_MS`, default 6h, + um ciclo ~15 s após o boot,
+  antes dos avisos de fim do acesso) chama
   `pruneProcessedBefore(now - PROCESSED_WEBHOOKS_RETENTION_DAYS)` gateado por
   **advisory xact-lock** (chave `30792292938117747` = 'members' ASCII int8 — o espaço
   é GLOBAL ao banco compartilhado, não colida com a do payments) → só 1 réplica

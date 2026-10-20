@@ -30,7 +30,7 @@ export function makeResolveOffer(env: Env): (funnel: string | null) => ResolvedO
     }
     return {
       offerSlug: resolveOfferSlug(env, f.key),
-      productName: f.productName,
+      productName: f.chargeName ?? f.productName,
       productSku: f.productSku,
       offerContract: f.offerContract,
     }

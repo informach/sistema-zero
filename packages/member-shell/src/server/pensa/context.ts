@@ -105,14 +105,42 @@ export async function loadPensaContext(
     role: inputUser.role,
     status: inputUser.status,
     hasProfile: Boolean(inputUser.activeProfile),
+    profileAccountId: inputUser.activeProfile?.accountId,
     impersonating: Boolean(inputUser.act),
     kidsKind: inputUser.kids?.kind,
   }
-  const response = await members.pensaTeamCapabilities(actor, projectId).catch(() => {
-    throw new PensaUnavailable(
-      'Não consegui conferir os recursos do projeto. Sua ideia está guardada. Tente de novo.',
+  // Team preview, same rule as Members' `resolveKidsStaffPreviewActor`: an active privileged
+  // role, never in a support session, either on the account itself or in a profile of its OWN
+  // account (the Kids app makes staff pick a profile before Pensa). The role in a profile
+  // session is the account's (Auth signs it from `pfl.accountId` after checking ownership).
+  const staffSessionBase =
+    actor.audience !== 'adult' &&
+    actor.privileged &&
+    actor.profileId === user.id &&
+    user.status === 'active' &&
+    !user.impersonating &&
+    isPrivilegedRole(user.role)
+  const ownAccountPreview =
+    staffSessionBase &&
+    actor.profileId === actor.accountId &&
+    !user.hasProfile &&
+    user.kidsKind !== 'student'
+  const ownProfilePreview =
+    staffSessionBase &&
+    user.hasProfile &&
+    user.profileAccountId === actor.accountId &&
+    user.kidsKind !== 'parent'
+  const response = await members
+    .pensaTeamCapabilities(
+      actor,
+      projectId,
+      ownProfilePreview ? { staffSession: 'own-account' } : undefined,
     )
-  })
+    .catch(() => {
+      throw new PensaUnavailable(
+        'Não consegui conferir os recursos do projeto. Sua ideia está guardada. Tente de novo.',
+      )
+    })
   if (response.status !== 200 || !response.body)
     throw new PensaUnavailable(
       'Não consegui conferir os recursos do projeto. Sua ideia está guardada. Tente de novo.',
@@ -135,15 +163,7 @@ export async function loadPensaContext(
     : null
   const authoring = inspection?.authoring ?? view.studioAuthoring
   const isPrivileged = (profileId: string) => profileId === user.id && isPrivilegedRole(user.role)
-  const ownTeamPreview =
-    actor.privileged &&
-    actor.profileId === actor.accountId &&
-    actor.profileId === user.id &&
-    user.status === 'active' &&
-    !user.hasProfile &&
-    !user.impersonating &&
-    user.kidsKind !== 'student' &&
-    isPrivilegedRole(user.role)
+  const ownTeamPreview = ownAccountPreview || ownProfilePreview
   const kidsByProfile = new Map<string, KidsJourneyAccess>()
   if (!adult) {
     for (const person of [facts.code, ...facts.art]) {

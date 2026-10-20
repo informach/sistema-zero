@@ -10,6 +10,42 @@ a autorização real; flags/roles do cliente não habilitam Pro/IA. Preserve rem
 projetos já existentes e todos os contratos JS/Python. Antigos exemplos resolveStudioTier nos
 registros históricos abaixo não são autoridade normal Kids. Gates integrados ainda pendentes.
 
+## Prévia da equipe no Pensa também no perfil da PRÓPRIA conta (20/10/2026)
+
+O Kids obriga toda conta (equipe inclusive) a escolher um perfil antes de aprender, então a equipe
+no Pensa está numa sessão de perfil. `loadPensaContext` (`server/pensa/context.ts`) aceita a prévia
+da equipe (`kidsPreview`) em dois casos, ambos com papel privilegiado ATIVO, `actor.privileged`,
+`actor.profileId === user.id`, vitrine Kids e SEM `act` (suporte nunca): a conta sozinha (como
+antes) ou o perfil da própria conta (`activeProfile.accountId === actor.accountId`, contexto não
+`parent`). Só no segundo caso o `pensaTeamCapabilities(actor, id, { staffSession: 'own-account' })`
+manda o campo à rota interna HMAC do Members: é a afirmação que o Members precisa, porque o `actor`
+não carrega impersonação (ver o CLAUDE.md do members). Sem ela o Members devolve a jornada real e a
+prévia segue recusada aqui. Cliente comum e adulto: sem mudança. Testes no fim de
+`tests/pensa-capabilities.test.ts` (o campo enviado e a prévia aceita; suporte, perfil de outra
+conta e equipe inativa recusados; perfil de cliente igual).
+
+## Oferta de continuidade adulta (20/10/2026)
+
+- **`lib/adult-links.ts`**: `COMUNIDADE_ADULTO_CONTINUAR_URL` (constante de produção, como o
+  `COMUNIDADE_OFERTA_URL` do Kids) e `comunidadeAdultoContinuarUrl(origem)` com
+  `utm_source=plataforma&utm_medium=app&utm_content=<origem>`. Os dois apps usam: o adulto nas
+  entradas da continuidade e o Kids no aviso dos 18 anos da área dos pais
+  (`areaAdultaContinuarUrl` de `community-kids/src/lib/links.ts` só repassa para cá). Teste em
+  `tests/adult-links.test.ts`.
+- **`lib/subscription-comeback.ts`**: o botão de voltar para a Comunidade em Compras (adulto) e na
+  Conta dos pais (Kids). `comebackSubscriptionId(subs, isProduct)` dá a assinatura mais recente do
+  produto SÓ se ela estiver `EXPIRED` (Encerrada); `CANCELED` ainda tem acesso até o fim do período
+  pago mais a carência (o botão faria pagar duas vezes) e segura o de uma encerrada mais antiga; uma
+  `ACTIVE` do produto esconde todas; `PENDING` não conta. ⚠️ A view pública de "Minhas assinaturas"
+  do payments (`MySubscriptionView`) não tem SKU, slug, produto nem público, só a descrição (o nome
+  do produto do checkout). Por isso o público sai do NOME: `isAdultComunidadeSubscription` exige
+  "adult" ("Comunidade dos Criadores (adultos)", nome que a oferta principal adulta passa a gravar
+  no funil) e `isKidsComunidadeSubscription` o exclui (a principal Kids cobra como "Comunidade dos
+  Criadores"). Teste em `tests/subscription-comeback.test.ts`.
+- **`checkCommunityContinuityAccessReadonly()`** no cliente do members: uma ida a
+  `/members/access` com `NCI_ACCESS_REF` (`no-comando-da-ia`) e o Clube da audiência. Aditivo; o
+  Kids não chama. Quem lê é o cartão de Cursos do community (ver o CLAUDE.md de lá).
+
 ## Peças com a pele da comunidade adulta (19/10/2026)
 
 Pedidos da direção de arte adulta (o CLAUDE.md do community, §"Entrada, páginas públicas…"). O

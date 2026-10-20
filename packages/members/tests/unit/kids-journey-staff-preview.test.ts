@@ -102,19 +102,50 @@ test('parent/customer roles, inactive staff and client flags cannot select the p
   expect(fixture.reads).toEqual([])
 })
 
-test('a profile, a third-party account, a student or either support mode is refused before reading policy', async () => {
+test('a profile session of the staff OWN account (how the Kids app enters learning) gets the preview', async () => {
   const fixture = app()
+  const account = randomUUID()
+  // Exact gateway shape of a Kids student session of a staff account (`kids.student` + `pfl`).
+  const studentSession = {
+    'x-auth-account-id': account,
+    'x-auth-profile-name': 'Perfil%20da%20Equipe',
+    'x-auth-profile-public': 'false',
+    'x-auth-kids-context': 'student',
+  }
   const cases: Record<string, string>[] = [
-    { 'x-auth-account-id': randomUUID() },
+    studentSession,
+    // Legacy default profile (`id = id da conta`) and the legacy select without the Kids claim.
+    { ...studentSession, 'x-auth-account-id': id },
+    { 'x-auth-account-id': account, 'x-auth-profile-name': 'Perfil' },
+  ]
+  for (const role of ['staff', 'admin', 'superadmin'])
+    for (const headers of cases) {
+      const response = await fixture.request({ ...headers, 'x-auth-user-role': role })
+      expect(response.status).toBe(200)
+      expect((await response.json()).capabilities).toEqual([...KIDS_CREATOR_CAPABILITIES])
+    }
+  for (const headers of cases)
+    expect((await fixture.request({ ...headers, 'x-auth-user-role': 'customer' })).status).toBe(403)
+})
+
+test('support sessions and inconsistent profile headers are refused before reading policy', async () => {
+  const fixture = app()
+  const profile = { 'x-auth-account-id': randomUUID(), 'x-auth-kids-context': 'student' }
+  const cases: Record<string, string>[] = [
     { 'x-auth-account-id': id, 'x-auth-kids-context': 'parent' },
     { 'x-auth-kids-context': 'student' },
     { 'x-auth-profile-name': 'Perfil' },
     { 'x-auth-profile-public': 'false' },
+    { 'x-auth-account-id': 'not-a-uuid' },
     { 'x-auth-impersonator-id': randomUUID() },
     { 'x-auth-impersonation-mode': 'readonly' },
     { 'x-auth-impersonation-mode': 'write' },
+    // Support inside a profile (the customer's child) must see the real state, never the preview.
+    { ...profile, 'x-auth-impersonator-id': randomUUID() },
+    { ...profile, 'x-auth-impersonation-mode': 'write' },
+    { 'x-auth-account-id': randomUUID(), 'x-auth-impersonator-id': randomUUID() },
   ]
-  for (const headers of cases) expect((await fixture.request(headers)).status).toBe(403)
+  for (const headers of cases) expect([400, 403]).toContain((await fixture.request(headers)).status)
   expect(fixture.reads).toEqual([])
 })
 
@@ -140,7 +171,7 @@ test('initializing/unavailable policy is explicit and the preview has no mutatio
   expect(fixture.reads).toEqual([])
 })
 
-test('Free Studio uses the same own-account team boundary as explicit preview', () => {
+test('Free Studio uses the same own-account team boundary as explicit preview, profile included', () => {
   const own = { 'x-auth-user-id': id, 'x-auth-user-role': 'staff', 'x-auth-user-status': 'active' }
   for (const role of ['staff', 'admin', 'superadmin'])
     for (const parent of [false, true]) {
@@ -152,17 +183,33 @@ test('Free Studio uses the same own-account team boundary as explicit preview', 
         privileged: true,
       })
     }
+  const account = randomUUID()
+  expect(
+    resolveStudioFreeActor(
+      { ...own, 'x-auth-account-id': account, 'x-auth-kids-context': 'student' },
+      'kids',
+    ),
+  ).toMatchObject({ userId: id, accountId: account, privileged: true, readOnly: false })
   for (const headers of [
-    { 'x-auth-account-id': id },
-    { 'x-auth-account-id': randomUUID() },
-    { 'x-auth-profile-name': 'Perfil' },
-    { 'x-auth-profile-public': 'false' },
-    { 'x-auth-kids-context': 'student' },
     { 'x-auth-impersonator-id': randomUUID() },
     { 'x-auth-impersonation-mode': 'readonly' },
     { 'x-auth-impersonation-mode': 'write' },
+    {
+      'x-auth-account-id': account,
+      'x-auth-kids-context': 'student',
+      'x-auth-impersonator-id': randomUUID(),
+    },
   ])
-    expect(() => resolveStudioFreeActor({ ...own, ...headers }, 'kids')).toThrow('conta da equipe')
+    expect(() => resolveStudioFreeActor({ ...own, ...headers }, 'kids')).toThrow(
+      'sessão de suporte',
+    )
+  for (const headers of [
+    { 'x-auth-account-id': id, 'x-auth-kids-context': 'parent' },
+    { 'x-auth-profile-name': 'Perfil' },
+    { 'x-auth-profile-public': 'false' },
+    { 'x-auth-kids-context': 'student' },
+  ])
+    expect(() => resolveStudioFreeActor({ ...own, ...headers }, 'kids')).toThrow('inconsistente')
   expect(() =>
     resolveStudioFreeActor(
       { ...own, 'x-auth-user-role': 'customer', 'x-auth-kids-context': 'parent' },

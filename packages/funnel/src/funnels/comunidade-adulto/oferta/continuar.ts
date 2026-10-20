@@ -170,7 +170,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
         rotulo: 'SAVE 3 · FEZ 18 ANOS NO KIDS',
         titulo: 'Você criava na Comunidade Kids',
         texto:
-          'A conta Kids fica no nome do responsável. A partir dos 18, a conta é sua, com o mesmo Estúdio que você já conhece, outra aparência e uma escada de etapas própria. Os projetos do perfil Kids não passam para a conta nova.',
+          'A conta Kids fica no nome do responsável, e o perfil Kids continua funcionando depois dos 18, com os projetos, enquanto a assinatura dele estiver ativa. Aqui a conta é sua e começa nova, com o mesmo Estúdio que você já conhece, outra aparência e uma escada de etapas própria.',
         proximo: 'UMA CONTA NO SEU NOME',
       },
       {
@@ -195,6 +195,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
         'Os jogos publicados, que continuam no Mural para visita',
         'Os certificados já emitidos',
         'O progresso nos cursos',
+        'A etapa e os blocos que você já liberou',
       ],
     },
     volta: {
@@ -242,7 +243,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
       {
         pergunta: 'Meus projetos ainda estão lá?',
         resposta:
-          'Estão. Os projetos em Meus Jogos, os jogos publicados no Mural, os certificados e o progresso nos cursos ficam na conta. Entre com o mesmo e-mail e continue de onde parou.',
+          'Estão. Os projetos em Meus Jogos, os jogos publicados no Mural, os certificados, o progresso nos cursos e a etapa que você alcançou ficam na conta. Entre com o mesmo e-mail e continue de onde parou.',
       },
       {
         pergunta: 'Preciso criar outra conta?',
@@ -257,7 +258,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
       {
         pergunta: 'Usava a Comunidade Kids e fiz 18 anos. Levo meus jogos?',
         resposta:
-          'A conta Kids é do seu responsável, e os projetos do perfil Kids não passam para a área adulta. Aqui você abre uma conta no seu nome, com o mesmo Estúdio que já conhece e uma escada de etapas própria.',
+          'Os jogos ficam no perfil Kids, que segue funcionando na conta do seu responsável enquanto a assinatura dele estiver ativa. A conta adulta começa nova, no seu nome, com o mesmo Estúdio que você já conhece e uma escada de etapas própria.',
       },
       {
         pergunta: 'Meu filho tem a assinatura Kids. Ela inclui a minha?',

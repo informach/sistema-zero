@@ -1,5 +1,6 @@
 import { ArrowRight, Check, Lock } from 'lucide-react'
 import Link from 'next/link'
+import type { LockedCourseLink } from '@/lib/continuity'
 import { courseKicker, isCourseDone } from '@/lib/course-levels'
 import type { CatalogCourseView, CourseProgress } from '@/lib/types'
 import { CourseCover, ProgressBar } from './courses/course-cover'
@@ -8,17 +9,17 @@ interface CatalogCourseCardProps {
   course: CatalogCourseView
   /** Progresso de Meus cursos (aulas feitas); `null` quando o curso não é da pessoa. */
   progress: CourseProgress | null
-  /** URL final da página de vendas (metadata.salesPageUrl ?? FUNNEL_URL), resolvida no server. */
-  salesUrl: string | null
+  /** O botão de curso bloqueado (`lockedCourseLink`: a página do curso ou a oferta da Comunidade). */
+  locked: LockedCourseLink
 }
 
 /**
  * O cartão deitado de "Todos os cursos" (direção de arte de 18/10/2026): capa à esquerda, o eixo e
  * o nível, o título e o estado com o botão: Concluído (Revisar curso), o progresso (Continuar),
- * Liberado para você (Começar agora) ou Bloqueado (Conhecer o curso, na página de vendas em OUTRA
- * aba, avisado no próprio cartão).
+ * Liberado para você (Começar agora) ou Bloqueado (Conhecer o curso, ou Conhecer a Comunidade quando
+ * o curso não tem página própria, em OUTRA aba, avisado no próprio cartão).
  */
-export function CatalogCourseCard({ course, progress, salesUrl }: CatalogCourseCardProps) {
+export function CatalogCourseCard({ course, progress, locked }: CatalogCourseCardProps) {
   const href = `/cursos/${encodeURIComponent(course.courseSlug)}`
   const done = course.hasAccess && isCourseDone({ milestones: course.milestones, progress })
   const started = !done && (progress?.completedLessons ?? 0) > 0
@@ -44,23 +45,17 @@ export function CatalogCourseCard({ course, progress, salesUrl }: CatalogCourseC
             <span className="text-[0.85rem] text-muted-foreground">
               Ainda não faz parte do seu acesso.
             </span>
-            {salesUrl ? (
-              <>
-                {/* Página de vendas é EXTERNA (funil): nova aba, e o aviso fica à vista. */}
-                <a
-                  href={salesUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="sz-btn-outline sz-btn-sm mt-auto self-start"
-                >
-                  Conhecer o curso
-                  <ArrowRight aria-hidden />
-                </a>
-                <span className="text-[0.85rem] text-muted-foreground">
-                  Abre a página do curso em outra aba.
-                </span>
-              </>
-            ) : null}
+            {/* Página de vendas é EXTERNA (funil): nova aba, e o aviso fica à vista. */}
+            <a
+              href={locked.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sz-btn-outline sz-btn-sm mt-auto self-start"
+            >
+              {locked.label}
+              <ArrowRight aria-hidden />
+            </a>
+            <span className="text-[0.85rem] text-muted-foreground">{locked.note}</span>
           </>
         ) : done ? (
           <>

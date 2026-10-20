@@ -8,6 +8,7 @@ import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
+import { toolEarnedInJourney, toolOpensAtLevel } from '@/lib/tool-opens-at'
 import {
   checkCreativeToolsAccessReadonly,
   getGamificationReadonly,
@@ -54,7 +55,12 @@ export default async function EstudioPage({
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
   if (res.status !== 200) return <ToolRouteRecado screen={KidsStudioUnavailable} />
   const hasAccess = res.body?.access?.['estudio-completo'] === true
-  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedStudio} />
+  if (!hasAccess) {
+    const lockedJourney = gam?.status === 200 ? kidsJourneyAccess(gam.body) : null
+    const opensAt = toolOpensAtLevel('estudio-completo', lockedJourney)
+    const earned = toolEarnedInJourney('estudio-completo', lockedJourney)
+    return <ToolRouteRecado screen={<KidsLockedStudio opensAt={opensAt} earned={earned} />} />
+  }
   const pintaOwned = res.body?.access?.pinta === true
   const moldaOwned = res.body?.access?.molda === true
   // Falha ao consultar o rank não pode virar Faísca: isso esconderia ferramentas de

@@ -4,6 +4,7 @@ import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioProClient } from '@/components/kids/studio-pro-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
+import { toolEarnedInJourney, toolOpensAtLevel } from '@/lib/tool-opens-at'
 import { checkCreativeToolsAccessReadonly, getGamificationReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
 import { resolveStudioProAccess } from '@/server/studio-pro-access'
@@ -57,7 +58,9 @@ export default async function EstudioProPage({
   if (!access.allowed && access.code === 'JOURNEY_UNAVAILABLE')
     return <ToolRouteRecado screen={KidsStudioUnavailable} />
   if (!access.allowed && access.code === 'STUDIO_ACCESS_REQUIRED') {
-    return <ToolRouteRecado screen={KidsLockedStudio} />
+    const opensAt = toolOpensAtLevel('estudio-completo', journey)
+    const earned = toolEarnedInJourney('estudio-completo', journey)
+    return <ToolRouteRecado screen={<KidsLockedStudio opensAt={opensAt} earned={earned} />} />
   }
   // A página é protegida pelo proxy, mas mantém o redirect defensivo para URL direta.
   if (!access.allowed) redirect('/estudio')

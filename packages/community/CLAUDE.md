@@ -260,6 +260,56 @@ volta da foto. Prancha "Perfil público e a cor da etapa" e "Jornada adulta" no 
 - A jornada é cadastrada no Admin; o script `journey:seed-adult` do members faz o cadastro inicial.
 - Testes: `tests/journey-stage.test.ts`.
 
+## Entradas para a oferta de continuidade (20/10/2026)
+
+A página pública `…/pro/comunidade-dos-criadores/oferta/continuar` agora tem links vindos do app.
+A URL é a constante `COMUNIDADE_ADULTO_CONTINUAR_URL` de **`member-shell/lib/adult-links`**, e
+`comunidadeAdultoContinuarUrl(origem)` acrescenta `utm_source=plataforma&utm_medium=app&utm_content=<origem>`.
+⚠️ Não use o `FUNNEL_URL` aqui: ele aponta para outro funil.
+
+- **Ferramenta fechada com motivo** (`lib/tool-lock.ts`): `toolLockReason` é a régua ÚNICA do
+  `/criar` e das páginas `/estudio`, `/pinta`, `/molda`, `/pensa` e `/estudio/pro/[id]` (`plan` |
+  `journey` | `advanced`). `toolLock` entrega ao `ToolNotice` o motivo, o nome da etapa em que a
+  ferramenta abre (`toolStageTitle`: a posição a que se chega ao concluir a etapa que a libera,
+  como o "abre no nível" do Kids; sem etapa por concluir que a libere, `null` e nenhuma promessa),
+  a página da etapa atual (`currentStageHref`) e, em `plan`, se a jornada já entregou a ferramenta
+  (`earned`, `toolEarned`: as capacidades sobrevivem ao fim do acesso). O `ToolNotice` recebe
+  `tool` (chave, que também é o `utm_content` `ferramenta-<chave>`) e `lock`. As frases:
+  - `plan` já conquistada: "O {nome} faz parte da Comunidade dos Criadores. Com a assinatura, ele
+    volta a abrir na sua conta, com o que você já fez."; sem a capacidade: "… Na Comunidade, ele abre
+    quando você chega à etapa {etapa} da jornada." (sem etapa conhecida: "… ele abre conforme você
+    avança nas etapas da jornada."). Botão "Ver como continuar". ⚠️ As ferramentas adultas abrem
+    por ETAPA, nunca só com a assinatura.
+  - `journey`: "O {nome} abre quando você chega à etapa {etapa}. O caminho começa pelos cursos da
+    etapa atual." (vale para etapa a mais de uma de distância); sem etapa, "O {nome} abre conforme
+    você avança nas etapas da jornada.", e a segunda frase só quando há etapa atual. Etapa abaixo
+    do piso da jornada (aparece concluída sem ter entregado a capacidade) cai na frase sem etapa:
+    nada de "mais adiante".
+  - `advanced` (Pensa sem IA): "O Pensa abre depois que você conclui um curso avançado da
+    jornada." `journey` e `advanced` levam à etapa atual ("Ver os cursos da etapa") ou a
+    `/progresso` ("Ver a sua jornada"). O "Por quê" do `/criar` para `journey` também não diz
+    "mais adiante" ("abre conforme você avança nas etapas da jornada.").
+- **Cursos** (`lib/continuity.ts`, `components/community/courses/continuity-card.tsx`): o cartão
+  "Você já tem o No Comando da IA. Com a Comunidade, os cursos adultos abrem nesta mesma conta, e as
+  ferramentas do Estúdio abrem conforme você avança nas etapas." aparece só com `no-comando-da-ia`
+  `true` e `adult-clube-dos-criadores` `false` em `checkCommunityContinuityAccessReadonly`
+  (member-shell; a rota `/members/access` ignora a chave-mestra de cursos). Falha fechada
+  (`showNciContinuityCard`).
+- **Curso bloqueado** (catálogo, trilha e etapa): `lockedCourseLink(salesPageUrl)` sempre devolve
+  destino, rótulo e aviso: com página própria, "Conhecer o curso" e "Abre a página do curso em outra
+  aba."; sem ela, a oferta de continuidade (`curso-bloqueado`) com "Conhecer a Comunidade" e "Abre a
+  página da Comunidade em outra aba.". O `shareUrl` do Compartilhar segue com o `FUNNEL_URL`.
+- **Compras**: "Voltar para a Comunidade" só na assinatura da Comunidade ADULTA `EXPIRED`
+  (Encerrada) mais recente (`comebackSubscriptionId`, régua do member-shell
+  `lib/subscription-comeback`). A Cancelada ainda dá acesso até o fim do período pago mais a
+  carência e não ganha botão (pagaria duas vezes); uma adulta Ativa esconde o botão; a Pendente não
+  conta. ⚠️ A view pública do payments não tem SKU, slug nem produto, só o nome: Compras EXIGE
+  "adult" no nome ("Comunidade dos Criadores (adultos)"). A oferta principal adulta passa a gravar
+  esse nome no funil; até lá, a assinatura adulta com o nome antigo ("Comunidade dos Criadores", o
+  mesmo da principal Kids) fica sem botão, para uma assinatura Kids da mesma conta nunca levar à
+  oferta adulta.
+- Testes: `tests/tool-lock.test.tsx`, `tests/continuity.test.tsx`.
+
 ## Arquitetura (o padrão central — preserve-o; espelha o @sistemazero/admin)
 
 ```
@@ -498,7 +548,7 @@ src/
 | `bun run dev` | Next dev server :3007 (Turbopack) |
 | `bun run build` / `start` | build (**`next build`** — Turbopack) + produção |
 | `bun run typecheck` | `tsc --noEmit` |
-| `bun test` | testes (watermark · markdown · download-mime · refresh · csrf · cookies · sentry · watermark-queue · ebook-prefs — rode com **sandbox off**, gotcha do monorepo) |
+| `bun test` | testes (watermark · markdown · download-mime · refresh · csrf · cookies · sentry · watermark-queue · ebook-prefs · tool-lock · continuity — rode com **sandbox off**, gotcha do monorepo) |
 | `bun run check` / `check:fix` | Biome |
 
 Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.

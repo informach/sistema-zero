@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react'
+import { type ComponentType, createElement, isValidElement, type ReactElement } from 'react'
 
 /**
  * A caixa do RECADO numa rota de ferramenta (Estúdio, Pinta, Pensa e Molda): o produto que
@@ -17,11 +17,14 @@ import type { ComponentType } from 'react'
 export const TOOL_ROUTE_RECADO =
   'flex min-h-0 flex-1 flex-col overflow-y-auto -mb-24 pb-24 md:mb-0 md:pb-0'
 
-/** `screen` é a tela do recado (todas as dessas rotas são sem props). */
-export function ToolRouteRecado({ screen: Screen }: { screen: ComponentType }) {
+/**
+ * `screen` é a tela do recado: o componente sem props, ou o elemento já montado quando a tela
+ * recebe dados da página (o produto bloqueado recebe o posto em que a ferramenta abre).
+ */
+export function ToolRouteRecado({ screen }: { screen: ComponentType | ReactElement }) {
   return (
     <div className={TOOL_ROUTE_RECADO}>
-      <Screen />
+      {isValidElement(screen) ? screen : createElement(screen)}
     </div>
   )
 }

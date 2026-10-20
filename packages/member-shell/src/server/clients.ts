@@ -169,6 +169,12 @@ export const MOLDA_ACCESS_REF = 'molda'
  */
 export const CLUB_ACCESS_REF = 'clube-dos-criadores'
 
+/**
+ * Ref do curso "No Comando da IA" (produto avulso adulto). Só alimenta o cartão de continuidade
+ * de Cursos do adulto. ⚠️ Tem que casar com o `courseRef` do produto no catálogo.
+ */
+export const NCI_ACCESS_REF = 'no-comando-da-ia'
+
 export type AuthClient = ReturnType<typeof createAuthClient>
 export type MembersClient = ReturnType<typeof createMembersClient>
 export type PaymentsClient = ReturnType<typeof createPaymentsClient>
@@ -525,6 +531,20 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return gw.gatewayFetchReadonly('/members/access', {
         query: {
           refs: `${creatorCommunityAccessRef(CLUB_ACCESS_REF, audience)},${STUDIO_ACCESS_REF}`,
+          audience,
+        },
+      })
+    },
+    /**
+     * "Tem o No Comando da IA e ainda não tem a Comunidade?" NUMA ida — Server Component.
+     * O adulto mostra o cartão de continuidade em Cursos só com NCI `true` e Clube `false`.
+     * A rota `/members/access` NÃO aplica a chave-mestra de cursos (`all_courses`), então o
+     * Clube responde pela posse real da Comunidade.
+     */
+    checkCommunityContinuityAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
+      return gw.gatewayFetchReadonly('/members/access', {
+        query: {
+          refs: `${NCI_ACCESS_REF},${creatorCommunityAccessRef(CLUB_ACCESS_REF, audience)}`,
           audience,
         },
       })

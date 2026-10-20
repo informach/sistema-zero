@@ -51,7 +51,7 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   // Assinatura: sem o disclaimer de acesso vitalício no rodapé.
   lifetimeAccess: false,
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
-  legal: { termos: TERMOS_COMUNIDADE_KIDS, termsVersion: 'comunidade-kids-2026-10-20' },
+  legal: { termos: TERMOS_COMUNIDADE_KIDS, termsVersion: 'comunidade-kids-2026-10-20b' },
   content: {
     copy: COMUNIDADE_PRODUTO,
     landing: COMUNIDADE_LANDING,

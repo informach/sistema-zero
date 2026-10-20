@@ -113,6 +113,11 @@ describe.skipIf(!target)('Purga de dados do usuário no Postgres real', () => {
     await conn.sql`insert into members.parent_reports_sent (account_id, week_key, sent_at) values (${accountId}, 'w:2026-07-20', now())`
     await conn.sql`insert into members.parent_report_prefs (account_id, updated_at) values (${accountId}, now())`
     await conn.sql`insert into members.renewal_reminders_sent (entitlement_id, expires_on) values (${entitlementId}, '2026-08-01')`
+    // Jornada adulta da conta: capacidades congeladas e o piso da etapa (0138).
+    await conn.sql`insert into members.adult_journey_grants (user_id, capability, policy_version, granted_at)
+      values (${accountId}, 'studio', 1, now())`
+    await conn.sql`insert into members.adult_journey_reached (user_id, position, policy_version, reached_at, updated_at)
+      values (${accountId}, 2, 1, now(), now())`
     // Uma criação do PERFIL (user_id = perfil) e outra só da CONTA: as duas somem.
     await conn.sql`
       insert into members.creations
@@ -147,6 +152,8 @@ describe.skipIf(!target)('Purga de dados do usuário no Postgres real', () => {
       'parent_reports_sent',
       'parent_report_prefs',
       'renewal_reminders_sent',
+      'adult_journey_grants',
+      'adult_journey_reached',
     ]
     for (const table of tables) {
       const rows = await conn.sql.unsafe<{ count: number }[]>(

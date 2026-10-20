@@ -24,6 +24,10 @@ import { ReadProfileCohortService } from './application/internal/read-profile-co
 import { WriteAuditLogService } from './application/internal/write-audit-log/write-audit-log.service'
 import { LoginService } from './application/login/login.service'
 import { LogoutService } from './application/logout/logout.service'
+import {
+  adultNoticeJobState,
+  NotifyAdultProfilesService,
+} from './application/maintenance/notify-adult-profiles.service'
 import { ProfileAdmissionWorker } from './application/maintenance/profile-admission-worker'
 import { purgeExpiredRecords } from './application/maintenance/purge-expired'
 import { ChangeMyPasswordService } from './application/me/change-password.service'
@@ -65,8 +69,10 @@ import { DrizzleOtpCodeRepository } from './infrastructure/persistence/drizzle/o
 import { DrizzlePasswordResetTokenRepository } from './infrastructure/persistence/drizzle/password-reset-token.repository'
 import { DrizzleProfileRepository } from './infrastructure/persistence/drizzle/profile.repository'
 import { DrizzleProfileAdmissionRepository } from './infrastructure/persistence/drizzle/profile-admission.repository'
+import { DrizzleProfileAdultNoticeRepository } from './infrastructure/persistence/drizzle/profile-adult-notice.repository'
 import { DrizzleProfileCohortRepository } from './infrastructure/persistence/drizzle/profile-cohort.repository'
 import { DrizzleRefreshTokenRepository } from './infrastructure/persistence/drizzle/refresh-token.repository'
+import { withSessionAdvisoryLock } from './infrastructure/persistence/drizzle/session-advisory-lock'
 import { DrizzleStudyAccessRepository } from './infrastructure/persistence/drizzle/study-access.repository'
 import { DrizzleUserRepository } from './infrastructure/persistence/drizzle/user.repository'
 import { createBunPasswordHasher } from './infrastructure/security/bun-password-hasher'
@@ -97,6 +103,11 @@ const PURGE_INTERVAL_MS = 6 * 60 * 60 * 1000
 const PURGE_GRACE_MS = 7 * 24 * 60 * 60 * 1000
 /** Retenção da trilha de auditoria (compliance) — bem mais longa que a dos tokens. */
 const AUDIT_RETENTION_MS = 365 * 24 * 60 * 60 * 1000
+/**
+ * Advisory lock (de SESSÃO) do aviso de 18 anos — 1 réplica por ciclo. Mesmo espaço GLOBAL
+ * do banco compartilhado: precisa ser única entre os serviços.
+ */
+const ADULT_NOTICE_ADVISORY_LOCK_KEY = '1635430518'
 
 /**
  * Raiz de composição (injeção de dependências). ÚNICO lugar onde adapters
@@ -140,6 +151,7 @@ export async function createApplication(env: Env): Promise<Application> {
   })
 
   // E-mail via gateway → messaging (HMAC). Sem config completa → no-op (best-effort).
+  const messagingConfigured = Boolean(env.GATEWAY_URL && env.AUTH_HMAC_SECRET)
   const messaging =
     env.GATEWAY_URL && env.AUTH_HMAC_SECRET
       ? createGatewayMessagingClient({
@@ -486,10 +498,53 @@ export async function createApplication(env: Env): Promise<Application> {
 
   let purgeTimer: ReturnType<typeof setInterval> | null = null
 
+  // Aviso de 18 anos: e-mail único ao responsável; o perfil segue funcionando.
+  const notifyAdultProfiles = new NotifyAdultProfilesService(
+    new DrizzleProfileAdultNoticeRepository(db),
+    messaging,
+    () => new Date(),
+    logger,
+  )
+  // Sem Messaging configurado o job NÃO sobe: o cliente nulo resolveria o envio e o aviso seria
+  // registrado como dado sem e-mail nenhum (o dedupe é para sempre).
+  const adultNoticeState = adultNoticeJobState({
+    nodeEnv: env.NODE_ENV,
+    intervalMs: env.PROFILE_ADULT_NOTICE_INTERVAL_MS,
+    messagingConfigured,
+  })
+  let adultNoticeTimer: ReturnType<typeof setInterval> | null = null
+  let adultNoticeCycle: Promise<void> | null = null
+  let stopping = false
+  const runAdultNoticeCycle = () => {
+    if (adultNoticeCycle || stopping) return // ciclo anterior ainda enviando nesta réplica
+    adultNoticeCycle = withSessionAdvisoryLock(connection.sql, ADULT_NOTICE_ADVISORY_LOCK_KEY, () =>
+      notifyAdultProfiles.runCycle(() => !stopping).then(() => undefined),
+    )
+      .then(() => undefined)
+      .catch((error) =>
+        logger.error('profile.adult_notice.cycle_failed', {
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      )
+      .finally(() => {
+        adultNoticeCycle = null
+      })
+  }
+
   return {
     logger,
     async start() {
       profileAdmissionWorker.start()
+      if (adultNoticeState === 'enabled') {
+        // Boot + intervalo (deploys frequentes não deixam o job sem rodar).
+        runAdultNoticeCycle()
+        adultNoticeTimer = setInterval(runAdultNoticeCycle, env.PROFILE_ADULT_NOTICE_INTERVAL_MS)
+      } else if (adultNoticeState === 'messaging-not-configured') {
+        logger.warn('profile.adult_notice.disabled', {
+          reason: 'messaging-not-configured',
+          detail: 'sem GATEWAY_URL + AUTH_HMAC_SECRET o aviso de 18 anos não roda',
+        })
+      }
       const purgeSafely = () =>
         runPurgeCycle().catch((error) =>
           logger.error('tokens.purge.failed', {
@@ -507,7 +562,10 @@ export async function createApplication(env: Env): Promise<Application> {
     },
     async stop() {
       if (purgeTimer) clearInterval(purgeTimer)
+      stopping = true
+      if (adultNoticeTimer) clearInterval(adultNoticeTimer)
       await server.stop()
+      await adultNoticeCycle
       await profileAdmissionWorker.stop()
       await connection.close()
       logger.info('app.stopped')

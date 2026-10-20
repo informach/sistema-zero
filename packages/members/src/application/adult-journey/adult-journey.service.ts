@@ -2,6 +2,7 @@ import { DomainError, ValidationError } from '@sistemazero/core/errors'
 import {
   ADULT_CREATOR_CAPABILITIES,
   type AdultCreatorCapability,
+  type AdultJourneyPolicy,
   AdultJourneyPolicySchema,
   type AdultJourneyPosition,
   type AdultJourneyView,
@@ -38,6 +39,24 @@ export class AdultJourneyService {
       expectedVersion > 2_147_483_646
     )
       throw new ValidationError('Versão de configuração inválida.')
+    const policy = await this.validate(input)
+    const saved = await this.repository.savePolicy(policy, expectedVersion, this.clock())
+    if (!saved) throw new AdultJourneyConflictError()
+    return saved
+  }
+
+  /**
+   * Grava a política SÓ se ainda não houver nenhuma (versão 0), pela mesma validação do Admin. É o
+   * caminho do seed automático: nunca sobrescreve a configuração do Admin nem a de um seed anterior.
+   * Devolve `null` quando já existe política (inclusive se outra instância gravou antes).
+   */
+  async seedIfAbsent(input: unknown) {
+    const policy = await this.validate(input)
+    return this.repository.insertPolicyIfAbsent(policy, this.clock())
+  }
+
+  /** A validação do Admin, a mesma para o seed: cursos adultos gravados e IA só após avançado. */
+  private async validate(input: unknown): Promise<AdultJourneyPolicy> {
     const parsed = AdultJourneyPolicySchema.safeParse(input)
     if (!parsed.success)
       throw new ValidationError(parsed.error.issues[0]?.message ?? 'Política inválida.')
@@ -75,23 +94,38 @@ export class AdultJourneyService {
           'Recursos de IA exigem a conclusão de um curso adulto avançado nesta etapa ou numa anterior.',
         )
     }
-    const saved = await this.repository.savePolicy(policy, expectedVersion, this.clock())
-    if (!saved) throw new AdultJourneyConflictError()
-    return saved
+    return policy
   }
 
+  /**
+   * A jornada da pessoa. Capacidades novas são congeladas e o piso da posição sobe (nunca desce) no
+   * mesmo ponto, sob a versão da política em que foram calculados: editar a política depois não
+   * tira ferramenta nem faz a pessoa voltar de etapa. Etapas abaixo do piso aparecem concluídas.
+   */
   async get(userId: string, privileged = false): Promise<AdultJourneyView> {
     for (let attempt = 0; attempt < 2; attempt++) {
-      const [record, milestones, frozen] = await Promise.all([
+      const [record, milestones, frozen, reached] = await Promise.all([
         this.policy(),
         this.repository.listMilestones(userId),
         this.repository.listGranted(userId),
+        this.repository.getReached(userId),
       ])
-      const result = projectAdultJourney(record.policy, record.version, milestones, frozen)
+      const result = projectAdultJourney(record.policy, record.version, milestones, frozen, reached)
       const newlyEarned = result.capabilities.filter((capability) => !frozen.includes(capability))
+      const position = adultJourneyPosition(result)?.position ?? null
+      const raisesFloor = position !== null && position > (reached ?? 1)
       if (
-        newlyEarned.length &&
-        !(await this.repository.freezeGranted(userId, record.version, newlyEarned, this.clock()))
+        (newlyEarned.length || raisesFloor) &&
+        !(await this.repository.freezeGranted(
+          userId,
+          record.version,
+          newlyEarned,
+          this.clock(),
+          raisesFloor ? position : null,
+        )) &&
+        // Só capacidade nova exige a gravação; subir o piso sozinho é melhor esforço (a próxima
+        // leitura tenta de novo) e não pode transformar uma leitura comum em conflito.
+        newlyEarned.length
       )
         continue
       return privileged ? { ...result, capabilities: [...ADULT_CREATOR_CAPABILITIES] } : result
@@ -100,8 +134,9 @@ export class AdultJourneyService {
   }
 
   /**
-   * A etapa de VÁRIAS pessoas: a política uma vez e os marcos numa consulta só. Só leitura (não
-   * congela capacidades: a posição não depende delas) e vazia sem jornada configurada.
+   * A etapa de VÁRIAS pessoas: a política uma vez, os marcos e os pisos numa consulta cada. Só
+   * leitura (não congela nem sobe piso) e vazia sem jornada configurada. Usa o mesmo piso da
+   * leitura individual, então a lista nunca mostra alguém numa etapa abaixo da que já alcançou.
    */
   async positions(userIds: readonly string[]): Promise<Map<string, AdultJourneyPosition>> {
     const out = new Map<string, AdultJourneyPosition>()
@@ -109,10 +144,19 @@ export class AdultJourneyService {
     if (unique.length === 0) return out
     const record = await this.policy()
     if (record.policy.stages.length === 0) return out
-    const milestones = await this.repository.listMilestonesForUsers(unique)
+    const [milestones, reached] = await Promise.all([
+      this.repository.listMilestonesForUsers(unique),
+      this.repository.listReachedForUsers(unique),
+    ])
     for (const userId of unique) {
       const position = adultJourneyPosition(
-        projectAdultJourney(record.policy, record.version, milestones.get(userId) ?? []),
+        projectAdultJourney(
+          record.policy,
+          record.version,
+          milestones.get(userId) ?? [],
+          [],
+          reached.get(userId) ?? null,
+        ),
       )
       if (position) out.set(userId, position)
     }

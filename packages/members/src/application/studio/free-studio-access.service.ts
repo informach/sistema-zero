@@ -51,9 +51,10 @@ export class FreeStudioAccessService {
       return { pro, modes }
     }
     if (actor.audience !== 'kids') throw new AccessDeniedError('Público inválido.')
+    // Team preview admitted by `resolveStudioFreeActor` → `resolveKidsStaffPreviewActor`: the
+    // staff account or a profile of its OWN account. Support sessions were refused above
+    // (`readOnly`) and at the HTTP boundary, so they never reach the preview.
     if (actor.privileged) {
-      if (actor.userId !== actor.accountId)
-        throw new AccessDeniedError('Use a conta da equipe, sem perfil de aluno.')
       const preview = await this.kidsJourney.staffPreview()
       return {
         pro: preview.capabilities.includes('pro'),

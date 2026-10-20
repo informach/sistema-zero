@@ -1757,23 +1757,95 @@ eram 44/60rem e 40/52rem): 960px de altura numa coluna de metade da tela viravam
 comprido. Quem quer mais espaço usa o "Expandir". A mudança é no member-shell, então **vale também
 no adulto** (como sempre valeu a altura de lá).
 
-## Telas de produto bloqueado (Estúdio/Clube/Pensa/Pinta/Mural + CTA da Comunidade) — 07/2026
+## Telas de produto bloqueado (Estúdio/Pinta/Pensa/Molda/Clube/Mural + Comunidade), revistas em 20/10/2026
 
-As 5 telas de "Ainda não liberado" dos produtos vendáveis (`kids-locked-{studio,clube,pensa,pinta,
-mural}.tsx`) são **wrappers finos** do componente compartilhado
-**`kids-locked-product.tsx`** (`KidsLockedProduct`, Server Component): mascote dormindo + título +
-pílula "Ainda não liberado" + prévia (`preview`) + o **cartão da Comunidade dos Criadores** (na faixa
-lilás) com um **CTA** para a oferta de assinatura. Cada wrapper só passa `title`/`intro`/`preview`; a API dos
-exports (`KidsLockedStudio`/`KidsLockedClube`/…, sem props) não mudou. **A promessa é REAL:** a
-assinatura "Comunidade dos Criadores" é um combo do catálogo que concede Clube + Mural + Estúdio +
-Pensa + Pinta (+ cursos) — confirmado em `packages/catalog/scripts/seed.ts`, então o CTA vale para as
-5. ⚠️ A **URL da oferta** é uma CONSTANTE nomeada (`COMUNIDADE_OFERTA_URL` em `lib/links.ts`:
-`https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta`, `target="_blank"`), NÃO uma env
-(kids segue sem `FUNNEL_URL` de env). ⚠️ **NÃO usar `KidsLockedProduct` na tela genérica
-`KidsLockedSpace`** (coringa de qualquer espaço do hub, que pode ser gateado por curso/cargo e não só
-pela assinatura — o CTA prometeria errado); a genérica fica sem CTA. As telas transientes
-`kids-*-unavailable.tsx` ("tente de novo") e a trava de aula `kids-locked-lesson.tsx` são gates
-diferentes (não-produto) e seguem sem CTA.
+As 6 telas de produto que a CONTA não tem (nunca assinou ou a assinatura acabou),
+`kids-locked-{studio,pinta,pensa,molda,clube,mural}.tsx`, são **wrappers finos** do componente
+compartilhado **`kids-locked-product.tsx`** (`KidsLockedProduct`, Server Component): mascote
+dormindo + título (o nome do produto) + pílula **"Parte da Comunidade"** + prévia (`preview`) + o
+**cartão da Comunidade dos Criadores** na faixa lilás. Cada wrapper passa `product` (a chave de
+`LOCKED_PRODUCTS`), `title`, `intro` e `preview`; os quatro de ferramenta aceitam `opensAt`.
+
+- **A promessa antiga era falsa** ("fica tudo liberado" com a assinatura). Na Comunidade as
+  FERRAMENTAS abrem por posto da Jornada; só o Clube e o Mural abrem direto com a assinatura.
+  Copy aprovada: título do cartão "O {Estúdio|Pinta|Pensa|Molda|Clube|Mural} faz parte da
+  Comunidade dos Criadores"; ferramentas: "Na Comunidade, cada posto da Jornada abre ferramentas
+  novas. O Pinta abre no posto Construtor(a). Chame o seu responsável para ver com você como
+  entrar na Comunidade."; Clube: "Com a assinatura, o Clube abre para você conversar com a turma
+  e mostrar as suas criações. …"; Mural: "Com a assinatura, o Mural abre para você publicar e
+  comentar. …". Botão **"Ver com o meu responsável"** (`target="_blank"`). A frase mora em
+  `lockedProductText`, e o pedido ao responsável é o `LOCKED_PRODUCT_ASK`.
+- **Quem volta depois do fim da assinatura e já chegou ao posto** (`journey.earned` cobre a
+  ferramenta, `toolEarnedInJourney` de `lib/tool-opens-at.ts`; as capacidades ficam com a
+  criança): "Você já chegou ao posto Construtor(a). Com a assinatura, o Pinta volta a abrir para
+  você. …" (sem posto conhecido, só a volta). As páginas passam `earned` junto do `opensAt`.
+- **O posto vem da política, nunca digitado:** `toolOpensAtLevel(tool, journey)`
+  (`lib/tool-opens-at.ts`) roda o MESMO `kidsCreativeToolAvailability` do core como se a criança
+  começasse sem capacidades (o real responde `not-included` sem posto para quem não tem o
+  produto), e o nome sai do `levelInfo` (o mesmo "Construtor(a)" do `/criar`). Política pausada,
+  sem horizonte, prévia da equipe ou jornada indisponível → `null`, e a frase do posto sai
+  inteira. As páginas (`/estudio`, `/estudio/pro/[id]`, `/pinta`, `/pensa`, `/molda`) já tinham a
+  gamificação em mãos e passam `<ToolRouteRecado screen={<KidsLockedPinta opensAt={…} />} />`
+  (o `ToolRouteRecado` aceita o componente sem props OU o elemento montado).
+- **Link:** a página de continuidade com UTM, `comunidadeContinuarUrl(origem)` em `lib/links.ts`
+  (`…/kids/comunidade-dos-criadores/oferta/continuar?utm_source=plataforma&utm_medium=app&utm_content=<origem>`),
+  aqui `ferramenta-<estudio|pinta|pensa|molda|clube|mural>`. Os outros links da Comunidade usam
+  o mesmo helper com origem própria: `perfis-nao-incluidos` (`ProfilesNotIncluded`),
+  `pais-limite-perfis` (`ProfileAllowanceNote`), `criar-oficinas-ao-vivo` (`/criar`). A constante
+  `COMUNIDADE_OFERTA_URL` (sem UTM) segue como base dos links derivados. Constante nomeada, NÃO
+  env (kids segue sem `FUNNEL_URL` de env).
+- **Guarda:** `tests/copy-produto-bloqueado.test.tsx` reprova "tudo liberado" em qualquer texto
+  de tela do `src/` e trava a pílula, o título, o pedido ao responsável, o botão, o
+  `utm_content=ferramenta-` e o posto vindo da política (seed: Estúdio e Pinta no Construtor(a),
+  Pensa no Inventor(a), Molda no Explorador(a) de Mundos).
+- ⚠️ **NÃO usar `KidsLockedProduct` na tela genérica `KidsLockedSpace`** (coringa de qualquer
+  espaço do hub, que pode ser gateado por curso/cargo e não só pela assinatura: o botão prometeria
+  errado); a genérica fica sem CTA. As telas transientes `kids-*-unavailable.tsx` ("tente de
+  novo"), o posto que falta com o produto comprado (`KidsJourneyLocked*`) e a trava de aula
+  `kids-locked-lesson.tsx` são gates diferentes e seguem sem o cartão da Comunidade.
+
+**Na área dos pais (20/10/2026):**
+
+- **Assinatura encerrada:** em Conta, só o cartão da Comunidade Kids `EXPIRED` ("Encerrada") mais
+  recente mostra **"Ver como continuar"** (`SECONDARY_ACTION`, `utm_content=pais-assinatura`), pela
+  régua `comebackSubscriptionId` do member-shell (`lib/subscription-comeback`). `CANCELED`
+  ("Cancelada") ainda dá acesso até o fim do período pago mais a carência: sem botão (a família
+  pagaria duas vezes), e enquanto o período pago derivado (última cobrança + intervalo) não
+  terminou, o cartão diz "O acesso continua até o fim do período já pago.". Uma Kids Ativa esconde o
+  botão; a Pendente não conta. ⚠️ A view pública do payments não tem SKU, slug nem produto, só o
+  nome do produto: a Kids é reconhecida pelo nome (`isKidsComunidadeSubscription`: começa com
+  "Comunidade dos Criadores" e NÃO tem "adult"). A oferta principal Kids cobra como "Comunidade dos
+  Criadores"; a adulta leva "(adultos)" no nome (a principal adulta passa a gravar esse nome no
+  funil).
+- **Perfil que fez 18 anos:** o perfil Kids NUNCA é cortado aos 18; continua funcionando. Na página
+  da criança (`child-client.tsx`), com data de nascimento e idade ≥ 18, um aviso diz "{nome} fez 18
+  anos. O perfil Kids continua funcionando enquanto a sua assinatura estiver ativa, com os projetos
+  que já estão aqui. Agora {nome} também pode ter uma conta própria na área adulta, que começa nova
+  e usa o mesmo Estúdio.", com **"Conhecer a área adulta"** (`areaAdultaContinuarUrl('pais-perfil-18')`,
+  que repassa ao `comunidadeAdultoContinuarUrl` do member-shell) e **"Arquivar perfil"**, que reusa
+  o arquivamento do editor (`_components/remove-profile.tsx`: `archiveProfile`,
+  `showProfileActionError` e a MESMA confirmação `RemoveProfileDialog`). A idade é contada no dia de
+  São Paulo (`profileAgeOn(birthDate, saoPauloDayKey())`, `lib/profile-age.ts`): servidor e
+  navegador chegam ao mesmo dia, sem diferença na hidratação.
+- **Arquivar** (`archiveProfile`): o `DELETE` arquiva no Auth (`status = 'archived'`, nunca apaga;
+  não há como desarquivar pela plataforma, então a tela não promete volta). O limite do Auth conta
+  só perfis `active`, então a vaga volta. A falha leva o código do servidor: `PARENT_REAUTH_REQUIRED`
+  vira `StudyRequestError` com esse código, e `showProfileActionError` mostra o atalho "Entrar de
+  novo". Diálogo: título "Arquivar perfil", botão "Arquivar", texto "Arquivar o perfil de {nome}?
+  Ele sai da sua conta e libera a vaga do plano, e {nome} deixa de entrar com ele. O progresso e os
+  projetos ficam guardados, mas não aparecem mais na plataforma." (sem "criança": serve ao perfil de
+  quem fez 18). O botão do formulário de edição também diz "Arquivar perfil".
+- **Sem data de nascimento:** a página da criança mostra, discreto e opcional, "Informe a data de
+  nascimento para a plataforma avisar você quando {nome} completar 18 anos." com "Informar a data"
+  (o formulário de edição). O campo segue opcional. Se o perfil já é de quem tem 18 anos ou mais, a
+  data não entra (`PROFILE_AGE_RESTRICTED`, a regra do Auth para qualquer data nova de 18+): na
+  EDIÇÃO a recusa diz "A plataforma só aceita datas de quem tem menos de 18 anos. O perfil continua
+  funcionando." (`profileAgeMessage(true)`); na criação segue "Esta comunidade é para crianças
+  menores de 18 anos.".
+- Testes: `tests/parent-surfaces.test.tsx` (o botão só na Kids Encerrada, a Cancelada e a Ativa sem
+  botão), `tests/parents-area.test.tsx` (o aviso dos 18, o arquivamento confirmado, o código do
+  login recente e o convite da data), `tests/guide-components.test.tsx` (a recusa da data na
+  edição) e `tests/copy-produto-bloqueado.test.tsx` (a volta de quem já chegou ao posto).
 
 ### O molde das telas de recado (11/09/2026)
 
@@ -2240,9 +2312,9 @@ e encontra o recado, que é justamente a mensagem que a autora quer dar.
    perfil" via `/api/profiles/:id`. O telefone do RESPONSÁVEL segue na compra (não se mistura).
 4. **SEM `FUNNEL_URL` de env** (curso bloqueado no catálogo sem `salesPageUrl` fica não-clicável —
    comportamento herdado). ⚠️ **Atualização 07/2026:** o funil kids EXISTE (assinatura "Comunidade
-   dos Criadores", em produção) — as 5 telas de PRODUTO bloqueado agora levam um CTA para a oferta
-   (ver `## Telas de produto bloqueado`). A URL é uma CONSTANTE no componente, não uma env; kids
-   segue sem `FUNNEL_URL` de env.
+   dos Criadores", em produção) — as 6 telas de PRODUTO bloqueado levam à página de continuidade
+   (`/oferta/continuar` com UTM, desde 20/10/2026; ver `## Telas de produto bloqueado`). A URL é uma
+   CONSTANTE em `lib/links.ts`, não uma env; kids segue sem `FUNNEL_URL` de env.
 5. **SEM `public/sw.js`** (kill-switch era cicatriz do domínio do community).
 6. `/impersonar` EXISTE (suporte): o admin gera o handoff com `?platform=kids` no auth → a URL
    devolvida é a deste app. O banner persiste também em `/perfis`, usa o nome do perfil ativo e

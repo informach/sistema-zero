@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { KidsRecado } from './kids-recado'
-import { KidsScene } from './kids-scene'
+import { KidsMascot } from './mascot'
 
 /**
  * Produto/servidor gated: o hub não conseguiu verificar o acesso agora. Diferente
@@ -18,10 +18,11 @@ export function KidsAccessUnavailable({ title, onRetry }: { title: string; onRet
   const router = useRouter()
   return (
     <KidsRecado
-      // Cena do funil, e não a pose pensativa do Zappy: aqui não é a criança que
-      // errou, é a nossa conexão que tropeçou — a cena de alívio diz isso. Sem a pílula
-      // amarela do motivo, de propósito: um tropeço não é conquista a festejar.
-      art={<KidsScene name="alivio" className="kid-float w-40" />}
+      // Zappy pensativo, a mesma pose das outras telas de "a gente tropeçou" (erro do app,
+      // 404, perfis indisponíveis): algo deu errado e ele está conferindo. A cena `alivio`
+      // (sorriso com coração) contradizia a mensagem de problema. Decorativo (alt vazio): o
+      // texto ao lado diz tudo. Sem a pílula amarela do motivo: tropeço não é conquista.
+      art={<KidsMascot expression="thinking" className="kid-float size-24" />}
       title={title}
       actions={
         <button

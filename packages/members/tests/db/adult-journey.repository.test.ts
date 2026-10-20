@@ -30,6 +30,7 @@ describe.skipIf(!url)('jornada adulta (Postgres real)', () => {
   })
   afterAll(async () => {
     await conn.sql`delete from members.adult_journey_grants where user_id = ${userId}`
+    await conn.sql`delete from members.adult_journey_reached where user_id in (${userId}, ${otherId})`
     await conn.sql`delete from members.xp_events where user_id in (${userId}, ${otherId})`
     await conn.sql`delete from members.account_deletion_fences where account_id = ${userId}`
     await conn.sql`delete from members.adult_journey_policy`
@@ -87,5 +88,62 @@ describe.skipIf(!url)('jornada adulta (Postgres real)', () => {
     expect(byUser.get(otherId)).toEqual([{ courseId: shared, completed: true, showcased: true }])
     expect(byUser.get(userId)?.every((milestone) => milestone.courseId !== shared)).toBe(true)
     expect((await repository.listMilestonesForUsers([])).size).toBe(0)
+  })
+  test('o piso da posição só sobe, na mesma transação e versão do congelamento', async () => {
+    const reacher = otherId
+    expect(await repository.getReached(reacher)).toBeNull()
+    // Versão obsoleta: nem capacidade nem piso.
+    expect(await repository.freezeGranted(reacher, 1, [], now, 3)).toBe(false)
+    expect(await repository.getReached(reacher)).toBeNull()
+    expect(await repository.freezeGranted(reacher, 2, [], now, 3)).toBe(true)
+    expect(await repository.getReached(reacher)).toBe(3)
+    // Uma posição menor (política editada) não desce o piso nem troca a data.
+    const later = new Date('2026-10-19T12:00:00Z')
+    expect(await repository.freezeGranted(reacher, 2, [], later, 2)).toBe(true)
+    const [kept] = await conn.sql<{ position: number; reached_at: string | Date }[]>`
+      select position, reached_at from members.adult_journey_reached where user_id = ${reacher}`
+    expect(kept?.position).toBe(3)
+    expect(new Date(kept?.reached_at ?? 0).toISOString()).toBe(now.toISOString())
+    // Corrida de duas subidas: vence a maior.
+    await Promise.all([
+      repository.freezeGranted(reacher, 2, [], later, 5),
+      repository.freezeGranted(reacher, 2, [], later, 4),
+    ])
+    expect(await repository.getReached(reacher)).toBe(5)
+    const many = await repository.listReachedForUsers([reacher, userId, randomUUID()])
+    expect([...many]).toEqual([[reacher, 5]])
+    expect((await repository.listReachedForUsers([])).size).toBe(0)
+    // Conta cercada para exclusão (userId) também não ganha piso.
+    expect(await repository.freezeGranted(userId, 2, [], now, 2)).toBe(false)
+    expect(await repository.getReached(userId)).toBeNull()
+  })
+  test('seed automático: instâncias concorrentes gravam UMA vez e nunca sobrescrevem', async () => {
+    await conn.sql`delete from members.adult_journey_policy`
+    const seed = {
+      schemaVersion: 1 as const,
+      stages: [
+        {
+          id: 'aprendiz',
+          title: 'Aprendiz',
+          requirements: [{ courseId: randomUUID(), milestone: 'complete' as const }],
+          capabilities: ['studio' as const],
+        },
+      ],
+    }
+    const results = await Promise.all(
+      Array.from({ length: 6 }, () => repository.insertPolicyIfAbsent(seed, now)),
+    )
+    expect(results.filter(Boolean)).toHaveLength(1)
+    expect((await repository.getPolicy())?.version).toBe(1)
+    // A equipe edita no Admin; o seed seguinte não toca na linha.
+    const admin = { ...seed, stages: [{ ...seed.stages[0]!, title: 'Editada no Admin' }] }
+    await repository.savePolicy(admin, 1, now)
+    const [before] = await conn.sql`select version, policy::text as policy, updated_at
+      from members.adult_journey_policy where id = 'adult'`
+    expect(await repository.insertPolicyIfAbsent(seed, new Date())).toBeNull()
+    const [after] = await conn.sql`select version, policy::text as policy, updated_at
+      from members.adult_journey_policy where id = 'adult'`
+    expect(after).toEqual(before)
+    expect(before?.version).toBe(2)
   })
 })

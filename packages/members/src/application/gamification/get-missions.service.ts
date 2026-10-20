@@ -1,5 +1,4 @@
 import type { CourseAudience } from '../../domain/course/course'
-import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import { localDateSaoPaulo } from '../../domain/gamification/gamification'
 import {
   assignDailyMissions,
@@ -59,8 +58,8 @@ export class GetMissionsService {
       privileged,
       now: this.clock(),
     })
-    if (audience === 'kids' && privileged && userId !== accountId)
-      throw new AccessDeniedError('Use a conta da equipe, sem perfil de aluno.')
+    // Kids `privileged` = the team preview admitted by `resolveKidsStaffPreviewActor` (staff
+    // account or a profile of its OWN account, never support); progress stays on `userId`.
     const kidsCapabilities =
       audience !== 'kids'
         ? null

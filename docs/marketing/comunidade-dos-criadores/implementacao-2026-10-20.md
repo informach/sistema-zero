@@ -126,21 +126,51 @@ Três revisões (código, copy, documentação e testes). O que mudou por causa 
   larguras sem rolagem lateral), o 301 da Como funciona com a query e a âncora, e os links da oferta
   do Desafio no build local. Conferência visual das duas continuidades em 390 e 1440 px.
 
+## Terceira rodada: as cinco pendências da continuidade
+
+Análise e proposta aprovadas pela dona em 20/10/2026, com as três recomendações: seed da jornada
+adulta automático, textos dos e-mails como propostos e perfil Kids sem prazo aos 18 anos.
+
+- **Etapa adulta depois do cancelamento:** a etapa mais alta alcançada fica gravada
+  (`members.adult_journey_reached`) e nunca desce, nem se a política for editada; o piso não dá
+  ferramenta. Testes provam que encerrar o acesso (adulto e Kids) não tira etapa, capacidades nem
+  paleta, e que as ferramentas voltam a pedir a licença. A página adulta passou a prometer "a etapa e
+  os blocos que você já liberou".
+- **Seed da jornada adulta:** roda sozinho na subida do members, uma vez só: só grava quando ainda não
+  existe política, com trava e inserção sem sobrescrever; uma edição feita no Admin nunca é tocada.
+  Sem cursos suficientes, registra o motivo e tenta na próxima subida. O curso No Comando da IA (produto
+  vendido à parte) nunca entra como requisito.
+- **Entradas da continuidade adulta:** a tela de ferramenta fechada separa "falta a assinatura" (leva à
+  continuidade) de "falta a etapa" (leva à etapa); cartão em Cursos para quem só tem No Comando da IA;
+  curso bloqueado sem página própria leva à continuidade; "Voltar para a Comunidade" em Compras. Links
+  com `utm_source=plataforma&utm_medium=app&utm_content=<lugar>`.
+- **Aviso de ferramenta fechada no Kids:** novo texto ("O Pinta faz parte da Comunidade dos Criadores
+  … abre no posto Construtor(a). Chame o seu responsável para ver a página junto com você."), com o
+  posto vindo da política; teste que reprova "tudo liberado"; "Ver como continuar" na área dos pais para
+  assinatura encerrada.
+- **E-mails:** `gift-expiry-2d`, `gift-expired`, `subscription-ended-kids`, `subscription-ended-adult`
+  (members, no ciclo de 6 h, com deduplicação e sem e-mail para expirações antigas) e
+  `profile-turned-18` (auth, diário, um por perfil).
+- **Perfil que completa 18 anos:** continua funcionando; aviso ao responsável por e-mail e na página do
+  perfil em /pais, com "Arquivar perfil"; pedido da data de nascimento quando falta. As duas páginas
+  de continuidade trocaram "os projetos não passam" por "o perfil Kids continua funcionando, e a conta
+  adulta começa nova". Termos Kids (versão `comunidade-kids-2026-10-20b`) e Privacidade ganharam a regra
+  dos 18 anos, para a revisão jurídica.
+- **Cancelamento:** conferido que hoje nada chama a rota do members que revogaria na hora no
+  `canceled`; o acesso termina na expiração com carência. A rota segue revogando na hora se um dia
+  for ligada (anotado no CLAUDE.md do members para mudar antes de ligar).
+
 ## Pendências para produção
 
-- **Continuidade adulta:** confirmar que a etapa e os blocos adultos não voltam para trás depois do
-  cancelamento (no Kids isso vale; a jornada adulta depende de rodar a configuração adulta com a
-  dona). Hoje a página só promete o que fica na conta (projetos, jogos publicados, certificados e o
-  progresso nos cursos) e não diz que a etapa fica guardada; confirmado isso, a frase pode entrar.
-  A página não tem link de entrada ainda: ligar no e-mail de assinatura encerrada, na tela de produto
-  fechado da área adulta e num cartão em Cursos para quem só tem No Comando da IA.
-- **Continuidade Kids:** o aviso de ferramenta fechada do app Kids diz à criança que "fica tudo
-  liberado pra você", o que contradiz a Jornada; faltam o e-mail de fim do presente de 7 dias e o
-  de assinatura encerrada; decidir o que acontece com o perfil que completa 18 anos.
+- **Levar os projetos do Kids para a conta adulta:** validar no navegador o Exportar (Kids) e Importar
+  (adulto) do Estúdio; se funcionar, escrever o passo a passo na Ajuda e dizer isso nas páginas.
+- **Compras e área dos pais:** a lista de assinaturas só traz o nome do produto, igual no adulto e no
+  Kids; o botão de volta pode aparecer na área errada para quem tem as duas. Corrigir quando o
+  Payments devolver o código do produto.
 - **Capturas reais da área adulta.** As telas da página adulta são prévias com dados de teste. A
   prévia do Mural ainda mostra o nome antigo "Mostra dos criadores".
-- **Cursos adultos** publicados com os blocos da paleta, e a política da jornada adulta, que exige
-  rodar `journey:seed-adult --apply` com a dona.
+- **Cursos adultos** publicados com os blocos da paleta. A política da jornada adulta se configura
+  sozinha na primeira subida do members com cursos suficientes; as etapas que faltarem entram pelo Admin.
 - **Espaços adultos no Hub:** Clube, Mural adulto e Desafio do mês, que a página e as cartas adultas
   já citam, assim como os tutoriais adultos.
 - **Ferramentas das fases seguintes no Kids:** as páginas descrevem Pensa, Molda, Ponte e código como

@@ -160,8 +160,14 @@ test('HTTP denies siblings, foreign account, impersonation and inactive staff, r
     expect(response.headers.get('cache-control')).toBe('private, no-store')
   }
   const staff = { 'x-auth-user-role': 'staff', 'x-auth-user-status': 'active' }
-  // A role on a student-profile request is no longer the own-account preview.
-  expect((await f.request(f.body, staff)).status).toBe(403)
+  // A student profile of the staff's OWN account (the only way into the Kids learning area) is
+  // the team preview; inside a support session it is refused like any impersonation.
+  expect((await f.request(f.body, staff)).status).toBe(200)
+  expect((await f.options(staff)).status).toBe(200)
+  expect((await f.request(f.body, { ...staff, 'x-auth-impersonator-id': SIBLING })).status).toBe(
+    403,
+  )
+  expect((await f.options({ ...staff, 'x-auth-impersonator-id': SIBLING })).status).toBe(403)
   const own = (extra: Record<string, string> = {}) =>
     f.app.handle(
       new Request('http://localhost/members/studio/free-runtime', {
@@ -283,6 +289,40 @@ test('adult discovery, execution and analysis use adult journey/product/palette 
         })
       ).status,
     ).toBe(403)
+})
+
+test('adult staff opens and runs the free Studio with no license, no grants and an empty policy', async () => {
+  const f = await adultSetup('pro')
+  f.grant.revoke(NOW)
+  f.entitlements.seed(f.grant)
+  f.adultJourneyRepository.grants.delete(ACCOUNT)
+  expect(f.adultJourneyRepository.record).toBeNull()
+  expect((await f.request('free-options')).status).toBe(403)
+  for (const role of ['staff', 'admin', 'superadmin']) {
+    const staff = { 'x-auth-user-role': role, 'x-auth-user-status': 'active' }
+    const options = await f.request('free-options', f.body, staff)
+    expect(options.status).toBe(200)
+    const discovery = StudioFreeOptionsSchema.parse(await options.json())
+    expect(discovery.canCreatePro).toBe(true)
+    expect(discovery.pythonCuration.allowedModes).toEqual(['blocks', 'bridge'])
+    for (const path of ['free-runtime', 'python-analysis']) {
+      const result = await f.request(
+        path,
+        { ...f.body, operation: path === 'python-analysis' ? 'analyze' : 'execute' },
+        staff,
+      )
+      expect(result.status).toBe(200)
+      expect(StudioFreeRuntimeDecisionSchema.parse(await result.json()).actor).toEqual({
+        userId: ACCOUNT,
+        accountId: ACCOUNT,
+      })
+    }
+    // Support (impersonation) keeps being refused even when the target is staff.
+    expect(
+      (await f.request('free-runtime', f.body, { ...staff, 'x-auth-impersonator-id': USER }))
+        .status,
+    ).toBe(403)
+  }
 })
 
 test('adult Pro follows adult Pro capability, independently of AI and Kids rank', async () => {

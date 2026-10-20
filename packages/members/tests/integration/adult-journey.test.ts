@@ -361,3 +361,51 @@ test('no adulto, a foto em lote sai só a da própria pessoa (a dos outros vem p
   expect(Object.keys(body.avatars)).toEqual([userId])
   expect(body.avatars[userId]?.photoUrl).toBe('https://cdn.exemplo/eu.png')
 })
+
+test('a etapa alcançada não volta quando a política ganha um curso numa etapa concluída', async () => {
+  const ctx = buildApp()
+  const first = seedSampleCourse(ctx.courses, 'piso-primeiro')
+  const second = seedSampleCourse(ctx.courses, 'piso-segundo')
+  const added = seedSampleCourse(ctx.courses, 'piso-novo')
+  const stages = (firstStage: string[]) => ({
+    schemaVersion: 1,
+    stages: [
+      {
+        id: 'aprendiz',
+        title: 'Aprendiz',
+        requirements: firstStage.map((courseId) => ({ courseId, milestone: 'complete' })),
+        capabilities: ['studio', 'pinta'],
+      },
+      {
+        id: 'construtor',
+        title: 'Construtor(a)',
+        requirements: [{ courseId: second.courseId, milestone: 'complete' }],
+        capabilities: [],
+      },
+    ],
+  })
+  await ctx.adultJourney.configure(stages([first.courseId]), 0)
+  ctx.gamification.events.push({
+    userId,
+    audience: 'adult',
+    sourceType: 'course_complete',
+    sourceId: first.courseId,
+    amount: 0,
+    createdAt: new Date(),
+  })
+  const before = await ctx.adultJourney.get(userId)
+  expect(before.stages[0]?.completed).toBe(true)
+  expect(ctx.adultJourneyRepository.reached.get(userId)).toBe(2)
+
+  await ctx.adultJourney.configure(stages([first.courseId, added.courseId]), 1)
+  const after = await ctx.adultJourney.get(userId)
+  expect(after.stages[0]).toMatchObject({ completed: true, missing: [] })
+  expect(after.stages[1]).toMatchObject({ completed: false, available: true })
+  expect(after.capabilities).toEqual(['studio', 'pinta'])
+  expect((await ctx.adultJourney.positions([userId])).get(userId)).toMatchObject({
+    position: 2,
+    title: 'Construtor(a)',
+  })
+  // Quem nunca abriu a jornada não tem piso: a lista usa a posição calculada.
+  expect((await ctx.adultJourney.positions([accountId])).get(accountId)?.position).toBe(1)
+})

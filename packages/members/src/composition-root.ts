@@ -5,6 +5,7 @@ import { AccessCheckService } from './application/access-check/access-check.serv
 import { CreationCleanupService } from './application/admin/creation-cleanup/creation-cleanup.service'
 import { PurgeUserDataService } from './application/admin/purge-user-data/purge-user-data.service'
 import { AdultJourneyService } from './application/adult-journey/adult-journey.service'
+import { runAdultJourneySeedOnce } from './application/adult-journey/adult-journey-seed-once'
 import { ConsumeAiUsageService } from './application/ai-usage/consume-ai-usage.service'
 import { GetAiCreditsService } from './application/ai-usage/get-ai-credits.service'
 import { GetAiUsageStatsService } from './application/ai-usage/get-ai-usage-stats.service'
@@ -92,6 +93,7 @@ import { GetProfileAllowanceService } from './application/profile-allowance/get-
 import { AdultProfileService } from './application/profiles/adult-profile.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { GetProfilesOverviewService } from './application/profiles-overview/get-profiles-overview.service'
+import { SendAccessEndedMessagesService } from './application/renewal-reminder/send-access-ended-messages.service'
 import { SendRenewalRemindersService } from './application/renewal-reminder/send-renewal-reminders.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
 import { BuyRoomItemService } from './application/room/buy-room-item.service'
@@ -188,6 +190,7 @@ import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
 import { DrizzleRenewalReminderRepository } from './infrastructure/persistence/drizzle/renewal-reminder.repository'
 import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room.repository'
+import { withSessionAdvisoryLock } from './infrastructure/persistence/drizzle/session-advisory-lock'
 import { DrizzleStudioAiAccountRepository } from './infrastructure/persistence/drizzle/studio-ai-account.repository'
 import { DrizzleStudioAiUsageRepository } from './infrastructure/persistence/drizzle/studio-ai-usage.repository'
 import { DrizzleStudioBuilderRepository } from './infrastructure/persistence/drizzle/studio-builder.repository'
@@ -229,9 +232,17 @@ const PARENT_REPORT_ADVISORY_LOCK_KEY = '30792292938117748'
 
 /**
  * Chave do advisory lock do LEMBRETE de renovação (report+1 — única no banco
- * compartilhado). Só UMA réplica envia por ciclo.
+ * compartilhado). Só UMA réplica envia por ciclo. Lock de SESSÃO (o ciclo faz HTTP).
  */
 const RENEWAL_REMINDER_ADVISORY_LOCK_KEY = '30792292938117749'
+
+/**
+ * Atraso do ciclo de boot (retenção + `expireLapsed`, depois vencimentos e fim do acesso). O
+ * intervalo de 6 h sozinho nunca roda quando o deploy é mais frequente que ele, e os avisos de
+ * fim do acesso só olham para trás `ACCESS_ENDED_WINDOW_MS` (72 h). Alguns segundos depois do
+ * `listen`, para não competir com a subida nem com o seed da jornada.
+ */
+const BOOT_CYCLE_DELAY_MS = 15_000
 
 /**
  * Raiz de composição (injeção de dependências). ÚNICO lugar que instancia adapters
@@ -552,6 +563,23 @@ export async function createApplication(env: Env): Promise<Application> {
             kidsUrl: env.KIDS_COMMUNITY_URL,
           },
           challengeAnalytics,
+        )
+      : null
+  // Fim do acesso (20/10/2026): presente de 7 dias (2 dias antes e no dia) e assinatura da
+  // Comunidade que venceu (Kids e adulta). Mesmo quarteto + FUNNEL_URL; roda no mesmo ciclo.
+  const accessEndedSender =
+    authGateway && env.GATEWAY_URL && env.MEMBERS_HMAC_SECRET && env.FUNNEL_URL
+      ? new SendAccessEndedMessagesService(
+          new DrizzleRenewalReminderRepository(db),
+          authGateway,
+          createGatewayMessagingClient({
+            gatewayUrl: env.GATEWAY_URL,
+            consumerId: 'members',
+            hmacSecret: env.MEMBERS_HMAC_SECRET,
+          }),
+          clock,
+          logger,
+          { funnelUrl: env.FUNNEL_URL, batchLimit: env.RENEWAL_REMINDER_BATCH_LIMIT },
         )
       : null
   const listMyCourses = new ListMyCoursesService(
@@ -1341,10 +1369,17 @@ export async function createApplication(env: Env): Promise<Application> {
   let broadcastCycle: Promise<unknown> | null = null
   let parentReportTimer: ReturnType<typeof setInterval> | null = null
   let renewalReminderTimer: ReturnType<typeof setInterval> | null = null
+  let renewalReminderCycle: Promise<void> | null = null
+  let retentionCycle: Promise<void> | null = null
+  let bootCycleTimer: ReturnType<typeof setTimeout> | null = null
+  let bootCycle: Promise<void> | null = null
   // Live deadlines (end overdue calls, cancel encounters that never happened) run in their own
   // loop: independent of the recorder and of whether live media is configured at all.
   let liveDeadlineTimer: ReturnType<typeof setInterval> | null = null
   let liveDeadlineCycle: Promise<void> | null = null
+  // Seed automático da jornada adulta (decisão da dona, 20/10/2026): uma vez por boot, sem
+  // bloquear a subida; só grava quando ainda não há política e nunca sobrescreve.
+  let adultJourneySeed: Promise<unknown> | null = null
 
   // Retenção do dedupe de webhooks (fora do hot path): apaga `processed_webhooks`
   // antigos para a tabela não crescer sem limite. O advisory lock garante que SÓ
@@ -1387,17 +1422,47 @@ export async function createApplication(env: Env): Promise<Application> {
     })
   }
 
-  // Renovação anual + ciclo do Desafio: um advisory lock cobre os dois envios.
+  // Renovação anual + ciclo do Desafio + fim do acesso: um advisory lock cobre os envios. Lock de
+  // SESSÃO numa conexão reservada (não xact): os senders fazem HTTP (Auth, Messaging) e uma
+  // transação-portão ficaria `idle in transaction`, derrubada pelo timeout de 30 s do pool.
   const runRenewalReminderCycle = async () => {
-    if (!renewalReminderSender && !challengeLifecycleSender) return
-    await connection.sql.begin(async (gate) => {
-      const [row] = await gate`
-        select pg_try_advisory_xact_lock(${RENEWAL_REMINDER_ADVISORY_LOCK_KEY}::bigint) as locked
-      `
-      if (!row?.locked) return // outra réplica está enviando neste ciclo
+    if (!renewalReminderSender && !challengeLifecycleSender && !accessEndedSender) return
+    // `false` = outra réplica (ou um ciclo anterior desta) está enviando agora.
+    await withSessionAdvisoryLock(connection.sql, RENEWAL_REMINDER_ADVISORY_LOCK_KEY, async () => {
       await renewalReminderSender?.runCycle()
       await challengeLifecycleSender?.runCycle()
+      await accessEndedSender?.runCycle()
     })
+  }
+  const hasLifecycleSenders = Boolean(
+    renewalReminderSender || challengeLifecycleSender || accessEndedSender,
+  )
+
+  // Disparos sem lançar, um por vez nesta réplica (o boot e o timer podem coincidir); `stop()`
+  // espera o que estiver em voo antes de fechar a conexão.
+  const retentionSafely = (): Promise<void> => {
+    retentionCycle ??= runRetentionCycle()
+      .catch((error) =>
+        logger.error('retention.cleanup.failed', {
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      )
+      .finally(() => {
+        retentionCycle = null
+      })
+    return retentionCycle
+  }
+  const renewalReminderSafely = (): Promise<void> => {
+    renewalReminderCycle ??= runRenewalReminderCycle()
+      .catch((error) =>
+        logger.error('entitlement_lifecycle.cycle_failed', {
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      )
+      .finally(() => {
+        renewalReminderCycle = null
+      })
+    return renewalReminderCycle
   }
 
   return {
@@ -1406,6 +1471,12 @@ export async function createApplication(env: Env): Promise<Application> {
       if (studioBuilder.executionAvailable || studioBuilder.adultExecutionAvailable)
         studioBuilderCoordinator.start()
       stopLiveRecording = liveRecording?.start()
+      adultJourneySeed = runAdultJourneySeedOnce({
+        service: adultJourney,
+        listCourses: () => courses.listPublishedCourses('adult'),
+        listShowcaseCourseIds: (ids) => content.listCourseIdsWithShowcaseBlock([...ids]),
+        logger,
+      })
       liveDeadlineTimer = setInterval(() => {
         if (liveDeadlineCycle) return
         liveDeadlineCycle = liveService
@@ -1432,13 +1503,7 @@ export async function createApplication(env: Env): Promise<Application> {
       }
       deliverRecados()
       broadcastTimer = setInterval(deliverRecados, 5000)
-      cleanupTimer = setInterval(() => {
-        void runRetentionCycle().catch((error) =>
-          logger.error('retention.cleanup.failed', {
-            error: error instanceof Error ? error.message : String(error),
-          }),
-        )
-      }, env.RETENTION_CLEANUP_INTERVAL_MS)
+      cleanupTimer = setInterval(() => void retentionSafely(), env.RETENTION_CLEANUP_INTERVAL_MS)
       if (parentReportSender) {
         parentReportTimer = setInterval(() => {
           void runParentReportCycle().catch((error) =>
@@ -1448,15 +1513,24 @@ export async function createApplication(env: Env): Promise<Application> {
           )
         }, env.PARENT_REPORT_INTERVAL_MS)
       }
-      if (renewalReminderSender || challengeLifecycleSender) {
-        renewalReminderTimer = setInterval(() => {
-          void runRenewalReminderCycle().catch((error) =>
-            logger.error('entitlement_lifecycle.cycle_failed', {
-              error: error instanceof Error ? error.message : String(error),
-            }),
-          )
-        }, env.RENEWAL_REMINDER_INTERVAL_MS)
+      if (hasLifecycleSenders) {
+        renewalReminderTimer = setInterval(
+          () => void renewalReminderSafely(),
+          env.RENEWAL_REMINDER_INTERVAL_MS,
+        )
       }
+      // Um ciclo logo depois do boot, sem bloquear a subida e sob os MESMOS locks: primeiro a
+      // retenção (o `expireLapsed` marca as assinaturas vencidas), depois os avisos, que leem
+      // esse `expired`. Deploys mais frequentes que o intervalo não deixam e-mail para trás.
+      bootCycleTimer = setTimeout(() => {
+        bootCycleTimer = null
+        bootCycle = (async () => {
+          await retentionSafely()
+          if (hasLifecycleSenders) await renewalReminderSafely()
+        })().finally(() => {
+          bootCycle = null
+        })
+      }, BOOT_CYCLE_DELAY_MS)
       // `::` = dual-stack (IPv4+IPv6) — necessário p/ o private networking do
       // Railway (`members.railway.internal` resolve IPv6).
       // O Bun fecha a conexão depois de `idleTimeout` sem bytes, INCLUSIVE com a resposta ainda
@@ -1466,15 +1540,21 @@ export async function createApplication(env: Env): Promise<Application> {
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
     },
     async stop() {
-      await studioBuilderCoordinator.stop()
-      await stopLiveRecording?.()
+      // Timers primeiro: nenhum ciclo novo começa enquanto o resto desliga.
       if (liveDeadlineTimer) clearInterval(liveDeadlineTimer)
-      if (liveDeadlineCycle) await liveDeadlineCycle
       if (broadcastTimer) clearInterval(broadcastTimer)
-      if (broadcastCycle) await broadcastCycle
       if (cleanupTimer) clearInterval(cleanupTimer)
       if (parentReportTimer) clearInterval(parentReportTimer)
       if (renewalReminderTimer) clearInterval(renewalReminderTimer)
+      if (bootCycleTimer) clearTimeout(bootCycleTimer)
+      await studioBuilderCoordinator.stop()
+      await stopLiveRecording?.()
+      if (adultJourneySeed) await adultJourneySeed
+      if (liveDeadlineCycle) await liveDeadlineCycle
+      if (broadcastCycle) await broadcastCycle
+      if (bootCycle) await bootCycle
+      if (retentionCycle) await retentionCycle
+      if (renewalReminderCycle) await renewalReminderCycle
       await server.stop()
       await connection.close()
       logger.info('app.stopped')

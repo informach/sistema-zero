@@ -235,6 +235,15 @@ test('active staff bypasses achievement gates, while support cannot execute even
     'suporte',
   )
   await expect(f.service.options({ ...staff, readOnly: true })).rejects.toThrow('suporte')
+  // Staff inside a profile of its own account (Kids requires a profile) gets the same preview.
+  f.state.reads.length = 0
+  const ownProfile = { ...f.actor, privileged: true }
+  expect(ownProfile.userId).not.toBe(ownProfile.accountId)
+  expect((await f.service.execute(ownProfile, f.request)).projectId).toBe(f.project.id)
+  expect(f.state.reads.map(({ port }) => port)).toEqual(['staff-preview'])
+  await expect(f.service.execute({ ...ownProfile, readOnly: true }, f.request)).rejects.toThrow(
+    'suporte',
+  )
 })
 
 test('resuming an eligible Pro retains its existing gate even without a known curriculum palette', async () => {
@@ -329,6 +338,9 @@ test('unavailable policy denies new child and staff runtime operations without f
   await expect(
     f.service.options({ ...f.actor, userId: f.actor.accountId, privileged: true }),
   ).rejects.toBeInstanceOf(KidsJourneyUnavailableError)
-  await expect(f.service.options({ ...f.actor, privileged: true })).rejects.toThrow('perfil')
+  // Staff in a profile of its own account (admitted at the HTTP boundary) reads the same preview.
+  await expect(f.service.options({ ...f.actor, privileged: true })).rejects.toBeInstanceOf(
+    KidsJourneyUnavailableError,
+  )
   expect(f.state.reads.some(({ port }) => port === 'palette' || port === 'frozen')).toBe(false)
 })

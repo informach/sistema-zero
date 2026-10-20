@@ -223,6 +223,12 @@ export interface FunnelDef {
   // `FUNNEL_OFFER_<KEY>` (obrigatória, fail-fast — ver `lib/env.ts`/`server/offer.ts`),
   // resolvida por `resolveOfferSlug(env, key)`. Trocar de oferta/campanha = só mudar a env.
   productName: string
+  /**
+   * Nome da cobrança da oferta PRINCIPAL (descrição do pagamento e da assinatura), quando difere do
+   * nome exibido. A Comunidade adulta cobra como "Comunidade dos Criadores (adultos)", o mesmo nome
+   * da oferta irmã no catálogo: é por ele que Compras e a área dos pais separam adulto de Kids.
+   */
+  chargeName?: string
   productSku: string
   /** Prefixo das imagens do funil em /public (ex.: `/img/no-comando-da-ia`). */
   imagesBase: string

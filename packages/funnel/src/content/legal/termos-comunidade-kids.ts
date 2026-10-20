@@ -24,7 +24,7 @@ export const TERMOS_COMUNIDADE_KIDS: LegalDoc = {
       bullets: [
         `Empresa: ${EMPRESA.razaoSocial}, inscrita no CNPJ sob o nº ${EMPRESA.cnpj}, titular deste site e responsável pelo Produto;`,
         'Responsável: a pessoa física maior de 18 anos que contrata o Produto e que declara ser pai, mãe ou responsável legal pela criança ou adolescente que irá utilizá-lo;',
-        'Aluno: a criança ou o adolescente menor de 18 anos que utiliza o Produto sob a supervisão do Responsável; abaixo de 9 anos, o uso acontece junto com o Responsável, que lê e conduz as sessões;',
+        'Aluno: a criança ou o adolescente cadastrado antes dos 18 anos que utiliza o Produto sob a supervisão do Responsável; abaixo de 9 anos, o uso acontece junto com o Responsável, que lê e conduz as sessões. O perfil do Aluno que completa 18 anos durante a vigência segue o disposto na cláusula 3;',
         `Assinatura ou Produto: a ${ASSINATURA}, o acesso por assinatura mensal ou anual à plataforma educacional da Empresa (cursos, Estúdio e demais ferramentas liberadas conforme a Jornada do Criador, Mural, Clube, revisão das atividades enviadas e respostas por escrito às dúvidas), para até 2 (dois) perfis de Aluno na mesma conta;`,
         `Desafio: o ${DESAFIO}, uma trilha guiada de caráter educacional para a criança criar o seu primeiro jogo dentro do Estúdio, incluída na Assinatura;`,
         'Jornada do Criador: o percurso de etapas da plataforma; conforme o Aluno avança nele, cursos e ferramentas de criação são liberados;',
@@ -45,6 +45,7 @@ export const TERMOS_COMUNIDADE_KIDS: LegalDoc = {
         'A contratação e o aceite destes Termos são feitos exclusivamente por um Responsável maior de 18 anos, que declara ser pai, mãe ou responsável legal pelo Aluno.',
         'O Aluno utiliza o Produto sob a supervisão e a responsabilidade do Responsável. A conta do Aluno é criada e gerida pelo Responsável e fica vinculada a ele, em linha com o ECA e a Lei nº 15.211/2025 (ECA Digital). Recomendamos o acompanhamento do adulto durante o uso, especialmente no primeiro acesso. Abaixo de 9 (nove) anos, o uso acontece junto com o Responsável, que lê e conduz as sessões.',
         'O Clube dos Criadores é um espaço restrito aos Alunos, com moderação prévia das publicações. O perfil público do Aluno começa desligado e só é ativado por decisão do Responsável. O Responsável pode solicitar a remoção de qualquer conteúdo publicado pelo Aluno.',
+        'Quando o Aluno completa 18 (dezoito) anos durante a vigência, o seu perfil continua ativo na conta do Responsável, nas mesmas condições, enquanto a Assinatura estiver vigente, com o progresso e os projetos já criados. A partir dessa idade, a pessoa passa a exercer pessoalmente os direitos de titular dos seus dados pessoais, nos termos da Política de Privacidade, e pode contratar a área adulta da plataforma, que usa uma conta própria e separada.',
       ],
     },
     {

@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import { CourseCover, ProgressBar } from '@/components/community/courses/course-cover'
 import { BackLink, PageBand, PageBody } from '@/components/community/page'
 import { cn } from '@/lib/cn'
+import { type LockedCourseLink, lockedCourseLink } from '@/lib/continuity'
 import {
   countWords,
   isCourseDone,
@@ -15,7 +16,6 @@ import {
   trackLabel,
 } from '@/lib/course-levels'
 import { lessonCountLabel, nextLessonOf } from '@/lib/course-outline'
-import { getEnv } from '@/lib/env'
 import type { CatalogCourseView, CourseProgress } from '@/lib/types'
 import { getMyCourse, listCatalog, listMyCourses } from '@/server/members'
 
@@ -80,7 +80,6 @@ export default async function TrackPage({ params }: { params: Promise<{ track: s
     highlightedDetail?.status === 200 && highlightedDetail.body
       ? nextLessonOf(highlightedDetail.body)
       : null
-  const fallbackSalesUrl = getEnv().FUNNEL_URL ?? null
   const ladder = summary.levels.filter((level) => level.level !== 'lenda')
   const total = summary.courses.length
   const where =
@@ -156,7 +155,7 @@ export default async function TrackPage({ params }: { params: Promise<{ track: s
                         course={course}
                         highlighted={course === highlighted}
                         next={course === highlighted ? highlightedNext : null}
-                        salesUrl={course.salesPageUrl ?? fallbackSalesUrl}
+                        locked={lockedCourseLink(course.salesPageUrl)}
                       />
                     </li>
                   ))}
@@ -214,12 +213,12 @@ function TrackCourseRow({
   course,
   highlighted,
   next,
-  salesUrl,
+  locked,
 }: {
   course: TrackCourse
   highlighted: boolean
   next: ReturnType<typeof nextLessonOf>
-  salesUrl: string | null
+  locked: LockedCourseLink
 }) {
   const { progress } = course
   const done = course.hasAccess && isCourseDone(course)
@@ -230,13 +229,13 @@ function TrackCourseRow({
   let action: ReactNode = null
   if (!course.hasAccess) {
     meta = { text: 'Ainda não faz parte do seu acesso' }
-    detail = salesUrl ? 'Abre a página do curso em outra aba.' : course.subtitle
-    action = salesUrl ? (
-      <a href={salesUrl} target="_blank" rel="noopener noreferrer" className="sz-btn-outline">
-        Conhecer o curso
+    detail = locked.note
+    action = (
+      <a href={locked.href} target="_blank" rel="noopener noreferrer" className="sz-btn-outline">
+        {locked.label}
         <ArrowRight aria-hidden />
       </a>
-    ) : null
+    )
   } else if (done) {
     detail = progress
       ? `${progress.totalLessons} de ${lessonCountLabel(progress.totalLessons)}${course.milestones?.showcased ? ' · jogo publicado no Mural' : ''}`

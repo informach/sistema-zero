@@ -25,6 +25,7 @@ export const COMUNIDADE_ADULTO: FunnelDef = {
   key: 'pro/comunidade-dos-criadores',
   basePath: '/pro/comunidade-dos-criadores',
   productName: 'Comunidade dos Criadores',
+  chargeName: 'Comunidade dos Criadores (adultos)',
   productSku: 'comunidade-dos-criadores-adulto',
   imagesBase: '/img/comunidade-adulto',
   checkoutImage: 'checkout-capa.webp',

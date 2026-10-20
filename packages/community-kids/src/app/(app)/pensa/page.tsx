@@ -9,6 +9,7 @@ import { KidsPensaUnavailable } from '@/components/kids/kids-pensa-unavailable'
 import { PensaClient } from '@/components/kids/pensa-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import { getEnv } from '@/lib/env'
+import { toolEarnedInJourney, toolOpensAtLevel } from '@/lib/tool-opens-at'
 import { checkPensaAccessReadonly, getGamificationReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
@@ -42,7 +43,12 @@ export default async function PensaPage({
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
   if (res.status !== 200) return <ToolRouteRecado screen={KidsPensaUnavailable} />
   const hasAccess = res.body?.access?.pensa === true
-  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedPensa} />
+  if (!hasAccess) {
+    const lockedJourney = gam?.status === 200 ? kidsJourneyAccess(gam.body) : null
+    const opensAt = toolOpensAtLevel('pensa', lockedJourney)
+    const earned = toolEarnedInJourney('pensa', lockedJourney)
+    return <ToolRouteRecado screen={<KidsLockedPensa opensAt={opensAt} earned={earned} />} />
+  }
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsPensaUnavailable} />
   const journey = kidsJourneyAccess(gam.body)
   if (!journey) return <ToolRouteRecado screen={KidsPensaUnavailable} />

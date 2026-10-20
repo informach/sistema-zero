@@ -967,6 +967,13 @@
       "when": 1792364213276,
       "tag": "0137_auth_capture",
       "breakpoints": true
+    },
+    {
+      "idx": 138,
+      "version": "7",
+      "when": 1792493298588,
+      "tag": "0138_adult_journey_reached",
+      "breakpoints": true
     }
   ]
 }

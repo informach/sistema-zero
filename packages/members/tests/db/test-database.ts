@@ -74,6 +74,7 @@ async function prepareBlockReadModel(database: ReturnType<typeof postgres>) {
     for (const [table, migration] of [
       ['adult_profiles', '0132_useful_jigsaw.sql'],
       ['adult_journey_policy', '0131_adult_journey_policy.sql'],
+      ['adult_journey_reached', '0138_adult_journey_reached.sql'],
       ['kids_journey_policy', '0136_kids_journey_policy.sql'],
       ['studio_ai_accounts', '0116_groovy_shriek.sql'],
       ['studio_ai_runs', '0117_absurd_jimmy_woo.sql'],

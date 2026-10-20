@@ -1,5 +1,28 @@
 # CLAUDE.md — @sistemazero/auth
 
+## Aviso de 18 anos do perfil Kids (20/10/2026)
+
+O perfil NUNCA é cortado ao completar 18 anos (a regra "um perfil válido não perde acesso" do
+`setBirthDate` continua valendo). O responsável recebe UM e-mail `profile-turned-18`
+(`nome` = primeiro nome da conta, fallback `Responsável`; `nome_perfil`; `link` = constante
+`ADULT_AREA_URL`, oferta `/pro/comunidade-dos-criadores/oferta/continuar` com UTM `perfil-18`).
+Job `NotifyAdultProfilesService` (application/maintenance): boot + `PROFILE_ADULT_NOTICE_INTERVAL_MS`
+(default 6 h, 0 desliga, teto 2.147.483.647 do `setInterval`, não roda com NODE_ENV=test). ⚠️ Só
+sobe com o Messaging configurado (`GATEWAY_URL` + `AUTH_HMAC_SECRET`, `adultNoticeJobState`): com
+o cliente nulo o envio resolveria e o aviso ficaria registrado para sempre sem e-mail; sem eles,
+loga UMA vez `profile.adult_notice.disabled` (`reason: messaging-not-configured`). O `link` segue
+constante (o Auth não tem env com a URL pública do funil). Roda sob advisory lock de SESSÃO numa conexão
+reservada (`withSessionAdvisoryLock`, chave `1635430518`; não xact, porque o ciclo faz HTTP).
+Elegível: perfil ativo, com `birth_date`, conta dona ativa, 18º aniversário (dia civil de São
+Paulo; 29/02 → 01/03) entre hoje-7 dias e hoje (`domain/profile/adult-notice.ts`; a faixa exata
+de nascimentos vai ao SQL). O responsável sai de `account_user_id`, inclusive no perfil-padrão
+legado (`id = id da conta`). Dedupe para sempre em `auth.profile_adult_notices` (PK no perfil,
+FK em cascata; migration `0025_profile_adult_notices`), gravado DEPOIS do envio; a
+idempotencyKey `profile-turned-18-<profileId>` cobre crash entre envio e registro. Falha de
+envio não registra e repete no próximo ciclo enquanto estiver na janela. Testes:
+`tests/unit/profile-adult-notice.test.ts`, `tests/db/profile-adult-notice.test.ts` e o contrato
+`tests/unit/message-templates-contract.test.ts` (chaves do Auth no seed do Messaging).
+
 ## Admissão de perfis Kids (implementação em andamento, 18/10/2026)
 
 `profiles.admissionState: pending|ready` é separado de `active|archived`. As migrations geradas

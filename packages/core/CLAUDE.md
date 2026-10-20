@@ -61,6 +61,12 @@ Novos consumidores Members estão em migração isolada; isso não qualifica a i
 também `requirements` e `capabilities` (cópias, nunca aliases da política). É a régua única que o
 members (listas) e o community (anel, chip, página da etapa) usam.
 
+**Piso (20/10/2026):** `projectAdultJourney(policy, version, milestones, frozen, reachedPosition)`
+recebe a posição mais alta já alcançada (gravada pelo members em `adult_journey_reached`). Etapas
+abaixo do piso saem `completed` (sem `missing`) e contam como anteriores concluídas; a posição vira
+`max(calculada, piso)`, limitada a `stages + 1`. O piso não concede capacidade (só conclusão real e
+`frozen`). Piso inválido (`null`, < 2, não inteiro) é ignorado (`normalizeAdultJourneyFloor`).
+
 ## Objetivos que RODAM o jogo (18/10/2026)
 
 `learning/project-execution.ts`: as regras `behavior`/`functionReturns`/`script`

@@ -9,6 +9,7 @@ import { KidsPintaUnavailable } from '@/components/kids/kids-pinta-unavailable'
 import { PintaClient } from '@/components/kids/pinta-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
+import { toolEarnedInJourney, toolOpensAtLevel } from '@/lib/tool-opens-at'
 import {
   checkPintaAccessReadonly,
   getGamificationReadonly,
@@ -43,7 +44,12 @@ export default async function PintaPage() {
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
   if (res.status !== 200) return <ToolRouteRecado screen={KidsPintaUnavailable} />
   const hasAccess = res.body?.access?.pinta === true
-  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedPinta} />
+  if (!hasAccess) {
+    const lockedJourney = gam?.status === 200 ? kidsJourneyAccess(gam.body) : null
+    const opensAt = toolOpensAtLevel('pinta', lockedJourney)
+    const earned = toolEarnedInJourney('pinta', lockedJourney)
+    return <ToolRouteRecado screen={<KidsLockedPinta opensAt={opensAt} earned={earned} />} />
+  }
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsPintaUnavailable} />
   const journey = kidsJourneyAccess(gam.body)
   if (!journey) return <ToolRouteRecado screen={KidsPintaUnavailable} />

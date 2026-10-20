@@ -14,6 +14,7 @@ import type { AuthGateway } from '../../../domain/ports/auth-gateway.port'
 import type { CreationsRepository } from '../../../domain/ports/creations-repository.port'
 import type { PensaProjectBase } from '../../../domain/ports/pensa-project-repository.port'
 import type {
+  PensaTeamContextSession,
   PensaTeamFacts,
   PensaTeamRepository,
 } from '../../../domain/ports/pensa-team-repository.port'
@@ -77,8 +78,19 @@ export class DrizzlePensaTeamRepository implements PensaTeamRepository {
     }
   }
 
-  async context(inputActor: P.PensaActor, id: string): Promise<PensaTeamFacts> {
+  /**
+   * `session.ownStaffProfile`: the caller (member-shell BFF, HMAC) vouches that the privileged
+   * actor is in a profile session of its OWN account with no support/impersonation. The actor
+   * alone cannot prove the absence of impersonation, so without it a profile session reads the
+   * profile's real journey, as before.
+   */
+  async context(
+    inputActor: P.PensaActor,
+    id: string,
+    session: PensaTeamContextSession = {},
+  ): Promise<PensaTeamFacts> {
     const actor = { ...inputActor }
+    const ownStaffProfile = session.ownStaffProfile === true
     const state = await this.store.get(actor, id)
     const creations =
       state.project.audience === 'adult' ? this.deps.adultCreations : this.deps.creations
@@ -95,10 +107,13 @@ export class DrizzlePensaTeamRepository implements PensaTeamRepository {
     const info = async (profileId: string) => {
       const accountId = accountOf(profileId)
       if (!accountId) pensaError('RESOURCES_CHANGED', 'Esta pessoa saiu da equipe.')
+      // Same own-account staff rule as `resolveKidsStaffPreviewActor`: the staff account itself,
+      // or (vouched) a profile of the staff's own account. Only the actor's own entry previews;
+      // teammates always keep their real journey.
       const ownPreview =
         state.project.audience === 'kids' &&
         actor.privileged &&
-        actor.profileId === actor.accountId &&
+        (actor.profileId === actor.accountId || ownStaffProfile) &&
         profileId === actor.profileId &&
         accountId === actor.accountId
       const [level, access] = await Promise.all([

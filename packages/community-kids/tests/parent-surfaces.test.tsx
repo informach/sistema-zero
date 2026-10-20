@@ -233,6 +233,101 @@ describe('os cartões da conta', () => {
     await waitFor(() => expect(screen.queryByText('Plano da família')).toBeNull())
   })
 
+  test('só a Comunidade Kids Encerrada mostra como continuar', async () => {
+    installFetch((path) => {
+      if (path === '/api/payments/my/subscriptions')
+        return Response.json({
+          items: [
+            {
+              ...subscription,
+              id: 'kids',
+              status: 'EXPIRED',
+              description: 'Comunidade dos Criadores',
+              createdAt: '2026-05-01T12:00:00.000Z',
+            },
+            {
+              ...subscription,
+              id: 'adulto',
+              status: 'EXPIRED',
+              description: 'Comunidade dos Criadores (adultos)',
+              createdAt: '2026-07-01T12:00:00.000Z',
+            },
+            // Uma cobrança que nunca confirmou não segura o botão.
+            {
+              ...subscription,
+              id: 'pendente',
+              status: 'PENDING',
+              description: 'Comunidade dos Criadores',
+              createdAt: '2026-08-01T12:00:00.000Z',
+            },
+          ],
+        })
+      throw new Error(`fetch de teste não previsto: ${path}`)
+    })
+    render(<ParentSubscriptions />)
+    expect((await screen.findAllByText('Encerrada')).length).toBe(2)
+    const links = screen.getAllByRole('link', { name: /Ver como continuar/ })
+    // Só a da Comunidade Kids encerrada: a adulta não leva à continuidade do Kids.
+    expect(links).toHaveLength(1)
+    expect(links[0]?.getAttribute('href')).toBe(
+      'https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta/continuar?utm_source=plataforma&utm_medium=app&utm_content=pais-assinatura',
+    )
+  })
+
+  test('Cancelada ou outra Kids ativa: sem o botão (o acesso ainda vale)', async () => {
+    const recent = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+    installFetch((path) => {
+      if (path === '/api/payments/my/subscriptions')
+        return Response.json({
+          items: [
+            {
+              ...subscription,
+              id: 'velha',
+              status: 'EXPIRED',
+              description: 'Comunidade dos Criadores',
+              createdAt: '2026-01-01T12:00:00.000Z',
+            },
+            {
+              ...subscription,
+              id: 'cancelada',
+              status: 'CANCELED',
+              description: 'Comunidade dos Criadores',
+              lastChargeAt: recent,
+              canceledAt: recent,
+              createdAt: '2026-06-01T12:00:00.000Z',
+            },
+          ],
+        })
+      throw new Error(`fetch de teste não previsto: ${path}`)
+    })
+    const { unmount } = render(<ParentSubscriptions />)
+    expect(await screen.findByText('Cancelada')).toBeTruthy()
+    expect(screen.queryByRole('link', { name: /Ver como continuar/ })).toBeNull()
+    expect(screen.getByText('O acesso continua até o fim do período já pago.')).toBeTruthy()
+    unmount()
+
+    installFetch((path) => {
+      if (path === '/api/payments/my/subscriptions')
+        return Response.json({
+          items: [
+            {
+              ...subscription,
+              id: 'velha',
+              status: 'EXPIRED',
+              description: 'Comunidade dos Criadores',
+              createdAt: '2026-01-01T12:00:00.000Z',
+            },
+            { ...subscription, id: 'ativa', description: 'Comunidade dos Criadores' },
+          ],
+        })
+      throw new Error(`fetch de teste não previsto: ${path}`)
+    })
+    render(<ParentSubscriptions />)
+    expect(await screen.findByText('Encerrada')).toBeTruthy()
+    expect(screen.queryByRole('link', { name: /Ver como continuar/ })).toBeNull()
+    expect(screen.getAllByRole('button', { name: 'Cancelar assinatura' })).toHaveLength(1)
+  })
+
   test('falhas não deixam esqueleto nem derrubam a conta', async () => {
     installFetch((path) => {
       if (path === '/api/payments/my/subscriptions') return Response.json({ items: [] })

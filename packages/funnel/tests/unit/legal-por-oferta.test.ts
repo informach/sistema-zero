@@ -17,7 +17,7 @@ describe('um Termo por oferta e uma Política de Privacidade', () => {
   test('a versão gravada na compra vem do funil do lead', () => {
     expect(termsVersionForFunnel('kids/desafio-primeiro-jogo')).toBe('desafio-2026-10-20')
     expect(termsVersionForFunnel('kids/comunidade-dos-criadores')).toBe(
-      'comunidade-kids-2026-10-20',
+      'comunidade-kids-2026-10-20b',
     )
     // O Termo do NCI não mudou: a versão de junho continua valendo, também para lead sem funil.
     expect(termsVersionForFunnel('pro/no-comando-da-ia')).toBe('pro-2026-06-04')

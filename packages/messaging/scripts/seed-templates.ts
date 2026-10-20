@@ -728,6 +728,126 @@ const seeds = [
       footerNote: 'Você recebeu este e-mail porque teve acesso ao Desafio do Primeiro Jogo.',
     }),
   },
+  // Fim do acesso (20/10/2026), enviados pelo MEMBERS (consumer HMAC `members`, job do ciclo
+  // de vencimentos, `send-access-ended-messages`). CONTRATO de variáveis com o members: NÃO
+  // renomear sem mudar o chamador. `data` chega formatada (dd/mm/aaaa, calendário de São
+  // Paulo); `link` já vem com as UTMs. Presente de 7 dias (resgate `scholarship:`, um curso +
+  // o Mural por tempo limitado, NÃO a assinatura da Comunidade): dois dias antes e no dia em
+  // que termina. Assinatura da Comunidade: no dia em que o acesso venceu,
+  // Kids e adulta separadas. Light Copy: sem "!", sem travessão, sem pergunta de gancho.
+  {
+    key: 'gift-expiry-2d',
+    channel: 'email' as const,
+    name: 'Presente do curso: faltam 2 dias (e-mail)',
+    subject: '{{nome}}, o presente do curso termina em {{data}}',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'O perfil, os projetos e os jogos publicados continuam guardados na conta.',
+      title: 'O presente do curso termina em {{data}}',
+      content: [
+        p(
+          'Olá, {{nome}}. O acesso de presente ao curso e ao Mural termina em <strong>{{data}}</strong>.',
+        ),
+        p(
+          'O perfil, os projetos e os jogos publicados continuam guardados na conta. Para seguir com os próximos cursos no mesmo perfil, use o mesmo e-mail na assinatura.',
+        ),
+        ctaButton('Ver como continuar', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque recebeu um presente de 7 dias na sua conta.',
+    }),
+  },
+  {
+    key: 'gift-expired',
+    channel: 'email' as const,
+    name: 'Presente do curso: terminou (e-mail)',
+    subject: 'O presente do curso terminou, {{nome}}',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'O perfil, os projetos e os jogos publicados no Mural continuam na conta.',
+      title: 'O presente do curso terminou',
+      content: [
+        p(
+          'Olá, {{nome}}. O que foi feito continua na conta: o perfil da criança, os projetos e os jogos publicados no Mural.',
+        ),
+        p('Com a assinatura, a criança segue de onde parou e continua nos próximos cursos.'),
+        ctaButton('Ver como continuar', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque recebeu um presente de 7 dias na sua conta.',
+    }),
+  },
+  {
+    key: 'subscription-ended-kids',
+    channel: 'email' as const,
+    name: 'Assinatura Kids encerrada (e-mail)',
+    subject: 'A assinatura da Comunidade terminou, {{nome}}',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'O perfil, a Jornada, os projetos e os jogos publicados continuam na conta.',
+      title: 'A assinatura da Comunidade terminou',
+      content: [
+        p(
+          'Olá, {{nome}}. O perfil, o posto da Jornada, os projetos guardados, os certificados e os jogos publicados continuam na conta.',
+        ),
+        p(
+          'Quando quiser voltar, a assinatura nova começa no dia em que o pagamento é aprovado e a criança segue de onde parou.',
+        ),
+        ctaButton('Ver como voltar', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque a assinatura da Comunidade dos Criadores terminou na sua conta.',
+    }),
+  },
+  {
+    key: 'subscription-ended-adult',
+    channel: 'email' as const,
+    name: 'Assinatura adulta encerrada (e-mail)',
+    subject: 'A sua assinatura da Comunidade terminou, {{nome}}',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'Os projetos, os certificados e o progresso continuam na sua conta.',
+      title: 'A sua assinatura da Comunidade terminou',
+      content: [
+        p(
+          'Olá, {{nome}}. Os projetos em Meus Jogos, os jogos publicados no Mural, os certificados e o progresso nos cursos continuam na sua conta. A etapa que você alcançou e os blocos que liberou também ficam.',
+        ),
+        p(
+          'Quando quiser voltar, a assinatura nova começa no dia em que o pagamento é aprovado e você segue de onde parou.',
+        ),
+        ctaButton('Ver como voltar', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque a sua assinatura da Comunidade dos Criadores terminou.',
+    }),
+  },
+  // Perfil Kids que fez 18 anos (20/10/2026), enviado pelo AUTH ao responsável. E-mail só.
+  // CONTRATO: `nome` (primeiro nome do responsável), `nome_perfil` e `link` (área adulta).
+  {
+    key: 'profile-turned-18',
+    channel: 'email' as const,
+    name: 'Perfil Kids fez 18 anos (e-mail)',
+    subject: '{{nome_perfil}} fez 18 anos',
+    variables: ['nome', 'nome_perfil', 'link'],
+    body: emailLayout({
+      preheader:
+        'O perfil Kids continua com a sua assinatura, e agora existe também a área adulta.',
+      title: '{{nome_perfil}} fez 18 anos',
+      content: [
+        p(
+          'Olá, {{nome}}. {{nome_perfil}} fez 18 anos, e o perfil Kids continua funcionando enquanto a sua assinatura estiver ativa.',
+        ),
+        p(
+          'Agora {{nome_perfil}} também pode ter uma conta própria na área adulta. Ela começa nova, usa o mesmo Estúdio, e os projetos continuam no perfil Kids.',
+        ),
+        ctaButton('Conhecer a área adulta', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque é responsável por um perfil Kids na sua conta.',
+    }),
+  },
   // Lembrete de RENOVAÇÃO do plano anual à vista (assinaturas, 07/2026) — enviado
   // pelo MEMBERS (consumer HMAC `members` via gateway) ~7 dias antes da validade
   // da matrícula vencer. CONTRATO de variáveis com o members

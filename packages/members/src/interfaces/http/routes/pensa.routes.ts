@@ -371,8 +371,21 @@ export function pensaRoutes(deps: PensaRoutesDeps, audience: 'kids' | 'adult' = 
     .post('/rewards/work', () => deps.rewards.work(), { body: z.strictObject({}) })
     .post(
       '/projects/:projectId/context',
-      ({ params, body }) => deps.team.context(body.actor, params.projectId),
-      { params: projectParams, body: z.strictObject({ actor: P.PensaActorSchema }) },
+      // `staffSession: 'own-account'` = the BFF vouches for a privileged profile session of the
+      // staff's OWN account with no impersonation (same rule as `resolveKidsStaffPreviewActor`).
+      // Absent → a profile session reads the real journey. Only a kids privileged actor counts.
+      ({ params, body }) =>
+        deps.team.context(body.actor, params.projectId, {
+          ownStaffProfile:
+            audience === 'kids' && body.actor.privileged && body.staffSession === 'own-account',
+        }),
+      {
+        params: projectParams,
+        body: z.strictObject({
+          actor: P.PensaActorSchema,
+          staffSession: z.literal('own-account').optional(),
+        }),
+      },
     )
     .post(
       '/projects/:projectId/view',

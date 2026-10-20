@@ -70,10 +70,13 @@ test('team metadata has no virtual rank/earned and requires the trusted own-acco
     expect(body.kidsPreview).not.toHaveProperty('earned')
     expect(body).not.toHaveProperty('ranking')
   }
+  // A profile session of the staff's own account is accepted (see kids-staff-profile-preview);
+  // inconsistent profile headers and support sessions are not.
   const deniedHeaders: Record<string, string>[] = [
-    { 'x-auth-account-id': accountId },
+    { 'x-auth-account-id': accountId, 'x-auth-kids-context': 'parent' },
     { 'x-auth-kids-context': 'student' },
     { 'x-auth-impersonation-mode': 'write' },
+    { 'x-auth-impersonator-id': randomUUID() },
   ]
   for (const extra of deniedHeaders) {
     const response = await ctx.app.handle(

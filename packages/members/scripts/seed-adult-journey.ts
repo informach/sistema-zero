@@ -7,6 +7,15 @@
  *   bun run journey:seed-adult -- --apply --force  # troca uma jornada já configurada
  *   bun run journey:seed-adult -- --milestone=complete  # só terminar, mesmo com o Mural no curso
  *   bun run journey:seed-adult -- --apply --allow-partial  # grava mesmo faltando etapas
+ *   bun run journey:seed-adult -- --once           # o modo automático do boot (ver abaixo)
+ *
+ * `--once` (20/10/2026) é o MESMO caminho que o Members roda sozinho no boot
+ * (`runAdultJourneySeedOnce`): grava só se ainda NÃO existe política, sob advisory lock, e nunca
+ * sobrescreve (ignora `--force`); sem curso no primeiro nível, só registra e sai com 0. Usa
+ * sempre o marco por curso (como o boot): `--once` com `--milestone` é ERRO, nada roda.
+ *
+ * Cursos vendidos como produto avulso (`ADULT_JOURNEY_STANDALONE_COURSE_SLUGS`, hoje
+ * `no-comando-da-ia`) nunca entram no plano e aparecem como "excluídos".
  *
  * Faltando curso publicado em algum nível, o plano para antes dele e o `--apply` RECUSA gravar:
  * uma jornada pela metade faria a pessoa virar Lenda cedo e deixaria a Ponte, a IA e o Pro sem
@@ -23,28 +32,17 @@
 import { createLogger } from '@sistemazero/core/logging'
 import { AdultJourneyService } from '../src/application/adult-journey/adult-journey.service'
 import { buildAdultJourneySeed } from '../src/application/adult-journey/adult-journey-seed'
+import { parseAdultJourneySeedArgs } from '../src/application/adult-journey/adult-journey-seed-args'
+import { runAdultJourneySeedOnce } from '../src/application/adult-journey/adult-journey-seed-once'
 import { DrizzleAdultJourneyRepository } from '../src/infrastructure/persistence/drizzle/adult-journey.repository'
 import { DrizzleContentAdminRepository } from '../src/infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from '../src/infrastructure/persistence/drizzle/course.repository'
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
 
-const args = process.argv.slice(2)
-const apply = args.includes('--apply')
-const force = args.includes('--force')
-const allowPartial = args.includes('--allow-partial')
-// `--milestone=showcase` ou `--milestone showcase`; valor vazio ou desconhecido é erro.
-const milestoneIndex = args.findIndex(
-  (arg) => arg === '--milestone' || arg.startsWith('--milestone='),
+// Argumento inválido (inclusive `--once` com `--milestone`) lança antes de abrir o banco.
+const { once, apply, force, allowPartial, milestone } = parseAdultJourneySeedArgs(
+  process.argv.slice(2),
 )
-const milestoneArg =
-  milestoneIndex === -1
-    ? 'auto'
-    : args[milestoneIndex]?.includes('=')
-      ? args[milestoneIndex]?.split('=')[1]
-      : args[milestoneIndex + 1]
-if (milestoneArg !== 'auto' && milestoneArg !== 'complete' && milestoneArg !== 'showcase')
-  throw new Error('Use --milestone=auto, --milestone=complete ou --milestone=showcase')
-const milestone = milestoneArg
 
 const databaseUrl = process.env.DATABASE_URL?.trim()
 if (!databaseUrl) throw new Error('DATABASE_URL é obrigatória')
@@ -62,11 +60,22 @@ try {
     courses,
     () => new Date(),
   )
+  const contentAdmin = new DrizzleContentAdminRepository(connection.db)
+  if (once) {
+    const outcome = await runAdultJourneySeedOnce({
+      service,
+      listCourses: () => courses.listPublishedCourses('adult'),
+      listShowcaseCourseIds: (ids) => contentAdmin.listCourseIdsWithShowcaseBlock([...ids]),
+      logger,
+    })
+    console.log(`\nSeed automático: ${JSON.stringify(outcome)}`)
+    // Nunca derruba quem chamou: sai com 0 em qualquer resultado.
+    await connection.close()
+    process.exit(0)
+  }
   const published = await courses.listPublishedCourses('adult')
   const showcaseCourseIds = new Set(
-    await new DrizzleContentAdminRepository(connection.db).listCourseIdsWithShowcaseBlock(
-      published.map((course) => course.id),
-    ),
+    await contentAdmin.listCourseIdsWithShowcaseBlock(published.map((course) => course.id)),
   )
   const plan = buildAdultJourneySeed(published, { milestone, showcaseCourseIds })
   const current = await service.policy()
@@ -87,6 +96,10 @@ try {
     console.log(
       `\n  Parou antes de "${plan.stoppedAt.title}": nenhum curso adulto publicado no nível ${plan.stoppedAt.tier}.`,
     )
+  if (plan.excluded.length) {
+    console.log('\n  Excluídos (produto avulso, nunca entram na jornada pelo seed):')
+    for (const course of plan.excluded) console.log(`    - ${course.title} (${course.slug})`)
+  }
   console.log(
     `\n  Hoje no banco: versão ${current.version}, ${current.policy.stages.length} etapa(s).`,
   )

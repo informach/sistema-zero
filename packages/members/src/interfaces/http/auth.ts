@@ -181,24 +181,41 @@ export function resolveAdultLearnerId(headers: Record<string, string | undefined
   return id
 }
 
-/** Trusted own-account team preview; a parent context alone never proves staff membership. */
+/**
+ * Trusted own-account team preview. Only the ROLE proves staff membership: a parent context
+ * alone never does. Two shapes are accepted, both without a support session:
+ * - the staff account itself (no profile headers; context absent or `parent`);
+ * - a profile session of the staff's OWN account. The Kids app forces every login (staff too)
+ *   to pick a profile before the learning area, so this is how the team reaches Pinta, Molda,
+ *   Pensa and Estúdio. Auth signs `role`/`status` from the account named in `pfl.accountId`
+ *   (`x-auth-account-id`) after checking that the profile belongs to it, so here the role and
+ *   the profile's owner are the same authenticated account.
+ * A support/impersonation session (`x-auth-impersonator-id`, claim `act`) carries the TARGET's
+ * role and may be looking at a customer's child: it must see the child's real state, so it is
+ * always refused. All `x-auth-*` headers are stripped from input and injected by the gateway.
+ */
 export function resolveKidsStaffPreviewActor(headers: Record<string, string | undefined>) {
   if (!isPrivilegedActor(headers))
     throw new ForbiddenError('Prévia disponível somente para a equipe ativa.')
+  if (
+    headers['x-auth-impersonator-id'] !== undefined ||
+    headers['x-auth-impersonation-mode'] !== undefined
+  )
+    throw new ForbiddenError('A sessão de suporte vê o estado real da criança, sem prévia.')
   const userId = resolveUserId(headers)
   const accountId = resolveAccountId(headers)
   const context = headers['x-auth-kids-context']
-  if (
-    accountId !== userId ||
-    headers['x-auth-account-id'] !== undefined ||
-    headers['x-auth-profile-name'] !== undefined ||
-    headers['x-auth-profile-public'] !== undefined ||
-    headers['x-auth-impersonator-id'] !== undefined ||
-    headers['x-auth-impersonation-mode'] !== undefined ||
-    (context !== undefined && context !== 'parent')
-  )
-    throw new ForbiddenError('Use a conta da equipe, sem perfil de aluno ou sessão de suporte.')
-  return { userId, accountId }
+  const profileSession = headers['x-auth-account-id'] !== undefined
+  const consistent = profileSession
+    ? // `pfl` exists only in profile sessions: never with the parent context.
+      context === undefined || context === 'student'
+    : // Without `pfl` there is no profile: no child name/visibility and no student context.
+      accountId === userId &&
+      headers['x-auth-profile-name'] === undefined &&
+      headers['x-auth-profile-public'] === undefined &&
+      (context === undefined || context === 'parent')
+  if (!consistent) throw new ForbiddenError('Sessão da equipe inconsistente para a prévia.')
+  return { userId, accountId, profileSession }
 }
 
 /** Free Studio requires an adult account or a verified student profile; parent sessions are not learners. */

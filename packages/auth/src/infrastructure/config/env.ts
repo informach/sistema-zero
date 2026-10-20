@@ -124,6 +124,17 @@ const EnvSchema = z
     GATEWAY_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
     AUTH_CONSUMER_ID: z.string().min(1).default('auth'),
     AUTH_HMAC_SECRET: z.string().min(16).optional(),
+
+    // Aviso de 18 anos (e-mail `profile-turned-18` ao responsável): intervalo do job, que
+    // roda também no boot. 0 desliga. Não roda com NODE_ENV=test. Default 6 h: o aniversário
+    // é pego no próprio dia e a janela de 7 dias cobre atrasos. Teto = maior atraso aceito pelo
+    // `setInterval` (acima disso o timer dispara na hora, em loop).
+    PROFILE_ADULT_NOTICE_INTERVAL_MS: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .max(2_147_483_647)
+      .default(6 * 60 * 60 * 1000),
   })
   // HS256 exige um segredo forte (≥ 32 chars) — um segredo curto/ausente derrubaria
   // toda a garantia de autenticidade dos tokens. Fail-fast no boot.

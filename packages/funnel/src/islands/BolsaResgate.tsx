@@ -231,7 +231,7 @@ export default function BolsaResgate({
     >
       <p className="rounded-xl border border-cyan/30 bg-cyan/10 px-4 py-3 text-sm text-ink">
         <strong>Estes dados são do responsável</strong> (mãe, pai ou tutor). O perfil da criança
-        (nome e idade) você cria depois, já dentro da plataforma.
+        (nome e, se quiser, a data de nascimento) você cria depois, já dentro da plataforma.
       </p>
 
       <div>

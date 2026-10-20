@@ -3,6 +3,7 @@ import {
   type AdultJourneyPolicy,
   AdultJourneyPolicySchema,
   adultJourneyPosition,
+  normalizeAdultJourneyFloor,
   projectAdultJourney,
 } from './adult-policy'
 
@@ -100,4 +101,74 @@ test('a posição é a primeira etapa não concluída, e quem terminou tudo fica
   // Uma etapa posterior feita antes da anterior não pula a pessoa para frente.
   const onlyAdvanced = [{ courseId: advanced, completed: true, showcased: true }]
   expect(adultJourneyPosition(projectAdultJourney(policy, 1, onlyAdvanced))?.position).toBe(1)
+})
+
+test('o piso da posição não volta quando a política ganha curso numa etapa já concluída', () => {
+  const extra = '33333333-3333-4333-8333-333333333333'
+  const firstDone = [{ courseId: first, completed: true, showcased: false }]
+  const reached = adultJourneyPosition(projectAdultJourney(policy, 1, firstDone))?.position
+  expect(reached).toBe(2)
+  const edited: AdultJourneyPolicy = {
+    ...policy,
+    stages: [
+      {
+        ...policy.stages[0]!,
+        requirements: [
+          ...policy.stages[0]!.requirements,
+          { courseId: extra, milestone: 'complete' },
+        ],
+      },
+      policy.stages[1]!,
+    ],
+  }
+  // Sem piso a pessoa voltaria para a etapa 1.
+  expect(adultJourneyPosition(projectAdultJourney(edited, 2, firstDone))?.position).toBe(1)
+  const floored = projectAdultJourney(edited, 2, firstDone, ['studio', 'pinta'], reached)
+  expect(adultJourneyPosition(floored)?.position).toBe(2)
+  expect(floored.stages[0]).toMatchObject({ completed: true, available: true, missing: [] })
+  expect(floored.stages[1]).toMatchObject({ completed: false, available: true })
+  expect(floored.capabilities).toEqual(['studio', 'pinta'])
+  // A etapa seguinte continua sendo liberada pela conclusão real dela.
+  const advancedDone = [...firstDone, { courseId: advanced, completed: true, showcased: true }]
+  const next = projectAdultJourney(edited, 2, advancedDone, ['studio', 'pinta'], reached)
+  expect(adultJourneyPosition(next)?.position).toBe(3)
+  expect(next.capabilities).toEqual(['studio', 'pinta', 'pro', 'ai', 'pensa'])
+})
+
+test('o piso não concede capacidade, vale o maior entre calculada e piso e respeita o total', () => {
+  // Etapa nova inserida abaixo do piso aparece concluída, mas não libera a ferramenta dela.
+  const inserted: AdultJourneyPolicy = {
+    ...policy,
+    stages: [
+      {
+        id: 'nova',
+        title: 'Nova',
+        requirements: [{ courseId: '44444444-4444-4444-8444-444444444444', milestone: 'complete' }],
+        capabilities: ['molda'],
+      },
+      ...policy.stages,
+    ],
+  }
+  const view = projectAdultJourney(inserted, 3, [], [], 2)
+  expect(view.stages[0]?.completed).toBe(true)
+  expect(view.capabilities).toEqual([])
+  expect(adultJourneyPosition(view)?.position).toBe(2)
+  // Calculada acima do piso: vence a calculada.
+  const allDone = [
+    { courseId: first, completed: true, showcased: false },
+    { courseId: advanced, completed: true, showcased: true },
+  ]
+  expect(adultJourneyPosition(projectAdultJourney(policy, 1, allDone, [], 2))?.position).toBe(3)
+  // Piso acima do total (etapas removidas): fica na última posição.
+  expect(adultJourneyPosition(projectAdultJourney(policy, 1, [], [], 9))).toEqual({
+    position: 3,
+    total: 3,
+    stageId: null,
+    title: null,
+  })
+  // Piso inválido é ignorado.
+  for (const floor of [null, 0, -3, 1.5, Number.NaN])
+    expect(adultJourneyPosition(projectAdultJourney(policy, 1, [], [], floor))?.position).toBe(1)
+  expect(normalizeAdultJourneyFloor(4)).toBe(4)
+  expect(normalizeAdultJourneyFloor(undefined)).toBe(1)
 })
