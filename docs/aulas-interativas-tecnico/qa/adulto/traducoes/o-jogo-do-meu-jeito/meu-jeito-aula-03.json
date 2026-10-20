@@ -5,737 +5,737 @@
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "# O Jogo do Meu Jeito · Aula 3 · Faça o motor da nave pulsar",
-      "adulto": null
+      "adulto": "# O Jogo do Meu Jeito · Aula 3 · Faça o motor da nave pulsar"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`. Consulte [o mapa do curso](modulos.md).",
-      "adulto": null
+      "adulto": "Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`. Consulte [o mapa do curso](modulos.md)."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "## Resumo",
-      "adulto": null
+      "adulto": "## Resumo"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "- Entrada: Nave em pixel art com espaço reservado para o fogo.\n- Resultado: Nave com animação voando de dois quadros a 8 quadros por segundo.\n- Seções: 7. Vídeos: 6.",
-      "adulto": null
+      "adulto": "- Entrada: Nave em pixel art com espaço reservado para o fogo.\n- Resultado: Nave com animação voando de dois quadros a 8 quadros por segundo.\n- Seções: 7. Vídeos: 6."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
-      "adulto": null
+      "adulto": "**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "## Diagnóstico e decisão",
-      "adulto": null
+      "adulto": "## Diagnóstico e decisão"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O segundo quadro muda só o motor. A revisão formativa fica separada da galeria.",
-      "adulto": null
+      "adulto": "A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O segundo quadro muda só o motor. A revisão formativa fica separada da galeria."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "## Triagem dos conceitos",
-      "adulto": null
+      "adulto": "## Triagem dos conceitos"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Quadros e velocidade | Experiência frames antes de desenhar o fogo. | Distingue alternância de desenhos de deslocamento do corpo. |\n| Fantasma do quadro anterior | Experiência onion-skin antes da duplicação e edição. | Compara o segundo fogo ao primeiro. |\n| Renomear animação | Aplicação direta em Spritesheet. | O nome será usado no Estúdio; não é um teste de memorização do menu. |",
-      "adulto": null
+      "adulto": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Quadros e velocidade | Experiência frames antes de desenhar o fogo. | Distingue alternância de desenhos de deslocamento do corpo. |\n| Fantasma do quadro anterior | Experiência onion-skin antes da duplicação e edição. | Compara o segundo fogo ao primeiro. |\n| Renomear animação | Aplicação direta em Spritesheet. | O nome será usado no Estúdio; não é um teste de memorização do menu. |"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "## Proposta final",
-      "adulto": null
+      "adulto": "## Proposta final"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "### Seção 1. Compare dois desenhos e uma animação",
-      "adulto": null
+      "adulto": "### Seção 1. Compare dois desenhos e uma animação"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Tarefa / Zappy na página:** Sua vez! Mude a Velocidade da Prévia e veja quando o fogo pulsa. Quando terminar, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Tarefa / Recado na página:** Sua vez: mude a Velocidade da Prévia e veja quando o fogo pulsa. Quando terminar, clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Blocos na página:** video-quadros → fala-quadros → experiencia-quadros.",
-      "adulto": null
+      "adulto": "**Blocos na página:** video-quadros → fala-quadros → experiencia-quadros."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "ID video-quadros-avatar-01. Professora até “a Velocidade diz quantas páginas passam por segundo.”. Antes: Comparar as velocidades 2 e 8, parar a Prévia e concluir a comparação com o livrinho. Debinha: “E se os dois desenhos forem iguais?”. Retomada da professora: “Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1.”. Depois: Ligar a Prévia e tornar o quadro 2 igual ao 1 só depois da pergunta.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Experiência existente:** `frames`. Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, ligue Quadro 2 igual ao quadro 1 e observe por um segundo. Sem palpite, pistas ou pergunta final.",
-      "adulto": null
+      "adulto": "**Experiência existente:** `frames`. Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, ligue Quadro 2 igual ao quadro 1 e observe por um segundo. Sem palpite, pistas ou pergunta final."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "### Seção 2. Desenhe o primeiro fogo",
-      "adulto": null
+      "adulto": "### Seção 2. Desenhe o primeiro fogo"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Tarefa / Zappy na página:** Agora desenhe o primeiro fogo da sua nave! No quadro 1, faça uma chama pequena logo abaixo do motor. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Tarefa / Recado na página:** Agora desenhe o primeiro fogo da sua nave. No quadro 1, faça uma chama pequena logo abaixo do motor. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Blocos na página:** video-primeiro-fogo → fala-primeiro-fogo.",
-      "adulto": null
+      "adulto": "**Blocos na página:** video-primeiro-fogo → fala-primeiro-fogo."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.",
-      "adulto": null
+      "adulto": "**Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "### Seção 3. Desenhe olhando o quadro anterior",
-      "adulto": null
+      "adulto": "### Seção 3. Desenhe olhando o quadro anterior"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Tarefa / Zappy na página:** Sua vez! Use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1. Quando terminar, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Tarefa / Recado na página:** Sua vez: use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1. Quando terminar, clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Blocos na página:** video-fantasma → fala-fantasma → experiencia-fantasma.",
-      "adulto": null
+      "adulto": "**Blocos na página:** video-fantasma → fala-fantasma → experiencia-fantasma."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "ID video-fantasma-avatar-01. Professora até “Sabe quando você põe uma folha fina por cima de um desenho e consegue ver as linhas de baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: deixa o quadro anterior à vista, para você comparar.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E se o fogo 2 ficar maior que o tracejado?”. Retomada da professora: “Vamos ver. Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "ID video-fantasma-avatar-02. Professora até “agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.”. Antes: Concluir a comparação com Fantasma e ajustar o fogo 2 para 10, com os dois contornos visíveis. Debinha: “Agora dá para ver quanto o fogo cresceu!”. Retomada da professora: “E o Fantasma não entra na animação, porque ele só ajuda a comparar.”. Depois: Explicar que o Fantasma serve para comparar e mostrar a diferença entre a experiência tracejada e o quadro clarinho do Pinta.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Experiência existente:** `onion-skin`. Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que o fogo tracejado, inteiro dentro do quadro. Sem palpite, pistas ou pergunta final.",
-      "adulto": null
+      "adulto": "**Experiência existente:** `onion-skin`. Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que o fogo tracejado, inteiro dentro do quadro. Sem palpite, pistas ou pergunta final."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "### Seção 4. Mude só o fogo no segundo quadro",
-      "adulto": null
+      "adulto": "### Seção 4. Mude só o fogo no segundo quadro"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Tarefa / Zappy na página:** Agora mude só o fogo no segundo quadro! Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Tarefa / Recado na página:** Agora mude só o fogo no segundo quadro. Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Blocos na página:** video-segundo-fogo → fala-segundo-fogo.",
-      "adulto": null
+      "adulto": "**Blocos na página:** video-segundo-fogo → fala-segundo-fogo."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "ID video-segundo-fogo-avatar-01. Professora até “Primeiro, na área Spritesheet da nave, selecione o quadro 1 e clique em Duplicar quadro. Depois selecione o quadro 2 e ligue Fantasma do quadro anterior. No Pinta, o quadro 1 fica clarinho, atrás do desenho. Como o quadro 2 ainda é uma cópia igual, ele cobre o fantasma, e por enquanto você não vê diferença.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Ainda está igual. Qual pedaço eu mudo?”. Retomada da professora: “Com Selecionar e mover, cerque somente a ponta do fogo e mova essa ponta um quadradinho para baixo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "### Seção 5. Dê nome e ritmo à animação",
-      "adulto": null
+      "adulto": "### Seção 5. Dê nome e ritmo à animação"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Tarefa / Zappy na página:** Agora dê nome e ritmo à animação! Nomeie a animação voando e deixe dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Tarefa / Recado na página:** Agora dê nome e ritmo à animação. Nomeie a animação voando e deixe dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Blocos na página:** video-voando → fala-voando.",
-      "adulto": null
+      "adulto": "**Blocos na página:** video-voando → fala-voando."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.",
-      "adulto": null
+      "adulto": "**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "### Seção 6. Confira sua nave animada",
-      "adulto": null
+      "adulto": "### Seção 6. Confira sua nave animada"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Tarefa / Zappy na página:** Agora vamos relembrar o que você fez na sua nave, com três perguntas! Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez. Quando acertar todas, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Tarefa / Recado na página:** Agora vamos relembrar o que você fez na sua nave, com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Blocos na página:** fala-revisao → quiz.",
-      "adulto": null
+      "adulto": "**Blocos na página:** fala-revisao → quiz."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Quiz formativo:** somente Zappy → quiz, sem vídeo ou ferramenta. Todas corretas, explicação após responder e tentativas ilimitadas, sem espera.",
-      "adulto": null
+      "adulto": "**Quiz formativo:** somente recado → quiz, sem vídeo ou ferramenta. Todas corretas, explicação após responder e tentativas ilimitadas, sem espera."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "### Seção 7. Envie a nave animada",
-      "adulto": null
+      "adulto": "### Seção 7. Envie a nave animada"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Tarefa / Zappy na página:** Hora de enviar a sua nave animada! Confira se a animação voando tem dois quadros a 8 por segundo. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
-      "adulto": null
+      "adulto": "**Tarefa / Recado na página:** Hora de enviar a sua nave animada. Confira se a animação voando tem dois quadros a 8 por segundo. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.",
-      "adulto": null
+      "adulto": "**Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.",
-      "adulto": null
+      "adulto": "**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "## Continuidade e produção",
-      "adulto": null
+      "adulto": "## Continuidade e produção"
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "Os oito slugs e a chave de entrega `entrega-galeria-v6` são preservados. Aula 5 recebe duas artes; as demais recebem um trabalho. A galeria guarda a cópia enviada. Não criar workspace embutido nem aplicar projectChecks a um projeto externo.",
-      "adulto": null
+      "adulto": "Os oito slugs e a chave de entrega `entrega-galeria-v6` são preservados. Aula 5 recebe duas artes; as demais recebem um trabalho. A galeria guarda a cópia enviada. Não criar workspace embutido nem aplicar projectChecks a um projeto externo."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "O programa de referência permanece em `qa/meu-jeito-projetos-qa.ts`; as etapas e artes de demonstração ficam em `qa/meu-jeito-etapas.ts`. Usar Programação e Jogo 2D já trazidos com o projeto de Nave Contra Asteroides. Não acrescentar HTML/CSS nem instalar extensão em um projeto vazio só para cumprir uma tarefa.",
-      "adulto": null
+      "adulto": "O programa de referência permanece em `qa/meu-jeito-projetos-qa.ts`; as etapas e artes de demonstração ficam em `qa/meu-jeito-etapas.ts`. Usar Programação e Jogo 2D já trazidos com o projeto de Nave Contra Asteroides. Não acrescentar HTML/CSS nem instalar extensão em um projeto vazio só para cumprir uma tarefa."
     },
     {
       "onde": "meu-jeito-aula-03.md",
       "kids": "A ordem vídeo → Zappy → atividade não configura sozinha o bloqueio: conferir videoBeforeActivity no curso durante a importação. Gravar os clipes, vincular o PDF, testar com perfil de aluno e ensaiar com crianças antes de declarar o percurso validado.",
-      "adulto": null
+      "adulto": "A ordem vídeo → recado → atividade não configura sozinha o bloqueio: conferir videoBeforeActivity no curso adulto durante a importação. Gravar os clipes adultos, vincular o PDF do Caderno do Aluno quando existir, testar com um perfil adulto e ensaiar com adultos antes de declarar o percurso validado."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "# Roteiro de gravação · O Jogo do Meu Jeito · Aula 3",
-      "adulto": null
+      "adulto": "# Roteiro de gravação · O Jogo do Meu Jeito · Aula 3"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Faça o motor da nave pulsar**",
-      "adulto": null
+      "adulto": "**Faça o motor da nave pulsar**"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "Fonte: `qa/meu-jeito.conteudo.json`. Gerado por `qa/gerar-meu-jeito.ts`. Revise a fonte e regenere proposta, roteiro e manifesto juntos.",
-      "adulto": null
+      "adulto": "Fonte: `qa/meu-jeito.conteudo.json`. Gerado por `qa/gerar-meu-jeito.ts`. Revise a fonte e regenere proposta, roteiro e manifesto juntos."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "Entrada: Nave em pixel art com espaço reservado para o fogo. Saída: Nave com animação voando de dois quadros a 8 quadros por segundo.",
-      "adulto": null
+      "adulto": "Entrada: Nave em pixel art com espaço reservado para o fogo. Saída: Nave com animação voando de dois quadros a 8 quadros por segundo."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.",
-      "adulto": null
+      "adulto": "Retomar o trabalho de quem faz a aula na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página e não entra na narração. A versão adulta ainda não foi gravada. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de \"Olha aqui:\", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.",
-      "adulto": null
+      "adulto": "Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de \"Olha aqui:\", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "Toda fala é uma conversa contínua com quem está fazendo a fase (Diretrizes, seção 6, revisão de 06/10/2026). Três vozes: \"você\" para o que é da pessoa e para as ações, \"a gente\" para pensar junto e convidar, \"eu\" só quando o narrador demonstra. As frases se ligam umas às outras (\"por isso\", \"mas\", \"é que\", \"agora que\", \"ou seja\"; sem \"então\", que é o nome de uma parte do bloco Se), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"), um chamado por momento importante. A aplicação que vem logo depois de uma experiência começa pela retomada, uma ponte de até umas 50 palavras: primeiro o problema no trabalho da pessoa, quando há o que testar (\"Tá vendo?\" com o porquê), depois a lembrança (\"Lembra da experiência da parte anterior?\", com o resultado numa frase) e um anúncio só, colado ao primeiro passo. Depois do teste da montagem, a conferência vem uma vez, como caminho da correção (\"Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …\"). A ponte do Zappy começa convidando (\"Sua vez!\" depois de uma demonstração; \"Agora…!\" ou \"Hora de…!\" antes de uma aplicação) e termina na ação real de saída.",
-      "adulto": null
+      "adulto": "Toda fala é uma conversa contínua com quem está fazendo a aula (Diretrizes, seção 6, revisão de 06/10/2026; tom adulto em DIRETRIZES-ADULTO.md). Três vozes: \"você\" para o que é da pessoa e para as ações, \"a gente\" para pensar junto e convidar, \"eu\" só quando o narrador demonstra. As frases se ligam umas às outras (\"por isso\", \"mas\", \"é que\", \"agora que\", \"ou seja\"; sem \"então\", que é o nome de uma parte do bloco Se), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Percebe?\"), um chamado por momento importante. A aplicação que vem logo depois de uma experiência começa pela retomada, uma ponte de até umas 50 palavras: primeiro o problema no trabalho da pessoa, quando há o que testar (\"Percebe?\" com o porquê), depois a lembrança (\"Lembra da experiência da seção anterior?\", com o resultado numa frase) e um anúncio só, colado ao primeiro passo. Depois do teste da montagem, a conferência vem uma vez, como caminho da correção (\"Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …\"). O recado da página começa convidando (\"Sua vez:\" depois de uma demonstração; \"Agora…\" ou \"Hora de…\" antes de uma aplicação) e termina na ação real de saída."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos títulos, a criança ouve e lê fase, parte e Mapa da Aventura, e os botões pelo nome novo (Próxima parte, Concluir fase, Enviar (1), Recebido!). Quem recebe o envio e responde os recados é a equipe. Aula, seção e caderno ficam só nas notas da equipe.",
-      "adulto": null
+      "adulto": "Vocabulário da versão adulta (20/10/2026): na narração, no recado da página e nos títulos, a pessoa ouve e lê aula, seção e caderno do curso, e os botões pelo nome da plataforma adulta (Próxima seção, Concluir aula, Enviar ao professor (1), Trabalho recebido pelo professor). Quem recebe o envio e responde os recados é o professor."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "## Seção 1. Compare dois desenhos e uma animação",
-      "adulto": null
+      "adulto": "## Seção 1. Compare dois desenhos e uma animação"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "### Clipe `video-quadros` · Compare dois desenhos e uma animação",
-      "adulto": null
+      "adulto": "### Clipe `video-quadros` · Compare dois desenhos e uma animação"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.",
-      "adulto": null
+      "adulto": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia parada no quadro 1, com a Velocidade em 4: escolher Quadro 1 e Quadro 2 e deixar ver o fogo pequeno e o grande. Colocar a Velocidade em 2, ligar a Prévia e deixar ver duas trocas lentas. Mudar para 8, deixar o fogo pulsar por um segundo e parar a Prévia, mostrando um quadro só. Ligar de novo, ligar Quadro 2 igual ao quadro 1 e deixar ver, por um segundo, a Prévia trocando sem o fogo pulsar. Meme na comparação: na frase do livrinho, o Zappy folheando um livrinho em que a nave aparece com o fogo pequeno numa página e grande na outra, com a legenda \"páginas rápidas viram movimento\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
-      "adulto": null
+      "adulto": "**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia parada no quadro 1, com a Velocidade em 4: escolher Quadro 1 e Quadro 2 e deixar ver o fogo pequeno e o grande. Colocar a Velocidade em 2, ligar a Prévia e deixar ver duas trocas lentas. Mudar para 8, deixar o fogo pulsar por um segundo e parar a Prévia, mostrando um quadro só. Ligar de novo, ligar Quadro 2 igual ao quadro 1 e deixar ver, por um segundo, a Prévia trocando sem o fogo pulsar. Meme na comparação: na frase do cinema, uma tira de filme em que a nave aparece com o fogo pequeno num fotograma e grande no outro, com a legenda \"fotos rápidas viram movimento\". Desenho nosso no formato de meme, com objetos do dia a dia ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Na tela:** Comparar as velocidades 2 e 8, parar a Prévia e concluir a comparação com o livrinho.",
-      "adulto": null
+      "adulto": "**Na tela:** Comparar as velocidades 2 e 8, parar a Prévia e concluir a comparação com o cinema."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Professora:**",
-      "adulto": null
+      "adulto": "**Professora:**"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “Esta é uma experiência para a gente entender como dois desenhos parados viram movimento.\n>\n> Olha aqui: com a Prévia parada, eu escolho o Quadro 1, que é a nave com o fogo pequeno, e depois o Quadro 2, que é a mesma nave com o fogo grande. Cada quadro é um desenho parado.\n>\n> Agora eu coloco a Velocidade em 2 quadros por segundo e ligo a Prévia. Tá vendo? Ela mostra um quadro, depois o outro, tão devagar que dá para ver cada troca.\n>\n> Quando eu mudo a Velocidade para 8, olha só: as trocas ficam tão rápidas que o fogo parece pulsar, e a nave fica no lugar. E, quando eu paro a Prévia, fica um quadro só na tela, porque o movimento era só a troca rápida entre os dois.\n>\n> Sabe aqueles livrinhos com um desenho em cada página? Quando você passa as páginas bem rápido, o desenho parece se mexer. Na Prévia, cada quadro é uma página, e a Velocidade diz quantas páginas passam por segundo.”",
-      "adulto": null
+      "adulto": "> “Esta é uma experiência para a gente entender como dois desenhos parados viram movimento.\n>\n> Olha aqui: com a Prévia parada, eu escolho o Quadro 1, que é a nave com o fogo pequeno, e depois o Quadro 2, que é a mesma nave com o fogo grande. Cada quadro é um desenho parado.\n>\n> Agora eu coloco a Velocidade em 2 quadros por segundo e ligo a Prévia. Percebe? Ela mostra um quadro, depois o outro, tão devagar que dá para ver cada troca.\n>\n> Quando eu mudo a Velocidade para 8, olha só: as trocas ficam tão rápidas que o fogo parece pulsar, e a nave fica no lugar. E, quando eu paro a Prévia, fica um quadro só na tela, porque o movimento era só a troca rápida entre os dois.\n>\n> É o mesmo truque do cinema: o filme é uma sequência de fotos paradas que passam tão rápido que parecem movimento. Na Prévia, cada quadro é uma dessas fotos, e a Velocidade diz quantas passam por segundo.”"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**ID de edição:** `video-quadros-avatar-01`.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Debinha (avatar):**",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “E se os dois desenhos forem iguais?”",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Na tela:** Debinha sai antes da resposta. Ligar a Prévia e tornar o quadro 2 igual ao 1 só depois da pergunta.",
-      "adulto": null
+      "adulto": "**Na tela:** Ligar a Prévia e tornar o quadro 2 igual ao 1, no ritmo da próxima fala."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1. Repare: a Prévia continua trocando 8 quadros por segundo, mas o fogo parou de pulsar, porque os dois desenhos ficaram iguais. Ou seja, sem diferença entre os quadros, não há movimento.\n>\n> Daqui a pouco, no Pinta, você vai desenhar o fogo do quadro 1 e o do quadro 2 da sua nave e deixar a Velocidade em 8 quadros por segundo.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
-      "adulto": null
+      "adulto": "> “E se os dois desenhos forem iguais? Eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1. Repare: a Prévia continua trocando 8 quadros por segundo, mas o fogo parou de pulsar, porque os dois desenhos ficaram iguais. Ou seja, sem diferença entre os quadros, não há movimento.\n>\n> Daqui a pouco, no Pinta, você vai desenhar o fogo do quadro 1 e o do quadro 2 da sua nave e deixar a Velocidade em 8 quadros por segundo.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Zappy na página (não gravar):** Sua vez! Mude a Velocidade da Prévia e veja quando o fogo pulsa. Quando terminar, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Sua vez: mude a Velocidade da Prévia e veja quando o fogo pulsa. Quando terminar, clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "## Seção 2. Desenhe o primeiro fogo",
-      "adulto": null
+      "adulto": "## Seção 2. Desenhe o primeiro fogo"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "### Clipe `video-primeiro-fogo` · Desenhe o primeiro fogo",
-      "adulto": null
+      "adulto": "### Clipe `video-primeiro-fogo` · Desenhe o primeiro fogo"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.",
-      "adulto": null
+      "adulto": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.",
-      "adulto": null
+      "adulto": "**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “Lembra da experiência da parte anterior? O fogo pulsou porque a Prévia trocava bem rápido um fogo pequeno e um fogo grande. Agora a gente vai dar esses dois fogos à sua nave, começando pelo pequeno, no quadro 1.\n>\n> Abra a sua nave no Pinta. No quadro 1, use o Lápis e uma cor quente para desenhar o fogo nas linhas reservadas embaixo. Faça uma chama pequena, porque no quadro seguinte ela ainda vai crescer um pouco. Se quiser, coloque um centro mais claro.\n>\n> Depois confira o seu fogo: a chama precisa encostar no motor, porque um fogo solto embaixo da nave parece que não sai dela. Confira também se ela continua dentro da grade e se o corpo e a cabine ficaram como estavam.\n>\n> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”",
-      "adulto": null
+      "adulto": "> “Lembra da experiência da seção anterior? O fogo pulsou porque a Prévia trocava bem rápido um fogo pequeno e um fogo grande. Agora a gente vai dar esses dois fogos à sua nave, começando pelo pequeno, no quadro 1.\n>\n> Abra a sua nave no Pinta. No quadro 1, use o Lápis e uma cor quente para desenhar o fogo nas linhas reservadas embaixo. Faça uma chama pequena, porque no quadro seguinte ela ainda vai crescer um pouco. Se quiser, coloque um centro mais claro.\n>\n> Depois confira o seu fogo: a chama precisa encostar no motor, porque um fogo solto embaixo da nave parece que não sai dela. Confira também se ela continua dentro da grade e se o corpo e a cabine ficaram como estavam.\n>\n> Pause aqui e faça este passo no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica salvo para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Zappy na página (não gravar):** Agora desenhe o primeiro fogo da sua nave! No quadro 1, faça uma chama pequena logo abaixo do motor. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Agora desenhe o primeiro fogo da sua nave. No quadro 1, faça uma chama pequena logo abaixo do motor. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "## Seção 3. Desenhe olhando o quadro anterior",
-      "adulto": null
+      "adulto": "## Seção 3. Desenhe olhando o quadro anterior"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "### Clipe `video-fantasma` · Desenhe olhando o quadro anterior",
-      "adulto": null
+      "adulto": "### Clipe `video-fantasma` · Desenhe olhando o quadro anterior"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 1, com o Fantasma desligado: escolher Quadro 2 e deixar ver o fogo 2 cortado na borda. Ainda sem o Fantasma, levar tamanho do fogo 2 até 7 quadradinhos e soltar. Ligar o Fantasma e deixar ver o fogo 1 tracejado, as marcas fogo 1 e fogo 2 quase juntas e a faixa dizendo quase nada. Levar tamanho do fogo 2 até 10 quadradinhos e soltar; deixar ver o fogo 2 um pouco maior que o tracejado e inteiro no quadro. Meme na comparação: na frase da folha fina, o Zappy desenhando o fogo da nave numa folha fina posta por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"dá para ver o de baixo\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
-      "adulto": null
+      "adulto": "**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 1, com o Fantasma desligado: escolher Quadro 2 e deixar ver o fogo 2 cortado na borda. Ainda sem o Fantasma, levar tamanho do fogo 2 até 7 quadradinhos e soltar. Ligar o Fantasma e deixar ver o fogo 1 tracejado, as marcas fogo 1 e fogo 2 quase juntas e a faixa dizendo quase nada. Levar tamanho do fogo 2 até 10 quadradinhos e soltar; deixar ver o fogo 2 um pouco maior que o tracejado e inteiro no quadro. Meme na comparação: na frase do papel vegetal, uma mão desenhando o fogo da nave num papel vegetal posto por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"dá para ver o de baixo\". Desenho nosso no formato de meme, com objetos do dia a dia ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-      "adulto": null
+      "adulto": "**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “Esta é uma experiência para a gente entender o Fantasma, que mostra o quadro anterior junto do quadro que você está desenhando, para você comparar os dois.\n>\n> Olha aqui: eu escolho o Quadro 2, com o Fantasma desligado, e o fogo 2 está tão grande que é cortado na borda do quadro. Por isso, eu diminuo o tamanho do fogo 2 para 7 quadradinhos. Mas ele ficou maior ou menor que o fogo do quadro 1? Não dá para saber, porque o fogo 1 não está na tela.\n>\n> Agora eu ligo o Fantasma, e o contorno do fogo do quadro 1 aparece tracejado, por cima do fogo 2, com as marcas fogo 1 e fogo 2 nas pontas. Repare: as duas pontas estão quase juntas, ou seja, o fogo 2 ficou quase igual ao fogo 1. Por isso, na animação, quase não ia dar para ver o fogo pulsar.\n>\n> Sabe quando você põe uma folha fina por cima de um desenho e consegue ver as linhas de baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: deixa o quadro anterior à vista, para você comparar.”",
-      "adulto": null
+      "adulto": "> “Esta é uma experiência para a gente entender o Fantasma, que mostra o quadro anterior junto do quadro que você está desenhando, para você comparar os dois.\n>\n> Olha aqui: eu escolho o Quadro 2, com o Fantasma desligado, e o fogo 2 está tão grande que é cortado na borda do quadro. Por isso, eu diminuo o tamanho do fogo 2 para 7 quadradinhos. Mas ele ficou maior ou menor que o fogo do quadro 1? Não dá para saber, porque o fogo 1 não está na tela.\n>\n> Agora eu ligo o Fantasma, e o contorno do fogo do quadro 1 aparece tracejado, por cima do fogo 2, com as marcas fogo 1 e fogo 2 nas pontas. Repare: as duas pontas estão quase juntas, ou seja, o fogo 2 ficou quase igual ao fogo 1. Por isso, na animação, quase não ia dar para ver o fogo pulsar.\n>\n> É como papel vegetal: você põe a folha por cima de um desenho, enxerga as linhas de baixo e desenha comparando com elas. O Fantasma faz isso: deixa o quadro anterior à vista, para você comparar.”"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**ID de edição:** `video-fantasma-avatar-01`.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “E se o fogo 2 ficar maior que o tracejado?”",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir a comparação com Fantasma e ajustar o fogo 2 para 10, com os dois contornos visíveis.",
-      "adulto": null
+      "adulto": "**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Concluir a comparação com Fantasma e ajustar o fogo 2 para 10, com os dois contornos visíveis."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “Vamos ver. Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos. Olha só: agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.”",
-      "adulto": null
+      "adulto": "> “E se o fogo 2 ficar maior que o tracejado? Vamos ver. Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos. Olha só: agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.”"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**ID de edição:** `video-fantasma-avatar-02`.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “Agora dá para ver quanto o fogo cresceu!”",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Na tela:** Debinha sai antes da resposta. Explicar que o Fantasma serve para comparar e mostrar a diferença entre a experiência tracejada e o quadro clarinho do Pinta.",
-      "adulto": null
+      "adulto": "**Na tela:** Manter os dois contornos à vista enquanto a fala explica que o Fantasma serve para comparar, e mostrar a diferença entre a experiência tracejada e o quadro mais claro do Pinta."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “E o Fantasma não entra na animação, porque ele só ajuda a comparar.\n>\n> Daqui a pouco, no Pinta, você vai ligar Fantasma do quadro anterior para mudar só o fogo no segundo quadro da sua nave. Lá, o quadro anterior aparece clarinho, atrás do seu desenho.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
-      "adulto": null
+      "adulto": "> “Agora dá para ver quanto o fogo cresceu. E o Fantasma não entra na animação, porque ele só ajuda a comparar.\n>\n> Daqui a pouco, no Pinta, você vai ligar Fantasma do quadro anterior para mudar só o fogo no segundo quadro da sua nave. Lá, o quadro anterior aparece mais claro, atrás do seu desenho.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Zappy na página (não gravar):** Sua vez! Use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1. Quando terminar, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Sua vez: use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1. Quando terminar, clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "## Seção 4. Mude só o fogo no segundo quadro",
-      "adulto": null
+      "adulto": "## Seção 4. Mude só o fogo no segundo quadro"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "### Clipe `video-segundo-fogo` · Mude só o fogo no segundo quadro",
-      "adulto": null
+      "adulto": "### Clipe `video-segundo-fogo` · Mude só o fogo no segundo quadro"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Direção geral do clipe:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
-      "adulto": null
+      "adulto": "**Direção geral do clipe:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista: primeiro o teste, com o resultado que o Percebe? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “Ligue a Prévia. Tá vendo? O fogo não pulsa, porque a animação só tem um quadro. Lembra da experiência da parte anterior? Com o Fantasma ligado, deu para deixar o fogo 2 só um pouco maior que o fogo 1. Agora a gente vai fazer esse segundo fogo!\n>\n> Primeiro, na área Spritesheet da nave, selecione o quadro 1 e clique em Duplicar quadro. Depois selecione o quadro 2 e ligue Fantasma do quadro anterior. No Pinta, o quadro 1 fica clarinho, atrás do desenho. Como o quadro 2 ainda é uma cópia igual, ele cobre o fantasma, e por enquanto você não vê diferença.”",
-      "adulto": null
+      "adulto": "> “Ligue a Prévia. Percebe? O fogo não pulsa, porque a animação só tem um quadro. Lembra da experiência da seção anterior? Com o Fantasma ligado, deu para deixar o fogo 2 só um pouco maior que o fogo 1. Agora a gente vai fazer esse segundo fogo.\n>\n> Primeiro, na área Spritesheet da nave, selecione o quadro 1 e clique em Duplicar quadro. Depois selecione o quadro 2 e ligue Fantasma do quadro anterior. No Pinta, o quadro 1 aparece mais claro, atrás do desenho. Como o quadro 2 ainda é uma cópia igual, ele cobre o fantasma, e por enquanto você não vê diferença.”"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**ID de edição:** `video-segundo-fogo-avatar-01`.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “Ainda está igual. Qual pedaço eu mudo?”",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
-      "adulto": null
+      "adulto": "**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “Com Selecionar e mover, cerque somente a ponta do fogo e mova essa ponta um quadradinho para baixo. Olha só: no espaço que abriu, a ponta do quadro 1 aparece clarinha, mostrando onde ela estava. Depois solte a seleção e preencha esse espaço com o Lápis. Não selecione nem mova o corpo da nave, porque, se o corpo mudar de lugar, a nave vai pular na animação. E, se a chama encostar na borda, diminua a mudança para ela caber inteira.\n>\n> Para conferir, troque entre os quadros 1 e 2: o corpo e a cabine ficam no mesmo lugar, e só o fogo cresce. Depois desligue o fantasma para ver o desenho sem ele.\n>\n> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”",
-      "adulto": null
+      "adulto": "> “Qual pedaço mudar? Só a ponta do fogo. Com Selecionar e mover, cerque somente essa ponta e mova a seleção um quadradinho para baixo. Olha só: no espaço que abriu, a ponta do quadro 1 aparece mais clara, mostrando onde ela estava. Depois solte a seleção e preencha esse espaço com o Lápis. Não selecione nem mova o corpo da nave, porque, se o corpo mudar de lugar, a nave vai pular na animação. E, se a chama encostar na borda, diminua a mudança para ela caber inteira.\n>\n> Para conferir, troque entre os quadros 1 e 2: o corpo e a cabine ficam no mesmo lugar, e só o fogo cresce. Depois desligue o fantasma para ver o desenho sem ele.\n>\n> Pause aqui e faça este passo no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica salvo para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Zappy na página (não gravar):** Agora mude só o fogo no segundo quadro! Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Agora mude só o fogo no segundo quadro. Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "## Seção 5. Dê nome e ritmo à animação",
-      "adulto": null
+      "adulto": "## Seção 5. Dê nome e ritmo à animação"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "### Clipe `video-voando` · Dê nome e ritmo à animação",
-      "adulto": null
+      "adulto": "### Clipe `video-voando` · Dê nome e ritmo à animação"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.",
-      "adulto": null
+      "adulto": "**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “Agora dê um nome à sua animação. Na área Spritesheet, clique em Renomear animação, ao lado do nome atual, parado. Escreva voando e confirme. Esse nome é importante, porque é por ele que você vai escolher essa animação no Estúdio.\n>\n> Depois, no controle de Velocidade, deixe 8 quadros por segundo e ligue a Prévia. Olha só: o fogo pulsa, como na experiência dos quadros.\n>\n> Se no seu desenho não ficou assim, confira: a nave fica no lugar, a chama não é cortada na borda e a animação voando tem dois quadros. Para achar o que mudou, pare a Prévia e compare os dois quadros.\n>\n> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”",
-      "adulto": null
+      "adulto": "> “Agora dê um nome à sua animação. Na área Spritesheet, clique em Renomear animação, ao lado do nome atual, parado. Escreva voando e confirme. Esse nome é importante, porque é por ele que você vai escolher essa animação no Estúdio.\n>\n> Depois, no controle de Velocidade, deixe 8 quadros por segundo e ligue a Prévia. Olha só: o fogo pulsa, como na experiência dos quadros.\n>\n> Se no seu desenho não ficou assim, confira: a nave fica no lugar, a chama não é cortada na borda e a animação voando tem dois quadros. Para achar o que mudou, pare a Prévia e compare os dois quadros.\n>\n> Pause aqui e faça este passo no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica salvo para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Zappy na página (não gravar):** Agora dê nome e ritmo à animação! Nomeie a animação voando e deixe dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Agora dê nome e ritmo à animação. Nomeie a animação voando e deixe dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "## Seção 6. Confira sua nave animada",
-      "adulto": null
+      "adulto": "## Seção 6. Confira sua nave animada"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Zappy na página (não gravar):** Agora vamos relembrar o que você fez na sua nave, com três perguntas! Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez. Quando acertar todas, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Agora vamos relembrar o que você fez na sua nave, com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "Sem vídeo nem ferramenta. O quiz vem imediatamente depois do Zappy. Correção com explicação, tentativas ilimitadas e sem espera.",
-      "adulto": null
+      "adulto": "Sem vídeo nem ferramenta. O quiz vem imediatamente depois do recado. Correção com explicação, tentativas ilimitadas e sem espera."
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "## Seção 7. Envie a nave animada",
-      "adulto": null
+      "adulto": "## Seção 7. Envie a nave animada"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "### Clipe `video-entrega` · Envie a nave animada",
-      "adulto": null
+      "adulto": "### Clipe `video-entrega` · Envie a nave animada"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "> “Hora de enviar a sua nave animada! Antes, confira na sua nave: a nave tem quadros de 32 por 32, a animação voando tem dois quadros a 8 por segundo, e só o fogo muda, sempre inteiro dentro da grade. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da fase só mostra o que já está guardado na sua conta.\n>\n> Agora volte para a aba da fase e clique em Escolher no Pinta. Na janela Minhas criações do Pinta, selecione a sua nave. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.\n>\n> Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!\n>\n> Esse envio guarda uma cópia deste momento, e você continua criando no Pinta. Por último, clique em Concluir fase.”",
-      "adulto": null
+      "adulto": "> “Hora de enviar a sua nave animada. Antes, confira na sua nave: a nave tem quadros de 32 por 32, a animação voando tem dois quadros a 8 por segundo, e só o fogo muda, sempre inteiro dentro da grade. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da aula só mostra o que já está salvo na sua conta.\n>\n> Agora volte para a aba da aula e clique em Escolher no Pinta. Na janela Meus trabalhos do Pinta, selecione a sua nave. Se o seu trabalho não aparecer, confira se ele ficou salvo na sua conta e clique em Atualizar galeria.\n>\n> Se quiser, escreva uma mensagem no campo Recado para o professor. Depois clique em Enviar ao professor (1) e espere aparecer Trabalho recebido pelo professor.\n>\n> Esse envio guarda uma cópia deste momento, e você continua criando no Pinta. Por último, clique em Concluir aula.”"
     },
     {
       "onde": "meu-jeito-aula-03.roteiro.md",
       "kids": "**Zappy na página (não gravar):** Hora de enviar a sua nave animada! Confira se a animação voando tem dois quadros a 8 por segundo. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Hora de enviar a sua nave animada. Confira se a animação voando tem dois quadros a 8 por segundo. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Faça o motor da nave pulsar",
-      "adulto": null
+      "adulto": "Faça o motor da nave pulsar"
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Título: Compare dois desenhos e uma animação\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia parada no quadro 1, com a Velocidade em 4: escolher Quadro 1 e Quadro 2 e deixar ver o fogo pequeno e o grande. Colocar a Velocidade em 2, ligar a Prévia e deixar ver duas trocas lentas. Mudar para 8, deixar o fogo pulsar por um segundo e parar a Prévia, mostrando um quadro só. Ligar de novo, ligar Quadro 2 igual ao quadro 1 e deixar ver, por um segundo, a Prévia trocando sem o fogo pulsar. Meme na comparação: na frase do livrinho, o Zappy folheando um livrinho em que a nave aparece com o fogo pequeno numa página e grande na outra, com a legenda \"páginas rápidas viram movimento\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-quadros-avatar-01. Professora até “a Velocidade diz quantas páginas passam por segundo.”. Antes: Comparar as velocidades 2 e 8, parar a Prévia e concluir a comparação com o livrinho. Debinha: “E se os dois desenhos forem iguais?”. Retomada da professora: “Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1.”. Depois: Ligar a Prévia e tornar o quadro 2 igual ao 1 só depois da pergunta.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
-      "adulto": null
+      "adulto": "Título: Compare dois desenhos e uma animação\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia parada no quadro 1, com a Velocidade em 4: escolher Quadro 1 e Quadro 2 e deixar ver o fogo pequeno e o grande. Colocar a Velocidade em 2, ligar a Prévia e deixar ver duas trocas lentas. Mudar para 8, deixar o fogo pulsar por um segundo e parar a Prévia, mostrando um quadro só. Ligar de novo, ligar Quadro 2 igual ao quadro 1 e deixar ver, por um segundo, a Prévia trocando sem o fogo pulsar. Meme na comparação: na frase do cinema, uma tira de filme em que a nave aparece com o fogo pequeno num fotograma e grande no outro, com a legenda \"fotos rápidas viram movimento\". Desenho nosso no formato de meme, com objetos do dia a dia ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Sua vez! Mude a Velocidade da Prévia e veja quando o fogo pulsa. Quando terminar, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "Sua vez: mude a Velocidade da Prévia e veja quando o fogo pulsa. Quando terminar, clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Compare dois desenhos e uma animação",
-      "adulto": null
+      "adulto": "Compare dois desenhos e uma animação"
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, ligue Quadro 2 igual ao quadro 1 e observe por um segundo.",
-      "adulto": null
+      "adulto": "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, ligue Quadro 2 igual ao quadro 1 e observe por um segundo."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Título: Desenhe o primeiro fogo\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
-      "adulto": null
+      "adulto": "Título: Desenhe o primeiro fogo\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Agora desenhe o primeiro fogo da sua nave! No quadro 1, faça uma chama pequena logo abaixo do motor. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
-      "adulto": null
+      "adulto": "Agora desenhe o primeiro fogo da sua nave. No quadro 1, faça uma chama pequena logo abaixo do motor. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Título: Desenhe olhando o quadro anterior\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 1, com o Fantasma desligado: escolher Quadro 2 e deixar ver o fogo 2 cortado na borda. Ainda sem o Fantasma, levar tamanho do fogo 2 até 7 quadradinhos e soltar. Ligar o Fantasma e deixar ver o fogo 1 tracejado, as marcas fogo 1 e fogo 2 quase juntas e a faixa dizendo quase nada. Levar tamanho do fogo 2 até 10 quadradinhos e soltar; deixar ver o fogo 2 um pouco maior que o tracejado e inteiro no quadro. Meme na comparação: na frase da folha fina, o Zappy desenhando o fogo da nave numa folha fina posta por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"dá para ver o de baixo\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-fantasma-avatar-01. Professora até “Sabe quando você põe uma folha fina por cima de um desenho e consegue ver as linhas de baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: deixa o quadro anterior à vista, para você comparar.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E se o fogo 2 ficar maior que o tracejado?”. Retomada da professora: “Vamos ver. Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-fantasma-avatar-02. Professora até “agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.”. Antes: Concluir a comparação com Fantasma e ajustar o fogo 2 para 10, com os dois contornos visíveis. Debinha: “Agora dá para ver quanto o fogo cresceu!”. Retomada da professora: “E o Fantasma não entra na animação, porque ele só ajuda a comparar.”. Depois: Explicar que o Fantasma serve para comparar e mostrar a diferença entre a experiência tracejada e o quadro clarinho do Pinta.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
-      "adulto": null
+      "adulto": "Título: Desenhe olhando o quadro anterior\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 1, com o Fantasma desligado: escolher Quadro 2 e deixar ver o fogo 2 cortado na borda. Ainda sem o Fantasma, levar tamanho do fogo 2 até 7 quadradinhos e soltar. Ligar o Fantasma e deixar ver o fogo 1 tracejado, as marcas fogo 1 e fogo 2 quase juntas e a faixa dizendo quase nada. Levar tamanho do fogo 2 até 10 quadradinhos e soltar; deixar ver o fogo 2 um pouco maior que o tracejado e inteiro no quadro. Meme na comparação: na frase do papel vegetal, uma mão desenhando o fogo da nave num papel vegetal posto por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"dá para ver o de baixo\". Desenho nosso no formato de meme, com objetos do dia a dia ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Sua vez! Use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1. Quando terminar, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "Sua vez: use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1. Quando terminar, clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Desenhe olhando o quadro anterior",
-      "adulto": null
+      "adulto": "Desenhe olhando o quadro anterior"
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que o fogo tracejado, inteiro dentro do quadro.",
-      "adulto": null
+      "adulto": "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que o fogo tracejado, inteiro dentro do quadro."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Título: Mude só o fogo no segundo quadro\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-segundo-fogo-avatar-01. Professora até “Primeiro, na área Spritesheet da nave, selecione o quadro 1 e clique em Duplicar quadro. Depois selecione o quadro 2 e ligue Fantasma do quadro anterior. No Pinta, o quadro 1 fica clarinho, atrás do desenho. Como o quadro 2 ainda é uma cópia igual, ele cobre o fantasma, e por enquanto você não vê diferença.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Ainda está igual. Qual pedaço eu mudo?”. Retomada da professora: “Com Selecionar e mover, cerque somente a ponta do fogo e mova essa ponta um quadradinho para baixo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
-      "adulto": null
+      "adulto": "Título: Mude só o fogo no segundo quadro\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista: primeiro o teste, com o resultado que o Percebe? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Agora mude só o fogo no segundo quadro! Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
-      "adulto": null
+      "adulto": "Agora mude só o fogo no segundo quadro. Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Título: Dê nome e ritmo à animação\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
-      "adulto": null
+      "adulto": "Título: Dê nome e ritmo à animação\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Agora dê nome e ritmo à animação! Nomeie a animação voando e deixe dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
-      "adulto": null
+      "adulto": "Agora dê nome e ritmo à animação. Nomeie a animação voando e deixe dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Agora vamos relembrar o que você fez na sua nave, com três perguntas! Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez. Quando acertar todas, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "Agora vamos relembrar o que você fez na sua nave, com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Você mudou a nave na cópia do Estúdio. O que acontece com o jogo da fase?",
-      "adulto": null
+      "adulto": "Você mudou a nave na cópia do Estúdio. O que acontece com o jogo original?"
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Ele continua como estava quando você fez a cópia.",
-      "adulto": null
+      "adulto": "Ele continua como estava quando você fez a cópia."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Ele recebe automaticamente a mesma mudança.",
-      "adulto": null
+      "adulto": "Ele recebe automaticamente a mesma mudança."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Ele desaparece quando a cópia é salva.",
-      "adulto": null
+      "adulto": "Ele desaparece quando a cópia é salva."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Exportar e importar criam uma cópia independente. Continuar na cópia não altera o jogo da fase.",
-      "adulto": null
+      "adulto": "Exportar e importar criam uma cópia independente. Continuar na cópia não altera o jogo original."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "A prévia toca, mas os dois quadros têm exatamente o mesmo desenho. O que você vê?",
-      "adulto": null
+      "adulto": "A prévia toca, mas os dois quadros têm exatamente o mesmo desenho. O que você vê?"
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "O fogo crescendo sozinho.",
-      "adulto": null
+      "adulto": "O fogo crescendo sozinho."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Um desenho que parece parado.",
-      "adulto": null
+      "adulto": "Um desenho que parece parado."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "A nave andando para a direita.",
-      "adulto": null
+      "adulto": "A nave andando para a direita."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "A animação alterna os quadros. Para enxergar uma mudança, alguma parte do desenho precisa ser diferente entre eles.",
-      "adulto": null
+      "adulto": "A animação alterna os quadros. Para enxergar uma mudança, alguma parte do desenho precisa ser diferente entre eles."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "O corpo da nave está pulando de lugar na animação. O que comparar?",
-      "adulto": null
+      "adulto": "O corpo da nave está pulando de lugar na animação. O que comparar?"
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "O nome do cartão em Meus Jogos.",
-      "adulto": null
+      "adulto": "O nome do cartão em Meus Jogos."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "A cor do fundo da página da fase.",
-      "adulto": null
+      "adulto": "A cor do fundo da página da aula."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "A posição do corpo nos dois quadros, comparando com o fantasma.",
-      "adulto": null
+      "adulto": "A posição do corpo nos dois quadros, comparando com o fantasma."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "O fantasma permite comparar posições. Neste projeto o corpo permanece no lugar; a mudança pequena fica no fogo.",
-      "adulto": null
+      "adulto": "O fantasma permite comparar posições. Neste projeto o corpo permanece no lugar; a mudança pequena fica no fogo."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Título: Envie a nave animada\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
-      "adulto": null
+      "adulto": "Título: Envie a nave animada\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Hora de enviar a sua nave animada! Confira se a animação voando tem dois quadros a 8 por segundo. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
-      "adulto": null
+      "adulto": "Hora de enviar a sua nave animada. Confira se a animação voando tem dois quadros a 8 por segundo. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula."
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Desenhe o primeiro fogo",
-      "adulto": null
+      "adulto": "Desenhe o primeiro fogo"
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Mude só o fogo no segundo quadro",
-      "adulto": null
+      "adulto": "Mude só o fogo no segundo quadro"
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Dê nome e ritmo à animação",
-      "adulto": null
+      "adulto": "Dê nome e ritmo à animação"
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Confira sua nave animada",
-      "adulto": null
+      "adulto": "Confira sua nave animada"
     },
     {
       "onde": "meu-jeito-aula-03.manifesto.json",
       "kids": "Envie a nave animada",
-      "adulto": null
+      "adulto": "Envie a nave animada"
     }
   ]
 }

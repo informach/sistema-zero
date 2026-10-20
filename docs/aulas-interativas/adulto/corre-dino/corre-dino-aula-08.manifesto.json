@@ -1,0 +1,968 @@
+{
+  "version": 5,
+  "courseSlug": "corre-dino-adulto",
+  "lessonSlug": "aula-08",
+  "title": "Comece por tecla ou toque",
+  "retireBlockKeys": [
+    "video-abertura-editorial",
+    "video-senao-se",
+    "fala-enter",
+    "experiencia-toque-tecla",
+    "video-entrada-completa",
+    "fala-entrada-completa",
+    "fala-entrega-editorial",
+    "video-fecho-editorial",
+    "video-teste-e-envio",
+    "video-abertura",
+    "fala-andar-novo",
+    "fala-menu-pronto",
+    "fala-evento-enter",
+    "video-enter",
+    "fala-antes-da-cena",
+    "fala-aula-4",
+    "fala-promessa",
+    "quiz-final",
+    "fala-proxima-aula"
+  ],
+  "blocks": [
+    {
+      "key": "video-menu",
+      "plannedVideo": "Título: Desenhe a tela de início\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-08.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-menu",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora desenhe a tela de início do seu jogo. Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+      }
+    },
+    {
+      "key": "video-convite",
+      "plannedVideo": "Título: Compare tecla e toque para começar\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Começar em Quando apertar a tecla. Tocar na tela e mostrar que nada muda. Clicar em Apertar Enter e mostrar a partida. Clicar em Voltar ao início, levar Começar para Quando apertar qualquer tecla ou tocar na tela e repetir o toque e o Enter, voltando ao início entre eles. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-08.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-convite",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sua vez: teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima seção."
+      }
+    },
+    {
+      "key": "experiencia-convite",
+      "content": {
+        "kind": "interactive",
+        "title": "Compare tecla e toque para começar",
+        "instructions": "Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início. Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos.",
+        "hints": [],
+        "required": true,
+        "activity": {
+          "type": "experimentation",
+          "scene": "controls",
+          "cenario": "corre-dino"
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-entrada-ampla",
+      "plannedVideo": "Título: Ligue a entrada ao início da partida\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Atualizar e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-08.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-entrada-ampla",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora faça a partida começar. Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-08.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Hora de testar e enviar o seu jogo. Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+      }
+    },
+    {
+      "key": "projeto",
+      "content": {
+        "kind": "studio",
+        "purpose": "submission",
+        "chain": "corre-dino",
+        "level": "iniciante-2d",
+        "allowedModes": [
+          "blocks"
+        ],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_events",
+          "sz_frame_loops",
+          "sz_frame_start",
+          "sz_g2d_apply_gravity",
+          "sz_g2d_clear",
+          "sz_g2d_control_dino",
+          "sz_g2d_create_dino",
+          "sz_g2d_create_group",
+          "sz_g2d_draw_group",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_every_seconds",
+          "sz_g2d_forest",
+          "sz_g2d_on_any_input",
+          "sz_g2d_on_jump",
+          "sz_g2d_on_key",
+          "sz_g2d_play_fx",
+          "sz_g2d_prune_offscreen",
+          "sz_g2d_scene_is",
+          "sz_g2d_set_scene",
+          "sz_g2d_set_stage_description",
+          "sz_g2d_setup_stage",
+          "sz_g2d_show_screen",
+          "sz_g2d_spawn_obstacle",
+          "sz_g2d_update_each_frame",
+          "sz_g2d_update_group",
+          "sz_js_if_else",
+          "sz_val_number",
+          "sz_val_text"
+        ],
+        "showcase": {
+          "enabled": false,
+          "title": "Corre, Dino!",
+          "summary": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
+        },
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-dino-etapa-7",
+          "name": "Corre, Dino!",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 270, \"#81d4fa\");\n  SZGame2D.setStageDescription(\"Corra com o dino e pule os cactos apertando espaço\");\n  const dino = SZGame2D.createDino({ x: 110, y: 150, size: 64, color: \"#8b5cf6\" });\n  const cactos = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  // Quando acontecer\n  SZGame2D.onJump(() => dino, () => {\n      SZGame2D.playFx(\"jump\");\n    }, \"dino-ref-34\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawForest(ctx, 5);\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.applyGravity(dino);\n      SZGame2D.controlDino(dino, ctx, 14);\n      SZGame2D.drawSprite(ctx, dino);\n      SZGame2D.updateGroup(cactos);\n      SZGame2D.drawGroup(ctx, cactos);\n      SZGame2D.pruneOffscreen(ctx, cactos, 40, (cacto) => {\n\n      });\n    }\n  }, \"dino-ref-12\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1.4)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        SZGame2D.spawnObstacle(cactos, ctx, { type: \"cactus\", x: 560, size: 44, vx: -5 });\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": {
+                    "type": "num",
+                    "value": 480,
+                    "__id": "dino-ref-2"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 270,
+                    "__id": "dino-ref-3"
+                  },
+                  "bg": "#81d4fa",
+                  "__id": "dino-ref-1"
+                },
+                {
+                  "type": "g2d:setStageDescription",
+                  "description": "Corra com o dino e pule os cactos apertando espaço",
+                  "__id": "dino-ref-4"
+                },
+                {
+                  "type": "g2d:createDino",
+                  "varName": "dino",
+                  "x": {
+                    "type": "num",
+                    "value": 110,
+                    "__id": "dino-ref-6"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 150,
+                    "__id": "dino-ref-7"
+                  },
+                  "size": {
+                    "type": "num",
+                    "value": 64,
+                    "__id": "dino-ref-8"
+                  },
+                  "color": "#8b5cf6",
+                  "__id": "dino-ref-5"
+                },
+                {
+                  "type": "g2d:createGroup",
+                  "varName": "cactos",
+                  "__id": "dino-ref-9"
+                },
+                {
+                  "type": "g2d:setScene",
+                  "name": "inicio",
+                  "__id": "dino-ref-10"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onJump",
+                  "spriteVar": "dino",
+                  "body": [
+                    {
+                      "type": "g2d:playFx",
+                      "fx": "jump",
+                      "__id": "dino-ref-35"
+                    }
+                  ],
+                  "__id": "dino-ref-34"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "dino-ref-13"
+                    },
+                    {
+                      "type": "g2d:forest",
+                      "ctxVar": "ctx",
+                      "speed": {
+                        "type": "num",
+                        "value": 5,
+                        "__id": "dino-ref-15"
+                      },
+                      "__id": "dino-ref-14"
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "jogando",
+                        "__id": "dino-ref-17"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:applyGravity",
+                          "spriteVar": "dino",
+                          "__id": "dino-ref-18"
+                        },
+                        {
+                          "type": "g2d:controlDino",
+                          "spriteVar": "dino",
+                          "ctxVar": "ctx",
+                          "jump": {
+                            "type": "num",
+                            "value": 14,
+                            "__id": "dino-ref-20"
+                          },
+                          "__id": "dino-ref-19"
+                        },
+                        {
+                          "type": "g2d:drawSprite",
+                          "spriteVar": "dino",
+                          "ctxVar": "ctx",
+                          "__id": "dino-ref-21"
+                        },
+                        {
+                          "type": "g2d:updateGroup",
+                          "groupVar": "cactos",
+                          "__id": "dino-ref-22"
+                        },
+                        {
+                          "type": "g2d:drawGroup",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "__id": "dino-ref-23"
+                        },
+                        {
+                          "type": "g2d:pruneOffscreen",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "itemName": "cacto",
+                          "body": [],
+                          "__id": "dino-ref-24"
+                        }
+                      ],
+                      "__id": "dino-ref-16"
+                    }
+                  ],
+                  "__id": "dino-ref-12"
+                },
+                {
+                  "type": "g2d:everySeconds",
+                  "seconds": {
+                    "type": "num",
+                    "value": 1.4,
+                    "__id": "dino-ref-26"
+                  },
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "jogando",
+                        "__id": "dino-ref-28"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:spawnObstacle",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "shape": "cactus",
+                          "x": {
+                            "type": "num",
+                            "value": 560,
+                            "__id": "dino-ref-30"
+                          },
+                          "size": {
+                            "type": "num",
+                            "value": 44,
+                            "__id": "dino-ref-32"
+                          },
+                          "vx": {
+                            "type": "num",
+                            "value": -5,
+                            "__id": "dino-ref-31"
+                          },
+                          "__id": "dino-ref-29"
+                        }
+                      ],
+                      "__id": "dino-ref-27"
+                    }
+                  ],
+                  "__id": "dino-ref-25"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#81d4fa"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 270
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_set_stage_description",
+                            "fields": {
+                              "DESCRIPTION": "Corra com o dino e pule os cactos apertando espaço"
+                            },
+                            "inputs": {},
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_dino",
+                                "fields": {
+                                  "NAME": "dino",
+                                  "COLOR": "#8b5cf6"
+                                },
+                                "inputs": {
+                                  "X": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 110
+                                      }
+                                    }
+                                  },
+                                  "Y": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 150
+                                      }
+                                    }
+                                  },
+                                  "SIZE": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 64
+                                      }
+                                    }
+                                  }
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_create_group",
+                                    "fields": {
+                                      "NAME": "cactos"
+                                    },
+                                    "inputs": {},
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_g2d_set_scene",
+                                        "fields": {
+                                          "SCENE": "inicio"
+                                        },
+                                        "inputs": {}
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "fields": {},
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "fields": {},
+                              "inputs": {},
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_forest",
+                                  "fields": {},
+                                  "inputs": {
+                                    "SPEED": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 5
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_js_if_else",
+                                      "fields": {},
+                                      "inputs": {
+                                        "COND": {
+                                          "block": {
+                                            "type": "sz_g2d_scene_is",
+                                            "fields": {
+                                              "SCENE": "jogando"
+                                            },
+                                            "inputs": {}
+                                          }
+                                        },
+                                        "THEN": {
+                                          "block": {
+                                            "type": "sz_g2d_apply_gravity",
+                                            "fields": {
+                                              "SPRITE": "dino"
+                                            },
+                                            "inputs": {},
+                                            "next": {
+                                              "block": {
+                                                "type": "sz_g2d_control_dino",
+                                                "fields": {
+                                                  "SPRITE": "dino"
+                                                },
+                                                "inputs": {
+                                                  "JUMP": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 14
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "next": {
+                                                  "block": {
+                                                    "type": "sz_g2d_draw_sprite",
+                                                    "fields": {
+                                                      "SPRITE": "dino"
+                                                    },
+                                                    "inputs": {},
+                                                    "next": {
+                                                      "block": {
+                                                        "type": "sz_g2d_update_group",
+                                                        "fields": {
+                                                          "GROUP": "cactos"
+                                                        },
+                                                        "inputs": {},
+                                                        "next": {
+                                                          "block": {
+                                                            "type": "sz_g2d_draw_group",
+                                                            "fields": {
+                                                              "GROUP": "cactos"
+                                                            },
+                                                            "inputs": {},
+                                                            "next": {
+                                                              "block": {
+                                                                "type": "sz_g2d_prune_offscreen",
+                                                                "fields": {
+                                                                  "GROUP": "cactos",
+                                                                  "ITEM": "cacto"
+                                                                },
+                                                                "inputs": {}
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_every_seconds",
+                            "fields": {},
+                            "inputs": {
+                              "SECS": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 1.4
+                                  }
+                                }
+                              },
+                              "BODY": {
+                                "block": {
+                                  "type": "sz_js_if_else",
+                                  "fields": {},
+                                  "inputs": {
+                                    "COND": {
+                                      "block": {
+                                        "type": "sz_g2d_scene_is",
+                                        "fields": {
+                                          "SCENE": "jogando"
+                                        },
+                                        "inputs": {}
+                                      }
+                                    },
+                                    "THEN": {
+                                      "block": {
+                                        "type": "sz_g2d_spawn_obstacle",
+                                        "fields": {
+                                          "GROUP": "cactos",
+                                          "SHAPE": "cactus"
+                                        },
+                                        "inputs": {
+                                          "X": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 560
+                                              }
+                                            }
+                                          },
+                                          "VX": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": -5
+                                              }
+                                            }
+                                          },
+                                          "SIZE": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 44
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_events",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_jump",
+                        "fields": {
+                          "SPRITE": "dino"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_play_fx",
+                              "fields": {
+                                "FX": "jump"
+                              },
+                              "inputs": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "menu",
+      "title": "Desenhe a tela de início",
+      "intent": "application",
+      "objective": "Agora desenhe a tela de início do seu jogo. Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.",
+      "blockKeys": [
+        "video-menu",
+        "fala-menu"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-menu"
+        ],
+        "projectChecks": [
+          {
+            "id": "menu",
+            "label": "No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND0": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "inicio"
+                  }
+                },
+                "ELSEIF_THEN0": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte qualquer tecla ou toque na tela para começar"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "convite",
+      "title": "Compare tecla e toque para começar",
+      "intent": "exploration",
+      "objective": "Sua vez: teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima seção.",
+      "blockKeys": [
+        "video-convite",
+        "fala-convite",
+        "experiencia-convite"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-convite",
+          "experiencia-convite"
+        ]
+      }
+    },
+    {
+      "key": "entrada-ampla",
+      "title": "Ligue a entrada ao início da partida",
+      "intent": "application",
+      "objective": "Agora faça a partida começar. Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.",
+      "blockKeys": [
+        "video-entrada-ampla",
+        "fala-entrada-ampla"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-entrada-ampla"
+        ],
+        "projectChecks": [
+          {
+            "id": "entrada-menu",
+            "label": "Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_any_input",
+              "area": "events",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "inicio"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sem-enter",
+            "label": "Use a entrada de qualquer tecla ou toque, sem um evento separado só para Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "count": 0
+            }
+          },
+          {
+            "id": "menu",
+            "label": "A dica da tela de início passa a descrever os dois jeitos de começar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND0": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "inicio"
+                  }
+                },
+                "ELSEIF_THEN0": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte qualquer tecla ou toque na tela para começar"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Teste e envie seu jogo",
+      "intent": "delivery",
+      "objective": "Hora de testar e enviar o seu jogo. Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
+      "blockKeys": [
+        "video-entrega",
+        "fala-entrega",
+        "projeto"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-entrega",
+          "projeto"
+        ],
+        "projectChecks": [
+          {
+            "id": "cena-inicial",
+            "label": "No Ao iniciar, o jogo continua abrindo com Mudar o estado do jogo para inicio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "start",
+              "fields": {
+                "SCENE": "inicio"
+              }
+            }
+          },
+          {
+            "id": "menu",
+            "label": "No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND0": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "inicio"
+                  }
+                },
+                "ELSEIF_THEN0": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte qualquer tecla ou toque na tela para começar"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "entrada-menu",
+            "label": "Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_any_input",
+              "area": "events",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "inicio"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sem-enter",
+            "label": "Use a entrada de qualquer tecla ou toque, sem um evento separado só para Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "count": 0
+            }
+          },
+          {
+            "id": "proteger-relogio",
+            "label": "No A cada 1,4 segundos, o No grupo criar obstáculo continua dentro de um Se o estado do jogo é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_obstacle",
+                      "fields": {
+                        "GROUP": "cactos"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

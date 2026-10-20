@@ -1,0 +1,380 @@
+{
+  "version": 5,
+  "courseSlug": "o-jogo-do-meu-jeito-adulto",
+  "lessonSlug": "aula-07",
+  "title": "Faça suas pedras nascerem animadas",
+  "retireBlockKeys": [
+    "video-abertura-v6",
+    "conferir-folha-asteroide",
+    "video-tempo-demo",
+    "demonstracao-nascimento",
+    "conferir-novo-criador",
+    "conferir-animar-cada",
+    "video-abertura",
+    "video-folha-asteroide",
+    "fala-folha-pronta",
+    "fala-relogio-das-pedras",
+    "fala-dois-sentidos-de-quadro",
+    "fala-sem-campo-de-imagem",
+    "fala-monta-antes-de-apagar",
+    "video-novo-criador",
+    "fala-duas-familias",
+    "fala-apagar-o-velho",
+    "fala-por-que-logo-abaixo",
+    "video-animar-cada",
+    "fala-teste-completo",
+    "fala-enviar-o-projeto",
+    "fala-editar-desenho",
+    "video-fecho-v6",
+    "quiz-v6"
+  ],
+  "blocks": [
+    {
+      "key": "video-dois-relogios",
+      "plannedVideo": "Título: Compare nascer e animar\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 0, com uma pedra a cada 40 quadros e 8 desenhos por segundo: escolher 20 quadros em A cada quantos quadros nasce uma pedra, deixar 8 por segundo, clicar em Voltar ao começo e no Tempo. Deixar o tempo passar até o contador mostrar Quadro 60 e três pedras, mostrando o quadro 0 em cada pedra ao entrar; parar o Tempo. Escolher 40 quadros e 16 por segundo, dizendo que cada relógio vai para um lado, clicar em Voltar ao começo, ligar o Tempo por três segundos e deixar ver duas pedras com o número trocando mais depressa. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+    },
+    {
+      "key": "fala-dois-relogios",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sua vez: mude os dois relógios e compare as pedras que nascem. Quando terminar, clique em Próxima seção."
+      }
+    },
+    {
+      "key": "experimento-dois-relogios",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Compare nascer e animar",
+        "instructions": "Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no Tempo, o botão com o triângulo. Deixe nascerem três pedras e veja o número em cada uma ao entrar. Clique em Tempo para parar. Mude o nascimento para 40 e os desenhos por segundo para 16. Clique em Voltar ao começo, ligue Tempo e observe por três segundos.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "two-clocks",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "meu-jeito",
+          "setup": {
+            "goals": [
+              "more-rocks",
+              "faster-spin",
+              "each-one"
+            ]
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-folha-pedra",
+      "plannedVideo": "Título: Prepare a folha do asteroide\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista. Mostrar cada gesto narrado e conferir os recortes nas duas folhas. Depois, voltar à prévia, começar uma partida com Enter e apontar as pedras ainda com o desenho antigo. Não pedir para observar as pedras enquanto só os blocos ou a abertura estão na tela. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+    },
+    {
+      "key": "fala-folha-pedra",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora prepare a folha do seu asteroide. Carregue folha-asteroide com quadros de 64 por 64 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+      }
+    },
+    {
+      "key": "video-trocar-pedra",
+      "plannedVideo": "Título: Troque a imagem das pedras que nascem\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+    },
+    {
+      "key": "fala-trocar-pedra",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora troque a imagem das pedras que nascem. Substitua o criador das pedras, conservando o grupo, o sorteio e a velocidade. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+      }
+    },
+    {
+      "key": "video-animar-pedra",
+      "plannedVideo": "Título: Anime cada pedra depois de criar\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+    },
+    {
+      "key": "fala-animar-pedra",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora anime cada pedra depois de criar. Coloque a animação girando logo abaixo do criador, dentro do mesmo Se. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção."
+      }
+    },
+    {
+      "key": "fala-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora vamos relembrar como as suas artes entraram no jogo, com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+      }
+    },
+    {
+      "key": "quiz",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A folha da nave tem dois quadros de 32 por 32. A nave aparece com 54 por 54 no jogo. Qual tamanho usar no recorte?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "32 por 32, o tamanho de cada desenho da folha."
+              },
+              {
+                "id": "b",
+                "label": "54 por 54, sempre igual ao tamanho na tela."
+              },
+              {
+                "id": "c",
+                "label": "64 por 32, com os dois desenhos juntos."
+              }
+            ],
+            "correctChoiceIds": [
+              "a"
+            ],
+            "explanation": "O recorte seleciona um desenho da folha. O tamanho no jogo é outra medida e pode aumentar ou diminuir esse desenho."
+          },
+          {
+            "id": "q2",
+            "prompt": "Você quer mais pedras nascendo, sem acelerar a animação de cada uma. O que mudar?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Os quadros por segundo da animação."
+              },
+              {
+                "id": "b",
+                "label": "O intervalo do relógio que cria pedras."
+              },
+              {
+                "id": "c",
+                "label": "O tamanho da cabine da nave no Pinta."
+              }
+            ],
+            "correctChoiceIds": [
+              "b"
+            ],
+            "explanation": "O relógio controla os nascimentos. Os quadros por segundo controlam a alternância dos desenhos de cada pedra."
+          },
+          {
+            "id": "q3",
+            "prompt": "Onde o comando Animar sprite asteroide precisa ficar para alcançar cada pedra nova?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Só no Ao iniciar, antes de existir qualquer pedra."
+              },
+              {
+                "id": "b",
+                "label": "No Pinta, entre os dois quadros do desenho."
+              },
+              {
+                "id": "c",
+                "label": "Logo depois do criador, dentro do Se jogando do relógio."
+              }
+            ],
+            "correctChoiceIds": [
+              "c"
+            ],
+            "explanation": "A folha é preparada no começo. Cada pedra precisa existir antes de receber a animação, por isso os comandos criar e animar ficam juntos no relógio."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Título: Envie o jogo com as duas artes\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+    },
+    {
+      "key": "fala-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Hora de enviar o seu jogo com as duas artes. Confira se a nave e as pedras usam as suas animações. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer a mensagem Trabalho recebido pelo professor, clique em Concluir aula."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "content": {
+        "kind": "studio",
+        "purpose": "submission",
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-meu-jeito-7",
+          "name": "Minha criação",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Minha criação</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": ""
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [],
+              "events": [],
+              "loops": []
+            },
+            "extensions": []
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": []
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        },
+        "gallery": {
+          "minItems": 1,
+          "maxItems": 1
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "dois-relogios",
+      "title": "Compare nascer e animar",
+      "objective": "Sua vez: mude os dois relógios e compare as pedras que nascem. Quando terminar, clique em Próxima seção.",
+      "intent": "exploration",
+      "blockKeys": [
+        "video-dois-relogios",
+        "fala-dois-relogios",
+        "experimento-dois-relogios"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-dois-relogios",
+          "experimento-dois-relogios"
+        ]
+      }
+    },
+    {
+      "key": "folha-pedra",
+      "title": "Prepare a folha do asteroide",
+      "objective": "Agora prepare a folha do seu asteroide. Carregue folha-asteroide com quadros de 64 por 64 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.",
+      "intent": "application",
+      "blockKeys": [
+        "video-folha-pedra",
+        "fala-folha-pedra"
+      ],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-folha-pedra"
+        ]
+      }
+    },
+    {
+      "key": "trocar-pedra",
+      "title": "Troque a imagem das pedras que nascem",
+      "objective": "Agora troque a imagem das pedras que nascem. Substitua o criador das pedras, conservando o grupo, o sorteio e a velocidade. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.",
+      "intent": "application",
+      "blockKeys": [
+        "video-trocar-pedra",
+        "fala-trocar-pedra"
+      ],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-trocar-pedra"
+        ]
+      }
+    },
+    {
+      "key": "animar-pedra",
+      "title": "Anime cada pedra depois de criar",
+      "objective": "Agora anime cada pedra depois de criar. Coloque a animação girando logo abaixo do criador, dentro do mesmo Se. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.",
+      "intent": "application",
+      "blockKeys": [
+        "video-animar-pedra",
+        "fala-animar-pedra"
+      ],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-animar-pedra"
+        ]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "Confira as artes dentro do jogo",
+      "objective": "Agora vamos relembrar como as suas artes entraram no jogo, com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.",
+      "intent": "explanation",
+      "blockKeys": [
+        "fala-revisao",
+        "quiz"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "quiz"
+        ]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Envie o jogo com as duas artes",
+      "objective": "Hora de enviar o seu jogo com as duas artes. Confira se a nave e as pedras usam as suas animações. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer a mensagem Trabalho recebido pelo professor, clique em Concluir aula.",
+      "intent": "delivery",
+      "blockKeys": [
+        "video-entrega",
+        "fala-entrega",
+        "entrega-galeria-v6"
+      ],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-entrega",
+          "entrega-galeria-v6"
+        ]
+      }
+    }
+  ]
+}

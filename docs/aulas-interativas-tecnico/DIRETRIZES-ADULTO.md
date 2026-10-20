@@ -53,9 +53,11 @@ A plataforma adulta mostra outros nomes de botões e partes. O texto precisa diz
 | Enviar o seu projeto? (confirmação) | Enviar ao professor? (o botão da confirmação continua Enviar) |
 | Enviar de novo | Reenviar ao professor |
 | Projeto enviado! | Projeto enviado ao professor |
-| Guardado na sua conta | Salvo na sua conta |
+| Guardado na sua conta (selo do rascunho dentro da aula) | Salvo na sua conta (o selo do Estúdio e do Pinta completos continua Guardado na sua conta nas duas plataformas) |
 | Concluir fase | Concluir aula |
 | Pegar meu certificado | Emitir meu certificado |
+| Responder! / Próxima (quiz, uma pergunta por vez) | Enviar quiz (o quiz adulto mostra todas as perguntas numa página só) |
+| Tentar de novo! (quiz) | troque a resposta errada e clique em Enviar quiz de novo |
 | Mapa da Aventura | caderno do curso (o bloco de materiais mostra "Caderno do Aluno"; na fala, diga "caderno") |
 | a equipe (quem recebe o projeto) | o professor |
 | Enviar para a equipe (pedido de ajuda) | Enviar ao professor |
@@ -75,7 +77,7 @@ Na plataforma adulta, depois de Publicar, aparece a tela do próprio Estúdio: "
 
 ### Links do Como fazer
 
-A biblioteca de ajuda adulta tem outros endereços (`docs/como-fazer-adulto/como-fazer.json`). Troque os links:
+A biblioteca de ajuda adulta tem outros endereços (`docs/como-fazer-adulto/como-fazer.json`). Troque os links no texto. Nos campos `url` dos materiais o gerador troca sozinho, pela mesma tabela (`COMO_FAZER_ADULTO` em `qa/adulto/versao-adulta.ts`), e para se encontrar um link sem par:
 
 | Kids | Adulto |
 | --- | --- |

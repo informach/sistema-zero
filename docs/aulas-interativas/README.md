@@ -12,4 +12,16 @@ Os cursos são os mesmos para crianças e adultos, em duas versões: `kids/` fal
 | Corre, Dino! | [Abrir pasta](kids/corre-dino/README.md) | [Ler](kids/corre-dino/modulos.md) | [JSON](kids/corre-dino/blocos.json) | [Importar no Estúdio](kids/corre-dino/projeto-final.szproject.json) | [PDF](kids/corre-dino/mapa-da-aventura.pdf) |
 | O Jogo do Meu Jeito | [Abrir pasta](kids/o-jogo-do-meu-jeito/README.md) | [Ler](kids/o-jogo-do-meu-jeito/modulos.md) | [JSON](kids/o-jogo-do-meu-jeito/blocos.json) | [Importar no Estúdio](kids/o-jogo-do-meu-jeito/projeto-final.szproject.json) | [PDF](kids/o-jogo-do-meu-jeito/mapa-da-aventura.pdf) |
 
+## Adulto
+
+Gerada a partir do Kids pelo `qa/adulto/gerar-adulto.ts`: não edite estes arquivos à mão, edite a tradução em [`qa/adulto/traducoes/`](../aulas-interativas-tecnico/qa/adulto/traducoes) e gere de novo ([Diretrizes da versão adulta](../aulas-interativas-tecnico/DIRETRIZES-ADULTO.md)). Cada curso adulto é outro curso no Admin, com público Adulto e o slug abaixo. O Caderno do Aluno adulto (o PDF) ainda está em produção: não anexe o Mapa da Aventura do Kids. Os vídeos adultos ainda não foram gravados.
+
+| Curso | Aulas e materiais | Módulos | Blocos | Projeto final | Slug no Admin |
+| --- | --- | --- | --- | --- | --- |
+| Cadê Todo Mundo? | [Abrir pasta](adulto/cade-todo-mundo/README.md) | [Ler](adulto/cade-todo-mundo/modulos.md) | [JSON](adulto/cade-todo-mundo/blocos.json) | [Importar no Estúdio](adulto/cade-todo-mundo/projeto-final.szproject.json) | `cade-todo-mundo-adulto` |
+| Desafio do Primeiro Jogo · A Chave do Farol | [Abrir pasta](adulto/desafio-primeiro-jogo/README.md) | [Ler](adulto/desafio-primeiro-jogo/modulos.md) | [JSON](adulto/desafio-primeiro-jogo/blocos.json) | [Importar no Estúdio](adulto/desafio-primeiro-jogo/projeto-final.szproject.json) | `desafio-primeiro-jogo-adulto` |
+| Nave Contra Asteroides | [Abrir pasta](adulto/nave-contra-asteroides/README.md) | [Ler](adulto/nave-contra-asteroides/modulos.md) | [JSON](adulto/nave-contra-asteroides/blocos.json) | [Importar no Estúdio](adulto/nave-contra-asteroides/projeto-final.szproject.json) | `nave-contra-asteroides-adulto` |
+| Corre, Dino! | [Abrir pasta](adulto/corre-dino/README.md) | [Ler](adulto/corre-dino/modulos.md) | [JSON](adulto/corre-dino/blocos.json) | [Importar no Estúdio](adulto/corre-dino/projeto-final.szproject.json) | `corre-dino-adulto` |
+| O Jogo do Meu Jeito | [Abrir pasta](adulto/o-jogo-do-meu-jeito/README.md) | [Ler](adulto/o-jogo-do-meu-jeito/modulos.md) | [JSON](adulto/o-jogo-do-meu-jeito/blocos.json) | [Importar no Estúdio](adulto/o-jogo-do-meu-jeito/projeto-final.szproject.json) | `o-jogo-do-meu-jeito-adulto` |
+
 As regras de autoria, fontes dos materiais, geradores, verificações e históricos estão em [Apoio técnico](../aulas-interativas-tecnico/README.md).

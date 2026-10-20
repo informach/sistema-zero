@@ -5,737 +5,737 @@
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "# Corre, Dino! · Aula 3 · Faça o Dino cair e pular",
-      "adulto": null
+      "adulto": "# Corre, Dino! · Aula 3 · Faça o Dino cair e pular"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md).",
-      "adulto": null
+      "adulto": "Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md)."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "## Resumo",
-      "adulto": null
+      "adulto": "## Resumo"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "- Estado de entrada: Dino parado diante da floresta.\n- Resultado da aula: Gravidade e controles de pulo, com impulso de referência 14.\n- Seções: 6. Vídeos: 5.",
-      "adulto": null
+      "adulto": "- Estado de entrada: Dino parado diante da floresta.\n- Resultado da aula: Gravidade e controles de pulo, com impulso de referência 14.\n- Seções: 6. Vídeos: 5."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
-      "adulto": null
+      "adulto": "**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "## Diagnóstico e decisão",
-      "adulto": null
+      "adulto": "## Diagnóstico e decisão"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "Gravidade e impulso são observados antes de cada montagem. Não é preciso programar primeiro um pulo sem gravidade para fabricar um defeito. O quiz retoma preparação, desenho, gravidade e impulso depois dos testes.",
-      "adulto": null
+      "adulto": "Gravidade e impulso são observados antes de cada montagem. Não é preciso programar primeiro um pulo sem gravidade para fabricar um defeito. O quiz retoma preparação, desenho, gravidade e impulso depois dos testes."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "## Triagem dos conceitos",
-      "adulto": null
+      "adulto": "## Triagem dos conceitos"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Gravidade | gravity antes de aplicar | Ver o que acontece no ar com e sem gravidade. |\n| Impulso e pulo | impulse antes de controlar | Comparar dois saltos mantendo a gravidade. |",
-      "adulto": null
+      "adulto": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Gravidade | gravity antes de aplicar | Ver o que acontece no ar com e sem gravidade. |\n| Impulso e pulo | impulse antes de controlar | Comparar dois saltos mantendo a gravidade. |"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "## Proposta final",
-      "adulto": null
+      "adulto": "## Proposta final"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "### Seção 1. Compare o salto com e sem gravidade",
-      "adulto": null
+      "adulto": "### Seção 1. Compare o salto com e sem gravidade"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Tarefa:** Sua vez! Faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Tarefa:** Sua vez: faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Blocos na página:** video-gravidade-modelo → fala-gravidade-modelo → experiencia-gravidade.",
-      "adulto": null
+      "adulto": "**Blocos na página:** video-gravidade-modelo → fala-gravidade-modelo → experiencia-gravidade."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Zappy na página (não gravar):** Sua vez! Faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Sua vez: faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "ID video-gravidade-modelo-avatar-01. Professora até “A experiência para o tempo com ele lá no alto.”. Antes: Tocar no Dino sem gravidade e esperar a experiência parar com ele no alto. Debinha: “E agora? Como ele volta para o chão?”. Retomada da professora: “Com o Dino no ar, eu ligo a Gravidade ao Dino.”. Depois: Ligar o fio da Gravidade com o Dino no ar e acompanhar a subida, a parada e a queda.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Experiência existente:** `gravity`. Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer. Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.",
-      "adulto": null
+      "adulto": "**Experiência existente:** `gravity`. Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer. Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "### Seção 2. Deixe a gravidade pronta",
-      "adulto": null
+      "adulto": "### Seção 2. Deixe a gravidade pronta"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Tarefa:** Agora deixe a gravidade pronta no seu Dino! Coloque Aplicar a gravidade do mundo ao sprite depois da floresta e antes do desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
-      "adulto": null
+      "adulto": "**Tarefa:** Agora deixe a gravidade pronta no seu Dino. Coloque Aplicar a gravidade do mundo ao sprite depois da floresta e antes do desenho do Dino. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Blocos na página:** video-aplicar-gravidade → fala-aplicar-gravidade.",
-      "adulto": null
+      "adulto": "**Blocos na página:** video-aplicar-gravidade → fala-aplicar-gravidade."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Zappy na página (não gravar):** Agora deixe a gravidade pronta no seu Dino! Coloque Aplicar a gravidade do mundo ao sprite depois da floresta e antes do desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Agora deixe a gravidade pronta no seu Dino. Coloque Aplicar a gravidade do mundo ao sprite depois da floresta e antes do desenho do Dino. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.",
-      "adulto": null
+      "adulto": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "- Deixe a gravidade depois da floresta.\n- Aplique gravidade ao dino dentro do quadro, antes de desenhar.",
-      "adulto": null
+      "adulto": "- Deixe a gravidade depois da floresta.\n- Aplique gravidade ao dino dentro do quadro, antes de desenhar."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "### Seção 3. Compare duas alturas de pulo",
-      "adulto": null
+      "adulto": "### Seção 3. Compare duas alturas de pulo"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Tarefa:** Sua vez! Faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Tarefa:** Sua vez: faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Blocos na página:** video-impulso-modelo → fala-impulso-modelo → experiencia-impulso.",
-      "adulto": null
+      "adulto": "**Blocos na página:** video-impulso-modelo → fala-impulso-modelo → experiencia-impulso."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Zappy na página (não gravar):** Sua vez! Faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Sua vez: faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Experiência existente:** `impulse`. Na experiência, escolha impulso 9, toque no Dino e espere o salto terminar. Observe a marca da altura. Mude o impulso para 14, toque no Dino de novo e espere cair. Compare as duas marcas. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.",
-      "adulto": null
+      "adulto": "**Experiência existente:** `impulse`. Na experiência, escolha impulso 9, toque no Dino e espere o salto terminar. Observe a marca da altura. Mude o impulso para 14, toque no Dino de novo e espere cair. Compare as duas marcas. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "### Seção 4. Dê os controles de pulo ao Dino",
-      "adulto": null
+      "adulto": "### Seção 4. Dê os controles de pulo ao Dino"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Tarefa:** Agora dê os controles de pulo ao seu Dino! Coloque Controlar o dinossauro entre a gravidade e o desenho, com força do pulo 14, e teste espaço, seta para cima e um toque na parte de cima da tela. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
-      "adulto": null
+      "adulto": "**Tarefa:** Agora dê os controles de pulo ao seu Dino. Coloque Controlar o dinossauro entre a gravidade e o desenho, com força do pulo 14, e teste espaço, seta para cima e um toque na parte de cima da tela. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Blocos na página:** video-comando-de-pulo → fala-comando-de-pulo.",
-      "adulto": null
+      "adulto": "**Blocos na página:** video-comando-de-pulo → fala-comando-de-pulo."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Zappy na página (não gravar):** Agora dê os controles de pulo ao seu Dino! Coloque Controlar o dinossauro entre a gravidade e o desenho, com força do pulo 14, e teste espaço, seta para cima e um toque na parte de cima da tela. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Agora dê os controles de pulo ao seu Dino. Coloque Controlar o dinossauro entre a gravidade e o desenho, com força do pulo 14, e teste espaço, seta para cima e um toque na parte de cima da tela. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "ID video-comando-de-pulo-avatar-01. Professora até “Olha só: ele pula e volta para o chão!”. Antes: Esperar o Dino completar o salto e pousar antes da entrada. Debinha: “Foi! Ele pulou!”. Retomada da professora: “Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "ID video-comando-de-pulo-avatar-02. Professora até “porque o mesmo bloco já cuida dos três controles.”. Antes: Concluir os saltos com espaço, seta para cima e toque na parte de cima; esperar o pouso. Debinha: “Já consegui pular dos três jeitos!”. Retomada da professora: “Agora vamos conferir mais duas coisas. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”. Depois: Retomar com o toque embaixo: tocar perto do chão junto da fala e mostrar o Dino se abaixando em vez de pular.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "ID video-comando-de-pulo-avatar-03. Professora até “Agora teste! Clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque e solte a barra de espaço e espere o Dino pousar. Olha só: ele pula e volta para o chão! Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”. Antes: Terminar o toque embaixo com o Dino no chão. Não começar o salto com dois toques antes da pergunta. Debinha: “Dá para pular de novo lá no alto?”. Retomada da professora: “Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto.”. Depois: Só então tocar duas vezes na barra de espaço durante o mesmo salto e manter à vista que o segundo toque não faz o Dino pular de novo no ar.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "- Aplique gravidade ao dino antes do controle do pulo.\n- Deixe a gravidade depois da floresta.\n- Encaixe Controlar o dinossauro dino antes de desenhá-lo.",
-      "adulto": null
+      "adulto": "- Aplique gravidade ao dino antes do controle do pulo.\n- Deixe a gravidade depois da floresta.\n- Encaixe Controlar o dinossauro dino antes de desenhá-lo."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "### Seção 5. Confira o que você construiu",
-      "adulto": null
+      "adulto": "### Seção 5. Confira o que você construiu"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Tarefa:** Hora de lembrar o que você construiu! As perguntas falam da tela e dos movimentos do seu Dino. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Tarefa:** Hora de lembrar o que você construiu. As perguntas falam da tela e dos movimentos do seu Dino. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Blocos na página:** fala-revisao → quiz.",
-      "adulto": null
+      "adulto": "**Blocos na página:** fala-revisao → quiz."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Zappy na página (não gravar):** Hora de lembrar o que você construiu! As perguntas falam da tela e dos movimentos do seu Dino. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam da tela e dos movimentos do seu Dino. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.",
-      "adulto": null
+      "adulto": "**Revisão formativa:** recado → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "### Seção 6. Teste e envie seu jogo",
-      "adulto": null
+      "adulto": "### Seção 6. Teste e envie seu jogo"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Tarefa:** Hora de testar e enviar o seu jogo! Teste os três controles de pulo, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
-      "adulto": null
+      "adulto": "**Tarefa:** Hora de testar e enviar o seu jogo. Teste os três controles de pulo, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Blocos na página:** video-entrega → fala-entrega → projeto.",
-      "adulto": null
+      "adulto": "**Blocos na página:** video-entrega → fala-entrega → projeto."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Teste os três controles de pulo, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
-      "adulto": null
+      "adulto": "**Recado na página (não gravar):** Hora de testar e enviar o seu jogo. Teste os três controles de pulo, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.",
-      "adulto": null
+      "adulto": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com o envio em Enviar para o professor confirmado em Enviar."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "- Aplique gravidade ao dino antes do controle do pulo.\n- Controle o dino com a sua força de pulo, antes de desenhá-lo.\n- Desenhe o sprite dino dentro de A cada quadro.\n- Desenhe a floresta com velocidade 5 antes do Dino.",
-      "adulto": null
+      "adulto": "- Aplique gravidade ao dino antes do controle do pulo.\n- Controle o dino com a sua força de pulo, antes de desenhá-lo.\n- Desenhe o sprite dino dentro de A cada quadro.\n- Desenhe a floresta com velocidade 5 antes do Dino."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "## Blocos disponíveis",
-      "adulto": null
+      "adulto": "## Blocos disponíveis"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "| Bloco | Caminho na paleta |\n| --- | --- |\n| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |\n| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |\n| Aplicar a gravidade do mundo ao sprite | Jogo 2D → Movimento → Velocidade e gravidade |\n| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |\n| Controlar o dinossauro , força do pulo | Jogo 2D → Kits prontos → Dino |\n| Criar dinossauro em x y tamanho cor | Jogo 2D → Kits prontos → Dino |\n| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |\n| Desenhar fundo de floresta (velocidade ) | Jogo 2D → Cenários → Fundos |\n| Descrever o jogo para leitor de tela | Jogo 2D → Jogo e telas → Telas e partida |\n| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |\n| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |\n| Número | Programação → 🔣 Valores |",
-      "adulto": null
+      "adulto": "| Bloco | Caminho na paleta |\n| --- | --- |\n| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |\n| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |\n| Aplicar a gravidade do mundo ao sprite | Jogo 2D → Movimento → Velocidade e gravidade |\n| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |\n| Controlar o dinossauro , força do pulo | Jogo 2D → Kits prontos → Dino |\n| Criar dinossauro em x y tamanho cor | Jogo 2D → Kits prontos → Dino |\n| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |\n| Desenhar fundo de floresta (velocidade ) | Jogo 2D → Cenários → Fundos |\n| Descrever o jogo para leitor de tela | Jogo 2D → Jogo e telas → Telas e partida |\n| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |\n| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |\n| Número | Programação → 🔣 Valores |"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "## Continuidade e produção",
-      "adulto": null
+      "adulto": "## Continuidade e produção"
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "Aula 3 na cadeia `corre-dino`. Entrada: etapa 2; saída: etapa 3 de `qa/corre-dino-etapas.ts`. Os 13 marcos originais e o código do jogo permanecem preservados.",
-      "adulto": null
+      "adulto": "Aula 3 na cadeia `corre-dino`. Entrada: etapa 2; saída: etapa 3 de `qa/corre-dino-etapas.ts`. Os 13 marcos originais e o código do jogo permanecem preservados."
     },
     {
       "onde": "corre-dino-aula-03.md",
       "kids": "A ordem vídeo → Zappy → atividade é editorial. Configurar videoBeforeActivity no curso e conferir com perfil de aluno; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos revisados, anexar o PDF quando aplicável e ensaiar com crianças antes de declarar o percurso validado.",
-      "adulto": null
+      "adulto": "A ordem vídeo → recado → atividade é editorial. Configurar videoBeforeActivity no curso adulto e conferir com um perfil adulto; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos adultos, anexar o PDF do Caderno do Aluno quando existir e ensaiar com adultos antes de declarar o percurso validado."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "# Roteiro de gravação · Corre, Dino! · Aula 3",
-      "adulto": null
+      "adulto": "# Roteiro de gravação · Corre, Dino! · Aula 3"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Faça o Dino cair e pular**",
-      "adulto": null
+      "adulto": "**Faça o Dino cair e pular**"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos.",
-      "adulto": null
+      "adulto": "Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "Entrada: Dino parado diante da floresta. Saída: Gravidade e controles de pulo, com impulso de referência 14.",
-      "adulto": null
+      "adulto": "Entrada: Dino parado diante da floresta. Saída: Gravidade e controles de pulo, com impulso de referência 14."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.",
-      "adulto": null
+      "adulto": "Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"agora que\", \"ou seja\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"). Neste curso, \"então\" é o encaixe do bloco Se e não serve de palavra de ligação. A montagem que aplica uma experiência começa pela retomada no próprio jogo, e a ponte do Zappy convida e termina na ação de saída (Diretrizes, seção 6, revisão de 06/10/2026).",
-      "adulto": null
+      "adulto": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"agora que\", \"ou seja\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Percebe?\"). Neste curso, \"então\" é o encaixe do bloco Se e não serve de palavra de ligação. A montagem que aplica uma experiência começa pela retomada no próprio jogo, e o recado da página convida e termina na ação de saída (Diretrizes, seção 6, revisão de 06/10/2026; tom adulto em DIRETRIZES-ADULTO.md)."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "## Seção 1. Compare o salto com e sem gravidade",
-      "adulto": null
+      "adulto": "## Seção 1. Compare o salto com e sem gravidade"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "### Clipe `video-gravidade-modelo` · Compare o salto com e sem gravidade",
-      "adulto": null
+      "adulto": "### Clipe `video-gravidade-modelo` · Compare o salto com e sem gravidade"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
-      "adulto": null
+      "adulto": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a gravidade desligada e o Dino no chão. Tocar no Dino e deixar a altura crescer até o tempo parar, com o Dino no alto. Ligar o fio da Gravidade ao Dino com ele no ar e acompanhar a subida mais lenta, a parada e a queda até o chão, com a altura à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy jogando uma bola para cima e a bola voltando para a mão dele. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
-      "adulto": null
+      "adulto": "**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a gravidade desligada e o Dino no chão. Tocar no Dino e deixar a altura crescer até o tempo parar, com o Dino no alto. Ligar o fio da Gravidade ao Dino com ele no ar e acompanhar a subida mais lenta, a parada e a queda até o chão, com a altura à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma mão jogando um molho de chaves para cima e as chaves voltando para a mão. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Na tela:** Tocar no Dino sem gravidade e esperar a experiência parar com ele no alto.",
-      "adulto": null
+      "adulto": "**Na tela:** Tocar no Dino sem gravidade e esperar a experiência parar com ele no alto."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Professora:**",
-      "adulto": null
+      "adulto": "**Professora:**"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “Esta é uma experiência para a gente entender a gravidade, a força que traz o Dino de volta ao chão.\n>\n> Olha aqui: com a gravidade desligada, eu toco no Dino. Ele pula e sobe sem parar: o número da altura só cresce. Nada puxa o Dino para baixo. A experiência para o tempo com ele lá no alto.”",
-      "adulto": null
+      "adulto": "> “Esta é uma experiência para a gente entender a gravidade, a força que traz o Dino de volta ao chão.\n>\n> Olha aqui: com a gravidade desligada, eu toco no Dino. Ele pula e sobe sem parar: o número da altura só cresce. Nada puxa o Dino para baixo. A experiência para o tempo com ele lá no alto.”"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**ID de edição:** `video-gravidade-modelo-avatar-01`.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Debinha (avatar):**",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “E agora? Como ele volta para o chão?”",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Na tela:** Debinha sai antes da resposta. Ligar o fio da Gravidade com o Dino no ar e acompanhar a subida, a parada e a queda.",
-      "adulto": null
+      "adulto": "**Na tela:** Ligar o fio da Gravidade com o Dino no ar e acompanhar a subida, a parada e a queda."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “Com o Dino no ar, eu ligo a Gravidade ao Dino. Ele ainda sobe um pouquinho, cada vez mais devagar, para e cai até o chão. A gravidade puxa o Dino para baixo um pouco em cada quadro.\n>\n> É como jogar uma bola para cima: ela sobe, perde força e volta para a sua mão. No seu jogo, você vai encaixar Aplicar a gravidade do mundo ao sprite dentro de A cada quadro do jogo, para puxar o Dino em todos os quadros.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
-      "adulto": null
+      "adulto": "> “E como ele volta para o chão? Com o Dino no ar, eu ligo a Gravidade ao Dino. Ele ainda sobe um pouco, cada vez mais devagar, para e cai até o chão. A gravidade puxa o Dino para baixo um pouco em cada quadro.\n>\n> É como jogar o molho de chaves para cima: ele sobe, perde força e volta para a sua mão. No seu jogo, você vai encaixar Aplicar a gravidade do mundo ao sprite dentro de A cada quadro do jogo, para puxar o Dino em todos os quadros.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "## Seção 2. Deixe a gravidade pronta",
-      "adulto": null
+      "adulto": "## Seção 2. Deixe a gravidade pronta"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "### Clipe `video-aplicar-gravidade` · Deixe a gravidade pronta",
-      "adulto": null
+      "adulto": "### Clipe `video-aplicar-gravidade` · Deixe a gravidade pronta"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Na tela:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. No fim, mostrar o Dino ainda parado, como a fala explica. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).",
-      "adulto": null
+      "adulto": "**Na tela:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta seção ainda não aparece: a fala só lembra a experiência e anuncia a montagem. No fim, mostrar o Dino ainda parado, como a fala explica. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Próxima seção)."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “Lembra da experiência da parte anterior? Sem gravidade, o Dino subia sem parar. Agora a gente vai colocar a gravidade no seu jogo!\n>\n> A gravidade tem que puxar o Dino em todo quadro, antes de ele ser desenhado. Por isso, deixe à vista o espaço entre Desenhar fundo de floresta e Desenhar o sprite dino, dentro de A cada quadro do jogo. Depois, abra Jogo 2D, depois Movimento e depois Velocidade e gravidade, pegue o bloco Aplicar a gravidade do mundo ao sprite e solte nesse espaço. No nome, escolha dino.\n>\n> Confira se ficou assim: dentro de A cada quadro do jogo, a gravidade está depois da floresta e antes do desenho do Dino, com o nome dino. O Dino continua parado, e está certo: a gravidade já puxa, mas quem move o Dino com essa força e faz ele pousar na grama é o controle do pulo, que você monta daqui a pouco.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
-      "adulto": null
+      "adulto": "> “Lembra da experiência da seção anterior? Sem gravidade, o Dino subia sem parar. Agora a gente vai colocar a gravidade no seu jogo.\n>\n> A gravidade tem que puxar o Dino em todo quadro, antes de ele ser desenhado. Por isso, deixe à vista o espaço entre Desenhar fundo de floresta e Desenhar o sprite dino, dentro de A cada quadro do jogo. Depois, abra Jogo 2D, depois Movimento e depois Velocidade e gravidade, pegue o bloco Aplicar a gravidade do mundo ao sprite e solte nesse espaço. No nome, escolha dino.\n>\n> Confira se ficou assim: dentro de A cada quadro do jogo, a gravidade está depois da floresta e antes do desenho do Dino, com o nome dino. O Dino continua parado, e está certo: a gravidade já puxa, mas quem move o Dino com essa força e faz ele pousar na grama é o controle do pulo, que você monta daqui a pouco.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "## Seção 3. Compare duas alturas de pulo",
-      "adulto": null
+      "adulto": "## Seção 3. Compare duas alturas de pulo"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "### Clipe `video-impulso-modelo` · Compare duas alturas de pulo",
-      "adulto": null
+      "adulto": "### Clipe `video-impulso-modelo` · Compare duas alturas de pulo"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Impulso do salto em 9. Tocar no Dino e esperar o pouso, com a marca 68 à vista. Escolher Impulso 14, tocar no Dino de novo e esperar o pouso, com as duas marcas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino numa cama elástica, com uma marca baixa escrita 9 e uma marca alta escrita 14. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.",
-      "adulto": null
+      "adulto": "**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Impulso do salto em 9. Tocar no Dino e esperar o pouso, com a marca 68 à vista. Escolher Impulso 14, tocar no Dino de novo e esperar o pouso, com as duas marcas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma bola de basquete arremessada duas vezes, com uma marca baixa escrita 9 e uma marca alta escrita 14. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “Esta é uma experiência para a gente entender o impulso, a força que começa o pulo.\n>\n> Olha aqui: com o impulso em 9, eu toco no Dino. Ele sobe, volta ao chão e deixa uma marca na altura 68.\n>\n> Agora eu mudo o impulso para 14 e toco no Dino de novo. A marca nova fica na altura 163, bem acima da primeira. A gravidade foi a mesma nos dois saltos. O que mudou foi a força do começo do pulo.\n>\n> É como pular numa cama elástica: com mais força, você vai mais alto, e mesmo assim volta para baixo. No seu jogo, você vai colocar força do pulo 14 no bloco Controlar o dinossauro.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
-      "adulto": null
+      "adulto": "> “Esta é uma experiência para a gente entender o impulso, a força que começa o pulo.\n>\n> Olha aqui: com o impulso em 9, eu toco no Dino. Ele sobe, volta ao chão e deixa uma marca na altura 68.\n>\n> Agora eu mudo o impulso para 14 e toco no Dino de novo. A marca nova fica na altura 163, bem acima da primeira. A gravidade foi a mesma nos dois saltos. O que mudou foi a força do começo do pulo.\n>\n> É como arremessar uma bola de basquete: com mais força, ela vai mais alto, e mesmo assim volta para baixo. No seu jogo, você vai colocar força do pulo 14 no bloco Controlar o dinossauro.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "## Seção 4. Dê os controles de pulo ao Dino",
-      "adulto": null
+      "adulto": "## Seção 4. Dê os controles de pulo ao Dino"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "### Clipe `video-comando-de-pulo` · Dê os controles de pulo ao Dino",
-      "adulto": null
+      "adulto": "### Clipe `video-comando-de-pulo` · Dê os controles de pulo ao Dino"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
-      "adulto": null
+      "adulto": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
-      "adulto": null
+      "adulto": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Próxima seção). Executar cada gesto junto da fala correspondente."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Na tela:** Esperar o Dino completar o salto e pousar antes da entrada.",
-      "adulto": null
+      "adulto": "**Na tela:** Esperar o Dino completar o salto e pousar antes da próxima fala."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “Clique na área do seu jogo e toque na barra de espaço. Tá vendo? O Dino não pula, porque ainda não tem controle.\n>\n> Lembra da experiência da parte anterior? Com impulso 14, o pulo foi bem mais alto. Agora a gente vai dar os controles de pulo ao seu Dino!\n>\n> O controle vai depois da gravidade e antes do desenho, dentro de A cada quadro do jogo: a gravidade puxa o Dino para baixo, o controle move o Dino, faz ele pousar na grama e confere o pulo, e só então o Dino é desenhado no lugar novo. Deixe à vista o espaço entre Aplicar a gravidade do mundo ao sprite e Desenhar o sprite. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco Controlar o dinossauro e solte nesse espaço. O bloco já chega com o nome dino: mantenha. Na força do pulo, troque 15 por 14.\n>\n> Agora teste! Clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque e solte a barra de espaço e espere o Dino pousar. Olha só: ele pula e volta para o chão!”",
-      "adulto": null
+      "adulto": "> “Clique na área do seu jogo e toque na barra de espaço. Percebe? O Dino não pula, porque ainda não tem controle.\n>\n> Lembra da experiência da seção anterior? Com impulso 14, o pulo foi bem mais alto. Agora a gente vai dar os controles de pulo ao seu Dino.\n>\n> O controle vai depois da gravidade e antes do desenho, dentro de A cada quadro do jogo: a gravidade puxa o Dino para baixo, o controle move o Dino, faz ele pousar na grama e confere o pulo, e só então o Dino é desenhado no lugar novo. Deixe à vista o espaço entre Aplicar a gravidade do mundo ao sprite e Desenhar o sprite. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco Controlar o dinossauro e solte nesse espaço. O bloco já chega com o nome dino: mantenha. Na força do pulo, troque 15 por 14.\n>\n> Agora teste. Clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque e solte a barra de espaço e espere o Dino pousar. Olha só: ele pula e volta para o chão.”"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**ID de edição:** `video-comando-de-pulo-avatar-01`.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “Foi! Ele pulou!”",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir os saltos com espaço, seta para cima e toque na parte de cima; esperar o pouso.",
-      "adulto": null
+      "adulto": "**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Concluir os saltos com espaço, seta para cima e toque na parte de cima; esperar o pouso."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles.”",
-      "adulto": null
+      "adulto": "> “Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles.”"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**ID de edição:** `video-comando-de-pulo-avatar-02`.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “Já consegui pular dos três jeitos!”",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Na tela:** Debinha sai antes da resposta. Retomar com o toque embaixo: tocar perto do chão junto da fala e mostrar o Dino se abaixando em vez de pular. Terminar o toque embaixo com o Dino no chão. Não começar o salto com dois toques antes da pergunta.",
-      "adulto": null
+      "adulto": "**Na tela:** Retomar com o toque embaixo: tocar perto do chão junto da fala e mostrar o Dino se abaixando em vez de pular. Terminar o toque embaixo com o Dino no chão. Não começar o salto com dois toques antes da próxima fala."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “Agora vamos conferir mais duas coisas. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”",
-      "adulto": null
+      "adulto": "> “Agora vamos conferir mais duas coisas. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**ID de edição:** `video-comando-de-pulo-avatar-03`.",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “Dá para pular de novo lá no alto?”",
-      "adulto": null
+      "adulto": ""
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Na tela:** Debinha sai antes da resposta. Só então tocar duas vezes na barra de espaço durante o mesmo salto e manter à vista que o segundo toque não faz o Dino pular de novo no ar.",
-      "adulto": null
+      "adulto": "**Na tela:** Tocar duas vezes na barra de espaço durante o mesmo salto e manter à vista que o segundo toque não faz o Dino pular de novo no ar."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino pular de novo no ar, porque ele só começa um salto quando está no chão.\n>\n> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, a ordem é floresta, gravidade, controle e desenho do Dino, com o nome dino. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
-      "adulto": null
+      "adulto": "> “E dá para pular de novo lá no alto? Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino pular de novo no ar, porque ele só começa um salto quando está no chão.\n>\n> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, a ordem é floresta, gravidade, controle e desenho do Dino, com o nome dino. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "## Seção 5. Confira o que você construiu",
-      "adulto": null
+      "adulto": "## Seção 5. Confira o que você construiu"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.",
-      "adulto": null
+      "adulto": "Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do recado. Leia a explicação após enviar; tentativas ilimitadas, sem espera."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "## Seção 6. Teste e envie seu jogo",
-      "adulto": null
+      "adulto": "## Seção 6. Teste e envie seu jogo"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "### Clipe `video-entrega` · Teste e envie seu jogo",
-      "adulto": null
+      "adulto": "### Clipe `video-entrega` · Teste e envie seu jogo"
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Enviar meu projeto, Enviar, Projeto enviado! e Concluir fase).",
-      "adulto": null
+      "adulto": "**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Enviar para o professor, Enviar, Projeto enviado ao professor e Concluir aula)."
     },
     {
       "onde": "corre-dino-aula-03.roteiro.md",
       "kids": "> “Agora o seu Dino já pula e volta para o chão! Antes de enviar o seu projeto, teste os três controles: a barra de espaço, a seta para cima e um toque na parte de cima da tela. Espere o Dino pousar entre um salto e outro, porque ele só pula de novo quando está no chão.\n>\n> Agora confira a ordem dentro de A cada quadro do jogo: a gravidade vem antes do controle, e os dois vêm antes do desenho do Dino. Deixe a força do pulo em 14, e as cores que você escolheu podem continuar do seu jeito.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.”",
-      "adulto": null
+      "adulto": "> “Agora o seu Dino já pula e volta para o chão. Antes de enviar o seu projeto, teste os três controles: a barra de espaço, a seta para cima e um toque na parte de cima da tela. Espere o Dino pousar entre um salto e outro, porque ele só pula de novo quando está no chão.\n>\n> Agora confira a ordem dentro de A cada quadro do jogo: a gravidade vem antes do controle, e os dois vêm antes do desenho do Dino. Deixe a força do pulo em 14, e as cores que você escolheu podem continuar do seu jeito.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula.”"
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Faça o Dino cair e pular",
-      "adulto": null
+      "adulto": "Faça o Dino cair e pular"
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Título: Compare o salto com e sem gravidade\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a gravidade desligada e o Dino no chão. Tocar no Dino e deixar a altura crescer até o tempo parar, com o Dino no alto. Ligar o fio da Gravidade ao Dino com ele no ar e acompanhar a subida mais lenta, a parada e a queda até o chão, com a altura à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy jogando uma bola para cima e a bola voltando para a mão dele. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-gravidade-modelo-avatar-01. Professora até “A experiência para o tempo com ele lá no alto.”. Antes: Tocar no Dino sem gravidade e esperar a experiência parar com ele no alto. Debinha: “E agora? Como ele volta para o chão?”. Retomada da professora: “Com o Dino no ar, eu ligo a Gravidade ao Dino.”. Depois: Ligar o fio da Gravidade com o Dino no ar e acompanhar a subida, a parada e a queda.\n\nFala completa em corre-dino-aula-03.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
-      "adulto": null
+      "adulto": "Título: Compare o salto com e sem gravidade\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a gravidade desligada e o Dino no chão. Tocar no Dino e deixar a altura crescer até o tempo parar, com o Dino no alto. Ligar o fio da Gravidade ao Dino com ele no ar e acompanhar a subida mais lenta, a parada e a queda até o chão, com a altura à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma mão jogando um molho de chaves para cima e as chaves voltando para a mão. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-03.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Sua vez! Faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "Sua vez: faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Compare o salto com e sem gravidade",
-      "adulto": null
+      "adulto": "Compare o salto com e sem gravidade"
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer. Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão.",
-      "adulto": null
+      "adulto": "Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer. Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Título: Deixe a gravidade pronta\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. No fim, mostrar o Dino ainda parado, como a fala explica. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-03.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
-      "adulto": null
+      "adulto": "Título: Deixe a gravidade pronta\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta seção ainda não aparece: a fala só lembra a experiência e anuncia a montagem. No fim, mostrar o Dino ainda parado, como a fala explica. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-03.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Agora deixe a gravidade pronta no seu Dino! Coloque Aplicar a gravidade do mundo ao sprite depois da floresta e antes do desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
-      "adulto": null
+      "adulto": "Agora deixe a gravidade pronta no seu Dino. Coloque Aplicar a gravidade do mundo ao sprite depois da floresta e antes do desenho do Dino. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Título: Compare duas alturas de pulo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Impulso do salto em 9. Tocar no Dino e esperar o pouso, com a marca 68 à vista. Escolher Impulso 14, tocar no Dino de novo e esperar o pouso, com as duas marcas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino numa cama elástica, com uma marca baixa escrita 9 e uma marca alta escrita 14. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-03.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
-      "adulto": null
+      "adulto": "Título: Compare duas alturas de pulo\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Impulso do salto em 9. Tocar no Dino e esperar o pouso, com a marca 68 à vista. Escolher Impulso 14, tocar no Dino de novo e esperar o pouso, com as duas marcas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma bola de basquete arremessada duas vezes, com uma marca baixa escrita 9 e uma marca alta escrita 14. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-03.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Sua vez! Faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "Sua vez: faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Compare duas alturas de pulo",
-      "adulto": null
+      "adulto": "Compare duas alturas de pulo"
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Na experiência, escolha impulso 9, toque no Dino e espere o salto terminar. Observe a marca da altura. Mude o impulso para 14, toque no Dino de novo e espere cair. Compare as duas marcas.",
-      "adulto": null
+      "adulto": "Na experiência, escolha impulso 9, toque no Dino e espere o salto terminar. Observe a marca da altura. Mude o impulso para 14, toque no Dino de novo e espere cair. Compare as duas marcas."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Título: Dê os controles de pulo ao Dino\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-comando-de-pulo-avatar-01. Professora até “Olha só: ele pula e volta para o chão!”. Antes: Esperar o Dino completar o salto e pousar antes da entrada. Debinha: “Foi! Ele pulou!”. Retomada da professora: “Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-comando-de-pulo-avatar-02. Professora até “porque o mesmo bloco já cuida dos três controles.”. Antes: Concluir os saltos com espaço, seta para cima e toque na parte de cima; esperar o pouso. Debinha: “Já consegui pular dos três jeitos!”. Retomada da professora: “Agora vamos conferir mais duas coisas. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”. Depois: Retomar com o toque embaixo: tocar perto do chão junto da fala e mostrar o Dino se abaixando em vez de pular.\n\nID video-comando-de-pulo-avatar-03. Professora até “Agora teste! Clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque e solte a barra de espaço e espere o Dino pousar. Olha só: ele pula e volta para o chão! Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”. Antes: Terminar o toque embaixo com o Dino no chão. Não começar o salto com dois toques antes da pergunta. Debinha: “Dá para pular de novo lá no alto?”. Retomada da professora: “Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto.”. Depois: Só então tocar duas vezes na barra de espaço durante o mesmo salto e manter à vista que o segundo toque não faz o Dino pular de novo no ar.\n\nFala completa em corre-dino-aula-03.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
-      "adulto": null
+      "adulto": "Título: Dê os controles de pulo ao Dino\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-03.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Agora dê os controles de pulo ao seu Dino! Coloque Controlar o dinossauro entre a gravidade e o desenho, com força do pulo 14, e teste espaço, seta para cima e um toque na parte de cima da tela. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
-      "adulto": null
+      "adulto": "Agora dê os controles de pulo ao seu Dino. Coloque Controlar o dinossauro entre a gravidade e o desenho, com força do pulo 14, e teste espaço, seta para cima e um toque na parte de cima da tela. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Hora de lembrar o que você construiu! As perguntas falam da tela e dos movimentos do seu Dino. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
-      "adulto": null
+      "adulto": "Hora de lembrar o que você construiu. As perguntas falam da tela e dos movimentos do seu Dino. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "O Dino foi criado, mas não há um bloco de desenho. O que falta para ele aparecer?",
-      "adulto": null
+      "adulto": "O Dino foi criado, mas não há um bloco de desenho. O que falta para ele aparecer?"
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Criar outro Dino.",
-      "adulto": null
+      "adulto": "Criar outro Dino."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Desenhar o Dino que já existe.",
-      "adulto": null
+      "adulto": "Desenhar o Dino que já existe."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Aumentar a largura da tela.",
-      "adulto": null
+      "adulto": "Aumentar a largura da tela."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Criar prepara o objeto. Desenhar mostra sua imagem; repetir a criação não substitui o desenho.",
-      "adulto": null
+      "adulto": "Criar prepara o objeto. Desenhar mostra sua imagem; repetir a criação não substitui o desenho."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "O Dino sobe e fica no ar sem voltar. Que regra falta observar?",
-      "adulto": null
+      "adulto": "O Dino sobe e fica no ar sem voltar. Que regra falta observar?"
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "A gravidade que o traz ao chão.",
-      "adulto": null
+      "adulto": "A gravidade que o traz ao chão."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "A cor da floresta.",
-      "adulto": null
+      "adulto": "A cor da floresta."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "A borda da tela.",
-      "adulto": null
+      "adulto": "A borda da tela."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "A gravidade muda o movimento vertical e traz o Dino de volta ao chão.",
-      "adulto": null
+      "adulto": "A gravidade muda o movimento vertical e traz o Dino de volta ao chão."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Você mantém a gravidade e aumenta o impulso de 9 para 14. O que está comparando?",
-      "adulto": null
+      "adulto": "Você mantém a gravidade e aumenta o impulso de 9 para 14. O que está comparando?"
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Dois tamanhos de tela.",
-      "adulto": null
+      "adulto": "Dois tamanhos de tela."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Duas cores de Dino.",
-      "adulto": null
+      "adulto": "Duas cores de Dino."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Duas alturas de salto.",
-      "adulto": null
+      "adulto": "Duas alturas de salto."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "O impulso inicia o salto. A comparação muda esse valor e conserva a gravidade.",
-      "adulto": null
+      "adulto": "O impulso inicia o salto. A comparação muda esse valor e conserva a gravidade."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-03.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
-      "adulto": null
+      "adulto": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-03.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Hora de testar e enviar o seu jogo! Teste os três controles de pulo, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
-      "adulto": null
+      "adulto": "Hora de testar e enviar o seu jogo. Teste os três controles de pulo, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Corre, Dino!",
-      "adulto": null
+      "adulto": "Corre, Dino!"
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida.",
-      "adulto": null
+      "adulto": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Deixe a gravidade pronta",
-      "adulto": null
+      "adulto": "Deixe a gravidade pronta"
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Deixe a gravidade depois da floresta.",
-      "adulto": null
+      "adulto": "Deixe a gravidade depois da floresta."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Aplique gravidade ao dino dentro do quadro, antes de desenhar.",
-      "adulto": null
+      "adulto": "Aplique gravidade ao dino dentro do quadro, antes de desenhar."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Dê os controles de pulo ao Dino",
-      "adulto": null
+      "adulto": "Dê os controles de pulo ao Dino"
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Aplique gravidade ao dino antes do controle do pulo.",
-      "adulto": null
+      "adulto": "Aplique gravidade ao dino antes do controle do pulo."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Encaixe Controlar o dinossauro dino antes de desenhá-lo.",
-      "adulto": null
+      "adulto": "Encaixe Controlar o dinossauro dino antes de desenhá-lo."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Confira o que você construiu",
-      "adulto": null
+      "adulto": "Confira o que você construiu"
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Teste e envie seu jogo",
-      "adulto": null
+      "adulto": "Teste e envie seu jogo"
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Controle o dino com a sua força de pulo, antes de desenhá-lo.",
-      "adulto": null
+      "adulto": "Controle o dino com a sua força de pulo, antes de desenhá-lo."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Desenhe o sprite dino dentro de A cada quadro.",
-      "adulto": null
+      "adulto": "Desenhe o sprite dino dentro de A cada quadro."
     },
     {
       "onde": "corre-dino-aula-03.manifesto.json",
       "kids": "Desenhe a floresta com velocidade 5 antes do Dino.",
-      "adulto": null
+      "adulto": "Desenhe a floresta com velocidade 5 antes do Dino."
     }
   ]
 }

@@ -1,0 +1,671 @@
+{
+  "version": 5,
+  "courseSlug": "corre-dino-adulto",
+  "lessonSlug": "aula-04",
+  "title": "Toque um som em cada pulo",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "checar-construir-2",
+    "construir-3",
+    "convite-construir-3",
+    "construir-4",
+    "fechamento",
+    "video-missao",
+    "descoberta",
+    "video-construir-1-1",
+    "zappy-construir-1",
+    "video-construir-2-1",
+    "zappy-construir-2",
+    "zappy-convite-construir-1",
+    "video-construir-3-1",
+    "zappy-construir-3",
+    "video-construir-4-1",
+    "zappy-construir-4",
+    "zappy-convite-construir-3",
+    "zappy-entrega",
+    "zappy-revisao",
+    "video-abertura-editorial",
+    "video-evento-espaco",
+    "fala-evento-espaco",
+    "video-primeiro-som",
+    "fala-primeiro-som",
+    "experiencia-entrada-ou-pulo",
+    "video-escutar-dino",
+    "fala-escutar-dino",
+    "fala-entrega-editorial",
+    "video-fecho-editorial",
+    "video-abertura",
+    "fala-tres-areas",
+    "fala-montar-evento",
+    "fala-montar-som",
+    "video-evento-e-som",
+    "video-quatro-testes",
+    "fala-mover-nao-copiar",
+    "video-teste-e-envio",
+    "quiz-final",
+    "fala-proxima-aula"
+  ],
+  "blocks": [
+    {
+      "key": "video-area-que-espera",
+      "plannedVideo": "Título: Compare esperar e repetir\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com as peças em Ações disponíveis. Colocar Tocar efeito · pulo em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado, com o contador da peça em 0 vezes. Clicar em Apertar a tecla e mostrar a nota ♪ no palco e o contador em 1 vez. Meme ilustrado na frase da comparação, por 2 a 3 segundos: um dedo tocando a campainha de uma casa, com uma nota musical saindo dela. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-04.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-area-que-espera",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sua vez: comece o teste sem clicar em Apertar a tecla e só depois clique nesse botão, de olho no contador. Quando terminar, clique em Próxima seção."
+      }
+    },
+    {
+      "key": "experiencia-tres-areas",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Compare esperar e repetir",
+        "instructions": "Na experiência, coloque Tocar efeito · pulo em Quando acontecer. Clique em Começar o jogo e espere o teste parar sem clicar em Apertar a tecla. Observe o contador. Depois clique em Apertar a tecla. Compare o contador antes e depois desse clique.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "once-vs-always",
+          "cenario": "corre-dino",
+          "setup": {
+            "preset": {
+              "id": "tres-caixas-som",
+              "areas": [
+                "start",
+                "loop",
+                "event"
+              ],
+              "cards": [
+                {
+                  "id": "paint",
+                  "kind": "paint",
+                  "label": "Pintar o fundo"
+                },
+                {
+                  "id": "create",
+                  "kind": "create",
+                  "label": "Criar o Dino"
+                },
+                {
+                  "id": "move",
+                  "kind": "move",
+                  "label": "Mover o Dino um pouquinho"
+                },
+                {
+                  "id": "event",
+                  "kind": "sound",
+                  "label": "Tocar efeito · pulo"
+                }
+              ]
+            },
+            "goals": [
+              "on-event",
+              "key-fires"
+            ]
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-dedo-e-pulo",
+      "plannedVideo": "Título: Compare a tecla com o pulo\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Tocar efeito em Quando apertar Espaço e os contadores de pulos e sons em 0. Fazer os gestos no ritmo da fala, esperando o pouso entre os testes, e manter os contadores à vista depois de cada clique. Levar Tocar efeito para Quando o Dino pular e repetir os testes. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-04.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-dedo-e-pulo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sua vez: teste a tecla repetida e o toque com o som nos dois lugares e compare os contadores. Quando terminar, clique em Próxima seção."
+      }
+    },
+    {
+      "key": "experiencia-dedo-e-pulo",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Compare a tecla com o pulo",
+        "instructions": "Deixe Tocar efeito em Quando apertar Espaço. Clique em Apertar Espaço duas vezes durante o mesmo pulo e compare os contadores de sons e pulos. Depois de pousar, clique em Tocar para pular. Leve Tocar efeito para Quando o Dino pular. Espere pousar e repita os dois testes: Apertar Espaço duas vezes no mesmo salto e Tocar para pular uma vez. Compare os contadores.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "jump-sound",
+          "cenario": "corre-dino"
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-som-no-pulo",
+      "plannedVideo": "Título: Ligue o som ao pulo do Dino\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebeu?”, deixar ouvir que o pulo está sem som. No teste final, em “Escute”, deixar o som do pulo ser ouvido, sem fala nem música por cima. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-04.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-som-no-pulo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora ligue o som ao pulo do seu Dino. Crie a área Quando acontecer e coloque um único Tocar efeito pulo dentro de Quando o sprite pular. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-04.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Hora de testar e enviar o seu jogo. Teste um salto com cada controle, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+      }
+    },
+    {
+      "key": "projeto",
+      "content": {
+        "kind": "studio",
+        "purpose": "submission",
+        "chain": "corre-dino",
+        "level": "iniciante-2d",
+        "allowedModes": [
+          "blocks"
+        ],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_events",
+          "sz_frame_loops",
+          "sz_frame_start",
+          "sz_g2d_apply_gravity",
+          "sz_g2d_clear",
+          "sz_g2d_control_dino",
+          "sz_g2d_create_dino",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_forest",
+          "sz_g2d_on_jump",
+          "sz_g2d_on_key",
+          "sz_g2d_play_fx",
+          "sz_g2d_set_stage_description",
+          "sz_g2d_setup_stage",
+          "sz_g2d_update_each_frame",
+          "sz_val_number"
+        ],
+        "showcase": {
+          "enabled": false,
+          "title": "Corre, Dino!",
+          "summary": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
+        },
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-dino-etapa-3",
+          "name": "Corre, Dino!",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 270, \"#81d4fa\");\n  SZGame2D.setStageDescription(\"Corra com o dino e pule os cactos apertando espaço\");\n  const dino = SZGame2D.createDino({ x: 110, y: 150, size: 64, color: \"#8b5cf6\" });\n  // Quando acontecer\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawForest(ctx, 5);\n    SZGame2D.applyGravity(dino);\n    SZGame2D.controlDino(dino, ctx, 14);\n    SZGame2D.drawSprite(ctx, dino);\n  }, \"dino-ref-10\");\n}, \"__sz-project\");\n"
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": {
+                    "type": "num",
+                    "value": 480,
+                    "__id": "dino-ref-2"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 270,
+                    "__id": "dino-ref-3"
+                  },
+                  "bg": "#81d4fa",
+                  "__id": "dino-ref-1"
+                },
+                {
+                  "type": "g2d:setStageDescription",
+                  "description": "Corra com o dino e pule os cactos apertando espaço",
+                  "__id": "dino-ref-4"
+                },
+                {
+                  "type": "g2d:createDino",
+                  "varName": "dino",
+                  "x": {
+                    "type": "num",
+                    "value": 110,
+                    "__id": "dino-ref-6"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 150,
+                    "__id": "dino-ref-7"
+                  },
+                  "size": {
+                    "type": "num",
+                    "value": 64,
+                    "__id": "dino-ref-8"
+                  },
+                  "color": "#8b5cf6",
+                  "__id": "dino-ref-5"
+                }
+              ],
+              "events": [],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "dino-ref-11"
+                    },
+                    {
+                      "type": "g2d:forest",
+                      "ctxVar": "ctx",
+                      "speed": {
+                        "type": "num",
+                        "value": 5,
+                        "__id": "dino-ref-13"
+                      },
+                      "__id": "dino-ref-12"
+                    },
+                    {
+                      "type": "g2d:applyGravity",
+                      "spriteVar": "dino",
+                      "__id": "dino-ref-14"
+                    },
+                    {
+                      "type": "g2d:controlDino",
+                      "spriteVar": "dino",
+                      "ctxVar": "ctx",
+                      "jump": {
+                        "type": "num",
+                        "value": 14,
+                        "__id": "dino-ref-16"
+                      },
+                      "__id": "dino-ref-15"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "dino",
+                      "ctxVar": "ctx",
+                      "__id": "dino-ref-17"
+                    }
+                  ],
+                  "__id": "dino-ref-10"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#81d4fa"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 270
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_set_stage_description",
+                            "fields": {
+                              "DESCRIPTION": "Corra com o dino e pule os cactos apertando espaço"
+                            },
+                            "inputs": {},
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_dino",
+                                "fields": {
+                                  "NAME": "dino",
+                                  "COLOR": "#8b5cf6"
+                                },
+                                "inputs": {
+                                  "X": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 110
+                                      }
+                                    }
+                                  },
+                                  "Y": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 150
+                                      }
+                                    }
+                                  },
+                                  "SIZE": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 64
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "fields": {},
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "fields": {},
+                              "inputs": {},
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_forest",
+                                  "fields": {},
+                                  "inputs": {
+                                    "SPEED": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 5
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_apply_gravity",
+                                      "fields": {
+                                        "SPRITE": "dino"
+                                      },
+                                      "inputs": {},
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_control_dino",
+                                          "fields": {
+                                            "SPRITE": "dino"
+                                          },
+                                          "inputs": {
+                                            "JUMP": {
+                                              "shadow": {
+                                                "type": "sz_val_number",
+                                                "fields": {
+                                                  "NUM": 14
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_draw_sprite",
+                                              "fields": {
+                                                "SPRITE": "dino"
+                                              },
+                                              "inputs": {}
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "area-que-espera",
+      "title": "Compare esperar e repetir",
+      "intent": "exploration",
+      "objective": "Sua vez: comece o teste sem clicar em Apertar a tecla e só depois clique nesse botão, de olho no contador. Quando terminar, clique em Próxima seção.",
+      "blockKeys": [
+        "video-area-que-espera",
+        "fala-area-que-espera",
+        "experiencia-tres-areas"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-area-que-espera",
+          "experiencia-tres-areas"
+        ]
+      }
+    },
+    {
+      "key": "dedo-e-pulo",
+      "title": "Compare a tecla com o pulo",
+      "intent": "exploration",
+      "objective": "Sua vez: teste a tecla repetida e o toque com o som nos dois lugares e compare os contadores. Quando terminar, clique em Próxima seção.",
+      "blockKeys": [
+        "video-dedo-e-pulo",
+        "fala-dedo-e-pulo",
+        "experiencia-dedo-e-pulo"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-dedo-e-pulo",
+          "experiencia-dedo-e-pulo"
+        ]
+      }
+    },
+    {
+      "key": "som-no-pulo",
+      "title": "Ligue o som ao pulo do Dino",
+      "intent": "application",
+      "objective": "Agora ligue o som ao pulo do seu Dino. Crie a área Quando acontecer e coloque um único Tocar efeito pulo dentro de Quando o sprite pular. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.",
+      "blockKeys": [
+        "video-som-no-pulo",
+        "fala-som-no-pulo"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-som-no-pulo"
+        ],
+        "projectChecks": [
+          {
+            "id": "som-pulo",
+            "label": "Coloque o Tocar efeito, com o efeito que você escolheu, dentro de Quando o dino pular.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_jump",
+              "area": "events",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx"
+                }
+              }
+            }
+          },
+          {
+            "id": "som-unico",
+            "label": "Mantenha apenas um Tocar efeito no projeto inteiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_play_fx",
+              "count": 1
+            }
+          },
+          {
+            "id": "sem-evento-tecla",
+            "label": "Use o acontecimento do pulo, sem um evento separado só para a tecla.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "count": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Teste e envie seu jogo",
+      "intent": "delivery",
+      "objective": "Hora de testar e enviar o seu jogo. Teste um salto com cada controle, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
+      "blockKeys": [
+        "video-entrega",
+        "fala-entrega",
+        "projeto"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-entrega",
+          "projeto"
+        ],
+        "projectChecks": [
+          {
+            "id": "som-pulo",
+            "label": "Coloque o Tocar efeito, com o efeito que você escolheu, dentro de Quando o dino pular.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_jump",
+              "area": "events",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx"
+                }
+              }
+            }
+          },
+          {
+            "id": "som-unico",
+            "label": "Mantenha apenas um Tocar efeito no projeto inteiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_play_fx",
+              "count": 1
+            }
+          },
+          {
+            "id": "sem-evento-tecla",
+            "label": "Use o acontecimento do pulo, sem um evento separado só para a tecla.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "count": 0
+            }
+          },
+          {
+            "id": "gravidade",
+            "label": "Aplique gravidade ao dino antes do controle do pulo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_apply_gravity",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "beforeBlock": "sz_g2d_control_dino"
+            }
+          },
+          {
+            "id": "controle",
+            "label": "Controle o dino com a sua força de pulo, antes de desenhá-lo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_control_dino",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

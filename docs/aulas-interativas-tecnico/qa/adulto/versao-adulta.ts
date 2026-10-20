@@ -86,7 +86,8 @@ const PALAVRAS_DO_KIDS: [RegExp, string][] = [
   [/\baventuras?\b/i, 'aventura (use curso)'],
   [/\bfases?\b(?! do jogo)/i, 'fase (use aula; para o nível do jogo, escreva "fase do jogo")'],
   [/\bZappy\b/, 'Zappy (na plataforma adulta o recado não tem personagem)'],
-  [/\b(?:Debinha|Dedé)\b/, 'avatar infantil'],
+  // `\b` do JavaScript não vê "é" como letra: "Dedé" escaparia da régua.
+  [/(?<!\p{L})(?:Debinha|Dedé)(?!\p{L})/u, 'avatar infantil'],
   [/\bcrian(?:ça|ças|cinha)\b/i, 'criança'],
   [/\bum adulto\b/i, 'ajuda de um adulto'],
   [/Próxima parte/, 'Próxima seção'],
@@ -98,7 +99,7 @@ const PALAVRAS_DO_KIDS: [RegExp, string][] = [
   [/Enviar de novo/, 'Reenviar ao professor'],
   [/Projeto enviado!/, 'Projeto enviado ao professor'],
   [/Pegar meu certificado/, 'Emitir meu certificado'],
-  [/Guardado na sua conta/, 'Salvo na sua conta'],
+  [/Responder!|Tentar de novo!/, 'botão do quiz do Kids (use Enviar quiz)'],
   [/Copiar link de jogar/, 'Copiar link'],
   [/Enviar para a equipe/, 'Enviar ao professor'],
   [/Parte concluída/, 'Etapa concluída!'],
@@ -227,8 +228,31 @@ function traduzir(d: Map<string, string>, kids: string, onde: string): string {
   return adulto
 }
 
+/**
+ * O endereço de um tutorial não é texto para reescrever: a biblioteca adulta tem outros slugs
+ * (`docs/como-fazer-adulto/como-fazer.json`). Tabela espelhada em DIRETRIZES-ADULTO.md.
+ */
+export const COMO_FAZER_ADULTO: Record<string, string> = {
+  '/como-fazer/plataforma-abrir-uma-aula': '/como-fazer/aula-abrir-e-passar-de-secao',
+  '/como-fazer/plataforma-ampliar-a-atividade': '/como-fazer/estudio-usar-na-aula',
+  '/como-fazer/plataforma-baixar-materiais': '/como-fazer/aula-baixar-materiais',
+  '/como-fazer/plataforma-mostrar-o-menu': '/como-fazer/primeiros-menu-do-alto',
+  '/como-fazer/plataforma-pedir-ajuda': '/como-fazer/aula-pedir-ajuda',
+  '/como-fazer/plataforma-publicar-no-mural': '/como-fazer/comunidade-publicar-no-mural',
+  '/como-fazer/plataforma-voltar-para-a-aula': '/como-fazer/primeiros-continuar-o-curso',
+  '/como-fazer/como-fazer': '/como-fazer/primeiros-achar-um-passo-a-passo',
+}
+
+function linkAdulto(url: string, onde: string): string {
+  if (!url.startsWith('/como-fazer/')) return url
+  const adulto = COMO_FAZER_ADULTO[url]
+  if (!adulto) throw new Pendencias(`${onde}: link do Como fazer sem par adulto: ${url}`)
+  return adulto
+}
+
 export function manifestoAdulto(manifesto: unknown, d: Map<string, string>, onde: string): unknown {
   const walk = (v: unknown, caminho: string[]): unknown => {
+    if (typeof v === 'string' && caminho.at(-1) === 'url') return linkAdulto(v, onde)
     if (typeof v === 'string')
       return v.trim() && ehTextoDoManifesto(caminho) ? traduzir(d, v, onde) : v
     if (Array.isArray(v)) return v.map((x) => walk(x, caminho))

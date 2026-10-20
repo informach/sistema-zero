@@ -83,9 +83,21 @@ describe('a camada de tradução', () => {
     expect(adulto.sections[0]?.completion.projectChecks[0]?.label).toBe('Pule o cacto. (adulto)')
   })
 
+  test('o link de um tutorial vai para a biblioteca adulta, e link sem par para a geração', () => {
+    const kids = {
+      blocks: [{ content: { items: [{ url: '/como-fazer/plataforma-pedir-ajuda' }] } }],
+    }
+    expect(manifestoAdulto(kids, new Map(), 'x')).toEqual({
+      blocks: [{ content: { items: [{ url: '/como-fazer/aula-pedir-ajuda' }] } }],
+    })
+    const solto = { blocks: [{ content: { items: [{ url: '/como-fazer/plataforma-nova' }] } }] }
+    expect(() => manifestoAdulto(solto, new Map(), 'x')).toThrow(Pendencias)
+  })
+
   test('a régua do vocabulário morde e deixa passar a fase do jogo', () => {
     expect(palavrasDoKids('Clique em Próxima parte.')).toEqual(['Próxima seção'])
     expect(palavrasDoKids('Termine esta fase.')).toHaveLength(1)
+    expect(palavrasDoKids('Dedé sai antes da resposta.')).toEqual(['avatar infantil'])
     expect(palavrasDoKids('Chegue na última fase do jogo.')).toEqual([])
     expect(palavrasDoKids('Clique em Próxima seção e depois em Concluir aula.')).toEqual([])
   })

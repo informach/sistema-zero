@@ -1,0 +1,27 @@
+{
+  "blocks": [
+    "sz_frame_events",
+    "sz_frame_loops",
+    "sz_frame_start",
+    "sz_g2d_add_to_group",
+    "sz_g2d_clear",
+    "sz_g2d_create_group",
+    "sz_g2d_create_image_sprite",
+    "sz_g2d_draw_backdrop",
+    "sz_g2d_draw_group",
+    "sz_g2d_draw_label",
+    "sz_g2d_draw_score",
+    "sz_g2d_draw_sprite",
+    "sz_g2d_on_group_click",
+    "sz_g2d_set_opacity",
+    "sz_g2d_setup_stage",
+    "sz_g2d_update_each_frame",
+    "sz_js_if_else",
+    "sz_js_var_create",
+    "sz_js_var_increment",
+    "sz_val_compare",
+    "sz_val_number",
+    "sz_val_text",
+    "sz_val_variable"
+  ]
+}
