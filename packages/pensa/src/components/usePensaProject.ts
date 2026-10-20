@@ -14,6 +14,8 @@ export function usePensaProject(transport: PensaTransport, initialProjectId: str
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [archived, setArchived] = useState(false)
+  const [counts, setCounts] = useState<{ active: number; archived: number } | null>(null)
+  const [listState, setListState] = useState<'loading' | 'ready' | 'failed'>('loading')
   const selected = useRef<string | null>(initialProjectId)
   const sequence = useRef(0)
   const readSequence = useRef(0)
@@ -27,14 +29,32 @@ export function usePensaProject(transport: PensaTransport, initialProjectId: str
       sequence.current += 1
     }
   }, [])
+  // As duas abas (Em andamento e Guardados) mostram a contagem: as duas listas vêm juntas.
   const list = useCallback(async () => {
     const visit = ++listSequence.current
-    const result = await transport.request<unknown>(
-      `/projects?status=${archived ? 'archived' : 'active'}`,
-    )
-    if (alive.current && visit === listSequence.current)
-      setProjects(PensaProjectListItemSchema.array().parse(result))
+    try {
+      const [active, stored] = await Promise.all(
+        (['active', 'archived'] as const).map(async (status) =>
+          PensaProjectListItemSchema.array().parse(
+            (await transport.request<unknown>(`/projects?status=${status}`)) ?? [],
+          ),
+        ),
+      )
+      if (!alive.current || visit !== listSequence.current) return
+      setProjects(archived ? stored! : active!)
+      setCounts({ active: active!.length, archived: stored!.length })
+      setListState('ready')
+    } catch (cause) {
+      if (alive.current && visit === listSequence.current)
+        setListState((current) => (current === 'ready' ? current : 'failed'))
+      throw cause
+    }
   }, [transport, archived])
+  const reloadList = useCallback(async () => {
+    setListState('loading')
+    setError(null)
+    await list().catch((cause: unknown) => setError(message(cause)))
+  }, [list])
   const refresh = useCallback(async () => {
     const projectId = selected.current
     if (!projectId) return
@@ -108,6 +128,8 @@ export function usePensaProject(transport: PensaTransport, initialProjectId: str
         return next
       } catch (cause) {
         if (alive.current && visit === sequence.current) {
+          // A sessão de suporte só lê: quem avisa é a faixa de suporte, não um erro solto.
+          if (isReadOnlyRefusal(cause)) return null
           setError(message(cause))
           if (cause && typeof cause === 'object' && 'status' in cause && cause.status === 409)
             await refresh().catch(() => {})
@@ -175,7 +197,19 @@ export function usePensaProject(transport: PensaTransport, initialProjectId: str
     execute,
     archived,
     setArchived,
+    counts,
+    listState,
+    reloadList,
   }
+}
+
+export function isReadOnlyRefusal(cause: unknown): boolean {
+  return (
+    typeof cause === 'object' &&
+    cause !== null &&
+    'code' in cause &&
+    cause.code === 'IMPERSONATION_READONLY'
+  )
 }
 
 function message(cause: unknown) {

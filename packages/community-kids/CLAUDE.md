@@ -1835,6 +1835,15 @@ dormindo + título (o nome do produto) + pílula **"Parte da Comunidade"** + pr�
   de tela do `src/` e trava a pílula, o título, o pedido ao responsável, o botão, o
   `utm_content=ferramenta-` e o posto vindo da política (seed: Estúdio e Pinta no Construtor(a),
   Pensa no Inventor(a), Molda no Explorador(a) de Mundos).
+- **Pensa (Canvas "Estados", 20/10/2026):** a prévia virou os três passos que o Pensa faz
+  ("Conte a ideia do jogo, escrevendo ou falando", "Confira o plano que o Zappy monta com você",
+  "Construa uma missão de cada vez no Estúdio, no Pinta e no Molda") em ladrilhos âmbar
+  numerados (`numbered`, opcional no `KidsLockedProduct`; as outras telas seguem com emoji). A
+  antiga prometia "desenhar as telas e o fluxo do jogo". Quem já conquistou lê que os jogos e os
+  planos estão guardados. O posto que falta (`KidsJourneyLockedPensa`) diz "O Pensa abre num
+  próximo posto da Jornada" (`heading`/`detail` opcionais no `KidsJourneyLockedProduct`), e o
+  `KidsPensaUnavailable` virou "O Pensa não abriu agora" com "Tentar de novo" e "Ir para o
+  Estúdio". O cartão da Comunidade não mudou (sem fluxo de "mostrar para quem cuida da conta").
 - ⚠️ **NÃO usar `KidsLockedProduct` na tela genérica `KidsLockedSpace`** (coringa de qualquer
   espaço do hub, que pode ser gateado por curso/cargo e não só pela assinatura: o botão prometeria
   errado); a genérica fica sem CTA. As telas transientes `kids-*-unavailable.tsx` ("tente de

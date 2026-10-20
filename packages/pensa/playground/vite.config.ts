@@ -10,6 +10,8 @@ const r = (p: string) => resolve(here, p).replace(/\\/g, '/')
 
 export default defineConfig({
   root: here,
+  // As imagens do Zappy saem do MESMO caminho do host (`/zappy/*.webp`).
+  publicDir: r('../../community-kids/public'),
   plugins: [react()],
   resolve: {
     alias: {

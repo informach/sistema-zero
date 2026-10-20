@@ -11,7 +11,7 @@ export function PensaMessageText({ text }: { text: string }) {
       match.index === undefined ||
       !label ||
       !href ||
-      !/^\/(cursos|ajuda|estudio|pinta|molda)(\/|\?|$)/.test(href)
+      !/^\/(cursos|como-fazer|ajuda|estudio|pinta|molda)(\/|\?|$)/.test(href)
     )
       continue
     content.push(
