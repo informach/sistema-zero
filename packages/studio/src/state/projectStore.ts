@@ -59,7 +59,10 @@ import type { StudioProjectFactoryContext } from '../core/projectFactory'
 import { withoutProjectPublication } from '../core/projectPublication'
 import type { ProAssistanceMeta } from '../core/proProject'
 import type { StudioPersistenceAdapter } from '../persistence/types'
-import { preservePythonWorkspaceDraft } from '../python/blocks/workspaceDraft'
+import {
+  emptyPythonWorkspaceState,
+  preservePythonWorkspaceDraft,
+} from '../python/blocks/workspaceDraft'
 import { prepareEditableCloudProject } from './editableCloudProject'
 import { prepareEditableStudioProject } from './editableProjectValidation'
 import {
@@ -1035,7 +1038,7 @@ export function createProjectStore(
           ...current,
           files: { ...files },
           ir: null,
-          blocksState: copyStudioProjectJson(blocksState ?? null) ?? null,
+          blocksState: copyStudioProjectJson(blocksState ?? emptyPythonWorkspaceState()),
         })
       },
       setIR: (ir) => {

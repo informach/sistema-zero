@@ -8,6 +8,7 @@ import {
   SUPPORTED_PROJECT_FORMAT_VERSION,
 } from '../core/projectDocument'
 import { cancelPendingAutosavesFor } from '../persistence/service'
+import { hasStaleJavaScriptBridgeBlocks } from './bridgeAuthority'
 import {
   conditionalGeneration,
   conditionalWrite,
@@ -277,7 +278,8 @@ export async function persistProject(
     const thumb = validThumbDataUrl(options.thumb)
     const stale = [
       ...(options.replace && !thumb ? [projectThumbKey(id)] : []),
-      ...((options.replace && project.blocksState == null) || project.bridgeCodeAhead === true
+      ...((options.replace && project.blocksState == null) ||
+      hasStaleJavaScriptBridgeBlocks(project)
         ? [projectBlocksKey(id)]
         : []),
     ]
@@ -295,7 +297,7 @@ export async function persistProject(
     // aluno editar antes do restore, o autosave gravaria vazio). Só persistimos a
     // partição de blocos quando há blocksState de fato; um workspace VAZIO serializa
     // como objeto (não null), então limpar de propósito continua sendo salvo.
-    if (project.blocksState != null && project.bridgeCodeAhead !== true) {
+    if (project.blocksState != null && !hasStaleJavaScriptBridgeBlocks(project)) {
       pairs.push([projectBlocksKey(id), projectToBlocksRecord(project)])
     }
     if (thumb) pairs.push([projectThumbKey(id), { id, dataUrl: thumb }])

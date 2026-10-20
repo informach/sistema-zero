@@ -19,6 +19,12 @@ interface PythonWorkspaceCollection {
   drafts: PythonWorkspaceDraft[]
 }
 export type PythonWorkspaceState = PythonWorkspaceDraft | PythonWorkspaceCollection
+
+/** Explicit empty cache: unlike a quick-load null, this must replace older saved drafts. */
+export function emptyPythonWorkspaceState(): PythonWorkspaceState {
+  return { kind: 'python-workspace-collection', version: 1, activePath: '', drafts: [] }
+}
+
 const limits = { nodes: 160_000, textChars: 8_388_608, depth: 40_064 }
 const record = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value)
@@ -135,8 +141,12 @@ export function pendingPythonWorkspaceDraft(project: PythonProjectDocument) {
   return readDrafts(project).drafts.find((draft) => draft.pending)
 }
 
-function pack(drafts: PythonWorkspaceDraft[], activePath?: string): PythonWorkspaceState | null {
-  if (!drafts.length) return null
+function pack(
+  drafts: PythonWorkspaceDraft[],
+  activePath?: string,
+  knownEmpty = false,
+): PythonWorkspaceState | null {
+  if (!drafts.length) return knownEmpty ? emptyPythonWorkspaceState() : null
   if (drafts.length > 1000) throw new Error('Há arquivos demais com blocos salvos neste projeto.')
   const state: PythonWorkspaceState =
     drafts.length === 1
@@ -163,7 +173,7 @@ export function updatePythonWorkspaceDraft(
   const state = readDrafts(project)
   const drafts = state.drafts.filter((entry) => entry.path !== path)
   if (draft) drafts.push(draft)
-  return pack(drafts, draft ? path : state.activePath)
+  return pack(drafts, draft ? path : state.activePath, true)
 }
 
 export function assertPythonVisualDraftSettled(project: PythonProjectDocument): void {
@@ -188,5 +198,5 @@ export function preservePythonWorkspaceDraft(
     const path = movedPath(draft.path)
     return files[path] === draft.baseSource && path.endsWith('.py') ? [{ ...draft, path }] : []
   })
-  return pack(drafts, state.activePath && movedPath(state.activePath))
+  return pack(drafts, state.activePath && movedPath(state.activePath), project.blocksState != null)
 }
