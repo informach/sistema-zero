@@ -60,6 +60,46 @@ async function options() {
   }
 }
 
+test('disabled Python discovery makes no request or offer, including retry and profile changes', async () => {
+  const raw = await options()
+  const original = globalThis.fetch
+  const fetch = spyOn(globalThis, 'fetch').mockImplementation(
+    Object.assign(async () => Response.json(raw), { preconnect: original.preconnect }),
+  )
+  const view = mount()
+  try {
+    await view.render('student', false)
+    await act(async () => view.current().retry())
+    await view.render('staff', false)
+    expect(fetch).not.toHaveBeenCalled()
+    expect(view.current().creation).toBeUndefined()
+    expect(view.current().loading).toBe(false)
+    expect(view.current().error).toBeUndefined()
+    expect(view.current().unavailable).toBe(false)
+
+    await view.render('admin', true)
+    await settle(() => !!view.current().creation)
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(
+      view
+        .current()
+        .creation?.environments.map(({ kind }) => kind)
+        .sort(),
+    ).toEqual(['classic', 'pro'])
+
+    await view.render('admin', false)
+    await act(async () => view.current().retry())
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(view.current().creation).toBeUndefined()
+    expect(view.current().loading).toBe(false)
+    expect(view.current().error).toBeUndefined()
+    expect(view.current().unavailable).toBe(false)
+  } finally {
+    await view.close()
+    fetch.mockRestore()
+  }
+})
+
 test('free discovery rechecks retirement at creation and cannot reuse an old profile response', async () => {
   const raw = await options()
   const pending: { signal: AbortSignal; resolve(response: Response): void }[] = []

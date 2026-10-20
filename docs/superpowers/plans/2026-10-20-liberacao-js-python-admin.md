@@ -29,21 +29,21 @@
 
 ## Task 2: Restringir a oferta de criação Python na interface
 
-**Files:** `packages/member-shell/src/components/creator/studio-full-client.tsx`; páginas `packages/community-kids/src/app/(app)/estudio/page.tsx` e `packages/community/src/app/(app)/estudio/page.tsx`; testes existentes de descoberta/host.
+**Files:** `packages/member-shell/src/components/creator/studio-full-client.tsx`; páginas `packages/community-kids/src/app/(app)/estudio/page.tsx` e `packages/community/src/app/(app)/estudio/page.tsx`; helper existente `packages/member-shell/src/lib/studio-tier.ts`; testes existentes de papéis e descoberta.
 
 **Interfaces:** opção `showPythonCreation?: boolean`, padrão `false`; páginas derivam `role === 'admin' || role === 'superadmin'` do contexto do servidor.
 
-- [ ] Acrescentar a opção explícita, independente de `showExamples`.
-- [ ] Habilitar `useFreeStudioOptions` somente com essa opção e fora de missão Pensa; projetar os mesmos critérios nos avisos e props de criação Python.
-- [ ] Passar a decisão administrativa em ambas as páginas, preservando todos os demais props.
-- [ ] Verificar aluno/admin e a consulta desabilitada nos testes pertinentes; executar Biome e revisar o diff.
-- [ ] Commitar o lote isolado após verificação.
+- [x] Acrescentar a opção explícita, independente de `showExamples`.
+- [x] Habilitar `useFreeStudioOptions` somente com essa opção e fora de missão Pensa; projetar os mesmos critérios nos avisos e props de criação Python.
+- [x] Passar a decisão administrativa em ambas as páginas pelo helper `canShowPythonCreation`, preservando todos os demais props.
+- [x] Verificar aluno/admin e a consulta desabilitada: 21 testes/85 asserções; Pensa isolado 9/39; rota Pro 8 casos. Biome dos seis arquivos, diff-check e revisão independente passaram.
+- [x] Commitar o lote isolado após verificação.
 
 ## Task 3: Verificar JavaScript e integrar staging
 
 **Files:** cenários existentes Studio/Pensa, configuração de CI e registros de QA.
 
-- [ ] Concluir os sete cenários JavaScript reais de edição/persistência/Pensa, preservando negativos anteriores e seus limites.
+- [ ] Concluir no CI os sete cenários JavaScript reais de edição/persistência/Pensa, preservando negativos locais anteriores e seus limites. O build local r4 excedeu o orçamento RSS e foi encerrado antes de qualquer teste; não conta como falha funcional nem como aceite.
 - [ ] Conferir o CI do commit que reúne este lote; corrigir falhas reais sem enfraquecer critérios.
 - [ ] Revisar o lote completo, conciliar qualquer avanço remoto e integrar/push em staging.
 - [ ] Informar separadamente o estado da liberação JavaScript e o que continua pendente na homologação Python.

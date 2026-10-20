@@ -1,5 +1,5 @@
 import { StudioFullClient } from '@sistemazero/member-shell/components/creator/studio-full-client'
-import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
+import { canShowPythonCreation, isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import { ToolNotice } from '@/components/community/tool-notice'
 import { toolLock } from '@/lib/tool-lock'
 import { getCreativeToolsState } from '@/server/creative-tools'
@@ -48,6 +48,7 @@ export default async function StudioPage({
       pintaOwned={state.access.pinta === true && state.journey.capabilities.includes('pinta')}
       moldaOwned={state.access.molda === true && state.journey.capabilities.includes('molda')}
       showExamples={isPrivilegedRole(state.session.role)}
+      showPythonCreation={canShowPythonCreation(state.session.role)}
     />
   )
 }

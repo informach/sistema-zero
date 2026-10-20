@@ -68,6 +68,7 @@ export function StudioFullClient({
   challenge = null,
   tier,
   showExamples = false,
+  showPythonCreation = false,
   zappyEnabled = false,
   aiCredits = null,
   taskId = null,
@@ -94,6 +95,8 @@ export function StudioFullClient({
    * o cliente segue sem exemplos. Default `false`.
    */
   showExamples?: boolean
+  /** Oferta de criação Python decidida pelo host; a autorização permanece no servidor. */
+  showPythonCreation?: boolean
   /** Capacidade de oferta derivada no servidor; o BFF mantém o gate autoritativo. */
   zappyEnabled?: boolean
   /** Saldo lido no Server Component. Nulo = não sei → o medidor não aparece. */
@@ -122,7 +125,8 @@ export function StudioFullClient({
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [view, setView] = useState<View>({ name: 'list' })
-  const freeOptions = useFreeStudioOptions(viewerId, !taskId, audience)
+  const pythonCreationVisible = !taskId && showPythonCreation
+  const freeOptions = useFreeStudioOptions(viewerId, pythonCreationVisible, audience)
   const [openingProject, setOpeningProject] = useState<'loading' | 'error' | null>(
     initialProjectId && !taskId ? 'loading' : null,
   )
@@ -728,33 +732,34 @@ export function StudioFullClient({
           <HostChromeAnnouncer text={announcement} />
           {view.name === 'list' ? (
             <div className="flex h-full min-h-0 flex-col">
-              {!taskId && (freeOptions.loading || freeOptions.error || freeOptions.unavailable) && (
-                <div
-                  role={freeOptions.error ? 'alert' : 'status'}
-                  className="flex flex-wrap items-center gap-2 px-3 py-2 text-sm"
-                >
-                  {freeOptions.error ??
-                    (freeOptions.loading
-                      ? 'Consultando ambientes Python…'
-                      : 'Python ainda não está disponível para novos projetos.')}
-                  {freeOptions.error && (
-                    <button
-                      type="button"
-                      className="min-h-10 rounded px-3 font-semibold underline"
-                      onClick={freeOptions.retry}
-                    >
-                      Tentar novamente
-                    </button>
-                  )}
-                </div>
-              )}
+              {pythonCreationVisible &&
+                (freeOptions.loading || freeOptions.error || freeOptions.unavailable) && (
+                  <div
+                    role={freeOptions.error ? 'alert' : 'status'}
+                    className="flex flex-wrap items-center gap-2 px-3 py-2 text-sm"
+                  >
+                    {freeOptions.error ??
+                      (freeOptions.loading
+                        ? 'Consultando ambientes Python…'
+                        : 'Python ainda não está disponível para novos projetos.')}
+                    {freeOptions.error && (
+                      <button
+                        type="button"
+                        className="min-h-10 rounded px-3 font-semibold underline"
+                        onClick={freeOptions.retry}
+                      >
+                        Tentar novamente
+                      </button>
+                    )}
+                  </div>
+                )}
               <div className="min-h-0 flex-1">
                 <mod.ProjectList
                   onOpenProject={openProject}
                   theme={studioTheme}
                   professional={proAvailable}
-                  pythonCreation={taskId ? undefined : freeOptions.creation}
-                  pythonDiscovery={taskId ? undefined : freeOptions}
+                  pythonCreation={pythonCreationVisible ? freeOptions.creation : undefined}
+                  pythonDiscovery={pythonCreationVisible ? freeOptions : undefined}
                   initialExtensions={tier.initialExtensions}
                   allowedExtensions={tier.allowedExtensions}
                   showExamples={showExamples}
