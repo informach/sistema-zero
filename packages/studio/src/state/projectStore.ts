@@ -1038,7 +1038,7 @@ export function createProjectStore(
           ...current,
           files: { ...files },
           ir: null,
-          blocksState: copyStudioProjectJson(blocksState ?? emptyPythonWorkspaceState()),
+          blocksState: copyStudioProjectJson(blocksState ?? emptyPythonWorkspaceState()) ?? null,
         })
       },
       setIR: (ir) => {
