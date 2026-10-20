@@ -27,7 +27,12 @@ afterEach(() => {
 })
 
 async function fixture(
-  fixtureOptions: { playtest?: boolean; standalone?: boolean; recipe?: unknown } = {},
+  fixtureOptions: {
+    playtest?: boolean
+    standalone?: boolean
+    hostAudio?: boolean
+    recipe?: unknown
+  } = {},
 ) {
   const f = await pythonInputFixture()
   const previews = await pythonInputFixture()
@@ -285,7 +290,7 @@ test('invalid validation recipes fail before admission rather than silently comp
 })
 
 test('protected preview survives private input retirement and uses the same two-phase job', async () => {
-  const x = await fixture({ playtest: true, standalone: true })
+  const x = await fixture({ playtest: true, standalone: true, hostAudio: true })
   let phases = 0
   x.setExecuted(async () => {
     phases++
@@ -297,6 +302,7 @@ test('protected preview survives private input retirement and uses the same two-
   })
   expect(result.report.status).toBe('passed')
   expect(result.preview?.revision).toBe(x.content.revision)
+  expect(result.preview?.previewHostAudioVersion).toBe(1)
   expect(phases).toBe(2)
   expect(x.counts().created).toBe(1)
   expect(x.counts().destroyed).toBe(1)
@@ -312,7 +318,7 @@ test('protected preview survives private input retirement and uses the same two-
 })
 
 test('preview requests reject invalid or same-origin configuration before HTTP admission', async () => {
-  const x = await fixture({ playtest: true, standalone: true })
+  const x = await fixture({ playtest: true, standalone: true, hostAudio: true })
   for (const preview of [
     undefined,
     { parentOrigin: 'http://external.example' },
@@ -325,9 +331,40 @@ test('preview requests reject invalid or same-origin configuration before HTTP a
   expect(x.counts().created).toBe(0)
 })
 
+test('legacy preview environment is unavailable before Sandbox and still retires its input', async () => {
+  const x = await fixture({ playtest: true, standalone: true, hostAudio: false })
+  const originalContent = structuredClone(x.content)
+  const originalBytes = new Uint8Array(x.f.bytes)
+  let phases = 0
+  x.setExecuted(async () => {
+    phases++
+  })
+  await expect(
+    buildStudioPythonRevision({
+      ...x.options,
+      recipe: x.recipe,
+      preview: { parentOrigin: 'https://app.example' },
+    }),
+  ).rejects.toMatchObject({ status: 503, code: 'PYTHON_PREVIEW_UNAVAILABLE' })
+  expect(x.counts().created).toBe(0)
+  expect(x.counts().destroyed).toBe(0)
+  expect(phases).toBe(0)
+  expect(x.previewUrl()).toBeUndefined()
+  expect(x.paths).toEqual([
+    '/v1/python/inputs',
+    `/v1/python/files/${x.f.fileHash}`,
+    '/v1/python/validate',
+    '/v1/python/inputs/remove',
+    '/v1/python/previews/remove',
+  ])
+  expect([...x.f.objects.keys()].filter((key) => key.includes('/files/'))).toEqual([])
+  expect(x.content).toEqual(originalContent)
+  expect(x.f.bytes).toEqual(originalBytes)
+})
+
 test('missing, substituted or stale service preview references cannot be accepted by the host', async () => {
   for (const change of ['missing', 'revision', 'origin', 'expiry'] as const) {
-    const x = await fixture({ playtest: true, standalone: true })
+    const x = await fixture({ playtest: true, standalone: true, hostAudio: true })
     x.setTransform(async (response, path) => {
       if (path !== '/v1/python/validate') return response
       const body: unknown = await response.json()
@@ -368,7 +405,7 @@ test('missing, substituted or stale service preview references cannot be accepte
 
 test('host rejection before or after input cleanup explicitly retires its owned preview', async () => {
   for (const fence of ['/v1/python/validate', '/v1/python/inputs/remove']) {
-    const x = await fixture({ playtest: true, standalone: true })
+    const x = await fixture({ playtest: true, standalone: true, hostAudio: true })
     x.setTransform(async (response, path) => {
       if (path === fence) x.setAuthorized(false)
       return response
