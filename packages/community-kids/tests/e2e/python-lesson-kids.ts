@@ -2,7 +2,6 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { freemem } from 'node:os'
 import { resolve } from 'node:path'
 import { type Browser, type BrowserContext, chromium, expect, type Page } from '@playwright/test'
 import { studioSourceAtPath } from '@sistemazero/core/studio/code-anchor'
@@ -14,6 +13,11 @@ import {
 } from '@sistemazero/core/studio/runtime-authorization'
 import { z } from 'zod'
 import { editPythonMain, pythonLessonSource, runPythonLessonPreview } from './python-lesson-admin'
+import {
+  launchAdmittedPythonLessonBrowser,
+  type PythonLessonAdmission,
+  readPythonLessonAdmission,
+} from './python-lesson-admission'
 import { cleanupPythonLessonBrowser, failPythonLessonCleanup } from './python-lesson-cleanup'
 
 const workspaceSchema = z.object({
@@ -29,11 +33,11 @@ const workspaceSchema = z.object({
   readOnly: z.boolean().optional(),
 })
 
-async function main() {
-  const [adminReceiptPath, outputPath] = process.argv.slice(2)
+export async function runPythonLessonKids() {
+  const [adminReceiptPath, outputPath, admissionPath, admissionSha256] = process.argv.slice(2)
   assert(
-    adminReceiptPath && outputPath,
-    'Usage: bun python-lesson-kids.ts <passed-admin-receipt.json> <new-output-dir>',
+    adminReceiptPath && outputPath && admissionPath && admissionSha256,
+    'Usage: python-lesson-kids.ts <passed-admin-receipt.json> <new-output-dir> <fresh-admission.json> <admission-sha256>',
   )
   const admin = z
     .object({
@@ -56,7 +60,6 @@ async function main() {
   const password = process.env.STUDIO_LESSONS_QA_PARENT_PASSWORD
   const learnerId = z.uuid().parse(process.env.STUDIO_LESSONS_QA_LEARNER_ID)
   assert(email && password, 'Parent QA credentials stay only in process/browser memory')
-  assert(freemem() >= 4096 * 1024 * 1024, 'Browser admission requires 4096 MiB available')
   const origin = 'http://localhost:43108'
   const out = resolve(outputPath)
   await mkdir(out)
@@ -82,6 +85,7 @@ async function main() {
       decision: z.infer<typeof StudioLiveRuntimeDecisionSchema>
     }[],
     failure: null as string | null,
+    admission: null as PythonLessonAdmission | null,
   }
   const save = () =>
     writeFile(resolve(out, 'receipt.json'), `${JSON.stringify(receipt, null, 2)}\n`)
@@ -138,8 +142,20 @@ async function main() {
       void work.finally(() => pending.delete(work))
     })
   }
+  const onSupervisorStop = () => {
+    receipt.failure ??= 'External owned supervisor requested stop'
+    void context?.close().catch((error) => {
+      listenerFailure ??= error
+    })
+  }
+  process.on('SIGTERM', onSupervisorStop)
   try {
-    browser = await chromium.launch({ channel: 'chrome', headless: true, timeout: 30_000 })
+    receipt.admission = await readPythonLessonAdmission(admissionPath, admissionSha256, 'kids')
+    await save()
+    browser = await launchAdmittedPythonLessonBrowser(receipt.admission, () =>
+      chromium.launch({ channel: 'chrome', headless: true, timeout: 30_000 }),
+    )
+    assert(!receipt.failure, 'Supervisor stopped before context creation')
     context = await browser.newContext({ viewport: { width: 1440, height: 1000 } })
     const ownedContext = context
     page = await context.newPage()
@@ -219,12 +235,34 @@ async function main() {
     receipt.workspace = saved
     await save()
     await page.goto(origin + admin.fixture.learnerPath)
-    await expect(page.getByRole('button', { name: 'Guardar', exact: true })).toBeVisible({
+    const saveReopened = page.getByRole('button', { name: 'Guardar', exact: true })
+    const resumeReopened = page.getByRole('button', { name: 'Continuar aqui', exact: true })
+    await expect(saveReopened.or(resumeReopened)).toBeVisible({ timeout: 90_000 })
+    // A navigation creates a new document writer; an active preceding lease requires UI consent.
+    if (await resumeReopened.isVisible()) {
+      const resumedResponse = page
+        .waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === `/api/live/workspaces/${saved.id}/claim` &&
+            response.request().postDataJSON()?.takeover === true,
+        )
+        .then(
+          (response) => ({ response }),
+          (error: unknown) => ({ error }),
+        )
+      await resumeReopened.click()
+      const resumedResult = await resumedResponse
+      if ('error' in resumedResult) throw resumedResult.error
+      assert.equal(resumedResult.response.status(), 200)
+    }
+    await expect(saveReopened).toBeVisible({
       timeout: 90_000,
     })
     const reopened = await readCurrent()
     assert.deepEqual(reopened.project, saved.project)
     assert.equal(reopened.revision, saved.revision)
+    assert(reopened.writerEpoch > saved.writerEpoch)
+    assert.notEqual(reopened.writerDeviceId, saved.writerDeviceId)
     await runPythonLessonPreview(page, marker, providerOrigin, false, admin.kind)
     await Promise.all([...pending])
     if (listenerFailure) throw listenerFailure
@@ -350,6 +388,7 @@ async function main() {
         if (receipt.failure) failed(receipt.failure)
       },
     })
+    process.off('SIGTERM', onSupervisorStop)
     console.log(
       JSON.stringify({
         state: receipt.state,
@@ -361,4 +400,4 @@ async function main() {
   }
 }
 
-if (import.meta.main) await main()
+if (import.meta.main) await runPythonLessonKids()

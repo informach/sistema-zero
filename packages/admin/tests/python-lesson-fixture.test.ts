@@ -310,6 +310,56 @@ test('fresh server publication is required before a new natural cohort and seat'
   expect(calls.some((call) => /open-lobby|admit|start|revoke/.test(call.path))).toBe(false)
 })
 
+test('an acknowledged seat with a foreign identity retains its ID and fails without retry', async () => {
+  const input = await publication('pro')
+  const fixture = ownedFixture()
+  const cohortId = randomUUID(),
+    sessionId = randomUUID(),
+    occurrenceId = randomUUID(),
+    enrollmentId = randomUUID()
+  const teacherId = randomUUID(),
+    accountId = randomUUID(),
+    learnerId = randomUUID()
+  const { request, calls } = server([
+    { status: 200, body: courseTree(fixture) },
+    { status: 200, body: input.published },
+    { status: 200, body: {} },
+    {
+      status: 201,
+      body: { cohort: { id: cohortId }, sessions: [{ id: sessionId, occurrenceId }] },
+    },
+    { status: 200, body: {} },
+    { status: 201, body: { id: enrollmentId, accountId: randomUUID(), learnerId } },
+  ])
+  const snapshots: PythonLessonFixture[] = []
+  await expect(
+    enrollPythonLiveLesson({
+      request,
+      origin: 'http://localhost:43107',
+      fixture,
+      expected: input,
+      teacherId,
+      accountId,
+      learnerId,
+      learnerName: 'Aluno QA',
+      onStep: async (value) => {
+        snapshots.push(value)
+      },
+    }),
+  ).rejects.toThrow()
+  expect(calls).toHaveLength(6)
+  expect(snapshots.at(-1)).toMatchObject({
+    cohortId,
+    sessionId,
+    occurrenceId,
+    enrollmentId,
+    state: 'empty-lesson-awaiting-admin-ui',
+  })
+  expect(snapshots.at(-1)?.steps.at(-1)?.status).toBe(201)
+  expect(snapshots.at(-1)?.learnerPath).toBeUndefined()
+  expect(fixture.enrollmentId).toBeUndefined()
+})
+
 test('course ownership guard refuses an existing curriculum or a foreign lesson before editing', async () => {
   for (const changed of ['slug', 'careerSlot', 'lesson', 'status']) {
     const fixture = ownedFixture()

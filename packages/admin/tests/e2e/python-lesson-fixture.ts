@@ -347,6 +347,8 @@ export async function enrollPythonLiveLesson(input: {
       ),
     )
   fixture.enrollmentId = identity(enrollment.id)
+  // Retain the acknowledged server ID even if the returned owner fails validation.
+  await input.onStep(structuredClone(fixture))
   assert.equal(enrollment.accountId, input.accountId)
   assert.equal(enrollment.learnerId, input.learnerId)
   fixture.learnerPath = `/oficinas/aulas/${fixture.sessionId}`

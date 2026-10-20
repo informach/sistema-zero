@@ -3,7 +3,6 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { freemem } from 'node:os'
 import { resolve } from 'node:path'
 import { type Browser, type BrowserContext, chromium, expect, type Page } from '@playwright/test'
 import { StudioRuntimeSelectionSchema } from '@sistemazero/core/studio/project-environment'
@@ -21,6 +20,11 @@ import {
   readOwnedPythonLesson,
   verifyPublishedPythonLesson,
 } from '../../../admin/tests/e2e/python-lesson-fixture'
+import {
+  launchAdmittedPythonLessonBrowser,
+  type PythonLessonAdmission,
+  readPythonLessonAdmission,
+} from './python-lesson-admission'
 import { cleanupPythonLessonBrowser, failPythonLessonCleanup } from './python-lesson-cleanup'
 
 export function pythonLessonSource(marker: string) {
@@ -45,7 +49,7 @@ export async function editPythonMain(page: Page, source?: string, kind: 'classic
   if (kind === 'pro') {
     await page
       .getByRole('navigation', { name: 'Organizar o editor' })
-      .getByRole('button', { name: 'Arquivos', exact: true })
+      .getByRole('button', { name: /^(Arquivos|Código e jogo)$/ })
       .click()
     await page.getByRole('treeitem', { name: 'main.py', exact: true }).click()
   } else {
@@ -78,7 +82,7 @@ export async function runPythonLessonPreview(
   if (kind === 'pro') {
     await page
       .getByRole('navigation', { name: 'Organizar o editor' })
-      .getByRole('button', { name: 'Jogo', exact: true })
+      .getByRole('button', { name: /^(Jogo|Ampliar jogo)$/ })
       .click()
   } else {
     const previewTab = page.getByRole('tab', { name: 'Pré-visualização', exact: true })
@@ -137,11 +141,11 @@ export async function runPythonLessonPreview(
   }
 }
 
-async function main() {
-  const [configPath, outputPath] = process.argv.slice(2)
+export async function runPythonLessonAdmin() {
+  const [configPath, outputPath, admissionPath, admissionSha256] = process.argv.slice(2)
   assert(
-    configPath && outputPath,
-    'Usage: bun python-lesson-admin.ts <reviewed-config.json> <new-output-dir>',
+    configPath && outputPath && admissionPath && admissionSha256,
+    'Usage: python-lesson-admin.ts <reviewed-config.json> <new-output-dir> <fresh-admission.json> <admission-sha256>',
   )
   const config = z
     .object({
@@ -166,7 +170,6 @@ async function main() {
   const email = process.env.STUDIO_LESSONS_QA_ADMIN_EMAIL
   const password = process.env.STUDIO_LESSONS_QA_ADMIN_PASSWORD
   assert(email && password, 'Real QA Admin credentials must be supplied only in process memory')
-  assert(freemem() >= 4096 * 1024 * 1024, 'Browser admission requires 4096 MiB available')
   const out = resolve(outputPath)
   await mkdir(out) // Exclusive namespace: failed receipts are never overwritten by a new run.
   const marker = `qa-python-${randomUUID()}`
@@ -194,6 +197,7 @@ async function main() {
     consoleErrors: [] as string[],
     failure: null as string | null,
     cleanup: [] as string[],
+    admission: null as PythonLessonAdmission | null,
   }
   const save = () =>
     writeFile(resolve(out, 'receipt.json'), `${JSON.stringify(receipt, null, 2)}\n`)
@@ -204,8 +208,20 @@ async function main() {
   let timer: ReturnType<typeof setTimeout> | undefined
   const pending = new Set<Promise<void>>()
   let listenerFailure: unknown
+  const onSupervisorStop = () => {
+    receipt.failure ??= 'External owned supervisor requested stop'
+    void context?.close().catch((error) => {
+      listenerFailure ??= error
+    })
+  }
+  process.on('SIGTERM', onSupervisorStop)
   try {
-    browser = await chromium.launch({ channel: 'chrome', headless: true, timeout: 30_000 })
+    receipt.admission = await readPythonLessonAdmission(admissionPath, admissionSha256, 'admin')
+    await save()
+    browser = await launchAdmittedPythonLessonBrowser(receipt.admission, () =>
+      chromium.launch({ channel: 'chrome', headless: true, timeout: 30_000 }),
+    )
+    assert(!receipt.failure, 'Supervisor stopped before context creation')
     context = await browser.newContext({ viewport: { width: 1440, height: 1000 } })
     const ownedContext = context
     page = await context.newPage()
@@ -478,6 +494,7 @@ async function main() {
         }
       },
     })
+    process.off('SIGTERM', onSupervisorStop)
     console.log(
       JSON.stringify({
         state: receipt.state,
@@ -489,4 +506,4 @@ async function main() {
   }
 }
 
-if (import.meta.main) await main()
+if (import.meta.main) await runPythonLessonAdmin()
