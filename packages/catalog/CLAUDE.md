@@ -60,7 +60,19 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > ligadas por `content.altOffer` nos DOIS sentidos, ambas com `maxProfiles: 2` + `guaranteeDays: 7`
 > e SEM cupom/parcelas — a MENSAL é a oferta do funil `/kids/comunidade-dos-criadores`
 > (env `FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES`); o `maxProfiles` é injetado no fulfillment do
-> componente PRIMÁRIO (a chave-mestra) pelo `getEntitlements`. ⚠️ A CHAVE de comunidade (= slug) casa com o `accessConfig`
+> componente PRIMÁRIO (a chave-mestra) pelo `getEntitlements`. **Comunidade dos Criadores ADULTA**
+> (`comunidade-dos-criadores-adulto`, 20/10/2026 — combo com as chaves ADULTAS de
+> `docs/plans/2026-10-18-comunidade-adulta-operacao.md`): chave-mestra **`todos-os-cursos-adultos`**
+> (`all_courses`, `sellable:false`, `isPrimary`; não concede vaga em oficina) + ferramentas
+> `adult-estudio-completo`, `adult-pinta`, `adult-molda`, `adult-pensa` (`kind:'tool'`, entrega
+> `community`, as chaves de `creativeToolAccessRef` do core; sem oferta própria) + espaços
+> `adult-clube-dos-criadores` e `adult-mural-dos-criadores` **+ 2 ofertas irmãs ativas**
+> `comunidade-dos-criadores-adulto-mensal` (R$ 97, intervalo 1) e `-anual` (R$ 797, intervalo 12,
+> compareAt R$ 1.164), `altOffer` nos dois sentidos, garantia 7 dias, SEM `maxProfiles`/cupom/parcelas
+> — a MENSAL é a oferta do funil `/pro/comunidade-dos-criadores`
+> (env `FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES`). Preço inicial igual ao Kids (decisão da dona).
+> A compra adulta não amplia direito Kids e vice-versa; a jornada adulta (Admin → Professor →
+> Jornada adulta) decide quando cada ferramenta abre. ⚠️ A CHAVE de comunidade (= slug) casa com o `accessConfig`
 > `community_gated` do servidor homônimo no hub e com o `/members/access`. **`tool` é só TAXONOMIA do
 > produto** — a entrega/acesso segue por `fulfillment.accessType`, NÃO há accessType `tool` no members.
 > ⚠️ Os CURSOS (`no-comando-da-ia`, `desafio-primeiro-jogo`) NÃO são seedados (members é DEV-only) —

@@ -78,6 +78,27 @@ const COMUNIDADE_SKU = 'comunidade-dos-criadores'
 const COMUNIDADE_OFFER_MENSAL_SLUG = 'comunidade-dos-criadores-mensal'
 const COMUNIDADE_OFFER_ANUAL_SLUG = 'comunidade-dos-criadores-anual'
 
+// Comunidade dos Criadores ADULTA (20/10/2026) — a assinatura da área adulta, vendida pelo
+// funil `/pro/comunidade-dos-criadores` (env `FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES` =
+// oferta MENSAL; a anual é a irmã via `content.altOffer`). Mesmo molde do combo kids, com as
+// chaves ADULTAS (docs/plans/2026-10-18-comunidade-adulta-operacao.md): a chave-mestra
+// `all_courses` (todos os gravados adultos; não concede vaga em oficina), as ferramentas
+// `adult-*` (as chaves de `creativeToolAccessRef` no core) e os espaços adultos do Hub. Preço
+// inicial igual ao Kids (decisão da dona, 19/10). Sem `maxProfiles`: o aluno adulto é a própria
+// conta. A compra adulta não amplia o direito Kids, e a compra Kids não libera nada adulto.
+const TODOS_CURSOS_ADULTOS_SKU = 'todos-os-cursos-adultos'
+const ADULT_TOOL_SKUS = {
+  studio: 'adult-estudio-completo',
+  pinta: 'adult-pinta',
+  molda: 'adult-molda',
+  pensa: 'adult-pensa',
+} as const
+const ADULT_CLUBE_SKU = 'adult-clube-dos-criadores'
+const ADULT_MURAL_SKU = 'adult-mural-dos-criadores'
+const COMUNIDADE_ADULTO_SKU = 'comunidade-dos-criadores-adulto'
+const COMUNIDADE_ADULTO_OFFER_MENSAL_SLUG = 'comunidade-dos-criadores-adulto-mensal'
+const COMUNIDADE_ADULTO_OFFER_ANUAL_SLUG = 'comunidade-dos-criadores-adulto-anual'
+
 const env = loadEnv()
 const logger = createLogger({ level: 'info', pretty: env.NODE_ENV !== 'production' })
 const connection = createDbConnection(env.DATABASE_URL, { max: env.DATABASE_POOL_MAX })
@@ -110,6 +131,34 @@ async function ensureCommunityProduct(input: {
     slug: input.sku,
     name: input.name,
     kind: 'community',
+    status: 'active',
+    sellable: true,
+    description: input.description,
+    fulfillment: { accessType: 'community', courseRef: input.sku, release: { mode: 'immediate' } },
+  })
+  logger.info('seed.product_created', { id: view.id, sku: view.sku })
+  return view.id
+}
+
+/**
+ * Garante uma FERRAMENTA adulta (`kind: 'tool'`, entrega `community` com a chave = sku), sem
+ * oferta própria: entra na mão do aluno pelo combo da Comunidade adulta. Idempotente.
+ */
+async function ensureAdultToolProduct(input: {
+  sku: string
+  name: string
+  description: string
+}): Promise<string> {
+  const existing = await products.findBySku(input.sku)
+  if (existing) {
+    logger.info('seed.product_exists', { id: existing.id, sku: existing.sku })
+    return existing.id
+  }
+  const view = await createProduct.execute({
+    sku: input.sku,
+    slug: input.sku,
+    name: input.name,
+    kind: 'tool',
     status: 'active',
     sellable: true,
     description: input.description,
@@ -601,6 +650,150 @@ async function main(): Promise<void> {
         ctaLabel: 'Garantir 1 ano de criação',
         maxProfiles: 2,
         altOffer: { slug: COMUNIDADE_OFFER_MENSAL_SLUG, label: 'Prefiro começar no mensal' },
+      },
+    })
+    logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
+  }
+
+  // ── Comunidade dos Criadores ADULTA: assinatura da área adulta ────────────
+  // Chave-mestra adulta: produto-FOLHA não vendável sozinho, `all_courses` sem courseRef.
+  let todosCursosAdultos = await products.findBySku(TODOS_CURSOS_ADULTOS_SKU)
+  if (todosCursosAdultos) {
+    logger.info('seed.product_exists', {
+      id: todosCursosAdultos.id,
+      sku: todosCursosAdultos.sku,
+    })
+  } else {
+    const view = await createProduct.execute({
+      sku: TODOS_CURSOS_ADULTOS_SKU,
+      slug: TODOS_CURSOS_ADULTOS_SKU,
+      name: 'Todos os cursos adultos',
+      kind: 'course',
+      status: 'active',
+      sellable: false,
+      description:
+        'Chave-mestra da área adulta: libera todos os cursos gravados adultos publicados, os de hoje e os que ainda vão entrar. Não concede vaga em oficina ao vivo. Entregue apenas dentro da Comunidade dos Criadores adulta.',
+      fulfillment: { accessType: 'all_courses', release: { mode: 'immediate' } },
+    })
+    logger.info('seed.product_created', { id: view.id, sku: view.sku })
+    todosCursosAdultos = await products.findById(view.id)
+  }
+  if (!todosCursosAdultos) throw new Error('Chave-mestra adulta não encontrada após a criação')
+
+  const adultStudioId = await ensureAdultToolProduct({
+    sku: ADULT_TOOL_SKUS.studio,
+    name: 'Estúdio Completo (adultos)',
+    description:
+      'O Estúdio livre da área adulta, com a paleta de blocos conquistada nos cursos concluídos.',
+  })
+  const adultPintaId = await ensureAdultToolProduct({
+    sku: ADULT_TOOL_SKUS.pinta,
+    name: 'Pinta (adultos)',
+    description: 'O editor de imagens dos jogos (pixel art, animações e cenários) da área adulta.',
+  })
+  const adultMoldaId = await ensureAdultToolProduct({
+    sku: ADULT_TOOL_SKUS.molda,
+    name: 'Molda (adultos)',
+    description: 'A oficina 3D da área adulta: modelos low poly, texturas e céus para os jogos.',
+  })
+  const adultPensaId = await ensureAdultToolProduct({
+    sku: ADULT_TOOL_SKUS.pensa,
+    name: 'Pensa (adultos)',
+    description:
+      'O planejamento guiado de jogos da área adulta. O uso depende também da etapa da jornada que libera a formação avançada.',
+  })
+  const adultClubeId = await ensureCommunityProduct({
+    sku: ADULT_CLUBE_SKU,
+    name: 'Clube dos Criadores (adultos)',
+    description: 'O espaço de conversa da área adulta, separado do Clube kids.',
+  })
+  const adultMuralId = await ensureCommunityProduct({
+    sku: ADULT_MURAL_SKU,
+    name: 'Mural dos Criadores (adultos)',
+    description: 'A vitrine dos jogos publicados na área adulta, separada do Mural kids.',
+  })
+
+  let comunidadeAdulto = await products.findBySku(COMUNIDADE_ADULTO_SKU)
+  if (comunidadeAdulto) {
+    logger.info('seed.product_exists', { id: comunidadeAdulto.id, sku: comunidadeAdulto.sku })
+  } else {
+    const view = await createProduct.execute({
+      sku: COMUNIDADE_ADULTO_SKU,
+      slug: COMUNIDADE_ADULTO_SKU,
+      name: 'Comunidade dos Criadores (adultos)',
+      kind: 'bundle',
+      status: 'active',
+      sellable: true,
+      description:
+        'A assinatura da área adulta: todos os cursos gravados adultos, o Clube e o Mural adultos e as ferramentas de criação livre (Estúdio, Pinta, Molda e Pensa), liberadas pela jornada.',
+      components: [
+        { componentProductId: todosCursosAdultos.id, isPrimary: true, sortOrder: 0 },
+        { componentProductId: adultClubeId, sortOrder: 1 },
+        { componentProductId: adultMuralId, sortOrder: 2 },
+        { componentProductId: adultStudioId, sortOrder: 3 },
+        { componentProductId: adultPintaId, sortOrder: 4 },
+        { componentProductId: adultMoldaId, sortOrder: 5 },
+        { componentProductId: adultPensaId, sortOrder: 6 },
+      ],
+    })
+    logger.info('seed.product_created', { id: view.id, sku: view.sku })
+    comunidadeAdulto = await products.findById(view.id)
+  }
+  if (!comunidadeAdulto) throw new Error('Produto da Comunidade adulta não encontrado')
+
+  // Irmãs de assinatura (mensal 1 / anual 12), ligadas por `content.altOffer` nos DOIS
+  // sentidos. Sem cupom, sem parcelas e sem `maxProfiles`.
+  const existingAdultoMensal = await offers.findBySlug(COMUNIDADE_ADULTO_OFFER_MENSAL_SLUG)
+  if (existingAdultoMensal) {
+    logger.info('seed.offer_exists', {
+      id: existingAdultoMensal.id,
+      slug: existingAdultoMensal.slug,
+    })
+  } else {
+    const view = await createOffer.execute({
+      productId: comunidadeAdulto.id,
+      code: 'comunidade-adulto-mensal',
+      slug: COMUNIDADE_ADULTO_OFFER_MENSAL_SLUG,
+      name: 'Comunidade dos Criadores adultos · Assinatura mensal',
+      priceCents: 9700,
+      currency: 'BRL',
+      pricingMode: 'subscription',
+      billingIntervalMonths: 1,
+      guaranteeDays: 7,
+      status: 'active',
+      content: {
+        badge: 'Todos os cursos e ferramentas numa assinatura',
+        ctaLabel: 'Quero fazer o meu primeiro jogo',
+        altOffer: { slug: COMUNIDADE_ADULTO_OFFER_ANUAL_SLUG, label: 'Economize no anual' },
+      },
+    })
+    logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
+  }
+
+  const existingAdultoAnual = await offers.findBySlug(COMUNIDADE_ADULTO_OFFER_ANUAL_SLUG)
+  if (existingAdultoAnual) {
+    logger.info('seed.offer_exists', {
+      id: existingAdultoAnual.id,
+      slug: existingAdultoAnual.slug,
+    })
+  } else {
+    const view = await createOffer.execute({
+      productId: comunidadeAdulto.id,
+      code: 'comunidade-adulto-anual',
+      slug: COMUNIDADE_ADULTO_OFFER_ANUAL_SLUG,
+      name: 'Comunidade dos Criadores adultos · Assinatura anual',
+      priceCents: 79700,
+      // Âncora "de/por": 12 × R$ 97 = R$ 1.164 (o que o mensal custaria no ano).
+      compareAtPriceCents: 116400,
+      currency: 'BRL',
+      pricingMode: 'subscription',
+      billingIntervalMonths: 12,
+      guaranteeDays: 7,
+      status: 'active',
+      content: {
+        badge: 'Todos os cursos e ferramentas numa assinatura',
+        ctaLabel: 'Garantir 1 ano de criação',
+        altOffer: { slug: COMUNIDADE_ADULTO_OFFER_MENSAL_SLUG, label: 'Prefiro começar no mensal' },
       },
     })
     logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
