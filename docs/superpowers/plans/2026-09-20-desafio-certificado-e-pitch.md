@@ -43,9 +43,9 @@
 ### Task 2: Conteúdo da nova aula
 
 **Files:**
-- Create: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-certificado.md`
-- Create: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-certificado.manifesto.json`
-- Create: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-certificado.roteiro.md`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-certificado.md`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-certificado.manifesto.json`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-certificado.roteiro.md`
 - Modify: `docs/aulas-interativas-tecnico/qa/validar-manifestos.ts`
 
 **Interfaces:**

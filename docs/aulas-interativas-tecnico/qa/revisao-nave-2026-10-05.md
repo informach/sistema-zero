@@ -7,7 +7,7 @@ A sessão interrompida deixou uma reorganização em nove aulas, geradores, proj
 - [Mapa do curso](../modulos-nave-contra-asteroides.md): nove aulas em três módulos, com 52 seções, 48 vídeos planejados, 19 experiências e quatro revisões por quiz.
 - [Fonte editorial](nave-contra-asteroides.conteudo.json) e [gerador](gerar-nave-contra-asteroides.ts): produzem os nove conjuntos de proposta, roteiro e manifesto. A fonte concentra também as instruções das experiências e os critérios de cada montagem.
 - [Projetos intermediários](nave-contra-asteroides-etapas.ts): os cinco resultados antigos continuam exatamente iguais; quatro etapas menores preparam a nave, os asteroides, a pontuação e o início da partida.
-- [Caderno do Aluno](../../aulas-interativas/nave-contra-asteroides/mapa-da-aventura.pdf): 33 páginas, derivadas das mesmas falas, com esquemas dos encaixes e 86 representações de blocos nas cores do Estúdio.
+- [Caderno do Aluno](../../aulas-interativas/kids/nave-contra-asteroides/mapa-da-aventura.pdf): 33 páginas, derivadas das mesmas falas, com esquemas dos encaixes e 86 representações de blocos nas cores do Estúdio.
 
 As experiências agora antecedem a aplicação dos conceitos. Criar e desenhar a nave, mover e limpar a imagem, e preparar vidas e programar a batida têm montagens próprias. As falas retomam o que foi observado e localizam o destino do encaixe antes de buscar cada bloco. A experiência de movimento do Farol aceita o cenário explícito da nave; seus controles, limites e motor permanecem os mesmos.
 

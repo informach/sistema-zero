@@ -11,7 +11,7 @@ Aplicação local das diretrizes já usadas em Nave Contra Asteroides e Corre, D
 - Criação, preparação da folha e animação separadas; nomes, dimensões, ordem das formas e encaixes conferidos nas ferramentas atuais. Publicação opcional, com a confirmação do Estúdio completo, Publicado!, e Abrir o jogo.
 - Caderno de 28 páginas com os passos reais, folhas de animação, exemplos de artes e 15 representações de blocos com rótulos, valores e cores das definições do Estúdio.
 
-O [mapa do curso](../modulos-o-jogo-do-meu-jeito.md) explica a sequência e a implantação. O [PDF](../../aulas-interativas/o-jogo-do-meu-jeito/mapa-da-aventura.pdf) e suas [fontes](../recursos/meu-jeito/README.md) estão disponíveis localmente.
+O [mapa do curso](../modulos-o-jogo-do-meu-jeito.md) explica a sequência e a implantação. O [PDF](../../aulas-interativas/kids/o-jogo-do-meu-jeito/mapa-da-aventura.pdf) e suas [fontes](../recursos/meu-jeito/README.md) estão disponíveis localmente.
 
 ## Continuidade e correções técnicas
 

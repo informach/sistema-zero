@@ -11,9 +11,9 @@ Você monta as regras com blocos e testa até achar todo mundo.
 
 **Resumo:** Jogue o exemplo, faça os personagens aparecerem, programe a contagem dos três achados, deixe o jogo com a sua cara e publique.
 
-- **Aula 1:** [O primeiro achado](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.md)
-- **Aula 2:** [Complete a busca](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.md)
-- **Aula 3:** [Seu certificado](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.md)
+- **Aula 1:** [O primeiro achado](../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.md)
+- **Aula 2:** [Complete a busca](../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.md)
+- **Aula 3:** [Seu certificado](../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-certificado.md)
 
 ## Situação editorial
 
@@ -62,7 +62,7 @@ Ajustes depois da revisão de ritmo, aplicados aos roteiros, propostas, gerador 
 
 **Pendências de produção:**
 
-1. **Trocar o PDF anexado no Admin.** O **docs/aulas-interativas/cade-todo-mundo/mapa-da-aventura.pdf** de 11/10/2026 reúne a regra da celebração e o envio único da Aula 2: a página 4 termina na verificação e a página 5 orienta o envio após a personalização. Substituir o anexo do bloco **caderno** (Aula 1, **Seu Mapa da Aventura**) por esse PDF, preservando o bloco e o histórico, antes de editar o vídeo do Mapa.
+1. **Trocar o PDF anexado no Admin.** O **docs/aulas-interativas/kids/cade-todo-mundo/mapa-da-aventura.pdf** de 11/10/2026 reúne a regra da celebração e o envio único da Aula 2: a página 4 termina na verificação e a página 5 orienta o envio após a personalização. Substituir o anexo do bloco **caderno** (Aula 1, **Seu Mapa da Aventura**) por esse PDF, preservando o bloco e o histórico, antes de editar o vídeo do Mapa.
 2. Atualizar a descrição do curso no Admin com o texto do topo deste documento.
 3. Importar os três manifestos, conferindo as chaves e os vídeos já vinculados.
 4. Editar a Aula 1 com as oito entradas da Debinha e o corte da parte 3; gravar e editar a Aula 2 e o certificado com as participações.
@@ -102,7 +102,7 @@ Aula 1. A leitura, o download e a impressão continuam opcionais; apenas o víde
 concluir essa seção. Desde 06/10/2026, o vídeo apresenta o caderno como escolha: ler na aula ou
 clicar em **Baixar** para guardar e consultar onde quiser. O mesmo anexo alimenta a consulta na tela e o download.
 
-Arquivo: **docs/aulas-interativas/cade-todo-mundo/mapa-da-aventura.pdf**. Fonte editável:
+Arquivo: **docs/aulas-interativas/kids/cade-todo-mundo/mapa-da-aventura.pdf**. Fonte editável:
 **recursos/cade-todo-mundo/caderno-do-aluno.template.html**. Para regenerar, usar
 **bun docs/aulas-interativas-tecnico/recursos/cade-todo-mundo/gerar-caderno.ts**.
 
@@ -117,7 +117,7 @@ Como folhear e baixar está no tutorial de materiais.
 - Cadeia **cade-todo-mundo** para continuar o projeto entre aulas. A Aula 2 usa a retomada
   preparada somente quando não há projeto salvo.
 - Estúdio incorporado em modo blocos, nível **iniciante-2d**, extensão Jogo 2D e blocos de
-  [blocos-cade-todo-mundo.json](../aulas-interativas/cade-todo-mundo/blocos.json). Sem Pinta ou Estúdio completo.
+  [blocos-cade-todo-mundo.json](../aulas-interativas/kids/cade-todo-mundo/blocos.json). Sem Pinta ou Estúdio completo.
 - Visibilidade dentro do evento na primeira prática; soma de 1 em achados na segunda.
 - Compartilhamento habilitado apenas no projeto da Aula 2, depois do envio. O mesmo
   workspace permanece no fechamento. A publicação não é condição de conclusão.
@@ -184,7 +184,7 @@ A pedido do responsável, a plataforma deixou de parecer uma extensão da escola
 
 - **Falas e pontes do Zappy:** os botões citados passaram a ser **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar para o guia** e **Concluir fase**, e a retomada diz "Lembra da experiência da parte anterior?". Na Aula 2, "do jeito que ficou na Aula 1" virou "na Fase 1", "nesta aula" virou "agora" e "Na aula, ele pode aparecer só como um ícone" virou "Aqui, ele pode aparecer…".
 - **Caderno para a criança:** a seção 2 da Aula 1 se chama **Seu Mapa da Aventura**, o material é **Mapa da Aventura: Cadê Todo Mundo?** e o vídeo diz "Olha aqui: este é o seu Mapa da Aventura! (…) Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser." As chaves **seu-caderno-do-aluno** e **caderno** continuam.
-- **PDF:** capa, título e rodapé dizem Mapa da Aventura; os cabeçalhos passaram a Fase 1, Fase 2 e Fase 3, "seção" virou "parte" e "professor" virou "guia". A capa dizia "Todos os passos para construir o nosso jogo." e agora diz "o seu jogo". O arquivo continua **docs/aulas-interativas/cade-todo-mundo/mapa-da-aventura.pdf**, agora com sete páginas após a inclusão da galeria de personalização.
+- **PDF:** capa, título e rodapé dizem Mapa da Aventura; os cabeçalhos passaram a Fase 1, Fase 2 e Fase 3, "seção" virou "parte" e "professor" virou "guia". A capa dizia "Todos os passos para construir o nosso jogo." e agora diz "o seu jogo". O arquivo continua **docs/aulas-interativas/kids/cade-todo-mundo/mapa-da-aventura.pdf**, agora com sete páginas após a inclusão da galeria de personalização.
 - **Certificado:** sem imagem base, o PDF tem o título **Certificado de Criador**, e a frase passou de "concluiu Cadê Todo Mundo?" para "completou a aventura Cadê Todo Mundo?".
 - **À noite, a equipe no lugar do guia:** "Enviar para o guia" soava estranho. Falas, pontes, notas de gravação e Mapa citam **Enviar meu projeto**, confirmado em **Enviar**, e as pontes dizem "antes de enviar o seu projeto"; quem recebe é a equipe. Manifestos e PDF (7 páginas) gerados de novo.
 

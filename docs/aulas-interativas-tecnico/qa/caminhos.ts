@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs'
 import { basename, resolve } from 'node:path'
 
-export const PASTA_CURSOS = resolve(import.meta.dir, '../../aulas-interativas')
+export const PASTA_CURSOS = resolve(import.meta.dir, '../../aulas-interativas/kids')
 
 const cursosPorPrefixo = {
   'cade-todo-mundo': 'cade-todo-mundo',

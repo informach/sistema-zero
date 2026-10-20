@@ -9,7 +9,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
-COURSES = ROOT / "docs/aulas-interativas"
+COURSES = ROOT / "docs/aulas-interativas/kids"
 
 
 def classify(section, blocks):

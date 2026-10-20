@@ -18,7 +18,7 @@
 - **Gravação:** o `.roteiro.md` da aula, ao lado de sua proposta. As falas do Zappy identificadas como texto da página não são gravadas.
 - **Montagem no admin:** o `.manifesto.json` correspondente. Os vídeos ainda são moldes `plannedVideo`.
 - **Revisão de texto ou estrutura:** `qa/nave-contra-asteroides.conteudo.json`; depois executar `bun docs/aulas-interativas-tecnico/qa/gerar-nave-contra-asteroides.ts`. Os nove trios são derivados dessa fonte única.
-- **Material de consulta:** [Caderno do Aluno](../aulas-interativas/nave-contra-asteroides/mapa-da-aventura.pdf), que a criança vê como **Mapa da Aventura**, apresentado na seção 2 da primeira aula. Geração e conferência em [recursos/nave-contra-asteroides](recursos/nave-contra-asteroides/README.md).
+- **Material de consulta:** [Caderno do Aluno](../aulas-interativas/kids/nave-contra-asteroides/mapa-da-aventura.pdf), que a criança vê como **Mapa da Aventura**, apresentado na seção 2 da primeira aula. Geração e conferência em [recursos/nave-contra-asteroides](recursos/nave-contra-asteroides/README.md).
 
 ## Módulo 1 · A nave e seus controles
 
@@ -26,9 +26,9 @@
 
 | Ordem | Aula | Resultado | Identificador |
 | --- | --- | --- | --- |
-| 1 | [Faça a nave aparecer](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.md) | Tela preparada e nave visível, ainda parada. | `primeira-nave` (novo) |
-| 2 | [Mova a nave pelo espaço](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-1.md) | Setas, limpeza, limites e estrelas. | `dia-1` (preservado) |
-| 3 | [Faça a nave atirar](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-2.md) | Disparo, movimento, desenho e limpeza dos tiros. | `dia-2` (preservado) |
+| 1 | [Faça a nave aparecer](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.md) | Tela preparada e nave visível, ainda parada. | `primeira-nave` (novo) |
+| 2 | [Mova a nave pelo espaço](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-1.md) | Setas, limpeza, limites e estrelas. | `dia-1` (preservado) |
+| 3 | [Faça a nave atirar](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-2.md) | Disparo, movimento, desenho e limpeza dos tiros. | `dia-2` (preservado) |
 
 ## Módulo 2 · Asteroides, pontos e vidas
 
@@ -36,10 +36,10 @@
 
 | Ordem | Aula | Resultado | Identificador |
 | --- | --- | --- | --- |
-| 4 | [Faça os asteroides cair](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.md) | Intervalo de 40 quadros, sorteio de x e queda das pedras. | `chuva-de-asteroides` (novo) |
-| 5 | [Faça o tiro acertar o asteroide](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-3.md) | Retirada do par envolvido, explosão e som. | `dia-3` (preservado) |
-| 6 | [Conte os acertos](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-pontos.md) | Um ponto por acerto, mostrado no placar. | `pontos` (novo) |
-| 7 | [Dê três vidas à nave](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-4.md) | Dano, proteção temporária e corações. | `dia-4` (preservado) |
+| 4 | [Faça os asteroides cair](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.md) | Intervalo de 40 quadros, sorteio de x e queda das pedras. | `chuva-de-asteroides` (novo) |
+| 5 | [Faça o tiro acertar o asteroide](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-3.md) | Retirada do par envolvido, explosão e som. | `dia-3` (preservado) |
+| 6 | [Conte os acertos](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-pontos.md) | Um ponto por acerto, mostrado no placar. | `pontos` (novo) |
+| 7 | [Dê três vidas à nave](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-4.md) | Dano, proteção temporária e corações. | `dia-4` (preservado) |
 
 ## Módulo 3 · Uma partida completa
 
@@ -47,8 +47,8 @@
 
 | Ordem | Aula | Resultado | Identificador |
 | --- | --- | --- | --- |
-| 8 | [Comece a partida com Enter](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-comecar-partida.md) | Abertura e partida; tiros e pedras só são criados em jogando. | `comecar-partida` (novo) |
-| 9 | [Termine e recomece a partida](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-5.md) | Meta de 26, finais, reinício, revisão e publicação opcional. | `dia-5` (preservado) |
+| 8 | [Comece a partida com Enter](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-comecar-partida.md) | Abertura e partida; tiros e pedras só são criados em jogando. | `comecar-partida` (novo) |
+| 9 | [Termine e recomece a partida](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-5.md) | Meta de 26, finais, reinício, revisão e publicação opcional. | `dia-5` (preservado) |
 
 ## Decisões pedagógicas
 

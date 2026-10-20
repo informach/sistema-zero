@@ -293,9 +293,9 @@ Condições de qualidade para expandir: nenhuma etapa de aprendizagem composta a
 | Fonte | O que foi verificado |
 | --- | --- |
 | [README das aulas](../aulas-interativas-tecnico/historico-organizacao.md) e [revisão pedagógica](../aulas-interativas-tecnico/qa/revisao-pedagogica-2026-09-12.md) | Estado do pacote, revisão anterior, produção pendente, continuidade e limites declarados. |
-| [Roteiro da animação](../aulas-interativas/o-jogo-do-meu-jeito/aula-03/roteiro.md) | Etapas atuais, perguntas, vídeos técnicos e uso do Pinta externo. |
+| [Roteiro da animação](../aulas-interativas/kids/o-jogo-do-meu-jeito/aula-03/roteiro.md) | Etapas atuais, perguntas, vídeos técnicos e uso do Pinta externo. |
 | [Quadros HTML](../aulas-interativas/interacoes/quadros.html) | Experiência atual de limpeza/rastros, sem montagem e reprodução automática de imagens diferentes. |
-| [Manifesto Dia 1](../aulas-interativas/desafio-primeiro-jogo/dia-1/manifesto.json) e [Dino 3](../aulas-interativas/corre-dino/aula-03/manifesto.json) | Composição das descobertas, posição de vídeos, textos e critérios. |
+| [Manifesto Dia 1](../aulas-interativas/kids/desafio-primeiro-jogo/dia-1/manifesto.json) e [Dino 3](../aulas-interativas/kids/corre-dino/aula-03/manifesto.json) | Composição das descobertas, posição de vídeos, textos e critérios. |
 | [Editor do percurso](../../packages/admin/src/components/editor/lesson-structure-editor.tsx) | Resumo dos cartões e ausência de marcador do tipo nesse cabeçalho. |
 | [Editor de conclusão](../../packages/admin/src/components/editor/section-completion-editor.tsx) | Seleção de critérios e verificações estruturais disponíveis. |
 | [Construtor de atividades](../../packages/admin/src/components/editor/learning-builder.tsx) e [contratos dos blocos](../../packages/members/src/domain/course/lesson-block.ts) | Modelos de autoria, campos atuais de diálogo, vídeo e quiz. |

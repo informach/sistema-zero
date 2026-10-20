@@ -52,6 +52,6 @@ Evidências conferidas:
 - Typechecks finais de core, member-shell, Estúdio, members e Admin passaram, todos com saída 0.
 - Capturas dependentes do funil regeneradas; o script do caderno usa o identificador estável p8, independente de número de página.
 
-Arte: [galeria](../../../output/artes/farol-personalizacao.png), [cenários](../../../output/artes/farol-cenarios.png), [jogo personalizado](../../../output/artes/farol-combinacao-vitoria.png). Experiência: [celular](../../../output/artes/farol-posicao-celular.png), [desktop](../../../output/artes/farol-posicao-desktop.png). Material: [Mapa da Aventura](../../aulas-interativas/desafio-primeiro-jogo/mapa-da-aventura.pdf).
+Arte: [galeria](../../../output/artes/farol-personalizacao.png), [cenários](../../../output/artes/farol-cenarios.png), [jogo personalizado](../../../output/artes/farol-combinacao-vitoria.png). Experiência: [celular](../../../output/artes/farol-posicao-celular.png), [desktop](../../../output/artes/farol-posicao-desktop.png). Material: [Mapa da Aventura](../../aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf).
 
 Publicação e gravação: os arquivos locais estão preparados. A importação no catálogo remoto, a substituição do PDF remoto e a gravação dos vídeos novos/revisados são etapas posteriores; nenhum progresso de aluno foi apagado.

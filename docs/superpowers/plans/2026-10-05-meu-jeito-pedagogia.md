@@ -20,7 +20,7 @@ Aplicar o padrão já autorizado para Nave Contra Asteroides e Corre, Dino! às 
 - [x] Preparar jogo completo de demonstração com artes ilustrativas e preservar os marcos de código originais.
 - [x] Corrigir a regra de aplicações externas e testar ausência, posição e ferramenta da entrega.
 - [x] Verificar todas as experiências no motor real, quizzes, continuidade, regeneração e importação.
-- [x] Atualizar o mapa e produzir/revisar visualmente o caderno em `docs/aulas-interativas/o-jogo-do-meu-jeito/mapa-da-aventura.pdf`.
+- [x] Atualizar o mapa e produzir/revisar visualmente o caderno em `docs/aulas-interativas/kids/o-jogo-do-meu-jeito/mapa-da-aventura.pdf`.
 - [x] Atualizar a cobertura das diretrizes e os controles de perguntas autorais para aceitar experiências sem perguntas.
 - [x] Executar validações finais; registrar evidência e limites na revisão editorial.
 

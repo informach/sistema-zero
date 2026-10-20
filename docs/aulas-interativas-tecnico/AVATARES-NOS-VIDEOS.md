@@ -1,6 +1,6 @@
 # Debinha e Dedé nos vídeos
 
-Direção de produção de 10/10/2026. A responsável já gravou os quatro vídeos-base da Aula 1 do Cadê Todo Mundo? e confirmou a **Debinha** como a criança dessa aula. As seis entradas informadas e duas novas na parte 4 estão no [roteiro, em ordem de edição](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md). A pedido da responsável, a alternância também foi aplicada aos roteiros da Aula 2, com **Dedé**, e do certificado, com **Debinha**. Este documento orienta a edição e as próximas gravações; não comprova uma montagem ou publicação dos vídeos.
+Direção de produção de 10/10/2026. A responsável já gravou os quatro vídeos-base da Aula 1 do Cadê Todo Mundo? e confirmou a **Debinha** como a criança dessa aula. As seis entradas informadas e duas novas na parte 4 estão no [roteiro, em ordem de edição](../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md). A pedido da responsável, a alternância também foi aplicada aos roteiros da Aula 2, com **Dedé**, e do certificado, com **Debinha**. Este documento orienta a edição e as próximas gravações; não comprova uma montagem ou publicação dos vídeos.
 
 ## Quem fala e onde aparece
 
@@ -64,7 +64,7 @@ O texto da professora é o do roteiro já gravado. As âncoras são trechos lite
 
 ## Aula 2: Dedé nos cinco vídeos
 
-As nove participações estão incorporadas ao [roteiro da Aula 2](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md), com a fala completa da professora antes e depois de cada entrada. A gravação e a edição desta versão ainda não foram confirmadas.
+As nove participações estão incorporadas ao [roteiro da Aula 2](../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md), com a fala completa da professora antes e depois de cada entrada. A gravação e a edição desta versão ainda não foram confirmadas.
 
 | ID de edição | Depois desta fala da professora | Dedé | Retomada da professora |
 | --- | --- | --- | --- |
@@ -80,7 +80,7 @@ Na personalização, o gato é a escolha do Dedé e o exemplo da demonstração,
 
 ## Certificado: Debinha na celebração
 
-A participação está incorporada ao [roteiro do certificado](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.roteiro.md), na seção **Comemore sua criação**. A revisão com quiz continua sem vídeo ou avatar. A gravação e a edição desta versão ainda não foram confirmadas.
+A participação está incorporada ao [roteiro do certificado](../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-certificado.roteiro.md), na seção **Comemore sua criação**. A revisão com quiz continua sem vídeo ou avatar. A gravação e a edição desta versão ainda não foram confirmadas.
 
 | ID de edição | Depois desta fala da professora | Debinha | Retomada da professora |
 | --- | --- | --- | --- |
@@ -98,7 +98,7 @@ As tabelas registram as âncoras e o começo da resposta; a fala completa e os g
 
 ### Dia 1: Debinha
 
-[Roteiro completo](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md). O vídeo do Mapa da Aventura continua só com a professora. As participações ajudam a descobrir os controles, a repetição dos quadros e o limite da tela.
+[Roteiro completo](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md). O vídeo do Mapa da Aventura continua só com a professora. As participações ajudam a descobrir os controles, a repetição dos quadros e o limite da tela.
 
 | Entrada | Depois desta fala da professora | Debinha | Começo da resposta da professora |
 | --- | --- | --- | --- |
@@ -110,7 +110,7 @@ As tabelas registram as âncoras e o começo da resposta; a fala completa e os g
 
 ### Dia 2: Dedé
 
-[Roteiro completo](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.roteiro.md). As participações distinguem a chave sumir, a informação ficar guardada e o aviso orientar quem joga. Não mostrar temChave no jogo como se existisse um mostrador; ele pertence à experiência separada.
+[Roteiro completo](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-2.roteiro.md). As participações distinguem a chave sumir, a informação ficar guardada e o aviso orientar quem joga. Não mostrar temChave no jogo como se existisse um mostrador; ele pertence à experiência separada.
 
 | Entrada | Depois desta fala da professora | Dedé | Começo da resposta da professora |
 | --- | --- | --- | --- |
@@ -121,7 +121,7 @@ As tabelas registram as âncoras e o começo da resposta; a fala completa e os g
 
 ### Dia 3: Debinha
 
-[Roteiro completo](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.roteiro.md). A montagem da resposta com chave tem três entradas: no problema inicial, depois de configurar a luz e antes de reiniciar a partida. O vídeo dos quatro avisos continua só com a professora. As escolhas de imagens, frases e posição continuam livres.
+[Roteiro completo](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.roteiro.md). A montagem da resposta com chave tem três entradas: no problema inicial, depois de configurar a luz e antes de reiniciar a partida. O vídeo dos quatro avisos continua só com a professora. As escolhas de imagens, frases e posição continuam livres.
 
 | Entrada | Depois desta fala da professora | Debinha | Começo da resposta da professora |
 | --- | --- | --- | --- |
@@ -136,7 +136,7 @@ As tabelas registram as âncoras e o começo da resposta; a fala completa e os g
 
 ### Certificado: Dedé
 
-[Roteiro completo](../aulas-interativas/desafio-primeiro-jogo/desafio-certificado.roteiro.md). Dedé comemora as regras que fez funcionar antes da orientação de emissão. O quiz permanece sem vídeo ou avatar. Não acrescentar convite comercial nem fala depois de Concluir fase.
+[Roteiro completo](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-certificado.roteiro.md). Dedé comemora as regras que fez funcionar antes da orientação de emissão. O quiz permanece sem vídeo ou avatar. Não acrescentar convite comercial nem fala depois de Concluir fase.
 
 | Entrada | Depois desta fala da professora | Dedé | Começo da resposta da professora |
 | --- | --- | --- | --- |
@@ -183,19 +183,19 @@ Se houver gravação anterior, localizar os cortes pelas âncoras e verificar a 
 
 | Aula e roteiro | Avatar | Participações |
 | --- | --- | --- |
-| [1. Prepare a tela e crie o Dino](../aulas-interativas/corre-dino/corre-dino-aula-01.roteiro.md) | Debinha | 6 |
-| [2. Mostre o Dino e a floresta](../aulas-interativas/corre-dino/corre-dino-aula-02.roteiro.md) | Dedé | 7 |
-| [3. Faça o Dino cair e pular](../aulas-interativas/corre-dino/corre-dino-aula-03.roteiro.md) | Debinha | 4 |
-| [4. Toque um som em cada pulo](../aulas-interativas/corre-dino/corre-dino-aula-04.roteiro.md) | Dedé | 4 |
-| [5. Faça os cactos entrar na pista](../aulas-interativas/corre-dino/corre-dino-aula-05.roteiro.md) | Debinha | 6 |
-| [6. Retire os cactos que saíram](../aulas-interativas/corre-dino/corre-dino-aula-06.roteiro.md) | Dedé | 3 |
-| [7. Separe a abertura da partida](../aulas-interativas/corre-dino/corre-dino-aula-07.roteiro.md) | Debinha | 7 |
-| [8. Comece por tecla ou toque](../aulas-interativas/corre-dino/corre-dino-aula-08.roteiro.md) | Dedé | 6 |
-| [9. Termine e recomece a corrida](../aulas-interativas/corre-dino/corre-dino-aula-09.roteiro.md) | Debinha | 10 |
-| [10. Ajuste a área da batida](../aulas-interativas/corre-dino/corre-dino-aula-10.roteiro.md) | Dedé | 4 |
-| [11. Conte e mostre os pontos](../aulas-interativas/corre-dino/corre-dino-aula-11.roteiro.md) | Debinha | 7 |
-| [12. Varie o lugar e a velocidade dos cactos](../aulas-interativas/corre-dino/corre-dino-aula-12.roteiro.md) | Dedé | 4 |
-| [13. Aumente a dificuldade com um limite](../aulas-interativas/corre-dino/corre-dino-aula-13.roteiro.md) | Debinha | 7 |
+| [1. Prepare a tela e crie o Dino](../aulas-interativas/kids/corre-dino/corre-dino-aula-01.roteiro.md) | Debinha | 6 |
+| [2. Mostre o Dino e a floresta](../aulas-interativas/kids/corre-dino/corre-dino-aula-02.roteiro.md) | Dedé | 7 |
+| [3. Faça o Dino cair e pular](../aulas-interativas/kids/corre-dino/corre-dino-aula-03.roteiro.md) | Debinha | 4 |
+| [4. Toque um som em cada pulo](../aulas-interativas/kids/corre-dino/corre-dino-aula-04.roteiro.md) | Dedé | 4 |
+| [5. Faça os cactos entrar na pista](../aulas-interativas/kids/corre-dino/corre-dino-aula-05.roteiro.md) | Debinha | 6 |
+| [6. Retire os cactos que saíram](../aulas-interativas/kids/corre-dino/corre-dino-aula-06.roteiro.md) | Dedé | 3 |
+| [7. Separe a abertura da partida](../aulas-interativas/kids/corre-dino/corre-dino-aula-07.roteiro.md) | Debinha | 7 |
+| [8. Comece por tecla ou toque](../aulas-interativas/kids/corre-dino/corre-dino-aula-08.roteiro.md) | Dedé | 6 |
+| [9. Termine e recomece a corrida](../aulas-interativas/kids/corre-dino/corre-dino-aula-09.roteiro.md) | Debinha | 10 |
+| [10. Ajuste a área da batida](../aulas-interativas/kids/corre-dino/corre-dino-aula-10.roteiro.md) | Dedé | 4 |
+| [11. Conte e mostre os pontos](../aulas-interativas/kids/corre-dino/corre-dino-aula-11.roteiro.md) | Debinha | 7 |
+| [12. Varie o lugar e a velocidade dos cactos](../aulas-interativas/kids/corre-dino/corre-dino-aula-12.roteiro.md) | Dedé | 4 |
+| [13. Aumente a dificuldade com um limite](../aulas-interativas/kids/corre-dino/corre-dino-aula-13.roteiro.md) | Debinha | 7 |
 
 ### Nave Contra Asteroides
 
@@ -203,15 +203,15 @@ Se houver gravação anterior, localizar os cortes pelas âncoras e verificar a 
 
 | Aula e roteiro | Avatar | Participações |
 | --- | --- | --- |
-| [1. Faça a nave aparecer](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.roteiro.md) | Debinha | 9 |
-| [2. Mova a nave pelo espaço](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-1.roteiro.md) | Dedé | 9 |
-| [3. Faça a nave atirar](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-2.roteiro.md) | Debinha | 12 |
-| [4. Faça os asteroides cair](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.roteiro.md) | Dedé | 7 |
-| [5. Faça o tiro acertar o asteroide](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-3.roteiro.md) | Debinha | 4 |
-| [6. Conte os acertos](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-pontos.roteiro.md) | Dedé | 5 |
-| [7. Dê três vidas à nave](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-4.roteiro.md) | Debinha | 6 |
-| [8. Comece a partida com Enter](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-comecar-partida.roteiro.md) | Dedé | 12 |
-| [9. Termine e recomece a partida](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-5.roteiro.md) | Debinha | 14 |
+| [1. Faça a nave aparecer](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.roteiro.md) | Debinha | 9 |
+| [2. Mova a nave pelo espaço](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-1.roteiro.md) | Dedé | 9 |
+| [3. Faça a nave atirar](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-2.roteiro.md) | Debinha | 12 |
+| [4. Faça os asteroides cair](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.roteiro.md) | Dedé | 7 |
+| [5. Faça o tiro acertar o asteroide](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-3.roteiro.md) | Debinha | 4 |
+| [6. Conte os acertos](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-pontos.roteiro.md) | Dedé | 5 |
+| [7. Dê três vidas à nave](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-4.roteiro.md) | Debinha | 6 |
+| [8. Comece a partida com Enter](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-comecar-partida.roteiro.md) | Dedé | 12 |
+| [9. Termine e recomece a partida](../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-5.roteiro.md) | Debinha | 14 |
 
 ### O Jogo do Meu Jeito
 
@@ -219,14 +219,14 @@ Se houver gravação anterior, localizar os cortes pelas âncoras e verificar a 
 
 | Aula e roteiro | Avatar | Participações |
 | --- | --- | --- |
-| [1. Guarde uma cópia para criar do seu jeito](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-01.roteiro.md) | Debinha | 5 |
-| [2. Desenhe sua nave em pixel art](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-02.roteiro.md) | Dedé | 7 |
-| [3. Faça o motor da nave pulsar](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-03.roteiro.md) | Debinha | 4 |
-| [4. Desenhe um asteroide com formas](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-04.roteiro.md) | Dedé | 2 |
-| [5. Anime as chamas e as crateras](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-05.roteiro.md) | Debinha | 5 |
-| [6. Coloque sua nave animada no jogo](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-06.roteiro.md) | Dedé | 8 |
-| [7. Faça suas pedras nascerem animadas](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-07.roteiro.md) | Debinha | 4 |
-| [8. Teste e compartilhe sua versão](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-08.roteiro.md) | Dedé | 3 |
+| [1. Guarde uma cópia para criar do seu jeito](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-01.roteiro.md) | Debinha | 5 |
+| [2. Desenhe sua nave em pixel art](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-02.roteiro.md) | Dedé | 7 |
+| [3. Faça o motor da nave pulsar](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-03.roteiro.md) | Debinha | 4 |
+| [4. Desenhe um asteroide com formas](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-04.roteiro.md) | Dedé | 2 |
+| [5. Anime as chamas e as crateras](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-05.roteiro.md) | Debinha | 5 |
+| [6. Coloque sua nave animada no jogo](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-06.roteiro.md) | Dedé | 8 |
+| [7. Faça suas pedras nascerem animadas](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-07.roteiro.md) | Debinha | 4 |
+| [8. Teste e compartilhe sua versão](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-08.roteiro.md) | Dedé | 3 |
 
 ## Novas entradas na revisão de ritmo · 10/10/2026
 
@@ -234,20 +234,20 @@ As tabelas anteriores conservam as entradas originais. Somam-se as inserções a
 
 | Aula e parte | Entrada | Depois da professora | Criança | Retomada |
 | --- | --- | --- | --- | --- |
-| [cade-todo-mundo-aula-1](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md) | A1P4-R01 | “Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.” | Debinha: “Ah! Se eu tocar no arbusto, ele vira o escolhido!” | “A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.” |
-| [cade-todo-mundo-aula-1](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md) | A1P4-R02 | “Funcionou?” | Debinha: “Agora sim!” | “Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.” |
-| [cade-todo-mundo-aula-2](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md) | A2P3-R01 | “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!” | Dedé: “Agora sim! Já está contando!” | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” |
-| [cade-todo-mundo-aula-2](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md) | A2P3-R02 | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” | Dedé: “E se eu tocar aqui de novo?” | “Vamos ver. Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.” |
-| [cade-todo-mundo-aula-2](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md) | A2P4-R01 | “Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.” | Dedé: “Meu gato vai se esconder atrás de um toco!” | “Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.” |
-| [cade-todo-mundo-aula-2](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md) | A2P4-R02 | “Agora troque, nos outros blocos Criar sprite, os bichos e os esconderijos que você quiser, até o jardim ficar do seu jeito. O que você gostou pode ficar como está.” | Dedé: “Troquei os desenhos e o meu jogo ficou do jeito que eu queria!” | “Se quiser, mude também a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.” |
-| [desafio-dia-1](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md) | F1P4-R01 | “Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.” | Debinha: “Primeiro eu preciso pôr as setas na tela!” | “As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.” |
-| [desafio-dia-1](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md) | F1P4-R02 | “Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!” | Debinha: “Foi! Agora ele anda!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar. E o bloco de movimento, com o sprite personagem, está dentro de A cada quadro do jogo. Depois de corrigir, teste de novo.” |
-| [desafio-dia-1](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md) | F1P6-R01 | “Agora teste as quatro direções até chegar às beiradas. Olha só: ele para em cada beirada e não sai mais da tela!” | Debinha: “Agora posso segurar a seta que ele não vai embora!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, o bloco que move o personagem vem antes, e logo abaixo dele está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo.” |
-| [desafio-dia-2](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.roteiro.md) | F2P2-R01 | “Repare que o bloco chega com dois nomes, jogador e inimigo. Clique em jogador e escolha personagem. Depois clique em inimigo e escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.” | Dedé: “Só pega se o personagem encostar mesmo na chave!” | “Agora vem a ação: tirar a chave do chão. Essa ação vai dentro do encontro, no espaço vazio ao lado da palavra fazer. Deixe esse espaço à vista.” |
-| [desafio-dia-2](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.roteiro.md) | F2P3-R01 | “Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.” | Dedé: “Ah! Na partida nova eu tenho que buscar a chave outra vez!” | “Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Encontre a área Quando acontecer, arrastando um espaço vazio entre os blocos se precisar, e deixe esse lugar à vista.” |
-| [desafio-dia-3](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | F3P2-R01 | “Clique em jogador e escolha personagem. Depois clique em inimigo e escolha farol.” | Debinha: “Agora o jogo vai perceber quando eu chegar ao farol!” | “Dentro desse encontro, o farol vai fazer a mesma pergunta da porta. Por isso, deixe à vista o espaço vazio ao lado da palavra fazer, dentro do encontro com o farol.” |
-| [desafio-dia-3](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | F3P2-R02 | “Vá até a porta do farol sem passar pela chave. Repare: a luz continua apagada, e o aviso diz que falta a chave. É a resposta do senão funcionando!” | Debinha: “Não adiantou correr direto para o farol. Preciso da chave!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e farol, dentro dele está o Se com temChave, e dentro do senão está o aviso de que falta a chave. Depois de corrigir, teste de novo.” |
-| [desafio-dia-3](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | F3P3-R01 | “Repare que esse bloco chega com heroi nos dois nomes. Clique no primeiro heroi e escolha farol. Depois clique no segundo e escolha a imagem farol listrado aceso. Se não achar, role a lista.” | Debinha: “E quem está jogando vai saber que deu certo?” | “Vai, sim! É para isso que serve o último bloco: o aviso. Ele vai logo abaixo da troca de imagem, ainda dentro do então. Deixe esse lugar à vista.” |
-| [desafio-dia-3](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | F3P4-R01 | “Agora encontre Quando acontecer e o encontro do personagem com o farol. Dentro do então do Se está Trocar imagem do sprite farol para. Clique no nome da imagem, como farol listrado aceso, e escolha o mesmo modelo, aceso: farol de pedra aceso. Repare: de pedra nos dois lugares, apagado no começo e aceso na resposta com chave.” | Debinha: “Se eu misturar os modelos, o farol muda de tipo quando acende!” | “Isso mesmo! Agora falta o lugar onde a história acontece. Em Enquanto estiver rodando, dentro de A cada quadro do jogo, clique no nome do cenário, como praia tropical, no bloco Desenhar o cenário. Eu vou usar noite na ilha. Olha só: a ponte e o mar continuam no mesmo lugar, e o caminho até o farol não muda.” |
-| [desafio-dia-3](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | F3P4-R02 | “Agora teste a sua combinação! Clique em Atualizar e vá até a porta do farol sem a chave: ele continua apagado. Depois busque a chave e volte até a porta na mesma partida. Olha só: o farol de pedra acende, e o barco pirata vem chegando!” | Debinha: “Uhu! Minha aventura de pirata está funcionando!” | “Agora o jogo tem a sua cara, e é com essa cara que ele vai para o Mural.” |
-| [desafio-dia-3](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | F3P7-R01 | “Agora teste o novo caminho. Clique em Atualizar, busque a chave no lugar escolhido e leve até a porta do farol. A luz deve acender, e o barco deve chegar.” | Debinha: “Mudei o caminho, mas a missão continua a mesma!” | “Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Agora o jogo está do seu jeito! Clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.” |
+| [cade-todo-mundo-aula-1](../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md) | A1P4-R01 | “Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.” | Debinha: “Ah! Se eu tocar no arbusto, ele vira o escolhido!” | “A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.” |
+| [cade-todo-mundo-aula-1](../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md) | A1P4-R02 | “Funcionou?” | Debinha: “Agora sim!” | “Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.” |
+| [cade-todo-mundo-aula-2](../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md) | A2P3-R01 | “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!” | Dedé: “Agora sim! Já está contando!” | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” |
+| [cade-todo-mundo-aula-2](../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md) | A2P3-R02 | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” | Dedé: “E se eu tocar aqui de novo?” | “Vamos ver. Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.” |
+| [cade-todo-mundo-aula-2](../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md) | A2P4-R01 | “Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.” | Dedé: “Meu gato vai se esconder atrás de um toco!” | “Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.” |
+| [cade-todo-mundo-aula-2](../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md) | A2P4-R02 | “Agora troque, nos outros blocos Criar sprite, os bichos e os esconderijos que você quiser, até o jardim ficar do seu jeito. O que você gostou pode ficar como está.” | Dedé: “Troquei os desenhos e o meu jogo ficou do jeito que eu queria!” | “Se quiser, mude também a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.” |
+| [desafio-dia-1](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md) | F1P4-R01 | “Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.” | Debinha: “Primeiro eu preciso pôr as setas na tela!” | “As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.” |
+| [desafio-dia-1](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md) | F1P4-R02 | “Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!” | Debinha: “Foi! Agora ele anda!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar. E o bloco de movimento, com o sprite personagem, está dentro de A cada quadro do jogo. Depois de corrigir, teste de novo.” |
+| [desafio-dia-1](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md) | F1P6-R01 | “Agora teste as quatro direções até chegar às beiradas. Olha só: ele para em cada beirada e não sai mais da tela!” | Debinha: “Agora posso segurar a seta que ele não vai embora!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, o bloco que move o personagem vem antes, e logo abaixo dele está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo.” |
+| [desafio-dia-2](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-2.roteiro.md) | F2P2-R01 | “Repare que o bloco chega com dois nomes, jogador e inimigo. Clique em jogador e escolha personagem. Depois clique em inimigo e escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.” | Dedé: “Só pega se o personagem encostar mesmo na chave!” | “Agora vem a ação: tirar a chave do chão. Essa ação vai dentro do encontro, no espaço vazio ao lado da palavra fazer. Deixe esse espaço à vista.” |
+| [desafio-dia-2](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-2.roteiro.md) | F2P3-R01 | “Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.” | Dedé: “Ah! Na partida nova eu tenho que buscar a chave outra vez!” | “Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Encontre a área Quando acontecer, arrastando um espaço vazio entre os blocos se precisar, e deixe esse lugar à vista.” |
+| [desafio-dia-3](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | F3P2-R01 | “Clique em jogador e escolha personagem. Depois clique em inimigo e escolha farol.” | Debinha: “Agora o jogo vai perceber quando eu chegar ao farol!” | “Dentro desse encontro, o farol vai fazer a mesma pergunta da porta. Por isso, deixe à vista o espaço vazio ao lado da palavra fazer, dentro do encontro com o farol.” |
+| [desafio-dia-3](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | F3P2-R02 | “Vá até a porta do farol sem passar pela chave. Repare: a luz continua apagada, e o aviso diz que falta a chave. É a resposta do senão funcionando!” | Debinha: “Não adiantou correr direto para o farol. Preciso da chave!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e farol, dentro dele está o Se com temChave, e dentro do senão está o aviso de que falta a chave. Depois de corrigir, teste de novo.” |
+| [desafio-dia-3](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | F3P3-R01 | “Repare que esse bloco chega com heroi nos dois nomes. Clique no primeiro heroi e escolha farol. Depois clique no segundo e escolha a imagem farol listrado aceso. Se não achar, role a lista.” | Debinha: “E quem está jogando vai saber que deu certo?” | “Vai, sim! É para isso que serve o último bloco: o aviso. Ele vai logo abaixo da troca de imagem, ainda dentro do então. Deixe esse lugar à vista.” |
+| [desafio-dia-3](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | F3P4-R01 | “Agora encontre Quando acontecer e o encontro do personagem com o farol. Dentro do então do Se está Trocar imagem do sprite farol para. Clique no nome da imagem, como farol listrado aceso, e escolha o mesmo modelo, aceso: farol de pedra aceso. Repare: de pedra nos dois lugares, apagado no começo e aceso na resposta com chave.” | Debinha: “Se eu misturar os modelos, o farol muda de tipo quando acende!” | “Isso mesmo! Agora falta o lugar onde a história acontece. Em Enquanto estiver rodando, dentro de A cada quadro do jogo, clique no nome do cenário, como praia tropical, no bloco Desenhar o cenário. Eu vou usar noite na ilha. Olha só: a ponte e o mar continuam no mesmo lugar, e o caminho até o farol não muda.” |
+| [desafio-dia-3](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | F3P4-R02 | “Agora teste a sua combinação! Clique em Atualizar e vá até a porta do farol sem a chave: ele continua apagado. Depois busque a chave e volte até a porta na mesma partida. Olha só: o farol de pedra acende, e o barco pirata vem chegando!” | Debinha: “Uhu! Minha aventura de pirata está funcionando!” | “Agora o jogo tem a sua cara, e é com essa cara que ele vai para o Mural.” |
+| [desafio-dia-3](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | F3P7-R01 | “Agora teste o novo caminho. Clique em Atualizar, busque a chave no lugar escolhido e leve até a porta do farol. A luz deve acender, e o barco deve chegar.” | Debinha: “Mudei o caminho, mas a missão continua a mesma!” | “Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Agora o jogo está do seu jeito! Clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.” |

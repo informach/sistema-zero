@@ -14,7 +14,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[4]
 WORK = ROOT / "tmp" / "pdfs" / "desafio-farol"
-OUTPUT = ROOT / "docs/aulas-interativas/desafio-primeiro-jogo/mapa-da-aventura.pdf"
+OUTPUT = ROOT / "docs/aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf"
 
 
 def main():
@@ -23,7 +23,7 @@ def main():
     generator = Path(__file__).with_name("gerar-caderno.ts")
     if cade:
         WORK = ROOT / "tmp" / "pdfs" / "cade-todo-mundo"
-        OUTPUT = ROOT / "docs/aulas-interativas/cade-todo-mundo/mapa-da-aventura.pdf"
+        OUTPUT = ROOT / "docs/aulas-interativas/kids/cade-todo-mundo/mapa-da-aventura.pdf"
         generator = Path(__file__).parent.parent / "cade-todo-mundo" / "gerar-caderno.ts"
     bun = shutil.which("bun")
     if not bun:

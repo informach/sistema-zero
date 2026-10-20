@@ -32,7 +32,7 @@ import { FONTE as nunito } from '../../../../packages/studio/src/official-extens
 
 const scriptDir = import.meta.dir
 const root = resolve(scriptDir, '../../../..')
-const output = resolve(root, 'docs/aulas-interativas/cade-todo-mundo/mapa-da-aventura.pdf')
+const output = resolve(root, 'docs/aulas-interativas/kids/cade-todo-mundo/mapa-da-aventura.pdf')
 const templatePath = resolve(scriptDir, 'caderno-do-aluno.template.html')
 const zappyPath = resolve(root, 'packages/community-kids/public/zappy/happy.webp')
 

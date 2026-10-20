@@ -2,7 +2,7 @@
 
 Revisão solicitada depois do ajuste da Aula 2 de Cadê Todo Mundo?. Escopo: 37 aulas, incluindo os dois certificados, e 35 projetos ou entregas pela galeria. Aplicação nos arquivos locais; não houve importação, commit, push ou deploy nesta revisão.
 
-**Situação de gravação confirmada pelo responsável em 11/10/2026:** somente Cadê Todo Mundo? foi gravado. Farol, Nave, Corre, Dino! e O Jogo do Meu Jeito ainda serão gravados; as orientações abaixo servem à primeira gravação deles. Para adequar os vídeos existentes do Cadê a esta revisão, ajustar apenas os encerramentos das partes 3 e 4 da Aula 2, conforme o [roteiro com os pontos de corte](../../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md). A revisão dos outros cursos não acrescentou mudanças aos vídeos do Cadê.
+**Situação de gravação confirmada pelo responsável em 11/10/2026:** somente Cadê Todo Mundo? foi gravado. Farol, Nave, Corre, Dino! e O Jogo do Meu Jeito ainda serão gravados; as orientações abaixo servem à primeira gravação deles. Para adequar os vídeos existentes do Cadê a esta revisão, ajustar apenas os encerramentos das partes 3 e 4 da Aula 2, conforme o [roteiro com os pontos de corte](../../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md). A revisão dos outros cursos não acrescentou mudanças aos vídeos do Cadê.
 
 ## Fluxo confirmado
 
@@ -58,28 +58,28 @@ Na primeira montagem de cada curso, antes desse encerramento, foi acrescentado:
 
 | Curso e aula | Vídeos de montagem com encerramento atualizado |
 | --- | --- |
-| [nave-contra-asteroides / primeira-nave](../../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.roteiro.md) | `video-montar-areas-tela`, `video-criar-nave`, `video-motor-e-nave` |
-| [nave-contra-asteroides / dia-1](../../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-1.roteiro.md) | `video-setas-e-rastro`, `video-limpeza`, `video-limite-da-nave`, `video-fundo-estrelado`, `video-teste-e-envio` |
-| [nave-contra-asteroides / dia-2](../../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-2.roteiro.md) | `video-criar-tiro`, `video-tiros-voam`, `video-faxina` |
-| [nave-contra-asteroides / chuva-de-asteroides](../../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.roteiro.md) | `video-grupo-e-relogio`, `video-asteroide`, `video-entrega` |
-| [nave-contra-asteroides / dia-3](../../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-3.roteiro.md) | `video-colisao`, `video-fecho` |
-| [nave-contra-asteroides / pontos](../../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-pontos.roteiro.md) | `video-pontos-e-placar` |
-| [nave-contra-asteroides / dia-4](../../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-4.roteiro.md) | `video-vidas`, `video-batida-e-coracoes`, `video-fecho` |
-| [nave-contra-asteroides / comecar-partida](../../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-comecar-partida.roteiro.md) | `video-embrulhar`, `video-relogio-e-tiro`, `video-enter` |
-| [nave-contra-asteroides / dia-5](../../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-5.roteiro.md) | `video-finais`, `video-mostrar-telas`, `video-enter`, `video-ciclo-completo` |
-| [corre-dino / aula-01](../../aulas-interativas/corre-dino/corre-dino-aula-01.roteiro.md) | `video-area-e-tela`, `video-borda`, `video-criar-dino`, `video-entrega` |
-| [corre-dino / aula-02](../../aulas-interativas/corre-dino/corre-dino-aula-02.roteiro.md) | `video-motor-e-dino`, `video-limpeza`, `video-ordem-certa`, `video-retirar-borda`, `video-descrever-jogo`, `video-entrega` |
-| [corre-dino / aula-03](../../aulas-interativas/corre-dino/corre-dino-aula-03.roteiro.md) | `video-aplicar-gravidade`, `video-comando-de-pulo`, `video-entrega` |
-| [corre-dino / aula-04](../../aulas-interativas/corre-dino/corre-dino-aula-04.roteiro.md) | `video-som-no-pulo`, `video-entrega` |
-| [corre-dino / aula-05](../../aulas-interativas/corre-dino/corre-dino-aula-05.roteiro.md) | `video-grupo-e-relogio`, `video-criar-cactos`, `video-mover-e-desenhar`, `video-entrega` |
-| [corre-dino / aula-06](../../aulas-interativas/corre-dino/corre-dino-aula-06.roteiro.md) | `video-faxina`, `video-entrega` |
-| [corre-dino / aula-07](../../aulas-interativas/corre-dino/corre-dino-aula-07.roteiro.md) | `video-estado-inicio`, `video-embrulhar`, `video-relogio`, `video-entrega` |
-| [corre-dino / aula-08](../../aulas-interativas/corre-dino/corre-dino-aula-08.roteiro.md) | `video-menu`, `video-entrada-ampla`, `video-entrega` |
-| [corre-dino / aula-09](../../aulas-interativas/corre-dino/corre-dino-aula-09.roteiro.md) | `video-batida-acaba-partida`, `video-mapa-do-jogo`, `video-batida-sentida`, `video-caminho-de-volta`, `video-entrega` |
-| [corre-dino / aula-10](../../aulas-interativas/corre-dino/corre-dino-aula-10.roteiro.md) | `video-ligar-raio-x`, `video-ajustar-area`, `video-retirar-contorno`, `video-entrega` |
-| [corre-dino / aula-11](../../aulas-interativas/corre-dino/corre-dino-aula-11.roteiro.md) | `video-caixinha-dos-pontos`, `video-numero-na-tela`, `video-relogio-dos-pontos`, `video-frase-da-tela-de-fim`, `video-entrega` |
-| [corre-dino / aula-12](../../aulas-interativas/corre-dino/corre-dino-aula-12.roteiro.md) | `video-lugar-diferente`, `video-velocidade-propria`, `video-entrega` |
-| [corre-dino / aula-13](../../aulas-interativas/corre-dino/corre-dino-aula-13.roteiro.md) | `video-numero-que-manda`, `video-relogio-da-dificuldade`, `video-acelerador-e-freio`, `video-descricao-completa`, `video-entrega` |
+| [nave-contra-asteroides / primeira-nave](../../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.roteiro.md) | `video-montar-areas-tela`, `video-criar-nave`, `video-motor-e-nave` |
+| [nave-contra-asteroides / dia-1](../../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-1.roteiro.md) | `video-setas-e-rastro`, `video-limpeza`, `video-limite-da-nave`, `video-fundo-estrelado`, `video-teste-e-envio` |
+| [nave-contra-asteroides / dia-2](../../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-2.roteiro.md) | `video-criar-tiro`, `video-tiros-voam`, `video-faxina` |
+| [nave-contra-asteroides / chuva-de-asteroides](../../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.roteiro.md) | `video-grupo-e-relogio`, `video-asteroide`, `video-entrega` |
+| [nave-contra-asteroides / dia-3](../../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-3.roteiro.md) | `video-colisao`, `video-fecho` |
+| [nave-contra-asteroides / pontos](../../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-pontos.roteiro.md) | `video-pontos-e-placar` |
+| [nave-contra-asteroides / dia-4](../../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-4.roteiro.md) | `video-vidas`, `video-batida-e-coracoes`, `video-fecho` |
+| [nave-contra-asteroides / comecar-partida](../../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-comecar-partida.roteiro.md) | `video-embrulhar`, `video-relogio-e-tiro`, `video-enter` |
+| [nave-contra-asteroides / dia-5](../../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-5.roteiro.md) | `video-finais`, `video-mostrar-telas`, `video-enter`, `video-ciclo-completo` |
+| [corre-dino / aula-01](../../aulas-interativas/kids/corre-dino/corre-dino-aula-01.roteiro.md) | `video-area-e-tela`, `video-borda`, `video-criar-dino`, `video-entrega` |
+| [corre-dino / aula-02](../../aulas-interativas/kids/corre-dino/corre-dino-aula-02.roteiro.md) | `video-motor-e-dino`, `video-limpeza`, `video-ordem-certa`, `video-retirar-borda`, `video-descrever-jogo`, `video-entrega` |
+| [corre-dino / aula-03](../../aulas-interativas/kids/corre-dino/corre-dino-aula-03.roteiro.md) | `video-aplicar-gravidade`, `video-comando-de-pulo`, `video-entrega` |
+| [corre-dino / aula-04](../../aulas-interativas/kids/corre-dino/corre-dino-aula-04.roteiro.md) | `video-som-no-pulo`, `video-entrega` |
+| [corre-dino / aula-05](../../aulas-interativas/kids/corre-dino/corre-dino-aula-05.roteiro.md) | `video-grupo-e-relogio`, `video-criar-cactos`, `video-mover-e-desenhar`, `video-entrega` |
+| [corre-dino / aula-06](../../aulas-interativas/kids/corre-dino/corre-dino-aula-06.roteiro.md) | `video-faxina`, `video-entrega` |
+| [corre-dino / aula-07](../../aulas-interativas/kids/corre-dino/corre-dino-aula-07.roteiro.md) | `video-estado-inicio`, `video-embrulhar`, `video-relogio`, `video-entrega` |
+| [corre-dino / aula-08](../../aulas-interativas/kids/corre-dino/corre-dino-aula-08.roteiro.md) | `video-menu`, `video-entrada-ampla`, `video-entrega` |
+| [corre-dino / aula-09](../../aulas-interativas/kids/corre-dino/corre-dino-aula-09.roteiro.md) | `video-batida-acaba-partida`, `video-mapa-do-jogo`, `video-batida-sentida`, `video-caminho-de-volta`, `video-entrega` |
+| [corre-dino / aula-10](../../aulas-interativas/kids/corre-dino/corre-dino-aula-10.roteiro.md) | `video-ligar-raio-x`, `video-ajustar-area`, `video-retirar-contorno`, `video-entrega` |
+| [corre-dino / aula-11](../../aulas-interativas/kids/corre-dino/corre-dino-aula-11.roteiro.md) | `video-caixinha-dos-pontos`, `video-numero-na-tela`, `video-relogio-dos-pontos`, `video-frase-da-tela-de-fim`, `video-entrega` |
+| [corre-dino / aula-12](../../aulas-interativas/kids/corre-dino/corre-dino-aula-12.roteiro.md) | `video-lugar-diferente`, `video-velocidade-propria`, `video-entrega` |
+| [corre-dino / aula-13](../../aulas-interativas/kids/corre-dino/corre-dino-aula-13.roteiro.md) | `video-numero-que-manda`, `video-relogio-da-dificuldade`, `video-acelerador-e-freio`, `video-descricao-completa`, `video-entrega` |
 
 ## Materiais e verificação
 

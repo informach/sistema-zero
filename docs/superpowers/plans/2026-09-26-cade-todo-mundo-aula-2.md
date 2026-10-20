@@ -32,9 +32,9 @@
 
 ### Task 2: Revise the Aula 2 teaching sequence
 
-**Files:** Modify `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md` and `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.md`.
+**Files:** Modify `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md` and `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.md`.
 
-**Interfaces:** Keep the three existing sections and their keys; refer to `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md` for previously taught preview controls.
+**Interfaces:** Keep the three existing sections and their keys; refer to `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md` for previously taught preview controls.
 
 - [x] In the 35–45 second retomada, show the zero-count problem before naming the task. Do not assume a live saved project exists when the fallback is used.
 - [x] In the practical narration, orient the child to the incorporated Estúdio, show where the preview is at narrow and wide widths only as needed, say it updates automatically, and name `Programação > Variáveis` and `Somar 1 em variável achados` before asking the child to test three hiding places.
@@ -43,13 +43,13 @@
 
 ### Task 3: Synchronize generator, manifest and import notes
 
-**Files:** Modify `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts` and `docs/aulas-interativas-tecnico/modulos-cade-todo-mundo.md`; regenerate `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json`.
+**Files:** Modify `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts` and `docs/aulas-interativas-tecnico/modulos-cade-todo-mundo.md`; regenerate `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json`.
 
 **Interfaces:** Reuse the Aula 1 material block shape: `{ key: 'caderno', content: { kind: 'materials', title: 'Caderno do Aluno — Cadê Todo Mundo?', items: [] } }`.
 
 - [x] Add `caderno` to Aula 2 `blocks` and its practical section `blockKeys`; do not add it to `completion.blockIds`.
 - [x] Align planned-video directions with the spoken script: automatic preview, no duplicate sending in the closing video, optional caderno in practice.
-- [x] Note that the PDF at `docs/aulas-interativas/cade-todo-mundo/mapa-da-aventura.pdf` must be attached to each lesson's `caderno` block in admin.
+- [x] Note that the PDF at `docs/aulas-interativas/kids/cade-todo-mundo/mapa-da-aventura.pdf` must be attached to each lesson's `caderno` block in admin.
 - [x] Run `bun docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts` and inspect the diff for unrelated manifest changes.
 
 ### Task 4: Verify

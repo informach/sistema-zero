@@ -56,7 +56,7 @@ export interface AulaDino {
   legacyKeys: string[]
   previousRetireKeys: string[]
 }
-const DIR = resolve(import.meta.dir, '../../aulas-interativas/corre-dino')
+const DIR = resolve(import.meta.dir, '../../aulas-interativas/kids/corre-dino')
 export const aulasDino = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'corre-dino.conteudo.json'), 'utf8'),
 ) as AulaDino[]
@@ -316,7 +316,7 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
       )
     if (s.materials)
       lines.push(
-        'Anexar somente `docs/aulas-interativas/corre-dino/mapa-da-aventura.pdf` ao bloco caderno. Ler, baixar e imprimir são opcionais; não entram na conclusão.',
+        'Anexar somente `docs/aulas-interativas/kids/corre-dino/mapa-da-aventura.pdf` ao bloco caderno. Ler, baixar e imprimir são opcionais; não entram na conclusão.',
         '',
       )
     if (s.checks?.length)

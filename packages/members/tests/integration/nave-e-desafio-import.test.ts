@@ -16,7 +16,7 @@ test.each([
   const document: unknown = await Bun.file(
     resolve(
       import.meta.dir,
-      `../../../../docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-${day}.manifesto.json`,
+      `../../../../docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-${day}.manifesto.json`,
     ),
   ).json()
   if (!isLearningManifest(document)) throw new Error('Invalid manifest')
@@ -99,7 +99,7 @@ test('Desafio Dia 1 imports and reimports keeping the notebook in the Farol mate
   const document: unknown = await Bun.file(
     resolve(
       import.meta.dir,
-      '../../../../docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json',
+      '../../../../docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json',
     ),
   ).json()
   if (!isLearningManifest(document)) throw new Error('Invalid manifest')

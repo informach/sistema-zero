@@ -67,7 +67,7 @@ const manifests = ORDEM_DINO.map((slug) => {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/corre-dino/corre-dino-${slug}.manifesto.json`,
+        `../../aulas-interativas/kids/corre-dino/corre-dino-${slug}.manifesto.json`,
       ),
       'utf8',
     ),

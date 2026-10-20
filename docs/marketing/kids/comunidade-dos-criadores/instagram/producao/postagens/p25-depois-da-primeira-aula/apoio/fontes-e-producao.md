@@ -16,7 +16,7 @@ Slide 1: [IR da primeira fase](nave-primeira-fase.json) e [código gerado](nave-
 
 Slide 3: componente CourseTrail original de packages/community-kids/src/components/kids/course-trail.tsx, renderizado localmente com CSS da aplicação e conteúdo do curso. [Origem e dados](interface-origem.json), [captura integral](03-trilha.png), [texto verificado](trilha-verificada.json). Estado inicial de demonstração: zero fases concluídas; primeira disponível e seguintes bloqueadas. O título e os dois primeiros nós foram recortados e ampliados; Primeiro, Depois e a seta são editoriais. Não é captura de uma conta real nem verificação de publicação no servidor.
 
-Slides 2 e 7: páginas 2 e 6 do PDF real docs/aulas-interativas/nave-contra-asteroides/mapa-da-aventura.pdf, conferidas visualmente com a skill de PDF. [Origem, hash e páginas](mapa-origem.json). Página 2: percurso completo do curso. Página 6: título Faça a nave aparecer e encaixes dos blocos. O material foi renderizado com PyMuPDF e inserido em perspectiva; não houve edição de seu conteúdo.
+Slides 2 e 7: páginas 2 e 6 do PDF real docs/aulas-interativas/kids/nave-contra-asteroides/mapa-da-aventura.pdf, conferidas visualmente com a skill de PDF. [Origem, hash e páginas](mapa-origem.json). Página 2: percurso completo do curso. Página 6: título Faça a nave aparecer e encaixes dos blocos. O material foi renderizado com PyMuPDF e inserido em perspectiva; não houve edição de seu conteúdo.
 
 ## Base da Lua em funcionamento
 

@@ -70,9 +70,9 @@ acompanhada pelo pipeline do repositório.
 ### Task 3: Aula piloto e fontes pedagógicas
 
 **Files:**
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.md`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md`
 - Modify: `docs/aulas-interativas-tecnico/cenas/CENAS-NOVAS.md`
 - Modify: `docs/aulas-interativas-tecnico/CATALOGO-CENAS.json`
 - Test: `docs/aulas-interativas-tecnico/qa/validar-manifestos.ts`

@@ -51,7 +51,7 @@ test('confirma todas as remoções antes de substituir o rascunho', async () => 
   const source = await Bun.file(
     resolve(
       import.meta.dir,
-      '../../../../docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-1.manifesto.json',
+      '../../../../docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-1.manifesto.json',
     ),
   ).text()
   const container = document.createElement('div')
@@ -119,7 +119,7 @@ test('atualizar pelo manifesto é o padrão e aplica sem confirmação extra, mo
   const source = await Bun.file(
     resolve(
       import.meta.dir,
-      '../../../../docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-1.manifesto.json',
+      '../../../../docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-1.manifesto.json',
     ),
   ).text()
   const container = document.createElement('div')

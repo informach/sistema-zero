@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[4]
 WORK = ROOT / 'tmp/pdfs/nave-contra-asteroides'
-OUTPUT = ROOT / 'docs/aulas-interativas/nave-contra-asteroides/mapa-da-aventura.pdf'
+OUTPUT = ROOT / 'docs/aulas-interativas/kids/nave-contra-asteroides/mapa-da-aventura.pdf'
 
 def main():
     bun = shutil.which('bun')

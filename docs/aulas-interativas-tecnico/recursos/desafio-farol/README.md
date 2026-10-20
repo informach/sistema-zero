@@ -15,7 +15,7 @@ Na raiz do repositório:
 python docs/aulas-interativas-tecnico/recursos/desafio-farol/gerar-materiais.py
 ```
 
-Requisitos: Bun, Python com `playwright` e Chrome ou Edge instalado. A geração usa arquivos locais, sem baixar fontes ou imagens. Saída: [desafio-farol-caderno.pdf](../../../aulas-interativas/desafio-primeiro-jogo/mapa-da-aventura.pdf). HTML e relatório de limites ficam em `tmp/pdfs/desafio-farol/` para inspeção.
+Requisitos: Bun, Python com `playwright` e Chrome ou Edge instalado. A geração usa arquivos locais, sem baixar fontes ou imagens. Saída: [desafio-farol-caderno.pdf](../../../aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf). HTML e relatório de limites ficam em `tmp/pdfs/desafio-farol/` para inspeção.
 
 O PDF atual tem 29 páginas (revisão de 13/10/2026: duas páginas novas, o teste da parte 4 do Dia 1 e o desenho da resposta sem chave do Dia 3) e acompanha a personalização ampliada de 06/10/2026, com galerias e posição da chave. Os nomes das imagens não quebram no hífen. Após editar passos ou diagramas, conferir também a navegação por páginas e renderizar o PDF inteiro para revisão visual. A validação de limites complementa essa revisão, não substitui a leitura. Não reduzir fonte ou omitir instruções para caber na página.
 

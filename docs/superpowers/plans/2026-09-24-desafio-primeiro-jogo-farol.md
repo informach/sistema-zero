@@ -123,9 +123,9 @@
 **Files:**
 - Create: `docs/aulas-interativas-tecnico/qa/gerar-desafio-farol.ts`
 - Create: `docs/aulas-interativas-tecnico/qa/desafio-farol-manifestos.test.ts`
-- Create: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.md`, `desafio-dia-1.roteiro.md`, `desafio-dia-1.manifesto.json`
-- Create: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.md`, `desafio-dia-2.roteiro.md`, `desafio-dia-2.manifesto.json`
-- Create: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.md`, `desafio-dia-3.roteiro.md`, `desafio-dia-3.manifesto.json`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.md`, `desafio-dia-1.roteiro.md`, `desafio-dia-1.manifesto.json`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-2.md`, `desafio-dia-2.roteiro.md`, `desafio-dia-2.manifesto.json`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.md`, `desafio-dia-3.roteiro.md`, `desafio-dia-3.manifesto.json`
 - Modify: `docs/aulas-interativas-tecnico/qa/novo-modelo.ts` and `validar-manifestos.ts`
 
 **Interfaces:** Three version-5 manifests under `courseSlug: 'desafio-primeiro-jogo'`, with `lessonSlug: 'dia-1' | 'dia-2' | 'dia-3'`, `chain: 'desafio-primeiro-jogo'`, an initialProject fallback per day, `allowedModes: ['blocks']` and project checks for each authored rule.
@@ -147,11 +147,11 @@
 ### Task 5: Introdução, certificado, módulos e materiais
 
 **Files:**
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-introducao.md`, `.roteiro.md`, `.manifesto.json`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-certificado.md`, `.roteiro.md`, `.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-introducao.md`, `.roteiro.md`, `.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-certificado.md`, `.roteiro.md`, `.manifesto.json`
 - Modify: `docs/aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md`, `README.md`, `BRIEFING.md` only where old directions contradict the approved course
 - Create: `docs/aulas-interativas-tecnico/recursos/desafio-farol/gerar-materiais.py`
-- Create: `docs/aulas-interativas/desafio-primeiro-jogo/mapa-da-aventura.pdf`, `output/pdf/desafio-farol-mapa-responsaveis.pdf`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf`, `output/pdf/desafio-farol-mapa-responsaveis.pdf`
 - Create or extend: manifest and content tests for intro/certificate
 
 **Interfaces:** Existing slugs `boas-vindas` and `certificado` remain. The intro has three sections; certificate has issuance and adult-facing next steps. Materials are optional and referenced in the manifesto with `items: []` until manually attached in admin.

@@ -12,7 +12,7 @@ O visual usa o CSS e as fontes Baloo 2/Nunito do caderno de Cadê Todo Mundo?, c
 python docs/aulas-interativas-tecnico/recursos/nave-contra-asteroides/gerar-materiais.py
 ```
 
-Requer Bun, Python com Playwright e Chrome ou Edge instalado. HTML, captura, PDF temporário e relatório de limites ficam em `tmp/pdfs/nave-contra-asteroides/`. A saída é [nave-contra-asteroides-caderno.pdf](../../../aulas-interativas/nave-contra-asteroides/mapa-da-aventura.pdf).
+Requer Bun, Python com Playwright e Chrome ou Edge instalado. HTML, captura, PDF temporário e relatório de limites ficam em `tmp/pdfs/nave-contra-asteroides/`. A saída é [nave-contra-asteroides-caderno.pdf](../../../aulas-interativas/kids/nave-contra-asteroides/mapa-da-aventura.pdf).
 
 O gerador espera as fontes, pagina o conteúdo sem cortar parágrafos, confere imagens, cores e limites antes de substituir o PDF. A inspeção visual do PDF continua necessária, especialmente após mudar texto ou esquemas.
 

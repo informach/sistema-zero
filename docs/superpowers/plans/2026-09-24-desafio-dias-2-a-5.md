@@ -24,9 +24,9 @@
 ### Task 1: Day 2, ship shoots
 
 **Files:**
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.manifesto.json`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.roteiro.md`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-2.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-2.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-2.md`
 - Modify: `docs/aulas-interativas-tecnico/qa/novo-modelo.ts`
 
 **Interfaces:** Consumes the existing manifest v5 shape and shared scene IDs `once-vs-always`, `fixed-vs-read`, `velocity`, `cleanup`; produces a manifest whose four concept sections have video+bridge+experience and all practical sections have video+bridge+project checks.
@@ -39,9 +39,9 @@
 ### Task 2: Day 3, asteroid rain and collision
 
 **Files:**
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.manifesto.json`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.roteiro.md`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.md`
 - Modify: `docs/aulas-interativas-tecnico/qa/novo-modelo.ts`
 
 **Interfaces:** Consumes the Day 2 project state unchanged; produces concepts for the `spawn`, `random` and `collision-pair` scenes and a final project ready for Day 4.
@@ -69,9 +69,9 @@
 ### Task 4: Day 4, points and lives
 
 **Files:**
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-4.manifesto.json`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-4.roteiro.md`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-4.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-4.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-4.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-4.md`
 - Modify: `docs/aulas-interativas-tecnico/qa/novo-modelo.ts`
 
 **Interfaces:** Consumes the `lives-loop` goal from Task 3; preserves Day 4 Studio checks and project state needed by Day 5.
@@ -84,9 +84,9 @@
 ### Task 5: Day 5, game states and final delivery
 
 **Files:**
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-5.manifesto.json`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-5.roteiro.md`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-5.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-5.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-5.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-5.md`
 - Modify: `docs/aulas-interativas-tecnico/qa/novo-modelo.ts`
 
 **Interfaces:** Consumes Day 4 canonical project state; produces a complete challenge game with four state branches, restart-to-menu, separated quiz and one final delivery video.
@@ -100,7 +100,7 @@
 
 **Files:**
 - Modify if contradiction remains: `docs/aulas-interativas-tecnico/BRIEFING.md`
-- Test: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-{2,3,4,5}.manifesto.json`
+- Test: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-{2,3,4,5}.manifesto.json`
 - Test: `packages/core/src/learning/scene/once-vs-always.test.ts`
 
 **Interfaces:** Produces a verified local `staging` commit sequence. Does not import drafts in admin or publish lessons.

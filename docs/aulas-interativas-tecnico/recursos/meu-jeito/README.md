@@ -12,7 +12,7 @@ Usa o CSS e as fontes Baloo 2/Nunito do Cadê Todo Mundo?. Os diagramas recebem 
 python -X utf8 docs/aulas-interativas-tecnico/recursos/meu-jeito/gerar-materiais.py
 ```
 
-Requer Bun, Python com Playwright e Chrome ou Edge instalado. HTML, captura, PDF temporário e relatório de limites ficam em `tmp/pdfs/meu-jeito/`. Saída: [meu-jeito-caderno.pdf](../../../aulas-interativas/o-jogo-do-meu-jeito/mapa-da-aventura.pdf).
+Requer Bun, Python com Playwright e Chrome ou Edge instalado. HTML, captura, PDF temporário e relatório de limites ficam em `tmp/pdfs/meu-jeito/`. Saída: [meu-jeito-caderno.pdf](../../../aulas-interativas/kids/o-jogo-do-meu-jeito/mapa-da-aventura.pdf).
 
 Desde a revisão de falas de 06/10/2026 (três vozes, conversa contínua e chamados de atenção), o Mapa usa a fala das aplicações no modo `mapa` de `falasSecao`: o fecho não manda pausar um vídeo nem voltar a "esta aba", e sim fazer a parte, esperar o salvamento e voltar à aba da fase para clicar em Próxima parte. No jogo pronto saem os dois parágrafos da demonstração do narrador ("Olha aqui:" e "Olha só:"). O índice diz por que nomes, tamanhos e animações precisam combinar com os blocos e como enviar pela galeria, com "clique em".
 
