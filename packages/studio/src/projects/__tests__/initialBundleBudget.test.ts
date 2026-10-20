@@ -3,18 +3,12 @@ import { join } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import { build } from 'vite'
 
-// After grouping the shared list contracts for Rolldown 1.2: 9 initial files,
-// 350,912 raw bytes and 116,276 gzip bytes. Keep a narrow raw allowance while
-// the 120 kB transfer budget and 10-request ceiling continue to guard startup.
-const MAX_INITIAL_JS_BYTES = 355_000
+const MAX_INITIAL_JS_BYTES = 350_000
 const MAX_INITIAL_JS_GZIP_BYTES = 120_000
 const MAX_INITIAL_JS_FILES = 10
 const MAX_EDITOR_ROUTE_JS_BYTES = 5_000_000
 const MAX_EDITOR_ROUTE_JS_GZIP_BYTES = 1_600_000
-// Rolldown 1.2 splits shared editor modules by their static import sets. The
-// route now has 47 cacheable files, but remains at 3.96 MB raw / 1.23 MB gzip.
-// Guard transferred bytes independently from the number of cacheable chunks.
-const MAX_EDITOR_ROUTE_JS_FILES = 50
+const MAX_EDITOR_ROUTE_JS_FILES = 20
 /**
  * ⚠️ O teto CRU do modo Blocos subiu de 4 500 000 para 4 750 000 em 13/09/2026.
  *
@@ -36,9 +30,9 @@ const MAX_EDITOR_ROUTE_JS_FILES = 50
  * estava — está em 4,0 M, com folga de verdade.
  */
 const MODE_BUDGETS = {
-  BlocksMode: { raw: 4_750_000, gzip: 1_450_000, files: 50 },
-  BridgeMode: { raw: 4_500_000, gzip: 1_450_000, files: 50 },
-  CodeMode: { raw: 4_000_000, gzip: 1_300_000, files: 50 },
+  BlocksMode: { raw: 4_750_000, gzip: 1_450_000, files: 20 },
+  BridgeMode: { raw: 4_500_000, gzip: 1_450_000, files: 20 },
+  CodeMode: { raw: 4_000_000, gzip: 1_300_000, files: 18 },
 } as const
 
 test('a lista inicial não pré-carrega o editor nem os catálogos pesados', async () => {

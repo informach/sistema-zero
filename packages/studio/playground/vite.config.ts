@@ -128,11 +128,10 @@ export default defineConfig({
           includeDependenciesRecursively: false,
           groups: [
             {
-              // Rolldown 1.2 separates tiny contracts shared by the project list and editor
-              // into individual initial requests. These modules already load on the list;
-              // keep their shared boundary together without pulling editor-only modules in.
-              name: 'studio-initial-contracts',
-              test: /(?:[\\/]core[\\/]src[\\/]studio[\\/](?:pro-templates|project-format|project-json|runtime-identity)\.ts$|[\\/]studio[\\/]src[\\/](?:components[\\/]code[\\/]pro-templates[\\/]index|state[\\/](?:projectStorageRuntime|idbTransaction|bridgeAuthority|projectOperations|projectStorageRevision|projectStorageKeys|projectStorageRecords|projectSummary)|core[\\/](?:projectDocumentGuards|projectDocument|editableProject|modes)|persistence[\\/]service|blockly[\\/]blocksStateShape)\.ts$|[\\/]node_modules[\\/](?:idb-keyval[\\/]dist[\\/]index\.js|zustand[\\/]esm[\\/](?:vanilla|react|index)\.mjs)$)/,
+              // Group only the static entry graph. Rolldown 1.1 otherwise emits
+              // tiny shared helpers separately; dynamic editor imports stay lazy.
+              name: 'studio-initial',
+              tags: ['$initial'],
             },
             {
               // Editor models, material/factory leaves, UI contexts and canonical runtime/preview
@@ -166,6 +165,24 @@ export default defineConfig({
               // Blockly-only presentation remains absent from source-only modes.
               name: 'studio-blockly-presentation',
               test: /(?:[\\/]studio[\\/]src[\\/](?:blockly[\\/](?:theme|themeColors|blocks[\\/]mutatorEvents)|components[\\/]blocks[\\/]blocklyHistory)\.ts$|[\\/]blockly[\\/]msg[\\/]pt-br\.m?js$)/,
+            },
+            {
+              // Coalesce shared modules already reachable through the editor's
+              // static imports. Never follow a dynamic import into a lazy mode.
+              minShareCount: 2,
+              name(id, context) {
+                const visited = new Set<string>()
+                const pending = [r('../src/studio/StudioEditor.tsx')]
+                while (pending.length) {
+                  const current = pending.pop()!
+                  if (current === id) return 'studio-editor-shared'
+                  if (visited.has(current)) continue
+                  visited.add(current)
+                  const info = context.getModuleInfo(current)
+                  if (info) pending.push(...info.importedIds)
+                }
+                return null
+              },
             },
           ],
         },

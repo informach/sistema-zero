@@ -53,3 +53,17 @@
 - [ ] Informar separadamente o estado da liberação JavaScript e o que continua pendente na homologação Python.
 
 Verificações adicionais em 20/10: a imagem local com Vite 8.1.6 e perfil `9e33e74e…` passou pelo smoke sem rede e pelos seis kits, com usuário não root, compilação, comportamento e captura PNG. O bundle correspondente do Worker foi produzido por dry-run. Isso não comprova publicação no registry ou implantação de staging. A tentativa 2 do CI passou por Molda e Windows e revelou dois testes editoriais desatualizados: os sons alternativos passaram a controles positivos; ausência do efeito e efeito apenas em evento alheio continuam controles negativos, com serialização Blockly real. O foco corrigido passou com 19 testes e 245 asserções; o CI completo da correção ainda precisa concluir.
+
+Atualização da regressão de empacotamento em 20/10: no commit `10a69eda5`, CI `39504777180`, os três shards Chromium passaram com 325 testes e dez skips fora dos oito alvos JavaScript/Pro; esses oito passaram na primeira tentativa. Kids, Windows, Firefox, WebKit e armazenamento macOS também passaram. O job central parou no orçamento do bundle, antes da tipagem global. A instalação local ainda apontava para Vite 8.0.16; após `bun install --frozen-lockfile`, Vite 8.1.6/Rolldown 1.1.5 reproduziu os 25 arquivos iniciais do CI. A medição com o compilador anterior não qualifica o atual.
+
+A configuração do playground agora reúne o grafo inicial pela tag oficial `$initial` e os módulos compartilhados que o editor já alcança por imports estáticos. Os imports dinâmicos, as três fronteiras existentes e `strictExecutionOrder` permanecem preservados. O teste original passou com 27 asserções, mantendo os tetos anteriores; o ajuste remoto `cdb7073d2` foi conciliado sem conservar o aumento dos tetos.
+
+| Escopo | Arquivos | Bytes | Gzip |
+| --- | ---: | ---: | ---: |
+| Inicial | 2 | 346.215 | 112.674 |
+| Rota do editor, além do inicial | 5 | 3.949.373 | 1.218.684 |
+| Blocos | 12 | 4.501.495 | 1.187.547 |
+| Ponte | 13 | 3.980.275 | 1.050.886 |
+| Código | 10 | 2.417.435 | 666.547 |
+
+Os conjuntos de módulos carregados antes/depois são idênticos no inicial (86), na rota (514) e na união da rota com cada modo: Blocos 642, Ponte 638 e Código 548. Os hashes do CSS também são iguais. A contabilização isolada dos modos inclui módulos compartilhados que a rota já carregou; não significa download adicional. Três testes existentes no Chromium passaram com build de produção novo, sem repetição: abertura em Blocos, execução do script na Ponte e criação de arquivo no Pro. Build, preview e runner encerraram com código zero e a porta 5195 ficou livre. O CI do próximo commit e a homologação dos serviços publicados continuam pendentes.
