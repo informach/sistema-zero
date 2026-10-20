@@ -59,3 +59,24 @@ test('uma missão concluída permite reabrir sem trocar o resultado esperado', a
   expect(screen.getByText('Você reconhece a nave.')).toBeTruthy()
   expect(screen.queryByText(/Passo 1 de|Próximo passo/)).toBeNull()
 })
+test('o topo âmbar recolhe a missão e o trilho a abre de novo', () => {
+  const onCollapsedChange = mock()
+  const session = {
+    ...missionSessionFixture(),
+    order: { index: 4, total: 9 },
+    onCollapsedChange,
+  }
+  const { rerender } = render(<TaskGuidePanel session={session} />)
+  const head = screen.getByRole('button', { name: /Desenhar a nave/ })
+  expect(head.getAttribute('aria-expanded')).toBe('true')
+  expect(screen.getByText(/Pensa · Bosque · missão 4 de 9/)).toBeTruthy()
+  fireEvent.click(head)
+  expect(onCollapsedChange).toHaveBeenLastCalledWith(true)
+
+  rerender(<TaskGuidePanel session={{ ...session, collapsed: true }} />)
+  const rail = screen.getByRole('button', { name: /Ver missão · Desenhar a nave/ })
+  expect(rail.getAttribute('aria-expanded')).toBe('false')
+  expect(screen.queryByRole('button', { name: 'Conferi e está pronto' })).toBeNull()
+  fireEvent.click(rail)
+  expect(onCollapsedChange).toHaveBeenLastCalledWith(false)
+})

@@ -289,65 +289,133 @@ describe('tool-chrome.css: receitas', () => {
     expect(dasFaixas.some((seletor) => seletor.includes('sz-tool-card--new'))).toBe(true)
   })
 
-  it('o cabeçalho do guia tem o alvo de toque e o respiro do canto de 20px', () => {
-    // O relato dela era o Pinta: 12px de lado e 8px embaixo num canto de 16px, com o texto
-    // encostando na curva. Recolhido o cabeçalho é o ÚNICO filho, então o respiro do cartão
-    // inteiro é o dele.
-    const cabeca = bloco('.sz-tool-guide__head {')
-    expect(cabeca.corpo).toContain('min-height: var(--sz-tool-hit)')
-    expect(cabeca.corpo).toContain('padding: 0.875rem 1.125rem')
-    // O primeiro filho come o espaço livre: sem isso a situação flutua no meio da linha.
-    expect(bloco('.sz-tool-guide__head > :first-child {').corpo).toContain('flex: 1 1 auto')
-    // O cabeçalho que é CONTÊINER (o do Estúdio, com o botão dentro) respira menos: o botão já
-    // traz o alvo de 44px, e 14+44+14 dava 72px contra os ~47px dos irmãos.
-    expect(bloco('div.sz-tool-guide__head {').corpo).toContain('padding-block: 0.125rem')
-    const botao = bloco('button.sz-tool-guide__head,')
-    expect(botao.seletor).toContain('.sz-tool-guide__head button')
-    expect(botao.corpo).toContain('cursor: pointer')
-    // ⚠ O raio inteiro só quando o cabeçalho É o cartão (recolhido): aberto, herdar os quatro
-    // cantos deixava o hover com dois entalhes arredondados sobre o corpo.
-    expect(bloco('button.sz-tool-guide__head {').corpo).toContain('border-start-start-radius')
-    expect(bloco('button.sz-tool-guide__head:only-child {').corpo).toContain(
-      'border-radius: inherit',
+  /*
+   * A MISSÃO DO PENSA nas oficinas (20/10/2026, desenho aprovado). Pedido dela: o painel
+   * NUNCA cobre o Estúdio, o Pinta ou o Molda, nem aberto nem recolhido. Coluna própria à
+   * direita a partir de 1100px de oficina, faixa embaixo abaixo disso, trilho de 64px ou uma
+   * linha quando recolhido.
+   */
+  const regrasDaMissao = () =>
+    [...semComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .map(([, seletor = '', corpo = '']) => ({ seletor: seletor.trim(), corpo }))
+      .filter(({ seletor }) => seletor.includes('sz-tool-mission'))
+  const containerLarga = () => {
+    const i = semComentarios.indexOf('@container sz-mission (min-width: 68.75rem) {')
+    expect(i).toBeGreaterThan(-1)
+    let profundidade = 0
+    for (let j = semComentarios.indexOf('{', i); j < semComentarios.length; j++) {
+      if (semComentarios[j] === '{') profundidade++
+      if (semComentarios[j] === '}') profundidade--
+      if (profundidade === 0) return semComentarios.slice(i, j + 1)
+    }
+    throw new Error('bloco @container sem fim')
+  }
+
+  it('a oficina é o contêiner, e o painel fica EMBAIXO dela até 1100px', () => {
+    expect(bloco('.sz-tool-mission-layout.has-panel {').corpo).toContain(
+      'container: sz-mission / inline-size',
     )
+    // A direção padrão é a coluna: o painel vem DEPOIS da oficina no DOM, então fica embaixo,
+    // e quem rola é a coluna (a faixa nunca espreme nem corta a oficina).
+    const linha = bloco('.has-panel > .sz-tool-mission-layout__row {').corpo
+    expect(linha).toContain('flex-direction: column')
+    expect(linha).toContain('overflow-y: auto')
+    // A oficina não desce do piso das ferramentas embarcadas e não pinta fora da caixa dela.
+    const oficina = bloco('.has-panel .sz-tool-mission-layout__work {').corpo
+    expect(oficina).toContain('min-height: min(34rem, calc(100% - 4.875rem))')
+    expect(oficina).toContain('overflow-y: clip')
+    expect(bloco('.sz-tool-mission-panel {').corpo).toContain('flex: none')
   })
 
-  it('o texto pequeno do guia respeita o piso de 12px da casa', () => {
-    // ⚠️⚠️ Achado do full review de 19/09/2026: o sobretítulo nasceu em 11px e a situação em 10px
-    // (herdada de uma utilitária de 10px que existia só no Estúdio). Promover isso a receita
-    // teria espalhado o tamanho errado para as quatro ferramentas. O piso para criança é 12px.
-    for (const ancora of ['.sz-tool-guide__kicker {', '.sz-tool-guide__state {']) {
-      const tamanho = /font-size:\s*([\d.]+)rem/.exec(bloco(ancora).corpo)?.[1]
-      expect({ ancora, tamanho }).toEqual({ ancora, tamanho: '0.75' })
+  it('a partir de 1100px de oficina o painel é uma coluna de 360px e recolhe para 64px', () => {
+    const larga = containerLarga()
+    expect(larga).toMatch(/\.has-panel > \.sz-tool-mission-layout__row \{\s*flex-direction: row;/)
+    expect(larga).toMatch(/\.sz-tool-mission-panel \{[^}]*width: 22\.5rem/)
+    expect(larga).toMatch(
+      /\.sz-tool-mission-panel\.is-collapsed:not\(\.has-alert\) \{\s*width: 4rem;/,
+    )
+    // O texto do trilho é vertical.
+    expect(larga).toContain('writing-mode: vertical-rl')
+  })
+
+  it('nada do painel flutua por cima da oficina', () => {
+    const regras = regrasDaMissao()
+    expect(regras.length).toBeGreaterThan(30) // anti-vácuo
+    for (const { seletor, corpo } of regras) {
+      expect({ seletor, fixed: corpo.includes('position: fixed') }).toEqual({
+        seletor,
+        fixed: false,
+      })
+      expect({ seletor, z: corpo.includes('z-index') }).toEqual({ seletor, z: false })
+      // `absolute` só no que é escondido para o leitor de tela (recortado por inteiro).
+      if (corpo.includes('position: absolute')) expect(corpo).toContain('clip-path: inset(50%)')
+      else
+        expect({ seletor, negativa: /margin[\w-]*:\s*-/.test(corpo) }).toEqual({
+          seletor,
+          negativa: false,
+        })
     }
   })
 
-  it('o corpo e o pé do guia trazem o respiro e a divisória', () => {
-    expect(bloco('.sz-tool-guide__body {').corpo).toContain('padding: 0 1.125rem 1rem')
-    const pe = bloco('.sz-tool-guide__foot {')
-    expect(pe.corpo).toContain('padding: 0.75rem 1.125rem 1.125rem')
-    expect(pe.corpo).toContain('border-top: 1px solid var(--sz-tool-line)')
+  it('recolhido com um recado, a coluna não vira trilho: problema não se esconde', () => {
+    const larga = containerLarga()
+    expect(larga).toContain('.sz-tool-mission-panel.is-collapsed.has-alert {')
+    // Toda regra de trilho exige a ausência do recado.
+    for (const linha of larga.split('\n')) {
+      if (linha.includes('.is-collapsed') && linha.includes('{') && !linha.includes('.has-alert {'))
+        expect(linha).toContain(':not(.has-alert)')
+    }
   })
 
-  it('a divisória do guia lateral usa o fio VISÍVEL, nunca a borda de cartão', () => {
-    // O `--sz-tool-card-edge` é transparent no claro (uma borda de cartão some de propósito);
-    // a divisória que separa o guia do editor não pode sumir.
-    const aside = bloco('.sz-tool-guide--aside {')
-    expect(aside.corpo).toContain('border-bottom: 1px solid var(--sz-tool-line)')
-    expect(aside.corpo).toContain('border-radius: 0')
-    expect(aside.corpo).not.toContain('card-edge')
-    // ⚠️⚠️ O bloco da media é RECORTADO de verdade: a primeira versão fatiava daqui até o FIM do
-    // arquivo, então esvaziar a media e pôr as declarações em qualquer regra mais abaixo passava
-    // verde (provado no full review de 19/09/2026) — e o fio do lado sumiria a partir de 1024px
-    // sem nenhum teste vermelho.
-    const iMedia = semComentarios.indexOf('@media', semComentarios.indexOf('.sz-tool-guide--aside'))
-    const abre = semComentarios.indexOf('{', iMedia)
-    const fimDaRegra = semComentarios.indexOf('}', abre)
-    const media = semComentarios.slice(iMedia, semComentarios.indexOf('}', fimDaRegra + 1) + 1)
-    expect(media).toContain('min-width: 64rem')
-    expect(media).toContain('.sz-tool-guide--aside')
-    expect(media).toContain('border-inline-end: 1px solid var(--sz-tool-line)')
-    expect(media).toContain('border-bottom: 0')
+  it('o texto pequeno do painel respeita o piso de 12px da casa', () => {
+    for (const ancora of ['.sz-tool-mission-panel__kicker {', '.sz-tool-mission-panel__chip,']) {
+      const tamanho = /font-size:\s*([\d.]+)rem/.exec(bloco(ancora).corpo)?.[1]
+      expect({ ancora, tamanho }).toEqual({ ancora, tamanho: '0.75' })
+    }
+    for (const { seletor, corpo } of regrasDaMissao()) {
+      for (const [, rem] of corpo.matchAll(/font-size:\s*([\d.]+)rem/g))
+        expect({ seletor, rem: Number(rem) >= 0.75 }).toEqual({ seletor, rem: true })
+    }
+  })
+
+  it('os botões do painel têm o degrau do desenho aprovado, com classe própria', () => {
+    expect(bloco('.sz-tool-mission-panel__btn--primary {').corpo).toContain(
+      '0 4px 0 var(--sz-tool-cta-degrau)',
+    )
+    const botao = bloco('.sz-tool-mission-panel__btn {').corpo
+    expect(botao).toContain('var(--sz-tool-degrau)')
+    // O alvo da casa: 40px no mouse, 44px no toque.
+    expect(botao).toContain('min-height: var(--sz-tool-hit)')
+    expect(bloco('.sz-tool-mission-panel__link {').corpo).toContain(
+      'min-height: var(--sz-tool-hit)',
+    )
+  })
+
+  it('o topo âmbar e o menta do pronto usam as constantes, que não trocam de tema', () => {
+    const geometria = bloco(':root {').corpo
+    for (const nome of [
+      'on-tint',
+      'sig-pensa-tint',
+      'sig-pensa-ink',
+      'sig-ok-tint',
+      'sig-molda-tint',
+    ])
+      expect(geometria).toContain(`--sz-tool-${nome}:`)
+    const topo = bloco('.sz-tool-mission-panel__head,').corpo
+    expect(topo).toContain('background: var(--sz-tool-sig-pensa-tint)')
+    expect(topo).toContain('color: var(--sz-tool-on-tint)')
+  })
+
+  it('a tinta sobre o âmbar do Pensa é ESCURA, derivada da assinatura, nunca a branca da ação', () => {
+    const geometria = bloco(':root {').corpo
+    const tinta = /--sz-tool-on-sig-pensa:\s*([^;]+);/.exec(geometria)?.[1] ?? ''
+    expect(tinta).toBe('color-mix(in oklab, var(--sz-tool-sig-pensa) 33%, oklch(0 0 0))')
+    expect(tinta).not.toContain('cta-tinta')
+    // O ladrilho das galerias e a lâmpada do topo da missão leem a mesma tinta.
+    expect(bloco('.sz-tool-tile--pensa {').corpo).toContain('color: var(--sz-tool-on-sig-pensa)')
+    expect(bloco('.sz-tool-mission-panel__lamp {').corpo).toContain(
+      'color: var(--sz-tool-on-sig-pensa)',
+    )
   })
 
   it('o recado de problema tem cara de problema, o de aviso não, e os dois passam nos temas', () => {
@@ -441,7 +509,7 @@ describe('os três guias do Pensa vestem a MESMA casca', () => {
   ]
   it('a receita existe na folha que os três consomem', () => {
     // Fora do laço: repetida a cada arquivo, ela não era anti-vácuo de nada.
-    expect(semComentarios).toMatch(/\.sz-tool-guide__head\b/)
+    expect(semComentarios).toMatch(/\.sz-tool-mission-panel__head\b/)
   })
   it('o ponto de entrada Kids encaminha para o mesmo guia compartilhado', async () => {
     const wrapper = await Bun.file(

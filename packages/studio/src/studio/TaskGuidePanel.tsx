@@ -82,10 +82,9 @@ export function TaskGuidePanel({ session }: { session: StudioTaskSession }) {
       key={`${session.mission.id}:${session.mission.contentRevision}`}
       session={panelSession}
       recovery={error ? <p role="alert">{error}</p> : null}
-      aside
     >
       {setup ? (
-        <div>
+        <div className="sz-tool-mission-content__item">
           {installed ? (
             <p role="status">Já está preparada.</p>
           ) : (

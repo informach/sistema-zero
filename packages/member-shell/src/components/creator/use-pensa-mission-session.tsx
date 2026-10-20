@@ -5,6 +5,7 @@ import {
   type PensaDestination,
   type PensaMissionHandoff,
   PensaMissionHandoffSchema,
+  PensaProjectViewSchema,
 } from '@sistemazero/core/pensa'
 import { PrivateZappyVoice } from '@sistemazero/member-shell/components/private-zappy-voice'
 import { sessionFetch } from '@sistemazero/member-shell/lib/session-fetch'
@@ -96,6 +97,57 @@ async function readHandoff(missionId: string, viewerId: string, signal?: AbortSi
   return handoff
 }
 
+/** The accepted plan in plan order, for display only (titles and "missão N de M"). */
+export interface PensaMissionOutline {
+  projectId: string
+  revisionId: string
+  missions: Array<{ id: string; title: string; destination: PensaDestination }>
+}
+
+/**
+ * Reads the accepted plan of the mission's project so the workshop panel can say "missão 4 de 9"
+ * and name the next mission. Decoration only: the order and the next action stay server
+ * decisions (the handoff carries them); a failure here just leaves the panel without the count.
+ */
+export function usePensaMissionOutline(
+  handoff: PensaMissionHandoff | null,
+  viewerId: string | null,
+): PensaMissionOutline | null {
+  const projectId = handoff?.project.id ?? null
+  const revisionId = handoff?.projectRevisionId ?? null
+  const [outline, setOutline] = useState<PensaMissionOutline | null>(null)
+  useEffect(() => {
+    if (!projectId || !revisionId || !viewerId) return
+    const controller = new AbortController()
+    void sessionFetch(`/api/pensa/projects/${encodeURIComponent(projectId)}`, {
+      signal: controller.signal,
+      cache: 'no-store',
+      headers: { 'x-sz-viewer': viewerId },
+    })
+      .then(async (response) => {
+        if (!response.ok) return
+        const parsed = PensaProjectViewSchema.safeParse(await response.json())
+        if (controller.signal.aborted || !parsed.success) return
+        const view = parsed.data
+        if (view.team.viewerProfileId !== viewerId || view.revision?.id !== revisionId) return
+        setOutline({
+          projectId,
+          revisionId,
+          missions: [...view.revision.plan.missions]
+            .sort((a, b) => a.position - b.position)
+            .map((mission) => ({
+              id: mission.id,
+              title: mission.title,
+              destination: mission.destination,
+            })),
+        })
+      })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [projectId, revisionId, viewerId])
+  return outline?.projectId === projectId && outline?.revisionId === revisionId ? outline : null
+}
+
 /** Serialize mutations, refresh CAS tokens and attach only creations confirmed in the account. */
 export function usePensaMissionSession({
   handoff,
@@ -105,6 +157,7 @@ export function usePensaMissionSession({
   retry,
   navigate,
   narrationEnabled = false,
+  outline = null,
 }: {
   handoff: PensaMissionHandoff | null
   viewerId: string | null
@@ -113,6 +166,8 @@ export function usePensaMissionSession({
   retry(): void
   navigate(path: string): void
   narrationEnabled?: boolean
+  /** The accepted plan (`usePensaMissionOutline`), for the count and the next title. */
+  outline?: PensaMissionOutline | null
 }): PensaMissionSession | undefined {
   const { collapsed, setCollapsed } = usePensaGuideCollapsed(viewerId)
   const current = useRef(handoff)
@@ -242,7 +297,25 @@ export function usePensaMissionSession({
           ? 'Continuar meu caminho'
           : `Continuar no ${nextAction.destination === 'studio' ? 'Estúdio' : nextAction.destination === 'pinta' ? 'Pinta' : 'Molda'}`
         : 'Voltar ao plano'
+    const position = outline ? outline.missions.findIndex((item) => item.id === mission.id) : -1
+    const nextTitle =
+      nextAction.type === 'mission'
+        ? outline?.missions.find((item) => item.id === nextAction.missionId)?.title
+        : undefined
+    // The teammate who programs receives the art (team games): the roles come from the server.
+    const team = handoff.team
+    const programmer =
+      team.memberCount > 0 && team.programmerProfileId !== activeViewerId
+        ? team.people.find((person) => person.profileId === team.programmerProfileId)
+        : undefined
     return {
+      order:
+        outline && position >= 0 ? { index: position + 1, total: outline.missions.length } : null,
+      nextMission:
+        nextAction.type === 'mission' && nextTitle
+          ? { title: nextTitle, destination: nextAction.destination }
+          : null,
+      handoffTo: programmer ? { name: programmer.firstName?.trim() || 'Colega' } : null,
       mission: handoff.mission,
       progress: handoff.progress,
       project: handoff.project,
@@ -325,5 +398,6 @@ export function usePensaMissionSession({
     collapsed,
     setCollapsed,
     scope,
+    outline,
   ])
 }

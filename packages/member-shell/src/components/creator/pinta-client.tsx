@@ -21,6 +21,7 @@ import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import {
   canOpenPensaMission,
   usePensaMissionHandoff,
+  usePensaMissionOutline,
   usePensaMissionSession,
 } from './use-pensa-mission-session'
 
@@ -168,6 +169,7 @@ export function PintaClient({
   // vive no PACOTE e não conhece `viewerId` nem `localStorage`, então o par desce como DADO —
   // o mesmo idioma do `menu.hidden`/`onToggle` do `hostChrome`.
   const navigate = useCallback((path: string) => router.push(path), [router])
+  const outline = usePensaMissionOutline(handoff, viewerId)
   const missionSession = usePensaMissionSession({
     handoff,
     viewerId,
@@ -176,6 +178,7 @@ export function PintaClient({
     retry: retryHandoff,
     navigate,
     narrationEnabled,
+    outline,
   })
 
   const adapter = useMemo<PintaHostAdapter>(() => {
