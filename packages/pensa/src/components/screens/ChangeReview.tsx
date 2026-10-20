@@ -47,6 +47,8 @@ export function ChangeReview({
   onDiscard(): void
 }) {
   const { readOnly, copy } = usePensaUi()
+  // Pausado ou em Guardados, o servidor recusa o aceite; descartar continua livre.
+  const locked = view.project.paused || view.project.status === 'archived'
   const impact = draft.impact
   const counts: Array<{ kind: Kind; count: number; label: (n: number) => string }> = [
     {
@@ -180,7 +182,7 @@ export function ChangeReview({
           <button
             type="button"
             className="pz-btn pz-btn--action pz-btn--lg"
-            disabled={busy || readOnly || draft.status !== 'ready'}
+            disabled={busy || readOnly || locked || draft.status !== 'ready'}
             title={readOnly ? copy.readOnlyHint : undefined}
             onClick={onAccept}
           >

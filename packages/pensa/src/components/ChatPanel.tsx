@@ -106,7 +106,7 @@ export function ChatPanel({
           <li className="pz-bubble is-assistant">
             {kids ? <Mascot pose="speaking" size={36} className="pz-bubble__face" /> : null}
             <div className="pz-bubble__text">
-              <p>Pode me perguntar sobre uma missão ou pedir para mudar uma parte do jogo.</p>
+              <p>{copy.chatEmpty}</p>
             </div>
           </li>
         ) : null}
@@ -132,7 +132,7 @@ export function ChatPanel({
         {changeReady ? (
           <li className="pz-bubble is-assistant">
             <div className="pz-bubble__text">
-              <p>Preparei a mudança para você conferir.</p>
+              <p>{copy.changePrepared}</p>
               <button
                 type="button"
                 className="pz-btn pz-btn--card pz-btn--sm"
@@ -166,7 +166,13 @@ export function ChatPanel({
       {failed ? (
         <div className="pz-chat__state">
           <OperationFailed
-            kind={operation?.kind === 'help' ? 'help' : 'planning'}
+            kind={
+              operation?.kind === 'help'
+                ? 'help'
+                : operation?.kind === 'planning'
+                  ? 'planning'
+                  : 'other'
+            }
             busy={busy}
             onRetry={onRetryOperation}
           />

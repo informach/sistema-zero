@@ -89,9 +89,11 @@ export function Finished({
               </li>
             ))}
           </ul>
-          <button type="button" className="pz-link-btn pz-self-start" onClick={onNewGame}>
-            Começar outro jogo
-          </button>
+          {!readOnly ? (
+            <button type="button" className="pz-link-btn pz-self-start" onClick={onNewGame}>
+              Começar outro jogo
+            </button>
+          ) : null}
         </section>
       ) : null}
     </div>

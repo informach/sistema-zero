@@ -155,6 +155,8 @@ test('leaving a bound Pro mission returns to its Pensa plan by full navigation',
       if (path === `/api/pensa/missions/${handoff.mission.id}/handoff`)
         return Response.json(handoff)
       if (path === '/api/creations/studio') return Response.json({ items: [], nextCursor: null })
+      // The mission panel reads the accepted plan only to DISPLAY "missão N de M".
+      if (path === `/api/pensa/projects/${planId}`) return Response.json(projectFixture())
       unexpectedRequests.push(path)
       throw new Error(`Unexpected fixture request: ${path}`)
     },

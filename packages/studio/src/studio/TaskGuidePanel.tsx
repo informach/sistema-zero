@@ -90,7 +90,7 @@ export function TaskGuidePanel({ session }: { session: StudioTaskSession }) {
           ) : (
             <button
               type="button"
-              className="sz-tool-pill sz-tool-pill--outline"
+              className="sz-tool-mission-panel__btn sz-tool-mission-panel__btn--small"
               disabled={Boolean(session.blockedReason) || installing}
               onClick={() => void install()}
             >

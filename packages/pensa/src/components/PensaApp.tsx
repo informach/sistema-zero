@@ -163,9 +163,11 @@ function PensaWorkspace({
   const [cartaOpen, setCartaOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [showChange, setShowChange] = useState(false)
-  const [editingIdea, setEditingIdea] = useState(false)
-  const [preview, setPreview] = useState<Preview | null>(null)
+  // A tela da mudança, o texto em edição e a missão aberta pertencem a UM jogo: guardam o id
+  // dele e somem sozinhos quando outro jogo abre (sem esperar um efeito de limpeza).
+  const [changeFor, setChangeFor] = useState<string | null>(null)
+  const [editingFor, setEditingFor] = useState<string | null>(null)
+  const [previewState, setPreviewState] = useState<(Preview & { projectId: string }) | null>(null)
   const deleteKey = useRef<{ projectId: string; requestId: string } | null>(null)
   const deletingRef = useRef(false)
   const opener = useRef<HTMLElement | null>(null)
@@ -175,15 +177,29 @@ function PensaWorkspace({
   const sendKey = useRef<{ fingerprint: string; id: string } | null>(null)
   const joinKey = useRef<{ code: string; id: string } | null>(null)
   const lastOpened = useRef<string | null>(initialProjectId)
+  // `?ajuda=` abre o jogo do link já na Conversa (no celular), uma vez só.
+  const helpTabPending = useRef(Boolean(initialHelpMissionId && initialProjectId))
 
   const projectId = view?.project.id ?? null
-  // Trocar de jogo volta à aba do plano e fecha o que era do jogo anterior.
+  const showChange = projectId !== null && changeFor === projectId
+  const setShowChange = (open: boolean) => setChangeFor(open ? projectId : null)
+  const editingIdea = projectId !== null && editingFor === projectId
+  const setEditingIdea = (editing: boolean) => setEditingFor(editing ? projectId : null)
+  const preview = previewState && previewState.projectId === projectId ? previewState : null
+  const setPreview = (next: Preview | null) =>
+    setPreviewState(next && projectId ? { ...next, projectId } : null)
+  // Trocar de jogo volta à aba do plano. O primeiro jogo aberto por `?ajuda=` fica na Conversa
+  // (o efeito também roda antes de a view chegar, com `projectId` nulo, e não pode gastar a aba
+  // da ajuda nesse momento).
   // biome-ignore lint/correctness/useExhaustiveDependencies: resets only when the project changes.
   useEffect(() => {
-    setPreview(null)
-    setShowChange(false)
-    setEditingIdea(false)
-    if (!initialHelpMissionId || projectId !== initialProjectId) setTab('plano')
+    if (!projectId) return
+    if (helpTabPending.current && projectId === initialProjectId) {
+      helpTabPending.current = false
+      return
+    }
+    helpTabPending.current = false
+    setTab('plano')
   }, [projectId])
 
   const draftKeyFor = (mode: 'planning' | 'help', missionId: string | null) =>
@@ -225,6 +241,9 @@ function PensaWorkspace({
     next?.type === 'mission'
       ? (accepted?.plan.missions.find((item) => item.id === next.missionId) ?? null)
       : null
+  const nextAccess = nextMission
+    ? view?.availability.find((item) => item.missionId === nextMission.id)
+    : undefined
   const helpMission =
     accepted?.plan.missions.find((item) => item.id === (helpMissionId ?? nextMission?.id)) ?? null
   const draft = view?.draft ?? null
@@ -421,7 +440,7 @@ function PensaWorkspace({
       actions={
         view && accepted ? (
           <>
-            {nextMission ? (
+            {nextMission && nextAccess?.available !== false ? (
               <button
                 type="button"
                 className="pz-btn pz-btn--action"
@@ -558,6 +577,8 @@ function PensaWorkspace({
           assistantText={lastAssistantText}
           composer={composer}
           disabled={blocked}
+          exhausted={exhausted}
+          exhaustedCard={exhaustedCard}
           onBack={goHome}
           onChoose={(option) =>
             void send({ choiceId: pendingChoice.id, optionId: option.id, label: option.label })
@@ -571,6 +592,8 @@ function PensaWorkspace({
           draft={readyDraft}
           composer={composer}
           busy={busy}
+          exhausted={exhausted}
+          exhaustedCard={exhaustedCard}
           onAccept={acceptDraft}
           onLater={goHome}
           onOpenMission={(mission) => {

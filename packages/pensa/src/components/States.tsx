@@ -60,9 +60,12 @@ export function OperationFailed({
       <h2 id="pz-failed" className="pz-title pz-title--md">
         {kind === 'help'
           ? 'Deu um tropeço. A sua pergunta está guardada.'
-          : 'Deu um tropeço. A sua ideia está guardada.'}
+          : kind === 'other'
+            ? 'Deu um tropeço. O seu jogo está guardado.'
+            : 'Deu um tropeço. A sua ideia está guardada.'}
       </h2>
-      <p>{copy.failedSaved}</p>
+      {/* Voltar a uma versão não parte de um texto: a frase do texto guardado não cabe. */}
+      {kind === 'other' ? null : <p>{copy.failedSaved}</p>}
       {quote ? <blockquote className="pz-quote">“{quote}”</blockquote> : null}
       <div className="pz-row">
         <button

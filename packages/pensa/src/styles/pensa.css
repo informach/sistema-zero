@@ -32,9 +32,9 @@
   --pz-action-tint: color-mix(in oklab, var(--pz-action) 12%, var(--pz-surface));
   --pz-action-ink: var(--pz-action-step);
   --pz-amber: var(--sz-tool-sig-pensa, var(--sz-amber, #e8a317));
-  /* A tinta escura sobre o âmbar. Não lê o `--sz-tool-on-sig-pensa`: no host kids ele cai na
-     tinta da AÇÃO (branca) e reprova sobre o âmbar. */
-  --pz-on-amber: color-mix(in oklab, var(--pz-amber) 24%, black);
+  /* A tinta sobre o âmbar vem do chrome compartilhado (`--sz-tool-on-sig-pensa`, uma tinta
+     âmbar escura, 7,38:1 sobre o âmbar); a reserva repete a mesma conta para o playground sem host. */
+  --pz-on-amber: var(--sz-tool-on-sig-pensa, color-mix(in oklab, var(--pz-amber) 33%, black));
   --pz-amber-step: color-mix(in oklab, var(--pz-amber) 66%, black);
   --pz-amber-ink: color-mix(in oklab, var(--pz-amber) 50%, black);
   --pz-yellow: var(--sz-yellow, #ffc02e);
@@ -60,7 +60,8 @@
   --pz-studio-step: color-mix(in oklab, var(--pz-studio) 72%, black);
   --pz-menu: var(--sz-menu, #121a30);
   --pz-quiet: color-mix(in oklab, var(--pz-surface-2) 70%, var(--pz-surface));
-  --pz-faint: color-mix(in oklab, var(--pz-muted) 75%, var(--pz-surface));
+  /* 88%: o texto apagado ("Não precisa mais", "Sai do mapa") ainda passa de 4,5:1 no chão. */
+  --pz-faint: color-mix(in oklab, var(--pz-muted) 88%, var(--pz-surface));
   --pz-font-display: var(
     --sz-tool-font-display,
     var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif)
@@ -314,6 +315,22 @@
     0 3px 0 var(--pz-step);
 }
 
+/* O botão pequeno e o ícone pequeno desenham menos de 44px, mas o alvo do toque tem 44. */
+.pz-btn--sm,
+.pz-icon-btn.is-small {
+  position: relative;
+}
+.pz-btn--sm::after,
+.pz-icon-btn.is-small::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
 /* O voltar do host (receita do tool-chrome) veste o quadrado branco do Canvas. */
 .pensa-planner .pz-head .sz-tool-back,
 .pensa-planner .pz-head .sz-tool-btn-menu {
@@ -389,7 +406,7 @@
 .pz-chip-btn {
   display: inline-flex;
   align-items: center;
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 12px;
   border: 0;
   border-radius: 9999px;
@@ -845,12 +862,12 @@
   font-weight: 600;
 }
 .pz-zero__step.is-done {
-  color: var(--pz-green);
+  color: var(--pz-green-ink);
 }
 .pz-zero__step.is-done .pz-zero__letter {
   background: var(--pz-mint);
   box-shadow: none;
-  color: var(--pz-green);
+  color: var(--pz-green-ink);
 }
 .pz-zero__step.is-current {
   padding: 4px 12px 4px 4px;
@@ -1245,7 +1262,7 @@
 .pz-step.is-done .pz-step__mark {
   border: 0;
   background: var(--pz-mint);
-  color: var(--pz-green);
+  color: var(--pz-green-ink);
 }
 .pz-step.is-now .pz-step__mark {
   border-color: var(--pz-yellow-line);
@@ -1559,7 +1576,7 @@
   color: var(--pz-action-ink);
 }
 .pz-plan-list__title.is-mint {
-  color: var(--pz-green);
+  color: var(--pz-green-ink);
 }
 .pz-plan-list__title.is-pink {
   color: var(--pz-pink-ink);
@@ -1920,7 +1937,7 @@
 .pz-pin.is-done .pz-pin__node {
   background: var(--pz-mint);
   box-shadow: 0 4px 0 var(--pz-mint-step);
-  color: var(--pz-green);
+  color: var(--pz-green-ink);
 }
 .pz-pin.is-done .pz-pin__title {
   color: var(--pz-ink);
@@ -1963,7 +1980,7 @@
   gap: 10px;
 }
 .pz-map-compact__count {
-  color: var(--pz-green);
+  color: var(--pz-green-ink);
   font-size: 13px;
   font-weight: 800;
 }
@@ -2332,7 +2349,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--pz-green);
+  color: var(--pz-green-ink);
   font-size: 15px;
   font-weight: 800;
 }
@@ -2852,7 +2869,7 @@
 .pz-change__no.is-done {
   background: var(--pz-mint);
   box-shadow: none;
-  color: var(--pz-green);
+  color: var(--pz-green-ink);
 }
 .pz-change__text {
   flex: 1 1 260px;
@@ -3152,7 +3169,7 @@
     gap: 12px;
   }
   .pz-tab {
-    min-height: 36px;
+    min-height: 44px;
     padding: 0 14px;
     font-size: 13px;
   }

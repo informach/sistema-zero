@@ -33,6 +33,8 @@ export function MissionBrief({
         {renderListen?.('setup')}
       </>
     ) : null
+  // A arte se descreve pelo jeito que fica; as outras missões, pelo jeito que funcionam.
+  const rulesTitle = mission.kind === 'asset' ? 'Como deve ser' : 'Como deve funcionar'
   const rules = mission.rules.length ? (
     <ul className="pz-brief__list">
       {mission.rules.map((rule) => (
@@ -71,8 +73,8 @@ export function MissionBrief({
           </section>
         ) : null}
         {rules ? (
-          <section className="pz-brief__tile" aria-label="Como deve funcionar">
-            <h3>Como deve funcionar</h3>
+          <section className="pz-brief__tile" aria-label={rulesTitle}>
+            <h3>{rulesTitle}</h3>
             {rules}
           </section>
         ) : null}
@@ -107,12 +109,12 @@ export function MissionBrief({
         </section>
       ) : null}
       {rules ? (
-        <section className="pz-brief__row" aria-label="Como deve funcionar">
+        <section className="pz-brief__row" aria-label={rulesTitle}>
           <span className="pz-brief__icon is-blue" aria-hidden="true">
             <ListIcon size={20} />
           </span>
           <div>
-            <h3>Como deve funcionar</h3>
+            <h3>{rulesTitle}</h3>
             {rules}
           </div>
         </section>

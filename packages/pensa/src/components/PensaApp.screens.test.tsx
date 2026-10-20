@@ -5,7 +5,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { PensaApiError, type PensaHostAdapter } from '../core/types'
 import { PensaApp } from './PensaApp'
 import { PensaMessageText } from './PensaMessageText'
-import { PROJECT_ID, projectFixture } from './pensa.fixture'
+import { MISSION_ID, PROJECT_ID, projectFixture } from './pensa.fixture'
 
 type Call = { path: string; method: string; body?: unknown }
 
@@ -338,6 +338,135 @@ describe('Projeto em andamento', () => {
   })
 })
 
+describe('Regressões da revisão', () => {
+  test('a próxima missão que o servidor fecha sem frase continua fechada', async () => {
+    const view = projectFixture()
+    view.availability[0] = { ...view.availability[0]!, available: false, message: null }
+    const { adapter } = setup({ view })
+    render(<PensaApp adapter={adapter} initialProjectId={PROJECT_ID} />)
+    const button = await screen.findByRole('button', { name: 'Continuar no Estúdio' })
+    expect(button.hasAttribute('disabled')).toBe(true)
+    expect(screen.getByText('Esta missão ainda não abre.')).toBeTruthy()
+  })
+  test('a pergunta no projeto aceito manda a resposta livre para a conversa, sem outro campo', async () => {
+    const view = projectFixture()
+    const revision = view.revision!
+    view.draft = {
+      id: '10000000-0000-4000-8000-0000000000d3',
+      projectId: PROJECT_ID,
+      revision: 1,
+      baseRevisionId: revision.id,
+      status: 'needs_choice',
+      definition: null,
+      plan: null,
+      technical: null,
+      pendingChoices: [
+        {
+          id: 'som',
+          kind: 'rule',
+          question: 'Toca um som quando acerta o par?',
+          options: [
+            { id: 'sim', label: 'Toca um som', description: 'Um plim curto.' },
+            { id: 'nao', label: 'Sem som', description: 'Fica em silêncio.' },
+          ],
+        },
+      ],
+      impact: null,
+      affectedProgressVersions: {},
+      capabilitiesFingerprint: null,
+      acceptedRevisionId: null,
+      updatedAt: view.project.updatedAt,
+    }
+    const { adapter } = setup({ view })
+    render(<PensaApp adapter={adapter} initialProjectId={PROJECT_ID} />)
+    await screen.findByRole('heading', { name: 'Toca um som quando acerta o par?' })
+    expect(document.querySelectorAll('textarea')).toHaveLength(1)
+    fireEvent.click(screen.getByRole('button', { name: 'Responder do meu jeito na conversa' }))
+    const chat = screen.getByLabelText('Mensagem para o Zappy')
+    await waitFor(() => expect(document.activeElement === chat).toBe(true))
+  })
+  test('pausado, a mudança não pode ser aceita, mas dá para deixar como está', async () => {
+    const view = projectFixture()
+    const revision = view.revision!
+    view.project.paused = true
+    view.draft = {
+      id: '10000000-0000-4000-8000-0000000000d2',
+      projectId: PROJECT_ID,
+      revision: 3,
+      baseRevisionId: revision.id,
+      status: 'ready',
+      definition: revision.definition,
+      plan: revision.plan,
+      technical: revision.technical,
+      pendingChoices: [],
+      impact: null,
+      affectedProgressVersions: {},
+      capabilitiesFingerprint: 'x',
+      acceptedRevisionId: null,
+      updatedAt: view.project.updatedAt,
+    }
+    const { adapter } = setup({ view })
+    render(<PensaApp adapter={adapter} initialProjectId={PROJECT_ID} />)
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Ver o que muda' }))[0]!)
+    await screen.findByText('Mudança preparada pelo Zappy')
+    expect(
+      screen.getByRole('button', { name: 'Quero esta mudança' }).hasAttribute('disabled'),
+    ).toBe(true)
+    expect(screen.getByRole('button', { name: 'Deixar como está' }).hasAttribute('disabled')).toBe(
+      false,
+    )
+  })
+  test('a janela aberta pelo menu devolve o foco ao botão de três pontos', async () => {
+    const { adapter } = setup({
+      respond: (call) => (call.path.endsWith('/checkpoints') ? [] : undefined),
+    })
+    render(<PensaApp adapter={adapter} initialProjectId={PROJECT_ID} />)
+    const dots = await screen.findByRole('button', { name: 'Cuidar do jogo' })
+    fireEvent.click(dots)
+    fireEvent.click(screen.getByRole('menuitem', { name: /Versões guardadas/ }))
+    const dialog = await screen.findByRole('dialog', { name: 'Versões guardadas' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Fechar as versões' }))
+    await waitFor(() => expect(document.activeElement === dots).toBe(true))
+  })
+  test('sem ideias, a pergunta do Zappy explica por que as opções esperam', async () => {
+    const view = projectFixture()
+    const plan = view.revision!
+    view.revision = null
+    view.draft = {
+      id: '10000000-0000-4000-8000-0000000000d1',
+      projectId: PROJECT_ID,
+      revision: 1,
+      baseRevisionId: null,
+      status: 'needs_choice',
+      definition: plan.definition,
+      plan: null,
+      technical: null,
+      pendingChoices: [
+        {
+          id: 'erro',
+          kind: 'rule',
+          question: 'Quando erra o par, o que acontece?',
+          options: [
+            { id: 'fecha', label: 'As cartas fecham', description: 'Depois de um segundo.' },
+            { id: 'vida', label: 'Perde uma vida', description: 'São três vidas.' },
+          ],
+        },
+      ],
+      impact: null,
+      affectedProgressVersions: {},
+      capabilitiesFingerprint: null,
+      acceptedRevisionId: null,
+      updatedAt: view.project.updatedAt,
+    }
+    const { adapter } = setup({ view, credits: { ...CREDITS, dayRemaining: 0 } })
+    render(<PensaApp adapter={adapter} initialProjectId={PROJECT_ID} />)
+    expect(await screen.findByRole('heading', { name: 'As ideias de hoje acabaram' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /As cartas fecham/ }).hasAttribute('disabled')).toBe(
+      true,
+    )
+  })
+})
+
 describe('No celular', () => {
   test('o projeto vira abas Plano, Conversa e Carta do jogo, e a ajuda abre a conversa', async () => {
     const original = HTMLElement.prototype.getBoundingClientRect
@@ -357,6 +486,27 @@ describe('No celular', () => {
       )
       fireEvent.click(screen.getByRole('tab', { name: 'Carta do jogo' }))
       expect(await screen.findByText('A carta do jogo')).toBeTruthy()
+    } finally {
+      HTMLElement.prototype.getBoundingClientRect = original
+    }
+  })
+  test('a ajuda trazida pelo link (?ajuda=) abre direto na aba Conversa', async () => {
+    const original = HTMLElement.prototype.getBoundingClientRect
+    HTMLElement.prototype.getBoundingClientRect = function () {
+      return { ...original.call(this), width: 390 } as DOMRect
+    }
+    try {
+      const { adapter } = setup()
+      render(
+        <PensaApp
+          adapter={adapter}
+          initialProjectId={PROJECT_ID}
+          initialHelpMissionId={MISSION_ID}
+        />,
+      )
+      const conversa = await screen.findByRole('tab', { name: 'Conversa' })
+      await waitFor(() => expect(conversa.getAttribute('aria-selected')).toBe('true'))
+      expect(screen.getByLabelText('Sua dúvida')).toBeTruthy()
     } finally {
       HTMLElement.prototype.getBoundingClientRect = original
     }

@@ -32,7 +32,7 @@ export function KidsLockedPensa({
       title="Pensa"
       intro={
         earned
-          ? 'Você já conquistou o Pensa. Os seus jogos e os planos estão guardados, e eles voltam a abrir junto com o acesso à Comunidade.'
+          ? 'Você já conquistou o Pensa. Nada do que você planejou aqui se perde: tudo volta a abrir junto com o acesso à Comunidade.'
           : 'No Pensa você conta a ideia de um jogo e o Zappy ajuda a dividir em missões. Depois, cada missão vira uma parte do jogo.'
       }
       preview={PREVIEW}

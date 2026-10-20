@@ -315,7 +315,7 @@ export function usePensaMissionSession({
         nextAction.type === 'mission' && nextTitle
           ? { title: nextTitle, destination: nextAction.destination }
           : null,
-      handoffTo: programmer ? { name: programmer.firstName?.trim() || 'Colega' } : null,
+      handoffTo: programmer ? { name: programmer.firstName?.trim() || null } : null,
       mission: handoff.mission,
       progress: handoff.progress,
       project: handoff.project,

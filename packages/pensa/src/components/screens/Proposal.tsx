@@ -1,5 +1,10 @@
-import type { PensaMission, PensaPlanDraft, PensaProjectView } from '@sistemazero/core/pensa'
-import { useEffect, useId, useState } from 'react'
+import {
+  PENSA_LIMITS,
+  type PensaMission,
+  type PensaPlanDraft,
+  type PensaProjectView,
+} from '@sistemazero/core/pensa'
+import { type ReactNode, useEffect, useId, useState } from 'react'
 import { DESTINATION_NAMES } from '../../core/copy'
 import { orderedMissions } from '../../core/planView'
 import type { Composer } from '../ChatPanel'
@@ -18,6 +23,8 @@ export function Proposal({
   draft,
   composer,
   busy,
+  exhausted = false,
+  exhaustedCard = null,
   onAccept,
   onLater,
   onOpenMission,
@@ -29,6 +36,9 @@ export function Proposal({
   }
   composer: Composer
   busy: boolean
+  /** Sem ideias (ou créditos), pedir uma mudança espera; o cartão explica e aceitar segue livre. */
+  exhausted?: boolean
+  exhaustedCard?: ReactNode
   onAccept(): void
   onLater(): void
   onOpenMission(mission: PensaMission): void
@@ -37,6 +47,7 @@ export function Proposal({
   const [changing, setChanging] = useState(false)
   const mapId = useId()
   const first = orderedMissions(draft.plan)[0]
+  const tooLong = composer.text.length > PENSA_LIMITS.messageChars
   const locked = readOnly || view.project.paused || view.project.status === 'archived'
   useEffect(() => {
     if (changing) composer.textareaRef.current?.focus()
@@ -107,7 +118,8 @@ export function Proposal({
             ) : null}
           </section>
         </div>
-        {changing ? (
+        {changing && exhausted ? exhaustedCard : null}
+        {changing && !exhausted ? (
           <form
             className="pz-card pz-answer"
             onSubmit={(event) => {
@@ -128,6 +140,12 @@ export function Proposal({
               disabled={composer.voiceBusy}
               onChange={(event) => composer.setText(event.target.value)}
             />
+            {tooLong ? (
+              <p role="status" className="pz-small">
+                O seu texto tem {composer.text.length} caracteres. Cada mensagem pode ter até 4.000;
+                guarde uma parte para mandar depois.
+              </p>
+            ) : null}
             <div className="pz-answer__actions">
               <button type="button" className="pz-text-btn" onClick={() => setChanging(false)}>
                 Cancelar
@@ -136,7 +154,7 @@ export function Proposal({
               <button
                 type="submit"
                 className="pz-btn pz-btn--action"
-                disabled={composer.blocked || !composer.text.trim()}
+                disabled={composer.blocked || !composer.text.trim() || tooLong}
               >
                 Mandar para o Zappy
               </button>

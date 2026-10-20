@@ -626,6 +626,40 @@ describe('PintaApp — Voltar ao plano', () => {
   })
 })
 
+describe('PintaApp — a missão chega sem remontar o editor', () => {
+  it('o canvas aberto é o MESMO nó antes e depois do painel aparecer, e o painel vem depois', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const persistence = createMemoryPersistence([nave])
+    const { container, rerender } = render(<PintaApp adapter={{}} persistence={persistence} />)
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Abrir nave/ }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.editor.resize.button(32, 32) })).toBeTruthy()
+    })
+    const canvas = container.querySelector('canvas')
+    expect(canvas).toBeTruthy()
+    expect(container.querySelector('aside[aria-label="Missão do Pensa"]')).toBeNull()
+
+    rerender(
+      <PintaApp adapter={{ taskSession: missionSessionFixture() }} persistence={persistence} />,
+    )
+    const panel = container.querySelector('aside[aria-label="Missão do Pensa"]')
+    expect(panel).toBeTruthy()
+    // Sem remontar: o desenho, o desfazer e o zoom continuam onde estavam.
+    expect(container.querySelector('canvas') === canvas).toBe(true)
+    expect(canvas?.isConnected).toBe(true)
+    // A oficina vem primeiro e o painel é irmão dela (nunca por cima).
+    const work = container.querySelector('.sz-tool-mission-layout__work')
+    expect(work?.contains(canvas ?? null)).toBe(true)
+    expect(work?.contains(panel)).toBe(false)
+    expect(work?.parentElement === panel?.parentElement).toBe(true)
+  })
+})
+
 /**
  * O missão funcional no `PintaApp` (14/10/2026): "Conferi e está pronto" GRAVA o desenho aberto antes
  * de chamar o host, a mesma disciplina do "Voltar ao plano". A ordem é REGISTRADA numa lista

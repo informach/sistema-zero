@@ -1,5 +1,5 @@
 import { type AiCreditsView, resolveAiCredits } from '@sistemazero/core/ai-credits'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { PensaTransport } from '../core/types'
 
 /** `audience`: para quem a frase fala (no adulto, "créditos" e sem a família). Padrão: kids. */
@@ -33,5 +33,6 @@ export function usePensaCredits(
       document.removeEventListener('visibilitychange', onVisible)
     }
   }, [transport, operationStatus, revisionId])
-  return resolveAiCredits(credits, { audience })
+  // O medidor entra no contexto do planner: um objeto novo a cada render desfaria o memo.
+  return useMemo(() => resolveAiCredits(credits, { audience }), [credits, audience])
 }

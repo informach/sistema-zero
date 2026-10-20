@@ -108,7 +108,9 @@ export function CareMenu({ items, narrow }: { items: CareMenuItem[]; narrow: boo
                 role="menuitem"
                 className={`pz-menu__item${item.danger ? ' is-danger' : ''}`}
                 onClick={() => {
-                  close(false)
+                  // O foco volta ao botão ANTES da ação: a janela que ela abre guarda quem tinha o
+                  // foco e o devolve a ele (um item do menu já desmontado não recebe foco).
+                  close()
                   item.onSelect()
                 }}
               >

@@ -37,5 +37,6 @@ export interface PensaMissionSession {
    * Display only: the teammate who programs the game and receives this art (team games, art
    * missions of someone else). Comes from the team the server returned.
    */
-  handoffTo?: { name: string } | null
+  /** Quem programa e recebe a arte; `name` nulo quando o primeiro nome não veio. */
+  handoffTo?: { name: string | null } | null
 }

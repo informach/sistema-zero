@@ -125,7 +125,7 @@ export function ProjectWorkspace(props: ProjectWorkspaceProps) {
                 role="tab"
                 id={`pz-tabbtn-${item.id}`}
                 aria-selected={tab === item.id}
-                aria-controls={`pz-panel-${item.id}`}
+                aria-controls={tab === item.id ? `pz-panel-${item.id}` : undefined}
                 tabIndex={tab === item.id ? 0 : -1}
                 className="pz-tabbar__tab"
                 onClick={() => props.onTab(item.id)}
@@ -171,10 +171,18 @@ function ProjectHeader(props: ProjectWorkspaceProps) {
   const [name, setName] = useState(view.project.name)
   const pencil = useRef<HTMLButtonElement>(null)
   const input = useRef<HTMLInputElement>(null)
+  // O Esc e o Enter fecham o campo; o blur que vem depois não pode guardar de novo (nem
+  // guardar o que o Esc desistiu).
+  const finished = useRef(false)
   useEffect(() => {
-    if (renaming) input.current?.select()
+    if (renaming) {
+      finished.current = false
+      input.current?.select()
+    }
   }, [renaming])
   function finish(save: boolean) {
+    if (finished.current) return
+    finished.current = true
     const value = name.trim()
     setRenaming(false)
     if (save && value.length >= 2 && value !== view.project.name) onRename(value)
@@ -189,6 +197,7 @@ function ProjectHeader(props: ProjectWorkspaceProps) {
           type="button"
           className="pz-btn pz-btn--card pz-btn--square"
           aria-label="Voltar aos meus jogos"
+          disabled={props.composer.voiceBusy}
           onClick={onBack}
         >
           <ArrowLeftIcon size={20} />
@@ -313,6 +322,7 @@ function PlanColumn(
             assistantText={props.lastAssistantText}
             composer={props.composer}
             disabled={props.composer.blocked}
+            onAnswerInChat={props.onAskChange}
             onChoose={(option) => props.onChoose(props.changeChoice!, option)}
           />
         </section>
@@ -388,7 +398,9 @@ function NextMission({
   const number = missionNumber(revision.plan, mission.id)
   const total = revision.plan.missions.length
   const where = DESTINATION_NAMES[mission.destination]
-  const blocked = access && !access.available ? access.message : null
+  // Executar segue a disponibilidade do servidor; a frase é dele, com uma reserva se faltar.
+  const blocked =
+    access && !access.available ? (access.message ?? 'Esta missão ainda não abre.') : null
   const note = view.progress.find((item) => item.missionId === mission.id)?.resumeNote
   const label = `${mode === 'reconfirm' ? 'Conferir' : 'Continuar'} no ${where}`
   return (

@@ -226,8 +226,9 @@ describe('o Pensa bloqueado mostra o que o Pensa faz de verdade', () => {
     ])
     expect(container.textContent).not.toMatch(/telas e o fluxo/)
   })
-  test('quem já conquistou o Pensa lê que os jogos estão guardados', () => {
+  test('quem já conquistou o Pensa lê que nada se perde, sem prometer jogos que talvez não existam', () => {
     render(<KidsLockedPensa opensAt="hacker" earned />)
-    expect(screen.getByText(/Os seus jogos e os planos estão guardados/)).toBeTruthy()
+    expect(screen.getByText(/Nada do que você planejou aqui se perde/)).toBeTruthy()
+    expect(document.body.textContent).not.toMatch(/Os seus jogos e os planos estão guardados/)
   })
 })

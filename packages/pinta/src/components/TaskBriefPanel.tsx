@@ -93,13 +93,13 @@ export function TaskBriefPanel({
                       .finally(() => setBinding(false))
                   }}
                 >
-                  {deliveredId ? 'Trocar pelo desenho aberto' : 'Usar no jogo'}
+                  {deliveredId ? 'Trocar pelo desenho aberto' : 'Escolher o desenho aberto'}
                   <span className="sz-tool-mission-panel__sr"> como {slot.name}</span>
                 </button>
               )}
               {!currentCreationId && !locked ? (
                 <p className="sz-tool-mission-panel__slot-note">
-                  Abra o desenho desta parte para usar no jogo.
+                  Abra um desenho para escolher aqui.
                 </p>
               ) : null}
             </div>

@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { KidsRecado } from './kids-recado'
 import { KidsMascot } from './mascot'
@@ -12,7 +11,8 @@ import { KidsMascot } from './mascot'
  * transitório, mentiria que ela não tem acesso.
  *
  * Copy do Canvas "Estados" (20/10/2026): "O Pensa não abriu agora", dizendo que os jogos
- * estão guardados (vivem no servidor) e com o Estúdio como caminho enquanto isso. Mesmo molde
+ * estão guardados (vivem no servidor), sem atalho para o Estúdio (aqui não dá para confirmar que
+ * a conta tem o Estúdio). Mesmo molde
  * `KidsRecado` do `KidsAccessUnavailable`, sem a pílula do motivo (tropeço não é conquista).
  */
 export function KidsPensaUnavailable() {
@@ -22,17 +22,12 @@ export function KidsPensaUnavailable() {
       art={<KidsMascot expression="thinking" className="kid-float size-24" />}
       title="O Pensa não abriu agora"
       actions={
-        <>
-          <button type="button" onClick={() => router.refresh()} className="sz-btn-gradient">
-            Tentar de novo
-          </button>
-          <Link href="/estudio" className="sz-btn-gradient sz-btn-contorno">
-            Ir para o Estúdio
-          </Link>
-        </>
+        <button type="button" onClick={() => router.refresh()} className="sz-btn-gradient">
+          Tentar de novo
+        </button>
       }
     >
-      <p>Os seus jogos e as suas missões estão guardados. Tente de novo daqui a pouco.</p>
+      <p>Nada do que você fez no Pensa se perde. Tente de novo daqui a pouco.</p>
     </KidsRecado>
   )
 }

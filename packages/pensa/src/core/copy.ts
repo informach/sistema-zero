@@ -19,6 +19,10 @@ export interface PensaCopy {
   readOnlyHint: string
   suggestion: string
   failedSaved: string
+  /** O balão da conversa ainda vazia. */
+  chatEmpty: string
+  /** O balão que avisa da mudança pronta para conferir. */
+  changePrepared: string
   restoreBody: string
   finishedText: (name: string) => string
 }
@@ -33,6 +37,8 @@ const KIDS: PensaCopy = {
   readOnlyHint: 'Só a criança mexe no jogo',
   suggestion: 'Sugestão do Zappy',
   failedSaved: 'Eu não consegui terminar. O que você escreveu continua aqui.',
+  chatEmpty: 'Pode me perguntar sobre uma missão ou pedir para mudar uma parte do jogo.',
+  changePrepared: 'Preparei a mudança para você conferir.',
   restoreBody:
     'Antes de voltar, eu guardo o jogo de agora. Depois, a conferência final precisa ser feita de novo.',
   finishedText: (name) =>
@@ -49,6 +55,8 @@ const ADULT: PensaCopy = {
   readOnlyHint: 'Só a pessoa dona da conta mexe no jogo',
   suggestion: 'Sugestão do Zappy',
   failedSaved: 'O Zappy não conseguiu terminar. O que você escreveu continua aqui.',
+  chatEmpty: 'Pergunte ao Zappy sobre uma missão ou peça para mudar uma parte do jogo.',
+  changePrepared: 'O Zappy preparou a mudança para você conferir.',
   restoreBody:
     'Antes de voltar, o jogo de agora fica guardado. Depois, a conferência final precisa ser feita de novo.',
   finishedText: (name) =>

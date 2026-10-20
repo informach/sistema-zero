@@ -87,6 +87,12 @@ describe('PensaMissionPanel', () => {
       'Você faz as artes. Bia programa e recebe o que você criar nesta missão.',
     )
     expect(lido).toContain('Depois de conferir, Bia encontra esta arte no Estúdio.')
+    // Sem o primeiro nome, a frase fala de quem programa, sem inventar um nome.
+    const semNome = texto(html({ ...missionSessionFixture(), handoffTo: { name: null } }))
+    expect(semNome).toContain(
+      'Você faz as artes. Quem programa recebe o que você criar nesta missão.',
+    )
+    expect(semNome).toContain('Depois de conferir, quem programa encontra esta arte no Estúdio.')
     // Missão de programação não tem entrega para outra pessoa.
     const feature = missionSessionFixture()
     feature.mission = {
@@ -110,6 +116,19 @@ describe('PensaMissionPanel', () => {
     expect(lido).toContain('Quero mexer de novo')
     expect(lido).toContain('Pronta')
     expect(lido).not.toContain('Conferi e está pronto')
+  })
+
+  test('pronta e sem próxima missão, "Voltar ao plano" aparece uma vez só', () => {
+    const session = missionSessionFixture()
+    session.progress = { ...session.progress, status: 'completed' }
+    session.nextMissionLabel = 'Voltar ao plano'
+    const lido = texto(html(session))
+    expect(lido.match(/Voltar ao plano/g)?.length).toBe(1)
+    expect(lido).toContain('Missão pronta.')
+    // Com próxima missão, o caminho de volta continua ao lado da ajuda.
+    session.nextMissionLabel = 'Continuar meu caminho'
+    expect(texto(html(session)).match(/Voltar ao plano/g)?.length).toBe(1)
+    expect(texto(html(session))).toContain('Continuar meu caminho')
   })
 
   test('as ações da preparação, do teste e da reconferência', () => {

@@ -38,12 +38,16 @@ export function PensaTeamDialog({
   const [programmer, setProgrammer] = useState(view.team.programmerProfileId)
   const [artists, setArtists] = useState(view.team.artistProfileIds)
   const [rolesRevision, setRolesRevision] = useState(view.project.teamRevision)
-  // As funções que esta janela acabou de guardar não contam como "a equipe mudou".
+  // O que esta janela acabou de guardar (funções, tirar alguém) não conta como "a equipe
+  // mudou": as escolhas voltam a ser as do servidor e continuam editáveis.
   const ownSave = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: resyncs only when the team revision moves.
   useEffect(() => {
     if (!ownSave.current) return
     ownSave.current = false
     setRolesRevision(view.project.teamRevision)
+    setProgrammer(view.team.programmerProfileId)
+    setArtists(view.team.artistProfileIds)
   }, [view.project.teamRevision])
   const rolesChanged = rolesRevision !== view.project.teamRevision
   const owner = view.team.viewerProfileId === view.team.ownerProfileId
@@ -199,7 +203,12 @@ export function PensaTeamDialog({
                           type="button"
                           className="pz-text-btn is-danger"
                           disabled={busy}
-                          onClick={() => void action(`/members/${person.profileId}`, 'DELETE')}
+                          onClick={() => {
+                            ownSave.current = true
+                            void action(`/members/${person.profileId}`, 'DELETE').then((done) => {
+                              if (!done) ownSave.current = false
+                            })
+                          }}
                         >
                           Tirar mesmo
                         </button>

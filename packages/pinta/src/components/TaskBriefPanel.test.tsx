@@ -17,7 +17,7 @@ test('o desenho aberto pode ser associado ao slot escolhido sem concluir a miss�
   session.onBindCreation = mock(async () => {})
   session.onComplete = mock(async () => {})
   render(<TaskBriefPanel session={session} outputMissing={false} currentCreationId="nave" />)
-  fireEvent.click(screen.getByRole('button', { name: 'Usar no jogo como Nave' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Escolher o desenho aberto como Nave' }))
   await waitFor(() =>
     expect(session.onBindCreation).toHaveBeenCalledWith({
       assetSlotId: session.assetSlots[0]!.id,
@@ -65,14 +65,14 @@ test('um desenho ausente continua recuperável com a missão recolhida', () => {
   expect(onRelink).toHaveBeenCalledTimes(1)
 })
 
-test('a lista da missão marca a parte já escolhida e pede o desenho aberto para usar no jogo', () => {
+test('a lista da missão marca a parte já escolhida e pede um desenho aberto para escolher', () => {
   const session = missionSessionFixture()
   const { rerender } = render(
     <TaskBriefPanel session={session} outputMissing={false} currentCreationId={null} />,
   )
-  const usar = screen.getByRole('button', { name: 'Usar no jogo como Nave' })
+  const usar = screen.getByRole('button', { name: 'Escolher o desenho aberto como Nave' })
   expect((usar as HTMLButtonElement).disabled).toBe(true)
-  expect(screen.getByText('Abra o desenho desta parte para usar no jogo.')).toBeTruthy()
+  expect(screen.getByText('Abra um desenho para escolher aqui.')).toBeTruthy()
 
   const slot = session.assetSlots[0]!
   const delivered = {

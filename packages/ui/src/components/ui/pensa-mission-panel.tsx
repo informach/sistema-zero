@@ -1,9 +1,11 @@
 'use client'
 
 import type { PensaDestination } from '@sistemazero/core/pensa'
-import { type CSSProperties, type ReactNode, useId, useRef, useState } from 'react'
+import { type CSSProperties, type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { PensaMissionContent } from './pensa-mission-content'
 import type { PensaMissionSession } from './pensa-mission-session'
+
+const RETURN_TO_PLAN = 'Voltar ao plano'
 
 const WORKSHOP: Record<PensaDestination, string> = {
   studio: 'Estúdio',
@@ -138,7 +140,6 @@ export function PensaMissionPanel({
   extensionName,
   recovery,
   note: noteMode = 'inline',
-  hint,
 }: {
   session: PensaMissionSession
   /** Workshop controls, shown inside "Para esta missão". */
@@ -148,8 +149,6 @@ export function PensaMissionPanel({
   recovery?: ReactNode
   /** "Onde parei" as an open field (Estúdio) or folded behind its title (Pinta, Molda). */
   note?: 'inline' | 'folded'
-  /** Overrides the line under the main action. */
-  hint?: string
 }) {
   const mainId = useId()
   const noteId = useId()
@@ -160,8 +159,25 @@ export function PensaMissionPanel({
   const actionRef = useRef(false)
   const noticeRef = useRef<HTMLParagraphElement>(null)
   const doneRef = useRef<HTMLParagraphElement>(null)
+  // "Conferi e está pronto" unmounts when the mission is done: the focus moves to the finished
+  // message as soon as the host renders the server answer (never left on the page body).
+  const focusDoneRef = useRef(false)
+  const asideRef = useRef<HTMLElement>(null)
+  // Opened by the child on a narrow screen, the band grows BELOW the workshop and its content
+  // would start out of view: bring it in (a no-op in the right column, already fully visible).
+  const revealRef = useRef(false)
   const { mission, progress, order, nextMission, handoffTo, collapsed } = session
   const done = progress.status === 'completed' && progress.validity === 'current'
+  useEffect(() => {
+    if (collapsed || !revealRef.current) return
+    revealRef.current = false
+    asideRef.current?.scrollIntoView?.({ block: 'nearest' })
+  }, [collapsed])
+  useEffect(() => {
+    if (!done || !focusDoneRef.current) return
+    focusDoneRef.current = false
+    doneRef.current?.focus()
+  }, [done])
   const status =
     progress.validity === 'needs_review'
       ? 'Conferir de novo'
@@ -189,12 +205,11 @@ export function PensaMissionPanel({
       }.`
     : 'Missão pronta.'
   const primaryHint =
-    hint ??
-    (progress.validity === 'needs_review'
+    progress.validity === 'needs_review'
       ? 'A missão volta a ficar pronta.'
       : teamHandoff
-        ? `Depois de conferir, ${teamHandoff.name} encontra esta arte no Estúdio.`
-        : 'A missão fica pronta e a próxima aparece aqui.')
+        ? `Depois de conferir, ${teamHandoff.name ?? 'quem programa'} encontra esta arte no Estúdio.`
+        : 'A missão fica pronta e a próxima aparece aqui.'
   const hasAlert = Boolean(error || recovery)
   const links = session.references.filter((reference) => reference.href)
 
@@ -206,16 +221,23 @@ export function PensaMissionPanel({
   ) {
     if (actionRef.current) return
     actionRef.current = true
+    focusDoneRef.current = focus === 'done'
     setBusy(true)
     setError(null)
     setNotice(waiting)
     try {
       await action()
       setNotice(success)
-      // The finished state renders after the host applies the server answer.
-      if (focus === 'done') setTimeout(() => doneRef.current?.focus(), 0)
-      else if (success) noticeRef.current?.focus()
+      if (focus === 'done') {
+        // Already rendered (the host applied the answer before resolving): focus now. Otherwise
+        // the effect below does it when `done` turns true.
+        if (doneRef.current) {
+          focusDoneRef.current = false
+          doneRef.current.focus()
+        }
+      } else if (success) noticeRef.current?.focus()
     } catch (cause) {
+      focusDoneRef.current = false
       const childMessage =
         cause && typeof cause === 'object' && 'childMessage' in cause ? cause.childMessage : null
       setNotice('')
@@ -255,6 +277,7 @@ export function PensaMissionPanel({
 
   return (
     <aside
+      ref={asideRef}
       className={`sz-tool-guide sz-tool-mission-panel${collapsed ? ' is-collapsed' : ''}${
         hasAlert ? ' has-alert' : ''
       }`}
@@ -269,7 +292,10 @@ export function PensaMissionPanel({
           aria-expanded={!collapsed}
           aria-controls={collapsed ? undefined : mainId}
           title={collapsed ? undefined : 'Recolher a missão'}
-          onClick={() => session.onCollapsedChange(!collapsed)}
+          onClick={() => {
+            revealRef.current = collapsed
+            session.onCollapsedChange(!collapsed)
+          }}
         >
           <span className="sz-tool-mission-panel__lamp">
             <LampIcon />
@@ -320,12 +346,23 @@ export function PensaMissionPanel({
           <div className="sz-tool-mission-panel__body">
             {teamHandoff ? (
               <p className="sz-tool-mission-panel__team">
-                <span className="sz-tool-mission-panel__avatar" aria-hidden="true">
-                  {teamHandoff.name.trim().charAt(0).toLocaleUpperCase('pt-BR')}
-                </span>
+                {teamHandoff.name ? (
+                  <span className="sz-tool-mission-panel__avatar" aria-hidden="true">
+                    {teamHandoff.name.charAt(0).toLocaleUpperCase('pt-BR')}
+                  </span>
+                ) : null}
                 <span>
-                  Você faz as artes. <strong>{teamHandoff.name} programa</strong> e recebe o que
-                  você criar nesta missão.
+                  Você faz as artes.{' '}
+                  {teamHandoff.name ? (
+                    <>
+                      <strong>{teamHandoff.name} programa</strong> e recebe o que você criar nesta
+                      missão.
+                    </>
+                  ) : (
+                    <>
+                      <strong>Quem programa</strong> recebe o que você criar nesta missão.
+                    </>
+                  )}
                 </span>
               </p>
             ) : null}
@@ -431,14 +468,18 @@ export function PensaMissionPanel({
               >
                 Preciso de ajuda
               </button>
-              <button
-                type="button"
-                className="sz-tool-mission-panel__link"
-                disabled={busy}
-                onClick={() => void run(session.onReturnToPlan, 'Voltando ao plano…')}
-              >
-                Voltar ao plano
-              </button>
+              {/* Finished with nothing next, the main action already says "Voltar ao plano": two
+                  buttons with the same name read as two different things. */}
+              {done && session.nextMissionLabel === RETURN_TO_PLAN ? null : (
+                <button
+                  type="button"
+                  className="sz-tool-mission-panel__link"
+                  disabled={busy}
+                  onClick={() => void run(session.onReturnToPlan, 'Voltando ao plano…')}
+                >
+                  {RETURN_TO_PLAN}
+                </button>
+              )}
             </div>
           </div>
         </div>

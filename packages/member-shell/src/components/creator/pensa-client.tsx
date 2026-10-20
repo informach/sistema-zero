@@ -140,11 +140,7 @@ export function PensaClient({
   return (
     <div className={EMBEDDED_APP_FRAME}>
       {loadError ? (
-        <PensaLoadError
-          kids={audience === 'kids'}
-          onRetry={() => void load()}
-          onStudio={() => router.push('/estudio')}
-        />
+        <PensaLoadError kids={audience === 'kids'} onRetry={() => void load()} />
       ) : module ? (
         <module.PensaHostChromeProvider value={chrome}>
           <module.PensaApp
@@ -163,18 +159,11 @@ export function PensaClient({
 
 /**
  * O Pensa não carregou (Canvas "Estados": "O Pensa não abriu agora"). Os jogos ficam no
- * servidor, então a frase diz que nada se perdeu e oferece tentar de novo ou seguir no Estúdio.
+ * servidor, então a frase diz que nada se perdeu e oferece tentar de novo. Sem atalho para o
+ * Estúdio: aqui não dá para confirmar que a conta tem o Estúdio.
  * O Zappy pensando só aparece no Kids.
  */
-function PensaLoadError({
-  kids,
-  onRetry,
-  onStudio,
-}: {
-  kids: boolean
-  onRetry(): void
-  onStudio(): void
-}) {
+function PensaLoadError({ kids, onRetry }: { kids: boolean; onRetry(): void }) {
   return (
     <div className="grid flex-1 place-items-center p-4">
       <section
@@ -189,7 +178,7 @@ function PensaLoadError({
           O Pensa não abriu agora
         </h2>
         <p className="text-[0.9375rem] text-muted-foreground">
-          Os seus jogos e as suas missões estão guardados. Tente de novo daqui a pouco.
+          Nada do que você fez no Pensa se perde. Tente de novo daqui a pouco.
         </p>
         <div className="mt-1 flex flex-wrap justify-center gap-3">
           <button
@@ -198,13 +187,6 @@ function PensaLoadError({
             className="min-h-11 rounded-full bg-primary px-5 font-extrabold text-primary-foreground"
           >
             Tentar de novo
-          </button>
-          <button
-            type="button"
-            onClick={onStudio}
-            className="min-h-11 rounded-full border-2 border-border bg-card px-5 font-extrabold"
-          >
-            Ir para o Estúdio
           </button>
         </div>
       </section>

@@ -307,7 +307,7 @@ test('em equipe, a artista vê quem programa e recebe a arte', () => {
   unnamed.team.people = unnamed.team.people.map((person) =>
     person.profileId === PROGRAMMER ? { ...person, firstName: null } : person,
   )
-  expect(session(unnamed)?.handoffTo).toEqual({ name: 'Colega' })
+  expect(session(unnamed)?.handoffTo).toEqual({ name: null })
   // Quem programa não entrega a si mesmo.
   const own = structuredClone(handoff)
   own.team.programmerProfileId = PROFILE_ID
