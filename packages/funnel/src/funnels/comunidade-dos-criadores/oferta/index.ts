@@ -1,10 +1,4 @@
-import { PAGE_E } from './continuidade'
-import type { ComunidadeOfertaId, ComunidadePage, ComunidadePageId } from './types'
-
-/** As páginas do motor de seções (`ComunidadeOfertaBody`). */
-export const COMUNIDADE_PAGES: Record<ComunidadePageId, ComunidadePage> = {
-  continuar: PAGE_E,
-}
+import type { ComunidadeOfertaId } from './types'
 
 /** As subpáginas de `/oferta/<id>` (a 9 a 17 é a própria `/oferta`). */
 export const COMUNIDADE_SUBPAGINAS = ['criar-junto', 'continuar'] as const

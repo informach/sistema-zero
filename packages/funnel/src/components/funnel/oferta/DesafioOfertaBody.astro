@@ -80,7 +80,7 @@ const faqVisuals: Record<string, string> = {
     <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
     <header class="topbar"><div class="wrap nav">
       <a class="brand" href={link('/')} aria-label="Sistema Zero Kids, página inicial"><img class="logo" src={`${communityImages}/logo-kids-escuro.svg`} alt="Sistema Zero Kids" width="279" height="26"/></a>
-      <nav class="nav-links" aria-label="Navegação do Desafio"><a href="#experiencia">A experiência</a><a href={link('/como-funciona/')} data-analytics-id="desafio-nav-como-funciona">Como funciona</a><a href="#duvidas">Dúvidas</a></nav>
+      <nav class="nav-links" aria-label="Navegação do Desafio"><a href="#experiencia">A experiência</a><a href="#duvidas">Dúvidas</a></nav>
       <div class="nav-right"><p class="nav-preco">Pagamento único<strong>{price}</strong></p><a class="kof-btn kof-btn--compacta" href="#oferta" data-analytics-id="desafio-nav-oferta">Conhecer a oferta</a></div>
     </div></header>
     <main id="conteudo">
@@ -108,7 +108,7 @@ const faqVisuals: Record<string, string> = {
           <div class="cap-head"><span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">{art.icon}</span><span class="cap-chip-texto">{art.label}</span></span><h2 class="kof-display" id={`title-${id}`}>{section.title}</h2><p class="cap-lead">{copy(section.paragraphs[0]!)}</p></div>
           <div class:list={['df-section-grid',{ 'df-inverse':index%2===1 }]}>
             <div class="prosa">{section.paragraphs.slice(1).map(p=><p>{copy(p)}</p>)}
-              {id==='experiencia' && <p><a class="kof-link kof-link--inline" href={link('/como-funciona/')} data-analytics-id="desafio-experiencia-como-funciona">Conheça também o jeito de aprender da plataforma</a>. A página mostra o percurso geral; esta compra inclui o curso do Farol e o acesso descrito aqui.</p>}
+              {id==='experiencia' && <p><a class="kof-link kof-link--inline" href={link('/kids/comunidade-dos-criadores/oferta#experiencia')} data-analytics-id="desafio-experiencia-plataforma">Conheça também o jeito de aprender da plataforma</a>. A página da Comunidade mostra o percurso geral; esta compra inclui o curso do Farol e o acesso descrito aqui.</p>}
               {id==='familia' && <a class="kof-link" href={link(`${f.basePath}/quiz`)} data-analytics-id="desafio-familia-quiz">Receber uma orientação para o começo do meu filho<span aria-hidden="true">→</span></a>}
             </div>
             <div class="df-section-visual"><DesafioVisual visual={art.visual}/></div>
@@ -118,7 +118,7 @@ const faqVisuals: Record<string, string> = {
 
       <section class="section fundo-folha cor-rosa" id="quem-prepara" data-analytics-id="desafio-quem-prepara"><div class="wrap df-section-grid">
         <figure class="family-photo"><img src={`${communityImages}/familia-helena-julio-kids.webp`} alt="Helena e Júlio, criadores do Sistema Zero" width="880" height="1019" loading="lazy"/><figcaption>Helena e Júlio · Sistema Zero</figcaption></figure>
-        <div class="prosa"><span class="kof-eyebrow">Quem prepara a experiência</span><h2 class="kof-display">Um começo que você pode conhecer por dentro</h2><p>Somos Helena e Júlio, criadores do Sistema Zero. No Desafio, reunimos o projeto do Farol, a sequência de explicações e o espaço para montar, testar e mostrar a criação.</p><p>Você pode conhecer o jogo, os passos da montagem e o caminho de ajuda antes de decidir. As imagens desta página mostram o projeto e recursos da plataforma. Quando uma tela usa outro curso para explicar a interface, a legenda identifica esse exemplo.</p><a class="kof-link" href={link('/como-funciona/')} data-analytics-id="desafio-autores-como-funciona">Ver a experiência de aprendizagem<span aria-hidden="true">→</span></a></div>
+        <div class="prosa"><span class="kof-eyebrow">Quem prepara a experiência</span><h2 class="kof-display">Um começo que você pode conhecer por dentro</h2><p>Somos Helena e Júlio, criadores do Sistema Zero. No Desafio, reunimos o projeto do Farol, a sequência de explicações e o espaço para montar, testar e mostrar a criação.</p><p>Você pode conhecer o jogo, os passos da montagem e o caminho de ajuda antes de decidir. As imagens desta página mostram o projeto e recursos da plataforma. Quando uma tela usa outro curso para explicar a interface, a legenda identifica esse exemplo.</p><a class="kof-link" href={link('/kids/comunidade-dos-criadores/oferta#experiencia')} data-analytics-id="desafio-autores-plataforma">Ver as aulas da plataforma na página da Comunidade<span aria-hidden="true">→</span></a></div>
       </div></section>
 
       <section class="section fundo-alt cor-azul" id="requisitos" aria-labelledby="title-requisitos" data-analytics-id="desafio-requisitos"><div class="wrap">
@@ -148,7 +148,7 @@ const faqVisuals: Record<string, string> = {
         </div>
       </div></section>
 
-      <section class="section fundo-folha cor-rosa" id="continuidade" data-analytics-id="desafio-continuidade"><div class="wrap df-continuity prosa"><span class="kof-eyebrow">Quando fizer sentido continuar</span><h2 class="kof-display">{DESAFIO_SECTIONS.continuidade.title}</h2>{DESAFIO_SECTIONS.continuidade.paragraphs.map(p=><p>{copy(p)}</p>)}<div class="hero-actions"><a class="kof-link" href={link('/kids/comunidade-dos-criadores/oferta')} data-analytics-id="desafio-comunidade">Conhecer a Comunidade e os planos<span aria-hidden="true">→</span></a><a class="kof-link" href={link('/como-funciona/')} data-analytics-id="desafio-continuidade-como-funciona">Ver como funciona a plataforma<span aria-hidden="true">→</span></a></div></div></section>
+      <section class="section fundo-folha cor-rosa" id="continuidade" data-analytics-id="desafio-continuidade"><div class="wrap df-continuity prosa"><span class="kof-eyebrow">Quando fizer sentido continuar</span><h2 class="kof-display">{DESAFIO_SECTIONS.continuidade.title}</h2>{DESAFIO_SECTIONS.continuidade.paragraphs.map(p=><p>{copy(p)}</p>)}<div class="hero-actions"><a class="kof-link" href={link('/kids/comunidade-dos-criadores/oferta')} data-analytics-id="desafio-comunidade">Conhecer a Comunidade e os planos<span aria-hidden="true">→</span></a></div></div></section>
       <section class="section kof-banda df-closing" data-analytics-id="desafio-convite"><div class="wrap prosa"><span class="kof-eyebrow">Um começo para conhecer juntos</span><h2 class="kof-display">O primeiro convite pode ser para conhecer a aventura</h2><p>Mostre o Farol ao seu filho e conversem sobre o que ele gostaria de experimentar. Se fizer sentido para vocês, o Desafio oferece a orientação para construir as regras, testar o jogo e aprender a mostrá-lo.</p><a class="kof-btn kof-btn--grande kof-btn--sobre-navy" href={checkout} data-checkout-cta data-analytics-id="desafio-convite-comprar">Quero começar o Desafio<span aria-hidden="true">→</span></a><p>{price} uma vez. Curso e Mural completo por 30 dias; depois, Mural visitante. Para 9 a 14 anos, no computador.</p></div></section>
     </main>
     <ComunidadeImageZoom/>

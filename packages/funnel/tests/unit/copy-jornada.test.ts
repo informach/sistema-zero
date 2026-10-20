@@ -67,9 +67,9 @@ describe('copy do funil — a palavra é jornada, não carreira', () => {
     expect(/carreira/i.test(readFileSync(legal as string, 'utf8'))).toBe(true)
   })
 
-  test('a oferta da Comunidade fala da Jornada do Criador', () => {
+  test('a continuidade da Comunidade fala da Jornada do Criador', () => {
     const oferta = readFileSync(
-      join(SRC, 'components/funnel/oferta/ComunidadeOfertaBody.astro'),
+      join(SRC, 'funnels/comunidade-dos-criadores/oferta/pagina-continuar.ts'),
       'utf8',
     )
     expect(oferta).toContain('Jornada do Criador')

@@ -107,7 +107,7 @@ try {
     await noOverflow(page)
     assert.equal(await page.locator('#duvidas details').count(), 19)
     const how = await page
-      .locator('[data-analytics-id="desafio-nav-como-funciona"]')
+      .locator('[data-analytics-id="desafio-experiencia-plataforma"]')
       .getAttribute('href')
     assert.ok(how?.includes('utm_source=qa_farol'))
     assert.ok(!how?.includes('email'))

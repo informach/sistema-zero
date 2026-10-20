@@ -1082,6 +1082,18 @@
 .cda .cda-caixa--garantia > p {
   color: var(--cda-texto);
 }
+/* O cupom da URL: o aviso de que foi recebido, ou o alerta quando não vale. */
+.cda .cda-cupom {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 3px solid var(--cda-linha);
+  background: var(--cda-fundo-2);
+  color: var(--cda-texto);
+  font-weight: 700;
+}
+.cda .cda-cupom--alerta {
+  border-color: var(--cda-amarelo);
+}
 .cda .cda-oferta__lado {
   display: flex;
   justify-content: center;

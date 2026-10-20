@@ -40,6 +40,21 @@
       "x": 1520,
       "y": 7700
     },
+    "PaginaBio.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "Página da bio do Instagram · proposta",
+      "w": 1440,
+      "x": 0,
+      "y": 26350
+    },
+    "PaginaBioCelular.dc.html": {
+      "h": 900,
+      "title": "Página da bio · no celular",
+      "w": 390,
+      "x": 1520,
+      "y": 26350
+    },
     "PaginaMenor9.dc.html": {
       "expand": "fill",
       "h": 8000,
@@ -140,6 +155,14 @@
       "x": 1520,
       "y": 16600
     },
+    "TermosPrivacidade.dc.html": {
+      "expand": "fill",
+      "h": 3380,
+      "title": "Termos, privacidade e nome da área adulta · proposta",
+      "w": 1440,
+      "x": 3040,
+      "y": 1860
+    },
     "VozDosPublicos.dc.html": {
       "expand": "fill",
       "h": 1760,
@@ -148,28 +171,43 @@
       "x": 3040,
       "y": 0
     },
-    "TermosPrivacidade.dc.html": {
-      "x": 3040,
-      "y": 1860,
+    "EstrategiaContinuar.dc.html": {
+      "expand": "fill",
+      "h": 4600,
+      "title": "Continuidade · estratégia das duas páginas e a Como funciona",
       "w": 1440,
-      "h": 3380,
-      "title": "Termos, privacidade e nome da área adulta · proposta",
-      "expand": "fill"
-    },
-    "PaginaBio.dc.html": {
       "x": 0,
-      "y": 26350,
-      "w": 1440,
-      "h": 900,
-      "title": "Página da bio do Instagram · proposta",
-      "expand": "fill"
+      "y": 27920
     },
-    "PaginaBioCelular.dc.html": {
+    "PaginaContinuarAdulto.dc.html": {
+      "expand": "fill",
+      "h": 8000,
+      "title": "Continuidade adulta · quem já conhece o Sistema Zero",
+      "w": 1440,
       "x": 1520,
-      "y": 26350,
+      "y": 27920
+    },
+    "PaginaContinuarAdultoCelular.dc.html": {
+      "h": 8000,
+      "title": "Continuidade adulta · no celular",
       "w": 390,
-      "h": 900,
-      "title": "Página da bio · no celular"
+      "x": 3040,
+      "y": 27920
+    },
+    "PaginaContinuarKids.dc.html": {
+      "expand": "fill",
+      "h": 8000,
+      "title": "Continuidade Kids · família que já começou",
+      "w": 1440,
+      "x": 3510,
+      "y": 27920
+    },
+    "PaginaContinuarKidsCelular.dc.html": {
+      "h": 8000,
+      "title": "Continuidade Kids · no celular",
+      "w": 390,
+      "x": 5030,
+      "y": 27920
     }
   },
   "createdOnFiles": {
@@ -181,6 +219,12 @@
     "view": "canvas"
   },
   "notes": {
+    "bio": {
+      "text": "Proposta de 19/10 para a raiz do funil, o link da bio. A página de hoje tem logo Kids, avatar, título longo, parágrafo, chip 9 a 14, três botões, vitrine de três telas com o Zappy e links legais: dez coisas para uma decisão. A proposta tem seis: a foto real de Helena e Júlio (a mesma da bio atual), uma linha de quem são, o posicionamento Criar jogos não tem idade, a frase que explica o que acontece ao tocar, e os dois caminhos: É para mim (18 ou mais, quiz adulto, cartão escuro no estilo da página adulta) e É para meu filho ou filha (9 a 17 ou menor de 9 criando junto, quiz infantil, cartão branco no estilo Kids). A linha \"já conhece\" saiu da bio em 19/10, porque só servia a um dos três públicos, e não entrou no quiz: decisão da dona, nenhuma tela antes do resultado cita oferta, senão o quiz perde o sentido para quem não conhece. Quem já conhece toca no mesmo cartão e chega à oferta pelo resultado, ou pelos links que já tem. O Desafio continua acessível pela página de planos. Sem telas, sem Zappy, sem chip de idade. Implementação: src/pages/index.astro e content/home-comunidade.ts; os cartões levam data-analytics-id (bio-quiz-adulto, bio-quiz-infantil) e o link do quiz adulto depende do nome da área (pro/comunidade-dos-criadores ou pro/modo-criador). Links legais: Termos e Política conforme o quadro de Termos.",
+      "w": 440,
+      "x": 1990,
+      "y": 26350
+    },
     "celular": {
       "fill": "teal",
       "text": "Os quadros de celular mostram a mesma página em 390 px, até 8.000 px de altura. Para rolar até o fim no celular, abra a versão de computador em tela cheia: o layout se ajusta à largura do aparelho.",
@@ -200,6 +244,12 @@
       "w": 440,
       "x": 5970,
       "y": 12180
+    },
+    "legal": {
+      "text": "Proposta de 19/10, à noite, a pedido da dona: um Termo por oferta (Desafio, Comunidade Kids, Comunidade adultos), uma Política de Privacidade única com capítulos por público, e o nome da área adulta. Recomendação: Comunidade dos Criadores para os dois, com Kids como qualificador. Decidido no mesmo dia: o nome na tela de título é legítimo (a pessoa escreve o próprio nome num texto de HUD), e as páginas voltaram a dizer isso. Não é texto jurídico pronto: a redação final pede revisão de quem assina por ela.",
+      "w": 440,
+      "x": 4560,
+      "y": 1860
     },
     "lightcopy": {
       "fill": "gray",
@@ -294,33 +344,48 @@
       "x": 0,
       "y": 16280
     },
+    "titulo4": {
+      "kind": "title1",
+      "maxW": 5890,
+      "text": "A página da bio do Instagram: uma decisão só",
+      "w": 240,
+      "x": 0,
+      "y": 26030
+    },
     "voz": {
       "text": "Quadro novo de 19/10: a voz de cada público, montada com as falas reais dos relatos, os comentários do Instagram, a pesquisa de públicos e as buscas de hoje. É a régua usada para reescrever as páginas e os quizzes: toda frase tem que ser algo que a pessoa diria, e não a descrição tecnicamente correta do produto. O que ainda falta: entrevistas com pais de menores de 9 e com adultos que nunca programaram, antes de fechar a copy de produção.",
       "w": 440,
       "x": 4560,
       "y": 0
     },
-    "legal": {
-      "x": 4560,
-      "y": 1860,
-      "w": 440,
-      "fill": "yellow",
-      "text": "Proposta de 19/10, à noite, a pedido da dona: um Termo por oferta (Desafio, Comunidade Kids, Comunidade adultos), uma Política de Privacidade única com capítulos por público, e o nome da área adulta. Recomendação: Comunidade dos Criadores para os dois, com Kids como qualificador. Decidido no mesmo dia: o nome na tela de título é legítimo (a pessoa escreve o próprio nome num texto de HUD), e as páginas voltaram a dizer isso. Não é texto jurídico pronto: a redação final pede revisão de quem assina por ela."
-    },
-    "titulo4": {
-      "x": 0,
-      "y": 26030,
+    "titulo5": {
       "kind": "title1",
       "maxW": 5890,
+      "text": "As páginas de continuidade: adulta e Kids, com a versão de celular ao lado",
       "w": 240,
-      "text": "A página da bio do Instagram: uma decisão só"
+      "x": 0,
+      "y": 27600
     },
-    "bio": {
-      "x": 1990,
-      "y": 26350,
+    "continuar": {
+      "fill": "green",
+      "text": "Proposta de 20/10 para as páginas de continuidade, a pedido da dona: a Kids (/kids/comunidade-dos-criadores/oferta/continuar) sai do desenho antigo e da faixa de 9 a 14 e entra na família visual da página de 9 a 17; a adulta (/pro/comunidade-dos-criadores/oferta/continuar) é nova, no tema arcade. As duas seguem a mesma ordem: o que ficou guardado, o próximo passo de cada situação, o que fica e o que a assinatura acrescenta, o caminho daqui para frente, prova, planos com quando começa e garantia. Preços do seed (R$ 97 e R$ 797), ao vivo na implementação.",
       "w": 440,
-      "fill": "yellow",
-      "text": "Proposta de 19/10 para a raiz do funil, o link da bio. A página de hoje tem logo Kids, avatar, título longo, parágrafo, chip 9 a 14, três botões, vitrine de três telas com o Zappy e links legais: dez coisas para uma decisão. A proposta tem seis: a foto real de Helena e Júlio (a mesma da bio atual), uma linha de quem são, o posicionamento Criar jogos não tem idade, a frase que explica o que acontece ao tocar, e os dois caminhos: É para mim (18 ou mais, quiz adulto, cartão escuro no estilo da página adulta) e É para meu filho ou filha (9 a 17 ou menor de 9 criando junto, quiz infantil, cartão branco no estilo Kids). A linha \"já conhece\" saiu da bio em 19/10, porque só servia a um dos três públicos, e não entrou no quiz: decisão da dona, nenhuma tela antes do resultado cita oferta, senão o quiz perde o sentido para quem não conhece. Quem já conhece toca no mesmo cartão e chega à oferta pelo resultado, ou pelos links que já tem. O Desafio continua acessível pela página de planos. Sem telas, sem Zappy, sem chip de idade. Implementação: src/pages/index.astro e content/home-comunidade.ts; os cartões levam data-analytics-id (bio-quiz-adulto, bio-quiz-infantil) e o link do quiz adulto depende do nome da área (pro/comunidade-dos-criadores ou pro/modo-criador). Links legais: Termos e Política conforme o quadro de Termos."
+      "x": 5500,
+      "y": 27920
+    },
+    "continuar-verdade": {
+      "fill": "red",
+      "text": "Conferir antes de publicar: a etapa adulta salva depois do cancelamento (no Kids, posto e blocos não voltam para trás; a jornada adulta depende de rodar a configuração adulta com a dona); Clube, Mural adulto e Desafio do mês ainda não existem no Hub; o aviso de ferramenta fechada do Kids diz à criança que fica tudo liberado; faltam os e-mails de fim do presente e de assinatura encerrada. Relatos da Kids: Jeffrey (N18), Daniel (AV11) e Harle (N15), todos de relatos.ts. A adulta não tem relato, por isso convida a jogar de novo o que a pessoa publicou.",
+      "w": 440,
+      "x": 5500,
+      "y": 28560
+    },
+    "comofunciona": {
+      "fill": "orange",
+      "text": "Como funciona: recomendação de retirar. Só o funil do Desafio manda para ela (oferta do Desafio, resultado do quiz, cabeçalho do resultado e o botão de quem o quiz não recomenda), além do sitemap. A bio, as páginas da Comunidade, os e-mails, o ManyChat e o destaque do Instagram não levam a ela. Proposta: 301 para /kids/comunidade-dos-criadores/oferta#experiencia, links do Desafio trocados, sitemap e dois testes atualizados. Detalhes no quadro de estratégia, seção 7.",
+      "w": 440,
+      "x": 5500,
+      "y": 29200
     }
   },
   "order": [
@@ -345,7 +410,12 @@
     "QuizMenor9Resultado.dc.html",
     "QuizMenor9ResultadoCelular.dc.html",
     "PaginaBio.dc.html",
-    "PaginaBioCelular.dc.html"
+    "PaginaBioCelular.dc.html",
+    "EstrategiaContinuar.dc.html",
+    "PaginaContinuarAdulto.dc.html",
+    "PaginaContinuarAdultoCelular.dc.html",
+    "PaginaContinuarKids.dc.html",
+    "PaginaContinuarKidsCelular.dc.html"
   ],
   "pages": [],
   "title": "Três páginas de oferta · proposta"

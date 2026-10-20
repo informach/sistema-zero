@@ -10,10 +10,15 @@ import silkscreenPixel from '@fontsource/silkscreen/files/silkscreen-latin-400-n
 import '../../../styles/comunidade-adulto.css'
 import { COMUNIDADE_ADULTO_PRECO_FALLBACK } from '../../../funnels/comunidade-adulto/content'
 import { PAGINA_ADULTO as P } from '../../../funnels/comunidade-adulto/oferta/pagina'
-import { calcularEconomiaAnual } from '../../../funnels/comunidade-dos-criadores/oferta/economia'
+import { cupomDaOferta } from '../../../funnels/comunidade-dos-criadores/oferta/cupom'
+import {
+  calcularEconomiaAnual,
+  precoPorDiaCents,
+} from '../../../funnels/comunidade-dos-criadores/oferta/economia'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import type { CouponPresentation } from '../../../lib/coupon-query'
 import { formatBRLFromCents, formatBRLFromCents2 } from '../../../lib/money'
 import { funnelOgImage } from '../../../lib/seo'
 import type { OfferPlans } from '../../../server/catalog'
@@ -31,8 +36,10 @@ interface Props {
   quer?: string | null
   ofertaUrl: string
   plans: OfferPlans | null
+  coupon: CouponPresentation
 }
-const { f, productName, imagesBase, ofertaUrl, plans } = Astro.props
+const { f, productName, imagesBase, ofertaUrl, plans, coupon } = Astro.props
+const cupom = cupomDaOferta(coupon)
 
 // Planos ao vivo, normalizados por intervalo (sem assumir qual é a principal da env).
 const byInterval = (n: number) =>
@@ -49,9 +56,8 @@ const mostraMensal = !plans || mensal !== null
 const mostraAnual = !plans || anual !== null
 const mensalCents = mensal?.priceCents ?? COMUNIDADE_ADULTO_PRECO_FALLBACK.mensalCents
 const anualCents = anual?.priceCents ?? COMUNIDADE_ADULTO_PRECO_FALLBACK.anualCents
-// "Menos de X por dia": a mensalidade dividida por 30, levada aos PRÓXIMOS 10 centavos acima
-// (9700 → 323,3 → 330 centavos). Num valor exato sobe mais 10 centavos, para a frase seguir verdadeira.
-const precoDiaCents = Math.floor(mensalCents / 30 / 10) * 10 + 10
+// "Menos de R$ X por dia" (`precoPorDiaCents`: sempre acima da conta exata).
+const precoDiaCents = precoPorDiaCents(mensalCents)
 // A economia só existe com os DOIS preços ao vivo; sem ela, o selo do anual sai.
 const economiaAnualCents = calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)
 const precos: Record<string, string> = {
@@ -107,7 +113,7 @@ const cartao = P.oferta.cartao
               <p class="cda-garantia">{P.hero.garantia}</p>
             </div>
             <ul class="cda-requisitos">
-              {P.hero.requisitos.map((item) => <li class={`cor-${item.cor}`}><span class="cda-quadradinho" aria-hidden="true"></span>{preencher(item.texto)}</li>)}
+              {P.hero.requisitos.filter((item) => mostraMensal || !item.texto.includes('{{preco_mensal}}')).map((item) => <li class={`cor-${item.cor}`}><span class="cda-quadradinho" aria-hidden="true"></span>{preencher(item.texto)}</li>)}
             </ul>
           </div>
           <figure class="cda-monitor">
@@ -380,6 +386,7 @@ const cartao = P.oferta.cartao
             <p class="cda-rotulo cor-amarelo">{P.oferta.rotulo}</p>
             <h2 id="cda-oferta-titulo" class="cda-h2 cda-h2--oferta">{P.oferta.titulo}</h2>
             <p class="cda-suave">{P.oferta.texto}</p>
+            {cupom.aviso && <p class:list={['cda-cupom', { 'cda-cupom--alerta': cupom.aviso.alerta }]} role={cupom.aviso.alerta ? 'alert' : undefined}>{cupom.aviso.texto}</p>}
             <div class="cda-caixa cda-caixa--depois">
               <h3 class="cda-rotulo cda-rotulo--pequeno cor-verde">{P.oferta.depois.rotulo}</h3>
               <ol class="cda-depois">
@@ -418,8 +425,8 @@ const cartao = P.oferta.cartao
                   )}
                   {mostraAnual && (
                   <div class="cda-plano cda-plano--anual">
-                    {economiaAnualCents > 0 && <p class="cda-plano__selo">{preencher(cartao.anual.selo)}</p>}
                     <h3 class="cda-rotulo cda-rotulo--13 cor-amarelo">{cartao.anual.rotulo}</h3>
+                    {economiaAnualCents > 0 && <p class="cda-plano__selo">{preencher(cartao.anual.selo)}</p>}
                     <p class="cda-plano__preco">{preencher(cartao.anual.preco)}<span>{cartao.anual.sufixo}</span></p>
                     <p class="cda-plano__texto">{preencher(cartao.anual.texto)}</p>
                     <button type="button" class="cda-plano__btn" data-checkout-cta data-checkout-oferta={anual?.slug}>{cartao.anual.cta}</button>
@@ -470,7 +477,7 @@ const cartao = P.oferta.cartao
     </div>
   </div>
   <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
-  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} assinatura />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} assinatura />
 </BaseLayout>
 
 <script>

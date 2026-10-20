@@ -1306,6 +1306,21 @@
   flex: none;
   color: var(--c9-verde);
 }
+/* O cupom da URL: o aviso de que foi recebido, ou o alerta quando não vale. */
+.c917 .c9-cupom {
+  margin: 0;
+  padding: 10px 16px;
+  border: var(--c9-borda);
+  border-radius: 14px;
+  background: var(--kof-carta);
+  color: var(--c9-tinta);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.c917 .c9-cupom--alerta {
+  background: var(--kof-amarelo-fundo);
+}
 
 /* ── Dúvidas ────────────────────────────────────────────────────────────────── */
 .c917 .c9-wrap--estreito {

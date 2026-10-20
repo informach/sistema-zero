@@ -14,3 +14,11 @@ export function calcularEconomiaAnual(
   if (bruta < 100) return 0
   return Math.floor(bruta / 100) * 100
 }
+
+/**
+ * O "menos de R$ X por dia" das páginas de assinatura: a mensalidade em 30 dias, levada à dezena de
+ * centavos SEGUINTE (sempre acima do valor real, nunca igual, para o "menos de" ser verdade).
+ */
+export function precoPorDiaCents(mensalCents: number): number {
+  return (Math.floor(mensalCents / 300) + 1) * 10
+}

@@ -15,7 +15,7 @@ const { id, imagesBase, variant = 'faixa' } = Astro.props
 const relato = RELATOS[id]
 ---
 
-<figure class:list={['relato', `relato--${variant}`, 'kof-carta', 'kof-carta--fio', 'kof-reveal']} data-relato={id}>
+<figure class:list={['relato', `relato--${variant}`, 'kof-carta', 'kof-carta--fio']} data-relato={id}>
   <span class="relato-aspas material-symbols-rounded" aria-hidden="true">format_quote</span>
   <blockquote class="relato-fala"><p>{relato.fala}</p></blockquote>
   <figcaption class="relato-quem">

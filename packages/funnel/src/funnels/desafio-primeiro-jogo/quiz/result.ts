@@ -194,7 +194,10 @@ export function buildDesafioResult(answers: QuizAnswers) {
     showBridge: !blocked,
     copyFirst: decision.next === 'conversar_com_filho',
     primary: refused
-      ? { href: '/como-funciona/', label: 'Conhecer a proposta da plataforma' }
+      ? {
+          href: '/kids/comunidade-dos-criadores/oferta#experiencia',
+          label: 'Conhecer a proposta da plataforma',
+        }
       : blocked || decision.next === 'conferir_condicoes'
         ? { href: `${DESAFIO_BASE}/oferta#requisitos`, label: 'Conferir as condições do curso' }
         : {

@@ -2,7 +2,7 @@
 
 **03/10/2026 · proposta v2 aprovada, implementação local concluída.**
 
-O funil agora apresenta **A Chave do Farol**, com a identidade visual das ofertas da Comunidade. A raiz continua sendo a bio com os caminhos principais; `/como-funciona/` explica a experiência geral. O Desafio é uma entrada opcional: a família pode contratar a Comunidade diretamente.
+O funil agora apresenta **A Chave do Farol**, com a identidade visual das ofertas da Comunidade. A raiz continua sendo a bio com os caminhos principais; `/como-funciona/` explica a experiência geral (desde 20/10/2026, a raiz leva aos dois quizzes da Comunidade e a `/como-funciona` faz 301 para `/kids/comunidade-dos-criadores/oferta#experiencia`; os links do Desafio para ela passaram a apontar para essa seção). O Desafio é uma entrada opcional: a família pode contratar a Comunidade diretamente.
 
 ## Páginas e encaminhamento
 

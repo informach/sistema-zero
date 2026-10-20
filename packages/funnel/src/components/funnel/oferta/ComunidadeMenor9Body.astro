@@ -6,7 +6,11 @@
 import '../../../styles/kids-oferta.css'
 import '../../../styles/comunidade-menor9.css'
 import { COMUNIDADE_PRECO_FALLBACK } from '../../../funnels/comunidade-dos-criadores/content'
-import { calcularEconomiaAnual } from '../../../funnels/comunidade-dos-criadores/oferta/economia'
+import { cupomDaOferta } from '../../../funnels/comunidade-dos-criadores/oferta/cupom'
+import {
+  calcularEconomiaAnual,
+  precoPorDiaCents,
+} from '../../../funnels/comunidade-dos-criadores/oferta/economia'
 import {
   type ImagemMenor9,
   PAGINA_MENOR9,
@@ -15,6 +19,7 @@ import { RELATOS } from '../../../funnels/comunidade-dos-criadores/oferta/relato
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import type { CouponPresentation } from '../../../lib/coupon-query'
 import { formatBRLFromCents, formatBRLFromCents2 } from '../../../lib/money'
 import { funnelOgImage } from '../../../lib/seo'
 import type { OfferPlans } from '../../../server/catalog'
@@ -32,8 +37,10 @@ interface Props {
   quer?: string | null
   ofertaUrl: string
   plans: OfferPlans | null
+  coupon: CouponPresentation
 }
-const { f, productName, imagesBase, ofertaUrl, plans } = Astro.props
+const { f, productName, imagesBase, ofertaUrl, plans, coupon } = Astro.props
+const cupom = cupomDaOferta(coupon)
 const P = PAGINA_MENOR9
 const img = (file: string) => `${imagesBase}/${file}`
 const srcset = (imagem: ImagemMenor9) =>
@@ -42,7 +49,7 @@ const srcset = (imagem: ImagemMenor9) =>
 if (!P.heroi.titulo.includes(P.heroi.enfase)) throw new Error('Ênfase fora do título do herói')
 const [tituloInicio = '', tituloFim = ''] = P.heroi.titulo.split(P.heroi.enfase)
 
-// Preços AO VIVO, como na ComunidadeOfertaBody: a resolução por intervalo conserva qual oferta é a
+// Preços AO VIVO, como na Comunidade917Body: a resolução por intervalo conserva qual oferta é a
 // principal e qual é a irmã; sem catálogo, vale o fallback da Comunidade (nunca o do NCI).
 const byInterval = (n: number) =>
   plans?.main.intervalMonths === n
@@ -60,10 +67,8 @@ const mensalCents = mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents
 const anualCents = anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents
 // A economia só existe com os DOIS preços ao vivo; sem economia, o selo do anual sai.
 const economiaAnualCents = calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)
-// "Menos de X por dia": a mensalidade dividida por 30, levada aos 10 centavos SEGUINTES
-// (9700 centavos → 323,33 → 330 centavos). Estritamente acima da conta exata, para o "menos de" valer
-// também quando ela fecha num múltiplo de 10 centavos.
-const precoDiaCents = (Math.floor(mensalCents / 300) + 1) * 10
+// "Menos de R$ X por dia" (`precoPorDiaCents`: sempre acima da conta exata).
+const precoDiaCents = precoPorDiaCents(mensalCents)
 const PRECOS: Record<string, string> = {
   '{{preco_mensal}}': formatBRLFromCents(mensalCents),
   '{{preco_anual}}': formatBRLFromCents(anualCents),
@@ -346,6 +351,7 @@ const CORES_DEPOIS = ['amarelo', 'rosa', 'azul', 'menta']
             <h2 id="cm9-planos" class="cm9-h2 cm9-h2--planos">{P.planos.titulo}</h2>
             <p class="cm9-texto cm9-texto--tinta">{P.planos.texto}</p>
             <p class="cm9-texto cm9-texto--forte">{P.planos.destaque}</p>
+            {cupom.aviso && <p class:list={['cm9-cupom', { 'cm9-cupom--alerta': cupom.aviso.alerta }]} role={cupom.aviso.alerta ? 'alert' : undefined}>{cupom.aviso.texto}</p>}
           </div>
           <div class="cm9-planos">
             {mostraMensal && (
@@ -359,8 +365,8 @@ const CORES_DEPOIS = ['amarelo', 'rosa', 'azul', 'menta']
             )}
             {mostraAnual && (
             <article class="cm9-plano cm9-plano--anual" aria-labelledby="cm9-plano-anual">
-              {economiaAnualCents > 0 && <p class="cm9-plano__selo">{preencher(P.planos.anual.selo)}</p>}
               <h3 id="cm9-plano-anual" class="cm9-plano__nome">{P.planos.anual.nome}</h3>
+              {economiaAnualCents > 0 && <p class="cm9-plano__selo">{preencher(P.planos.anual.selo)}</p>}
               <p class="cm9-plano__preco">{preencher(P.planos.anual.preco)}<span>{P.planos.anual.periodo}</span></p>
               <p class="cm9-plano__texto">{preencher(P.planos.anual.texto)}</p>
               <button type="button" class="cm9-plano__botao cm9-plano__botao--escuro" data-checkout-cta data-checkout-oferta={anual?.slug}>{P.planos.anual.cta}</button>
@@ -430,11 +436,11 @@ const CORES_DEPOIS = ['amarelo', 'rosa', 'azul', 'menta']
     </div>
   </div>
   <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
-  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} />
 </BaseLayout>
 
 <script>
-  // A barra fixa do celular, a mesma da ComunidadeOfertaBody: aparece depois da dobra e some
+  // A barra fixa do celular, a mesma da Comunidade917Body: aparece depois da dobra e some
   // quando os planos ou o rodapé entram na tela. Sem JS ela nasce escondida e `aria-hidden`.
   const barra = document.querySelector<HTMLElement>('[data-mobar]')
   const planos = document.getElementById('planos')

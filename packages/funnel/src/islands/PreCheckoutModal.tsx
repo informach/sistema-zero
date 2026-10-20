@@ -15,7 +15,7 @@ export interface PreCheckoutModalProps {
   funnel: string
   /** Código recebido na oferta; o checkout volta a validá-lo no servidor. */
   couponCode?: string | null
-  /** Convite para continuar usando a conta que a família já conhece. */
+  /** Página de continuidade: pede o mesmo e-mail da conta que a pessoa (ou a família) já tem. */
   continuidade?: boolean
   /**
    * Oferta de assinatura (mensal ou anual): o texto fala do plano e da renovação, e o rodapé não
@@ -279,6 +279,12 @@ export default function PreCheckoutModal({
                     criança (nome e idade) você cria depois, já dentro da plataforma.
                   </>
                 )}
+              </p>
+            )}
+            {!isKids && continuidade && (
+              <p className="mt-4 rounded-xl border border-cyan/30 bg-cyan/10 px-4 py-3 text-sm text-ink">
+                <strong>Se você já tem conta no Sistema Zero, use o mesmo e-mail.</strong> Assim, a
+                assinatura entra na conta onde estão os seus projetos e o seu progresso.
               </p>
             )}
 

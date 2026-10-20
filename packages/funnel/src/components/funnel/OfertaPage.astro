@@ -1,14 +1,16 @@
 ---
 import { COMUNIDADE_ADULTO } from '../../funnels/comunidade-adulto'
+import type { ComunidadeAdultoSubpagina } from '../../funnels/comunidade-adulto/oferta'
 import { COMUNIDADE_DOS_CRIADORES } from '../../funnels/comunidade-dos-criadores'
 import type { ComunidadeOfertaId } from '../../funnels/comunidade-dos-criadores/oferta/types'
 import { DESAFIO_PRIMEIRO_JOGO } from '../../funnels/desafio-primeiro-jogo'
 import type { DesafioOfferId } from '../../funnels/desafio-primeiro-jogo/offer'
 import type { OfferPageData } from '../../server/offer-page'
 import Comunidade917Body from './oferta/Comunidade917Body.astro'
+import ComunidadeAdultoContinuarBody from './oferta/ComunidadeAdultoContinuarBody.astro'
 import ComunidadeAdultoOfertaBody from './oferta/ComunidadeAdultoOfertaBody.astro'
+import ComunidadeContinuarBody from './oferta/ComunidadeContinuarBody.astro'
 import ComunidadeMenor9Body from './oferta/ComunidadeMenor9Body.astro'
-import ComunidadeOfertaBody from './oferta/ComunidadeOfertaBody.astro'
 import DesafioOfertaBody from './oferta/DesafioOfertaBody.astro'
 import NoComandoOfertaBody from './oferta/NoComandoOfertaBody.astro'
 
@@ -17,9 +19,17 @@ import NoComandoOfertaBody from './oferta/NoComandoOfertaBody.astro'
 interface Props extends OfferPageData {
   /** Comunidade Kids: a página 9 a 17 (`/oferta`), a "criar junto" ou a de continuidade. */
   comunidadePage?: ComunidadeOfertaId
+  /** Comunidade adulta: a continuidade (`/oferta/continuar`); sem valor, a página principal. */
+  comunidadeAdultoPage?: ComunidadeAdultoSubpagina
   desafioProfile?: DesafioOfferId
 }
-const { bodyProps, plans, comunidadePage = '9a17', desafioProfile = 'primeiro-jogo' } = Astro.props
+const {
+  bodyProps,
+  plans,
+  comunidadePage = '9a17',
+  comunidadeAdultoPage,
+  desafioProfile = 'primeiro-jogo',
+} = Astro.props
 const { f } = bodyProps
 const corpo = f.content.sales
   ? 'sales'
@@ -40,12 +50,16 @@ if (!corpo) throw new Error(`Funil sem corpo de oferta declarado: ${f.key}`)
     comunidadePage === 'criar-junto' ? (
       <ComunidadeMenor9Body {...bodyProps} plans={plans} />
     ) : comunidadePage === 'continuar' ? (
-      <ComunidadeOfertaBody {...bodyProps} plans={plans} profile="continuar" />
+      <ComunidadeContinuarBody {...bodyProps} plans={plans} />
     ) : (
       <Comunidade917Body {...bodyProps} plans={plans} />
     )
   ) : corpo === 'comunidade-adulto' ? (
-    <ComunidadeAdultoOfertaBody {...bodyProps} plans={plans} />
+    comunidadeAdultoPage === 'continuar' ? (
+      <ComunidadeAdultoContinuarBody {...bodyProps} plans={plans} />
+    ) : (
+      <ComunidadeAdultoOfertaBody {...bodyProps} plans={plans} />
+    )
   ) : (
     <DesafioOfertaBody {...bodyProps} profile={desafioProfile} />
   )

@@ -1,12 +1,9 @@
 /**
  * As páginas de oferta da Comunidade Kids (20/10/2026): `9a17` em `/oferta`, `criar-junto` (menor
- * de 9, criando com o responsável) e `continuar` (quem veio do Desafio). As cinco páginas de perfil
- * de antes redirecionam para `/oferta` (`COMUNIDADE_OFERTAS_ANTIGAS`).
+ * de 9, criando com o responsável) e `continuar` (a família que já começou na plataforma). As cinco
+ * páginas de perfil de antes redirecionam para `/oferta` (`COMUNIDADE_OFERTAS_ANTIGAS`).
  */
 export type ComunidadeOfertaId = '9a17' | 'criar-junto' | 'continuar'
-
-/** As páginas montadas pelo motor de seções (`ComunidadeOfertaBody`): hoje só a de continuidade. */
-export type ComunidadePageId = 'continuar'
 
 export interface ComunidadeAction {
   label: string
@@ -74,54 +71,6 @@ export type RelatoId =
   | 'N17'
   | 'N18'
   | 'N19'
-
-export interface ComunidadePage {
-  id: ComunidadePageId
-  label: string
-  seoTitle: string
-  description: string
-  emphasis: string
-  heroVisual: string
-  heroChip: string
-  hero: {
-    title: string
-    description: string
-    benefits: string[]
-    requirements: string
-    primary: ComunidadeAction
-    secondary: ComunidadeAction
-  }
-  sections: ComunidadeSection[]
-  /** Sem configuração, o tour aparece logo após o hero. */
-  tourAfterSection?: string
-  faqTitle: string
-  faqGroups: { title: string; questions: string[] }[]
-  faq?: Record<string, ComunidadeFaqEntry>
-  faqVisuals?: Record<string, readonly string[]>
-  faqLinks?: ComunidadeAction[]
-  offer?: ComunidadeOffer
-  showFounder?: boolean
-  /** Sem configuração, vale `SHARED_COPY.founder`. */
-  founder?: ComunidadeSection
-  closing: ComunidadeSection
-}
-
-export interface ComunidadeOffer {
-  title: string
-  paragraphs: string[]
-  /** Fala real antes dos cartões dos planos. */
-  falas?: readonly RelatoId[]
-  monthly: { title: string; paragraphs: string[]; cta: string }
-  annual: { title: string; paragraphs: string[]; cta: string }
-  period?: { title: string; paragraphs: string[] }
-  guarantee: { title: string; paragraphs: string[] }
-  checkout: string
-}
-
-export interface ComunidadeFaqEntry {
-  question: string
-  paragraphs: string[]
-}
 
 /** Uma captura REAL do kids em staging (1x e @2x, mesma proporção). */
 export interface ComunidadeFrame {

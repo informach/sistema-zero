@@ -1,7 +1,8 @@
 /**
  * Espelho editorial do funil adulto da Comunidade dos Criadores (20/10/2026):
- * docs/marketing/comunidade-dos-criadores/adulto/copy/ com a página de oferta (`pagina.md`), a
- * entrada e as perguntas do quiz (`quiz.md`) e uma carta de resultado de cada perfil
+ * docs/marketing/comunidade-dos-criadores/adulto/copy/ com a página de oferta (`pagina.md`), a de
+ * continuidade (`pagina-continuar.md`), a entrada e as perguntas do quiz (`quiz.md`) e uma carta de
+ * resultado de cada perfil
  * (`resultados-quiz.md`), gerados da copy tipada em src/funnels/comunidade-adulto. A copy vive no
  * código; o espelho existe para ler e revisar em Markdown. Para mudar uma frase, edite o `.ts` e rode
  * `bun scripts/espelho-comunidade-adulto.ts`; `comunidade-adulto-funnel.test.ts` reprova espelho
@@ -10,6 +11,7 @@
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { ResultadoConversa } from '../src/content/resultado-conversa'
+import { PAGINA_ADULTO_CONTINUAR } from '../src/funnels/comunidade-adulto/oferta/continuar'
 import { PAGINA_ADULTO } from '../src/funnels/comunidade-adulto/oferta/pagina'
 import {
   CLEAR_PROFILE_MIN,
@@ -44,6 +46,7 @@ export const PASTA_ESPELHO_ADULTO = join(
 )
 export const ARQUIVOS_ESPELHO_ADULTO = {
   pagina: 'pagina.md',
+  continuar: 'pagina-continuar.md',
   quiz: 'quiz.md',
   resultados: 'resultados-quiz.md',
 } as const
@@ -54,9 +57,9 @@ const CABECALHO =
 /** Chaves técnicas do módulo que não são texto da página. */
 const CHAVES_TECNICAS = new Set(['src', 'width', 'height', 'href', 'cor', 'id'])
 
-/** Cada texto da página de oferta, na ordem do módulo (a ordem da página), com o caminho da chave. */
-export function espelhoPaginaAdulto(): string {
-  const b: string[] = [CABECALHO, '# Comunidade dos Criadores para adultos: a página de oferta']
+/** Cada texto de uma página, na ordem do módulo (a ordem da página), com o caminho da chave. */
+function espelhoDoModuloAdulto(titulo: string, modulo: object): string {
+  const b: string[] = [CABECALHO, `# Comunidade dos Criadores para adultos: ${titulo}`]
   b.push(
     '_Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…): a página os preenche com os planos ao vivo do catálogo. As imagens aparecem pelo texto alternativo._',
   )
@@ -77,9 +80,16 @@ export function espelhoPaginaAdulto(): string {
         visita(item, caminho ? `${caminho}.${chave}` : chave)
       }
   }
-  visita(PAGINA_ADULTO, '')
+  visita(modulo, '')
   return `${b.join('\n\n')}\n`
 }
+
+/** A página de oferta (`pagina.md`). */
+export const espelhoPaginaAdulto = () => espelhoDoModuloAdulto('a página de oferta', PAGINA_ADULTO)
+
+/** A página de continuidade, para quem já conhece o Sistema Zero (`pagina-continuar.md`). */
+export const espelhoContinuarAdulto = () =>
+  espelhoDoModuloAdulto('a página de continuidade', PAGINA_ADULTO_CONTINUAR)
 
 export function espelhoQuizAdulto(): string {
   const b: string[] = [CABECALHO, '# Quiz adulto da Comunidade dos Criadores: entrada e perguntas']
@@ -175,6 +185,7 @@ export function espelhoResultadosAdulto(): string {
 
 export const ESPELHOS_ADULTO: Record<keyof typeof ARQUIVOS_ESPELHO_ADULTO, () => string> = {
   pagina: espelhoPaginaAdulto,
+  continuar: espelhoContinuarAdulto,
   quiz: espelhoQuizAdulto,
   resultados: espelhoResultadosAdulto,
 }

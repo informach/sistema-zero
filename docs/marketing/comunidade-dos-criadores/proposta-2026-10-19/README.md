@@ -8,13 +8,26 @@ Esta pasta guarda a fonte da implementação; o Canvas continua sendo a referên
 
 - **Kids:** as cinco páginas de perfil da Comunidade dos Criadores deram lugar a duas: 9 a 17 anos
   (`/kids/comunidade-dos-criadores/oferta`) e menor de 9 criando junto (`/oferta/criar-junto`).
-  A página `/oferta/continuar` ficou como estava.
+  A página `/oferta/continuar` foi redesenhada numa segunda rodada (abaixo).
 - **Adulto:** funil novo `pro/comunidade-dos-criadores`, com página, quiz, resultado e checkout de
   assinatura mensal ou anual.
 - **Quizzes:** Kids v6 (entrada filho ou filha, idade, ramo 9 a 17 e ramo menor de 9) e quiz adulto,
   os dois com o resultado em conversa.
 - **Bio:** a raiz do funil passou a ter só dois caminhos, "É para mim" e "É para meu filho ou filha".
 - **Termos e privacidade:** um Termo por oferta e uma Política de Privacidade única.
+
+## Segunda rodada (20/10/2026): continuidades e Como funciona
+
+Proposta no mesmo Canvas (quadros `EstrategiaContinuar`, `PaginaContinuarKids` e
+`PaginaContinuarAdulto`), aprovada pela dona e implementada no mesmo dia:
+
+- **Continuidade Kids** (`/kids/comunidade-dos-criadores/oferta/continuar`) no desenho da página de
+  9 a 17, para a família que já começou (Desafio, presente, oficina ao vivo ou assinatura que acabou).
+- **Continuidade adulta** (`/pro/comunidade-dos-criadores/oferta/continuar`), nova, no tema arcade,
+  para quem cancelou, quem já tem conta por outro curso, quem fez 18 anos no Kids e quem acompanha
+  alguém da família no Kids.
+- **Como funciona** retirada: `/como-funciona/` faz 301 para
+  `/kids/comunidade-dos-criadores/oferta#experiencia`, e os links do Desafio apontam direto para lá.
 
 ## Arquivos
 

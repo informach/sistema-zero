@@ -20,7 +20,7 @@ const measurements: Array<{
 try {
   // Interleave conditions to avoid attributing browser warm-up or host drift to collection.
   for (let run = 0; run < 7; run++)
-    for (const path of ['/', '/como-funciona/'])
+    for (const path of ['/', '/kids/comunidade-dos-criadores/oferta'])
       for (const collection of ['disabled', 'automatic']) {
         const context = await browser.newContext({ viewport: { width: 390, height: 844 } })
         try {
@@ -95,7 +95,7 @@ try {
       }
   const median = (values: number[]) =>
     [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]!
-  const summary = ['/', '/como-funciona/'].flatMap((path) =>
+  const summary = ['/', '/kids/comunidade-dos-criadores/oferta'].flatMap((path) =>
     ['disabled', 'automatic'].map((collection) => {
       const rows = measurements.filter((row) => row.path === path && row.collection === collection)
       return {

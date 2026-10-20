@@ -222,7 +222,7 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
   },
   // A captura inteira (`tela-catalogo`) traz no alto o fim do mapa, com "Mais 6 postos estão
   // sendo construídos": entra só o RECORTE da lista de aventuras (`tela-catalogo-trilha`, caixa
-  // 600,330–2560,1600 do @2x). Recapturou? Refaça o recorte (vale também para a faixa TOUR).
+  // 600,330–2560,1600 do @2x). Recapturou? Refaça o recorte.
   catalogo: {
     frames: [
       tela(
@@ -504,107 +504,10 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
 /**
  * Demonstrações citadas pela copy que ainda NÃO têm tela real. Não renderizam nada: a seção ou a
  * resposta segue só com o texto. Para ligar uma delas, capture a tela e mova a chave para
- * `COMUNIDADE_VISUALS` (os vínculos com as quatro páginas e com as dúvidas já existem).
+ * `COMUNIDADE_VISUALS`.
  */
 export const PENDING_VISUALS: Record<string, string> = {
   conexao: 'Aviso de sem conexão: o editor não mostra um estado próprio para fotografar.',
 }
 
 export const visualDe = (id: string): ComunidadeVisual | null => COMUNIDADE_VISUALS[id] ?? null
-
-export const FAQ_VISUALS: Record<string, readonly string[]> = {
-  programacao: ['aula', 'estudio'],
-  desenho: ['estudio', 'pinta'],
-  pais: ['responsavel'],
-  'aulas-gravadas': ['pausa'],
-  'ao-vivo': ['aula-estudio'],
-  equipamento: ['aula'],
-  nivel: ['catalogo', 'estudio'],
-  telas: ['pausa'],
-  frequencia: ['ferias', 'missoes'],
-  salvamento: ['salvamento', 'exportacao'],
-  interesse: ['jogo-pronto'],
-  liberacao: ['jornada'],
-  catalogo: ['catalogo'],
-  ia: ['pensa', 'zappy'],
-  creditos: ['creditos'],
-  avancado: ['molda', 'codigo'],
-  certificado: ['certificado'],
-  irmaos: ['perfis'],
-  perfil: ['privacidade', 'publicacao'],
-  convivencia: ['clube'],
-  'apoio-especifico': ['aula'],
-  ajuda: ['como-fazer', 'recados'],
-  custos: ['jornada', 'creditos'],
-  cancelamento: ['compras'],
-  reembolso: [],
-  atendimento: ['conta', 'senha'],
-  // Respostas de algumas páginas (`FAQ_EXTRA`).
-  roblox: ['estudio'],
-  desafio: ['jornada'],
-  'so-desenho': ['integracao'],
-  papel: ['pinta', 'integracao'],
-}
-
-/**
- * A faixa "Por dentro da Comunidade": uma tela de cada área, com o nome que a plataforma dá a ela
- * e UMA linha PESSOAL sobre a função: o filho fazendo algo ali ("Onde seu filho monta e testa os
- * jogos"), nunca a descrição da ferramenta. Só o que a copy das páginas já afirma de cada área,
- * sem condição de acesso (a faixa mostra o que existe; a liberação está no capítulo da Jornada).
- */
-export interface ComunidadeTourItem extends ComunidadeFrame {
-  resumo: string
-}
-
-const area = (frame: ComunidadeFrame, resumo: string): ComunidadeTourItem => ({ ...frame, resumo })
-
-export const TOUR: readonly ComunidadeTourItem[] = [
-  area(
-    tela(
-      'jogo-pronto',
-      'Aulas',
-      'Aula com vídeo, fala do Zappy e o jogo pronto para experimentar.',
-    ),
-    'Onde seu filho vê a explicação e faz o passo.',
-  ),
-  area(
-    tela('estudio', 'Estúdio', 'Estúdio com os blocos do jogo e a partida em execução.'),
-    'Onde seu filho monta e testa os jogos.',
-  ),
-  area(
-    tela('pinta', 'Pinta', 'Editor do Pinta com um personagem de cavaleiro.'),
-    'Onde ele desenha personagens e cenários.',
-  ),
-  area(
-    tela('pensa', 'Pensa', 'Plano de criação no Pensa, com as etapas e os cartões de tarefa.'),
-    'Onde ele transforma uma ideia em plano.',
-  ),
-  area(
-    tela('molda', 'Molda', 'Molda com um personagem de blocos em três dimensões.'),
-    'Onde ele cria em três dimensões.',
-  ),
-  area(
-    tela('catalogo-trilha', 'Jornada', 'Aventuras da trilha na Jornada do Criador.', 980, 635),
-    'Onde ele vê o próximo passo.',
-  ),
-  area(
-    tela('mural', 'Mural', 'Mural dos Criadores com os jogos publicados.'),
-    'Onde ele apresenta o jogo que publicou.',
-  ),
-  area(
-    tela('recados', 'Recados', 'Recados do professor com uma dúvida de aula.'),
-    'Onde ele acompanha a ajuda que pediu.',
-  ),
-  area(
-    tela('quarto', 'Meu quarto', 'Meu quarto com cama, mesa e cadeira posicionadas no espaço.'),
-    'Onde ele monta um espaço do jeito dele.',
-  ),
-  area(
-    tela(
-      'como-fazer',
-      'Como fazer',
-      'Biblioteca de ajuda Como fazer, com os tutoriais por assunto.',
-    ),
-    'Onde ele consulta como fazer uma ação.',
-  ),
-]

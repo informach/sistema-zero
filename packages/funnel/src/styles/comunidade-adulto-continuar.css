@@ -1,0 +1,238 @@
+/*
+ * comunidade-adulto-continuar.css: as peças próprias da página de continuidade adulta
+ * (`/pro/comunidade-dos-criadores/oferta/continuar`, proposta de 20/10/2026; desenho em
+ * docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/canvas/PaginaContinuarAdulto.html).
+ * Body: `ComunidadeAdultoContinuarBody.astro`; copy: `comunidade-adulto/oferta/continuar.ts`.
+ *
+ * A página veste o layout da página adulta (`comunidade-adulto.css`, sob `.cda`) e só acrescenta a
+ * tela de save do herói, os casos (SAVE 1 a 4) e os dois painéis do que ficou salvo. Mesmas
+ * regras: só os tokens `--cda-*` do theme-arcade, transparências por `color-mix in oklab`, e a cor de
+ * cada item vem de `.cor-<nome>` (`--cor`).
+ */
+
+/* O brilho do herói é verde, a cor do CONTINUE (na página adulta ele é azul). */
+.cda .cda-hero--continuar {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in oklab, var(--cda-branco) 3.5%, transparent) 0 1px,
+      transparent 1px 4px
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      color-mix(in oklab, var(--cda-verde) 14%, transparent),
+      transparent 55%
+    );
+}
+
+/* ── Tela de save (dentro do monitor do herói) ──────────────────────────────── */
+.cda .cda-monitor__tela--save img {
+  opacity: 0.28;
+}
+.cda .cda-save {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.375rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--cda-fundo) 35%, transparent),
+    color-mix(in oklab, var(--cda-fundo) 85%, transparent)
+  );
+}
+.cda .cda-save__titulo {
+  font-family: var(--cda-pixel);
+  font-size: clamp(1.625rem, 3vw, 2.5rem);
+  line-height: 1.1;
+  color: var(--cda-amarelo);
+  text-shadow: 4px 4px 0 var(--cda-fundo);
+}
+.cda .cda-save__slot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  width: 100%;
+  max-width: 25rem;
+  margin: 0;
+  padding: 0.875rem 1rem;
+  background: color-mix(in oklab, var(--cda-fundo) 88%, transparent);
+  border: 3px solid var(--cda-amarelo);
+  box-shadow: 5px 5px 0 var(--cda-rosa);
+  font-family: var(--cda-pixel);
+}
+.cda .cda-save__slot > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.cda .cda-save__slot dt,
+.cda .cda-save__slot dd {
+  margin: 0;
+}
+.cda .cda-save__cabeca {
+  font-size: 0.875rem;
+}
+.cda .cda-save__cabeca dt {
+  color: var(--cda-rosa);
+}
+.cda .cda-save__cabeca dd {
+  color: var(--cda-texto);
+}
+.cda .cda-save__linha {
+  font-size: 0.75rem;
+  color: var(--cda-texto-apoio);
+}
+.cda .cda-save__linha dd {
+  color: var(--cda-verde);
+}
+.cda .cda-save__menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-family: var(--cda-pixel);
+  font-size: clamp(0.8125rem, 1.2vw, 1rem);
+  color: var(--cda-legenda);
+}
+.cda .cda-save__menu li {
+  padding-left: 1.375rem;
+}
+.cda .cda-save__menu .cda-save__atual {
+  padding-left: 0;
+  color: var(--cda-amarelo);
+  text-shadow: 2px 2px 0 var(--cda-fundo);
+}
+
+/* ── Você está aqui: os quatro casos ────────────────────────────────────────── */
+.cda .cda-casos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(27.5rem, 100%), 1fr));
+  gap: 1.25rem;
+}
+.cda .cda-caso {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: var(--cda-fundo);
+  border: 3px solid var(--cda-linha-forte);
+  border-top: 8px solid var(--cor);
+}
+.cda .cda-caso__titulo {
+  font-family: var(--cda-titulo);
+  font-weight: 800;
+  font-size: 1.5625rem;
+  line-height: 1.15;
+}
+.cda .cda-caso__texto {
+  font-size: 1.0625rem;
+  color: var(--cda-texto-suave);
+}
+.cda .cda-caso__proximo {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 2px dashed var(--cda-linha-forte);
+  font-family: var(--cda-pixel);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--cda-texto);
+}
+.cda .cda-caso__proximo-rotulo {
+  margin-right: 0.5rem;
+  color: var(--cda-verde);
+}
+
+/* ── O que ficou salvo × o que volta com a assinatura ───────────────────────── */
+.cda .cda-salvo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 1.5rem;
+}
+.cda .cda-salvo__painel {
+  flex: 1 1 26.25rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.5rem;
+  background: var(--cda-fundo-2);
+  border: 3px solid var(--cda-linha-forte);
+}
+.cda .cda-salvo__painel--volta {
+  background: var(--cda-carta);
+  border-color: var(--cda-amarelo);
+  box-shadow: 8px 8px 0 var(--cda-rosa);
+}
+.cda .cda-salvo__topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem;
+}
+.cda .cda-salvo__rotulo {
+  color: var(--cor, var(--cda-texto));
+}
+.cda .cda-salvo__selo {
+  padding: 0.1875rem 0.5rem;
+  background: var(--cda-texto-apoio);
+  color: var(--cda-fundo);
+  font-family: var(--cda-pixel);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+.cda .cda-salvo__painel--volta .cda-salvo__selo {
+  background: var(--cda-amarelo);
+}
+.cda .cda-salvo__itens {
+  font-size: 1.125rem;
+}
+.cda .cda-salvo__painel:not(.cda-salvo__painel--volta) .cda-check {
+  stroke: var(--cda-texto-apoio);
+}
+
+/* ── A prova é sua: texto à esquerda, o Mural à direita ─────────────────────── */
+.cda .cda-dupla--prova > :first-child {
+  flex: 1 1 26.25rem;
+}
+.cda .cda-dupla--prova > :last-child {
+  flex: 1 1 32.5rem;
+}
+.cda .cda-mural--prova .cda-mural__quadro {
+  box-shadow: 10px 10px 0 var(--cda-verde);
+}
+.cda .cda-mural--prova .cda-mural__quadro img {
+  height: 22.5rem;
+}
+
+@media (max-width: 760px) {
+  .cda .cda-save {
+    gap: 0.625rem;
+    padding: 0.75rem;
+  }
+  .cda .cda-save__slot {
+    gap: 0.25rem;
+    padding: 0.5rem 0.625rem;
+  }
+  .cda .cda-save__cabeca {
+    font-size: 0.75rem;
+  }
+  .cda .cda-save__linha {
+    font-size: 0.625rem;
+  }
+  .cda .cda-save__titulo {
+    font-size: clamp(1.125rem, 6vw, 1.625rem);
+  }
+  .cda .cda-save__menu {
+    gap: 0.25rem;
+    font-size: 0.75rem;
+  }
+  /* No celular a tela tem a altura do conteúdo, sem folga: fica só a opção marcada. */
+  .cda .cda-save__menu li:not(.cda-save__atual) {
+    display: none;
+  }
+}

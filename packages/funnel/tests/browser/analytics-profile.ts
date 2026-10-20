@@ -3,10 +3,10 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
 
 const base = process.env.ANALYTICS_CAPTURE_URL || 'http://127.0.0.1:4322'
-const path = process.env.QA_PROFILE_PATH || '/como-funciona/'
+const path = process.env.QA_PROFILE_PATH || '/'
 const automatic = process.env.QA_PROFILE_COLLECTION === 'automatic'
 assert.ok(['localhost', '127.0.0.1'].includes(new URL(base).hostname))
-assert.ok(['/', '/como-funciona/'].includes(path))
+assert.ok(['/', '/kids/comunidade-dos-criadores/oferta'].includes(path))
 const browser = await chromium.launch()
 const context = await browser.newContext({ viewport: { width: 390, height: 844 } })
 try {

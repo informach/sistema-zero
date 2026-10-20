@@ -1,7 +1,8 @@
 // Funil "Comunidade dos Criadores" (kids, /kids/comunidade-dos-criadores) — a
 // ASSINATURA da plataforma inteira, com quiz opcional de orientação familiar.
-// A oferta tem layout PRÓPRIO (ComunidadeOfertaBody) → `content.sales` ausente
-// de propósito; a /oferta despacha pelo body deste funil via `f.key`.
+// As ofertas têm layout PRÓPRIO (Comunidade917Body, ComunidadeMenor9Body e
+// ComunidadeContinuarBody) → `content.sales` ausente de propósito; a /oferta despacha pelo body
+// deste funil via `f.key`.
 //
 // Oferta no catálogo: env `FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES` aponta a
 // oferta MENSAL (`comunidade-dos-criadores-mensal`); a ANUAL é a irmã ligada por
@@ -54,7 +55,7 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   content: {
     copy: COMUNIDADE_PRODUTO,
     landing: COMUNIDADE_LANDING,
-    // sem `sales`: a página de vendas tem layout próprio (ComunidadeOfertaBody.astro).
+    // sem `sales`: as páginas de vendas têm layout próprio (Comunidade917Body e irmãs).
     obrigado: COMUNIDADE_OBRIGADO,
     checkout: COMUNIDADE_CHECKOUT,
     quiz: COMMUNITY_QUIZ,

@@ -66,6 +66,9 @@ test('conteúdo vigente não vende a nave, mapa dos pais ou duração garantida'
     'utf8',
   )
   expect(source).toContain('funnelLinkWithAttribution')
-  expect(source).toContain("'/como-funciona/'")
+  // A Como funciona virou redirecionamento (20/10/2026): os links de plataforma vão direto para a
+  // seção de experiência da página de 9 a 17.
+  expect(source).toContain("'/kids/comunidade-dos-criadores/oferta#experiencia'")
+  expect(source).not.toContain('/como-funciona')
   expect(source).toContain('data-checkout-cta')
 })

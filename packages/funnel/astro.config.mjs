@@ -37,9 +37,9 @@ export default defineConfig({
       // que o sitemap não enumera sozinho → listamos explicitamente. Ao adicionar
       // um funil indexável, inclua a URL da sua oferta aqui.
       customPages: [
-        `${site}/como-funciona/`,
         `${site}/pro/no-comando-da-ia/oferta`,
         `${site}/pro/comunidade-dos-criadores/oferta`,
+        `${site}/pro/comunidade-dos-criadores/oferta/continuar`,
         `${site}/kids/desafio-primeiro-jogo/oferta`,
         `${site}/kids/desafio-primeiro-jogo/oferta/tempo-de-tela`,
         `${site}/kids/desafio-primeiro-jogo/oferta/iniciacao-tecnologica`,

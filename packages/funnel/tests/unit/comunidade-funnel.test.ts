@@ -28,7 +28,7 @@ describe('registro do funil Comunidade dos Criadores', () => {
     expect(f.content.quiz?.presentation).toBe('comunidade')
     expect(f.content.hero).toBeUndefined()
     expect(f.content.result).toBeDefined()
-    // Sem `sales`: a /oferta despacha o ComunidadeOfertaBody pela chave.
+    // Sem `sales`: a /oferta despacha os corpos da Comunidade pela chave.
     expect(f.content.sales).toBeUndefined()
     // Capa dedicada do checkout/og.
     expect(f.checkoutImage).toBe('checkout-capa.webp')

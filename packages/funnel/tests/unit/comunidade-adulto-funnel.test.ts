@@ -14,6 +14,11 @@ import {
   COMUNIDADE_ADULTO_OBRIGADO,
   COMUNIDADE_ADULTO_PRECO_FALLBACK,
 } from '../../src/funnels/comunidade-adulto/content'
+import {
+  COMUNIDADE_ADULTO_SUBPAGINAS,
+  isComunidadeAdultoSubpagina,
+} from '../../src/funnels/comunidade-adulto/oferta'
+import { PAGINA_ADULTO_CONTINUAR } from '../../src/funnels/comunidade-adulto/oferta/continuar'
 import { PAGINA_ADULTO } from '../../src/funnels/comunidade-adulto/oferta/pagina'
 import { COMUNIDADE_PRECO_FALLBACK } from '../../src/funnels/comunidade-dos-criadores/content'
 import {
@@ -108,8 +113,11 @@ describe('a página de oferta adulta', () => {
     expect(body).toContain('data-checkout-oferta={mensal?.slug}')
     expect(body).toContain('data-checkout-oferta={anual?.slug}')
     expect(body).toContain(
-      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} assinatura />',
+      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} assinatura />',
     )
+    // O cupom da URL segue para o checkout; o preço mensal do herói só aparece com o plano mensal.
+    expect(body).toContain('const cupom = cupomDaOferta(coupon)')
+    expect(body).toContain("mostraMensal || !item.texto.includes('{{preco_mensal}}')")
     expect(body).toContain(`termosHref={\`${'$'}{f.basePath}/termos\`}`)
     expect(body).not.toContain('<style')
   })
@@ -145,6 +153,83 @@ describe('a página de oferta adulta', () => {
   })
 })
 
+describe('a continuidade adulta (/oferta/continuar)', () => {
+  const P = PAGINA_ADULTO_CONTINUAR
+  const ofertaPage = ler('components', 'funnel', 'OfertaPage.astro')
+  const rota = ler('pages', '[audience]', '[produto]', 'oferta', '[perfilOferta].astro')
+  const body = ler('components', 'funnel', 'oferta', 'ComunidadeAdultoContinuarBody.astro')
+
+  test('a rota só abre a continuidade no funil adulto, e o corpo vem pela subpágina', () => {
+    expect([...COMUNIDADE_ADULTO_SUBPAGINAS]).toEqual(['continuar'])
+    expect(isComunidadeAdultoSubpagina('continuar')).toBe(true)
+    for (const valor of [undefined, '', 'criar-junto', 'tempo-de-tela', 'toString', '__proto__'])
+      expect(isComunidadeAdultoSubpagina(valor)).toBe(false)
+    expect(rota).toContain("Astro.params.audience === 'pro'")
+    expect(rota).toContain('isComunidadeAdultoSubpagina(profile)')
+    expect(ofertaPage).toContain("comunidadeAdultoPage === 'continuar' ? (")
+    expect(ofertaPage).toContain('<ComunidadeAdultoContinuarBody {...bodyProps} plans={plans} />')
+  })
+
+  test('dois CTAs, preços do catálogo e o pré-checkout no modo assinatura', () => {
+    expect(body.match(/data-checkout-cta/g)?.length).toBe(2)
+    expect(body).toContain('data-checkout-oferta={mensal?.slug}')
+    expect(body).toContain('data-checkout-oferta={anual?.slug}')
+    expect(body).toContain('mensal?.priceCents ?? COMUNIDADE_ADULTO_PRECO_FALLBACK.mensalCents')
+    expect(body).toContain('calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)')
+    // A continuidade pede o mesmo e-mail da conta no pré-checkout.
+    expect(body).toContain(
+      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} assinatura continuidade />',
+    )
+    expect(body).toContain('const cupom = cupomDaOferta(coupon)')
+    expect(body).toContain("mostraMensal || !item.texto.includes('{{preco_mensal}}')")
+    // A tela de save é ilustração (a legenda diz): leitor de tela não ouve um menu que não funciona.
+    expect(body).toContain('<div class="cda-save" aria-hidden="true">')
+    expect(body).toContain(`termosHref={\`${'$'}{f.basePath}/termos\`}`)
+    expect(body).not.toContain('<style')
+  })
+
+  test('o que a página adulta já diz vem dela, por referência (uma fonte só)', () => {
+    expect(P.oferta.cartao).toBe(PAGINA_ADULTO.oferta.cartao)
+    expect(P.oferta.garantia).toBe(PAGINA_ADULTO.oferta.garantia)
+    expect(P.hero.requisitos).toBe(PAGINA_ADULTO.hero.requisitos)
+    expect(P.prova.tela).toBe(PAGINA_ADULTO.comunidade.tela)
+    expect(P.save.escada.etapas).toBe(PAGINA_ADULTO.etapas.escada.etapas)
+    expect(P.fechamento.legal).toBe(PAGINA_ADULTO.fechamento.legal)
+  })
+
+  test('Light Copy em toda a página; sem preço escrito à mão nem "carreira"', () => {
+    for (const [caminho, texto] of textos(P)) {
+      const pergunta = caminho.endsWith('.pergunta')
+      const regras = lintLightCopy(texto).filter((i) => !(i.rule === 3 && pergunta))
+      expect([caminho, regras.map((i) => i.rule)]).toEqual([caminho, []])
+      expect([caminho, /R\$\s*\d/.test(texto)]).toEqual([caminho, false])
+      expect([caminho, /carreira/i.test(texto)]).toEqual([caminho, false])
+    }
+  })
+
+  test('os quatro casos dizem a verdade inteira: conta nova aos 18 e assinaturas separadas', () => {
+    expect(P.casos.itens).toHaveLength(4)
+    const casos = P.casos.itens.map((caso) => caso.texto).join(' ')
+    expect(casos).toContain('Os projetos do perfil Kids não passam para a conta nova.')
+    expect(casos).toContain('São assinaturas separadas')
+    expect(casos).toContain('mesmo e-mail')
+    expect(JSON.stringify(P.duvidas)).toContain('não passam para a área adulta')
+  })
+
+  test('as imagens existem, e a tela de save é uma ilustração que diz isso', () => {
+    const imagens = textos(P)
+      .filter(([caminho]) => caminho.endsWith('.src'))
+      .map(([, src]) => src)
+    expect(imagens.length).toBeGreaterThan(1)
+    for (const src of imagens)
+      expect([src, existsSync(join(ROOT, 'public', src))]).toEqual([src, true])
+    // O jogo de arena só faz o fundo: decorativo, sem texto alternativo.
+    expect(P.hero.tela.fundo.alt).toBe('')
+    expect(P.hero.tela.legenda).toMatch(/^Ilustração/)
+    expect(P.prova.tela.legenda.toLowerCase()).toContain('prévia')
+  })
+})
+
 describe('etapas compartilhadas do funil adulto', () => {
   const checkout = ler('pages', '[audience]', '[produto]', 'checkout.astro')
   const obrigado = ler('pages', '[audience]', '[produto]', 'obrigado.astro')
@@ -175,6 +260,9 @@ describe('etapas compartilhadas do funil adulto', () => {
     expect(pre).toContain(
       "? 'Assinatura mensal ou anual, com 7 dias de garantia. As formas de pagamento aparecem na próxima tela.'",
     )
+    // Na continuidade adulta, o pré-checkout pede o mesmo e-mail da conta (o Kids tem o seu aviso).
+    expect(pre).toContain('{!isKids && continuidade && (')
+    expect(pre).toContain('Se você já tem conta no Sistema Zero, use o mesmo e-mail.')
   })
 
   test('o quiz adulto tem a sua ilha, e as saídas cruzadas ligam os dois quizzes', () => {
@@ -194,7 +282,7 @@ describe('etapas compartilhadas do funil adulto', () => {
 })
 
 describe('o espelho editorial do funil adulto', () => {
-  test('pagina.md, quiz.md e resultados-quiz.md são exatamente o código', () => {
+  test('pagina.md, pagina-continuar.md, quiz.md e resultados-quiz.md são exatamente o código', () => {
     for (const [id, arquivo] of Object.entries(ARQUIVOS_ESPELHO_ADULTO)) {
       const esperado = ESPELHOS_ADULTO[id as keyof typeof ESPELHOS_ADULTO]()
       const atual = readFileSync(join(PASTA_ESPELHO_ADULTO, arquivo), 'utf8')

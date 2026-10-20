@@ -33,7 +33,7 @@ try {
     'No implicit acceptance cookie',
   )
   assert.equal(
-    await page.locator('.bio-avatar').evaluate((img: HTMLImageElement) => img.naturalWidth > 0),
+    await page.locator('.bio-foto').evaluate((img: HTMLImageElement) => img.naturalWidth > 0),
     true,
   )
   await page.getByRole('button', { name: 'Privacidade', exact: true }).click()
@@ -49,20 +49,13 @@ try {
   await page.getByRole('button', { name: 'Privacidade', exact: true }).click()
   await page.getByRole('button', { name: 'Ativar métricas' }).click()
   await page.waitForResponse((r) => r.url().endsWith('/api/analytics/events') && r.status() === 200)
-  await page.getByRole('link', { name: /^Como funciona/ }).click()
-  await page.waitForURL('**/como-funciona/**')
+  // A bio leva aos quizzes com a atribuição; a Como funciona virou redirecionamento (20/10/2026).
+  await page.locator('[data-analytics-id="bio-quiz-infantil"]').click()
+  await page.waitForURL('**/kids/comunidade-dos-criadores/quiz**')
   assert.equal(new URL(page.url()).searchParams.get('utm_source'), 'qa_analytics')
-  await page.locator('.home-faq summary').first().click()
-  await page.locator('.home-faq details[open]').waitFor()
-  const spacing = await page.locator('.home-faq details[open]').evaluate((details) => {
-    const question = getComputedStyle(details.querySelector('summary')!)
-    const answer = getComputedStyle(details.querySelector('.resposta')!)
-    return [question.paddingLeft, question.paddingRight, answer.paddingLeft, answer.paddingRight]
-  })
-  assert.deepEqual(spacing, ['24px', '24px', '24px', '24px'])
-  await page.locator('a[data-zoom]').first().click()
-  await page.locator('dialog[data-zoom-dialog][open]').waitFor()
-  await page.getByRole('button', { name: 'Fechar a imagem ampliada' }).click()
+  await page.goto(`${origin}/kids/comunidade-dos-criadores/oferta?utm_source=qa_analytics`)
+  await page.locator('.c9-duvida summary').first().click()
+  await page.locator('.c9-duvida[open]').waitFor()
   const before = await page.evaluate(() => window.__szAnalyticsSnapshot!())
   await page.evaluate(() => {
     const section = document.createElement('section')
@@ -85,8 +78,7 @@ try {
   assert.ok(batches.flatMap((b) => b.events).some((e) => e.name === 'details_open'))
   assert.ok(!JSON.stringify(batches).includes('nao-coletar@example.test'))
   await page.goto(`${origin}/kids/comunidade-dos-criadores/quiz`)
-  // v5: a primeira pergunta fica na própria entrada (sem botão de começar para quem chega agora).
-  await page.locator('.cq-p1-opcoes button:not([disabled])').first().waitFor()
+  // v6: a entrada já é a primeira pergunta (filho ou filha), sem botão de começar.
   await page.locator('[data-analytics-question]').waitFor()
   await page.waitForTimeout(5500)
   assert.ok(

@@ -2,12 +2,12 @@
  * Run after `bun run build`: node --import tsx tests/browser/comunidade-oferta.ts
  *
  * As páginas de oferta da Comunidade dos Criadores (20/10/2026): Kids 9 a 17 (`/oferta`), menor de
- * 9 (`/oferta/criar-junto`), continuidade (`/oferta/continuar`) e a adulta
- * (`/pro/comunidade-dos-criadores/oferta`). Sobe o build com um catálogo falso (preços diferentes
- * da reserva editorial, para provar que o SSR usa o catálogo) e confere, em cada página: status,
- * um h1, âncoras e ids, imagens, preços ao vivo, larguras sem rolagem lateral, os dois CTAs de
- * plano e o pré-checkout até o checkout com o plano e a atribuição. Também os 301 das cinco páginas
- * de perfil antigas. `QA_CHROME_CHANNEL=chrome` usa o Chrome instalado e `QA_CHROMIUM_PATH` um
+ * 9 (`/oferta/criar-junto`), continuidade Kids (`/oferta/continuar`), a adulta
+ * (`/pro/comunidade-dos-criadores/oferta`) e a continuidade adulta (`/oferta/continuar`). Sobe o
+ * build com um catálogo falso (preços diferentes da reserva editorial, para provar que o SSR usa o
+ * catálogo) e confere, em cada página: status, um h1, âncoras e ids, imagens, preços ao vivo,
+ * larguras sem rolagem lateral, os dois CTAs de plano e o pré-checkout até o checkout com o plano e
+ * a atribuição. Também os 301 das cinco páginas de perfil antigas e da Como funciona. `QA_CHROME_CHANNEL=chrome` usa o Chrome instalado e `QA_CHROMIUM_PATH` um
  * Chromium já baixado; sem os dois, o Chromium do Playwright.
  */
 import assert from 'node:assert/strict'
@@ -140,6 +140,15 @@ const PAGINAS: Pagina[] = [
   {
     nome: 'adulto',
     path: `${adultBase}/oferta`,
+    basePath: adultBase,
+    mensal: 'comunidade-dos-criadores-adulto-mensal',
+    anual: 'comunidade-dos-criadores-adulto-anual',
+    precos: [/119/, /999/],
+    nome_campo: 'Nome',
+  },
+  {
+    nome: 'adulto-continuar',
+    path: `${adultBase}/oferta/continuar`,
     basePath: adultBase,
     mensal: 'comunidade-dos-criadores-adulto-mensal',
     anual: 'comunidade-dos-criadores-adulto-anual',
@@ -313,9 +322,16 @@ try {
     assert.equal(res.status(), 301, antiga)
     assert.equal(res.headers().location, `${kidsBase}/oferta?cupom=QA`, antiga)
   }
+  // A Como funciona (até 20/10/2026) leva à experiência da página de 9 a 17, com a mesma query.
+  const comoFunciona = await page.request.get(`${origin}/como-funciona/?utm_source=qa`, {
+    maxRedirects: 0,
+  })
+  assert.equal(comoFunciona.status(), 301)
+  assert.equal(comoFunciona.headers().location, `${kidsBase}/oferta?utm_source=qa#experiencia`)
   for (const inexistente of [
     `${kidsBase}/oferta/escolar-inexistente`,
     `${adultBase}/oferta/tempo-de-tela`,
+    `${adultBase}/oferta/criar-junto`,
   ])
     assert.equal((await page.request.get(`${origin}${inexistente}`)).status(), 404, inexistente)
   assert.deepEqual(errors, [])

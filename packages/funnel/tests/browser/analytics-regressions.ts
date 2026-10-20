@@ -89,9 +89,9 @@ try {
   const revisions = await page.evaluate(async () => {
     const path = '/src/analytics/dom.ts'
     const { pageRevision } = await import(/* @vite-ignore */ path)
-    history.replaceState(null, '', '/como-funciona')
+    history.replaceState(null, '', '/kids/comunidade-dos-criadores/oferta')
     const first = await pageRevision(true, '', 'test')
-    history.replaceState(null, '', '/como-funciona/')
+    history.replaceState(null, '', '/kids/comunidade-dos-criadores/oferta/')
     return [first, await pageRevision(true, '', 'test')]
   })
   check(
