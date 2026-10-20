@@ -2,7 +2,7 @@
 
 import type { PensaMissionHandoff } from '@sistemazero/core/pensa'
 import type { CreationsCloud } from '../../lib/creations-cloud'
-import { usePensaMissionSession } from './use-pensa-mission-session'
+import { type PensaMissionOutline, usePensaMissionSession } from './use-pensa-mission-session'
 
 /** Both Studio modes use the same functional mission and saved evidence contract. */
 export function useStudioTaskSession(input: {
@@ -14,6 +14,7 @@ export function useStudioTaskSession(input: {
   update(next: PensaMissionHandoff): void
   navigate(path: string): void
   narrationEnabled?: boolean
+  outline?: PensaMissionOutline | null
 }) {
   return usePensaMissionSession({
     ...input,

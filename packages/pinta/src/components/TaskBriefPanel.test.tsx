@@ -17,7 +17,7 @@ test('o desenho aberto pode ser associado ao slot escolhido sem concluir a miss�
   session.onBindCreation = mock(async () => {})
   session.onComplete = mock(async () => {})
   render(<TaskBriefPanel session={session} outputMissing={false} currentCreationId="nave" />)
-  fireEvent.click(screen.getByRole('button', { name: 'Usar o desenho aberto nesta parte' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Usar no jogo como Nave' }))
   await waitFor(() =>
     expect(session.onBindCreation).toHaveBeenCalledWith({
       assetSlotId: session.assetSlots[0]!.id,
@@ -63,4 +63,37 @@ test('um desenho ausente continua recuperável com a missão recolhida', () => {
   expect(screen.getByText(/Este desenho não está neste aparelho/)).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: 'Escolher desenho' }))
   expect(onRelink).toHaveBeenCalledTimes(1)
+})
+
+test('a lista da missão marca a parte já escolhida e pede o desenho aberto para usar no jogo', () => {
+  const session = missionSessionFixture()
+  const { rerender } = render(
+    <TaskBriefPanel session={session} outputMissing={false} currentCreationId={null} />,
+  )
+  const usar = screen.getByRole('button', { name: 'Usar no jogo como Nave' })
+  expect((usar as HTMLButtonElement).disabled).toBe(true)
+  expect(screen.getByText('Abra o desenho desta parte para usar no jogo.')).toBeTruthy()
+
+  const slot = session.assetSlots[0]!
+  const delivered = {
+    ...session,
+    progress: {
+      ...session.progress,
+      deliveries: [
+        {
+          assetSlotId: slot.id,
+          creation: {
+            tool: 'pinta' as const,
+            profileId: '10000000-0000-4000-8000-000000000009',
+            creationId: 'nave',
+            saveRevision: '1',
+            contentFingerprint: null,
+          },
+        },
+      ],
+    },
+  }
+  rerender(<TaskBriefPanel session={delivered} outputMissing={false} currentCreationId="outra" />)
+  expect(screen.getByText(/desenho escolhido/)).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Trocar pelo desenho aberto como Nave' })).toBeTruthy()
 })

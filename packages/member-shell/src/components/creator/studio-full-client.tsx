@@ -32,7 +32,11 @@ import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-lo
 import { PensaMissionBlocked } from './pensa-mission-blocked'
 import { StudioFullEditor } from './studio-full-editor'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
-import { canOpenPensaMission, usePensaMissionHandoff } from './use-pensa-mission-session'
+import {
+  canOpenPensaMission,
+  usePensaMissionHandoff,
+  usePensaMissionOutline,
+} from './use-pensa-mission-session'
 import { usePensaTeamLibrary } from './use-pensa-team-library'
 import { useStudioCreationLibraries } from './use-studio-creation-libraries'
 import { useStudioShare } from './use-studio-share'
@@ -476,6 +480,7 @@ export function StudioFullClient({
   }, [cloudSync, missingTaskProject, mod, preparePensaOpen, localNamespace])
 
   const navigateTask = useCallback((path: string) => router.push(path), [router])
+  const taskOutline = usePensaMissionOutline(taskHandoff, viewerId)
   const taskSession = useStudioTaskSession({
     handoff: taskHandoff,
     projectId: view.name === 'editor' ? view.projectId : null,
@@ -485,6 +490,7 @@ export function StudioFullClient({
     update: updateTaskProgress,
     navigate: navigateTask,
     narrationEnabled,
+    outline: taskOutline,
   })
 
   const share = useStudioShare(challenge, audience === 'kids' || zappyEnabled)

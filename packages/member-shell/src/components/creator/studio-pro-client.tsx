@@ -20,7 +20,11 @@ import { createStudioCloudSync } from '../../lib/studio-cloud'
 import { reportStudioError } from '../../lib/studio-error'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
-import { canOpenPensaMission, usePensaMissionHandoff } from './use-pensa-mission-session'
+import {
+  canOpenPensaMission,
+  usePensaMissionHandoff,
+  usePensaMissionOutline,
+} from './use-pensa-mission-session'
 import { usePensaTeamLibrary } from './use-pensa-team-library'
 import { useStudioActivity } from './use-studio-activity'
 import { useStudioCreationLibraries } from './use-studio-creation-libraries'
@@ -130,6 +134,7 @@ function StudioProClientSession({
     },
     [router],
   )
+  const taskOutline = usePensaMissionOutline(boundHandoff, viewerId)
   const taskSession = useStudioTaskSession({
     handoff: boundHandoff,
     projectId,
@@ -139,6 +144,7 @@ function StudioProClientSession({
     update: handoff.update,
     navigate: navigateTask,
     narrationEnabled,
+    outline: taskOutline,
   })
   const share = useStudioShare(challenge, audience === 'kids' || zappyEnabled)
   const handleActivity = useStudioActivity(taskSession, false)

@@ -1,5 +1,6 @@
 import type {
   PensaAssetSlot,
+  PensaDestination,
   PensaKnowledgeReference,
   PensaMission,
   PensaMissionProgress,
@@ -25,4 +26,16 @@ export interface PensaMissionSession {
   onReturnToPlan(): void | Promise<void>
   onBindCreation(input: { assetSlotId: string; creationId: string }): Promise<void>
   onSaveNote(note: string): Promise<void>
+  /**
+   * Display only, read from the accepted plan the server returned: where this mission sits in
+   * the plan ("missão 4 de 9"). Absent while the plan is loading or when the host has none.
+   */
+  order?: { index: number; total: number } | null
+  /** Display only: the mission the server named as the next action, with its title. */
+  nextMission?: { title: string; destination: PensaDestination } | null
+  /**
+   * Display only: the teammate who programs the game and receives this art (team games, art
+   * missions of someone else). Comes from the team the server returned.
+   */
+  handoffTo?: { name: string } | null
 }
