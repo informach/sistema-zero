@@ -69,6 +69,7 @@ mock.module('../../src/components/creator/use-pensa-mission-session', () => ({
     retry: () => {},
     update: () => {},
   }),
+  usePensaMissionOutline: () => null,
   usePensaMissionSession: () => undefined,
 }))
 mock.module('@sistemazero/studio/personal-assets', () => ({

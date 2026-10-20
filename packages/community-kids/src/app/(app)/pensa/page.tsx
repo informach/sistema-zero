@@ -1,3 +1,4 @@
+import { isReadonlyImpersonation } from '@sistemazero/member-shell/lib/act'
 import {
   hasKidsCapability,
   kidsJourneyAccess,
@@ -71,6 +72,7 @@ export default async function PensaPage({
       narrationEnabled={Boolean(getEnv().ELEVENLABS_API_KEY)}
       initialProjectId={plano ?? null}
       initialHelpMissionId={ajuda ?? null}
+      supportReadOnly={isReadonlyImpersonation(session)}
     />
   )
 }

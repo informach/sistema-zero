@@ -1,3 +1,4 @@
+import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import type { JSX } from 'react'
 import { useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
@@ -680,27 +681,35 @@ function StudioCoreBody({
                                       >
                                         <div
                                           inert={isObserver}
-                                          className="flex h-full min-h-0 flex-col lg:flex-row"
+                                          className="flex h-full min-h-0 flex-col"
                                         >
-                                          {sessaoDoGuia ? (
-                                            <TaskGuidePanel session={sessaoDoGuia} />
-                                          ) : null}
-                                          <div className="min-h-0 min-w-0 flex-1">
-                                            <Shell
-                                              key={observationViewVersion}
-                                              onExit={onExit}
-                                              onPromoteToPro={onPromoteToPro}
-                                              canToggleTheme={theme === undefined}
-                                              onRenderError={(area, error) =>
-                                                onError?.({
-                                                  kind: 'render',
-                                                  area,
-                                                  message: error.message,
-                                                  ...(error.stack ? { stack: error.stack } : {}),
-                                                })
-                                              }
-                                            />
-                                          </div>
+                                          {/* A missão do Pensa é uma coluna PRÓPRIA à direita (ou
+                                              uma faixa embaixo, na tela estreita): nunca cobre o
+                                              editor, e o editor se mede no espaço que sobra. */}
+                                          <PensaMissionLayout
+                                            panel={
+                                              sessaoDoGuia ? (
+                                                <TaskGuidePanel session={sessaoDoGuia} />
+                                              ) : null
+                                            }
+                                          >
+                                            <div className="min-h-0 min-w-0 flex-1">
+                                              <Shell
+                                                key={observationViewVersion}
+                                                onExit={onExit}
+                                                onPromoteToPro={onPromoteToPro}
+                                                canToggleTheme={theme === undefined}
+                                                onRenderError={(area, error) =>
+                                                  onError?.({
+                                                    kind: 'render',
+                                                    area,
+                                                    message: error.message,
+                                                    ...(error.stack ? { stack: error.stack } : {}),
+                                                  })
+                                                }
+                                              />
+                                            </div>
+                                          </PensaMissionLayout>
                                         </div>
                                       </ErrorBoundary>
                                     ) : null}

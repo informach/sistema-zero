@@ -59,3 +59,87 @@ test('uma missão concluída permite reabrir sem trocar o resultado esperado', a
   expect(screen.getByText('Você reconhece a nave.')).toBeTruthy()
   expect(screen.queryByText(/Passo 1 de|Próximo passo/)).toBeNull()
 })
+test('o topo âmbar recolhe a missão e o trilho a abre de novo', () => {
+  const onCollapsedChange = mock()
+  const session = {
+    ...missionSessionFixture(),
+    order: { index: 4, total: 9 },
+    onCollapsedChange,
+  }
+  const { rerender } = render(<TaskGuidePanel session={session} />)
+  const head = screen.getByRole('button', { name: /Desenhar a nave/ })
+  expect(head.getAttribute('aria-expanded')).toBe('true')
+  expect(screen.getByText(/Pensa · Bosque · missão 4 de 9/)).toBeTruthy()
+  fireEvent.click(head)
+  expect(onCollapsedChange).toHaveBeenLastCalledWith(true)
+
+  rerender(<TaskGuidePanel session={{ ...session, collapsed: true }} />)
+  const rail = screen.getByRole('button', { name: /Ver missão · Desenhar a nave/ })
+  expect(rail.getAttribute('aria-expanded')).toBe('false')
+  expect(screen.queryByRole('button', { name: 'Conferi e está pronto' })).toBeNull()
+  fireEvent.click(rail)
+  expect(onCollapsedChange).toHaveBeenLastCalledWith(false)
+})
+test('recolher e abrir não perde o foco: o topo e o trilho são o MESMO botão', () => {
+  const session = missionSessionFixture()
+  const { rerender } = render(<TaskGuidePanel session={session} />)
+  const head = screen.getByRole('button', { name: /Desenhar a nave/ })
+  head.focus()
+  expect(document.activeElement).toBe(head)
+  rerender(<TaskGuidePanel session={{ ...session, collapsed: true }} />)
+  const rail = screen.getByRole('button', { name: /Ver missão · Desenhar a nave/ })
+  // O nó sobreviveu à troca (é ele que segura o foco), e o foco continua nele.
+  expect(rail === head).toBe(true)
+  expect(document.activeElement === rail).toBe(true)
+  rerender(<TaskGuidePanel session={{ ...session, collapsed: false }} />)
+  expect(document.activeElement === head).toBe(true)
+  expect(head.getAttribute('aria-expanded')).toBe('true')
+})
+test('concluir leva o foco ao recado de missão pronta, mesmo que o host responda depois', async () => {
+  let finish: () => void = () => {}
+  const session = {
+    ...missionSessionFixture(),
+    nextMission: { title: 'Faça a nave voar', destination: 'studio' as const },
+    onComplete: () =>
+      new Promise<void>((resolve) => {
+        finish = resolve
+      }),
+  }
+  const { rerender } = render(<TaskGuidePanel session={session} />)
+  const conferir = screen.getByRole('button', { name: 'Conferi e está pronto' })
+  conferir.focus()
+  fireEvent.click(conferir)
+  finish()
+  await waitFor(() => expect(conferir.getAttribute('aria-busy')).toBe('false'))
+  // O host aplica a resposta do servidor só agora: o botão sai e o foco não cai no corpo.
+  rerender(
+    <TaskGuidePanel
+      session={{ ...session, progress: { ...session.progress, status: 'completed' } }}
+    />,
+  )
+  const pronto = screen.getByText(/Missão pronta\. A próxima é Faça a nave voar, no Estúdio\./)
+  await waitFor(() => expect(document.activeElement === pronto.closest('p')).toBe(true))
+})
+test('abrir pela linha recolhida traz a faixa para a vista; montar aberto não rola nada', () => {
+  const calls: unknown[] = []
+  const original = Element.prototype.scrollIntoView
+  Element.prototype.scrollIntoView = function (this: Element, arg?: unknown) {
+    if (this.matches('aside[aria-label="Missão do Pensa"]')) calls.push(arg)
+  } as typeof Element.prototype.scrollIntoView
+  try {
+    const session = { ...missionSessionFixture(), collapsed: true }
+    const onCollapsedChange = mock()
+    const { rerender } = render(<TaskGuidePanel session={{ ...session, onCollapsedChange }} />)
+    expect(calls).toEqual([])
+    fireEvent.click(screen.getByRole('button', { name: /Ver missão · Desenhar a nave/ }))
+    expect(onCollapsedChange).toHaveBeenLastCalledWith(false)
+    rerender(<TaskGuidePanel session={{ ...session, collapsed: false, onCollapsedChange }} />)
+    expect(calls).toEqual([{ block: 'nearest' }])
+    // Recolher não rola.
+    fireEvent.click(screen.getByRole('button', { name: /Desenhar a nave/ }))
+    rerender(<TaskGuidePanel session={{ ...session, collapsed: true, onCollapsedChange }} />)
+    expect(calls).toHaveLength(1)
+  } finally {
+    Element.prototype.scrollIntoView = original
+  }
+})

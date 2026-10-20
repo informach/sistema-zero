@@ -1,6 +1,31 @@
 # Calendário editorial: 60 postagens, 30 dores e 30 desejos
 
+**Atualização de 20/10/2026:** o feed ganhou duas linhas novas, Adultos e Por dentro dos jogos (ver [Três linhas](#três-linhas-a-partir-de-20102026)). O texto a seguir descreve a linha Famílias.
+
 **Revisão de clareza: 13/10/2026.** São **60 publicações principais**, uma para cada uma das 30 dores e dos 30 desejos: **30 carrosséis, 18 Reels e 12 imagens únicas**. Há seis extras de acompanhamento e vinte sequências de quatro stories. Os três fixados e as 14 peças ManyChat ficam separados. As 57 peças restantes receberam a mesma revisão aprovada em P01, P07 e P34, preservadas integralmente.
+
+## Três linhas a partir de 20/10/2026
+
+O perfil passou a falar com pais e com adultos que querem fazer jogos ([posicionamento](README.md#posicionamento)). O feed tem agora três linhas:
+
+| Linha | Para quem | Peças | Onde está a copy |
+| --- | --- | --- | --- |
+| **Famílias** | Pais de crianças de 9 a 14 anos (a faixa para a qual as 60 foram escritas) | P01 a P60, extras E01 a E06, stories ST01 a ST20 | Fichas listadas abaixo; nada mudou nelas |
+| **Adultos** | Quem tem 18 anos ou mais e sempre quis fazer um jogo | PA01 a PA06 (primeiras seis) | [16 · Linhas Adultos e Por dentro dos jogos](postagens/16-linhas-adulto-e-por-dentro.md) |
+| **Por dentro dos jogos** | Os dois públicos: a regra escondida atrás de algo que todo mundo já jogou | PD01 a PD06 (primeiras seis) | [16 · Linhas Adultos e Por dentro dos jogos](postagens/16-linhas-adulto-e-por-dentro.md) |
+
+**Hipótese de ritmo:** três posts por semana. Dois vêm da fila da linha Famílias, na ordem da tabela de vinte semanas abaixo. O terceiro alterna entre Adultos e Por dentro dos jogos. Com esse ritmo, as 60 publicações da linha Famílias passam a ocupar 30 semanas, e as vinte semanas abaixo continuam valendo como ordem da fila, não como datas.
+
+| Semana | Famílias | Famílias | Terceiro post |
+| --- | --- | --- | --- |
+| 1 | P01 | P07 | PA01 · Você tem uma ideia de jogo há anos. |
+| 2 | P16 | P34 | PD02 · O placar só soma porque alguém escreveu: acertou, mais um. |
+| 3 | P03 | P51 | PA02 · Você começa um jogo e não termina. |
+| 4 | P04 | P37 | PD01 · Toda fase difícil tem uma regra escondida. |
+
+Depois da semana 4, seguir alternando: PA03, PD03, PA04, PD05, PA05, PD06, PA06 e PD04 (PD04 longe de P42, que usa o mesmo jogo; PD01 longe de P08). Os stories ST01 a ST20 seguem uma sequência por semana.
+
+**Como medir:** depois de quatro semanas, comparar os cliques dos dois cartões da bio, `bio-quiz-adulto` e `bio-quiz-infantil`, com o período anterior e entre si, junto com seguidores e salvamentos de cada linha. Se um público não aparecer, ajustar a proporção. É uma hipótese; não há meta nem resultado esperado escrito aqui.
 
 ## Direção do conteúdo
 
@@ -40,6 +65,7 @@ R, I e H nas fichas distinguem relatos, interpretações e hipóteses. A pesquis
 | ST01–ST20 | [80 telas de stories](postagens/04-stories.md) |
 | E01–E06 | [Seis extras de acompanhamento](postagens/07-extras-para-familias.md) |
 | Direct | [Postagens ManyChat](04-postagens-manychat.md), a categoria de conversão |
+| PA01–PA06 · PD01–PD06 | [Linhas Adultos e Por dentro dos jogos](postagens/16-linhas-adulto-e-por-dentro.md), com a palavra adulta MEUJOGO para direct (só documentada) |
 | Régua de copy | [Guia de copy](postagens/13-guia-de-copy.md) |
 | Demonstrações | [Vitrine de exemplos](postagens/14-vitrine-de-exemplos.md); o que capturar está na linha Produção de cada ficha |
 | Produção | [Direção visual](postagens/05-direcao-visual-e-producao.md) e [estado das mídias](producao/postagens/README.md) |
@@ -49,7 +75,7 @@ Todas as peças têm copy literal, legenda e direção visual. Os Reels também 
 
 ## Vinte semanas sugeridas
 
-Três posts por semana e uma sequência de stories. A ordem abaixo intercala dores e desejos, evitando publicar blocos de trinta problemas seguidos de trinta aspirações. Os IDs organizam a cobertura, não a ordem de publicação. A primeira semana começa quando os materiais estiverem prontos. Não há datas, horários, responsáveis por gravação ou capacidade de produção presumidos.
+Fila da linha Famílias. Até 20/10/2026, eram três posts dessa linha por semana; agora são dois, mais um das linhas novas (ver [Três linhas](#três-linhas-a-partir-de-20102026)). A ordem abaixo intercala dores e desejos, evitando publicar blocos de trinta problemas seguidos de trinta aspirações. Os IDs organizam a cobertura, não a ordem de publicação. A primeira semana começa quando os materiais estiverem prontos. Não há datas, horários, responsáveis por gravação ou capacidade de produção presumidos.
 
 | Semana | Primeira publicação | Segunda publicação | Terceira publicação | Stories |
 | --- | --- | --- | --- | --- |

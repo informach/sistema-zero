@@ -10,6 +10,10 @@ A preparação pode recomendar a extensão oficial do Estúdio. Os demais tipos 
 
 Schemas, limites e algoritmos puros ficam em `packages/core/src/pensa`. Members aplica autorização, cotas e transações. O BFF resolve catálogos, acessos e o arquivo realmente salvo, assina chamadas internas e executa IA/cópias. Pensa e oficinas consomem o mesmo contrato de missão. Capacidades e confirmação de instalação nunca vêm diretamente do navegador.
 
+## Interface do planner
+
+Desde 20/10/2026 o `@sistemazero/pensa` segue o Canvas aprovado pela dona: Meus jogos, nova ideia (com sementes estáticas só no Kids), montando o plano, pergunta do Zappy, plano para conferir, projeto com a conversa ao lado (abas Plano, Conversa e Carta do jogo abaixo de 900px), missão aberta em folha, mudar uma parte, equipe, cuidar do jogo (menu de três pontos e versões), jogo pronto e os estados (ideias acabaram, esperando a equipe, tropeço, esqueleto, falha ao abrir, pausado/Guardados, suporte só leitura). Toda tela lê a view canônica: passos de `operation.step`, mapa de `plan.stages` + `mission.stageId`, estados de `progress`/`availability`, impacto de `draft.impact`, ideias de `definition.futureIdeas`, equipe de `team`, créditos de `/credits`. Nenhuma tela recalcula disponibilidade ou próxima ação. A sessão de suporte só leitura vem do host (`readOnly`) ou da recusa `IMPERSONATION_READONLY` do BFF. Detalhes em `packages/pensa/CLAUDE.md` ("Telas").
+
 ## Persistência e concorrência
 
 `pensa_projects` mantém identidade, dona, versões de metadados/equipe/execução e vínculo do jogo. `pensa_project_revisions` contém snapshots imutáveis da definição, plano e contexto técnico; apenas um snapshot é ativo. `pensa_plan_drafts` guarda a proposta ainda não aceita. `pensa_mission_progress` guarda o estado atual de cada identidade estável, incluindo entregas, conferência e nota de retomada. Eventos guardam deltas e intenções duráveis de recompensa.

@@ -82,16 +82,15 @@ export function TaskGuidePanel({ session }: { session: StudioTaskSession }) {
       key={`${session.mission.id}:${session.mission.contentRevision}`}
       session={panelSession}
       recovery={error ? <p role="alert">{error}</p> : null}
-      aside
     >
       {setup ? (
-        <div>
+        <div className="sz-tool-mission-content__item">
           {installed ? (
             <p role="status">Já está preparada.</p>
           ) : (
             <button
               type="button"
-              className="sz-tool-pill sz-tool-pill--outline"
+              className="sz-tool-mission-panel__btn sz-tool-mission-panel__btn--small"
               disabled={Boolean(session.blockedReason) || installing}
               onClick={() => void install()}
             >

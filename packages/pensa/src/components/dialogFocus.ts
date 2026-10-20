@@ -56,6 +56,9 @@ export function useDialogFocus({
     function handleKeyDown(event: KeyboardEvent) {
       const active = cardRef.current
       if (!active || event.defaultPrevented) return
+      // Uma janela aberta DENTRO desta (voltar a uma versão, dentro das versões) cuida das
+      // teclas; esta só volta a responder quando a de dentro fechar.
+      if (active.querySelector('[role="dialog"][aria-modal="true"]')) return
       if (event.key === 'Escape') {
         event.preventDefault()
         event.stopPropagation()

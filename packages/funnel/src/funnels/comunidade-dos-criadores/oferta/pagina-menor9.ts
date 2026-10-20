@@ -167,7 +167,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
   seoTitle:
     'Criar junto, para crianças menores de 9 anos | Comunidade dos Criadores | Sistema Zero',
   description:
-    'O primeiro jogo dela, feito com você do lado. Ela decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.',
+    'Os jogos dela, um depois do outro, feitos com você do lado. Ela decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.',
   capa: 'checkout-capa.webp',
   topo: {
     pular: 'Ir para o conteúdo',
@@ -179,14 +179,14 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
   },
   heroi: {
     selo: 'Para crianças menores de 9 anos, com um adulto ao lado',
-    titulo: 'O primeiro jogo dela, feito com você do lado.',
+    titulo: 'Os jogos dela, um depois do outro, feitos com você do lado.',
     enfase: 'com você do lado.',
     texto:
-      'Imagine a cara dela quando o personagem que ela escolheu aparece na tela e faz exatamente o que ela mandou. Ela decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois, com um jogo no fim para mostrar aos avós.',
+      'Imagine a cara dela quando o personagem que ela escolheu aparece na tela e faz exatamente o que ela mandou. Ela decide, e você lê e ajuda com o mouse. Cada jogo pronto pode ir para os avós jogarem, por um link. Cada aula ensina peças novas, e os próximos jogos ficam maiores, até o jogo que ela inventar.',
     beneficios: [
       'Tela junto com você, e não sozinha no tablet',
       'A ideia dela na tela, do jeito que ela inventou',
-      'Serve agora e quando ela for maior',
+      'Um jogo depois do outro',
     ],
     cta: CTA_PLANOS,
     garantia: GARANTIA_CURTA,
@@ -209,7 +209,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
   },
   juntos: {
     titulo: 'Quando vocês sentam juntos para criar, a tela vira um tempo de vocês dois',
-    texto: 'E cada sessão deixa alguma coisa boa, para ela e para você.',
+    texto: 'Veja o que cada sessão traz para ela e para você.',
     cartas: [
       {
         titulo: 'Um tempo de tela que vocês dividem',
@@ -347,7 +347,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
   pecas: {
     titulo: 'Cada aula que vocês terminam deixa peças para o jogo que ela inventar',
     texto:
-      'Ela não recebe a caixa de peças inteira de uma vez. Recebe as que já sabe usar, uma aula de cada vez, e isso é de propósito: é assim que ela aprende de verdade, em vez de só apertar o que aparece.',
+      'Ela não recebe todas as peças de uma vez. Recebe as que já sabe usar, uma aula de cada vez, e isso é de propósito: é assim que ela aprende de verdade, em vez de só apertar o que aparece.',
     cartas: [
       {
         titulo: 'Nas aulas, ela aprende com um jogo pronto',
@@ -381,7 +381,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
     },
     proximos: {
       destaque: 'Depois do jardim, vêm o farol, a nave, o jogo do jeito dela e o dino,',
-      texto: 'e cada um deixa peças novas na caixa dela:',
+      texto: 'e cada um ensina peças novas para os próximos jogos dela:',
     },
     jogos: [
       {
@@ -497,7 +497,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
       {
         pergunta: 'Ela pode inventar o jogo dela, ou só faz o do curso?',
         resposta:
-          'Os dois, nessa ordem. Nas aulas, ela cria dentro do jogo do curso: escolhe personagem, cor e regra. Depois de A Chave do Farol publicada, o Estúdio livre abre, e vocês montam o jogo que ela inventou com as peças que ela já conhece. Cada curso novo põe peças novas na caixa.',
+          'Os dois, nessa ordem. Nas aulas, ela cria dentro do jogo do curso: escolhe personagem, cor e regra. Depois de A Chave do Farol publicada, o Estúdio livre abre, e vocês montam o jogo que ela inventou com as peças que ela já conhece. Cada curso novo ensina peças novas, e os jogos dela ficam maiores.',
       },
       {
         pergunta: 'E se ela perder o interesse?',
@@ -537,7 +537,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
     ],
   },
   fechamento: {
-    titulo: 'A próxima brincadeira que ela inventar pode virar o primeiro jogo de vocês',
+    titulo: 'A próxima brincadeira que ela inventar pode virar um jogo de vocês',
     cta: CTA_PLANOS,
     garantia: GARANTIA_CURTA,
     zappy: { arquivo: 'zappy-festa.webp', alt: '', largura: 640, altura: 640 },

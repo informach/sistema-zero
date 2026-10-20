@@ -12,7 +12,7 @@
 import { type CorAdulto, type ImagemAdulto, PAGINA_ADULTO } from './pagina'
 
 const GARANTIA = '7 dias de garantia. Cancele quando quiser.'
-const CTA_CONTINUAR = 'Ir para a próxima fase'
+const CTA_CONTINUAR = 'Assinar e continuar criando'
 
 /** Uma situação de quem chega à página, como um slot de save, com o próximo passo. */
 export interface CasoAdulto {
@@ -96,7 +96,7 @@ export interface PaginaAdultoContinuar {
 export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
   seoTitle: 'Continue na Comunidade dos Criadores | Sistema Zero',
   description:
-    'Para quem já conhece o Sistema Zero: quem já tem conta continua nela, com o mesmo e-mail, e a próxima fase é o seu jogo. 7 dias de garantia. Cancele quando quiser.',
+    'Para quem já conhece o Sistema Zero: quem já tem conta continua nela, com o mesmo e-mail, e segue criando jogos, até o jogo com a sua ideia. 7 dias de garantia. Cancele quando quiser.',
   pularParaConteudo: PAGINA_ADULTO.pularParaConteudo,
   topo: {
     marcaAria: PAGINA_ADULTO.topo.marcaAria,
@@ -112,15 +112,16 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
   hero: {
     rotulo: 'CONTINUE · PARA QUEM JÁ CONHECE O SISTEMA ZERO',
     titulo: {
-      antes: 'Você já conhece o Sistema Zero. Agora a próxima fase é ',
-      destaque: 'o seu jogo.',
+      antes:
+        'Você já conhece o Sistema Zero. Agora você continua criando jogos, cada vez maiores, ',
+      destaque: 'até o jogo com a sua ideia.',
     },
     texto:
-      'Quem já tem conta continua nela, com o mesmo e-mail: os projetos em Meus Jogos, os jogos publicados e o progresso nos cursos ficam lá. Com a assinatura, a plataforma abre de novo na sua conta: os cursos, o Estúdio livre e as ferramentas da sua etapa, o Mural, o Clube e os Recados. Cada etapa concluída põe blocos novos na sua paleta, e algumas abrem uma ferramenta nova no Estúdio. Se você criava na Comunidade Kids ou acompanha alguém lá, o seu caso está logo abaixo.',
+      'Quem já tem conta continua nela, com o mesmo e-mail. Os projetos em Meus Jogos, os jogos publicados e o progresso nos cursos ficam lá. Com a assinatura, você volta a ter na conta os cursos, o Estúdio livre e as ferramentas da sua etapa, o Mural, o Clube e os Recados. Cada etapa concluída libera blocos novos no Estúdio, e algumas liberam uma ferramenta nova. Assim os seus próximos jogos ficam maiores. Se você criava na Comunidade Kids ou acompanha alguém lá, o seu caso está logo abaixo.',
     beneficios: [
       'Quem já tem conta continua nela, com o mesmo e-mail.',
       'Cursos, ferramentas, Mural, Clube e Recados na mesma conta.',
-      '7 dias de garantia para testar a próxima fase.',
+      '7 dias de garantia para testar a assinatura.',
     ],
     cta: CTA_CONTINUAR,
     garantia: GARANTIA,
@@ -170,7 +171,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
         rotulo: 'SAVE 3 · FEZ 18 ANOS NO KIDS',
         titulo: 'Você criava na Comunidade Kids',
         texto:
-          'A conta Kids fica no nome do responsável, e o perfil Kids continua funcionando depois dos 18, com os projetos, enquanto a assinatura dele estiver ativa. Aqui a conta é sua e começa nova, com o mesmo Estúdio que você já conhece, outra aparência e uma escada de etapas própria.',
+          'A conta Kids fica no nome do responsável, e o perfil Kids continua funcionando depois dos 18, com os projetos, enquanto a assinatura dele estiver ativa. Aqui a conta é sua e começa nova, com o mesmo Estúdio que você já conhece, outra aparência e etapas próprias.',
         proximo: 'UMA CONTA NO SEU NOME',
       },
       {
@@ -185,7 +186,8 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
   },
   save: {
     rotulo: 'O QUE FICOU SALVO',
-    titulo: 'Quando a assinatura para, o save fica. Quando ela volta, o jogo continua.',
+    titulo:
+      'Quando a assinatura para, o que você fez fica guardado. Quando ela volta, você continua de onde parou.',
     fica: {
       rotulo: 'FICA NA CONTA',
       selo: 'SEM CUSTO',
@@ -216,7 +218,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
     rotulo: 'A PROVA É SUA',
     titulo: 'Antes de decidir, jogue de novo o que você publicou',
     texto:
-      'O link do seu jogo continua abrindo no celular. Abra, jogue uma partida e repare no que você mudaria hoje. É por aí que a próxima fase começa.',
+      'O link do seu jogo continua abrindo no celular. Abra, jogue uma partida e repare no que você mudaria hoje. Essa mudança pode ser o começo do seu próximo jogo.',
     nota: 'Se você ainda não publicou um jogo, o primeiro curso começa pela versão pronta, e logo depois você muda a primeira regra.',
     tela: PAGINA_ADULTO.comunidade.tela,
   },
@@ -258,7 +260,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
       {
         pergunta: 'Usava a Comunidade Kids e fiz 18 anos. Levo meus jogos?',
         resposta:
-          'Os jogos ficam no perfil Kids, que segue funcionando na conta do seu responsável enquanto a assinatura dele estiver ativa. A conta adulta começa nova, no seu nome, com o mesmo Estúdio que você já conhece e uma escada de etapas própria.',
+          'Os jogos ficam no perfil Kids, que segue funcionando na conta do seu responsável enquanto a assinatura dele estiver ativa. A conta adulta começa nova, no seu nome, com o mesmo Estúdio que você já conhece e etapas próprias.',
       },
       {
         pergunta: 'Meu filho tem a assinatura Kids. Ela inclui a minha?',
@@ -272,7 +274,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
       {
         pergunta: 'E se eu precisar parar de novo?',
         resposta:
-          'O cancelamento fica na sua conta, em Compras e assinatura, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e o save continua guardado para a próxima vez.',
+          'O cancelamento fica na sua conta, em Compras e assinatura, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e os seus projetos continuam guardados para a próxima vez.',
       },
       {
         pergunta: 'Que computador eu preciso?',
@@ -283,7 +285,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
   },
   fechamento: {
     rotulo: 'CONTINUE',
-    titulo: 'A próxima fase está aqui. Falta apertar start.',
+    titulo: 'Escolha o plano e continue criando os seus jogos.',
     texto: 'Quem parou continua de onde estava, e quem está chegando começa pelo primeiro jogo.',
     cta: CTA_CONTINUAR,
     garantia: GARANTIA,

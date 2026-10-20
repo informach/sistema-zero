@@ -13,14 +13,14 @@ export const prerender = false
 Astro.response.headers.set('cache-control', 'no-store')
 const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
 ---
-<BaseLayout title="Helena e Júlio | Sistema Zero" description="A gente ensina a fazer jogos. Criar jogos não tem idade: diga para quem é, e em 3 minutos a gente mostra por onde começar." htmlClass="theme-kids">
+<BaseLayout title="Helena e Júlio | Sistema Zero" description="A gente ensina a fazer jogos. Criar jogos não tem idade. Escolha se é para você ou para o seu filho ou filha, e em 3 minutos a gente mostra por onde começar." htmlClass="theme-kids">
   <main class="bio" id="bio">
     <div class="bio-coluna">
       <div class="bio-topo">
         <img class="bio-foto" src={`${kids.imagesBase}/helena-julio-perfil.webp`} alt="Helena e Júlio" width="360" height="360" fetchpriority="high" />
         <p class="bio-quem"><strong>Helena e Júlio</strong><span>A gente ensina a fazer jogos</span></p>
         <h1 class="bio-titulo">Criar jogos não tem idade.</h1>
-        <p class="bio-lead">Diga para quem é, e em 3 minutos a gente mostra por onde começar.</p>
+        <p class="bio-lead">Escolha abaixo se é para você ou para o seu filho ou filha. Em 3 minutos, a gente mostra por onde começar.</p>
       </div>
 
       <nav class="bio-caminhos" aria-label="Para quem é">

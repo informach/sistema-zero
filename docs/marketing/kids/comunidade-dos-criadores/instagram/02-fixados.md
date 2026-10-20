@@ -1,8 +1,18 @@
 # Fixados: carrosséis 4:5 com copy completa
 
-**Revisão: 11/10/2026.** Os três fixados são carrosséis de **1080 × 1350 pixels (4:5)**, conforme orientação do responsável. F01 apresenta o primeiro jogo, F02 apresenta os alunos e F03 explica como começar. São independentes das 30 publicações P01–P30 do [calendário](03-postagens.md), que não inclui os fixados. As artes e copies aprovadas dos fixados foram preservadas.
+**Revisão: 20/10/2026, dois públicos.** Os três fixados, nesta ordem:
 
-Todas as frases destinadas às artes estão nos blocos de citação de cada slide. Títulos, textos, destaques visuais e chamadas entram na imagem. As notas de cena são internas. As legendas completas acompanham cada carrossel. O destino é sempre a página da bio (LB), seguida do botão **Desafio do Primeiro Jogo**, que abre a oferta (L0).
+| Posição | Peça | Para quem | Destino |
+| --- | --- | --- | --- |
+| 1 | **F04 · Criar jogos não tem idade** (novo, 6 slides) | Os dois públicos | Bio LB → É para mim ou É para meu filho ou filha |
+| 2 | **F01 · O primeiro jogo do seu filho** (8 slides, último slide e legenda ajustados) | Pais | Bio LB → É para meu filho ou filha → quiz infantil (LK) |
+| 3 | **F05 · O jogo que você sempre quis fazer** (novo, 8 slides) | Adultos | Bio LB → É para mim → quiz adulto (LA) |
+
+**Saíram dos fixados:** F02 (o conteúdo vive no destaque Criadores) e F03 “Como começar pelo Desafio” (o funil agora passa pelos quizzes). Os dois ficam neste documento como histórico, no fim, sem mudança de texto. Todos são carrosséis de **1080 × 1350 pixels (4:5)** e ficam fora das publicações do [calendário](03-postagens.md).
+
+**Regras dos três:** [bater o olho e entender](postagens/13-guia-de-copy.md#regra-1--bater-o-olho-e-entender); preço só na página, nunca na arte; quem apresenta a Comunidade mostra a continuidade (o primeiro jogo, depois os próximos, até o jogo com a própria ideia). F04 e F05 usam a Nave Contra Asteroides, que existe nas duas áreas. Até haver capturas reais da área adulta, as telas são dos cursos Kids, com o rótulo “Tela da versão Kids do curso. Na área adulta, a aparência é outra.”
+
+Todas as frases destinadas às artes estão nos blocos de citação de cada slide. Títulos, textos, destaques visuais e chamadas entram na imagem. As notas de cena são internas. As legendas completas acompanham cada carrossel. Até 20/10/2026, o destino de todos era a bio (LB) seguida do botão **Desafio do Primeiro Jogo** (L0); essa página inicial não existe mais.
 
 **Direção visual:** manter azul, branco e amarelo dos destaques; redesenhar o conteúdo para 4:5. Capas independentes e reconhecíveis, texto grande, margens generosas, sequência numerada e uma ideia por slide. Conforme orientação do usuário, as capturas dos três fixados não levam o rótulo Demonstração da equipe. A origem das imagens permanece registrada nas notas de produção. F01 acrescenta a personalização no slide 7, depois do jogo funcionar e antes do convite final. Os carrosséis encaminham para a bio; não desenhar um sticker como se fosse clicável.
 
@@ -10,11 +20,85 @@ Todas as frases destinadas às artes estão nos blocos de citação de cada slid
 
 **Como começar:** os nove slides de F03 têm cenas geradas com referências da família e do produto. Capa: Débora descobrindo o Farol no notebook, com o rosto e o jogo em destaque. Faixa etária: André e Débora juntos. Equipamento: mãos no mouse e teclado. Aula gravada: André pausando o vídeo. Ajuda: Débora escrevendo pela aula. Prazo: calendário e atividade. Após o prazo: jogar sem abrir a edição. Garantia: Helena acompanhando Débora. Convite: Júlio conversando com André. As telas dentro das cenas são composições baseadas nas capturas, não capturas novas da plataforma. Manter essa origem nas notas internas e no texto alternativo. Não usar cartelas que repitam o texto no lugar de imagens.
 
-**Produção:** [Pasta dos três carrosséis](producao/fixados/). Cada subpasta contém os PNGs numerados, a legenda completa, o texto alternativo de cada slide e as orientações de publicação. A versão anterior em Reels e a alternativa F02B estão preservadas na cópia de trabalho de 09/10/2026; não fazem parte da execução atual.
+**Produção:** [Pasta dos carrosséis de 11/10/2026](producao/fixados/) (F01, F02 e F03). F04 e F05 ainda não têm artes; o slide 8 de F01 precisa ser refeito. Cada subpasta contém os PNGs numerados, a legenda completa, o texto alternativo de cada slide e as orientações de publicação. A versão anterior em Reels e a alternativa F02B estão preservadas na cópia de trabalho de 09/10/2026; não fazem parte da execução atual.
+
+## F04 · Criar jogos não tem idade
+
+**Novo em 20/10/2026. Posição:** primeiro fixado. **Formato:** carrossel de 6 slides, 4:5. **Objetivo:** mostrar, com uma regra de jogo, que criança e adulto aprendem a criar do mesmo jeito, e abrir as duas portas da bio. **Destino:** bio LB → É para mim (LA) ou É para meu filho ou filha (LK). **Jogo:** Nave Contra Asteroides, que está nas duas áreas.
+
+**Visual:** paleta da bio (lilás e menta no fundo claro), com o cartão adulto em arcade no slide 5. Rosto adulto: Helena e Júlio, pessoas reais. Criança: personagem fictício com o rótulo de imagem gerada, nunca no mesmo quadro que Helena ou Júlio.
+
+### Slide 1 · Capa
+
+> Criar jogos não tem idade.
+>
+> Num jogo de nave contra asteroides, alguém decide quanto vale cada acerto. Pode ser você.
+
+**Cena:** captura real da Nave Contra Asteroides em andamento, com tiro, asteroide e placar visíveis.
+
+### Slide 2 · Todo jogo tem regras.
+
+> Todo jogo tem regras.
+>
+> Na nave, a regra é simples: acertou o asteroide, o placar soma um.
+
+**Cena:** recorte legível do bloco “se acertar asteroide, placar mais um” ao lado do placar da partida.
+
+### Slide 3 · Quem cria escolhe a regra.
+
+> Quem cria o jogo escolhe a regra.
+>
+> Cada acerto pode valer cinco. Você troca o número, roda o jogo e vê o placar subir mais rápido.
+
+**Cena:** o mesmo bloco com o número cinco e o placar maior depois de poucos acertos. Duas capturas reais, uma de cada versão.
+
+### Slide 4 · O mesmo jeito.
+
+> Uma criança de 10 anos e um adulto de 50 montam essa regra do mesmo jeito.
+>
+> Cada um estuda numa área feita para a sua idade, com aulas e conversa próprias.
+
+**Cena:** Helena e Júlio apresentam o slide, como professores, num canto da arte. No centro, uma ilustração com duas pessoas fictícias, uma criança e um adulto, cada uma num computador com a mesma regra da nave na tela. Helena e Júlio não aparecem como alunos nem como o “adulto de 50”. Ilustração identificada como imagem gerada.
+
+**Fonte:** a área adulta usa os mesmos clássicos e o mesmo Estúdio (dúvida “É a mesma plataforma das crianças?” e “Quem criou” da página adulta). A ideia proposta de “o que muda é o ritmo” não está nas páginas; ficou o que elas afirmam: área, aulas e conversa próprias.
+
+### Slide 5 · Para quem é.
+
+> Para seu filho, de 9 a 17 anos: ele faz um jogo e segue criando outros, cada vez maiores, até o jogo que ele inventou.
+>
+> Para você, com 18 anos ou mais: você faz o primeiro jogo e segue para os próximos, cada vez maiores, até o jogo com a sua ideia.
+
+**Cena:** dois cartões, como na bio: o de cima na identidade Kids, o de baixo em arcade.
+
+**Fonte:** página de 9 a 17 (“Cada curso que termina abre peças novas no Estúdio dele, onde ele faz o jogo que inventou”) e hero adulto em reescrita (“Aqui você faz o primeiro e segue criando outros, cada vez maiores, até o jogo com a sua ideia”).
+
+### Slide 6 · Diga para quem é.
+
+> Diga para quem é no link da bio.
+>
+> No link da bio, escolha: É para mim ou É para meu filho ou filha. Em 3 minutos, a gente mostra por onde começar.
+
+**Chamada:**
+
+> Link da bio → É para mim · É para meu filho ou filha
+
+**Cena:** Helena e Júlio juntos, olhando para a câmera.
+
+### Legenda completa
+
+> Criar jogos não tem idade. Uma criança de 10 anos e um adulto de 50 montam a mesma regra do mesmo jeito.
+>
+> Num jogo de nave, cada asteroide acertado soma um ponto no placar. Quem cria o jogo pode trocar esse valor para cinco, rodar e ver o placar subir mais rápido. É assim que a gente ensina: você muda uma regra e vê o resultado no jogo.
+>
+> Seu filho, de 9 a 17 anos, cria numa área feita para crianças e adolescentes e segue fazendo jogos cada vez maiores, até o jogo que ele inventou. Você, com 18 anos ou mais, faz o primeiro jogo numa área adulta, com conta própria, e segue para os próximos, até o jogo com a sua ideia.
+>
+> No link da bio, toque em É para mim ou em É para meu filho ou filha. Em 3 minutos, a gente mostra por onde começar.
+
+**Texto alternativo (base):** slide 1, “Jogo de nave atirando em asteroides, com o placar no canto”; slide 2, “Bloco do jogo: se acertar o asteroide, o placar soma um”; slide 3, “O mesmo bloco com o número cinco e o placar mais alto”; slide 4, “Ilustração de uma criança e de um adulto, cada um no seu computador, com a mesma regra na tela; Helena e Júlio no canto”; slide 5, “Dois cartões: um para o filho, um para você”; slide 6, “Helena e Júlio olhando para a câmera”.
 
 ## F01 · O primeiro jogo do seu filho
 
-**Formato:** carrossel de 8 slides, 4:5. **Objetivo:** Apresentar A Chave do Farol, mostrando experimentar, montar, testar e personalizar o jogo. **Destino:** bio LB → botão Desafio do Primeiro Jogo → oferta L0.
+**Posição:** segundo fixado. **Formato:** carrossel de 8 slides, 4:5. **Objetivo:** Apresentar A Chave do Farol, o jogo do Desafio do Primeiro Jogo, mostrando experimentar, montar, testar e personalizar. **Destino desde 20/10/2026:** bio LB → É para meu filho ou filha → quiz infantil → página Kids. Slides 1 a 7 continuam iguais (falam do primeiro jogo, que o Desafio promete e a Comunidade inclui); o slide 8 e os dois últimos parágrafos da legenda mudaram.
 
 ### Slide 1 · Capa
 
@@ -86,19 +170,21 @@ Todas as frases destinadas às artes estão nos blocos de citação de cada slid
 
 **Cena:** Captura real de uma versão personalizada do Farol, com cenário noturno, personagem robô e outro modelo de farol. Mostrar o jogo inteiro, preservando o personagem e o cenário. As opções correspondem ao catálogo do Dia 3.
 
-### Slide 8 · Conheça as aulas antes de escolher.
+### Slide 8 · Depois da Chave do Farol, os próximos.
 
-> Conheça as aulas antes de escolher.
+> Depois da Chave do Farol, os próximos.
 >
-> Abra o link da bio e escolha Desafio do Primeiro Jogo.
+> Na Comunidade dos Criadores, seu filho segue criando outros jogos, até o jogo que ele inventou.
 >
-> Veja a aventura com seu filho e conversem sobre a ideia de criar esse jogo.
+> Abra o link da bio e toque em É para meu filho ou filha.
 
 **Chamada:**
 
-> Link da bio → Desafio do Primeiro Jogo
+> Link da bio → É para meu filho ou filha
 
 **Cena:** Cena de Helena e Júlio já produzida para Quem somos; texto dirige o convite ao responsável.
+
+**Fonte:** hero e “O que muda” da página de 9 a 17 (“Cada curso que termina abre peças novas no Estúdio dele, onde ele faz o jogo que inventou”). **Histórico, até 20/10/2026:** título “Conheça as aulas antes de escolher.”, texto “Abra o link da bio e escolha Desafio do Primeiro Jogo. Veja a aventura com seu filho e conversem sobre a ideia de criar esse jogo.” e chamada “Link da bio → Desafio do Primeiro Jogo”. O PNG atual do slide 8 é dessa versão.
 
 ### Legenda completa
 
@@ -110,11 +196,109 @@ Todas as frases destinadas às artes estão nos blocos de citação de cada slid
 >
 > Depois de entender as regras e fazer o jogo funcionar, seu filho pode personalizar a aventura. Ele escolhe entre opções de cenários, personagens, barcos, chaves e faróis.
 >
-> As explicações são gravadas, e o curso precisa de computador com internet, mouse e teclado. Você paga uma vez e tem 30 dias de acesso, contados da aprovação do pagamento.
+> A Chave do Farol é o jogo do Desafio do Primeiro Jogo, que vem incluído na Comunidade dos Criadores. Na Comunidade, para quem tem de 9 a 17 anos, seu filho segue criando outros jogos. Cada curso que ele termina abre peças novas no Estúdio, onde ele faz o jogo que inventou. As aulas são gravadas e precisam de computador com internet, mouse e teclado.
 >
-> Abra o link da bio e escolha Desafio do Primeiro Jogo para ver as aulas, o valor e o que está incluído.
+> Abra o link da bio e toque em É para meu filho ou filha. Você responde algumas perguntas sobre a rotina dele e vê por onde começar.
 
-## F02 · Alunos em atividade
+**Histórico da legenda, até 20/10/2026:** os dois últimos parágrafos eram “As explicações são gravadas, e o curso precisa de computador com internet, mouse e teclado. Você paga uma vez e tem 30 dias de acesso, contados da aprovação do pagamento.” e “Abra o link da bio e escolha Desafio do Primeiro Jogo para ver as aulas, o valor e o que está incluído.”
+
+## F05 · O jogo que você sempre quis fazer
+
+**Novo em 20/10/2026. Posição:** terceiro fixado. **Formato:** carrossel de 8 slides, 4:5. **Objetivo:** falar com o adulto que sempre quis fazer um jogo: a ideia parada, a causa, o primeiro jogo, os próximos e as condições. **Destino:** bio LB → É para mim → quiz adulto (LA). **Fonte única dos fatos:** [página adulta](../../../../../packages/funnel/src/funnels/comunidade-adulto/oferta/pagina.ts), com o hero em reescrita em 20/10/2026.
+
+**Visual:** identidade adulta da página (arcade). O arcade fica na arte; o texto é literal. Rosto: Helena e Júlio. Telas dos cursos Kids com o rótulo até haver captura adulta real.
+
+### Slide 1 · Capa
+
+> O jogo que você sempre quis fazer.
+>
+> Aqui você faz o primeiro e segue criando outros, até o jogo com a sua ideia.
+
+**Cena:** Helena e Júlio diante do computador com a Nave Contra Asteroides na tela.
+
+### Slide 2 · A ideia já existe.
+
+> A ideia já existe.
+>
+> Uma fase mais difícil. Um chefe diferente. Uma regra que deixaria tudo mais divertido. Talvez ela esteja na sua cabeça há anos.
+
+**Cena:** caderno aberto com um esboço de fase ao lado do teclado. Foto encenada, sem pessoa identificável.
+
+### Slide 3 · Por que ela fica parada.
+
+> Por que ela fica parada.
+>
+> As ferramentas profissionais de fazer jogo foram feitas para estúdios. Abrem com dezenas de janelas e nenhum próximo passo. E o primeiro projeto começa grande demais.
+
+**Cena:** tela de computador cheia de janelas, desfocada, sem marca de programa reconhecível.
+
+### Slide 4 · Comece pelos clássicos pequenos.
+
+> Comece pelos clássicos pequenos.
+>
+> Uma nave contra asteroides. Um dino que pula cactos. Um farol que só acende com a chave. São pequenos de propósito, para você terminar o primeiro.
+
+**Cena:** três capturas lado a lado, com o rótulo das telas Kids.
+
+### Slide 5 · Mude a primeira regra.
+
+> Mude a primeira regra.
+>
+> Na nave, cada asteroide acertado vale um ponto. Você troca para cinco, roda o jogo e vê o placar subir mais rápido.
+
+**Cena:** bloco do placar com cinco e o placar da partida. Captura real a fazer.
+
+### Slide 6 · Depois do primeiro, os próximos.
+
+> O primeiro fica pronto. Depois, os próximos.
+>
+> Seu primeiro jogo ganha um link que abre no celular dos amigos, sem cadastro. Depois vêm outros, cada vez maiores, até o jogo com a sua ideia.
+
+**Cena:** celular mostrando o jogo publicado, ao lado do computador com o Estúdio aberto.
+
+**Fonte:** hero (link sem cadastro; o primeiro e os próximos) e “Selecione a etapa” (“do clássico de uma tela ao jogo de várias fases”).
+
+### Slide 7 · Antes de começar.
+
+> Antes de começar.
+>
+> Para quem tem 18 anos ou mais. Você cria no navegador do computador, com mouse e teclado. É uma assinatura, mensal ou anual. Você tem 7 dias de garantia e cancela quando quiser.
+
+**Cena:** fundo arcade com os quatro itens em lista. Sem preço.
+
+### Slide 8 · É para mim.
+
+> Abra o link da bio e toque em É para mim.
+>
+> Você responde algumas perguntas e vê por onde começar o seu primeiro jogo.
+
+**Chamada:**
+
+> Link da bio → É para mim
+
+**Cena:** Helena e Júlio à câmera.
+
+### Legenda completa
+
+> Você sempre quis fazer um jogo. Talvez a ideia esteja na sua cabeça há anos: uma fase, um chefe, uma regra.
+>
+> Ela costuma ficar parada por dois motivos. As ferramentas profissionais foram feitas para estúdios, com dezenas de janelas e nenhum próximo passo. E o primeiro projeto começa grande demais.
+>
+> Aqui você começa por clássicos pequenos: uma nave contra asteroides, um dino que pula cactos, um farol que só acende com a chave. Na nave, você muda quanto vale cada acerto, roda o jogo e vê o placar mudar.
+>
+> Seu primeiro jogo fica pronto, com um link que abre no celular dos amigos. Depois vêm os próximos. Cada curso ensina uma parte nova do jogo, como o pulo, o placar e o fim da fase. No Estúdio livre, você monta o jogo com a sua ideia.
+>
+> É para quem tem 18 anos ou mais, no navegador do computador. É uma assinatura, mensal ou anual, com 7 dias de garantia. Você cancela quando quiser.
+>
+> Abra o link da bio e toque em É para mim.
+
+**Texto alternativo (base):** slide 1, “Helena e Júlio diante do computador com um jogo de nave na tela”; slide 2, “Caderno com o esboço de uma fase ao lado do teclado”; slide 3, “Tela de computador cheia de janelas”; slide 4, “Três jogos: nave, dino e farol”; slide 5, “Bloco do placar com o número cinco”; slide 6, “Celular com o jogo publicado ao lado do computador”; slide 7, “Lista com as condições”; slide 8, “Helena e Júlio olhando para a câmera”.
+
+## Saíram dos fixados em 20/10/2026
+
+F02 e F03 ficam abaixo como histórico, com o texto de 11/10/2026. Não fixar de novo sem revisão: os dois mandam escolher um botão “Desafio do Primeiro Jogo” que a bio não tem mais. F02 continua útil como base do destaque Criadores. F03 depende da revisão da dona (ver [dependências](README.md#dependências-da-dona)).
+
+## F02 · Alunos em atividade (histórico)
 
 **Formato:** carrossel de 7 slides, 4:5. **Objetivo:** Apresentar os alunos e as ações de aprender, personalizar e testar; versão provisória com imagens já autorizadas. **Destino:** bio LB → botão Desafio do Primeiro Jogo → oferta L0.
 
@@ -210,7 +394,7 @@ Todas as frases destinadas às artes estão nos blocos de citação de cada slid
 >
 > Esta versão usa imagens geradas a partir das fotos dos alunos. Os vídeos das atividades serão incluídos depois.
 
-## F03 · Como começar pelo Desafio
+## F03 · Como começar pelo Desafio (histórico)
 
 **Formato:** carrossel de 9 slides, 4:5. **Objetivo:** Ajudar o responsável a conferir idade, equipamento, formato, ajuda e condições da compra. **Destino:** bio LB → botão Desafio do Primeiro Jogo → oferta L0.
 
@@ -325,6 +509,6 @@ Todas as frases destinadas às artes estão nos blocos de citação de cada slid
 >
 > Abra o link da bio e escolha Desafio do Primeiro Jogo. Veja o jogo com seu filho antes de decidir.
 
-**Conferência final:** imagens e copy legíveis em 4:5; títulos e legendas coerentes quando vistos sozinhos; aulas gravadas, equipamento, ajuda, prazo e garantia conforme a oferta; identificação dos alunos sem parentesco; nenhuma imagem gerada descrita como registro real. Conferir os três posts no perfil depois da publicação.
+**Conferência final (de 11/10/2026, para F01 a F03):** imagens e copy legíveis em 4:5; títulos e legendas coerentes quando vistos sozinhos; aulas gravadas, equipamento, ajuda, prazo e garantia conforme a oferta; identificação dos alunos sem parentesco; nenhuma imagem gerada descrita como registro real. Conferir os três posts no perfil depois da publicação.
 
 [Guia e bio](README.md) · [Destaques](01-destaques.md) · [Calendário](03-postagens.md)

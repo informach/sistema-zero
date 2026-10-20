@@ -106,7 +106,7 @@ export const COMMUNITY_OPENING =
 
 /** O que a próxima página mostra (a mesma página de 9 a 17 para todos os perfis). */
 export const NEXT_917 =
-  'Na próxima página, você vê os cinco jogos, uma aula por dentro, a Jornada até o código, como você acompanha e os dois planos.'
+  'Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.'
 
 export const PERFIS_917: Record<CommunityProfile, Perfil917Copy> = {
   A: {
@@ -118,9 +118,9 @@ export const PERFIS_917: Record<CommunityProfile, Perfil917Copy> = {
       'Nos jogos e nos vídeos prontos, alguém já tomou todas as decisões. As regras, os personagens e o que acontece em cada toque vieram prontos, e ele só escolhe o que vem em seguida. O interesse está lá.',
     changeTitle: 'O que muda quando ele cria o próprio jogo',
     change:
-      'Quando ele cria o próprio jogo, passa para o outro lado da tela. Decide quanto o personagem pula, o que acontece quando o personagem encosta numa moeda e quanto vale cada ponto. Aperta para testar e vê na hora se ficou como queria.',
+      'Quando ele cria o próprio jogo, as decisões passam a ser dele. Decide quanto o personagem pula, o que acontece quando o personagem encosta numa moeda e quanto vale cada ponto. Aperta para testar e vê na hora se ficou como queria.',
     where:
-      'Os cursos são projetos de jogo, e a aula mostra cada passo ao lado do editor. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para as ideias dele. O jogo publicado vai para o Mural dos Criadores, com um link para a família jogar.',
+      'Os cursos são projetos de jogo, e a aula mostra cada passo ao lado do Estúdio, onde ele monta o jogo. Depois de cada jogo vem o próximo, cada vez maior. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para os jogos que ele inventar. O jogo publicado vai para o Mural dos Criadores, com um link para a família jogar.',
     visual: 'aula-estudio',
     relato: 'AV12',
     cta: 'Ver como o tempo de tela vira criação',
@@ -133,9 +133,9 @@ export const PERFIS_917: Record<CommunityProfile, Perfil917Copy> = {
       'A vontade já está aí. O que falta é transformar a ideia em regras que o computador entende: quando tocar aqui, acontece isso. Enquanto esse passo não chega, cada ideia nova volta para a conversa, como a anterior.',
     changeTitle: 'O que muda quando ele monta a regra',
     change:
-      'Criar um jogo é escrever as regras da ideia: quando o jogador tocar no esconderijo, o personagem aparece e o contador soma um. Ele monta essas regras, aperta para testar e descobre na hora se o jogo faz o que imaginou.',
+      'Criar um jogo é montar as regras da ideia: quando o jogador tocar no esconderijo, o personagem aparece e o contador soma um. Ele monta essas regras, aperta para testar e descobre na hora se o jogo faz o que imaginou.',
     where:
-      'Cada curso é um jogo completo, e ele começa jogando a versão pronta para saber aonde vai chegar: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para as ideias dele, com as peças dos cursos que ele terminou. Cada curso novo põe peças novas na caixa, e o jogo que ele consegue fazer cresce junto.',
+      'Cada curso é um jogo completo, e ele começa jogando a versão pronta para saber aonde vai chegar: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para as ideias dele, com as peças dos cursos que ele terminou. A cada curso, ele ganha peças novas e consegue fazer jogos maiores, até os que ele inventa.',
     visual: 'estudio-jardim',
     relato: 'AV11',
     cta: 'Ver como ele tira os jogos do papel',
@@ -167,7 +167,7 @@ export const PERFIS_917: Record<CommunityProfile, Perfil917Copy> = {
     change:
       'Programar faz sentido quando cada comando tem um efeito que ele vê e testa. Num jogo, isso acontece o tempo todo: ele monta o comando, aperta para testar e vê na hora se o personagem andou, pulou ou parou como ele esperava.',
     where:
-      'Ele aprende a programar montando jogos. A aula mostra o passo ao lado do editor, e as falas do Zappy, o mascote das aulas, explicam o que fazer; o botão Ouvir lê em voz alta. Os cursos seguem esta ordem: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. A Jornada do Criador mostra em que ponto ele está e o que vem depois, dos blocos até o código.',
+      'Ele aprende a programar montando jogos, um depois do outro. A aula mostra o passo ao lado do Estúdio, onde ele monta o jogo, e as falas do Zappy, o mascote das aulas, explicam o que fazer; o botão Ouvir lê em voz alta. Os cursos seguem esta ordem: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. A Jornada do Criador mostra em que ponto ele está e o que vem depois, dos blocos até o código.',
     visual: 'estudio',
     relato: 'N17',
     cta: 'Ver o caminho para ele aprender a programar',
@@ -306,7 +306,7 @@ export const APPROXIMATE_NOTE =
 /** O que precisa estar garantido (N9), no fim da carta. */
 export const NEED_SENTENCE: Record<string, string> = {
   sozinho:
-    'Você precisa que ele [[consiga sozinho, porque você não entende disso]]. A explicação está nas aulas, com o passo ao lado do editor. O seu papel é combinar o horário e pedir para ver o jogo.',
+    'Você precisa que ele [[consiga sozinho, porque você não entende disso]]. A explicação está nas aulas, com o passo ao lado do Estúdio, onde ele monta o jogo. O seu papel é combinar o horário e pedir para ver o jogo.',
   recorrer:
     'Você quer que ele [[tenha a quem recorrer quando travar]]. Primeiro vem o que está na tela: ele volta ao trecho do vídeo, aperta Verificar esta parte nas partes que têm verificação e abre o Como fazer, que tem tutoriais por assunto. Se a dúvida continuar, o botão Preciso de ajuda manda a pergunta para a nossa equipe, e a resposta chega por escrito nos Recados.',
   acompanhar:

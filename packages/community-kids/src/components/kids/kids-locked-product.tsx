@@ -77,6 +77,7 @@ export function KidsLockedProduct({
   preview,
   opensAt = null,
   earned = false,
+  numbered = false,
 }: {
   product: LockedProductId
   title: string
@@ -86,6 +87,11 @@ export function KidsLockedProduct({
   opensAt?: JourneyLevelSlug | null
   /** A criança já conquistou a ferramenta na Jornada (`toolEarnedInJourney`). */
   earned?: boolean
+  /**
+   * A prévia é uma sequência (o Pensa: contar, conferir, construir): no lugar do emoji, o número
+   * do passo no ladrilho âmbar. As outras telas seguem com o emoji.
+   */
+  numbered?: boolean
 }) {
   const info = LOCKED_PRODUCTS[product]
   return (
@@ -114,14 +120,27 @@ export function KidsLockedProduct({
     >
       <p>{intro}</p>
       <ul className="mt-2 flex w-full flex-col gap-2 text-left">
-        {preview.map((item) => (
+        {preview.map((item, index) => (
           <li
             key={item.text}
-            className="flex items-center gap-3 rounded-2xl bg-(--band-creme) px-4 py-3"
+            className={
+              numbered
+                ? 'flex items-center gap-3 rounded-2xl bg-(--sz-yellow-surface) px-4 py-3'
+                : 'flex items-center gap-3 rounded-2xl bg-(--band-creme) px-4 py-3'
+            }
           >
-            <span aria-hidden="true" className="text-2xl leading-none">
-              {item.emoji}
-            </span>
+            {numbered ? (
+              <span
+                aria-hidden="true"
+                className="sz-display grid size-9 flex-none place-items-center rounded-[10px] bg-(--sz-amber) text-base text-foreground"
+              >
+                {index + 1}
+              </span>
+            ) : (
+              <span aria-hidden="true" className="text-2xl leading-none">
+                {item.emoji}
+              </span>
+            )}
             <span className="font-bold text-[0.9375rem] text-foreground">{item.text}</span>
           </li>
         ))}

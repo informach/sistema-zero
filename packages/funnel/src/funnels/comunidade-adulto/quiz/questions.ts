@@ -102,7 +102,7 @@ export const ADULT_QUESTIONS: SelecaoStep[] = [
     'tempo_criacao',
     'trava',
     'Calculadora',
-    'Quanto das suas horas de jogo virou alguma coisa sua?',
+    'Quanto das suas horas de jogo virou alguma coisa criada por você?',
     [
       ['quase_nada', 'Quase nada'],
       ['um_pouco', 'Um pouco'],
@@ -165,7 +165,7 @@ export const ADULT_QUESTIONS: SelecaoStep[] = [
     'Frase-síntese',
     'Juntando tudo, o que você quer?',
     [
-      ['A', 'Que o meu tempo de jogo renda alguma coisa minha'],
+      ['A', 'Que o meu tempo de jogo vire alguma coisa feita por mim'],
       ['B', 'Tirar a ideia da gaveta e fazer o jogo'],
       ['D', 'Entender como um jogo é feito e aprender a programar'],
       ['conhecer', 'Ainda estou conhecendo'],

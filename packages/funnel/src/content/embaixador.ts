@@ -175,7 +175,7 @@ export const PAINEL_EMBAIXADOR = {
     adult: {
       titulo: 'Um adulto que cresceu jogando',
       texto:
-        'Alguém que sempre quis saber como um jogo funciona por dentro. Ou que já tentou começar sozinho, numa ferramenta grande demais, e parou no meio.',
+        'Alguém que sempre quis saber como um jogo funciona por dentro. Ou que já tentou começar sozinho, num programa profissional de jogos, e parou no meio.',
     },
     passos: [
       'Você escolhe o público e manda o link com uma mensagem sua, contando por que lembrou da pessoa.',
@@ -205,8 +205,8 @@ export const PAINEL_EMBAIXADOR = {
       },
       {
         item: 'Fica para a assinatura',
-        kids: 'Outros cursos, o Estúdio livre e as cópias de jogos',
-        adult: 'Outros cursos, o Estúdio livre e as cópias de jogos',
+        kids: 'Outros cursos, o Estúdio livre e a opção de fazer a própria versão de um jogo do Mural',
+        adult: 'Outros cursos, o Estúdio livre e a opção de fazer a sua versão de um jogo do Mural',
       },
       {
         item: 'Custo',
@@ -216,7 +216,7 @@ export const PAINEL_EMBAIXADOR = {
     ],
   },
   fechamento: {
-    titulo: 'Um convite pessoal abre o primeiro passo',
+    titulo: 'Um convite seu ajuda a pessoa a começar',
     texto:
       'Conte por que você lembrou daquela pessoa e deixe a página explicar o resto com calma. Começar, e continuar depois, é decisão de quem recebe.',
     cta: 'Voltar aos meus links',
@@ -258,7 +258,7 @@ export const EMBAIXADOR_DUVIDAS = {
       pergunta: 'Quem recebe precisa assinar alguma coisa?',
       paragrafos: [
         'Não. Quem recebe ganha 7 dias do Cadê Todo Mundo e do Mural do seu público, contados do cadastro, sem cartão e sem assinatura automática. Depois, o link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
-        'Explique isso no convite e lembre que o curso pede um computador com mouse e teclado. Os outros cursos, a criação livre e as cópias de jogos fazem parte da Comunidade dos Criadores, Kids ou adulta, que a pessoa pode escolher contratar depois.',
+        'Explique isso no convite e lembre que o curso pede um computador com mouse e teclado. Os outros cursos, a criação livre e a opção de fazer a própria versão de um jogo do Mural fazem parte da Comunidade dos Criadores, Kids ou adulta, que a pessoa pode escolher contratar depois.',
       ],
     },
     {

@@ -3,35 +3,64 @@ import {
   PensaCheckpointSchema,
   type PensaProjectView,
 } from '@sistemazero/core/pensa'
-import { useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
+import { type PensaCopy, pensaCopy } from '../core/copy'
 import { PensaApiError, type PensaTransport } from '../core/types'
 import { ConfirmDialog } from './ConfirmDialog'
+import { CheckIcon, HistoryIcon } from './icons'
 
+const time = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' })
+const day = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' })
+
+/** "hoje, 16:40" ou "18/10, 10:15", no relógio de quem olha. */
+export function versionLabel(iso: string, now: Date = new Date()): string {
+  const at = new Date(iso)
+  const today = at.toDateString() === now.toDateString()
+  return `${today ? 'hoje' : day.format(at)}, ${time.format(at)}`
+}
+
+/**
+ * As versões guardadas do jogo (Canvas "Cuidar do jogo"): guardar a versão de agora e voltar a
+ * uma versão anterior. Só quem programa guarda, depois que o jogo está salvo na conta; quem
+ * decide é o servidor (a lista e a restauração passam por ele).
+ */
 export function ProjectCare({
   view,
   transport,
   onChanged,
+  copy = pensaCopy('kids'),
+  readOnly = false,
+  titleId,
 }: {
   view: PensaProjectView
   transport: PensaTransport
   onChanged(): Promise<void>
+  copy?: PensaCopy
+  readOnly?: boolean
+  titleId?: string
 }) {
   const [checkpoints, setCheckpoints] = useState<PensaCheckpoint[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [restore, setRestore] = useState<PensaCheckpoint | null>(null)
   const [notice, setNotice] = useState('')
-  const returnFocus = useRef<HTMLButtonElement>(null)
+  const restoreFrom = useRef<HTMLButtonElement | null>(null)
   const acting = useRef(false)
   const pending = useRef<{ key: string; requestId: string } | null>(null)
+  const ownTitle = useId()
   const canProtect =
+    !readOnly &&
     view.team.viewerProfileId === view.team.programmerProfileId &&
     view.project.status === 'active' &&
     Boolean(view.gameCreation && view.revision)
   async function list() {
     const result = await transport.request(`/projects/${view.project.id}/checkpoints`)
-    setCheckpoints(PensaCheckpointSchema.array().parse(result))
+    setCheckpoints(PensaCheckpointSchema.array().parse(result ?? []))
   }
+  // biome-ignore lint/correctness/useExhaustiveDependencies: lists once per project when the panel opens.
+  useEffect(() => {
+    void list().catch(() => setError('Não consegui ver as versões agora. Tente de novo.'))
+  }, [view.project.id])
   async function run(
     action: (requestId: string) => Promise<void>,
     success: string,
@@ -41,6 +70,7 @@ export function ProjectCare({
     acting.current = true
     setBusy(true)
     setError(null)
+    setNotice('')
     const key = JSON.stringify([
       view.project.id,
       view.revision?.id,
@@ -61,9 +91,7 @@ export function ProjectCare({
         await onChanged().catch(() => {})
       }
       setError(
-        cause instanceof Error
-          ? cause.message
-          : 'Não consegui guardar esta versão. Tente novamente.',
+        cause instanceof Error ? cause.message : 'Não consegui guardar esta versão. Tente de novo.',
       )
     } finally {
       acting.current = false
@@ -71,13 +99,22 @@ export function ProjectCare({
     }
   }
   return (
-    <section>
-      <h3>Versões guardadas</h3>
-      <p>Guarde uma versão do jogo para poder voltar a ela depois.</p>
+    <section className="pz-versions" aria-labelledby={titleId ?? ownTitle}>
+      <div className="pz-versions__head">
+        <span className="pz-menu__icon is-mint" aria-hidden="true">
+          <HistoryIcon size={20} />
+        </span>
+        <h2 id={titleId ?? ownTitle} className="pz-title pz-title--md">
+          Versões guardadas
+        </h2>
+      </div>
+      <p className="pz-muted">
+        Guarde uma versão do jogo antes de uma mudança grande. Depois, dá para voltar a ela.
+      </p>
       {canProtect ? (
         <button
           type="button"
-          className="sz-tool-pill sz-tool-pill--outline"
+          className="pz-btn pz-btn--action pz-self-start"
           disabled={busy}
           onClick={() =>
             void run(
@@ -98,51 +135,55 @@ export function ProjectCare({
         >
           Guardar esta versão
         </button>
-      ) : (
-        <p>Quem programa pode guardar uma versão depois que o jogo estiver salvo na conta.</p>
-      )}
-      <button
-        ref={returnFocus}
-        type="button"
-        className="sz-tool-pill sz-tool-pill--quiet"
-        disabled={busy}
-        onClick={() =>
-          void list().catch(() => setError('Não consegui consultar as versões. Tente novamente.'))
-        }
-      >
-        Ver versões guardadas
-      </button>
-      <ul>
-        {checkpoints.map((checkpoint) => (
-          <li key={checkpoint.id}>
-            <span>
-              Versão de{' '}
-              {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(
-                new Date(checkpoint.createdAt),
+      ) : null}
+      <p role="status" className={notice ? 'pz-status-ok' : 'pz-sr-only'}>
+        {notice ? <CheckIcon size={18} /> : null}
+        {notice}
+      </p>
+      {error ? (
+        <p role="alert" className="pz-alert-text">
+          {error}
+        </p>
+      ) : null}
+      {checkpoints.length ? (
+        <ul className="pz-versions__list">
+          {checkpoints.map((checkpoint) => (
+            <li key={checkpoint.id}>
+              <strong>Versão de {versionLabel(checkpoint.createdAt)}</strong>
+              {checkpoint.status === 'ready' ? (
+                <button
+                  type="button"
+                  className="pz-btn pz-btn--card pz-btn--sm"
+                  disabled={!canProtect || busy}
+                  onClick={(event) => {
+                    restoreFrom.current = event.currentTarget
+                    setRestore(checkpoint)
+                  }}
+                >
+                  Voltar para esta
+                </button>
+              ) : (
+                <span className="pz-muted">
+                  {checkpoint.status === 'copying' ? 'Guardando…' : 'Não deu para guardar'}
+                </span>
               )}
-            </span>
-            <button
-              type="button"
-              className="sz-tool-pill sz-tool-pill--outline"
-              disabled={!canProtect || busy || checkpoint.status !== 'ready'}
-              onClick={() => setRestore(checkpoint)}
-            >
-              Voltar para esta versão
-            </button>
-          </li>
-        ))}
-      </ul>
-      {error ? <p role="alert">{error}</p> : null}
-      <p role="status">{notice}</p>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <p className="pz-small">
+        Só quem programa guarda versões, depois que o jogo estiver salvo na conta.
+      </p>
       <ConfirmDialog
         open={Boolean(restore)}
-        title="Voltar para esta versão?"
-        body="Vamos proteger o jogo atual antes de voltar para a versão escolhida. A conferência final precisa ser feita de novo."
-        confirmLabel="Voltar para a versão"
+        title={restore ? `Voltar para a versão de ${versionLabel(restore.createdAt)}` : ''}
+        body={copy.restoreBody}
+        confirmLabel="Voltar para esta versão"
+        tone="action"
         busy={busy}
         error={error}
         onClose={() => setRestore(null)}
-        returnFocusTo={returnFocus}
+        returnFocusTo={restoreFrom}
         onConfirm={() => {
           if (!restore || !view.revision || !view.gameCreation) return
           const target = restore.id,
@@ -158,7 +199,7 @@ export function ProjectCare({
                 },
               )
             },
-            'Versão restaurada. Confira seu jogo antes de continuar.',
+            'Versão restaurada. Confira o seu jogo antes de continuar.',
             `restore:${target}`,
           )
         }}
