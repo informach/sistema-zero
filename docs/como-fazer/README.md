@@ -1,5 +1,33 @@
 # Como fazer: a biblioteca de ajuda do Kids
 
+## Revisão de 20/10/2026: 78 tutoriais, conferidos no código de staging
+
+O lote foi refeito a partir do código de `origin/staging` de 20/10/2026, depois do Pensa v2, do Molda
+novo, dos objetivos únicos da parte, das Oficinas ao vivo e da jornada configurável. São **78
+tutoriais**: Plataforma 33, Estúdio 11, Pinta 13, Pensa 11 e Molda 10.
+
+- **Reescritos:** os cinco do Pensa (o fluxo de planos, cartões e "Concluir tarefa" saiu; agora são o
+  plano do jogo, o caminho Z, E, R, O e as missões) e dois do Molda (criar e montar e pintar, com os
+  rótulos da oficina nova). Os slugs ficaram, porque as fases e o Zappy apontam para eles.
+- **Atualizados:** os que tinham rótulo ou caminho velho (objetivos da parte, rascunho guardado na
+  conta, **Trazer foto**, folha de animações no Pinta, selo **Salvo** do Molda, item **Oficinas** no
+  menu, jornada com etapas configuráveis e outros).
+- **Novos (30):** Plataforma: verificar os objetivos da parte, concluir a fase e abrir o baú, ouvir o
+  Zappy, continuar em outro aparelho, entrar numa oficina, rever uma oficina, missões e moedas, arrumar
+  o quarto. Estúdio: perguntar ao Zappy, achar e organizar blocos, Desafio do mês, recomeçar o projeto
+  da fase. Pinta: animar, montar um mapa, trocar a paleta, organizar desenhos, trazer uma imagem,
+  baixar imagem ou GIF. Pensa: conferir o plano, preparar o jogo, mudar uma parte, tirar dúvida com o
+  Zappy, jogar em equipe, voltar uma versão. Molda: pintar de perto, apagar e vazar, movimento
+  pronto, animar com poses, mudar a forma, trazer um modelo 3D.
+- Houve full review do lote inteiro contra o código (66 achados, nenhum alto, todos corrigidos), e o
+  `validar.ts` passa.
+- **Nada foi publicado ainda.** Os prints novos estão em `prints/2026-10-20/` e o passo a passo para
+  subir as imagens, importar e publicar, com a lista do que falta capturar e por quê, está em
+  [PRINTS-2026-10-20.md](PRINTS-2026-10-20.md). [PRINTS-A-REFAZER-2026-10-06.md](PRINTS-A-REFAZER-2026-10-06.md)
+  ficou como histórico.
+- A exceção do validador para "etapa" e "tarefa" no Pensa e a regra do **Guia do Pensa** não
+  correspondem mais a nenhuma tela; ficaram no `validar.ts` porque não atrapalham.
+
 ## Acesso infantil por aparelho: conteúdo preparado em 10/10/2026
 
 O rascunho local tem **47 tutoriais**. Para a nova entrada da criança, entraram três tutoriais
