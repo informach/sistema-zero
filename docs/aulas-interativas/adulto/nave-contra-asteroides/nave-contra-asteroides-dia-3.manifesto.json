@@ -899,7 +899,10 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx"
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "explosion"
+                  }
                 }
               },
               "area": "loops",
@@ -1023,7 +1026,10 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx"
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "shoot"
+                  }
                 }
               },
               "area": "events"
@@ -1249,7 +1255,10 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx"
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "explosion"
+                  }
                 }
               },
               "area": "loops",

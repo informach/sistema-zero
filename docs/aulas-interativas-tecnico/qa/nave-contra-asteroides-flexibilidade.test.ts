@@ -43,9 +43,6 @@ for (const [index, lesson] of aulasNave.entries()) {
         case 'sz_g2d_damage_sprite':
           setFixtureLiteral(block, 'FRAMES', 60)
           break
-        case 'sz_g2d_play_fx':
-          block.fields = { ...block.fields, FX: 'jump' }
-          break
         case 'sz_g2d_show_screen':
           setFixtureLiteral(block, 'HINT', 'Use Enter para continuar.')
           break

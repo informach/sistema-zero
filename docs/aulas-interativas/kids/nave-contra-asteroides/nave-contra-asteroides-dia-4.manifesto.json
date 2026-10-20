@@ -1646,7 +1646,10 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx"
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "explosion"
+                  }
                 }
               },
               "area": "loops",
