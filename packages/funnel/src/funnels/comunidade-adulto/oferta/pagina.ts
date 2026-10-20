@@ -145,14 +145,14 @@ export interface PaginaAdulto {
 }
 
 const GARANTIA = '7 dias de garantia. Cancele quando quiser.'
-const CTA_PRIMEIRO_JOGO = 'Quero criar meu primeiro jogo'
+const CTA_PRIMEIRO_JOGO = 'Quero começar a criar meus jogos'
 const IMG_ADULTO = '/img/comunidade-adulto'
 const IMG_KIDS = '/img/comunidade-dos-criadores'
 
 export const PAGINA_ADULTO: PaginaAdulto = {
   seoTitle: 'Comunidade dos Criadores para adultos | Sistema Zero',
   description:
-    'Para quem tem 18 anos ou mais e cresceu jogando: crie o seu primeiro jogo no navegador do computador, publique com o seu nome e siga dos blocos ao código. 7 dias de garantia. Cancele quando quiser.',
+    'Para quem tem 18 anos ou mais e cresceu jogando. Você faz o primeiro jogo no navegador do computador e segue criando outros, cada vez maiores, até o jogo com a sua ideia. 7 dias de garantia. Cancele quando quiser.',
   pularParaConteudo: 'Ir para o conteúdo',
   topo: {
     marcaAria: 'Sistema Zero Comunidade dos Criadores, voltar ao topo',
@@ -168,16 +168,17 @@ export const PAGINA_ADULTO: PaginaAdulto = {
   hero: {
     rotulo: 'PLAYER 1 · PRESS START',
     titulo: {
-      antes: 'Você cresceu jogando os jogos dos outros. Agora é o ',
-      destaque: 'seu nome',
-      depois: ' que aparece na tela de título.',
+      antes: 'Você sempre quis fazer um jogo. Aqui você faz o primeiro e ',
+      destaque: 'segue criando outros',
+      depois: ', cada vez maiores, até o jogo com a sua ideia.',
     },
     texto:
-      'Imagine mandar o link para os amigos e ouvir que ninguém passou da fase que você inventou. O herói tem a cara que você desenhou, as regras são as que você escreveu e o placar conta do jeito que você decidiu. Aquela vontade de saber como um jogo funciona por dentro, que você tem desde a primeira partida, finalmente vira um jogo seu.',
+      'Você desenha o herói, decide as regras e escolhe quanto vale cada ponto. Depois manda o link, e os amigos jogam a fase que você inventou. A vontade de entender como um jogo funciona por dentro, que você tem desde criança, vira jogos feitos por você.',
     beneficios: [
-      'Seu primeiro jogo terminado e publicado, com o seu nome na tela de título, escrito por você.',
-      'Um link que abre no celular de quem você quiser, sem cadastro.',
-      'Um passatempo para as horas livres que termina em algo para mostrar.',
+      'O primeiro jogo pronto já no primeiro curso, com o seu nome como criador na abertura.',
+      'Depois, novos jogos: cada curso ensina uma parte nova, como placar, vidas e personagens desenhados por você.',
+      'Até o seu próprio jogo: você monta a sua ideia no Estúdio livre, e mais adiante o Pensa ajuda a dividi-la em partes.',
+      'Um link para mandar aos amigos. O jogo abre no celular deles, sem cadastro.',
     ],
     cta: CTA_PRIMEIRO_JOGO,
     garantia: GARANTIA,
@@ -187,10 +188,10 @@ export const PAGINA_ADULTO: PaginaAdulto = {
       { cor: 'rosa', texto: '{{preco_mensal}} por mês, menos de {{preco_dia}} por dia' },
     ],
     tela: {
-      rotulo: 'TELA DE TÍTULO',
+      rotulo: 'ABERTURA DO JOGO',
       imagem: {
         src: `${IMG_ADULTO}/previa-arena.webp`,
-        alt: 'Jogo de arena em pixel art ao fundo, com a tela de título por cima',
+        alt: 'Jogo de arena em pixel art ao fundo da abertura, com o nome do jogo e o nome de quem criou por cima',
         width: 1100,
         height: 909,
       },
@@ -199,31 +200,30 @@ export const PAGINA_ADULTO: PaginaAdulto = {
       start: 'PRESS START',
       recorde: '1P · RECORDE 00450',
       direitos: '© VOCÊ',
-      legenda:
-        'Ao fundo, uma tela de título como a que você monta no Estúdio, com um texto de HUD para o seu nome. Prévia ilustrativa, com dados fictícios.',
+      legenda: 'Assim fica a abertura do seu jogo, com o seu nome como criador. Imagem de exemplo.',
     },
   },
   problema: {
     rotulo: 'A IDEIA QUE FICOU NA CABEÇA',
     titulo: 'Talvez você já tenha imaginado um jogo inteiro no meio de uma partida',
     texto:
-      'Uma fase mais difícil, um chefe diferente, uma regra que deixaria tudo mais divertido. Você sempre quis fazer um jogo. Aí abre uma engine, vê dezenas de janelas e fecha no mesmo dia. Ou segue um tutorial que acaba antes de chegar na sua ideia. Ou começa logo pelo jogo dos sonhos, com mundo aberto e história longa, e para no meio. Com o trabalho, a família e o cansaço da noite, o projeto fica para depois, e a ideia continua na gaveta.',
+      'Uma fase mais difícil, um chefe diferente, uma regra que deixaria tudo mais divertido. Você sempre quis fazer um jogo. Aí abre um programa profissional de fazer jogos, como a Unity, vê dezenas de janelas e fecha no mesmo dia. Ou segue um tutorial que acaba antes de chegar na sua ideia. Ou começa logo pelo jogo dos sonhos, com mundo aberto e história longa, e para no meio. Com o trabalho, a família e o cansaço da noite, o projeto fica para depois, e a ideia continua na gaveta.',
     trava: {
       rotulo: 'O QUE TRAVA',
       texto:
-        'O problema quase sempre está no ponto de partida: um projeto grande demais, numa ferramenta feita para estúdios e sem um próximo passo claro. Por isso, aqui o primeiro jogo é pequeno de propósito, para você terminar, mostrar e ficar com vontade de fazer o próximo.',
+        'O problema quase sempre está no ponto de partida: um projeto grande demais, num programa feito para empresas de jogos e sem um próximo passo claro. Por isso, aqui o primeiro jogo é pequeno de propósito, para você terminar, mostrar e ficar com vontade de fazer o próximo.',
     },
   },
   levelUp: {
     rotulo: 'LEVEL UP',
-    titulo: 'Quando essa ideia finalmente sai da cabeça, o jogo muda de lado',
-    texto: 'Você passa a decidir como o jogo funciona, e isso mexe com mais coisas do que parece.',
+    titulo: 'Quando a ideia sai da cabeça, você passa a ser quem cria o jogo',
+    texto: 'Você decide como o jogo funciona. Isso muda mais coisas do que parece.',
     cartas: [
       {
         cor: 'amarelo',
         titulo: 'A ideia vira um jogo terminado',
         texto:
-          'Com começo, meio e fim, rodando no navegador e com o seu nome na tela de título. O "um dia eu faço" sai da lista.',
+          'Com começo, meio e fim, rodando no navegador e com o seu nome na abertura do jogo. O "um dia eu faço" sai da lista.',
       },
       {
         cor: 'rosa',
@@ -233,9 +233,9 @@ export const PAGINA_ADULTO: PaginaAdulto = {
       },
       {
         cor: 'azul',
-        titulo: 'Você passa a jogar com outros olhos',
+        titulo: 'Você passa a reparar em como os jogos são feitos',
         texto:
-          'Começa a reparar como o pulo foi ajustado, por que aquela fase é difícil e onde o jogo esconde as dicas. E jogar fica ainda melhor.',
+          'Você nota como o pulo foi ajustado, por que aquela fase é difícil e onde o jogo esconde as dicas. Jogar fica ainda melhor.',
       },
       {
         cor: 'verde',
@@ -252,7 +252,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
         cor: 'rosa',
         titulo: 'Você encontra gente que curte o mesmo',
         texto:
-          'No Clube e no Desafio do mês, você mostra o que fez, joga o que os outros criaram e sai com ideia para o próximo.',
+          'Na conversa do Clube e no Desafio do mês, você mostra o que fez, joga o jogo dos outros e sai com ideia para o próximo.',
       },
     ],
     cta: CTA_PRIMEIRO_JOGO,
@@ -260,9 +260,9 @@ export const PAGINA_ADULTO: PaginaAdulto = {
   },
   base: {
     rotulo: 'VOCÊ JÁ TEM A BASE',
-    titulo: 'E a boa notícia é que você já sabe mais do que imagina',
+    titulo: 'Você já sabe mais do que imagina: conhece as regras dos jogos que jogou',
     texto:
-      'Quem passou horas jogando já conhece as regras de um jogo por dentro: pular na hora certa, pegar a chave antes da porta, perder uma vida ao encostar no inimigo, voltar ao último checkpoint. Criar um jogo é escrever essas mesmas regras em blocos e ver o jogo obedecer. Veja, em esquema, como quatro delas ficam escritas nos primeiros jogos do caminho.',
+      'Quem passou horas jogando já conhece as regras de um jogo por dentro: pular na hora certa, pegar a chave antes da porta, perder uma vida ao encostar no inimigo, voltar ao último checkpoint. Criar um jogo é montar essas mesmas regras e ver o jogo obedecer. Aqui você monta com blocos: peças de encaixar com o comando já escrito. Veja abaixo quatro dessas regras nos primeiros jogos que você faz.',
     regras: [
       {
         cor: 'azul',
@@ -293,9 +293,9 @@ export const PAGINA_ADULTO: PaginaAdulto = {
   },
   comoFunciona: {
     rotulo: 'COMO FUNCIONA',
-    titulo: 'Na prática, cada aula tem o ritmo de uma partida',
+    titulo: 'Na prática, você assiste, monta e vê o jogo funcionar na mesma tela',
     texto:
-      'O vídeo fica ao lado do editor, então você pausa, monta e vê o resultado antes de seguir. Tudo fica salvo na sua conta, e você continua de onde parou.',
+      'O vídeo da aula fica de um lado e o Estúdio, onde você monta o jogo, fica do outro. Você pausa, monta e vê o resultado antes de seguir. Tudo fica salvo na sua conta, e você continua de onde parou.',
     passos: [
       {
         cor: 'azul',
@@ -332,13 +332,13 @@ export const PAGINA_ADULTO: PaginaAdulto = {
     exemplo: {
       rotulo: 'POR EXEMPLO',
       texto:
-        'Na Nave Contra Asteroides, cada asteroide acertado vale um ponto. Você troca o valor para cinco, roda o jogo e vê o placar disparar. É a primeira regra do jogo que passa a ser sua.',
+        'Na Nave Contra Asteroides, cada asteroide acertado vale um ponto. Você troca o valor para cinco, roda o jogo e vê o placar disparar. É a primeira regra do jogo decidida por você.',
     },
     classicos: {
       rotulo: 'OS PRIMEIROS JOGOS',
       titulo: 'Você começa pelos clássicos',
       texto:
-        'Uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. São jogos pequenos de propósito, que ensinam as regras de todo jogo, e os primeiros que você termina e publica com o seu nome.',
+        'Uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. São jogos pequenos de propósito, que ensinam as regras usadas em todo jogo. São os primeiros que você termina e publica com o seu nome, antes dos maiores.',
       jogos: [
         {
           nome: 'Cadê Todo Mundo',
@@ -386,40 +386,40 @@ export const PAGINA_ADULTO: PaginaAdulto = {
           },
         },
       ],
-      nota: 'As telas são dos cursos Kids, que a área adulta recebe com outra aparência.',
+      nota: 'As imagens são dos cursos infantis. Na área adulta, os mesmos jogos têm outra aparência.',
     },
   },
   etapas: {
     rotulo: 'SELECIONE A ETAPA',
     titulo:
-      'Cada curso que você termina vira ferramenta no seu Estúdio. E é lá que você faz o jogo que está na sua cabeça',
+      'Cada curso que você termina libera peças novas no Estúdio. Com elas, você faz jogos maiores, até o que está na sua cabeça',
     texto:
-      'As aulas ensinam com um jogo completo. O que fica para você é a caixa de ferramentas, e ela cresce curso a curso, de propósito.',
+      'Cada curso ensina com um jogo completo. Os blocos que você aprendeu continuam no seu Estúdio, e a lista cresce a cada curso.',
     passos: [
       {
         cor: 'menta',
         rotulo: 'PASSO 1',
         titulo: 'Termina um curso, ganha os blocos',
         texto:
-          'Cada curso ensina blocos novos, e eles ficam na sua paleta para sempre: Colisões, Som, Aparência. Concluir os cursos de uma etapa sobe você para a seguinte, e são 7 etapas, cada uma com nome e cor.',
+          'Cada curso ensina blocos novos, como Colisões, Som e Aparência, e eles ficam no seu Estúdio para sempre. Ao concluir os cursos de uma etapa, você sobe para a próxima. São 7 etapas, cada uma com nome e cor.',
       },
       {
         cor: 'azul',
         rotulo: 'PASSO 2',
         titulo: 'Sobe de etapa, abre a ferramenta',
         texto:
-          'O Estúdio livre e o Pinta abrem assim que você conclui a primeira etapa. Depois chegam o Molda, para criar em três dimensões; a Ponte entre blocos e código; o Pensa, que conversa sobre a ideia do seu jogo e a divide em missões; o Zappy, o tutor do Estúdio, que olha os seus blocos e diz o que conferir, sem mexer neles; e, por fim, o Estúdio Pro, em código, onde o Zappy também pode propor uma mudança, que só entra no jogo quando você revisa e aperta Aplicar alterações.',
+          'O Estúdio livre, para criar o que quiser, e o Pinta, para desenhar, abrem quando você conclui a primeira etapa. Depois chegam o Molda, para criar em três dimensões, e a Ponte, que mostra cada bloco ao lado do código. Também chegam o Pensa, que conversa sobre a ideia do seu jogo e a divide em missões, e o Zappy, o tutor do Estúdio, que olha os seus blocos e diz o que conferir, sem mexer neles. Por fim vem o Estúdio Pro, onde você escreve em código. Lá o Zappy pode propor uma mudança, que só entra no jogo quando você revisa e aperta Aplicar alterações.',
       },
       {
         cor: 'rosa',
         rotulo: 'PASSO 3',
         titulo: 'Faz o seu jogo com o que já sabe',
         texto:
-          'Em Meus Jogos, você começa um projeto do zero com os blocos que conquistou. Cada curso novo põe peças na caixa, e o jogo que você consegue fazer cresce junto: do clássico de uma tela ao jogo de várias fases.',
+          'Em Meus Jogos, você começa um projeto do zero com os blocos que conquistou. A cada curso, você ganha blocos novos e consegue fazer jogos maiores: do jogo de uma tela só ao jogo de várias fases.',
       },
     ],
     escada: {
-      titulo: 'A escada, etapa por etapa',
+      titulo: 'As 7 etapas, uma por uma',
       legenda: [
         { cor: 'azul', texto: 'fase 1, blocos' },
         { cor: 'amarelo', texto: 'fase 2, Ponte' },
@@ -478,7 +478,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
         },
       ],
       fim: {
-        rotulo: 'FIM DA ESCADA',
+        rotulo: 'DEPOIS DA ETAPA 7',
         nome: 'Lenda',
         nivel: 'Todas as etapas concluídas',
         texto: 'Nome em dourado no perfil e no Mural.',
@@ -490,7 +490,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
         rotulo: 'FASE 1 · BLOCOS',
         titulo: 'A lógica do jogo, no Estúdio',
         texto:
-          'Você monta cada regra com blocos e vê funcionar: quando apertar, pular; se tocar no asteroide, perder uma vida. É o mesmo Estúdio das aulas e de Meus Jogos. O Pinta e o Molda chegam para o herói, o cenário e o 3D.',
+          'Você monta cada regra com blocos e vê funcionar: quando apertar, pular; se tocar no asteroide, perder uma vida. É o mesmo Estúdio das aulas e de Meus Jogos. Com o Pinta e o Molda, você desenha o herói e o cenário, em 2D ou em 3D.',
         imagem: {
           src: `${IMG_KIDS}/tela-estudio.webp`,
           alt: 'O Estúdio com os blocos montados e o jogo rodando ao lado',
@@ -516,7 +516,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
         rotulo: 'FASE 3 · CÓDIGO',
         titulo: 'O Estúdio Pro, em código',
         texto:
-          'Com a base firme, você escreve o jogo inteiro em código, com arquivos e pastas, para quem quiser ir até o fim da escada.',
+          'Aqui você escreve o jogo inteiro em código, com arquivos e pastas. É a última fase, para quem quiser ir até o fim.',
         imagem: {
           src: `${IMG_KIDS}/estudio-pro-codigo.webp`,
           alt: 'Estúdio Pro no modo código, com a árvore de arquivos e o editor',
@@ -528,7 +528,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
     ordem: {
       rotulo: 'POR QUE NESSA ORDEM',
       texto:
-        'A engine inteira no primeiro dia é a cena que você conhece: dezenas de janelas e nenhum próximo passo. Aqui a caixa cresce no ritmo do que você já aprendeu, e cada ferramenta chega quando você tem base para usar. Você aprende de verdade, e o jogo que consegue fazer cresce junto.',
+        'Abrir um programa profissional de jogos no primeiro dia dá no que você conhece: dezenas de janelas e nenhum próximo passo. Aqui, cada ferramenta abre quando você já sabe o suficiente para usar. Assim você aprende de verdade, e os jogos que consegue fazer ficam maiores.',
     },
     nota: 'No Pinta e no Molda, o desenho é todo seu, sem sugestão automática. As telas são prévias da área adulta com dados de teste.',
     cta: 'Quero começar pela etapa 1',
@@ -536,7 +536,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
   },
   comunidade: {
     rotulo: 'MULTIPLAYER',
-    titulo: 'Depois de pronto, o jogo merece ser jogado',
+    titulo: 'Depois de pronto, outras pessoas jogam o seu jogo',
     texto: 'É para isso que existe a comunidade. Ela tem quatro lugares:',
     tela: {
       imagem: {
@@ -594,7 +594,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
         'quer se preparar para trabalhar com jogos ou montar portfólio;',
         'precisa de professor ao vivo toda semana;',
         'quer criar pelo celular ou pelo tablet;',
-        'procura aprender uma engine específica, como Unity ou Unreal.',
+        'procura aprender um programa profissional de jogos, como Unity ou Unreal.',
       ],
     },
   },
@@ -612,9 +612,9 @@ export const PAGINA_ADULTO: PaginaAdulto = {
   },
   oferta: {
     rotulo: 'INSERT COIN',
-    titulo: 'Tudo o que você precisa para tirar o jogo da cabeça fica num lugar só',
+    titulo: 'Tudo o que você precisa para fazer o primeiro jogo e os próximos fica num lugar só',
     texto:
-      'Os cursos levam você do primeiro jogo ao código, o Estúdio, o Pinta e o Molda cobrem regras, arte e 3D, e o Mural coloca o seu jogo no celular de quem você quiser. O Clube e o Desafio do mês juntam gente que também está criando, e os tutoriais e os Recados ajudam quando você trava. As etapas decidem a ordem, para cada ferramenta chegar quando você tem base para usar. Os cursos lançados durante a assinatura entram sem custo extra, e os dois planos dão acesso a tudo: muda só a forma de pagar.',
+      'Os cursos levam você do primeiro jogo ao código. Com o Estúdio, o Pinta e o Molda, você faz as regras, os desenhos e o 3D. O Mural publica o seu jogo com um link que abre no celular de quem você quiser. O Clube e o Desafio do mês juntam gente que também está criando. Os tutoriais e os Recados ajudam quando você trava. As etapas definem a ordem, e cada ferramenta abre quando você já sabe usar. Os cursos lançados durante a assinatura entram sem custo extra. Os dois planos dão acesso a tudo: muda só a forma de pagar.',
     depois: {
       rotulo: 'O QUE ACONTECE DEPOIS DE ASSINAR',
       passos: [
@@ -664,7 +664,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
   },
   duvidas: {
     rotulo: 'PERGUNTAS',
-    titulo: 'Algumas dúvidas que costumam aparecer antes de apertar start',
+    titulo: 'Dúvidas comuns antes de assinar',
     itens: [
       {
         pergunta: 'Tenho 18 anos. É para mim?',
@@ -674,17 +674,17 @@ export const PAGINA_ADULTO: PaginaAdulto = {
       {
         pergunta: 'Tenho mais de 30 anos e nunca programei. É tarde?',
         resposta:
-          'Não. Tarde seria para quem quer concorrer com quem começou aos 15 para trabalhar com isso, e aqui o objetivo é outro: terminar um jogo nas horas livres. A primeira fase é com blocos, para a lógica ficar à vista, e o primeiro curso traz os blocos e o projeto preparados.',
+          'Não. Aqui ninguém compete com quem começou aos 15 anos para trabalhar com isso. O objetivo é criar jogos nas horas livres. A primeira fase usa blocos, então você vê cada regra montada na tela. O primeiro curso traz os blocos e o projeto preparados.',
       },
       {
         pergunta: 'Nunca programei. Consigo?',
         resposta:
-          'Consegue começar. O primeiro curso usa blocos e um projeto preparado, e cada parte é conferida antes da próxima. A proposta é você terminar o seu primeiro jogo nas horas livres, sem prometer uma profissão.',
+          'Consegue começar. O primeiro curso usa blocos e um projeto preparado, e cada parte é conferida antes da próxima. A proposta é você criar jogos nas horas livres, começando pelo primeiro, sem prometer uma profissão.',
       },
       {
         pergunta: 'Bloco de montar não é coisa de criança?',
         resposta:
-          'Os blocos são a primeira fase: tiram a digitação do caminho e deixam a lógica à vista. Na segunda fase, a Ponte mostra cada bloco ao lado do código que ele gera, e na terceira você escreve o jogo em código.',
+          'Os blocos são só a primeira fase. Com eles, você monta a regra sem digitar código e vê como ela funciona. Na segunda fase, a Ponte mostra cada bloco ao lado do código que ele gera. Na terceira, você escreve o jogo em código.',
       },
       {
         pergunta: 'É a mesma plataforma das crianças?',

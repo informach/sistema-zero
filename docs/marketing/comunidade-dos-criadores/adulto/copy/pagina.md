@@ -6,7 +6,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **seoTitle**: Comunidade dos Criadores para adultos | Sistema Zero
 
-**description**: Para quem tem 18 anos ou mais e cresceu jogando: crie o seu primeiro jogo no navegador do computador, publique com o seu nome e siga dos blocos ao código. 7 dias de garantia. Cancele quando quiser.
+**description**: Para quem tem 18 anos ou mais e cresceu jogando. Você faz o primeiro jogo no navegador do computador e segue criando outros, cada vez maiores, até o jogo com a sua ideia. 7 dias de garantia. Cancele quando quiser.
 
 **pularParaConteudo**: Ir para o conteúdo
 
@@ -26,21 +26,23 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.rotulo**: PLAYER 1 · PRESS START
 
-**hero.titulo.antes**: Você cresceu jogando os jogos dos outros. Agora é o 
+**hero.titulo.antes**: Você sempre quis fazer um jogo. Aqui você faz o primeiro e 
 
-**hero.titulo.destaque**: seu nome
+**hero.titulo.destaque**: segue criando outros
 
-**hero.titulo.depois**:  que aparece na tela de título.
+**hero.titulo.depois**: , cada vez maiores, até o jogo com a sua ideia.
 
-**hero.texto**: Imagine mandar o link para os amigos e ouvir que ninguém passou da fase que você inventou. O herói tem a cara que você desenhou, as regras são as que você escreveu e o placar conta do jeito que você decidiu. Aquela vontade de saber como um jogo funciona por dentro, que você tem desde a primeira partida, finalmente vira um jogo seu.
+**hero.texto**: Você desenha o herói, decide as regras e escolhe quanto vale cada ponto. Depois manda o link, e os amigos jogam a fase que você inventou. A vontade de entender como um jogo funciona por dentro, que você tem desde criança, vira jogos feitos por você.
 
-**hero.beneficios[0]**: Seu primeiro jogo terminado e publicado, com o seu nome na tela de título, escrito por você.
+**hero.beneficios[0]**: O primeiro jogo pronto já no primeiro curso, com o seu nome como criador na abertura.
 
-**hero.beneficios[1]**: Um link que abre no celular de quem você quiser, sem cadastro.
+**hero.beneficios[1]**: Depois, novos jogos: cada curso ensina uma parte nova, como placar, vidas e personagens desenhados por você.
 
-**hero.beneficios[2]**: Um passatempo para as horas livres que termina em algo para mostrar.
+**hero.beneficios[2]**: Até o seu próprio jogo: você monta a sua ideia no Estúdio livre, e mais adiante o Pensa ajuda a dividi-la em partes.
 
-**hero.cta**: Quero criar meu primeiro jogo
+**hero.beneficios[3]**: Um link para mandar aos amigos. O jogo abre no celular deles, sem cadastro.
+
+**hero.cta**: Quero começar a criar meus jogos
 
 **hero.garantia**: 7 dias de garantia. Cancele quando quiser.
 
@@ -50,9 +52,9 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.requisitos[2].texto**: {{preco_mensal}} por mês, menos de {{preco_dia}} por dia
 
-**hero.tela.rotulo**: TELA DE TÍTULO
+**hero.tela.rotulo**: ABERTURA DO JOGO
 
-**hero.tela.imagem.alt**: Jogo de arena em pixel art ao fundo, com a tela de título por cima
+**hero.tela.imagem.alt**: Jogo de arena em pixel art ao fundo da abertura, com o nome do jogo e o nome de quem criou por cima
 
 **hero.tela.jogo**: GUARDIÕES DA ARENA
 
@@ -66,35 +68,35 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.tela.direitos**: © VOCÊ
 
-**hero.tela.legenda**: Ao fundo, uma tela de título como a que você monta no Estúdio, com um texto de HUD para o seu nome. Prévia ilustrativa, com dados fictícios.
+**hero.tela.legenda**: Assim fica a abertura do seu jogo, com o seu nome como criador. Imagem de exemplo.
 
 **problema.rotulo**: A IDEIA QUE FICOU NA CABEÇA
 
 **problema.titulo**: Talvez você já tenha imaginado um jogo inteiro no meio de uma partida
 
-**problema.texto**: Uma fase mais difícil, um chefe diferente, uma regra que deixaria tudo mais divertido. Você sempre quis fazer um jogo. Aí abre uma engine, vê dezenas de janelas e fecha no mesmo dia. Ou segue um tutorial que acaba antes de chegar na sua ideia. Ou começa logo pelo jogo dos sonhos, com mundo aberto e história longa, e para no meio. Com o trabalho, a família e o cansaço da noite, o projeto fica para depois, e a ideia continua na gaveta.
+**problema.texto**: Uma fase mais difícil, um chefe diferente, uma regra que deixaria tudo mais divertido. Você sempre quis fazer um jogo. Aí abre um programa profissional de fazer jogos, como a Unity, vê dezenas de janelas e fecha no mesmo dia. Ou segue um tutorial que acaba antes de chegar na sua ideia. Ou começa logo pelo jogo dos sonhos, com mundo aberto e história longa, e para no meio. Com o trabalho, a família e o cansaço da noite, o projeto fica para depois, e a ideia continua na gaveta.
 
 **problema.trava.rotulo**: O QUE TRAVA
 
-**problema.trava.texto**: O problema quase sempre está no ponto de partida: um projeto grande demais, numa ferramenta feita para estúdios e sem um próximo passo claro. Por isso, aqui o primeiro jogo é pequeno de propósito, para você terminar, mostrar e ficar com vontade de fazer o próximo.
+**problema.trava.texto**: O problema quase sempre está no ponto de partida: um projeto grande demais, num programa feito para empresas de jogos e sem um próximo passo claro. Por isso, aqui o primeiro jogo é pequeno de propósito, para você terminar, mostrar e ficar com vontade de fazer o próximo.
 
 **levelUp.rotulo**: LEVEL UP
 
-**levelUp.titulo**: Quando essa ideia finalmente sai da cabeça, o jogo muda de lado
+**levelUp.titulo**: Quando a ideia sai da cabeça, você passa a ser quem cria o jogo
 
-**levelUp.texto**: Você passa a decidir como o jogo funciona, e isso mexe com mais coisas do que parece.
+**levelUp.texto**: Você decide como o jogo funciona. Isso muda mais coisas do que parece.
 
 **levelUp.cartas[0].titulo**: A ideia vira um jogo terminado
 
-**levelUp.cartas[0].texto**: Com começo, meio e fim, rodando no navegador e com o seu nome na tela de título. O "um dia eu faço" sai da lista.
+**levelUp.cartas[0].texto**: Com começo, meio e fim, rodando no navegador e com o seu nome na abertura do jogo. O "um dia eu faço" sai da lista.
 
 **levelUp.cartas[1].titulo**: Você ouve "foi você que fez?"
 
 **levelUp.cartas[1].texto**: Você compartilha no grupo, os amigos jogam pelo celular e alguém trava na fase que você desenhou.
 
-**levelUp.cartas[2].titulo**: Você passa a jogar com outros olhos
+**levelUp.cartas[2].titulo**: Você passa a reparar em como os jogos são feitos
 
-**levelUp.cartas[2].texto**: Começa a reparar como o pulo foi ajustado, por que aquela fase é difícil e onde o jogo esconde as dicas. E jogar fica ainda melhor.
+**levelUp.cartas[2].texto**: Você nota como o pulo foi ajustado, por que aquela fase é difícil e onde o jogo esconde as dicas. Jogar fica ainda melhor.
 
 **levelUp.cartas[3].titulo**: A noite livre termina com uma fase nova
 
@@ -106,17 +108,17 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **levelUp.cartas[5].titulo**: Você encontra gente que curte o mesmo
 
-**levelUp.cartas[5].texto**: No Clube e no Desafio do mês, você mostra o que fez, joga o que os outros criaram e sai com ideia para o próximo.
+**levelUp.cartas[5].texto**: Na conversa do Clube e no Desafio do mês, você mostra o que fez, joga o jogo dos outros e sai com ideia para o próximo.
 
-**levelUp.cta**: Quero criar meu primeiro jogo
+**levelUp.cta**: Quero começar a criar meus jogos
 
 **levelUp.garantia**: 7 dias de garantia. Cancele quando quiser.
 
 **base.rotulo**: VOCÊ JÁ TEM A BASE
 
-**base.titulo**: E a boa notícia é que você já sabe mais do que imagina
+**base.titulo**: Você já sabe mais do que imagina: conhece as regras dos jogos que jogou
 
-**base.texto**: Quem passou horas jogando já conhece as regras de um jogo por dentro: pular na hora certa, pegar a chave antes da porta, perder uma vida ao encostar no inimigo, voltar ao último checkpoint. Criar um jogo é escrever essas mesmas regras em blocos e ver o jogo obedecer. Veja, em esquema, como quatro delas ficam escritas nos primeiros jogos do caminho.
+**base.texto**: Quem passou horas jogando já conhece as regras de um jogo por dentro: pular na hora certa, pegar a chave antes da porta, perder uma vida ao encostar no inimigo, voltar ao último checkpoint. Criar um jogo é montar essas mesmas regras e ver o jogo obedecer. Aqui você monta com blocos: peças de encaixar com o comando já escrito. Veja abaixo quatro dessas regras nos primeiros jogos que você faz.
 
 **base.regras[0].nome**: PULO
 
@@ -144,9 +146,9 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **comoFunciona.rotulo**: COMO FUNCIONA
 
-**comoFunciona.titulo**: Na prática, cada aula tem o ritmo de uma partida
+**comoFunciona.titulo**: Na prática, você assiste, monta e vê o jogo funcionar na mesma tela
 
-**comoFunciona.texto**: O vídeo fica ao lado do editor, então você pausa, monta e vê o resultado antes de seguir. Tudo fica salvo na sua conta, e você continua de onde parou.
+**comoFunciona.texto**: O vídeo da aula fica de um lado e o Estúdio, onde você monta o jogo, fica do outro. Você pausa, monta e vê o resultado antes de seguir. Tudo fica salvo na sua conta, e você continua de onde parou.
 
 **comoFunciona.passos[0].titulo**: Primeiro, você joga a versão pronta
 
@@ -170,13 +172,13 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **comoFunciona.exemplo.rotulo**: POR EXEMPLO
 
-**comoFunciona.exemplo.texto**: Na Nave Contra Asteroides, cada asteroide acertado vale um ponto. Você troca o valor para cinco, roda o jogo e vê o placar disparar. É a primeira regra do jogo que passa a ser sua.
+**comoFunciona.exemplo.texto**: Na Nave Contra Asteroides, cada asteroide acertado vale um ponto. Você troca o valor para cinco, roda o jogo e vê o placar disparar. É a primeira regra do jogo decidida por você.
 
 **comoFunciona.classicos.rotulo**: OS PRIMEIROS JOGOS
 
 **comoFunciona.classicos.titulo**: Você começa pelos clássicos
 
-**comoFunciona.classicos.texto**: Uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. São jogos pequenos de propósito, que ensinam as regras de todo jogo, e os primeiros que você termina e publica com o seu nome.
+**comoFunciona.classicos.texto**: Uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. São jogos pequenos de propósito, que ensinam as regras usadas em todo jogo. São os primeiros que você termina e publica com o seu nome, antes dos maiores.
 
 **comoFunciona.classicos.jogos[0].nome**: Cadê Todo Mundo
 
@@ -208,33 +210,33 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **comoFunciona.classicos.jogos[4].imagem.alt**: Corre, Dino: o dino, o cacto e o placar
 
-**comoFunciona.classicos.nota**: As telas são dos cursos Kids, que a área adulta recebe com outra aparência.
+**comoFunciona.classicos.nota**: As imagens são dos cursos infantis. Na área adulta, os mesmos jogos têm outra aparência.
 
 **etapas.rotulo**: SELECIONE A ETAPA
 
-**etapas.titulo**: Cada curso que você termina vira ferramenta no seu Estúdio. E é lá que você faz o jogo que está na sua cabeça
+**etapas.titulo**: Cada curso que você termina libera peças novas no Estúdio. Com elas, você faz jogos maiores, até o que está na sua cabeça
 
-**etapas.texto**: As aulas ensinam com um jogo completo. O que fica para você é a caixa de ferramentas, e ela cresce curso a curso, de propósito.
+**etapas.texto**: Cada curso ensina com um jogo completo. Os blocos que você aprendeu continuam no seu Estúdio, e a lista cresce a cada curso.
 
 **etapas.passos[0].rotulo**: PASSO 1
 
 **etapas.passos[0].titulo**: Termina um curso, ganha os blocos
 
-**etapas.passos[0].texto**: Cada curso ensina blocos novos, e eles ficam na sua paleta para sempre: Colisões, Som, Aparência. Concluir os cursos de uma etapa sobe você para a seguinte, e são 7 etapas, cada uma com nome e cor.
+**etapas.passos[0].texto**: Cada curso ensina blocos novos, como Colisões, Som e Aparência, e eles ficam no seu Estúdio para sempre. Ao concluir os cursos de uma etapa, você sobe para a próxima. São 7 etapas, cada uma com nome e cor.
 
 **etapas.passos[1].rotulo**: PASSO 2
 
 **etapas.passos[1].titulo**: Sobe de etapa, abre a ferramenta
 
-**etapas.passos[1].texto**: O Estúdio livre e o Pinta abrem assim que você conclui a primeira etapa. Depois chegam o Molda, para criar em três dimensões; a Ponte entre blocos e código; o Pensa, que conversa sobre a ideia do seu jogo e a divide em missões; o Zappy, o tutor do Estúdio, que olha os seus blocos e diz o que conferir, sem mexer neles; e, por fim, o Estúdio Pro, em código, onde o Zappy também pode propor uma mudança, que só entra no jogo quando você revisa e aperta Aplicar alterações.
+**etapas.passos[1].texto**: O Estúdio livre, para criar o que quiser, e o Pinta, para desenhar, abrem quando você conclui a primeira etapa. Depois chegam o Molda, para criar em três dimensões, e a Ponte, que mostra cada bloco ao lado do código. Também chegam o Pensa, que conversa sobre a ideia do seu jogo e a divide em missões, e o Zappy, o tutor do Estúdio, que olha os seus blocos e diz o que conferir, sem mexer neles. Por fim vem o Estúdio Pro, onde você escreve em código. Lá o Zappy pode propor uma mudança, que só entra no jogo quando você revisa e aperta Aplicar alterações.
 
 **etapas.passos[2].rotulo**: PASSO 3
 
 **etapas.passos[2].titulo**: Faz o seu jogo com o que já sabe
 
-**etapas.passos[2].texto**: Em Meus Jogos, você começa um projeto do zero com os blocos que conquistou. Cada curso novo põe peças na caixa, e o jogo que você consegue fazer cresce junto: do clássico de uma tela ao jogo de várias fases.
+**etapas.passos[2].texto**: Em Meus Jogos, você começa um projeto do zero com os blocos que conquistou. A cada curso, você ganha blocos novos e consegue fazer jogos maiores: do jogo de uma tela só ao jogo de várias fases.
 
-**etapas.escada.titulo**: A escada, etapa por etapa
+**etapas.escada.titulo**: As 7 etapas, uma por uma
 
 **etapas.escada.legenda[0].texto**: fase 1, blocos
 
@@ -300,7 +302,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **etapas.escada.etapas[6].libera**: Estúdio Pro, em código
 
-**etapas.escada.fim.rotulo**: FIM DA ESCADA
+**etapas.escada.fim.rotulo**: DEPOIS DA ETAPA 7
 
 **etapas.escada.fim.nome**: Lenda
 
@@ -312,7 +314,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **etapas.fases[0].titulo**: A lógica do jogo, no Estúdio
 
-**etapas.fases[0].texto**: Você monta cada regra com blocos e vê funcionar: quando apertar, pular; se tocar no asteroide, perder uma vida. É o mesmo Estúdio das aulas e de Meus Jogos. O Pinta e o Molda chegam para o herói, o cenário e o 3D.
+**etapas.fases[0].texto**: Você monta cada regra com blocos e vê funcionar: quando apertar, pular; se tocar no asteroide, perder uma vida. É o mesmo Estúdio das aulas e de Meus Jogos. Com o Pinta e o Molda, você desenha o herói e o cenário, em 2D ou em 3D.
 
 **etapas.fases[0].imagem.alt**: O Estúdio com os blocos montados e o jogo rodando ao lado
 
@@ -328,13 +330,13 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **etapas.fases[2].titulo**: O Estúdio Pro, em código
 
-**etapas.fases[2].texto**: Com a base firme, você escreve o jogo inteiro em código, com arquivos e pastas, para quem quiser ir até o fim da escada.
+**etapas.fases[2].texto**: Aqui você escreve o jogo inteiro em código, com arquivos e pastas. É a última fase, para quem quiser ir até o fim.
 
 **etapas.fases[2].imagem.alt**: Estúdio Pro no modo código, com a árvore de arquivos e o editor
 
 **etapas.ordem.rotulo**: POR QUE NESSA ORDEM
 
-**etapas.ordem.texto**: A engine inteira no primeiro dia é a cena que você conhece: dezenas de janelas e nenhum próximo passo. Aqui a caixa cresce no ritmo do que você já aprendeu, e cada ferramenta chega quando você tem base para usar. Você aprende de verdade, e o jogo que consegue fazer cresce junto.
+**etapas.ordem.texto**: Abrir um programa profissional de jogos no primeiro dia dá no que você conhece: dezenas de janelas e nenhum próximo passo. Aqui, cada ferramenta abre quando você já sabe o suficiente para usar. Assim você aprende de verdade, e os jogos que consegue fazer ficam maiores.
 
 **etapas.nota**: No Pinta e no Molda, o desenho é todo seu, sem sugestão automática. As telas são prévias da área adulta com dados de teste.
 
@@ -344,7 +346,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **comunidade.rotulo**: MULTIPLAYER
 
-**comunidade.titulo**: Depois de pronto, o jogo merece ser jogado
+**comunidade.titulo**: Depois de pronto, outras pessoas jogam o seu jogo
 
 **comunidade.texto**: É para isso que existe a comunidade. Ela tem quatro lugares:
 
@@ -392,7 +394,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **paraQuem.nao.itens[2]**: quer criar pelo celular ou pelo tablet;
 
-**paraQuem.nao.itens[3]**: procura aprender uma engine específica, como Unity ou Unreal.
+**paraQuem.nao.itens[3]**: procura aprender um programa profissional de jogos, como Unity ou Unreal.
 
 **fundadores.rotulo**: QUEM CRIOU
 
@@ -404,9 +406,9 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **oferta.rotulo**: INSERT COIN
 
-**oferta.titulo**: Tudo o que você precisa para tirar o jogo da cabeça fica num lugar só
+**oferta.titulo**: Tudo o que você precisa para fazer o primeiro jogo e os próximos fica num lugar só
 
-**oferta.texto**: Os cursos levam você do primeiro jogo ao código, o Estúdio, o Pinta e o Molda cobrem regras, arte e 3D, e o Mural coloca o seu jogo no celular de quem você quiser. O Clube e o Desafio do mês juntam gente que também está criando, e os tutoriais e os Recados ajudam quando você trava. As etapas decidem a ordem, para cada ferramenta chegar quando você tem base para usar. Os cursos lançados durante a assinatura entram sem custo extra, e os dois planos dão acesso a tudo: muda só a forma de pagar.
+**oferta.texto**: Os cursos levam você do primeiro jogo ao código. Com o Estúdio, o Pinta e o Molda, você faz as regras, os desenhos e o 3D. O Mural publica o seu jogo com um link que abre no celular de quem você quiser. O Clube e o Desafio do mês juntam gente que também está criando. Os tutoriais e os Recados ajudam quando você trava. As etapas definem a ordem, e cada ferramenta abre quando você já sabe usar. Os cursos lançados durante a assinatura entram sem custo extra. Os dois planos dão acesso a tudo: muda só a forma de pagar.
 
 **oferta.depois.rotulo**: O QUE ACONTECE DEPOIS DE ASSINAR
 
@@ -468,7 +470,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **duvidas.rotulo**: PERGUNTAS
 
-**duvidas.titulo**: Algumas dúvidas que costumam aparecer antes de apertar start
+**duvidas.titulo**: Dúvidas comuns antes de assinar
 
 **duvidas.itens[0].pergunta**: Tenho 18 anos. É para mim?
 
@@ -476,15 +478,15 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **duvidas.itens[1].pergunta**: Tenho mais de 30 anos e nunca programei. É tarde?
 
-**duvidas.itens[1].resposta**: Não. Tarde seria para quem quer concorrer com quem começou aos 15 para trabalhar com isso, e aqui o objetivo é outro: terminar um jogo nas horas livres. A primeira fase é com blocos, para a lógica ficar à vista, e o primeiro curso traz os blocos e o projeto preparados.
+**duvidas.itens[1].resposta**: Não. Aqui ninguém compete com quem começou aos 15 anos para trabalhar com isso. O objetivo é criar jogos nas horas livres. A primeira fase usa blocos, então você vê cada regra montada na tela. O primeiro curso traz os blocos e o projeto preparados.
 
 **duvidas.itens[2].pergunta**: Nunca programei. Consigo?
 
-**duvidas.itens[2].resposta**: Consegue começar. O primeiro curso usa blocos e um projeto preparado, e cada parte é conferida antes da próxima. A proposta é você terminar o seu primeiro jogo nas horas livres, sem prometer uma profissão.
+**duvidas.itens[2].resposta**: Consegue começar. O primeiro curso usa blocos e um projeto preparado, e cada parte é conferida antes da próxima. A proposta é você criar jogos nas horas livres, começando pelo primeiro, sem prometer uma profissão.
 
 **duvidas.itens[3].pergunta**: Bloco de montar não é coisa de criança?
 
-**duvidas.itens[3].resposta**: Os blocos são a primeira fase: tiram a digitação do caminho e deixam a lógica à vista. Na segunda fase, a Ponte mostra cada bloco ao lado do código que ele gera, e na terceira você escreve o jogo em código.
+**duvidas.itens[3].resposta**: Os blocos são só a primeira fase. Com eles, você monta a regra sem digitar código e vê como ela funciona. Na segunda fase, a Ponte mostra cada bloco ao lado do código que ele gera. Na terceira, você escreve o jogo em código.
 
 **duvidas.itens[4].pergunta**: É a mesma plataforma das crianças?
 
@@ -524,7 +526,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **fechamento.texto**: E a ideia que você teve jogando ontem pode virar a primeira fase dele.
 
-**fechamento.cta**: Quero criar meu primeiro jogo
+**fechamento.cta**: Quero começar a criar meus jogos
 
 **fechamento.garantia**: 7 dias de garantia. Cancele quando quiser.
 

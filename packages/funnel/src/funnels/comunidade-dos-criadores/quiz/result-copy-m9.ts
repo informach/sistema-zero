@@ -85,8 +85,8 @@ export const PERFIS_M9: Record<M9Profile, PerfilM9Copy> = {
     why: 'No joguinho pronto do tablet, alguém já decidiu tudo: o que aparece, o que acontece em cada toque e quando acaba. Ele aperta o que surge na tela, e o tempo passa sem nada que seja dele. O que ainda falta para ele fazer diferente é {falta}, e nessa idade ninguém espera que ele faça sozinho. Muitos cursos e aplicativos foram pensados para a criança usar sem adulto.',
     changeTitle: 'O que muda quando vocês criam juntos',
     change:
-      'Criar um jogo é escrever a regra da brincadeira em blocos: se tocar, some; se achar, conta mais um. Em vez de apertar o que aparece, ele decide o que vai aparecer.',
-    cta: 'Ver como criar o primeiro jogo de vocês',
+      'Criar um jogo é montar a regra da brincadeira com blocos: se tocar, some; se achar, conta mais um. Em vez de apertar o que aparece, ele decide o que vai aparecer.',
+    cta: 'Ver como vocês criam os primeiros jogos juntos',
   },
   B: {
     title:
@@ -95,7 +95,7 @@ export const PERFIS_M9: Record<M9Profile, PerfilM9Copy> = {
     why: 'Pique-esconde, pega-pega, quem pisar na lava perde: as brincadeiras que ele inventa já têm regra, ponto e fim. Num jogo de computador é igual. O que ainda falta para ele fazer isso sozinho é {falta}, e nessa idade ninguém espera que ele faça sozinho. Muitos cursos e aplicativos foram pensados para a criança usar sem adulto.',
     changeTitle: 'O que muda quando vocês criam juntos',
     change:
-      'Criar um jogo é escrever a regra da brincadeira em blocos: se tocar, some; se achar, conta mais um.',
+      'Criar um jogo é montar a regra da brincadeira com blocos: se tocar, some; se achar, conta mais um.',
     cta: 'Ver as ideias dele virando jogo',
   },
   D: {
@@ -105,7 +105,7 @@ export const PERFIS_M9: Record<M9Profile, PerfilM9Copy> = {
     why: 'Quando ele aperta tudo, está tentando descobrir o que acontece em cada toque. No joguinho pronto, a resposta já vem decidida, e ele não vê o porquê. O que ainda falta para ele descobrir sozinho é {falta}, e nessa idade ninguém espera que ele faça sozinho. Muitos cursos e aplicativos foram pensados para a criança usar sem adulto.',
     changeTitle: 'O que muda quando vocês criam juntos',
     change:
-      'Criar um jogo é escrever a regra em blocos: se tocar, some; se achar, conta mais um. Cada bloco que ele escolhe faz alguma coisa acontecer, e ele vê o porquê.',
+      'Criar um jogo é montar a regra com blocos: se tocar, some; se achar, conta mais um. Cada bloco que ele escolhe faz alguma coisa acontecer, e ele vê o porquê.',
     cta: 'Ver como a curiosidade dele vira jogo',
   },
 }

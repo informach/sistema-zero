@@ -1,25 +1,25 @@
 // Conteúdo aprovado, desenvolvido em docs/marketing/kids/desafio-primeiro-jogo/copy-proposta.md.
 export const DESAFIO_SECTIONS = {
   aventura: {
-    title: 'Um personagem, uma chave e uma porta que precisa responder',
+    title: 'Um personagem, uma chave e um farol que só acende com a chave',
     paragraphs: [
       'Um barco precisa chegar à costa, mas o farol está apagado. Para acender a luz, o personagem precisa encontrar a chave e chegar à porta. Essa é a aventura que seu filho vai conhecer e aprender a programar.',
       'Ele começa jogando uma versão pronta para entender o que está construindo. Depois encontra o cenário preparado e monta as regras que fazem a aventura acontecer. Se o personagem encosta na chave, o jogo precisa recolhê-la e guardar essa informação. Quando chega ao farol, precisa conferir se a chave foi encontrada.',
-      'Essas ações dão um motivo concreto à programação. Seu filho consegue testar o que montou e comparar com o que esperava ver. Você também pode experimentar a partida e pedir que ele mostre a regra que faz a porta responder.',
+      'Essas ações dão um motivo concreto à programação. Seu filho consegue testar o que montou e comparar com o que esperava ver. Você também pode experimentar a partida e pedir que ele mostre a regra que decide o que a porta faz.',
     ],
   },
   experiencia: {
-    title: 'A explicação fica perto do lugar de fazer',
+    title: 'O vídeo da aula fica ao lado de onde ele monta o jogo',
     paragraphs: [
-      'Imagine seu filho assistindo à parte em que a chave deve desaparecer quando o personagem encosta nela. Ele pausa a explicação, encontra o bloco indicado e encaixa no encontro entre os dois. Ali mesmo, leva o personagem até a chave e vê se a regra funcionou. A aula não termina em “entendeu?”: ela encaminha uma construção que ele consegue experimentar.',
+      'Imagine seu filho assistindo à parte em que a chave deve desaparecer quando o personagem encosta nela. Ele pausa a explicação, encontra o bloco indicado e encaixa no encontro entre os dois. Ali mesmo, leva o personagem até a chave e vê se a regra funcionou. Cada explicação termina com uma parte do jogo para ele montar e testar.',
       'No Estúdio que abre dentro da aula, seu filho encontra os blocos e o jogo para testar. Ele acompanha a demonstração, pausa no momento de montar e retoma a explicação quando estiver pronto para continuar.',
       'Essa pausa faz diferença porque assistir a um encaixe pode ser rápido, mas localizar o bloco e fazê-lo pode levar mais tempo. A orientação gravada permite voltar exatamente ao trecho em que ele se perdeu, durante o período de acesso.',
       'O caderno também acompanha as aulas. Ele mostra caminhos dos blocos, encaixes e testes para consultar quando faltar um passo. Pode ser lido na tela; imprimir e preencher não são tarefas obrigatórias.',
-      'Quando passa para a próxima montagem, continua o projeto que enviou. Você não precisa procurar um tutorial diferente para cada pedaço: o curso organiza o movimento, a coleta e a porta em uma sequência. Ao final, a publicação usa esse mesmo jogo. É assim que aula, criação e Mural participam de uma experiência só.',
+      'Quando passa para a próxima montagem, continua o projeto que enviou. Você não precisa procurar um tutorial diferente para cada pedaço: o curso organiza o movimento, a coleta e a porta em uma sequência. Ao final, a publicação usa esse mesmo jogo. Aula, montagem e Mural ficam no mesmo lugar.',
     ],
   },
   construcoes: {
-    title: 'Três construções que vocês conseguem reconhecer',
+    title: 'As três partes do jogo que ele monta',
     paragraphs: [
       'O personagem começa a andar. A criança monta os controles, programa o movimento e faz o personagem permanecer dentro do cenário. Depois testa as direções e as bordas.',
       'A chave passa a fazer diferença. Ela programa o encontro com a chave, retira o objeto do chão e faz o jogo guardar que ele foi recolhido. Uma mensagem informa o que aconteceu. No passo seguinte, essa informação guardada será usada para decidir o que a porta faz.',
@@ -36,7 +36,7 @@ export const DESAFIO_SECTIONS = {
     ],
   },
   familia: {
-    title: 'Você participa conhecendo a criação',
+    title: 'Você participa jogando o que ele montou',
     paragraphs: [
       'Para começar, vale abrir a aula junto, conferir o computador e ajudar seu filho a se localizar. Algumas crianças se familiarizam rapidamente; outras precisam de companhia nas primeiras tentativas. A autonomia vai sendo observada na atividade, sem exigir que ele faça tudo sozinho desde o início.',
       'Você não precisa dominar os blocos para participar da conversa. Pode pedir: “Me mostra o que acontece quando você vai ao farol sem a chave”. Depois, perguntar qual parte do programa faz isso acontecer.',
@@ -44,7 +44,7 @@ export const DESAFIO_SECTIONS = {
     ],
   },
   mural: {
-    title: 'O jogo ganha um lugar para ser mostrado',
+    title: 'O jogo pronto vai para o Mural, com um link para mostrar',
     paragraphs: [
       'Ao terminar a montagem, a aula ensina a publicar o mesmo projeto no Mural dos Criadores. O jogo recebe uma apresentação e pode ser aberto por um link para a família e os amigos jogarem.',
       'Durante os 30 dias, o acesso ao Mural é completo: seu filho pode publicar o jogo do curso, conhecer jogos de outras crianças, comentar e reagir, seguindo as regras do espaço. O Mural permite que a criação seja vista e experimentada por outras pessoas; isso não garante que todo projeto receberá comentários.',
@@ -74,7 +74,7 @@ export const DESAFIO_SECTIONS = {
     ],
   },
   convite: {
-    title: 'O primeiro convite pode ser para conhecer a aventura',
+    title: 'Para começar, mostre a aventura do Farol ao seu filho',
     paragraphs: [
       'Mostre o Farol ao seu filho e conversem sobre o que ele gostaria de experimentar. Se fizer sentido para vocês, o Desafio oferece a orientação para construir as regras, testar o jogo e aprender a mostrá-lo.',
       '{{preco}} uma vez. Inclui, por 30 dias, o projeto guiado, a ajuda por mensagens e o Mural completo; depois, Mural visitante. Para crianças e adolescentes de 9 a 14 anos, no computador.',

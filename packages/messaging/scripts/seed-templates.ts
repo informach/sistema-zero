@@ -777,7 +777,9 @@ const seeds = [
         p(
           'Olá, {{nome}}. O que foi feito continua na conta: o perfil da criança, os projetos e os jogos publicados no Mural.',
         ),
-        p('Com a assinatura, a criança segue de onde parou e continua nos próximos cursos.'),
+        p(
+          'Com a assinatura, a criança segue de onde parou, faz os próximos cursos e cria jogos cada vez maiores.',
+        ),
         ctaButton('Ver como continuar', '{{link}}'),
         fallbackLink('{{link}}'),
       ].join('\n'),
@@ -823,7 +825,7 @@ const seeds = [
       content: [
         p('O que você fez continua na conta: os projetos e o progresso no curso.'),
         p(
-          'Com a assinatura da Comunidade dos Criadores, você segue de onde parou, com os próximos cursos, o Estúdio e o Mural. São 7 etapas, e cada uma põe ferramentas novas no seu Estúdio.',
+          'Com a assinatura da Comunidade dos Criadores, você segue de onde parou, com os próximos cursos, o Estúdio e o Mural. Cada curso ensina uma parte nova, e os seus jogos ficam maiores, até o jogo com a sua ideia. São 7 etapas, e cada uma libera blocos ou ferramentas novas no Estúdio.',
         ),
         ctaButton('Ver como continuar', '{{link}}'),
         small('7 dias de garantia na assinatura. Cancele quando quiser.'),
@@ -1063,11 +1065,11 @@ const seeds = [
           '<strong>{{indicador}}</strong> pensou na sua família e convidou você para receber o curso <strong>Cadê Todo Mundo?</strong>, do Sistema Zero, sem custo.',
         ),
         p(
-          'No Sistema Zero, crianças aprendem criando projetos. Neste curso, crianças de 9 a 14 anos montam, passo a passo, um jogo de procurar personagens e concluem a jornada com um certificado. O convite libera este curso e a participação no Mural dos Criadores por sete dias. A assinatura da Comunidade dos Criadores é uma contratação separada.',
+          'No Sistema Zero, crianças aprendem criando projetos. Neste curso, crianças de 9 a 14 anos montam, passo a passo, um jogo de procurar personagens e concluem o curso com um certificado. O convite libera este curso e a participação no Mural dos Criadores por sete dias. A assinatura da Comunidade dos Criadores é uma contratação separada.',
         ),
         p('O acesso ao curso dura 7 dias a partir do cadastro pelo link, não da primeira aula.'),
         p(
-          'Durante os sete dias, seu filho também pode <strong>publicar o jogo do curso, comentar e reagir no Mural dos Criadores</strong>. Depois, vocês continuam podendo ver e jogar enquanto a conta existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível, para compartilhar com a família e os amigos. Ferramentas de criação livre e cópias de jogos não estão incluídas.',
+          'Durante os sete dias, seu filho também pode <strong>publicar o jogo do curso, comentar e reagir no Mural dos Criadores</strong>. Depois, vocês continuam podendo ver e jogar enquanto a conta existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível, para compartilhar com a família e os amigos. Ferramentas de criação livre e fazer a própria versão de jogos do Mural não estão incluídas.',
         ),
         p(
           'Para receber o curso, confirme seus dados de responsável no link abaixo. Não pedimos cartão:',
@@ -1087,7 +1089,7 @@ const seeds = [
     key: 'referrals-scholarship-welcome',
     channel: 'email' as const,
     name: 'Boas-vindas da bolsa (e-mail)',
-    subject: 'Seu acesso está pronto, {{nome}}! Crie sua senha',
+    subject: 'Seu acesso está pronto, {{nome}}. Crie sua senha',
     variables: ['nome', 'indicador', 'link'],
     body: emailLayout({
       preheader: 'O curso recebido por indicação já está na sua conta.',
@@ -1099,7 +1101,7 @@ const seeds = [
         p('Primeiro, crie a sua senha pelo botão abaixo e entre na Área dos pais.'),
         p(DEVICE_SETUP.html),
         ctaButton('Criar senha da área dos pais', '{{link}}'),
-        p('Depois é só seu filho começar a aventura. Divirtam-se! 🚀'),
+        p('Depois, seu filho já pode abrir o curso no computador e começar.'),
         divider,
         small(
           'Por segurança, o link acima expira em <strong>14 dias</strong> e só pode ser usado uma vez. Se expirar, use a opção <strong>“Esqueci minha senha”</strong> na página de login para gerar outro.',
@@ -1178,7 +1180,7 @@ const seeds = [
           'O curso fica disponível por <strong>7 dias a partir do cadastro pelo link</strong>. Criar ou recuperar a senha depois não reinicia esse prazo.',
         ),
         p(
-          'Vocês também podem <strong>ver e jogar os jogos do Mural dos Criadores</strong> enquanto a conta existir, mesmo depois dos 7 dias. Este presente não libera publicar, comentar, reagir nem fazer cópias dos jogos. Uma assinatura ativa libera a participação completa.',
+          'Vocês também podem <strong>ver e jogar os jogos do Mural dos Criadores</strong> enquanto a conta existir, mesmo depois dos 7 dias. Este presente não libera publicar, comentar, reagir nem fazer a própria versão de jogos do Mural. Uma assinatura ativa libera a participação completa.',
         ),
         p(DEVICE_SETUP.html),
         ctaButton('Criar minha senha e começar', '{{link}}'),
@@ -1208,7 +1210,7 @@ const seeds = [
           'O curso fica disponível por <strong>7 dias a partir do cadastro pelo link</strong>. Recuperar a senha não reinicia esse prazo.',
         ),
         p(
-          'O acesso para <strong>ver e jogar os jogos do Mural dos Criadores</strong> continua enquanto sua conta existir. Publicar, comentar, reagir e copiar jogos não fazem parte do presente; uma assinatura ativa libera a participação completa.',
+          'O acesso para <strong>ver e jogar os jogos do Mural dos Criadores</strong> continua enquanto sua conta existir. Publicar, comentar, reagir e fazer a própria versão de jogos do Mural não fazem parte do presente; uma assinatura ativa libera a participação completa.',
         ),
         p(DEVICE_SETUP.html),
         p(DEVICE_ALREADY_READY),
@@ -1227,7 +1229,7 @@ const seeds = [
     variables: ['nome', 'campanha', 'validade', 'link'],
     body: emailLayout({
       preheader: 'Crie sua senha para começar o Cadê Todo Mundo? com seu filho.',
-      title: 'Vamos começar, {{nome}}?',
+      title: 'Seu presente está liberado, {{nome}}',
       content: [
         p(
           'Seu cadastro na campanha <strong>{{campanha}}</strong> liberou o curso <strong>Cadê Todo Mundo?</strong>. Seu filho vai acompanhar as aulas e programar um jogo de esconde-esconde, usando um projeto preparado para começar.',
@@ -1238,7 +1240,7 @@ const seeds = [
         p(DEVICE_SETUP.html),
         ctaButton('Criar minha senha e começar', '{{link}}'),
         p(
-          'Depois dos sete dias, vocês continuam podendo ver e jogar no Mural dos Criadores enquanto a conta existir. Publicar, comentar, reagir e copiar jogos não fazem parte do presente.',
+          'Depois dos sete dias, vocês continuam podendo ver e jogar no Mural dos Criadores enquanto a conta existir. Publicar, comentar, reagir e fazer a própria versão de jogos do Mural não fazem parte do presente.',
         ),
         p(
           'O presente é gratuito. Não há cobrança automática nem obrigação de assinar a Comunidade dos Criadores.',
@@ -1272,7 +1274,7 @@ const seeds = [
         p(DEVICE_ALREADY_READY),
         ctaButton('Acessar meu presente', '{{link}}'),
         p(
-          'Vocês também podem ver e jogar no Mural dos Criadores enquanto a conta existir, mesmo depois do curso. Publicar, comentar, reagir e copiar jogos não fazem parte do presente.',
+          'Vocês também podem ver e jogar no Mural dos Criadores enquanto a conta existir, mesmo depois do curso. Publicar, comentar, reagir e fazer a própria versão de jogos do Mural não fazem parte do presente.',
         ),
         p(
           'Não há cobrança automática nem obrigação de assinar. Recuperar a senha não reinicia os sete dias, contados do cadastro.',
@@ -1321,7 +1323,7 @@ const seeds = [
           'Depois dos sete dias, o curso e as ações de publicar, comentar e reagir deixam de estar liberados por este convite. Sua conta continua podendo <strong>ver e jogar no Mural</strong> enquanto existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
         ),
         p(
-          'O presente não inclui outros cursos, ferramentas de criação livre ou cópias dos jogos. Não há cobrança automática nem obrigação de assinar a Comunidade dos Criadores.',
+          'O presente não inclui outros cursos, ferramentas de criação livre nem fazer a própria versão de jogos do Mural. Não há cobrança automática nem obrigação de assinar a Comunidade dos Criadores.',
         ),
         divider,
         ...(newAccount
@@ -1357,7 +1359,7 @@ const seeds = [
       content: [
         p('Oi, {{nome}}.'),
         p(
-          '<strong>{{indicador}}</strong> lembrou de você e deu 7 dias no Sistema Zero, sem custo. No <strong>Cadê Todo Mundo</strong>, o jardim e os personagens já estão prontos, e você monta as regras que fazem o jogo responder, no navegador do computador.',
+          '<strong>{{indicador}}</strong> lembrou de você e deu 7 dias no Sistema Zero, sem custo. No <strong>Cadê Todo Mundo</strong>, o jardim e os personagens já estão prontos, e você monta as regras que fazem os esconderijos sumirem e o placar contar cada achado, no navegador do computador.',
         ),
         p(
           'Nesses dias, você também publica o jogo no <strong>Mural adulto</strong> e manda o link para quem quiser. O presente não pede cartão e não cria assinatura. Os 7 dias começam no cadastro.',

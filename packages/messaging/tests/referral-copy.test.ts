@@ -135,7 +135,7 @@ describe('presente adulto (20/10/2026)', () => {
     const { section } = await adultSection()
     for (const text of [
       "subject: '{{indicador}} deu a você 7 dias para fazer o seu primeiro jogo'",
-      'o jardim e os personagens já estão prontos, e você monta as regras que fazem o jogo responder, no navegador do computador.',
+      'o jardim e os personagens já estão prontos, e você monta as regras que fazem os esconderijos sumirem e o placar contar cada achado, no navegador do computador.',
       'O presente não pede cartão e não cria assinatura. Os 7 dias começam no cadastro.',
       "ctaButton('Ver o meu presente', '{{link}}')",
       'Seu curso e o Mural adulto estão liberados, {{nome}}',

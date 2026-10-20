@@ -18,11 +18,11 @@ De 2 a 4 horas por dia dão entre 730 e 1.460 horas por ano em jogos e vídeos, 
 
 #### O que muda quando ele cria o próprio jogo
 
-Quando ele cria o próprio jogo, passa para o outro lado da tela. Decide quanto o personagem pula, o que acontece quando o personagem encosta numa moeda e quanto vale cada ponto. Aperta para testar e vê na hora se ficou como queria. Se não deu certo, ajusta, que é exatamente o que ele já faz quando algo trava. A cena que você quer ver, **ele chamando você: olha o que eu fiz**, é como termina um jogo criado: com alguém da família jogando.
+Quando ele cria o próprio jogo, as decisões passam a ser dele. Decide quanto o personagem pula, o que acontece quando o personagem encosta numa moeda e quanto vale cada ponto. Aperta para testar e vê na hora se ficou como queria. Se não deu certo, ajusta, que é exatamente o que ele já faz quando algo trava. A cena que você quer ver, **ele chamando você: olha o que eu fiz**, é como termina um jogo criado: com alguém da família jogando.
 
 #### Onde isso acontece
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Os cursos são projetos de jogo, e a aula mostra cada passo ao lado do editor. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para as ideias dele. O jogo publicado vai para o Mural dos Criadores, com um link para a família jogar.
+A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Os cursos são projetos de jogo, e a aula mostra cada passo ao lado do Estúdio, onde ele monta o jogo. Depois de cada jogo vem o próximo, cada vez maior. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para os jogos que ele inventar. O jogo publicado vai para o Mural dos Criadores, com um link para a família jogar.
 
 _[Tela: A aula com o vídeo e a fala do Zappy de um lado e a atividade no Estúdio do outro]_
 
@@ -34,7 +34,7 @@ A Flávia, mãe do Fernando, viu isso acontecer em casa:
 
 Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou.
 
-Na próxima página, você vê os cinco jogos, uma aula por dentro, a Jornada até o código, como você acompanha e os dois planos.
+Na próxima página, você vê os cinco primeiros jogos, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
 
 [Ver como o tempo de tela vira criação](/kids/comunidade-dos-criadores/oferta)
 
@@ -54,11 +54,11 @@ De 2 a 4 horas por dia dão entre 730 e 1.460 horas por ano em jogos e vídeos, 
 
 #### O que muda quando ele monta a regra
 
-Criar um jogo é escrever as regras da ideia: quando o jogador tocar no esconderijo, o personagem aparece e o contador soma um. Ele monta essas regras, aperta para testar e descobre na hora se o jogo faz o que imaginou. Se não fez, ajusta, que é exatamente o que ele já faz quando algo trava. A cena que você quer ver, **um amigo jogando um jogo que ele inventou**, é onde isso termina: um jogo que funciona na mão de outra pessoa.
+Criar um jogo é montar as regras da ideia: quando o jogador tocar no esconderijo, o personagem aparece e o contador soma um. Ele monta essas regras, aperta para testar e descobre na hora se o jogo faz o que imaginou. Se não fez, ajusta, que é exatamente o que ele já faz quando algo trava. A cena que você quer ver, **um amigo jogando um jogo que ele inventou**, é onde isso termina: um jogo que funciona na mão de outra pessoa.
 
 #### Onde isso acontece
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Cada curso é um jogo completo, e ele começa jogando a versão pronta para saber aonde vai chegar: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para as ideias dele, com as peças dos cursos que ele terminou. Cada curso novo põe peças novas na caixa, e o jogo que ele consegue fazer cresce junto.
+A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Cada curso é um jogo completo, e ele começa jogando a versão pronta para saber aonde vai chegar: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para as ideias dele, com as peças dos cursos que ele terminou. A cada curso, ele ganha peças novas e consegue fazer jogos maiores, até os que ele inventa.
 
 _[Tela: O Estúdio com os blocos do jardim e o jogo rodando ao lado]_
 
@@ -70,7 +70,7 @@ O Daniel, pai do Rafael, viu isso acontecer em casa:
 
 Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou. Você disse também que **qualquer ferramenta serve, se ele gostar**; aqui a ferramenta é o Estúdio, da própria plataforma.
 
-Na próxima página, você vê os cinco jogos, uma aula por dentro, a Jornada até o código, como você acompanha e os dois planos.
+Na próxima página, você vê os cinco primeiros jogos, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
 
 [Ver como ele tira os jogos do papel](/kids/comunidade-dos-criadores/oferta)
 
@@ -106,7 +106,7 @@ O Jeffrey, aluno, contou assim:
 
 Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou. Você disse também que quer **que os personagens façam coisas: andem, pulem, reajam**, e é exatamente isso que as regras do jogo fazem.
 
-Na próxima página, você vê os cinco jogos, uma aula por dentro, a Jornada até o código, como você acompanha e os dois planos.
+Na próxima página, você vê os cinco primeiros jogos, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
 
 [Ver o desenho dele entrando no jogo](/kids/comunidade-dos-criadores/oferta)
 
@@ -130,7 +130,7 @@ Programar faz sentido quando cada comando tem um efeito que ele vê e testa. Num
 
 #### Onde isso acontece
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Ele aprende a programar montando jogos. A aula mostra o passo ao lado do editor, e as falas do Zappy, o mascote das aulas, explicam o que fazer; o botão Ouvir lê em voz alta. Os cursos seguem esta ordem: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. A Jornada do Criador mostra em que ponto ele está e o que vem depois, dos blocos até o código.
+A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Ele aprende a programar montando jogos, um depois do outro. A aula mostra o passo ao lado do Estúdio, onde ele monta o jogo, e as falas do Zappy, o mascote das aulas, explicam o que fazer; o botão Ouvir lê em voz alta. Os cursos seguem esta ordem: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. A Jornada do Criador mostra em que ponto ele está e o que vem depois, dos blocos até o código.
 
 _[Tela: O Estúdio com os blocos de um lado e o jogo rodando do outro]_
 
@@ -142,7 +142,7 @@ O Jeffrey, aluno, contou assim:
 
 Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou.
 
-Na próxima página, você vê os cinco jogos, uma aula por dentro, a Jornada até o código, como você acompanha e os dois planos.
+Na próxima página, você vê os cinco primeiros jogos, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
 
 [Ver o caminho para ele aprender a programar](/kids/comunidade-dos-criadores/oferta)
 
@@ -178,7 +178,7 @@ O Daniel, pai do Rafael, viu isso acontecer em casa:
 
 Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou.
 
-Na próxima página, você vê os cinco jogos, uma aula por dentro, a Jornada até o código, como você acompanha e os dois planos.
+Na próxima página, você vê os cinco primeiros jogos, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
 
 [Ver a escola dentro do jogo](/kids/comunidade-dos-criadores/oferta)
 
@@ -198,7 +198,7 @@ No joguinho pronto do tablet, alguém já decidiu tudo: o que aparece, o que aco
 
 #### O que muda quando vocês criam juntos
 
-Criar um jogo é escrever a regra da brincadeira em blocos: se tocar, some; se achar, conta mais um. Em vez de apertar o que aparece, ela decide o que vai aparecer. Como ela está começando a ler, você lê o passo e os blocos, e ela decide. O botão Ouvir lê as falas do Zappy em voz alta. Vocês apertam para testar e, se não saiu como ela queria, descobrem juntos o porquê. A cena que você quer ver, **ela chamando você para ver o que vocês fizeram**, é como termina cada sessão: com o jogo rodando e ela chamando alguém para testar. E duas ou três sessões curtas por semana cabem: o projeto fica guardado e espera por vocês.
+Criar um jogo é montar a regra da brincadeira com blocos: se tocar, some; se achar, conta mais um. Em vez de apertar o que aparece, ela decide o que vai aparecer. Como ela está começando a ler, você lê o passo e os blocos, e ela decide. O botão Ouvir lê as falas do Zappy em voz alta. Vocês apertam para testar e, se não saiu como ela queria, descobrem juntos o porquê. A cena que você quer ver, **ela chamando você para ver o que vocês fizeram**, é como termina cada sessão: com o jogo rodando e ela chamando alguém para testar. E duas ou três sessões curtas por semana cabem: o projeto fica guardado e espera por vocês.
 
 #### Onde isso acontece
 
@@ -216,7 +216,7 @@ Você precisa **conseguir conduzir sem saber programar**. O vídeo mostra cada p
 
 Na próxima página, você vê como é uma sessão de vocês, do vídeo ao teste, o seu papel, as regras de segurança e os dois planos.
 
-[Ver como criar o primeiro jogo de vocês](/kids/comunidade-dos-criadores/oferta/criar-junto)
+[Ver como vocês criam os primeiros jogos juntos](/kids/comunidade-dos-criadores/oferta/criar-junto)
 
 _Helena e Júlio, Sistema Zero Kids_
 
@@ -234,7 +234,7 @@ Pique-esconde, pega-pega, quem pisar na lava perde: as brincadeiras que ela inve
 
 #### O que muda quando vocês criam juntos
 
-Criar um jogo é escrever a regra da brincadeira em blocos: se tocar, some; se achar, conta mais um. Como ela está começando a ler, você lê o passo e os blocos, e ela decide. O botão Ouvir lê as falas do Zappy em voz alta. Vocês apertam para testar e, se não saiu como ela queria, descobrem juntos o porquê. A cena que você quer ver, **o personagem dela aparecendo na tela**, começa na primeira sessão, com o bichinho que aparece quando ela toca no esconderijo. E duas ou três sessões curtas por semana cabem: o projeto fica guardado e espera por vocês.
+Criar um jogo é montar a regra da brincadeira com blocos: se tocar, some; se achar, conta mais um. Como ela está começando a ler, você lê o passo e os blocos, e ela decide. O botão Ouvir lê as falas do Zappy em voz alta. Vocês apertam para testar e, se não saiu como ela queria, descobrem juntos o porquê. A cena que você quer ver, **o personagem dela aparecendo na tela**, começa na primeira sessão, com o bichinho que aparece quando ela toca no esconderijo. E duas ou três sessões curtas por semana cabem: o projeto fica guardado e espera por vocês.
 
 #### Onde isso acontece
 
@@ -270,7 +270,7 @@ Quando ela aperta tudo, está tentando descobrir o que acontece em cada toque. N
 
 #### O que muda quando vocês criam juntos
 
-Criar um jogo é escrever a regra em blocos: se tocar, some; se achar, conta mais um. Cada bloco que ela escolhe faz alguma coisa acontecer, e ela vê o porquê. Como ela está começando a ler, você lê o passo e os blocos, e ela decide. O botão Ouvir lê as falas do Zappy em voz alta. Vocês apertam para testar e, se não saiu como ela queria, descobrem juntos o porquê. A cena que você quer ver, **ela explicando o que cada botão faz**, nasce de cada teste: ela aperta, vê o que acontece e conta para você. E duas ou três sessões curtas por semana cabem: o projeto fica guardado e espera por vocês.
+Criar um jogo é montar a regra com blocos: se tocar, some; se achar, conta mais um. Cada bloco que ela escolhe faz alguma coisa acontecer, e ela vê o porquê. Como ela está começando a ler, você lê o passo e os blocos, e ela decide. O botão Ouvir lê as falas do Zappy em voz alta. Vocês apertam para testar e, se não saiu como ela queria, descobrem juntos o porquê. A cena que você quer ver, **ela explicando o que cada botão faz**, nasce de cada teste: ela aperta, vê o que acontece e conta para você. E duas ou três sessões curtas por semana cabem: o projeto fica guardado e espera por vocês.
 
 #### Onde isso acontece
 

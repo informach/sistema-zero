@@ -2,7 +2,7 @@
 
 **seoTitle**: Criar junto, para crianças menores de 9 anos | Comunidade dos Criadores | Sistema Zero
 
-**description**: O primeiro jogo dela, feito com você do lado. Ela decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.
+**description**: O primeiro jogo dela e os próximos, feitos com você do lado. Ela decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.
 
 **topo.pular**: Ir para o conteúdo
 
@@ -18,17 +18,17 @@
 
 **heroi.selo**: Para crianças menores de 9 anos, com um adulto ao lado
 
-**heroi.titulo**: O primeiro jogo dela, feito com você do lado.
+**heroi.titulo**: O primeiro jogo dela e os próximos, feitos com você do lado.
 
 **heroi.enfase**: com você do lado.
 
-**heroi.texto**: Imagine a cara dela quando o personagem que ela escolheu aparece na tela e faz exatamente o que ela mandou. Ela decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois, com um jogo no fim para mostrar aos avós.
+**heroi.texto**: Imagine a cara dela quando o personagem que ela escolheu aparece na tela e faz exatamente o que ela mandou. Ela decide, e você lê e ajuda com o mouse. Cada jogo pronto vai para os avós jogarem. Cada aula ensina peças novas, e os próximos jogos ficam maiores, até o jogo que ela inventar.
 
 **heroi.beneficios[0]**: Tela junto com você, e não sozinha no tablet
 
 **heroi.beneficios[1]**: A ideia dela na tela, do jeito que ela inventou
 
-**heroi.beneficios[2]**: Serve agora e quando ela for maior
+**heroi.beneficios[2]**: Um jogo depois do outro, e quando aprender a ler ela segue sozinha no mesmo perfil
 
 **heroi.cta**: Ver os planos para criarmos juntos
 
@@ -50,7 +50,7 @@
 
 **juntos.titulo**: Quando vocês sentam juntos para criar, a tela vira um tempo de vocês dois
 
-**juntos.texto**: E cada sessão deixa alguma coisa boa, para ela e para você.
+**juntos.texto**: Veja o que cada sessão traz para ela e para você.
 
 **juntos.cartas[0].titulo**: Um tempo de tela que vocês dividem
 
@@ -158,7 +158,7 @@
 
 **pecas.titulo**: Cada aula que vocês terminam deixa peças para o jogo que ela inventar
 
-**pecas.texto**: Ela não recebe a caixa de peças inteira de uma vez. Recebe as que já sabe usar, uma aula de cada vez, e isso é de propósito: é assim que ela aprende de verdade, em vez de só apertar o que aparece.
+**pecas.texto**: Ela não recebe todas as peças de uma vez. Recebe as que já sabe usar, uma aula de cada vez, e isso é de propósito: é assim que ela aprende de verdade, em vez de só apertar o que aparece.
 
 **pecas.cartas[0].titulo**: Nas aulas, ela aprende com um jogo pronto
 
@@ -180,7 +180,7 @@
 
 **pecas.proximos.destaque**: Depois do jardim, vêm o farol, a nave, o jogo do jeito dela e o dino,
 
-**pecas.proximos.texto**: e cada um deixa peças novas na caixa dela:
+**pecas.proximos.texto**: e cada um ensina peças novas para os próximos jogos dela:
 
 **pecas.jogos[0].imagem.alt**: A Chave do Farol: a ilha, a chave e o farol
 
@@ -276,7 +276,7 @@
 
 **duvidas.itens[1].pergunta**: Ela pode inventar o jogo dela, ou só faz o do curso?
 
-**duvidas.itens[1].resposta**: Os dois, nessa ordem. Nas aulas, ela cria dentro do jogo do curso: escolhe personagem, cor e regra. Depois de A Chave do Farol publicada, o Estúdio livre abre, e vocês montam o jogo que ela inventou com as peças que ela já conhece. Cada curso novo põe peças novas na caixa.
+**duvidas.itens[1].resposta**: Os dois, nessa ordem. Nas aulas, ela cria dentro do jogo do curso: escolhe personagem, cor e regra. Depois de A Chave do Farol publicada, o Estúdio livre abre, e vocês montam o jogo que ela inventou com as peças que ela já conhece. Cada curso novo ensina peças novas, e os jogos dela ficam maiores.
 
 **duvidas.itens[2].pergunta**: E se ela perder o interesse?
 

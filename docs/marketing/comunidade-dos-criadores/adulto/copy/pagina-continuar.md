@@ -6,7 +6,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **seoTitle**: Continue na Comunidade dos Criadores | Sistema Zero
 
-**description**: Para quem já conhece o Sistema Zero: quem já tem conta continua nela, com o mesmo e-mail, e a próxima fase é o seu jogo. 7 dias de garantia. Cancele quando quiser.
+**description**: Para quem já conhece o Sistema Zero: quem já tem conta continua nela, com o mesmo e-mail, e segue criando jogos, até o jogo com a sua ideia. 7 dias de garantia. Cancele quando quiser.
 
 **pularParaConteudo**: Ir para o conteúdo
 
@@ -26,19 +26,19 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.rotulo**: CONTINUE · PARA QUEM JÁ CONHECE O SISTEMA ZERO
 
-**hero.titulo.antes**: Você já conhece o Sistema Zero. Agora a próxima fase é 
+**hero.titulo.antes**: Você já conhece o Sistema Zero. Agora é continuar criando jogos, 
 
-**hero.titulo.destaque**: o seu jogo.
+**hero.titulo.destaque**: até o jogo com a sua ideia.
 
-**hero.texto**: Quem já tem conta continua nela, com o mesmo e-mail: os projetos em Meus Jogos, os jogos publicados e o progresso nos cursos ficam lá. Com a assinatura, a plataforma abre de novo na sua conta: os cursos, o Estúdio livre e as ferramentas da sua etapa, o Mural, o Clube e os Recados. Cada etapa concluída põe blocos novos na sua paleta, e algumas abrem uma ferramenta nova no Estúdio. Se você criava na Comunidade Kids ou acompanha alguém lá, o seu caso está logo abaixo.
+**hero.texto**: Quem já tem conta continua nela, com o mesmo e-mail. Os projetos em Meus Jogos, os jogos publicados e o progresso nos cursos ficam lá. Com a assinatura, você volta a ter na conta os cursos, o Estúdio livre e as ferramentas da sua etapa, o Mural, o Clube e os Recados. Cada etapa concluída libera blocos novos no Estúdio, e algumas liberam uma ferramenta nova. Assim os seus próximos jogos ficam maiores. Se você criava na Comunidade Kids ou acompanha alguém lá, o seu caso está logo abaixo.
 
 **hero.beneficios[0]**: Quem já tem conta continua nela, com o mesmo e-mail.
 
 **hero.beneficios[1]**: Cursos, ferramentas, Mural, Clube e Recados na mesma conta.
 
-**hero.beneficios[2]**: 7 dias de garantia para testar a próxima fase.
+**hero.beneficios[2]**: 7 dias de garantia para testar a assinatura.
 
-**hero.cta**: Ir para a próxima fase
+**hero.cta**: Assinar e continuar criando
 
 **hero.garantia**: 7 dias de garantia. Cancele quando quiser.
 
@@ -106,7 +106,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **casos.itens[2].titulo**: Você criava na Comunidade Kids
 
-**casos.itens[2].texto**: A conta Kids fica no nome do responsável, e o perfil Kids continua funcionando depois dos 18, com os projetos, enquanto a assinatura dele estiver ativa. Aqui a conta é sua e começa nova, com o mesmo Estúdio que você já conhece, outra aparência e uma escada de etapas própria.
+**casos.itens[2].texto**: A conta Kids fica no nome do responsável, e o perfil Kids continua funcionando depois dos 18, com os projetos, enquanto a assinatura dele estiver ativa. Aqui a conta é sua e começa nova, com o mesmo Estúdio que você já conhece, outra aparência e etapas próprias.
 
 **casos.itens[2].proximo**: UMA CONTA NO SEU NOME
 
@@ -120,7 +120,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **save.rotulo**: O QUE FICOU SALVO
 
-**save.titulo**: Quando a assinatura para, o save fica. Quando ela volta, o jogo continua.
+**save.titulo**: Quando a assinatura para, o que você fez fica guardado. Quando ela volta, você continua de onde parou.
 
 **save.fica.rotulo**: FICA NA CONTA
 
@@ -220,7 +220,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **save.escada.etapas[6].libera**: Estúdio Pro, em código
 
-**save.escada.fim.rotulo**: FIM DA ESCADA
+**save.escada.fim.rotulo**: DEPOIS DA ETAPA 7
 
 **save.escada.fim.nome**: Lenda
 
@@ -232,7 +232,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **prova.titulo**: Antes de decidir, jogue de novo o que você publicou
 
-**prova.texto**: O link do seu jogo continua abrindo no celular. Abra, jogue uma partida e repare no que você mudaria hoje. É por aí que a próxima fase começa.
+**prova.texto**: O link do seu jogo continua abrindo no celular. Abra, jogue uma partida e repare no que você mudaria hoje. Essa mudança pode ser o começo do seu próximo jogo.
 
 **prova.nota**: Se você ainda não publicou um jogo, o primeiro curso começa pela versão pronta, e logo depois você muda a primeira regra.
 
@@ -320,7 +320,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **duvidas.itens[3].pergunta**: Usava a Comunidade Kids e fiz 18 anos. Levo meus jogos?
 
-**duvidas.itens[3].resposta**: Os jogos ficam no perfil Kids, que segue funcionando na conta do seu responsável enquanto a assinatura dele estiver ativa. A conta adulta começa nova, no seu nome, com o mesmo Estúdio que você já conhece e uma escada de etapas própria.
+**duvidas.itens[3].resposta**: Os jogos ficam no perfil Kids, que segue funcionando na conta do seu responsável enquanto a assinatura dele estiver ativa. A conta adulta começa nova, no seu nome, com o mesmo Estúdio que você já conhece e etapas próprias.
 
 **duvidas.itens[4].pergunta**: Meu filho tem a assinatura Kids. Ela inclui a minha?
 
@@ -332,7 +332,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **duvidas.itens[6].pergunta**: E se eu precisar parar de novo?
 
-**duvidas.itens[6].resposta**: O cancelamento fica na sua conta, em Compras e assinatura, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e o save continua guardado para a próxima vez.
+**duvidas.itens[6].resposta**: O cancelamento fica na sua conta, em Compras e assinatura, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e os seus projetos continuam guardados para a próxima vez.
 
 **duvidas.itens[7].pergunta**: Que computador eu preciso?
 
@@ -340,11 +340,11 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **fechamento.rotulo**: CONTINUE
 
-**fechamento.titulo**: A próxima fase está aqui. Falta apertar start.
+**fechamento.titulo**: Escolha o plano e continue criando os seus jogos.
 
 **fechamento.texto**: Quem parou continua de onde estava, e quem está chegando começa pelo primeiro jogo.
 
-**fechamento.cta**: Ir para a próxima fase
+**fechamento.cta**: Assinar e continuar criando
 
 **fechamento.garantia**: 7 dias de garantia. Cancele quando quiser.
 

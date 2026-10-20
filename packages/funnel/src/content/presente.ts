@@ -71,7 +71,7 @@ export const PRESENTE_KIDS = {
     texto:
       'No Cadê Todo Mundo, o jardim e os personagens já estão prontos. Seu filho acompanha a orientação, monta as regras que fazem os esconderijos sumirem e cada achado entrar na contagem. Depois, testa e vê o resultado no próprio jogo.',
     beneficios: [
-      'Um primeiro projeto, com a explicação ao lado da atividade',
+      'Um primeiro jogo, com o vídeo da aula ao lado de onde ele monta',
       '7 dias de curso e de Mural, contados do cadastro',
       'Gratuito, sem cartão e sem assinatura automática',
     ],
@@ -149,7 +149,8 @@ export const PRESENTE_KIDS = {
   },
   plataforma: {
     etiqueta: 'A plataforma por trás do presente',
-    titulo: 'O Cadê Todo Mundo é o primeiro projeto de uma plataforma inteira',
+    titulo:
+      'O Cadê Todo Mundo é o primeiro jogo. Na Comunidade, ele segue criando outros, cada vez maiores',
     paragrafos: [
       'No Sistema Zero Kids, os cursos seguem em sequência, cada um com um jogo. O Estúdio é onde as crianças montam os próprios jogos, o Mural mostra o que elas publicam, o Clube junta quem está criando e a equipe responde as dúvidas nos Recados. Cada curso concluído e publicado leva a um posto novo da Jornada do Criador.',
       'O presente inclui o curso e o Mural por 7 dias. O resto faz parte da Comunidade dos Criadores, uma assinatura à parte, que vocês decidem depois, se quiserem.',
@@ -163,7 +164,7 @@ export const PRESENTE_KIDS = {
   },
   condicoes: {
     etiqueta: 'O presente da sua família',
-    titulo: 'Um começo concreto, com condições claras',
+    titulo: 'O que o presente inclui',
     cartoes: [
       {
         titulo: 'O curso por 7 dias',
@@ -302,7 +303,7 @@ export const GIFT_SECTIONS = [
   section(
     'comeco',
     'Um primeiro projeto com direção',
-    'O jardim está preparado. As regras são a descoberta.',
+    'O jardim está preparado. Seu filho monta as regras.',
     [
       'Seu filho não precisa começar diante de uma tela vazia. O cenário e os personagens já estão preparados para a atividade. Há uma tarefa concreta: fazer os esconderijos responderem aos toques e contar os personagens encontrados.',
       'Isso deixa espaço para aprender uma parte da criação de cada vez. Ele acompanha a montagem com blocos, experimenta os comandos apresentados e confere o resultado. Saber programar antes não é requisito, e ele não precisa desenhar os personagens para fazer este curso.',
@@ -315,7 +316,7 @@ export const GIFT_SECTIONS = [
     'A explicação fica ao lado do que seu filho está construindo.',
     [
       'Na tela da aula, seu filho encontra o vídeo com a orientação e a atividade para colocar a ideia em prática. Ele pode assistir a um passo, pausar e fazer a ação no projeto. Se não entendeu um detalhe, volta à explicação antes de continuar.',
-      'A orientação e o trabalho ficam juntos. Você consegue olhar a tela com ele e entender o que está tentando fazer; ele consegue comparar o que ouviu com o que aconteceu na própria atividade. O curso usa o Estúdio dentro desse projeto guiado, e o presente não libera o editor para criar projetos livres.',
+      'A orientação e o trabalho ficam juntos. Você consegue olhar a tela com ele e entender o que está tentando fazer; ele consegue comparar o que ouviu com o que aconteceu na própria atividade. O curso usa o Estúdio dentro desse projeto guiado, e o presente não libera o Estúdio livre, onde se criam jogos do zero.',
     ],
     ['aula-estudio'],
   ),
@@ -333,7 +334,7 @@ export const GIFT_SECTIONS = [
   section(
     'conquista',
     'Do experimento à conclusão',
-    'Ao terminar, ele tem uma experiência para mostrar e explicar.',
+    'Ao terminar, ele tem um jogo para mostrar e explicar.',
     [
       'O percurso passa por experimentar o jogo, montar as reações e trabalhar a contagem dos achados. Em cada etapa, seu filho pode testar e perceber como uma regra interfere na brincadeira.',
       'Ao cumprir as atividades de conclusão, ele recebe o certificado do curso. Mais que olhar esse registro, peça para ele mostrar uma parte do projeto e contar o que aprendeu a fazer. Não há promessa de concluir em uma tarde: aproveitem os sete dias para seguir as etapas com atenção.',
@@ -348,7 +349,7 @@ export const GIFT_SECTIONS = [
       'Durante os sete dias, seu filho pode publicar no Mural dos Criadores o jogo que fez no Cadê Todo Mundo, seguindo as orientações e atividades do curso. A aula 2 ensina esse caminho. Depois de publicar, ele recebe um link para convidar você, os avós ou os amigos para jogar, sem que eles precisem de uma conta.',
       'Nesse período, ele também pode conhecer os jogos de outras crianças, jogar, comentar e reagir. Você pode acompanhar esse momento: pedir que ele mostre uma regra que criou, experimentar o jogo e conversar sobre o que achou interessante em outra criação.',
       'Quando os sete dias terminam, o curso e as ações de publicar, comentar e reagir deixam de estar liberados por este convite. Sua conta continua podendo ver e jogar no Mural enquanto existir. O link do jogo que ele já publicou continua funcionando enquanto a publicação estiver disponível.',
-      'O print mostra o Mural da plataforma. Fazer cópias dos jogos e usar ferramentas de criação livre depende dos acessos e das etapas da Comunidade; esses recursos não fazem parte do presente.',
+      'Este é o Mural da plataforma. Fazer a própria versão de jogos do Mural e usar ferramentas de criação livre depende dos acessos e das etapas da Comunidade; esses recursos não fazem parte do presente.',
     ],
     ['mural'],
   ),
@@ -500,7 +501,7 @@ export const AMBASSADOR_SECTIONS = [
     'Um convite claro desde o começo',
     'Quem recebe ganha um presente. Continuar é uma escolha dela.',
     [
-      'Durante os 7 dias contados do cadastro, quem recebe faz o curso, publica o jogo que criou nele, comenta e reage no Mural do seu público. Depois, o link do jogo publicado continua funcionando enquanto a publicação estiver disponível. Outros cursos, ferramentas de criação livre e cópias de jogos não fazem parte do presente.',
+      'Durante os 7 dias contados do cadastro, quem recebe faz o curso, publica o jogo que criou nele, comenta e reage no Mural do seu público. Depois, o link do jogo publicado continua funcionando enquanto a publicação estiver disponível. Outros cursos, ferramentas de criação livre e fazer a própria versão de jogos do Mural não fazem parte do presente.',
       'Não há cartão nem assinatura automática. Se a família ou o adulto quiser conhecer a Comunidade dos Criadores depois, decide por conta própria. Essa clareza ajuda você a indicar com confiança e quem recebe a saber exatamente o que está ganhando.',
     ],
     ['mural'],

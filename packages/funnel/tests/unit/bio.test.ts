@@ -29,7 +29,7 @@ describe('a página da bio', () => {
     for (const texto of [
       'A gente ensina a fazer jogos',
       'Criar jogos não tem idade.',
-      'Diga para quem é, e em 3 minutos a gente mostra por onde começar.',
+      'Escolha abaixo se é para você ou para o seu filho ou filha. Em 3 minutos, a gente mostra por onde começar.',
       'É para mim',
       'Tenho 18 anos ou mais e sempre quis fazer um jogo.',
       'É para meu filho ou filha',

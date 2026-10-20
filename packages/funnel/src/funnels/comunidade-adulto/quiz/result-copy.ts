@@ -60,10 +60,10 @@ export const MARCAS = {
     nao_apareceu: 'nunca pensou em fazer um jogo',
   },
   tempo_criacao: {
-    quase_nada: 'quase nada disso virou alguma coisa sua',
-    um_pouco: 'um pouco disso virou alguma coisa sua',
-    boa_parte: 'boa parte disso já virou alguma coisa sua',
-    nao_sei: 'não sabe quanto disso virou alguma coisa sua',
+    quase_nada: 'quase nada disso virou alguma coisa criada por você',
+    um_pouco: 'um pouco disso virou alguma coisa criada por você',
+    boa_parte: 'boa parte disso já virou alguma coisa criada por você',
+    nao_sei: 'não sabe quanto disso virou alguma coisa criada por você',
   },
   preocupacao: {
     A: 'continuar só jogando',
@@ -85,7 +85,7 @@ export const MARCAS = {
     trabalho: 'sirva para trabalhar com jogos',
   },
   sintese: {
-    A: 'quer que o seu tempo de jogo renda alguma coisa sua',
+    A: 'quer que o seu tempo de jogo vire alguma coisa feita por você',
     B: 'quer tirar a ideia da gaveta e fazer o jogo',
     D: 'quer entender como um jogo é feito e aprender a programar',
     conhecer: 'ainda está conhecendo',
@@ -115,13 +115,13 @@ export const marca = (key: string, value: unknown): string =>
 
 /** O título nomeia o que falta (spec: `perfis.X.titulo`). */
 export const TITLES: Record<AdultProfile, string> = {
-  A: 'Você joga há anos. O que falta é uma noite de jogo que termine com alguma coisa sua',
+  A: 'Você joga há anos. O que falta é uma noite livre que termine com uma fase feita por você',
   B: 'A sua ideia de jogo já existe. O que falta é um começo pequeno',
-  D: 'Você quer ver como um jogo é feito por dentro. O que falta é alguma coisa para apertar e testar',
+  D: 'Você quer ver como um jogo é feito por dentro. O que falta é montar as regras e testar você mesmo',
 }
 /** Perfil A com "Boa parte" na calculadora: o título não pode dizer que nada virou coisa sua. */
 export const TITLE_A_GOOD_PART =
-  'Boa parte do seu tempo de jogo já virou alguma coisa sua. O que falta é um caminho para ir mais longe'
+  'Boa parte do seu tempo de jogo já virou alguma coisa criada por você. O que falta é um caminho para fazer jogos maiores'
 export const APPROXIMATE_NOTE =
   'Suas respostas apontaram para mais de um lado. Este foi o que mais apareceu.'
 export const SIGNATURE = 'Helena e Júlio, Sistema Zero'
@@ -194,13 +194,13 @@ export const WHY: Record<AdultProfile, WhyCopy> = {
   A: {
     lead: (tc) =>
       tc === 'boa_parte'
-        ? 'Então você já sabe o que é terminar uma noite com alguma coisa sua.'
+        ? 'Então você já sabe o que é terminar uma noite com alguma coisa criada por você.'
         : 'É bastante tempo, e quase tudo nele foi decidido por quem fez o jogo: as regras, as fases, o que acontece a cada botão.',
     attempt: {
       vontade:
-        'Fazer um jogo ficou só na vontade, e faz sentido: o primeiro passo parece grande, numa ferramenta feita para estúdios.',
+        'Fazer um jogo ficou só na vontade, e faz sentido: o primeiro passo parece grande, num programa feito para empresas de jogos.',
       perdi:
-        'Quando você tentou fazer um jogo, o programa que abriu foi feito para estúdios: dezenas de janelas e nenhum próximo passo claro.',
+        'Quando você tentou fazer um jogo, o programa que abriu foi feito para empresas de jogos: dezenas de janelas e nenhum próximo passo claro.',
       tutorial:
         'Quando você tentou fazer um jogo, o tutorial acabou antes de virar alguma coisa sua: ensinou o jogo de outra pessoa e parou ali.',
       sonhos:
@@ -208,7 +208,7 @@ export const WHY: Record<AdultProfile, WhyCopy> = {
       terminei:
         'Você já terminou um jogo pequeno, e isso conta. O que costuma faltar depois dele é um próximo passo claro.',
       nao_apareceu:
-        'Fazer um jogo nunca tinha passado pela sua cabeça, e é comum: quem cresce jogando aprende a jogar cada vez melhor, e o caminho para o outro lado quase nunca aparece.',
+        'Fazer um jogo nunca tinha passado pela sua cabeça, e é comum: quem cresce jogando aprende a jogar cada vez melhor, e quase ninguém mostra como se cria um jogo.',
     },
     tail: (tc) =>
       tc === 'boa_parte'
@@ -219,8 +219,8 @@ export const WHY: Record<AdultProfile, WhyCopy> = {
     lead: () => '',
     attempt: {
       vontade:
-        'O que trava é o ponto de partida. A ideia é grande, com mundo, história e dezenas de fases, e a primeira ferramenta que aparece costuma ser uma engine feita para estúdios: só de olhar, começar parece um projeto inteiro.',
-      perdi: `${TRIED} ${BIG_IDEA} e o programa que você abriu foi feito para estúdios: dezenas de janelas e nenhum próximo passo claro.`,
+        'O que trava é o ponto de partida. A ideia é grande, com mundo, história e dezenas de fases, e a primeira ferramenta que aparece costuma ser um programa feito para empresas de jogos: só de olhar, começar parece um projeto inteiro.',
+      perdi: `${TRIED} ${BIG_IDEA} e o programa que você abriu foi feito para empresas de jogos: dezenas de janelas e nenhum próximo passo claro.`,
       tutorial: `${TRIED} ${BIG_IDEA} e o tutorial acaba antes de chegar nela: ensina o jogo de outra pessoa e para ali.`,
       sonhos: `${TRIED} ${BIG_IDEA} e começar por ela é começar pelo projeto mais difícil: cada parte puxa outra, e o fim nunca chega perto.`,
       terminei:
@@ -228,16 +228,16 @@ export const WHY: Record<AdultProfile, WhyCopy> = {
       nao_apareceu:
         'Fazer o jogo nunca chegou a entrar nos seus planos, e faz sentido: a ideia parece grande demais, com mundo, história e dezenas de fases, para caber num começo.',
     },
-    tail: () => `${RUSH} o projeto fica para depois, e a ideia volta para onde estava.`,
+    tail: () => `${RUSH} o projeto fica para depois, e a ideia continua só na cabeça.`,
   },
   D: {
     lead: () =>
       'Jogando, dá para perceber que existe uma regra por trás de cada pulo e de cada fase, mas o jogo pronto não mostra nenhuma delas.',
     attempt: {
       vontade:
-        'Ficou só na vontade, e faz sentido: parece que é preciso aprender uma ferramenta de estúdio inteira antes de ver a primeira regra funcionar.',
+        'Ficou só na vontade, e faz sentido: parece que é preciso aprender um programa profissional inteiro antes de ver a primeira regra funcionar.',
       perdi:
-        'Quando você tentou olhar por dentro, o programa que abriu foi feito para estúdios: dezenas de janelas e nenhum próximo passo claro.',
+        'Quando você tentou olhar por dentro, o programa que abriu foi feito para empresas de jogos: dezenas de janelas e nenhum próximo passo claro.',
       tutorial:
         'Quando você tentou olhar por dentro, o tutorial mostrou o que copiar, e quando acabou, ficou faltando entender por que cada parte funciona.',
       sonhos:
@@ -247,7 +247,8 @@ export const WHY: Record<AdultProfile, WhyCopy> = {
       nao_apareceu:
         'Fazer um jogo nunca tinha passado pela sua cabeça, e é comum: a curiosidade sobre como fizeram aquilo costuma ficar na pergunta, porque o caminho até a resposta não aparece.',
     },
-    tail: () => `${RUSH} a pergunta fica para depois, e o jogo continua sendo uma caixa fechada.`,
+    tail: () =>
+      `${RUSH} a pergunta fica para depois, e você continua sem ver como o jogo funciona por dentro.`,
   },
 }
 
@@ -265,15 +266,15 @@ export const NO_WORRY = `E você disse que, se nada mudar no próximo ano, ${m(M
 // ---------------------------------------------------------------------------------------------
 
 export const CHANGE_HEADING: Record<AdultProfile, string> = {
-  A: 'O que muda quando o jogo muda de lado',
+  A: 'O que muda quando você passa a criar o jogo',
   B: 'O que muda quando o primeiro jogo é pequeno',
-  D: 'O que muda quando você aperta e testa',
+  D: 'O que muda quando você monta as regras e testa',
 }
 
 export const CHANGE: Record<AdultProfile, string> = {
-  A: 'Quem passou horas jogando já conhece as regras de um jogo por dentro: pular na hora certa, pegar a chave antes da porta, perder uma vida ao encostar no inimigo. Fazer um jogo é escrever essas regras em blocos e ver o jogo obedecer. Com um primeiro jogo pequeno de propósito, a noite livre deixa alguma coisa sua: uma regra nova, uma fase, um jogo pronto para mostrar.',
-  B: 'Fazer um jogo é escrever as regras da ideia em blocos: quando o jogador tocar aqui, acontece isso. Quando o primeiro jogo é pequeno de propósito, você termina, publica e mostra. É esse jogo pronto que tira a ideia grande da gaveta, uma fase de cada vez.',
-  D: 'Por dentro, um jogo é um conjunto de regras: quando apertar a tecla, o personagem pula; se encostar no asteroide, a nave perde uma vida; cada acerto soma um ponto no placar. Quando você monta essas regras em blocos, muda um número e roda o jogo, vê na hora o que cada uma faz. Com um primeiro jogo pequeno de propósito, cada regra fica à vista, e a pergunta sobre como fizeram aquilo ganha resposta, uma regra de cada vez.',
+  A: 'Quem passou horas jogando já conhece as regras de um jogo por dentro: pular na hora certa, pegar a chave antes da porta, perder uma vida ao encostar no inimigo. Fazer um jogo é montar essas regras com blocos, peças de encaixar com o comando já escrito, e ver o jogo obedecer. Com um primeiro jogo pequeno de propósito, a noite livre termina com alguma coisa feita por você: uma regra nova, uma fase, um jogo pronto para mostrar. Depois vêm os próximos, cada vez maiores.',
+  B: 'Fazer um jogo é montar as regras da ideia com blocos: quando o jogador tocar aqui, acontece isso. Quando o primeiro jogo é pequeno de propósito, você termina, publica e mostra. Depois vêm jogos maiores, e cada um ensina uma parte nova. É assim que a ideia grande vira jogo, uma fase de cada vez.',
+  D: 'Por dentro, um jogo é um conjunto de regras: quando apertar a tecla, o personagem pula; se encostar no asteroide, a nave perde uma vida; cada acerto soma um ponto no placar. Quando você monta essas regras em blocos, muda um número e roda o jogo, vê na hora o que cada uma faz. Com um primeiro jogo pequeno de propósito, você vê cada regra montada na tela. Nos jogos seguintes, entram regras novas, e a pergunta sobre como fizeram aquilo ganha resposta, uma regra de cada vez.',
 }
 
 /** A cena desejada (N8), quando não abriu a carta. Vale depois do texto de qualquer perfil. */
@@ -293,7 +294,7 @@ export const SECONDARY_LEAD: Record<
   preocupacao: (q) => `Você também disse que incomoda ${m(MARCAS.preocupacao[q])}.`,
 }
 export const SECONDARY_TAIL: Record<AdultProfile, string> = {
-  A: 'Um jogo pequeno terminado é justamente o que faz uma noite livre deixar alguma coisa sua.',
+  A: 'Um jogo pequeno terminado é justamente o que faz uma noite livre deixar alguma coisa criada por você.',
   B: 'A ideia grande entra depois, uma fase de cada vez, quando o primeiro jogo pequeno estiver pronto.',
   D: 'Montar as regras de um jogo é justamente o que mostra como ele funciona por dentro.',
 }
@@ -306,20 +307,20 @@ export const WHERE_HEADING = 'Onde isso acontece'
 export const WHERE_OPENING =
   'A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos, com as aulas, o Estúdio, o Mural, o Clube e a ajuda da equipe no mesmo lugar. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural.'
 export const WHERE_TOOLBOX =
-  'Os blocos que cada curso ensina ficam na sua caixa de ferramentas, e o Estúdio livre abre logo na primeira etapa:'
+  'Os blocos que cada curso ensina continuam no seu Estúdio, e o Estúdio livre, onde você cria o que quiser, abre logo na primeira etapa:'
 export const WHERE_STUDIO: Record<AdultProfile, string> = {
   A: 'é lá, com o que você já sabe usar, que as próximas noites livres viram jogos seus.',
-  B: 'é lá, com o que você já sabe usar, que a sua ideia vira projeto, uma fase de cada vez.',
-  D: 'é lá, com o que você já sabe usar, que dá para inventar as suas regras e ver como cada uma muda o jogo.',
+  B: 'é lá, com o que você já sabe usar, que a sua ideia vira projeto, uma fase de cada vez. Mais adiante, o Pensa ajuda a dividir a ideia em partes.',
+  D: 'é lá, com o que você já sabe usar, que dá para inventar as suas regras e ver como cada uma muda o jogo. Mais adiante, o Pensa ajuda a dividir a sua ideia em partes.',
 }
 export const WHERE_CLASSICS =
   'Os primeiros cursos são clássicos: uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave.'
 
 /** A S4 muda uma frase: blocos primeiro para quem nunca programou; Ponte e código para quem já. */
 const PROGRAMMING_PATH =
-  'vale ver o caminho inteiro: na Ponte, cada bloco aparece ao lado do código que ele gera, e no fim da escada você escreve o jogo inteiro em código, no Estúdio Pro. A primeira fase é com blocos, que deixam a lógica do jogo à vista.'
+  'vale ver o caminho inteiro: na Ponte, cada bloco aparece ao lado do código que ele gera, e na última fase você escreve o jogo inteiro em código, no Estúdio Pro. A primeira fase é com blocos, para você ver cada regra montada na tela.'
 export const PROGRAMMING: Record<string, string> = {
-  nunca: `Como você ${m(MARCAS.programacao.nunca)}, a primeira fase tira a digitação do caminho: você monta a lógica em blocos e vê cada regra funcionar. A Ponte e o código chegam depois, quando a base estiver firme.`,
+  nunca: `Como você ${m(MARCAS.programacao.nunca)}, na primeira fase você não digita código: monta cada regra com blocos e vê funcionar. A Ponte e o código chegam depois, quando você já souber montar.`,
   um_pouco: `Como você ${m(MARCAS.programacao.um_pouco)}, ${PROGRAMMING_PATH}`,
   estudei: `Como você ${m(MARCAS.programacao.estudei)}, ${PROGRAMMING_PATH}`,
 }
@@ -367,12 +368,12 @@ export const NEEDS_HEADING = 'Duas coisas que você disse e que importam'
 
 /** A N9. "Ter professor ao vivo" e "Servir para trabalhar com jogos": o que a página diz que não faz. */
 export const NEED: Record<string, string> = {
-  sozinho: `Você precisa ${m(MARCAS.garantia.sozinho)}. As aulas são gravadas, o vídeo fica ao lado do editor e o projeto fica salvo na sua conta: você para hoje e continua amanhã do mesmo ponto.`,
+  sozinho: `Você precisa ${m(MARCAS.garantia.sozinho)}. As aulas são gravadas, o vídeo fica ao lado do Estúdio, onde você monta o jogo, e o projeto fica salvo na sua conta: você para hoje e continua amanhã do mesmo ponto.`,
   recorrer: `Você precisa ${m(MARCAS.garantia.recorrer)}. As dúvidas são respondidas pela equipe nos Recados, o canal de mensagens da plataforma, e o botão Verificar esta etapa diz o que já está certo antes de você seguir.`,
   tempo: `Você precisa que ${m(MARCAS.garantia.tempo)}. Quem decide o ritmo é você: as aulas são gravadas, o projeto fica salvo e você continua de onde parou.`,
   orcamento: `Você precisa que ${m(MARCAS.garantia.orcamento)}. Os dois planos dão acesso a tudo, dos cursos e ferramentas ao Mural, ao Clube e aos Recados, e muda só a forma de pagar. Você tem 7 dias para testar: se não for para você, é só pedir o reembolso integral por e-mail dentro desse prazo.`,
   ao_vivo: `Você precisa ${m(MARCAS.garantia.ao_vivo)}. Aqui as aulas são gravadas, para caber no seu horário, e as dúvidas são respondidas pela equipe nos Recados. Se o professor ao vivo for indispensável, este ainda não é o formato para você.`,
-  trabalho: `Você precisa que ${m(MARCAS.garantia.trabalho)}. Aqui a proposta é terminar o seu primeiro jogo nas horas livres, sem prometer uma profissão. Se o objetivo é trabalhar com jogos, este ainda não é o caminho para você.`,
+  trabalho: `Você precisa que ${m(MARCAS.garantia.trabalho)}. Aqui a proposta é criar jogos nas horas livres, começando pelo primeiro, sem prometer uma profissão. Se o objetivo é trabalhar com jogos, este ainda não é o caminho para você.`,
 }
 
 /** A S3: o requisito do computador, dito também quando já está atendido. */
@@ -384,7 +385,7 @@ export const COMPUTER: Record<string, string> = {
 }
 
 const ENGINE_FACT =
-  'a ferramenta é o Estúdio, que roda no navegador, e a gente não ensina uma engine específica, como Unity ou Unreal.'
+  'a ferramenta é o Estúdio, que roda no navegador, e a gente não ensina programas profissionais de jogos, como Unity ou Unreal.'
 const toolRequired = (ferramenta: string) =>
   `Você disse também que o jogo precisa ser ${m(ferramenta)}. Aqui ${ENGINE_FACT} Se essa ferramenta for indispensável, este ainda não é o caminho para você.`
 
@@ -401,7 +402,7 @@ export const TOOL: Record<string, string> = {
 /** A condicional do perfil D (C12): quem quer código no primeiro dia sabe antes que a fase 1 é com blocos. */
 export const CODE: Record<string, string> = {
   codigo_ja: `Você disse também que aprender a programar é ${m(MARCAS.codigo.codigo_ja)}. Melhor saber antes: aqui a primeira fase é com blocos, e o código vem depois, nas fases seguintes.`,
-  logica: `Você disse também que aprender a programar é ${m(MARCAS.codigo.logica)}. É assim que o caminho começa: blocos primeiro, para a lógica ficar à vista, e código depois.`,
+  logica: `Você disse também que aprender a programar é ${m(MARCAS.codigo.logica)}. É assim que o caminho começa: blocos primeiro, para você ver cada regra montada, e código depois.`,
   tanto_faz: `Você disse também que, para aprender a programar, ${m(MARCAS.codigo.tanto_faz)}. É o que acontece a cada regra: você monta, roda o jogo e vê se ele obedeceu.`,
 }
 
@@ -413,14 +414,14 @@ export const STILL_LOOKING = `E, juntando tudo, você disse que ${m(MARCAS.sinte
 // ---------------------------------------------------------------------------------------------
 
 export const CTA_TEXT: Record<AdultProfile, string> = {
-  A: 'Na próxima página, você vê como é uma aula, do jogo pronto à primeira regra que você muda, os clássicos que vêm primeiro, o Mural onde o jogo fica publicado e os dois planos.',
-  B: 'Na próxima página, você vê a aula da Nave por dentro, os clássicos que vêm primeiro, as três fases até o código e os dois planos.',
-  D: 'Na próxima página, você vê o esquema de quatro regras dos primeiros jogos, a aula da Nave por dentro, as três fases até o código e os dois planos.',
+  A: 'Na próxima página, você vê como é uma aula, do jogo pronto à primeira regra que você muda, os primeiros jogos, os que vêm depois, o Mural onde o jogo fica publicado e os dois planos.',
+  B: 'Na próxima página, você vê como é a aula da Nave Contra Asteroides, os primeiros jogos, o caminho dos blocos ao código até o jogo com a sua ideia e os dois planos.',
+  D: 'Na próxima página, você vê quatro regras dos primeiros jogos montadas com blocos, como é a aula da Nave Contra Asteroides, o caminho dos blocos ao código e os dois planos.',
 }
 /** Spec: `perfis.X.cta`. */
 export const CTA_LABEL: Record<AdultProfile, string> = {
   A: 'Ver como a noite de jogo vira uma fase pronta',
-  B: 'Ver como a ideia sai da gaveta',
+  B: 'Ver como a ideia vira jogo',
   D: 'Ver o caminho para entender um jogo por dentro',
 }
 /** Com alguma condição não atendida, o botão convida a conferir antes de decidir. */

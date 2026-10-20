@@ -60,7 +60,7 @@ export const PAGINA_CONTINUAR = {
     title: 'O que seu filho começou está guardado. Agora ele segue até o ',
     destaque: 'jogo que ele inventa.',
     description:
-      'Assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. Com a assinatura, ele volta a ter os outros cursos, as ferramentas que a Jornada vai liberando, o Mural para publicar, o Clube e as dúvidas respondidas pela equipe nos Recados. Cada curso concluído põe peças novas na caixa dele, e concluir e publicar os cursos de um degrau leva a um posto novo da Jornada, com ferramentas para os jogos dele. Você segue acompanhando pela sua área.',
+      'Assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. Com a assinatura, ele volta a ter os outros cursos, as ferramentas que a Jornada vai liberando, o Mural para publicar, o Clube e as dúvidas respondidas pela equipe nos Recados. Cada curso concluído ensina peças novas para os jogos dele. Quando ele conclui e publica os cursos de um posto, sobe para o próximo posto da Jornada do Criador, que libera ferramentas novas. Você segue acompanhando pela sua área.',
     benefits: [
       'Continua no mesmo perfil, com tudo o que já fez',
       'Todos os cursos, o Mural, o Clube e as dúvidas respondidas pela equipe',
@@ -193,9 +193,10 @@ export const PAGINA_CONTINUAR = {
 
   jornada: {
     eyebrow: 'A Jornada do Criador',
-    title: 'Depois de A Chave do Farol, cada posto põe algo novo na caixa dele',
+    title:
+      'Depois de A Chave do Farol, cada posto libera ferramentas ou peças novas para os jogos dele',
     paragraph:
-      'Para subir de posto, ele conclui e publica no Mural os cursos de cada degrau. A ordem é de propósito: ele nunca fica diante de uma ferramenta que ainda não sabe usar. O tempo de cada posto depende do ritmo dele.',
+      'Para subir de posto, ele conclui e publica no Mural os cursos de cada posto. A ordem é de propósito: ele nunca fica diante de uma ferramenta que ainda não sabe usar. O tempo de cada posto depende do ritmo dele.',
     postoLabel: 'Posto',
     /** O posto que a família alcança ao concluir e publicar A Chave do Farol. */
     marco: { posto: 'Construtor', label: 'Depois do Farol' },
@@ -204,7 +205,7 @@ export const PAGINA_CONTINUAR = {
       { nome: 'Construtor', libera: 'Estúdio livre e Pinta' },
       { nome: 'Inventor', libera: 'Pensa e ajuda do Zappy no Estúdio' },
       { nome: 'Explorador de Mundos', libera: 'Molda, para criar em 3D' },
-      { nome: 'Mestre dos Jogos', libera: 'Mais cursos e peças na caixa' },
+      { nome: 'Mestre dos Jogos', libera: 'Mais cursos e peças novas' },
       { nome: 'Arquiteto de Mundos', libera: 'Mais recursos no Molda' },
       { nome: 'Gênio da Criação', libera: 'Ponte: blocos e código lado a lado' },
       { nome: 'Lenda', libera: 'Estúdio Pro, em código' },
@@ -310,7 +311,8 @@ export const PAGINA_CONTINUAR = {
   ],
 
   closing: {
-    title: 'Peça para ele contar o que mudaria no primeiro jogo. É por aí que começa o próximo.',
+    title:
+      'Peça para ele contar o que mudaria no primeiro jogo. Essa ideia pode virar o próximo jogo dele.',
     zappy: { file: 'zappy-festa.webp', width: 640, height: 640, alt: '' },
   },
 
