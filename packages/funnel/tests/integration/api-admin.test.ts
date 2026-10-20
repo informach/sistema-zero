@@ -317,6 +317,26 @@ describe('adminPerfis', () => {
     expect(body.total).toBe(1)
     expect(body.counts.find((c: { perfil: string }) => c.perfil === 'tempo-de-tela')?.count).toBe(0)
   })
+  test('perfil fora da lista de hoje continua visível, pelo próprio nome', async () => {
+    const { repo, fg, deps } = setup()
+    const funnel = 'kids/comunidade-dos-criadores'
+    const lead = await repo.createLead(funnel)
+    await repo.updateLead(lead.id, { perfilResultado: 'perfil-de-versao-antiga' })
+    const body = await (
+      await adminPerfis(
+        new Request(`http://localhost/api/admin?funnel=${encodeURIComponent(funnel)}`, {
+          headers: { cookie: accessCookie(fg) },
+        }),
+        deps,
+      )
+    ).json()
+    expect(body.total).toBe(1)
+    expect(body.counts.at(-1)).toEqual({
+      perfil: 'perfil-de-versao-antiga',
+      label: 'perfil-de-versao-antiga',
+      count: 1,
+    })
+  })
   test('quiz atual e manchete recortam os perfis da Comunidade', async () => {
     const { repo, fg, deps, quizVersions } = setup()
     const funnel = 'kids/comunidade-dos-criadores'

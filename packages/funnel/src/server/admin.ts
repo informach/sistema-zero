@@ -1,5 +1,13 @@
+import type { QuizStep } from '../content/quiz-config'
 import type { FunnelRepo, QuizScope } from '../db/repo'
-import { DEFAULT_FUNNEL, type FunnelDef, getFunnelByKey, isFunnelKey } from '../funnels/registry'
+import {
+  branchEventName,
+  DEFAULT_FUNNEL,
+  type FunnelDef,
+  getFunnelByKey,
+  isFunnelKey,
+  LEGACY_ANSWER_PREFIX,
+} from '../funnels/registry'
 import {
   ADMIN_REFRESH_COOKIE,
   adminSessionCookies,
@@ -28,27 +36,54 @@ function withSession(base: Record<string, string>, setCookies?: string[]): [stri
   return headers
 }
 
+export interface AdminStep {
+  name: string
+  label: string
+  /** Só alguns percursos passam por ela: é comparada à anterior, mas não vira a base da seguinte. */
+  condicional?: boolean
+  /** Rótulo do ramo do quiz a que a etapa pertence. */
+  branch?: string
+  /** A entrada de um ramo, comparada com a última etapa comum antes dos ramos. */
+  branchEntry?: boolean
+  /** Um ramo sem perguntas (saída do quiz): não soma na base do resultado. */
+  exit?: boolean
+}
+
 /**
  * Etapas do funil de conversão (Performance), montadas POR FUNIL: landing → cada
  * pergunta do quiz daquele funil → resultado (se tiver) → vendas/pré-checkout/
  * checkout → 2 marcos de pagamento. Sem funil selecionado, usa o quiz do funil
  * default só para rotular as "perguntas N" (os eventos `respondeu_pergunta_N` são
- * compartilhados entre funis). Os labels das perguntas são genéricos ("Pergunta N").
+ * compartilhados entre funis). Num quiz com ramos, as perguntas comuns vêm primeiro
+ * e cada ramo segue com a sua entrada (`entrou_ramo_<id>`) e as suas perguntas.
  */
-function buildFunnelSteps(
-  f: FunnelDef | null,
-): { name: string; label: string; condicional?: boolean }[] {
-  const quizSteps = (f ?? DEFAULT_FUNNEL).content.quiz?.steps ?? []
-  const steps: { name: string; label: string; condicional?: boolean }[] = [
-    { name: 'entrou_landing', label: 'Entrou na landing' },
+export function buildFunnelSteps(f: FunnelDef | null): AdminStep[] {
+  const quiz = (f ?? DEFAULT_FUNNEL).content.quiz
+  const quizSteps = quiz?.steps ?? []
+  const question = (s: QuizStep, n: number): AdminStep => ({
+    name: s.eventName,
     // `rotuloCurto` nomeia a pergunta; a condicional (só alguns percursos) é marcada e não
     // entra na cadeia "da etapa", senão pareceria uma queda.
-    ...quizSteps.map((s, i) => ({
-      name: s.eventName,
-      label: `${s.condicional ? 'Extra' : `Pergunta ${i + 1}`}${s.rotuloCurto ? ` · ${s.rotuloCurto}` : ''}`,
-      ...(s.condicional ? { condicional: true } : {}),
-    })),
+    label: `${s.condicional ? 'Extra' : `Pergunta ${n}`}${s.rotuloCurto ? ` · ${s.rotuloCurto}` : ''}`,
+    ...(s.condicional ? { condicional: true } : {}),
+  })
+  const common = quizSteps.filter((s) => !s.ramo)
+  const steps: AdminStep[] = [
+    { name: 'entrou_landing', label: 'Entrou na landing' },
+    ...common.map((s, i) => question(s, i + 1)),
   ]
+  for (const [id, label] of Object.entries(quiz?.branches ?? {})) {
+    const own = quizSteps.filter((s) => s.ramo === id)
+    steps.push({
+      name: branchEventName(id),
+      label: own.length ? `Ramo · ${label}` : `Saída · ${label}`,
+      branch: label,
+      branchEntry: true,
+      ...(own.length ? {} : { exit: true }),
+    })
+    for (const [i, s] of own.entries())
+      steps.push({ ...question(s, common.length + i + 1), branch: label })
+  }
   if (!f || f.steps.resultado) steps.push({ name: 'viu_resultado', label: 'Viu o resultado' })
   steps.push(
     { name: 'viu_pagina_vendas', label: 'Página de vendas' },
@@ -59,6 +94,35 @@ function buildFunnelSteps(
     { name: 'pagamento_confirmado', label: 'Pagamento confirmado' },
   )
   return steps
+}
+
+/**
+ * A base de cada etapa ("da etapa"): a anterior na cadeia. A entrada de um ramo compara com a
+ * última etapa comum; a primeira etapa depois dos ramos compara com a soma do fim de cada ramo
+ * que tem perguntas. As condicionais nunca viram base.
+ */
+export function stepConversions(steps: AdminStep[], count: (name: string) => number) {
+  let prev = 0
+  let beforeBranches = 0
+  let inBranches = false
+  const branchEnds = new Map<string, number>()
+  return steps.map((step, i) => {
+    const n = count(step.name)
+    let base = prev
+    if (step.branchEntry) {
+      if (!inBranches) beforeBranches = prev
+      inBranches = true
+      base = beforeBranches
+    } else if (inBranches && !step.branch) {
+      inBranches = false
+      base = [...branchEnds.values()].reduce((sum, v) => sum + v, 0)
+    }
+    if (!step.condicional) {
+      prev = n
+      if (step.branch && !step.exit) branchEnds.set(step.branch, n)
+    }
+    return { step, count: n, fromPrev: i === 0 ? 1 : base > 0 ? n / base : 0 }
+  })
 }
 
 /** Lê e valida o `?funnel=` da query (chave conhecida → filtra; senão → todos). */
@@ -209,15 +273,16 @@ export async function adminFunnel(request: Request, deps: AdminDeps): Promise<Re
   const byName = new Map(counts.map((c) => [c.eventName, c.leads]))
   const top = byName.get('entrou_landing') ?? 0
 
-  let prev = 0
-  const steps = buildFunnelSteps(f).map((step, i) => {
-    const count = byName.get(step.name) ?? 0
-    const fromTop = top > 0 ? count / top : 0
-    const fromPrev = i === 0 ? 1 : prev > 0 ? count / prev : 0
-    // A pergunta extra é comparada à etapa anterior, mas não vira a base da seguinte.
-    if (!step.condicional) prev = count
-    return { name: step.name, label: step.label, count, fromTop, fromPrev }
-  })
+  const steps = stepConversions(buildFunnelSteps(f), (name) => byName.get(name) ?? 0).map(
+    ({ step, count, fromPrev }) => ({
+      name: step.name,
+      label: step.label,
+      count,
+      fromTop: top > 0 ? count / top : 0,
+      fromPrev,
+      ...(step.branch ? { branch: step.branch } : {}),
+    }),
+  )
 
   return json(
     { total: top, steps },
@@ -237,12 +302,15 @@ export async function adminPerfis(request: Request, deps: AdminDeps): Promise<Re
   const byPerfil = new Map(rows.map((r) => [r.perfil, r.count]))
   const result = f?.content.result
   const labels = result?.perfilLabels ?? {}
-  // Com funil selecionado: os perfis DELE (mesmo zerados), na ordem do funil.
+  const legacy = result?.legacyPerfilLabels ?? {}
+  // Com funil selecionado: os perfis DELE (mesmo zerados), na ordem do funil, e depois os que
+  // aparecem nos dados sem estar na lista de hoje (versão anterior do quiz), para não sumirem.
   // Sem funil: os perfis presentes nos dados (rótulo = a própria chave).
-  const perfis = result ? Object.keys(labels) : [...byPerfil.keys()]
+  const current = result ? Object.keys(labels) : []
+  const perfis = [...current, ...[...byPerfil.keys()].filter((p) => !current.includes(p))]
   const counts = perfis.map((perfil) => ({
     perfil,
-    label: labels[perfil] ?? perfil,
+    label: labels[perfil] ?? (legacy[perfil] ? `${LEGACY_ANSWER_PREFIX}${legacy[perfil]}` : perfil),
     count: byPerfil.get(perfil) ?? 0,
   }))
   const total = counts.reduce((sum, c) => sum + c.count, 0)

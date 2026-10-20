@@ -4,7 +4,6 @@ import ComunidadeResultado from '../../../components/funnel/ComunidadeResultado.
 import DesafioQuizLayout from '../../../components/funnel/DesafioQuizLayout.astro'
 import DesafioResultado from '../../../components/funnel/DesafioResultado.astro'
 import { quizRevision } from '../../../funnels/comunidade-dos-criadores/quiz/engine'
-import { DEFAULT_HEADLINE } from '../../../funnels/comunidade-dos-criadores/quiz/entry-copy'
 import { buildCommunityResult } from '../../../funnels/comunidade-dos-criadores/quiz/result'
 import { buildDesafioResult } from '../../../funnels/desafio-primeiro-jogo/quiz/result'
 import { leadBelongsToFunnel } from '../../../funnels/lead-scope'
@@ -40,11 +39,11 @@ if (!lead) return Astro.redirect(quizUrl)
 if (!leadBelongsToFunnel(lead.funnel, f.key)) return Astro.redirect(quizUrl)
 
 // Resultado aberto sem o quiz respondido: volta pro quiz (sem resultado vazio), mantendo a
-// manchete do teste A/B que a família viu (Comunidade).
+// manchete do teste A/B que a pessoa viu.
 const answers = lead.quizAnswers ?? {}
 const headline = lead.attribution?.quizHeadline
 const leadQuizUrl =
-  headline && headline !== DEFAULT_HEADLINE
+  headline && headline !== quiz.defaultHeadline && Object.hasOwn(quiz.headlines ?? {}, headline)
     ? `${quizUrl}${quizUrl.includes('?') ? '&' : '?'}manchete=${encodeURIComponent(headline)}`
     : quizUrl
 if (!isQuizComplete(quiz, answers)) return Astro.redirect(leadQuizUrl)

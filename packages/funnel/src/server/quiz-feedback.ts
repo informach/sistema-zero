@@ -1,9 +1,5 @@
 import { z } from 'zod'
-import {
-  communityDecision,
-  QUIZ_VERSION,
-  quizRevision,
-} from '../funnels/comunidade-dos-criadores/quiz/engine'
+import { getFunnelByKey, isQuizComplete } from '../funnels/registry'
 import { json, jsonError, safeJson } from '../lib/http'
 import { getLeadId } from '../lib/lead-session'
 import type { LeadDeps } from './leads'
@@ -17,23 +13,32 @@ const Feedback = z
   })
   .strict()
 
-export async function communityQuizFeedback(request: Request, deps: LeadDeps): Promise<Response> {
+const revisionOf = (value: unknown): number => (typeof value === 'number' ? value : 0)
+
+/**
+ * POST /api/leads/quiz-feedback — "Esse resultado parece com você?" no fim do resultado de um
+ * quiz com perfil (Comunidade Kids e Comunidade adulta). Grava uma opinião por revisão e só para
+ * o resultado completo que a pessoa está vendo agora.
+ */
+export async function quizFeedback(request: Request, deps: LeadDeps): Promise<Response> {
   const id = getLeadId(request)
   if (!id) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
   const parsed = Feedback.safeParse(await safeJson(request))
   if (!parsed.success) return jsonError('Opinião inválida.', 400, 'BAD_REQUEST')
   const lead = await deps.repo.getLead(id)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
-  if (lead.funnel !== 'kids/comunidade-dos-criadores')
+  const quiz = getFunnelByKey(lead.funnel)?.content.quiz
+  if (!quiz?.computePerfil)
     return jsonError('A sessão pertence a outro quiz.', 409, 'QUIZ_SESSION_CHANGED')
   const answers = lead.quizAnswers ?? {}
-  const decision = communityDecision(answers)
+  const profile = isQuizComplete(quiz, answers) ? quiz.computePerfil(answers) : null
   if (
-    !decision ||
-    parsed.data.revision !== quizRevision(answers) ||
+    !profile ||
+    parsed.data.revision !== revisionOf(answers._quiz_revision) ||
     parsed.data.sessionToken !== quizSessionToken(id)
   )
     return jsonError('O resultado mudou. Atualize a página para continuar.', 409, 'QUIZ_CONFLICT')
+  const branch = quiz.branchOf?.(answers) ?? null
   await deps.repo.insertEvent(
     id,
     'quiz_feedback',
@@ -41,9 +46,9 @@ export async function communityQuizFeedback(request: Request, deps: LeadDeps): P
     {
       feedback: parsed.data.feedback,
       revision: parsed.data.revision,
-      quiz_version: QUIZ_VERSION,
-      perfil_principal: decision.profile,
-      estado: decision.state,
+      quiz_version: answers._quiz_version,
+      perfil: profile,
+      ...(branch ? { ramo: branch } : {}),
     },
     `${id}:feedback:${parsed.data.revision}:${parsed.data.feedback}`,
   )

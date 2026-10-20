@@ -8,7 +8,7 @@ import type {
   PriceCount,
   QuizScope,
 } from '../../src/db/repo'
-import { canonicalEventName } from '../../src/db/repo'
+import { COMMUNITY_KIDS_FUNNEL, canonicalEventName } from '../../src/db/repo'
 
 const matchesQuery = (l: Lead, term: string) =>
   (l.nome ?? '').toLowerCase().includes(term) || (l.email ?? '').toLowerCase().includes(term)
@@ -351,7 +351,12 @@ export function createFakeRepo(): FakeRepoState {
     },
     async recordCommunitySubscription(sourceLeadId, buyerUserId) {
       const source = leads.get(sourceLeadId)
-      if (!source?.offerRef?.includes('comunidade') || !source.paidAt) return
+      if (
+        source?.funnel !== COMMUNITY_KIDS_FUNNEL ||
+        !source.offerRef?.includes('comunidade') ||
+        !source.paidAt
+      )
+        return
       const target = [...leads.values()]
         .filter(
           (lead) =>

@@ -14,6 +14,9 @@ import {
 export type Lead = typeof leads.$inferSelect
 /** Campos do lead atualizáveis via updateLead (contato/funil/perfil; respostas em quiz_answers). */
 export type LeadUpdate = Partial<typeof leads.$inferInsert>
+/** O funil cuja assinatura continua a jornada do Desafio (`recordCommunitySubscription`). */
+export const COMMUNITY_KIDS_FUNNEL = 'kids/comunidade-dos-criadores'
+
 export interface QuizAnswerEvent {
   step: string
   metadata: Record<string, unknown>
@@ -674,11 +677,19 @@ export function createFunnelRepo(db: Database): FunnelRepo {
 
     async recordCommunitySubscription(sourceLeadId, buyerUserId) {
       const [source] = await db
-        .select({ offerRef: leads.offerRef, paidAt: leads.paidAt })
+        .select({ funnel: leads.funnel, offerRef: leads.offerRef, paidAt: leads.paidAt })
         .from(leads)
         .where(eq(leads.id, sourceLeadId))
         .limit(1)
-      if (!source?.offerRef?.includes('comunidade') || !source.paidAt) return
+      // Só a assinatura Kids continua a jornada do Desafio: a Comunidade adulta também tem
+      // "comunidade" na oferta, e um adulto que já comprou o Desafio para o filho não é o
+      // responsável assinando a continuação.
+      if (
+        source?.funnel !== COMMUNITY_KIDS_FUNNEL ||
+        !source.offerRef?.includes('comunidade') ||
+        !source.paidAt
+      )
+        return
       const [target] = await db
         .select({
           id: leads.id,

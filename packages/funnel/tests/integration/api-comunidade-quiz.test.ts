@@ -2,8 +2,8 @@ import { describe, expect, test } from 'bun:test'
 import { QUIZ_VERSION } from '../../src/funnels/comunidade-dos-criadores/quiz/engine'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
 import type { QuizAnswers } from '../../src/lib/quiz-types'
-import { communityQuizFeedback } from '../../src/server/community-quiz-feedback'
 import { createLead, patchLead } from '../../src/server/leads'
+import { quizFeedback } from '../../src/server/quiz-feedback'
 import { quizSessionToken } from '../../src/server/quiz-session'
 import { createFakeRepo } from '../fakes/fake-db'
 
@@ -94,7 +94,7 @@ describe('API do quiz da Comunidade', () => {
     ).toBe(409)
     expect(
       (
-        await communityQuizFeedback(
+        await quizFeedback(
           request('POST', { feedback: 'sim', revision: 9, sessionToken }, nextId),
           deps,
         )
@@ -185,27 +185,23 @@ describe('API do quiz da Comunidade', () => {
   test('feedback só é gravado para resultado completo na revisão atual', async () => {
     const { deps, id, events, repo } = await setup(fixture())
     expect(
-      (
-        await communityQuizFeedback(
-          request('POST', { feedback: 'nao_representa', revision: 8 }, id),
-          deps,
-        )
-      ).status,
+      (await quizFeedback(request('POST', { feedback: 'nao_representa', revision: 8 }, id), deps))
+        .status,
     ).toBe(409)
     expect(
-      (
-        await communityQuizFeedback(
-          request('POST', { feedback: 'nao_representa', revision: 9 }, id),
-          deps,
-        )
-      ).status,
+      (await quizFeedback(request('POST', { feedback: 'nao_representa', revision: 9 }, id), deps))
+        .status,
     ).toBe(201)
     expect(events.filter((e) => e.eventName === 'quiz_feedback')).toHaveLength(1)
+    expect(events.find((e) => e.eventName === 'quiz_feedback')?.metadata).toMatchObject({
+      feedback: 'nao_representa',
+      revision: 9,
+      perfil: 'criacao-de-jogos',
+    })
     expect((await repo.getLead(id))?.perfilResultado).toBe('criacao-de-jogos')
     await repo.updateLead(id, { quizAnswers: {} })
     expect(
-      (await communityQuizFeedback(request('POST', { feedback: 'sim', revision: 0 }, id), deps))
-        .status,
+      (await quizFeedback(request('POST', { feedback: 'sim', revision: 0 }, id), deps)).status,
     ).toBe(409)
   })
   test('outro filho recebe nova sessão sem apagar a anterior', async () => {

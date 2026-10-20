@@ -16,6 +16,7 @@ import {
   QUIZ_ENTRY,
   QUIZ_HEADLINES,
   type QuizHeadlineId,
+  quizHeadlineId,
 } from '../funnels/comunidade-dos-criadores/quiz/entry-copy'
 import { flexionar } from '../funnels/comunidade-dos-criadores/quiz/genero'
 import { COMMUNITY_QUESTIONS } from '../funnels/comunidade-dos-criadores/quiz/questions'
@@ -29,7 +30,7 @@ interface Props {
   imagesBase: string
   quizDefinitionId?: string
   /** Variante da manchete resolvida no servidor (`?manchete=`); vai na atribuição do lead. */
-  headline: QuizHeadlineId
+  headline?: string
 }
 interface Session {
   id: string
@@ -98,8 +99,9 @@ export default function ComunidadeQuiz({
   basePath,
   imagesBase,
   quizDefinitionId,
-  headline,
+  headline: headlineParam,
 }: Props) {
+  const headline = quizHeadlineId(headlineParam)
   const [session, setSession] = useState<Session | null>(null)
   const [cursor, setCursor] = useState('intro')
   const [busy, setBusy] = useState(false)

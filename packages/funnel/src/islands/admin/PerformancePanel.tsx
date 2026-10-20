@@ -7,6 +7,8 @@ interface Step {
   count: number
   fromTop: number
   fromPrev: number
+  /** Ramo do quiz: a etapa é recuada, e "da etapa" compara dentro do ramo. */
+  branch?: string
 }
 
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`
@@ -65,7 +67,10 @@ export default function PerformancePanel({
 
       <div className="flex flex-col gap-2">
         {steps.map((s, i) => (
-          <div key={s.name} className="card p-3.5">
+          <div
+            key={s.name}
+            className={`card p-3.5 ${s.branch ? 'ml-5 border-l-4 border-l-cyan/50' : ''}`}
+          >
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-sm font-medium text-ink">{s.label}</span>
               <span className="text-sm text-muted">

@@ -33,6 +33,12 @@ export interface QuizQuestionSnapshot {
   type: string
   revision: string
   options: { value: string; label: string }[]
+  /** Rótulo do ramo do quiz a que a pergunta pertence (ausente: comum a todos). */
+  branch?: string
+  /** Pergunta que só aparece em alguns percursos. */
+  conditional?: boolean
+  /** Nome curto da pergunta, o mesmo da aba Performance. */
+  shortLabel?: string
 }
 export interface QuizDefinition {
   id: string

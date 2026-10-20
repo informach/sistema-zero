@@ -46,6 +46,11 @@ interface StepBase {
   rotuloCurto?: string
   /** Pergunta que só aparece em alguns percursos: no /admin ela não quebra a cadeia de etapas. */
   condicional?: boolean
+  /**
+   * Ramo do quiz a que a pergunta pertence (id em `FunnelQuiz.branches`). Ausente: a pergunta é
+   * comum a todos os percursos. O /admin numera e encadeia cada ramo à parte.
+   */
+  ramo?: string
 }
 
 export interface MultiplaEscolhaStep extends StepBase {
@@ -62,8 +67,13 @@ export interface MultiplaEscolhaStep extends StepBase {
 /** Explicit confirmation, with optional multiple/exclusive choices. */
 export interface SelecaoStep extends StepBase {
   tipo: 'selecao'
-  /** Etapa da barra do quiz. v5 da Comunidade: rotina → casa → desejo (v4: filho/objetivos/começo). */
-  etapa: 'rotina' | 'casa' | 'desejo' | 'filho' | 'objetivos' | 'comeco'
+  /**
+   * Etapa da barra do quiz. Comunidade Kids: rotina → casa → desejo (v4: filho/objetivos/começo).
+   * Comunidade adulta: rotina → trava → quer.
+   */
+  etapa: 'rotina' | 'casa' | 'desejo' | 'filho' | 'objetivos' | 'comeco' | 'trava' | 'quer'
+  /** Opções em cartas grandes (com a `image` de cada opção, quando houver) em vez de lista. */
+  cartas?: boolean
   opcoes: Opcao[]
   multiple?: boolean
   maxSelections?: number
