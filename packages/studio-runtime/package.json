@@ -10,7 +10,7 @@
     "deploy": "bun run check:validation-profile && wrangler deploy",
     "deploy:staging": "bun run check:validation-profile && wrangler deploy --env staging",
     "audit:image": "npm audit --package-lock-only --omit=dev --prefix runtime",
-    "build:image": "bun run check:validation-profile && docker build --tag sistemazero-studio-runtime:verify .",
+    "build:image": "bun run check:validation-profile && docker build --load --platform linux/amd64 --provenance=false --tag sistemazero-studio-runtime:verify .",
     "typecheck": "tsc --noEmit && tsc --project tsconfig.test.json --noEmit",
     "typecheck:promoter": "node scripts/check-python-operational-types.ts",
     "test": "bun test",
