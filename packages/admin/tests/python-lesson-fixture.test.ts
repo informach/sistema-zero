@@ -158,32 +158,32 @@ async function publication(kind: 'classic' | 'pro') {
   else project.files['main.py'] = source
   const blockId = randomUUID(),
     sectionId = randomUUID()
-  const published = {
-    revision: randomUUID(),
-    document: {
-      blocks: [
-        {
-          id: blockId,
-          content: {
-            kind: 'studio',
-            initialProject: project,
-            ...(kind === 'classic' ? { allowedModes: ['blocks', 'bridge'], pythonLevel: 3 } : {}),
-          },
+  const document = {
+    blocks: [
+      {
+        id: blockId,
+        content: {
+          kind: 'studio',
+          initialProject: project,
+          ...(kind === 'classic' ? { allowedModes: ['blocks', 'bridge'], pythonLevel: 3 } : {}),
         },
-      ],
-      sections: [{ id: sectionId, workspaceBlockId: blockId }],
-    },
+      },
+    ],
+    sections: [{ id: sectionId, workspaceBlockId: blockId }],
   }
-  published.revision = publishedLessonRevisions(
-    {
-      title: 'QA Python',
-      slug: 'qa-python',
-      estimatedMinutes: 15,
-      blocks: published.document.blocks,
-      attachments: [],
-    },
-    published.document.sections,
-  ).current
+  const published = {
+    revision: publishedLessonRevisions(
+      {
+        title: 'QA Python',
+        slug: 'qa-python',
+        estimatedMinutes: 15,
+        blocks: document.blocks,
+        attachments: [],
+      },
+      document.sections,
+    ).current,
+    document,
+  }
   return { published, runtime: project.runtime, kind, source }
 }
 
