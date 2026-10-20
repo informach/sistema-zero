@@ -1,0 +1,821 @@
+{
+  "curso": "nave-contra-asteroides",
+  "grupo": "nave-contra-asteroides-dia-4",
+  "trechos": [
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "# Nave Contra Asteroides · Aula 7 · Dê três vidas à nave",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md).",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "## Resumo",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "- Estado de entrada: Variável pontos começa em zero, aumenta somente no acerto e aparece no placar.\n- Resultado da aula: Três vidas, dano de uma vida, proteção de 45 quadros e corações na tela; jogo ainda sem encerramento.\n- Seções: 6. Vídeos: 5.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "## Diagnóstico e decisão",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montagem própria; a comparação da proteção prepara a colisão da nave. Um quiz e o teste final retomam acertos, erros e batidas.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "## Triagem dos conceitos",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Preparar vidas | once-vs-always antes dos corações | Evitar devolver vidas a cada quadro. |\n| Dano e proteção | invincibility antes da batida | Comparar 0, 45 e 15 quadros antes de aplicar o dano. |\n| Colisão com a nave | Retomada de collision-pair | Usar inimigo para a pedra envolvida e nave para quem perde vida. |",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "## Proposta final",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "### Seção 1. Compare quando dar as vidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Tarefa:** Sua vez! Compare Dar três vidas à nave em Ao iniciar e em Enquanto estiver rodando, esperando cada teste parar e olhando os corações. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Blocos na página:** video-vidas-no-comeco → fala-vidas-no-comeco → experiencia-uma-vez.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Zappy na página (não gravar):** Sua vez! Compare Dar três vidas à nave em Ao iniciar e em Enquanto estiver rodando, esperando cada teste parar e olhando os corações. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "ID video-vidas-no-comeco-avatar-01. Professora até “as batidas conseguiram tirar.”. Antes: Concluir o teste em Ao iniciar com Vidas: 0 e Batidas: 3. Debinha: “E se eu der as vidas o tempo todo?”. Retomada da professora: “Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo.”. Depois: Levar a peça para Enquanto estiver rodando e mostrar o resultado real, inclusive Vidas: 2 no último quadro.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Experiência existente:** `once-vs-always`. Na experiência, coloque Dar três vidas à nave em Ao iniciar. Clique em Começar o jogo, espere o teste parar e observe os corações depois das batidas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo, espere o teste parar e compare os corações. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "### Seção 2. Dê e mostre as três vidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Tarefa:** Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Blocos na página:** video-vidas → fala-vidas.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Zappy na página (não gravar):** Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "ID video-vidas-avatar-01. Professora até “Agora abra Jogo 2D, depois Vida e placar e depois Vida, e pegue o bloco Dar ao sprite de vida. Arraste e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E como eu vejo quantas vidas tenho?”. Retomada da professora: “Agora os corações, que precisam ser desenhados em todo quadro.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "- Dê 3 vidas à nave em Ao iniciar.\n- Desenhe corações da nave em x 12, y 48, tamanho 22.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "### Seção 3. Compare as batidas com proteção",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Tarefa:** Sua vez! Teste as três batidas com 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Blocos na página:** video-protecao → fala-respiro → experiencia-protecao.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Zappy na página (não gravar):** Sua vez! Teste as três batidas com 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "ID video-protecao-avatar-01. Professora até “só a primeira batida tirou vida.”. Antes: Concluir as três batidas com proteção de 45 quadros; manter os corações e o tempo restante à vista. Debinha: “E quando esse tempinho de proteção acabar?”. Retomada da professora: “Por último, eu volto ao começo e escolho 15 quadros.”. Depois: Voltar ao começo, escolher 15 quadros e mostrar a terceira batida tirando vida.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Experiência existente:** `invincibility`. Teste as três batidas com proteção de 0 quadros. Volte ao começo e repita com 45. Volte ao começo e repita com 15, observando quando a proteção acaba. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "### Seção 4. Programe as vidas e a batida",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Tarefa:** Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Blocos na página:** video-batida-e-coracoes → fala-batida.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Zappy na página (não gravar):** Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "ID video-batida-e-coracoes-avatar-01. Professora até “Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada sprite do grupo que colidir com o sprite. Arraste e solte entre o placar e o desenho dos corações.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Qual pedra o jogo vai tirar?”. Retomada da professora: “Repare: o bloco já chega com o grupo asteroides, o sprite nave e, na linha de baixo, chamar o sprite de inimigo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "ID video-batida-e-coracoes-avatar-02. Professora até “Deixe à vista o encaixe logo abaixo da retirada. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Falta tirar a vida da nave, né?”. Retomada da professora: “Deixe à vista o encaixe logo abaixo da explosão.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "ID video-batida-e-coracoes-avatar-03. Professora até “Olha só: a pedra sai, a tela treme e um coração apaga!”. Antes: Esperar a batida e a tremida acabarem; manter os corações à vista. Debinha: “Um coração apagou!”. Retomada da professora: “Espere a proteção acabar e deixe outra pedra bater, para ver outro coração apagar.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "- Na colisão nave × asteroides, remova inimigo antes da explosão.\n- A explosão da batida usa inimigo, antes de machucar a nave.\n- Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "### Seção 5. Confira o que você construiu",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Tarefa:** Hora de conferir o que você construiu! Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Blocos na página:** fala-quiz-final → quiz.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Zappy na página (não gravar):** Hora de conferir o que você construiu! Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "### Seção 6. Teste os pontos e as vidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Tarefa:** Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Blocos na página:** video-fecho → fala-entrega → projeto.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Zappy na página (não gravar):** Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "- Crie a variável pontos com 0 em Ao iniciar.\n- Some 1 em pontos dentro da colisão tiros × asteroides.\n- Mantenha um único Somar 1 em pontos.\n- Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.\n- Dê 3 vidas à nave em Ao iniciar.\n- Na colisão nave × asteroides, remova inimigo antes da explosão.\n- Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.\n- A explosão da batida usa inimigo, antes de machucar a nave.\n- Desenhe corações da nave em x 12, y 48, tamanho 22.\n- Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.\n- Na colisão tiros × asteroides, remova o tiro do grupo tiros.\n- Na mesma colisão, remova o asteroide e depois solte a explosão.\n- Exploda o asteroide atingido e toque o som de explosão dentro da colisão.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "## Blocos disponíveis",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "| Bloco | Caminho na paleta |\n| --- | --- |\n| ⚡ Quando acontecer | 🗂️ Áreas do projeto |\n| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |\n| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |\n| Mover o sprite com as setas <- -> (velocidade ) | Jogo 2D → Movimento → Movimentos prontos |\n| o centro x do sprite | Jogo 2D → Movimento → Posição e tamanho |\n| Manter o sprite dentro da tela | Jogo 2D → Movimento → Bordas e rebatidas |\n| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |\n| Criar grupo de sprites | Jogo 2D → Grupos → Criar e percorrer |\n| Criar nave em x y largura altura , cor do corpo cor das asas | Jogo 2D → Kits prontos → Espaço |\n| Machucar o sprite em e deixá-lo invencível por quadros | Jogo 2D → Vida e placar → Vida |\n| Desenhar o grupo | Jogo 2D → Grupos → Desenho e ordem |\n| Mostrar placar valor em x y cor tamanho | Jogo 2D → Vida e placar → Indicadores e texto na tela |\n| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |\n| Desenhar as vidas do sprite como em x y tamanho cor | Jogo 2D → Vida e placar → Vida |\n| A cada quadros | Jogo 2D → Tempo → Quadros e intervalos |\n| Soltar explosão no sprite cor | Jogo 2D → Desenho e efeitos → Partículas |\n| Para cada colisão entre os grupos e | Jogo 2D → Colisões → Encostar e bloquear |\n| Quando apertar a tecla | Jogo 2D → Controles → Teclado, ações e toque |\n| Para cada sprite do grupo que colidir com o sprite | Jogo 2D → Colisões → Encostar e bloquear |\n| Tocar efeito | Jogo 2D → Som → Efeitos prontos |\n| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D → Grupos → Participação e limpeza |\n| um x aleatório na tela | Jogo 2D → Sorteios → Números e posições |\n| Tirar o sprite do grupo | Jogo 2D → Grupos → Participação e limpeza |\n| Dar ao sprite de vida | Jogo 2D → Vida e placar → Vida |\n| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |\n| Tremer a tela com intensidade | Jogo 2D → Desenho e efeitos → Efeitos |\n| No grupo criar um asteroide em x y tamanho cor com vx vy | Jogo 2D → Kits prontos → Espaço |\n| Criar tiro no grupo em x y raio cor vx vy | Jogo 2D → Grupos → Criar e percorrer |\n| a posição y do sprite | Jogo 2D → Movimento → Posição e tamanho |\n| Desenhar fundo de estrelas (velocidade ) | Jogo 2D → Cenários → Fundos |\n| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |\n| Mover os sprites do grupo usando suas velocidades | Jogo 2D → Grupos → Movimento |\n| Criar variável com valor | Programação → 🏷️ Variáveis |\n| Somar em variável | Programação → 🏷️ Variáveis |\n| Número | Programação → 🔣 Valores |\n| valor da variável | Programação → 🔣 Valores |",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "## Continuidade e produção",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "Aula 7 na cadeia `nave-contra-asteroides`. Entrada: etapa 6; saída: etapa 7 de `qa/nave-contra-asteroides-etapas.ts`. Os cinco marcos originais e o código do jogo permanecem preservados.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.md",
+      "kids": "A ordem vídeo → Zappy → atividade é editorial. Configurar videoBeforeActivity no curso e conferir com perfil de aluno; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos revisados, anexar o PDF quando aplicável e ensaiar com crianças antes de declarar o percurso validado.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "# Roteiro de gravação · Nave Contra Asteroides · Aula 7",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Dê três vidas à nave**",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "Fonte: `qa/nave-contra-asteroides.conteudo.json`. Gerado por `qa/gerar-nave-contra-asteroides.ts`. Revise a fonte e regenere os três arquivos juntos.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "Entrada: Variável pontos começa em zero, aumenta somente no acerto e aparece no placar. Saída: Três vidas, dano de uma vida, proteção de 45 quadros e corações na tela; jogo ainda sem encerramento.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"ou seja\", \"agora que\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"). Neste curso, \"então\" é o encaixe do bloco Se e não aparece como palavra de ligação. A ponte do Zappy começa convidando (\"Sua vez!\", \"Agora…!\", \"Hora de…!\") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo (\"Tá vendo?\", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, a criança testa direto; a lista dos blocos entra uma vez só, depois do teste (\"Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …\").",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "## Seção 1. Compare quando dar as vidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "### Clipe `video-vidas-no-comeco` · Compare quando dar as vidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Dar três vidas à nave em Ao iniciar, clicar em Começar o jogo e acompanhar os corações apagando até Vidas: 0 · Batidas: 3 e Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar os corações voltando para 3 no quadro depois de cada batida e Vidas: 2 no fim, porque a última batida cai no último quadro. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Na tela:** Concluir o teste em Ao iniciar com Vidas: 0 e Batidas: 3.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Professora:**",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Esta é a mesma experiência da primeira fase, agora para a gente entender onde as vidas da nave devem ser dadas. Aqui, uma pedra bate na nave de tempos em tempos.\n>\n> Olha aqui: eu coloco Dar três vidas à nave em Ao iniciar e clico em Começar o jogo. A nave começa com 3 vidas, e cada batida apaga um coração. Tá vendo? No fim do teste, a tela mostra Vidas: 0 e Batidas: 3, porque as vidas foram dadas uma vez, no começo, e as batidas conseguiram tirar.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**ID de edição:** `video-vidas-no-comeco-avatar-01`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Debinha (avatar):**",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “E se eu der as vidas o tempo todo?”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Levar a peça para Enquanto estiver rodando e mostrar o resultado real, inclusive Vidas: 2 no último quadro.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo. Repare: a batida apaga um coração, mas, no quadro seguinte, as vidas voltam para 3. No fim do teste, aparece Vidas: 2, porque a última batida foi bem no último quadro. Ou seja, a peça devolve as vidas o tempo todo, e a nave nunca perderia. Por isso, no seu jogo, as vidas vão ser dadas em Ao iniciar.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "## Seção 2. Dê e mostre as três vidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "### Clipe `video-vidas` · Dê e mostre as três vidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Direção geral do clipe:** Começar pela retomada: no \"Tá vendo?\", mostrar a tela sem corações. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Olhe a tela do seu jogo. Tá vendo? Não tem nenhum coração, porque a nave ainda não tem vidas.\n>\n> Lembra da experiência da parte anterior? Dadas em Ao iniciar, as vidas caíam a cada batida e não voltavam. Agora a gente vai dar três vidas à nave do seu jogo!\n>\n> As vidas são dadas uma vez, quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista, logo depois de Criar variável pontos.\n>\n> Agora abra Jogo 2D, depois Vida e placar e depois Vida, e pegue o bloco Dar ao sprite de vida. Arraste e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**ID de edição:** `video-vidas-avatar-01`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “E como eu vejo quantas vidas tenho?”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Agora os corações, que precisam ser desenhados em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo depois do placar. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Desenhar as vidas do sprite e solte nesse lugar.\n>\n> Escolha nave. O formato já vem corações, em x 12, y 48 e tamanho 22: mantenha. Depois, escolha vermelho.\n>\n> Olha só: aparecem três corações na tela, logo abaixo do placar!\n>\n> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Dar ao sprite nave 3 de vida, e, no fim de A cada quadro do jogo, depois do placar, está Desenhar as vidas do sprite nave como corações, em x 12, y 48 e tamanho 22. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "## Seção 3. Compare as batidas com proteção",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "### Clipe `video-protecao` · Compare as batidas com proteção",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar 0, 45 e 15 no seletor. A cena tem batidas nos quadros 1, 10 e 30; 15 permite ver expirar. Com 0 quadros, clicar três vezes em Avançar até a próxima pedra e mostrar as vidas de 3 a 0. Voltar ao começo, repetir com 45 e mostrar 36 e 16 quadros restando nas batidas 10 e 30, com 2 vidas no fim. Voltar ao começo, repetir com 15 e mostrar 6 quadros restando na batida 10 e a vida caindo na batida 30. Não prometer que a cena reproduz 45 quadros de jogo real em segundos. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Na tela:** Concluir as três batidas com proteção de 45 quadros; manter os corações e o tempo restante à vista.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Esta é uma experiência para a gente entender a proteção depois de uma batida: um tempinho em que outra batida não tira vida. Aqui, as pedras batem nos quadros 1, 10 e 30.\n>\n> Olha aqui: eu escolho 0 quadros em Proteção em quadros e clico em Avançar até a próxima pedra três vezes. Tá vendo? Cada batida apaga um coração, e a nave fica sem vidas, porque, sem proteção, as três batidas tiram as três vidas.\n>\n> Eu clico em Voltar ao começo, escolho 45 quadros e repito as três batidas. A primeira tira uma vida, e a proteção começa com 45 quadros. Repare: na batida do quadro 10, ainda restam 36 quadros de proteção, e a vida não cai. Na do quadro 30, ainda restam 16. Ou seja, só a primeira batida tirou vida.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**ID de edição:** `video-protecao-avatar-01`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “E quando esse tempinho de proteção acabar?”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Voltar ao começo, escolher 15 quadros e mostrar a terceira batida tirando vida.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Por último, eu volto ao começo e escolho 15 quadros. A primeira batida tira uma vida, e, na batida do quadro 10, restam 6 quadros, por isso a vida não cai. Mas, no quadro 30, a proteção já acabou, e olha só: essa batida tira outra vida. A proteção é um respiro com prazo. No seu jogo, a batida vai dar 45 quadros de proteção.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "## Seção 4. Programe as vidas e a batida",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "### Clipe `video-batida-e-coracoes` · Programe as vidas e a batida",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Direção geral do clipe:** Começar pela retomada: deixar uma pedra bater na nave e, no \"Tá vendo?\", mostrar que os corações continuam três. Encaixar a colisão entre o placar e o desenho dos corações, com o destino à vista antes de abrir a paleta. Confirmar a ordem final original: placar, colisão da nave, corações. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Clique no seu jogo e deixe uma pedra bater na nave. Tá vendo? Os corações continuam três, porque a batida ainda não existe no jogo.\n>\n> Lembra da experiência da parte anterior? Cada batida tirava uma vida e dava um tempo de proteção. Agora a gente vai programar essa batida no seu jogo!\n>\n> O jogo confere a batida em todo quadro, antes de desenhar os corações, para eles já mostrarem a vida certa. Por isso, deixe à vista o espaço entre Mostrar placar e Desenhar as vidas do sprite, dentro de A cada quadro do jogo.\n>\n> Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada sprite do grupo que colidir com o sprite. Arraste e solte entre o placar e o desenho dos corações.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**ID de edição:** `video-batida-e-coracoes-avatar-01`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Qual pedra o jogo vai tirar?”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Repare: o bloco já chega com o grupo asteroides, o sprite nave e, na linha de baixo, chamar o sprite de inimigo. Inimigo é o apelido da pedra que bateu na nave. Confira se ficou asteroides, nave e inimigo.\n>\n> Agora as ações da batida, que vão dentro dessa colisão. Deixe à vista o espaço de dentro dela. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar o sprite do grupo e solte nesse espaço. Escolha inimigo como sprite e asteroides como grupo, porque quem sai do jogo é a pedra, e não a nave.\n>\n> Deixe à vista o encaixe logo abaixo da retirada. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**ID de edição:** `video-batida-e-coracoes-avatar-02`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Falta tirar a vida da nave, né?”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Esperar a batida e a tremida acabarem; manter os corações à vista.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Machucar o sprite em e deixá-lo invencível por quadros e solte nesse encaixe. Escolha nave. O dano já vem em 1, e a proteção, em 45 quadros: mantenha, porque cada batida tira uma vida e depois dá esse respiro.\n>\n> Deixe à vista o encaixe logo abaixo do dano. Abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Tremer a tela com intensidade e solte nesse encaixe. A intensidade já vem em 8: mantenha.\n>\n> Agora teste: clique na área do jogo e deixe uma pedra atingir a nave. Olha só: a pedra sai, a tela treme e um coração apaga!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**ID de edição:** `video-batida-e-coracoes-avatar-03`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Um coração apagou!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Espere a proteção acabar e deixe outra pedra bater, para ver outro coração apagar. Por enquanto, ficar sem vidas ainda não encerra a partida: o fim da partida vem mais adiante.\n>\n> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: entre o placar e os corações está a colisão de asteroides com nave, com o apelido inimigo. Dentro dela vêm Tirar o sprite inimigo do grupo asteroides, Soltar explosão no sprite inimigo, Machucar o sprite nave em 1 e deixá-lo invencível por 45 quadros e Tremer a tela com intensidade 8, nessa ordem. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "## Seção 5. Confira o que você construiu",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "## Seção 6. Teste os pontos e as vidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "### Clipe `video-fecho` · Teste os pontos e as vidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "**Na tela:** Testar as duas colisões e inspecionar os encaixes, preservando os blocos anteriores. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.roteiro.md",
+      "kids": "> “Agora teste os pontos e as vidas do seu jogo. Faça um tiro errar: os pontos têm que ficar iguais. Depois, acerte uma pedra e confira se soma um ponto. Por último, deixe uma pedra bater na nave e confira se ela perde uma vida.\n>\n> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar variável pontos e Dar ao sprite nave 3 de vida estão em Ao iniciar, Somar 1 em pontos está na colisão do tiro, Machucar o sprite nave está na colisão da nave, e o placar e os corações estão fora das colisões, em A cada quadro do jogo. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Dê três vidas à nave",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Título: Compare quando dar as vidas\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Dar três vidas à nave em Ao iniciar, clicar em Começar o jogo e acompanhar os corações apagando até Vidas: 0 · Batidas: 3 e Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar os corações voltando para 3 no quadro depois de cada batida e Vidas: 2 no fim, porque a última batida cai no último quadro. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-vidas-no-comeco-avatar-01. Professora até “as batidas conseguiram tirar.”. Antes: Concluir o teste em Ao iniciar com Vidas: 0 e Batidas: 3. Debinha: “E se eu der as vidas o tempo todo?”. Retomada da professora: “Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo.”. Depois: Levar a peça para Enquanto estiver rodando e mostrar o resultado real, inclusive Vidas: 2 no último quadro.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Sua vez! Compare Dar três vidas à nave em Ao iniciar e em Enquanto estiver rodando, esperando cada teste parar e olhando os corações. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Compare quando dar as vidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Na experiência, coloque Dar três vidas à nave em Ao iniciar. Clique em Começar o jogo, espere o teste parar e observe os corações depois das batidas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo, espere o teste parar e compare os corações.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Em Ao iniciar, as vidas foram dadas uma vez, e a batida conseguiu tirar",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Ponha Dar três vidas à nave em Ao iniciar e comece o jogo. Observe as batidas.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "No motor, as vidas voltaram a encher depois das batidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Depois de testar Ao iniciar, ponha Dar três vidas à nave em Enquanto estiver rodando e comece o jogo.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Título: Dê e mostre as três vidas\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada: no \"Tá vendo?\", mostrar a tela sem corações. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-vidas-avatar-01. Professora até “Agora abra Jogo 2D, depois Vida e placar e depois Vida, e pegue o bloco Dar ao sprite de vida. Arraste e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E como eu vejo quantas vidas tenho?”. Retomada da professora: “Agora os corações, que precisam ser desenhados em todo quadro.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Título: Compare as batidas com proteção\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar 0, 45 e 15 no seletor. A cena tem batidas nos quadros 1, 10 e 30; 15 permite ver expirar. Com 0 quadros, clicar três vezes em Avançar até a próxima pedra e mostrar as vidas de 3 a 0. Voltar ao começo, repetir com 45 e mostrar 36 e 16 quadros restando nas batidas 10 e 30, com 2 vidas no fim. Voltar ao começo, repetir com 15 e mostrar 6 quadros restando na batida 10 e a vida caindo na batida 30. Não prometer que a cena reproduz 45 quadros de jogo real em segundos. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-protecao-avatar-01. Professora até “só a primeira batida tirou vida.”. Antes: Concluir as três batidas com proteção de 45 quadros; manter os corações e o tempo restante à vista. Debinha: “E quando esse tempinho de proteção acabar?”. Retomada da professora: “Por último, eu volto ao começo e escolho 15 quadros.”. Depois: Voltar ao começo, escolher 15 quadros e mostrar a terceira batida tirando vida.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Sua vez! Teste as três batidas com 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Compare as batidas com proteção",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Teste as três batidas com proteção de 0 quadros. Volte ao começo e repita com 45. Volte ao começo e repita com 15, observando quando a proteção acaba.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Título: Programe as vidas e a batida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada: deixar uma pedra bater na nave e, no \"Tá vendo?\", mostrar que os corações continuam três. Encaixar a colisão entre o placar e o desenho dos corações, com o destino à vista antes de abrir a paleta. Confirmar a ordem final original: placar, colisão da nave, corações.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-batida-e-coracoes-avatar-01. Professora até “Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada sprite do grupo que colidir com o sprite. Arraste e solte entre o placar e o desenho dos corações.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Qual pedra o jogo vai tirar?”. Retomada da professora: “Repare: o bloco já chega com o grupo asteroides, o sprite nave e, na linha de baixo, chamar o sprite de inimigo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-batida-e-coracoes-avatar-02. Professora até “Deixe à vista o encaixe logo abaixo da retirada. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Falta tirar a vida da nave, né?”. Retomada da professora: “Deixe à vista o encaixe logo abaixo da explosão.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-batida-e-coracoes-avatar-03. Professora até “Olha só: a pedra sai, a tela treme e um coração apaga!”. Antes: Esperar a batida e a tremida acabarem; manter os corações à vista. Debinha: “Um coração apagou!”. Retomada da professora: “Espere a proteção acabar e deixe outra pedra bater, para ver outro coração apagar.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Hora de conferir o que você construiu! Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "O placar aumenta mesmo quando nenhum tiro acerta. Onde deve ficar Somar 1 em pontos?",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Dentro de Ao iniciar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Dentro da colisão entre tiros e asteroides.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Solto no começo de A cada quadro do jogo.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "A soma fica dentro da colisão para acompanhar os acertos. Solta em cada quadro, ela aumentaria sem depender de um tiro acertar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "A nave bateu, perdeu uma vida e ainda está protegida. Outra pedra bate nesse intervalo. O que deve acontecer com as vidas?",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Voltam para três.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "A nave perde todas.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Não diminui outra vida enquanto a proteção está ativa.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "A proteção impede um novo dano durante os 45 quadros. Depois que esse tempo termina, uma nova batida pode tirar outra vida.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Título: Teste os pontos e as vidas\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Testar as duas colisões e inspecionar os encaixes, preservando os blocos anteriores.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Nave contra Asteroides",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Mova a nave, acerte os asteroides e tente chegar a 26 pontos sem perder as três vidas.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Dê e mostre as três vidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Dê 3 vidas à nave em Ao iniciar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Desenhe corações da nave em x 12, y 48, tamanho 22.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Programe as vidas e a batida",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Na colisão nave × asteroides, remova inimigo antes da explosão.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "A explosão da batida usa inimigo, antes de machucar a nave.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Confira o que você construiu",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Teste os pontos e as vidas",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Crie a variável pontos com 0 em Ao iniciar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Some 1 em pontos dentro da colisão tiros × asteroides.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Mantenha um único Somar 1 em pontos.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Na colisão tiros × asteroides, remova o tiro do grupo tiros.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Na mesma colisão, remova o asteroide e depois solte a explosão.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-4.manifesto.json",
+      "kids": "Exploda o asteroide atingido e toque o som de explosão dentro da colisão.",
+      "adulto": null
+    }
+  ]
+}

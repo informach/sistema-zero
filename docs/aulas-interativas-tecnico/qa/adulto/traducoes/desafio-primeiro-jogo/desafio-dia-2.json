@@ -1,0 +1,686 @@
+{
+  "curso": "desafio-primeiro-jogo",
+  "grupo": "desafio-dia-2",
+  "trechos": [
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "# A Chave do Farol · Dia 2 · A chave muda a aventura",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. recolher, guardar e programar-chave têm soluções distintas: retirar a chave; guardar a informação sem aviso; acrescentar o aviso. Cada entrada conserva a etapa anterior. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "## Resumo",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "- Estado de entrada: projeto enviado no Dia 1, com quatro direções e bordas. A retomada preparada só serve quando não há envio anterior.\n- Vitória do dia: a chave sai do chão, temChave guarda verdadeiro e uma mensagem informa a coleta.\n- Seções na entrada deste review: 2 · Seções finais: 4 (05/10/2026: uma ideia por seção).\n- Clipes na entrada deste review: 2 · Clipes finais: 4.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"); as pontes do Zappy começam convidando. Cada fala virou uma conversa contínua, com o porquê de cada resultado. Em vez de dizer que a variável aviso \"já veio preparada\", a fala diz o que ela faz: mostra a mensagem na tela. Seções, blocos e critérios não mudaram.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "**Vocabulário da aventura, 06/10/2026:** a comparação da variável passou de \"anotar num caderno\" para \"anotar num bloquinho\" (o caderno lembra a escola), também no meme e na partida nova que \"começa com o bloquinho em branco\". As retomadas dizem \"Lembra da experiência da parte anterior?\" e \"Lembra da experiência da primeira parte desta fase?\", e as falas citam **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar meu projeto** e **Concluir fase**.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "**Full review de 06/10/2026:** \"então\" saiu de todas as falas como palavra de ligação (no Farol inteiro ele é o nome de um espaço do bloco Se); no lugar ficaram \"por isso\", \"para o jogo responder\" ou duas frases. A abertura da experiência ganhou o porquê (\"Para o jogo saber que a chave foi pega, ele precisa guardar essa informação\") e o evento passou a ser \"uma coisa que acontece no jogo\". Na criação da área **Quando acontecer**, o destino virou \"um lugar sem blocos, ao lado das áreas\", para não se confundir com o \"espaço vazio\" que se arrasta para abrir lugar. A ponte da experiência termina em \"Quando terminar, clique em Próxima parte.\". Seções, blocos e critérios não mudaram.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "**Revisão para a gravação, 13/10/2026:** a experiência abre direto na cena, sem o projeto do Dia 1; o personagem passando pela chave fica para a retomada da seção 2. A variável virou \"um lugar com nome onde o jogo guarda uma informação\", e o próprio nome temChave é a pergunta de sim ou não (verdadeiro quer dizer sim, falso quer dizer não). A comparação diz o que é cada coisa: temChave é o bloquinho, e anotar é mudar temChave para verdadeiro. O vídeo aponta, na regra da coleta, a linha Alterar temChave para verdadeiro desligada, explica por que recomeçar antes de ligar e diz que o sumiço e o aviso são iguais nos dois modos. Cada bloco que chega com nome de outro jogo diz o nome e o clique: o encontro chega com jogador e inimigo, Destruir o sprite chega com resposta, e Criar e Alterar variável chegam com contador. O encaixe no evento é \"no espaço vazio ao lado da palavra fazer\", a seção 3 manda encontrar a área Quando acontecer antes do segundo bloco, a seção 4 fala o reinício por Atualizar, e a comemoração do fim cita temChave. As três pontes das montagens terminam na ação de saída. Durações novas, sem acelerar: seção 1 de 120 a 140 s para 160 a 190 s, seções 2 e 3 de 3 a 4 min para 4 a 5 min e seção 4 de 2 a 3 min para 3 a 4 min. Seções, blocos e critérios não mudaram; o texto do critério do aviso passou a \"Mude aviso para um texto dentro do encontro com a chave.\".",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "## Vozes e produção · 10/10/2026",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "**Dedé** participa em 6 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-2.roteiro.md) identifica **Professora**, **Dedé (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "As participações distinguem a chave sumir, a informação ficar guardada e o aviso orientar quem joga. Não mostrar temChave no jogo como se existisse um mostrador; ele pertence à experiência separada.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "| Entrada | Fala de Dedé |\n| --- | --- |\n| F2P1-D01 | “Mas a chave sumiu. Por que ainda está falso?” |\n| F2P2-D01 | “A chave some para sempre?” |\n| F2P3-D01 | “Como eu vejo se o jogo guardou a chave?” |\n| F2P4-D01 | “Agora quem joga vai saber para onde ir!” |",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela foram revistas em 10/10/2026 com as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md#chave-do-farol).",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "## Triagem dos conceitos",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "| O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |\n| --- | --- | --- | --- | --- | --- |\n| Falta da coleta | Não | No próprio jogo | Personagem passa por cima da chave; ela continua no chão | Na retomada da seção 2, antes de montar | Problema real, sem simular defeito |\n| Variável | Sim | No mostrador da experiência e depois na construção | Comparar a coleta com a regra de guardar desligada e ligada | Antes da montagem | Separar aparência, aviso e informação guardada |\n| Falso e verdadeiro | Sim | No mostrador temChave | Falso: coleta ainda não guardada; verdadeiro: guardada | Na experiência e no valor inicial | Evitar confundir falso com erro do aluno |\n| Evento | Sim, mas próximo da ação | No encontro real | Contato personagem/chave dispara ações | Explicar fazendo, na experiência da seção 1; lembrar na seção 2 antes de pegar o bloco | Ligar acontecimento a resposta |\n| Retirar um sprite | Não | No jogo | A chave desaparece uma vez por partida | Depois de montar | O bloco tem efeito visível imediato |\n| Guardar e mostrar | Sim | Mesmo sumiço e aviso, memória diferente | Comparar as duas regras, afastar e reiniciar | Experiência; retomada na construção | A mensagem sozinha não prova que a memória foi alterada |",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "A nova cena `collect-and-remember` concretiza a memória booleana deste jogo. A retirada da chave e o aviso são iguais nos dois modos; só a informação guardada muda. A cena de contagem de Cadê Todo Mundo continua específica à contagem. O uso da memória para decidir a resposta será retomado no Dia 3.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "## Diagnóstico do desenho atual",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "O review de 03/10 encontrou conceitos na seção somente de vídeo, separados do momento da montagem. A revisão de 04/10 acrescenta ação nessa primeira seção: comparar, afastar e reiniciar, acompanhando temChave. A definição de variável aparece no mostrador temChave; o evento é explicado na experiência da seção 1, ao clicar em Encostar na chave, e lembrado na seção 2, antes de criar a área Quando acontecer.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "A definição de evento como “uma instrução” foi corrigida: o encontro é o acontecimento; o bloco programa a resposta. Falso ganhou significado concreto. O aviso foi distinguido da memória.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a mensagem. Os casos foram reproduzidos em testes antes da correção.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "## Proposta final",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "### Seção 1. O jogo guardou a chave?",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "- **Intenção:** exploração (`exploration`).\n- **Por que existe:** distinguir recolher, avisar e guardar antes de programar.\n- **Conclui quando:** vídeo e quatro descobertas reais na experiência.\n- **Blocos:** `video-d2-contexto`, `ponte-d2-contexto`, novo `experiencia-memoria`. O vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "**Ponte do Zappy na página (não gravar):** Sua vez! Faça os testes e fique de olho em temChave: compare o que some da tela com o que fica guardado. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "### Seção 2. Recolha a chave",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "- **Intenção:** aplicação (`application`), com verificação e sem envio.\n- **Por que existe:** programar o evento (o encontro) e a primeira resposta visível: a chave sai do chão.\n- **Conclui quando:** vídeo e aprovação dos três critérios de movimento mais a retirada dentro do encontro.\n- **Blocos:** `video-d2-recolher`, `ponte-d2-recolher`; Estúdio pela `workspaceKey: projeto`.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "**Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "O projeto do Dia 1 ainda não tem a área **Quando acontecer**: o Estúdio só cria as áreas que têm blocos. A fala ensina a pegá-la em **Áreas do projeto** e soltar num lugar sem blocos, ao lado das áreas, e só depois o encontro vai para dentro dela. O critério `recolher` exige o encontro nessa área.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "### Seção 3. Guarde que a chave foi encontrada",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "- **Intenção:** aplicação (`application`), com verificação e sem envio.\n- **Por que existe:** aplicar a memória vista na experiência: temChave começa em falso e vira verdadeiro no encontro.\n- **Conclui quando:** vídeo e aprovação de sete critérios: movimento, retirada, temChave em falso e verdadeiro no encontro, depois da retirada.\n- **Blocos:** `video-d2-guardar`, `ponte-d2-guardar`; Estúdio pela `workspaceKey: projeto`.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "**Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "A mudança de temChave não aparece no jogo. A fala diz isso com honestidade: quem usa a informação é a porta, no Dia 3, e por enquanto quem confere é a verificação.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "### Seção 4. Avise quem está jogando",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "- **Intenção:** construção e entrega (`delivery`).\n- **Por que existe:** mostrar a mensagem da coleta, testar a coleta inteira e entregar o dia.\n- **Conclui quando:** vídeo, aprovação dos oito critérios e envio confirmado do projeto.\n- **Blocos:** `video-d2-programar`, `ponte-d2-programar` e o Estúdio `projeto` com a cadeia existente.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "**Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "Testar coleta, mudança do aviso e reinício por Atualizar, que a fala pede (\"Agora clique em Atualizar. Começa uma partida nova: a chave volta para o chão, e o aviso diz de novo Encontre a chave e vá ao farol.\"). O texto do aviso com as palavras da criança fica para o mexa e veja do Dia 3. Conferir **Verificar esta parte → Objetivo cumprido! → Enviar meu projeto → Enviar → Concluir fase**. Entre o envio e **Concluir fase**, reconhecer a conquista com \"Pronto, você programou a coleta da chave: ela sai do chão, o jogo guarda em temChave que ela foi pega, e o aviso muda!\" e retomar uma vez só a surpresa que o narrador contou no Dia 1, sem mostrar nada dela (\"E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.\").",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "## Experiências e demonstrações desta aula",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "Cena `collect-and-remember`, cenário Farol: Guardar a coleta, Encostar na chave, Afastar e Recomeçar a partida. Quatro metas: coletar sem memória, coletar com memória, conservar a informação ao afastar e reiniciar depois da coleta guardada. O reinício mantém a regra escolhida e as descobertas, mas recoloca a chave e temChave falso. O controle da regra fica indisponível depois da coleta, com motivo visível, até reiniciar. Sem palpite ou pergunta final obrigatórios.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "A verificação é cumulativa em cada montagem: a seção 2 confere o movimento e a retirada; a seção 3 acrescenta temChave; a entrega confere os oito critérios. O texto do aviso pode usar palavras próprias; o teste jogado confere seu sentido.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "## Vídeos",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "| Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |\n| --- | --- | --- | --- | --- |\n| `video-d2-contexto` | Demonstração explicada da memória | Nova experiência, aberta direto na cena | 160 a 190 s | Gravar |\n| `video-d2-recolher` | Encontro com a chave, retirada, teste e verificação | Projeto do Dia 1 | 4 a 5 min | Gravar |\n| `video-d2-guardar` | temChave em falso e verdadeiro no encontro, verificação | Mesmo projeto | 4 a 5 min | Gravar |\n| `video-d2-programar` | Aviso, teste e envio (o aviso com as palavras da criança fica para o Dia 3) | Mesmo projeto | 3 a 4 min | Gravar |",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "**Personalização de 06/10/2026:** os projetos recebem o catálogo ampliado de imagens, com nomes reconhecíveis. Os sprites continuam `personagem`, `chave`, `farol` e `barco`; os passos e os critérios de coleta usam esses nomes e não dependem do desenho escolhido. A escolha de velocidade saiu do Dia 1; o movimento preparado permanece em 3.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "## Continuidade",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "Preservar as seções `contexto` e `programar-chave` (agora a entrega do aviso), os vídeos existentes e a chave do Estúdio. As seções `recolher` e `guardar` são novas. Manter a aposentadoria histórica de `video-d2-teste`.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "A aula entrega movimento, borda e coleta; não programa a porta. Valores: temChave começa falso e vira verdadeiro na coleta; aviso recebe a mensagem; ganhou continua falso. O Dia 3 retoma prioritariamente o envio da criança. Não substituir mídia existente por plannedVideo sem reconciliação no admin.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "## Revisão de ritmo e entendimento · 10/10/2026",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "O roteiro tem 6 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.md",
+      "kids": "| Entrada | Depois da professora | Criança | Retomada da professora |\n| --- | --- | --- | --- |\n| F2P2-R01 | “Repare que o bloco chega com dois nomes, jogador e inimigo. Clique em jogador e escolha personagem. Depois clique em inimigo e escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.” | Dedé: “Só pega se o personagem encostar mesmo na chave!” | “Agora vem a ação: tirar a chave do chão. Essa ação vai dentro do encontro, no espaço vazio ao lado da palavra fazer. Deixe esse espaço à vista.” |\n| F2P3-R01 | “Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.” | Dedé: “Ah! Na partida nova eu tenho que buscar a chave outra vez!” | “Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Encontre a área Quando acontecer, arrastando um espaço vazio entre os blocos se precisar, e deixe esse lugar à vista.” |",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "# Roteiro de gravação · A Chave do Farol · Dia 2",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Vozes e produção · 10/10/2026:** **Professora** conduz; **Dedé (avatar)** participa em 6 entradas marcadas para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações foram revistas em 10/10/2026 com as novas falas: cada alvo cobre a fala estimada a 137 palavras por minuto, contando a criança, e, nas montagens, os gestos sem fala; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md#chave-do-farol).",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Notas de gravação · 13/10/2026:** gravar a experiência da seção 1 numa sessão sem progresso nesse bloco, com o estado inicial da cena: chave no chão, Guardar a coleta desligado, temChave falso e o aviso Encontre a chave e vá ao farol. Abrir a fase numa aba nova depois do último deploy. Gravar o envio da seção 4 numa sessão sem envio anterior nesta fase: Recomeçar não apaga o envio; para repetir a tomada, usar outro perfil de ensaio. Mostrar o selo **Guardado na sua conta** só quando ele aparecer de verdade. Confirmar em **Enviar** sem preencher o **Recado (opcional)**. Na revisão de 13/10/2026, os alvos subiram para cobrir as falas e os gestos novos, sem acelerar: seção 1 de 120 a 140 s para 160 a 190 s, seções 2 e 3 de 3 a 4 min para 4 a 5 min e seção 4 de 2 a 3 min para 3 a 4 min.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "Quatro seções, quatro vídeos: a experiência da memória e, depois, uma montagem para cada ideia, sempre no mesmo projeto (recolher a chave, guardar a coleta e avisar quem joga). As seções 2 e 3 verificam sem enviar; a seção 4 verifica e envia. Retomar o projeto enviado no Dia 1; o projeto preparado do Dia 2 só é a alternativa quando não houver envio anterior. Não reconstruir nem substituir um projeto já feito pela pessoa. O vídeo da experiência é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. Cada montagem tem tempo para os encaixes.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Continuidade das imagens:** o projeto traz o catálogo ampliado de personagens, cenários, barcos, chaves e pares de faróis. Nesta montagem, os nomes dos sprites continuam personagem e chave; não trocar por nomes de imagens nos campos do encontro. As escolhas ficam no Dia 3.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"ou seja\", \"agora que\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"). Neste curso, \"então\" não serve de palavra de ligação: é o nome de um espaço do bloco Se. O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026).",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "## Seção 1. O jogo guardou a chave?",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "### Vídeo `video-d2-contexto` · O jogo guardou a chave?",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Duração alvo:** 160 a 190 segundos.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** abrir direto na experiência `collect-and-remember`, com a chave no chão. Na primeira frase, apontar o personagem e a chave da cena; o teste no projeto da pessoa fica para a retomada da seção 2. Depois demonstrar a coleta com Guardar a coleta desligado, no ritmo da fala. No \"Repare neste nome aqui\", apontar o mostrador `temChave`. No \"Olha só\", deixar ver a chave subindo e sumindo e o aviso novo na faixa do jogo. No \"A regra da coleta\", apontar a regra na bancada, começando pelo bloco do evento. No \"tá vendo?\", manter `temChave` em falso à vista. **Meme na comparação:** na frase do bloquinho, o personagem anotando \"peguei a chave ✔\" num bloquinho; ao lado, o mesmo personagem sem anotar, com cara de \"esqueci…\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Professora:**",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"O seu personagem já anda, mas passa pela chave sem pegar. Para o jogo saber que a chave foi pega, ele precisa guardar essa informação. Esta é uma experiência para a gente entender como uma variável guarda uma informação do jogo.\n>\n> Repare neste nome aqui: temChave. temChave é uma variável: um lugar com nome onde o jogo guarda uma informação. O próprio nome é uma pergunta: o personagem tem chave? E a resposta só pode ser verdadeiro, que quer dizer sim, ou falso, que quer dizer não. Agora está falso, porque ele ainda não pegou a chave.\n>\n> Guardar uma informação é como anotar num bloquinho para não esquecer: se ninguém anota, ninguém lembra depois. No seu jogo, temChave é o bloquinho, e anotar é mudar temChave para verdadeiro.\n>\n> Olha aqui: com Guardar a coleta desligado, eu clico em Encostar na chave. Olha só: a chave saiu do chão, e o aviso mudou. Encostar na chave é um evento, que é uma coisa que acontece no jogo. A regra da coleta responde a esse evento: ela tira a chave do chão e muda o aviso. Mas tá vendo? temChave continua falso.\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** **F2P1-D01** · Dedé entra depois da coleta sem memória, com a chave ausente e temChave falso visíveis. Não reiniciar durante a pergunta.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Dedé (avatar):**",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Mas a chave sumiu. Por que ainda está falso?\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai. Mostrar o valor falso ao responder e, no \"Olha aqui na regra\", apontar a linha Alterar temChave para verdadeiro com a marca (desligado). Depois recomeçar a partida antes de ligar Guardar a coleta; ao ligar, deixar ver a marca (desligado) sumir da linha antes de clicar em Encostar na chave. No \"Olha só\", deixar ver a chave sumir, o aviso novo e `temChave` em verdadeiro. Depois afastar e reiniciar conforme a fala.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"É que tirar a chave do chão não guarda essa informação. Olha aqui na regra: a linha Alterar temChave para verdadeiro está desligada. Falta anotar que a chave foi pega. E é essa anotação que a porta do farol vai conferir.\n>\n> A regra só pode mudar com a chave no chão. Por isso, eu clico em Recomeçar a partida, ligo Guardar a coleta e clico em Encostar na chave de novo. Olha só: a chave sumiu e o aviso mudou igualzinho, mas desta vez temChave virou verdadeiro! O jogo anotou que a chave foi pega.\n>\n> E quando eu clico em Afastar, temChave continua verdadeiro, mesmo longe da chave. É que a anotação fica guardada.\n>\n> Por último, eu clico em Recomeçar a partida, e temChave volta para falso, porque uma partida nova começa com o bloquinho em branco.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final. Guardar a coleta só muda com a chave no chão; por isso o recomeço vem antes de ligar.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "## Seção 2. Recolha a chave",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "### Vídeo `video-d2-recolher` · Recolha a chave",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Duração alvo:** 4 a 5 minutos, incluindo encaixes, teste e verificação.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** abrir o projeto da pessoa, o enviado no Dia 1. Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema (levar o personagem até a chave e, no \"Tá vendo?\", mostrar que ele passa por cima dela e a chave continua no chão), depois a lembrança e o anúncio. Em cada encaixe, primeiro deixar o destino à vista; só então abrir a categoria e pegar o bloco. O projeto ainda não tem a área **Quando acontecer**: deixar à vista um lugar sem blocos ao lado das áreas, abrir **Áreas do projeto**, pegar **Quando acontecer** e soltar nesse lugar. Se for preciso abrir espaço, arrastar um espaço vazio entre os blocos; na fala, \"lugar sem blocos\" é o destino e \"espaço vazio\" é só o ponto de onde se arrasta. Depois abrir **Jogo 2D → Colisões → Encostar e bloquear**, pegar **Quando o sprite ... começar a encostar no sprite ...** e soltar dentro da área nova. O bloco nasce com `jogador` e `inimigo`: no \"Repare\", apontar os dois nomes; clicar em `jogador` e escolher `personagem`, depois em `inimigo` e escolher `chave`.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Aqui no seu jogo, leve o personagem até a chave. Tá vendo? Ele passa por cima dela, e a chave continua no chão, porque o jogo ainda não sabe o que fazer quando os dois se encostam.\n>\n> Lembra da experiência da parte anterior? Quando o personagem encostava, a chave saía do chão. Agora a gente vai programar isso no seu jogo!\n>\n> Esse encontro é um evento, e os eventos ficam numa área própria, chamada Quando acontecer. Mas repare: o seu projeto ainda não tem essa área, por isso a gente vai criar uma.\n>\n> Deixe à vista um lugar sem blocos, ao lado das áreas. Se não houver lugar livre na tela, arraste um espaço vazio entre os blocos até aparecer um.\n>\n> Agora abra Áreas do projeto, pegue Quando acontecer e solte nesse lugar sem blocos.\n>\n> Com a área criada, abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Quando o sprite começar a encostar no sprite.\n>\n> Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe.\n>\n> Repare que o bloco chega com dois nomes, jogador e inimigo. Clique em jogador e escolha personagem. Depois clique em inimigo e escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** **F2P2-R01** · Dedé entra depois de configurar os dois nomes. Deixar o evento visível, sem executar o encontro ainda.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Só pega se o personagem encostar mesmo na chave!\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai. Mostrar o espaço vazio ao lado de **fazer**, dentro do encontro, antes de buscar Destruir o sprite. Com esse espaço à vista, abrir **Jogo 2D → Sprites → Criar e trocar aparência**, pegar **Destruir o sprite ...**, soltar ao lado de **fazer**, clicar em `resposta` (o nome com que o bloco nasce) e escolher `chave`.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Agora vem a ação: tirar a chave do chão. Essa ação vai dentro do encontro, no espaço vazio ao lado da palavra fazer. Deixe esse espaço à vista.\n>\n> Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, e pegue o bloco Destruir o sprite.\n>\n> Arraste e solte no espaço vazio ao lado de fazer. O bloco chega com o nome resposta: clique em resposta e escolha chave.\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** **F2P2-D01** · Dedé entra depois do encaixe e da escolha de chave. Não interromper a professora com um bloco preso no cursor; manter o nome Destruir o sprite chave visível.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"A chave some para sempre?\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai. Explicar com o bloco já encaixado. A coleta e o reinício serão demonstrados logo a seguir; não inventar uma perda permanente.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Aqui, destruir só tira a chave desta partida. Quando você começa outra, ela volta. E repare que quem sai é a chave, não o personagem.\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** depois da atualização da Pré-visualização, levar o personagem até a chave e passar de novo pelo mesmo lugar. Clicar em **Atualizar**, na barra logo acima do jogo, para começar outra partida e mostrar a chave de volta; em barra estreita, o botão aparece só como ⟳. Clicar em **Verificar esta parte** e apontar **Próxima parte**. O envio não faz parte desta seção.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Agora vamos testar! Leve o personagem até a chave. Olha só: a chave some do chão!\n>\n> Para ver de novo, clique em Atualizar, logo acima do jogo. Começa uma nova partida, e a chave volta para o chão.\n>\n> Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e chave, e dentro dele está Destruir o sprite chave. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.\n>\n> Quando aparecer Objetivo cumprido!, clique em Próxima parte.\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Conferência de produção:** a verificação confere também o movimento do Dia 1. A seção exige o vídeo e a aprovação, sem envio.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "## Seção 3. Guarde que a chave foi encontrada",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "### Vídeo `video-d2-guardar` · Guarde que a chave foi encontrada",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Duração alvo:** 4 a 5 minutos, incluindo encaixes e verificação.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** mostrar o fim da área **Ao iniciar**, logo abaixo de **Ativar controles clássicos**. Abrir **Programação → Variáveis**, pegar **Criar variável ... com valor ...** e soltar ali. No \"Repare que, logo acima\", apontar as variáveis `aviso` e `ganhou` que já estão em **Ao iniciar**. Clicar em `contador` (o nome com que o bloco nasce), apagar, escrever `temChave` e clicar fora do campo. Abrir **Programação → Lógica & Se**, pegar o bloco **verdadeiro** (no catálogo, Verdadeiro ou falso; na tela, só o menu), soltar sobre o `0` do bloco e escolher **falso** no menu.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Lembra da experiência da primeira parte desta fase? Com Guardar a coleta desligado, a chave sumia, mas temChave continuava falso. O seu jogo está assim. Agora a gente vai ensinar o seu jogo a guardar que a chave foi pega!\n>\n> Primeiro, a gente precisa criar a variável temChave. Ela nasce quando o jogo começa. Por isso, encontre o fim da área Ao iniciar, logo abaixo de Ativar controles clássicos. Se esse lugar não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ele aparecer.\n>\n> Agora abra Programação e depois Variáveis, e pegue o bloco Criar variável com valor.\n>\n> Arraste e solte logo abaixo de Ativar controles clássicos. Repare que, logo acima, o seu jogo já tem outras variáveis, como aviso. temChave vai ficar junto delas.\n>\n> Esse bloco chega com o nome contador. Clique em contador, apague e escreva temChave, tudo junto e com o C maiúsculo. Depois clique fora do campo.\n>\n> O valor desse bloco vem com o número 0. Só que temChave não guarda número: ela guarda verdadeiro ou falso. Por isso, a gente vai trocar esse 0. Abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do 0. Ele toma o lugar do número.\n>\n> No menu desse bloco, troque verdadeiro por falso, porque o jogo começa sem a chave.\n>\n> Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** **F2P3-R01** · Dedé entra com temChave falso em Ao iniciar à vista. Não mostrar um contador de chave inexistente no jogo.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Ah! Na partida nova eu tenho que buscar a chave outra vez!\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai. Trazer à vista a área **Quando acontecer**, arrastando um espaço vazio se for preciso, e mostrar o encontro que vai mudar a informação depois da coleta. Deixar à vista o bloco **Destruir o sprite chave**, dentro do encontro. Abrir **Programação → Variáveis**, pegar **Alterar variável ... para ...** e soltar logo abaixo dele, ainda dentro do evento. Clicar em `contador` (o nome com que o bloco nasce) e escolher `temChave` na lista. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o `1` e manter **verdadeiro**.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Encontre a área Quando acontecer, arrastando um espaço vazio entre os blocos se precisar, e deixe esse lugar à vista.\n>\n> Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.\n>\n> Arraste e solte logo abaixo de Destruir o sprite. Esse bloco também chega com contador: clique em contador e escolha temChave.\n>\n> O valor dele vem com o número 1. Troque do mesmo jeito: abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do 1. Desta vez, deixe em verdadeiro, porque agora o personagem está com a chave.\n>\n> Confira se ficou assim: no encontro com a chave, primeiro vem Destruir o sprite chave e, logo abaixo, Alterar temChave para verdadeiro.\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** **F2P3-D01** · Dedé entra depois da conferência dos blocos. Não criar um mostrador no jogo: temChave só foi visível na experiência separada.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Como eu vejo se o jogo guardou a chave?\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai. Apontar a declaração em **Ao iniciar** e a mudança no encontro. Clicar em **Verificar esta parte** e apontar **Próxima parte**. O envio não faz parte desta seção.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"No jogo, você ainda não consegue ver temChave, porque quem vai usar essa informação é a porta do farol, no Dia 3. Por isso, desta vez quem confere o que você montou é a verificação.\n>\n> Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.\n>\n> Quando aparecer Objetivo cumprido!, clique em Próxima parte.\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Conferência de produção:** a mudança de temChave não aparece no jogo; a experiência da seção 1 já mostrou a informação guardada. A seção exige o vídeo e a aprovação, sem envio.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "## Seção 4. Avise quem está jogando",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "### Vídeo `video-d2-programar` · Avise quem está jogando",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Duração alvo:** 3 a 4 minutos, incluindo encaixe, testes e envio.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema (levar o personagem até a chave e, no \"Tá vendo?\", mostrar que o aviso continua dizendo Encontre a chave e vá ao farol), depois a lembrança e o anúncio. Depois, com o bloco de `temChave` à vista dentro do encontro, abrir **Programação → Variáveis**, pegar outro **Alterar variável ... para ...**, soltar logo abaixo dele, clicar em `contador` e escolher `aviso`. Em **Programação → Valores**, pegar **texto**, soltar sobre o `1`, clicar em `Olá`, apagar e escrever `Você pegou a chave! Agora vá ao farol.`. Mostrar os três blocos na ordem.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Aqui no seu jogo, leve o personagem até a chave. Tá vendo? Ela some, mas o aviso continua dizendo Encontre a chave e vá ao farol, porque nenhum bloco muda o aviso quando a chave é pega.\n>\n> Lembra da experiência da primeira parte desta fase? Quando a chave era recolhida, o aviso mudava. Agora a gente vai fazer o seu aviso mudar também!\n>\n> O aviso tem que mudar no encontro com a chave. Por isso, o próximo bloco vai logo abaixo do bloco de temChave, ainda dentro do encontro. Deixe esse lugar à vista.\n>\n> Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.\n>\n> Arraste e solte logo abaixo do bloco de temChave. Clique em contador e escolha aviso. É essa variável que mostra a mensagem na tela.\n>\n> Agora a gente precisa trocar o número desse bloco por um texto, que é a mensagem. Abra Programação e depois Valores, pegue o bloco texto e solte em cima do número.\n>\n> Repare que o bloco texto vem com a palavra Olá. Clique em Olá, apague e escreva: Você pegou a chave! Agora vá ao farol.\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** **F2P4-D01** · Dedé entra depois de a mensagem ser escrita, com o texto encaixado à vista. A reação comenta a função do aviso; ainda falta testar o resultado.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Agora quem joga vai saber para onde ir!\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai. Depois da atualização da Pré-visualização, levar o personagem até a chave e ler o aviso novo. No \"clique em Atualizar\", clicar em **Atualizar**, na barra logo acima do jogo, e mostrar a chave de volta no chão e o aviso inicial. Na conferência, apontar o texto encaixado em **Alterar variável aviso**, dentro do encontro; não apontar a declaração de `aviso` em **Ao iniciar** nem o bloco de `temChave`.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Vamos conferir no jogo! Leve o personagem até a chave. Olha só: a chave some e o aviso muda!\n>\n> Agora clique em Atualizar. Começa uma partida nova: a chave volta para o chão, e o aviso diz de novo Encontre a chave e vá ao farol.\n>\n> Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro com a chave estão três blocos, primeiro Destruir o sprite chave, depois Alterar temChave para verdadeiro e, por último, Alterar aviso para a sua mensagem. Depois de corrigir, teste de novo.\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Na tela:** clicar em **Verificar esta parte**, mostrar o resultado ou uma pendência real e corrigir antes de verificar de novo. Depois de **Objetivo cumprido!**, clicar em **Enviar meu projeto**, confirmar em **Enviar** sem preencher o **Recado (opcional)** e aguardar. Gravar numa sessão sem envio anterior nesta fase (ver as notas de gravação). No \"lembra da surpresa\", lembrar sem mostrar nada dela. Apontar **Concluir fase**.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "> \"Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.\n>\n> Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.\n>\n> Pronto, você programou a coleta da chave: ela sai do chão, o jogo guarda em temChave que ela foi pega, e o aviso muda! E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.\n>\n> Quando aparecer Projeto enviado!, clique em Concluir fase.\"",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.roteiro.md",
+      "kids": "**Conferência de produção:** a verificação confere também o movimento do Dia 1 e não exige copiar o texto do aviso. Antes de Concluir fase, a fala lembra uma vez só a surpresa plantada no Dia 1, sem dizer o que é (decisão do responsável, 07/10/2026). A seção exige o vídeo, a aprovação em **Verificar esta parte** e o envio confirmado.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "A chave muda a aventura",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Título: O jogo guardou a chave?\n\nSituar a coleta que falta já dentro da experiência, aberta direto na cena com a chave no chão (o teste no projeto da pessoa fica para a retomada da parte 2). Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: temChave é um lugar com nome onde o jogo guarda uma informação, e o nome é uma pergunta de sim ou não; encostar na chave é um evento; temChave é o bloquinho, e anotar é mudar temChave para verdadeiro. Mostrar a coleta sem memória, apontar na regra da coleta a linha Alterar temChave para verdadeiro desligada, recomeçar a partida antes de ligar Guardar a coleta, repetir a coleta com o mesmo sumiço e o mesmo aviso, afastar e recomeçar, nomeando temChave em cada um. Terminar com Agora é a sua vez e Próxima parte. Participações de Dedé, na ordem de corte: F2P1-D01, depois de \"temChave continua falso.\", Dedé diz \"Mas a chave sumiu. Por que ainda está falso?\"; a professora retoma \"É que tirar a chave do chão não guarda essa informação.\". Quando a entrada vem depois de um gesto, concluir o gesto antes de Dedé entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Sua vez! Faça os testes e fique de olho em temChave: compare o que some da tela com o que fica guardado. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "O jogo guardou a chave?",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Deixe Guardar a coleta desligado e clique em Encostar na chave. Olhe a chave, o aviso e temChave. Clique em Recomeçar a partida, ligue Guardar a coleta e clique em Encostar na chave de novo. Depois clique em Afastar e, por último, em Recomeçar a partida. Acompanhe temChave em cada teste.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Título: Recolha a chave\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (o personagem passa por cima da chave e ela continua no chão, porque o jogo ainda não sabe o que fazer quando os dois se encostam), a lembrança da experiência (ao encostar, a chave saía do chão) e o anúncio colado ao primeiro passo. No projeto enviado no Dia 1, que ainda não tem a área Quando acontecer: criá-la por Áreas do projeto e, com o destino à vista, montar dentro dela o encontro (o bloco chega com jogador e inimigo: clicar em cada nome e escolher personagem e chave) e, no espaço vazio ao lado da palavra fazer, Destruir o sprite (chega com resposta: clicar e escolher chave). Testar a chave sumindo e voltando com Atualizar. Verificar esta parte, Objetivo cumprido! e Próxima parte, sem envio. Participações de Dedé, na ordem de corte: F2P2-R01, depois de \"Repare que o bloco chega com dois nomes, jogador e inimigo. Clique em jogador e escolha personagem. Depois clique em inimigo e escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.\", Dedé diz \"Só pega se o personagem encostar mesmo na chave!\"; a professora retoma \"Agora vem a ação: tirar a chave do chão. Essa ação vai dentro do encontro, no espaço vazio ao lado da palavra fazer. Deixe esse espaço à vista.\". F2P2-D01, depois de \"O bloco chega com o nome resposta: clique em resposta e escolha chave.\", Dedé diz \"A chave some para sempre?\"; a professora retoma \"Aqui, destruir só tira a chave desta partida.\". As entradas -R vieram da revisão de ritmo de 10/10/2026: mostram uma consequência, fazem uma pergunta ou reagem ao teste, sem tirar passos da professora. Quando a entrada vem depois de um gesto, concluir o gesto antes de Dedé entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Título: Guarde que a chave foi encontrada\n\nComeçar pela retomada, curta: como o efeito não aparece no jogo, só a lembrança (com Guardar a coleta desligado, a chave sumia, mas temChave continuava falso; o jogo está assim) e o anúncio colado ao primeiro passo. Criar temChave começando em falso no fim de Ao iniciar, junto das variáveis que já estão ali (o bloco chega com contador e 0: clicar em contador, escrever temChave e trocar o 0 por falso). Depois encontrar a área Quando acontecer e mudar temChave para verdadeiro dentro do encontro, logo abaixo de Destruir o sprite (o Alterar chega com contador: clicar e escolher temChave). Verificar esta parte, Objetivo cumprido! e Próxima parte, sem envio. Participações de Dedé, na ordem de corte: F2P3-R01, depois de \"Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.\", Dedé diz \"Ah! Na partida nova eu tenho que buscar a chave outra vez!\"; a professora retoma \"Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Encontre a área Quando acontecer, arrastando um espaço vazio entre os blocos se precisar, e deixe esse lugar à vista.\". F2P3-D01, depois de \"Alterar temChave para verdadeiro.\", Dedé diz \"Como eu vejo se o jogo guardou a chave?\"; a professora retoma \"No jogo, você ainda não consegue ver temChave,\". As entradas -R vieram da revisão de ritmo de 10/10/2026: mostram uma consequência, fazem uma pergunta ou reagem ao teste, sem tirar passos da professora. Quando a entrada vem depois de um gesto, concluir o gesto antes de Dedé entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Título: Avise quem está jogando\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (a chave some, mas o aviso continua dizendo Encontre a chave e vá ao farol, porque nenhum bloco muda o aviso), a lembrança da experiência (o aviso mudava) e o anúncio colado ao primeiro passo. Mudar o aviso dentro do encontro, logo abaixo de temChave (o Alterar chega com contador: clicar e escolher aviso), com o texto de coleta no lugar de Olá. Testar, clicar em Atualizar e mostrar a chave e o aviso inicial de volta, verificar inclusive o movimento anterior, envio confirmado. Antes de Concluir fase, reconhecer a conquista com Pronto, você programou a coleta da chave: ela sai do chão, o jogo guarda em temChave que ela foi pega, e o aviso muda! e lembrar a surpresa uma vez só, sem mostrar nada dela (E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.). Terminar em Concluir fase. Participações de Dedé, na ordem de corte: F2P4-D01, depois de \"Você pegou a chave! Agora vá ao farol.\", Dedé diz \"Agora quem joga vai saber para onde ir!\"; a professora retoma \"Vamos conferir no jogo! Leve o personagem até a chave.\". Quando a entrada vem depois de um gesto, concluir o gesto antes de Dedé entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Distinguir retirada, aviso e memória; observar a informação ao afastar e ao recomeçar.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Recolha a chave",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Programar o encontro entre personagem e chave e tirar a chave da partida.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Retire a chave dentro do encontro entre personagem e chave.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Guarde que a chave foi encontrada",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Criar temChave em falso e guardar verdadeiro no encontro com a chave.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Crie temChave começando em falso.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "No encontro com a chave, retire a chave antes de mudar temChave.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Mude temChave para verdadeiro dentro do encontro com a chave.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Avise quem está jogando",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Mostrar o aviso da coleta, testar a coleta inteira e enviar a atividade.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "No encontro com a chave, retire a chave antes de mudar temChave e o aviso.",
+      "adulto": null
+    },
+    {
+      "onde": "desafio-dia-2.manifesto.json",
+      "kids": "Mude aviso para um texto dentro do encontro com a chave.",
+      "adulto": null
+    }
+  ]
+}

@@ -1,0 +1,1046 @@
+{
+  "curso": "nave-contra-asteroides",
+  "grupo": "nave-contra-asteroides-dia-5",
+  "trechos": [
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "# Nave Contra Asteroides · Aula 9 · Termine e recomece a partida",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md).",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "## Resumo",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "- Estado de entrada: Abertura aguarda Enter; nave, tiros e asteroides só agem em jogando. Ainda sem vitória, derrota ou reinício.\n- Resultado da aula: Jogo completo original: alvo 26, vitória, derrota, retorno à abertura e nova partida.\n- Seções: 6. Vídeos: 5.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "## Diagnóstico e decisão",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "Amplia a abertura já testada. As regras de final e o reinício são construídos em etapas distintas; a publicação tem instruções completas.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "## Triagem dos conceitos",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Constante e comparação | Meta de 26 pontos no projeto | A constante guarda uma meta que não muda durante a partida; comparar o valor atual com ela. |\n| Finais | Duas condições dentro da partida e dois ramos de tela | Conservar a ordem original: verificar vitória e depois derrota. |\n| Reinício | restart antes de ampliar Enter | Trocar só o estado não refaz pontos, vidas e grupos. |\n| Conclusão | Quiz formativo e teste do ciclo | Ganhar, perder, recomeçar e enviar; publicação opcional no Mural. |",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "## Proposta final",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "### Seção 1. Defina quando ganhar e perder",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Tarefa:** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Blocos na página:** video-finais → fala-finais.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Zappy na página (não gravar):** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-finais-avatar-01. Professora até “O nome chega como PI: troque PI por alvo e o 0 do valor por 26.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Preciso fazer 26 pontos para ganhar!”. Retomada da professora: “Agora a pergunta da vitória, que o jogo faz em todo quadro, durante a partida.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-finais-avatar-02. Professora até “No sinal, clique em > e escolha ≥, que quer dizer maior ou igual.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E do outro lado vai a meta?”. Retomada da professora: “Agora o lado direito.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-finais-avatar-03. Professora até “solte dentro desse então e escolha vitoria.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Chegou na meta, ganhou! E se acabarem as vidas?”. Retomada da professora: “Agora a derrota.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-finais-avatar-04. Professora até “solte dentro do então e escolha fim.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E se as duas coisas acontecerem juntas?”. Retomada da professora: “Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da derrota.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-finais-avatar-05. Professora até “e o Se as vidas do sprite nave acabaram?, que muda o estado para fim.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Agora dá para terminar ganhando ou perdendo!”. Retomada da professora: “As telas da vitória e da derrota ainda não existem, por isso o jogo ainda não mostra esses finais.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "- No final da partida, se pontos ≥ alvo, vá para vitoria.\n- Na partida, coloque a pergunta de vitória antes da pergunta de derrota.\n- Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.\n- Crie a constante alvo = 26 em Ao iniciar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "### Seção 2. Mostre a vitória e a derrota",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Tarefa:** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Blocos na página:** video-mostrar-telas → fala-telas.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Zappy na página (não gravar):** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-mostrar-telas-avatar-01. Professora até “O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado desse senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha vitoria.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Agora falta desenhar a tela de vitória!”. Retomada da professora: “Deixe à vista o espaço do então do ramo vitoria.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-mostrar-telas-avatar-02. Professora até “Agora os textos da vitória: no título, escreva Você ganhou!, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E a tela de quando eu perder?”. Retomada da professora: “Agora a derrota, do mesmo jeito.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-mostrar-telas-avatar-03. Professora até “Olha só: aparece a tela Você perdeu!”. Antes: Esperar as vidas acabarem e manter a tela de derrota real visível. Debinha: “Agora apareceu o fim da partida!”. Retomada da professora: “Isso acontece porque a pergunta das vidas muda o estado para fim, e o ramo fim mostra essa tela.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "- No senão se inicio, encaixe Mostrar tela com a dica de Enter.\n- No senão se vitoria, encaixe Mostrar tela com a dica de Enter.\n- No senão se fim, encaixe Mostrar tela com a dica de Enter.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "### Seção 3. Compare voltar à abertura e reiniciar",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Tarefa:** Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Blocos na página:** video-reiniciar → fala-reiniciar → experiencia-reiniciar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Zappy na página (não gravar):** Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-reiniciar-avatar-01. Professora até “Se ninguém arruma as peças, a partida nova já começa bagunçada.”. Antes: Concluir o teste em que mudar o estado mantém as pedras antigas e terminar a comparação com o tabuleiro. Debinha: “Eu quero recomeçar com tudo arrumado!”. Retomada da professora: “Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter.”. Depois: Trocar para Reiniciar o jogo e mostrar abertura e nova partida com a pista limpa.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Experiência existente:** `restart`. Escolha Mudar o estado do jogo para inicio. Comece, espere perder, volte à abertura e tente jogar de novo. No final, escolha Reiniciar o jogo, volte à abertura e comece outra partida para comparar. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "### Seção 4. Faça Enter preparar outra partida",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Tarefa:** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Blocos na página:** video-enter → fala-enter.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Zappy na página (não gravar):** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-enter-avatar-01. Professora até “Encontre o evento Enter em Quando acontecer. A condição dentro dele já começa a partida quando o estado é inicio, e esse pedaço fica como está. Na linha de baixo do Se que está dentro do evento Enter, clique uma vez no + que fica antes de senão se.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Primeiro, o Enter precisa saber se a partida acabou!”. Retomada da professora: “O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de senão se.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-enter-avatar-02. Professora até “Deixe à vista o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E quando eu ganhar? Também quero jogar de novo!”. Retomada da professora: “Agora a vitória, do mesmo jeito.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-enter-avatar-03. Professora até “Agora teste: perca uma partida e toque em Enter. Olha só: a abertura volta! Toque em Enter outra vez, porque é esse segundo Enter que começa a partida nova. Repare que o placar está em zero e os três corações voltaram, porque Reiniciar o jogo fez a preparação de novo.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “As vidas voltaram e os pontos zeraram!”. Retomada da professora: “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro do evento Enter, o Se tem três ramos.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "- Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "### Seção 5. Confira o que você construiu",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Tarefa:** Hora de conferir o que você construiu! Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Blocos na página:** fala-quiz-final → quiz.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Zappy na página (não gravar):** Hora de conferir o que você construiu! Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "### Seção 6. Teste o jogo completo e compartilhe",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Tarefa:** Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir fase.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Blocos na página:** video-ciclo-completo → fala-entrega → projeto.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Zappy na página (não gravar):** Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir fase.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-ciclo-completo-avatar-01. Professora até “Toque em Enter, mova a nave e atire. Depois, deixe as três vidas acabarem e confira a tela Você perdeu. Toque em Enter para voltar à abertura e mais uma vez para começar, e confira se a partida nova começa com zero pontos e três corações.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Agora quero tentar chegar na vitória!”. Retomada da professora: “Nessa nova partida, tente chegar a 26 pontos para ver a tela Você ganhou!.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "ID video-ciclo-completo-avatar-02. Professora até “Seu jogo está no Mural! Que conquista!”. Antes: Mostrar a confirmação Seu jogo está no Mural!, com Copiar link de jogar à vista, e manter a janela parada durante a fala. Debinha: “Quero chamar alguém para jogar o meu!”. Retomada da professora: “Agora a sua família e os seus amigos podem jogar o jogo que você criou.”. Depois: Depois da saída, clicar em Copiar link de jogar e em Fechar junto da fala, sem cobrir a confirmação.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "- Crie a constante alvo = 26 em Ao iniciar.\n- Vá para inicio em Ao iniciar.\n- Leve a sequência para o então de Se jogando, começando por Limpar.\n- O movimento da nave fica dentro de Se jogando.\n- Os corações também ficam dentro de Se jogando.\n- Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.\n- Não deixe outro criador de asteroides fora da condição.\n- Dentro de Espaço, coloque criar tiro e som no então de Se jogando.\n- Não deixe outro criador de tiro fora da condição.\n- No final da partida, se pontos ≥ alvo, vá para vitoria.\n- Na partida, coloque a pergunta de vitória antes da pergunta de derrota.\n- Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.\n- No senão se inicio, encaixe Mostrar tela com a dica de Enter.\n- No senão se vitoria, encaixe Mostrar tela com a dica de Enter.\n- No senão se fim, encaixe Mostrar tela com a dica de Enter.\n- Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.\n- O placar da variável fica na partida.\n- A colisão que soma pontos fica na partida.\n- A colisão que tira vida fica na partida.\n- Dê 3 vidas à nave em Ao iniciar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "Publicação opcional após o envio: Compartilhar → resumo já preenchido, sem mexer → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir fase. Não bloquear a conclusão por publicação.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "## Blocos disponíveis",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "| Bloco | Caminho na paleta |\n| --- | --- |\n| ⚡ Quando acontecer | 🗂️ Áreas do projeto |\n| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |\n| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |\n| Mover o sprite com as setas <- -> (velocidade ) | Jogo 2D → Movimento → Movimentos prontos |\n| o centro x do sprite | Jogo 2D → Movimento → Posição e tamanho |\n| Manter o sprite dentro da tela | Jogo 2D → Movimento → Bordas e rebatidas |\n| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |\n| Criar grupo de sprites | Jogo 2D → Grupos → Criar e percorrer |\n| Criar nave em x y largura altura , cor do corpo cor das asas | Jogo 2D → Kits prontos → Espaço |\n| Machucar o sprite em e deixá-lo invencível por quadros | Jogo 2D → Vida e placar → Vida |\n| Desenhar o grupo | Jogo 2D → Grupos → Desenho e ordem |\n| Mostrar placar valor em x y cor tamanho | Jogo 2D → Vida e placar → Indicadores e texto na tela |\n| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |\n| Desenhar as vidas do sprite como em x y tamanho cor | Jogo 2D → Vida e placar → Vida |\n| A cada quadros | Jogo 2D → Tempo → Quadros e intervalos |\n| Soltar explosão no sprite cor | Jogo 2D → Desenho e efeitos → Partículas |\n| as vidas do sprite acabaram? | Jogo 2D → Vida e placar → Vida |\n| Para cada colisão entre os grupos e | Jogo 2D → Colisões → Encostar e bloquear |\n| Quando apertar a tecla | Jogo 2D → Controles → Teclado, ações e toque |\n| Para cada sprite do grupo que colidir com o sprite | Jogo 2D → Colisões → Encostar e bloquear |\n| Tocar efeito | Jogo 2D → Som → Efeitos prontos |\n| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D → Grupos → Participação e limpeza |\n| um x aleatório na tela | Jogo 2D → Sorteios → Números e posições |\n| Tirar o sprite do grupo | Jogo 2D → Grupos → Participação e limpeza |\n| Reiniciar o jogo | Jogo 2D → Jogo e telas → Telas e partida |\n| o estado do jogo é ? | Jogo 2D → Jogo e telas → Telas e partida |\n| Dar ao sprite de vida | Jogo 2D → Vida e placar → Vida |\n| Mudar o estado do jogo para | Jogo 2D → Jogo e telas → Telas e partida |\n| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |\n| Tremer a tela com intensidade | Jogo 2D → Desenho e efeitos → Efeitos |\n| Mostrar tela com título subtítulo dica fundo | Jogo 2D → Jogo e telas → Telas e partida |\n| No grupo criar um asteroide em x y tamanho cor com vx vy | Jogo 2D → Kits prontos → Espaço |\n| Criar tiro no grupo em x y raio cor vx vy | Jogo 2D → Grupos → Criar e percorrer |\n| a posição y do sprite | Jogo 2D → Movimento → Posição e tamanho |\n| Desenhar fundo de estrelas (velocidade ) | Jogo 2D → Cenários → Fundos |\n| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |\n| Mover os sprites do grupo usando suas velocidades | Jogo 2D → Grupos → Movimento |\n| Criar constante com valor | Programação → 🏷️ Variáveis |\n| Condição se, senão se e senão | Programação → ❓ Lógica & Se |\n| Criar variável com valor | Programação → 🏷️ Variáveis |\n| Somar em variável | Programação → 🏷️ Variáveis |\n| Comparar dois valores | Programação → ❓ Lógica & Se |\n| Número | Programação → 🔣 Valores |\n| texto | Programação → 🔣 Valores |\n| valor da variável | Programação → 🔣 Valores |",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "## Continuidade e produção",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "Aula 9 na cadeia `nave-contra-asteroides`. Entrada: etapa 8; saída: etapa 9 de `qa/nave-contra-asteroides-etapas.ts`. Os cinco marcos originais e o código do jogo permanecem preservados.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.md",
+      "kids": "A ordem vídeo → Zappy → atividade é editorial. Configurar videoBeforeActivity no curso e conferir com perfil de aluno; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos revisados, anexar o PDF quando aplicável e ensaiar com crianças antes de declarar o percurso validado.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "# Roteiro de gravação · Nave Contra Asteroides · Aula 9",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Termine e recomece a partida**",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "Fonte: `qa/nave-contra-asteroides.conteudo.json`. Gerado por `qa/gerar-nave-contra-asteroides.ts`. Revise a fonte e regenere os três arquivos juntos.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "Entrada: Abertura aguarda Enter; nave, tiros e asteroides só agem em jogando. Ainda sem vitória, derrota ou reinício. Saída: Jogo completo original: alvo 26, vitória, derrota, retorno à abertura e nova partida.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"ou seja\", \"agora que\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"). Neste curso, \"então\" é o encaixe do bloco Se e não aparece como palavra de ligação. A ponte do Zappy começa convidando (\"Sua vez!\", \"Agora…!\", \"Hora de…!\") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo (\"Tá vendo?\", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, a criança testa direto; a lista dos blocos entra uma vez só, depois do teste (\"Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …\").",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "## Seção 1. Defina quando ganhar e perder",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "### Clipe `video-finais` · Defina quando ganhar e perder",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 6 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Direção geral do clipe:** Começar mostrando a partida que continua sem vidas. Não apresentar uma tela final ainda ausente como teste aprovado. Manter a prioridade real da derrota no empate e a comparação >= do código original. Na pergunta da derrota, a pergunta x > 0 vai para a lixeira antes de encaixar as vidas do sprite acabaram?. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Professora:**",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “No seu jogo, comece uma partida e deixe as vidas acabarem. A partida continua, porque você ainda não programou quando ela termina. Agora faça a partida acabar quando chegar a 26 pontos ou quando as vidas acabarem.\n>\n> Primeiro, a meta. Os 26 pontos não mudam durante a partida, por isso a meta vai numa constante, que é um nome que guarda um valor que não muda. A constante é criada uma vez, quando o jogo começa, em Ao iniciar: deixe à vista o espaço entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio.\n>\n> Agora abra Programação e depois Variáveis, e pegue o bloco Criar constante com valor. Arraste e solte entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio. O nome chega como PI: troque PI por alvo e o 0 do valor por 26.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-finais-avatar-01`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Debinha (avatar):**",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Preciso fazer 26 pontos para ganhar!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Agora a pergunta da vitória, que o jogo faz em todo quadro, durante a partida. Ela vai no fim do então de Se o estado do jogo é jogando, dentro de A cada quadro do jogo, logo depois de Desenhar as vidas do sprite: deixe esse lugar à vista. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse lugar.\n>\n> Desta vez, a pergunta que vem no Se vai ser usada. Ela é uma comparação: um valor, um sinal e outro valor. No lado esquerdo, clique em x e escolha pontos. No sinal, clique em > e escolha ≥, que quer dizer maior ou igual.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-finais-avatar-02`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “E do outro lado vai a meta?”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Agora o lado direito. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima do 0. Escolha alvo. Assim, a pergunta fica pontos maior ou igual a alvo, ou seja, a partida já chegou à meta?\n>\n> Deixe à vista o espaço do então dessa comparação. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro desse então e escolha vitoria.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-finais-avatar-03`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Chegou na meta, ganhou! E se acabarem as vidas?”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Agora a derrota. Deixe à vista o encaixe logo abaixo do Se da vitória, ainda dentro de jogando. Abra Programação e depois Lógica e Se, pegue outro Se e solte nesse encaixe. Desta vez, a pergunta x maior que 0 não serve, por isso arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se.\n>\n> Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco as vidas do sprite acabaram?, solte nesse lugar e escolha nave. Depois, deixe à vista o então desse Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-finais-avatar-04`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “E se as duas coisas acontecerem juntas?”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da derrota. Se as duas coisas acontecerem no mesmo quadro, a derrota vem por último, e é ela que vale.\n>\n> Confira se ficou assim: em Ao iniciar, entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio, está Criar constante alvo com valor 26. E, no fim de jogando, depois de Desenhar as vidas do sprite, estão o Se pontos ≥ alvo, que muda o estado para vitoria, e o Se as vidas do sprite nave acabaram?, que muda o estado para fim.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-finais-avatar-05`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Agora dá para terminar ganhando ou perdendo!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “As telas da vitória e da derrota ainda não existem, por isso o jogo ainda não mostra esses finais. Desta vez, quem confere o que você montou é a verificação, e as telas vêm na próxima parte.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "## Seção 2. Mostre a vitória e a derrota",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "### Clipe `video-mostrar-telas` · Mostre a vitória e a derrota",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Direção geral do clipe:** Começar mostrando a partida parada sem tela de fim. Criar um ramo por vez, sem remontar inicio, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Não alegar que Enter reinicia nesta etapa. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Repare: quando as vidas acabam, a partida para, mas nenhuma tela de fim aparece. É que o Se grande de A cada quadro do jogo só tem os ramos de jogando e de inicio, e nenhum para vitoria ou fim. Agora mostre uma tela para cada final.\n>\n> Encontre esse Se, dentro de A cada quadro do jogo. Olha aqui: na linha de baixo dele, clique uma vez no + que fica antes de senão se, para criar o ramo da vitória.\n>\n> O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado desse senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha vitoria.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-mostrar-telas-avatar-01`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Agora falta desenhar a tela de vitória!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Deixe à vista o espaço do então do ramo vitoria. Na mesma categoria Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse espaço.\n>\n> Agora os textos da vitória: no título, escreva Você ganhou!, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-mostrar-telas-avatar-02`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “E a tela de quando eu perder?”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Esperar as vidas acabarem e manter a tela de derrota real visível.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Agora a derrota, do mesmo jeito. Clique de novo no + que fica antes de senão se. O ramo novo também chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio. Na mesma categoria Telas e partida, pegue o estado do jogo é, solte nesse lugar e escolha fim.\n>\n> Deixe à vista o espaço do então do ramo fim. Pegue outro Mostrar tela com título subtítulo dica fundo, na mesma categoria, e solte nesse espaço. No título, escreva Você perdeu, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro.\n>\n> Agora teste: clique na área do jogo, comece com Enter e deixe as vidas acabarem. Olha só: aparece a tela Você perdeu!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-mostrar-telas-avatar-03`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Agora apareceu o fim da partida!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Isso acontece porque a pergunta das vidas muda o estado para fim, e o ramo fim mostra essa tela. A dica já fala em voltar ao início, mas o Enter ainda não faz isso: essa resposta vem depois da próxima experiência.\n>\n> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de jogando, a pergunta das vidas muda o estado para fim, e o Se grande tem os ramos jogando, inicio, vitoria e fim, nessa ordem. Os ramos vitoria e fim mostram as telas Você ganhou! e Você perdeu, com a dica Aperte Enter para voltar ao início. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "## Seção 3. Compare voltar à abertura e reiniciar",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "### Clipe `video-reiniciar` · Compare voltar à abertura e reiniciar",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A experiência restart usa Apertar Enter. A abertura pode cobrir indicadores: compará-los quando a partida começa. Com Mudar o estado do jogo para inicio, clicar em Apertar Enter, esperar a batida e o fim, clicar em Apertar Enter para voltar à abertura com as pedras ainda na pista e clicar de novo para mostrar a partida que acaba na hora. No fim, trocar para Reiniciar o jogo, clicar em Apertar Enter para mostrar a abertura com a pista vazia e clicar outra vez para mostrar a partida com a pista limpa. Meme na comparação: na frase do jogo de tabuleiro, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy arrumando as peças de um tabuleiro de volta na saída, com a legenda \"Reiniciar o jogo: tudo no lugar\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Na tela:** Concluir o teste em que mudar o estado mantém as pedras antigas e terminar a comparação com o tabuleiro.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Esta é uma experiência para a gente entender como preparar uma partida nova depois do fim. Aqui, o Enter começa a partida, e dá para escolher o que ele faz no fim.\n>\n> Olha aqui: em No fim, o Enter faz, eu escolho Mudar o estado do jogo para inicio. Clico em Apertar Enter, e a partida começa. Uma pedra bate na nave, e a partida termina. Clico em Apertar Enter, e o jogo volta para a abertura, mas tá vendo? As pedras da partida continuam na pista. Clico de novo para jogar, e a partida nova começa com as pedras velhas e acaba na hora, com uma batida. Ou seja, mudar só o estado não arruma o que ficou da partida anterior.\n>\n> É como um jogo de tabuleiro: para jogar de novo, você volta todas as peças para a saída. Se ninguém arruma as peças, a partida nova já começa bagunçada.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-reiniciar-avatar-01`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Eu quero recomeçar com tudo arrumado!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Trocar para Reiniciar o jogo e mostrar abertura e nova partida com a pista limpa.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter. Olha só: a abertura volta, e a pista fica vazia. Clico outra vez, e a partida começa com a pista limpa, porque Reiniciar o jogo faz de novo a preparação de Ao iniciar. No seu jogo, o Enter vai reiniciar o jogo quando a partida terminar.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "## Seção 4. Faça Enter preparar outra partida",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "### Clipe `video-enter` · Faça Enter preparar outra partida",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Direção geral do clipe:** Começar pela retomada: perder, tocar em Enter e, no \"Tá vendo?\", mostrar que a tela Você perdeu continua. Ampliar o evento existente, sem criar um segundo Enter, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “No seu jogo, comece uma partida, perca e toque em Enter. Tá vendo? Você perdeu continua na tela, porque o Enter só sabe começar a partida.\n>\n> Lembra da experiência da parte anterior? Reiniciar o jogo deixava tudo limpo para outra partida. Agora a gente vai ensinar isso ao Enter do seu jogo!\n>\n> Encontre o evento Enter em Quando acontecer. A condição dentro dele já começa a partida quando o estado é inicio, e esse pedaço fica como está. Na linha de baixo do Se que está dentro do evento Enter, clique uma vez no + que fica antes de senão se.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-enter-avatar-01`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Primeiro, o Enter precisa saber se a partida acabou!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha fim.\n>\n> Deixe à vista o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-enter-avatar-02`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “E quando eu ganhar? Também quero jogar de novo!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Agora a vitória, do mesmo jeito. Clique de novo no + que fica antes de senão se. Arraste a pergunta x maior que 0 do ramo novo para a lixeira e deixe à vista o lugar vazio. Na mesma categoria, pegue o estado do jogo é, solte nesse lugar e escolha vitoria. Depois, deixe à vista o então do ramo vitoria, pegue outro Reiniciar o jogo e solte nesse espaço.\n>\n> Agora teste: perca uma partida e toque em Enter. Olha só: a abertura volta! Toque em Enter outra vez, porque é esse segundo Enter que começa a partida nova. Repare que o placar está em zero e os três corações voltaram, porque Reiniciar o jogo fez a preparação de novo.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-enter-avatar-03`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “As vidas voltaram e os pontos zeraram!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro do evento Enter, o Se tem três ramos. Em inicio, o Enter muda o estado para jogando. Em fim e em vitoria, o Enter reinicia o jogo. E Dar ao sprite nave 3 de vida continua em Ao iniciar. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "## Seção 5. Confira o que você construiu",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "## Seção 6. Teste o jogo completo e compartilhe",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "### Clipe `video-ciclo-completo` · Teste o jogo completo e compartilhe",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Direção geral do clipe:** Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, envio, confirmação e publicação opcional, com o resumo já preenchido, Seu jogo está no Mural!, Copiar link de jogar e Fechar. A comemoração nomeia o que a pessoa programou e o resultado no jogo; o preparo dos desenhos fica nas notas da equipe, sem ressalva na fala. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Agora teste o ciclo completo do seu jogo. Na abertura, clique na área do jogo e toque na barra de espaço. Repare: não sai som de tiro, porque criar tiros e criar asteroides ficam dentro de Se jogando. Confira também nos blocos se os dois estão lá.\n>\n> Toque em Enter, mova a nave e atire. Depois, deixe as três vidas acabarem e confira a tela Você perdeu. Toque em Enter para voltar à abertura e mais uma vez para começar, e confira se a partida nova começa com zero pontos e três corações.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-ciclo-completo-avatar-01`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Agora quero tentar chegar na vitória!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Mostrar a confirmação Seu jogo está no Mural!, com Copiar link de jogar à vista, e manter a janela parada durante a fala.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Nessa nova partida, tente chegar a 26 pontos para ver a tela Você ganhou!. Se perder antes, recomece e tente de novo. Na vitória, toque na barra de espaço: não pode sair nenhum tiro. Toque em Enter para voltar à abertura e outra vez para jogar, e confira de novo os pontos e as vidas. Se algum final não funcionar, reveja a pergunta que muda o estado e o ramo que mostra aquela tela.\n>\n> Olha só o que você programou: os controles, os tiros, os acertos, os pontos, as vidas e as telas! É com essas regras que a sua nave enfrenta os asteroides do começo ao fim da partida.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**ID de edição:** `video-ciclo-completo-avatar-02`.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Quero chamar alguém para jogar o meu!”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "**Na tela:** Debinha sai antes da resposta. Depois da saída, clicar em Copiar link de jogar e em Fechar junto da fala, sem cobrir a confirmação.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.roteiro.md",
+      "kids": "> “Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir fase.”",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Termine e recomece a partida",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Título: Defina quando ganhar e perder\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar mostrando a partida que continua sem vidas. Não apresentar uma tela final ainda ausente como teste aprovado. Manter a prioridade real da derrota no empate e a comparação >= do código original. Na pergunta da derrota, a pergunta x > 0 vai para a lixeira antes de encaixar as vidas do sprite acabaram?.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-finais-avatar-01. Professora até “O nome chega como PI: troque PI por alvo e o 0 do valor por 26.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Preciso fazer 26 pontos para ganhar!”. Retomada da professora: “Agora a pergunta da vitória, que o jogo faz em todo quadro, durante a partida.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-finais-avatar-02. Professora até “No sinal, clique em > e escolha ≥, que quer dizer maior ou igual.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E do outro lado vai a meta?”. Retomada da professora: “Agora o lado direito.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-finais-avatar-03. Professora até “solte dentro desse então e escolha vitoria.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Chegou na meta, ganhou! E se acabarem as vidas?”. Retomada da professora: “Agora a derrota.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-finais-avatar-04. Professora até “solte dentro do então e escolha fim.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E se as duas coisas acontecerem juntas?”. Retomada da professora: “Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da derrota.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-finais-avatar-05. Professora até “e o Se as vidas do sprite nave acabaram?, que muda o estado para fim.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Agora dá para terminar ganhando ou perdendo!”. Retomada da professora: “As telas da vitória e da derrota ainda não existem, por isso o jogo ainda não mostra esses finais.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Título: Mostre a vitória e a derrota\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar mostrando a partida parada sem tela de fim. Criar um ramo por vez, sem remontar inicio, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Não alegar que Enter reinicia nesta etapa.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-mostrar-telas-avatar-01. Professora até “O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado desse senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha vitoria.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Agora falta desenhar a tela de vitória!”. Retomada da professora: “Deixe à vista o espaço do então do ramo vitoria.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-mostrar-telas-avatar-02. Professora até “Agora os textos da vitória: no título, escreva Você ganhou!, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E a tela de quando eu perder?”. Retomada da professora: “Agora a derrota, do mesmo jeito.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-mostrar-telas-avatar-03. Professora até “Olha só: aparece a tela Você perdeu!”. Antes: Esperar as vidas acabarem e manter a tela de derrota real visível. Debinha: “Agora apareceu o fim da partida!”. Retomada da professora: “Isso acontece porque a pergunta das vidas muda o estado para fim, e o ramo fim mostra essa tela.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Título: Compare voltar à abertura e reiniciar\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A experiência restart usa Apertar Enter. A abertura pode cobrir indicadores: compará-los quando a partida começa. Com Mudar o estado do jogo para inicio, clicar em Apertar Enter, esperar a batida e o fim, clicar em Apertar Enter para voltar à abertura com as pedras ainda na pista e clicar de novo para mostrar a partida que acaba na hora. No fim, trocar para Reiniciar o jogo, clicar em Apertar Enter para mostrar a abertura com a pista vazia e clicar outra vez para mostrar a partida com a pista limpa. Meme na comparação: na frase do jogo de tabuleiro, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy arrumando as peças de um tabuleiro de volta na saída, com a legenda \"Reiniciar o jogo: tudo no lugar\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-reiniciar-avatar-01. Professora até “Se ninguém arruma as peças, a partida nova já começa bagunçada.”. Antes: Concluir o teste em que mudar o estado mantém as pedras antigas e terminar a comparação com o tabuleiro. Debinha: “Eu quero recomeçar com tudo arrumado!”. Retomada da professora: “Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter.”. Depois: Trocar para Reiniciar o jogo e mostrar abertura e nova partida com a pista limpa.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Compare voltar à abertura e reiniciar",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Escolha Mudar o estado do jogo para inicio. Comece, espere perder, volte à abertura e tente jogar de novo. No final, escolha Reiniciar o jogo, volte à abertura e comece outra partida para comparar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Mudando só o momento, as pedras da partida anterior continuaram caindo",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Escolha Mudar o estado do jogo para inicio, clique em Apertar Enter no fim e comece outra partida.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Reiniciar levou para a abertura, e foi preciso outro Enter para jogar",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Escolha Reiniciar o jogo, clique em Apertar Enter no fim e olhe em que momento o jogo ficou.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Título: Faça Enter preparar outra partida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada: perder, tocar em Enter e, no \"Tá vendo?\", mostrar que a tela Você perdeu continua. Ampliar o evento existente, sem criar um segundo Enter, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-enter-avatar-01. Professora até “Encontre o evento Enter em Quando acontecer. A condição dentro dele já começa a partida quando o estado é inicio, e esse pedaço fica como está. Na linha de baixo do Se que está dentro do evento Enter, clique uma vez no + que fica antes de senão se.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Primeiro, o Enter precisa saber se a partida acabou!”. Retomada da professora: “O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de senão se.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-enter-avatar-02. Professora até “Deixe à vista o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E quando eu ganhar? Também quero jogar de novo!”. Retomada da professora: “Agora a vitória, do mesmo jeito.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-enter-avatar-03. Professora até “Agora teste: perca uma partida e toque em Enter. Olha só: a abertura volta! Toque em Enter outra vez, porque é esse segundo Enter que começa a partida nova. Repare que o placar está em zero e os três corações voltaram, porque Reiniciar o jogo fez a preparação de novo.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “As vidas voltaram e os pontos zeraram!”. Retomada da professora: “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro do evento Enter, o Se tem três ramos.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Hora de conferir o que você construiu! Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Você perdeu e tocou em Enter uma vez. O que deve aparecer?",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Outra partida já em movimento.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "A tela de abertura, esperando mais um Enter.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "A tela de vitória.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Reiniciar executa Ao iniciar novamente, que define inicio. O próximo Enter muda de inicio para jogando.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Por que o criador de asteroides fica dentro de Se jogando, no intervalo?",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Para só criar pedras durante a partida, mesmo que o intervalo continue contando.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Para fazer todas as pedras terem o mesmo x.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Para dar pontos sem acertar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "A condição controla se o criador pode agir. A contagem do intervalo e a permissão para criar pedras são coisas diferentes.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "O que faz a partida ir para vitoria?",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "A nave ficar parada.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Tocar em Enter durante a partida.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Pontos ficar maior ou igual ao alvo de 26.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "A comparação usa o valor atual de pontos e a constante alvo. Quando pontos chega a 26, a condição pode mudar o estado para vitoria.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Título: Teste o jogo completo e compartilhe\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, envio, confirmação e publicação opcional, com o resumo já preenchido, Seu jogo está no Mural!, Copiar link de jogar e Fechar. A comemoração nomeia o que a pessoa programou e o resultado no jogo; o preparo dos desenhos fica nas notas da equipe, sem ressalva na fala.\n\nDebinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-ciclo-completo-avatar-01. Professora até “Toque em Enter, mova a nave e atire. Depois, deixe as três vidas acabarem e confira a tela Você perdeu. Toque em Enter para voltar à abertura e mais uma vez para começar, e confira se a partida nova começa com zero pontos e três corações.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Agora quero tentar chegar na vitória!”. Retomada da professora: “Nessa nova partida, tente chegar a 26 pontos para ver a tela Você ganhou!.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.\n\nID video-ciclo-completo-avatar-02. Professora até “Seu jogo está no Mural! Que conquista!”. Antes: Mostrar a confirmação Seu jogo está no Mural!, com Copiar link de jogar à vista, e manter a janela parada durante a fala. Debinha: “Quero chamar alguém para jogar o meu!”. Retomada da professora: “Agora a sua família e os seus amigos podem jogar o jogo que você criou.”. Depois: Depois da saída, clicar em Copiar link de jogar e em Fechar junto da fala, sem cobrir a confirmação.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir fase.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Nave contra Asteroides",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Mova a nave, acerte os asteroides e tente chegar a 26 pontos sem perder as três vidas.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Defina quando ganhar e perder",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "No final da partida, se pontos ≥ alvo, vá para vitoria.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Na partida, coloque a pergunta de vitória antes da pergunta de derrota.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Crie a constante alvo = 26 em Ao iniciar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Mostre a vitória e a derrota",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "No senão se inicio, encaixe Mostrar tela com a dica de Enter.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "No senão se vitoria, encaixe Mostrar tela com a dica de Enter.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "No senão se fim, encaixe Mostrar tela com a dica de Enter.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Faça Enter preparar outra partida",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Confira o que você construiu",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Teste o jogo completo e compartilhe",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Vá para inicio em Ao iniciar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Leve a sequência para o então de Se jogando, começando por Limpar.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "O movimento da nave fica dentro de Se jogando.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Os corações também ficam dentro de Se jogando.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Não deixe outro criador de asteroides fora da condição.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Dentro de Espaço, coloque criar tiro e som no então de Se jogando.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Não deixe outro criador de tiro fora da condição.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "O placar da variável fica na partida.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "A colisão que soma pontos fica na partida.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "A colisão que tira vida fica na partida.",
+      "adulto": null
+    },
+    {
+      "onde": "nave-contra-asteroides-dia-5.manifesto.json",
+      "kids": "Dê 3 vidas à nave em Ao iniciar.",
+      "adulto": null
+    }
+  ]
+}

@@ -1,0 +1,551 @@
+{
+  "curso": "o-jogo-do-meu-jeito",
+  "grupo": "meu-jeito-aula-04",
+  "trechos": [
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "# O Jogo do Meu Jeito · Aula 4 · Desenhe um asteroide com formas",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`. Consulte [o mapa do curso](modulos.md).",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "## Resumo",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "- Entrada: Nave animada salva no Pinta.\n- Resultado: Arte asteroide em vetor, 64 × 64, com corpo arredondado e crateras.\n- Seções: 6. Vídeos: 6.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "## Diagnóstico e decisão",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno são comparados antes da pintura. Construir a forma, suavizar pontos e acrescentar crateras tornam-se aplicações separadas.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "## Triagem dos conceitos",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Preenchimento e contorno | Experiência fill-stroke antes de desenhar. | Separa cor interna de linha da borda. |\n| Vetor | Retomada da experiência da aula 2. | Não repetir a mesma bancada só para cumprir uma estrutura. |\n| Caneta, pontos suaves e formas | Três aplicações no Pinta. | Cada ação tem uma consequência visível no desenho e um teste próprio. |",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "## Proposta final",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "### Seção 1. Separe o miolo da borda",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Tarefa / Zappy na página:** Sua vez! Tire a cor de uma parte de cada vez e compare a pedra. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Blocos na página:** video-preenchimento-contorno → fala-preenchimento-contorno → experiencia-cores.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "ID video-preenchimento-contorno-avatar-01. Professora até “por dentro dela aparece o xadrez do fundo.”. Antes: Tirar a cor do preenchimento e deixar a borda laranja e o xadrez à vista. Dedé: “Cadê a cor de dentro?”. Retomada da professora: “É que Sem cor não é branco: é transparente, por isso dá para ver o fundo.”. Depois: Apontar o fundo visível enquanto explica a transparência; retomar o preenchimento no momento previsto.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Experiência existente:** `fill-stroke`. Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões. Sem palpite, pistas ou pergunta final.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "### Seção 2. Prepare o desenho em vetor",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Tarefa / Zappy na página:** Agora prepare o desenho do seu asteroide! Crie um personagem em Vetor, tamanho Médio, chamado asteroide. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Blocos na página:** video-novo-asteroide → fala-novo-asteroide.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "### Seção 3. Feche a forma da pedra",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Tarefa / Zappy na página:** Agora feche a forma da sua pedra! Desenhe a pedra com a Caneta e termine no primeiro ponto. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Blocos na página:** video-forma-pedra → fala-forma-pedra.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "### Seção 4. Arredonde os pontos",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Tarefa / Zappy na página:** Agora arredonde os pontos da sua pedra! Transforme alguns cantos em curvas para dar forma a ela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Blocos na página:** video-curvas → fala-curvas.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "### Seção 5. Acrescente crateras",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Tarefa / Zappy na página:** Agora acrescente crateras à sua pedra! Desenhe pequenas formas dentro dela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Blocos na página:** video-crateras → fala-crateras.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "ID video-crateras-avatar-01. Professora até “a forma desenhada por último fica na frente.”. Antes: Concluir a primeira cratera e deixar a pedra e o círculo à vista; terminar o arraste antes da entrada. Dedé: “Quero uma cratera grande e outra pequena!”. Retomada da professora: “Você pode variar os tamanhos. Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e colar.”. Depois: Copiar a cratera, mover e redimensionar a cópia pelas alças; conferir que todas ficam dentro da pedra.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "### Seção 6. Envie seu asteroide",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Tarefa / Zappy na página:** Hora de enviar o seu asteroide! Confira se ele é Vetor de 64 por 64, com forma fechada e crateras dentro do corpo. Depois clique em Escolher no Pinta, selecione o asteroide e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "## Continuidade e produção",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "Os oito slugs e a chave de entrega `entrega-galeria-v6` são preservados. Aula 5 recebe duas artes; as demais recebem um trabalho. A galeria guarda a cópia enviada. Não criar workspace embutido nem aplicar projectChecks a um projeto externo.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "O programa de referência permanece em `qa/meu-jeito-projetos-qa.ts`; as etapas e artes de demonstração ficam em `qa/meu-jeito-etapas.ts`. Usar Programação e Jogo 2D já trazidos com o projeto de Nave Contra Asteroides. Não acrescentar HTML/CSS nem instalar extensão em um projeto vazio só para cumprir uma tarefa.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.md",
+      "kids": "A ordem vídeo → Zappy → atividade não configura sozinha o bloqueio: conferir videoBeforeActivity no curso durante a importação. Gravar os clipes, vincular o PDF, testar com perfil de aluno e ensaiar com crianças antes de declarar o percurso validado.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "# Roteiro de gravação · O Jogo do Meu Jeito · Aula 4",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Desenhe um asteroide com formas**",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "Fonte: `qa/meu-jeito.conteudo.json`. Gerado por `qa/gerar-meu-jeito.ts`. Revise a fonte e regenere proposta, roteiro e manifesto juntos.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "Entrada: Nave animada salva no Pinta. Saída: Arte asteroide em vetor, 64 × 64, com corpo arredondado e crateras.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de \"Olha aqui:\", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "Toda fala é uma conversa contínua com quem está fazendo a fase (Diretrizes, seção 6, revisão de 06/10/2026). Três vozes: \"você\" para o que é da pessoa e para as ações, \"a gente\" para pensar junto e convidar, \"eu\" só quando o narrador demonstra. As frases se ligam umas às outras (\"por isso\", \"mas\", \"é que\", \"agora que\", \"ou seja\"; sem \"então\", que é o nome de uma parte do bloco Se), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"), um chamado por momento importante. A aplicação que vem logo depois de uma experiência começa pela retomada, uma ponte de até umas 50 palavras: primeiro o problema no trabalho da pessoa, quando há o que testar (\"Tá vendo?\" com o porquê), depois a lembrança (\"Lembra da experiência da parte anterior?\", com o resultado numa frase) e um anúncio só, colado ao primeiro passo. Depois do teste da montagem, a conferência vem uma vez, como caminho da correção (\"Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …\"). A ponte do Zappy começa convidando (\"Sua vez!\" depois de uma demonstração; \"Agora…!\" ou \"Hora de…!\" antes de uma aplicação) e termina na ação real de saída.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos títulos, a criança ouve e lê fase, parte e Mapa da Aventura, e os botões pelo nome novo (Próxima parte, Concluir fase, Enviar (1), Recebido!). Quem recebe o envio e responde os recados é a equipe. Aula, seção e caderno ficam só nas notas da equipe.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "## Seção 1. Separe o miolo da borda",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "### Clipe `video-preenchimento-contorno` · Separe o miolo da borda",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do livro de colorir, o Zappy pintando por dentro do contorno de uma pedra num livro de colorir, com a legenda \"linha: Contorno · dentro: Preenchimento\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Na tela:** Tirar a cor do preenchimento e deixar a borda laranja e o xadrez à vista.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Professora:**",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "> “Esta é uma experiência para a gente entender as duas partes de uma forma: o Preenchimento, que fica dentro, e o Contorno, que é a linha da borda.\n>\n> Olha aqui: a pedra começa com Preenchimento azul e Contorno laranja. Quando eu deixo o Contorno em Sem cor, a linha laranja da borda some, e fica só o azul por dentro, porque o Contorno é a linha da borda.\n>\n> Agora eu volto o Contorno com cor e deixo o Preenchimento em Sem cor. Olha só: a linha laranja volta, e por dentro dela aparece o xadrez do fundo.”",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**ID de edição:** `video-preenchimento-contorno-avatar-01`.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Dedé (avatar):**",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "> “Cadê a cor de dentro?”",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Apontar o fundo visível enquanto explica a transparência; retomar o preenchimento no momento previsto.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "> “É que Sem cor não é branco: é transparente, por isso dá para ver o fundo.\n>\n> Sabe um livro de colorir? A linha preta já vem desenhada, e você pinta por dentro dela. No Pinta, a linha é o Contorno, e a pintura de dentro é o Preenchimento. Cada parte tem a sua cor, e cada uma pode ficar em Sem cor.\n>\n> Por fim, eu volto o Preenchimento com cor. A pedra fica com as duas partes de novo: azul por dentro e laranja na borda.\n>\n> Daqui a pouco, a sua pedra vai ter uma cor no Preenchimento e o Contorno em Sem cor.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Sua vez! Tire a cor de uma parte de cada vez e compare a pedra. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "## Seção 2. Prepare o desenho em vetor",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "### Clipe `video-novo-asteroide` · Prepare o desenho em vetor",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "> “Lembra da experiência da parte anterior? A pedra tinha uma cor no Preenchimento, por dentro, e outra no Contorno, na borda. Agora a gente vai preparar o seu asteroide em Vetor, porque é no Vetor que as formas têm essas duas partes.\n>\n> Clique em Abrir meu Pinta nesta parte. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Vetor. Depois escolha Personagem e Médio, 64 por 64. Escreva asteroide e clique em Começar a desenhar. Se você já começou esse desenho nesta aventura, retome o mesmo cartão.\n>\n> Confira o nome asteroide e a área quadrada. Por último, deixe a parte de cima livre para as chamas que você vai desenhar depois, porque a pedra vai ocupar o centro e a parte de baixo.\n>\n> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Agora prepare o desenho do seu asteroide! Crie um personagem em Vetor, tamanho Médio, chamado asteroide. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "## Seção 3. Feche a forma da pedra",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "### Clipe `video-forma-pedra` · Feche a forma da pedra",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "> “Agora desenhe a forma da sua pedra. Com nenhuma forma selecionada, escolha uma cor para Preenchimento e, em Contorno, escolha Sem cor, como na experiência do começo desta fase.\n>\n> Depois pegue a Caneta e clique para marcar pontos ao redor da pedra, deixando espaço livre em cima. Seis pontos podem servir de começo, e o formato é seu.\n>\n> Para fechar, clique no primeiro ponto. Olha só: o interior ganha a cor que você escolheu, porque agora a forma está fechada. Depois confira se toda a pedra está dentro da área do desenho.\n>\n> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Agora feche a forma da sua pedra! Desenhe a pedra com a Caneta e termine no primeiro ponto. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "## Seção 4. Arredonde os pontos",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "### Clipe `video-curvas` · Arredonde os pontos",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "> “Agora arredonde a sua pedra. Escolha Editar os pontos e clique na pedra. Selecione um ponto do contorno e use Ponto suave. Repare: aparecem alças nesse ponto. Arraste essas alças para arredondar o trecho e faça o mesmo nos cantos que você quiser suavizar.\n>\n> Depois afaste a imagem e confira o contorno. A pedra pode ser irregular, mas precisa continuar fechada, inteira no quadro e com espaço em cima. Se uma curva criou uma ponta comprida, ajuste as alças ou use Desfazer e tente uma mudança menor, porque alça puxada demais estica a curva para fora.\n>\n> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Agora arredonde os pontos da sua pedra! Transforme alguns cantos em curvas para dar forma a ela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "## Seção 5. Acrescente crateras",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "### Clipe `video-crateras` · Acrescente crateras",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Direção geral do clipe:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Na tela:** Concluir a primeira cratera e deixar a pedra e o círculo à vista; terminar o arraste antes da entrada.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "> “Agora faça crateras na sua pedra. Antes de escolher uma cor nova, clique fora da pedra para tirar a seleção, porque, com a pedra selecionada, a cor nova pintaria a pedra inteira. Depois escolha um tom mais escuro e a ferramenta Círculo, e arraste dentro da pedra para criar uma cratera. Olha só: a cratera aparece por cima da pedra, porque a forma desenhada por último fica na frente.”",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**ID de edição:** `video-crateras-avatar-01`.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "> “Quero uma cratera grande e outra pequena!”",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Copiar a cratera, mover e redimensionar a cópia pelas alças; conferir que todas ficam dentro da pedra.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "> “Você pode variar os tamanhos. Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e colar. Mova a cópia para outro lugar dentro da pedra e mude o tamanho dela pelas alças. Se quiser, faça mais uma.\n>\n> Para conferir, veja se todas as crateras ficaram dentro do corpo e com tamanhos que você consiga distinguir.\n>\n> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Agora acrescente crateras à sua pedra! Desenhe pequenas formas dentro dela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "## Seção 6. Envie seu asteroide",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "### Clipe `video-entrega` · Envie seu asteroide",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "> “Hora de enviar o seu asteroide! Antes, confira no seu asteroide: o asteroide é Vetor de 64 por 64, tem forma fechada, curvas e crateras dentro do corpo, e sobra espaço em cima para as chamas. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da fase só mostra o que já está guardado na sua conta.\n>\n> Agora volte para a aba da fase e clique em Escolher no Pinta. Na janela Minhas criações do Pinta, selecione o seu asteroide. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.\n>\n> Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!\n>\n> Esse envio guarda uma cópia deste momento, e você continua criando no Pinta. Por último, clique em Concluir fase.”",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** Hora de enviar o seu asteroide! Confira se ele é Vetor de 64 por 64, com forma fechada e crateras dentro do corpo. Depois clique em Escolher no Pinta, selecione o asteroide e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Desenhe um asteroide com formas",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Título: Separe o miolo da borda\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do livro de colorir, o Zappy pintando por dentro do contorno de uma pedra num livro de colorir, com a legenda \"linha: Contorno · dentro: Preenchimento\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-preenchimento-contorno-avatar-01. Professora até “por dentro dela aparece o xadrez do fundo.”. Antes: Tirar a cor do preenchimento e deixar a borda laranja e o xadrez à vista. Dedé: “Cadê a cor de dentro?”. Retomada da professora: “É que Sem cor não é branco: é transparente, por isso dá para ver o fundo.”. Depois: Apontar o fundo visível enquanto explica a transparência; retomar o preenchimento no momento previsto.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Sua vez! Tire a cor de uma parte de cada vez e compare a pedra. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Separe o miolo da borda",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Título: Prepare o desenho em vetor\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Agora prepare o desenho do seu asteroide! Crie um personagem em Vetor, tamanho Médio, chamado asteroide. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Título: Feche a forma da pedra\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Agora feche a forma da sua pedra! Desenhe a pedra com a Caneta e termine no primeiro ponto. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Título: Arredonde os pontos\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Agora arredonde os pontos da sua pedra! Transforme alguns cantos em curvas para dar forma a ela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Título: Acrescente crateras\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-crateras-avatar-01. Professora até “a forma desenhada por último fica na frente.”. Antes: Concluir a primeira cratera e deixar a pedra e o círculo à vista; terminar o arraste antes da entrada. Dedé: “Quero uma cratera grande e outra pequena!”. Retomada da professora: “Você pode variar os tamanhos. Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e colar.”. Depois: Copiar a cratera, mover e redimensionar a cópia pelas alças; conferir que todas ficam dentro da pedra.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Agora acrescente crateras à sua pedra! Desenhe pequenas formas dentro dela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Título: Envie seu asteroide\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Hora de enviar o seu asteroide! Confira se ele é Vetor de 64 por 64, com forma fechada e crateras dentro do corpo. Depois clique em Escolher no Pinta, selecione o asteroide e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Prepare o desenho em vetor",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Feche a forma da pedra",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Arredonde os pontos",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Acrescente crateras",
+      "adulto": null
+    },
+    {
+      "onde": "meu-jeito-aula-04.manifesto.json",
+      "kids": "Envie seu asteroide",
+      "adulto": null
+    }
+  ]
+}

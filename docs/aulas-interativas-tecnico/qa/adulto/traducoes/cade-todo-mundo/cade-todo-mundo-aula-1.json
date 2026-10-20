@@ -1,0 +1,646 @@
+{
+  "curso": "cade-todo-mundo",
+  "grupo": "cade-todo-mundo-aula-1",
+  "trechos": [
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "# Cadê Todo Mundo? | Aula 1: O primeiro achado",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. primeiro-achado: entrada sem reação; solução com a reação no toque. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "## Direção da revisão",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Revisão de linguagem de 27/09/2026, depois de duas crianças assistirem ao curso. Uma delas não\nentendeu que deveria jogar a versão pronta na abertura. O vídeo misturava apresentação do jogo\ne uso da plataforma. A revisão mantém as quatro seções, a experiência e os critérios de\nconclusão. Muda a fala e as orientações de gravação.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "O jardim, os personagens, os esconderijos e a estrutura do jogo vêm preparados. A criança\nacrescenta a reação ao toque. O roteiro mostra exatamente essa autoria.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "A revisão de 06/10/2026 faz todas as falas conversarem com a criança e chamarem a atenção dela\npara o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"), sem mudar seções nem\ncritérios. O caderno passa a ser apresentado como escolha: ler na aula ou baixar para guardar.\nSaiu o \"não precisa baixar nem imprimir\", que a criança entenderia como uma ordem para não baixar.\nNo mesmo dia, a pedido do responsável, cada fala virou uma conversa contínua: as frases se ligam,\ncada resultado vem com o porquê e a experiência diz com clareza qual é a ação (o toque) e qual é a\nreação (o esconderijo ficar invisível). Saiu da montagem a frase solta \"O jardim e os personagens\njá estão preparados\": a criança vê o que já está no projeto, e o que vem pronto só entra na fala\nquando ajuda a ação, como o evento que já está em **Quando acontecer**.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Ainda em 06/10/2026, o vocabulário da aventura (Diretrizes, seção 6): no que a criança vê e ouve,\naula virou fase, seção virou parte, o caderno virou Mapa da Aventura (a seção se chama **Seu Mapa\nda Aventura**) e professor virou equipe. As falas citam os botões novos (**Próxima parte**,\n**Verificar esta parte**, **Objetivo cumprido!**, **Enviar meu projeto**, **Concluir fase**);\nseções, blocos e critérios não mudaram. Na mesma noite, o botão de envio passou a dizer o que\nela envia (**Enviar meu projeto**), e quem recebe passou a ser a equipe.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "No full review de 06/10/2026, a explicação de **escolhido** foi partida em duas frases curtas (\"Cada\nesconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo\nque você tocar.\") e a ponte da experiência do toque passou a terminar em \"Quando terminar, clique em\nPróxima parte.\". No Mapa da Aventura, a página da Fase 1 deixou de inverter ação e reação: o toque\né a ação, e a reação ligada a ele é o esconderijo ficar invisível.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "## Vozes e estado da produção",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Em 10/10/2026, o responsável informou que os quatro vídeos da professora já estão gravados e\nconfirmou **Debinha** como o avatar desta aula. O roteiro agora identifica as seis participações\ninformadas: duas na abertura, uma no mapa, uma na experiência e duas na montagem. Cada entrada\ntem um ID de edição, a fala literal e a saída antes de a professora continuar. “E os outros dois?”\npassa para a Debinha; não repetir a pergunta na voz da professora.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Usar **Professora**, **Debinha (avatar)** e **Zappy na página (não gravar)** para distinguir as\nvozes. O Zappy não fala dentro dos vídeos; suas instruções ficam na página, com o recurso Ouvir\nda plataforma. Se aparecer no meme ou na interface filmada, sua presença é visual.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Preservar o áudio já gravado e localizar as inserções pelas âncoras do\n[roteiro completo](cade-todo-mundo-aula-1.roteiro.md). A edição final e a publicação ainda precisam\nser conferidas; não presumir que foram concluídas. As regras para os próximos roteiros e os\nexemplos com Dedé na Aula 2 estão em [Avatares nos vídeos](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "## Sequência",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "| Seção | Vídeo | O que fazer | Conclusão |\n| --- | --- | --- | --- |\n| Bem-vindo ao jardim | 40 a 55 s | jogar a versão pronta e encontrar os três personagens | vídeo e três achados |\n| Seu Mapa da Aventura | 35 a 45 s | conhecer o mapa e seguir; ler aqui mesmo ou baixar, se quiser | vídeo |\n| O que um toque faz? | 70 a 90 s | tocar com a reação desligada, ligar e tocar novamente; comparar | vídeo e duas metas |\n| Faça alguém aparecer | 4 a 5 min | encaixar a visibilidade no evento, testar, verificar a etapa e enviar | vídeo, verificação aprovada e envio |",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Os tempos da tabela foram revistos em 10/10/2026 e já contam as falas da Debinha: cobrem a fala\nestimada a 137 palavras por minuto e, na montagem, os gestos sem fala. Medir a duração final sem\nacelerar a montagem. Não aumentar os vídeos de apresentação para atingir\numa duração mínima.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "## Orientação por seção",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "### Bem-vindo ao jardim",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "A primeira fala diz qual jogo será construído e apresenta a versão pronta. O vídeo é uma\ndemonstração, como nas experiências: o narrador mostra como se joga com UM achado (\"Olha aqui:\nquando eu toco num esconderijo…\"), deixa os outros para a criança descobrir e só no fim passa a\nvez: jogar até encontrar os três, pois a seção exige esse resultado, e clicar em **Próxima parte**.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Antes de passar a vez, a fala planta a surpresa do final (decisão do responsável, 07/10/2026): \"Ah, e\ntem mais uma coisa: no fim da aventura tem uma surpresa esperando por você. Ela vai deixar o seu jogo\nainda mais seu.\" Conta que a surpresa existe, sem dizer o que é. Ela é revelada em **Deixe o jogo com\na sua cara**, na Aula 2, e lembrada uma vez no fim desta aula.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "O jogo pronto é uma cópia separada do projeto de construção. O Zappy resume a ação. O vídeo\nnão apresenta seções, player, ampliação, reinício, caderno ou Estúdio.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "### Seu Mapa da Aventura",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Chamar a atenção para o caderno real (\"Olha aqui: este é o seu Mapa da Aventura!\") e dizer que\nele tem os passos para consultar se surgir dúvida. Ler e baixar são escolhas, oferecidas como\nconvite: ler aqui mesmo ou clicar em **Baixar** para guardar o mapa e consultar onde\nquiser. A fala não diz que a criança não precisa baixar ou imprimir: ela entenderia como uma ordem\npara não fazer (ajuste do responsável, 06/10/2026). Encaminhar diretamente para a próxima seção.\nApenas este bloco recebe o PDF; a Aula 2 continua usando a mesma referência.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "**Zappy na página (não gravar):** “Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "### O que um toque faz?",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "O vídeo é uma demonstração que explica enquanto faz (Diretrizes, seção 2): o narrador faz os testes na primeira pessoa e só no fim passa a vez. Dizer que a experiência mostra ação e\nreação e apontar para ela. Tocar no arbusto: nada acontece (\"Tá vendo?\"), porque o jogo ainda não\nsabe o que fazer quando alguém toca no arbusto, e a gente precisa dizer isso para ele. Comparar com\no que a criança já vive: toda ação tem uma reação, como a cócega e a risada. No jogo, o toque é a\nação, e a reação que a gente quer é o arbusto ficar invisível; para o jogo ter essa reação, a gente\nprecisa ligá-la ao toque. Clicar em **Ligar a reação ao toque**, tocar de novo e mostrar o arbusto\ninvisível com o coelho atrás (\"Olha só: agora sim…\"), dizendo que essa é a reação ligada ao toque.\nTudo numa conversa contínua, sem frases soltas. Terminar em \"Agora é a sua vez\": a criança repete\nos dois testes, e a experiência cobra as metas.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Na frase das cócegas, um meme ilustrado nosso por 2 a 3 segundos, com Zappy apenas visual, sem voz. Não esconder os passos\nobrigatórios nas pistas. Manter a experiência existente, sem palpite ou pergunta final. A fala\nnão inclui campainha, tour de controles ou retorno à seção do caderno.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "### Faça alguém aparecer",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Começar pela retomada, numa conversa curta: pedir um toque num esconderijo do próprio jogo e\nmostrar que nada acontece, porque o toque ainda não tem nenhuma reação ligada a ele. Depois,\nlembrar que, na experiência da parte anterior, o arbusto só ficou invisível depois de ligar a reação\nao toque, e convidar a fazer isso com os esconderijos do jogo.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Antes de \"Para começar, encontre a área Quando acontecer\", apresentar os comandos como instruções\nque dizem ao jogo o que fazer e que aparecem como bloquinhos. No \"Olha aqui: neste menu\", apontar\na paleta de comandos como o lugar de escolher os blocos, sem pegar nenhum ainda. Esta é a primeira\nmontagem: a apresentação liga a experiência ao uso dos blocos. Não repetir a explicação de ação e\nreação nem dizer que o jardim e os personagens estão preparados.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Só então mostrar o evento que já está em **Quando acontecer** (\"Olha aqui:\nnessa área já tem o bloco…\", é ele que percebe o toque), trazendo a área à vista se ela começar fora\nda tela, e explicar **escolhido** como o esconderijo tocado. Com o espaço ao lado de **fazer** à vista,\nensinar o caminho **Jogo 2D > Sprites > Aparência** e o bloco de visibilidade, que nasce com\n**jogador** e **50**: trocar o nome para **escolhido**, que fica no fim da lista, e o valor para\n**0**.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "A prévia atualiza automaticamente. Pedir o toque em dois esconderijos e conferir a revelação.\nDepois do teste, iniciar a conferência com \"Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim:\", seguida do encaixe, sprite e valor. Essa abertura deixa claro quando a criança deve conferir. **Achados** ainda fica em zero nesta aula.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Após o teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os blocos e verificar\nnovamente. Quando aparecer **Objetivo cumprido!**, esperar **Salvo**, usar **Enviar\nmeu projeto**, confirmar em **Enviar** e aguardar a conclusão do envio antes de **Concluir\nfase**. O recado é opcional. Entre o envio e **Concluir fase**, reconhecer a conquista com\n\"Pronto, você já programou a primeira regra do seu jogo!\", sem pedir que a criança olhe para o jogo\nnovamente. Retomar a surpresa como parte da conversa, uma vez só, sem mostrar nada dela:\n\"E lembra da surpresa que eu te contei lá no começo da aventura? Pois é, ela está quase chegando!\nNa próxima fase, você já vai descobrir o que é.\" A verificação exige esse clique; o envio não a\nexecuta automaticamente.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "## Tutoriais retirados do vídeo",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Os detalhes de pausa, replay, divisória, ampliação, abas, olhinho, leitor do caderno e o passo a\npasso do download ficam na biblioteca Como Fazer; a fala do caderno só aponta o botão **Baixar**. O mapa de destinos está em\n[REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md](../../../aulas-interativas-tecnico/REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md).\nA biblioteca é consulta, sem pré-requisito ou seção extra.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "## Conferência da edição",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "Conferir rótulos e encaixes no Estúdio incorporado, largura estreita e larga, atualização da\nprévia, verificação da etapa, envio e avanço. Manter mouse, toque e teclado nas experiências existentes. Conferir o\ncaderno real anexado e a sua presença na captura; não substituir o anexo pela lista vazia do molde editorial.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "O ensaio da abertura deve comprovar que a criança reconhece o jogo a construir, começa a jogar\nsem explicação adicional e sabe como seguir. Conferir as oito entradas da Debinha na versão\neditada, sem sobrepor vozes nem cobrir os controles. A gravação base foi informada como concluída;\navaliar uma fala complementar somente se a edição revelar uma lacuna concreta. Os manifestos\nlocais continuam como moldes de autoria.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "## Revisão de ritmo e entendimento · 10/10/2026",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "O roteiro tem 8 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "A parte 4 recebeu duas inserções entre trechos do áudio já gravado. Na parte 3, a resposta a A1P3-D01 perde o \"Por isso,\" na edição: a pergunta \"E como eu faço essa ligação?\" pede o como, e a resposta passa a começar pela demonstração (\"eu clico em Ligar a reação ao toque…\"). Nenhuma fala é regravada; as partes 1 e 2 continuam iguais. “Funcionou?” vem antes de “Agora sim!”. [Cortes exatos](../../../aulas-interativas-tecnico/edicao-cade-aula-1-reacoes.md).",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.md",
+      "kids": "| Entrada | Depois da professora | Criança | Retomada da professora |\n| --- | --- | --- | --- |\n| A1P4-R01 | “Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.” | Debinha: “Ah! Se eu tocar no arbusto, ele vira o escolhido!” | “A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.” |\n| A1P4-R02 | “Funcionou?” | Debinha: “Agora sim!” | “Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.” |",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "# Roteiro falado: Cadê Todo Mundo? | Aula 1",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "Um vídeo por seção. **Status em 10/10/2026:** a responsável informou que os quatro vídeos-base já foram gravados. Este roteiro organiza oito inserções da **Debinha**, confirmada como a criança desta aula: as seis informadas e duas novas na parte 4. Na parte 3, a edição corta duas palavras do áudio gravado (A1P3-D01). Preservar a fala gravada da professora; conferir os pontos de corte no material original. As durações abaixo foram revistas em 10/10/2026 e já contam as inserções: cobrem a fala estimada a 137 palavras por minuto e, na montagem, os gestos sem fala. São alvos para a montagem, não tempos medidos.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Quem fala:** **Professora** é a voz que conduz a explicação; **Debinha (avatar)** é a participação dentro do vídeo; **Zappy na página (não gravar)** é o diálogo da plataforma, fora da gravação. O Zappy não ganha voz no meio do vídeo. Quando aparece no meme ou na interface capturada, sua presença é visual. O botão Ouvir da plataforma continua independente da edição do vídeo.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Edição:** seguir as entradas e saídas marcadas em **Na tela**. Debinha entra, fala e sai; não permanece cobrindo a atividade. A professora retoma depois da fala da criança, sem vozes sobrepostas. Manter livres os blocos, os campos, os botões e os resultados que estão sendo mostrados. O roteiro completo permanece em ordem de edição; as notas não são lidas. Aponte para a atividade ao dizer \"aqui\". O botão atual se chama **Próxima parte**. [Direção para as próximas aulas](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"então\", \"por isso\", \"mas\", \"agora que\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"). O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026).",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "## 1. Bem-vindo ao jardim",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Duração alvo:** 40 a 55 segundos.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** mostrar o jogo pronto nesta seção, com os três personagens escondidos. No \"Olha aqui\", tocar em UM esconderijo e deixar ver o personagem aparecer. No \"repare\", apontar o número Achados, que virou 1. Não tocar nos outros esconderijos. No \"tem mais uma coisa\", falar olhando para a câmera, com entusiasmo e naturalidade, sem mostrar nada da personalização. No fim, apontar para a área jogável ao passar a vez e para **Próxima parte**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Professora:**",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Oi! Você vai construir um jogo chamado Cadê Todo Mundo. Antes de montar o seu, você vai brincar com a versão pronta, para ver como o jogo funciona.\n>\n> Neste jardim, três personagens estão escondidos. Olha aqui: quando eu toco num esconderijo, ele some e aparece quem estava atrás dele. Achei um! E repare no número Achados: ele mudou para 1, porque eu encontrei um personagem.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** **A1P1-D01** · manter o jardim com dois esconderijos ainda fechados. Debinha entra, curiosa, sem cobrir os esconderijos.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Debinha (avatar):**",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “E os outros dois?”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai; a professora responde sem revelar os outros personagens.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Esses eu deixo para você descobrir.\n>\n> Ah, e tem mais uma coisa: no fim da aventura tem uma surpresa esperando por você. Ela vai deixar o seu jogo ainda mais seu.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** **A1P1-D02** · Debinha entra para uma comemoração curta, sem mostrar a surpresa.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Uhu!”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai; a professora passa a vez para quem está assistindo.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Agora é a sua vez: jogue até encontrar os três personagens. Quando terminar, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** “Sua vez! Jogue a versão pronta e encontre os três personagens. Depois, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Conferência de produção:** o vídeo é uma demonstração: mostra como se joga com UM achado, sem revelar os outros esconderijos, e só no fim passa a vez. Antes de passar a vez, a fala planta a surpresa do final (decisão do responsável, 07/10/2026): conta que existe, sem dizer o que é; a revelação é a seção Deixe o jogo com a sua cara, na Aula 2. A seção exige assistir ao vídeo e encontrar os três personagens. A cópia jogável é independente do projeto de construção. Pausa, replay, ampliação e reinício ficam no Como Fazer.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "## 2. Seu Mapa da Aventura",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Duração alvo:** 35 a 45 segundos.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** mostrar a capa e a página de orientação do Mapa da Aventura, o caderno real. No \"Olha aqui\", apontar o mapa. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão, a divisória nem os controles do leitor. O PDF precisa estar anexado antes da gravação.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Olha aqui: este é o seu Mapa da Aventura! Nele estão os passos para montar o seu jogo, com os blocos que você vai usar e o lugar de cada um. Então, se você esquecer algum passo, é só voltar aqui e abrir o mapa.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** **A1P2-D01** · manter o Mapa da Aventura visível. Debinha entra para comentar o que entendeu.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Entendi. Sempre que eu tiver dúvida, eu vou olhar no mapa.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai; a professora continua oferecendo as formas de consultar o mapa. A fala da criança não transforma a consulta em obrigação.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.\n>\n> Agora clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Conferência de produção:** o caderno, que a criança vê como Mapa da Aventura, é consulta opcional, e a fala oferece as duas escolhas como convite: ler aqui mesmo ou baixar para guardar. A fala não diz que a pessoa não precisa baixar ou imprimir: quem ouve entende como uma ordem para não fazer. Só o vídeo é necessário para avançar. O tutorial de materiais ensina a folhear e a baixar o PDF.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "## 3. O que um toque faz?",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Duração alvo:** 70 a 90 segundos.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** mostrar a experiência com a reação desligada. No \"Olha aqui\", tocar no arbusto e deixar ver que nada acontece; no \"Tá vendo?\", manter o arbusto parado na tela. Clicar em **Ligar a reação ao toque**, tocar de novo e, no \"Olha só\", deixar ver o arbusto invisível e o coelho. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase das cócegas, o Zappy morrendo de rir com uma pena fazendo cócegas, com a legenda \"ação: cócega · reação: risada\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a professora explica sozinha. O meme do Zappy é silencioso, sem fala ou voz do mascote.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Esta é uma experiência para a gente entender como funciona a ação e a reação.\n>\n> Olha aqui: quando eu toco no arbusto, nada acontece. Tá vendo? É que o jogo ainda não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele.\n>\n> Na vida é assim também: toda ação tem uma reação. Por exemplo, se alguém faz cócegas em você, você ri. A cócega é a ação, e a risada é a reação.\n>\n> No seu jogo, o toque é a ação. E a reação que a gente quer é o arbusto ficar invisível, para aparecer quem está escondido atrás dele. Mas, para o jogo ter essa reação, a gente precisa ligar a reação ao toque.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** **A1P3-D01** · a experiência continua com a reação desligada. Debinha entra e pergunta antes do clique de demonstração.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “E como eu faço essa ligação?”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai. Na edição, cortar \"Por isso,\" do áudio gravado e retomar em \"eu clico\": a pergunta pede o como, e a resposta é a demonstração ([corte A1P3-D01](../../../aulas-interativas-tecnico/edicao-cade-aula-1-reacoes.md)). Só então a professora demonstra o clique em Ligar a reação ao toque e toca novamente no arbusto.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Eu clico em Ligar a reação ao toque e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o coelho que estava atrás! Então essa é a reação que eu liguei ao toque: o arbusto ficar invisível.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** “Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda. Quando terminar, clique em Próxima parte.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê, como numa conversa. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e chega ao jogo dizendo qual é a ação (o toque) e qual é a reação (o arbusto ficar invisível). Sem palpite nem pergunta final.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "## 4. Faça alguém aparecer",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Duração alvo:** 4 a 5 minutos, incluindo os gestos de montagem e teste.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** abrir o Estúdio incorporado com o projeto inicial. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo na Pré-visualização e, no \"Tá vendo?\", mostrar que nada acontece. Depois da lembrança da experiência, apresentar os comandos como bloquinhos; no \"Olha aqui: neste menu\", apontar a paleta de comandos, sem pegar nenhum bloco ainda. Depois trazer à vista a área **Quando acontecer**, arrastando um espaço vazio entre os blocos se ela começar fora da tela, e, no \"Olha aqui: nessa área\", enquadrar o evento do grupo **esconderijos**, ainda vazio. Deixar à vista o espaço ao lado de **fazer** antes de abrir a categoria na paleta. Mostrar cada gesto no ritmo da fala, com pausa suficiente para acompanhar. Não demonstrar abas, divisória, expansão ou olhinho.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Aqui no seu jogo, toque num esconderijo. Tá vendo? Nada acontece, porque o toque ainda não tem nenhuma reação ligada a ele.\n>\n> Lembra da experiência da parte anterior? O arbusto só ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso com os esconderijos do seu jogo!”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** **A1P4-D01** · Debinha entra depois da retomada da experiência, antes de apresentar os comandos.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “E como eu faço isso?”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai; a professora apresenta os bloquinhos e a paleta de comandos, mantendo o passo a passo completo.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.\n>\n> Para começar, encontre a área Quando acontecer. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.\n>\n> Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** **A1P4-R01** · Nova inserção. Debinha entra depois da explicação de escolhido. Deixar o nome à vista e terminar o apontamento antes da fala.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Ah! Se eu tocar no arbusto, ele vira o escolhido!”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai. Retomar o áudio gravado em A reação vai ficar dentro desse bloco; só então apontar o encaixe.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.\n>\n> Agora sim, abra Jogo 2D, depois Sprites e depois Aparência, e pegue o bloco Deixar o sprite jogador com 50% de visibilidade.\n>\n> Arraste esse bloco até o espaço vazio ao lado de fazer e solte quando aparecer o encaixe.\n>\n> Repare que o bloco chega com o nome jogador. Mas quem precisa ficar invisível é o esconderijo que você tocar. Então clique em jogador, desça até o fim da lista que abre e clique em escolhido.\n>\n> Agora falta o número. Clique no 50 e troque por 0. Com zero de visibilidade, o esconderijo fica invisível, e aí dá para ver o personagem que está atrás dele.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e, no \"Olha só\", deixar ver o personagem; depois tocar em outro. Deixar visíveis o resultado e os blocos. Após o teste, clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Mostrar **Salvo**, abrir **Enviar meu projeto**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. No \"lembra da surpresa\", lembrar sem mostrar nada dela. Apontar **Concluir fase**.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Agora vamos testar no seu jogo! Toque num esconderijo. Olha só: ele fica invisível, e o personagem que estava atrás aparece! Achados continua em zero por enquanto, porque o jogo ainda não conta quem você encontra. Depois, toque em outro esconderijo também.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** **A1P4-D02** · Debinha entra com uma dúvida tranquila, depois do teste. O resultado mostrado pela professora continua visível; não fabricar um defeito nessa demonstração.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “No meu não deu certo.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai; a professora orienta a conferência para quem também precisar. Manter a fala condicional gravada, a lista uma vez só e o novo teste.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0. Depois de corrigir, teste de novo.\n>\n> Funcionou?”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** **A1P4-R02** · Nova inserção, depois da pergunta Funcionou? Mostrar novamente um esconderijo ficando invisível e o personagem aparecendo, com os blocos conferidos. Debinha responde à professora sobre o próprio novo teste; não afirmar que todos os jogos de quem assiste já funcionaram.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Agora sim!”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Na tela:** Debinha sai. Retomar o áudio gravado em Clique em Verificar esta parte. Não repetir Funcionou? depois da resposta da criança. Não retirar a verificação nem o envio.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "> “Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.\n>\n> Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.\n>\n> Pronto, você já programou a primeira regra do seu jogo! E lembra da surpresa que eu te contei lá no começo da aventura? Pois é, ela está quase chegando! Na próxima fase, você já vai descobrir o que é.\n>\n> Quando o envio terminar, clique em Concluir fase.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** “Agora monte a regra do toque no seu jogo! Depois, teste nos esconderijos e clique em Verificar esta parte antes de enviar o seu projeto.”",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.roteiro.md",
+      "kids": "**Conferência de produção:** a Pré-visualização atualiza automaticamente. O bloco é Deixar o sprite ___ com ___% de visibilidade e nasce com jogador e 50. A opção escolhido só existe com o bloco dentro do evento preparado e aparece no fim da lista de sprites, depois dos seis sprites com imagem; é preciso rolar a lista. A fala não diz que o jardim e os personagens estão preparados: a criança vê o que já está no projeto. O que vem pronto entra na conversa só quando ajuda a ação, como o evento que já está na área Quando acontecer. A seção exige vídeo, aprovação em **Verificar esta parte** e envio. A verificação depende desse clique; o envio não a executa automaticamente. Manter o projeto da criança, sem abrir Pinta ou o Estúdio completo.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "O primeiro achado",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Título: Vamos procurar!\n\nDizer que a criança vai construir Cadê Todo Mundo? e apresentar a versão pronta. Demonstração na primeira pessoa com UM achado (Olha aqui: quando eu toco num esconderijo…), sem revelar os outros esconderijos. Antes de passar a vez, plantar a surpresa do final, sem dizer o que é (Ah, e tem mais uma coisa: no fim da aventura tem uma surpresa esperando por você. Ela vai deixar o seu jogo ainda mais seu.); só no fim passar a vez: jogar até encontrar os três e clicar em Próxima parte. Falar como numa conversa, ligando as frases e dizendo o porquê do que aparece (Achados mudou para 1 porque eu encontrei um personagem). Não explicar controles da plataforma. Pausa, replay, ampliação e reinício ficam no Como Fazer. Produção em 10/10/2026: vídeo-base da professora informado como gravado. Preservar o áudio e conferir as inserções no roteiro; edição e publicação ainda precisam ser conferidas. Debinha faz duas entradas, na ordem de corte. A1P1-D01: depois de \"porque eu encontrei um personagem.\", Debinha pergunta \"E os outros dois?\"; a professora retoma \"Esses eu deixo para você descobrir.\". Não repetir a pergunta na voz da professora. A1P1-D02: depois de \"Ela vai deixar o seu jogo ainda mais seu.\", Debinha comemora \"Uhu!\"; a professora passa a vez. Em cada entrada, Debinha aparece, fala e sai antes de a professora continuar, sem sobrepor vozes ou cobrir controles. Zappy só tem voz na página, fora do vídeo. Ver AVATARES-NOS-VIDEOS.md. Duração alvo com as inserções; medir a montagem final: 40 a 55 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Sua vez! Jogue a versão pronta e encontre os três personagens. Depois, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Experimente o jogo pronto",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Toque nos esconderijos até encontrar os três personagens.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Título: Seu Mapa da Aventura\n\nChamar a atenção para o caderno real, que a criança conhece como Mapa da Aventura (Olha aqui: este é o seu Mapa da Aventura!), e dizer que ele reúne os passos de montagem para consultar quando precisar. Oferecer as duas escolhas como convite: ler aqui mesmo ou clicar em Baixar para guardar o mapa e consultar onde quiser. Não dizer que não precisa baixar ou imprimir: soa como uma ordem para não fazer. Terminar com Próxima parte. Apontar Baixar sem demonstrar o download; controles do leitor e divisória ficam no Como Fazer. Conferir o PDF real anexado e visível na captura. Produção em 10/10/2026: vídeo-base da professora informado como gravado. Preservar o áudio e conferir as inserções no roteiro; edição e publicação ainda precisam ser conferidas. A1P2-D01: depois de \"é só voltar aqui e abrir o mapa.\", Debinha diz \"Entendi. Sempre que eu tiver dúvida, eu vou olhar no mapa.\". A professora retoma \"Se quiser, você pode ler aqui mesmo.\". A consulta ao mapa continua opcional. Em cada entrada, Debinha aparece, fala e sai antes de a professora continuar, sem sobrepor vozes ou cobrir controles. Zappy só tem voz na página, fora do vídeo. Ver AVATARES-NOS-VIDEOS.md. Duração alvo com a inserção; medir a montagem final: 35 a 45 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Mapa da Aventura: Cadê Todo Mundo?",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Título: Um toque pode chamar uma ação\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz, como numa conversa: tocar no arbusto (Tá vendo? Nada acontece, porque o jogo ainda não sabe o que fazer quando alguém toca no arbusto, e a gente precisa dizer isso para ele), dizer que toda ação tem uma reação, como cócegas e risada, e que no jogo o toque é a ação e a reação que a gente quer é o arbusto ficar invisível; para o jogo ter essa reação, a gente precisa ligar a reação ao toque. Clicar em Ligar a reação ao toque e tocar de novo (Olha só: agora sim o arbusto fica invisível e o coelho aparece) e dizer que essa é a reação ligada ao toque. Meme na comparação: na frase das cócegas, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy morrendo de rir com uma pena fazendo cócegas e a legenda \"ação: cócega · reação: risada\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar com Agora é a sua vez e Próxima parte. Sem palpite nem pergunta final. Produção em 10/10/2026: vídeo-base da professora informado como gravado. Preservar o áudio e conferir as inserções no roteiro; edição e publicação ainda precisam ser conferidas. A1P3-D01: depois de \"a gente precisa ligar a reação ao toque.\", Debinha pergunta \"E como eu faço essa ligação?\". Manter a reação desligada durante a pergunta. Na edição, cortar \"Por isso,\" do áudio gravado, porque a pergunta pede o como e não uma conclusão: a professora retoma em \"eu clico em Ligar a reação ao toque e toco no arbusto de novo.\" e demonstra só depois da saída da Debinha (ver edicao-cade-aula-1-reacoes.md). O meme do Zappy é silencioso. Em cada entrada, Debinha aparece, fala e sai antes de a professora continuar, sem sobrepor vozes ou cobrir controles. Zappy só tem voz na página, fora do vídeo. Ver AVATARES-NOS-VIDEOS.md. Duração alvo com a inserção; medir a montagem final: 70 a 90 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda. Quando terminar, clique em Próxima parte.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "O toque faz o jogo responder",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Toque no arbusto. Depois clique em Ligar a reação ao toque e toque no arbusto de novo. Compare as duas vezes.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Título: Faça o primeiro personagem aparecer\n\nComeçar pela retomada, antes de qualquer bloco, nesta ordem: primeiro tocar num esconderijo do próprio jogo e mostrar que nada acontece, porque o toque ainda não tem nenhuma reação ligada a ele; depois lembrar a experiência da parte anterior e convidar a fazer isso com os esconderijos do jogo. Antes de pedir para encontrar Quando acontecer, apresentar os comandos e os bloquinhos com a fala: \"Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.\" Apontar a paleta no \"Olha aqui: neste menu\", sem pegar nenhum bloco ainda. Não repetir a explicação de ação e reação nem dizer que o jardim e os personagens estão preparados. Primeiro o destino: trazer à vista a área Quando acontecer (arrastando um espaço vazio entre os blocos se ela estiver fora da tela), mostrar o evento que já está nela (é ele que percebe o toque) e o significado de escolhido, e deixar à vista o espaço ao lado de fazer antes de abrir a paleta. Só então ensinar Jogo 2D > Sprites > Aparência, o bloco de visibilidade, o encaixe nesse espaço, escolhido e a troca de 50 para 0. Testar dois esconderijos com a prévia automática. Depois do teste, iniciar a conferência uma vez com a fala Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: e listar o encaixe, o sprite escolhido e o número 0. Depois de corrigir, testar de novo. Clicar em Verificar esta parte; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo cumprido!, esperar Salvo, usar Enviar meu projeto e confirmar em Enviar. Antes de Concluir fase, reconhecer a conquista depois do envio (Pronto, você já programou a primeira regra do seu jogo!), sem pedir que a criança olhe para o jogo novamente, e lembrar a surpresa uma vez só, sem mostrar nada dela (E lembra da surpresa que eu te contei lá no começo da aventura? Pois é, ela está quase chegando! Na próxima fase, você já vai descobrir o que é.). Terminar em Concluir fase. Sem tour de abas, olhinho, divisória ou expansão. Produção em 10/10/2026: vídeo-base da professora informado como gravado. Preservar integralmente o áudio gravado e conferir as inserções no roteiro; edição e publicação ainda precisam ser conferidas. Quatro entradas de Debinha, na ordem de corte. A1P4-D01: depois de \"Agora a gente vai fazer isso com os esconderijos do seu jogo!\", Debinha pergunta \"E como eu faço isso?\"; a professora apresenta os comandos e os bloquinhos. A1P4-R01: depois de \"Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.\", Debinha diz \"Ah! Se eu tocar no arbusto, ele vira o escolhido!\"; a professora retoma em \"A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.\". A1P4-D02: depois de \"Depois, toque em outro esconderijo também.\", Debinha diz \"No meu não deu certo.\"; a professora mantém \"Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim:\" e a lista uma vez só, sem fabricar um defeito na demonstração bem-sucedida. A1P4-R02: depois de \"Funcionou?\", Debinha diz \"Agora sim!\"; a professora retoma em \"Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.\". Mostrar o novo teste bem-sucedido antes dessa reação e não repetir Funcionou? depois. As entradas -R vieram da revisão de ritmo de 10/10/2026; os pontos de corte estão em edicao-cade-aula-1-reacoes.md. Em cada entrada, Debinha aparece, fala e sai antes de a professora continuar, sem sobrepor vozes ou cobrir controles. Zappy só tem voz na página, fora do vídeo. Ver AVATARES-NOS-VIDEOS.md. Duração alvo com as inserções; medir a montagem final: 4 a 5 minutos, incluindo gestos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Agora monte a regra do toque no seu jogo! Depois, teste nos esconderijos e clique em Verificar esta parte antes de enviar o seu projeto.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Bem-vindo ao jardim",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Jogar a versão pronta e encontrar os três personagens antes de construir o próprio jogo.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Seu Mapa da Aventura",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Conhecer o caderno e saber onde consultá-lo durante a construção do jogo.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "O que um toque faz?",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Comparar o mesmo toque antes e depois de ligar uma ação, sem palpite obrigatório.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Faça alguém aparecer",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Encaixar a reação no evento preparado e tocar num esconderijo do próprio jogo.",
+      "adulto": null
+    },
+    {
+      "onde": "cade-todo-mundo-aula-1.manifesto.json",
+      "kids": "Revele o personagem tocado deixando o esconderijo escolhido invisível.",
+      "adulto": null
+    }
+  ]
+}

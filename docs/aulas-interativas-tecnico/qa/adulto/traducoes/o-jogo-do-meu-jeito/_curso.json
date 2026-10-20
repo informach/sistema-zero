@@ -1,0 +1,96 @@
+{
+  "curso": "o-jogo-do-meu-jeito",
+  "grupo": "_curso",
+  "trechos": [
+    {
+      "onde": "modulos.md",
+      "kids": "# O Jogo do Meu Jeito",
+      "adulto": null
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Título do curso:** O Jogo do Meu Jeito",
+      "adulto": null
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Descrição curta:** Desenhe, anime e coloque suas próprias artes no jogo.",
+      "adulto": null
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Descrição longa:** Continue a partir de uma cópia do jogo que você concluiu em Nave Contra Asteroides. Crie uma nave em pixel art e um asteroide em vetor no Pinta, anime os dois e use essas artes no Estúdio. Teste as regras com os novos desenhos e, se quiser, publique sua versão no Mural dos Criadores.",
+      "adulto": null
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "## Módulo 1 — Seu jogo e sua nave",
+      "adulto": null
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Resumo:** Guarde uma cópia do jogo, desenhe sua nave e faça o motor pulsar.",
+      "adulto": null
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "- [Guarde uma cópia para criar do seu jeito](meu-jeito-aula-01.md)\n- [Desenhe sua nave em pixel art](meu-jeito-aula-02.md)\n- [Faça o motor da nave pulsar](meu-jeito-aula-03.md)",
+      "adulto": null
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "## Módulo 2 — Suas pedras em movimento",
+      "adulto": null
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Resumo:** Desenhe a pedra com formas e curvas, ponha as chamas atrás e anime os detalhes.",
+      "adulto": null
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "- [Desenhe um asteroide com formas](meu-jeito-aula-04.md)\n- [Anime as chamas e as crateras](meu-jeito-aula-05.md)",
+      "adulto": null
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "## Módulo 3 — Sua arte entra no jogo",
+      "adulto": null
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Resumo:** Use as duas artes na mesma cópia do jogo, teste uma partida completa e aprenda a compartilhar sua versão.",
+      "adulto": null
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "- [Coloque sua nave animada no jogo](meu-jeito-aula-06.md)\n- [Faça suas pedras nascerem animadas](meu-jeito-aula-07.md)\n- [Teste e compartilhe sua versão](meu-jeito-aula-08.md)",
+      "adulto": null
+    },
+    {
+      "onde": "README.md",
+      "kids": "Materiais do curso para consulta, gravação e importação.",
+      "adulto": null
+    },
+    {
+      "onde": "README.md",
+      "kids": "| Material | Arquivo |\n| --- | --- |\n| Título, descrições, módulos e aulas | [Módulos](modulos.md) |\n| Blocos do projeto | [JSON dos blocos](blocos.json) |\n| Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |\n| Mapa da Aventura para consultar ou anexar | [PDF do mapa](mapa-da-aventura.pdf) |",
+      "adulto": null
+    },
+    {
+      "onde": "README.md",
+      "kids": "Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as orientações; **roteiro** traz as falas e a direção dos vídeos; **manifesto** é o JSON para importar no Admin.",
+      "adulto": null
+    },
+    {
+      "onde": "README.md",
+      "kids": "| Aula | Conteúdo | Roteiro | Manifesto |\n| --- | --- | --- | --- |\n| Guarde uma cópia para criar do seu jeito | [Abrir](meu-jeito-aula-01.md) | [Abrir](meu-jeito-aula-01.roteiro.md) | [JSON](meu-jeito-aula-01.manifesto.json) |\n| Desenhe sua nave em pixel art | [Abrir](meu-jeito-aula-02.md) | [Abrir](meu-jeito-aula-02.roteiro.md) | [JSON](meu-jeito-aula-02.manifesto.json) |\n| Faça o motor da nave pulsar | [Abrir](meu-jeito-aula-03.md) | [Abrir](meu-jeito-aula-03.roteiro.md) | [JSON](meu-jeito-aula-03.manifesto.json) |\n| Desenhe um asteroide com formas | [Abrir](meu-jeito-aula-04.md) | [Abrir](meu-jeito-aula-04.roteiro.md) | [JSON](meu-jeito-aula-04.manifesto.json) |\n| Anime as chamas e as crateras | [Abrir](meu-jeito-aula-05.md) | [Abrir](meu-jeito-aula-05.roteiro.md) | [JSON](meu-jeito-aula-05.manifesto.json) |\n| Coloque sua nave animada no jogo | [Abrir](meu-jeito-aula-06.md) | [Abrir](meu-jeito-aula-06.roteiro.md) | [JSON](meu-jeito-aula-06.manifesto.json) |\n| Faça suas pedras nascerem animadas | [Abrir](meu-jeito-aula-07.md) | [Abrir](meu-jeito-aula-07.roteiro.md) | [JSON](meu-jeito-aula-07.manifesto.json) |\n| Teste e compartilhe sua versão | [Abrir](meu-jeito-aula-08.md) | [Abrir](meu-jeito-aula-08.roteiro.md) | [JSON](meu-jeito-aula-08.manifesto.json) |",
+      "adulto": null
+    },
+    {
+      "onde": "README.md",
+      "kids": "O projeto final usa as artes de demonstração do curso. Cada criança cria e usa suas próprias artes.",
+      "adulto": null
+    }
+  ]
+}
