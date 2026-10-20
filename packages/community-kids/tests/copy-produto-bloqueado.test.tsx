@@ -214,3 +214,20 @@ describe('a copy aprovada das seis telas', () => {
     ).toBeTruthy()
   })
 })
+
+describe('o Pensa bloqueado mostra o que o Pensa faz de verdade', () => {
+  test('a prévia são os três passos, sem a promessa antiga de desenhar telas', () => {
+    const { container } = render(<KidsLockedPensa opensAt="hacker" />)
+    const itens = [...container.querySelectorAll('li')].map((item) => item.textContent)
+    expect(itens).toEqual([
+      '1Conte a ideia do jogo, escrevendo ou falando',
+      '2Confira o plano que o Zappy monta com você',
+      '3Construa uma missão de cada vez no Estúdio, no Pinta e no Molda',
+    ])
+    expect(container.textContent).not.toMatch(/telas e o fluxo/)
+  })
+  test('quem já conquistou o Pensa lê que os jogos estão guardados', () => {
+    render(<KidsLockedPensa opensAt="hacker" earned />)
+    expect(screen.getByText(/Os seus jogos e os planos estão guardados/)).toBeTruthy()
+  })
+})

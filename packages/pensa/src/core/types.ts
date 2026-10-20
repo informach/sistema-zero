@@ -23,7 +23,7 @@ export class PensaApiError extends Error {
   }
 }
 
-export type PensaMascotPose = 'happy' | 'thinking' | 'celebrating' | 'sleeping'
+export type PensaMascotPose = 'happy' | 'thinking' | 'celebrating' | 'sleeping' | 'speaking'
 
 /** Browser integration only. Project availability is supplied by the server. */
 export interface PensaHostAdapter {
@@ -31,7 +31,13 @@ export interface PensaHostAdapter {
   transport: PensaTransport
   mode: 'kids' | 'adult'
   theme?: 'light' | 'dark'
+  /** Kids only: the Zappy poses. Adult hosts omit them and the planner shows no mascot. */
   mascotImages?: Partial<Record<PensaMascotPose, string>>
+  /**
+   * The host already knows this is a read-only support session. Without it the planner still
+   * switches to read-only when the BFF answers `IMPERSONATION_READONLY`.
+   */
+  readOnly?: boolean
   renderListen?: (reference: PensaNarratableRef) => ReactNode
   renderVoiceInput?: (input: {
     value: string

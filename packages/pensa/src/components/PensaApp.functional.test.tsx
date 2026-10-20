@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import type { PensaHostAdapter, PensaTransport } from '../core/types'
 import { PensaApp } from './PensaApp'
 import { handoffFixture, MISSION_ID, PROJECT_ID, projectFixture } from './pensa.fixture'
@@ -36,7 +36,10 @@ describe('Pensa funcional', () => {
       return view as T
     })
     render(<PensaApp adapter={adapter} initialProjectId={PROJECT_ID} />)
-    fireEvent.click(await screen.findByRole('button', { name: /^Tentar de novo$/ }))
+    expect(
+      await screen.findByRole('heading', { name: 'Deu um tropeço. A sua ideia está guardada.' }),
+    ).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: /^Tentar de novo$/ }))
     await waitFor(() => expect(sent).toMatchObject({ retry: true }))
   })
   test('o plano inteiro pode ser consultado antes de liberar a execução das próximas missões', async () => {
@@ -44,12 +47,15 @@ describe('Pensa funcional', () => {
       async <T,>(path: string) => (path.startsWith('/projects?') ? [] : projectFixture()) as T,
     )
     render(<PensaApp adapter={adapter} initialProjectId={PROJECT_ID} />)
-    const buttons = await screen.findAllByRole('button', { name: 'Ver missão' })
-    fireEvent.click(buttons[1]!)
-    const dialog = await screen.findByRole('region', { name: 'Prepare os seis pares de cartas' })
+    fireEvent.click(await screen.findByRole('button', { name: /^Missão 2, / }))
+    const dialog = await screen.findByRole('dialog', { name: 'Prepare os seis pares de cartas' })
     expect(dialog.textContent).toContain('Cada animal aparece em duas cartas.')
     expect(dialog.textContent).toContain('Há doze cartas e seis pares de animais.')
-    expect(screen.queryByRole('button', { name: 'Continuar esta missão na oficina' })).toBeNull()
+    expect(dialog.textContent).toContain('Faça primeiro a missão anterior.')
+    const run = within(dialog).getByRole('button', { name: 'Continuar no Estúdio' })
+    expect(run.hasAttribute('disabled')).toBe(true)
+    fireEvent.click(within(dialog).getAllByRole('button', { name: 'Fechar' })[0]!)
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
   })
   test('a ajuda trazida de uma oficina preserva a missão escolhida', async () => {
     let sent: unknown
@@ -65,8 +71,7 @@ describe('Pensa funcional', () => {
         initialHelpMissionId={MISSION_ID}
       />,
     )
-    await screen.findByRole('heading', { name: 'Vamos pensar nessa parte' })
-    fireEvent.change(screen.getByLabelText('Sua dúvida'), {
+    fireEvent.change(await screen.findByLabelText('Sua dúvida'), {
       target: { value: 'Não entendi o resultado desta missão.' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Enviar' }))
@@ -85,14 +90,14 @@ describe('Pensa funcional', () => {
       return projectFixture() as T
     })
     render(<PensaApp adapter={adapter} />)
-    await screen.findByRole('heading', { name: 'Meus jogos' })
-    expect(calls.some((call) => call.path === '/projects')).toBe(false)
-    fireEvent.change(screen.getByLabelText('Sua ideia ou mudança'), {
+    // Sem nenhum jogo, o Pensa já abre na nova ideia.
+    fireEvent.change(await screen.findByLabelText('Sua ideia'), {
       target: { value: 'Quero um jogo com doze cartas.' },
     })
+    expect(calls.some((call) => call.path === '/projects')).toBe(false)
     fireEvent.click(screen.getByRole('button', { name: 'Organizar meu jogo' }))
     await screen.findByRole('alert')
-    expect((screen.getByLabelText('Sua ideia ou mudança') as HTMLTextAreaElement).value).toBe(
+    expect((screen.getByLabelText('Sua ideia') as HTMLTextAreaElement).value).toBe(
       'Quero um jogo com doze cartas.',
     )
     fail = false
@@ -141,7 +146,7 @@ describe('Pensa funcional', () => {
       async <T,>(path: string) => (path.startsWith('/projects?') ? [] : view) as T,
     )
     render(<PensaApp adapter={adapter} initialProjectId={PROJECT_ID} />)
-    expect(await screen.findByText('Vamos conferir de novo')).toBeTruthy()
+    expect(await screen.findByText(/Vamos conferir de novo/)).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Conferir no Estúdio' })).toBeTruthy()
   })
 })

@@ -9,6 +9,7 @@ mock.module('next/navigation', () => ({ ...nav, useRouter: () => ({ refresh }) }
 
 const { KidsAccessUnavailable } = await import('../src/components/kids/kids-access-unavailable')
 const { HelpUnavailable } = await import('../src/components/kids/help/help-unavailable')
+const { KidsPensaUnavailable } = await import('../src/components/kids/kids-pensa-unavailable')
 
 beforeEach(() => refresh.mockClear())
 afterEach(cleanup)
@@ -54,6 +55,24 @@ describe('HelpUnavailable', () => {
     expect(art[0]?.getAttribute('class')).toContain('size-24')
     expect(container.innerHTML).not.toContain('/ilustra/alivio')
     expect(screen.getByText(/Não consegui abrir os tutoriais agora/)).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }))
+    expect(refresh).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('KidsPensaUnavailable', () => {
+  it('diz que os jogos estão guardados, tenta de novo e leva ao Estúdio', () => {
+    const { container } = render(<KidsPensaUnavailable />)
+    expect(screen.getByRole('heading', { name: 'O Pensa não abriu agora' })).toBeTruthy()
+    expect(
+      screen.getByText(
+        'Os seus jogos e as suas missões estão guardados. Tente de novo daqui a pouco.',
+      ),
+    ).toBeTruthy()
+    expect(container.querySelector('img')?.getAttribute('src')).toBe(ZAPPY_SRC.thinking)
+    expect(screen.getByRole('link', { name: 'Ir para o Estúdio' }).getAttribute('href')).toBe(
+      '/estudio',
+    )
     fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }))
     expect(refresh).toHaveBeenCalledTimes(1)
   })
