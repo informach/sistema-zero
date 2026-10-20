@@ -3850,14 +3850,22 @@
             "label": "Revele o personagem tocado deixando o esconderijo escolhido invisível.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_set_opacity",
+              "blockType": "sz_g2d_on_group_click",
               "area": "events",
-              "withinBlock": "sz_g2d_on_group_click",
               "fields": {
-                "SPRITE": "escolhido"
+                "GROUP": "esconderijos",
+                "ITEM": "escolhido"
               },
-              "inputs": {
-                "PERCENT": 0
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_set_opacity",
+                  "fields": {
+                    "SPRITE": "escolhido"
+                  },
+                  "inputs": {
+                    "PERCENT": 0
+                  }
+                }
               }
             }
           }

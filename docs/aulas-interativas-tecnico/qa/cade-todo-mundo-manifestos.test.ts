@@ -329,6 +329,22 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
     )
   })
 
+  test.each([
+    'aula-1',
+    'aula-2',
+  ])('%s não aprova a reação programada no evento de outro grupo', (lesson) => {
+    const project = montarProjetoCompleto()
+    const ir = structuredClone(project.ir) as SZIRV2
+    ir.behavior.start.push({ type: 'g2d:createGroup', varName: 'outroGrupo' })
+    const event = ir.behavior.events[0]
+    if (event?.type !== 'g2d:onGroupClick') throw new Error('Evento ausente')
+    event.groupVar = 'outroGrupo'
+    const wrongGroup = { ...project, ir, blocksState: buildWorkspaceStateFromIR(ir) }
+    expect(evaluateStudioSectionProject(checks(lesson), wrongGroup).every((c) => !c.passed)).toBe(
+      true,
+    )
+  })
+
   test('inventário de blocos corresponde ao jogo completo', () => {
     const { blocks } = JSON.parse(
       readFileSync(

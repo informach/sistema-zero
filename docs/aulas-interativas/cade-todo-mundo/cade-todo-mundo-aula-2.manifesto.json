@@ -2949,14 +2949,22 @@
             "label": "Revele o personagem tocado deixando o esconderijo escolhido invisível.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_set_opacity",
+              "blockType": "sz_g2d_on_group_click",
               "area": "events",
-              "withinBlock": "sz_g2d_on_group_click",
               "fields": {
-                "SPRITE": "escolhido"
+                "GROUP": "esconderijos",
+                "ITEM": "escolhido"
               },
-              "inputs": {
-                "PERCENT": 0
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_set_opacity",
+                  "fields": {
+                    "SPRITE": "escolhido"
+                  },
+                  "inputs": {
+                    "PERCENT": 0
+                  }
+                }
               }
             }
           },
@@ -2965,12 +2973,20 @@
             "label": "Some 1 em achados dentro do evento de clicar ou tocar no esconderijo.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_js_var_increment",
+              "blockType": "sz_g2d_on_group_click",
               "area": "events",
-              "withinBlock": "sz_g2d_on_group_click",
               "fields": {
-                "NAME": "achados",
-                "DELTA": 1
+                "GROUP": "esconderijos",
+                "ITEM": "escolhido"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_increment",
+                  "fields": {
+                    "NAME": "achados",
+                    "DELTA": 1
+                  }
+                }
               }
             }
           }

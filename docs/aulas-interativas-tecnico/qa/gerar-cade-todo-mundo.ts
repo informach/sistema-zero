@@ -1,6 +1,10 @@
 /** Gera apenas os três manifestos derivados deste curso. Não altera catálogo nem outros cursos. */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import type {
+  ProjectBlockPattern,
+  SectionStructureRule,
+} from '../../../packages/core/src/learning/section-progression'
 import { JARDIM_PARES, jardimSpriteRect } from '../../../packages/studio/src/arte/jardim-assets'
 import {
   montarProjetoCadeTodoMundo,
@@ -11,6 +15,14 @@ import { cadeTodoMundo } from './quizzes-cursos-curtos'
 
 const DIR = resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo')
 const CURSO = 'cade-todo-mundo'
+/** A reação precisa pertencer ao evento do grupo ensinado, com seu membro escolhido. */
+const noToqueDosEsconderijos = (body: ProjectBlockPattern): SectionStructureRule => ({
+  type: 'usesBlock',
+  blockType: 'sz_g2d_on_group_click',
+  area: 'events',
+  fields: { GROUP: 'esconderijos', ITEM: 'escolhido' },
+  inputBlocks: { BODY: body },
+})
 const EXEMPLOS = {
   inicio: 'ca000001-0000-4000-8000-000000000001',
   revelar: 'ca000002-0000-4000-8000-000000000002',
@@ -244,14 +256,11 @@ const aula1 = {
         {
           id: 'revelar-ao-toque',
           label: 'Revele o personagem tocado deixando o esconderijo escolhido invisível.',
-          rule: {
-            type: 'usesBlock',
+          rule: noToqueDosEsconderijos({
             blockType: 'sz_g2d_set_opacity',
-            area: 'events',
-            withinBlock: 'sz_g2d_on_group_click',
             fields: { SPRITE: 'escolhido' },
             inputs: { PERCENT: 0 },
-          },
+          }),
         },
       ],
     ),
@@ -367,25 +376,19 @@ const aula2 = {
         {
           id: 'revelar-ao-toque',
           label: 'Revele o personagem tocado deixando o esconderijo escolhido invisível.',
-          rule: {
-            type: 'usesBlock',
+          rule: noToqueDosEsconderijos({
             blockType: 'sz_g2d_set_opacity',
-            area: 'events',
-            withinBlock: 'sz_g2d_on_group_click',
             fields: { SPRITE: 'escolhido' },
             inputs: { PERCENT: 0 },
-          },
+          }),
         },
         {
           id: 'somar-achado',
           label: 'Some 1 em achados dentro do evento de clicar ou tocar no esconderijo.',
-          rule: {
-            type: 'usesBlock',
+          rule: noToqueDosEsconderijos({
             blockType: 'sz_js_var_increment',
-            area: 'events',
-            withinBlock: 'sz_g2d_on_group_click',
             fields: { NAME: 'achados', DELTA: 1 },
-          },
+          }),
         },
       ],
     ),
