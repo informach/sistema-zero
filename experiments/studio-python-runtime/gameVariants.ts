@@ -54,16 +54,6 @@ export const portableGameRecipes = {
         last: 846,
         replacement: ['    # O console do Estúdio preserva o histórico de FPS sem abrir um shell.'],
       },
-      {
-        first: 855,
-        last: 855,
-        replacement: [
-          '    if game.state == "paused":',
-          '        wn.update()',
-          '        continue',
-          '    ',
-        ],
-      },
     ],
   },
 } as const satisfies Record<
@@ -76,6 +66,41 @@ export const portableGameRecipes = {
 >
 
 export type PortableGame = keyof typeof portableGameRecipes
+
+function modernizeSpaceArenaEventLoop(source: string) {
+  const start = '\nwhile True:\n'
+  const playing = '    if game.state == "playing":\n'
+  const end = '\n# wn.mainloop()'
+  assert.equal(source.split(start).length, 2)
+  assert.equal(source.split(end).length, 2)
+  const [prefix, loopAndTail] = source.split(start)
+  const [loop, tail] = loopAndTail!.split(end)
+  assert.equal(loop!.split(playing).length, 2)
+  const previousClear = '        # Clear everything\n        pen.clear()'
+  const body = loop!.split(playing)[1]!
+  assert.equal(body.split(previousClear).length, 2)
+  assert.equal(body.split(previousClear)[1]!.trim(), '')
+  const unchangedBody = body.split(previousClear)[0]!.trimEnd()
+  return (
+    prefix +
+    '\n\ndef _space_arena_tick():\n' +
+    '    frame_started = time.monotonic()\n' +
+    '    if game.state == "playing":\n' +
+    '        # Clear the previous frame before drawing the next one.\n' +
+    '        pen.clear()\n' +
+    unchangedBody +
+    '\n' +
+    '    else:\n' +
+    '        # Dispatch input/timers while splash or paused, without simulation.\n' +
+    '        wn.update()\n' +
+    '    # Schedule after dispatch returns: no overlapping tick or catch-up steps.\n' +
+    '    elapsed_ms = (time.monotonic() - frame_started) * 1000\n' +
+    '    wn.ontimer(_space_arena_tick, max(1, math.ceil(1000 / 60 - elapsed_ms)))\n' +
+    '\n# Complete setup and expose the unchanged splash before scheduling play.\n' +
+    'wn.update()\nwn.ontimer(_space_arena_tick, 1)\nwn.mainloop()' +
+    tail
+  )
+}
 
 export function portableGameSource(game: PortableGame, source: string) {
   const recipe = portableGameRecipes[game]
@@ -97,7 +122,8 @@ export function portableGameSource(game: PortableGame, source: string) {
     lines.splice(edit.first - 1, edit.last - edit.first + 1, ...edit.replacement)
     boundary = edit.first
   }
-  const content = lines.join('\n')
+  const patched = lines.join('\n')
+  const content = game === 'space-arena' ? modernizeSpaceArenaEventLoop(patched) : patched
   assert.equal(
     sha256(content),
     recipe.manifest.portableVariant.entrypointSha256,
@@ -115,7 +141,7 @@ export function portableGameSource(game: PortableGame, source: string) {
       ...(game === 'space-arena'
         ? {
             pauseBehavior:
-              'explicit event pump while paused; isolated original-loop Tk reproduction passed; full-game qualification pending',
+              'official Turtle timer/mainloop, one unchanged playing tick per callback; event-driven source candidate requires fresh native/browser qualification',
           }
         : {}),
     },
