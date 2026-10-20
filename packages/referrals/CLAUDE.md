@@ -31,7 +31,8 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
    pelo prazo restante, sem estendê-lo e sem e-mail.
    O curso segue bloqueado para quem apenas cria conta. Antes de registrar o resgate,
    o serviço verifica se ele está publicado; falha/rascunho fecha o fluxo sem criar conta.
-   **1 resgate por E-MAIL, global** (UNIQUE em `scholarship_redemptions.email`).
+   **1 resgate por E-MAIL e PÚBLICO** (UNIQUE `(email, audience)` desde a 0005; ver §Presente
+   Kids e adulto).
 2. **Embaixador não precisa de conta** — a página dele é uma capability-URL
    (`/embaixador/<page_token>`, 32 bytes base64url). Bônus Pix segue a extensão abaixo;
    campanhas institucionais não geram bônus.
@@ -52,7 +53,7 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
 2. Normaliza e-mail (lower/trim) **ANTES** do UNIQUE e de qualquer S2S.
 3. Consulta o members: curso kids publicado? Indisponível → 503 sem claim nem conta;
    upstream fora → 502 sem claim nem conta. Resgate já concluído pula essa checagem para
-   manter o 409 e a retomada do e-mail antigo. Claim da bolsa: `INSERT … ON CONFLICT (email) DO NOTHING`; conflito → `completed` = 409 —
+   manter o 409 e a retomada do e-mail antigo. Claim da bolsa: `INSERT … ON CONFLICT (email, audience) DO NOTHING`; conflito → `completed` = 409 —
    mas se `welcome_sent_at` for NULL, **RETOMA só o e-mail antes do 409** (crash entre o grant e
    o welcome; o claim atômico do welcome é o mutex — dispensa lease, que exclui completed);
    `pending/failed` = **RETOMADA por etapas** (colunas `user_id`/`granted_at`/`mural_visitor_granted_at`/`welcome_sent_at`
@@ -222,8 +223,8 @@ canônico `canonicalHmacMessage`, timeout NUNCA lança — vira 502/504 por stat
 `ambassadors` (email UNIQUE lower, `page_token` UNIQUE, `link_email_count`; extensão 09/2026:
 `account_user_id` UNIQUE parcial — vínculo com a conta do responsável — + `pix_key`) · `codes`
 (code UNIQUE `^[a-z0-9-]{4,32}$`; UNIQUEs parciais por owner; CHECK owner; `owner_email`/
-`owner_document`/`panel_audience` já criados p/ F2-F3) · `scholarship_redemptions` (email UNIQUE
-global; etapas + lease + claim do welcome) · `invites` (UNIQUE ambassador+e-mail; `send_count`
+`owner_document` já criados p/ F2-F3; `panel_audience` = o público do código desde a 0005) ·
+`scholarship_redemptions` (UNIQUE (email, audience); etapas + lease + claim do welcome) · `invites` (UNIQUE ambassador+e-mail; `send_count`
 versiona reenvio) · `conversions` (0001: `redemption_id` UNIQUE **PARCIAL** `WHERE status <>
 'canceled'` — 1 bônus por bolsista, mas estorno + nova assinatura volta a converter —,
 `payment_id` UNIQUE, `offer_slug`, `amount_cents` bigint, `bonus_cents`, status, `matures_at`/
@@ -295,3 +296,67 @@ promise do drizzle (thenable preguiçoso) — try/catch; Date em SQL cru do post
 - PATCH de campanha exige `expectedUpdatedAt`; conferência sob lock recusa edição antiga com 409 `CAMPAIGN_CHANGED`. O admin deve reler antes de tentar novamente. O identificador do operador é preservado mesmo com nome longo.
 - Conversões de assinatura consultam `GET /payments/internal/subscriptions/:id` com token interno; assinatura criada antes do resgate não é atribuída por uma renovação posterior. Falha/404 na consulta pede reentrega. A conferência de estorno após INSERT também pede retry quando indisponível e funciona quando o INSERT já existe.
 - `welcome_accepted_at` é recibo local: falhar ao gravá-lo não transforma aceitação confirmada pelo messaging em falha de envio nem libera a emissão de outro token.
+
+## Presente Kids e adulto (20/10/2026)
+
+Plano: `~/.claude/plans/stateless-gathering-sonnet.md`; copy no Canvas "Presente Kids e adulto".
+Contrato client-safe em `@sistemazero/core/referrals` (`GiftAudience`, `AmbassadorShareUrls`).
+
+- **Público (`kids` | `adult`)** em `campaigns.audience`, `scholarship_redemptions.audience` e
+  `codes.audience`. Migration `0005_gift_audience`: colunas novas com DEFAULT `'kids'` + CHECK;
+  `codes` usa a coluna física **`panel_audience`** (criada na 0000, nunca escrita), mapeada como
+  `audience` no Drizzle. Não foi renomeada de propósito: o Drizzle lista as colunas no SELECT e o
+  container antigo quebraria entre o preDeploy e a troca. Backfill `kids` antes do NOT NULL; os
+  UNIQUEs novos nascem antes de soltar os antigos. ⚠️ Janela do deploy: o container ANTIGO faz
+  `ON CONFLICT (email)` no claim do resgate e esse índice some na 0005; resgates nesse minuto
+  respondem 500 e a família re-tenta (retomada idempotente).
+- **Unicidade:** `scholarship_redemptions_email_audience_uq (email, audience)` (o mesmo e-mail
+  resgata um Kids e um adulto); `codes_ambassador_audience_uq (ambassador_id, audience) WHERE
+  ambassador_id is not null` (um código de embaixador por público).
+- **Curso e app por público** (`RedeemScholarshipService.target`): Kids = `SCHOLARSHIP_COURSE_SLUG`
+  + `KIDS_COMMUNITY_URL`; adulto = `SCHOLARSHIP_ADULT_COURSE_SLUG` (default
+  `cade-todo-mundo-adulto`) + `COMMUNITY_URL` (SEM default). **`COMMUNITY_URL` ausente = adulto
+  fail-closed**: `giftAvailable:false` no `codes/:code`, 503 `GIFT_UNAVAILABLE` no resgate e no
+  convite adulto (`adultGiftEnabled:false` no `CreateInviteService`), `shareUrls.adult:null` sem
+  criar código (`AmbassadorAdminService`), sem consultar o Members; o Kids segue. Links adultos: conta nova
+  `${COMMUNITY_URL}/redefinir-senha?token=` (rota real do app adulto), conta existente
+  `${COMMUNITY_URL}/cursos`.
+- **Resgate:** o público vem do código (campanha → `campaign.audience`; embaixador →
+  `code.audience`) e é gravado no resgate; "já resgatado" é por público. No fio com o Members,
+  SÓ o adulto leva o campo (Kids byte a byte igual): `GET gift-course/:slug?audience=adult`
+  (query fora do path assinado), `grant-manual` `mode:'course'|'mural_trial'` com
+  `audience:'adult'`. O Mural (Kids ou adulto) só confirma com o lote completo do Members
+  (`ok` + `granted === 2`: participação temporária + visita permanente, ou `deduped`).
+- **E-mails adultos** (seed do Messaging): convite `referrals-scholarship-invite-adult`
+  {nome, indicador, link}; boas-vindas `referrals-scholarship-{welcome,existing}-adult`
+  {nome, indicador, validade, link} e `referrals-campaign-{welcome,existing}-adult`
+  {nome, campanha, validade, link}. Fim do presente (enviados pelo MEMBERS):
+  `gift-expiry-2d-adult` {nome, data, link} e `gift-expired-adult` {nome, link}.
+- **Embaixador:** `createAmbassadorWithCode` cria o código Kids; o adulto nasce sob demanda em
+  `ensureAmbassadorShareCode` (`ensureAmbassadorCode` no repo: SELECT → INSERT `ON CONFLICT
+  (ambassador_id, audience) WHERE ambassador_id is not null DO NOTHING` → relê o vencedor;
+  colisão do código sorteado = re-sorteio). O INSERT roda numa transação com `FOR SHARE` na
+  linha do embaixador: a desativação (`updateAmbassador`) espera ou é vista, então o código nasce
+  `disabled` para embaixador desativado e nunca fica ativo por corrida. As
+  leituras de embaixador (`code`) seguem sendo o código **Kids** (JOIN filtrado, `kidsCodeOf`);
+  contagens e detalhe do admin somam os dois códigos.
+- **HTTP:** `GET internal/codes/:code` → `+audience`; `GET internal/ambassadors/by-token/:token`
+  → `shareUrl` (Kids, compatível) `+ shareUrls {kids, adult}` (cria o adulto; falha → `adult:null`
+  e log); `POST …/invites` aceita `audience` opcional (default kids; adulto = template adulto e
+  link do código adulto; o convite continua único por (embaixador, e-mail), qualquer público);
+  `GET|POST /referrals/me/ambassador` → `ambassador.shareUrls`. Sessão de suporte
+  (`x-auth-impersonator-id`): GET devolve o estado com `code`/`pageUrl`/`shareUrl` nulos e
+  `shareUrls {kids:null, adult:null}` (sem criar o código adulto; o `pageUrl` troca a chave Pix);
+  POST → 403.
+- **Campanhas:** `audience` opcional no corpo (criação sem o campo = kids; edição e duplicata
+  sem o campo mantêm o gravado). Trocar o público fora do rascunho, ou num rascunho que já tem
+  resgate (campanha publicada que voltou a rascunho), → 409 `CAMPAIGN_AUDIENCE_LOCKED` (serviço +
+  repo sob o lock). O código da campanha espelha o público.
+- **Conversões:** default de `CONVERSION_OFFER_SLUGS` inclui
+  `comunidade-dos-criadores-adulto-{mensal,anual}`. ⚠️ A env é preservada no Railway: se estiver
+  definida lá, o valor precisa ganhar os dois slugs. O consumer escolhe, entre os resgates do
+  e-mail, o do público da oferta (`offerGiftAudience`: slug com `adulto`); sem ele, o do outro
+  público. Campanha segue sem bônus.
+- **Deploy:** `COMMUNITY_URL` (e `SCHOLARSHIP_ADULT_COURSE_SLUG`, se sair do default) precisam ser
+  criadas no painel do Railway do referrals (staging e produção) e declaradas em
+  `.railway/variables.ts` (`common.referrals`), senão o gate lê exclusão.

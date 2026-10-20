@@ -4,6 +4,7 @@ import { Plus, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { PageBand, PageBody } from '@/components/community/page'
 import { cn } from '@/lib/cn'
+import { muralVisitor } from '@/lib/mural-visitor'
 import { getCreativeToolsState } from '@/server/creative-tools'
 import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
@@ -24,7 +25,7 @@ export default async function AdultShowcasePage({
 }: {
   searchParams: Promise<{ desafio?: string; ordem?: string }>
 }) {
-  const [session, state, query, challengeResult, python] = await Promise.all([
+  const [session, state, query, challengeResult, python, space] = await Promise.all([
     getSession(),
     getCreativeToolsState(),
     searchParams,
@@ -33,7 +34,13 @@ export default async function AdultShowcasePage({
       .studioFreeOptionsReadonly()
       .then((response) => (response.status === 200 ? pythonRemixCapabilities(response.body) : []))
       .catch(() => []),
+    // Visitante (20/10/2026): o hub devolve `canInteract: false` para a chave de visitante do
+    // Mural, que deixa ver e jogar mas recusa publicar, comentar e reagir.
+    shell.hub.getSpaceReadonly(CREATOR_SHOWCASE_SLUGS.adult).catch(() => null),
   ])
+  // Só esconde o "Publicar" quando o hub DIZ que é visitante: com o hub fora, a página segue como
+  // sempre foi e quem decide no clique é o próprio hub (403).
+  const visitor = muralVisitor(space)
   const challenge =
     challengeResult?.status === 200 && challengeResult.body?.audience === 'adult'
       ? challengeResult.body.challenge
@@ -46,13 +53,20 @@ export default async function AdultShowcasePage({
       <PageBand
         back={{ href: '/comunidade', label: 'Comunidade' }}
         title="Mural dos Criadores"
-        lead="Jogos prontos da comunidade. Jogue no navegador, comente e faça a sua versão no Estúdio."
+        lead={
+          visitor
+            ? 'Jogos prontos da comunidade. Jogue no navegador.'
+            : 'Jogos prontos da comunidade. Jogue no navegador, comente e faça a sua versão no Estúdio.'
+        }
         actions={
           // Publicar é pelo Compartilhar do Estúdio; sem ele liberado, o Criar explica o porquê.
-          <Link href={studioReady ? '/estudio' : '/criar'} prefetch={false} className="sz-btn">
-            <Plus aria-hidden />
-            Publicar um jogo meu
-          </Link>
+          // O visitante não publica: o recado da lista (`ReadOnlyNote`) já leva à continuidade.
+          visitor ? undefined : (
+            <Link href={studioReady ? '/estudio' : '/criar'} prefetch={false} className="sz-btn">
+              <Plus aria-hidden />
+              Publicar um jogo meu
+            </Link>
+          )
         }
       >
         <nav aria-label="Filtros do Mural" className="mt-2 flex flex-wrap items-center gap-2">

@@ -6,6 +6,7 @@ import {
   type UploadedAttachment,
 } from '@sistemazero/member-shell/components/attachment-uploader'
 import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
+import { comunidadeAdultoContinuarUrl } from '@sistemazero/member-shell/lib/adult-links'
 import { renderUgcMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import type { StudioRemixCapability } from '@sistemazero/member-shell/lib/studio-tier'
 import { Input } from '@sistemazero/ui/input'
@@ -29,6 +30,34 @@ import type {
 } from '@/lib/types'
 
 const QUICK_EMOJIS = ['👍', '❤️', '🎉', '😂', '🤔']
+
+/**
+ * Leitura sem interação (20/10/2026): quem recebeu o presente adulto fica, depois dos 7 dias, com a
+ * chave de visitante do Mural (`adult-mural-dos-criadores-visitante`). O hub devolve
+ * `canInteract: false` e recusa comentário, reação e publicação com 403; a tela esconde esses
+ * controles (como o Kids) e diz o que segue aberto, com a oferta de continuidade.
+ */
+export const MURAL_VISITOR_NOTE =
+  'Você pode ver e jogar o Mural. Para publicar, comentar e reagir, a Comunidade dos Criadores abre tudo de novo.'
+
+export function ReadOnlyNote({ origem }: { origem: string }) {
+  return (
+    <p role="note" className="sz-soft flex flex-wrap items-center gap-x-3 gap-y-1 p-4">
+      <span className="min-w-0 flex-1 basis-[16rem] text-muted-foreground">
+        {MURAL_VISITOR_NOTE}
+      </span>
+      <a
+        href={comunidadeAdultoContinuarUrl(origem)}
+        target="_blank"
+        rel="noreferrer"
+        className="sz-link inline-flex min-h-[2.4rem] items-center"
+      >
+        Ver como continuar
+        <span className="sr-only"> (abre em outra aba)</span>
+      </a>
+    </p>
+  )
+}
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
@@ -418,9 +447,10 @@ export function SpaceViewClient({
       backLabel={showcase ? 'Voltar aos jogos' : 'Tópicos'}
       paned={!showcase}
       onSend={sendComment}
-      onReact={react}
+      onReact={space.canInteract ? react : null}
       onReport={report}
       authorLabel={authorLabel}
+      canInteract={space.canInteract}
     />
   ) : null
 
@@ -429,6 +459,7 @@ export function SpaceViewClient({
     if (detail) return <div className="mx-auto w-full max-w-[46rem]">{detail}</div>
     return (
       <>
+        {space.canInteract ? null : <ReadOnlyNote origem="mural-visitante" />}
         {threads.length === 0 ? (
           <p className="sz-card p-6 text-center text-muted-foreground">
             {showcaseFilter?.challengeKey
@@ -536,7 +567,7 @@ export function SpaceViewClient({
               <p className="min-w-0 flex-1 text-[0.85rem] text-muted-foreground">
                 {channel ? channel.topic || `#${channel.slug}` : 'Selecione um canal'}
               </p>
-              {channel ? (
+              {channel && space.canInteract ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -591,7 +622,7 @@ export function SpaceViewClient({
             )}
           </section>
 
-          {showNew ? (
+          {showNew && space.canInteract ? (
             <section
               aria-labelledby="novo-topico"
               className="sz-card flex min-w-0 flex-col gap-4 p-5 md:p-7"
@@ -790,6 +821,13 @@ function ShowcaseSkeleton() {
   )
 }
 
+type ReactHandler = (
+  target: 'threads' | 'comments',
+  id: string,
+  emoji: string,
+  mine: boolean,
+) => void
+
 function ReactionBar({
   target,
   id,
@@ -799,9 +837,27 @@ function ReactionBar({
   target: 'threads' | 'comments'
   id: string
   reactions: HubThreadView['reactions']
-  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  /** `null` = sem interação (visitante): só as contagens, sem botão. */
+  onReact: ReactHandler | null
 }) {
   const byEmoji = new Map(reactions.map((r) => [r.emoji, r]))
+  if (!onReact) {
+    const counted = reactions.filter((r) => r.count > 0)
+    if (!counted.length) return <span />
+    return (
+      <ul aria-label="Reações" className="flex flex-wrap items-center gap-1.5">
+        {counted.map((r) => (
+          <li
+            key={r.emoji}
+            className="inline-flex min-h-[2.4rem] items-center gap-1 rounded-full bg-background px-2.5 text-[0.9rem]"
+          >
+            <span>{r.emoji}</span>
+            <span>{r.count}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {QUICK_EMOJIS.map((emoji) => {
@@ -860,7 +916,7 @@ function CommentCard({
 }: {
   comment: HubCommentView
   authorLabel: (authorId: string | null) => string
-  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  onReact: ReactHandler | null
   onReport: (target: 'threads' | 'comments', id: string) => void
 }) {
   const author = comment.authorDisplayName ?? authorLabel(comment.authorId)
@@ -902,7 +958,7 @@ function CommentCard({
   )
 }
 
-function ThreadDetail({
+export function ThreadDetail({
   thread,
   comments,
   newComments,
@@ -921,6 +977,7 @@ function ThreadDetail({
   onReact,
   onReport,
   authorLabel,
+  canInteract = true,
 }: {
   thread: HubThreadView
   comments: HubCommentView[]
@@ -938,11 +995,14 @@ function ThreadDetail({
   /** No fórum, a conversa é a terceira coluna no computador (e fica presa ao rolar). */
   paned: boolean
   onSend: () => void
-  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  onReact: ReactHandler | null
   onReport: (target: 'threads' | 'comments', id: string) => void
   authorLabel: (authorId: string | null) => string
+  /** `false` (visitante do Mural): sem comentar nem reagir, com o recado da continuidade. */
+  canInteract?: boolean
 }) {
   const total = comments.length + newComments.length
+  const reactHandler = canInteract ? onReact : null
   const author = thread.authorDisplayName ?? authorLabel(thread.authorId)
   const ref = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -1004,7 +1064,7 @@ function ThreadDetail({
           target="threads"
           id={thread.id}
           reactions={thread.reactions}
-          onReact={onReact}
+          onReact={reactHandler}
         />
         <ReportButton onClick={() => onReport('threads', thread.id)} />
       </div>
@@ -1021,7 +1081,7 @@ function ThreadDetail({
             key={c.id}
             comment={c}
             authorLabel={authorLabel}
-            onReact={onReact}
+            onReact={reactHandler}
             onReport={onReport}
           />
         ))}
@@ -1040,13 +1100,15 @@ function ThreadDetail({
             key={c.id}
             comment={c}
             authorLabel={authorLabel}
-            onReact={onReact}
+            onReact={reactHandler}
             onReport={onReport}
           />
         ))}
       </section>
 
-      {thread.isLocked ? (
+      {!canInteract ? (
+        <ReadOnlyNote origem={thread.isShowcase ? 'mural-visitante' : 'comunidade-visitante'} />
+      ) : thread.isLocked ? (
         <p className="sz-soft p-4 text-center text-muted-foreground">
           Tópico trancado para novos comentários.
         </p>

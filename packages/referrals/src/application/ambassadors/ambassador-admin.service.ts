@@ -1,4 +1,5 @@
 import type { Logger } from '@sistemazero/core/logging'
+import type { AmbassadorShareUrls } from '@sistemazero/core/referrals'
 import { generateAmbassadorCode, generatePageToken, normalizeEmail } from '../../domain/codes'
 import { ambassadorPageUrl, scholarshipShareUrl } from '../../domain/links'
 import { splitName } from '../../domain/names'
@@ -10,9 +11,15 @@ import type {
   RedemptionRecord,
   ReferralRepository,
 } from '../../domain/ports/referral-repository.port'
+import { ensureAmbassadorShareCode } from './ambassador-codes'
 
 export interface AmbassadorAdminOptions {
   funnelPublicUrl: string
+  /**
+   * O presente adulto está configurado (`COMMUNITY_URL` presente)? Sem ele, `shareUrls.adult`
+   * é `null` e nenhum código adulto nasce (fail-closed: o painel não mostra link que não abre).
+   */
+  adultGiftEnabled: boolean
 }
 
 export interface AmbassadorView {
@@ -62,6 +69,32 @@ export class AmbassadorAdminService {
 
   private toView(a: AmbassadorRecord & { code: string | null }): AmbassadorView {
     return this.viewOf(a)
+  }
+
+  /**
+   * Os dois links públicos do embaixador. O Kids é o `code` de sempre; o adulto nasce aqui
+   * quando falta (idempotente, seguro em corrida). Embaixador desativado não ganha código
+   * novo. Falha ao criar o adulto não derruba a página: devolve `adult: null` e registra.
+   * Presente adulto sem configuração: `adult: null`, sem criar código.
+   */
+  async shareUrls(a: AmbassadorRecord & { code: string | null }): Promise<AmbassadorShareUrls> {
+    const kids = a.code ? scholarshipShareUrl(this.opts.funnelPublicUrl, a.code) : null
+    let adult: string | null = null
+    if (!this.opts.adultGiftEnabled) return { kids, adult }
+    try {
+      const code =
+        a.status === 'active'
+          ? await ensureAmbassadorShareCode(this.repo, a, 'adult')
+          : ((await this.repo.listCodesByAmbassador(a.id)).find((c) => c.audience === 'adult') ??
+            null)
+      adult = code ? scholarshipShareUrl(this.opts.funnelPublicUrl, code.code) : null
+    } catch (error) {
+      this.logger.error('referrals.ambassador_adult_code_failed', {
+        ambassadorId: a.id,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
+    return { kids, adult }
   }
 
   async create(input: {
@@ -212,19 +245,23 @@ export class AmbassadorAdminService {
   } | null> {
     const ambassador = await this.repo.findAmbassadorById(id)
     if (!ambassador) return null
-    let redemptions: RedemptionRecord[] = []
     const conversionByRedemption = new Map<string, ConversionRecord>()
-    if (ambassador.code) {
-      const code = await this.repo.findCodeByCode(ambassador.code)
-      if (code) {
-        const [reds, convs] = await Promise.all([
+    // Resgates de todos os códigos do embaixador (Kids e adulto), do mais recente ao mais antigo.
+    const codes = await this.repo.listCodesByAmbassador(ambassador.id)
+    const perCode = await Promise.all(
+      codes.map((code) =>
+        Promise.all([
           this.repo.listRedemptionsByCode(code.id, 200),
           this.repo.listConversionsByCode(code.id, 200),
-        ])
-        redemptions = reds
-        for (const c of convs) conversionByRedemption.set(c.redemptionId, c)
-      }
-    }
+        ]),
+      ),
+    )
+    const redemptions: RedemptionRecord[] = perCode
+      .flatMap(([reds]) => reds)
+      .sort((x, y) => y.createdAt.getTime() - x.createdAt.getTime())
+      .slice(0, 200)
+    for (const [, convs] of perCode)
+      for (const c of convs) conversionByRedemption.set(c.redemptionId, c)
     return { ambassador: this.toView(ambassador), redemptions, conversionByRedemption }
   }
 

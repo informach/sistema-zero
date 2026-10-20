@@ -79,7 +79,8 @@ function groupBy<T>(rows: readonly T[], key: (row: T) => string): T[][] {
  *
  * - Presente de 7 dias (resgate `scholarship:`): `gift-expiry-2d` dois dias antes e
  *   `gift-expired` no dia em que termina. Um e-mail por presente (curso + Mural temporário do
- *   mesmo resgate são um grupo).
+ *   mesmo resgate são um grupo). Presente adulto: `gift-expiry-2d-adult`/`gift-expired-adult`,
+ *   mesmas variáveis, link da continuidade adulta.
  * - Assinatura da Comunidade que venceu: `subscription-ended-kids` ou `-adult`, um e-mail por
  *   conta + assinatura (o combo cria várias matrículas). Só se não houver outro acesso ativo à
  *   Comunidade da mesma audiência (o repositório decide).
@@ -132,17 +133,21 @@ export class SendAccessEndedMessagesService {
     const first = group[0]
     if (!first) return 'skipped' as const
     const expired = first.messageKind === 'gift_expired'
-    const templateKey = expired ? 'gift-expired' : 'gift-expiry-2d'
+    // Presente adulto (20/10/2026): templates `-adult` com as MESMAS variáveis e a continuidade
+    // adulta. O Kids continua com as chaves e o link de sempre.
+    const adult = first.audience === 'adult'
+    const baseKey = expired ? 'gift-expired' : 'gift-expiry-2d'
+    const templateKey = adult ? `${baseKey}-adult` : baseKey
     const link = accessEndedLink(
       this.opts.funnelUrl,
-      'kids',
+      adult ? 'adult' : 'kids',
       'fim-do-presente',
       expired ? 'no-dia' : '2-dias',
     )
     return this.deliver({
       userId: first.userId,
       templateKey,
-      fallbackName: 'Responsável',
+      fallbackName: adult ? 'Aluno(a)' : 'Responsável',
       variables: (nome): Record<string, string> =>
         expired ? { nome, link } : { nome, data: ddmmyyyySaoPaulo(first.expiresAt), link },
       idempotency: [first.userId, first.sourceId, expiresOnKey(first.expiresAt)],

@@ -86,6 +86,7 @@ describe('RedeemScholarshipService', () => {
 
   test('resgate da política visitante conserva sua entrega e seu e-mail', async () => {
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: repo.codes[0]!.id,
       email: 'paula@example.com',
       name: 'Paula Prado',
@@ -105,6 +106,7 @@ describe('RedeemScholarshipService', () => {
 
   test('resgate histórico conserva concessão sem vencimento', async () => {
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: repo.codes[0]!.id,
       email: 'paula@example.com',
       name: 'Paula Prado',
@@ -123,6 +125,7 @@ describe('RedeemScholarshipService', () => {
 
   test('conta histórica pré-existente recebe orientação de acesso infantil', async () => {
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: repo.codes[0]!.id,
       email: 'paula@example.com',
       name: 'Paula Prado',
@@ -142,6 +145,7 @@ describe('RedeemScholarshipService', () => {
   describe('Messaging ainda sem kids-new-access (publicação fora de ordem)', () => {
     async function historicExistingAccount() {
       const { redemption } = await repo.insertRedemption({
+        audience: 'kids',
         codeId: repo.codes[0]!.id,
         email: 'paula@example.com',
         name: 'Paula Prado',
@@ -194,6 +198,7 @@ describe('RedeemScholarshipService', () => {
 
   test('resgate anterior à visita não recebe Mural mesmo com curso de sete dias', async () => {
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: repo.codes[0]!.id,
       email: 'paula@example.com',
       name: 'Paula Prado',
@@ -285,6 +290,7 @@ describe('RedeemScholarshipService', () => {
 
   test('grant que responde no instante do vencimento não anuncia acesso utilizável', async () => {
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: repo.codes[0]!.id,
       email: 'paula@example.com',
       name: 'Paula Prado',
@@ -449,6 +455,7 @@ describe('RedeemScholarshipService', () => {
 
   test('lease em posse de outra execução → processing (202)', async () => {
     await repo.insertRedemption({
+      audience: 'kids',
       codeId: repo.codes[0]!.id,
       email: 'paula@example.com',
       name: 'Paula Prado',

@@ -109,12 +109,18 @@ describe('links da continuidade com UTM', () => {
 
 describe('SendAccessEndedMessagesService', () => {
   const expiresAt = new Date('2026-10-22T14:00:00Z')
-  const gift = (id: string, kind: GiftLifecycleEntitlement['messageKind'], userId = 'u1') => ({
+  const gift = (
+    id: string,
+    kind: GiftLifecycleEntitlement['messageKind'],
+    userId = 'u1',
+    audience: GiftLifecycleEntitlement['audience'] = 'kids',
+  ): GiftLifecycleEntitlement => ({
     id,
     userId,
-    sourceId: 'scholarship:r1',
+    sourceId: audience === 'adult' ? 'scholarship:a1' : 'scholarship:r1',
     expiresAt,
     messageKind: kind,
+    audience,
   })
 
   test('presente: um e-mail por resgate (curso + Mural), com data de São Paulo, e dedupe', async () => {
@@ -150,6 +156,53 @@ describe('SendAccessEndedMessagesService', () => {
       nome: 'Responsável',
       link: accessEndedLink(FUNNEL, 'kids', 'fim-do-presente', 'no-dia'),
     })
+  })
+
+  test('presente adulto: templates -adult com as mesmas variáveis e a continuidade adulta', async () => {
+    const { repo, sent } = fakeRepo(
+      [
+        gift('a-course', 'gift_expiry_2d', 'u2', 'adult'),
+        gift('a-mural', 'gift_expiry_2d', 'u2', 'adult'),
+        gift('a-done', 'gift_expired', 'u3', 'adult'),
+        gift('k-course', 'gift_expiry_2d', 'u1'),
+      ],
+      [],
+    )
+    const messaging = fakeMessaging()
+    const run = service(
+      repo,
+      fakeAuth({ u1: identity('u1'), u2: identity('u2', 'Bia'), u3: identity('u3', '') }),
+      messaging,
+    )
+    expect(await run.runCycle()).toEqual({ sent: 3, skipped: 0, failed: 0 })
+    const byKey = new Map(messaging.sent.map((email) => [email.templateKey, email]))
+    expect([...byKey.keys()].sort()).toEqual([
+      'gift-expired-adult',
+      'gift-expiry-2d',
+      'gift-expiry-2d-adult',
+    ])
+    expect(byKey.get('gift-expiry-2d-adult')?.variables).toEqual({
+      nome: 'Bia',
+      data: '22/10/2026',
+      link: accessEndedLink(FUNNEL, 'adult', 'fim-do-presente', '2-dias'),
+    })
+    expect(byKey.get('gift-expiry-2d-adult')?.variables.link).toBe(
+      'https://sistemazero.com.br/pro/comunidade-dos-criadores/oferta/continuar?utm_source=email&utm_medium=email&utm_campaign=fim-do-presente&utm_content=2-dias',
+    )
+    expect(byKey.get('gift-expiry-2d-adult')?.idempotencyKey).toMatch(
+      /^gift-expiry-2d-adult:[a-f0-9]{32}$/,
+    )
+    expect(byKey.get('gift-expired-adult')?.variables).toEqual({
+      nome: 'Aluno(a)',
+      link: accessEndedLink(FUNNEL, 'adult', 'fim-do-presente', 'no-dia'),
+    })
+    // O Kids do mesmo ciclo segue igual.
+    expect(byKey.get('gift-expiry-2d')?.variables).toEqual({
+      nome: 'Ana',
+      data: '22/10/2026',
+      link: accessEndedLink(FUNNEL, 'kids', 'fim-do-presente', '2-dias'),
+    })
+    expect(sent.size).toBe(4)
   })
 
   test('assinatura: agrupa o combo por conta + assinatura e escolhe o template pela audiência', async () => {

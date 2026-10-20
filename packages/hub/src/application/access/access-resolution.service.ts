@@ -1,3 +1,4 @@
+import { CREATOR_SHOWCASE_SLUGS, creatorCommunityAccessRef } from '@sistemazero/core/creations'
 import type { AccessConfig } from '../../domain/access/access-config'
 import type { MembersGateway } from '../../domain/ports/members-gateway.port'
 import type { Audience, Channel, Space } from '../../domain/space/space'
@@ -43,6 +44,14 @@ export interface SpaceAccessDecision {
 const MURAL_SLUG = 'mural-dos-criadores'
 const MURAL_FULL_ACCESS = 'mural-dos-criadores'
 const MURAL_VISITOR_ACCESS = 'mural-dos-criadores-visitante'
+/**
+ * Mural ADULTO (20/10/2026): mesma política de visita do Kids, com as chaves adultas
+ * (`adult-mural-dos-criadores` pleno, `adult-mural-dos-criadores-visitante` só leitura) sobre a
+ * Mostra `mural-dos-criadores-adulto`. A visita nunca vale no Mural do outro público.
+ */
+const ADULT_MURAL_SLUG = CREATOR_SHOWCASE_SLUGS.adult
+const ADULT_MURAL_FULL_ACCESS = creatorCommunityAccessRef(MURAL_FULL_ACCESS, 'adult')
+const ADULT_MURAL_VISITOR_ACCESS = creatorCommunityAccessRef(MURAL_VISITOR_ACCESS, 'adult')
 
 type AccessRefs = {
   courseRefs: string[]
@@ -100,16 +109,22 @@ export class AccessResolutionService {
     return { courseRefs: [...courseRefs], communityRefs: [...communityRefs] }
   }
 
-  /** O presente de indicação amplia apenas a LEITURA do Mural, nunca a escrita. */
+  /**
+   * O presente de indicação amplia apenas a LEITURA do Mural, nunca a escrita. Kids e adulto têm
+   * a mesma regra, cada um com a sua chave de visita; a escrita usa o `accessConfig` persistido.
+   */
   private readConfig(space: Space): AccessConfig {
     const config = space.accessConfig
+    if (config.visibility !== 'community_gated') return config
+    if (space.slug === MURAL_SLUG && config.communities?.includes(MURAL_FULL_ACCESS))
+      return { ...config, communities: [...config.communities, MURAL_VISITOR_ACCESS] }
     if (
-      space.slug !== MURAL_SLUG ||
-      config.visibility !== 'community_gated' ||
-      !config.communities?.includes(MURAL_FULL_ACCESS)
+      space.slug === ADULT_MURAL_SLUG &&
+      space.audience === 'adult' &&
+      config.communities?.includes(ADULT_MURAL_FULL_ACCESS)
     )
-      return config
-    return { ...config, communities: [...config.communities, MURAL_VISITOR_ACCESS] }
+      return { ...config, communities: [...config.communities, ADULT_MURAL_VISITOR_ACCESS] }
+    return config
   }
 
   /**

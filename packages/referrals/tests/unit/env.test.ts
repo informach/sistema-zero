@@ -72,6 +72,25 @@ describe('env do referrals', () => {
     expect(() => loadEnv(prodEnv({ GATEWAY_URL: 'http://localhost:3000' }))).toThrow(/GATEWAY_URL/)
   })
 
+  test('presente adulto: curso padrão, COMMUNITY_URL opcional e bônus da assinatura adulta', () => {
+    const env = loadEnv(prodEnv({ COMMUNITY_URL: undefined, CONVERSION_OFFER_SLUGS: undefined }))
+    expect(env.SCHOLARSHIP_ADULT_COURSE_SLUG).toBe('cade-todo-mundo-adulto')
+    expect(env.COMMUNITY_URL).toBeUndefined()
+    expect(env.CONVERSION_OFFER_SLUGS).toEqual([
+      'comunidade-dos-criadores-mensal',
+      'comunidade-dos-criadores-anual',
+      'comunidade-dos-criadores-adulto-mensal',
+      'comunidade-dos-criadores-adulto-anual',
+    ])
+    expect(
+      loadEnv(prodEnv({ COMMUNITY_URL: 'https://comunidade.sistemazero.com.br' })).COMMUNITY_URL,
+    ).toBe('https://comunidade.sistemazero.com.br')
+    expect(() => loadEnv(prodEnv({ COMMUNITY_URL: 'http://localhost:3000' }))).toThrow(
+      /COMMUNITY_URL/,
+    )
+    expect(() => loadEnv(prodEnv({ SCHOLARSHIP_ADULT_COURSE_SLUG: 'Curso Adulto' }))).toThrow()
+  })
+
   test('lease que não cobre as chamadas S2S falha', () => {
     expect(() => loadEnv(prodEnv({ REDEMPTION_LEASE_MS: '10000' }))).toThrow(/REDEMPTION_LEASE_MS/)
   })

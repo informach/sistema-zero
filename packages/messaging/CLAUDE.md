@@ -356,7 +356,35 @@ ou adulta (`/pro/...`). `profile-turned-18` (`nome` do responsável + `nome_perf
 adulta) é enviado pelo AUTH. Light Copy (sem "!", travessão, pergunta, emoji, "carreira"); o teste
 `tests/access-ended-copy.test.ts` confere contrato, textos aprovados e essas regras na fonte.
 O presente é um CURSO + o Mural por tempo limitado, nunca a assinatura da Comunidade: os textos
-de `gift-*` falam em "presente do curso" e não citam a Comunidade (o teste confere). A volta da
+de `gift-expiry-2d`/`gift-expired` (Kids) falam em "presente do curso" e não citam a Comunidade
+(o teste confere; os `-adult` estão na seção abaixo). A volta da
 assinatura começa "no dia em que o pagamento é aprovado". O perfil Kids que fez 18 anos continua
 "enquanto a sua assinatura estiver ativa"; a conta adulta começa nova.
 
+
+## Presente Kids e adulto (20/10/2026)
+
+Templates de e-mail (só e-mail), pelo `templates:seed` do deploy. O referrals escolhe a chave pelo
+público do resgate; o Kids continua com as chaves de sempre.
+
+- Consumer `referrals`: convite `referrals-scholarship-invite-adult` (`nome`+`indicador`+`link`,
+  link = `/bolsa/<código adulto>` do funil); boas-vindas por indicação
+  `referrals-scholarship-welcome-adult` (conta nova) e `referrals-scholarship-existing-adult`
+  (conta existente), com `nome`+`indicador`+`validade`+`link`; por campanha
+  `referrals-campaign-welcome-adult` e `referrals-campaign-existing-adult`, com
+  `nome`+`campanha`+`validade`+`link`. `validade` chega formatada (Brasília). O `link` é montado
+  pelo referrals sobre a env **`COMMUNITY_URL`** dele (base do app adulto):
+  `<COMMUNITY_URL>/redefinir-senha?token=` na conta nova e `<COMMUNITY_URL>/cursos` na existente.
+  Sem `COMMUNITY_URL` o referrals fecha o presente adulto (nenhum desses e-mails sai). O curso
+  liberado é o da env `SCHOLARSHIP_ADULT_COURSE_SLUG` do referrals (default
+  `cade-todo-mundo-adulto`); os templates citam "Cadê Todo Mundo, na versão adulta", então trocar
+  o curso pede revisar a copy.
+- Consumer `members`: `gift-expiry-2d-adult` (`nome`+`data`+`link`) e `gift-expired-adult`
+  (`nome`+`link`), as MESMAS variáveis do Kids, com o `link` da continuidade adulta (`/pro/...`).
+  Diferente dos `gift-*` Kids, os adultos citam a assinatura da Comunidade como próximo passo. O
+  e-mail de 2 dias tem um botão só: o desenho previa um segundo para entrar na Comunidade, mas o
+  members não manda variável com a URL do app adulto e o template não monta URL.
+- `referrals-ambassador-link` e `referrals-bonus-eligible` falam dos dois presentes (o bônus diz
+  "uma pessoa que recebeu o presente", sem presumir família).
+- Testes: `tests/referral-copy.test.ts` e `tests/access-ended-copy.test.ts` conferem contrato,
+  copy aprovada e Light Copy na fonte. Não rodar o seed contra um ambiente para conferir a copy.

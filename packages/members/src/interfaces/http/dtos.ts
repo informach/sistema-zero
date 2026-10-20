@@ -376,7 +376,14 @@ export const GrantWebhookBody = t.Object({
  * `mural_visitor` preserva o contrato histórico. As chaves-mestra seguem só no admin JWT.
  * `sourceId` = procedência auditável (ex.: `scholarship:<redemptionId>`); o
  * `sourceKind` fica `'manual'` (enum intocado). `expiresAt` ausente/null = vitalícia.
+ * `audience` (20/10/2026, só em `course` e `mural_trial`): público do presente; ausente = `kids`.
+ * `adult` exige curso adulto publicado e concede o Mural adulto.
  */
+const GiftAudienceField = t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')]))
+
+/** Query de `GET /members/webhooks/gift-course/:slug`: `audience` ausente = `kids`. */
+export const GiftCourseQuery = t.Object({ audience: GiftAudienceField })
+
 const ManualGrantBase = {
   userId: UUID,
   expiresAt: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
@@ -393,6 +400,7 @@ export const GrantManualWebhookBody = t.Union([
     ...ManualGrantBase,
     mode: t.Literal('course'),
     courseRef: t.String({ minLength: 1, maxLength: 200 }),
+    audience: GiftAudienceField,
   }),
   t.Object({
     ...ManualGrantBase,
@@ -406,6 +414,7 @@ export const GrantManualWebhookBody = t.Union([
     courseRef: t.String({ minLength: 1, maxLength: 200 }),
     sourceId: t.String({ pattern: '^scholarship:', minLength: 13, maxLength: 120 }),
     expiresAt: t.String({ format: 'date-time', maxLength: 40 }),
+    audience: GiftAudienceField,
   }),
 ])
 

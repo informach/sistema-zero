@@ -1,7 +1,12 @@
 ---
+// Layout da página de recebimento do presente KIDS (`/bolsa/<codigo>` com o público `kids` e a
+// prévia do Admin). Canvas "Presente Kids e adulto · proposta" (RecebimentoKids, 20/10/2026), na
+// linguagem da página de 9 a 17: receitas em kids-oferta.css, layout em comunidade-917.css (`.c917`)
+// e as peças do presente em presente-kids.css. O rodapé institucional fica fora do `.c917`.
 import '../../styles/kids-oferta.css'
-import '../../styles/comunidade-oferta.css'
-import '../../styles/presente.css'
+import '../../styles/comunidade-917.css'
+import '../../styles/presente-kids.css'
+import { PRESENTE_KIDS as P } from '../../content/presente'
 import { COMUNIDADE_DOS_CRIADORES } from '../../funnels/comunidade-dos-criadores'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import Footer from '../Footer.astro'
@@ -9,38 +14,42 @@ import Footer from '../Footer.astro'
 interface Props {
   title: string
   description: string
-  action?: { href: string; label: string }
-  canonical?: string
-  noindex?: boolean
+  /** Com o formulário aberto: o botão do topo e a barra fixa levam a ele. */
+  ready?: boolean
+  /** Sem o corpo do presente (link inválido, referrals fora do ar): sem os atalhos das seções. */
+  secoes?: boolean
 }
-const { title, description, action, canonical, noindex = true } = Astro.props
+const { title, description, ready = false, secoes = true } = Astro.props
 ---
-<BaseLayout title={title} description={description} canonical={canonical} noindex={noindex} htmlClass="theme-kids">
-  <div class="cdc presente">
-    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
-    <header class="topbar"><div class="wrap nav">
-      <a class="brand" href="/" aria-label="Sistema Zero Kids, início"><img class="logo" src="/img/comunidade-dos-criadores/logo-kids-escuro.svg" alt="Sistema Zero Kids" width="279" height="26" /></a>
-      <nav class="nav-links" aria-label="Partes da página"><a href="#experiencia">O curso</a><a href="#duvidas">Antes de começar</a></nav>
-      {action && <a class="kof-btn kof-btn--compacta" href={action.href}>{action.label}</a>}
-    </div></header>
+<BaseLayout title={title} description={description} noindex htmlClass="theme-kids">
+  <div class="c917 pk-corpo">
+    <a class="c9-pular" href="#conteudo">{P.pular}</a>
+    <header class="c9-topo">
+      <div class="c9-topo__barra">
+        <a class="c9-marca" href="#topo" aria-label={P.topo.marcaAria}>
+          <img src={P.topo.logo.src} alt={P.topo.logo.alt} width={P.topo.logo.width} height={P.topo.logo.height} decoding="async" />
+        </a>
+        {(secoes || ready) && (
+          <nav class="c9-nav" aria-label={P.topo.navAria}>
+            {secoes && P.topo.links.map((link) => <a class="c9-nav__link" href={link.href}>{link.label}</a>)}
+            {ready && <a class="c9-btn c9-btn--topo pk-topo-cta" href="#resgatar">{P.topo.cta}</a>}
+          </nav>
+        )}
+      </div>
+    </header>
     <main id="conteudo"><slot /></main>
-    <dialog class="zoom" data-gift-zoom aria-label="Imagem ampliada"><form method="dialog"><button class="zoom-fechar" aria-label="Fechar a imagem ampliada"><span class="material-symbols-rounded" aria-hidden="true">close</span></button></form><img alt="" decoding="async" /></dialog>
+    {ready && (
+      <div class="kof-mobar c9-barra" data-presente-barra aria-hidden="true">
+        <span class="c9-barra__preco"><strong>{P.barra.titulo}</strong><span>{P.barra.texto}</span></span>
+        <a class="c9-btn" href="#resgatar" tabindex="-1">{P.barra.cta}</a>
+      </div>
+    )}
   </div>
   <!-- O mesmo Termo do aceite no formulário do presente (`BolsaResgate`): as regras de uso da área
        Kids estão no Termo da Comunidade Kids. Um Termo próprio do presente fica para a revisão jurídica. -->
   <Footer audience="kids" termosHref={`${COMUNIDADE_DOS_CRIADORES.basePath}/termos`} />
 </BaseLayout>
 <script>
-  const zoom = document.querySelector<HTMLDialogElement>('[data-gift-zoom]')
-  const image = zoom?.querySelector('img')
-  if (zoom && image && typeof zoom.showModal === 'function') {
-    document.addEventListener('click', (event) => {
-      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-      const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('.presente a[data-zoom]')
-      if (!link) return
-      event.preventDefault(); image.src = link.href; image.alt = link.querySelector('img')?.alt ?? ''; zoom.showModal()
-    })
-    zoom.addEventListener('click', (event) => { if (event.target === zoom) zoom.close() })
-    zoom.addEventListener('close', () => image.removeAttribute('src'))
-  }
+  import { ligarBarraFixa } from '../../lib/barra-fixa'
+  ligarBarraFixa('[data-presente-barra]', 'resgatar')
 </script>

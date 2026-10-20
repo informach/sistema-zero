@@ -642,15 +642,16 @@ funil + coluna Funil; Perfis/Performance rotulam por funil (perguntas viram "Per
 **Landings de indicação (`/bolsa/[codigo]` e `/embaixador/[token]`, 08/2026 — Fase 1 do sistema
 de indicações):** páginas FLAT fora do registry (molde `/renovar` — registrar um funil exigiria
 `FUNNEL_OFFER_<KEY>` no Railway), tema kids, `no-store` + `noindex` (a do embaixador é
-capability-URL: o token de 32 bytes É a chave de acesso, sem conta/senha). O funil é só a BORDA:
+capability-URL: o token de 32 bytes É a chave de acesso, sem conta/senha; desde 20/10/2026 há um
+tema por público, ver "Presente por convite e campanha"). O funil é só a BORDA:
 o estado (códigos, embaixadores, resgates, convites) vive no **@sistemazero/referrals**, alcançado
 via gateway com o HMAC de borda de sempre (`gateway-client.ts`: `resolveReferralCode`,
 `getAmbassadorByToken`, `createAmbassadorInvite`, `redeemScholarship`). SSR resolve o código/token
 (404 amigável UNIFORME p/ inexistente/desativado; gateway fora → tela "recarregue", NUNCA afirmar
 que o código não existe). Em `/bolsa`, `resolveReferralGiftPage` exige `giftAvailable:boolean`
-na resposta do referrals: `false` mantém o link, mas mostra "em preparação" sem formulário;
+na resposta do referrals: `false` mantém o link, mas mostra "ainda não abriu" sem formulário;
 resposta incompleta/erro do gateway falha fechada. A página apresenta somente o curso
-**Cadê Todo Mundo?** (9–14 anos), não o Desafio ou a assinatura. Quando disponível, passa
+**Cadê Todo Mundo** (Kids 9 a 14 anos ou a versão adulta), não o Desafio ou a assinatura. Quando disponível, passa
 os dados por prop às ilhas `BolsaResgate` (form do RESPONSÁVEL —
 mesmo aviso kids do pré-checkout; telefone OPCIONAL, não reusar `ContactSchema`; estados
 completed/processing/409s por `ApiError.code`; o resgate é RETOMÁVEL no servidor — re-enviar após
@@ -671,12 +672,12 @@ garantia/liberado/pago — ⚠️ **"liberado, pagamento a caminho" SÓ com chav
 página sem resolver), campo de **chave Pix** (salvar → POST `/api/embaixador/pix` →
 `postAmbassadorPix` → PATCH by-token no referrals, envelope [200/404/429]; ⚠️ o catch distingue
 4xx — chave inválida é DETERMINÍSTICO, a copy não pode dizer "tente em instantes"; a mensagem é
-`role="alert"` + `aria-describedby` no input, e EDITAR o campo limpa o "Chave Pix salva!", senão
+`role="alert"` + `aria-describedby` no input, e EDITAR o campo limpa o "Chave Pix salva.", senão
 quem corrige a chave sai achando que salvou) e o texto dos
 termos (agradecimento único por Pix, sem vínculo; a usuária valida o texto com o contador ANTES
 de divulgar). Client `updateAmbassadorPix` no `gateway-client.ts`; `TOKEN_RE` único no
 `server/referrals.ts` (invite + pix); o `[token].astro` tipa o bônus por
-`EmbaixadorPainelProps['bonus']` (shape da ilha, sem cópia); a rota de escrita já caía no regex
+`EmbaixadorBonusProps['bonus']` (shape da ilha `EmbaixadorBonus`, sem cópia; até 20/10/2026 o bônus morava no `EmbaixadorPainel`); a rota de escrita já caía no regex
 `/embaixador/` do `RATE_LIMITED_WRITE`.
 
 **Pendência (decidida):**
@@ -1188,15 +1189,79 @@ no cold-start). Também ali: as deps do **`@sistemazero/ui`** (`lucide-react`/`c
 ilha lazy/import dinâmico, inclua-a ali também. Um restart simples basta (mudar `optimizeDeps` muda o
 config-hash → re-otimização automática).
 
-## Presente por convite e campanha (02/10/2026)
+## Presente por convite e campanha (02/10/2026; Kids e adulto desde 20/10/2026)
 
-`/bolsa/[codigo]`, `/embaixador/[token]` e `/kids/embaixadores` usam `components/referrals`, o CSS das ofertas e `content/presente.ts`. O rodapé fica fora de `.cdc`. Os prints atuais são reutilizados. Por decisão de 03/10/2026, o presente libera publicar o jogo do curso, comentar e reagir no Mural durante os sete dias. Depois fica a visita para ver e jogar; o link publicado continua enquanto a publicação estiver disponível. Cópias e ferramentas livres não estão incluídas. A faixa comunicada é **9–14 anos**, igual à oferta, inclusive nas perguntas e nos convites de WhatsApp/e-mail.
+**Dois públicos (Canvas "Presente Kids e adulto · proposta", aprovado em 20/10/2026; quadros
+RecebimentoKids, RecebimentoAdulto, Embaixador e Estados):** o público vem do CÓDIGO.
+`resolveReferralGiftPage` lê `audience` da resposta de `GET referrals/internal/codes/:code` (ausente ou
+`null` = `kids`, para o referrals anterior; valor desconhecido falha fechado como `unavailable`) e devolve
+`audience` no topo e no `gift` (`ResolvedGiftView`). `/bolsa/[codigo].astro` despacha:
+- **Kids** → `PresenteLayout` (`theme-kids`, logo Kids, `Footer audience="kids"` com o Termo da Comunidade
+  Kids) + `PresenteOferta`, na linguagem da página de 9 a 17: receitas em `kids-oferta.css`, layout em
+  `comunidade-917.css` (`.c917`) e as peças do presente em `styles/presente-kids.css` (`.pk-*`). Copy em
+  `PRESENTE_KIDS` (`content/presente.ts`). Quem lê é o responsável.
+- **Adulto** → `PresenteAdultoLayout` (`theme-arcade`, logo e selo da oferta adulta, `Footer
+  audience="pro"` com `/pro/comunidade-dos-criadores/termos`) + `PresenteAdultoOferta`, no layout
+  `.cda` de `comunidade-adulto.css` com as peças de `styles/presente-adulto.css` (`.pa-*`). Copy em
+  `PRESENTE_ADULTO` (`content/presente-adulto.ts`), com marca do topo, foto dos fundadores, prévia do
+  Mural e links legais de `PAGINA_ADULTO` por referência. Decisões da dona: as telas do curso são as
+  capturas Kids com a legenda "Tela da versão Kids do curso. Na área adulta, a aparência é outra."; o
+  Mural é `/img/comunidade-adulto/previa-mural.webp` com "Prévia do Mural adulto com dados de teste."; o
+  link do jogo publicado continua depois dos 7 dias, como no Kids.
+- Código inexistente (404) ou referrals fora do ar (503) não revelam público: tela de status no tema
+  Kids, sem os atalhos das seções (`secoes={false}`).
+- Estados (os dois temas, copy em `estados` de cada módulo): `preparing` "ainda não abriu", `scheduled`
+  "abre em dd/mm/aaaa", `paused`, `ended` "terminaram em dd/mm/aaaa" (sem data no convite pessoal) com a
+  retomada em `<details id="retomar">` (`BolsaResgate retryOnly`). O botão do topo e a barra fixa do
+  celular (`lib/barra-fixa.ts`) só aparecem com o formulário aberto; abaixo de 520px o botão do topo sai.
 
-`/bolsa/previa` é pública, noindex e sem formulário: somente apresentação escapada e datas, sem buscar campanha ou aceitar cadastro. O código `previa` é reservado no serviço. A resolução pública distingue scheduled/paused/ended/preparing; o backend revalida a janela no envio. Encerrada/pausada oferece retomada de cadastro previamente aceito, sem novos direitos.
+**`BolsaResgate` (`audience`, padrão `kids`):** copy por público em `content/presente-resgate.ts`
+(`RESGATE_COPY`, client-safe; a ilha NÃO lê env, a URL do app chega por prop: `KIDS_COMMUNITY_URL` no Kids,
+`COMMUNITY_URL` no adulto). Kids: aviso "Estes dados são do responsável", campos do responsável, aceite
+"é o responsável pela criança" + Termo Kids, concluído "O presente está liberado para a sua família" e
+"crie o perfil do seu filho". Adulto: "Seu nome", "Seu e-mail", telefone opcional, sem aviso de perfil,
+aceite "tem 18 anos ou mais" + Termo adulto, concluído "Está tudo pronto para o seu primeiro jogo" com
+"Entrar na Comunidade" (`/login`) e "Criar ou recuperar a senha" (`/esqueci-senha`). `SCHOLARSHIP_ALREADY_
+REDEEMED` agora é "este e-mail já resgatou um presente DESTE público" (o mesmo e-mail pode ter um Kids e
+um adulto): bloco "Este e-mail já recebeu um presente Kids/adulto", e no adulto "Ver como continuar" vai a
+`/pro/comunidade-dos-criadores/oferta/continuar`. O Mural da confirmação segue `muralAccess` (trial =
+"liberado até a mesma data"; visitor = só ver e jogar). Vencimento por `dataBrasilia` ("27/10/2026, às
+14h"). Visual pelas classes `bz-*`, desenhadas em `presente-kids.css` e `presente-adulto.css`. Não afirmar
+entrega confirmada a partir de HTTP 202 do messaging ("está a caminho do seu e-mail").
 
-O painel privado usa no-store, no-referrer e canonical público sem token. O link do WhatsApp é sempre o presente público. A confirmação de resgate informa vencimento em Brasília e aceitação do e-mail, com acesso/recuperação de senha. Não afirmar entrega confirmada a partir de HTTP 202 do messaging.
+**Painel do embaixador (`/embaixador/[token]`):** `EmbaixadorLayout` + `styles/embaixador.css` (`.emb`,
+painel neutro: chão e cartões `--kof-*`, títulos Bricolage e corpo Atkinson; a carta adulta leva a classe
+`theme-arcade` só para ler os tokens `--cda-*`, como o cartão da bio). Copy em `content/embaixador.ts`
+(`PAINEL_EMBAIXADOR`, `EMBAIXADOR_DUVIDAS`). O `GET by-token` traz `shareUrls: {kids, adult}` (o `shareUrl`
+segue como o link Kids de reserva; `linksDoEmbaixador`), e a ilha `EmbaixadorPainel` tem o seletor "Para
+quem é o presente" (rádios nativos, Kids por padrão), o link, a mensagem de WhatsApp editável (uma por
+público) e o convite por e-mail com o `audience` escolhido; link `null` mostra o aviso e desliga o convite
+daquele público. `postAmbassadorInvite` valida `audience` (`kids|adult`) e só repassa o campo quando é
+`adult` (o Kids viaja como antes, compatível com o referrals anterior). O bônus e a chave Pix moram na ilha
+`EmbaixadorBonus` (seção `#bonus`), com o valor SEMPRE de `bonus.amountCents` ("Kids ou adulta"). A
+contagem de resgates é o total (o contrato não separa por público). Seções: para quem faz sentido, os três
+passos, a tabela "O que o presente inclui", as dúvidas e o fechamento.
 
-O referrals e o funil precisam ser liberados de forma coordenada, após a migration do serviço e o seed dos templates de campanha. Pendências e validação: `docs/marketing/kids/cade-todo-mundo/implementacao.md`.
+`/kids/embaixadores` (público, indexado) usa o `ProgramaLayout` (o antigo `PresenteLayout`, layout `.cdc`)
+e fala dos dois presentes: hero, `AMBASSADOR_SECTIONS`, entrada pelo app adulto (`/perfil`) ou pela Área
+dos pais, e as dúvidas de `EMBAIXADOR_DUVIDAS`; a experiência detalhada (`GIFT_SECTIONS`/`GIFT_FAQ`) é a
+do presente Kids. A faixa Kids comunicada é **9 a 14 anos**; o adulto, 18 anos ou mais. O nome do curso
+vai sem a interrogação ("Cadê Todo Mundo").
+
+`/bolsa/previa` é pública, noindex e sem formulário: somente apresentação escapada e datas, sem buscar campanha ou aceitar cadastro; aceita `?audience=kids|adult` (padrão `kids`) para a prévia do Admin. O código `previa` é reservado no serviço. A resolução pública distingue scheduled/paused/ended/preparing; o backend revalida a janela no envio. Encerrada/pausada oferece retomada de cadastro previamente aceito, sem novos direitos.
+
+O painel privado usa no-store, no-referrer e canonical público sem token. O link do WhatsApp é sempre o presente público. As rotas continuam `/bolsa` e `/embaixador`, então `middleware.ts` e `rate-limit-paths.ts` não mudaram.
+
+**Testes:** `referral-gift-page.test.ts` (público do código e despacho da rota), `referral-gift-copy.test.tsx`
+(regras de voz nos módulos dos dois públicos, `BolsaResgate` Kids e adulto, seletor e convite do painel,
+bônus pelo serviço), `referrals-handlers.test.ts` (convite com `audience`), `comunidade-offer-css.test.ts`
+(as três folhas novas só por tokens) e `comunidade-offer-contrast.test.ts` (pares do formulário nos dois
+temas). Navegador: `node --import tsx tests/browser/presente.ts` depois do `bun run build` (referrals falso
+pelo gateway falso; Kids, Kids legado, adulto, estados, prévias e painel a 390 e 1440 px, resgates e o
+convite com o público; capturas em `QA_OUTPUT`, `QA_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`
+na nuvem).
+
+O referrals e o funil precisam ser liberados de forma coordenada, após a migration do serviço e o seed dos templates (os adultos inclusive). Sem o curso `cade-todo-mundo-adulto` publicado, o link adulto mostra o estado "ainda não abriu" (`giftAvailable=false`). Pendências e validação: `docs/marketing/kids/cade-todo-mundo/implementacao.md`.
 
 ## Acesso infantil por aparelho (10/10/2026)
 

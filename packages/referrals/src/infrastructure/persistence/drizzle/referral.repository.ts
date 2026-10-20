@@ -1,4 +1,4 @@
-import type { GiftAttribution, GiftSource } from '@sistemazero/core/referrals'
+import type { GiftAttribution, GiftAudience, GiftSource } from '@sistemazero/core/referrals'
 import { and, count, desc, eq, gte, ilike, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
 import { CampaignUnavailableError, campaignSource, campaignState } from '../../../domain/campaign'
 import { SCHOLARSHIP_ACCESS_DURATION_DAYS } from '../../../domain/gift-policy'
@@ -42,6 +42,14 @@ type CodeRow = typeof codes.$inferSelect
 type RedemptionRow = typeof scholarshipRedemptions.$inferSelect
 type InviteRow = typeof invites.$inferSelect
 type ConversionRow = typeof conversions.$inferSelect
+
+/**
+ * O `code` das leituras de embaixador é o código KIDS (o link histórico, `shareUrl`). Desde a
+ * 0005 o embaixador pode ter também o adulto; sem este filtro o JOIN duplicaria a linha.
+ */
+function kidsCodeOf() {
+  return and(eq(codes.ambassadorId, ambassadors.id), eq(codes.audience, 'kids'))
+}
 
 function toAmbassador(row: AmbassadorRow): AmbassadorRecord {
   return {
@@ -92,6 +100,7 @@ function toCode(row: CodeRow): CodeRecord {
     displayName: row.displayName,
     ownerEmail: row.ownerEmail,
     status: row.status,
+    audience: row.audience,
   }
 }
 
@@ -100,6 +109,7 @@ function toRedemption(row: RedemptionRow): RedemptionRecord {
     id: row.id,
     codeId: row.codeId,
     email: row.email,
+    audience: row.audience,
     name: row.name,
     phone: row.phone,
     sourceSnapshot: row.sourceSnapshot,
@@ -174,6 +184,9 @@ export class DrizzleReferralRepository implements ReferralRepository {
             ambassadorId: ambassador.id,
             displayName: ambassador.name,
             ownerEmail: ambassador.email,
+            // O código que nasce com o embaixador é o Kids; o adulto nasce sob demanda
+            // (`ensureAmbassadorCode`), quando o painel ou o convite pede.
+            audience: 'kids',
           })
           .returning()
         if (!code) throw new Error('insert do código não retornou linha')
@@ -215,7 +228,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
       this.db
         .select({ ambassador: ambassadors, code: codes })
         .from(ambassadors)
-        .leftJoin(codes, eq(codes.ambassadorId, ambassadors.id))
+        .leftJoin(codes, kidsCodeOf())
         .where(where)
         .orderBy(desc(ambassadors.createdAt))
         .limit(opts.limit)
@@ -224,20 +237,21 @@ export class DrizzleReferralRepository implements ReferralRepository {
     ])
 
     const ambassadorIds = rows.map((r) => r.ambassador.id)
-    const codeIds = rows.flatMap((r) => (r.code ? [r.code.id] : []))
 
+    // Resgates de TODOS os códigos do embaixador (Kids e adulto).
     const [redemptionGroups, inviteGroups] = await Promise.all([
-      codeIds.length > 0
+      ambassadorIds.length > 0
         ? this.db
-            .select({ codeId: scholarshipRedemptions.codeId, value: count() })
+            .select({ ambassadorId: codes.ambassadorId, value: count() })
             .from(scholarshipRedemptions)
+            .innerJoin(codes, eq(codes.id, scholarshipRedemptions.codeId))
             .where(
               and(
-                inArray(scholarshipRedemptions.codeId, codeIds),
+                inArray(codes.ambassadorId, ambassadorIds),
                 eq(scholarshipRedemptions.status, 'completed'),
               ),
             )
-            .groupBy(scholarshipRedemptions.codeId)
+            .groupBy(codes.ambassadorId)
         : Promise.resolve([]),
       ambassadorIds.length > 0
         ? this.db
@@ -247,7 +261,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
             .groupBy(invites.ambassadorId)
         : Promise.resolve([]),
     ])
-    const redemptionCounts = new Map(redemptionGroups.map((g) => [g.codeId, g.value]))
+    const redemptionCounts = new Map(redemptionGroups.map((g) => [g.ambassadorId, g.value]))
     const inviteCounts = new Map(inviteGroups.map((g) => [g.ambassadorId, g.value]))
 
     return {
@@ -257,7 +271,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
         email: r.ambassador.email,
         code: r.code?.code ?? '',
         status: r.ambassador.status as AmbassadorStatus,
-        redemptionsCompleted: r.code ? (redemptionCounts.get(r.code.id) ?? 0) : 0,
+        redemptionsCompleted: redemptionCounts.get(r.ambassador.id) ?? 0,
         invitesSent: inviteCounts.get(r.ambassador.id) ?? 0,
         linkEmailSentAt: r.ambassador.linkEmailSentAt,
         createdAt: r.ambassador.createdAt,
@@ -272,7 +286,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
     const [row] = await this.db
       .select({ ambassador: ambassadors, code: codes })
       .from(ambassadors)
-      .leftJoin(codes, eq(codes.ambassadorId, ambassadors.id))
+      .leftJoin(codes, kidsCodeOf())
       .where(eq(ambassadors.id, id))
       .limit(1)
     if (!row) return null
@@ -285,24 +299,22 @@ export class DrizzleReferralRepository implements ReferralRepository {
     const [row] = await this.db
       .select({ ambassador: ambassadors, code: codes })
       .from(ambassadors)
-      .leftJoin(codes, eq(codes.ambassadorId, ambassadors.id))
+      .leftJoin(codes, kidsCodeOf())
       .where(eq(ambassadors.pageToken, token))
       .limit(1)
     if (!row) return null
 
-    const codeId = row.code?.id
     const [[c] = [], [i]] = await Promise.all([
-      codeId
-        ? this.db
-            .select({ value: count() })
-            .from(scholarshipRedemptions)
-            .where(
-              and(
-                eq(scholarshipRedemptions.codeId, codeId),
-                eq(scholarshipRedemptions.status, 'completed'),
-              ),
-            )
-        : Promise.resolve([]),
+      this.db
+        .select({ value: count() })
+        .from(scholarshipRedemptions)
+        .innerJoin(codes, eq(codes.id, scholarshipRedemptions.codeId))
+        .where(
+          and(
+            eq(codes.ambassadorId, row.ambassador.id),
+            eq(scholarshipRedemptions.status, 'completed'),
+          ),
+        ),
       this.db
         .select({ value: count() })
         .from(invites)
@@ -383,7 +395,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
       const [codeRow] = await tx
         .select({ code: codes.code })
         .from(codes)
-        .where(eq(codes.ambassadorId, id))
+        .where(and(eq(codes.ambassadorId, id), eq(codes.audience, 'kids')))
         .limit(1)
       return { ...toAmbassador(ambassador), code: codeRow?.code ?? null }
     })
@@ -395,7 +407,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
     const [row] = await this.db
       .select({ ambassador: ambassadors, code: codes })
       .from(ambassadors)
-      .leftJoin(codes, eq(codes.ambassadorId, ambassadors.id))
+      .leftJoin(codes, kidsCodeOf())
       .where(eq(ambassadors.accountUserId, accountUserId))
       .limit(1)
     if (!row) return null
@@ -408,7 +420,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
     const [row] = await this.db
       .select({ ambassador: ambassadors, code: codes.code })
       .from(ambassadors)
-      .leftJoin(codes, eq(codes.ambassadorId, ambassadors.id))
+      .leftJoin(codes, kidsCodeOf())
       .where(eq(ambassadors.email, email))
       .limit(1)
     return row ? { ...toAmbassador(row.ambassador), code: row.code ?? null } : null
@@ -486,6 +498,82 @@ export class DrizzleReferralRepository implements ReferralRepository {
     return row ? toCode(row) : null
   }
 
+  async listCodesByAmbassador(ambassadorId: string): Promise<CodeRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(codes)
+      .where(eq(codes.ambassadorId, ambassadorId))
+      .orderBy(codes.createdAt)
+    return rows.map(toCode)
+  }
+
+  async ensureAmbassadorCode(input: {
+    ambassadorId: string
+    audience: GiftAudience
+    code: string
+  }): Promise<
+    { kind: 'ok'; code: CodeRecord; created: boolean } | { kind: 'code_collision' } | null
+  > {
+    const findExisting = async () => {
+      const [row] = await this.db
+        .select()
+        .from(codes)
+        .where(and(eq(codes.ambassadorId, input.ambassadorId), eq(codes.audience, input.audience)))
+        .limit(1)
+      return row ?? null
+    }
+    const existing = await findExisting()
+    if (existing) return { kind: 'ok', code: toCode(existing), created: false }
+    let outcome: { inserted: CodeRow | null } | null
+    try {
+      // FOR SHARE no embaixador: a desativação (`updateAmbassador`, que desliga TODOS os
+      // códigos dele) espera este INSERT ou é vista por ele. Sem o lock, um painel antigo
+      // podia ler `active`, a desativação passar, e o código adulto nascer ativo.
+      outcome = await this.db.transaction(async (tx) => {
+        const [ambassador] = await tx
+          .select()
+          .from(ambassadors)
+          .where(eq(ambassadors.id, input.ambassadorId))
+          .for('share')
+        if (!ambassador) return null
+        // O alvo do ON CONFLICT é SÓ o UNIQUE parcial (embaixador, público): a corrida de dois
+        // painéis abertos vira no-op e o perdedor relê o vencedor. Colisão do código sorteado
+        // (UNIQUE do code) continua estourando como 23505 para o serviço re-sortear.
+        const [inserted] = await tx
+          .insert(codes)
+          .values({
+            code: input.code,
+            ownerKind: 'ambassador',
+            ambassadorId: ambassador.id,
+            displayName: ambassador.name,
+            ownerEmail: ambassador.email,
+            audience: input.audience,
+            // Embaixador desativado não ganha código ativo por um painel antigo.
+            status: ambassador.status === 'active' ? 'active' : 'disabled',
+          })
+          .onConflictDoNothing({
+            target: [codes.ambassadorId, codes.audience],
+            where: sql`ambassador_id is not null`,
+          })
+          .returning()
+        return { inserted: inserted ?? null }
+      })
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        // A corrida pode também cair aqui quando os dois sorteiam o MESMO código.
+        const raced = await findExisting()
+        if (raced) return { kind: 'ok', code: toCode(raced), created: false }
+        return { kind: 'code_collision' }
+      }
+      throw error
+    }
+    if (!outcome) return null
+    if (outcome.inserted) return { kind: 'ok', code: toCode(outcome.inserted), created: true }
+    const raced = await findExisting()
+    if (!raced) throw new Error('conflito no código do embaixador sem linha existente')
+    return { kind: 'ok', code: toCode(raced), created: false }
+  }
+
   async markWelcomeAccepted(id: string, when: Date): Promise<void> {
     await this.db
       .update(scholarshipRedemptions)
@@ -496,6 +584,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
   async insertRedemption(input: {
     codeId: string
     email: string
+    audience: GiftAudience
     name: string
     phone: string | null
     sourceSnapshot?: GiftSource
@@ -503,10 +592,11 @@ export class DrizzleReferralRepository implements ReferralRepository {
     attribution?: GiftAttribution | null
   }): Promise<{ created: boolean; redemption: RedemptionRecord }> {
     return this.db.transaction(async (tx) => {
-      const [previous] = await tx
-        .select()
-        .from(scholarshipRedemptions)
-        .where(eq(scholarshipRedemptions.email, input.email))
+      const sameGift = and(
+        eq(scholarshipRedemptions.email, input.email),
+        eq(scholarshipRedemptions.audience, input.audience),
+      )
+      const [previous] = await tx.select().from(scholarshipRedemptions).where(sameGift)
       if (previous) return { created: false, redemption: toRedemption(previous) }
       const [code] = await tx.select().from(codes).where(eq(codes.id, input.codeId))
       if (!code) throw new Error('Código de resgate inexistente')
@@ -527,6 +617,9 @@ export class DrizzleReferralRepository implements ReferralRepository {
           acceptedAt,
         )
         if (state !== 'active') throw new CampaignUnavailableError(state)
+        // O público trava fora do rascunho; divergência aqui seria um bug de quem chamou.
+        if (campaign.audience !== input.audience)
+          throw new Error('público do resgate diverge do público da campanha')
         sourceSnapshot = campaignSource({
           ...campaign,
           code: code.code,
@@ -539,6 +632,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
         .values({
           codeId: input.codeId,
           email: input.email,
+          audience: input.audience,
           name: input.name,
           phone: input.phone,
           sourceSnapshot,
@@ -548,13 +642,12 @@ export class DrizzleReferralRepository implements ReferralRepository {
           accessDurationDays: SCHOLARSHIP_ACCESS_DURATION_DAYS,
           muralVisitorPolicy: 'trial',
         })
-        .onConflictDoNothing({ target: scholarshipRedemptions.email })
+        .onConflictDoNothing({
+          target: [scholarshipRedemptions.email, scholarshipRedemptions.audience],
+        })
         .returning()
       if (inserted) return { created: true, redemption: toRedemption(inserted) }
-      const [existing] = await tx
-        .select()
-        .from(scholarshipRedemptions)
-        .where(eq(scholarshipRedemptions.email, input.email))
+      const [existing] = await tx.select().from(scholarshipRedemptions).where(sameGift)
       if (!existing) throw new Error('conflito no insert sem linha existente (corrida de delete?)')
       return { created: false, redemption: toRedemption(existing) }
     })
@@ -658,11 +751,16 @@ export class DrizzleReferralRepository implements ReferralRepository {
       .where(eq(scholarshipRedemptions.id, id))
   }
 
-  async findRedemptionByEmail(email: string): Promise<RedemptionRecord | null> {
+  async findRedemptionByEmail(
+    email: string,
+    audience: GiftAudience,
+  ): Promise<RedemptionRecord | null> {
     const [row] = await this.db
       .select()
       .from(scholarshipRedemptions)
-      .where(eq(scholarshipRedemptions.email, email))
+      .where(
+        and(eq(scholarshipRedemptions.email, email), eq(scholarshipRedemptions.audience, audience)),
+      )
       .limit(1)
     return row ? toRedemption(row) : null
   }
@@ -738,17 +836,20 @@ export class DrizzleReferralRepository implements ReferralRepository {
 
   // ── Conversões ────────────────────────────────────────────────────────────
 
-  async findRedemptionWithCodeByEmail(
+  async listRedemptionsWithCodeByEmail(
     email: string,
-  ): Promise<{ redemption: RedemptionRecord; code: CodeRecord } | null> {
-    const [row] = await this.db
+  ): Promise<{ redemption: RedemptionRecord; code: CodeRecord }[]> {
+    // No máximo um por público (UNIQUE email+audience): o filtro barato do consumer.
+    const rows = await this.db
       .select({ redemption: scholarshipRedemptions, code: codes })
       .from(scholarshipRedemptions)
       .innerJoin(codes, eq(codes.id, scholarshipRedemptions.codeId))
       .where(eq(scholarshipRedemptions.email, email))
-      .limit(1)
-    if (!row) return null
-    return { redemption: toRedemption(row.redemption), code: toCode(row.code) }
+      .orderBy(scholarshipRedemptions.createdAt)
+    return rows.map((row) => ({
+      redemption: toRedemption(row.redemption),
+      code: toCode(row.code),
+    }))
   }
 
   async insertConversion(input: {

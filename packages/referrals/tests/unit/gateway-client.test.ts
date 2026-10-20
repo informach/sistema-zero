@@ -35,6 +35,53 @@ describe('createReferralsGatewayClient — corpo e headers no fio', () => {
     expect(headers['x-signature']).toMatch(/^t=\d+,v1=[0-9a-f]{64}$/)
   })
 
+  test('presente adulto: query ?audience=adult fora do path assinado; Kids sem query', async () => {
+    const { client, seen } = capture()
+    const realNow = Date.now
+    Date.now = () => 1_790_000_000_000
+    try {
+      await client.getGiftAvailability('cade-todo-mundo-adulto', 'adult')
+      await client.getGiftAvailability('cade-todo-mundo-adulto')
+      await client.getGiftAvailability('cade-todo-mundo-adulto', 'kids')
+    } finally {
+      Date.now = realNow
+    }
+    const [adult, kids, explicitKids] = seen
+    expect(adult!.url).toBe(
+      'http://gateway.test/members/webhooks/gift-course/cade-todo-mundo-adulto?audience=adult',
+    )
+    expect(kids!.url).toBe(
+      'http://gateway.test/members/webhooks/gift-course/cade-todo-mundo-adulto',
+    )
+    expect(explicitKids!.url).toBe(kids!.url)
+    // Mesma assinatura: o gateway confere só o pathname (a query não entra no canônico).
+    const sig = (call: { init: RequestInit }) =>
+      (call.init.headers as Record<string, string>)['x-signature']
+    expect(sig(adult!)).toBe(sig(kids!))
+  })
+
+  test('presente adulto: grant do curso e Mural adulto levam audience; Kids não', async () => {
+    const { client, seen } = capture()
+    const base = {
+      userId: 'u-1',
+      sourceId: 'scholarship:r-1',
+      courseRef: 'cade-todo-mundo-adulto',
+      expiresAt: '2026-10-27T12:00:00.000Z',
+    }
+    await client.grantManualCourse({ ...base, deliveryId: 'd-1', audience: 'adult' })
+    await client.grantMuralTrial({ ...base, deliveryId: 'd-2', audience: 'adult' })
+    expect(JSON.parse(String(seen[0]!.init.body))).toEqual({
+      mode: 'course',
+      ...base,
+      audience: 'adult',
+    })
+    expect(JSON.parse(String(seen[1]!.init.body))).toEqual({
+      mode: 'mural_trial',
+      ...base,
+      audience: 'adult',
+    })
+  })
+
   test('grantManualCourse envia mode:"course" no corpo (DTO do members exige)', async () => {
     const { client, seen } = capture()
     const res = await client.grantManualCourse({

@@ -1,106 +1,67 @@
+import type { AmbassadorShareUrls, GiftAudience } from '@sistemazero/core/referrals'
 import { useId, useState } from 'react'
+import { PAINEL_EMBAIXADOR } from '../content/embaixador'
 import { ApiError, apiPost } from '../lib/api-fetch'
-import { formatBRLFromCents2 } from '../lib/money'
 
 /**
- * Painel do embaixador (landing /embaixador/<token>, capability URL — sem
- * conta/senha). Duas ações: COMPARTILHAR o link de bolsa (primário — a mensagem
- * pronta vai no WhatsApp DELE, nunca da plataforma) e convidar por e-mail
- * (secundário — a plataforma envia UM convite, com opt-out, LGPD por desenho).
+ * Painel do embaixador (landing /embaixador/<token>, capability URL, sem conta/senha), Canvas
+ * "Presente Kids e adulto · proposta" de 20/10/2026. O embaixador escolhe para quem é o presente
+ * (uma família, no Kids, ou um adulto) e o painel mostra o link público, a mensagem pronta e o
+ * convite por e-mail DAQUELE público. A mensagem vai no WhatsApp DELE (a plataforma nunca envia);
+ * o convite por e-mail é um só por pessoa e leva o `audience` escolhido. O bônus e a chave Pix
+ * moram em `EmbaixadorBonus`.
  */
-export interface BonusItem {
-  id: string
-  status: 'pending' | 'eligible' | 'paid'
-  bonusCents: number
-  subscribedAt: string
-  paidMarkedAt: string | null
-}
-
 export interface EmbaixadorPainelProps {
   token: string
-  name: string
+  /** O link Kids, o único do painel anterior a 20/10/2026. */
   shareUrl: string
+  /** Um link por público; ausente na resposta antiga do referrals (vale só o Kids). */
+  shareUrls?: AmbassadorShareUrls
   stats: { redemptionsCompleted: number; invitesSent: number }
-  bonus?: { pixKey: string | null; items: BonusItem[]; amountCents?: number }
 }
 
+const T = PAINEL_EMBAIXADOR
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+const PUBLICOS: GiftAudience[] = ['kids', 'adult']
 
-function bonusLabel(item: BonusItem, hasPixKey: boolean): string {
-  if (item.status === 'paid') {
-    const when = item.paidMarkedAt
-      ? ` em ${new Date(item.paidMarkedAt).toLocaleDateString('pt-BR')}`
-      : ''
-    return `pago${when}`
+/** Só um endereço http(s) vira `href` e entra na mensagem; qualquer outro esquema conta como ausente. */
+const linkPublico = (url: string | null | undefined): string | null =>
+  typeof url === 'string' && /^https?:\/\/[^\s]+$/i.test(url) ? url : null
+
+/** Os links por público, com o `shareUrl` antigo como o link Kids de reserva. */
+export function linksDoEmbaixador(
+  shareUrl: string,
+  shareUrls?: AmbassadorShareUrls,
+): Record<GiftAudience, string | null> {
+  return {
+    kids: linkPublico(shareUrls?.kids ?? shareUrl),
+    adult: linkPublico(shareUrls?.adult),
   }
-  // ⚠️ Sem chave cadastrada NÃO há "pagamento a caminho": ele fica parado
-  // esperando o próprio embaixador, e prometer o contrário faz a pessoa
-  // fechar a página sem resolver a única coisa que trava o Pix.
-  if (item.status === 'eligible') {
-    return hasPixKey ? 'liberado, aguardando pagamento manual' : 'liberado, falta a sua chave Pix'
-  }
-  return 'aguardando a garantia de 7 dias'
 }
 
-export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: EmbaixadorPainelProps) {
+export default function EmbaixadorPainel({
+  token,
+  shareUrl,
+  shareUrls,
+  stats,
+}: EmbaixadorPainelProps) {
   const uid = useId()
+  const links = linksDoEmbaixador(shareUrl, shareUrls)
+  const [publico, setPublico] = useState<GiftAudience>('kids')
   const [copied, setCopied] = useState<'link' | 'message' | null>(null)
   const [manualCopy, setManualCopy] = useState<string | null>(null)
+  // Uma mensagem editável por público: trocar de público não apaga o que a pessoa ajustou.
+  const [mensagens, setMensagens] = useState<Record<GiftAudience, string>>(() => ({
+    kids: T.mensagens.kids.replace('{{link}}', links.kids ?? ''),
+    adult: T.mensagens.adult.replace('{{link}}', links.adult ?? ''),
+  }))
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [sending, setSending] = useState(false)
   const [inviteMsg, setInviteMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
   const [invitesSent, setInvitesSent] = useState(stats.invitesSent)
-  const [pixKey, setPixKey] = useState(bonus?.pixKey ?? '')
-  const [savingPix, setSavingPix] = useState(false)
-  const [pixMsg, setPixMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
-  // Chave que o SERVIDOR tem (só muda quando o salvamento confirma) — digitar
-  // no campo não pode fazer o rótulo do bônus dizer que o Pix vai sair.
-  const [savedPixKey, setSavedPixKey] = useState(bonus?.pixKey ?? '')
-  const hasPixKey = savedPixKey.trim().length > 0
-  const needsPixKey = !hasPixKey && Boolean(bonus?.items.some((i) => i.status === 'eligible'))
-
-  async function salvarPix() {
-    if (savingPix) return
-    const key = pixKey.trim()
-    if (key.length < 5 || key.length > 140) {
-      setPixMsg({
-        kind: 'err',
-        text: 'Confira a chave: ela parece incompleta ou longa demais. Vale CPF, e-mail, telefone ou chave aleatória.',
-      })
-      return
-    }
-    setSavingPix(true)
-    setPixMsg(null)
-    try {
-      await apiPost('/api/embaixador/pix', { token, pixKey: key })
-      setSavedPixKey(key)
-      setPixMsg({ kind: 'ok', text: 'Chave Pix salva!' })
-    } catch (err) {
-      // 4xx é DETERMINÍSTICO (chave inválida/página fora do ar): "tente de
-      // novo em instantes" mentiria — re-tentar nunca resolveria.
-      const status = err instanceof ApiError ? err.status : 0
-      setPixMsg({
-        kind: 'err',
-        text:
-          status >= 400 && status < 500
-            ? 'Essa chave não passou. Confira se ela está completa e tente com outra se precisar.'
-            : 'Não foi possível salvar agora. Tente de novo em instantes.',
-      })
-    }
-    setSavingPix(false)
-  }
-
-  const [shareMessage, setShareMessage] = useState(() =>
-    [
-      `Oi! Quero presentear sua família com o curso Cadê Todo Mundo?, do Sistema Zero. Nele, crianças de 9 a 14 anos criam um jogo de procurar personagens, passo a passo. 🎮`,
-      ``,
-      `Nos 7 dias a partir do cadastro pelo link, a criança pode fazer o curso, publicar o jogo dela, comentar e reagir no Mural dos Criadores. Depois, continua podendo ver e jogar enquanto a conta existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.`,
-      ``,
-      `Para as atividades, é preciso um computador com internet, mouse e teclado. É gratuito e não pede cartão. A página explica o que está incluído:`,
-      shareUrl,
-    ].join('\n'),
-  )
+  const link = links[publico]
+  const mensagem = mensagens[publico]
 
   async function copy(text: string, kind: 'link' | 'message') {
     try {
@@ -115,9 +76,9 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
   }
 
   async function convidar() {
-    if (sending) return
+    if (sending || !link) return
     if (nome.trim().length < 2 || !EMAIL_RE.test(email.trim())) {
-      setInviteMsg({ kind: 'err', text: 'Preencha o nome e um e-mail válido.' })
+      setInviteMsg({ kind: 'err', text: T.convite.invalido })
       return
     }
     setSending(true)
@@ -127,258 +88,244 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
         token,
         nome: nome.trim(),
         email: email.trim(),
+        audience: publico,
       })
       setInvitesSent((n) => n + 1)
-      setInviteMsg({ kind: 'ok', text: `Convite enviado para ${email.trim()} 🎉` })
+      setInviteMsg({ kind: 'ok', text: T.convite.enviado.replace('{{email}}', email.trim()) })
       setNome('')
       setEmail('')
     } catch (err) {
-      if (err instanceof ApiError && err.code === 'INVITE_ALREADY_SENT') {
-        setInviteMsg({ kind: 'err', text: 'Esse e-mail já recebeu o convite.' })
-      } else if (err instanceof ApiError && err.code === 'EMAIL_ALREADY_REDEEMED') {
-        setInviteMsg({ kind: 'err', text: 'Boa notícia: esse e-mail já resgatou a bolsa!' })
-      } else if (err instanceof ApiError && err.code === 'INVITE_DAILY_LIMIT') {
-        setInviteMsg({
-          kind: 'err',
-          text: 'Você atingiu o limite de convites de hoje. Amanhã pode mais!',
-        })
-      } else {
-        setInviteMsg({
-          kind: 'err',
-          text: 'Não foi possível enviar agora. Tente de novo em instantes.',
-        })
-      }
+      const code = err instanceof ApiError ? err.code : null
+      setInviteMsg({
+        kind: 'err',
+        text:
+          code === 'INVITE_ALREADY_SENT'
+            ? T.convite.jaEnviado
+            : code === 'EMAIL_ALREADY_REDEEMED'
+              ? T.convite.jaResgatou[publico]
+              : code === 'INVITE_DAILY_LIMIT'
+                ? T.convite.limite
+                : T.convite.falha,
+      })
     }
     setSending(false)
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="card rounded-2xl border-line/80 bg-card p-6 sm:p-8">
-        <h2 className="text-lg font-bold text-ink">Este é o link para presentear outra família</h2>
-        <p className="mt-2 text-sm text-muted">
-          Quem entrar por ele recebe 7 dias de acesso ao curso{' '}
-          <strong className="text-ink">Cadê Todo Mundo?</strong>, sem custo. O prazo começa no
-          cadastro pelo link. Nesses sete dias, a criança pode publicar o jogo do curso, comentar e
-          reagir no Mural dos Criadores. Depois, continua podendo ver e jogar enquanto a conta
-          existir. O link do jogo publicado continua funcionando enquanto a publicação estiver
-          disponível. Os demais cursos, ferramentas de criação livre e cópias de jogos não estão
-          incluídos.
-        </p>
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-          <input
-            readOnly
-            value={shareUrl}
-            onFocus={(e) => e.currentTarget.select()}
-            aria-label="Seu link público do presente"
-            className="w-full flex-1 rounded-xl border border-line bg-card px-4 py-3 text-sm text-ink outline-none"
-          />
-          <button
-            type="button"
-            onClick={() => void copy(shareUrl, 'link')}
-            className="btn btn-primary shrink-0"
-          >
-            {copied === 'link' ? 'Copiado! ✓' : 'Copiar link'}
-          </button>
-        </div>
-        <p className="mt-3 text-sm">
-          <a className="font-bold underline" href={shareUrl} target="_blank" rel="noreferrer">
-            Ver a página que a família vai receber
-          </a>
-        </p>
-        <label className="mt-5 block text-sm font-bold" htmlFor={`${uid}-message`}>
-          Sua mensagem de convite
-        </label>
-        <p className="text-sm text-muted">
-          Ajuste o texto para a família que você conhece. O envio pelo WhatsApp é feito por você.
-        </p>
-        <textarea
-          id={`${uid}-message`}
-          value={shareMessage}
-          onChange={(event) => setShareMessage(event.target.value)}
-          rows={7}
-          className="mt-3 w-full rounded-xl border border-line bg-card p-4 text-sm leading-relaxed text-ink"
-        />
-        <div className="gift-share-actions">
-          <a
-            href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-primary inline-flex"
-          >
-            Abrir meu WhatsApp com o convite
-          </a>
-          <button
-            type="button"
-            onClick={() => void copy(shareMessage, 'message')}
-            className="text-sm font-semibold text-cyan underline-offset-2 hover:underline"
-          >
-            {copied === 'message' ? 'Mensagem copiada! ✓' : 'Copiar mensagem pronta pro WhatsApp'}
-          </button>
-        </div>
-        {manualCopy && (
-          <div role="status" className="mt-4">
-            <p className="text-sm">
-              A cópia automática não funcionou. Selecione o texto abaixo e copie:
-            </p>
-            <textarea
-              aria-label="Texto para copiar manualmente"
-              readOnly
-              value={manualCopy}
-              rows={4}
-              onFocus={(event) => event.target.select()}
-              className="mt-2 w-full rounded-xl border border-line p-3 text-sm"
-            />
-          </div>
-        )}
-      </div>
-
-      <div className="card rounded-2xl border-line/80 bg-card p-6 sm:p-8">
-        <h2 className="text-lg font-bold text-ink">Ou envie o convite por e-mail</h2>
-        <p className="mt-2 text-sm text-muted">
-          A gente manda um único e-mail dizendo que foi você quem indicou, com o link da bolsa. Nada
-          de spam depois.
-        </p>
-        <form
-          noValidate
-          onSubmit={(e) => {
-            e.preventDefault()
-            void convidar()
-          }}
-          className="mt-4 flex flex-col gap-3"
-        >
-          <input
-            id={`${uid}-nome`}
-            type="text"
-            placeholder="Nome de quem vai receber"
-            aria-label="Nome de quem vai receber"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            className="w-full rounded-xl border border-line bg-card px-4 py-3 text-ink outline-none transition placeholder:text-muted/60 focus:border-cyan"
-          />
-          <input
-            id={`${uid}-email`}
-            type="email"
-            inputMode="email"
-            placeholder="email@dapessoa.com"
-            aria-label="E-mail de quem vai receber"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-line bg-card px-4 py-3 text-ink outline-none transition placeholder:text-muted/60 focus:border-cyan"
-          />
-          {inviteMsg && (
-            <p className={`text-sm ${inviteMsg.kind === 'ok' ? 'text-ink' : 'text-red-400'}`}>
-              {inviteMsg.text}
-            </p>
-          )}
-          <button type="submit" disabled={sending} className="btn btn-primary disabled:opacity-50">
-            {sending ? 'Enviando…' : 'Enviar convite'}
-          </button>
-        </form>
-      </div>
-
-      {bonus && (
-        <div className="card rounded-2xl border-line/80 bg-card p-6 sm:p-8">
-          <h2 className="text-lg font-bold text-ink">
-            Um agradecimento quando a indicação vira assinatura
-          </h2>
-          <p className="mt-2 text-sm text-muted">
-            Quando uma família que ganhou a bolsa com o seu link assina a Comunidade dos Criadores,
-            você pode receber{' '}
-            {typeof bonus.amountCents === 'number'
-              ? formatBRLFromCents2(bonus.amountCents)
-              : 'um bônus'}{' '}
-            por essa indicação, após a verificação da compra e do período de garantia. O pagamento é
-            feito manualmente por Pix. O resgate gratuito, sozinho, não gera bônus.
-          </p>
-          <ul className="mt-4 flex flex-col gap-2">
-            {bonus.items.map((item) => (
-              <li
-                key={item.id}
-                className="flex items-center justify-between rounded-xl border border-line px-4 py-3 text-sm"
-              >
-                <span className="text-muted">
-                  Assinatura em {new Date(item.subscribedAt).toLocaleDateString('pt-BR')}
-                </span>
-                <span className="font-semibold text-ink">
-                  {formatBRLFromCents2(item.bonusCents)} · {bonusLabel(item, hasPixKey)}
-                </span>
-              </li>
-            ))}
-          </ul>
-          {bonus.items.length === 0 && (
-            <p className="text-sm text-muted">
-              Ainda não há bônus registrados. Você já pode compartilhar seu link e cadastrar sua
-              chave Pix.
-            </p>
-          )}
-          <div className="mt-4">
-            <label htmlFor={`${uid}-pix`} className="mb-1.5 block text-sm font-semibold text-ink">
-              Sua chave Pix para receber
-            </label>
-            {needsPixKey && (
-              <p id={`${uid}-pix-hint`} className="mb-2 text-sm font-semibold text-ink">
-                Cadastre a sua chave para o dinheiro sair: sem ela o pagamento fica parado.
-              </p>
-            )}
-            <div className="flex flex-col gap-2 sm:flex-row">
+    <div className="emb-painel">
+      <fieldset className="emb-publicos">
+        <legend className="emb-sr">{T.seletor.legenda}</legend>
+        {PUBLICOS.map((alvo) => {
+          const opcao = T.seletor.opcoes[alvo]
+          const marcado = publico === alvo
+          return (
+            <label
+              key={alvo}
+              className={`emb-publico emb-publico--${alvo}${alvo === 'adult' ? ' theme-arcade' : ''}${marcado ? ' is-marcado' : ''}`}
+            >
               <input
-                id={`${uid}-pix`}
-                type="text"
-                placeholder="CPF, e-mail, telefone ou chave aleatória"
-                value={pixKey}
-                onChange={(e) => {
-                  setPixKey(e.target.value)
-                  // A mensagem antiga ("Chave Pix salva!") não pode sobreviver à
-                  // edição: quem corrigiu a chave sairia achando que salvou.
-                  setPixMsg(null)
+                type="radio"
+                name={`${uid}-publico`}
+                value={alvo}
+                checked={marcado}
+                onChange={() => {
+                  setPublico(alvo)
+                  setInviteMsg(null)
+                  setManualCopy(null)
+                  setCopied(null)
                 }}
-                aria-invalid={pixMsg?.kind === 'err' || undefined}
-                aria-describedby={
-                  [pixMsg ? `${uid}-pix-msg` : '', needsPixKey ? `${uid}-pix-hint` : '']
-                    .filter(Boolean)
-                    .join(' ') || undefined
-                }
-                className="w-full flex-1 rounded-xl border border-line bg-card px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-cyan"
+                className="emb-publico__radio"
               />
-              <button
-                type="button"
-                onClick={() => void salvarPix()}
-                disabled={savingPix}
-                className="btn btn-primary shrink-0 disabled:opacity-50"
-              >
-                {savingPix ? 'Salvando…' : 'Salvar chave'}
-              </button>
-            </div>
-            {pixMsg && (
-              // role=alert: a confirmação/recusa é sobre DINHEIRO e precisa ser
-              // anunciada a quem usa leitor de tela.
+              <span className="emb-publico__topo">
+                <span className="emb-publico__selo">{opcao.selo}</span>
+                <span className="emb-publico__marca" aria-hidden="true">
+                  <svg
+                    aria-hidden="true"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                </span>
+              </span>
+              <span className="emb-publico__corpo">
+                <img
+                  src={opcao.imagem.src}
+                  alt={opcao.imagem.alt}
+                  width={opcao.imagem.width}
+                  height={opcao.imagem.height}
+                  loading="lazy"
+                  decoding="async"
+                  className="emb-publico__imagem"
+                />
+                <span className="emb-publico__texto">
+                  <strong className="emb-publico__titulo">{opcao.titulo}</strong>
+                  <span>{opcao.texto}</span>
+                </span>
+              </span>
+            </label>
+          )
+        })}
+      </fieldset>
+
+      <div className="emb-grade">
+        <section className="emb-cartao emb-cartao--link" aria-labelledby={`${uid}-link-titulo`}>
+          <div className="emb-cartao__topo">
+            <h2 id={`${uid}-link-titulo`} className="emb-h3">
+              {T.link.titulo[publico]}
+            </h2>
+            <span
+              className={`emb-chip emb-chip--${publico}${publico === 'adult' ? ' theme-arcade' : ''}`}
+            >
+              {T.link.chip[publico]}
+            </span>
+          </div>
+          {link ? (
+            <>
+              <div className="emb-linha">
+                <input
+                  readOnly
+                  value={link}
+                  onFocus={(e) => e.currentTarget.select()}
+                  aria-label={T.link.campo}
+                  className="emb-input emb-input--link"
+                />
+                <button type="button" onClick={() => void copy(link, 'link')} className="emb-btn">
+                  {copied === 'link' ? T.link.copiado : T.link.copiar}
+                </button>
+              </div>
+              <a className="emb-link" href={link} target="_blank" rel="noreferrer">
+                {T.link.ver}
+              </a>
+              <label className="emb-rotulo" htmlFor={`${uid}-mensagem`}>
+                {T.link.mensagemRotulo}
+              </label>
+              <p className="emb-ajuda">{T.link.mensagemAjuda}</p>
+              <textarea
+                id={`${uid}-mensagem`}
+                value={mensagem}
+                onChange={(event) =>
+                  setMensagens((atual) => ({ ...atual, [publico]: event.target.value }))
+                }
+                rows={6}
+                className="emb-input emb-input--mensagem"
+              />
+              <div className="emb-acoes">
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(mensagem)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="emb-btn"
+                >
+                  {T.link.whatsapp}
+                </a>
+                <button
+                  type="button"
+                  onClick={() => void copy(mensagem, 'message')}
+                  className="emb-btn emb-btn--contorno"
+                >
+                  {copied === 'message' ? T.link.mensagemCopiada : T.link.copiarMensagem}
+                </button>
+              </div>
+              <p className="emb-ajuda">{T.link.nota}</p>
+              {manualCopy && (
+                <div role="status" className="emb-manual">
+                  <p className="emb-ajuda">{T.link.manual}</p>
+                  <textarea
+                    aria-label={T.link.manualAria}
+                    readOnly
+                    value={manualCopy}
+                    rows={4}
+                    onFocus={(event) => event.target.select()}
+                    className="emb-input emb-input--mensagem"
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="emb-aviso-link" role="status">
+              {T.link.indisponivel}
+            </p>
+          )}
+        </section>
+
+        <div className="emb-coluna">
+          <form
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault()
+              void convidar()
+            }}
+            className="emb-cartao emb-form"
+            aria-labelledby={`${uid}-convite-titulo`}
+          >
+            <h2 id={`${uid}-convite-titulo`} className="emb-h3">
+              {T.convite.titulo}
+            </h2>
+            <p className="emb-ajuda">
+              {T.convite.antes}
+              <strong>{T.convite.paraQuem[publico]}</strong>
+              {T.convite.depois}
+            </p>
+            <label className="emb-rotulo" htmlFor={`${uid}-nome`}>
+              {T.convite.nome}
+            </label>
+            <input
+              id={`${uid}-nome`}
+              type="text"
+              autoComplete="off"
+              placeholder={T.convite.nomePlaceholder}
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              className="emb-input"
+            />
+            <label className="emb-rotulo" htmlFor={`${uid}-email`}>
+              {T.convite.email}
+            </label>
+            <input
+              id={`${uid}-email`}
+              type="email"
+              inputMode="email"
+              autoComplete="off"
+              placeholder={T.convite.emailPlaceholder}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="emb-input"
+            />
+            {!link && <p className="emb-ajuda">{T.convite.semLink}</p>}
+            {inviteMsg && (
               <p
-                id={`${uid}-pix-msg`}
-                role="alert"
-                className={`mt-2 text-sm ${pixMsg.kind === 'ok' ? 'text-ink' : 'font-semibold text-red-600'}`}
+                role={inviteMsg.kind === 'err' ? 'alert' : 'status'}
+                className={inviteMsg.kind === 'ok' ? 'emb-ok' : 'emb-erro'}
               >
-                {pixMsg.text}
+                {inviteMsg.text}
               </p>
             )}
-          </div>
-          <p className="mt-4 text-xs text-muted">
-            O bônus é um agradecimento único por indicação que virar assinatura. Não é salário nem
-            renda garantida e não cria vínculo com a plataforma. Pagamos por Pix na chave acima,
-            após a liberação e a conferência pela equipe. Autoindicação não gera bônus, e estorno
-            dentro da garantia cancela o bônus pendente. Uma renovação da mesma família não gera
-            outro bônus.
-          </p>
-        </div>
-      )}
+            <button type="submit" disabled={sending || !link} className="emb-btn">
+              {sending ? T.convite.enviando : T.convite.enviar}
+            </button>
+          </form>
 
-      <div className="card rounded-2xl border-line/80 bg-card p-6 text-center sm:p-8">
-        <p className="text-sm text-muted">Bolsas resgatadas pelo seu link</p>
-        <p className="mt-1 text-4xl font-bold text-ink">{stats.redemptionsCompleted}</p>
-        <p className="mt-2 text-xs text-muted">
-          {invitesSent} convite{invitesSent === 1 ? '' : 's'} por e-mail enviado
-          {invitesSent === 1 ? '' : 's'}
-        </p>
+          <section className="emb-cartao emb-resgates" aria-labelledby={`${uid}-resgates`}>
+            <h2 id={`${uid}-resgates`} className="emb-resgates__titulo">
+              {T.resgates.titulo}
+            </h2>
+            <p className="emb-resgates__numero">{stats.redemptionsCompleted}</p>
+            <p className="emb-ajuda">
+              {(invitesSent === 1 ? T.resgates.convites.um : T.resgates.convites.varios).replace(
+                '{{n}}',
+                String(invitesSent),
+              )}
+            </p>
+            <p className="emb-ajuda">{T.resgates.nota}</p>
+          </section>
+        </div>
       </div>
     </div>
   )

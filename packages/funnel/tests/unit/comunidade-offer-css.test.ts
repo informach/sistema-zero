@@ -34,6 +34,11 @@ const novos = {
   // As continuidades (20/10/2026) vestem o layout das páginas irmãs, com o mesmo prefixo.
   'comunidade-continuar.css': '.c917',
   'comunidade-adulto-continuar.css': '.cda',
+  // O presente (20/10/2026): o recebimento Kids veste a 9 a 17, o adulto o arcade, e o painel do
+  // embaixador tem o seu namespace neutro.
+  'presente-kids.css': '.c917',
+  'presente-adulto.css': '.cda',
+  'embaixador.css': '.emb',
 } as const
 const novosCss = Object.fromEntries(
   Object.keys(novos).map((nome) => [nome, readFileSync(join(SRC, 'styles', nome), 'utf8')]),

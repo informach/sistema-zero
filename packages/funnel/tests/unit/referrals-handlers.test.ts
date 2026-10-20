@@ -100,7 +100,7 @@ describe('postRedeemScholarship (/api/bolsa/resgatar)', () => {
     expect((await readJson(throttled)).error.code).toBe('RATE_LIMITED')
 
     fake.setRedeemResult(503, {
-      error: { code: 'GIFT_UNAVAILABLE', message: 'Curso em preparação' },
+      error: { code: 'GIFT_UNAVAILABLE', message: 'O cadastro por este link ainda não abriu.' },
     })
     const preparing = await postRedeemScholarship(post('/api/bolsa/resgatar', valid), {
       gateway: fake.gateway,
@@ -158,6 +158,36 @@ describe('postAmbassadorInvite (/api/embaixador/convites)', () => {
       gateway: fake.gateway,
     })
     expect(limit.status).toBe(429)
+  })
+
+  test('o público do convite: adulto viaja; Kids (explícito ou ausente) vai sem o campo', async () => {
+    const fake = createFakeGateway()
+    const adulto = await postAmbassadorInvite(
+      post('/api/embaixador/convites', { ...valid, audience: 'adult' }),
+      { gateway: fake.gateway },
+    )
+    expect(adulto.status).toBe(202)
+    expect(fake.calls.invites[0]?.input).toEqual({
+      name: 'Paula Prado',
+      email: 'paula@example.com',
+      audience: 'adult',
+    })
+    await postAmbassadorInvite(post('/api/embaixador/convites', { ...valid, audience: 'kids' }), {
+      gateway: fake.gateway,
+    })
+    await postAmbassadorInvite(post('/api/embaixador/convites', valid), { gateway: fake.gateway })
+    for (const call of fake.calls.invites.slice(1))
+      expect(call.input).not.toHaveProperty('audience')
+  })
+
+  test('público desconhecido → 400 sem chamar o gateway', async () => {
+    const fake = createFakeGateway()
+    const res = await postAmbassadorInvite(
+      post('/api/embaixador/convites', { ...valid, audience: 'teen' }),
+      { gateway: fake.gateway },
+    )
+    expect(res.status).toBe(400)
+    expect(fake.calls.invites).toHaveLength(0)
   })
 
   test('token com formato inválido → 400 sem chamar o gateway', async () => {

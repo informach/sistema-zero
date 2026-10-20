@@ -1204,9 +1204,16 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return gw.gatewayFetch('/members/parents/report-prefs')
     },
 
-    /** Embaixador da Bolsa (auto-cadastro do responsável) — atrás do portão de senha. */
+    /**
+     * Embaixador do presente (auto-cadastro). No Kids, atrás do portão dos pais; no adulto, só a
+     * sessão da própria conta (`community/src/server/own-account.ts`).
+     */
     getAmbassadorEnrollment(): Promise<GatewayResponse<AmbassadorEnrollmentView>> {
       return gw.gatewayFetch('/referrals/me/ambassador')
+    },
+    /** Leitura para Server Component (Meu perfil do adulto): sem refresh nem escrita de cookie. */
+    getAmbassadorEnrollmentReadonly(): Promise<GatewayResponse<AmbassadorEnrollmentView>> {
+      return gw.gatewayFetchReadonly('/referrals/me/ambassador')
     },
     enrollAmbassador(): Promise<GatewayResponse<AmbassadorEnrollmentView>> {
       return gw.gatewayFetch('/referrals/me/ambassador', { method: 'POST', body: {} })
@@ -1660,6 +1667,13 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
     },
     getSpace(slug: string): Promise<GatewayResponse<HubSpaceView>> {
       return gw.gatewayFetch(`/hub/spaces/${enc(slug)}`)
+    },
+    /**
+     * Leitura para Server Component (sem refresh nem escrita de cookie): o cabeçalho do Mural
+     * adulto confere `canInteract` antes de oferecer "Publicar um jogo meu" ao visitante.
+     */
+    getSpaceReadonly(slug: string): Promise<GatewayResponse<HubSpaceView>> {
+      return gw.gatewayFetchReadonly(`/hub/spaces/${enc(slug)}`)
     },
     listChannels(slug: string): Promise<GatewayResponse<{ items: HubChannelView[] }>> {
       return gw.gatewayFetch(`/hub/spaces/${enc(slug)}/channels`)

@@ -1,4 +1,9 @@
-import type { CampaignInput, GiftAttribution, GiftSource } from '@sistemazero/core/referrals'
+import type {
+  CampaignInput,
+  GiftAttribution,
+  GiftAudience,
+  GiftSource,
+} from '@sistemazero/core/referrals'
 import { sql } from 'drizzle-orm'
 import {
   bigint,
@@ -35,11 +40,14 @@ export const campaigns = referralsSchema.table(
     startsAt: timestamp({ withTimezone: true }).notNull(),
     endsAt: timestamp({ withTimezone: true }).notNull(),
     channel: varchar({ length: 100 }).notNull().default(''),
+    /** Público do presente (0005). Só muda em rascunho; depois, só duplicando. */
+    audience: varchar({ length: 16 }).$type<GiftAudience>().notNull().default('kids'),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     check('campaigns_period_check', sql`${t.endsAt} > ${t.startsAt}`),
+    check('campaigns_audience_check', sql`${t.audience} in ('kids','adult')`),
     check('campaigns_status_check', sql`${t.status} in ('draft','active','paused','ended')`),
     check('campaigns_context_check', sql`${t.context} in ('ad','event','other')`),
   ],
@@ -107,16 +115,28 @@ export const codes = referralsSchema.table(
     ownerEmail: text(),
     /** CPF do dono (opcional; checagem adicional de autoindicação quando presente). */
     ownerDocument: text(),
-    /** De qual app o código do membro nasceu ('community' | 'kids') — link do e-mail de crédito. */
-    panelAudience: varchar({ length: 16 }),
+    /**
+     * Público do presente que o código entrega (0005). A coluna física continua
+     * `panel_audience` (criada na 0000 e nunca usada): renomear quebraria as
+     * leituras do container antigo durante o deploy, porque o Drizzle lista as
+     * colunas no SELECT. Embaixador tem um código por público; campanha espelha
+     * o público da campanha.
+     */
+    audience: varchar('panel_audience', { length: 16 })
+      .$type<GiftAudience>()
+      .notNull()
+      .default('kids'),
     status: varchar({ length: 16 }).notNull().default('active'),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     uniqueIndex('codes_code_uq').on(t.code),
-    uniqueIndex('codes_ambassador_uq').on(t.ambassadorId).where(sql`ambassador_id is not null`),
+    uniqueIndex('codes_ambassador_audience_uq')
+      .on(t.ambassadorId, t.audience)
+      .where(sql`ambassador_id is not null`),
     uniqueIndex('codes_account_uq').on(t.accountUserId).where(sql`account_user_id is not null`),
     uniqueIndex('codes_campaign_uq').on(t.campaignId).where(sql`campaign_id is not null`),
+    check('codes_audience_check', sql`${t.audience} in ('kids','adult')`),
     check(
       'codes_owner_check',
       sql`(owner_kind = 'ambassador' and ambassador_id is not null and account_user_id is null and campaign_id is null) or (owner_kind = 'account' and account_user_id is not null and ambassador_id is null and campaign_id is null) or (owner_kind = 'campaign' and campaign_id is not null and ambassador_id is null and account_user_id is null)`,
@@ -132,8 +152,10 @@ export const scholarshipRedemptions = referralsSchema.table(
     codeId: uuid()
       .notNull()
       .references(() => codes.id),
-    /** Normalizado (lower/trim). UNIQUE = 1 bolsa por e-mail, GLOBAL. */
+    /** Normalizado (lower/trim). UNIQUE (email, audience) = 1 presente por e-mail e público. */
     email: text().notNull(),
+    /** Público do presente resgatado (vem do código). Históricos são `kids`. */
+    audience: varchar({ length: 16 }).$type<GiftAudience>().notNull().default('kids'),
     name: varchar({ length: 120 }).notNull(),
     phone: varchar({ length: 20 }),
     /** Termos da origem no instante da aceitação; não mudam ao editar a campanha. */
@@ -166,8 +188,9 @@ export const scholarshipRedemptions = referralsSchema.table(
     updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    uniqueIndex('scholarship_redemptions_email_uq').on(t.email),
+    uniqueIndex('scholarship_redemptions_email_audience_uq').on(t.email, t.audience),
     index('scholarship_redemptions_code_status_idx').on(t.codeId, t.status),
+    check('scholarship_redemptions_audience_check', sql`${t.audience} in ('kids','adult')`),
   ],
 )
 

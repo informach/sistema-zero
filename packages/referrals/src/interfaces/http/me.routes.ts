@@ -35,21 +35,34 @@ export function meRoutes(deps: MeRoutesDeps) {
     const email = headers['x-auth-user-email']
     if (!accountUserId || !email) throw new UnauthorizedError('Autenticação necessária')
     const name = decodeIdentityHeader(headers['x-auth-user-name']) ?? ''
-    return { accountUserId, email, name }
+    // Sessão de SUPORTE (o gateway injeta o ator em `x-auth-impersonator-id`): a equipe vê o
+    // estado do cadastro, mas nunca os links. O `pageUrl` é a capability que troca a chave Pix.
+    const impersonated = Boolean(headers['x-auth-impersonator-id']?.trim())
+    return { accountUserId, email, name, impersonated }
   }
 
-  async function bodyFor(view: AmbassadorView, ambassadorId: string) {
-    const [stats, bonusCounts] = await Promise.all([
-      deps.repo.getAmbassadorStats(ambassadorId),
-      deps.repo.countConversionsForAmbassador(ambassadorId),
+  async function bodyFor(
+    view: AmbassadorView,
+    ambassador: Parameters<AmbassadorAdminService['shareUrls']>[0],
+    redactLinks: boolean,
+  ) {
+    const [stats, bonusCounts, shareUrls] = await Promise.all([
+      deps.repo.getAmbassadorStats(ambassador.id),
+      deps.repo.countConversionsForAmbassador(ambassador.id),
+      // Suporte: sem links e sem criar o código adulto (um GET da equipe não muda nada).
+      redactLinks
+        ? Promise.resolve({ kids: null, adult: null })
+        : deps.ambassadors.shareUrls(ambassador),
     ])
     return {
       enrolled: true as const,
       ambassador: {
-        code: view.code,
+        code: redactLinks ? null : view.code,
         status: view.status,
-        pageUrl: view.pageUrl,
-        shareUrl: view.shareUrl,
+        pageUrl: redactLinks ? null : view.pageUrl,
+        // `shareUrl` é o link Kids (compatível); `shareUrls` traz um link por público.
+        shareUrl: redactLinks ? null : view.shareUrl,
+        shareUrls,
         pixKeySet: false, // sobrescrito abaixo quando o record está em mãos
       },
       stats,
@@ -62,12 +75,12 @@ export function meRoutes(deps: MeRoutesDeps) {
     }
   }
 
-  async function enrolledView(accountUserId: string) {
+  async function enrolledView(accountUserId: string, redactLinks = false) {
     const ambassador = await deps.repo.findAmbassadorByAccount(accountUserId)
     if (!ambassador) {
       return { enrolled: false as const, bonus: { amountCents: deps.bonusAmountCents } }
     }
-    const body = await bodyFor(deps.ambassadors.viewOf(ambassador), ambassador.id)
+    const body = await bodyFor(deps.ambassadors.viewOf(ambassador), ambassador, redactLinks)
     body.ambassador.pixKeySet = Boolean(ambassador.pixKey)
     return body
   }
@@ -75,10 +88,13 @@ export function meRoutes(deps: MeRoutesDeps) {
   return new Elysia({ prefix: '/referrals/me' })
     .get('/ambassador', async ({ headers }) => {
       const id = identity(headers)
-      return enrolledView(id.accountUserId)
+      return enrolledView(id.accountUserId, id.impersonated)
     })
     .post('/ambassador', async ({ headers, set }) => {
       const id = identity(headers)
+      // Cadastro (e o e-mail com o link da página) é decisão da própria pessoa, nunca do suporte.
+      if (id.impersonated)
+        throw new ForbiddenError('Sessão de suporte não cadastra embaixador nem recebe os links')
       const name = id.name.trim() || id.email.split('@')[0] || 'Responsável'
       const result = await deps.ambassadors.selfEnroll({
         accountUserId: id.accountUserId,

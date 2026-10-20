@@ -11,6 +11,7 @@ import type {
   SceneVozes,
   ZappySpeechOverride,
 } from '@sistemazero/core/learning/scene'
+import type { AmbassadorShareUrls } from '@sistemazero/core/referrals'
 
 // "Como fazer" (biblioteca de ajuda do Kids): as views nascem no core e valem nos dois lados.
 export type {
@@ -1249,7 +1250,7 @@ export interface ParentReportPrefsView {
 }
 
 /**
- * Embaixador da Bolsa do Primeiro Jogo (auto-cadastro na área dos pais) —
+ * Embaixador do presente (auto-cadastro na área dos pais do Kids e em Meu perfil do adulto) —
  * mirror do `GET/POST /referrals/me/ambassador` do @sistemazero/referrals.
  */
 export interface AmbassadorEnrollmentView {
@@ -1259,8 +1260,16 @@ export interface AmbassadorEnrollmentView {
     status: string
     /** Página do embaixador (capability-URL absoluta do funil). */
     pageUrl: string
-    /** Link de bolsa compartilhável (`/bolsa/<code>` no funil). */
+    /**
+     * Link do presente Kids (`/bolsa/<code>` no funil). Fica por compatibilidade: é o mesmo que
+     * `shareUrls.kids`, e um referrals anterior a 20/10/2026 só manda este.
+     */
     shareUrl: string | null
+    /**
+     * Um link por público (20/10/2026): `kids` para uma família, `adult` para um adulto.
+     * Ausente em respostas antigas: aí só existe o `shareUrl` (Kids).
+     */
+    shareUrls?: AmbassadorShareUrls
     pixKeySet: boolean
   }
   stats?: { redemptionsCompleted: number; invitesSent: number }

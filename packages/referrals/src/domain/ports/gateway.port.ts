@@ -1,3 +1,5 @@
+import type { GiftAudience } from '@sistemazero/core/referrals'
+
 /**
  * Porta do api-gateway (BFF S2S). Todas as integrações do referrals passam pelo
  * gateway com HMAC de borda (consumer `referrals`) — nunca direto no serviço
@@ -29,6 +31,8 @@ export interface GrantManualCourseInput {
   expiresAt: string | null
   /** Dedupe do members (`x-delivery-id`) — ESTÁVEL por operação. */
   deliveryId: string
+  /** Só no presente adulto; ausente = Kids (o corpo Kids continua byte a byte o de antes). */
+  audience?: 'adult'
 }
 
 export interface GrantMuralVisitorInput {
@@ -40,6 +44,8 @@ export interface GrantMuralVisitorInput {
 export interface GrantMuralTrialInput extends GrantMuralVisitorInput {
   courseRef: string
   expiresAt: string
+  /** Só no presente adulto (Mural adulto); ausente = Kids. */
+  audience?: 'adult'
 }
 
 /** Corpo de `POST /messaging/send` (gateway → messaging). */
@@ -50,8 +56,11 @@ export interface SendEmailInput {
 }
 
 export interface ReferralsGateway {
-  /** `GET /members/webhooks/gift-course/:slug` — curso kids publicado? */
-  getGiftAvailability(courseRef: string): Promise<GatewayResult>
+  /**
+   * `GET /members/webhooks/gift-course/:slug[?audience=adult]` — o curso do público está
+   * publicado? Kids não manda query (a requisição continua idêntica à de antes).
+   */
+  getGiftAvailability(courseRef: string, audience?: GiftAudience): Promise<GatewayResult>
   ensureBuyer(input: EnsureBuyerInput): Promise<GatewayResult>
   /** `POST /auth/internal/password-tokens` — token de definir senha (TTL 14d). */
   createPasswordToken(email: string): Promise<GatewayResult>

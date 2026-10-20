@@ -1,18 +1,30 @@
-import type {
-  CampaignDetailView,
-  CampaignInput,
-  CampaignUpdateInput,
-  CampaignView,
+import {
+  type CampaignDetailView,
+  type CampaignInput,
+  type CampaignUpdateInput,
+  type CampaignView,
+  type GiftAudience,
+  isGiftAudience,
 } from '@sistemazero/core/referrals'
-import { type CampaignRecord, CampaignValidationError, campaignState } from '../../domain/campaign'
+import {
+  CampaignAudienceLockedError,
+  type CampaignRecord,
+  CampaignValidationError,
+  campaignState,
+} from '../../domain/campaign'
 import { isValidCode } from '../../domain/codes'
 import { scholarshipExpiresAt } from '../../domain/gift-policy'
 import { scholarshipShareUrl } from '../../domain/links'
 import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 
-export function validateCampaignInput(input: CampaignInput): CampaignInput {
-  const result: CampaignInput = {
+/** Entrada validada: o público sempre resolvido (ausente = `kids`). */
+export type ValidatedCampaignInput = CampaignInput & { audience: GiftAudience }
+
+export function validateCampaignInput(input: CampaignInput): ValidatedCampaignInput {
+  if (input.audience !== undefined && !isGiftAudience(input.audience))
+    throw new CampaignValidationError('Escolha o público do presente: Kids ou adulto.')
+  const result: ValidatedCampaignInput = {
     name: input.name.trim(),
     publicTitle: input.publicTitle.trim(),
     description: input.description.trim(),
@@ -22,6 +34,7 @@ export function validateCampaignInput(input: CampaignInput): CampaignInput {
     endsAt: input.endsAt,
     status: input.status,
     context: input.context,
+    audience: input.audience ?? 'kids',
   }
   const start = new Date(input.startsAt)
   const end = new Date(input.endsAt)
@@ -88,12 +101,14 @@ export class CampaignAdminService {
     actor: string,
     duplicatedFrom?: string,
   ): Promise<CampaignView | null> {
-    const validated = validateCampaignInput(input)
+    let validated = validateCampaignInput(input)
     if (duplicatedFrom) {
       const previous = await this.repo.findById(duplicatedFrom)
       if (!previous) throw new CampaignValidationError('A campanha original não foi encontrada.')
       if (previous.code === validated.code)
         throw new CampaignValidationError('Uma nova edição precisa de outro código.')
+      // A duplicata herda o público da original quando o corpo não escolhe outro.
+      if (input.audience === undefined) validated = { ...validated, audience: previous.audience }
     }
     const created = await this.repo.create(validated, actor, duplicatedFrom)
     return created ? this.view(created) : null
@@ -104,13 +119,24 @@ export class CampaignAdminService {
     input: CampaignUpdateInput,
     actor: string,
   ): Promise<CampaignView | null> {
-    const validated = validateCampaignInput(input)
     const previous = await this.repo.findById(id)
     if (!previous) return null
+    // Cliente que não manda o público (anterior a 20/10/2026) mantém o que está gravado.
+    const validated = validateCampaignInput({
+      ...input,
+      audience: input.audience ?? previous.audience,
+    })
     if (previous.code !== validated.code)
       throw new CampaignValidationError(
         'O código de uma campanha existente não muda. Duplique para criar outra edição.',
       )
+    if (validated.audience !== previous.audience) {
+      if (previous.status !== 'draft') throw new CampaignAudienceLockedError()
+      // Rascunho que já foi publicado pode ter resgates (o repo confere de novo sob o lock).
+      const stats = await this.repo.stats(id)
+      if (stats.redemptions + stats.pending + stats.failed > 0)
+        throw new CampaignAudienceLockedError()
+    }
     const updated = await this.repo.update(id, validated, actor, input.expectedUpdatedAt)
     return updated ? this.view(updated) : null
   }

@@ -2,6 +2,16 @@
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'ended'
 export type CampaignState = CampaignStatus | 'scheduled'
 export type CampaignContext = 'ad' | 'event' | 'other'
+/**
+ * Público do presente (20/10/2026): `kids` leva ao Cadê Todo Mundo e ao Mural Kids, com o
+ * cadastro feito pelo responsável; `adult` leva à versão adulta do curso e ao Mural adulto, com
+ * o cadastro da própria pessoa. Códigos, campanhas e resgates antigos são `kids`.
+ */
+export type GiftAudience = 'kids' | 'adult'
+export const GIFT_AUDIENCES: readonly GiftAudience[] = ['kids', 'adult']
+export function isGiftAudience(value: unknown): value is GiftAudience {
+  return value === 'kids' || value === 'adult'
+}
 /** Direito efetivamente concedido pelo resgate, incluindo versões históricas. */
 export type GiftMuralAccess = 'trial' | 'visitor' | 'none'
 export interface GiftAttribution {
@@ -26,6 +36,13 @@ export interface ReferralGiftView {
   startsAt: string | null
   endsAt: string | null
   giftAvailable: boolean
+  /** Ausente em respostas anteriores a 20/10/2026: trate como `kids`. */
+  audience?: GiftAudience
+}
+/** Os links públicos do embaixador, um por público (`/bolsa/<code>`). */
+export interface AmbassadorShareUrls {
+  kids: string | null
+  adult: string | null
 }
 export interface CampaignInput {
   name: string
@@ -37,8 +54,11 @@ export interface CampaignInput {
   endsAt: string
   status: CampaignStatus
   channel: string
+  /** Ausente = `kids`. Só muda enquanto a campanha está em rascunho. */
+  audience?: GiftAudience
 }
 export interface CampaignView extends CampaignInput {
+  audience: GiftAudience
   id: string
   state: CampaignState
   shareUrl: string

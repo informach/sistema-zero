@@ -1,0 +1,43 @@
+---
+// Layout do painel do embaixador (Canvas "Presente Kids e adulto · proposta", Embaixador,
+// 20/10/2026): um painel neutro para os dois públicos, com o chão e os cartões da paleta Kids e as
+// peças de cada público na língua dele (embaixador.css, `.emb`). O rodapé é o institucional, com o
+// índice dos Termos (o painel serve aos dois públicos).
+import '../../styles/kids-oferta.css'
+import '../../styles/embaixador.css'
+import { PAINEL_EMBAIXADOR as P } from '../../content/embaixador'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import Footer from '../Footer.astro'
+
+interface Props {
+  title: string
+  description: string
+  canonical: string
+  /** Com o painel aberto: os atalhos do topo. */
+  painel?: boolean
+  bonus?: boolean
+}
+const { title, description, canonical, painel = false, bonus = false } = Astro.props
+---
+<BaseLayout title={title} description={description} canonical={canonical} noindex htmlClass="theme-kids">
+  <div class="emb">
+    <a class="emb-pular" href="#conteudo">{P.pular}</a>
+    <header class="emb-topo">
+      <div class="emb-topo__barra">
+        <a class="emb-marca" href="#topo" aria-label={P.topo.marcaAria}>
+          <img src="/logo_white.svg" alt={P.topo.logoAlt} width="515" height="44" decoding="async" />
+          <span>{P.topo.programa}</span>
+        </a>
+        {painel && (
+          <nav class="emb-nav" aria-label={P.topo.navAria}>
+            {bonus && <a class="emb-nav__link" href="#bonus">{P.topo.bonus}</a>}
+            <a class="emb-nav__link" href="#inclui">{P.topo.inclui}</a>
+            <a class="emb-btn emb-topo-cta" href="#painel">{P.topo.cta}</a>
+          </nav>
+        )}
+      </div>
+    </header>
+    <main id="conteudo"><slot /></main>
+  </div>
+  <Footer />
+</BaseLayout>

@@ -19,6 +19,14 @@ Assinantes com ambas as chaves interagem normalmente; após perder a assinatura,
 voltam à leitura. Não adicionar a chave visitante ao `accessConfig` persistido:
 isso ampliaria a autorização de escrita por acidente.
 
+**Mural adulto visitante (20/10/2026, presente adulto):** mesma regra do Kids na Mostra
+`mural-dos-criadores-adulto` (space `adult`, `community_gated` com `adult-mural-dos-criadores`):
+`readConfig` acrescenta só na LEITURA a chave `adult-mural-dos-criadores-visitante`. A visita lê
+canais, jogos e comentários; publicar (o `canInteractChannel` do destino adulto), comentar e reagir
+usam o `accessConfig` persistido e exigem o pleno. Visita Kids não abre a Mostra adulta e
+vice-versa. Jogo publicado e `/jogar` não dependem do acesso do autor (nos dois públicos). Teste:
+`tests/integration/adult-mural-visitor.test.ts`.
+
 ## O que é
 
 **Comunidade em FÓRUM** (só back-end/API; os front-ends são o **[@sistemazero/community](../community)**

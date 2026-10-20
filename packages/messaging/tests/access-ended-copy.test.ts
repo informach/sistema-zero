@@ -19,6 +19,9 @@ function readable(key: string): string {
 const CONTRACTS = {
   'gift-expiry-2d': ['nome', 'data', 'link'],
   'gift-expired': ['nome', 'link'],
+  // Presente adulto (20/10/2026): o members manda as MESMAS variáveis do Kids.
+  'gift-expiry-2d-adult': ['nome', 'data', 'link'],
+  'gift-expired-adult': ['nome', 'link'],
   'subscription-ended-kids': ['nome', 'link'],
   'subscription-ended-adult': ['nome', 'link'],
   'profile-turned-18': ['nome', 'nome_perfil', 'link'],
@@ -50,6 +53,20 @@ describe('fim do acesso e perfil que fez 18 anos (20/10/2026)', () => {
         'O que foi feito continua na conta: o perfil da criança, os projetos e os jogos publicados no Mural.',
         'Com a assinatura, a criança segue de onde parou e continua nos próximos cursos.',
         'Ver como continuar',
+      ],
+      // Copy do Canvas aprovado (presente adulto, quadro E-mails).
+      'gift-expiry-2d-adult': [
+        "subject: '{{nome}}, o presente de 7 dias termina em {{data}}'",
+        'O acesso de presente ao <strong>Cadê Todo Mundo</strong> e ao <strong>Mural adulto</strong> termina em <strong>{{data}}</strong>.',
+        'Se ainda falta uma parte do jogo, estes dois dias servem para terminar e publicar. Depois do fim, os seus projetos continuam guardados na conta. Para seguir com os próximos cursos, a assinatura usa este mesmo e-mail.',
+        'Ver como continuar na Comunidade',
+      ],
+      'gift-expired-adult': [
+        "subject: 'O presente de 7 dias terminou, {{nome}}'",
+        'O que você fez continua na conta: os projetos e o progresso no curso.',
+        'Com a assinatura da Comunidade dos Criadores, você segue de onde parou, com os próximos cursos, o Estúdio e o Mural. São 7 etapas, e cada uma põe ferramentas novas no seu Estúdio.',
+        'Ver como continuar',
+        '7 dias de garantia na assinatura. Cancele quando quiser.',
       ],
       'subscription-ended-kids': [
         "subject: 'A assinatura da Comunidade terminou, {{nome}}'",
@@ -84,6 +101,16 @@ describe('fim do acesso e perfil que fez 18 anos (20/10/2026)', () => {
       expect(readable(key)).not.toContain('presente de 7 dias termina')
     }
     expect(source).not.toContain('no dia da aprovação')
+  })
+
+  test('o presente adulto fala com a própria pessoa, sem o perfil da criança', () => {
+    expect(readable('gift-expiry-2d-adult')).toContain('Cadê Todo Mundo')
+    for (const key of ['gift-expiry-2d-adult', 'gift-expired-adult'] as const) {
+      const text = readable(key)
+      expect(text).not.toContain('Cadê Todo Mundo?')
+      expect(text).not.toMatch(/criança|filho|responsável/i)
+      expect(text).toMatch(/você|seus projetos/)
+    }
   })
 
   test('Light Copy: sem exclamação, travessão, pergunta, emoji ou palavras vetadas', () => {

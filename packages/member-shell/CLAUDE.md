@@ -1298,8 +1298,17 @@ linkEmailSent?}` — URLs ABSOLUTAS, o app não conhece a base do funil; `create
 o e-mail do link saiu. ⚠️ **`emailPending`**: o e-mail já é de um embaixador e a plataforma não
 verifica e-mail, então o referrals NÃO vincula — o magic-link vai para a caixa do dono e a resposta
 vem SEM links; o app precisa ter estado próprio p/ isso, senão vira "não cadastrado" mudo).
-O kids embrulha o shim com `requireParentGateAccountOnly` (tela exclusiva dos pais); o community
-adulto não monta a UI hoje.
+O kids embrulha o shim com `requireParentGateAccountOnly` (tela exclusiva dos pais).
+**Presente Kids e adulto (20/10/2026):** a view ganhou `ambassador.shareUrls?: AmbassadorShareUrls`
+(`{ kids, adult }`, tipo do `@sistemazero/core/referrals`); o `shareUrl` fica (é o Kids) para
+tolerar referrals antigo, e quem renderiza cai nele quando `shareUrls` falta. O handler repassa o
+corpo inteiro (teste `tests/ambassador-me-route.test.ts`). O community adulto agora monta a seção
+"Embaixador" em Meu perfil: lê no servidor com `getAmbassadorEnrollmentReadonly()` (sem refresh
+nem cookie, só na sessão da própria conta) e escreve pelo shim `api/embaixador`, embrulhado com
+`requireOwnAdultAccount` (sem perfil nem claim Kids; GET e POST recusam QUALQUER sessão de suporte,
+até no modo escrita, porque o `pageUrl` é a capability-URL que troca a chave Pix).
+`hub.getSpaceReadonly(slug)` (RSC, sem refresh) é a leitura do espaço que o cabeçalho do Mural
+adulto usa para esconder "Publicar um jogo meu" do visitante (`canInteract: false`).
 
 **Quota compartilhada de IA:** `consumeAiQuota` em server/ai-quota.ts continua servindo
 studio-describe e os consumidores existentes. Descrição do Mural recusada permite escrita
