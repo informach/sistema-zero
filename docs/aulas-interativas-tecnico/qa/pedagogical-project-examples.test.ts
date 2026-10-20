@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   isLearningManifest,
+  isSectionExecutionRule,
   readManifestStudioProjectExamples,
   type SectionJavaScriptProjectCheck,
 } from '../../../packages/core/src/learning'
@@ -42,7 +43,8 @@ for (const [course, lesson] of pilots) {
     )
     for (const section of manifest.sections) {
       const checks = (section.completion?.projectChecks ?? []).filter(
-        (check): check is SectionJavaScriptProjectCheck => check.programmingLanguage !== 'python',
+        (check): check is SectionJavaScriptProjectCheck =>
+          check.programmingLanguage !== 'python' && !isSectionExecutionRule(check.rule),
       )
       if (!checks.length) continue
       const binding = registry.sections[section.key]
