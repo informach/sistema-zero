@@ -2,6 +2,8 @@
 
 Situação em 20/10/2026. Este documento orienta a revisão das gravações; não declara todos os cursos prontos para regravar nem aprovados em staging.
 
+Escopo confirmado pela autora: os roteiros existentes estavam bons. Preservar as falas gravadas, a sequência e a montagem. Ajustar o roteiro apenas no trecho de verificar os objetivos que mudou, e melhorar os objetivos dos manifestos. A revisão de coerência não autoriza reescrever as aulas nem pedir regravação geral. Quando uma mudança real de interface/verificação exigir complemento, apontar somente o trecho e o motivo concretos.
+
 Adicionar Python não exige refazer todas as aulas JavaScript. JavaScript continua sendo o padrão e mantém seus recursos. É preciso comparar os trechos que mostram a plataforma com a interface validada e conferir o roteiro junto do manifesto da mesma aula.
 
 | Área | Mudança | Trechos a conferir |
@@ -19,7 +21,7 @@ Adicionar Python não exige refazer todas as aulas JavaScript. JavaScript contin
 
 O lote de nove arquivos integrado em `1389d1b4f` alterou o Dia 1 do Desafio Primeiro Jogo/Farol, seção `andar` ("Faça seu personagem andar"). O roteiro, seu resumo, a fonte de conteúdo e o manifesto desse dia foram atualizados juntos.
 
-Mantém dois critérios de montagem e acrescenta quatro verificações de direção. Cor, arte, posição e magnitude da velocidade ficam livres. A demonstração apresenta `3` como exemplo e testa as quatro setas. Soltar a tecla e mostrar a parada é orientação da demonstração, não um novo critério avaliado.
+Mantém dois critérios de montagem e acrescenta quatro verificações de direção. Na avaliação, cor, arte, posição e magnitude da velocidade não precisam copiar a demonstração; os valores precisam produzir o comportamento pedido. No roteiro, a professora mostra a velocidade `3` e manda colocar esse valor, com uma instrução concreta por vez, e testa as quatro setas. Soltar a tecla e mostrar a parada é orientação da demonstração, não um novo critério avaliado.
 
 Esse lote não reescreveu os Dias 2/3, as seções de borda/entrega nem todos os demais cursos. As propostas de Cadê Todo Mundo que ficaram fora do commit não devem ser tratadas como material final ou publicado. Atualizar um arquivo local também não comprova sua importação e publicação no Admin.
 
@@ -35,3 +37,7 @@ Antes de gravar uma demonstração de tela, registrar para aquela aula:
 Uma mudança apenas no executor ou no critério do servidor não exige automaticamente regravar vídeo: primeiro conferir se a demonstração continua correta e suficiente. Se só um trecho deixou de corresponder, atualizar esse trecho, sem presumir que o curso inteiro precisa ser refeito.
 
 Enquanto esses itens estão pendentes, é possível preparar roteiros, exemplos e explicações conceituais. Não considerar liberada a gravação de um percurso ainda sujeito a ajustes de tela, roteiro ou manifesto. Este registro será atualizado por lote; o aceite funcional geral do Python continua separado.
+
+## Instrução guiada e avaliação flexível
+
+Direção explicitada pela autora em 20/10: a flexibilidade dos objetivos não deve transformar o passo a passo em uma escolha aberta. O roteiro especifica o bloco, o campo e o valor mostrado pela professora, um comando por vez. Por exemplo: "Coloque 3 na velocidade." A verificação pode aceitar outro valor coerente que cumpra o comportamento, sem exigir esse mesmo número. Aplicar a mesma separação a cores e sprites. Não pedir que a criança decida valores durante uma montagem guiada apenas porque a avaliação permite variação.
