@@ -1,6 +1,7 @@
 import { ProjectList } from '@sistemazero/studio/project-list'
 import type { JSX } from 'react'
 import { lazy, Suspense, useEffect, useState } from 'react'
+import { editorDemoPath } from './editorNavigation'
 import { DemoHostChrome, HOST_DEMO } from './hostChromeDemo'
 
 const EditorPlayground = lazy(async () => {
@@ -48,7 +49,7 @@ export function LandingApp(): JSX.Element {
       professional
       showExamples
       onOpenProject={(projectId) => {
-        window.history.pushState(null, '', `/editor/${encodeURIComponent(projectId)}`)
+        window.history.pushState(null, '', editorDemoPath(projectId, window.location.search))
         setEditorRequested(true)
       }}
     />

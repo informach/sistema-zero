@@ -298,6 +298,10 @@ test.describe('Sistema Zero Studio — smoke', () => {
   test('Pensa: recolher e abrir preserva editor e histórico', async ({ page }, testInfo) => {
     test.setTimeout(60_000)
     await createProject(page, '/?missao=adiada')
+    await expect(page).toHaveURL(/[?&]missao=adiada(?:&|$)/)
+    await expect(
+      page.getByRole('button', { name: 'Mostrar missão de demonstração', exact: true }),
+    ).toBeVisible()
     await openBridgeScript(page)
     const codigo = page.locator('.monaco-editor .view-lines').first()
     const workspace = await page.getByLabel('Espaço de trabalho do Blockly').elementHandle()
@@ -360,7 +364,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await page.getByRole('button', { name: 'Refazer', exact: true }).click()
     await expect(codigo).toContainText(marker)
 
-    const projectId = page.url().split('/editor/')[1] ?? ''
+    const projectId = decodeURIComponent(new URL(page.url()).pathname.split('/editor/')[1] ?? '')
     expect(projectId).not.toBe('')
     const savedScript = () =>
       page.evaluate(async (id) => {
