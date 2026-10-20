@@ -18,7 +18,7 @@
 
 **Full review de 06/10/2026:** "então" saiu de todas as falas como palavra de ligação (no Farol inteiro ele é o nome de um espaço do bloco Se); no lugar ficaram "por isso" ou duas frases. Três rótulos da ajuda da seção 2 não eram títulos de tutoriais que existem; agora os links usam exatamente os títulos de `docs/como-fazer/como-fazer.json`: **Como abrir o Mapa da Aventura e os materiais**, **Como abrir uma fase e trocar de parte**, **Como dar mais espaço ao jogo e à experiência**, **Como mostrar o menu e a lista de fases**, **Como continuar uma fase** e **Como pedir ajuda à equipe**. As pontes das experiências terminam em "Quando terminar, clique em Próxima parte.". Na experiência do quadro, "Olha a regra aqui embaixo" virou "Olha a regra do movimento", porque a posição muda com o tamanho da tela. Essa revisão de fala antecedeu a retirada das seções de velocidade registrada abaixo.
 
-**Personalização ampliada, 06/10/2026:** as seções `tanto` e `velocidade` foram retiradas por decisão do responsável. Seus vídeos, pontes e experiência estão em `retireBlockKeys`. O movimento usa 3 na demonstração; esse número não é uma resposta obrigatória. A personalização se concentra no Dia 3: visuais, avisos e lugar da chave. As demais chaves e o progresso são preservados.
+**Personalização ampliada, 06/10/2026:** as seções `tanto` e `velocidade` foram retiradas por decisão do responsável. Seus vídeos, pontes e experiência estão em `retireBlockKeys`. A montagem manda manter a velocidade em 3, sem convite para escolher outro valor. A avaliação aceita outros valores coerentes com a direção pedida. A personalização se concentra no Dia 3: visuais, avisos e lugar da chave. As demais chaves e o progresso são preservados.
 
 **Revisão antes da gravação, 13/10/2026:** a fala diz o que chega no bloco e onde clicar (**Ativar controles clássicos** chega com **automáticos no celular**; **Mover sprite** e **Manter o sprite** chegam com **heroi**). A procura de **Enquanto estiver rodando** ganhou o socorro de arrastar um espaço vazio, e a área vem antes do bloco. As retomadas das partes 4 e 6 começam por um gesto da criança que mostra o que falta, e o fim do dia reconhece a conquista depois do envio. Na experiência do quadro, o vídeo aponta o **quadro** passando de 0 para 1 e o **+3** embaixo do personagem, e as descobertas dizem "personagem" (a palavra sprite só é explicada na parte 4). Na do limite, a comparação da janela explica a faixa **fora da tela** que a cena desenha, e o vídeo aponta na regra **Manter o sprite personagem dentro da tela** logo abaixo do bloco que move. No jogo pronto, o vídeo aponta o aviso do alto da tela. As listas de conferência ficaram curtas, as pontes das partes 4 e 6 terminam na saída e o critério das direções diz qual bloco usar. O roteiro ganhou as notas de gravação (aba nova depois do deploy, experiência sem progresso, envio sem envio anterior, selo **Guardado na sua conta** só quando aparece). As durações foram medidas de novo e subiram, sem acelerar.
 
@@ -98,7 +98,7 @@ Anexar somente `docs/aulas-interativas/desafio-primeiro-jogo/mapa-da-aventura.pd
 
 - **Intenção:** aplicação (`application`), com verificação e sem envio.
 - **Por que existe:** montar no jogo o que a experiência mostrou.
-- **Conclui quando:** vídeo e aprovação de dois critérios: as quatro direções e o movimento dentro de A cada quadro do jogo.
+- **Conclui quando:** vídeo e aprovação de seis critérios: dois de montagem (controles com quatro direções e movimento dentro de A cada quadro do jogo) e quatro de comportamento, um para cada direção.
 - **Blocos:** `video-d1-andar` e `ponte-d1-andar`; Estúdio pela `workspaceKey: projeto`. A ajuda opcional que ficava aqui (`ajuda-d1`) entrou no bloco do Mapa em 07/10/2026.
 
 **Ponte do Zappy na página (não gravar):** Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
@@ -109,6 +109,8 @@ apontar a paleta de comandos como o lugar de escolher os blocos, sem pegar nenhu
 primeira montagem do Desafio, que também recebe quem nunca programou; a fala completa está no roteiro.
 
 Com o destino à vista antes de cada bloco: controles com só as quatro direções no fim de Ao iniciar; movimento dentro de **A cada quadro do jogo**, logo abaixo de Desenhar o cenário praia-tropical. Primeiro a área **Enquanto estiver rodando**, com o socorro de arrastar um espaço vazio, e depois o bloco dentro dela. A fala diz o que chega em cada bloco e onde clicar: **Ativar controles clássicos** chega com **automáticos no celular** (trocar para **só as quatro direções**) e **Mover sprite** chega com **heroi** (trocar para **personagem**).
+
+**Correção de montagem, 20/10/2026:** conservar a âncora “A velocidade já vem em 3; deixe assim.” e retirar a inserção que convidava a escolher outro tamanho de passo. Ensinar um comando por vez. Conservar o teste e a sequência já narrados; os quatro casos internos da avaliação não exigem novas falas. A avaliação continua aceitando outros valores coerentes, cores e imagens; não exigir velocidade literal 3. Preservar as falas já gravadas e as âncoras dos avatares; limitar eventual fala complementar ao fluxo de verificação que mudou, sem afirmar gravação ou publicação concluída.
 
 ### Seção 5. Até onde ele pode ir?
 
@@ -153,7 +155,7 @@ Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstra�
 
 Preservar as seções `apresentacao`, `caderno` e `borda` (agora a última, com a entrega), a chave `materiais-farol`, a chave `projeto` e a cadeia `desafio-primeiro-jogo`. Preservar também `quadro`, `andar` e `limite`. Retirar somente `tanto` e `velocidade`, com seus blocos aposentados explicitamente, sem apagar o progresso anterior. A pessoa programa as regras de movimento, não a arte nem o barco preparado.
 
-Valores da demonstração: controles com as quatro direções, personagem, velocidade 3 e movimento antes do limite de tela. A magnitude pode variar, desde que respeite a direção pedida; zero não demonstra movimento. O Dia 2 assume esse trabalho enviado; a retomada preparada só é alternativa quando não há envio anterior.
+Valores ensinados na montagem: controles com as quatro direções, personagem, velocidade 3 e movimento antes do limite de tela. Na avaliação, a magnitude pode variar, desde que respeite a direção pedida; zero não demonstra movimento. O Dia 2 assume esse trabalho enviado; a retomada preparada só é alternativa quando não há envio anterior.
 
 No Admin, a aula antiga `boas-vindas` sai do curso sem apagar progresso nem certificados; ver [Atualização de aulas existentes](../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md#atualização-de-aulas-existentes). Anexar o PDF antes de gravar a seção 2. Os links do Como Fazer abrem na mesma aba e voltam para a aula.
 

@@ -80,7 +80,7 @@
       {
         "kind": "step",
         "title": "2. Programe o movimento",
-        "text": "Encontre a área <b>Enquanto estiver rodando</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Dentro dela, no bloco <b>A cada quadro do jogo</b>, deixe à vista o <b>Desenhar o cenário <span class='nome'>praia-tropical</span></b>.<br/><b>Jogo 2D &gt; Movimento &gt; Movimentos prontos.</b> Pegue <b>Mover sprite em 4 direções com setas</b> e solte logo abaixo de <b>Desenhar o cenário <span class='nome'>praia-tropical</span></b>.<br/>O bloco chega com <b>heroi</b>: clique em <b>heroi</b> e escolha <b>personagem</b>. Nesta demonstração, a velocidade é <b>3</b>. Você pode escolher outro tamanho de passo. Teste se o personagem anda na direção de cada seta."
+        "text": "Encontre a área <b>Enquanto estiver rodando</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Dentro dela, no bloco <b>A cada quadro do jogo</b>, deixe à vista o <b>Desenhar o cenário <span class='nome'>praia-tropical</span></b>.<br/><b>Jogo 2D &gt; Movimento &gt; Movimentos prontos.</b> Pegue <b>Mover sprite em 4 direções com setas</b> e solte logo abaixo de <b>Desenhar o cenário <span class='nome'>praia-tropical</span></b>.<br/>O bloco chega com <b>heroi</b>: clique em <b>heroi</b> e escolha <b>personagem</b>. A velocidade já vem em <b>3</b>; deixe assim."
       }
     ]
   },

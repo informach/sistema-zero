@@ -314,9 +314,11 @@ versões ainda não confirmadas. A ordem completa está em [Avatares nos vídeos
 
 ## 7. Como manter as decisões vivas
 
-**Evidência e liberdade, 19/10/2026:** uma solução privada é uma possibilidade de cumprir a parte,
+**Montagem concreta e avaliação flexível, 20/10/2026:** na montagem guiada, a professora mostra e manda usar um valor, uma cor ou uma imagem específicos, com um comando por vez. Se a velocidade já vem em 3, dizer “A velocidade já vem em 3; deixe assim.”; se precisa mudar, dizer “Coloque 3 na velocidade.” Não acrescentar “você pode escolher outro” nessa montagem. Dar cada gesto e cada teste separadamente, com tempo para acompanhar. As escolhas da seção de personalização continuam seguindo sua orientação própria. Essa precisão da fala não restringe a avaliação ao exemplo da professora.
+
+**Evidência e liberdade na avaliação, 19/10/2026:** uma solução privada é uma possibilidade de cumprir a parte,
 não um modelo visual obrigatório. Cores, imagens, mensagens e magnitude da velocidade são livres
-quando a intenção continua atendida. Um movimento pedido precisa acontecer na direção coerente:
+na avaliação, quando a intenção continua atendida. Um movimento pedido precisa acontecer na direção coerente:
 no Jogo 2D, Y menor sobe e Y maior desce; zero não cumpre um objetivo de movimento. Uma implementação
 equivalente que produz o mesmo efeito também deve passar quando o objetivo pede o efeito. Conferir
 a convenção de eixos de cada ambiente antes de reutilizar uma regra.
