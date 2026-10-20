@@ -10,23 +10,25 @@ test('API e PostgreSQL preservam aceite, execução, conclusão e reabertura pel
   const fixture = await request.get('/fixture').then((r) => r.json())
   const headers = { 'x-sz-viewer': fixture.viewerId }
   await page.goto('/native.html')
-  await page.getByRole('button', { name: /^Continuar / }).click()
-  await expect(page.getByRole('heading', { name: 'Vamos retomar?', exact: true })).toBeVisible({
+  await page.getByRole('button', { name: /^(Continuar|Conferir o plano) / }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Deu um tropeço. A sua ideia está guardada.', exact: true }),
+  ).toBeVisible({
     timeout: 30_000,
   })
   const interrupted = await request.get('/fixture/state').then((r) => r.json())
   expect(interrupted.revision).toBeNull()
   expect(interrupted.operation.status).toBe('failed')
   await page.getByRole('button', { name: 'Tentar de novo', exact: true }).click()
-  await expect(
-    page.getByRole('heading', { name: 'Confira este caminho', exact: true }),
-  ).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole('heading', { name: /^Este é o plano do / })).toBeVisible({
+    timeout: 30_000,
+  })
   const before = await request.get('/fixture/state').then((r) => r.json())
   expect(before.revision).toBeNull()
   expect(before.draft.status).toBe('ready')
   expect(before.providerCalls).toBeGreaterThanOrEqual(4)
-  const plan = page.getByRole('region', { name: 'Meu caminho', exact: true })
-  await expect(plan.locator('li')).toHaveCount(3)
+  const plan = page.getByRole('region', { name: 'O mapa das missões', exact: true })
+  await expect(plan.getByRole('button', { name: /^Missão \d+, / })).toHaveCount(3)
   await page.getByRole('button', { name: 'Este é o meu jogo', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Continuar no Estúdio', exact: true }),
@@ -83,7 +85,7 @@ test('API e PostgreSQL preservam aceite, execução, conclusão e reabertura pel
   await page.reload()
   await page.getByRole('button', { name: /^Continuar / }).click()
   await expect(
-    page.getByRole('heading', { name: 'Seu jogo está pronto!', exact: true }),
+    page.getByRole('heading', { name: 'O seu jogo está pronto', exact: true }),
   ).toBeVisible()
   const final = await request
     .get(`/api/pensa/projects/${fixture.projectId}`, { headers })

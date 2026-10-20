@@ -6,6 +6,7 @@
 import type { MoldaHostAdapter } from '@sistemazero/molda'
 import { MOLDA_MAX_READ_VERSION } from '@sistemazero/molda/assets'
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
+import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -23,6 +24,7 @@ import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import {
   canOpenPensaMission,
   usePensaMissionHandoff,
+  usePensaMissionOutline,
   usePensaMissionSession,
 } from './use-pensa-mission-session'
 
@@ -92,6 +94,7 @@ export function MoldaClient({
   const handoff = usePensaMissionHandoff(taskId, 'molda', viewerId)
   // "Continuar no Estúdio" quando a próxima missão é em outra oficina.
   const navigate = useCallback((path: string) => router.push(path), [router])
+  const outline = usePensaMissionOutline(handoff.data, viewerId)
   const missionSession = usePensaMissionSession({
     handoff: handoff.data,
     viewerId,
@@ -100,6 +103,7 @@ export function MoldaClient({
     retry: handoff.retry,
     navigate,
     narrationEnabled,
+    outline,
   })
   useEffect(() => {
     if (!initialAssetId) return
@@ -308,36 +312,44 @@ export function MoldaClient({
         />
       ) : (
         <>
-          {missionSession && persistence ? (
-            <MoldaMissionGuide
-              session={missionSession}
-              persistence={persistence}
-              onOpenAsset={(assetId) =>
-                setOpenRequest((current) => ({ assetId, revision: current.revision + 1 }))
-              }
-              hasOpenCreation={async () => {
-                const gallery: MoldaGuidePersistence = persistence
-                const all = gallery.listSummaries
-                  ? await gallery.listSummaries()
-                  : await gallery.loadAll()
-                return all.some((asset) => mod.isMoldaAssetOpen(asset.id))
-              }}
-            />
-          ) : null}
           {/* A região viva do selo fica no HOST (sempre montada; só offline/erro falam). */}
           <HostChromeAnnouncer text={announcement} />
-          {/* O wrapper dá ao `h-full` do Molda uma altura definida. ⚠️ O Provider vem do MESMO
-              módulo do `import()` que montou o app: dois módulos seriam dois contextos. */}
-          <div className="flex min-h-0 flex-1 flex-col">
-            <mod.MoldaHostChromeProvider value={hostChrome}>
-              <mod.MoldaApp
-                key={openRequest.revision}
-                adapter={adapter}
-                onWorkspaceChange={setWorkspaceActive}
-                {...(persistence ? { persistence } : {})}
-              />
-            </mod.MoldaHostChromeProvider>
-          </div>
+          {/* A missão do Pensa é uma coluna PRÓPRIA à direita (ou uma faixa embaixo, na tela
+              estreita): nunca cobre as ferramentas, o palco nem Peças e propriedades, que
+              encolhem juntos no espaço que sobra. */}
+          <PensaMissionLayout
+            panel={
+              missionSession && persistence ? (
+                <MoldaMissionGuide
+                  session={missionSession}
+                  persistence={persistence}
+                  onOpenAsset={(assetId) =>
+                    setOpenRequest((current) => ({ assetId, revision: current.revision + 1 }))
+                  }
+                  hasOpenCreation={async () => {
+                    const gallery: MoldaGuidePersistence = persistence
+                    const all = gallery.listSummaries
+                      ? await gallery.listSummaries()
+                      : await gallery.loadAll()
+                    return all.some((asset) => mod.isMoldaAssetOpen(asset.id))
+                  }}
+                />
+              ) : null
+            }
+          >
+            {/* O wrapper dá ao `h-full` do Molda uma altura definida. ⚠️ O Provider vem do MESMO
+                módulo do `import()` que montou o app: dois módulos seriam dois contextos. */}
+            <div className="flex min-h-0 flex-1 flex-col">
+              <mod.MoldaHostChromeProvider value={hostChrome}>
+                <mod.MoldaApp
+                  key={openRequest.revision}
+                  adapter={adapter}
+                  onWorkspaceChange={setWorkspaceActive}
+                  {...(persistence ? { persistence } : {})}
+                />
+              </mod.MoldaHostChromeProvider>
+            </div>
+          </PensaMissionLayout>
         </>
       )}
     </div>

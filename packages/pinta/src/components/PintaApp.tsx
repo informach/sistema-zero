@@ -3,6 +3,7 @@
  * galeria ⇄ editor. O host só passa o `adapter` (tema/capabilities) e chama
  * `setPintaStorageNamespace(viewerId)` ANTES de montar.
  */
+import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../core/copy'
@@ -250,22 +251,29 @@ export function PintaApp({
               }
             }}
           />
-          {resolvedAdapter.taskSession ? (
-            <TaskBriefPanel
-              session={sessaoDoGuia ?? resolvedAdapter.taskSession}
-              outputMissing={taskOutputMissing}
-              currentCreationId={view.screen === 'editor' ? view.assetId : null}
-              onRecreate={recreateTaskAsset}
-              onRelink={() => setView({ screen: 'gallery' })}
-              onReturn={returnToPlan}
-            />
-          ) : null}
-          {view.screen === 'gallery' ? (
-            <GalleryScreen />
-          ) : (
-            // key por asset: trocar de desenho recria o editor (stores novas).
-            <EditorScreen key={view.assetId} assetId={view.assetId} />
-          )}
+          {/* A missão do Pensa é uma coluna PRÓPRIA à direita (ou uma faixa embaixo, na tela
+              estreita): nunca cobre a paleta, as camadas nem a linha de animações. */}
+          <PensaMissionLayout
+            panel={
+              resolvedAdapter.taskSession ? (
+                <TaskBriefPanel
+                  session={sessaoDoGuia ?? resolvedAdapter.taskSession}
+                  outputMissing={taskOutputMissing}
+                  currentCreationId={view.screen === 'editor' ? view.assetId : null}
+                  onRecreate={recreateTaskAsset}
+                  onRelink={() => setView({ screen: 'gallery' })}
+                  onReturn={returnToPlan}
+                />
+              ) : null
+            }
+          >
+            {view.screen === 'gallery' ? (
+              <GalleryScreen />
+            ) : (
+              // key por asset: trocar de desenho recria o editor (stores novas).
+              <EditorScreen key={view.assetId} assetId={view.assetId} />
+            )}
+          </PensaMissionLayout>
         </ToastProvider>
       </PintaAppProvider>
     </div>

@@ -1,8 +1,13 @@
 import { afterEach, expect, test } from 'bun:test'
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { handoffFixture, PROFILE_ID } from '../../pensa/src/components/pensa.fixture'
+import {
+  handoffFixture,
+  PROFILE_ID,
+  projectFixture,
+} from '../../pensa/src/components/pensa.fixture'
 import {
   usePensaMissionHandoff,
+  usePensaMissionOutline,
   usePensaMissionSession,
 } from '../src/components/kids/use-pensa-mission-session'
 import type { CloudPeek } from '../src/lib/creations-cloud'
@@ -195,4 +200,116 @@ test('a sessão de arte exibe e aceita somente os elementos da missão aberta', 
     result.current!.onBindCreation({ assetSlotId: otherId, creationId: 'arte' }),
   ).rejects.toThrow('missão atual')
   expect(confirmed).toBe(0)
+})
+
+/*
+ * O painel nas oficinas (20/10/2026): "missão N de M", o nome da próxima e quem recebe a arte
+ * numa equipe. Tudo LIDO do que o servidor devolveu; nada decidido no navegador.
+ */
+const SECOND_MISSION = '10000000-0000-4000-8000-000000000007'
+
+test('a contagem e a próxima missão vêm do plano aceito, na ordem do plano', async () => {
+  const handoff = handoffFixture()
+  handoff.nextAction = {
+    type: 'mission',
+    missionId: SECOND_MISSION,
+    destination: 'pinta',
+    mode: 'build',
+  }
+  const requested: string[] = []
+  replaceFetch(async (input, init) => {
+    requested.push(`${String(input)} ${new Headers(init?.headers).get('x-sz-viewer')}`)
+    return Response.json(projectFixture())
+  })
+  const outline = renderHook(() => usePensaMissionOutline(handoff, PROFILE_ID))
+  await waitFor(() => expect(outline.result.current).not.toBeNull())
+  expect(requested).toEqual([`/api/pensa/projects/${handoff.project.id} ${PROFILE_ID}`])
+  expect(outline.result.current?.missions.map((mission) => mission.title)).toEqual([
+    'Prepare o Estúdio para seu jogo',
+    'Prepare os seis pares de cartas',
+    'Experimente seu jogo',
+  ])
+  const { result } = renderHook(() =>
+    usePensaMissionSession({
+      handoff,
+      viewerId: PROFILE_ID,
+      cloud: null,
+      update() {},
+      retry() {},
+      navigate() {},
+      outline: outline.result.current,
+    }),
+  )
+  expect(result.current?.order).toEqual({ index: 1, total: 3 })
+  expect(result.current?.nextMission).toEqual({
+    title: 'Prepare os seis pares de cartas',
+    destination: 'pinta',
+  })
+  // Fora de equipe ninguém recebe a arte.
+  expect(result.current?.handoffTo).toBeNull()
+})
+
+test('sem o plano (ou com o plano de outra revisão) o painel fica sem número', async () => {
+  const handoff = handoffFixture()
+  const other = projectFixture()
+  if (!other.revision) throw new Error('Missing fixture revision')
+  other.revision = { ...other.revision, id: '10000000-0000-4000-8000-000000000099' }
+  let calls = 0
+  replaceFetch(async () => {
+    calls++
+    return Response.json(other)
+  })
+  const outline = renderHook(() => usePensaMissionOutline(handoff, PROFILE_ID))
+  await waitFor(() => expect(calls).toBe(1))
+  await new Promise((resolve) => setTimeout(resolve, 20))
+  expect(outline.result.current).toBeNull()
+  const { result } = renderHook(() =>
+    usePensaMissionSession({
+      handoff,
+      viewerId: PROFILE_ID,
+      cloud: null,
+      update() {},
+      retry() {},
+      navigate() {},
+    }),
+  )
+  expect(result.current?.order).toBeNull()
+  expect(result.current?.nextMission).toBeNull()
+})
+
+test('em equipe, a artista vê quem programa e recebe a arte', () => {
+  const PROGRAMMER = '10000000-0000-4000-8000-000000000055'
+  const handoff = handoffFixture()
+  handoff.team = {
+    ...handoff.team,
+    programmerProfileId: PROGRAMMER,
+    artistProfileIds: [PROFILE_ID],
+    memberCount: 1,
+    people: [
+      ...handoff.team.people,
+      { profileId: PROGRAMMER, firstName: 'Bia', photoUrl: null, owner: false, joinedAt: null },
+    ],
+  }
+  const session = (next = handoff) =>
+    renderHook(() =>
+      usePensaMissionSession({
+        handoff: next,
+        viewerId: PROFILE_ID,
+        cloud: null,
+        update() {},
+        retry() {},
+        navigate() {},
+      }),
+    ).result.current
+  expect(session()?.handoffTo).toEqual({ name: 'Bia' })
+  // Sem primeiro nome, a mesma palavra da janela da equipe.
+  const unnamed = structuredClone(handoff)
+  unnamed.team.people = unnamed.team.people.map((person) =>
+    person.profileId === PROGRAMMER ? { ...person, firstName: null } : person,
+  )
+  expect(session(unnamed)?.handoffTo).toEqual({ name: null })
+  // Quem programa não entrega a si mesmo.
+  const own = structuredClone(handoff)
+  own.team.programmerProfileId = PROFILE_ID
+  expect(session(own)?.handoffTo).toBeNull()
 })

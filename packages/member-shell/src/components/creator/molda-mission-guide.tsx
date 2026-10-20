@@ -74,68 +74,101 @@ export function MoldaMissionGuide({
       key={`${session.mission.id}:${session.mission.contentRevision}`}
       session={safeSession}
       recovery={error ? <p role="alert">{error}</p> : null}
+      note="folded"
     >
       {session.assetSlots.map((slot) => {
         const creationId =
           session.progress.deliveries.find((delivery) => delivery.assetSlotId === slot.id)?.creation
             .creationId ?? ''
         return (
-          <div key={slot.id}>
-            <label>
-              {slot.name}
-              <select
-                value={creationId}
-                disabled={
-                  busy || Boolean(session.blockedReason) || session.progress.status === 'completed'
-                }
-                onChange={(event) => {
-                  const chosenId = event.target.value
-                  if (!chosenId || busy) return
-                  setBusy(true)
-                  setError(null)
-                  void (async () => {
-                    if (await hasOpenCreation())
-                      throw guideError(
-                        'Guarde e feche a criação antes de escolher o resultado da missão.',
+          <div key={slot.id} className="sz-tool-mission-content__item sz-tool-mission-panel__slot">
+            <span
+              aria-hidden="true"
+              className={`sz-tool-mission-panel__mark${creationId ? ' is-done' : ''}`}
+            >
+              {creationId ? <CheckMark /> : null}
+            </span>
+            <div className="sz-tool-mission-panel__slot-body">
+              <label>
+                <span>
+                  {slot.name}
+                  {creationId ? ' · criação escolhida' : null}
+                </span>
+                <select
+                  value={creationId}
+                  disabled={
+                    busy ||
+                    Boolean(session.blockedReason) ||
+                    session.progress.status === 'completed'
+                  }
+                  onChange={(event) => {
+                    const chosenId = event.target.value
+                    if (!chosenId || busy) return
+                    setBusy(true)
+                    setError(null)
+                    void (async () => {
+                      if (await hasOpenCreation())
+                        throw guideError(
+                          'Guarde e feche a criação antes de escolher o resultado da missão.',
+                        )
+                      const selected = await persistence.load(chosenId)
+                      if (!selected || selected.kind !== slot.kind)
+                        throw guideError(
+                          'Escolha uma criação guardada do tipo pedido nesta missão.',
+                        )
+                      await session.onBindCreation({ assetSlotId: slot.id, creationId: chosenId })
+                    })()
+                      .catch((cause: unknown) =>
+                        setError(
+                          cause instanceof Error
+                            ? cause.message
+                            : 'Não consegui guardar sua escolha.',
+                        ),
                       )
-                    const selected = await persistence.load(chosenId)
-                    if (!selected || selected.kind !== slot.kind)
-                      throw guideError('Escolha uma criação guardada do tipo pedido nesta missão.')
-                    await session.onBindCreation({ assetSlotId: slot.id, creationId: chosenId })
-                  })()
-                    .catch((cause: unknown) =>
-                      setError(
-                        cause instanceof Error
-                          ? cause.message
-                          : 'Não consegui guardar sua escolha.',
-                      ),
-                    )
-                    .finally(() => setBusy(false))
-                }}
-              >
-                <option value="">Escolha uma criação guardada</option>
-                {assets
-                  .filter((asset) => asset.kind === slot.kind)
-                  .map((asset) => (
-                    <option value={asset.id} key={asset.id}>
-                      {asset.name}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <p>{slot.description}</p>
-            {creationId ? (
-              <button
-                type="button"
-                className="sz-tool-pill sz-tool-pill--outline"
-                onClick={() => onOpenAsset(creationId)}
-              >
-                Abrir {slot.name}
-              </button>
-            ) : null}
+                      .finally(() => setBusy(false))
+                  }}
+                >
+                  <option value="">Escolha uma criação guardada</option>
+                  {assets
+                    .filter((asset) => asset.kind === slot.kind)
+                    .map((asset) => (
+                      <option value={asset.id} key={asset.id}>
+                        {asset.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <p className="sz-tool-mission-panel__slot-note">{slot.description}</p>
+              {creationId ? (
+                <button
+                  type="button"
+                  className="sz-tool-mission-panel__btn sz-tool-mission-panel__btn--small"
+                  onClick={() => onOpenAsset(creationId)}
+                >
+                  Abrir {slot.name}
+                </button>
+              ) : null}
+            </div>
           </div>
         )
       })}
     </PensaMissionPanel>
+  )
+}
+
+function CheckMark() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
   )
 }

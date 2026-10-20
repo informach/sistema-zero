@@ -1843,6 +1843,15 @@ dormindo + título (o nome do produto) + pílula **"Parte da Comunidade"** + pr�
   de tela do `src/` e trava a pílula, o título, o pedido ao responsável, o botão, o
   `utm_content=ferramenta-` e o posto vindo da política (seed: Estúdio e Pinta no Construtor(a),
   Pensa no Inventor(a), Molda no Explorador(a) de Mundos).
+- **Pensa (Canvas "Estados", 20/10/2026):** a prévia virou os três passos que o Pensa faz
+  ("Conte a ideia do jogo, escrevendo ou falando", "Confira o plano que o Zappy monta com você",
+  "Construa uma missão de cada vez no Estúdio, no Pinta e no Molda") em ladrilhos âmbar
+  numerados (`numbered`, opcional no `KidsLockedProduct`; as outras telas seguem com emoji). A
+  antiga prometia "desenhar as telas e o fluxo do jogo". Quem já conquistou lê que os jogos e os
+  planos estão guardados. O posto que falta (`KidsJourneyLockedPensa`) diz "O Pensa abre num
+  próximo posto da Jornada" (`heading`/`detail` opcionais no `KidsJourneyLockedProduct`), e o
+  `KidsPensaUnavailable` virou "O Pensa não abriu agora" com "Tentar de novo" e "Ir para o
+  Estúdio". O cartão da Comunidade não mudou (sem fluxo de "mostrar para quem cuida da conta").
 - ⚠️ **NÃO usar `KidsLockedProduct` na tela genérica `KidsLockedSpace`** (coringa de qualquer
   espaço do hub, que pode ser gateado por curso/cargo e não só pela assinatura: o botão prometeria
   errado); a genérica fica sem CTA. As telas transientes `kids-*-unavailable.tsx` ("tente de
@@ -2388,6 +2397,10 @@ A API usa somente o shim `app/api/pensa/[...path]/route.ts`, que encaminha os ve
 Antes de concluir, reconferir ou vincular uma criação, o host aguarda a gravação na conta por `CreationsCloud.confirm` e lê a revisão salva real. Entregas persistem por missão e `assetSlotId` via `PATCH /missions/:id/deliveries`. Referências não são inventadas nem guardadas em `sessionStorage`. Instalar a extensão recomendada é uma ação explícita no Estúdio; o BFF inspeciona o snapshot autorizado, incluindo extensões instaladas. A criação de uma arte independe de sua integração posterior no jogo.
 
 `pensa-mission-link.ts` inicia com as revisões canônicas de concorrência e não recomeça uma missão concluída. `pensa-next-mission.ts` consulta a próxima ação autorizada no servidor. Não ordene dependências ou decida papéis no browser. A anotação “Onde parei” é persistida no servidor. O recolhimento do painel é uma preferência visual por perfil (`use-pensa-guide-collapsed.tsx`), compartilhada pelas três oficinas.
+
+⭐ **A missão nunca cobre a oficina (20/10/2026, desenho aprovado).** Estúdio, Pinta e Molda montam `PensaMissionLayout` (`@sistemazero/ui/pensa-mission-panel`) em volta da oficina, com o painel como IRMÃO dela. Medida é a largura da área da oficina (container query, não o viewport): a partir de 1100px o painel é uma coluna própria de 360px à direita e a oficina encolhe; recolhido vira um trilho de 64px (lâmpada, "4/9", "Ver missão · título" em pé, seta) que reabre ao toque. Abaixo de 1100px o painel vira uma faixa EMBAIXO da oficina (a coluna rola; a oficina mantém o piso de 34rem das ferramentas embarcadas) e recolhe para a linha "Missão 4/9 · título". Recolhido com recado (erro de gravação, desenho ausente) a linha fica e o recado continua visível. Canvas e editores re-medem sozinhos (ResizeObserver de cada oficina). Provado em Chromium real: nenhum elemento da oficina intersecta o painel, aberto ou recolhido, a 1440px e a 390px.
+
+`usePensaMissionOutline` (em `use-pensa-mission-session.tsx`) lê `GET /api/pensa/projects/:id` só para EXIBIR "missão N de M", o título da próxima missão ("Missão pronta. A próxima é …") e, em equipe, quem programa e recebe a arte (linha lilás). Sem o plano carregado, nada de número inventado: o topo mostra só "Pensa · <jogo>". A ordem e a próxima ação continuam decididas pelo servidor. Cada oficina acrescenta só os controles nativos dela: o Estúdio instala as ferramentas e mostra "Onde parei"; o Pinta lista as partes com "Escolher o desenho aberto"/"Trocar pelo desenho aberto" (nunca "Usar no jogo": ligar o desenho à parte não o leva ao Estúdio, e a barra do editor já tem o "Usar no Estúdio", que faz outra coisa); o Molda escolhe a criação guardada de cada parte. O painel "Peças e propriedades" do Molda segue onde estava: a missão é uma coluna própria, sem abas dentro do Molda.
 
 No Estúdio, restaure a criação da conta antes de propor um projeto vazio quando ela já existe. `gameCreation` e `restoredSaveRevision` vêm do servidor; `pensa-restore-pending.ts` protege contra gravar um rascunho local anterior sobre uma restauração. Não remonte o editor ao atualizar progresso. Pinta/Molda guardam antes de sair; o Molda exige fechar a criação pelo Voltar nativo antes de conferir, vincular ou navegar.
 
