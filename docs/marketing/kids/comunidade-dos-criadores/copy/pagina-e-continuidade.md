@@ -30,11 +30,11 @@
 
 **hero.destaque**: jogo que ele inventa.
 
-**hero.description**: Assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. A assinatura abre os outros cursos. Cada curso concluído põe peças novas na caixa dele, e concluir e publicar os cursos de um degrau leva a um posto novo da Jornada, com ferramentas para os jogos dele. Você segue acompanhando pela sua área.
+**hero.description**: Assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. Com a assinatura, ele volta a ter os outros cursos, as ferramentas que a Jornada vai liberando, o Mural para publicar, o Clube e as dúvidas respondidas pela equipe nos Recados. Cada curso concluído põe peças novas na caixa dele, e concluir e publicar os cursos de um degrau leva a um posto novo da Jornada, com ferramentas para os jogos dele. Você segue acompanhando pela sua área.
 
 **hero.benefits[0]**: Continua no mesmo perfil, com tudo o que já fez
 
-**hero.benefits[1]**: Todos os cursos, inclusive os lançados durante a assinatura
+**hero.benefits[1]**: Todos os cursos, o Mural, o Clube e as dúvidas respondidas pela equipe
 
 **hero.benefits[2]**: Estúdio livre e Pinta depois de concluir e publicar A Chave do Farol
 
@@ -122,11 +122,11 @@
 
 **fica.comAssinatura.itens[1]**: Publicar, comentar e reagir no Mural
 
-**fica.comAssinatura.itens[2]**: As ferramentas de cada posto: Estúdio livre, Pinta, Pensa e Molda
+**fica.comAssinatura.itens[2]**: As ferramentas de cada posto: Estúdio livre, Pinta, Pensa, ajuda do Zappy e Molda
 
 **fica.comAssinatura.itens[3]**: O Clube dos Criadores, só de alunos
 
-**fica.comAssinatura.itens[4]**: Dúvidas por escrito com a equipe, nos Recados
+**fica.comAssinatura.itens[4]**: Dúvidas respondidas pela equipe nos Recados
 
 **fica.comAssinatura.itens[5]**: Até 2 perfis, cada um com seus jogos e sua Jornada
 
@@ -192,11 +192,11 @@
 
 **planos.inclui[1]**: O curso do Desafio do Primeiro Jogo incluído
 
-**planos.inclui[2]**: Estúdio livre, Pinta, Molda e Pensa, liberados posto a posto pela Jornada
+**planos.inclui[2]**: Estúdio livre, Pinta, Pensa, a ajuda do Zappy e Molda, liberados posto a posto pela Jornada
 
-**planos.inclui[3]**: Mural e Clube dos Criadores
+**planos.inclui[3]**: Mural e Clube dos Criadores, com moderação
 
-**planos.inclui[4]**: Dúvidas por escrito com a equipe, nos Recados
+**planos.inclui[4]**: Dúvidas respondidas pela equipe nos Recados
 
 **planos.inclui[5]**: Até 2 perfis e a área do responsável
 
@@ -256,7 +256,7 @@
 
 **faq[3].question**: O acesso dele acabou faz tempo. Ainda dá para continuar?
 
-**faq[3].answer**: Dá. O que ele fez fica na conta, e a assinatura reabre os cursos no mesmo perfil.
+**faq[3].answer**: Dá. O que ele fez fica na conta, e a assinatura reabre a plataforma no mesmo perfil: os cursos, as ferramentas do posto dele, o Mural, o Clube e os Recados.
 
 **faq[4].question**: E se ele travar no próximo curso?
 

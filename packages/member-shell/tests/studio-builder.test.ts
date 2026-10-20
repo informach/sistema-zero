@@ -9,9 +9,8 @@ import {
 
 mock.module('server-only', () => ({}))
 process.env.JWT_HS256_SECRET ??= 'builder-test-secret-at-least-32-characters'
-const { advanceStudioBuilder, refreshStudioBuilderPreview } = await import(
-  '../src/server/studio-builder'
-)
+const { advanceStudioBuilder, refreshStudioBuilderPreview, studioBuilderReservationDenied } =
+  await import('../src/server/studio-builder')
 type Members = Parameters<typeof advanceStudioBuilder>[0]['members']
 type Answer = import('../src/server/studio-builder-tools').StudioBuilderAnswer
 afterEach(() => mock.restore())
@@ -375,5 +374,27 @@ describe('durable builder orchestration', () => {
     await f.advance()
     expect((await f.advance())?.phase).toBe('failed')
     expect(f.job().error).toContain('captura')
+  })
+})
+
+describe('recusa da reserva em frase de gente', () => {
+  test('nunca mostra o código do motivo e fala com cada público pelo caminho certo', () => {
+    const scopes = ['day', 'month', 'cost-day', 'cost-month', 'busy', 'connection'] as const
+    for (const scope of scopes)
+      for (const audience of ['adult', undefined] as const) {
+        const text = studioBuilderReservationDenied(scope, audience)
+        expect(text).not.toContain(scope === 'day' || scope === 'month' ? `(${scope})` : scope)
+        expect(text).not.toMatch(/\bIA\b/)
+        if (audience === 'adult') expect(text).not.toContain('família')
+      }
+    expect(studioBuilderReservationDenied('cost-month', 'adult')).toBe(
+      'Não foi possível começar a construção. O limite de gasto deste mês foi atingido.',
+    )
+    expect(studioBuilderReservationDenied('day', 'adult')).toBe(
+      'Não foi possível começar a construção. Os créditos de hoje acabaram. Veja quanto resta em Meu perfil.',
+    )
+    expect(studioBuilderReservationDenied('month', undefined)).toBe(
+      'Não foi possível começar a construção. As ideias deste mês acabaram. Peça ao responsável para conferir os limites e a conexão na área da família.',
+    )
   })
 })

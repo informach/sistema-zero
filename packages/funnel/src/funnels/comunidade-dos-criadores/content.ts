@@ -43,7 +43,7 @@ export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
     'Desafio do Primeiro Jogo e acesso aos cursos publicados durante a assinatura',
     'Estúdio, Pinta, Pensa e Molda, com liberação por progresso e disponibilidade dos cursos necessários',
     'Clube dos Criadores e Mural para publicar e compartilhar os jogos',
-    'Recados para enviar dúvidas à equipe dentro da plataforma',
+    'Dúvidas respondidas pela equipe nos Recados, dentro da plataforma',
     'Jornada do Criador para encontrar a etapa atual e os próximos passos disponíveis',
     'Até 2 perfis de criança, cada um com seu próprio progresso',
   ],
@@ -80,7 +80,7 @@ export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
 export const COMUNIDADE_CHECKOUT: FunnelCheckoutIntro = {
   titulo: 'Confirme sua assinatura da Comunidade dos Criadores',
   paragrafos: [
-    'Projetos guiados e ferramentas de criação liberadas ao longo da Jornada, para até dois perfis de criança. Confira o plano, o valor e a renovação antes de pagar.',
+    'Para até dois perfis de criança: projetos guiados, ferramentas de criação liberadas ao longo da Jornada, Mural e Clube com moderação, e dúvidas respondidas pela equipe nos Recados. Confira o plano, o valor e a renovação antes de pagar.',
     'Preencha os dados do responsável. Após a aprovação, abra o perfil do seu filho ou crie um novo. Ele pode começar pela atividade de entrada ou continuar do ponto em que está.',
   ],
 }

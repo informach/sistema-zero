@@ -52,6 +52,7 @@ export default async function ProfilePage() {
     getAvatarReadonly().catch(() => null),
   ])
   const aiAvailable = progress?.body?.journey?.capabilities.includes('ai') === true
+  const pensaUnlocked = progress?.body?.journey?.capabilities.includes('pensa') === true
   // Ler o saldo não consome crédito; só vale a ida quando a seção aparece.
   const credits = aiAvailable ? await shell.members.getAiCreditsReadonly().catch(() => null) : null
 
@@ -121,6 +122,7 @@ export default async function ProfilePage() {
                 ? {
                     credits: credits?.status === 200 ? (credits.body ?? null) : null,
                     voiceConfigured: isVoiceInputConfigured(),
+                    pensaUnlocked,
                   }
                 : null
             }

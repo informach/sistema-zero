@@ -49,7 +49,7 @@ export const ptBR: Record<string, string> = {
   'topbar.exportStudio': 'Baixar o projeto',
   'topbar.cloudSync': 'Trazer o que eu enviei',
   'topbar.convertPro': 'Virar profissional',
-  'topbar.ai': 'IA',
+  'topbar.ai': 'Zappy',
   'topbar.rename': 'Renomear projeto',
   'topbar.projects': 'Meus projetos',
   'topbar.more': 'Mais opções',
@@ -88,7 +88,7 @@ export const ptBR: Record<string, string> = {
 
   'panel.console': 'Console',
   'panel.terminal': 'Terminal',
-  'panel.ai': 'IA',
+  'panel.ai': 'Zappy',
   'panel.preview': 'Pré-visualização',
   'panel.extensions': 'Extensões oficiais',
 
@@ -139,10 +139,9 @@ export const ptBR: Record<string, string> = {
   'console.messages': '{count} mensagens',
   'console.showBlock': 'Ver o bloco que causou o erro',
 
-  'ai.placeholder':
-    'O ajudante de IA ainda está em construção. Logo ele chega para criar junto com você!',
+  'ai.placeholder': 'O Zappy ainda não está disponível neste espaço.',
   'ai.sendDisabled': 'Chegando em breve',
-  'ai.title': 'Assistente IA (prévia)',
+  'ai.title': 'Zappy',
 
   'project.newName': 'Meu projeto',
   'project.new': 'Novo projeto',
@@ -388,7 +387,9 @@ export const ptBR: Record<string, string> = {
   'share.step.describe.label': 'Descrição do projeto',
   'share.step.describe.placeholder':
     'Ex.: Um jogo de nave que desvia dos asteroides para fazer pontos.',
-  'share.step.describe.generate': 'Escrever com ajuda da IA',
+  // Quem escreve o rascunho é o Zappy: a rota `/api/studio/describe` do member-shell usa o
+  // modelo e os créditos dele (`purpose: 'tutor'`). O recurso tem nome, nunca "IA" (20/10/2026).
+  'share.step.describe.generate': 'Escrever com ajuda do Zappy',
   'share.step.describe.regenerate': 'Escrever de novo',
   'share.step.describe.generating': 'Escrevendo…',
   'share.step.describe.failed':
@@ -433,7 +434,7 @@ export const ptBR: Record<string, string> = {
   'share.ai.capped': 'Você já pediu algumas ideias. Agora é só deixar o texto do seu jeito. 😊',
   'share.ai.quota.day': 'As ideias de hoje acabaram! Escreva você mesmo a descrição. ✍️',
   'share.ai.quota.month': 'As ideias deste mês acabaram! Escreva você mesmo a descrição. ✍️',
-  'share.ai.button': 'Gerar resumo com a IA',
+  'share.ai.button': 'Gerar resumo com o Zappy',
   'share.error': 'Não foi possível publicar: {reason}',
   'share.cancel': 'Cancelar',
   'share.back': 'Voltar',

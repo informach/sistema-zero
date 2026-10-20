@@ -450,7 +450,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
   planos: {
     titulo: 'Para começarem juntos, escolha o plano que cabe na rotina de vocês',
     texto:
-      'Os dois planos dão acesso a tudo: os cursos publicados e os que forem lançados, o Estúdio e as ferramentas liberadas pela Jornada, o Mural e a área do responsável. A diferença está só na forma de pagar.',
+      'Os dois planos dão acesso a tudo. Vocês têm as aulas dos cursos publicados e dos que forem lançados, o Estúdio e as ferramentas que a Jornada vai abrindo. Têm também o Mural e o Clube com moderação, as dúvidas respondidas pela equipe nos Recados e a área do responsável. A diferença está só na forma de pagar.',
     destaque:
       'Uma assinatura, dois perfis: ela cria junto com você hoje e sozinha quando crescer, e o irmão mais velho usa o outro perfil.',
     mensal: {
@@ -527,7 +527,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
       {
         pergunta: 'Tem app grátis para isso. Qual é a diferença?',
         resposta:
-          'O ScratchJr é gratuito, roda no tablet e é uma boa porta de entrada para montar historinhas com blocos. Aqui tem aula em português, um projeto guiado de cada vez, você no papel de ler e conduzir, e a conta continua com ela quando crescer, no mesmo perfil.',
+          'O ScratchJr é gratuito, roda no tablet e é uma boa porta de entrada para montar historinhas com blocos. Aqui, cada projeto é guiado, com aula em português e você no papel de ler e conduzir. Junto vêm o Estúdio e as ferramentas que vão abrindo, o Mural para mostrar o jogo à família e as dúvidas respondidas pela equipe nos Recados. E a conta continua com ela quando crescer, no mesmo perfil.',
       },
       {
         pergunta: 'Como cancelo?',

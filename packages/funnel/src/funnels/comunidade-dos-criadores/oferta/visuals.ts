@@ -461,17 +461,20 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
   // "Minhas compras": ela vem de uma captura da própria dona na conta dela (02/10/2026), com os
   // dígitos do cartão embaçados, porque o staging não tem assinatura ativa para mostrar. O @2x
   // dela é ampliado: não há captura em escala 2.
+  // ⚠️ `creditos`: a captura ainda mostra o título antigo "Ajuda da IA neste mês". A tela passou a
+  // se chamar "Créditos do Zappy e do Pensa neste mês" (20/10/2026): refaça a captura antes de usar.
   creditos: {
     frames: [
       tela(
         'pais-creditos',
-        'Ajuda da IA neste mês',
-        'Quadro Ajuda da IA neste mês, na Conta da Área dos pais: 0 de 500 no mês, renovação em 1º de novembro, 0 de 50 no dia e o aviso de que as crianças da família dividem o mesmo total.',
+        'Créditos do Zappy e do Pensa',
+        'Quadro dos créditos do mês na Conta da Área dos pais, usados pelo Pensa e pela ajuda do Zappy: 0 de 500 no mês, renovação em 1º de novembro, 0 de 50 no dia e o aviso de que as crianças da família dividem o mesmo total.',
         384,
         239,
       ),
     ],
-    caption: 'O saldo de ajuda da IA do mês é um só para a família e aparece na Área dos pais.',
+    caption:
+      'Os créditos do Pensa e da ajuda do Zappy têm limite por dia e por mês, num só total para a família, que aparece na Área dos pais.',
   },
   compras: {
     frames: [

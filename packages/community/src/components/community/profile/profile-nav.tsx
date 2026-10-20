@@ -9,7 +9,7 @@ const SECTIONS: readonly { id: string; label: string; icon: LucideIcon }[] = [
   { id: 'dados', label: 'Dados pessoais', icon: UserRound },
   { id: 'cor', label: 'Cor da plataforma', icon: Palette },
   { id: 'identidade', label: 'Na comunidade', icon: Users },
-  { id: 'ia', label: 'IA e voz', icon: Sparkles },
+  { id: 'creditos', label: 'Créditos e voz', icon: Sparkles },
   { id: 'senha', label: 'Senha', icon: ShieldCheck },
 ]
 
@@ -18,7 +18,7 @@ const SECTIONS: readonly { id: string; label: string; icon: LucideIcon }[] = [
  * celular. A seção à vista fica marcada (o link ganha `aria-current`).
  */
 export function ProfileNav({ showAi }: { showAi: boolean }) {
-  const items = SECTIONS.filter((section) => showAi || section.id !== 'ia')
+  const items = SECTIONS.filter((section) => showAi || section.id !== 'creditos')
   const [active, setActive] = useState(items[0]?.id ?? '')
 
   useEffect(() => {

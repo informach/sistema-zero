@@ -44,7 +44,7 @@ export const en: Record<string, string> = {
   'topbar.exportStudio': 'Download the project',
   'topbar.cloudSync': 'Bring back what I submitted',
   'topbar.convertPro': 'Go professional',
-  'topbar.ai': 'AI',
+  'topbar.ai': 'Zappy',
   'topbar.rename': 'Rename project',
   'topbar.projects': 'My projects',
   'topbar.more': 'More options',
@@ -75,7 +75,7 @@ export const en: Record<string, string> = {
   'tab.files': 'Files',
   'panel.console': 'Console',
   'panel.terminal': 'Terminal',
-  'panel.ai': 'AI',
+  'panel.ai': 'Zappy',
   'panel.preview': 'Preview',
   'panel.extensions': 'Official extensions',
 
@@ -110,10 +110,9 @@ export const en: Record<string, string> = {
   'console.message': '1 message',
   'console.messages': '{count} messages',
   'console.showBlock': 'Show the block that caused the error',
-  'ai.placeholder':
-    'The AI helper is still under construction. Soon it will be here to create with you!',
+  'ai.placeholder': 'Zappy is not available in this space yet.',
   'ai.sendDisabled': 'Coming soon',
-  'ai.title': 'AI assistant (preview)',
+  'ai.title': 'Zappy',
   'project.newName': 'My project',
   'project.new': 'New project',
   'project.unsaved': 'Unsaved changes',
@@ -346,7 +345,7 @@ export const en: Record<string, string> = {
   'share.step.describe.label': 'Project description',
   'share.step.describe.placeholder':
     'Example: A spaceship game where you dodge asteroids to score points.',
-  'share.step.describe.generate': 'Write with AI help',
+  'share.step.describe.generate': 'Write with help from Zappy',
   'share.step.describe.regenerate': 'Write again',
   'share.step.describe.generating': 'Writing…',
   'share.step.describe.failed':
@@ -388,7 +387,7 @@ export const en: Record<string, string> = {
   'share.ai.capped': 'You already asked for a few ideas—now make the text your own. 😊',
   'share.ai.quota.day': 'No more ideas today! Write the description yourself. ✍️',
   'share.ai.quota.month': 'No more ideas this month! Write the description yourself. ✍️',
-  'share.ai.button': 'Generate summary with AI',
+  'share.ai.button': 'Generate summary with Zappy',
   'share.error': 'Could not publish: {reason}',
   'share.cancel': 'Cancel',
   'share.back': 'Back',

@@ -93,6 +93,10 @@ export default function ProBuilderPanel({
   const isDirty = useProjectStore((state) => state.isDirty)
   const preview = useProCandidatePreview()
   const { proCapture, config: tutorConfig } = useStudioTutor()
+  // O recurso tem nome, nunca "IA" solta (20/10/2026): o adulto conta em créditos (os mesmos do
+  // Zappy e do Pensa) e a criança em ideias, a palavra do medidor dela.
+  const adulto = tutorConfig?.audience === 'adult'
+  const unidade = adulto ? 'créditos' : 'ideias'
   const inputId = useId()
   const scope = useRef(captureProjectStorageScope())
   const [objective, setObjective] = useState('')
@@ -684,7 +688,7 @@ export default function ProBuilderPanel({
         {request.diagnostic && (
           <p className="text-xs text-sz-fg-mute">
             Resumo da resposta anexado como observação, não como causa comprovada. Descreva a
-            mudança que deseja; preparar uma proposta usa IA.
+            mudança que deseja; preparar uma proposta gasta {unidade}.
           </p>
         )}
         {request.selection && (
@@ -740,7 +744,7 @@ export default function ProBuilderPanel({
         />
         {request.scope === 'game' && (
           <p className="text-xs">
-            Este pedido tem até 3 chamadas de IA e 3 verificações. Se o jogo precisar de mais
+            Este pedido tem até 3 passos do Zappy e 3 verificações. Se o jogo precisar de mais
             passos, você decide quando continuar em uma nova proposta.
           </p>
         )}
@@ -759,9 +763,9 @@ export default function ProBuilderPanel({
           {pendingCreate.current ? 'Recuperar solicitação' : 'Preparar proposta'}
         </button>
         <p className="text-xs text-sz-fg-mute">
-          {tutorConfig?.audience === 'adult'
-            ? 'A execução usa os pedidos de IA da sua conta. Você revisa antes de aplicar.'
-            : 'A execução usa os limites de IA da família. Você revisa antes de aplicar.'}
+          {adulto
+            ? 'A construção usa os créditos do Zappy e do Pensa da sua conta. Você revisa antes de aplicar.'
+            : 'A construção usa as ideias da família, as mesmas do Zappy e do Pensa. Você revisa antes de aplicar.'}
         </p>
         <p className="text-xs text-sz-fg-mute">
           O construtor pode consultar os arquivos do projeto, seu objetivo e o manifesto de
@@ -784,7 +788,7 @@ export default function ProBuilderPanel({
             Propostas anteriores ({history.length})
           </summary>
           <p className="my-2 text-xs text-sz-fg-mute">
-            Disponíveis por até 7 dias, com limite de 10 por conta. Consultar não usa IA.
+            Disponíveis por até 7 dias, com limite de 10 por conta. Consultar não gasta {unidade}.
           </p>
           <ul className="space-y-2">
             {history.map((item) => (
@@ -837,7 +841,7 @@ export default function ProBuilderPanel({
             </p>
           )}
           <p className="text-xs text-sz-fg-mute">
-            {job.modelCalls}/3 chamadas de IA · {job.validationCalls}/3 verificações
+            {job.modelCalls}/3 passos do Zappy · {job.validationCalls}/3 verificações
           </p>
           {job.cost && (
             <p className="text-xs">
@@ -855,8 +859,8 @@ export default function ProBuilderPanel({
           {active(job) && (
             <div className="flex flex-wrap gap-2">
               <p className="text-xs">
-                A construção continua no servidor mesmo com esta aba fechada. Consultar não inicia
-                novas chamadas de IA.
+                A construção continua no servidor mesmo com esta aba fechada. Consultar não gasta{' '}
+                {unidade}.
               </p>
               <button type="button" className={button} onClick={() => void cancel()}>
                 Cancelar construção
@@ -1037,7 +1041,7 @@ export default function ProBuilderPanel({
                         }
                         onClick={() => void refreshPreview()}
                       >
-                        Gerar nova prévia · sem IA
+                        Gerar nova prévia · não gasta {unidade}
                       </button>
                     )}
                   <button

@@ -1136,11 +1136,11 @@ export const SERVER_EXAMPLES_INDEX: readonly ServerExampleIndexEntry[] = [
     extension: null,
     name: 'Pong (na mão)',
     description:
-      'O Pong clássico só com blocos do núcleo Canvas 2D (sem extensão): classes Paddle e Ball, laço com deltaTime, rebote com ângulo pelo ponto de contato, uma IA de raquete para o computador e placar até 5. Mova com as setas; Enter recomeça. Abra a Ponte para ver o código.',
+      'O Pong clássico só com blocos do núcleo Canvas 2D (sem extensão): classes Paddle e Ball, laço com deltaTime, rebote com ângulo pelo ponto de contato, o computador controlando a outra raquete e placar até 5. Mova com as setas; Enter recomeça. Abra a Ponte para ver o código.',
     promise:
       'O Pong feito só com o núcleo Canvas 2D: classes Paddle e Ball, deltaTime e rebote por ângulo.',
     scenario:
-      'Mover a raquete com as setas, rebater a bola com ângulo pelo ponto de contato, marcar até cinco contra a IA do computador e apertar Enter para recomeçar.',
+      'Mover a raquete com as setas, rebater a bola com ângulo pelo ponto de contato, marcar até cinco contra o computador e apertar Enter para recomeçar.',
     blockTypes: [
       'sz_canvas_fill_rect',
       'sz_canvas_fill_style',
@@ -4785,7 +4785,7 @@ export const SERVER_EXAMPLES_INDEX: readonly ServerExampleIndexEntry[] = [
     description:
       'Jogue contra o COMPUTADOR: você arrasta para mirar e o robô mira e joga sozinho (simula lançamentos e escolhe o melhor). Vento e gravidade entortam a banana; acertar o inimigo vence. Enter começa.',
     difficulty: 'advanced',
-    concepts: ['inteligência artificial', 'trajetória', 'turnos'],
+    concepts: ['robô adversário', 'trajetória', 'turnos'],
     genre: 'artilharia',
     promise: 'Enfrentar um robô que calcula e executa a própria jogada.',
     scenario: 'Começar, lançar, observar a resposta automática e concluir.',

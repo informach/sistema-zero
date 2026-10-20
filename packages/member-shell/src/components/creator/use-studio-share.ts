@@ -37,7 +37,7 @@ export function useStudioShare(
             // ⚠️ O `scope` PRECISA viajar: sem ele o dialog dizia "a ajuda de HOJE
             // acabou" mesmo quando o teto estourado era o do MÊS, mandando a
             // criança voltar amanhã para nada.
-            throw Object.assign(new Error('quota de IA esgotada'), {
+            throw Object.assign(new Error('créditos esgotados'), {
               code: 'AI_QUOTA_EXCEEDED' as const,
               scope: body.scope,
             })
