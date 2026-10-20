@@ -1403,8 +1403,10 @@
     font-size: 0.8125rem;
   }
 
-  /* A OFICINA LARGA: coluna à direita e trilho de 64px. */
-  @container sz-mission (min-width: 68.75rem) {
+  /* A coluna só entra quando deixa ao editor ao menos 1024px. Encaixá-la antes
+     trocava o Studio para o layout de abas e remontava Blockly/Monaco ao abrir
+     ou recolher uma missão. */
+  @container sz-mission (min-width: 87.5rem) {
     .has-panel > .sz-tool-mission-layout__row {
       flex-direction: row;
       overflow: hidden;

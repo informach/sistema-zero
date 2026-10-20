@@ -2,6 +2,7 @@ import { ProjectList } from '@sistemazero/studio/project-list'
 import type { JSX } from 'react'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { DemoHostChrome, HOST_DEMO } from './hostChromeDemo'
+import { PLAYGROUND_DEMO_MISSION } from './initialQuery'
 
 const EditorPlayground = lazy(async () => {
   const module = await import('./App')
@@ -38,7 +39,7 @@ export function LandingApp(): JSX.Element {
           </div>
         }
       >
-        <EditorPlayground />
+        <EditorPlayground demoMission={PLAYGROUND_DEMO_MISSION} />
       </Suspense>
     )
   }

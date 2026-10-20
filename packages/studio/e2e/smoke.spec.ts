@@ -380,7 +380,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
               request.onerror = () => reject(request.error)
             },
           )
-          return stored?.files?.['script.js'] ?? null
+          return stored?.files?.['script.js']?.replace(/\r\n/g, '\n') ?? null
         } finally {
           db.close()
         }
