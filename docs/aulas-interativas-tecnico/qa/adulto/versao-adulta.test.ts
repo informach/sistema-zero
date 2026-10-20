@@ -1,0 +1,207 @@
+import { describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { isLearningManifest } from '../../../../packages/core/src/learning'
+import { traduzirHtml } from '../../recursos/caderno-adulto'
+import { PASTA_CURSOS_ADULTO } from '../caminhos'
+import {
+  arquivosPorGrupo,
+  cursos,
+  divergencias,
+  GRUPO_DO_CADERNO,
+  gerarCurso,
+  lerTraducao,
+  manifestoAdulto,
+  markdownAdulto,
+  Pendencias,
+  palavrasDoKids,
+  procedencia,
+  sufixoSlugAdulto,
+  textosManifesto,
+  trechosMarkdown,
+} from './versao-adulta'
+
+describe('a camada de tradução', () => {
+  test('markdown com cada trecho repetido volta igual ao kids', () => {
+    const kids =
+      '# Título\n\nUm parágrafo.\n\n> “Fala\n>\n> com duas partes.”\n\n| a | b |\n| --- | --- |\n'
+    const d = new Map(trechosMarkdown(kids).map((t) => [t, t]))
+    expect(markdownAdulto(kids, d, 'x')).toBe(kids)
+  })
+
+  test('trecho vazio sai da versão adulta sem deixar linha em branco dobrada', () => {
+    const kids = 'Antes.\n\n**Debinha (avatar):** Uhu!\n\nDepois.\n'
+    const d = new Map([
+      ['Antes.', 'Antes.'],
+      ['**Debinha (avatar):** Uhu!', ''],
+      ['Depois.', 'Depois.'],
+    ])
+    expect(markdownAdulto(kids, d, 'x')).toBe('Antes.\n\nDepois.\n')
+  })
+
+  test('sem o avatar, duas falas seguidas da professora viram uma só', () => {
+    const kids =
+      '**Professora:**\n\n> “Primeira.”\n\n**Debinha (avatar):**\n\n> “E aí?”\n\n**Professora:**\n\n> “Segunda.”\n'
+    const d = new Map([
+      ['**Professora:**', '**Professora:**'],
+      ['> “Primeira.”', '> “Primeira.”'],
+      ['**Debinha (avatar):**', ''],
+      ['> “E aí?”', ''],
+      ['> “Segunda.”', '> “Segunda.”'],
+    ])
+    expect(markdownAdulto(kids, d, 'x')).toBe('**Professora:**\n\n> “Primeira.\n>\n> Segunda.”\n')
+    // Com uma nota de tela no meio, as falas continuam separadas.
+    const comNota =
+      '**Professora:**\n\n> “Um.”\n\n**Na tela:** gesto.\n\n**Professora:**\n\n> “Dois.”\n'
+    const identidade = new Map(trechosMarkdown(comNota).map((t) => [t, t]))
+    expect(markdownAdulto(comNota, identidade, 'x')).toBe(comNota)
+  })
+
+  test('trecho kids sem par para a geração em vez de passar adiante a frase infantil', () => {
+    expect(() => markdownAdulto('Frase nova.\n', new Map(), 'x')).toThrow(Pendencias)
+  })
+
+  test('o manifesto troca só o texto de tela e mantém o jogo e as regras', () => {
+    const kids = {
+      courseSlug: 'corre-dino',
+      title: 'Aula kids',
+      blocks: [
+        { key: 'fala', content: { kind: 'dialogue', text: 'Clique em Próxima parte.' } },
+        {
+          key: 'projeto',
+          content: {
+            kind: 'studio',
+            initialProject: { name: 'Corre, Dino!', ir: { title: 'Fim de jogo' } },
+          },
+        },
+      ],
+      sections: [
+        {
+          title: 'Seção',
+          objective: 'Jogar.',
+          completion: {
+            projectChecks: [{ label: 'Pule o cacto.', rule: { title: 'Fim de jogo' } }],
+          },
+        },
+      ],
+    }
+    expect(textosManifesto(kids)).toEqual([
+      'Aula kids',
+      'Clique em Próxima parte.',
+      'Seção',
+      'Jogar.',
+      'Pule o cacto.',
+    ])
+    const d = new Map(textosManifesto(kids).map((t) => [t, `${t} (adulto)`]))
+    const adulto = manifestoAdulto(kids, d, 'x') as typeof kids
+    expect(adulto.courseSlug).toBe(`corre-dino${sufixoSlugAdulto}`)
+    expect(adulto.blocks[0]?.content).toEqual({
+      kind: 'dialogue',
+      text: 'Clique em Próxima parte. (adulto)',
+    })
+    expect(adulto.blocks[1]).toEqual(kids.blocks[1])
+    expect(adulto.sections[0]?.completion.projectChecks[0]?.rule).toEqual({ title: 'Fim de jogo' })
+    expect(adulto.sections[0]?.completion.projectChecks[0]?.label).toBe('Pule o cacto. (adulto)')
+  })
+
+  test('o link de um tutorial vai para a biblioteca adulta, e link sem par para a geração', () => {
+    const kids = {
+      blocks: [{ content: { items: [{ url: '/como-fazer/plataforma-pedir-ajuda' }] } }],
+    }
+    expect(manifestoAdulto(kids, new Map(), 'x')).toEqual({
+      blocks: [{ content: { items: [{ url: '/como-fazer/aula-pedir-ajuda' }] } }],
+    })
+    const solto = { blocks: [{ content: { items: [{ url: '/como-fazer/plataforma-nova' }] } }] }
+    expect(() => manifestoAdulto(solto, new Map(), 'x')).toThrow(Pendencias)
+  })
+
+  test('campo de tela vazio e campo de texto novo param a geração', () => {
+    const kids = { blocks: [{ key: 'fala', content: { kind: 'dialogue', text: 'Oi.' } }] }
+    expect(() => manifestoAdulto(kids, new Map([['Oi.', '']]), 'x')).toThrow(Pendencias)
+    expect(() => manifestoAdulto(kids, new Map([['Oi.', 'Olá.']]), 'x')).not.toThrow()
+    const novo = { blocks: [{ key: 'img', content: { kind: 'image', alt: 'Uma nave.' } }] }
+    expect(() => manifestoAdulto(novo, new Map(), 'x')).toThrow(/campo novo/)
+  })
+
+  test('o Markdown adulto começa dizendo de onde vem', () => {
+    const d = new Map([['Oi.', 'Olá.']])
+    const saida = markdownAdulto('Oi.\n', d, 'x', procedencia('corre-dino', 'a.md', 'a'))
+    expect(saida.startsWith('<!-- Versão adulta gerada')).toBe(true)
+    expect(saida.endsWith('Olá.\n')).toBe(true)
+  })
+
+  test('a régua do vocabulário morde e deixa passar a fase do jogo', () => {
+    for (const kids of [
+      'Clique em próxima parte.',
+      'A criançada adora.',
+      'O ZAPPY ajuda.',
+      'Partes da aula',
+      'Ainda falta um objetivo.',
+      'No cabeçalho Seu projeto no Estúdio.',
+      'Escreva no campo Recado (opcional).',
+      'Clique em Mostrar menu.',
+    ])
+      expect(palavrasDoKids(kids)).not.toEqual([])
+    expect(palavrasDoKids('Compare com o quadro O jogo da fase.')).toEqual([])
+    expect(palavrasDoKids('Ainda falta cumprir um objetivo desta etapa.')).toEqual([])
+    expect(palavrasDoKids('Clique em Próxima parte.')).toEqual(['Próxima seção'])
+    expect(palavrasDoKids('Termine esta fase.')).toHaveLength(1)
+    expect(palavrasDoKids('Dedé sai antes da resposta.')).toEqual(['avatar infantil'])
+    expect(palavrasDoKids('Chegue na última fase do jogo.')).toEqual([])
+    expect(palavrasDoKids('Clique em Próxima seção e depois em Concluir aula.')).toEqual([])
+  })
+})
+
+describe('o caderno adulto', () => {
+  test('o texto de um HTML pronto passa inteiro pela tradução, menos estilos e scripts', () => {
+    const html =
+      '<style>p{color:red}</style><span class="badge">Mapa</span><p>Clique em <strong>Ok</strong>.</p><img alt="Jogo"><div>Solto <em>junto</em></div>'
+    expect(traduzirHtml(html, (s) => `[${s}]`)).toBe(
+      '<style>p{color:red}</style><span class="badge">[Mapa]</span><p>[Clique em <strong>Ok</strong>.]</p><img alt="[Jogo]"><div>[Solto] <em>[junto]</em></div>',
+    )
+  })
+})
+
+describe.each(cursos())('versão adulta de $pasta', ({ prefixo, pasta }) => {
+  test('todo trecho tem versão adulta', () => {
+    expect(() => gerarCurso(prefixo, pasta)).not.toThrow()
+  })
+
+  test('o Caderno do Aluno adulto tem versão adulta de todo texto, sem palavras do Kids', () => {
+    const caderno = lerTraducao(pasta, GRUPO_DO_CADERNO)
+    expect(caderno?.trechos.length ?? 0).toBeGreaterThan(0)
+    const problemas = (caderno?.trechos ?? []).flatMap((t) =>
+      t.adulto === null || !t.adulto.trim()
+        ? [`pendente: ${t.kids.slice(0, 60)}`]
+        : palavrasDoKids(t.adulto).map((p) => `${p}: ${t.adulto?.slice(0, 60)}`),
+    )
+    expect(problemas).toEqual([])
+  })
+
+  test('os arquivos adultos estão em dia com o kids e com a tradução', () => {
+    expect(divergencias(prefixo, pasta)).toEqual([])
+  })
+
+  test('nenhuma palavra do Kids na versão adulta', () => {
+    const problemas = [...arquivosPorGrupo(prefixo, pasta).keys()].flatMap((grupo) =>
+      (lerTraducao(pasta, grupo)?.trechos ?? []).flatMap((t) =>
+        t.adulto
+          ? palavrasDoKids(t.adulto).map((p) => `${grupo}: ${p}: ${t.adulto?.slice(0, 80)}`)
+          : [],
+      ),
+    )
+    expect(problemas).toEqual([])
+  })
+
+  test('os manifestos adultos são válidos e apontam para o curso adulto', () => {
+    const nomes = [...gerarCurso(prefixo, pasta).keys()].filter((n) =>
+      n.endsWith('.manifesto.json'),
+    )
+    expect(nomes.length).toBeGreaterThan(0)
+    for (const nome of nomes) {
+      const m = JSON.parse(readFileSync(resolve(PASTA_CURSOS_ADULTO, pasta, nome), 'utf8'))
+      expect(isLearningManifest(m)).toBe(true)
+      expect(m.courseSlug.endsWith(sufixoSlugAdulto)).toBe(true)
+    }
+  })
+})

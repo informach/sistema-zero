@@ -22,7 +22,7 @@ O gerador permanece a fonte do manifesto; projeto e conclusão mantêm os mesmos
 ### Task 1: Alinhar a aula, a ajuda e as diretrizes
 
 **Files:**
-- Modificar `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.md` e `.roteiro.md`.
+- Modificar `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.md` e `.roteiro.md`.
 - Modificar `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts` e regenerar o manifesto da Aula 2.
 - Modificar `docs/como-fazer/como-fazer.json`, tutorial `plataforma-publicar-no-mural`.
 - Modificar `docs/aulas-interativas-tecnico/BRIEFING.md`, `ESPEC-ROTEIRO.md` e `docs/orientacao-cursos-jogos.md`.

@@ -24,7 +24,7 @@ A experiência de memória só credita os gestos realizados. Mudar a regra sozin
 ## Materiais e preservação
 
 - [Organização do curso](../../modulos-desafio-primeiro-jogo.md), propostas, roteiros, gerador, manifestos, diretrizes e catálogo atualizados juntos.
-- [Caderno do Aluno](../../../aulas-interativas/desafio-primeiro-jogo/mapa-da-aventura.pdf): 19 páginas, com índice calculado pela composição efetiva, cores dos blocos do Estúdio e o padrão visual do Cadê Todo Mundo. Não contém gabarito do quiz.
+- [Caderno do Aluno](../../../aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf): 19 páginas, com índice calculado pela composição efetiva, cores dos blocos do Estúdio e o padrão visual do Cadê Todo Mundo. Não contém gabarito do quiz.
 - Comparação com o Git confirmou todos os identificadores anteriores de aula, seção e bloco. O acréscimo do Dia 3 usa `sem-chave`, `video-d3-sem-chave` e `ponte-d3-sem-chave`; a experiência do Dia 2 usa `experiencia-memoria`.
 - Blocos `projeto`, cadeia `desafio-primeiro-jogo`, projetos iniciais, jogo pronto e bloco de certificado permanecem iguais à versão anterior. Não foi criado projeto paralelo entre as duas construções do Dia 3.
 - Regenerar os cinco manifestos produz os mesmos arquivos. Os moldes de mídia permanecem `plannedVideo` e o vínculo do PDF depende do Admin.

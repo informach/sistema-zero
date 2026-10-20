@@ -3,7 +3,7 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent / 'aulas-interativas'
+ROOT = Path(__file__).resolve().parent.parent / 'aulas-interativas' / 'kids'
 WORD = re.compile(r"[\wÀ-ÿ]+(?:['’][\wÀ-ÿ]+)?", re.UNICODE)
 CLIP = re.compile(r'^### (?:Clipe|Vídeo) `([^`]+)`', re.MULTILINE)
 SECTION = re.compile(r'^## Seção (\d+)\. (.+)$', re.MULTILINE)

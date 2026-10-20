@@ -1,0 +1,129 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-12.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-12.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
+# Corre, Dino! · Aula 12 · Varie o lugar e a velocidade dos cactos
+
+Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md).
+
+## Resumo
+
+- Estado de entrada: Cactos nascendo sempre em x 560 e velocidade -5; partida completa com pontos.
+- Resultado da aula: Nascimento com x de 500 a 560 e vx igual a -5 menos um número de 0 a 1.
+- Seções: 4. Vídeos: 4.
+
+**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
+
+## Diagnóstico e decisão
+
+O sorteio vem antes das duas aplicações. A experiência mostra posições, repetições e as contas de velocidade. Lugar e velocidade têm montagens separadas. A fala não promete partidas sempre diferentes: números podem repetir.
+
+## Triagem dos conceitos
+
+| Conceito | Como e quando trabalhar | Razão |
+| --- | --- | --- |
+| Sorteio e faixa | random antes dos valores sorteados | Ver resultados dentro da faixa, inclusive repetições. |
+| Variação da velocidade | mesma experiência compara -5 - 0 e -5 - 1 | Relacionar a conta com a direção já observada na aula 5. |
+
+## Proposta final
+
+### Seção 1. Compare os resultados de um sorteio
+
+**Tarefa:** Sua vez: sorteie lugares até ver diferenças e repetições e, depois, compare as duas velocidades. Quando terminar, clique em Próxima seção.
+
+**Blocos na página:** video-sorteio-tira-na-hora → fala-sorteio-tira-na-hora → experiencia-random.
+
+**Recado na página (não gravar):** Sua vez: sorteie lugares até ver diferenças e repetições e, depois, compare as duas velocidades. Quando terminar, clique em Próxima seção.
+
+**Experiência existente:** `random`. Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem. Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+
+### Seção 2. Sorteie onde cada cacto nasce
+
+**Tarefa:** Agora sorteie onde cada cacto nasce. Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.
+
+**Blocos na página:** video-lugar-diferente → fala-lugar-diferente.
+
+**Recado na página (não gravar):** Agora sorteie onde cada cacto nasce. Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+
+- No x do cacto, encaixe um número de 500 a 560.
+- Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.
+- Use um único bloco de criar cacto no projeto inteiro.
+
+### Seção 3. Sorteie uma variação na velocidade
+
+**Tarefa:** Agora sorteie uma variação na velocidade. No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.
+
+**Blocos na página:** video-velocidade-propria → fala-velocidade-propria.
+
+**Recado na página (não gravar):** Agora sorteie uma variação na velocidade. No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+
+- No x do cacto, encaixe um número de 500 a 560.
+- Na velocidade do cacto, use -5 menos um número de 0 a 1.
+- Use um único bloco de criar cacto no projeto inteiro.
+
+### Seção 4. Teste e envie seu jogo
+
+**Tarefa:** Hora de testar e enviar o seu jogo. Jogue duas partidas e observe os cactos, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+
+**Blocos na página:** video-entrega → fala-entrega → projeto.
+
+**Recado na página (não gravar):** Hora de testar e enviar o seu jogo. Jogue duas partidas e observe os cactos, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com o envio em Enviar para o professor confirmado em Enviar.
+
+- No x do cacto, encaixe um número de 500 a 560.
+- Na velocidade do cacto, use -5 menos um número de 0 a 1.
+- Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.
+- Use um único bloco de criar cacto no projeto inteiro.
+
+## Blocos disponíveis
+
+| Bloco | Caminho na paleta |
+| --- | --- |
+| ⚡ Quando acontecer | 🗂️ Áreas do projeto |
+| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |
+| Aplicar a gravidade do mundo ao sprite | Jogo 2D → Movimento → Velocidade e gravidade |
+| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |
+| Controlar o dinossauro , força do pulo | Jogo 2D → Kits prontos → Dino |
+| Criar dinossauro em x y tamanho cor | Jogo 2D → Kits prontos → Dino |
+| Criar grupo de sprites | Jogo 2D → Grupos → Criar e percorrer |
+| Desenhar o grupo | Jogo 2D → Grupos → Desenho e ordem |
+| Mostrar placar valor em x y cor tamanho | Jogo 2D → Vida e placar → Indicadores e texto na tela |
+| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |
+| A cada segundos | Jogo 2D → Tempo → Quadros e intervalos |
+| Soltar explosão no sprite cor | Jogo 2D → Desenho e efeitos → Partículas |
+| Desenhar fundo de floresta (velocidade ) | Jogo 2D → Cenários → Fundos |
+| Quando apertar qualquer tecla ou tocar na tela | Jogo 2D → Controles → Teclado, ações e toque |
+| Quando o sprite pular | Jogo 2D → Controles → Teclado, ações e toque |
+| Para cada sprite do grupo que colidir com o sprite | Jogo 2D → Colisões → Encostar e bloquear |
+| Tocar efeito | Jogo 2D → Som → Efeitos prontos |
+| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D → Grupos → Participação e limpeza |
+| um número de a | Jogo 2D → Sorteios → Números e posições |
+| Reiniciar o jogo | Jogo 2D → Jogo e telas → Telas e partida |
+| o estado do jogo é ? | Jogo 2D → Jogo e telas → Telas e partida |
+| Usar área de colisão de % do tamanho para o sprite | Jogo 2D → Colisões → Área de contato |
+| Mudar o estado do jogo para | Jogo 2D → Jogo e telas → Telas e partida |
+| Descrever o jogo para leitor de tela | Jogo 2D → Jogo e telas → Telas e partida |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |
+| Tremer a tela com intensidade | Jogo 2D → Desenho e efeitos → Efeitos |
+| Mostrar tela com título subtítulo dica fundo | Jogo 2D → Jogo e telas → Telas e partida |
+| No grupo criar obstáculo em x tamanho com vx | Jogo 2D → Kits prontos → Dino |
+| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |
+| Mover os sprites do grupo usando suas velocidades | Jogo 2D → Grupos → Movimento |
+| Condição se, senão se e senão | Programação → ❓ Lógica & Se |
+| Criar variável com valor | Programação → 🏷️ Variáveis |
+| Somar em variável | Programação → 🏷️ Variáveis |
+| Conta matemática | Programação → 🔢 Matemática |
+| juntar texto | Programação → 🔣 Valores |
+| Número | Programação → 🔣 Valores |
+| texto | Programação → 🔣 Valores |
+| valor da variável | Programação → 🔣 Valores |
+
+## Continuidade e produção
+
+Aula 12 na cadeia `corre-dino`. Entrada: etapa 11; saída: etapa 12 de `qa/corre-dino-etapas.ts`. Os 13 marcos originais e o código do jogo permanecem preservados.
+
+A ordem vídeo → recado → atividade é editorial. Configurar videoBeforeActivity no curso adulto e conferir com um perfil adulto; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos adultos, anexar o PDF do caderno do curso quando existir e ensaiar com adultos antes de declarar o percurso validado.

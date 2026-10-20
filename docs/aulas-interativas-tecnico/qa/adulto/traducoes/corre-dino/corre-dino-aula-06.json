@@ -1,0 +1,571 @@
+{
+  "curso": "corre-dino",
+  "grupo": "corre-dino-aula-06",
+  "trechos": [
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "# Corre, Dino! · Aula 6 · Retire os cactos que saíram",
+      "adulto": "# Corre, Dino! · Aula 6 · Retire os cactos que saíram"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md).",
+      "adulto": "Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md)."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "## Resumo",
+      "adulto": "## Resumo"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "- Estado de entrada: Cactos atravessando a tela, ainda guardados no grupo depois de sair.\n- Resultado da aula: Limpeza do grupo a cada quadro, com o intervalo original 1,4 segundo preservado.\n- Seções: 4. Vídeos: 3.",
+      "adulto": "- Estado de entrada: Cactos atravessando a tela, ainda guardados no grupo depois de sair.\n- Resultado da aula: Limpeza do grupo a cada quadro, com o intervalo original 1,4 segundo preservado.\n- Seções: 4. Vídeos: 3."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
+      "adulto": "**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "## Diagnóstico e decisão",
+      "adulto": "## Diagnóstico e decisão"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "A experiência torna visível o conteúdo do grupo. O medidor temporário e a criação acelerada, depois retirados no desenho antigo, deixam de ser desvios obrigatórios. A montagem atua diretamente sobre a limpeza, com o mesmo programa final.",
+      "adulto": "A experiência torna visível o conteúdo do grupo. O medidor temporário e a criação acelerada, depois retirados no desenho antigo, deixam de ser desvios obrigatórios. A montagem atua diretamente sobre a limpeza, com o mesmo programa final."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "## Triagem dos conceitos",
+      "adulto": "## Triagem dos conceitos"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Visibilidade e permanência no grupo | cleanup antes da limpeza | Observar os objetos fora da tela nos bastidores. |\n| Limpeza da imagem e do grupo | retomada no quiz | Distinguir apagar pixels de retirar objetos. |",
+      "adulto": "| Conceito | Como e quando trabalhar | Razão |\n| --- | --- | --- |\n| Visibilidade e permanência no grupo | cleanup antes da limpeza | Observar os objetos fora da tela nos bastidores. |\n| Limpeza da imagem e do grupo | retomada no quiz | Distinguir apagar pixels de retirar objetos. |"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "## Proposta final",
+      "adulto": "## Proposta final"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "### Seção 1. Compare a tela com o grupo",
+      "adulto": "### Seção 1. Compare a tela com o grupo"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Tarefa:** Sua vez! Compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Tarefa:** Sua vez: compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Blocos na página:** video-visivel-guardado → fala-visivel-guardado → experiencia-visivel-guardado.",
+      "adulto": "**Blocos na página:** video-visivel-guardado → fala-visivel-guardado → experiencia-visivel-guardado."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Zappy na página (não gravar):** Sua vez! Compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Sua vez: compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "ID video-visivel-guardado-avatar-01. Professora até “Por isso o grupo tem mais cactos do que a tela.”. Antes: Deixar dois cactos saírem; mostrar a prateleira Fora da tela, no grupo, antes de ligar a chave. Dedé: “Eu achei que sair da tela já tirava o cacto do jogo!”. Retomada da professora: “Não tira, não. Fora da tela, o cacto continua guardado no grupo. Para tirar, o jogo precisa de uma regra. Depois que dois cactos saem, a chave abre.”. Depois: Manter a prateleira Fora da tela, no grupo, à vista durante a resposta; depois, ligar a regra e acompanhar os números até ficarem iguais.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Experiência existente:** `cleanup`. Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste. Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.",
+      "adulto": "**Experiência existente:** `cleanup`. Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste. Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "### Seção 2. Retire do grupo quem já saiu",
+      "adulto": "### Seção 2. Retire do grupo quem já saiu"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Tarefa:** Agora tire do grupo os cactos que já saíram! Coloque Tirar do grupo quem sair da tela depois do desenho dos cactos e mantenha o relógio em 1.4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "**Tarefa:** Agora tire do grupo os cactos que já saíram. Coloque Tirar do grupo quem sair da tela depois do desenho dos cactos e mantenha o relógio em 1.4. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Blocos na página:** video-faxina → fala-faxina.",
+      "adulto": "**Blocos na página:** video-faxina → fala-faxina."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Zappy na página (não gravar):** Agora tire do grupo os cactos que já saíram! Coloque Tirar do grupo quem sair da tela depois do desenho dos cactos e mantenha o relógio em 1.4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Agora tire do grupo os cactos que já saíram. Coloque Tirar do grupo quem sair da tela depois do desenho dos cactos e mantenha o relógio em 1.4. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "ID video-faxina-avatar-01. Professora até “Agora a gente vai colocar a regra que tira esses cactos de lá!”. Antes: Retomar a experiência com o projeto aberto, sem pegar blocos ainda. Dedé: “Onde essa regra entra?”. Retomada da professora: “A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados.”. Depois: Localizar o fim do quadro, depois do desenho dos cactos, encaixar Tirar do grupo quem sair da tela, escolher cactos e trocar sprite por cacto.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "ID video-faxina-avatar-02. Professora até “Repare: no fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que a regra dá a cada cacto que ela confere. E não coloque outros blocos no espaço fazer dessa peça.”. Antes: Manter à vista o bloco encaixado no fim do quadro, com cactos e cacto. Não começar a conferência antes da reação. Dedé: “Se um cacto sair da tela, ele sai do grupo também!”. Retomada da professora: “Confira se ficou assim: o relógio continua em 1.4 segundo, e Tirar do grupo quem sair da tela está no fim de A cada quadro do jogo, depois do desenho dos cactos.”. Depois: Só então apontar a conferência e deixar alguns cactos atravessarem a tela. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.",
+      "adulto": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "- Remova do grupo cactos quem saiu da tela, a cada quadro.\n- Mantenha a criação de cactos no relógio de 1.4 s.\n- Mantenha o projeto sem um placar de teste para contar cactos.",
+      "adulto": "- Remova do grupo cactos quem saiu da tela, a cada quadro.\n- Mantenha a criação de cactos no relógio de 1.4 s.\n- Mantenha o projeto sem um placar de teste para contar cactos."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "### Seção 3. Confira o que você construiu",
+      "adulto": "### Seção 3. Confira o que você construiu"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Tarefa:** Hora de lembrar o que você construiu! As perguntas falam do som do pulo e dos cactos. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
+      "adulto": "**Tarefa:** Hora de lembrar o que você construiu. As perguntas falam do som do pulo e dos cactos. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Blocos na página:** fala-revisao → quiz.",
+      "adulto": "**Blocos na página:** fala-revisao → quiz."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Zappy na página (não gravar):** Hora de lembrar o que você construiu! As perguntas falam do som do pulo e dos cactos. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
+      "adulto": "**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam do som do pulo e dos cactos. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.",
+      "adulto": "**Revisão formativa:** recado → quiz, com todas as perguntas numa página só e o botão Enviar quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "### Seção 4. Teste e envie seu jogo",
+      "adulto": "### Seção 4. Teste e envie seu jogo"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Tarefa:** Hora de testar e enviar o seu jogo! Espere novos cactos passarem, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
+      "adulto": "**Tarefa:** Hora de testar e enviar o seu jogo. Espere novos cactos passarem, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Blocos na página:** video-entrega → fala-entrega → projeto.",
+      "adulto": "**Blocos na página:** video-entrega → fala-entrega → projeto."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Espere novos cactos passarem, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
+      "adulto": "**Recado na página (não gravar):** Hora de testar e enviar o seu jogo. Espere novos cactos passarem, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.",
+      "adulto": "**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com o envio em Enviar para o professor confirmado em Enviar."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "## Blocos disponíveis",
+      "adulto": "## Blocos disponíveis"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "| Bloco | Caminho na paleta |\n| --- | --- |\n| ⚡ Quando acontecer | 🗂️ Áreas do projeto |\n| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |\n| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |\n| Aplicar a gravidade do mundo ao sprite | Jogo 2D → Movimento → Velocidade e gravidade |\n| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |\n| Controlar o dinossauro , força do pulo | Jogo 2D → Kits prontos → Dino |\n| Criar dinossauro em x y tamanho cor | Jogo 2D → Kits prontos → Dino |\n| Criar grupo de sprites | Jogo 2D → Grupos → Criar e percorrer |\n| Desenhar o grupo | Jogo 2D → Grupos → Desenho e ordem |\n| Mostrar placar valor em x y cor tamanho | Jogo 2D → Vida e placar → Indicadores e texto na tela |\n| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |\n| A cada segundos | Jogo 2D → Tempo → Quadros e intervalos |\n| Desenhar fundo de floresta (velocidade ) | Jogo 2D → Cenários → Fundos |\n| Quando o sprite pular | Jogo 2D → Controles → Teclado, ações e toque |\n| Tocar efeito | Jogo 2D → Som → Efeitos prontos |\n| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D → Grupos → Participação e limpeza |\n| Descrever o jogo para leitor de tela | Jogo 2D → Jogo e telas → Telas e partida |\n| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |\n| No grupo criar obstáculo em x tamanho com vx | Jogo 2D → Kits prontos → Dino |\n| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |\n| Mover os sprites do grupo usando suas velocidades | Jogo 2D → Grupos → Movimento |\n| Número | Programação → 🔣 Valores |",
+      "adulto": "| Bloco | Caminho na paleta |\n| --- | --- |\n| ⚡ Quando acontecer | 🗂️ Áreas do projeto |\n| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |\n| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |\n| Aplicar a gravidade do mundo ao sprite | Jogo 2D → Movimento → Velocidade e gravidade |\n| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |\n| Controlar o dinossauro , força do pulo | Jogo 2D → Kits prontos → Dino |\n| Criar dinossauro em x y tamanho cor | Jogo 2D → Kits prontos → Dino |\n| Criar grupo de sprites | Jogo 2D → Grupos → Criar e percorrer |\n| Desenhar o grupo | Jogo 2D → Grupos → Desenho e ordem |\n| Mostrar placar valor em x y cor tamanho | Jogo 2D → Vida e placar → Indicadores e texto na tela |\n| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |\n| A cada segundos | Jogo 2D → Tempo → Quadros e intervalos |\n| Desenhar fundo de floresta (velocidade ) | Jogo 2D → Cenários → Fundos |\n| Quando o sprite pular | Jogo 2D → Controles → Teclado, ações e toque |\n| Tocar efeito | Jogo 2D → Som → Efeitos prontos |\n| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D → Grupos → Participação e limpeza |\n| Descrever o jogo para leitor de tela | Jogo 2D → Jogo e telas → Telas e partida |\n| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |\n| No grupo criar obstáculo em x tamanho com vx | Jogo 2D → Kits prontos → Dino |\n| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |\n| Mover os sprites do grupo usando suas velocidades | Jogo 2D → Grupos → Movimento |\n| Número | Programação → 🔣 Valores |"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "## Continuidade e produção",
+      "adulto": "## Continuidade e produção"
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "Aula 6 na cadeia `corre-dino`. Entrada: etapa 5; saída: etapa 6 de `qa/corre-dino-etapas.ts`. Os 13 marcos originais e o código do jogo permanecem preservados.",
+      "adulto": "Aula 6 na cadeia `corre-dino`. Entrada: etapa 5; saída: etapa 6 de `qa/corre-dino-etapas.ts`. Os 13 marcos originais e o código do jogo permanecem preservados."
+    },
+    {
+      "onde": "corre-dino-aula-06.md",
+      "kids": "A ordem vídeo → Zappy → atividade é editorial. Configurar videoBeforeActivity no curso e conferir com perfil de aluno; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos revisados, anexar o PDF quando aplicável e ensaiar com crianças antes de declarar o percurso validado.",
+      "adulto": "A ordem vídeo → recado → atividade é editorial. Configurar videoBeforeActivity no curso adulto e conferir com um perfil adulto; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos adultos, anexar o PDF do caderno do curso quando existir e ensaiar com adultos antes de declarar o percurso validado."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "# Roteiro de gravação · Corre, Dino! · Aula 6",
+      "adulto": "# Roteiro de gravação · Corre, Dino! · Aula 6"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Retire os cactos que saíram**",
+      "adulto": "**Retire os cactos que saíram**"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos.",
+      "adulto": "Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "Entrada: Cactos atravessando a tela, ainda guardados no grupo depois de sair. Saída: Limpeza do grupo a cada quadro, com o intervalo original 1,4 segundo preservado.",
+      "adulto": "Entrada: Cactos atravessando a tela, ainda guardados no grupo depois de sair. Saída: Limpeza do grupo a cada quadro, com o intervalo original 1,4 segundo preservado."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.",
+      "adulto": "Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"agora que\", \"ou seja\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"). Neste curso, \"então\" é o encaixe do bloco Se e não serve de palavra de ligação. A montagem que aplica uma experiência começa pela retomada no próprio jogo, e a ponte do Zappy convida e termina na ação de saída (Diretrizes, seção 6, revisão de 06/10/2026).",
+      "adulto": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"por isso\", \"mas\", \"agora que\", \"ou seja\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Percebe?\"). Neste curso, \"então\" é o encaixe do bloco Se e não serve de palavra de ligação. A montagem que aplica uma experiência começa pela retomada no próprio jogo, e o recado da página convida e termina na ação de saída (Diretrizes, seção 6, revisão de 06/10/2026; tom adulto em DIRETRIZES-ADULTO.md)."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "## Seção 1. Compare a tela com o grupo",
+      "adulto": "## Seção 1. Compare a tela com o grupo"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "### Clipe `video-visivel-guardado` · Compare a tela com o grupo",
+      "adulto": "### Clipe `video-visivel-guardado` · Compare a tela com o grupo"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": "**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a regra desligada, a tela do jogo e os bastidores lado a lado. Clicar em Tempo e deixar dois cactos saírem pela esquerda, mostrando a prateleira dos bastidores enchendo e os números da tela e do grupo na faixa. Ligar a chave e deixar o tempo passar até os dois números ficarem iguais. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy com uma mochila cheia de cactos pesando nas costas. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a regra desligada, a tela do jogo e os bastidores lado a lado. Clicar em Tempo e deixar dois cactos saírem pela esquerda, mostrando a prateleira dos bastidores enchendo e os números da tela e do grupo na faixa. Ligar a chave e deixar o tempo passar até os dois números ficarem iguais. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino com uma carteira estufada, cheia de cactos no lugar dos comprovantes. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Na tela:** Deixar dois cactos saírem; mostrar a prateleira Fora da tela, no grupo, antes de ligar a chave.",
+      "adulto": "**Na tela:** Deixar dois cactos saírem; mostrar a prateleira Fora da tela, no grupo, antes de ligar a chave."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Professora:**",
+      "adulto": "**Professora:**"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "> “Esta é uma experiência para a gente entender o que acontece com um cacto que sai da tela.\n>\n> Olha aqui: com Tirar do grupo quem sair da tela desligado, eu clico em Tempo. Os cactos passam e saem pela esquerda. Na tela do jogo eles somem, mas nos bastidores continuam no grupo, na prateleira Fora da tela, no grupo. Por isso o grupo tem mais cactos do que a tela.”",
+      "adulto": "> “Esta é uma experiência para a gente entender o que acontece com um cacto que sai da tela.\n>\n> Olha aqui: com Tirar do grupo quem sair da tela desligado, eu clico em Tempo. Os cactos passam e saem pela esquerda. Na tela do jogo eles somem, mas nos bastidores continuam no grupo, na prateleira Fora da tela, no grupo. Por isso o grupo tem mais cactos do que a tela.”"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**ID de edição:** `video-visivel-guardado-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Dedé (avatar):**",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "> “Eu achei que sair da tela já tirava o cacto do jogo!”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Manter a prateleira Fora da tela, no grupo, à vista durante a resposta; depois, ligar a regra e acompanhar os números até ficarem iguais.",
+      "adulto": "**Na tela:** Manter a prateleira Fora da tela, no grupo, à vista durante a resposta; depois, ligar a regra e acompanhar os números até ficarem iguais."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "> “Não tira, não. Fora da tela, o cacto continua guardado no grupo. Para tirar, o jogo precisa de uma regra. Depois que dois cactos saem, a chave abre. Eu ligo Tirar do grupo quem sair da tela e deixo o tempo passar. Agora quem sai da tela é tirado do grupo, e o número do grupo fica igual ao da tela. Sair da tela não apaga um cacto. Quem tira do grupo é essa regra.\n>\n> É como uma mochila de passeio: o brinquedo que você não usa mais continua lá dentro, pesando, até alguém tirar. No seu jogo, você vai encaixar Tirar do grupo quem sair da tela depois do desenho dos cactos.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
+      "adulto": "> “Parece que sair da tela já tira o cacto do jogo, mas não tira. Fora da tela, o cacto continua guardado no grupo. Para tirar, o jogo precisa de uma regra. Depois que dois cactos saem, a chave abre. Eu ligo Tirar do grupo quem sair da tela e deixo o tempo passar. Agora quem sai da tela é tirado do grupo, e o número do grupo fica igual ao da tela. Sair da tela não apaga um cacto. Quem tira do grupo é essa regra.\n>\n> É como a carteira: o comprovante que você não usa mais continua lá dentro, fazendo volume, até alguém tirar. No seu jogo, você vai encaixar Tirar do grupo quem sair da tela depois do desenho dos cactos.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "## Seção 2. Retire do grupo quem já saiu",
+      "adulto": "## Seção 2. Retire do grupo quem já saiu"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "### Clipe `video-faxina` · Retire do grupo quem já saiu",
+      "adulto": "### Clipe `video-faxina` · Retire do grupo quem já saiu"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": "**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.",
+      "adulto": "**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta seção ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Próxima seção). Executar cada gesto junto da fala correspondente."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Na tela:** Retomar a experiência com o projeto aberto, sem pegar blocos ainda.",
+      "adulto": "**Na tela:** Retomar a experiência com o projeto aberto, sem pegar blocos ainda."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "> “Lembra da experiência da parte anterior? Os cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai colocar a regra que tira esses cactos de lá!”",
+      "adulto": "> “Lembra da experiência da seção anterior? Os cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai colocar a regra que tira esses cactos de lá.”"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**ID de edição:** `video-faxina-avatar-01`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "> “Onde essa regra entra?”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Localizar o fim do quadro, depois do desenho dos cactos, encaixar Tirar do grupo quem sair da tela, escolher cactos e trocar sprite por cacto. Manter à vista o bloco encaixado no fim do quadro, com cactos e cacto. Não começar a conferência antes da reação.",
+      "adulto": "**Na tela:** Localizar o fim do quadro, depois do desenho dos cactos, encaixar Tirar do grupo quem sair da tela, escolher cactos e trocar sprite por cacto. Manter à vista o bloco encaixado no fim do quadro, com cactos e cacto."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "> “A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo cactos. Depois, abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte depois do desenho dos cactos. Escolha cactos.\n>\n> Repare: no fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que a regra dá a cada cacto que ela confere. E não coloque outros blocos no espaço fazer dessa peça.”",
+      "adulto": "> “A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo cactos. Depois, abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte depois do desenho dos cactos. Escolha cactos.\n>\n> Repare: no fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que a regra dá a cada cacto que ela confere. E não coloque outros blocos no espaço fazer dessa peça.”"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**ID de edição:** `video-faxina-avatar-02`.",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "> “Se um cacto sair da tela, ele sai do grupo também!”",
+      "adulto": ""
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Na tela:** Dedé sai antes da resposta. Só então apontar a conferência e deixar alguns cactos atravessarem a tela. Manter livres os campos, os encaixes e o resultado do teste.",
+      "adulto": "**Na tela:** Apontar a conferência e deixar alguns cactos atravessarem a tela. Manter livres os campos, os encaixes e o resultado do teste."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "> “Confira se ficou assim: o relógio continua em 1.4 segundo, e Tirar do grupo quem sair da tela está no fim de A cada quadro do jogo, depois do desenho dos cactos. Limpar a tela continua no começo do quadro, porque ela cuida da imagem, e esta regra cuida dos cactos guardados no grupo.\n>\n> Agora espere alguns cactos atravessarem a tela. Os que chegam pela direita têm que continuar entrando normalmente. A diferença no grupo não aparece no seu jogo, porque ela acontece por dentro, e quem confere essa regra é a verificação.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": "> “Agora, quando um cacto sai da tela, ele sai do grupo também. Confira se ficou assim: o relógio continua em 1.4 segundo, e Tirar do grupo quem sair da tela está no fim de A cada quadro do jogo, depois do desenho dos cactos. Limpar a tela continua no começo do quadro, porque ela cuida da imagem, e esta regra cuida dos cactos guardados no grupo.\n>\n> Agora espere alguns cactos atravessarem a tela. Os que chegam pela direita têm que continuar entrando normalmente. A diferença no grupo não aparece no seu jogo, porque ela acontece por dentro, e quem confere essa regra é a verificação.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "## Seção 3. Confira o que você construiu",
+      "adulto": "## Seção 3. Confira o que você construiu"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.",
+      "adulto": "Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do recado. Leia a explicação após enviar; tentativas ilimitadas, sem espera."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "## Seção 4. Teste e envie seu jogo",
+      "adulto": "## Seção 4. Teste e envie seu jogo"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "### Clipe `video-entrega` · Teste e envie seu jogo",
+      "adulto": "### Clipe `video-entrega` · Teste e envie seu jogo"
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.",
+      "adulto": "**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Enviar meu projeto, Enviar, Projeto enviado! e Concluir fase).",
+      "adulto": "**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Enviar para o professor, Enviar, Projeto enviado ao professor e Concluir aula)."
+    },
+    {
+      "onde": "corre-dino-aula-06.roteiro.md",
+      "kids": "> “Agora a sua corrida tira do grupo os cactos que já saíram! Antes de enviar o seu projeto, espere novos cactos entrarem e passarem pela tela. Eles têm que continuar vindo no mesmo ritmo.\n>\n> Confira o nome cactos na regra que tira do grupo e o relógio em 1.4 segundo. Se um cacto bater no Dino, você pode seguir o teste, porque o jogo ainda não tem a regra da derrota.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.”",
+      "adulto": "> “Agora a sua corrida tira do grupo os cactos que já saíram. Antes de enviar o seu projeto, espere novos cactos entrarem e passarem pela tela. Eles têm que continuar vindo no mesmo ritmo.\n>\n> Confira o nome cactos na regra que tira do grupo e o relógio em 1.4 segundo. Se um cacto bater no Dino, você pode seguir o teste, porque o jogo ainda não tem a regra da derrota.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula.”"
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Retire os cactos que saíram",
+      "adulto": "Retire os cactos que saíram"
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Título: Compare a tela com o grupo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a regra desligada, a tela do jogo e os bastidores lado a lado. Clicar em Tempo e deixar dois cactos saírem pela esquerda, mostrando a prateleira dos bastidores enchendo e os números da tela e do grupo na faixa. Ligar a chave e deixar o tempo passar até os dois números ficarem iguais. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy com uma mochila cheia de cactos pesando nas costas. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-visivel-guardado-avatar-01. Professora até “Por isso o grupo tem mais cactos do que a tela.”. Antes: Deixar dois cactos saírem; mostrar a prateleira Fora da tela, no grupo, antes de ligar a chave. Dedé: “Eu achei que sair da tela já tirava o cacto do jogo!”. Retomada da professora: “Não tira, não. Fora da tela, o cacto continua guardado no grupo. Para tirar, o jogo precisa de uma regra. Depois que dois cactos saem, a chave abre.”. Depois: Manter a prateleira Fora da tela, no grupo, à vista durante a resposta; depois, ligar a regra e acompanhar os números até ficarem iguais.\n\nFala completa em corre-dino-aula-06.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Compare a tela com o grupo\n\nProduzir no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a regra desligada, a tela do jogo e os bastidores lado a lado. Clicar em Tempo e deixar dois cactos saírem pela esquerda, mostrando a prateleira dos bastidores enchendo e os números da tela e do grupo na faixa. Ligar a chave e deixar o tempo passar até os dois números ficarem iguais. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino com uma carteira estufada, cheia de cactos no lugar dos comprovantes. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-06.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Sua vez! Compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima parte.",
+      "adulto": "Sua vez: compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Compare a tela com o grupo",
+      "adulto": "Compare a tela com o grupo"
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste. Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita.",
+      "adulto": "Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste. Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Título: Retire do grupo quem já saiu\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nDedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\nID video-faxina-avatar-01. Professora até “Agora a gente vai colocar a regra que tira esses cactos de lá!”. Antes: Retomar a experiência com o projeto aberto, sem pegar blocos ainda. Dedé: “Onde essa regra entra?”. Retomada da professora: “A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados.”. Depois: Localizar o fim do quadro, depois do desenho dos cactos, encaixar Tirar do grupo quem sair da tela, escolher cactos e trocar sprite por cacto.\n\nID video-faxina-avatar-02. Professora até “Repare: no fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que a regra dá a cada cacto que ela confere. E não coloque outros blocos no espaço fazer dessa peça.”. Antes: Manter à vista o bloco encaixado no fim do quadro, com cactos e cacto. Não começar a conferência antes da reação. Dedé: “Se um cacto sair da tela, ele sai do grupo também!”. Retomada da professora: “Confira se ficou assim: o relógio continua em 1.4 segundo, e Tirar do grupo quem sair da tela está no fim de A cada quadro do jogo, depois do desenho dos cactos.”. Depois: Só então apontar a conferência e deixar alguns cactos atravessarem a tela. Manter livres os campos, os encaixes e o resultado do teste.\n\nFala completa em corre-dino-aula-06.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Retire do grupo quem já saiu\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta seção ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-06.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Agora tire do grupo os cactos que já saíram! Coloque Tirar do grupo quem sair da tela depois do desenho dos cactos e mantenha o relógio em 1.4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "adulto": "Agora tire do grupo os cactos que já saíram. Coloque Tirar do grupo quem sair da tela depois do desenho dos cactos e mantenha o relógio em 1.4. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Hora de lembrar o que você construiu! As perguntas falam do som do pulo e dos cactos. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
+      "adulto": "Hora de lembrar o que você construiu. As perguntas falam do som do pulo e dos cactos. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "O Dino pula com espaço e com toque. Onde ligar um som que acompanha os dois?",
+      "adulto": "O Dino pula com espaço e com toque. Onde ligar um som que acompanha os dois?"
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Em Quando o sprite pular.",
+      "adulto": "Em Quando o sprite pular."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Somente em Quando apertar Espaço.",
+      "adulto": "Somente em Quando apertar Espaço."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Em Ao iniciar.",
+      "adulto": "Em Ao iniciar."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "O evento do Dino acompanha o salto, independentemente do controle usado. A tecla sozinha não representa todos os pulos.",
+      "adulto": "O evento do Dino acompanha o salto, independentemente do controle usado. A tecla sozinha não representa todos os pulos."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "O jogo cria cactos a cada quadro. O que ajuda a deixar um intervalo entre os nascimentos?",
+      "adulto": "O jogo cria cactos a cada quadro. O que ajuda a deixar um intervalo entre os nascimentos?"
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Trocar a cor do cacto.",
+      "adulto": "Trocar a cor do cacto."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Desenhar cada cacto duas vezes.",
+      "adulto": "Desenhar cada cacto duas vezes."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Criar dentro de um relógio com intervalo.",
+      "adulto": "Criar dentro de um relógio com intervalo."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "O relógio espera entre uma criação e outra. O desenho continua sendo atualizado em cada quadro.",
+      "adulto": "O relógio espera entre uma criação e outra. O desenho continua sendo atualizado em cada quadro."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Um cacto passou da borda. O que retira esse objeto do grupo?",
+      "adulto": "Um cacto passou da borda. O que retira esse objeto do grupo?"
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Limpar a tela antes do fundo.",
+      "adulto": "Limpar a tela antes do fundo."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Tirar do grupo quem sair da tela.",
+      "adulto": "Tirar do grupo quem sair da tela."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Parar de desenhar o Dino.",
+      "adulto": "Parar de desenhar o Dino."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Limpar a tela prepara outra imagem. A regra do grupo retira os objetos antigos; sair da imagem sozinho não faz isso.",
+      "adulto": "Limpar a tela prepara outra imagem. A regra do grupo retira os objetos antigos; sair da imagem sozinho não faz isso."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-06.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.",
+      "adulto": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-06.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Hora de testar e enviar o seu jogo! Espere novos cactos passarem, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
+      "adulto": "Hora de testar e enviar o seu jogo. Espere novos cactos passarem, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Corre, Dino!",
+      "adulto": "Corre, Dino!"
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida.",
+      "adulto": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Retire do grupo quem já saiu",
+      "adulto": "Retire do grupo quem já saiu"
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Remova do grupo cactos quem saiu da tela, a cada quadro.",
+      "adulto": "Remova do grupo cactos quem saiu da tela, a cada quadro."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Mantenha a criação de cactos no relógio de 1.4 s.",
+      "adulto": "Mantenha a criação de cactos no relógio de 1.4 s."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Mantenha o projeto sem um placar de teste para contar cactos.",
+      "adulto": "Mantenha o projeto sem um placar de teste para contar cactos."
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Confira o que você construiu",
+      "adulto": "Confira o que você construiu"
+    },
+    {
+      "onde": "corre-dino-aula-06.manifesto.json",
+      "kids": "Teste e envie seu jogo",
+      "adulto": "Teste e envie seu jogo"
+    }
+  ]
+}

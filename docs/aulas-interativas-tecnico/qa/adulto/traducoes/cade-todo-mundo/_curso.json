@@ -1,0 +1,61 @@
+{
+  "curso": "cade-todo-mundo",
+  "grupo": "_curso",
+  "trechos": [
+    {
+      "onde": "modulos.md",
+      "kids": "# Cadê Todo Mundo?",
+      "adulto": "# Cadê Todo Mundo?"
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Título do curso:** Cadê Todo Mundo?",
+      "adulto": "**Título do curso:** Cadê Todo Mundo?"
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Descrição curta:** Monte um jogo de procurar personagens escondidos.",
+      "adulto": "**Descrição curta:** Monte um jogo de achar personagens escondidos."
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Descrição longa:** Faça os esconderijos sumirem com um toque e conte os personagens encontrados. Você monta as regras com blocos e testa até achar todo mundo.",
+      "adulto": "**Descrição longa:** Faça os esconderijos sumirem com um toque e conte os personagens encontrados. Você monta as regras com blocos e testa até achar todo mundo."
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "## Módulo 1: Minha primeira busca",
+      "adulto": "## Módulo 1: Minha primeira busca"
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "**Resumo:** Jogue o exemplo, faça os personagens aparecerem, programe a contagem dos três achados, deixe o jogo com a sua cara e publique.",
+      "adulto": "**Resumo:** Jogue o exemplo, faça os personagens aparecerem, programe a contagem dos três achados, deixe o jogo com a sua cara e publique."
+    },
+    {
+      "onde": "modulos.md",
+      "kids": "- [O primeiro achado](cade-todo-mundo-aula-1.md)\n- [Complete a busca](cade-todo-mundo-aula-2.md)\n- [Seu certificado](cade-todo-mundo-certificado.md)",
+      "adulto": "- [O primeiro achado](cade-todo-mundo-aula-1.md)\n- [Complete a busca](cade-todo-mundo-aula-2.md)\n- [Seu certificado](cade-todo-mundo-certificado.md)"
+    },
+    {
+      "onde": "README.md",
+      "kids": "Materiais do curso para consulta, gravação e importação.",
+      "adulto": "Materiais do curso para consulta, gravação e importação."
+    },
+    {
+      "onde": "README.md",
+      "kids": "| Material | Arquivo |\n| --- | --- |\n| Título, descrições, módulos e aulas | [Módulos](modulos.md) |\n| Blocos do projeto | [JSON dos blocos](blocos.json) |\n| Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |\n| Mapa da Aventura para consultar ou anexar | [PDF do mapa](mapa-da-aventura.pdf) |",
+      "adulto": "| Material | Arquivo |\n| --- | --- |\n| Título, descrições, módulos e aulas | [Módulos](modulos.md) |\n| Blocos do projeto | [JSON dos blocos](blocos.json) |\n| Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |\n| Caderno do Aluno para consultar ou anexar | [PDF do caderno](caderno-do-aluno.pdf) |"
+    },
+    {
+      "onde": "README.md",
+      "kids": "Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as orientações; **roteiro** traz as falas e a direção dos vídeos; **manifesto** é o JSON para importar no Admin.",
+      "adulto": "Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as orientações; **roteiro** traz as falas e a direção dos vídeos; **manifesto** é o JSON para importar no Admin."
+    },
+    {
+      "onde": "README.md",
+      "kids": "| Aula | Conteúdo | Roteiro | Manifesto |\n| --- | --- | --- | --- |\n| O primeiro achado | [Abrir](cade-todo-mundo-aula-1.md) | [Abrir](cade-todo-mundo-aula-1.roteiro.md) | [JSON](cade-todo-mundo-aula-1.manifesto.json) |\n| Complete a busca | [Abrir](cade-todo-mundo-aula-2.md) | [Abrir](cade-todo-mundo-aula-2.roteiro.md) | [JSON](cade-todo-mundo-aula-2.manifesto.json) |\n| Seu certificado | [Abrir](cade-todo-mundo-certificado.md) | [Abrir](cade-todo-mundo-certificado.roteiro.md) | [JSON](cade-todo-mundo-certificado.manifesto.json) |",
+      "adulto": "| Aula | Conteúdo | Roteiro | Manifesto |\n| --- | --- | --- | --- |\n| O primeiro achado | [Abrir](cade-todo-mundo-aula-1.md) | [Abrir](cade-todo-mundo-aula-1.roteiro.md) | [JSON](cade-todo-mundo-aula-1.manifesto.json) |\n| Complete a busca | [Abrir](cade-todo-mundo-aula-2.md) | [Abrir](cade-todo-mundo-aula-2.roteiro.md) | [JSON](cade-todo-mundo-aula-2.manifesto.json) |\n| Seu certificado | [Abrir](cade-todo-mundo-certificado.md) | [Abrir](cade-todo-mundo-certificado.roteiro.md) | [JSON](cade-todo-mundo-certificado.manifesto.json) |"
+    }
+  ]
+}

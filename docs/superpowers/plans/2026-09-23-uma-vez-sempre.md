@@ -172,9 +172,9 @@ git commit -m "feat(learning): mostrar comparacao de movimento no palco"
 ### Task 3: Align the pilot lesson, recording brief, and scene catalog
 
 **Files:**
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json:122-170`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.md`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json:122-170`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md`
 - Modify: `docs/aulas-interativas-tecnico/cenas/CENAS-NOVAS.md:71-117`
 - Test: `packages/core/src/learning/scene/pedidos-no-motor.test.ts`
 
@@ -234,7 +234,7 @@ Expected: PASS, including the global imported-manifest validation and the adapte
 - [ ] **Step 6: Commit the lesson content**
 
 ```bash
-git add docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.md docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md docs/aulas-interativas-tecnico/cenas/CENAS-NOVAS.md packages/core/src/learning/scene/pedidos-no-motor.test.ts
+git add docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.md docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md docs/aulas-interativas-tecnico/cenas/CENAS-NOVAS.md packages/core/src/learning/scene/pedidos-no-motor.test.ts
 git commit -m "docs(learning): orientar dois testes na aula piloto"
 ```
 
@@ -254,7 +254,7 @@ git commit -m "docs(learning): orientar dois testes na aula piloto"
 Run:
 
 ```bash
-bunx biome format --write packages/core/src/learning/scene/presets.ts packages/core/src/learning/scene/once-vs-always.test.ts packages/member-shell/src/components/scene-once-vs-always.tsx packages/member-shell/tests/scene-once-vs-always.test.tsx docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.md docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md docs/aulas-interativas-tecnico/cenas/CENAS-NOVAS.md
+bunx biome format --write packages/core/src/learning/scene/presets.ts packages/core/src/learning/scene/once-vs-always.test.ts packages/member-shell/src/components/scene-once-vs-always.tsx packages/member-shell/tests/scene-once-vs-always.test.tsx docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.md docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md docs/aulas-interativas-tecnico/cenas/CENAS-NOVAS.md
 ```
 
 - [ ] **Step 2: Run focused behavior tests**

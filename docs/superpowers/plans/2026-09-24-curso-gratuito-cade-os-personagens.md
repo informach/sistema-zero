@@ -58,7 +58,7 @@
 ### Task 3: Aula 1 do gratuito
 
 **Files:**
-- Create: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.md`, `.roteiro.md`, `.manifesto.json`.
+- Create: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.md`, `.roteiro.md`, `.manifesto.json`.
 - Create: caderno visual de uma página sob `docs/aulas-interativas-tecnico/recursos/cade-todo-mundo/`.
 - Modify: `docs/aulas-interativas-tecnico/qa/novo-modelo.ts`.
 
@@ -72,8 +72,8 @@
 ### Task 4: Aula 2 e certificado
 
 **Files:**
-- Create: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.md`, `.roteiro.md`, `.manifesto.json`.
-- Create: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.md`, `.roteiro.md`, `.manifesto.json`.
+- Create: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.md`, `.roteiro.md`, `.manifesto.json`.
+- Create: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-certificado.md`, `.roteiro.md`, `.manifesto.json`.
 - Create: `docs/aulas-interativas-tecnico/modulos-cade-todo-mundo.md`.
 
 **Interfaces:** Aula 2 continua a mesma cadeia da Aula 1, sem substituir o projeto salvo. Certificado usa `kind: 'certificate'` e não contém oferta.

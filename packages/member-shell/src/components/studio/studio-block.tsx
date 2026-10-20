@@ -920,6 +920,8 @@ function LessonStudioBlockView({
   useEffect(() => {
     onSharedRef.current = onShared
   }, [onShared])
+  // Ter ou não ter celebração é fixo por app (o kids sempre passa `onShared` na aula vitrine).
+  const temCelebracao = Boolean(onShared)
 
   // Título/resumo do post pré-definidos pelo admin (vitrine): preenchem o Compartilhar e
   // ECONOMIZAM IA — com resumo, o dialog NÃO chama a IA (abre com este texto, editável). Vazio
@@ -981,14 +983,25 @@ function LessonStudioBlockView({
         }
       },
       // Publicou: TRAVA o compartilhar da aula (1 vez só, persistido local) e entrega os
-      // links ao host (kids abre a celebração); o ShareDialog fecha sozinho.
+      // links ao host. O kids abre a celebração e o ShareDialog fecha sozinho; o adulto não tem
+      // celebração, então o dialog mostra a própria tela com o link (Publicado!, Copiar link).
       onPublished: (result) => {
         setAlreadyShared(true)
         writeSharedFlag(projectId)
         onSharedRef.current?.(result)
       },
+      showPublishedScreen: !temCelebracao,
     }
-  }, [enableShare, lessonId, blockId, projectId, presetTitle, presetDescription, presetCoverUrl])
+  }, [
+    enableShare,
+    lessonId,
+    blockId,
+    projectId,
+    presetTitle,
+    presetDescription,
+    presetCoverUrl,
+    temCelebracao,
+  ])
 
   const ready = StudioLesson !== null && seed?.id === projectId && !seedLoadFailed
   const savingDrafts = useLessonDraftEditor(

@@ -1,0 +1,2161 @@
+{
+  "curso": "corre-dino",
+  "grupo": "_caderno",
+  "trechos": [
+    {
+      "onde": "caderno",
+      "kids": "Blocos que você já montou nas fases anteriores",
+      "adulto": "Blocos que você já montou nas aulas anteriores"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Jogue antes de construir",
+      "adulto": "Jogue antes de construir"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Você vai construir Corre, Dino! O Dino pula os cactos numa corrida que fica mais rápida. Tente passar pelos obstáculos e somar pontos pelo tempo que conseguir continuar na partida.",
+      "adulto": "Você vai construir Corre, Dino! O Dino pula os cactos numa corrida que fica mais rápida. Tente passar pelos obstáculos e somar pontos pelo tempo que conseguir continuar na partida."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Experimente a versão pronta. Clique na área do jogo para começar. Toque e solte a barra de espaço ou a seta para cima, ou toque na parte de cima da tela, para pular. Espere o Dino voltar ao chão para pular outra vez.",
+      "adulto": "Experimente a versão pronta. Clique na área do jogo para começar. Aperte e solte a barra de espaço ou a seta para cima, ou toque na parte de cima da tela, para pular. Espere o Dino voltar ao chão para pular outra vez."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Quando perder, toque uma vez para voltar à abertura e outra para começar uma nova partida. Você pode seguir mesmo sem bater recorde. Depois de experimentar os controles, clique em Próxima parte.",
+      "adulto": "Quando perder, toque uma vez para voltar à abertura e outra para começar uma nova partida. Não precisa bater recorde para seguir. Depois de experimentar os controles, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare uma vez e sempre",
+      "adulto": "Compare uma vez e sempre"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Antes de preparar o seu jogo, compare uma ação feita uma vez com a mesma ação repetida.",
+      "adulto": "Antes de preparar o seu jogo, compare uma ação feita uma vez com a mesma ação repetida."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Nesta experiência, coloque Mover o Dino um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a posição e o contador da ação.",
+      "adulto": "Nesta experiência, coloque Mover o Dino um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a posição e o contador da ação."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a posição e o contador.",
+      "adulto": "Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a posição e o contador."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Depois dos testes, clique em Próxima parte.",
+      "adulto": "Depois dos testes, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Escolha o tamanho da tela",
+      "adulto": "Escolha o tamanho da tela"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Seu jogo vai ocupar uma tela de 480 por 270. Antes de preparar essa tela, veja o que os dois números mudam.",
+      "adulto": "Seu jogo vai ocupar uma tela de 480 por 270. Antes de preparar essa tela, veja o que os dois números mudam."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique em Ligue a borda. Com a borda visível, mude a largura para 600 e a altura para 300. Observe o retângulo.",
+      "adulto": "Clique em Ligue a borda. Com a borda visível, mude a largura para 600 e a altura para 300. Observe o retângulo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Depois coloque largura 480 e altura 270. Compare com o tamanho anterior.",
+      "adulto": "Depois coloque largura 480 e altura 270. Compare com o tamanho anterior."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Prepare a tela do jogo",
+      "adulto": "Prepare a tela do jogo"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe a área do seu jogo. Tá vendo? Ela ainda não tem tamanho nem cor, porque o seu projeto está vazio.",
+      "adulto": "Olhe a área do seu jogo. Percebe? Ela ainda não tem tamanho nem cor, porque o seu projeto está vazio."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? A tela mudou de tamanho com a largura e a altura. Agora a gente vai preparar a sua tela!",
+      "adulto": "Lembra da experiência da seção anterior? A tela mudou de tamanho com a largura e a altura. Agora a gente vai preparar a sua tela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Antes de pegar cada peça, deixe à vista o lugar do encaixe. Se ele estiver fora da tela, é só arrastar um espaço vazio entre os blocos até ele aparecer.",
+      "adulto": "Antes de pegar cada peça, deixe à vista o lugar do encaixe. Se ele estiver fora da tela, é só arrastar um espaço vazio entre os blocos até ele aparecer."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A tela só precisa ser preparada uma vez, por isso ela vai em Ao iniciar, que faz cada peça uma vez só, no começo do jogo. Deixe à vista um espaço vazio do projeto, abra Áreas do projeto, pegue Ao iniciar e solte nesse espaço.",
+      "adulto": "A tela só precisa ser preparada uma vez, por isso ela vai em Ao iniciar, que faz cada peça uma vez só, no começo do jogo. Deixe à vista um espaço vazio do projeto, abra Áreas do projeto, pegue Ao iniciar e solte nesse espaço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio dentro de Ao iniciar. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste até dentro de Ao iniciar e solte quando aparecer o encaixe.",
+      "adulto": "Agora deixe à vista o espaço vazio dentro de Ao iniciar. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste até dentro de Ao iniciar e solte quando aparecer o encaixe."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Repare nos números do bloco: ele chega com 800 e 480. O primeiro número é a largura, e o segundo, a altura. Troque 800 por 480 e 480 por 270. Depois, no campo fundo, escolha um azul claro, que vai pintar o fundo do seu jogo.",
+      "adulto": "Repare nos números do bloco: ele chega com 800 e 480. O primeiro número é a largura, e o segundo, a altura. Troque 800 por 480 e 480 por 270. Depois, no campo fundo, escolha um azul claro, que vai pintar o fundo do seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora olhe a área do jogo: a cor aparece! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Preparar o jogo em tela cheia está dentro de Ao iniciar, com largura 480 e altura 270. Depois de corrigir, teste de novo.",
+      "adulto": "Agora olhe a área do jogo: a cor aparece. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Preparar o jogo em tela cheia está dentro de Ao iniciar, com largura 480 e altura 270. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta fase.",
+      "adulto": "O Estúdio guarda o seu jogo automaticamente enquanto você monta. Você só envia o seu projeto ao professor no fim desta aula."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+      "adulto": "Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mostre o limite da tela",
+      "adulto": "Mostre o limite da tela"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe a área do seu jogo. Tá vendo? Não tem nenhum contorno, porque o jogo ainda não mostra a borda.",
+      "adulto": "Olhe a área do seu jogo. Percebe? Não tem nenhum contorno, porque o jogo ainda não mostra a borda."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência do tamanho da tela, na quarta parte desta fase? Com a borda ligada, aparecia um contorno. Agora a gente vai colocar a borda no seu jogo!",
+      "adulto": "Lembra da experiência do tamanho da tela, na quarta seção desta aula? Com a borda ligada, aparecia um contorno. Agora a gente vai colocar a borda no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A borda aparece junto com a tela, logo depois de ela ser preparada. Por isso, deixe à vista o lugar logo abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar. Depois, abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação.",
+      "adulto": "A borda aparece junto com a tela, logo depois de ela ser preparada. Por isso, deixe à vista o lugar logo abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar. Depois, abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe a espessura em 4 e escolha uma cor que apareça sobre o azul, como branco, porque, com duas cores parecidas, a borda some no fundo.",
+      "adulto": "Deixe a espessura em 4. Na cor, escolha uma que apareça sobre o azul, como branco, porque, com duas cores parecidas, a borda some no fundo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora olhe a área do jogo: aparece um retângulo em volta dela! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de Ao iniciar, primeiro vem Preparar o jogo em tela cheia e, logo abaixo, Mostrar a borda da tela, com espessura 4. Se a borda estiver lá e mesmo assim não aparecer, escolha para ela uma cor diferente da cor do fundo. Depois de corrigir, teste de novo.",
+      "adulto": "Agora olhe a área do jogo: aparece um retângulo em volta dela. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de Ao iniciar, primeiro vem Preparar o jogo em tela cheia e, logo abaixo, Mostrar a borda da tela, com espessura 4. Se a borda estiver lá e mesmo assim não aparecer, escolha para ela uma cor diferente da cor do fundo. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Escolha onde o Dino fica",
+      "adulto": "Escolha onde o Dino fica"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Para criar o seu Dino num lugar da tela, você vai usar dois números: o x e o y.",
+      "adulto": "Para criar o seu Dino num lugar da tela, você vai usar dois números: o x e o y."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Nesta experiência, aumente o x sem mudar o y e observe o Dino. Depois aumente o y sem mudar o x e compare as direções.",
+      "adulto": "Nesta experiência, aumente o x sem mudar o y e observe o Dino. Depois aumente o y sem mudar o x e compare as direções."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Por último, coloque x em 0 e y em 0. Observe onde fica essa posição.",
+      "adulto": "Por último, coloque x em 0 e y em 0. Observe onde fica essa posição."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare criar e mostrar",
+      "adulto": "Compare criar e mostrar"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Você já escolheu posições. Agora observe a diferença entre criar um objeto e desenhá-lo na tela.",
+      "adulto": "Você já escolheu posições. Agora observe a diferença entre criar um objeto e desenhá-lo na tela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique em Criar o Dino. Compare os bastidores com a tela do jogo.",
+      "adulto": "Clique em Criar o Dino. Compare os bastidores com a tela do jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Depois clique em Mostrar o Dino na tela e compare os dois lugares novamente.",
+      "adulto": "Depois clique em Mostrar o Dino na tela e compare os dois lugares novamente."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Crie o Dino nos bastidores",
+      "adulto": "Crie o Dino nos bastidores"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Criar o Dino deixava ele nos bastidores, fora da tela. Agora você vai criar o Dino do seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Criar o Dino deixava ele nos bastidores, fora da tela. Agora você vai criar o Dino do seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O Dino nasce quando o jogo começa, logo depois da borda. Por isso, deixe à vista o lugar logo abaixo de Mostrar a borda da tela, dentro de Ao iniciar. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco Criar dinossauro e solte logo abaixo da borda.",
+      "adulto": "O Dino nasce quando o jogo começa, logo depois da borda. Por isso, deixe à vista o lugar logo abaixo de Mostrar a borda da tela, dentro de Ao iniciar. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco Criar dinossauro e solte logo abaixo da borda."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olha aqui: o bloco já vem com o nome dino. Mantenha esse nome, porque é ele que identifica o seu Dino no jogo. No jogo, o Dino é um sprite, que é um objeto do jogo que você pode programar.",
+      "adulto": "Olha aqui: o bloco já vem com o nome dino. Mantenha esse nome, porque é ele que identifica o seu Dino no jogo. No jogo, o Dino é um sprite, que é um objeto do jogo que você pode programar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O bloco chega com x 120: troque por 110. O y já vem 150 e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino.",
+      "adulto": "O bloco chega com x 120: troque por 110. O y já vem 150 e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: dentro de Ao iniciar, primeiro vem a preparação da tela, depois a borda e, por último, Criar dinossauro, com x 110, y 150 e tamanho 64. A tela continua sem Dino, e está certo: ele já existe nos bastidores, mas ainda não tem uma ordem de desenho. Por isso, não duplique o bloco para tentar fazer o Dino aparecer.",
+      "adulto": "Confira se ficou assim: dentro de Ao iniciar, primeiro vem a preparação da tela, depois a borda e, por último, Criar dinossauro, com x 110, y 150 e tamanho 64. A tela continua sem Dino, e está certo: ele já existe nos bastidores, mas ainda não tem uma ordem de desenho. Por isso, não duplique o bloco para tentar fazer o Dino aparecer."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Teste e envie seu jogo",
+      "adulto": "Teste e envie seu jogo"
+    },
+    {
+      "onde": "caderno",
+      "kids": "O seu projeto agora prepara a tela e cria o Dino! Antes de enviar, vamos conferir tudo. Olhe a área do jogo: a cor e a borda aparecem numa tela de 480 por 270, e o Dino ainda não aparece, porque ele está criado nos bastidores, sem desenho.",
+      "adulto": "O seu projeto agora prepara a tela e cria o Dino. Antes de enviar, vamos conferir tudo. Olhe a área do jogo: a cor e a borda aparecem numa tela de 480 por 270, e o Dino ainda não aparece, porque ele está criado nos bastidores, sem desenho."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora confira o bloco Criar dinossauro dentro de Ao iniciar, com o nome dino, x 110, y 150 e tamanho 64. Se algum campo estiver diferente, corrija antes de enviar.",
+      "adulto": "Agora confira o bloco Criar dinossauro dentro de Ao iniciar, com o nome dino, x 110, y 150 e tamanho 64. Se algum campo estiver diferente, corrija antes de enviar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.",
+      "adulto": "Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Prepare a tela e crie o Dino",
+      "adulto": "Prepare a tela e crie o Dino"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 1",
+      "adulto": "Aula 1"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Estes são os encaixes desta fase, com as mesmas cores dos blocos no Estúdio. Os caminhos, os valores e os testes completos estão nos passos desta fase.",
+      "adulto": "Estes são os encaixes desta aula, com as mesmas cores dos blocos no Estúdio. Os caminhos, os valores e os testes completos estão nos passos desta aula."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare o desenho no começo e a cada quadro",
+      "adulto": "Compare o desenho no começo e a cada quadro"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Seu Dino foi criado, mas ainda não aparece. Antes de desenhá-lo, compare uma imagem feita no começo com imagens que acompanham o movimento.",
+      "adulto": "Seu Dino foi criado, mas ainda não aparece. Antes de desenhá-lo, compare uma imagem feita no começo com imagens que acompanham o movimento."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Nesta experiência, deixe Desenhar o Dino em Só no começo. Clique em Avançar 1 quadro algumas vezes e compare o desenho com o x mostrado.",
+      "adulto": "Nesta experiência, deixe Desenhar o Dino em Só no começo. Clique em Avançar 1 quadro algumas vezes e compare o desenho com o x mostrado."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Troque para A cada quadro e avance mais alguns quadros. Por último, ligue Limpar a tela antes e avance de novo. Compare os três jeitos.",
+      "adulto": "Troque para A cada quadro e avance mais alguns quadros. Por último, ligue Limpar a tela antes e avance de novo. Compare os três jeitos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mostre o Dino a cada quadro",
+      "adulto": "Mostre o Dino a cada quadro"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe a área do seu jogo. Tá vendo? O Dino não aparece, porque nada manda desenhar ele.",
+      "adulto": "Olhe a área do seu jogo. Percebe? O Dino não aparece, porque nada manda desenhar ele."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? O Dino só acompanhou o movimento quando foi desenhado de novo em cada quadro. Agora a gente vai fazer o seu Dino aparecer!",
+      "adulto": "Lembra da experiência da seção anterior? O Dino só acompanhou o movimento quando foi desenhado de novo em cada quadro. Agora a gente vai fazer o seu Dino aparecer."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A repetição fica numa área própria, chamada Enquanto estiver rodando. Deixe à vista um espaço vazio ao lado de Ao iniciar. Depois, abra Áreas do projeto, pegue Enquanto estiver rodando e solte nesse espaço, separada de Ao iniciar.",
+      "adulto": "A repetição fica numa área própria, chamada Enquanto estiver rodando. Deixe à vista um espaço vazio ao lado de Ao iniciar. Depois, abra Áreas do projeto, pegue Enquanto estiver rodando e solte nesse espaço, separada de Ao iniciar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio dentro de Enquanto estiver rodando. Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada quadro do jogo e solte dentro dessa área. Tudo o que ficar dentro dele vai acontecer de novo em cada quadro.",
+      "adulto": "Agora deixe à vista o espaço vazio dentro de Enquanto estiver rodando. Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada quadro do jogo e solte dentro dessa área. Tudo o que ficar dentro dele vai acontecer de novo em cada quadro."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio dentro de A cada quadro do jogo. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro do quadro. No nome, escolha dino.",
+      "adulto": "Agora deixe à vista o espaço vazio dentro de A cada quadro do jogo. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro do quadro. No nome, escolha dino."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora olhe a área do jogo: o Dino aparece, parado no lugar em que foi criado! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar dinossauro continua em Ao iniciar, e Desenhar o sprite dino está dentro de A cada quadro do jogo, em Enquanto estiver rodando, com o nome dino nos dois blocos. Depois de corrigir, teste de novo.",
+      "adulto": "Agora olhe a área do jogo: o Dino aparece, parado no lugar em que foi criado. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar dinossauro continua em Ao iniciar, e Desenhar o sprite dino está dentro de A cada quadro do jogo, em Enquanto estiver rodando, com o nome dino nos dois blocos. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Prepare uma imagem nova em cada quadro",
+      "adulto": "Prepare uma imagem nova em cada quadro"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Aqui no seu jogo, olhe a sombra do Dino. Tá vendo? Ela vai ficando escura, porque cada desenho novo cai em cima do velho.",
+      "adulto": "Aqui no seu jogo, olhe a sombra do Dino. Percebe? Ela vai ficando escura, porque cada desenho novo cai em cima do velho."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da primeira parte desta fase? Com Limpar a tela antes, ficava um Dino só. Agora a gente vai colocar essa limpeza!",
+      "adulto": "Lembra da experiência da primeira seção desta aula? Com Limpar a tela antes, ficava um Dino só. Agora a gente vai colocar essa limpeza."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A limpeza tem que vir antes do desenho, em todo quadro: primeiro o jogo apaga a imagem velha e, depois, desenha a nova. Por isso, deixe à vista o lugar logo antes de Desenhar o sprite, no começo de A cada quadro do jogo. Depois, abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Limpar a tela e solte nesse primeiro lugar.",
+      "adulto": "A limpeza tem que vir antes do desenho, em todo quadro: primeiro o jogo apaga a imagem velha e, depois, desenha a nova. Por isso, deixe à vista o lugar logo antes de Desenhar o sprite, no começo de A cada quadro do jogo. Depois, abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Limpar a tela e solte nesse primeiro lugar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora olhe o Dino: ele continua aparecendo, e a sombra embaixo dele volta a ficar clarinha, porque agora cada quadro começa com a tela limpa! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Limpar a tela e, logo abaixo, Desenhar o sprite dino. Depois de corrigir, teste de novo.",
+      "adulto": "Agora olhe o Dino: ele continua aparecendo, e a sombra embaixo dele volta a ficar clara, porque agora cada quadro começa com a tela limpa. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Limpar a tela e, logo abaixo, Desenhar o sprite dino. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Limpar a tela só apaga a imagem: o Dino que você criou continua no jogo.",
+      "adulto": "Limpar a tela só apaga a imagem: o Dino que você criou continua no jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare a ordem dos desenhos",
+      "adulto": "Compare a ordem dos desenhos"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Seu jogo já desenha o Dino. Antes de colocar o fundo, compare como a ordem dos desenhos muda o que aparece.",
+      "adulto": "Seu jogo já desenha o Dino. Antes de colocar o fundo, compare como a ordem dos desenhos muda o que aparece."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na lista de desenhos desta experiência, coloque Dino depois de Floresta. Observe a tela.",
+      "adulto": "Na lista de desenhos desta experiência, coloque Dino depois de Floresta. Observe a tela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Troque a ordem para desenhar Dino antes de Floresta. Observe de novo e termine com Dino depois de Floresta.",
+      "adulto": "Troque a ordem para desenhar Dino antes de Floresta. Observe de novo e termine com Dino depois de Floresta."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Coloque a floresta atrás do Dino",
+      "adulto": "Coloque a floresta atrás do Dino"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe a área do seu jogo. Tá vendo? O Dino está sozinho no fundo azul, porque o jogo ainda não desenha a floresta.",
+      "adulto": "Olhe a área do seu jogo. Percebe? O Dino está sozinho no fundo azul, porque o jogo ainda não desenha a floresta."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? O Dino só apareceu inteiro quando foi desenhado depois da floresta. Agora a gente vai colocar a floresta atrás dele!",
+      "adulto": "Lembra da experiência da seção anterior? O Dino só apareceu inteiro quando foi desenhado depois da floresta. Agora a gente vai colocar a floresta atrás dele."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O lugar da floresta é entre Limpar a tela e Desenhar o sprite, dentro de A cada quadro do jogo. Deixe esse espaço à vista. Depois, abra Jogo 2D, depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino.",
+      "adulto": "O lugar da floresta é entre Limpar a tela e Desenhar o sprite, dentro de A cada quadro do jogo. Deixe esse espaço à vista. Depois, abra Jogo 2D, depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Repare: o bloco chega com velocidade 4. Troque por 5, porque esse número diz quanto o fundo anda em cada quadro, e é ele que faz o Dino parecer correr pela floresta.",
+      "adulto": "Repare: o bloco chega com velocidade 4. Troque por 5, porque esse número diz quanto o fundo anda em cada quadro, e é ele que faz o Dino parecer correr pela floresta."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora olhe a área do jogo: a floresta passa atrás do Dino! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Limpar a tela, depois Desenhar fundo de floresta, com velocidade 5, e, por último, Desenhar o sprite dino, com uma floresta só. Depois de corrigir, teste de novo.",
+      "adulto": "Agora olhe a área do jogo: a floresta passa atrás do Dino. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Limpar a tela, depois Desenhar fundo de floresta, com velocidade 5, e, por último, Desenhar o sprite dino, com uma floresta só. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Retire a borda provisória",
+      "adulto": "Retire a borda provisória"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Repare: agora que a floresta mostra onde fica a área do jogo, a borda não faz mais falta. Ela serviu para você enxergar o tamanho da tela. Por isso, retire só a borda e deixe o resto como está.",
+      "adulto": "Repare: agora que a floresta mostra onde fica a área do jogo, a borda não faz mais falta. Ela serviu para você enxergar o tamanho da tela. Por isso, retire só a borda e deixe o resto como está."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olha aqui: dentro de Ao iniciar, a borda está entre a preparação da tela e Criar dinossauro. Se você puxar a borda, Criar dinossauro sai junto, porque está encaixado embaixo dela. Por isso, primeiro arraste Criar dinossauro para um espaço vazio. Depois, arraste Mostrar a borda da tela para a lixeira e, por último, encaixe Criar dinossauro de novo, logo abaixo de Preparar o jogo em tela cheia.",
+      "adulto": "Olha aqui: dentro de Ao iniciar, a borda está entre a preparação da tela e Criar dinossauro. Se você puxar a borda, Criar dinossauro sai junto, porque está encaixado embaixo dela. Por isso, primeiro arraste Criar dinossauro para um espaço vazio. Depois, arraste Mostrar a borda da tela para a lixeira e, por último, encaixe Criar dinossauro de novo, logo abaixo de Preparar o jogo em tela cheia."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora olhe a área do jogo: a floresta continua passando, e o Dino continua aparecendo, agora sem a borda! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar tem Preparar o jogo em tela cheia e, logo abaixo, Criar dinossauro, sem a borda. Depois de corrigir, teste de novo.",
+      "adulto": "Agora olhe a área do jogo: a floresta continua passando, e o Dino continua aparecendo, agora sem a borda. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar tem Preparar o jogo em tela cheia e, logo abaixo, Criar dinossauro, sem a borda. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Ouça a descrição do jogo",
+      "adulto": "Ouça a descrição do jogo"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Quem usa um leitor de tela precisa ouvir o que fazer no jogo. Compare uma tela sem descrição com uma frase que explica o que fazer e como jogar.",
+      "adulto": "Quem usa um leitor de tela precisa ouvir o que fazer no jogo. Compare uma tela sem descrição com uma frase que explica o que fazer e como jogar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique em Ouvir a tela com o campo vazio. Depois escreva Corra com o dino e pule os cactos apertando espaço e clique em Ouvir a tela novamente.",
+      "adulto": "Clique em Ouvir a tela com o campo vazio. Depois escreva Corra com o dino e pule os cactos apertando espaço e clique em Ouvir a tela novamente."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare o que foi lido antes e depois da frase.",
+      "adulto": "Compare o que foi lido antes e depois da frase."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Escreva a descrição do jogo",
+      "adulto": "Escreva a descrição do jogo"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu jogo, olhe Ao iniciar. Tá vendo? Não tem nenhum bloco de descrição, por isso o leitor de tela não teria nada para contar.",
+      "adulto": "No seu jogo, olhe Ao iniciar. Percebe? Não tem nenhum bloco de descrição, por isso o leitor de tela não teria nada para contar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Com a frase, o leitor de tela contava como jogar. Agora você vai escrever a sua descrição!",
+      "adulto": "Lembra da experiência da seção anterior? Com a frase, o leitor de tela contava como jogar. Agora você vai escrever a sua descrição."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A descrição vale para o jogo inteiro, desde o começo. Por isso, ela vai em Ao iniciar, logo abaixo de Preparar o jogo em tela cheia. Deixe à vista o espaço entre Preparar o jogo em tela cheia e Criar dinossauro. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço.",
+      "adulto": "A descrição vale para o jogo inteiro, desde o começo. Por isso, ela vai em Ao iniciar, logo abaixo de Preparar o jogo em tela cheia. Deixe à vista o espaço entre Preparar o jogo em tela cheia e Criar dinossauro. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "No texto, apague a frase que veio no bloco e escreva esta, exatamente assim, sem ponto no fim: Corra com o dino e pule os cactos apertando espaço. Essa frase não aparece desenhada sobre a floresta, porque ela fica guardada para o leitor de tela. O pulo ainda vai ser montado, mas tudo bem: a frase descreve o jogo completo.",
+      "adulto": "No texto, apague a frase que veio no bloco e escreva esta, exatamente assim, sem ponto no fim: Corra com o dino e pule os cactos apertando espaço. Essa frase não aparece desenhada sobre a floresta, porque ela fica guardada para o leitor de tela. O pulo ainda vai ser montado, mas tudo bem: a frase descreve o jogo completo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: em Ao iniciar, logo abaixo da preparação da tela, está Descrever o jogo para leitor de tela, com a frase inteira. O Dino e a floresta continuam aparecendo como antes.",
+      "adulto": "Confira se ficou assim: em Ao iniciar, logo abaixo da preparação da tela, está Descrever o jogo para leitor de tela, com a frase inteira. O Dino e a floresta continuam aparecendo como antes."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olha só: o seu jogo já mostra o Dino na frente da floresta! Antes de enviar o seu projeto, vamos conferir tudo. Olhe a área do jogo: a floresta tem que passar atrás, e o Dino tem que continuar aparecendo.",
+      "adulto": "Olha só: o seu jogo já mostra o Dino na frente da floresta. Antes de enviar o seu projeto, vamos conferir tudo. Olhe a área do jogo: a floresta tem que passar atrás, e o Dino tem que continuar aparecendo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora confira a ordem dentro de A cada quadro do jogo: limpar a tela, a floresta com velocidade 5 e o desenho do Dino. Confira também que a borda saiu e que a descrição está em Ao iniciar.",
+      "adulto": "Agora confira a ordem dentro de A cada quadro do jogo: limpar a tela, a floresta com velocidade 5 e o desenho do Dino. Confira também que a borda saiu e que a descrição está em Ao iniciar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mostre o Dino e a floresta",
+      "adulto": "Mostre o Dino e a floresta"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 2",
+      "adulto": "Aula 2"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare o salto com e sem gravidade",
+      "adulto": "Compare o salto com e sem gravidade"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Seu Dino ainda está parado. Antes de fazê-lo pular no jogo, observe o que traz um personagem de volta ao chão.",
+      "adulto": "Seu Dino ainda está parado. Antes de fazê-lo pular no jogo, observe o que traz um personagem de volta ao chão."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer.",
+      "adulto": "Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão.",
+      "adulto": "Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe a gravidade pronta",
+      "adulto": "Deixe a gravidade pronta"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Sem gravidade, o Dino subia sem parar. Agora a gente vai colocar a gravidade no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Sem gravidade, o Dino subia sem parar. Agora a gente vai colocar a gravidade no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A gravidade tem que puxar o Dino em todo quadro, antes de ele ser desenhado. Por isso, deixe à vista o espaço entre Desenhar fundo de floresta e Desenhar o sprite dino, dentro de A cada quadro do jogo. Depois, abra Jogo 2D, depois Movimento e depois Velocidade e gravidade, pegue o bloco Aplicar a gravidade do mundo ao sprite e solte nesse espaço. No nome, escolha dino.",
+      "adulto": "A gravidade tem que puxar o Dino em todo quadro, antes de ele ser desenhado. Por isso, deixe à vista o espaço entre Desenhar fundo de floresta e Desenhar o sprite dino, dentro de A cada quadro do jogo. Depois, abra Jogo 2D, depois Movimento e depois Velocidade e gravidade, pegue o bloco Aplicar a gravidade do mundo ao sprite e solte nesse espaço. No nome, escolha dino."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: dentro de A cada quadro do jogo, a gravidade está depois da floresta e antes do desenho do Dino, com o nome dino. O Dino continua parado, e está certo: a gravidade já puxa, mas quem move o Dino com essa força e faz ele pousar na grama é o controle do pulo, que você monta daqui a pouco.",
+      "adulto": "Confira se ficou assim: dentro de A cada quadro do jogo, a gravidade está depois da floresta e antes do desenho do Dino, com o nome dino. O Dino continua parado, e está certo: a gravidade já puxa, mas quem move o Dino com essa força e faz ele pousar na grama é o controle do pulo, que você monta daqui a pouco."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare duas alturas de pulo",
+      "adulto": "Compare duas alturas de pulo"
+    },
+    {
+      "onde": "caderno",
+      "kids": "A gravidade do seu Dino já está pronta. Agora compare a força que inicia um salto, mantendo a mesma gravidade.",
+      "adulto": "A gravidade do seu Dino já está pronta. Agora compare a força que inicia um salto, mantendo a mesma gravidade."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, escolha impulso 9, toque no Dino e espere o salto terminar. Observe a marca da altura.",
+      "adulto": "Na experiência, escolha impulso 9, toque no Dino e espere o salto terminar. Observe a marca da altura."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mude o impulso para 14, toque no Dino de novo e espere cair. Compare as duas marcas.",
+      "adulto": "Mude o impulso para 14, toque no Dino de novo e espere cair. Compare as duas marcas."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Dê os controles de pulo ao Dino",
+      "adulto": "Dê os controles de pulo ao Dino"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique na área do seu jogo e toque na barra de espaço. Tá vendo? O Dino não pula, porque ainda não tem controle.",
+      "adulto": "Clique na área do seu jogo e aperte a barra de espaço. Percebe? O Dino não pula, porque ainda não tem controle."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Com impulso 14, o pulo foi bem mais alto. Agora a gente vai dar os controles de pulo ao seu Dino!",
+      "adulto": "Lembra da experiência da seção anterior? Com impulso 14, o pulo foi bem mais alto. Agora a gente vai dar os controles de pulo ao seu Dino."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O controle vai depois da gravidade e antes do desenho, dentro de A cada quadro do jogo: a gravidade puxa o Dino para baixo, o controle move o Dino, faz ele pousar na grama e confere o pulo, e só então o Dino é desenhado no lugar novo. Deixe à vista o espaço entre Aplicar a gravidade do mundo ao sprite e Desenhar o sprite. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco Controlar o dinossauro e solte nesse espaço. O bloco já chega com o nome dino: mantenha. Na força do pulo, troque 15 por 14.",
+      "adulto": "O controle vai depois da gravidade e antes do desenho, dentro de A cada quadro do jogo: a gravidade puxa o Dino para baixo, o controle move o Dino, faz ele pousar na grama e confere o pulo, e só então o Dino é desenhado no lugar novo. Deixe à vista o espaço entre Aplicar a gravidade do mundo ao sprite e Desenhar o sprite. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco Controlar o dinossauro e solte nesse espaço. O bloco já chega com o nome dino: mantenha. Na força do pulo, troque 15 por 14."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste! Clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque e solte a barra de espaço e espere o Dino pousar. Olha só: ele pula e volta para o chão! Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.",
+      "adulto": "Agora teste. Clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, aperte e solte a barra de espaço e espere o Dino pousar. Olha só: ele pula e volta para o chão. Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino pular de novo no ar, porque ele só começa um salto quando está no chão.",
+      "adulto": "Agora aperte duas vezes a barra de espaço durante o mesmo salto. Repare: a segunda vez não faz o Dino pular de novo no ar, porque ele só começa um salto quando está no chão."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, a ordem é floresta, gravidade, controle e desenho do Dino, com o nome dino. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, a ordem é floresta, gravidade, controle e desenho do Dino, com o nome dino. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira o que você construiu",
+      "adulto": "Confira o que você construiu"
+    },
+    {
+      "onde": "caderno",
+      "kids": "As perguntas estão na própria fase, logo depois do Zappy.",
+      "adulto": "As perguntas estão na própria aula, logo depois do recado."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Hora de lembrar o que você construiu! As perguntas falam da tela e dos movimentos do seu Dino. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
+      "adulto": "Hora de lembrar o que você construiu. As perguntas falam da tela e dos movimentos do seu Dino. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora o seu Dino já pula e volta para o chão! Antes de enviar o seu projeto, teste os três controles: a barra de espaço, a seta para cima e um toque na parte de cima da tela. Espere o Dino pousar entre um salto e outro, porque ele só pula de novo quando está no chão.",
+      "adulto": "Agora o seu Dino já pula e volta para o chão. Antes de enviar o seu projeto, teste os três controles: a barra de espaço, a seta para cima e um toque na parte de cima da tela. Espere o Dino pousar entre um salto e outro, porque ele só pula de novo quando está no chão."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora confira a ordem dentro de A cada quadro do jogo: a gravidade vem antes do controle, e os dois vêm antes do desenho do Dino. Deixe a força do pulo em 14, e as cores que você escolheu podem continuar do seu jeito.",
+      "adulto": "Agora confira a ordem dentro de A cada quadro do jogo: a gravidade vem antes do controle, e os dois vêm antes do desenho do Dino. Deixe a força do pulo em 14, e as cores que você escolheu podem continuar do seu jeito."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Faça o Dino cair e pular",
+      "adulto": "Faça o Dino cair e pular"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 3",
+      "adulto": "Aula 3"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare esperar e repetir",
+      "adulto": "Compare esperar e repetir"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Seu Dino já pula. Para tocar um som no momento certo, observe uma ação que espera um acontecimento.",
+      "adulto": "Seu Dino já pula. Para tocar um som no momento certo, observe uma ação que espera um acontecimento."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, coloque Tocar efeito · pulo em Quando acontecer. Clique em Começar o jogo e espere o teste parar sem clicar em Apertar a tecla. Observe o contador.",
+      "adulto": "Na experiência, coloque Tocar efeito · pulo em Quando acontecer. Clique em Começar o jogo e espere o teste parar sem clicar em Apertar a tecla. Observe o contador."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Depois clique em Apertar a tecla. Compare o contador antes e depois desse clique.",
+      "adulto": "Depois clique em Apertar a tecla. Compare o contador antes e depois desse clique."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare a tecla com o pulo",
+      "adulto": "Compare a tecla com o pulo"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu jogo, um toque na tecla e um salto nem sempre acontecem juntos. Compare esses dois momentos antes de escolher onde o som vai ficar.",
+      "adulto": "No seu jogo, apertar a tecla e saltar nem sempre acontecem juntos. Compare esses dois momentos antes de escolher onde o som vai ficar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe Tocar efeito em Quando apertar Espaço. Clique em Apertar Espaço duas vezes durante o mesmo pulo e compare os contadores de sons e pulos. Depois de pousar, clique em Tocar para pular.",
+      "adulto": "Deixe Tocar efeito em Quando apertar Espaço. Clique em Apertar Espaço duas vezes durante o mesmo pulo e compare os contadores de sons e pulos. Depois de pousar, clique em Tocar para pular."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Leve Tocar efeito para Quando o Dino pular. Espere pousar e repita os dois testes: Apertar Espaço duas vezes no mesmo salto e Tocar para pular uma vez. Compare os contadores.",
+      "adulto": "Leve Tocar efeito para Quando o Dino pular. Espere pousar e repita os dois testes: Apertar Espaço duas vezes no mesmo salto e Tocar para pular uma vez. Compare os contadores."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Ligue o som ao pulo do Dino",
+      "adulto": "Ligue o som ao pulo do Dino"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique em Atualizar e pule com a barra de espaço. Percebeu? O pulo não tem som, porque nada liga som a ele.",
+      "adulto": "Clique em Atualizar e pule com a barra de espaço. Percebeu? O pulo não tem som, porque nada liga som a ele."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Com o som em Quando o Dino pular, cada pulo teve som. Agora a gente vai fazer isso no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Com o som em Quando o Dino pular, cada pulo teve som. Agora a gente vai fazer isso no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O som vai esperar um acontecimento, e os acontecimentos ficam numa área própria, chamada Quando acontecer. O seu projeto ainda não tem essa área, por isso a gente vai criar uma. Deixe à vista um espaço vazio do projeto, separado de Ao iniciar e de Enquanto estiver rodando. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse espaço.",
+      "adulto": "O som vai esperar um acontecimento, e os acontecimentos ficam numa área própria, chamada Quando acontecer. O seu projeto ainda não tem essa área, por isso a gente vai criar uma. Deixe à vista um espaço vazio do projeto, separado de Ao iniciar e de Enquanto estiver rodando. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse espaço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando o sprite pular e solte nessa área. No nome, escolha dino. É esse bloco que percebe o pulo do Dino, venha ele da tecla ou do toque.",
+      "adulto": "Agora deixe à vista o espaço vazio dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando o sprite pular e solte nessa área. No nome, escolha dino. É esse bloco que percebe o pulo do Dino, venha ele da tecla ou do toque."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio dentro de Quando o sprite pular. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte dentro do evento do pulo. No efeito, escolha pulo.",
+      "adulto": "Agora deixe à vista o espaço vazio dentro de Quando o sprite pular. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte dentro do evento do pulo. No efeito, escolha pulo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste! Clique em Atualizar e pule com a barra de espaço. Escute: agora o pulo vem com som! Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som.",
+      "adulto": "Agora teste. Clique em Atualizar e pule com a barra de espaço. Escute: agora o pulo vem com som. Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Por último, toque duas vezes na barra de espaço com o Dino no ar. Repare: o segundo toque não faz outro salto nem outro som, porque o som está ligado ao pulo, e não à tecla.",
+      "adulto": "Por último, aperte duas vezes a barra de espaço com o Dino no ar. Repare: a segunda vez não faz outro salto nem outro som, porque o som está ligado ao pulo, e não à tecla."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: o projeto tem um único Tocar efeito, com pulo, e ele está dentro de Quando o sprite dino pular, em Quando acontecer. Se os blocos estiverem certos e o jogo continuar mudo, clique uma vez na área do jogo, porque o navegador só libera o som depois de um clique ou de uma tecla. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, por exemplo, se apertar duas vezes também fez dois sons, volte aos blocos e confira se ficou assim: o projeto tem um único Tocar efeito, com pulo, e ele está dentro de Quando o sprite dino pular, em Quando acontecer. Se os blocos estiverem certos e o jogo continuar mudo, clique uma vez na área do jogo, porque o navegador só libera o som depois de um clique ou de uma tecla. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora o seu Dino pula com som! Antes de enviar o seu projeto, teste um salto com a barra de espaço, outro com a seta para cima e outro com um toque na parte de cima da tela, esperando o Dino pousar entre eles. Cada salto tem que tocar um som.",
+      "adulto": "Agora o seu Dino pula com som. Antes de enviar o seu projeto, teste um salto com a barra de espaço, outro com a seta para cima e outro com um toque na parte de cima da tela, esperando o Dino pousar entre eles. Cada salto tem que tocar um som."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira também que dois toques na barra de espaço durante o mesmo salto não fazem dois sons. A gravidade e o desenho continuam como antes.",
+      "adulto": "Confira também que apertar duas vezes a barra de espaço durante o mesmo salto não faz dois sons. A gravidade e o desenho continuam como antes."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Toque um som em cada pulo",
+      "adulto": "Toque um som em cada pulo"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 4",
+      "adulto": "Aula 4"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare o intervalo entre cactos",
+      "adulto": "Compare o intervalo entre cactos"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Seu jogo já tem um Dino. Antes de criar os obstáculos, compare vários cactos nascendo a cada quadro com cactos nascendo num intervalo.",
+      "adulto": "Seu jogo já tem um Dino. Antes de criar os obstáculos, compare vários cactos nascendo a cada quadro com cactos nascendo num intervalo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe os cactos que nascem.",
+      "adulto": "Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe os cactos que nascem."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa.",
+      "adulto": "Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Prepare o grupo e o relógio",
+      "adulto": "Prepare o grupo e o relógio"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Com o relógio de 1,4 segundo, sobrava espaço entre os cactos. Agora a gente vai preparar o grupo e o relógio dos cactos!",
+      "adulto": "Lembra da experiência da seção anterior? Com o relógio de 1,4 segundo, sobrava espaço entre os cactos. Agora a gente vai preparar o grupo e o relógio dos cactos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O grupo é criado uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar dinossauro. Depois, abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar grupo de sprites e solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.",
+      "adulto": "O grupo é criado uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar dinossauro. Depois, abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar grupo de sprites e solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora vem o relógio. Ele fica em Enquanto estiver rodando, mas fora de A cada quadro do jogo, porque não pode criar um cacto em todo quadro. Deixe à vista um espaço dentro de Enquanto estiver rodando, abaixo de A cada quadro do jogo e fora dele. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos e solte nesse espaço. Troque o 2 por 1.4, ou seja, um segundo e quase meio.",
+      "adulto": "Agora vem o relógio, que faz aparecer um cacto de cada vez. Ele fica em Enquanto estiver rodando, mas fora de A cada quadro do jogo, porque não pode criar um cacto em todo quadro. Deixe à vista um espaço dentro de Enquanto estiver rodando, abaixo de A cada quadro do jogo e fora dele. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos e solte nesse espaço. Troque o 2 por 1.4, ou seja, um segundo e quase meio."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: o grupo cactos está no fim de Ao iniciar, e o relógio de 1.4 segundo está em Enquanto estiver rodando, fora de A cada quadro do jogo. O relógio ainda está vazio, e por isso nenhum cacto aparece por enquanto.",
+      "adulto": "Confira se ficou assim: o grupo cactos está no fim de Ao iniciar, e o relógio de 1.4 segundo está em Enquanto estiver rodando, fora de A cada quadro do jogo. O relógio ainda está vazio, e por isso nenhum cacto aparece por enquanto."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare a direção da velocidade",
+      "adulto": "Compare a direção da velocidade"
+    },
+    {
+      "onde": "caderno",
+      "kids": "O relógio do seu jogo já está preparado. Antes de criar um cacto que entra pela direita, compare a direção que cada número de velocidade produz.",
+      "adulto": "O relógio do seu jogo já está preparado. Antes de criar um cacto que entra pela direita, compare a direção que cada número de velocidade produz."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, deixe a velocidade para baixo em 0. Escolha velocidade para o lado 5 e clique em Avançar 1 quadro algumas vezes. Observe o x.",
+      "adulto": "Na experiência, deixe a velocidade para baixo em 0. Escolha velocidade para o lado 5 e clique em Avançar 1 quadro algumas vezes. Observe o x."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Troque a velocidade para o lado por -5 e avance mais alguns quadros. Compare a direção. Por último, deixe as duas velocidades em 0 e avance de novo.",
+      "adulto": "Troque a velocidade para o lado por -5 e avance mais alguns quadros. Compare a direção. Por último, deixe as duas velocidades em 0 e avance de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Crie os cactos no relógio",
+      "adulto": "Crie os cactos no relógio"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu projeto, olhe o relógio de 1.4 segundo. Tá vendo? Ele está vazio, por isso nenhum cacto nasce.",
+      "adulto": "No seu projeto, olhe o relógio de 1.4 segundo. Percebe? Ele está vazio, por isso nenhum cacto nasce."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Com velocidade -5, o cacto andava para a esquerda. Agora a gente vai criar cactos que entram pela direita!",
+      "adulto": "Lembra da experiência da seção anterior? Com velocidade -5, o cacto andava para a esquerda. Agora a gente vai criar cactos que entram pela direita."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço vazio dentro de A cada 1.4 segundos. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco No grupo criar obstáculo e solte dentro do relógio. Escolha o grupo cactos. A forma já chega como cacto: mantenha.",
+      "adulto": "Deixe à vista o espaço vazio dentro de A cada 1.4 segundos. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco No grupo criar obstáculo e solte dentro do relógio. Escolha o grupo cactos. A forma já chega como cacto: mantenha."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora troque o x 400 por 560. Em vx, troque -3 por -5: o vx é a velocidade para o lado, a mesma da experiência. O tamanho já chega 44: mantenha. Repare no x: a tela do seu jogo tem largura 480, por isso o cacto que nasce em x 560 começa escondido, além da borda direita.",
+      "adulto": "Agora troque o x 400 por 560. Em vx, troque -3 por -5: o vx é a velocidade para o lado, a mesma da experiência. O tamanho já chega 44: mantenha. Repare no x: a tela do seu jogo tem largura 480, por isso o cacto que nasce em x 560 começa escondido, além da borda direita."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: No grupo criar obstáculo está dentro do relógio de 1.4 segundo, com o grupo cactos, x 560, vx -5 e tamanho 44. Olhe a área do jogo: por enquanto, ela continua só com o Dino e a floresta. É que os cactos já nascem, mas o jogo ainda não manda mover nem desenhar esses cactos.",
+      "adulto": "Confira se ficou assim: No grupo criar obstáculo está dentro do relógio de 1.4 segundo, com o grupo cactos, x 560, vx -5 e tamanho 44. Olhe a área do jogo: por enquanto, ela continua só com o Dino e a floresta. É que os cactos já nascem, mas o jogo ainda não manda mover nem desenhar esses cactos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mova e mostre o grupo de cactos",
+      "adulto": "Mova e mostre o grupo de cactos"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe a área do seu jogo. Tá vendo? Nenhum cacto aparece, porque o jogo ainda não move nem desenha o grupo.",
+      "adulto": "Olhe a área do seu jogo. Percebe? Nenhum cacto aparece, porque o jogo ainda não move nem desenha o grupo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência do relógio, na primeira parte desta fase? Os cactos nasciam um de cada vez. Agora a gente vai mover e desenhar os seus cactos!",
+      "adulto": "Lembra da experiência do relógio, na primeira seção desta aula? Os cactos nasciam um de cada vez. Agora a gente vai mover e desenhar os seus cactos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O movimento e o desenho dos cactos acontecem em todo quadro, depois do Dino. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite dino. Depois, abra Jogo 2D, depois Grupos e depois Movimento, pegue o bloco Mover os sprites do grupo e solte logo depois do Dino. Escolha cactos. Esse bloco usa a velocidade que cada cacto recebeu ao nascer.",
+      "adulto": "O movimento e o desenho dos cactos acontecem em todo quadro, depois do Dino. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite dino. Depois, abra Jogo 2D, depois Grupos e depois Movimento, pegue o bloco Mover os sprites do grupo e solte logo depois do Dino. Escolha cactos. Esse bloco usa a velocidade que cada cacto recebeu ao nascer."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o lugar logo abaixo de Mover os sprites do grupo. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte logo abaixo. Escolha cactos.",
+      "adulto": "Agora deixe à vista o lugar logo abaixo de Mover os sprites do grupo. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte logo abaixo. Escolha cactos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora espere alguns cactos nascerem. Olha só: eles entram pela direita e passam para a esquerda! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, a ordem é desenhar o Dino, mover os cactos e desenhar os cactos, com o grupo cactos. No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.",
+      "adulto": "Agora espere alguns cactos nascerem. Olha só: eles entram pela direita e passam para a esquerda. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, a ordem é desenhar o Dino, mover os cactos e desenhar os cactos, com o grupo cactos. No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora pule um deles. Se um cacto atravessar o Dino, tudo bem, porque a batida ainda não foi programada.",
+      "adulto": "Agora pule um deles. Repare: se um cacto atravessar o Dino, tudo bem. Neste ponto isso pode acontecer, porque a batida ainda não foi programada."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora o seu Dino encontra cactos vindo da direita! Antes de enviar o seu projeto, espere pelo menos dois cactos nascerem e teste o pulo.",
+      "adulto": "Agora o seu Dino encontra cactos vindo da direita. Antes de enviar o seu projeto, espere pelo menos dois cactos nascerem e teste o pulo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira o relógio em 1.4 e, no bloco que cria os cactos, o x 560, o vx -5 e o tamanho 44. Repare que uma batida ainda não termina o jogo, porque essa regra ainda não existe. Nesta fase, o que importa é os cactos entrarem e andarem pela pista.",
+      "adulto": "Confira o relógio em 1.4 e, no bloco que cria os cactos, o x 560, o vx -5 e o tamanho 44. Repare que uma batida ainda não termina o jogo, porque essa regra ainda não existe. Nesta aula, o que importa é os cactos entrarem e andarem pela pista."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Faça os cactos entrar na pista",
+      "adulto": "Faça os cactos entrar na pista"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 5",
+      "adulto": "Aula 5"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare a tela com o grupo",
+      "adulto": "Compare a tela com o grupo"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Os cactos saem pela esquerda no seu jogo. Agora observe o grupo por dentro para descobrir o que acontece com esses objetos.",
+      "adulto": "Os cactos saem pela esquerda no seu jogo. Agora observe o grupo por dentro para descobrir o que acontece com esses objetos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste.",
+      "adulto": "Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita.",
+      "adulto": "Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Retire do grupo quem já saiu",
+      "adulto": "Retire do grupo quem já saiu"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Os cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai colocar a regra que tira esses cactos de lá!",
+      "adulto": "Lembra da experiência da seção anterior? Os cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai colocar a regra que tira esses cactos de lá."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo cactos. Depois, abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte depois do desenho dos cactos. Escolha cactos.",
+      "adulto": "A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo cactos. Depois, abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte depois do desenho dos cactos. Escolha cactos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Repare: no fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que a regra dá a cada cacto que ela confere. E não coloque outros blocos no espaço fazer dessa peça.",
+      "adulto": "Repare: no fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que a regra dá a cada cacto que ela confere. E não coloque outros blocos no espaço fazer dessa peça."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: o relógio continua em 1.4 segundo, e Tirar do grupo quem sair da tela está no fim de A cada quadro do jogo, depois do desenho dos cactos. Limpar a tela continua no começo do quadro, porque ela cuida da imagem, e esta regra cuida dos cactos guardados no grupo.",
+      "adulto": "Confira se ficou assim: o relógio continua em 1.4 segundo, e Tirar do grupo quem sair da tela está no fim de A cada quadro do jogo, depois do desenho dos cactos. Limpar a tela continua no começo do quadro, porque ela cuida da imagem, e esta regra cuida dos cactos guardados no grupo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora espere alguns cactos atravessarem a tela. Os que chegam pela direita têm que continuar entrando normalmente. A diferença no grupo não aparece no seu jogo, porque ela acontece por dentro, e quem confere essa regra é a verificação.",
+      "adulto": "Agora espere alguns cactos atravessarem a tela. Os que chegam pela direita têm que continuar entrando normalmente. A diferença no grupo não aparece no seu jogo, porque ela acontece por dentro, e quem confere essa regra é a verificação."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Hora de lembrar o que você construiu! As perguntas falam do som do pulo e dos cactos. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
+      "adulto": "Hora de lembrar o que você construiu. As perguntas falam do som do pulo e dos cactos. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora a sua corrida tira do grupo os cactos que já saíram! Antes de enviar o seu projeto, espere novos cactos entrarem e passarem pela tela. Eles têm que continuar vindo no mesmo ritmo.",
+      "adulto": "Agora a sua corrida tira do grupo os cactos que já saíram. Antes de enviar o seu projeto, espere novos cactos entrarem e passarem pela tela. Eles têm que continuar vindo no mesmo ritmo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira o nome cactos na regra que tira do grupo e o relógio em 1.4 segundo. Se um cacto bater no Dino, você pode seguir o teste, porque o jogo ainda não tem a regra da derrota.",
+      "adulto": "Confira o nome cactos na regra que tira do grupo e o relógio em 1.4 segundo. Se um cacto bater no Dino, você pode seguir o teste, porque o jogo ainda não tem a regra da derrota."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Retire os cactos que saíram",
+      "adulto": "Retire os cactos que saíram"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 6",
+      "adulto": "Aula 6"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Escolha quando o jogo pode agir",
+      "adulto": "Escolha quando o jogo pode agir"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Sua corrida começa assim que o projeto abre. Vamos separar a abertura da partida para poder esperar uma entrada antes de jogar.",
+      "adulto": "Sua corrida começa assim que o projeto abre. Vamos separar a abertura da partida para poder esperar uma entrada antes de jogar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, deixe Criar cacto fora de Se o estado do jogo é jogando. Sem começar a partida, clique em Tempo e espere nascer pelo menos um cacto.",
+      "adulto": "Na experiência, deixe Criar cacto fora de Se o estado do jogo é jogando. Sem começar a partida, clique em Tempo e espere nascer pelo menos um cacto."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Leve Criar cacto para dentro de Se o estado do jogo é jogando. Na tela de início, deixe o tempo passar três segundos e observe o contador.",
+      "adulto": "Leve Criar cacto para dentro de Se o estado do jogo é jogando. Na tela de início, deixe o tempo passar três segundos e observe o contador."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Depois clique em Toque para começar e deixe o tempo passar novamente. Compare os nascimentos nos dois momentos.",
+      "adulto": "Depois clique em Toque para começar e deixe o tempo passar novamente. Compare os nascimentos nos dois momentos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Guarde em que momento o jogo está",
+      "adulto": "Guarde em que momento o jogo está"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe a área do seu jogo. Tá vendo? A corrida começa sozinha, porque o jogo ainda não sabe em que momento está.",
+      "adulto": "Olhe a área do seu jogo. Percebe? A corrida começa sozinha, porque o jogo ainda não sabe em que momento está."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Na tela de início, os cactos esperavam a partida. Agora a gente vai guardar o estado do seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Na tela de início, os cactos esperavam a partida. Agora a gente vai guardar o estado do seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O estado começa junto com o jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar grupo de sprites. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no fim de Ao iniciar. Ele já chega com inicio: mantenha.",
+      "adulto": "O estado começa junto com o jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar grupo de sprites. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no fim de Ao iniciar. Ele já chega com inicio: mantenha."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: no fim de Ao iniciar, está Mudar o estado do jogo para inicio, e as regras de movimento e de criação dos cactos continuam nos mesmos lugares.",
+      "adulto": "Confira se ficou assim: no fim de Ao iniciar, está Mudar o estado do jogo para inicio, e as regras de movimento e de criação dos cactos continuam nos mesmos lugares."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora olhe o jogo de novo. Repare: o Dino e os cactos continuam correndo, e está certo, porque o bloco só guarda o nome do momento, e nenhuma regra pergunta por ele ainda. Quem vai fazer essa pergunta é o bloco Se.",
+      "adulto": "Agora olhe o jogo de novo. Repare: o Dino e os cactos continuam correndo, e está certo, porque o bloco só guarda o nome do momento, e nenhuma regra pergunta por ele ainda. Quem vai fazer essa pergunta é o bloco Se."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Separe as ações da partida",
+      "adulto": "Separe as ações da partida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olhe a área do seu jogo. Tá vendo? O Dino e os cactos continuam correndo, porque nenhuma regra pergunta pelo estado.",
+      "adulto": "Olhe a área do seu jogo. Percebe? O Dino e os cactos continuam correndo, porque nenhuma regra pergunta pelo estado."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da primeira parte desta fase? Dentro do Se jogando, a ação esperou a partida. Agora a gente vai colocar as ações da partida num Se!",
+      "adulto": "Lembra da experiência da primeira seção desta aula? Dentro do Se jogando, a ação esperou a partida. Agora a gente vai colocar as ações da partida num Se."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olha aqui: dentro de A cada quadro do jogo, as ações da partida começam em Aplicar a gravidade do mundo ao sprite e vão até o fim. São o controle, o desenho do Dino, o movimento e o desenho dos cactos e a regra que tira do grupo. Arraste o bloco da gravidade para um espaço livre, e a pilha inteira vem junto, porque os outros blocos estão encaixados embaixo dele. Não copie nada: só separe.",
+      "adulto": "Olha aqui: dentro de A cada quadro do jogo, as ações da partida começam em Aplicar a gravidade do mundo ao sprite e vão até o fim. São o controle, o desenho do Dino, o movimento e o desenho dos cactos e a regra que tira do grupo. Arraste o bloco da gravidade para um espaço livre, e a pilha inteira vem junto, porque os outros blocos estão encaixados embaixo dele. Não copie nada: só separe."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço logo depois de Desenhar fundo de floresta, dentro do quadro. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço.",
+      "adulto": "Agora deixe à vista o espaço logo depois de Desenhar fundo de floresta, dentro do quadro. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Repare: o Se chega com a pergunta x > 0. Arraste essa pergunta para a lixeira, para o lugar dela ficar vazio. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ? e solte no lugar vazio da pergunta. No menu dele, escolha jogando.",
+      "adulto": "Repare: o Se chega com a pergunta x > 0. Arraste essa pergunta para a lixeira, para o lugar dela ficar vazio. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ? e solte no lugar vazio da pergunta. No menu dele, escolha jogando."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio do então, dentro do Se. Arraste a pilha que você separou, segurando pela gravidade, e solte nesse espaço. A limpeza e a floresta ficam fora do Se, antes dele, porque a floresta também passa na tela de início.",
+      "adulto": "Agora deixe à vista o espaço vazio do então, dentro do Se. Arraste a pilha que você separou, segurando pela gravidade, e solte nesse espaço. A limpeza e a floresta ficam fora do Se, antes dele, porque a floresta também passa na tela de início."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora olhe o jogo: com o estado em inicio, o Dino e os cactos deixam de aparecer, e só a floresta continua passando, porque as ações da partida esperam o estado jogando.",
+      "adulto": "Agora olhe o jogo: com o estado em inicio, o Dino e os cactos deixam de aparecer, e só a floresta continua passando, porque as ações da partida esperam o estado jogando."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Para conferir se essas ações ainda funcionam, troque, por um momento, o estado em Ao iniciar para jogando. Teste um pulo e espere um cacto entrar.",
+      "adulto": "Para conferir se essas ações ainda funcionam, troque, por um momento, o estado em Ao iniciar para jogando. Teste um pulo e espere um cacto entrar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no então do Se jogando, a ordem é gravidade, controle, desenho do Dino, mover os cactos, desenhar os cactos e tirar do grupo quem saiu, e a limpeza e a floresta ficam antes do Se. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no então do Se jogando, a ordem é gravidade, controle, desenho do Dino, mover os cactos, desenhar os cactos e tirar do grupo quem saiu, e a limpeza e a floresta ficam antes do Se. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque é assim que o seu jogo tem que começar. O Dino e os cactos somem de novo, e só a floresta continua passando.",
+      "adulto": "Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque é assim que o seu jogo tem que começar. O Dino e os cactos somem de novo, e só a floresta continua passando."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Faça o relógio esperar a partida",
+      "adulto": "Faça o relógio esperar a partida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da primeira parte desta fase? Com Criar cacto dentro do Se, os cactos só nasciam durante a partida. Agora o relógio do seu jogo vai aprender a esperar também!",
+      "adulto": "Lembra da experiência da primeira seção desta aula? Com Criar cacto dentro do Se, os cactos só nasciam durante a partida. Agora o relógio do seu jogo também vai esperar a partida."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O relógio fica fora do quadro, por isso ainda cria cactos escondidos na tela de início. Deixe à vista o interior do relógio de 1.4 segundo e arraste No grupo criar obstáculo para um espaço livre, fora do relógio. Ele vai voltar para dentro daqui a pouco, mas, antes, o relógio precisa ganhar a pergunta.",
+      "adulto": "O relógio fica fora do quadro, por isso ainda cria cactos escondidos na tela de início. Deixe à vista o interior do relógio de 1.4 segundo e arraste No grupo criar obstáculo para um espaço livre, fora do relógio. Ele vai voltar para dentro daqui a pouco, mas, antes, o relógio precisa ganhar a pergunta."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio dentro do relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.",
+      "adulto": "Agora deixe à vista o espaço vazio dentro do relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o lugar vazio da pergunta desse Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha jogando. Depois, deixe à vista o espaço vazio do então e arraste No grupo criar obstáculo de volta, para dentro dele.",
+      "adulto": "Deixe à vista o lugar vazio da pergunta desse Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha jogando. Depois, deixe à vista o espaço vazio do então e arraste No grupo criar obstáculo de volta, para dentro dele."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Para testar, troque, por um momento, o estado em Ao iniciar para jogando. Olha só: os cactos nascem como antes! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no relógio de 1.4 segundo, está o Se o estado do jogo é jogando, e No grupo criar obstáculo está no então desse Se. Depois de corrigir, teste de novo.",
+      "adulto": "Para testar, troque, por um momento, o estado em Ao iniciar para jogando. Olha só: os cactos nascem como antes. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no relógio de 1.4 segundo, está o Se o estado do jogo é jogando, e No grupo criar obstáculo está no então desse Se. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque é assim que o seu jogo tem que começar. Só a floresta continua passando, e agora o seu jogo espera a partida, mesmo ainda sem uma tela de abertura desenhada.",
+      "adulto": "Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque é assim que o seu jogo tem que começar. Só a floresta continua passando, e agora o seu jogo espera a partida, mesmo ainda sem uma tela de abertura desenhada."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora o seu jogo espera no estado inicio! Antes de enviar o seu projeto, confira os dois lugares que perguntam pelo estado jogando: o Se dentro do quadro e o Se dentro do relógio dos cactos.",
+      "adulto": "Agora o seu jogo espera no estado inicio. Antes de enviar o seu projeto, confira os dois lugares que perguntam pelo estado jogando: o Se dentro do quadro e o Se dentro do relógio dos cactos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Para testar a partida, troque, por um momento, o estado em Ao iniciar para jogando e confira o pulo, o som e a entrada dos cactos.",
+      "adulto": "Para testar a partida, troque, por um momento, o estado em Ao iniciar para jogando e confira o pulo, o som e a entrada dos cactos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque é com ele que você vai enviar o jogo. Repare na floresta: ela continua passando no estado inicio, porque ficou fora do Se, e a tela de começo ainda não foi desenhada.",
+      "adulto": "Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque é com ele que você vai enviar o jogo. Repare na floresta: ela continua passando no estado inicio, porque ficou fora do Se, e a tela de começo ainda não foi desenhada."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Separe a abertura da partida",
+      "adulto": "Separe a abertura da partida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 7",
+      "adulto": "Aula 7"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Desenhe a tela de início",
+      "adulto": "Desenhe a tela de início"
+    },
+    {
+      "onde": "caderno",
+      "kids": "O seu jogo já espera no estado inicio, mas quem abre o jogo ainda não sabe o que fazer. Primeiro, olhe a área do jogo. Tá vendo? Só a floresta aparece, porque o Se do quadro só tem uma resposta, para jogando. Por isso, vamos acrescentar outra resposta, para o estado inicio, que desenha a tela de abertura.",
+      "adulto": "O seu jogo já espera no estado inicio, mas quem abre o jogo ainda não sabe o que fazer. Primeiro, olhe a área do jogo. Percebe? Só a floresta aparece, porque o Se do quadro só tem uma resposta, para jogando. Por isso, vamos acrescentar outra resposta, para o estado inicio, que desenha a tela de abertura."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o Se jogando, dentro de A cada quadro do jogo. Olha aqui, na linha de baixo do bloco: aparecem duas opções com um sinal de mais, senão se e senão. Clique uma vez no + ao lado de senão se, e o Se ganha um ramo novo, chamado senão se.",
+      "adulto": "Deixe à vista o Se jogando, dentro de A cada quadro do jogo. Olha aqui, na linha de baixo do bloco: aparecem duas opções com um sinal de mais, senão se e senão. Clique uma vez no + ao lado de senão se, e o Se ganha um ramo novo, chamado senão se."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ? e solte no lugar vazio da pergunta. Ele já chega com inicio: mantenha.",
+      "adulto": "O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ? e solte no lugar vazio da pergunta. Ele já chega com inicio: mantenha."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio dentro do ramo inicio. Na mesma categoria, Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse ramo.",
+      "adulto": "Agora deixe à vista o espaço vazio dentro do ramo inicio. Na mesma categoria, Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse ramo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "No título, escreva Corre, Dino! No subtítulo, escreva Pule os cactos! E, na dica, escreva Aperte qualquer tecla ou toque na tela para começar. O fundo já chega escuro, para o texto aparecer bem: mantenha ou escolha outra cor escura.",
+      "adulto": "No título, escreva Corre, Dino! No subtítulo, escreva Pule os cactos! E, na dica, escreva Aperte qualquer tecla ou toque na tela para começar. O fundo já chega escuro, para o texto aparecer bem: mantenha ou escolha outra cor escura."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora olhe a área do jogo: a abertura aparece, porque o estado está em inicio! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no ramo senão se o estado do jogo é inicio, está Mostrar tela, com o título, o subtítulo e a dica. Depois de corrigir, teste de novo.",
+      "adulto": "Agora olhe a área do jogo: a abertura aparece, porque o estado está em inicio. Assim, quem abre o jogo já sabe como começar. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no ramo senão se o estado do jogo é inicio, está Mostrar tela, com o título, o subtítulo e a dica. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A abertura ainda não começa a partida com um toque ou uma tecla, porque, por enquanto, você só montou o desenho.",
+      "adulto": "A abertura ainda não começa a partida com um toque ou uma tecla, porque, por enquanto, você só montou o desenho."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare tecla e toque para começar",
+      "adulto": "Compare tecla e toque para começar"
+    },
+    {
+      "onde": "caderno",
+      "kids": "A abertura do seu jogo convida a usar tecla ou toque. Compare como escolher um evento que atende aos dois.",
+      "adulto": "A abertura do seu jogo convida a usar tecla ou toque. Compare como escolher um evento que atende aos dois."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início.",
+      "adulto": "Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos.",
+      "adulto": "Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Ligue a entrada ao início da partida",
+      "adulto": "Ligue a entrada ao início da partida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Aqui no seu jogo, toque na abertura. Tá vendo? Nada acontece, porque nenhum evento muda o estado.",
+      "adulto": "Aqui no seu jogo, toque na abertura. Percebe? Nada acontece, porque nenhum evento muda o estado."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Quando apertar qualquer tecla ou tocar na tela começou a partida dos dois jeitos. Agora a gente vai usar esse evento no seu jogo!",
+      "adulto": "Lembra da experiência da seção anterior? Quando apertar qualquer tecla ou tocar na tela começou a partida dos dois jeitos. Agora a gente vai usar esse evento no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Esse evento fica em Quando acontecer, junto do evento do pulo, mas separado dele. Deixe à vista um espaço vazio dentro de Quando acontecer. Depois, abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.",
+      "adulto": "Esse evento fica em Quando acontecer, junto do evento do pulo, mas separado dele. Deixe à vista um espaço vazio dentro de Quando acontecer. Depois, abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Só que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de agir. Deixe à vista o espaço vazio dentro do novo evento. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.",
+      "adulto": "Só que você também usa uma tecla para pular, e esse evento acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de agir. Deixe à vista o espaço vazio dentro do novo evento. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e mantenha inicio, que já vem escolhido.",
+      "adulto": "Agora deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e mantenha inicio, que já vem escolhido."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio do então desse Se. Na mesma categoria, Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no então. Ele chega com inicio: troque por jogando.",
+      "adulto": "Agora deixe à vista o espaço vazio do então desse Se. Na mesma categoria, Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no então. Ele chega com inicio: troque por jogando."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque na barra de espaço. Olha só: a abertura some, e o Dino aparece! Depois, use a barra de espaço, a seta para cima e um toque na parte de cima da tela para conferir os pulos. Durante a partida, o evento não muda o estado de novo, porque a pergunta só responde sim quando o estado é inicio.",
+      "adulto": "Agora clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, aperte a barra de espaço. Olha só: a abertura some, e o Dino aparece. Depois, use a barra de espaço, a seta para cima e um toque na parte de cima da tela para conferir os pulos. Durante a partida, o evento não muda o estado de novo, porque a pergunta só responde sim quando o estado é inicio."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Para testar o toque desde a abertura, clique em Atualizar de novo e, desta vez, toque na abertura para começar.",
+      "adulto": "Para testar o toque desde a abertura, clique em Atualizar de novo e, desta vez, toque na abertura para começar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um único evento de qualquer tecla ou toque, com o Se inicio e, no então, Mudar o estado do jogo para jogando. Depois de corrigir, teste de novo.",
+      "adulto": "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um único evento de qualquer tecla ou toque, com o Se inicio e, no então, Mudar o estado do jogo para jogando. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora a sua abertura começa uma partida! Antes de enviar o seu projeto, confira o convite escrito e comece a partida por tecla e também por toque, sempre desde a abertura. Para começar por tecla, clique em Atualizar, a seta circular no alto da prévia do jogo, e use a tecla sem clicar no jogo. Para começar por toque, clique em Atualizar de novo e toque na abertura.",
+      "adulto": "Agora a sua abertura começa uma partida. Antes de enviar o seu projeto, confira o convite escrito e comece a partida por tecla e também por toque, sempre desde a abertura. Para começar por tecla, clique em Atualizar, a seta circular no alto da prévia do jogo, e use a tecla sem clicar no jogo. Para começar por toque, clique em Atualizar de novo e toque na abertura."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Depois de começar, teste o pulo e espere os cactos entrarem. Confira também que a criação dos cactos continua protegida pelo Se jogando, no relógio. Se um cacto bater no Dino, nada acontece ainda, porque a derrota ainda não foi programada.",
+      "adulto": "Depois de começar, teste o pulo e espere os cactos entrarem. Confira também que a criação dos cactos continua protegida pelo Se jogando, no relógio. Se um cacto bater no Dino, nada acontece ainda, porque a derrota ainda não foi programada."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Comece por tecla ou toque",
+      "adulto": "Comece por tecla ou toque"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 8",
+      "adulto": "Aula 8"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Observe quando o jogo reconhece a batida",
+      "adulto": "Observe quando o jogo reconhece a batida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu jogo o Dino atravessa os cactos. Antes de usar uma colisão para encerrar a partida, observe quando a regra reconhece um contato.",
+      "adulto": "No seu jogo o Dino atravessa os cactos. Antes de usar uma colisão para encerrar a partida, observe quando a regra reconhece um contato."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, mantenha Tamanho da área do Dino em 100%. Aproxime o cacto com Distância do cacto, um toque de cada vez, até aparecer BATEU!",
+      "adulto": "Na experiência, mantenha Tamanho da área do Dino em 100%. Aproxime o cacto com Distância do cacto, um toque de cada vez, até aparecer BATEU!"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Observe os desenhos e as áreas mostradas quando a indicação muda. Nesta comparação, mantenha o tamanho da área em 100%.",
+      "adulto": "Observe os desenhos e as áreas mostradas quando a indicação muda. Nesta comparação, mantenha o tamanho da área em 100%."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Encerre a partida na batida",
+      "adulto": "Encerre a partida na batida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Comece a partida e deixe um cacto chegar no Dino. Tá vendo? A corrida continua, porque o jogo ainda não confere a batida.",
+      "adulto": "Comece a partida e deixe um cacto chegar no Dino. Percebe? A corrida continua, porque o jogo ainda não confere a batida."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? O jogo marcou a batida quando as áreas se encostaram. Agora a gente vai fazer a batida terminar a partida!",
+      "adulto": "Lembra da experiência da seção anterior? O jogo marcou a batida quando as áreas se encostaram. Agora a gente vai fazer a batida terminar a partida."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A batida é conferida em todo quadro, durante a partida, depois que os cactos andaram. Por isso, deixe à vista o espaço entre Desenhar o grupo cactos e a regra que tira do grupo, no então de Se jogando, dentro do quadro. Depois, abra Jogo 2D, depois Colisões e depois Encostar e bloquear, pegue o bloco Para cada sprite do grupo que colidir com o sprite e solte nesse espaço.",
+      "adulto": "A batida é conferida em todo quadro, durante a partida, depois que os cactos andaram. Por isso, deixe à vista o espaço entre Desenhar o grupo cactos e a regra que tira do grupo, no então de Se jogando, dentro do quadro. Depois, abra Jogo 2D, depois Colisões e depois Encostar e bloquear, pegue o bloco Para cada sprite do grupo que colidir com o sprite e solte nesse espaço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Escolha o grupo cactos e o sprite dino. Repare na linha chamar o sprite de: ela chega com inimigo. Clique em inimigo e escreva cacto. É o nome que o seu jogo vai usar para o cacto que bateu.",
+      "adulto": "Escolha o grupo cactos e o sprite dino. Repare na linha chamar o sprite de: ela chega com inimigo. Clique em inimigo e escreva cacto. É o nome que o seu jogo vai usar para o cacto que bateu."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio dentro da colisão. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para e solte dentro da colisão. Escolha fim.",
+      "adulto": "Agora deixe à vista o espaço vazio dentro da colisão. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para e solte dentro da colisão. Escolha fim."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora comece a partida e deixe um cacto bater no Dino. Olha só: o Dino e os cactos somem, e ainda não aparece nenhuma tela de fim, porque as ações deles só acontecem no estado jogando, e agora o estado é fim! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: a colisão com o grupo cactos, o sprite dino e o nome cacto está no então de Se jogando, entre Desenhar o grupo cactos e a regra que tira do grupo. Dentro dela, está Mudar o estado do jogo para fim. Depois de corrigir, teste de novo.",
+      "adulto": "Agora comece a partida e deixe um cacto bater no Dino. Olha só: o Dino e os cactos somem, e ainda não aparece nenhuma tela de fim, porque as ações deles só acontecem no estado jogando, e agora o estado é fim. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: a colisão com o grupo cactos, o sprite dino e o nome cacto está no então de Se jogando, entre Desenhar o grupo cactos e a regra que tira do grupo. Dentro dela, está Mudar o estado do jogo para fim. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mostre a tela de fim",
+      "adulto": "Mostre a tela de fim"
+    },
+    {
+      "onde": "caderno",
+      "kids": "A batida já muda o seu jogo para fim. Primeiro, comece a partida e deixe um cacto bater no Dino. Tá vendo? O Dino e os cactos somem, e só a floresta continua passando, porque o Se do quadro ainda não tem uma resposta para fim. Lembra da abertura, na fase anterior? Você fez um ramo senão se para desenhar a tela de início. Agora a gente vai fazer do mesmo jeito para a tela de fim.",
+      "adulto": "A batida já muda o seu jogo para fim. Primeiro, comece a partida e deixe um cacto bater no Dino. Percebe? O Dino e os cactos somem, e só a floresta continua passando, porque o Se do quadro ainda não tem uma resposta para fim. Lembra da abertura, na aula anterior? Você fez um ramo senão se para desenhar a tela de início. Agora a gente vai fazer do mesmo jeito para a tela de fim."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o Se do quadro, que já tem os ramos jogando e inicio. Na linha de baixo do bloco, clique uma vez no + ao lado de senão se, para criar mais um senão se. O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira.",
+      "adulto": "Deixe à vista o Se do quadro, que já tem os ramos jogando e inicio. Na linha de baixo do bloco, clique uma vez no + ao lado de senão se, para criar mais um senão se. O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o lugar vazio da pergunta do último ramo. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha fim.",
+      "adulto": "Agora deixe à vista o lugar vazio da pergunta do último ramo. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha fim."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço vazio dentro do ramo fim. Na mesma categoria, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte ali. No título, escreva Fim de jogo. No subtítulo, escreva Boa tentativa! E, na dica, escreva Aperte qualquer tecla ou toque para jogar de novo. O fundo já chega escuro: mantenha ou escolha outra cor escura.",
+      "adulto": "Deixe à vista o espaço vazio dentro do ramo fim. Na mesma categoria, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte ali. No título, escreva Fim de jogo. No subtítulo, escreva Boa tentativa! E, na dica, escreva Aperte qualquer tecla ou toque para jogar de novo. O fundo já chega escuro: mantenha ou escolha outra cor escura."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora comece e deixe o Dino bater. Olha só: a tela de fim aparece! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: o último ramo do Se do quadro pergunta se o estado do jogo é fim, com a tela de fim dentro dele, e a colisão muda o estado para fim. Depois de corrigir, teste de novo.",
+      "adulto": "Agora comece e deixe o Dino bater. Olha só: a tela de fim aparece. Agora dá para ver que a partida acabou. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: o último ramo do Se do quadro pergunta se o estado do jogo é fim, com a tela de fim dentro dele, e a colisão muda o estado para fim. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A tela de fim ainda não recomeça a corrida, porque, por enquanto, você só montou o desenho.",
+      "adulto": "A tela de fim ainda não recomeça a corrida, porque, por enquanto, você só montou o desenho."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Dê som e imagem à batida",
+      "adulto": "Dê som e imagem à batida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Você já fez a batida encerrar a partida. Falta dar som e imagem a esse momento, para quem joga perceber o que aconteceu. Lembra da fase 4? Você ligou um som a um acontecimento, o pulo. Agora a gente vai fazer a mesma coisa com a batida, colocando os efeitos dentro dela.",
+      "adulto": "Você já fez a batida encerrar a partida. Falta dar som e imagem a esse momento, para quem joga perceber o que aconteceu. Lembra da aula 4? Você ligou um som a um acontecimento, o pulo. Agora a gente vai fazer a mesma coisa com a batida, colocando os efeitos dentro dela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Os efeitos vêm antes da mudança de estado: primeiro o jogo mostra a batida e, por último, passa para a tela de fim. Por isso, deixe à vista o lugar logo antes de Mudar o estado do jogo para fim, dentro da colisão. Depois, abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite e solte antes da mudança de estado. No sprite, escolha cacto, o nome que você deu ao cacto que bateu, e escolha uma cor para a explosão.",
+      "adulto": "Os efeitos vêm antes da mudança de estado: primeiro o jogo mostra a batida e, por último, passa para a tela de fim. Por isso, deixe à vista o lugar logo antes de Mudar o estado do jogo para fim, dentro da colisão. Depois, abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite e solte antes da mudança de estado. No sprite, escolha cacto, o nome que você deu ao cacto que bateu, e escolha uma cor para a explosão."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço entre a explosão e a mudança de estado. Abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Tremer a tela e solte nesse espaço. Ele já chega com intensidade 8: mantenha.",
+      "adulto": "Agora deixe à vista o espaço entre a explosão e a mudança de estado. Abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Tremer a tela e solte nesse espaço. Ele já chega com intensidade 8: mantenha."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço entre Tremer a tela e a mudança de estado. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito, solte ali e escolha derrota.",
+      "adulto": "Deixe à vista o espaço entre Tremer a tela e a mudança de estado. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito, solte ali e escolha derrota."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora comece e deixe uma batida acontecer. Olha só: o cacto explode, a tela treme, o som toca e aparece a tela de fim! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro da colisão, a ordem é explodir o cacto, tremer a tela em 8, tocar o efeito derrota e, por último, mudar o estado para fim. Depois de corrigir, teste de novo.",
+      "adulto": "Agora comece e deixe uma batida acontecer. Olha só: o cacto explode, a tela treme, o som toca e aparece a tela de fim. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro da colisão, a ordem é explodir o cacto, tremer a tela em 8, tocar o efeito derrota e, por último, mudar o estado para fim. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare voltar e reiniciar",
+      "adulto": "Compare voltar e reiniciar"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Sua corrida já termina. Antes de programar outra partida, compare voltar à abertura com refazer a preparação do jogo.",
+      "adulto": "Sua corrida já termina. Antes de programar outra partida, compare voltar à abertura com refazer a preparação do jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, em No fim, o toque faz, escolha Mudar o estado do jogo para inicio. Clique em Tocar na tela para começar e espere a partida terminar. Clique em Tocar na tela para voltar à abertura e outra vez para jogar. Observe os cactos e os números da nova partida.",
+      "adulto": "Na experiência, em No fim, o toque faz, escolha Mudar o estado do jogo para inicio. Clique em Tocar na tela para começar e espere a partida terminar. Clique em Tocar na tela para voltar à abertura e outra vez para jogar. Observe os cactos e os números da nova partida."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Quando terminar novamente, troque a ação para Reiniciar o jogo. Clique em Tocar na tela para voltar e outra vez para começar. Compare os cactos e os números com a tentativa anterior.",
+      "adulto": "Quando terminar novamente, troque a ação para Reiniciar o jogo. Clique em Tocar na tela para voltar e outra vez para começar. Compare os cactos e os números com a tentativa anterior."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Prepare uma nova partida",
+      "adulto": "Prepare uma nova partida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu jogo, deixe um cacto bater e toque na tela de fim. Tá vendo? Nada acontece, porque o toque ainda não tem resposta no estado fim.",
+      "adulto": "No seu jogo, deixe um cacto bater e toque na tela de fim. Percebe? Nada acontece, porque o toque ainda não tem resposta no estado fim."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Com Reiniciar o jogo, a partida nova começava limpa. Agora a gente vai programar o recomeço!",
+      "adulto": "Lembra da experiência da seção anterior? Com Reiniciar o jogo, a partida nova começava limpa. Agora a gente vai programar o recomeço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O recomeço vai no mesmo evento que começa a partida. Deixe à vista o Se inicio, dentro de Quando apertar qualquer tecla ou tocar na tela. Na linha de baixo desse Se, clique uma vez no + ao lado de senão se. O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira.",
+      "adulto": "O recomeço vai no mesmo evento que começa a partida. Deixe à vista o Se inicio, dentro de Quando apertar qualquer tecla ou tocar na tela. Na linha de baixo desse Se, clique uma vez no + ao lado de senão se. O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o lugar vazio da pergunta desse ramo. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha fim.",
+      "adulto": "Deixe à vista o lugar vazio da pergunta desse ramo. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha fim."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio dentro do ramo fim. Na mesma categoria, pegue o bloco Reiniciar o jogo e solte ali. Esse bloco repete a preparação de Ao iniciar: cria de novo o grupo de cactos, vazio, e devolve o estado para inicio.",
+      "adulto": "Agora deixe à vista o espaço vazio dentro do ramo fim. Na mesma categoria, pegue o bloco Reiniciar o jogo e solte ali. Esse bloco repete a preparação de Ao iniciar: cria de novo o grupo de cactos, vazio, e devolve o estado para inicio."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora comece, deixe uma batida acontecer e toque na tela de fim. Olha só: a abertura volta! Toque outra vez para jogar e repare que os cactos da partida anterior não estão mais na pista. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no evento de qualquer tecla ou toque, o Se tem o ramo inicio, que muda para jogando, e o ramo senão se fim, com Reiniciar o jogo. Depois de corrigir, teste de novo.",
+      "adulto": "Agora comece, deixe uma batida acontecer e toque na tela de fim. Olha só: a abertura volta. Toque outra vez para jogar e repare que os cactos da partida anterior não estão mais na pista. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no evento de qualquer tecla ou toque, o Se tem o ramo inicio, que muda para jogando, e o ramo senão se fim, com Reiniciar o jogo. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Hora de lembrar o que você construiu! As perguntas falam do começo da partida, da batida e do recomeço. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
+      "adulto": "Hora de lembrar o que você construiu. As perguntas falam do começo da partida, da batida e do recomeço. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora o seu jogo tem um ciclo completo: começo, partida, batida e recomeço! Antes de enviar o seu projeto, comece uma partida, pule um cacto, deixe uma batida acontecer e confira os efeitos e a tela de fim.",
+      "adulto": "Agora o seu jogo tem um ciclo completo: começo, partida, batida e recomeço. Antes de enviar o seu projeto, comece uma partida, pule um cacto, deixe uma batida acontecer e confira os efeitos e a tela de fim."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Depois, toque para voltar à abertura e comece outra partida. Confira que o Dino volta ao lugar do começo e que os cactos antigos não continuam na pista. Teste também a entrada por tecla: clique em Atualizar e, sem clicar no jogo, use uma tecla para começar.",
+      "adulto": "Depois, toque para voltar à abertura e comece outra partida. Confira que o Dino volta ao lugar do começo e que os cactos antigos não continuam na pista. Teste também a entrada por tecla: clique em Atualizar e, sem clicar no jogo, use uma tecla para começar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Termine e recomece a corrida",
+      "adulto": "Termine e recomece a corrida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 9",
+      "adulto": "Aula 9"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare a área com o desenho",
+      "adulto": "Compare a área com o desenho"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Seu jogo já reconhece a batida. Agora compare o tamanho do desenho com a área usada para decidir esse contato.",
+      "adulto": "Seu jogo já reconhece a batida. Agora compare o tamanho do desenho com a área usada para decidir esse contato."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU! Observe os desenhos nesse momento.",
+      "adulto": "Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU! Observe os desenhos nesse momento."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo.",
+      "adulto": "Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mostre a área no seu jogo",
+      "adulto": "Mostre a área no seu jogo"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe um cacto chegar perto do Dino. Tá vendo? Não dá para saber onde a área começa, porque ela é invisível.",
+      "adulto": "Deixe um cacto chegar perto do Dino. Percebe? Não dá para saber onde a área começa, porque ela é invisível."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Com a área em 100%, a batida vinha antes de os desenhos se encostarem. Agora a gente vai mostrar essa área!",
+      "adulto": "Lembra da experiência da seção anterior? Com a área em 100%, a batida vinha antes de os desenhos se encostarem. Agora a gente vai mostrar essa área."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O contorno precisa ser desenhado depois do Dino, para aparecer por cima dele. Por isso, deixe à vista o lugar logo depois de Desenhar o sprite dino, no então de Se jogando, dentro do quadro. Depois, abra Jogo 2D, depois Colisões e depois Área de contato, pegue o bloco Mostrar a caixa de colisão do sprite e solte logo depois do desenho do Dino. Escolha dino.",
+      "adulto": "O contorno precisa ser desenhado depois do Dino, para aparecer por cima dele. Por isso, deixe à vista o lugar logo depois de Desenhar o sprite dino, no então de Se jogando, dentro do quadro. Depois, abra Jogo 2D, depois Colisões e depois Área de contato, pegue o bloco Mostrar a caixa de colisão do sprite e solte logo depois do desenho do Dino. Escolha dino."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora comece a partida. Olha só: aparece um contorno em volta do Dino, que só mostra a área e não muda a batida! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no então de Se jogando, logo depois de Desenhar o sprite dino, está Mostrar a caixa de colisão do sprite, com dino. Depois de corrigir, teste de novo.",
+      "adulto": "Agora comece a partida. Olha só: aparece um contorno em volta do Dino, que só mostra a área e não muda a batida. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no então de Se jogando, logo depois de Desenhar o sprite dino, está Mostrar a caixa de colisão do sprite, com dino. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Ajuste a área sem mudar o desenho",
+      "adulto": "Ajuste a área sem mudar o desenho"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu jogo, comece a partida e olhe o contorno. Tá vendo? Ele é maior que o desenho do Dino, porque a área ainda está inteira.",
+      "adulto": "No seu jogo, comece a partida e olhe o contorno. Percebe? Ele é maior que o desenho do Dino, porque a área ainda está inteira."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da primeira parte desta fase? Com 80%, a batida ficou justa. Agora a gente vai ajustar a área do seu Dino!",
+      "adulto": "Lembra da experiência da primeira seção desta aula? Com 80%, a batida ficou justa. Agora a gente vai ajustar a área do seu Dino."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A área é escolhida uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar. Depois, abra Jogo 2D, depois Colisões e depois Área de contato, pegue o bloco Usar área de colisão, que chega com 80 % do tamanho, e solte no fim de Ao iniciar. No sprite, escolha dino e deixe a porcentagem em 80.",
+      "adulto": "A área é escolhida uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar. Depois, abra Jogo 2D, depois Colisões e depois Área de contato, pegue o bloco Usar área de colisão, que chega com 80 % do tamanho, e solte no fim de Ao iniciar. No sprite, escolha dino e deixe a porcentagem em 80."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora comece a partida e olhe o contorno: ele ficou menor, mas o Dino continua do mesmo tamanho, 64, porque só a área da batida mudou! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Usar área de colisão está no fim de Ao iniciar, com dino e 80, e o tamanho do Dino continua 64. Depois de corrigir, teste de novo.",
+      "adulto": "Agora comece a partida e olhe o contorno: ele ficou menor, mas o Dino continua do mesmo tamanho, 64, porque só a área da batida mudou. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Usar área de colisão está no fim de Ao iniciar, com dino e 80, e o tamanho do Dino continua 64. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe um cacto chegar e compare a batida com a do teste anterior. Se quiser, teste 70 e 85 nesse campo e compare. Você pode escolher um valor entre 70 e 85, e, no exemplo, fica 80. Não mude o tamanho do desenho para tentar ajustar a área, porque isso encolheria o Dino.",
+      "adulto": "Deixe um cacto chegar e compare a batida com a do teste anterior. Se quiser, teste 70 e 85 nesse campo e compare. Você pode escolher um valor entre 70 e 85, e, no exemplo, fica 80. Não mude o tamanho do desenho para tentar ajustar a área, porque isso encolheria o Dino."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Retire o contorno de teste",
+      "adulto": "Retire o contorno de teste"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Repare: agora que a área da batida está ajustada, o contorno não faz mais falta. Ele serviu para você enxergar a área enquanto ajustava. Por isso, retire só o contorno e deixe a regra que escolhe a porcentagem.",
+      "adulto": "Repare: agora que a área da batida está ajustada, o contorno não faz mais falta. Ele serviu para você enxergar a área enquanto ajustava. Por isso, retire só o contorno e deixe a regra que escolhe a porcentagem."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o bloco Mostrar a caixa de colisão do sprite, no então de Se jogando. Se você puxar esse bloco, os blocos de baixo saem junto, porque estão encaixados nele. Por isso, primeiro arraste o bloco que vem logo abaixo do contorno para um espaço livre, levando o resto da sequência. Depois, arraste o contorno para a lixeira e encaixe a sequência de volta, logo abaixo do desenho do Dino.",
+      "adulto": "Deixe à vista o bloco Mostrar a caixa de colisão do sprite, no então de Se jogando. Se você puxar esse bloco, os blocos de baixo saem junto, porque estão encaixados nele. Por isso, primeiro arraste o bloco que vem logo abaixo do contorno para um espaço livre, levando o resto da sequência. Depois, arraste o contorno para a lixeira e encaixe a sequência de volta, logo abaixo do desenho do Dino."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora comece outra partida. Olha só: o contorno desaparece, e a batida continua usando a área menor! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: em Ao iniciar, continua o bloco Usar área de colisão, com dino e a porcentagem escolhida, e o contorno não está mais no quadro. Depois de corrigir, teste de novo.",
+      "adulto": "Agora comece outra partida. Olha só: o contorno desaparece, e a batida continua usando a área menor. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: em Ao iniciar, continua o bloco Usar área de colisão, com dino e a porcentagem escolhida, e o contorno não está mais no quadro. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora o seu jogo usa uma área ajustada para a batida! Antes de enviar o seu projeto, comece uma partida, pule e deixe uma batida acontecer, para conferir a tela de fim e o recomeço.",
+      "adulto": "Agora o seu jogo usa uma área ajustada para a batida. Antes de enviar o seu projeto, comece uma partida, pule e deixe uma batida acontecer, para conferir a tela de fim e o recomeço."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira o tamanho 64 no Dino e, no bloco de área, a porcentagem que você escolheu, entre 70 e 85. O contorno de teste tem que estar fora do jogo.",
+      "adulto": "Confira o tamanho 64 no Dino e, no bloco de área, a porcentagem que você escolheu, entre 70 e 85. O contorno de teste tem que estar fora do jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Ajuste a área da batida",
+      "adulto": "Ajuste a área da batida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 10",
+      "adulto": "Aula 10"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare guardar, mudar e mostrar",
+      "adulto": "Compare guardar, mudar e mostrar"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Seu jogo ainda não conta pontos. Uma variável guarda um valor; o mostrador pode ler esse valor. Compare essas duas partes antes de montar.",
+      "adulto": "Seu jogo ainda não conta pontos. Uma variável guarda um valor; o mostrador pode ler esse valor. Compare essas duas partes antes de montar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, coloque o número guardado em 1 e depois em 0. Deixe Mostrar placar desligado. Clique em Somar 1 em pontos duas vezes e observe o número guardado.",
+      "adulto": "Na experiência, coloque o número guardado em 1 e depois em 0. Deixe Mostrar placar desligado. Clique em Somar 1 em pontos duas vezes e observe o número guardado."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Ligue Mostrar placar. Compare o que aparece na tela com o número guardado. Clique em Somar 1 em pontos mais uma vez e acompanhe os dois.",
+      "adulto": "Ligue Mostrar placar. Compare o que aparece na tela com o número guardado. Clique em Somar 1 em pontos mais uma vez e acompanhe os dois."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Prepare os pontos em zero",
+      "adulto": "Prepare os pontos em zero"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu jogo, olhe Ao iniciar. Tá vendo? Não tem nenhum bloco que guarde os pontos, porque o jogo ainda não conta nada.",
+      "adulto": "No seu jogo, olhe Ao iniciar. Percebe? Não tem nenhum bloco que guarde os pontos, porque o jogo ainda não conta nada."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? A caixa pontos guardava o número, mesmo com o placar desligado. Agora a gente vai criar essa variável!",
+      "adulto": "Lembra da experiência da seção anterior? A caixa pontos guardava o número, mesmo com o placar desligado. Agora a gente vai criar essa variável."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A variável nasce quando o jogo começa. Por isso, deixe à vista o fim de Ao iniciar. Depois, abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim. Repare: o nome chega como contador. Troque contador por pontos e mantenha o valor em 0.",
+      "adulto": "A variável nasce quando o jogo começa. Por isso, deixe à vista o fim de Ao iniciar. Depois, abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim. Repare: o nome chega como contador. Troque contador por pontos e mantenha o valor em 0."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: no fim de Ao iniciar, está Criar variável pontos com valor 0. Na área do jogo, ainda não aparece nenhum número, porque guardar um número não desenha o placar. E, como Reiniciar o jogo repete a preparação de Ao iniciar, os pontos voltam para zero a cada partida nova.",
+      "adulto": "Confira se ficou assim: no fim de Ao iniciar, está Criar variável pontos com valor 0. Na área do jogo, ainda não aparece nenhum número, porque guardar um número não desenha o placar. E, como Reiniciar o jogo repete a preparação de Ao iniciar, os pontos voltam para zero a cada partida nova."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mostre o número guardado",
+      "adulto": "Mostre o número guardado"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Aqui no seu jogo, comece uma partida. Tá vendo? Nenhum número aparece, porque nada desenha o placar.",
+      "adulto": "Aqui no seu jogo, comece uma partida. Percebe? Nenhum número aparece, porque nada desenha o placar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da primeira parte desta fase? O número só apareceu quando você ligou Mostrar placar. Agora a gente vai mostrar os pontos no seu jogo!",
+      "adulto": "Lembra da experiência da primeira seção desta aula? O número só apareceu quando você ligou Mostrar placar. Agora a gente vai mostrar os pontos no seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O placar só aparece durante a partida. Por isso, deixe à vista o fim do então de Se jogando, logo depois da regra que tira do grupo os cactos. Depois, abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse fim.",
+      "adulto": "O placar só aparece durante a partida. Por isso, deixe à vista o fim do então de Se jogando, logo depois da regra que tira do grupo os cactos. Depois, abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse fim."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Repare: o placar já chega com Pontos: escrito. Mantenha. Depois, deixe à vista o número do campo valor. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima desse número, para ele tomar o lugar do número. Escolha pontos, e assim o placar lê o número guardado em pontos.",
+      "adulto": "Repare: o placar já chega com Pontos: escrito. Mantenha. Depois, deixe à vista o número do campo valor. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima desse número, para ele tomar o lugar do número. Escolha pontos, e assim o placar lê o número guardado em pontos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O x 12, o y 30 e o tamanho 24 também já vêm certos: mantenha. Só troque a cor, que chega branca, por uma cor escura, que apareça sobre a floresta.",
+      "adulto": "O x 12, o y 30 e o tamanho 24 também já vêm certos: mantenha. Só troque a cor, que chega branca, por uma cor escura, que apareça sobre a floresta."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora comece uma partida. Olha só: o placar aparece, mostrando zero, e ainda não cresce, porque nenhuma regra soma pontos! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim do então de Se jogando, está Mostrar placar, com o valor da variável pontos no campo valor, x 12, y 30 e uma cor escura. Depois de corrigir, teste de novo.",
+      "adulto": "Agora comece uma partida. Olha só: o placar aparece, mostrando zero, e ainda não cresce, porque nenhuma regra soma pontos. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim do então de Se jogando, está Mostrar placar, com o valor da variável pontos no campo valor, x 12, y 30 e uma cor escura. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare quando somar os pontos",
+      "adulto": "Compare quando somar os pontos"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Seu placar já mostra zero. Antes de programar a soma, compare quantas vezes ela acontece e em quais estados.",
+      "adulto": "Seu placar já mostra zero. Antes de programar a soma, compare quantas vezes ela acontece e em quais estados."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, coloque Somar ponto em A cada quadro do jogo e deixe Tempo passar um segundo. Observe o placar.",
+      "adulto": "Na experiência, coloque Somar ponto em A cada quadro do jogo e deixe Tempo passar um segundo. Observe o placar."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe Somar ponto solto, fora do relógio e da condição. Na tela de início, deixe passar mais um segundo e observe.",
+      "adulto": "Deixe Somar ponto solto, fora do relógio e da condição. Na tela de início, deixe passar mais um segundo e observe."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Leve Somar ponto para dentro de o estado do jogo é jogando ?, no relógio de um segundo. Ainda no início, deixe Tempo passar. Clique em Próxima tela até Jogando e observe os pontos crescerem. Depois clique em Próxima tela até Fim e deixe passar mais tempo.",
+      "adulto": "Leve Somar ponto para dentro de o estado do jogo é jogando ?, no relógio de um segundo. Ainda no início, deixe Tempo passar. Clique em Próxima tela até Jogando e observe os pontos crescerem. Depois clique em Próxima tela até Fim e deixe passar mais tempo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Some um ponto por segundo de partida",
+      "adulto": "Some um ponto por segundo de partida"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu jogo, comece uma partida e olhe o placar. Tá vendo? Ele fica em zero, porque nenhuma regra soma pontos.",
+      "adulto": "No seu jogo, comece uma partida e olhe o placar. Percebe? Ele fica em zero, porque nenhuma regra soma pontos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? No relógio de 1 segundo, dentro de jogando, o placar contou um ponto por segundo. Agora a gente vai somar os seus pontos!",
+      "adulto": "Lembra da experiência da seção anterior? No relógio de 1 segundo, dentro de jogando, o placar contou um ponto por segundo. Agora a gente vai somar os seus pontos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A soma vai num relógio só dela, separado do relógio dos cactos. Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e do relógio dos cactos. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o intervalo para 1.",
+      "adulto": "A soma vai num relógio só dela, separado do relógio dos cactos. Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e do relógio dos cactos. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o intervalo para 1."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio dentro do novo relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.",
+      "adulto": "Agora deixe à vista o espaço vazio dentro do novo relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha jogando.",
+      "adulto": "Deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha jogando."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio do então desse Se. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte no então. Escolha pontos e deixe a soma em 1.",
+      "adulto": "Agora deixe à vista o espaço vazio do então desse Se. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte no então. Escolha pontos e deixe a soma em 1."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora comece uma partida. Olha só: os pontos sobem, um por segundo! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no relógio de 1 segundo, o Se jogando tem, no então, Somar em variável pontos, com 1, e esse é o único Somar em pontos. O relógio dos cactos continua em 1.4. Depois de corrigir, teste de novo.",
+      "adulto": "Agora comece uma partida. Olha só: os pontos sobem, um por segundo. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no relógio de 1 segundo, o Se jogando tem, no então, Somar em variável pontos, com 1, e esse é o único Somar em pontos. O relógio dos cactos continua em 1.4. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se quiser, você pode escolher um intervalo de 0.5 a 3 e comparar o ritmo.",
+      "adulto": "Se quiser, você pode escolher um intervalo de 0.5 a 3 e comparar o ritmo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mostre os pontos na tela de fim",
+      "adulto": "Mostre os pontos na tela de fim"
+    },
+    {
+      "onde": "caderno",
+      "kids": "O seu placar já lê a variável pontos durante a partida. Primeiro, deixe uma batida acontecer e olhe a tela de fim. Tá vendo? Ela mostra a sua frase, mas não diz quantos pontos você fez, porque não lê os pontos. Por isso, vamos usar a mesma leitura do placar na frase da tela de fim, para mostrar quantos pontos você fez na partida.",
+      "adulto": "O seu placar já lê a variável pontos durante a partida. Primeiro, deixe uma batida acontecer e olhe a tela de fim. Percebe? Ela mostra a sua frase, mas não diz quantos pontos você fez, porque não lê os pontos. Por isso, vamos usar a mesma leitura do placar na frase da tela de fim, para mostrar quantos pontos você fez na partida."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o subtítulo da tela de fim, no ramo fim, dentro do Se do quadro. Depois, abra Programação e depois Valores, pegue o bloco juntar texto e solte em cima desse subtítulo, para ele tomar o lugar do texto antigo.",
+      "adulto": "Deixe à vista o subtítulo da tela de fim, no ramo fim, dentro do Se do quadro. Depois, abra Programação e depois Valores, pegue o bloco juntar texto e solte em cima desse subtítulo, para ele tomar o lugar do texto antigo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique três vezes no + do bloco juntar texto. Repare: ele ganha três entradas, que começam com números. Você vai preencher essas entradas com texto, valor e texto, nessa ordem.",
+      "adulto": "Clique três vezes no + do bloco juntar texto. Repare: ele ganha três entradas, que começam com números. Você vai preencher essas entradas com texto, valor e texto, nessa ordem."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista a primeira entrada. Ainda em Programação e Valores, pegue o bloco de texto que mostra Olá e solte em cima do primeiro número. Apague Olá e escreva Você fez, com um espaço depois de fez.",
+      "adulto": "Deixe à vista a primeira entrada. Ainda em Programação e Valores, pegue o bloco de texto que mostra Olá e solte em cima do primeiro número. Apague Olá e escreva Você fez, com um espaço depois de fez."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em cima do número do meio e escolha pontos.",
+      "adulto": "Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em cima do número do meio e escolha pontos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Por último, deixe à vista a última entrada. Em Programação e Valores, pegue outro texto Olá e solte em cima do último número. Apague Olá e escreva um espaço no começo, seguido de: pontos. Tente bater essa marca!",
+      "adulto": "Por último, deixe à vista a última entrada. Em Programação e Valores, pegue outro texto Olá e solte em cima do último número. Apague Olá e escreva um espaço no começo, seguido de: pontos. Tente bater essa marca!"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora comece, espere o placar crescer e deixe uma batida acontecer. Olha só: a frase mostra os pontos da partida! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no subtítulo da tela de fim, o juntar texto tem Você fez, com um espaço no fim, o valor de pontos no meio e o resto da frase, começando com um espaço. Depois de corrigir, teste de novo.",
+      "adulto": "Agora comece, espere o placar crescer e deixe uma batida acontecer. Olha só: a frase mostra os pontos da partida. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no subtítulo da tela de fim, o juntar texto tem Você fez, com um espaço no fim, o valor de pontos no meio e o resto da frase, começando com um espaço. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Hora de lembrar o que você construiu! As perguntas falam da variável pontos e do placar. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
+      "adulto": "Hora de lembrar o que você construiu. As perguntas falam da variável pontos e do placar. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora a sua corrida conta os pontos e mostra o resultado! Antes de enviar o seu projeto, espere um pouco na abertura, porque o placar não pode aparecer ali. Depois, comece a partida e veja os pontos crescerem.",
+      "adulto": "Agora a sua corrida conta os pontos e mostra o resultado. Antes de enviar o seu projeto, espere um pouco na abertura, porque o placar não pode aparecer ali. Depois, comece a partida e veja os pontos crescerem."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe uma batida acontecer e confira o número na frase da tela de fim. Depois, volte à abertura, espere um pouco e comece outra partida: o placar tem que começar do zero. Se a contagem continuar fora da partida, confira o Se jogando no relógio da soma.",
+      "adulto": "Deixe uma batida acontecer e confira o número na frase da tela de fim. Depois, volte à abertura, espere um pouco e comece outra partida: o placar tem que começar do zero. Se a contagem continuar fora da partida, confira o Se jogando no relógio da soma."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Conte e mostre os pontos",
+      "adulto": "Conte e mostre os pontos"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 11",
+      "adulto": "Aula 11"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare os resultados de um sorteio",
+      "adulto": "Compare os resultados de um sorteio"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Os cactos do seu jogo nascem no mesmo lugar e com a mesma velocidade. Observe um sorteio que escolhe um valor a cada nascimento.",
+      "adulto": "Os cactos do seu jogo nascem no mesmo lugar e com a mesma velocidade. Observe um sorteio que escolhe um valor a cada nascimento."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem.",
+      "adulto": "Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias.",
+      "adulto": "Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Sorteie onde cada cacto nasce",
+      "adulto": "Sorteie onde cada cacto nasce"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu jogo, comece uma partida e olhe os cactos. Tá vendo? Eles chegam sempre com a mesma distância, porque todos nascem em x 560.",
+      "adulto": "No seu jogo, comece uma partida e olhe os cactos. Percebe? Eles chegam sempre com a mesma distância, porque todos nascem em x 560."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? Cada sorteio tirava um lugar de 500 a 560. Agora a gente vai sortear o lugar dos seus cactos!",
+      "adulto": "Lembra da experiência da seção anterior? Cada sorteio tirava um lugar de 500 a 560. Agora a gente vai sortear o lugar dos seus cactos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o x 560 do bloco No grupo criar obstáculo, no então de Se jogando, dentro do relógio de 1.4 segundo. Depois, abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560 do campo x, para ele tomar o lugar do número.",
+      "adulto": "Deixe à vista o x 560 do bloco No grupo criar obstáculo, no então de Se jogando, dentro do relógio de 1.4 segundo. Depois, abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560 do campo x, para ele tomar o lugar do número."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O sorteio chega com 1 e 6: troque o 1 por 500 e o 6 por 560. A tela termina em x 480, por isso todos esses lugares ficam além da borda direita, e o cacto continua entrando escondido. Mantenha o tamanho 44 e o vx -5 no bloco.",
+      "adulto": "O sorteio chega com 1 e 6: troque o 1 por 500 e o 6 por 560. A tela termina em x 480, por isso todos esses lugares ficam além da borda direita, e o cacto continua entrando escondido. Mantenha o tamanho 44 e o vx -5 no bloco."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora comece e observe vários cactos entrarem. Repare: a distância entre eles muda um pouco, porque cada um sorteia o lugar quando nasce, e dois cactos podem até nascer no mesmo lugar. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: o x do único No grupo criar obstáculo tem um número de 500 a 560, e o relógio continua em 1.4 segundo. Depois de corrigir, teste de novo.",
+      "adulto": "Agora comece e observe vários cactos entrarem. Repare: a distância entre eles muda um pouco, porque cada um sorteia o lugar quando nasce, e dois cactos podem até nascer no mesmo lugar. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: o x do único No grupo criar obstáculo tem um número de 500 a 560, e o relógio continua em 1.4 segundo. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Sorteie uma variação na velocidade",
+      "adulto": "Sorteie uma variação na velocidade"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu jogo, comece e olhe os cactos. Tá vendo? Todos andam no mesmo ritmo, porque todos têm vx -5.",
+      "adulto": "No seu jogo, comece e olhe os cactos. Percebe? Todos andam no mesmo ritmo, porque todos têm vx -5."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da primeira parte desta fase? Nas raias, o cacto de -6 andou mais longe que o de -5. Agora a gente vai sortear a velocidade também!",
+      "adulto": "Lembra da experiência da primeira seção desta aula? Nas raias, o cacto de -6 andou mais longe que o de -5. Agora a gente vai sortear a velocidade também, para alguns cactos ficarem mais rápidos que outros."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o campo vx, com -5, no bloco que cria os cactos. Depois, abra Programação e depois Matemática, pegue o bloco da conta, que aparece como 0 + 0, e solte em cima desse número, para ele tomar o lugar do -5.",
+      "adulto": "Deixe à vista o campo vx, com -5, no bloco que cria os cactos. Depois, abra Programação e depois Matemática, pegue o bloco da conta, que aparece como 0 + 0, e solte em cima desse número, para ele tomar o lugar do -5."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na conta, troque o primeiro 0 por -5 e, no sinal, troque + por −, o sinal de menos. Depois, deixe à vista o 0 do lado direito. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0. Troque o 1 por 0 e o 6 por 1.",
+      "adulto": "Na conta, troque o primeiro 0 por -5 e, no sinal, troque + por −, o sinal de menos. Depois, deixe à vista o 0 do lado direito. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0. Troque o 1 por 0 e o 6 por 1."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Assim, se sair 0, a velocidade é -5, e, se sair 1, é -6, que anda mais para a esquerda em cada quadro. Não use o sinal de mais, porque, com ele, a conta daria -5 ou -4, e alguns cactos ficariam mais lentos.",
+      "adulto": "A conta usa menos porque, assim, se sair 0, a velocidade é -5, e, se sair 1, é -6, que anda mais para a esquerda em cada quadro. Não use o sinal de mais, porque, com ele, a conta daria -5 ou -4, e alguns cactos ficariam mais lentos."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora comece e compare vários cactos. Repare: alguns andam um pouco mais rápido, e cada um guarda a velocidade que recebeu ao nascer. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no vx, está a conta -5 menos um número de 0 a 1, e o x continua com o sorteio de 500 a 560, no mesmo bloco, com tamanho 44 e o relógio em 1.4. Depois de corrigir, teste de novo.",
+      "adulto": "Agora comece e compare vários cactos. Repare: alguns andam um pouco mais rápido, e cada um guarda a velocidade que recebeu ao nascer. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no vx, está a conta -5 menos um número de 0 a 1, e o x continua com o sorteio de 500 a 560, no mesmo bloco, com tamanho 44 e o relógio em 1.4. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora a sua corrida varia o lugar e a velocidade dos cactos! Antes de enviar o seu projeto, jogue duas partidas, observe os cactos e confira o placar, a batida e o recomeço. Se dois cactos nascerem no mesmo lugar, tudo bem, porque um sorteio pode repetir o resultado.",
+      "adulto": "Agora a sua corrida varia o lugar e a velocidade dos cactos. Antes de enviar o seu projeto, jogue duas partidas, observe os cactos e confira o placar, a batida e o recomeço. Se dois cactos nascerem no mesmo lugar, tudo bem, porque um sorteio pode repetir o resultado."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira o sorteio do x, de 500 a 560, e a conta -5 menos um número de 0 a 1. O tamanho e o relógio não mudaram.",
+      "adulto": "Confira o sorteio do x, de 500 a 560, e a conta -5 menos um número de 0 a 1. O tamanho e o relógio não mudaram."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Varie o lugar e a velocidade dos cactos",
+      "adulto": "Varie o lugar e a velocidade dos cactos"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 12",
+      "adulto": "Aula 12"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare os números negativos",
+      "adulto": "Compare os números negativos"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Seu jogo usa velocidades negativas para andar para a esquerda. Antes de aumentar a dificuldade, compare esses números numa régua.",
+      "adulto": "Seu jogo usa velocidades negativas para andar para a esquerda. Antes de aumentar a dificuldade, compare esses números numa régua."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >.",
+      "adulto": "Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Observe a resposta com o marcador em -5. Depois mude valor da base para -9 e compare a resposta.",
+      "adulto": "Observe a resposta com o marcador em -5. Depois mude valor da base para -9 e compare a resposta."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta.",
+      "adulto": "Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Compare a base com cada cacto",
+      "adulto": "Compare a base com cada cacto"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Na régua, você viu como a base pode mudar. Agora compare essa base com a velocidade que cada cacto recebe ao nascer.",
+      "adulto": "Na régua, você viu como a base pode mudar. Agora compare essa base com a velocidade que cada cacto recebe ao nascer."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe a condição ligada. Clique em Passar 5 segundos cinco vezes. Observe a base e os números escritos nos cactos que já nasceram.",
+      "adulto": "Deixe a condição ligada. Clique em Passar 5 segundos cinco vezes. Observe a base e os números escritos nos cactos que já nasceram."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Com a base em -9 e a condição ligada, continue clicando em Passar 5 segundos até aparecer um cacto com -10. Compare a conta desse cacto com a base.",
+      "adulto": "Com a base em -9 e a condição ligada, continue clicando em Passar 5 segundos até aparecer um cacto com -10. Compare a conta desse cacto com a base."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Desligue a condição e clique em Passar 5 segundos mais cinco vezes. Compare até onde a base foi e observe se os cactos antigos trocaram de número.",
+      "adulto": "Desligue a condição e clique em Passar 5 segundos mais cinco vezes. Compare até onde a base foi e observe se os cactos antigos trocaram de número."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Guarde a velocidade base",
+      "adulto": "Guarde a velocidade base"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu projeto, olhe a conta do vx. Tá vendo? O lado esquerdo é o -5 escrito direto, por isso ele nunca muda.",
+      "adulto": "No seu projeto, olhe a conta do vx. Percebe? O lado esquerdo é o -5 escrito direto, por isso ele nunca muda."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da parte anterior? A base diminuía com o tempo. Agora a gente vai guardar a base numa variável!",
+      "adulto": "Lembra da experiência da seção anterior? A base diminuía com o tempo. Agora a gente vai guardar a base numa variável."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A variável nasce quando o jogo começa. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar variável pontos. Depois, abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim. Troque contador por velocidade e o valor por -5.",
+      "adulto": "A variável nasce quando o jogo começa. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar variável pontos. Depois, abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim. Troque contador por velocidade e o valor por -5."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o -5 do lado esquerdo da conta, no vx do bloco que cria os cactos. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima desse -5 e escolha velocidade. Mantenha o sinal de menos e o sorteio de 0 a 1 do lado direito.",
+      "adulto": "Agora deixe à vista o -5 do lado esquerdo da conta, no vx do bloco que cria os cactos. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima desse -5 e escolha velocidade. Mantenha o sinal de menos e o sorteio de 0 a 1 do lado direito."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: em Ao iniciar, está Criar variável velocidade com valor -5, e o vx dos cactos é velocidade menos um número de 0 a 1. Agora comece uma partida. Repare: o jogo continua igual, porque a variável guarda o mesmo -5 de antes. A diferença é que, agora, essa base pode mudar durante a corrida.",
+      "adulto": "Confira se ficou assim: em Ao iniciar, está Criar variável velocidade com valor -5, e o vx dos cactos é velocidade menos um número de 0 a 1. Agora comece uma partida. Repare: o jogo continua igual, porque a variável guarda o mesmo -5 de antes. A diferença é que, agora, essa base pode mudar durante a corrida."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Prepare o relógio da dificuldade",
+      "adulto": "Prepare o relógio da dificuldade"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu projeto, olhe Enquanto estiver rodando. Tá vendo? Só tem o relógio dos cactos e o dos pontos, por isso nada muda a base.",
+      "adulto": "No seu projeto, olhe Enquanto estiver rodando. Percebe? Só tem o relógio dos cactos e o dos pontos, por isso nada muda a base."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da segunda parte desta fase? A cada 5 segundos, a base diminuía 1. Agora a gente vai criar o relógio da dificuldade!",
+      "adulto": "Lembra da experiência da segunda seção desta aula? A cada 5 segundos, a base diminuía 1. Agora a gente vai criar o relógio da dificuldade."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e dos dois relógios que já existem. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o valor para 5.",
+      "adulto": "Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e dos dois relógios que já existem. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o valor para 5."
+    },
+    {
+      "onde": "caderno",
+      "kids": "A base só pode mudar durante a partida. Por isso, deixe à vista o espaço vazio dentro desse relógio, abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.",
+      "adulto": "A base só pode mudar durante a partida. Por isso, deixe à vista o espaço vazio dentro desse relógio, abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: em Enquanto estiver rodando, há três relógios separados: o dos cactos, em 1.4 segundo, o dos pontos, no intervalo que você escolheu, e o da dificuldade, em 5 segundos, com o Se jogando. O então do relógio novo ainda está vazio, e por isso a base ainda não muda.",
+      "adulto": "Confira se ficou assim: em Enquanto estiver rodando, há três relógios separados: o dos cactos, em 1.4 segundo, o dos pontos, no intervalo que você escolheu, e o da dificuldade, em 5 segundos, com o Se jogando. O então do relógio novo ainda está vazio, e por isso a base ainda não muda."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Diminua a base até o limite",
+      "adulto": "Diminua a base até o limite"
+    },
+    {
+      "onde": "caderno",
+      "kids": "No seu projeto, olhe o relógio de 5 segundos. Tá vendo? O então dele está vazio, por isso a base fica sempre em -5.",
+      "adulto": "No seu projeto, olhe o relógio de 5 segundos. Percebe? O então dele está vazio, por isso a base fica sempre em -5."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Lembra da experiência da segunda parte desta fase? Com a condição ligada, a base parou em -9. Agora a gente vai programar esse limite!",
+      "adulto": "Lembra da experiência da segunda seção desta aula? Com a condição ligada, a base parou em -9. Agora a gente vai programar esse limite."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o espaço vazio do então de Se jogando, no relógio de 5 segundos. Depois, abra Programação e depois Lógica e Se, pegue outro bloco Se e solte nesse espaço. Desta vez, mantenha a comparação que veio nele, porque você vai usar essa pergunta.",
+      "adulto": "Deixe à vista o espaço vazio do então de Se jogando, no relógio de 5 segundos. Depois, abra Programação e depois Lógica e Se, pegue outro bloco Se e solte nesse espaço. Desta vez, mantenha a comparação que veio nele, porque você vai usar essa pergunta."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o lado esquerdo da comparação do Se de dentro. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima do x, do lado esquerdo, e escolha velocidade.",
+      "adulto": "Agora deixe à vista o lado esquerdo da comparação do Se de dentro. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima do x, do lado esquerdo, e escolha velocidade."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O sinal já chega como >, maior que: mantenha. No lado direito, troque o 0 por -9. Assim, a pergunta fica: velocidade maior que -9? A resposta é sim enquanto a base não chega em -9, e vira não quando ela chega lá.",
+      "adulto": "O sinal já chega como >, maior que: mantenha. No lado direito, troque o 0 por -9. Assim, a pergunta fica: velocidade maior que -9? A resposta é sim enquanto a base não chega em -9, e vira não quando ela chega lá."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora deixe à vista o espaço vazio do então do Se de dentro. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte ali. Escolha velocidade e coloque -1 no valor da soma. Somar -1 deixa a base menor, e base menor é cacto mais rápido.",
+      "adulto": "Agora deixe à vista o espaço vazio do então do Se de dentro. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte ali. Escolha velocidade e coloque -1 no valor da soma. Somar -1 deixa a base menor, e base menor é cacto mais rápido."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Agora teste uma partida longa. Repare: os cactos novos vão ficando mais rápidos aos poucos, e os que já nasceram guardam a velocidade que receberam. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no relógio de 5 segundos, o Se jogando tem dentro dele o Se velocidade > -9, e só dentro desse Se fica Somar -1 em velocidade, o único bloco de soma dessa variável. Depois de corrigir, teste de novo.",
+      "adulto": "Agora teste uma partida longa e veja a corrida ficar mais rápida. Repare: os cactos novos vão ficando mais rápidos aos poucos, e os que já nasceram guardam a velocidade que receberam. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no relógio de 5 segundos, o Se jogando tem dentro dele o Se velocidade > -9, e só dentro desse Se fica Somar -1 em velocidade, o único bloco de soma dessa variável. Depois de corrigir, teste de novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Se você perder cedo, tudo bem: a comparação completa você já viu na experiência da segunda parte desta fase.",
+      "adulto": "Se você perder cedo, tudo bem: a comparação completa você já viu na experiência da segunda seção desta aula."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Complete a descrição dos controles",
+      "adulto": "Complete a descrição dos controles"
+    },
+    {
+      "onde": "caderno",
+      "kids": "O seu jogo aceita três controles de pulo: a barra de espaço, a seta para cima e um toque na parte de cima da tela. Mas repare: a descrição que você escreveu na fase 2 fala só do espaço, e quem usa o leitor de tela não fica sabendo dos outros dois jeitos. Por isso, vamos completar essa frase.",
+      "adulto": "O seu jogo aceita três controles de pulo: a barra de espaço, a seta para cima e um toque na parte de cima da tela. Mas repare: a descrição que você escreveu na aula 2 fala só do espaço, e quem usa o leitor de tela não fica sabendo dos outros dois jeitos. Por isso, vamos completar essa frase."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Deixe à vista o bloco Descrever o jogo para leitor de tela, em Ao iniciar. No texto, apague a frase antiga e escreva esta, exatamente assim, sem ponto no fim: Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela.",
+      "adulto": "Deixe à vista o bloco Descrever o jogo para leitor de tela, em Ao iniciar. No texto, apague a frase antiga e escreva esta, exatamente assim, sem ponto no fim: Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira se ficou assim: em Ao iniciar, a descrição tem a frase inteira, com o que fazer e os três controles. Depois, teste os três controles no jogo. A descrição só conta como se joga: ela não cria nenhum controle novo.",
+      "adulto": "Confira se ficou assim: em Ao iniciar, a descrição tem a frase inteira, com o que fazer e os três controles. Depois, teste os três controles no jogo. A descrição só conta como se joga: ela não cria nenhum controle novo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Hora de lembrar o que você construiu! As perguntas falam dos sorteios e da dificuldade da corrida. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
+      "adulto": "Hora de lembrar o que você construiu. As perguntas falam dos sorteios e da dificuldade da corrida. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Olha só: o seu Corre, Dino! já tem começo, pulo com som, cactos, pontos, derrota, recomeço e uma corrida que fica mais rápida! Antes de enviar, teste esse ciclo inteiro, por tecla e por toque, no projeto que você construiu. Para começar por tecla, clique em Atualizar e use a tecla sem clicar no jogo.",
+      "adulto": "Olha só: o seu Corre, Dino! já tem começo, pulo com som, cactos, pontos, derrota, recomeço e uma corrida que fica mais rápida. Antes de enviar, teste esse ciclo inteiro, por tecla e por toque, no projeto que você construiu. Para começar por tecla, clique em Atualizar e use a tecla sem clicar no jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O limite segura só a base: o sorteio ainda pode tirar mais 1 e deixar um cacto um pouquinho mais rápido.",
+      "adulto": "O limite segura só a base: o sorteio ainda pode tirar mais 1 e deixar um cacto um pouco mais rápido."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Depois de uma derrota, confira o recomeço: os pontos voltam a zero, a base volta a -5 e a abertura aparece. Comece outra partida e confira os três controles.",
+      "adulto": "Depois de uma derrota, confira o recomeço: os pontos voltam a zero, a base volta a -5 e a abertura aparece. Comece outra partida e confira os três controles."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Os desenhos do Dino, da floresta e dos efeitos vêm nos blocos. Olha só o que você programou: as regras que fazem essas partes funcionarem juntas!",
+      "adulto": "Os desenhos do Dino, da floresta e dos efeitos vêm nos blocos. Olha só o que você programou: as regras que fazem essas partes funcionarem juntas."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, se quiser mostrar o seu jogo no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir fase.",
+      "adulto": "Funcionou? Primeiro, confira e envie o seu projeto: clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando o envio terminar, se quiser mostrar o seu jogo para outras pessoas no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido; pode deixar como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar e espere a confirmação. Quando aparecer Publicado!, o seu jogo já está no Mural dos Criadores. Clique em Copiar link e mande para os amigos, para o grupo, para quem você quiser. Quem receber pode jogar direto, até no celular. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Aumente a dificuldade com um limite",
+      "adulto": "Aumente a dificuldade com um limite"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Fase 13",
+      "adulto": "Aula 13"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Corre, Dino! · Mapa da Aventura",
+      "adulto": "Corre, Dino! · Caderno do Aluno"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Mapa da Aventura",
+      "adulto": "Caderno do Aluno"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Os passos para construir, testar e recomeçar o seu jogo.",
+      "adulto": "Os passos para construir, testar e recomeçar o seu jogo."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Da primeira tela à corrida completa.",
+      "adulto": "Da primeira tela à corrida completa."
+    },
+    {
+      "onde": "caderno",
+      "kids": "O jogo Corre, Dino! em funcionamento",
+      "adulto": "O jogo Corre, Dino! em funcionamento"
+    },
+    {
+      "onde": "caderno",
+      "kids": "continuação",
+      "adulto": "continuação"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Corre, Dino! | Mapa da Aventura",
+      "adulto": "Corre, Dino! | Caderno do Aluno"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Seu percurso",
+      "adulto": "Seu percurso"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Uma parte do jogo por fase",
+      "adulto": "Uma parte do jogo por aula"
+    },
+    {
+      "onde": "caderno",
+      "kids": "Este é o seu Mapa da Aventura! Nele estão os passos para montar e testar o seu jogo, fase por fase. Quando precisar de um passo, de um valor ou de um teste, é só voltar aqui. Se quiser, você pode ler na própria fase. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.",
+      "adulto": "Este é o seu caderno do curso. Nele estão os passos para montar e testar o seu jogo, aula por aula. Quando precisar conferir um passo, um valor ou um teste, é só voltar aqui. Se quiser, você pode ler na própria aula. E, se preferir, também pode clicar em Baixar para guardar o caderno e consultar onde quiser."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Os desenhos do Dino, da floresta e dos efeitos já vêm nos blocos, e é você que vai programar como eles participam do seu jogo. Em cada fase, continue no projeto que você enviou na fase anterior.",
+      "adulto": "Os desenhos do Dino, da floresta e dos efeitos já vêm nos blocos, e é você que vai programar como eles participam do seu jogo. Em cada aula, continue no projeto que você enviou na aula anterior."
+    },
+    {
+      "onde": "caderno",
+      "kids": "Confira os encaixes",
+      "adulto": "Confira os encaixes"
+    },
+    {
+      "onde": "caderno",
+      "kids": "confira os encaixes",
+      "adulto": "confira os encaixes"
+    }
+  ]
+}

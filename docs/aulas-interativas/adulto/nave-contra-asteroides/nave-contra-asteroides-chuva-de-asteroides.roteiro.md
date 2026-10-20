@@ -1,0 +1,181 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.roteiro.md e de qa/adulto/traducoes/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
+# Roteiro de gravação · Nave Contra Asteroides · Aula 4
+
+**Faça os asteroides cair**
+
+Fonte: `qa/nave-contra-asteroides.conteudo.json`. Gerado por `qa/gerar-nave-contra-asteroides.ts`. Revise a fonte e regenere os três arquivos juntos.
+
+Entrada: Tiros saem da nave, sobem, têm som e são retirados do grupo ao sair da tela. Saída: Asteroides nascem a cada 40 quadros, caem e saem do grupo; tiros ainda atravessam as pedras.
+
+**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
+
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página.
+
+Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Percebe?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. O recado da página começa convidando ("Sua vez:", "Agora…", "Hora de…") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Percebe?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, quem faz a aula testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …"). Tom adulto em DIRETRIZES-ADULTO.md.
+
+## Seção 1. Compare o intervalo entre as pedras
+
+### Clipe `video-intervalo-das-pedras` · Compare o intervalo entre as pedras
+
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Criar asteroide em A cada quadro, clicar em Tempo, deixar passar cerca de um segundo e mostrar umas 30 pedras amontoadas. Levar a peça para a caixa A cada 40 quadros, deixar passar cerca de quatro segundos e mostrar as pedras nascendo separadas e a marca relógio 40: 180 em 60 quadros. Escolher 20 quadros, deixar passar mais três segundos e mostrar relógio 20: 180 em 60 quadros abaixo da primeira marca. A faixa mostra o intervalo em segundos (1,33 s); a fala usa quadros, como o bloco. Meme na comparação: na frase dos carros entrando na rodovia, mostrar por 2 a 3 segundos o meme ilustrado nosso, asteroides colados uns nos outros na entrada de uma rodovia e depois entrando um de cada vez, com espaço entre eles, com a legenda "um de cada vez"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
+
+**Na tela:** Concluir o teste de 40 quadros, com espaços entre as pedras.
+
+**Professora:**
+
+> “Esta é uma experiência para a gente entender o intervalo: quanto tempo o jogo espera entre uma pedra e outra.
+>
+> Olha aqui: Criar asteroide está em A cada quadro. Eu clico em Tempo e deixo passar mais ou menos um segundo. Percebe? Nascem umas 30 pedras, uma em cada quadro, grudadas umas nas outras. Vira um amontoado, e ninguém conseguiria passar por ali.
+>
+> É como carros entrando numa rodovia: se todos entram de uma vez, um cola no outro, mas, se cada um espera a sua vez, sobra espaço entre um e outro.
+>
+> Agora eu levo Criar asteroide para a caixa A cada 40 quadros, e tudo recomeça do zero. Deixo passar uns quatro segundos. Olha só: nasce uma pedra, depois outra, depois outra, com espaço entre elas, porque o relógio espera 40 quadros antes de criar a próxima.”
+
+**Na tela:** Trocar para 20 quadros e comparar quantidade e distância percorrida; manter a velocidade igual nos dois testes.
+
+**Professora:**
+
+> “E se eu diminuir a espera, a pedra cai mais rápido? Vamos comparar. Por último, eu escolho 20 quadros e deixo passar mais três segundos. As pedras nascem mais perto umas das outras, mas repare: cada pedra desce o mesmo tanto, 180 em 60 quadros, igual antes. Ou seja, o intervalo muda quantas pedras nascem, e não a velocidade de cada uma. No seu jogo, o relógio vai criar uma pedra a cada 40 quadros.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
+
+**Recado na página (não gravar):** Sua vez: compare criar pedras em cada quadro, a cada 40 e a cada 20 quadros, olhando o nascimento e a queda. Quando terminar, clique em Próxima seção.
+
+## Seção 2. Prepare a criação dos asteroides
+
+### Clipe `video-grupo-e-relogio` · Prepare a criação dos asteroides
+
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Direção geral do clipe:** Começar pela retomada: clicar na área do jogo, esperar alguns segundos e, no "Percebe?", mostrar que nenhuma pedra aparece. Mostrar a diferença entre encaixar depois do bloco inteiro e dentro dele. O intervalo começa vazio. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo.
+
+**Professora:**
+
+> “Clique no seu jogo e espere um pouco. Percebe? Nenhuma pedra aparece, porque o jogo ainda não cria pedras.
+>
+> Lembra da experiência da seção anterior? Com o relógio de 40 quadros, as pedras nasciam com espaço entre elas. Agora a gente vai preparar as pedras e o relógio no seu jogo.
+>
+> As pedras também vão ser muitas, por isso ficam num grupo, criado uma vez quando o jogo começa. Deixe à vista o fim de Ao iniciar, logo depois de Criar grupo de sprites tiros.
+>
+> Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. Repare: o nome já vem asteroides, que é o nome certo para este grupo, por isso mantenha.”
+
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste, e manter à vista o bloco ou o resultado que a professora acabou de mostrar antes de seguir para o próximo passo.
+
+**Professora:**
+
+> “Agora o relógio, que decide quando nasce cada pedra. Ele fica fora de A cada quadro do jogo, porque não é para criar uma pedra em todo quadro, e sim de tempos em tempos. Por isso, deixe à vista o espaço logo abaixo do bloco inteiro A cada quadro do jogo, ainda dentro de Enquanto estiver rodando.
+>
+> Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadros. Arraste e solte logo abaixo de A cada quadro do jogo, mas fora dele, ainda dentro de Enquanto estiver rodando. Os dois blocos ficam como vizinhos, um embaixo do outro.
+>
+> O número do intervalo chega em 30. Troque por 40, porque o seu jogo vai criar uma pedra a cada 40 quadros. Assim, A cada quadro do jogo continua cuidando de cada imagem da partida, e A cada 40 quadros espera esse intervalo para fazer o que estiver dentro dele.”
+
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites asteroides, e, dentro de Enquanto estiver rodando, A cada 40 quadros está logo abaixo de A cada quadro do jogo, como vizinho, e não encaixado dentro dele. Por enquanto, nenhuma pedra cai, porque o relógio ainda está vazio.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”
+
+**Recado na página (não gravar):** Agora prepare a chuva de pedras. Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar esta etapa. Depois, clique em Próxima seção.
+
+## Seção 3. Sorteie onde a pedra nasce
+
+### Clipe `video-posicao-sorteada` · Sorteie onde a pedra nasce
+
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Sortear lugar na régua de cima até sair pelo menos um segundo lugar diferente, apontando as marcas na régua entre x 90 e x 390. Mostrar a pedra acima da borda de cima, clicar em Tempo e acompanhar a pedra entrando na tela. Meme na comparação: na frase do dado, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma mão jogando um dado com asteroides nas faces, com a legenda "Sortear lugar"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
+
+**Na tela:** Fazer os sorteios e mostrar a pedra acima da borda, sem iniciar o tempo ainda.
+
+**Professora:**
+
+> “Esta é uma experiência para a gente entender o sorteio: como o jogo escolhe onde cada pedra nasce.
+>
+> Olha aqui: eu clico em Sortear lugar na régua de cima. Sai um lugar, e uma marca aparece na régua. Eu clico de novo, e sai outro lugar. Repare: cada clique é um sorteio novo, sempre entre x 90 e x 390. É como jogar um dado: você não sabe qual número vai sair, e o mesmo número pode sair de novo.”
+
+**Na tela:** Apontar a posição inicial e clicar em Tempo só quando a professora anunciar o gesto.
+
+**Professora:**
+
+> “Repare na pedra: ela fica acima da borda de cima, do lado de fora da tela. Eu clico em Tempo, e olha só: ela desce e entra caindo pela borda de cima. Assim, ninguém vê a pedra aparecer do nada. No seu jogo, o x do asteroide vai ser sorteado, e o y vai começar em -30, acima da tela.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
+
+**Recado na página (não gravar):** Sua vez: sorteie até ver lugares diferentes e depois acompanhe uma pedra entrando na tela. Quando terminar, clique em Próxima seção.
+
+## Seção 4. Crie e mostre as pedras caindo
+
+### Clipe `video-asteroide` · Crie e mostre as pedras caindo
+
+**Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Direção geral do clipe:** Começar pela retomada: esperar alguns segundos e, no "Percebe?", mostrar que ainda não cai nenhuma pedra. Mostrar a criação no intervalo e o movimento, a limpeza e o desenho no bloco de cada quadro, sempre com o destino à vista antes de abrir a paleta. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo.
+
+**Professora:**
+
+> “Clique no seu jogo e espere um pouco. Percebe? Ainda não cai nenhuma pedra, porque o relógio está vazio.
+>
+> Lembra da experiência da seção anterior? Cada pedra nascia num lugar sorteado, acima da tela, e entrava caindo. Agora a gente vai pôr o asteroide no relógio do seu jogo.
+>
+> Deixe à vista o espaço vazio dentro de A cada 40 quadros.
+>
+> Agora abra Jogo 2D, depois Kits prontos e depois Espaço, e pegue o bloco No grupo criar um asteroide. Arraste para dentro de A cada 40 quadros e solte quando aparecer o encaixe. O grupo já vem asteroides: mantenha.
+>
+> Agora o lugar onde a pedra nasce. Em vez de um número fixo no x, a pedra vai nascer num lugar sorteado, por isso deixe à vista o número do campo x do asteroide. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um x aleatório na tela e solte em cima desse número.”
+
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste, e manter à vista o bloco ou o resultado que a professora acabou de mostrar antes de seguir para o próximo passo.
+
+**Professora:**
+
+> “Assim, as pedras não nascem sempre no mesmo lugar. Agora troque o y para -30, para a pedra nascer acima da tela. O tamanho já vem em 40: mantenha. O vx já vem em 0, por isso a pedra não anda para os lados. Troque o vy para 3: sem o sinal de menos, a pedra desce. Se quiser, escolha uma cor que apareça bem no fundo.
+>
+> Agora as pedras precisam andar, sair do grupo quando passarem da tela e aparecer, em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo tiros. Abra Jogo 2D, depois Grupos e depois Movimento, pegue o bloco Mover os sprites do grupo usando suas velocidades e solte nesse lugar. O grupo já vem asteroides, e nos dois próximos blocos também: é só manter.”
+
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Esperar as pedras aparecerem antes do disparo que ainda atravessa a pedra.
+
+**Professora:**
+
+> “Agora a limpeza, que tira do grupo as pedras que saem da tela. Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte nesse encaixe. Mantenha sprite no campo chamado e deixe o espaço de dentro vazio.
+>
+> Deixe à vista o encaixe logo abaixo da limpeza dos asteroides. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe.
+>
+> Agora clique na área do jogo e espere. Olha só: as pedras entram pela parte de cima e caem.”
+
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Atire em uma delas. Por enquanto, o tiro atravessa a pedra, e isso é esperado, porque você ainda não programou o acerto.
+>
+> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está No grupo asteroides criar um asteroide, com um x aleatório na tela, y -30, tamanho 40, vx 0 e vy 3. E, no fim de A cada quadro do jogo, estão Mover os sprites do grupo asteroides, Tirar do grupo asteroides quem sair da tela e Desenhar o grupo asteroides, nessa ordem. Depois de corrigir, teste de novo.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”
+
+**Recado na página (não gravar):** Agora faça as pedras caírem. Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar esta etapa. Depois, clique em Próxima seção.
+
+## Seção 5. Teste e envie a sua chuva de pedras
+
+### Clipe `video-entrega` · Teste e envie a sua chuva de pedras
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Na tela:** Clicar na área do jogo e dar tempo para observar algumas pedras nascendo e caindo. Depois mover a nave e atirar, mostrando o tiro atravessando as pedras. Não trocar valores nesta seção. Não confundir quadros com segundos. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado.
+
+**Professora:**
+
+> “Agora teste o seu jogo inteiro. Clique na área do jogo e olhe as pedras: elas entram pela parte de cima, uma a cada 40 quadros, e caem sempre no mesmo ritmo, porque a velocidade de cada uma é vy 3.
+>
+> Depois mova a nave e atire. As setas e os tiros precisam continuar funcionando como antes, agora com as pedras caindo. Por enquanto o tiro atravessa as pedras, e isso é esperado: o acerto vem na próxima aula.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula.”
+
+**Recado na página (não gravar):** Hora de testar a sua chuva de pedras. Confira as pedras caindo, as setas e os tiros, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula.

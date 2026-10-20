@@ -105,4 +105,4 @@ A progressão estrutural pode continuar onde corresponde ao objetivo. Instrument
 - [Interface das simulações](../../packages/member-shell/src/components/learning-simulation.tsx), [cena](../../packages/member-shell/src/components/learning-simulation-scene.tsx), [modelos e critérios](../../packages/core/src/learning/simulation.ts).
 - [Player das seções](../../packages/member-shell/src/components/lesson-sections.tsx), [autoria dos blocos](../../packages/admin/src/components/editor/learning-builder.tsx), [critérios](../../packages/admin/src/components/editor/section-completion-editor.tsx).
 - [Painel do professor](../../packages/admin/src/components/professor/lesson-learning-panel.tsx), [integração do Estúdio](../../packages/member-shell/src/components/studio/studio-block.tsx), [física do Jogo 2D](../../packages/studio/src/official-extensions/game-2d/runtime/physics.ts).
-- [Roteiro do salto](../aulas-interativas/corre-dino/aula-03/roteiro.md) e os demais 12 roteiros do Corre Dino.
+- [Roteiro do salto](../aulas-interativas/kids/corre-dino/aula-03/roteiro.md) e os demais 12 roteiros do Corre Dino.

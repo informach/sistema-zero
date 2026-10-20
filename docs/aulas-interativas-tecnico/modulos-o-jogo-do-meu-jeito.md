@@ -12,7 +12,7 @@
 
 **Descrição:** Continue a partir de uma cópia do jogo que você concluiu em Nave Contra Asteroides. Crie uma nave em pixel art e um asteroide em vetor no Pinta, anime os dois e use essas artes no Estúdio. Teste as regras com os novos desenhos e, se quiser, publique sua versão no Mural dos Criadores.
 
-Revisão local de 05/10/2026: **8 aulas, 54 seções, 50 vídeos planejados, 14 experiências e quatro quizzes**. Vídeos das experiências, do jogo pronto e da publicação revistos em 06/10/2026. Os oito identificadores e a chave das entregas foram preservados. O caderno, que a criança conhece como [Mapa da Aventura](../aulas-interativas/o-jogo-do-meu-jeito/mapa-da-aventura.pdf), acompanha o percurso; [fontes e reprodução](recursos/meu-jeito/README.md).
+Revisão local de 05/10/2026: **8 aulas, 54 seções, 50 vídeos planejados, 14 experiências e quatro quizzes**. Vídeos das experiências, do jogo pronto e da publicação revistos em 06/10/2026. Os oito identificadores e a chave das entregas foram preservados. O caderno, que a criança conhece como [Mapa da Aventura](../aulas-interativas/kids/o-jogo-do-meu-jeito/mapa-da-aventura.pdf), acompanha o percurso; [fontes e reprodução](recursos/meu-jeito/README.md).
 
 **Revisão de 06/10/2026 (vocabulário da aventura):** o que a criança vê e ouve passou a falar de aventura, fase, parte, Mapa da Aventura e guia (Diretrizes, seção 6), e as falas citam os botões novos: **Próxima parte**, **Concluir fase** e, na galeria, **Minhas criações do Pinta/Estúdio**, **Recado para o guia (opcional)**, **Enviar para o guia (1 ou 2)** e **Recebido pelo seu guia.**. A seção 2 da aula 1 virou **Seu Mapa da Aventura**, com o material **Mapa da Aventura: O Jogo do Meu Jeito** e ler ou baixar oferecidos como convite; as seções de envio viraram **Envie…**. Comparações da escola trocadas por outras de casa e da brincadeira: o desenho do quadro da sala copiado no caderno virou o desenho de um gibi copiado numa folha; o globo da sala de aula, a bola girando na ponta do dedo; a professora que chama, o técnico do time. Na experiência das cópias e no quiz da aula 3, "o jogo da aula" virou "o jogo da fase", como nos rótulos da cena. Negações do que é opcional viraram convite e "no nosso jogo" deu lugar ao nome do que a experiência mostra. O PDF foi gerado de novo, com capa, índice e rodapé do Mapa da Aventura. Chaves, slugs e o nome do arquivo não mudaram.
 
@@ -38,9 +38,9 @@ Ids, chaves, estrutura (8 aulas, 54 seções, 50 vídeos, 14 experiências, quat
 
 | Aula | Resultado | Seções | Identificador |
 | --- | --- | ---: | --- |
-| 1. [Guarde uma cópia para criar do seu jeito](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-01.md) | Próprio jogo copiado, nomeado e salvo no Estúdio. | 7 | `aula-01` |
-| 2. [Desenhe sua nave em pixel art](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-02.md) | Nave 32 × 32 com cabine, luz, sombra e espaço para o motor. | 8 | `aula-02` |
-| 3. [Faça o motor da nave pulsar](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-03.md) | voando, dois quadros, 8 quadros por segundo; revisão. | 7 | `aula-03` |
+| 1. [Guarde uma cópia para criar do seu jeito](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-01.md) | Próprio jogo copiado, nomeado e salvo no Estúdio. | 7 | `aula-01` |
+| 2. [Desenhe sua nave em pixel art](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-02.md) | Nave 32 × 32 com cabine, luz, sombra e espaço para o motor. | 8 | `aula-02` |
+| 3. [Faça o motor da nave pulsar](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-03.md) | voando, dois quadros, 8 quadros por segundo; revisão. | 7 | `aula-03` |
 
 ## Módulo 2 — Suas pedras em movimento
 
@@ -48,8 +48,8 @@ Ids, chaves, estrutura (8 aulas, 54 seções, 50 vídeos, 14 experiências, quat
 
 | Aula | Resultado | Seções | Identificador |
 | --- | --- | ---: | --- |
-| 4. [Desenhe um asteroide com formas](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-04.md) | Asteroide em vetor de 64 × 64, com curvas e crateras. | 6 | `aula-04` |
-| 5. [Anime as chamas e as crateras](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-05.md) | girando, dois quadros, 8 por segundo; revisão e entrega das duas artes. | 8 | `aula-05` |
+| 4. [Desenhe um asteroide com formas](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-04.md) | Asteroide em vetor de 64 × 64, com curvas e crateras. | 6 | `aula-04` |
+| 5. [Anime as chamas e as crateras](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-05.md) | girando, dois quadros, 8 por segundo; revisão e entrega das duas artes. | 8 | `aula-05` |
 
 ## Módulo 3 — Sua arte entra no jogo
 
@@ -57,9 +57,9 @@ Ids, chaves, estrutura (8 aulas, 54 seções, 50 vídeos, 14 experiências, quat
 
 | Aula | Resultado | Seções | Identificador |
 | --- | --- | ---: | --- |
-| 6. [Coloque sua nave animada no jogo](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-06.md) | Nave autoral com voando; pedras originais e regras preservadas. | 7 | `aula-06` |
-| 7. [Faça suas pedras nascerem animadas](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-07.md) | Cada nova pedra usa girando; revisão de recorte e ritmos. | 6 | `aula-07` |
-| 8. [Teste e compartilhe sua versão](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-08.md) | Partida testada até o reinício e jogo entregue; publicação opcional. | 5 | `aula-08` |
+| 6. [Coloque sua nave animada no jogo](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-06.md) | Nave autoral com voando; pedras originais e regras preservadas. | 7 | `aula-06` |
+| 7. [Faça suas pedras nascerem animadas](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-07.md) | Cada nova pedra usa girando; revisão de recorte e ritmos. | 6 | `aula-07` |
+| 8. [Teste e compartilhe sua versão](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-08.md) | Partida testada até o reinício e jogo entregue; publicação opcional. | 5 | `aula-08` |
 
 ## Aplicação das diretrizes
 

@@ -9,7 +9,7 @@ import {
 
 import { cadeTodoMundo } from './quizzes-cursos-curtos'
 
-const DIR = resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo')
+const DIR = resolve(import.meta.dir, '../../aulas-interativas/kids/cade-todo-mundo')
 const CURSO = 'cade-todo-mundo'
 const EXEMPLOS = {
   inicio: 'ca000001-0000-4000-8000-000000000001',
@@ -58,7 +58,7 @@ const comEnvioEmDia = <S extends { completion: object }>(s: S) => ({
 })
 const { blocks: allowed } = JSON.parse(
   readFileSync(
-    resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo/blocos.json'),
+    resolve(import.meta.dir, '../../aulas-interativas/kids/cade-todo-mundo/blocos.json'),
     'utf8',
   ),
 ) as { blocks: string[] }

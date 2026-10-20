@@ -16,7 +16,7 @@ import { montarProjetoFarol, montarProjetoFarolDaParte } from './desafio-farol-p
 
 import { farol } from './quizzes-cursos-curtos'
 
-const DIR = resolve(import.meta.dir, '../../aulas-interativas/desafio-primeiro-jogo')
+const DIR = resolve(import.meta.dir, '../../aulas-interativas/kids/desafio-primeiro-jogo')
 const CURSO = 'desafio-primeiro-jogo'
 const EXEMPLOS = {
   inicio: 'fa000001-0000-4000-8000-000000000001',

@@ -33,7 +33,7 @@
 
 ### Task 2: Update the manifest source and generated JSON
 
-**Files:** Modify `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts` and `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json`.
+**Files:** Modify `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts` and `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json`.
 
 **Interfaces:** Generator exports no public API; running it rewrites the three course manifests. Preserve Aula 2 and certificate bytes or verify they remain unchanged.
 
@@ -43,7 +43,7 @@
 
 ### Task 3: Rewrite spoken script and author notes
 
-**Files:** Modify `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md` and `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.md`.
+**Files:** Modify `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md` and `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.md`.
 
 **Interfaces:** Each heading corresponds to one manifest section and one video. Directions are not spoken; quoted text is speakable Brazilian Portuguese for a child at first contact.
 
@@ -62,7 +62,7 @@
 
 ### Task 5: Restore explanatory depth without changing the sequence (26/09 clarification)
 
-**Files:** Modify `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md`, `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.md`, `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts`, and the Aula 1 manifest JSON.
+**Files:** Modify `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md`, `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.md`, `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts`, and the Aula 1 manifest JSON.
 
 **Interfaces:** Keep the three existing section keys and all `completion.blockIds` unchanged. Only spoken copy, recording directions and matching planned-video descriptions change.
 
@@ -73,7 +73,7 @@
 
 ### Task 6: Teach where the child sees and tests the game (26/09 clarification)
 
-**Files:** Modify `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md`, `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.md`, `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts`, and `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json`.
+**Files:** Modify `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md`, `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.md`, `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts`, and `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json`.
 
 **Interfaces:** Keep all section keys, block keys and `completion.blockIds` unchanged. Edit only section 3 speech, recording direction and matching planned-video description. The narrow/wide distinction depends on the Studio width, not the fullscreen toggle alone.
 

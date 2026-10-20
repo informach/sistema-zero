@@ -62,9 +62,9 @@
 
 **Files:**
 
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.md`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md`
 
 - [x] Consolidar a aula em vitórias de 3–5 minutos, sem microseções de um encaixe.
 - [x] Manter somente palpites que satisfazem os seis critérios do design.

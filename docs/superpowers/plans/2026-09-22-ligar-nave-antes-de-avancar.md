@@ -64,8 +64,8 @@
 - Modify: `packages/member-shell/src/components/scene-figures.tsx`
 - Modify: `packages/member-shell/src/components/scene-once-vs-always.tsx`
 - Modify: `packages/member-shell/src/components/scene-activity.tsx`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.md`
 - Modify: `docs/aulas-interativas-tecnico/cenas/CENAS-NOVAS.md`
 - Modify: `docs/superpowers/plans/2026-09-22-experiencia-uma-vez-sempre.md`
 - Modify: `packages/member-shell/CLAUDE.md`

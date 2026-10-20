@@ -35,7 +35,7 @@
 ### Task 2: Percursos didáticos do manifesto
 
 **Files:**
-- Modify: `docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
 - Modify: `packages/core/tests/learning.test.ts`
 - Modify: `packages/member-shell/tests/scene-sem-pergunta.test.tsx`, se sua expectativa de coordenadas depender da pergunta removida.
 - Modify: `docs/aulas-interativas-tecnico/BRIEFING.md`

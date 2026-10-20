@@ -10,7 +10,7 @@
 
 **Descrição:** Em 13 fases, prepare a tela, faça o Dino pular e coloque cactos na pista. Monte sons, telas de começo e fim, reinício e placar. Depois, varie os obstáculos e ajuste a dificuldade com um limite.
 
-Revisão local de 05/10/2026, com os vídeos de experiência reescritos como demonstração em 06/10/2026: **13 aulas, 81 seções, 76 vídeos planejados, 24 experiências e cinco quizzes**. Os 13 identificadores e os 13 programas originais foram preservados. O [Caderno do Aluno](../aulas-interativas/corre-dino/mapa-da-aventura.pdf), que a criança vê como **Mapa da Aventura**, acompanha os roteiros; [fontes e reprodução](recursos/corre-dino/README.md).
+Revisão local de 05/10/2026, com os vídeos de experiência reescritos como demonstração em 06/10/2026: **13 aulas, 81 seções, 76 vídeos planejados, 24 experiências e cinco quizzes**. Os 13 identificadores e os 13 programas originais foram preservados. O [Caderno do Aluno](../aulas-interativas/kids/corre-dino/mapa-da-aventura.pdf), que a criança vê como **Mapa da Aventura**, acompanha os roteiros; [fontes e reprodução](recursos/corre-dino/README.md).
 
 **Revisão de 06/10/2026 (vocabulário da aventura).** O que a criança vê ou ouve fala de fase, parte, Mapa da Aventura e guia (Diretrizes, seção 6); chaves, slugs e arquivos não mudaram. Falas, Zappy e Mapa citam **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar para o guia** e **Concluir fase**; a ponte da entrega virou conversa e as retomadas usam "Lembra da experiência da parte anterior?". A seção 2 da aula 1 virou **Seu Mapa da Aventura**, com o material **Mapa da Aventura: Corre, Dino!** e as escolhas como convite (ler aqui mesmo ou clicar em **Baixar** para guardar). Nas aulas 6 e 11, a comparação usa um bloquinho no lugar do caderno. O PDF foi gerado de novo, sem "Você não precisa baixar ou imprimir". A descrição do curso diz "Em 13 fases"; atualizar também no admin.
 
@@ -79,10 +79,10 @@ Pendente: gravar os vídeos com as falas novas, importar os 13 manifestos no adm
 
 | Aula | Resultado | Seções | Identificador |
 | --- | --- | ---: | --- |
-| 1. [Prepare a tela e crie o Dino](../aulas-interativas/corre-dino/corre-dino-aula-01.md) | Tela 480 × 270, borda e Dino criado, ainda sem desenho. | 10 | `aula-01` |
-| 2. [Mostre o Dino e a floresta](../aulas-interativas/corre-dino/corre-dino-aula-02.md) | Desenho por quadro, limpeza, floresta e descrição acessível. | 9 | `aula-02` |
-| 3. [Faça o Dino cair e pular](../aulas-interativas/corre-dino/corre-dino-aula-03.md) | Gravidade e controles de pulo; primeira revisão. | 6 | `aula-03` |
-| 4. [Toque um som em cada pulo](../aulas-interativas/corre-dino/corre-dino-aula-04.md) | Som ligado ao pulo que aconteceu. | 4 | `aula-04` |
+| 1. [Prepare a tela e crie o Dino](../aulas-interativas/kids/corre-dino/corre-dino-aula-01.md) | Tela 480 × 270, borda e Dino criado, ainda sem desenho. | 10 | `aula-01` |
+| 2. [Mostre o Dino e a floresta](../aulas-interativas/kids/corre-dino/corre-dino-aula-02.md) | Desenho por quadro, limpeza, floresta e descrição acessível. | 9 | `aula-02` |
+| 3. [Faça o Dino cair e pular](../aulas-interativas/kids/corre-dino/corre-dino-aula-03.md) | Gravidade e controles de pulo; primeira revisão. | 6 | `aula-03` |
+| 4. [Toque um som em cada pulo](../aulas-interativas/kids/corre-dino/corre-dino-aula-04.md) | Som ligado ao pulo que aconteceu. | 4 | `aula-04` |
 
 ## Módulo 2 — Da corrida ao jogo inteiro
 
@@ -90,11 +90,11 @@ Pendente: gravar os vídeos com as falas novas, importar os 13 manifestos no adm
 
 | Aula | Resultado | Seções | Identificador |
 | --- | --- | ---: | --- |
-| 5. [Faça os cactos entrar na pista](../aulas-interativas/corre-dino/corre-dino-aula-05.md) | Grupo, nascimento por intervalo, movimento e desenho. | 6 | `aula-05` |
-| 6. [Retire os cactos que saíram](../aulas-interativas/corre-dino/corre-dino-aula-06.md) | Limpeza do grupo; revisão de som e obstáculos. | 4 | `aula-06` |
-| 7. [Separe a abertura da partida](../aulas-interativas/corre-dino/corre-dino-aula-07.md) | Estados e condições no quadro e no relógio dos cactos. | 5 | `aula-07` |
-| 8. [Comece por tecla ou toque](../aulas-interativas/corre-dino/corre-dino-aula-08.md) | Tela de início e entrada para começar a partida. | 4 | `aula-08` |
-| 9. [Termine e recomece a corrida](../aulas-interativas/corre-dino/corre-dino-aula-09.md) | Batida, efeitos, tela de fim e reinício; revisão do ciclo. | 8 | `aula-09` |
+| 5. [Faça os cactos entrar na pista](../aulas-interativas/kids/corre-dino/corre-dino-aula-05.md) | Grupo, nascimento por intervalo, movimento e desenho. | 6 | `aula-05` |
+| 6. [Retire os cactos que saíram](../aulas-interativas/kids/corre-dino/corre-dino-aula-06.md) | Limpeza do grupo; revisão de som e obstáculos. | 4 | `aula-06` |
+| 7. [Separe a abertura da partida](../aulas-interativas/kids/corre-dino/corre-dino-aula-07.md) | Estados e condições no quadro e no relógio dos cactos. | 5 | `aula-07` |
+| 8. [Comece por tecla ou toque](../aulas-interativas/kids/corre-dino/corre-dino-aula-08.md) | Tela de início e entrada para começar a partida. | 4 | `aula-08` |
+| 9. [Termine e recomece a corrida](../aulas-interativas/kids/corre-dino/corre-dino-aula-09.md) | Batida, efeitos, tela de fim e reinício; revisão do ciclo. | 8 | `aula-09` |
 
 ## Módulo 3 — Pontos e dificuldade
 
@@ -102,10 +102,10 @@ Pendente: gravar os vídeos com as falas novas, importar os 13 manifestos no adm
 
 | Aula | Resultado | Seções | Identificador |
 | --- | --- | ---: | --- |
-| 10. [Ajuste a área da batida](../aulas-interativas/corre-dino/corre-dino-aula-10.md) | Área menor sem mudar o desenho; contorno de teste retirado. | 5 | `aula-10` |
-| 11. [Conte e mostre os pontos](../aulas-interativas/corre-dino/corre-dino-aula-11.md) | Memória, placar, soma por tempo e resultado final; revisão. | 8 | `aula-11` |
-| 12. [Varie o lugar e a velocidade dos cactos](../aulas-interativas/corre-dino/corre-dino-aula-12.md) | Sorteio de posição e de variação na velocidade. | 4 | `aula-12` |
-| 13. [Aumente a dificuldade com um limite](../aulas-interativas/corre-dino/corre-dino-aula-13.md) | Velocidade base variável, condição de limite, descrição completa e revisão final. | 8 | `aula-13` |
+| 10. [Ajuste a área da batida](../aulas-interativas/kids/corre-dino/corre-dino-aula-10.md) | Área menor sem mudar o desenho; contorno de teste retirado. | 5 | `aula-10` |
+| 11. [Conte e mostre os pontos](../aulas-interativas/kids/corre-dino/corre-dino-aula-11.md) | Memória, placar, soma por tempo e resultado final; revisão. | 8 | `aula-11` |
+| 12. [Varie o lugar e a velocidade dos cactos](../aulas-interativas/kids/corre-dino/corre-dino-aula-12.md) | Sorteio de posição e de variação na velocidade. | 4 | `aula-12` |
+| 13. [Aumente a dificuldade com um limite](../aulas-interativas/kids/corre-dino/corre-dino-aula-13.md) | Velocidade base variável, condição de limite, descrição completa e revisão final. | 8 | `aula-13` |
 
 ## Aplicação das diretrizes
 

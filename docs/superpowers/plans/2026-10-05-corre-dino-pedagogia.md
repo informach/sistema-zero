@@ -23,7 +23,7 @@
 - [x] Executar a referência anterior: 24 testes do Estúdio aprovados.
 - [x] Criar `qa/corre-dino.conteudo.json`, `qa/corre-dino-etapas.ts` e `qa/gerar-corre-dino.ts`; gerar os 39 arquivos das aulas.
 - [x] Incluir o curso nos validadores das diretrizes atuais e testar continuidade, critérios, quizzes e instruções executáveis das experiências em `qa/corre-dino.test.ts`.
-- [x] Gerar e inspecionar `docs/aulas-interativas/corre-dino/mapa-da-aventura.pdf` com os fontes em `recursos/corre-dino/`.
+- [x] Gerar e inspecionar `docs/aulas-interativas/kids/corre-dino/mapa-da-aventura.pdf` com os fontes em `recursos/corre-dino/`.
 - [x] Atualizar o mapa do curso, índice e registro de revisão; executar validadores, testes editoriais e de execução do jogo, tipagem e conferência visual.
 
 Resultado: 13 aulas, 81 seções, 76 vídeos planejados, 24 experiências e cinco quizzes; caderno de 52 páginas. Verificações do escopo: 185 testes editoriais/aprendizagem, 24 de execução do jogo e dois de renderização aprovados. A varredura ampliada das cenas conserva uma falha de distribuição de alternativas em Meu Jeito; a tipagem completa do member-shell conserva cinco diagnósticos externos. Evidências e produção pendente em `docs/aulas-interativas-tecnico/qa/revisao-corre-dino-2026-10-05.md`.

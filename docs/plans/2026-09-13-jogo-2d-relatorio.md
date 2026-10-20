@@ -36,9 +36,9 @@ Foram revisadas as 27 aulas atuais em `docs/aulas-interativas/*-v6`, incluindo r
 
 | Curso | Aulas | Tipos usados | Lista nova |
 | --- | ---: | ---: | --- |
-| Corre Dino | 13 | 44 | [JSON](../aulas-interativas/corre-dino-v6/blocos-corre-dino.json) |
-| Desafio do Primeiro Jogo | 6 | 45 | [JSON](../aulas-interativas/desafio-primeiro-jogo-v6/blocos-desafio-primeiro-jogo.json) |
-| O Jogo do Meu Jeito | 8 | 49 | [JSON](../aulas-interativas/o-jogo-do-meu-jeito-v6/blocos-o-jogo-do-meu-jeito.json) |
+| Corre Dino | 13 | 44 | [JSON](../aulas-interativas/kids/corre-dino-v6/blocos-corre-dino.json) |
+| Desafio do Primeiro Jogo | 6 | 45 | [JSON](../aulas-interativas/kids/desafio-primeiro-jogo-v6/blocos-desafio-primeiro-jogo.json) |
+| O Jogo do Meu Jeito | 8 | 49 | [JSON](../aulas-interativas/kids/o-jogo-do-meu-jeito-v6/blocos-o-jogo-do-meu-jeito.json) |
 
 Cada curso também tem `blocos-por-aula.json`, com localização, descrição e primeira utilização. A [orientação de atualização dos cursos](../aulas-interativas/ATUALIZACAO-JOGO-2D.md) distingue uso completo de concessão adicional e identifica as capturas que precisam ser regravadas.
 

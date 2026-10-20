@@ -22,9 +22,9 @@
 ### Task 1: Encadear a seção 3
 
 **Files:**
-- Modify: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md`
 - Modify: `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts`
-- Modify: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json`
 - Test: `docs/aulas-interativas-tecnico/qa/cade-todo-mundo-manifestos.test.ts`
 
 **Interfaces:** A chave do vídeo continua `video-a1-toque`; o texto `plannedVideo` no gerador e no manifesto deve ser idêntico. Nenhum campo estrutural muda.

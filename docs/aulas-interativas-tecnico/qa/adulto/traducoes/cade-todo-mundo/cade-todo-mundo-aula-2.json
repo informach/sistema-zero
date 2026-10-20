@@ -1,0 +1,751 @@
+{
+  "curso": "cade-todo-mundo",
+  "grupo": "cade-todo-mundo-aula-2",
+  "trechos": [
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "# Cadê Todo Mundo? | Aula 2: Complete a busca",
+      "adulto": "# Cadê Todo Mundo? | Aula 2: Complete a busca"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. contar-achados: entrada que já revela; solução que também soma 1. A regra de reação é preservação legítima. A conferência estrutural localiza a soma no evento; não comprova sozinha a ordem dos efeitos ou toda a partida. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.",
+      "adulto": "**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. contar-achados: entrada que já revela; solução que também soma 1. A regra de reação é preservação legítima. A conferência estrutural localiza a soma no evento; não comprova sozinha a ordem dos efeitos ou toda a partida. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Não informa gravação, publicação ou ensaio."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "## Direção da revisão",
+      "adulto": "## Direção da revisão"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "A criança retoma o projeto da Aula 1 e acrescenta a contagem. A experiência,\no projeto inicial de retomada, a cadeia de continuidade e os critérios de conclusão permanecem.\nA revisão de 27/09/2026 dá comandos diretos e retira os tutoriais gerais de interface.\nO complemento de 28/09/2026 transforma o fechamento em uma publicação guiada pelo caminho\nmínimo, com ajuda direta no Como fazer e saída em **Concluir fase**.\nA revisão de 29/09/2026 aplica os ajustes da Aula 1 já gravada: apresentar a experiência\nantes dos testes e orientar a verificação da etapa antes do envio.\nA revisão de 05/10/2026 faz a experiência explicar enquanto faz, abre a montagem com a retomada\nno próprio jogo e acrescenta **Deixe o jogo com a sua cara**, a seção de mexa e veja, entre o envio e a\npublicação: a criança troca bichos, esconderijos e a mensagem do final, e as mudanças ficam no jogo.\nA revisão de 06/10/2026 faz todas as falas conversarem com a criança e chamarem a atenção dela\npara o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"), sem mudar seções nem critérios.\nCada fala virou uma conversa contínua, com o porquê de cada resultado. A mensagem de vitória deixou\nde ser apresentada como \"já estava preparada\": a fala a liga à contagem que a criança montou.\nNo mesmo dia, o vocabulário da aventura (Diretrizes, seção 6): na fala, \"do jeito que ficou na\nAula 1\" virou \"na Fase 1\", \"nesta aula\" virou \"agora\", \"Na aula, ele pode aparecer só como um ícone\"\nvirou \"Aqui, ele pode aparecer…\", e os botões citados passaram a ser **Próxima parte**,\n**Verificar esta parte**, **Objetivo cumprido!**, **Enviar meu projeto** e **Concluir fase**\n(nome do botão desde a noite de 06/10/2026, quando quem recebe passou a ser a equipe).\nNo full review de 06/10/2026: a experiência diz o porquê sem círculo (\"Achados vai para 1, porque eu\nencontrei um personagem e o jogo somou um\"), o título dela virou **Quantos você já encontrou?** (sem o\n\"nós\"), a ponte da experiência termina em **Próxima parte**, a vitória diz que \"a mensagem aparece\nquando Achados chega a 3\", e a troca de imagens explica que todos os bichos e todos os esconderijos\nforam desenhados do mesmo tamanho, \"por isso\" (e não \"então\": a criança está olhando um bloco **Se**\nnessa parte) o desenho novo cabe no lugar do antigo. Na publicação, **Compartilhar** aparece como\n\"uma setinha para cima\", a ponte pede ajuda a um adulto se precisar e a ajuda escrita fala em \"a\nárea de ajuda\", sem \"nossa\". Seções, blocos e critérios não mudaram.\n**Envio único, 11/10/2026:** a parte 3 confere a montagem com **Verificar esta parte**, sem envio.\nO projeto é salvo automaticamente e continua no mesmo Estúdio. **Deixe o jogo com a sua cara**,\nna parte 4, passa a ser a seção de entrega: a criança testa e usa **Enviar meu projeto**, confirmado\nem **Enviar**, mesmo que mantenha as imagens ou a mensagem. O critério `submissionUpToDate`\npermanece nessa parte para conferir a versão atual se ela editar depois de enviar, antes de avançar.\nRoteiro, ponte, manifesto, gerador e Mapa da Aventura seguem esse único ponto de envio.",
+      "adulto": "Quem faz a aula retoma o projeto da Aula 1 e acrescenta a contagem. A experiência,\no projeto inicial de retomada, a cadeia de continuidade e os critérios de conclusão permanecem.\nA aula dá comandos diretos, deixa os tutoriais gerais de interface no Como fazer e fecha com uma\npublicação guiada pelo caminho mínimo, com saída em **Concluir aula**.\nA experiência explica enquanto faz, a montagem abre com a retomada no próprio jogo e\n**Deixe o jogo com a sua cara**, a seção de mexa e veja, fica entre a contagem e a publicação:\na pessoa troca bichos, esconderijos e a mensagem do final, e as mudanças ficam no jogo.\nAs falas conversam com quem faz a aula e chamam a atenção para o que aparece na tela (\"Olha aqui\",\n\"Olha só\", \"Repare\", \"Percebe?\"), com o porquê de cada resultado. A mensagem de vitória não é\napresentada como \"já estava preparada\": a fala a liga à contagem que a pessoa montou.\nOs botões citados são os da tela adulta: **Próxima seção**, **Verificar esta etapa**,\n**Objetivo da etapa cumprido!**, **Enviar para o professor** e **Concluir aula**.\nA experiência diz o porquê sem círculo (\"Achados vai para 1, porque eu encontrei um personagem e o\njogo somou um\"), o título dela é **Quantos você já encontrou?**, a vitória diz que \"a mensagem\naparece quando Achados chega a 3\", e a troca de imagens explica que todos os bichos e todos os\nesconderijos foram desenhados do mesmo tamanho, \"por isso\" (e não \"então\": a pessoa está olhando\num bloco **Se** nessa seção) o desenho novo cabe no lugar do antigo. Na publicação, **Compartilhar**\naparece como \"uma seta para cima\" e a ajuda escrita fala em \"a área de ajuda\", sem \"nossa\".\nSeções, blocos e critérios não mudaram.\n**Envio único:** a seção 3 confere a montagem com **Verificar esta etapa**, sem envio.\nO projeto é salvo automaticamente e continua no mesmo Estúdio. **Deixe o jogo com a sua cara**,\nna seção 4, é a seção de entrega: a pessoa testa e usa **Enviar para o professor**, confirmado\nem **Enviar**, mesmo que mantenha as imagens ou a mensagem. O critério `submissionUpToDate`\npermanece nessa seção para conferir a versão atual se ela editar depois de enviar, antes de avançar.\nRoteiro, recado, manifesto, gerador e caderno do curso seguem esse único ponto de envio."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "**Fala do envio, 11/10/2026:** no encerramento da parte 4, usar “Agora, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.” O envio é o próximo passo da atividade, sem justificá-lo como uma escolha de mostrar o jogo à equipe. Na gravação existente, preservar até “é com essa cara que ele vai para o Mural.” e substituir apenas a instrução seguinte.",
+      "adulto": "**Fala do envio:** no encerramento da seção 4, usar “Agora, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Próxima seção.” O envio é o próximo passo da atividade, sem justificá-lo como uma escolha de mostrar o jogo ao professor."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "**Quem já enviou na versão anterior:** o bloco **projeto** conserva a mesma chave e a entrega\nanterior. Se o jogo mudou, **Enviar de novo** atualiza a versão que a equipe recebe. Se continua\nigual, o envio existente já atende ao critério. No fluxo novo, o botão de envio fica disponível\nquando a parte 4 é liberada; o salvamento e a verificação continuam disponíveis na parte 3.",
+      "adulto": "**Reenvio:** o bloco **projeto** conserva a mesma chave e a entrega anterior. Se o jogo mudou\ndepois do envio, **Reenviar ao professor** atualiza a versão que o professor recebe. Se continua\nigual, o envio existente já atende ao critério. O botão de envio fica disponível quando a seção 4\né liberada; o salvamento e a verificação continuam disponíveis na seção 3."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "## Vozes e produção",
+      "adulto": "## Vozes e produção"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Aplicação de 10/10/2026: **Dedé** participa dos cinco vídeos, alternando com a Debinha da Aula 1.\nO [roteiro completo](cade-todo-mundo-aula-2.roteiro.md) separa **Professora**, **Dedé (avatar)** e\n**Zappy na página (não gravar)**, com entrada e saída em cada participação. Em 11/10/2026, a responsável informou a gravação da parte 3 em andamento. Os encerramentos das partes 3 e 4 mudaram para um único envio; a edição e a publicação precisam ser conferidas. Os tempos da tabela foram revistos em 10/10/2026 e já\ncontam as participações; medir a versão final sem acelerar a montagem.",
+      "adulto": "**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada. As falas estão no [roteiro completo](cade-todo-mundo-aula-2.roteiro.md); medir a versão final sem acelerar a montagem."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Dedé pergunta por que o número ficou no zero, o que acontece ao tocar num espaço vazio e onde\nentra o bloco que conta. Na personalização, escolhe o gato e o toco; na publicação, pergunta como mostrar\no jogo à família. A professora responde logo depois, mantendo os passos completos. A pergunta do\nespaço vazio passa para Dedé, sem repetição na voz da professora. A escolha do gato é um exemplo,\nnão um requisito. As nove entradas e seus IDs estão em [Avatares nos vídeos](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
+      "adulto": "As perguntas que movem a aula ficam na fala da professora: por que o número ficou no zero, o que\nacontece ao tocar num espaço vazio, onde entra o bloco que conta e o que acontece ao tocar de novo\nno mesmo lugar. Na personalização, o gato e o toco são exemplos da demonstração, não requisitos."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Zappy continua nas instruções da página, com o recurso Ouvir da plataforma. No meme e na tela de\npublicação, sua presença é somente visual: não incluir voz do mascote na gravação.",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "## Sequência",
+      "adulto": "## Sequência"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "| Seção | Vídeo | O que fazer | Conclusão |\n| --- | --- | --- | --- |\n| Volte ao seu jardim | 25 a 35 s | ver o que falta no contador e avançar | vídeo |\n| Um número que acompanha a busca | 75 a 95 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |\n| Cada personagem vale um achado | 3 a 4 min | encaixar a soma, testar e verificar a parte | vídeo e aprovação na verificação; salvamento automático |\n| Deixe o jogo com a sua cara | 4 a 5 min | escolher bichos, esconderijos e mensagem, testar e enviar o jogo completo | vídeo, envio do projeto e envio em dia; as escolhas não viram critério |\n| Publique seu jogo | 60 a 80 s | manter o resumo, gerar capa, publicar, comemorar, copiar o link de jogar para a família e concluir a aula | vídeo; publicação orientada, sem bloqueio técnico |",
+      "adulto": "| Seção | Vídeo | O que fazer | Conclusão |\n| --- | --- | --- | --- |\n| Volte ao seu jardim | 25 a 35 s | ver o que falta no contador e avançar | vídeo |\n| Um número que acompanha a busca | 75 a 95 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |\n| Cada personagem vale um achado | 3 a 4 min | encaixar a soma, testar e verificar a etapa | vídeo e aprovação na verificação; salvamento automático |\n| Deixe o jogo com a sua cara | 4 a 5 min | escolher bichos, esconderijos e mensagem, testar e enviar o jogo completo | vídeo, envio do projeto e envio em dia; as escolhas não viram critério |\n| Publique seu jogo | 60 a 80 s | manter o resumo, gerar capa, publicar, copiar o link para mandar aos amigos e concluir a aula | vídeo; publicação orientada, sem bloqueio técnico |"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "## Orientação por seção",
+      "adulto": "## Orientação por seção"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "### Volte ao seu jardim",
+      "adulto": "### Volte ao seu jardim"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Começar dizendo que a tarefa é fazer o jogo contar os personagens encontrados. Mostrar um toque\nrevelando o personagem (\"Olha aqui…\"), com **Achados** ainda em zero. Dedé pergunta \"Ué, por que\no número ficou no zero?\"; a professora explica que o jogo ainda não conta e encaminha para **Próxima parte**.\nA seção tem vídeo e ponte do Zappy, sem ferramenta. A fala não pode pedir que a criança manipule um projeto ali.",
+      "adulto": "Começar dizendo que a tarefa é fazer o jogo contar os personagens encontrados. Mostrar um toque\nrevelando o personagem (\"Olha aqui…\"), com **Achados** ainda em zero. A professora pergunta por que\no número ficou no zero, explica que o jogo ainda não conta e encaminha para **Próxima seção**.\nA seção tem vídeo e recado da página, sem ferramenta. A fala não pode pedir que a pessoa manipule um projeto ali."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "**Zappy na página (não gravar):** “Seus personagens já aparecem, mas Achados ainda fica em zero. Então vamos ensinar o jogo a contar: clique em Próxima parte para começar.”",
+      "adulto": "**Recado na página (não gravar):** “Seus personagens já aparecem, mas Achados ainda fica em zero. Então vamos ensinar o jogo a contar: clique em Próxima seção para começar.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "### Um número que acompanha a busca",
+      "adulto": "### Um número que acompanha a busca"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "O vídeo é uma demonstração que explica enquanto faz, como na Aula 1: o narrador faz os testes na primeira pessoa e só no fim passa a vez. Dizer que a experiência mostra como o jogo conta e\nexplicar variável em uma frase: um lugar onde o jogo guarda um número que pode mudar. A comparação\ndo placar de futebol chega ao jogo: a cada gol, o placar soma um; cada personagem encontrado é como\num gol, e o jogo soma um em Achados. Sem lista de conceitos.\nFazer os quatro testes das metas no ritmo da fala: primeiro esconderijo (1), outro esconderijo\n(2), espaço vazio (o número fica igual) e **Recomeçar a busca** (volta a zero). Terminar em\n\"Agora é a sua vez\": a criança repete os testes, e a experiência cobra as metas.",
+      "adulto": "O vídeo é uma demonstração que explica enquanto faz, como na Aula 1: o narrador faz os testes na primeira pessoa e só no fim passa a vez. Dizer que a experiência mostra como o jogo conta e\nexplicar variável em uma frase: um lugar onde o jogo guarda um número que pode mudar. A comparação\ndo placar de futebol chega ao jogo: a cada gol, o placar soma um; cada personagem encontrado é\ncomo um gol, e o jogo soma um em Achados. Sem lista de conceitos.\nFazer os quatro testes das metas no ritmo da fala: primeiro esconderijo (1), outro esconderijo\n(2), espaço vazio (o número fica igual) e **Recomeçar a busca** (volta a zero). Terminar em\n\"Agora é a sua vez\": a pessoa repete os testes, e a experiência cobra as metas."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Na frase do placar, um meme ilustrado nosso por 2 a 3 segundos. Manter um único valor atual, as\npistas, o retorno de cada toque e a ausência de palpite ou quiz.",
+      "adulto": "Na frase do placar, um meme ilustrado nosso por 2 a 3 segundos. Manter um único valor atual, as\npistas, o retorno de cada toque e a ausência de palpite ou quiz."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "### Cada personagem vale um achado",
+      "adulto": "### Cada personagem vale um achado"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Começar pela retomada, curta (umas 50 palavras) e nesta ordem: primeiro o problema, com um toque\nnum esconderijo do próprio jogo (o personagem aparece, mas Achados continua em zero, porque o jogo\nainda não conta); depois a lembrança da experiência da seção anterior (cada personagem encontrado\nsomava um em Achados); por fim, o convite uma vez só, colado ao primeiro passo (\"Agora a gente vai\nfazer o seu jogo contar do mesmo jeito!\"). A retomada não repete a explicação da variável.\nSeparar a procura da área da identificação do bloco, apontando cada um no ritmo da fala:\n\"Para começar, procure a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço\nvazio entre os blocos até encontrá-la. Dentro dessa área, encontre o bloco Quando clicar ou tocar\nnum sprite do grupo esconderijos.\" Só então mostrar a ação de visibilidade dentro dele.\nCom a ação de visibilidade à vista, ensinar **Programação > Variáveis** e **Somar ___ em variável ___**,\nque nasce com **1** e **contador**, logo abaixo dela. Manter **1** e trocar **contador** por\n**achados**. A verificação desta parte também confere a regra da Aula 1.",
+      "adulto": "Começar pela retomada, curta (umas 50 palavras) e nesta ordem: primeiro o problema, com um toque\nnum esconderijo do próprio jogo (o personagem aparece, mas Achados continua em zero, porque o jogo\nainda não conta); depois a lembrança da experiência da seção anterior (cada personagem encontrado\nsomava um em Achados); por fim, o convite uma vez só, colado ao primeiro passo (\"Agora a gente vai\nfazer o seu jogo contar do mesmo jeito.\"). A retomada não repete a explicação da variável.\nSeparar a procura da área da identificação do bloco, apontando cada um no ritmo da fala:\n\"Para começar, procure a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço\nvazio entre os blocos até encontrá-la. Dentro dessa área, encontre o bloco Quando clicar ou tocar\nnum sprite do grupo esconderijos.\" Só então mostrar a ação de visibilidade dentro dele.\nCom a ação de visibilidade à vista, ensinar **Programação > Variáveis** e **Somar ___ em variável ___**,\nque nasce com **1** e **contador**, logo abaixo dela. Manter **1** e trocar **contador** por\n**achados**. A verificação desta etapa também confere a regra da Aula 1."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Pedir que teste cada esconderijo: contagem 1, 2, 3 e a mensagem de vitória, que aparece quando\n**Achados** chega a 3; a fala diz que quem faz a mensagem aparecer é a contagem que a criança montou. Repetir o toque no mesmo lugar deve manter 3, pois o esconderijo invisível não recebe\noutro toque. A montagem não lista os blocos antes do teste: a lista entra uma vez, depois dele, com o\ngatilho genérico (\"Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: …\"),\ncobrindo encaixe, ordem, número e variável.",
+      "adulto": "Pedir que teste cada esconderijo: contagem 1, 2, 3 e a mensagem de vitória, que aparece quando\n**Achados** chega a 3; a fala diz que quem faz a mensagem aparecer é a contagem que a pessoa montou. Repetir o toque no mesmo lugar deve manter 3, pois o esconderijo invisível não recebe\noutro toque. A montagem não lista os blocos antes do teste: a lista entra uma vez, depois dele, com o\ngatilho genérico (\"Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: …\"),\ncobrindo encaixe, ordem, número e variável."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Depois do teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os blocos e\nverificar novamente. Explicar que o jogo é salvo automaticamente enquanto a criança monta.\nQuando aparecer **Objetivo cumprido!**, seguir em **Próxima parte**. A verificação exige esse clique;\no envio fica no fim da personalização, na parte 4. Não ensinar o layout da Pré-visualização ou o compartilhamento.\nO caderno continua disponível na Aula 1, sem novo upload ou bloco.",
+      "adulto": "Depois do teste, clicar em **Verificar esta etapa**. Se faltar algo, corrigir os blocos e\nverificar novamente. Explicar que o jogo é salvo automaticamente enquanto a pessoa monta.\nQuando aparecer **Objetivo da etapa cumprido!**, seguir em **Próxima seção**. A verificação exige esse clique;\no envio fica no fim da personalização, na seção 4. Não ensinar o layout da Pré-visualização ou o compartilhamento.\nO caderno continua disponível na Aula 1, sem novo upload ou bloco."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "### Deixe o jogo com a sua cara",
+      "adulto": "### Deixe o jogo com a sua cara"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "É a revelação da surpresa plantada na abertura da Aula 1 (decisão do responsável, 07/10/2026). A fala\ncomeça com \"A surpresa chegou! Olha quem mais pode brincar de se esconder!\" e mostra, no Mapa da\nAventura, a página **A surpresa do final**, com todos os bichos e esconderijos; só então vai\npara o Estúdio. Fecha ligando as escolhas à publicação: \"é com essa cara que ele vai para o Mural\".",
+      "adulto": "É a revelação da surpresa anunciada na abertura da Aula 1 (decisão do responsável, 07/10/2026). A fala\ncomeça com \"A surpresa chegou: olha quem mais pode se esconder no seu jogo.\" e mostra, no caderno do\ncurso, a página **A surpresa do final**, com todos os bichos e esconderijos; só então vai\npara o Estúdio. Fecha ligando as escolhas à publicação: \"é com essa cara que ele vai para o Mural\"."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Seção de mexa e veja e entrega: vem depois da verificação da contagem e antes de publicar.\nO único envio da aula acontece depois das escolhas, para a equipe receber o jogo completo. Só traz mudanças que a criança mantém. Começar pelo destino:\ntrazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso, e\napontar os blocos **Criar sprite**. No bloco não\nhá desenho para clicar: no fim dele, depois de **com imagem**, o Estúdio mostra o NOME da imagem.\nNum bloco que cria um bicho, clicar nesse nome (por exemplo, **coelho**) para abrir a lista com as\nimagens do jogo e escolher outro bicho; se não achar, rolar a lista. Fazer o mesmo num bloco que\ncria um esconderijo (por exemplo, clicar em **arbusto** e escolher **toco**). Dizer que todos os\nbichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também, por isso o\ndesenho novo cabe certinho no lugar do antigo. Em seguida, pedir que a criança faça o mesmo nos\noutros blocos **Criar sprite**, trocando os bichos e os esconderijos que quiser; o que ela gostou\npode ficar como está. Na demonstração, trocar os outros em ritmo rápido. O teste não supõe que\ntudo foi trocado: os bichos aparecem atrás dos esconderijos \"do jeito que você deixou\".",
+      "adulto": "Seção de mexa e veja e entrega: vem depois da verificação da contagem e antes de publicar.\nO único envio da aula acontece depois das escolhas, para o professor receber o jogo completo. Só traz mudanças que a pessoa mantém. Começar pelo destino:\ntrazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso, e\napontar os blocos **Criar sprite**. No bloco não\nhá desenho para clicar: no fim dele, depois de **com imagem**, o Estúdio mostra o NOME da imagem.\nNum bloco que cria um bicho, clicar nesse nome (por exemplo, **coelho**) para abrir a lista com as\nimagens do jogo e escolher outro bicho; se não achar, rolar a lista. Fazer o mesmo num bloco que\ncria um esconderijo (por exemplo, clicar em **arbusto** e escolher **toco**). Dizer que todos os\nbichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também, por isso o\ndesenho novo cabe exatamente no lugar do antigo. Em seguida, pedir que a pessoa faça o mesmo nos\noutros blocos **Criar sprite**, trocando os bichos e os esconderijos que quiser; o que ela gostou\npode ficar como está. Na demonstração, trocar os outros em ritmo rápido. O teste não supõe que\ntudo foi trocado: os bichos aparecem atrás dos esconderijos \"do jeito que você deixou\"."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Por último, trazer à vista a área **Enquanto estiver rodando**, arrastando um espaço vazio se for\npreciso, e, dentro do bloco **Se**, mostrar como trocar o texto do bloco **Escrever** (**Você achou\ntodo mundo!**) por uma frase curta. A troca é opcional: quem gostou da frase pode mantê-la.",
+      "adulto": "Por último, trazer à vista a área **Enquanto estiver rodando**, arrastando um espaço vazio se for\npreciso, e, dentro do bloco **Se**, mostrar como trocar o texto do bloco **Escrever** (**Você achou\ntodo mundo!**) por uma frase curta. A troca é opcional: quem gostou da frase pode mantê-la."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Antes do teste, a correção do erro provável: ao escolher outra imagem, o Estúdio ajusta largura e\naltura ao tamanho da imagem nova e mantém o canto de cima. Uma imagem do outro tipo muda o tamanho:\num esconderijo no bloco de um bicho fica grande e aparece antes do toque; um bicho no bloco de um\nesconderijo fica pequeno e deixa o bicho de trás à vista. A fala diz: \"Antes de testar, dê uma olhada\nno jardim. Se algum bicho aparecer antes do toque, ou se um desenho ficar grande demais, é porque a\nimagem escolhida é do outro tipo. Aí é só clicar de novo no nome da imagem e escolher um desenho do\nmesmo tipo: bicho no bloco do bicho, esconderijo no bloco do esconderijo.\" Testar encontrando todo\nmundo de novo; se a frase passar da tela, deixar mais curta. Pedir **Enviar meu projeto**,\nconfirmado em **Enviar**. Quando aparecer **Projeto enviado!**, terminar em **Próxima parte**.\nO envio vale também para quem manteve as imagens ou a mensagem.",
+      "adulto": "Antes do teste, a correção do erro provável: ao escolher outra imagem, o Estúdio ajusta largura e\naltura ao tamanho da imagem nova e mantém o canto de cima. Uma imagem do outro tipo muda o tamanho:\num esconderijo no bloco de um bicho fica grande e aparece antes do toque; um bicho no bloco de um\nesconderijo fica pequeno e deixa o bicho de trás à vista. A fala diz: \"Antes de testar, dê uma olhada\nno jardim. Se algum bicho aparecer antes do toque, ou se um desenho ficar grande demais, é porque a\nimagem escolhida é do outro tipo. Aí é só clicar de novo no nome da imagem e escolher um desenho do\nmesmo tipo: bicho no bloco do bicho, esconderijo no bloco do esconderijo.\" Testar encontrando todo\nmundo de novo; se a frase passar da tela, deixar mais curta. Pedir **Enviar para o professor**,\nconfirmado em **Enviar**. Quando aparecer **Projeto enviado ao professor**, terminar em **Próxima seção**.\nO envio vale também para quem manteve as imagens ou a mensagem."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "O projeto traz sete bichos (coelho, raposa, coruja, gato, sapo, tartaruga, esquilo) e seis\nesconderijos (arbusto, pedras, flores, toco, cogumelo, folhas), cada grupo com uma caixa única\n(72 × 87 e 161 × 144). Os sprites se chamam **bicho1** a **bicho3** e **esconderijo1** a\n**esconderijo3**, para o nome não contradizer a imagem escolhida. A troca é escolha da criança e\nnão vira critério: a seção conclui pelo vídeo, pelo envio do projeto e pelo envio em dia, para a equipe\nreceber a versão atual. Se houver nova edição após o envio, antes do avanço, a plataforma pede a\natualização dessa entrega. A gravação mostra o primeiro envio da fase.",
+      "adulto": "O projeto traz sete bichos (coelho, raposa, coruja, gato, sapo, tartaruga, esquilo) e seis\nesconderijos (arbusto, pedras, flores, toco, cogumelo, folhas), cada grupo com uma caixa única\n(72 × 87 e 161 × 144). Os sprites se chamam **bicho1** a **bicho3** e **esconderijo1** a\n**esconderijo3**, para o nome não contradizer a imagem escolhida. A troca é escolha de quem faz a aula e\nnão vira critério: a seção conclui pelo vídeo, pelo envio do projeto e pelo envio em dia, para o professor\nreceber a versão atual. Se houver nova edição após o envio, antes do avanço, a plataforma pede a\natualização dessa entrega. A gravação mostra o primeiro envio da aula."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Na página 5 do Mapa da Aventura, a galeria mostra todos esses bichos e esconderijos, separados\npor tipo, com as imagens do jogo e os nomes exatos da lista. A criança pode consultar as opções\nantes de trocar, seguindo os passos de personalização e o teste na mesma página. A publicação\nfica na página 6; a revisão e o certificado, na 7.",
+      "adulto": "Na página 5 do caderno do curso, a galeria mostra todos esses bichos e esconderijos, separados\npor tipo, com as imagens do jogo e os nomes exatos da lista. A pessoa pode consultar as opções\nantes de trocar, seguindo os passos de personalização e o teste na mesma página. A publicação\nfica na página 6; a revisão e o certificado, na 7."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "**Zappy na página (não gravar):** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.”",
+      "adulto": "**Recado na página (não gravar):** “A surpresa chegou. Escolha os bichos e os esconderijos do seu jogo: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Próxima seção.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "### Publique seu jogo",
+      "adulto": "### Publique seu jogo"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Começar com a tarefa de publicar o jogo para a família e os amigos jogarem. No mesmo Estúdio da prática,\nabrir **Compartilhar** e deixar o **Resumo do projeto**, que já vem preenchido, como está. Na aula,\na janela não mostra o campo Título: o título vem do curso, e a fala não o cita. Clicar em\n**Gerar capa**, esperar a imagem e conferir. Clicar em **Publicar** e comemorar com a criança na\ntela do Zappy (**Seu jogo está no Mural!**): agora a família e os amigos podem jogar. Clicar em\n**Copiar link de jogar** e convidar a mandar o link para a família e os amigos, com ajuda de um\nadulto se precisar. Clicar em **Fechar** e terminar em **Concluir fase**.",
+      "adulto": "Começar com a tarefa de publicar o jogo para os amigos jogarem. No mesmo Estúdio da prática,\nabrir **Compartilhar** e deixar o **Resumo do projeto**, que já vem preenchido, como está. Na aula,\na janela não mostra o campo Título: o título vem do curso, e a fala não o cita. Clicar em\n**Gerar capa**, esperar a imagem e conferir. Clicar em **Publicar** e mostrar a tela **Publicado!**\n(**Seu projeto já está no Mural dos Criadores.**): agora os amigos podem jogar.\nClicar em **Copiar link** e convidar a mandar o link para os amigos, para o grupo ou para quem\nquiser. Clicar em **Fechar** e terminar em **Concluir aula**."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Gerar capa já inclui a imagem, sem download ou upload manual. Trocar a capa por outra imagem e\nresolver problemas ficam no Como fazer. Decisão de 06/10/2026: a publicação do primeiro jogo é\nmomento de comemorar e de mostrar o jogo para a família.\nUma ajuda escrita junto ao vídeo apresenta a área de ajuda e liga diretamente ao tutorial\n**Como publicar seu jogo no Mural**, sem exigir leitura nem acrescentar um comando à narração.",
+      "adulto": "Gerar capa já inclui a imagem, sem download ou upload manual. Trocar a capa por outra imagem e\nresolver problemas ficam no Como fazer. Decisão de 06/10/2026: a publicação do primeiro jogo é\no momento de mandar o jogo para os amigos.\nUma ajuda escrita junto ao vídeo apresenta a área de ajuda e liga diretamente ao tutorial\n**Como publicar o seu jogo no Mural**, sem exigir leitura nem acrescentar um comando à narração."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Preservar a chave **conclusao**, o mesmo projeto e a conclusão pelo vídeo. Publicar é a atividade\nesperada, sem criar bloqueio técnico de conclusão ou acesso obrigatório ao Mural. Não dizer\n“compartilhar é opcional” nem anunciar certificado, próxima seção ou próxima aula na fala.",
+      "adulto": "Preservar a chave **conclusao**, o mesmo projeto e a conclusão pelo vídeo. Publicar é a atividade\nesperada, sem criar bloqueio técnico de conclusão ou acesso obrigatório ao Mural. Não dizer\n“compartilhar é opcional” nem anunciar certificado, próxima seção ou próxima aula na fala."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "**Zappy na página (não gravar):** “Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir fase.”",
+      "adulto": "**Recado na página (não gravar):** “Hora de mostrar o seu jogo. Publique no Mural, copie o link e mande para os seus amigos ou para quem você quiser. Depois clique em Fechar e em Concluir aula.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "## Conferência da gravação e edição",
+      "adulto": "## Conferência da gravação e edição"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Conferir as nove entradas do Dedé, cada uma antes da resposta e do gesto correspondente.\nManter o placar e os blocos visíveis. As perguntas precisam se ligar às respostas sem repetir a\nmesma explicação; a criança não substitui quem assiste nem executa os passos no lugar da professora.",
+      "adulto": "Conferir que só a professora fala e que as perguntas da aula ficam ligadas às respostas, sem repetir a\nmesma explicação. Manter o placar e os blocos visíveis."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Conferir a continuidade do projeto enviado e o projeto de retomada quando não há trabalho salvo.\nNão tratar essa cópia como se fosse o arquivo pessoal da criança. Testar as quatro metas da\nexperiência, montagem correta, contagem sem repetição, vitória, verificação da etapa, envio e avanço.",
+      "adulto": "Conferir a continuidade do projeto enviado e o projeto de retomada quando não há trabalho salvo.\nNão tratar essa cópia como se fosse o arquivo pessoal de quem faz a aula. Testar as quatro metas da\nexperiência, montagem correta, contagem sem repetição, vitória, verificação da etapa, envio e avanço."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Conferir a troca de imagem num bicho e num esconderijo, clicando no nome da imagem no fim do bloco:\na lista abre, rola até as 14 imagens, e o desenho escolhido fica do mesmo tamanho e no mesmo lugar.\nConferir também o erro provável (uma imagem do outro tipo muda o tamanho) e a correção da fala.",
+      "adulto": "Conferir a troca de imagem num bicho e num esconderijo, clicando no nome da imagem no fim do bloco:\na lista abre, rola até as 14 imagens, e o desenho escolhido fica do mesmo tamanho e no mesmo lugar.\nConferir também o erro provável (uma imagem do outro tipo muda o tamanho) e a correção da fala."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Projetos salvos antes de 05/10/2026 recebem as imagens novas ao abrir: o Estúdio da aula acrescenta\nas imagens do curso que faltam, sem trocar as que já existem. Eles guardam os nomes antigos dos\nsprites (coelho, arbusto e os outros) e as caixas antigas (coelho 54 × 87, raposa 66 × 84, coruja\n72 × 81, arbusto 154 × 116, pedras 161 × 112, flores 133 × 144). Como o Estúdio ajusta largura e\naltura ao tamanho da imagem nova e mantém o canto de cima do sprite, nesses projetos o desenho\ntrocado pode ficar um pouco fora do lugar: um bicho novo fica até 18 pixels mais largo para a direita\ne até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para a direita ou até 32\npixels mais baixo. Conferir uma troca num projeto salvo antes da revisão.",
+      "adulto": "Projetos salvos antes de 05/10/2026 recebem as imagens novas ao abrir: o Estúdio da aula acrescenta\nas imagens do curso que faltam, sem trocar as que já existem. Eles guardam os nomes antigos dos\nsprites (coelho, arbusto e os outros) e as caixas antigas (coelho 54 × 87, raposa 66 × 84, coruja\n72 × 81, arbusto 154 × 116, pedras 161 × 112, flores 133 × 144). Como o Estúdio ajusta largura e\naltura ao tamanho da imagem nova e mantém o canto de cima do sprite, nesses projetos o desenho\ntrocado pode ficar um pouco fora do lugar: um bicho novo fica até 18 pixels mais largo para a direita\ne até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para a direita ou até 32\npixels mais baixo. Conferir uma troca num projeto salvo antes da revisão."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "Conferir Compartilhar liberado após o envio, resumo preenchido, capa gerada, publicação,\ncomemoração, **Copiar link de jogar** e **Link copiado!**, Fechar e Concluir fase. Manter a conclusão possível sem publicação ou visita ao Mural.\nO tutorial de compartilhamento deve acompanhar a orientação da aula e conservar as alternativas\nde capa e link público. As novas falas precisam ser regravadas antes de substituir os vídeos\natuais e o caminho precisa de ensaio com crianças.",
+      "adulto": "Conferir Compartilhar liberado após o envio, resumo preenchido, capa gerada, publicação, a tela\n**Publicado!**, **Copiar link** e **Link copiado!**, Fechar e Concluir aula. Manter a conclusão possível sem publicação ou visita ao Mural.\nO tutorial de compartilhamento deve acompanhar a orientação da aula e conservar as alternativas\nde capa e link público. O caminho precisa de ensaio com adultos."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "## Revisão de ritmo e entendimento · 10/10/2026",
+      "adulto": "## Ritmo e entendimento"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "O roteiro tem 9 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.",
+      "adulto": "Sem avatar, as perguntas e descobertas ficam na fala da professora, que segue contínua ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; o reconhecimento no fim é curto. Preservar os passos e deixar o resultado visível antes de seguir."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.md",
+      "kids": "| Entrada | Depois da professora | Criança | Retomada da professora |\n| --- | --- | --- | --- |\n| A2P3-R01 | “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!” | Dedé: “Agora sim! Já está contando!” | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” |\n| A2P3-R02 | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” | Dedé: “E se eu tocar aqui de novo?” | “Vamos ver. Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.” |\n| A2P4-R01 | “Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.” | Dedé: “Meu gato vai se esconder atrás de um toco!” | “Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.” |\n| A2P4-R02 | “Agora troque, nos outros blocos Criar sprite, os bichos e os esconderijos que você quiser, até o jardim ficar do seu jeito. O que você gostou pode ficar como está.” | Dedé: “Troquei os desenhos e o meu jogo ficou do jeito que eu queria!” | “Se quiser, mude também a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.” |",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "# Roteiro falado: Cadê Todo Mundo? | Aula 2",
+      "adulto": "# Roteiro falado: Cadê Todo Mundo? | Aula 2"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "Um vídeo por seção. **Produção em 10/10/2026:** roteiro atualizado com nove participações do **Dedé**, distribuídas pelos cinco vídeos, alternando com a Debinha da Aula 1. Em 11/10/2026, a responsável informou que está gravando a parte 3. Os encerramentos das partes 3 e 4 foram ajustados para um único envio ao final da personalização; a edição e a publicação dessa versão ainda precisam ser conferidas. Comandos da atividade e montagem completa ficam na fala. Tours da plataforma ficam no Como Fazer. As durações abaixo foram revistas em 10/10/2026 e já contam as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a versão final sem acelerar.",
+      "adulto": "Um vídeo por seção. **Status:** a versão adulta ainda não foi gravada. Só a professora fala; não há participações de avatar. A seção 3 confere a montagem sem envio, e o único envio fica no fim da personalização, na seção 4. Comandos da atividade e montagem completa ficam na fala. Tours da plataforma ficam no Como Fazer. As durações abaixo cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a versão final sem acelerar."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Quem fala:** **Professora** conduz a explicação; **Dedé (avatar)** participa dentro do vídeo; **Zappy na página (não gravar)** é o diálogo da plataforma. Zappy pode aparecer visualmente no meme ou na interface, mas não tem voz dentro do vídeo. O recurso Ouvir da página continua independente da gravação.",
+      "adulto": "**Quem fala:** **Professora** conduz a explicação; **Recado na página (não gravar)** é o texto da plataforma, fora da gravação. Não há avatar nem mascote no vídeo."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Ajuste para a gravação, 11/10/2026:** na parte 3, conservar até “Se faltar alguma coisa, corrija os blocos e clique novamente.” e usar o novo encerramento sobre salvamento automático e **Próxima parte**. Retirar a demonstração de envio desse trecho. Na parte 4, conservar até “é com essa cara que ele vai para o Mural.” e usar o novo encerramento com **Enviar meu projeto**, **Enviar**, **Projeto enviado!** e **Próxima parte**. Mostrar o primeiro envio da fase. As falas e entradas do Dedé continuam iguais. Esses dois encerramentos estão completos nas seções abaixo.",
+      "adulto": "**Encerramentos:** na seção 3, a fala termina no salvamento automático e em **Próxima seção**, sem demonstração de envio. Na seção 4, depois de “é com essa cara que ele vai para o Mural.”, vem o encerramento com **Enviar para o professor**, **Enviar**, **Projeto enviado ao professor** e **Próxima seção**. Mostrar o primeiro envio da aula. Esses dois encerramentos estão completos nas seções abaixo."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Fala do envio revisada, 11/10/2026:** na parte 4, após “é com essa cara que ele vai para o Mural.”, a instrução passa a começar em “Agora, clique em Enviar meu projeto”. O envio é o próximo passo da atividade. Esta revisão de linguagem altera apenas essa instrução; os gestos, a confirmação, a saída e as falas do Dedé permanecem.",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Edição:** Dedé entra no intervalo indicado, fala e sai antes da resposta e do próximo gesto da professora. Manter livres os blocos, o placar, os botões e o resultado mostrado, sem sobrepor vozes. Os IDs em **Na tela** localizam as nove entradas. [Direção dos avatares](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).",
+      "adulto": "**Edição:** seguir as orientações marcadas em **Na tela**. Manter livres os blocos, o placar, os botões e o resultado mostrado."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"então\", \"por isso\", \"mas\", \"agora que\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Tá vendo?\"). O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026).",
+      "adulto": "Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras (\"então\", \"por isso\", \"mas\", \"agora que\"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela (\"Olha aqui\", \"Olha só\", \"Repare\", \"Percebe?\"). O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026; tom adulto em DIRETRIZES-ADULTO.md)."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "## 1. Volte ao seu jardim",
+      "adulto": "## 1. Volte ao seu jardim"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Duração alvo:** 25 a 35 segundos.",
+      "adulto": "**Duração alvo:** 25 a 35 segundos."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** mostrar a reação pronta da Aula 1. No \"Olha aqui\", tocar em um esconderijo: o personagem aparece, e **Achados** continua em zero. Deixar o placar visível para a pergunta do Dedé. Esta seção tem apenas vídeo; não mandar a criança procurar um Estúdio aqui.",
+      "adulto": "**Na tela:** mostrar a reação pronta da Aula 1. No \"Olha aqui\", tocar em um esconderijo: o personagem aparece, e **Achados** continua em zero. Deixar o placar visível enquanto a professora explica o zero. Esta seção tem apenas vídeo; não mandar a pessoa procurar um Estúdio aqui."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Professora:**",
+      "adulto": "**Professora:**"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Hoje você vai ensinar o seu jogo a contar os personagens que você encontra.\n>\n> Olha aqui o jardim, do jeito que ficou na Fase 1: quando eu toco num esconderijo, ele fica invisível e o personagem aparece.”",
+      "adulto": "> “Hoje você vai ensinar o seu jogo a contar os personagens que você encontra.\n>\n> Olha aqui o jardim, do jeito que ficou na Aula 1: quando eu toco num esconderijo, ele fica invisível e o personagem aparece.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** **A2P1-D01** · Dedé entra e olha para o número Achados, sem cobri-lo. O personagem revelado e o zero continuam visíveis.",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Dedé (avatar):**",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Ué, por que o número ficou no zero?”",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai; a professora aponta Achados ao responder. Não abrir outra ferramenta nesta seção.",
+      "adulto": "**Na tela:** apontar Achados durante a explicação. Não abrir outra ferramenta nesta seção."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “É que o jogo ainda não conta quem você encontra. Então, agora a gente vai fazer esse número contar cada personagem encontrado. Clique em Próxima parte para começar.”",
+      "adulto": "> “Mas repare no número Achados: ele ficou no zero. Por quê? É que o jogo ainda não conta quem você encontra. Então, agora a gente vai fazer esse número contar cada personagem encontrado. Clique em Próxima seção para começar.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "## 2. Um número que acompanha a busca",
+      "adulto": "## 2. Um número que acompanha a busca"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Duração alvo:** 75 a 95 segundos.",
+      "adulto": "**Duração alvo:** 75 a 95 segundos."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** mostrar a experiência com **Achados: 0**. Tocar em um esconderijo e depois em outro, deixando ver 1 e 2. Parar com o placar em 2 para a entrada do Dedé. **Meme na comparação:** na frase do placar, um placar de futebol virando de 0 para 1, com o coelho comemorando, com a legenda \"+1\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a professora explica sozinha, sem voz do Zappy.",
+      "adulto": "**Na tela:** mostrar a experiência com **Achados: 0**. Tocar em um esconderijo e depois em outro, deixando ver 1 e 2. Com o placar em 2, deixar um espaço vazio do jardim à vista, sem tocar nele ainda. **Meme na comparação:** na frase do placar, um placar de futebol virando de 0 para 1, com o coelho comemorando, com a legenda \"+1\". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a professora explica sozinha."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Esta é uma experiência para a gente entender o que é uma variável, o número que o jogo usa para contar.\n>\n> Repare no número Achados. Ele guarda quantos personagens a gente já encontrou, e esse número vai mudando durante a busca. É isso que é uma variável: um lugar onde o jogo guarda um número que pode mudar.\n>\n> Sabe o placar de um jogo de futebol? A cada gol, o placar soma um. Aqui no jardim é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados.\n>\n> Olha aqui: quando eu toco num esconderijo, Achados vai para 1, porque eu encontrei um personagem e o jogo somou um. Se eu toco em outro, ele soma de novo, e agora é 2.”",
+      "adulto": "> “Esta é uma experiência para a gente entender o que é uma variável, o número que o jogo usa para contar.\n>\n> Repare no número Achados. Ele guarda quantos personagens a gente já encontrou, e esse número vai mudando durante a busca. É isso que é uma variável: um lugar onde o jogo guarda um número que pode mudar.\n>\n> Sabe o placar de um jogo de futebol? A cada gol, o placar soma um. Aqui no jardim é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados.\n>\n> Olha aqui: quando eu toco num esconderijo, Achados vai para 1, porque eu encontrei um personagem e o jogo somou um. Se eu toco em outro, ele soma de novo, e agora é 2.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** **A2P2-D01** · Dedé entra com Achados em 2. Manter um espaço vazio do jardim à vista; ainda não tocar nele.",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “E se eu tocar num espaço vazio do jardim?”",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai. A professora toca no espaço vazio no ritmo da resposta e mostra que Achados continua em 2. Depois demonstra Recomeçar a busca e passa a vez para quem assiste.",
+      "adulto": "**Na tela:** a professora toca no espaço vazio no ritmo da fala e mostra que Achados continua em 2. Depois demonstra Recomeçar a busca e passa a vez para quem assiste."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Vamos ver. Olha aqui: eu toco num espaço vazio. Tá vendo? O número não muda. Isso acontece porque a regra que soma está ligada aos esconderijos: ela só funciona quando eu toco num esconderijo. Ali não tinha nenhum, então nada foi somado.\n>\n> Por último, eu clico em Recomeçar a busca, e Achados volta para zero, igual ao placar no começo de um jogo novo.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”",
+      "adulto": "> “E se eu tocar num espaço vazio do jardim? Olha aqui: eu toco num espaço vazio. Percebe? O número não muda. Isso acontece porque a regra que soma está ligada aos esconderijos: ela só funciona quando eu toco num esconderijo. Ali não tinha nenhum, então nada foi somado.\n>\n> Por último, eu clico em Recomeçar a busca, e Achados volta para zero, igual ao placar no começo de um jogo novo.\n>\n> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** “Sua vez! Procure no jardim e fique de olho no número Achados. Quando terminar, clique em Próxima parte.”",
+      "adulto": "**Recado na página (não gravar):** “Sua vez: procure no jardim e fique de olho no número Achados. Quando terminar, clique em Próxima seção.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e chega ao jogo: o gol soma um no placar, e cada personagem encontrado soma um em Achados. Sem palpite nem pergunta final.",
+      "adulto": "**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e chega ao jogo: o gol soma um no placar, e cada personagem encontrado soma um em Achados. Sem palpite nem pergunta final."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "## 3. Cada personagem vale um achado",
+      "adulto": "## 3. Cada personagem vale um achado"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Duração alvo:** 3 a 4 minutos, incluindo montagem, testes e verificação.",
+      "adulto": "**Duração alvo:** 3 a 4 minutos, incluindo montagem, testes e verificação."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** mostrar o projeto da criança no Estúdio incorporado. Se não houver projeto salvo, usar a retomada prevista no manifesto. Começar com três esconderijos fechados e **Achados: 0**. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo e, no \"Tá vendo?\", mostrar que o personagem aparece, mas Achados continua em zero. Depois trazer à vista a área Quando acontecer, arrastando um espaço vazio entre os blocos se for preciso. Apontar a área primeiro e o bloco Quando clicar ou tocar dentro dela em seguida, acompanhando cada frase. Deixar à vista a regra de visibilidade que já está dentro desse bloco antes de abrir a paleta. O bloco Somar nasce com 1 e contador.",
+      "adulto": "**Na tela:** mostrar o projeto de quem faz a aula no Estúdio incorporado. Se não houver projeto salvo, usar a retomada prevista no manifesto. Começar com três esconderijos fechados e **Achados: 0**. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo e, no \"Percebe?\", mostrar que o personagem aparece, mas Achados continua em zero. Depois trazer à vista a área Quando acontecer, arrastando um espaço vazio entre os blocos se for preciso. Apontar a área primeiro e o bloco Quando clicar ou tocar dentro dela em seguida, acompanhando cada frase. Deixar à vista a regra de visibilidade que já está dentro desse bloco antes de abrir a paleta. O bloco Somar nasce com 1 e contador."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Aqui no seu jogo, toque num esconderijo. Tá vendo? O personagem aparece, mas Achados continua em zero, porque o seu jogo ainda não conta.\n>\n> Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados. Agora a gente vai fazer o seu jogo contar do mesmo jeito!\n>\n> Para começar, procure a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até encontrá-la. Dentro dessa área, encontre o bloco Quando clicar ou tocar num sprite do grupo esconderijos.\n>\n> Repare que dentro dele já está o bloco da Fase 1, Deixar o sprite escolhido com 0% de visibilidade.”",
+      "adulto": "> “Aqui no seu jogo, toque num esconderijo. Percebe? O personagem aparece, mas Achados continua em zero, porque o seu jogo ainda não conta.\n>\n> Lembra da experiência da seção anterior? Cada personagem encontrado somava um em Achados. Agora a gente vai fazer o seu jogo contar do mesmo jeito.\n>\n> Para começar, procure a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até encontrá-la. Dentro dessa área, encontre o bloco Quando clicar ou tocar num sprite do grupo esconderijos.\n>\n> Repare que dentro dele já está o bloco da Aula 1, Deixar o sprite escolhido com 0% de visibilidade.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** **A2P3-D01** · Dedé entra com o evento e o bloco de visibilidade à vista. Não abrir a paleta ainda.",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “E onde eu coloco o bloco que conta?”",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai. A professora aponta o encaixe logo abaixo da visibilidade, dentro do evento. Só depois abre a paleta e demonstra o caminho, o bloco, o encaixe e a escolha de achados.",
+      "adulto": "**Na tela:** a professora aponta o encaixe logo abaixo da visibilidade, dentro do evento. Só depois abre a paleta e demonstra o caminho, o bloco, o encaixe e a escolha de achados."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Ele vai entrar logo abaixo do bloco de visibilidade, dentro de Quando clicar ou tocar. Então deixe esse lugar à vista.\n>\n> Agora abra Programação e depois Variáveis, e pegue o bloco Somar 1 em variável contador.\n>\n> Arraste e solte logo abaixo de Deixar o sprite escolhido com 0% de visibilidade.\n>\n> O número 1 já está certo, porque cada personagem vale um achado. Mas o bloco chega com contador, e a variável do seu jogo se chama achados. Então clique em contador e escolha achados.”",
+      "adulto": "> “E onde entra o bloco que conta? Ele vai entrar logo abaixo do bloco de visibilidade, dentro de Quando clicar ou tocar. Então deixe esse lugar à vista.\n>\n> Agora abra Programação e depois Variáveis, e pegue o bloco Somar 1 em variável contador.\n>\n> Arraste e solte logo abaixo de Deixar o sprite escolhido com 0% de visibilidade.\n>\n> O número 1 já está certo, porque cada personagem vale um achado. Mas o bloco chega com contador, e a variável do seu jogo se chama achados. Então clique em contador e escolha achados.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** mostrar o jardim atualizado e testar os três esconderijos, um por vez. No \"Olha só\", deixar ver o primeiro personagem e Achados em 1. Conferir 2, 3 e a mensagem **Você achou todo mundo!** Tocar novamente no mesmo lugar e conferir que a contagem não sobe. Após o teste, clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Ao falar do salvamento automático, mostrar o selo **Guardado na sua conta** somente depois da confirmação real. Após **Objetivo cumprido!**, apontar **Próxima parte**. O envio fica na parte 4. Não demonstrar compartilhamento.",
+      "adulto": "**Na tela:** mostrar o jardim atualizado e testar os três esconderijos, um por vez. No \"Olha só\", deixar ver o primeiro personagem e Achados em 1. Conferir 2, 3 e a mensagem **Você achou todo mundo!** Tocar novamente no mesmo lugar e conferir que a contagem não sobe. Após o teste, clicar em **Verificar esta etapa** e mostrar **Objetivo da etapa cumprido!**. Ao falar do salvamento automático, mostrar o selo **Salvo na sua conta** somente depois da confirmação real. Após **Objetivo da etapa cumprido!**, apontar **Próxima seção**. O envio fica na seção 4. Não demonstrar compartilhamento."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!”",
+      "adulto": "> “Agora vamos testar. Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1. Já está contando.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** **A2P3-R01** · Dedé entra somente depois de Achados mostrar 1. Manter o número e o primeiro personagem visíveis.",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Agora sim! Já está contando!”",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai. Continuar o teste com o segundo e o terceiro esconderijos.",
+      "adulto": "**Na tela:** continuar o teste com o segundo e o terceiro esconderijos."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.”",
+      "adulto": "> “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** **A2P3-R02** · Dedé olha para o lugar do último esconderijo. A contagem permanece em 3; esperar a pergunta antes de tocar outra vez.",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “E se eu tocar aqui de novo?”",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai. Demonstrar o novo toque e explicar por que o número não sobe.",
+      "adulto": "**Na tela:** com a contagem em 3, demonstrar o novo toque no mesmo lugar e explicar por que o número não sobe."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Vamos ver. Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.\n>\n> Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: os dois blocos estão dentro de Quando clicar ou tocar, primeiro o esconderijo escolhido fica invisível e, logo abaixo, o jogo soma 1 em achados. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.\n>\n> Seu jogo é salvo automaticamente enquanto você monta. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": "> “E se você tocar de novo no mesmo lugar? Vamos ver: toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.\n>\n> Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: os dois blocos estão dentro de Quando clicar ou tocar, primeiro o esconderijo escolhido fica invisível e, logo abaixo, o jogo soma 1 em achados. Depois de corrigir, teste de novo.\n>\n> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.\n>\n> Seu jogo é salvo automaticamente enquanto você monta. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Zappy na página (não gravar):** “Agora faça o seu jogo contar os achados! Depois, teste os três esconderijos e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”",
+      "adulto": "**Recado na página (não gravar):** “Agora faça o seu jogo contar os achados. Depois, teste os três esconderijos e clique em Verificar esta etapa. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Conferência de produção:** a Pré-visualização atualiza automaticamente. O caminho é Programação > Variáveis, com o bloco Somar ___ em variável ___, que nasce com 1 e contador. A verificação também confere a regra da Aula 1. O caderno continua na seção Seu Mapa da Aventura da Aula 1. Manter a cadeia do projeto e a regra de vitória preparada. A fala não diz que a mensagem de vitória já estava preparada: ela liga a mensagem à contagem que a criança montou, que é o que a faz aparecer (Achados maior ou igual a 3). A conclusão exige vídeo e aprovação em **Verificar esta parte**. A verificação depende desse clique. O mesmo projeto continua na parte 4, onde será enviado depois da personalização.",
+      "adulto": "**Conferência de produção:** a Pré-visualização atualiza automaticamente. O caminho é Programação > Variáveis, com o bloco Somar ___ em variável ___, que nasce com 1 e contador. A verificação também confere a regra da Aula 1. O caderno continua na seção Seu caderno do curso da Aula 1. Manter a cadeia do projeto e a regra de vitória preparada. A fala não diz que a mensagem de vitória já estava preparada: ela liga a mensagem à contagem que a pessoa montou, que é o que a faz aparecer (Achados maior ou igual a 3). A conclusão exige vídeo e aprovação em **Verificar esta etapa**. A verificação depende desse clique. O mesmo projeto continua na seção 4, onde será enviado depois da personalização."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "## 4. Deixe o jogo com a sua cara",
+      "adulto": "## 4. Deixe o jogo com a sua cara"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Duração alvo:** 4 a 5 minutos, incluindo a galeria do Mapa, os gestos, as trocas e o teste.",
+      "adulto": "**Duração alvo:** 4 a 5 minutos, incluindo a galeria do caderno, os gestos, as trocas e o teste."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** começar pela revelação: no \"A surpresa chegou\", abrir o Mapa da Aventura na página **A surpresa do final** e, no \"Olha quem mais pode brincar de se esconder\", mostrar a galeria inteira, com os sete bichos e os seis esconderijos, por alguns segundos. Manter essa página aberta durante a entrada do Dedé.",
+      "adulto": "**Na tela:** começar pela revelação: no \"A surpresa chegou\", abrir o caderno do curso na página **A surpresa do final** e, no \"olha quem mais pode se esconder\", mostrar a galeria inteira, com os sete bichos e os seis esconderijos, por alguns segundos. Manter essa página aberta enquanto a professora apresenta as escolhas."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “A surpresa chegou! Olha quem mais pode brincar de se esconder! Agora você vai escolher os bichinhos e preparar os esconderijos da sua brincadeira.”",
+      "adulto": "> “A surpresa chegou: olha quem mais pode se esconder no seu jogo. Agora você vai escolher os bichos e os esconderijos do seu jardim.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** **A2P4-D01** · Dedé entra com a galeria do Mapa da Aventura aberta e o gato visível. Não cobrir os outros bichos e esconderijos.",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Eu quero escolher o gato!”",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai; a professora responde ainda com a galeria à vista e depois volta aos blocos. O gato é a escolha do Dedé e o exemplo da demonstração, não uma escolha obrigatória para quem assiste. Depois voltar ao mesmo Estúdio e trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso. Apontar os blocos **Criar sprite**. Num bloco que cria um bicho, apontar o fim do bloco: depois de **com imagem** está o nome da imagem, **coelho**. Clicar nesse nome, mostrar a lista que se abre com as imagens do jogo e o nome de cada uma (sem título; rolar a lista se for preciso) e clicar em **gato**. Fazer o mesmo num bloco que cria um esconderijo: clicar em **arbusto** e escolher **toco**. Mostrar que o gato e o toco ficaram no mesmo lugar e do mesmo tamanho. Trocar também os outros bichos e esconderijos, em ritmo rápido. Depois trazer à vista a área **Enquanto estiver rodando**, arrastando um espaço vazio se for preciso, e, dentro do bloco **Se**, o bloco **Escrever** com a frase **Você achou todo mundo!** Clicar no texto e trocar por uma frase curta. Olhar o jardim antes de testar. Testar encontrando todo mundo de novo e mostrar a mensagem nova. Clicar em **Enviar meu projeto**, confirmar em **Enviar** sem preencher o recado opcional e aguardar **Projeto enviado!**. Só então apontar **Próxima parte**. Na gravação, usar uma sessão sem envio anterior nesta fase para mostrar os rótulos do primeiro envio.",
+      "adulto": "**Na tela:** com a galeria ainda à vista, a professora apresenta as escolhas e depois volta aos blocos. O gato é o exemplo da demonstração, não uma escolha obrigatória para quem assiste. Depois voltar ao mesmo Estúdio e trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso. Apontar os blocos **Criar sprite**. Num bloco que cria um bicho, apontar o fim do bloco: depois de **com imagem** está o nome da imagem, **coelho**. Clicar nesse nome, mostrar a lista que se abre com as imagens do jogo e o nome de cada uma (sem título; rolar a lista se for preciso) e clicar em **gato**. Fazer o mesmo num bloco que cria um esconderijo: clicar em **arbusto** e escolher **toco**. Mostrar que o gato e o toco ficaram no mesmo lugar e do mesmo tamanho. Trocar também os outros bichos e esconderijos, em ritmo rápido. Depois trazer à vista a área **Enquanto estiver rodando**, arrastando um espaço vazio se for preciso, e, dentro do bloco **Se**, o bloco **Escrever** com a frase **Você achou todo mundo!** Clicar no texto e trocar por uma frase curta. Olhar o jardim antes de testar. Testar encontrando todo mundo de novo e mostrar a mensagem nova. Clicar em **Enviar para o professor**, confirmar em **Enviar** sem preencher o campo opcional Recado para o professor e aguardar **Projeto enviado ao professor**. Só então apontar **Próxima seção**. Na gravação, usar uma sessão sem envio anterior nesta aula para mostrar os rótulos do primeiro envio."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Pode escolher! Os bichos e os esconderijos estão no seu Mapa da Aventura, com o nome de cada um. E a mensagem do final também pode ser sua. Tudo o que você mudar fica no seu jogo.\n>\n> Vamos começar pelos bichos. Encontre a área Ao iniciar. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer. Repare nos blocos Criar sprite que estão nela: cada um cria um bicho ou um esconderijo do jardim.\n>\n> Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.”",
+      "adulto": "> “Todos eles estão no seu caderno do curso, com o nome de cada um. E a mensagem do final também pode ser sua. Tudo o que você mudar fica no seu jogo.\n>\n> Vamos começar pelos bichos. Encontre a área Ao iniciar. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer. Repare nos blocos Criar sprite que estão nela: cada um cria um bicho ou um esconderijo do jardim.\n>\n> Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** **A2P4-R01** · Dedé entra depois da troca do bichinho, antes de escolher o esconderijo. O toco é a escolha dele e o exemplo da demonstração, não uma exigência para quem assiste.",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Meu gato vai se esconder atrás de um toco!”",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai. Explicar como trocar o esconderijo e manter as opções livres.",
+      "adulto": "**Na tela:** explicar como trocar o esconderijo e manter as opções livres; o toco é o exemplo da demonstração, não uma exigência para quem assiste."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.\n>\n> Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe certinho no lugar do antigo.\n>\n> Agora troque, nos outros blocos Criar sprite, os bichos e os esconderijos que você quiser, até o jardim ficar do seu jeito. O que você gostou pode ficar como está.”",
+      "adulto": "> “Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.\n>\n> Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe exatamente no lugar do antigo.\n>\n> Agora troque, nos outros blocos Criar sprite, os bichos e os esconderijos que você quiser, até o jardim ficar do seu jeito. O que você gostou pode ficar como está.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** **A2P4-R02** · Trocar também os outros bichos e esconderijos, em ritmo rápido; as escolhas da demonstração são livres e não viram exigência para quem assiste. Mostrar os bichos e os esconderijos novos nas posições anteriores. Dedé entra depois de terminar as trocas, sem cobrir o jogo.",
+      "adulto": "**Na tela:** Trocar também os outros bichos e esconderijos, em ritmo rápido; as escolhas da demonstração são livres e não viram exigência para quem assiste. Mostrar os bichos e os esconderijos novos nas posições anteriores."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Troquei os desenhos e o meu jogo ficou do jeito que eu queria!”",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai. Deixar a combinação visível antes de começar a editar a mensagem.",
+      "adulto": "**Na tela:** deixar a combinação visível antes de começar a editar a mensagem."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Se quiser, mude também a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.\n>\n> Antes de testar, dê uma olhada no jardim. Se algum bicho aparecer antes do toque, ou se um desenho ficar grande demais, é porque a imagem escolhida é do outro tipo. Aí é só clicar de novo no nome da imagem e escolher um desenho do mesmo tipo: bicho no bloco do bicho, esconderijo no bloco do esconderijo.\n>\n> Agora teste: encontre todo mundo de novo. Os bichos vão aparecer atrás dos esconderijos, do jeito que você deixou, e no fim vem a mensagem! Se a frase passar da tela, deixe a frase mais curta e teste de novo.\n>\n> Agora o jogo tem a sua cara, e é com essa cara que ele vai para o Mural. Agora, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.”",
+      "adulto": "> “Se quiser, mude também a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.\n>\n> Antes de testar, dê uma olhada no jardim. Se algum bicho aparecer antes do toque, ou se um desenho ficar grande demais, é porque a imagem escolhida é do outro tipo. Aí é só clicar de novo no nome da imagem e escolher um desenho do mesmo tipo: bicho no bloco do bicho, esconderijo no bloco do esconderijo.\n>\n> Agora teste: encontre todo mundo de novo. Os bichos vão aparecer atrás dos esconderijos, do jeito que você deixou, e no fim vem a mensagem. Se a frase passar da tela, deixe a frase mais curta e teste de novo.\n>\n> Agora o jogo tem a sua cara, e é com essa cara que ele vai para o Mural. Agora, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Próxima seção.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Conferência de produção:** é a revelação da surpresa plantada no vídeo de abertura da Aula 1 e lembrada no fim dela (decisão do responsável, 07/10/2026): a fala diz que a surpresa chegou e apresenta a galeria do Mapa como a turma nova que pode brincar de se esconder (decisão do responsável, 07/10/2026: cada curso revela o que tem de próprio). Não chamar de surpresa nenhuma outra coisa do curso. É também a seção de mexa e veja e o único ponto de entrega da Aula 2 (11/10/2026): vem depois da verificação da contagem e antes de publicar. As mudanças ficam no jogo e as escolhas não viram critério. A seção conclui pelo vídeo, pelo envio do projeto e pelo envio em dia (`submissionUpToDate`). O envio é pedido ao final, mesmo para quem manteve as imagens ou a mensagem. Se a criança editar novamente depois de enviar, antes de avançar, o critério pede a versão atualizada; isso não cria outro ponto de entrega no roteiro. A equipe recebe o jogo que será publicado na parte 5. Mover blocos não conta como mudança; trocar imagem ou mensagem conta. O bloco é Criar sprite ___ em x ___ y ___ largura ___ altura ___ com imagem ___. No fim dele, depois de **com imagem**, o Estúdio mostra o NOME da imagem num campo, e não um desenho: clicar no nome abre a lista com as miniaturas e o nome de cada imagem; com 14 imagens, a lista rola. Embaixo da lista há um campo para digitar um nome e o botão OK; não usar na gravação. Ao escolher outra imagem, o Estúdio ajusta largura e altura ao tamanho da imagem nova e mantém x e y, o canto de cima do sprite. No projeto novo, todos os bichos têm a caixa 72 × 87 e todos os esconderijos 161 × 144, então trocar bicho por bicho ou esconderijo por esconderijo não muda tamanho nem lugar. O erro provável é escolher uma imagem do outro tipo: um esconderijo no bloco de um bicho fica grande e aparece antes do toque; um bicho no bloco de um esconderijo fica pequeno e deixa o bicho de trás à vista. A correção da fala resolve: escolhendo de novo uma imagem do tipo certo, o tamanho volta. Os sprites se chamam bicho1, bicho2, bicho3 e esconderijo1, esconderijo2, esconderijo3 nos projetos novos. Projetos salvos antes de 05/10/2026 recebem as imagens novas ao abrir (o Estúdio da aula acrescenta as imagens do curso que faltam, sem trocar as que já existem), mas guardam os nomes antigos dos sprites (coelho, arbusto e os outros) e as caixas antigas (coelho 54 × 87, raposa 66 × 84, coruja 72 × 81, arbusto 154 × 116, pedras 161 × 112, flores 133 × 144). Neles, como o Estúdio ajusta o tamanho à imagem nova mantendo o canto de cima, o desenho trocado pode ficar um pouco fora do lugar: um bicho novo fica até 18 pixels mais largo para a direita e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para a direita ou até 32 pixels mais baixo que o antigo. A fala serve aos dois porque cita nomes de imagens, que existem nos dois, e não nomes de sprites. A mensagem é o texto do bloco Escrever ___ em x ___ y ___, dentro do Se de A cada quadro do jogo; frase curta para caber na tela.",
+      "adulto": "**Conferência de produção:** é a revelação da surpresa anunciada no vídeo de abertura da Aula 1 e lembrada no fim dela (decisão do responsável, 07/10/2026): a fala diz que a surpresa chegou e apresenta a galeria do caderno como os novos bichos e esconderijos do jogo (decisão do responsável, 07/10/2026: cada curso revela o que tem de próprio). Não chamar de surpresa nenhuma outra coisa do curso. É também a seção de mexa e veja e o único ponto de entrega da Aula 2 (11/10/2026): vem depois da verificação da contagem e antes de publicar. As mudanças ficam no jogo e as escolhas não viram critério. A seção conclui pelo vídeo, pelo envio do projeto e pelo envio em dia (`submissionUpToDate`). O envio é pedido ao final, mesmo para quem manteve as imagens ou a mensagem. Se a pessoa editar novamente depois de enviar, antes de avançar, o critério pede a versão atualizada; isso não cria outro ponto de entrega no roteiro. O professor recebe o jogo que será publicado na seção 5. Mover blocos não conta como mudança; trocar imagem ou mensagem conta. O bloco é Criar sprite ___ em x ___ y ___ largura ___ altura ___ com imagem ___. No fim dele, depois de **com imagem**, o Estúdio mostra o NOME da imagem num campo, e não um desenho: clicar no nome abre a lista com as miniaturas e o nome de cada imagem; com 14 imagens, a lista rola. Embaixo da lista há um campo para digitar um nome e o botão OK; não usar na gravação. Ao escolher outra imagem, o Estúdio ajusta largura e altura ao tamanho da imagem nova e mantém x e y, o canto de cima do sprite. No projeto novo, todos os bichos têm a caixa 72 × 87 e todos os esconderijos 161 × 144, então trocar bicho por bicho ou esconderijo por esconderijo não muda tamanho nem lugar. O erro provável é escolher uma imagem do outro tipo: um esconderijo no bloco de um bicho fica grande e aparece antes do toque; um bicho no bloco de um esconderijo fica pequeno e deixa o bicho de trás à vista. A correção da fala resolve: escolhendo de novo uma imagem do tipo certo, o tamanho volta. Os sprites se chamam bicho1, bicho2, bicho3 e esconderijo1, esconderijo2, esconderijo3 nos projetos novos. Projetos salvos antes de 05/10/2026 recebem as imagens novas ao abrir (o Estúdio da aula acrescenta as imagens do curso que faltam, sem trocar as que já existem), mas guardam os nomes antigos dos sprites (coelho, arbusto e os outros) e as caixas antigas (coelho 54 × 87, raposa 66 × 84, coruja 72 × 81, arbusto 154 × 116, pedras 161 × 112, flores 133 × 144). Neles, como o Estúdio ajusta o tamanho à imagem nova mantendo o canto de cima, o desenho trocado pode ficar um pouco fora do lugar: um bicho novo fica até 18 pixels mais largo para a direita e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para a direita ou até 32 pixels mais baixo que o antigo. A fala serve aos dois porque cita nomes de imagens, que existem nos dois, e não nomes de sprites. A mensagem é o texto do bloco Escrever ___ em x ___ y ___, dentro do Se de A cada quadro do jogo; frase curta para caber na tela."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "## 5. Publique seu jogo",
+      "adulto": "## 5. Publique seu jogo"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Duração alvo:** 60 a 80 segundos, incluindo publicação, comemoração e cópia do link.",
+      "adulto": "**Duração alvo:** 60 a 80 segundos, incluindo publicação, confirmação e cópia do link."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** manter o mesmo Estúdio da prática, com o projeto já enviado ao professor. Apontar e abrir **Compartilhar**, no alto do Estúdio; na aula, o botão costuma aparecer só como ícone (uma setinha para cima saindo de uma bandeja), e a janela se chama **Compartilhar no Mural dos Criadores**. Mostrar o **Resumo do projeto** já preenchido, sem editar. Na aula, a janela não mostra o campo Título: o título vem do curso. Clicar em **Gerar capa**, esperar a imagem e conferir o resultado. Não demonstrar upload nem outra capa.",
+      "adulto": "**Na tela:** manter o mesmo Estúdio da prática, com o projeto já enviado ao professor. Apontar e abrir **Compartilhar**, no alto do Estúdio; na aula, o botão costuma aparecer só como ícone (uma seta para cima saindo de uma bandeja), e a janela se chama **Compartilhar no Mural dos Criadores**. Mostrar o **Resumo do projeto** já preenchido, sem editar. Na aula, a janela não mostra o campo Título: o título vem do curso. Clicar em **Gerar capa**, esperar a imagem e conferir o resultado. Não demonstrar upload nem outra capa."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Agora chegou a hora de publicar o seu jogo, do jeito que você deixou, para a sua família e os seus amigos jogarem!\n>\n> Para isso, clique em Compartilhar, no alto do Estúdio. Aqui, ele pode aparecer só como uma setinha para cima. Repare que o resumo do projeto já vem preenchido, então pode deixar como está.\n>\n> Depois, clique em Gerar capa e espere a imagem aparecer. Olha só: essa é a capa que vai apresentar o seu jogo!”",
+      "adulto": "> “Agora chegou a hora de publicar o seu jogo, do jeito que você deixou, para os seus amigos jogarem.\n>\n> Para isso, clique em Compartilhar, no alto do Estúdio. Aqui, ele pode aparecer só como uma seta para cima. Repare que o resumo do projeto já vem preenchido, então pode deixar como está.\n>\n> Depois, clique em Gerar capa e espere a imagem aparecer. Olha só: essa é a capa que vai apresentar o seu jogo.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** conferir a capa, clicar em **Publicar** e esperar a comemoração visual do Zappy com **Seu jogo está no Mural!**, sem voz do mascote no vídeo. Deixar a confirmação e Copiar link de jogar visíveis para a entrada do Dedé, sem copiar ainda.",
+      "adulto": "**Na tela:** conferir a capa, clicar em **Publicar** e esperar a tela **Publicado!**, com **Seu projeto já está no Mural dos Criadores.** e os botões **Ver no Mural**, **Abrir o jogo**, **Copiar link** e **Fechar**. Deixar a confirmação e Copiar link visíveis, sem copiar ainda."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Confira se a capa ficou boa e clique em Publicar. Agora é só esperar um pouquinho…\n>\n> Seu jogo está no Mural! Que conquista! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.”",
+      "adulto": "> “Confira se a capa ficou boa e clique em Publicar. Agora é só esperar um pouco.\n>\n> Pronto: seu jogo está no Mural dos Criadores. Agora você e os seus amigos podem jogar o jogo que você criou.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** **A2P5-D01** · Dedé entra após a confirmação da publicação, sem cobrir Copiar link de jogar. Ainda não copiar o link. Zappy aparece somente na comemoração visual da interface, sem voz no vídeo.",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Como eu mostro o jogo para a minha família?”",
+      "adulto": ""
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Na tela:** Dedé sai; a professora demonstra Copiar link de jogar, espera Link copiado!, fecha a janela e aponta Concluir fase. Não acrescentar fala depois da orientação de saída.",
+      "adulto": "**Na tela:** a professora demonstra Copiar link, espera Link copiado!, fecha a janela e aponta Concluir aula. Não acrescentar fala depois da orientação de saída."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "> “Clique em Copiar link de jogar e mande esse link para a sua família e os seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar.\n>\n> Depois de copiar o link, clique em Fechar e, por fim, em Concluir fase.”",
+      "adulto": "> “E para mandar o jogo para alguém? Clique em Copiar link e mande esse link para os seus amigos, para o grupo ou para quem você quiser. Quem receber pode jogar direto, até no celular.\n>\n> Depois de copiar o link, clique em Fechar e, por fim, em Concluir aula.”"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Ajuda escrita junto ao vídeo, fora da narração:** Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), a área de ajuda.",
+      "adulto": "**Ajuda escrita junto ao vídeo, fora da narração:** Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/comunidade-publicar-no-mural), a área de ajuda."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.roteiro.md",
+      "kids": "**Conferência de produção:** publicar é a tarefa esperada da seção. O vídeo continua sendo o critério técnico de conclusão; publicação e acesso ao Mural não viram bloqueios. O envio da seção anterior libera Compartilhar. Gerar capa já inclui a imagem na publicação, sem download nem upload manual. Conferir o resumo pronto antes da gravação; o título vem do curso e não aparece na janela da aula, então a fala não o cita. A ajuda abre diretamente o tutorial; não exigir sua leitura. Outras capas e solução de problemas ficam no Como fazer. Copiar o link de jogar faz parte da comemoração e aparece no vídeo: o link é público e não mostra o nome da criança, e a fala sugere mandar para a família e os amigos, com ajuda de um adulto se precisar. A fala termina em Concluir fase, sem antecipar certificado ou próxima aula. Sem oferta comercial. Regravar e ensaiar o caminho completo com crianças.",
+      "adulto": "**Conferência de produção:** publicar é a tarefa esperada da seção. O vídeo continua sendo o critério técnico de conclusão; publicação e acesso ao Mural não viram bloqueios. O envio da seção anterior libera Compartilhar. Gerar capa já inclui a imagem na publicação, sem download nem upload manual. Conferir o resumo pronto antes da gravação; o título vem do curso e não aparece na janela da aula, então a fala não o cita. A ajuda abre diretamente o tutorial; não exigir sua leitura. Outras capas e solução de problemas ficam no Como fazer. Copiar o link faz parte do fechamento e aparece no vídeo: o link é público, e a fala sugere mandar para os amigos, para o grupo ou para quem a pessoa quiser. A fala termina em Concluir aula, sem antecipar certificado ou próxima aula. Sem oferta comercial. Ensaiar o caminho completo com adultos."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Complete a busca",
+      "adulto": "Complete a busca"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Título: Quem você já encontrou?\n\nComeçar pela tarefa de fazer o jogo contar os personagens. Mostrar um toque revelando o personagem enquanto Achados fica em zero. Terminar em Próxima parte. Esta seção só tem vídeo; não pedir manipulação de um Estúdio que ainda não aparece. Produção em 10/10/2026: participação de Dedé aplicada ao roteiro; gravação e edição desta versão ainda não confirmadas. Entrada A2P1-D01: depois de \"ele fica invisível e o personagem aparece.\", Dedé pergunta \"Ué, por que o número ficou no zero?\". A professora retoma \"É que o jogo ainda não conta quem você encontra.\" e mantém o convite para começar. A pergunta substitui a observação sobre o zero na voz da professora, sem repetir a explicação. Dedé entra, fala e sai antes da retomada da professora, sem sobrepor vozes ou cobrir controles. Zappy só fala na página, fora do vídeo. Ver AVATARES-NOS-VIDEOS.md. Duração alvo com a participação; medir a versão final com falas e gestos: 25 a 35 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": "Título: Quem você já encontrou?\n\nComeçar pela tarefa de fazer o jogo contar os personagens. Mostrar um toque revelando o personagem enquanto Achados fica em zero e explicar o zero na voz da professora (Mas repare no número Achados: ele ficou no zero. Por quê? É que o jogo ainda não conta quem você encontra.), sem repetir a explicação. Terminar em Próxima seção. Esta seção só tem vídeo; não pedir manipulação de um Estúdio que ainda não aparece. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Duração alvo; medir a versão final com falas e gestos: 25 a 35 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Seus personagens já aparecem, mas Achados ainda fica em zero. Então vamos ensinar o jogo a contar: clique em Próxima parte para começar.",
+      "adulto": "Seus personagens já aparecem, mas Achados ainda fica em zero. Então vamos ensinar o jogo a contar: clique em Próxima seção para começar."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Título: Um número que acompanha a busca\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: Achados é uma variável, um lugar onde o jogo guarda um número que pode mudar. A comparação chega ao jogo: no placar de um jogo de futebol, a cada gol o placar soma um; aqui no jardim é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados. Meme na comparação: na frase do placar, mostrar por 2 a 3 segundos o meme ilustrado nosso, um placar de futebol virando de 0 para 1 com o coelho comemorando e a legenda \"+1\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Mostrar dois achados, o espaço vazio que não soma e Recomeçar a busca voltando a zero, nomeando cada resultado. Terminar com Agora é a sua vez e Próxima parte. Sem palpite nem pergunta final. Produção em 10/10/2026: participação de Dedé aplicada ao roteiro; gravação e edição desta versão ainda não confirmadas. Entrada A2P2-D01: depois de \"ele soma de novo, e agora é 2.\", Dedé pergunta \"E se eu tocar num espaço vazio do jardim?\". Essa pergunta passa para ele e sai da voz da professora. Ela retoma \"Vamos ver. Olha aqui: eu toco num espaço vazio.\" e demonstra só depois da pergunta, sem antecipar o resultado. Manter Recomeçar a busca e a passagem da vez. O meme é visual, sem voz do Zappy. Dedé entra, fala e sai antes da retomada da professora, sem sobrepor vozes ou cobrir controles. Zappy só fala na página, fora do vídeo. Ver AVATARES-NOS-VIDEOS.md. Duração alvo com a participação; medir a versão final com falas e gestos: 75 a 95 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": "Título: Um número que acompanha a busca\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: Achados é uma variável, um lugar onde o jogo guarda um número que pode mudar. A comparação chega ao jogo: no placar de um jogo de futebol, a cada gol o placar soma um; aqui no jardim é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados. Meme na comparação: na frase do placar, mostrar por 2 a 3 segundos o meme ilustrado nosso, um placar de futebol virando de 0 para 1 com o coelho comemorando e a legenda \"+1\"; desenho nosso, com os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Mostrar dois achados, o espaço vazio que não soma (E se eu tocar num espaço vazio do jardim? Olha aqui: eu toco num espaço vazio.) e Recomeçar a busca voltando a zero, nomeando cada resultado. Terminar com Agora é a sua vez e Próxima seção. Sem palpite nem pergunta final. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Duração alvo; medir a versão final com falas e gestos: 75 a 95 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Sua vez! Procure no jardim e fique de olho no número Achados. Quando terminar, clique em Próxima parte.",
+      "adulto": "Sua vez: procure no jardim e fique de olho no número Achados. Quando terminar, clique em Próxima seção."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Quantos você já encontrou?",
+      "adulto": "Quantos você já encontrou?"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Toque em um esconderijo e olhe Achados. Toque em outro. Depois toque num espaço vazio do jardim. Por último, clique em Recomeçar a busca.",
+      "adulto": "Toque em um esconderijo e olhe Achados. Toque em outro. Depois toque num espaço vazio do jardim. Por último, clique em Recomeçar a busca."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Título: Cada descoberta conta\n\nComeçar pela retomada, antes de qualquer bloco, curta e nesta ordem: primeiro o problema no próprio jogo (\"Aqui no seu jogo, toque num esconderijo. Tá vendo? O personagem aparece, mas Achados continua em zero, porque o seu jogo ainda não conta.\"), depois a lembrança (\"Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados.\") e, por último, o anúncio uma vez só, colado ao primeiro passo (\"Agora a gente vai fazer o seu jogo contar do mesmo jeito!\"). Não repetir a explicação da experiência. Primeiro o destino, separando a área do bloco: \"Para começar, procure a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até encontrá-la. Dentro dessa área, encontre o bloco Quando clicar ou tocar num sprite do grupo esconderijos.\" Apontar a área e depois o bloco no ritmo de cada frase; deixar à vista o bloco de visibilidade que já está dentro dele antes de abrir a paleta. Só então ensinar Programação > Variáveis, Somar 1 em variável, o encaixe logo abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a mensagem de vitória (ligada à contagem que a criança montou: aparece quando Achados chega a 3) e a contagem sem repetição. Não listar os blocos antes do teste: a lista entra uma vez, depois dele, com o gatilho genérico (Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: …). Clicar em Verificar esta parte; se faltar algo, corrigir os blocos e verificar novamente. Dizer que o jogo é salvo automaticamente enquanto a criança monta. Quando aparecer Objetivo cumprido!, seguir em Próxima parte. A verificação depende desse clique; o envio fica no fim da personalização, na parte 4. Ao citar o salvamento, mostrar Guardado na sua conta somente após a confirmação real. Não ensinar o layout da prévia nem compartilhamento. Produção em 11/10/2026: gravação da parte 3 informada em andamento; encerramentos das partes 3 e 4 ajustados para envio único. Edição e publicação dessa versão ainda a conferir. Entrada A2P3-D01: depois de mostrar \"Deixar o sprite escolhido com 0% de visibilidade.\", Dedé pergunta \"E onde eu coloco o bloco que conta?\". A professora responde \"Ele vai entrar logo abaixo do bloco de visibilidade, dentro de Quando clicar ou tocar. Então deixe esse lugar à vista.\". Mostrar o encaixe antes da paleta e manter todos os passos de montagem, campos e testes. Dedé entra, fala e sai antes da retomada da professora, sem sobrepor vozes ou cobrir controles. Zappy só fala na página, fora do vídeo. Ver AVATARES-NOS-VIDEOS.md. Duração alvo com as participações; medir a versão final com falas e gestos: 3 a 4 minutos, incluindo gestos. Revisão de ritmo em 10/10/2026: Entrada A2P3-R01: após \"Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!\", Dedé diz \"Agora sim! Já está contando!\". Retomar a professora em \"Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.\". Entrada A2P3-R02: após \"Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.\", Dedé diz \"E se eu tocar aqui de novo?\". Retomar a professora em \"Vamos ver. Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.\". Concluir o gesto antes da criança entrar; manter o resultado à vista e sair antes do próximo gesto. As novas falas mostram uma consequência, fazem uma pergunta ou reagem ao teste. Preservar a voz da professora e os passos completos. Conferir durações com as novas entradas, sem acelerar a demonstração.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": "Título: Cada descoberta conta\n\nComeçar pela retomada, antes de qualquer bloco, curta e nesta ordem: primeiro o problema no próprio jogo (\"Aqui no seu jogo, toque num esconderijo. Percebe? O personagem aparece, mas Achados continua em zero, porque o seu jogo ainda não conta.\"), depois a lembrança (\"Lembra da experiência da seção anterior? Cada personagem encontrado somava um em Achados.\") e, por último, o anúncio uma vez só, colado ao primeiro passo (\"Agora a gente vai fazer o seu jogo contar do mesmo jeito.\"). Não repetir a explicação da experiência. Primeiro o destino, separando a área do bloco: \"Para começar, procure a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até encontrá-la. Dentro dessa área, encontre o bloco Quando clicar ou tocar num sprite do grupo esconderijos.\" Apontar a área e depois o bloco no ritmo de cada frase; deixar à vista o bloco de visibilidade que já está dentro dele antes de abrir a paleta. Antes da paleta, mostrar o encaixe (E onde entra o bloco que conta? Ele vai entrar logo abaixo do bloco de visibilidade, dentro de Quando clicar ou tocar.). Só então ensinar Programação > Variáveis, Somar 1 em variável, o encaixe logo abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a mensagem de vitória (ligada à contagem que a pessoa montou: aparece quando Achados chega a 3) e a contagem sem repetição (E se você tocar de novo no mesmo lugar? Vamos ver: toque de novo no mesmo lugar. O número continua em 3.). Não listar os blocos antes do teste: a lista entra uma vez, depois dele, com o gatilho genérico (Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: …). Clicar em Verificar esta etapa; se faltar algo, corrigir os blocos e verificar novamente. Dizer que o jogo é salvo automaticamente enquanto a pessoa monta. Quando aparecer Objetivo da etapa cumprido!, seguir em Próxima seção. A verificação depende desse clique; o envio fica no fim da personalização, na seção 4. Ao citar o salvamento, mostrar Salvo na sua conta somente após a confirmação real. Não ensinar o layout da prévia nem compartilhamento. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Concluir cada gesto e manter o resultado à vista antes da próxima fala. Duração alvo; medir a versão final com falas e gestos, sem acelerar a demonstração: 3 a 4 minutos, incluindo gestos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Agora faça o seu jogo contar os achados! Depois, teste os três esconderijos e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+      "adulto": "Agora faça o seu jogo contar os achados. Depois, teste os três esconderijos e clique em Verificar esta etapa. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Cadê Todo Mundo?",
+      "adulto": "Cadê Todo Mundo?"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Um jogo de encontrar personagens escondidos no jardim.",
+      "adulto": "Um jogo de encontrar personagens escondidos no jardim."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Título: Deixe o jogo com a sua cara\n\nRevelar a surpresa plantada na abertura da Aula 1: começar com A surpresa chegou! Olha quem mais pode brincar de se esconder! e mostrar a página A surpresa do final do Mapa da Aventura, com todos os bichos e esconderijos, como a turma nova da brincadeira; depois voltar ao Estúdio. Mexa e veja numa seção própria, com mudanças que ficam no jogo. Com o destino à vista, mostrar a área Ao iniciar e os blocos Criar sprite. No bloco não há desenho para clicar: no fim de um bloco que cria um bicho, depois de com imagem, clicar no nome da imagem (coelho) para abrir a lista com as imagens do jogo e escolher outro bicho (gato); dizer que, se não achar, é só rolar a lista. Fazer o mesmo num bloco que cria um esconderijo: clicar em arbusto e escolher toco. Dizer que todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também, por isso o desenho novo cabe certinho no lugar do antigo. Em seguida, pedir que a criança faça o mesmo nos outros blocos Criar sprite, trocando os bichos e os esconderijos que quiser (o que ela gostou pode ficar como está), e trocar os outros na demonstração, em ritmo rápido. O teste não supõe que tudo foi trocado (do jeito que você deixou). Depois, em Enquanto estiver rodando, mostrar como trocar o texto do bloco Escrever dentro do Se por uma frase curta, dizendo que a troca é opcional (Se quiser, mude também a mensagem do final). Antes do teste, dar a correção do erro provável: se algum bicho aparecer antes do toque, ou um desenho ficar grande demais, clicar de novo no nome da imagem e escolher um desenho do mesmo tipo (bicho no bloco do bicho, esconderijo no bloco do esconderijo). Testar encontrando todo mundo de novo; se a frase passar da tela, deixar mais curta. Fechar dizendo que é com essa cara que o jogo vai para o Mural e pedir o único envio da fase com a fala: \"Agora, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.\" Na gravação, usar uma sessão sem envio anterior nesta fase. As escolhas não viram critério; a parte exige o vídeo, o envio do projeto e o envio em dia. Mesmo quem manteve as imagens e a mensagem envia o jogo. A contagem da parte 3 já foi verificada, sem envio intermediário. Produção em 11/10/2026: gravação da parte 3 informada em andamento; encerramentos das partes 3 e 4 ajustados para envio único. Edição e publicação dessa versão ainda a conferir. Entrada A2P4-D01: depois de \"Agora você vai escolher os bichinhos e preparar os esconderijos da sua brincadeira.\", Dedé diz \"Eu quero escolher o gato!\". A professora responde \"Pode escolher! Os bichos e os esconderijos estão no seu Mapa da Aventura, com o nome de cada um.\" e continua a apresentação das escolhas. A galeria permanece visível durante a entrada. O gato é um exemplo e a escolha do Dedé, não uma escolha obrigatória para quem assiste. Dedé entra, fala e sai antes da retomada da professora, sem sobrepor vozes ou cobrir controles. Zappy só fala na página, fora do vídeo. Ver AVATARES-NOS-VIDEOS.md. Duração alvo com as participações; medir a versão final com falas e gestos: 4 a 5 minutos, incluindo gestos, trocas e teste. Revisão de ritmo em 10/10/2026: Entrada A2P4-R01: após \"Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.\", Dedé diz \"Meu gato vai se esconder atrás de um toco!\". Retomar a professora em \"Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.\". Entrada A2P4-R02: após \"Agora troque, nos outros blocos Criar sprite, os bichos e os esconderijos que você quiser, até o jardim ficar do seu jeito. O que você gostou pode ficar como está.\", Dedé diz \"Troquei os desenhos e o meu jogo ficou do jeito que eu queria!\". Retomar a professora em \"Se quiser, mude também a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.\". Concluir o gesto antes da criança entrar; manter o resultado à vista e sair antes do próximo gesto. As novas falas mostram uma consequência, fazem uma pergunta ou reagem ao teste. Preservar a voz da professora e os passos completos. Conferir durações com as novas entradas, sem acelerar a demonstração.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": "Título: Deixe o jogo com a sua cara\n\nRevelar a surpresa anunciada na abertura da Aula 1: começar com A surpresa chegou: olha quem mais pode se esconder no seu jogo. e mostrar a página A surpresa do final do caderno do curso, com todos os bichos e esconderijos, como os novos bichos e esconderijos do jogo; depois voltar ao Estúdio. Mexa e veja numa seção própria, com mudanças que ficam no jogo. Com o destino à vista, mostrar a área Ao iniciar e os blocos Criar sprite. No bloco não há desenho para clicar: no fim de um bloco que cria um bicho, depois de com imagem, clicar no nome da imagem (coelho) para abrir a lista com as imagens do jogo e escolher outro bicho (gato); dizer que, se não achar, é só rolar a lista. Fazer o mesmo num bloco que cria um esconderijo: clicar em arbusto e escolher toco. Dizer que todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também, por isso o desenho novo cabe exatamente no lugar do antigo. Em seguida, pedir que a pessoa faça o mesmo nos outros blocos Criar sprite, trocando os bichos e os esconderijos que quiser (o que ela gostou pode ficar como está), e trocar os outros na demonstração, em ritmo rápido. O gato e o toco são exemplos, não escolhas obrigatórias. O teste não supõe que tudo foi trocado (do jeito que você deixou). Depois, em Enquanto estiver rodando, mostrar como trocar o texto do bloco Escrever dentro do Se por uma frase curta, dizendo que a troca é opcional (Se quiser, mude também a mensagem do final). Antes do teste, dar a correção do erro provável: se algum bicho aparecer antes do toque, ou um desenho ficar grande demais, clicar de novo no nome da imagem e escolher um desenho do mesmo tipo (bicho no bloco do bicho, esconderijo no bloco do esconderijo). Testar encontrando todo mundo de novo; se a frase passar da tela, deixar mais curta. Fechar dizendo que é com essa cara que o jogo vai para o Mural e pedir o único envio da aula com a fala: \"Agora, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Próxima seção.\" Na gravação, usar uma sessão sem envio anterior nesta aula. As escolhas não viram critério; a seção exige o vídeo, o envio do projeto e o envio em dia. Mesmo quem manteve as imagens e a mensagem envia o jogo. A contagem da seção 3 já foi verificada, sem envio intermediário. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Concluir cada gesto e manter o resultado à vista antes da próxima fala. Duração alvo; medir a versão final com falas e gestos, sem acelerar a demonstração: 4 a 5 minutos, incluindo gestos, trocas e teste.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.",
+      "adulto": "A surpresa chegou. Escolha os bichos e os esconderijos do seu jogo: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Próxima seção."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Título: Publique seu jogo\n\nPedir que a criança publique o jogo para a família e os amigos jogarem. No mesmo Estúdio da prática, após o envio ao professor, abrir Compartilhar e dizer que o resumo do projeto já vem preenchido e pode ficar como está; na aula a janela não mostra o campo Título, então a fala não o cita. Clicar em Gerar capa e conferir a imagem. Clicar em Publicar e comemorar com a criança na tela do Zappy (Seu jogo está no Mural!): agora a família e os amigos podem jogar. Clicar em Copiar link de jogar e convidar a mandar o link para a família e os amigos, com ajuda de um adulto se precisar. Clicar em Fechar e terminar em Concluir fase. Não antecipar certificado ou próxima aula, nem apresentar compartilhar como opcional. A publicação não vira bloqueio técnico de conclusão. A ajuda escrita apresenta o Como fazer e abre o tutorial direto, sem exigir leitura. Outra capa e upload ficam na biblioteca. Sem venda. Produção em 10/10/2026: participação de Dedé aplicada ao roteiro; gravação e edição desta versão ainda não confirmadas. Entrada A2P5-D01: depois de \"Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.\", Dedé pergunta \"Como eu mostro o jogo para a minha família?\". A professora retoma \"Clique em Copiar link de jogar e mande esse link para a sua família e os seus amigos.\" e mantém a orientação de ajuda de um adulto, Fechar e Concluir fase. Copiar o link só depois da pergunta e da saída do avatar. A comemoração do Zappy na interface é visual, sem voz do mascote no vídeo. Dedé entra, fala e sai antes da retomada da professora, sem sobrepor vozes ou cobrir controles. Zappy só fala na página, fora do vídeo. Ver AVATARES-NOS-VIDEOS.md. Duração alvo com a participação; medir a versão final com falas e gestos: 60 a 80 segundos, incluindo publicação, comemoração e cópia do link.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
+      "adulto": "Título: Publique seu jogo\n\nPedir que a pessoa publique o jogo para os amigos jogarem. No mesmo Estúdio da prática, após o envio ao professor, abrir Compartilhar e dizer que o resumo do projeto já vem preenchido e pode ficar como está; na aula a janela não mostra o campo Título, então a fala não o cita. Clicar em Gerar capa e conferir a imagem. Clicar em Publicar e mostrar a tela Publicado! (Seu projeto já está no Mural dos Criadores.), com Ver no Mural, Abrir o jogo, Copiar link e Fechar: agora os amigos podem jogar. Clicar em Copiar link e convidar a mandar o link para os amigos, para o grupo ou para quem quiser (E para mandar o jogo para alguém? Clique em Copiar link…). Clicar em Fechar e terminar em Concluir aula. Não antecipar certificado ou próxima aula, nem apresentar compartilhar como opcional. A publicação não vira bloqueio técnico de conclusão. A ajuda escrita apresenta o Como fazer e abre o tutorial direto, sem exigir leitura. Outra capa e upload ficam na biblioteca. Sem venda. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Duração alvo; medir a versão final com falas e gestos: 60 a 80 segundos, incluindo publicação, confirmação e cópia do link.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir fase.",
+      "adulto": "Hora de mostrar o seu jogo. Publique no Mural, copie o link e mande para os seus amigos ou para quem você quiser. Depois clique em Fechar e em Concluir aula."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), a área de ajuda.",
+      "adulto": "Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/comunidade-publicar-no-mural), a área de ajuda."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Volte ao seu jardim",
+      "adulto": "Volte ao seu jardim"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Ver que o jogo já revela os personagens, mas ainda não conta os achados.",
+      "adulto": "Ver que o jogo já revela os personagens, mas ainda não conta os achados."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Um número que acompanha a busca",
+      "adulto": "Um número que acompanha a busca"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Observar quando o valor atual de Achados muda e quando continua igual durante uma busca.",
+      "adulto": "Observar quando o valor atual de Achados muda e quando continua igual durante uma busca."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Cada personagem vale um achado",
+      "adulto": "Cada personagem vale um achado"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Somar um no contador no mesmo evento do toque e testar até a mensagem de vitória.",
+      "adulto": "Somar um no contador no mesmo evento do toque e testar até a mensagem de vitória."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Revele o personagem tocado deixando o esconderijo escolhido invisível.",
+      "adulto": "Revele o personagem tocado deixando o esconderijo escolhido invisível."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Some 1 em achados dentro do evento de clicar ou tocar no esconderijo.",
+      "adulto": "Some 1 em achados dentro do evento de clicar ou tocar no esconderijo."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Deixe o jogo com a sua cara",
+      "adulto": "Deixe o jogo com a sua cara"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Escolher os bichos, esconderijos e a mensagem do final, testar e enviar o jogo completo.",
+      "adulto": "Escolher os bichos, esconderijos e a mensagem do final, testar e enviar o jogo completo."
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Publique seu jogo",
+      "adulto": "Publique seu jogo"
+    },
+    {
+      "onde": "cade-todo-mundo-aula-2.manifesto.json",
+      "kids": "Publicar o jogo com o resumo pronto e a capa gerada; fechar a confirmação e concluir a aula.",
+      "adulto": "Publicar o jogo com o resumo pronto e a capa gerada; fechar a confirmação e concluir a aula."
+    }
+  ]
+}

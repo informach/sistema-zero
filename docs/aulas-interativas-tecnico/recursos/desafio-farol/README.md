@@ -15,13 +15,15 @@ Na raiz do repositório:
 python docs/aulas-interativas-tecnico/recursos/desafio-farol/gerar-materiais.py
 ```
 
-Requisitos: Bun, Python com `playwright` e Chrome ou Edge instalado. A geração usa arquivos locais, sem baixar fontes ou imagens. Saída: [desafio-farol-caderno.pdf](../../../aulas-interativas/desafio-primeiro-jogo/mapa-da-aventura.pdf). HTML e relatório de limites ficam em `tmp/pdfs/desafio-farol/` para inspeção.
+Requisitos: Bun, Python com `playwright` e Chrome ou Edge instalado. A geração usa arquivos locais, sem baixar fontes ou imagens. Saída: [desafio-farol-caderno.pdf](../../../aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf). HTML e relatório de limites ficam em `tmp/pdfs/desafio-farol/` para inspeção.
 
 O PDF atual tem 29 páginas (revisão de 13/10/2026: duas páginas novas, o teste da parte 4 do Dia 1 e o desenho da resposta sem chave do Dia 3) e acompanha a personalização ampliada de 06/10/2026, com galerias e posição da chave. Os nomes das imagens não quebram no hífen. Após editar passos ou diagramas, conferir também a navegação por páginas e renderizar o PDF inteiro para revisão visual. A validação de limites complementa essa revisão, não substitui a leitura. Não reduzir fonte ou omitir instruções para caber na página.
 
 O mapa para responsáveis foi retirado por orientação de 03/10/2026. A revisão antes do certificado está implementada nos materiais locais. O caderno orienta responder na aula e corrigir com as explicações; não antecipa o gabarito.
 
 O mesmo verificador pode gerar o caderno do Cadê Todo Mundo com `python docs/aulas-interativas-tecnico/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo`: cores oficiais e verificação de limites.
+
+Com `--adulto` (também depois de `cade-todo-mundo`), o mesmo comando gera o Caderno do Aluno da versão adulta em `docs/aulas-interativas/adulto/<curso>/caderno-do-aluno.pdf`, com o texto de `qa/adulto/traducoes/<curso>/_caderno.json` e as mesmas verificações (pasta temporária com o sufixo `-adulto`). Quando o caderno kids muda, rode antes o `gerar-caderno.ts` do curso com `--coletar` e escreva a versão adulta dos textos novos ([Diretrizes da versão adulta](../../DIRETRIZES-ADULTO.md#caderno-do-aluno)).
 
 ## Artes e personalização · 06/10/2026
 

@@ -33,7 +33,7 @@ const manifests = ORDEM_NAVE.map((slug) => {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-${slug}.manifesto.json`,
+        `../../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-${slug}.manifesto.json`,
       ),
       'utf8',
     ),

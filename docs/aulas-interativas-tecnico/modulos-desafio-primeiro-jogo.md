@@ -86,7 +86,7 @@ Seções, blocos, critérios e identificadores não mudaram, e a fórmula de ver
 - no Dia 2, a comparação da variável passou de "anotar num caderno" para "anotar num bloquinho", também no meme e na partida nova, que "começa com o bloquinho em branco";
 - no Dia 3, como "parte" passou a ser o nome da seção, os ramos do bloco Se deixaram de ser "a parte então" e "a parte senão": a fala, a ponte do Zappy e o caderno dizem "o espaço do então" e "o espaço do senão" ("Complete o espaço do então"), como o Cadê fala do espaço vazio ao lado de fazer, e "na parte de baixo do bloco Se" virou "na linha de baixo do bloco Se";
 - os links do Como Fazer mantêm os mesmos endereços. Nesta rodada, três rótulos do Dia 1 e o da publicação ainda não eram títulos de tutoriais que existem; o full review de 06/10/2026 (abaixo) os trocou pelos títulos exatos de `docs/como-fazer/como-fazer.json`;
-- o PDF diz Mapa da Aventura na capa, no título e no rodapé, troca seção por parte e professor por guia e, nos cabeçalhos, "entrega" por "envio"; o arquivo continua `docs/aulas-interativas/desafio-primeiro-jogo/mapa-da-aventura.pdf`, com a paginação daquela revisão;
+- o PDF diz Mapa da Aventura na capa, no título e no rodapé, troca seção por parte e professor por guia e, nos cabeçalhos, "entrega" por "envio"; o arquivo continua `docs/aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf`, com a paginação daquela revisão;
 - à noite, a equipe no lugar do guia ("Enviar para o guia" soava estranho): falas, pontes e notas citam **Enviar meu projeto**, confirmado em **Enviar**; a ponte do Dia 3 diz "envie o seu projeto"; o link de ajuda virou **Como pedir ajuda à equipe**, o título novo do tutorial; o Mapa diz que **Enviar meu projeto** manda o projeto para a equipe; manifestos e PDF (27 páginas) gerados de novo;
 - sem imagem base, o certificado tem o título **Certificado de Criador**, e a frase passou de "concluiu o Desafio do Primeiro Jogo" para "completou o Desafio do Primeiro Jogo";
 - a descrição do curso dizia "O Estúdio aparece dentro das fases"; no full review de 06/10/2026 ela passou a dizer "Tudo acontece dentro das fases, inclusive o Estúdio." e deixou de citar o Pinta e o Estúdio completo, que são vendidos à parte.
@@ -151,10 +151,10 @@ Seções, blocos, critérios e identificadores não mudaram. No Admin: importar 
 
 | Aula | Seções | Resultado |
 | --- | --- | --- |
-| [O personagem ganha movimento](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.md) | 6 | Jogar a versão pronta e conhecer o caderno. Depois, experimentar e montar o movimento a cada quadro e o limite da tela. |
-| [A chave muda a aventura](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.md) | 4 | Experimentar a memória e montar a coleta em três partes: recolher, guardar e avisar. |
-| [A luz do farol](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.md) | 8 | Comparar a condição, montar as respostas, trocar as imagens (com o par do farol), escrever os avisos, experimentar a posição da chave e publicar o mesmo jogo. |
-| [Seu certificado](../aulas-interativas/desafio-primeiro-jogo/desafio-certificado.md) | 2 | Rever as regras no quiz, reconhecer a autoria e guardar a conquista. |
+| [O personagem ganha movimento](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.md) | 6 | Jogar a versão pronta e conhecer o caderno. Depois, experimentar e montar o movimento a cada quadro e o limite da tela. |
+| [A chave muda a aventura](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-2.md) | 4 | Experimentar a memória e montar a coleta em três partes: recolher, guardar e avisar. |
+| [A luz do farol](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.md) | 8 | Comparar a condição, montar as respostas, trocar as imagens (com o par do farol), escrever os avisos, experimentar a posição da chave e publicar o mesmo jogo. |
+| [Seu certificado](../aulas-interativas/kids/desafio-primeiro-jogo/desafio-certificado.md) | 2 | Rever as regras no quiz, reconhecer a autoria e guardar a conquista. |
 
 São quatro aulas, vinte seções e dezenove vídeos. Cada conceito novo tem uma experiência antes de virar bloco. No Dia 1, `quadro` e `limite` usam `lighthouse-walk`. No Dia 2, a memória é experimentada antes da coleta. No Dia 3, `lighthouse-key` compara as respostas da porta, e `lighthouse-position` apresenta x/y antes da escolha do lugar da chave. A versão pronta e o caderno abrem o Dia 1, como na Aula 1 do Cadê Todo Mundo?. As montagens intermediárias verificam sem enviar; cada dia tem um envio na última montagem obrigatória. No Dia 3, a personalização vem antes do único envio, e a publicação usa esse mesmo projeto. A seção comercial obrigatória continua retirada do certificado.
 
@@ -176,7 +176,7 @@ No Dia 1, as experiências `quadro` e `limite` antecedem `andar` e `borda`; só 
 
 A experiência de posição exige as metas `mover-horizontal` e `mover-vertical`. As escolhas visuais, textuais e do lugar da chave não viram critério de preferência. Conferir manualmente visibilidade, alcance e reinício, incluindo todos os pontos sugeridos.
 
-O inventário [blocos-desafio-primeiro-jogo.json](../aulas-interativas/desafio-primeiro-jogo/blocos.json) é gerado junto dos manifestos e descreve os blocos disponíveis para este Farol, incluindo os preparados. O inventário do jogo antigo de nave permanece no acervo legado.
+O inventário [blocos-desafio-primeiro-jogo.json](../aulas-interativas/kids/desafio-primeiro-jogo/blocos.json) é gerado junto dos manifestos e descreve os blocos disponíveis para este Farol, incluindo os preparados. O inventário do jogo antigo de nave permanece no acervo legado.
 
 O projeto preparado e a paleta usam somente **Programação e Jogo 2D**. As áreas Ao iniciar, Quando acontecer e Enquanto estiver rodando organizam esses blocos. A tela é criada pelo facilitador Jogo 2D; não liberar HTML, CSS ou Canvas nem embutir blocos dessas categorias no projeto inicial.
 
@@ -186,7 +186,7 @@ No Dia 3, a seção de publicação usa o mesmo Estúdio da montagem. **Comparti
 
 ## Materiais de consulta
 
-- **Mapa da Aventura (o caderno):** [desafio-farol-caderno.pdf](../aulas-interativas/desafio-primeiro-jogo/mapa-da-aventura.pdf). PDF único com passos de montagem, testes, entrega, publicação e ajuda. Anexar em `materiais-farol`, com `bookPreview: true`.
+- **Mapa da Aventura (o caderno):** [desafio-farol-caderno.pdf](../aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf). PDF único com passos de montagem, testes, entrega, publicação e ajuda. Anexar em `materiais-farol`, com `bookPreview: true`.
 - **Como Fazer:** links contextuais na parte Seu Mapa da Aventura do Dia 1 e na publicação. Abrem na mesma aba e permitem voltar à aula. Não exigir consulta, impressão ou download para concluir.
 
 O [gerador do caderno](recursos/desafio-farol/gerar-materiais.py) usa o conteúdo de `caderno-conteudo.json` e a composição de `gerar-caderno.ts`, com o mesmo CSS, fontes locais e blocos desenhados do Cadê Todo Mundo. O PDF tem 29 páginas, incluindo capa, montagens ilustradas, galerias por tipo, pares de faróis, posição da chave, testes, publicação e certificado. O caderno deve ser anexado antes da gravação que o apresenta.

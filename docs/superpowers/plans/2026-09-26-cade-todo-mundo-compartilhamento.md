@@ -22,10 +22,10 @@
 ### Task 1: Separar entrega e compartilhamento na Aula 2
 
 **Files:**
-- Modify: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md`
-- Modify: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.md`
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.md`
 - Modify: `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts`
-- Modify: `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json`
 - Modify: `docs/aulas-interativas-tecnico/modulos-cade-todo-mundo.md`
 - Modify: `docs/aulas-interativas-tecnico/ESPEC-MANIFESTO.md`
 - Modify: `docs/aulas-interativas-tecnico/qa/validar-manifestos.ts`

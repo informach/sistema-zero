@@ -298,7 +298,9 @@ describe('vocabulário da criança nos manifestos', () => {
  */
 const RECURSOS = join(import.meta.dir, '..', 'recursos')
 const CAMPOS_INTERNOS_DO_MAPA = new Set(['id', 'kind', 'tone', 'category', 'name'])
-const mapas = readdirSync(RECURSOS)
+const mapas = readdirSync(RECURSOS, { withFileTypes: true })
+  .filter((d) => d.isDirectory())
+  .map((d) => d.name)
   .filter((curso) => readdirSync(join(RECURSOS, curso)).includes('caderno-conteudo.json'))
   .map((curso) => ({
     curso,
