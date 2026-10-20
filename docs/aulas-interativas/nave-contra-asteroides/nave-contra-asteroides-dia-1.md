@@ -55,7 +55,7 @@ ID video-setas-e-rastro-avatar-02. Professora até “Olha só: a nave anda!”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
-- Mova nave com as setas, velocidade 7, antes de desenhá-la.
+- Mova nave com as setas, com velocidade positiva, antes de desenhá-la.
 
 ### Seção 3. Tire o rastro da nave
 
@@ -133,7 +133,7 @@ ID video-fundo-estrelado-avatar-02. Professora até “Solte qualquer peça que 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Limpe antes de desenhar o céu estrelado.
-- Desenhe as estrelas com velocidade 1 antes da nave.
+- Desenhe o fundo de estrelas em movimento a cada quadro.
 
 ### Seção 8. Confira o que você construiu
 
@@ -155,11 +155,11 @@ ID video-fundo-estrelado-avatar-02. Professora até “Solte qualquer peça que 
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
-- Deixe a tela de 800 × 480 em Ao iniciar.
-- Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.
+- Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.
+- Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.
 - Limpe antes de desenhar o fundo de estrelas.
-- Desenhe as estrelas com velocidade 1 a cada quadro.
-- Mova nave com as setas, velocidade 7, antes de prender à tela.
+- Desenhe o fundo de estrelas em movimento a cada quadro.
+- Mova nave com as setas, com velocidade positiva, antes de desenhá-la.
 - Mantenha nave dentro da tela, no motor.
 - Desenhe nave depois de manter dentro da tela.
 - Desenhe o sprite nave a cada quadro.

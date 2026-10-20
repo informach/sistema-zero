@@ -694,10 +694,16 @@
                       "fields": {
                         "SPRITE": "nave"
                       }
+                    },
+                    "R": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
                     }
-                  },
-                  "inputs": {
-                    "R": 5
                   }
                 }
               },
@@ -706,7 +712,7 @@
           },
           {
             "id": "efeito-tiro",
-            "label": "No evento Espaço, use Tocar efeito e escolha tiro grande.",
+            "label": "Toque um efeito no mesmo evento de disparar com Espaço.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -715,10 +721,7 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "shoot"
-                  }
+                  "blockType": "sz_g2d_play_fx"
                 }
               },
               "area": "events"
@@ -726,7 +729,7 @@
           },
           {
             "id": "disparo",
-            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
+            "label": "No evento Espaço, crie o tiro a partir da nave, para cima, e toque um efeito.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -740,9 +743,7 @@
                     "GROUP": "tiros"
                   },
                   "inputs": {
-                    "R": 5,
-                    "VX": 0,
-                    "VY": -9
+                    "VX": 0
                   },
                   "inputBlocks": {
                     "X": {
@@ -755,6 +756,24 @@
                       "blockType": "sz_g2d_sprite_y",
                       "fields": {
                         "SPRITE": "nave"
+                      }
+                    },
+                    "R": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    },
+                    "VY": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "max": 0,
+                          "maxExclusive": true
+                        }
                       }
                     }
                   },
@@ -847,21 +866,55 @@
         "projectChecks": [
           {
             "id": "nave",
-            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "label": "Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_ship",
               "fields": {
                 "NAME": "nave"
               },
-              "inputs": {
-                "X": 400,
-                "Y": 410,
-                "W": 54,
-                "H": 62
-              },
               "area": "start",
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "W": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "H": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 480,
+                      "maxExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -879,7 +932,7 @@
           },
           {
             "id": "efeito-tiro",
-            "label": "No evento Espaço, use Tocar efeito e escolha tiro grande.",
+            "label": "Toque um efeito no mesmo evento de disparar com Espaço.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -888,10 +941,7 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "shoot"
-                  }
+                  "blockType": "sz_g2d_play_fx"
                 }
               },
               "area": "events"
@@ -899,7 +949,7 @@
           },
           {
             "id": "disparo",
-            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
+            "label": "No evento Espaço, crie o tiro a partir da nave, para cima, e toque um efeito.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -913,9 +963,7 @@
                     "GROUP": "tiros"
                   },
                   "inputs": {
-                    "R": 5,
-                    "VX": 0,
-                    "VY": -9
+                    "VX": 0
                   },
                   "inputBlocks": {
                     "X": {
@@ -928,6 +976,24 @@
                       "blockType": "sz_g2d_sprite_y",
                       "fields": {
                         "SPRITE": "nave"
+                      }
+                    },
+                    "R": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    },
+                    "VY": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "max": 0,
+                          "maxExclusive": true
+                        }
                       }
                     }
                   },

@@ -1196,21 +1196,45 @@
           },
           {
             "id": "coracoes",
-            "label": "Desenhe corações da nave em x 12, y 48, tamanho 22.",
+            "label": "Mostre as vidas atuais da nave a cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_draw_sprite_health",
               "fields": {
-                "SPRITE": "nave",
-                "STYLE": "hearts"
-              },
-              "inputs": {
-                "X": 12,
-                "Y": 48,
-                "SIZE": 22
+                "SPRITE": "nave"
               },
               "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1,
+                      "max": 480
+                    }
+                  }
+                }
+              }
             }
           }
         ]
@@ -1294,7 +1318,7 @@
           },
           {
             "id": "dano-protegido",
-            "label": "Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.",
+            "label": "Nessa colisão, tire 1 vida da nave e dê um tempo positivo de proteção.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_sprite_group_overlap",
@@ -1310,10 +1334,20 @@
                     "SPRITE": "nave"
                   },
                   "inputs": {
-                    "AMOUNT": 1,
-                    "FRAMES": 45
+                    "AMOUNT": 1
                   },
-                  "beforeBlock": "sz_g2d_shake"
+                  "beforeBlock": "sz_g2d_shake",
+                  "inputBlocks": {
+                    "FRAMES": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    }
+                  }
                 }
               },
               "area": "loops",
@@ -1404,28 +1438,53 @@
           },
           {
             "id": "placar",
-            "label": "Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.",
+            "label": "Mostre o valor de pontos em um placar com texto e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_draw_score",
-              "fields": {
-                "LABEL": "Pontos:"
-              },
-              "inputs": {
-                "X": 12,
-                "Y": 30,
-                "SIZE": 24
-              },
               "inputBlocks": {
                 "VALUE": {
                   "blockType": "sz_val_variable",
                   "fields": {
                     "NAME": "pontos"
                   }
+                },
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1,
+                      "max": 480
+                    }
+                  }
                 }
               },
               "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fieldText": {
+                "LABEL": {
+                  "nonBlank": true
+                }
+              }
             }
           },
           {
@@ -1470,7 +1529,7 @@
           },
           {
             "id": "dano-protegido",
-            "label": "Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.",
+            "label": "Nessa colisão, tire 1 vida da nave e dê um tempo positivo de proteção.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_sprite_group_overlap",
@@ -1486,10 +1545,20 @@
                     "SPRITE": "nave"
                   },
                   "inputs": {
-                    "AMOUNT": 1,
-                    "FRAMES": 45
+                    "AMOUNT": 1
                   },
-                  "beforeBlock": "sz_g2d_shake"
+                  "beforeBlock": "sz_g2d_shake",
+                  "inputBlocks": {
+                    "FRAMES": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    }
+                  }
                 }
               },
               "area": "loops",
@@ -1522,26 +1591,50 @@
           },
           {
             "id": "coracoes",
-            "label": "Desenhe corações da nave em x 12, y 48, tamanho 22.",
+            "label": "Mostre as vidas atuais da nave a cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_draw_sprite_health",
               "fields": {
-                "SPRITE": "nave",
-                "STYLE": "hearts"
-              },
-              "inputs": {
-                "X": 12,
-                "Y": 48,
-                "SIZE": 22
+                "SPRITE": "nave"
               },
               "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1,
+                      "max": 480
+                    }
+                  }
+                }
+              }
             }
           },
           {
             "id": "efeito-explosao",
-            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "label": "Toque um efeito dentro da colisão entre tiros e asteroides.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_group_overlap",
@@ -1553,10 +1646,7 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "explosion"
-                  }
+                  "blockType": "sz_g2d_play_fx"
                 }
               },
               "area": "loops",

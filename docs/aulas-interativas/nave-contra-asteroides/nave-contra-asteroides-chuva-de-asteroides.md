@@ -55,7 +55,7 @@ ID video-grupo-e-relogio-avatar-02. Professora até “O número do intervalo ch
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Crie o grupo asteroides em Ao iniciar.
-- Use A cada 40 quadros como vizinho de A cada quadro do jogo.
+- Crie os asteroides em um relógio com intervalo positivo, fora de A cada quadro.
 - Os dois relógios são vizinhos em Enquanto estiver rodando.
 
 ### Seção 3. Sorteie onde a pedra nasce
@@ -90,7 +90,7 @@ ID video-asteroide-avatar-03. Professora até “Olha só: as pedras entram pela
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
-- No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.
+- No relógio, crie asteroides com x sorteado, acima da tela e descendo.
 - Mantenha um único comando de criar asteroide.
 - Mova asteroides antes de limpar o grupo.
 - Retire os asteroides que saem e depois desenhe esse grupo.
@@ -107,9 +107,9 @@ ID video-asteroide-avatar-03. Professora até “Olha só: as pedras entram pela
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie o grupo asteroides em Ao iniciar.
-- Use A cada 40 quadros como vizinho de A cada quadro do jogo.
+- Crie os asteroides em um relógio com intervalo positivo, fora de A cada quadro.
 - Os dois relógios são vizinhos em Enquanto estiver rodando.
-- No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.
+- No relógio, crie asteroides com x sorteado, acima da tela e descendo.
 - Mantenha um único comando de criar asteroide.
 - Mova asteroides antes de limpar o grupo.
 - Retire os asteroides que saem e depois desenhe esse grupo.

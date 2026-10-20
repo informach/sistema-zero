@@ -6,6 +6,8 @@ Fonte: `qa/nave-contra-asteroides.conteudo.json`. Gerado por `qa/gerar-nave-cont
 
 Entrada: Projeto vazio, com Programação e Jogo 2D disponíveis. Saída: Tela 800 × 480 e nave visível em x 400, y 410, ainda parada.
 
+**Verificação das partes (nota da equipe, não gravar):** mostrar a lista Objetivos desta parte e o resultado real de Verificar esta parte. Aguardar a resposta do servidor; corrigir os itens pendentes e verificar novamente. Se o projeto mudar depois da conferência, verificar de novo. Conservar os valores da montagem gravada; os critérios aceitam as alternativas previstas sem exigir cópia da aparência. Os testes narrados do jogo continuam necessários.
+
 **Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).
 
 Começar com o projeto vazio preparado para esta aula. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.

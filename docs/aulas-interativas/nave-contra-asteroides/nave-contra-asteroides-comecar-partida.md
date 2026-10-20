@@ -63,7 +63,7 @@ ID video-embrulhar-avatar-05. Professora até “Olha só: a abertura aparece!�
 - Vá para inicio em Ao iniciar.
 - Leve a sequência para o então de Se jogando, começando por Limpar.
 - O movimento da nave fica dentro de Se jogando.
-- Os corações também ficam dentro de Se jogando.
+- Mostre as vidas da nave dentro de Se jogando.
 - No senão se inicio, encaixe Mostrar tela com a dica de Enter.
 
 ### Seção 3. Espere a partida para criar pedras e tiros
@@ -84,7 +84,7 @@ ID video-relogio-e-tiro-avatar-03. Professora até “porque o Se responde não 
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
-- Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.
+- No relógio de intervalo positivo, crie asteroides somente se o estado é jogando.
 - Não deixe outro criador de asteroides fora da condição.
 - Dentro de Espaço, coloque criar tiro e som no então de Se jogando.
 - Não deixe outro criador de tiro fora da condição.
@@ -110,8 +110,8 @@ ID video-enter-avatar-03. Professora até “Agora teste: clique na área do jog
 - Vá para inicio em Ao iniciar.
 - Leve a sequência para o então de Se jogando, começando por Limpar.
 - O movimento da nave fica dentro de Se jogando.
-- Os corações também ficam dentro de Se jogando.
-- Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.
+- Mostre as vidas da nave dentro de Se jogando.
+- No relógio de intervalo positivo, crie asteroides somente se o estado é jogando.
 - Não deixe outro criador de asteroides fora da condição.
 - Dentro de Espaço, coloque criar tiro e som no então de Se jogando.
 - Não deixe outro criador de tiro fora da condição.

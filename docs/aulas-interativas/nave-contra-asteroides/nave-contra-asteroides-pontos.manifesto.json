@@ -906,28 +906,53 @@
           },
           {
             "id": "placar",
-            "label": "Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.",
+            "label": "Mostre o valor de pontos em um placar com texto e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_draw_score",
-              "fields": {
-                "LABEL": "Pontos:"
-              },
-              "inputs": {
-                "X": 12,
-                "Y": 30,
-                "SIZE": 24
-              },
               "inputBlocks": {
                 "VALUE": {
                   "blockType": "sz_val_variable",
                   "fields": {
                     "NAME": "pontos"
                   }
+                },
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1,
+                      "max": 480
+                    }
+                  }
                 }
               },
               "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fieldText": {
+                "LABEL": {
+                  "nonBlank": true
+                }
+              }
             }
           }
         ]

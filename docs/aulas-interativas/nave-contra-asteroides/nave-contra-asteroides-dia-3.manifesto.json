@@ -887,7 +887,7 @@
         "projectChecks": [
           {
             "id": "efeito-explosao",
-            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "label": "Toque um efeito dentro da colisão entre tiros e asteroides.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_group_overlap",
@@ -899,10 +899,7 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "explosion"
-                  }
+                  "blockType": "sz_g2d_play_fx"
                 }
               },
               "area": "loops",
@@ -1017,7 +1014,7 @@
         "projectChecks": [
           {
             "id": "efeito-tiro",
-            "label": "No evento Espaço, use Tocar efeito e escolha tiro grande.",
+            "label": "Toque um efeito no mesmo evento de disparar com Espaço.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -1026,10 +1023,7 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "shoot"
-                  }
+                  "blockType": "sz_g2d_play_fx"
                 }
               },
               "area": "events"
@@ -1037,7 +1031,7 @@
           },
           {
             "id": "disparo",
-            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
+            "label": "No evento Espaço, crie o tiro a partir da nave, para cima, e toque um efeito.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -1051,9 +1045,7 @@
                     "GROUP": "tiros"
                   },
                   "inputs": {
-                    "R": 5,
-                    "VX": 0,
-                    "VY": -9
+                    "VX": 0
                   },
                   "inputBlocks": {
                     "X": {
@@ -1066,6 +1058,24 @@
                       "blockType": "sz_g2d_sprite_y",
                       "fields": {
                         "SPRITE": "nave"
+                      }
+                    },
+                    "R": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    },
+                    "VY": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "max": 0,
+                          "maxExclusive": true
+                        }
                       }
                     }
                   },
@@ -1099,15 +1109,22 @@
           },
           {
             "id": "relogio",
-            "label": "Use A cada 40 quadros como vizinho de A cada quadro do jogo.",
+            "label": "Crie os asteroides em um relógio com intervalo positivo, fora de A cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_frames",
               "area": "loops",
-              "inputs": {
-                "N": 40
-              },
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "N": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -1122,7 +1139,7 @@
           },
           {
             "id": "asteroide",
-            "label": "No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.",
+            "label": "No relógio, crie asteroides com x sorteado, acima da tela e descendo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_asteroid",
@@ -1130,14 +1147,37 @@
                 "GROUP": "asteroides"
               },
               "inputs": {
-                "Y": -30,
-                "SIZE": 40,
-                "VX": 0,
-                "VY": 3
+                "VX": 0
               },
               "inputBlocks": {
                 "X": {
                   "blockType": "sz_g2d_random_x"
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "max": 0
+                    }
+                  }
+                },
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "VY": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
                 }
               },
               "area": "loops",
@@ -1197,7 +1237,7 @@
           },
           {
             "id": "efeito-explosao",
-            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "label": "Toque um efeito dentro da colisão entre tiros e asteroides.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_group_overlap",
@@ -1209,10 +1249,7 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "explosion"
-                  }
+                  "blockType": "sz_g2d_play_fx"
                 }
               },
               "area": "loops",

@@ -90,8 +90,8 @@ ID video-criar-tiro-avatar-04. Professora até “Por último, o som. Deixe à v
 - Crie o grupo tiros em Ao iniciar.
 - Em Quando acontecer, coloque Quando apertar a tecla: barra de espaço.
 - Dentro de Espaço, crie o tiro usando centro x e posição y da nave.
-- No evento Espaço, use Tocar efeito e escolha tiro grande.
-- No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.
+- Toque um efeito no mesmo evento de disparar com Espaço.
+- No evento Espaço, crie o tiro a partir da nave, para cima, e toque um efeito.
 - Mantenha apenas um comando de criar tiro.
 
 ### Seção 5. Mova e desenhe os tiros
@@ -143,10 +143,10 @@ ID video-faxina-avatar-02. Professora até “Confira se ficou assim: dentro de 
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
-- Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.
+- Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.
 - Crie o grupo tiros em Ao iniciar.
-- No evento Espaço, use Tocar efeito e escolha tiro grande.
-- No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.
+- Toque um efeito no mesmo evento de disparar com Espaço.
+- No evento Espaço, crie o tiro a partir da nave, para cima, e toque um efeito.
 - Mantenha apenas um comando de criar tiro.
 - Mova tiros antes de limpar o grupo.
 - Retire os tiros que saem e depois desenhe esse grupo.

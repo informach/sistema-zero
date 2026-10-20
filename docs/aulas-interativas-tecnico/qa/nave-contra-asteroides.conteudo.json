@@ -91,7 +91,10 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": ["once", "always"],
+              "goals": [
+                "once",
+                "always"
+              ],
               "goalCopy": {
                 "once": {
                   "label": "Em Ao iniciar, a nave se moveu uma vez e parou",
@@ -104,7 +107,10 @@
               },
               "preset": {
                 "id": "duas-caixas-nave",
-                "areas": ["start", "loop"],
+                "areas": [
+                  "start",
+                  "loop"
+                ],
                 "cards": [
                   {
                     "id": "move",
@@ -162,7 +168,7 @@
           },
           {
             "id": "tela",
-            "label": "Deixe a tela de 800 × 480 em Ao iniciar.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -238,7 +244,11 @@
                   "y": 40
                 }
               ],
-              "goals": ["right", "down", "origin"]
+              "goals": [
+                "right",
+                "down",
+                "origin"
+              ]
             }
           }
         },
@@ -302,26 +312,60 @@
         "checks": [
           {
             "id": "nave",
-            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "label": "Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_ship",
               "fields": {
                 "NAME": "nave"
               },
-              "inputs": {
-                "X": 400,
-                "Y": 410,
-                "W": 54,
-                "H": 62
-              },
               "area": "start",
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "W": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "H": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 480,
+                      "maxExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
             "id": "tela",
-            "label": "Deixe a tela de 800 × 480 em Ao iniciar.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -377,7 +421,11 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": ["frozen", "trail", "moving"]
+              "goals": [
+                "frozen",
+                "trail",
+                "moving"
+              ]
             }
           },
           "semPerguntaFinal": true
@@ -416,21 +464,55 @@
         "checks": [
           {
             "id": "nave",
-            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "label": "Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_ship",
               "fields": {
                 "NAME": "nave"
               },
-              "inputs": {
-                "X": 400,
-                "Y": 410,
-                "W": 54,
-                "H": 62
-              },
               "area": "start",
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "W": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "H": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 480,
+                      "maxExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -458,7 +540,7 @@
           },
           {
             "id": "tela",
-            "label": "Deixe a tela de 800 × 480 em Ao iniciar.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -549,7 +631,12 @@
             "scene": "lighthouse-walk",
             "cenario": "nave",
             "setup": {
-              "goals": ["still-without-arrow", "moves-each-frame", "step-speed-3", "step-speed-1"]
+              "goals": [
+                "still-without-arrow",
+                "moves-each-frame",
+                "step-speed-3",
+                "step-speed-1"
+              ]
             }
           }
         },
@@ -577,7 +664,7 @@
         "checks": [
           {
             "id": "setas",
-            "label": "Mova nave com as setas, velocidade 7, antes de desenhá-la.",
+            "label": "Mova nave com as setas, com velocidade positiva, antes de desenhá-la.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_arrows_x",
@@ -586,10 +673,18 @@
               "fields": {
                 "SPRITE": "nave"
               },
-              "inputs": {
-                "SPEED": 7
-              },
-              "beforeBlock": "sz_g2d_draw_sprite"
+              "beforeBlock": "sz_g2d_draw_sprite",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           }
         ],
@@ -674,7 +769,10 @@
             "scene": "lighthouse-walk",
             "cenario": "nave",
             "setup": {
-              "goals": ["left-the-screen", "stayed-inside"]
+              "goals": [
+                "left-the-screen",
+                "stayed-inside"
+              ]
             }
           }
         },
@@ -712,10 +810,18 @@
               "fields": {
                 "SPRITE": "nave"
               },
-              "inputs": {
-                "SPEED": 7
-              },
-              "beforeBlock": "sz_g2d_clamp_to_screen"
+              "beforeBlock": "sz_g2d_clamp_to_screen",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -788,7 +894,11 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": ["front", "covered", "back-in-front"]
+              "goals": [
+                "front",
+                "covered",
+                "back-in-front"
+              ]
             }
           }
         },
@@ -824,16 +934,24 @@
           },
           {
             "id": "estrelas",
-            "label": "Desenhe as estrelas com velocidade 1 antes da nave.",
+            "label": "Desenhe o fundo de estrelas em movimento a cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_starfield",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 1
-              },
-              "beforeBlock": "sz_g2d_arrows_x"
+              "beforeBlock": "sz_g2d_arrows_x",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           }
         ],
@@ -877,7 +995,9 @@
                 "label": "Aumentar a velocidade da nave."
               }
             ],
-            "correctChoiceIds": ["b"],
+            "correctChoiceIds": [
+              "b"
+            ],
             "explanation": "O fundo de estrelas cobre a tela inteira. Desenhando o fundo primeiro e a nave depois, a nave fica visível na frente."
           },
           {
@@ -897,7 +1017,9 @@
                 "label": "Para fazer as estrelas pararem."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "O movimento pode levar a nave além da borda. O limite corrige a posição antes de o desenho mostrar o resultado."
           }
         ],
@@ -916,7 +1038,7 @@
         "checks": [
           {
             "id": "tela",
-            "label": "Deixe a tela de 800 × 480 em Ao iniciar.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -929,21 +1051,55 @@
           },
           {
             "id": "nave",
-            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "label": "Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_ship",
               "fields": {
                 "NAME": "nave"
               },
-              "inputs": {
-                "X": 400,
-                "Y": 410,
-                "W": 54,
-                "H": 62
-              },
               "area": "start",
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "W": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "H": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 480,
+                      "maxExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -959,20 +1115,28 @@
           },
           {
             "id": "estrelas",
-            "label": "Desenhe as estrelas com velocidade 1 a cada quadro.",
+            "label": "Desenhe o fundo de estrelas em movimento a cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_starfield",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 1
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
               }
             }
           },
           {
             "id": "setas",
-            "label": "Mova nave com as setas, velocidade 7, antes de prender à tela.",
+            "label": "Mova nave com as setas, com velocidade positiva, antes de desenhá-la.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_arrows_x",
@@ -981,10 +1145,18 @@
               "fields": {
                 "SPRITE": "nave"
               },
-              "inputs": {
-                "SPEED": 7
-              },
-              "beforeBlock": "sz_g2d_clamp_to_screen"
+              "beforeBlock": "sz_g2d_clamp_to_screen",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -1124,8 +1296,16 @@
         "fixed-vs-read antes da origem do tiro",
         "Comparar número fixo e posição atual da nave."
       ],
-      ["Velocidade vertical", "velocity antes de vx e vy", "Observar o sinal e a mudança do y."],
-      ["Grupo e limpeza", "cleanup antes da retirada", "Distinguir sair da tela de sair do grupo."]
+      [
+        "Velocidade vertical",
+        "velocity antes de vx e vy",
+        "Observar o sinal e a mudança do y."
+      ],
+      [
+        "Grupo e limpeza",
+        "cleanup antes da retirada",
+        "Distinguir sair da tela de sair do grupo."
+      ]
     ],
     "sections": [
       {
@@ -1165,7 +1345,11 @@
             "setup": {
               "preset": {
                 "id": "tres-caixas-tiro",
-                "areas": ["start", "loop", "event"],
+                "areas": [
+                  "start",
+                  "loop",
+                  "event"
+                ],
                 "cards": [
                   {
                     "id": "paint",
@@ -1189,7 +1373,11 @@
                   }
                 ]
               },
-              "goals": ["on-event", "key-fires", "flood"]
+              "goals": [
+                "on-event",
+                "key-fires",
+                "flood"
+              ]
             }
           },
           "semPerguntaFinal": true
@@ -1231,7 +1419,11 @@
             "scene": "fixed-vs-read",
             "cenario": "nave",
             "setup": {
-              "goals": ["same-spot", "follows", "box-marks"]
+              "goals": [
+                "same-spot",
+                "follows",
+                "box-marks"
+              ]
             }
           },
           "semPerguntaFinal": true
@@ -1290,7 +1482,10 @@
                   "vy": 0
                 }
               ],
-              "goals": ["up", "down"]
+              "goals": [
+                "up",
+                "down"
+              ]
             }
           },
           "semPerguntaFinal": true
@@ -1377,10 +1572,16 @@
                       "fields": {
                         "SPRITE": "nave"
                       }
+                    },
+                    "R": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
                     }
-                  },
-                  "inputs": {
-                    "R": 5
                   }
                 }
               },
@@ -1389,7 +1590,7 @@
           },
           {
             "id": "efeito-tiro",
-            "label": "No evento Espaço, use Tocar efeito e escolha tiro grande.",
+            "label": "Toque um efeito no mesmo evento de disparar com Espaço.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -1398,10 +1599,7 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "shoot"
-                  }
+                  "blockType": "sz_g2d_play_fx"
                 }
               },
               "area": "events"
@@ -1409,7 +1607,7 @@
           },
           {
             "id": "disparo",
-            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
+            "label": "No evento Espaço, crie o tiro a partir da nave, para cima, e toque um efeito.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -1423,9 +1621,7 @@
                     "GROUP": "tiros"
                   },
                   "inputs": {
-                    "R": 5,
-                    "VX": 0,
-                    "VY": -9
+                    "VX": 0
                   },
                   "inputBlocks": {
                     "X": {
@@ -1438,6 +1634,24 @@
                       "blockType": "sz_g2d_sprite_y",
                       "fields": {
                         "SPRITE": "nave"
+                      }
+                    },
+                    "R": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    },
+                    "VY": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "max": 0,
+                          "maxExclusive": true
+                        }
                       }
                     }
                   },
@@ -1584,7 +1798,10 @@
                 "exit": "top",
                 "incoming": false
               },
-              "goals": ["invisible-stored", "rule-removes"]
+              "goals": [
+                "invisible-stored",
+                "rule-removes"
+              ]
             }
           },
           "semPerguntaFinal": true
@@ -1616,21 +1833,55 @@
         "checks": [
           {
             "id": "nave",
-            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "label": "Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_ship",
               "fields": {
                 "NAME": "nave"
               },
-              "inputs": {
-                "X": 400,
-                "Y": 410,
-                "W": 54,
-                "H": 62
-              },
               "area": "start",
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "W": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "H": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 480,
+                      "maxExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -1648,7 +1899,7 @@
           },
           {
             "id": "efeito-tiro",
-            "label": "No evento Espaço, use Tocar efeito e escolha tiro grande.",
+            "label": "Toque um efeito no mesmo evento de disparar com Espaço.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -1657,10 +1908,7 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "shoot"
-                  }
+                  "blockType": "sz_g2d_play_fx"
                 }
               },
               "area": "events"
@@ -1668,7 +1916,7 @@
           },
           {
             "id": "disparo",
-            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
+            "label": "No evento Espaço, crie o tiro a partir da nave, para cima, e toque um efeito.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -1682,9 +1930,7 @@
                     "GROUP": "tiros"
                   },
                   "inputs": {
-                    "R": 5,
-                    "VX": 0,
-                    "VY": -9
+                    "VX": 0
                   },
                   "inputBlocks": {
                     "X": {
@@ -1697,6 +1943,24 @@
                       "blockType": "sz_g2d_sprite_y",
                       "fields": {
                         "SPRITE": "nave"
+                      }
+                    },
+                    "R": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    },
+                    "VY": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "max": 0,
+                          "maxExclusive": true
+                        }
                       }
                     }
                   },
@@ -1887,7 +2151,11 @@
               "preset": {
                 "id": "pedra-quadros",
                 "unit": "frames",
-                "intervals": [20, 40, 80],
+                "intervals": [
+                  20,
+                  40,
+                  80
+                ],
                 "falling": true
               }
             }
@@ -1934,15 +2202,22 @@
           },
           {
             "id": "relogio",
-            "label": "Use A cada 40 quadros como vizinho de A cada quadro do jogo.",
+            "label": "Crie os asteroides em um relógio com intervalo positivo, fora de A cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_frames",
               "area": "loops",
-              "inputs": {
-                "N": 40
-              },
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "N": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -2042,7 +2317,7 @@
         "checks": [
           {
             "id": "asteroide",
-            "label": "No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.",
+            "label": "No relógio, crie asteroides com x sorteado, acima da tela e descendo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_asteroid",
@@ -2050,14 +2325,37 @@
                 "GROUP": "asteroides"
               },
               "inputs": {
-                "Y": -30,
-                "SIZE": 40,
-                "VX": 0,
-                "VY": 3
+                "VX": 0
               },
               "inputBlocks": {
                 "X": {
                   "blockType": "sz_g2d_random_x"
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "max": 0
+                    }
+                  }
+                },
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "VY": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
                 }
               },
               "area": "loops",
@@ -2165,15 +2463,22 @@
           },
           {
             "id": "relogio",
-            "label": "Use A cada 40 quadros como vizinho de A cada quadro do jogo.",
+            "label": "Crie os asteroides em um relógio com intervalo positivo, fora de A cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_frames",
               "area": "loops",
-              "inputs": {
-                "N": 40
-              },
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "N": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -2188,7 +2493,7 @@
           },
           {
             "id": "asteroide",
-            "label": "No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.",
+            "label": "No relógio, crie asteroides com x sorteado, acima da tela e descendo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_asteroid",
@@ -2196,14 +2501,37 @@
                 "GROUP": "asteroides"
               },
               "inputs": {
-                "Y": -30,
-                "SIZE": 40,
-                "VX": 0,
-                "VY": 3
+                "VX": 0
               },
               "inputBlocks": {
                 "X": {
                   "blockType": "sz_g2d_random_x"
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "max": 0
+                    }
+                  }
+                },
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "VY": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
                 }
               },
               "area": "loops",
@@ -2326,7 +2654,11 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": ["whole-group", "just-the-pair", "others-stay"]
+              "goals": [
+                "whole-group",
+                "just-the-pair",
+                "others-stay"
+              ]
             }
           },
           "semPerguntaFinal": true
@@ -2360,7 +2692,7 @@
         "checks": [
           {
             "id": "efeito-explosao",
-            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "label": "Toque um efeito dentro da colisão entre tiros e asteroides.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_group_overlap",
@@ -2372,10 +2704,7 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "explosion"
-                  }
+                  "blockType": "sz_g2d_play_fx"
                 }
               },
               "area": "loops",
@@ -2506,7 +2835,9 @@
                 "label": "O tiro e o asteroide envolvidos naquele acerto."
               }
             ],
-            "correctChoiceIds": ["c"],
+            "correctChoiceIds": [
+              "c"
+            ],
             "explanation": "Os apelidos tiro e asteroide apontam para os dois objetos da colisão. Os demais objetos dos grupos continuam no jogo."
           },
           {
@@ -2526,7 +2857,9 @@
                 "label": "Se o som está mais alto."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "O número 400 não acompanha o movimento. O bloco o centro x do sprite nave lê a posição atual a cada disparo."
           }
         ],
@@ -2545,7 +2878,7 @@
         "checks": [
           {
             "id": "efeito-tiro",
-            "label": "No evento Espaço, use Tocar efeito e escolha tiro grande.",
+            "label": "Toque um efeito no mesmo evento de disparar com Espaço.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -2554,10 +2887,7 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "shoot"
-                  }
+                  "blockType": "sz_g2d_play_fx"
                 }
               },
               "area": "events"
@@ -2565,7 +2895,7 @@
           },
           {
             "id": "disparo",
-            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
+            "label": "No evento Espaço, crie o tiro a partir da nave, para cima, e toque um efeito.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -2579,9 +2909,7 @@
                     "GROUP": "tiros"
                   },
                   "inputs": {
-                    "R": 5,
-                    "VX": 0,
-                    "VY": -9
+                    "VX": 0
                   },
                   "inputBlocks": {
                     "X": {
@@ -2594,6 +2922,24 @@
                       "blockType": "sz_g2d_sprite_y",
                       "fields": {
                         "SPRITE": "nave"
+                      }
+                    },
+                    "R": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    },
+                    "VY": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "max": 0,
+                          "maxExclusive": true
+                        }
                       }
                     }
                   },
@@ -2627,15 +2973,22 @@
           },
           {
             "id": "relogio",
-            "label": "Use A cada 40 quadros como vizinho de A cada quadro do jogo.",
+            "label": "Crie os asteroides em um relógio com intervalo positivo, fora de A cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_frames",
               "area": "loops",
-              "inputs": {
-                "N": 40
-              },
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "N": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -2650,7 +3003,7 @@
           },
           {
             "id": "asteroide",
-            "label": "No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.",
+            "label": "No relógio, crie asteroides com x sorteado, acima da tela e descendo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_asteroid",
@@ -2658,14 +3011,37 @@
                 "GROUP": "asteroides"
               },
               "inputs": {
-                "Y": -30,
-                "SIZE": 40,
-                "VX": 0,
-                "VY": 3
+                "VX": 0
               },
               "inputBlocks": {
                 "X": {
                   "blockType": "sz_g2d_random_x"
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "max": 0
+                    }
+                  }
+                },
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "VY": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
                 }
               },
               "area": "loops",
@@ -2725,7 +3101,7 @@
           },
           {
             "id": "efeito-explosao",
-            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "label": "Toque um efeito dentro da colisão entre tiros e asteroides.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_group_overlap",
@@ -2737,10 +3113,7 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "explosion"
-                  }
+                  "blockType": "sz_g2d_play_fx"
                 }
               },
               "area": "loops",
@@ -2950,7 +3323,11 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": ["stored", "changed-hidden", "shown"]
+              "goals": [
+                "stored",
+                "changed-hidden",
+                "shown"
+              ]
             }
           },
           "semPerguntaFinal": true
@@ -3037,28 +3414,53 @@
           },
           {
             "id": "placar",
-            "label": "Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.",
+            "label": "Mostre o valor de pontos em um placar com texto e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_draw_score",
-              "fields": {
-                "LABEL": "Pontos:"
-              },
-              "inputs": {
-                "X": 12,
-                "Y": 30,
-                "SIZE": 24
-              },
               "inputBlocks": {
                 "VALUE": {
                   "blockType": "sz_val_variable",
                   "fields": {
                     "NAME": "pontos"
                   }
+                },
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1,
+                      "max": 480
+                    }
+                  }
                 }
               },
               "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fieldText": {
+                "LABEL": {
+                  "nonBlank": true
+                }
+              }
             }
           }
         ],
@@ -3156,7 +3558,10 @@
             "setup": {
               "preset": {
                 "id": "uma-ficha-vidas",
-                "areas": ["start", "loop"],
+                "areas": [
+                  "start",
+                  "loop"
+                ],
                 "cards": [
                   {
                     "id": "lives",
@@ -3176,7 +3581,10 @@
                   "pedido": "Depois de testar Ao iniciar, ponha Dar três vidas à nave em Enquanto estiver rodando e comece o jogo."
                 }
               },
-              "goals": ["once", "lives-loop"]
+              "goals": [
+                "once",
+                "lives-loop"
+              ]
             }
           },
           "semPerguntaFinal": true
@@ -3222,21 +3630,45 @@
           },
           {
             "id": "coracoes",
-            "label": "Desenhe corações da nave em x 12, y 48, tamanho 22.",
+            "label": "Mostre as vidas atuais da nave a cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_draw_sprite_health",
               "fields": {
-                "SPRITE": "nave",
-                "STYLE": "hearts"
-              },
-              "inputs": {
-                "X": 12,
-                "Y": 48,
-                "SIZE": 22
+                "SPRITE": "nave"
               },
               "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1,
+                      "max": 480
+                    }
+                  }
+                }
+              }
             }
           }
         ],
@@ -3289,7 +3721,11 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": ["no-shield", "window", "expires"]
+              "goals": [
+                "no-shield",
+                "window",
+                "expires"
+              ]
             }
           },
           "semPerguntaFinal": true
@@ -3372,7 +3808,7 @@
           },
           {
             "id": "dano-protegido",
-            "label": "Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.",
+            "label": "Nessa colisão, tire 1 vida da nave e dê um tempo positivo de proteção.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_sprite_group_overlap",
@@ -3388,10 +3824,20 @@
                     "SPRITE": "nave"
                   },
                   "inputs": {
-                    "AMOUNT": 1,
-                    "FRAMES": 45
+                    "AMOUNT": 1
                   },
-                  "beforeBlock": "sz_g2d_shake"
+                  "beforeBlock": "sz_g2d_shake",
+                  "inputBlocks": {
+                    "FRAMES": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    }
+                  }
                 }
               },
               "area": "loops",
@@ -3445,7 +3891,9 @@
                 "label": "Solto no começo de A cada quadro do jogo."
               }
             ],
-            "correctChoiceIds": ["b"],
+            "correctChoiceIds": [
+              "b"
+            ],
             "explanation": "A soma fica dentro da colisão para acompanhar os acertos. Solta em cada quadro, ela aumentaria sem depender de um tiro acertar."
           },
           {
@@ -3465,7 +3913,9 @@
                 "label": "Não diminui outra vida enquanto a proteção está ativa."
               }
             ],
-            "correctChoiceIds": ["c"],
+            "correctChoiceIds": [
+              "c"
+            ],
             "explanation": "A proteção impede um novo dano durante os 45 quadros. Depois que esse tempo termina, uma nova batida pode tirar outra vida."
           }
         ],
@@ -3536,28 +3986,53 @@
           },
           {
             "id": "placar",
-            "label": "Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.",
+            "label": "Mostre o valor de pontos em um placar com texto e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_draw_score",
-              "fields": {
-                "LABEL": "Pontos:"
-              },
-              "inputs": {
-                "X": 12,
-                "Y": 30,
-                "SIZE": 24
-              },
               "inputBlocks": {
                 "VALUE": {
                   "blockType": "sz_val_variable",
                   "fields": {
                     "NAME": "pontos"
                   }
+                },
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1,
+                      "max": 480
+                    }
+                  }
                 }
               },
               "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fieldText": {
+                "LABEL": {
+                  "nonBlank": true
+                }
+              }
             }
           },
           {
@@ -3602,7 +4077,7 @@
           },
           {
             "id": "dano-protegido",
-            "label": "Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.",
+            "label": "Nessa colisão, tire 1 vida da nave e dê um tempo positivo de proteção.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_sprite_group_overlap",
@@ -3618,10 +4093,20 @@
                     "SPRITE": "nave"
                   },
                   "inputs": {
-                    "AMOUNT": 1,
-                    "FRAMES": 45
+                    "AMOUNT": 1
                   },
-                  "beforeBlock": "sz_g2d_shake"
+                  "beforeBlock": "sz_g2d_shake",
+                  "inputBlocks": {
+                    "FRAMES": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    }
+                  }
                 }
               },
               "area": "loops",
@@ -3654,26 +4139,50 @@
           },
           {
             "id": "coracoes",
-            "label": "Desenhe corações da nave em x 12, y 48, tamanho 22.",
+            "label": "Mostre as vidas atuais da nave a cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_draw_sprite_health",
               "fields": {
-                "SPRITE": "nave",
-                "STYLE": "hearts"
-              },
-              "inputs": {
-                "X": 12,
-                "Y": 48,
-                "SIZE": 22
+                "SPRITE": "nave"
               },
               "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1,
+                      "max": 480
+                    }
+                  }
+                }
+              }
             }
           },
           {
             "id": "efeito-explosao",
-            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "label": "Toque um efeito dentro da colisão entre tiros e asteroides.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_group_overlap",
@@ -3685,10 +4194,7 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "explosion"
-                  }
+                  "blockType": "sz_g2d_play_fx"
                 }
               },
               "area": "loops",
@@ -3909,7 +4415,11 @@
                 "waitingSeconds": 4,
                 "moment": "screen"
               },
-              "goals": ["outside", "waiting", "playing"],
+              "goals": [
+                "outside",
+                "waiting",
+                "playing"
+              ],
               "goalCopy": {
                 "outside": {
                   "label": "Sem a pergunta, as pedras nasceram antes de começar"
@@ -4017,7 +4527,7 @@
           },
           {
             "id": "guardar-vidas",
-            "label": "Os corações também ficam dentro de Se jogando.",
+            "label": "Mostre as vidas da nave dentro de Se jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -4031,13 +4541,37 @@
                 "THEN": {
                   "blockType": "sz_g2d_draw_sprite_health",
                   "fields": {
-                    "SPRITE": "nave",
-                    "STYLE": "hearts"
+                    "SPRITE": "nave"
                   },
-                  "inputs": {
-                    "X": 12,
-                    "Y": 48,
-                    "SIZE": 22
+                  "inputBlocks": {
+                    "SIZE": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    },
+                    "X": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "max": 800,
+                          "maxExclusive": true
+                        }
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 1,
+                          "max": 480
+                        }
+                      }
+                    }
                   }
                 }
               },
@@ -4068,8 +4602,15 @@
                 },
                 "ELSEIF_THEN0": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte Enter para começar"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -4131,13 +4672,10 @@
         "checks": [
           {
             "id": "guardar-relogio",
-            "label": "Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.",
+            "label": "No relógio de intervalo positivo, crie asteroides somente se o estado é jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_frames",
-              "inputs": {
-                "N": 40
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -4154,16 +4692,47 @@
                         "GROUP": "asteroides"
                       },
                       "inputs": {
-                        "Y": -30,
-                        "SIZE": 40,
-                        "VX": 0,
-                        "VY": 3
+                        "VX": 0
                       },
                       "inputBlocks": {
                         "X": {
                           "blockType": "sz_g2d_random_x"
+                        },
+                        "Y": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "max": 0
+                            }
+                          }
+                        },
+                        "SIZE": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        },
+                        "VY": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
                         }
                       }
+                    }
+                  }
+                },
+                "N": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1
                     }
                   }
                 }
@@ -4205,9 +4774,7 @@
                         "GROUP": "tiros"
                       },
                       "inputs": {
-                        "R": 5,
-                        "VX": 0,
-                        "VY": -9
+                        "VX": 0
                       },
                       "inputBlocks": {
                         "X": {
@@ -4220,6 +4787,24 @@
                           "blockType": "sz_g2d_sprite_y",
                           "fields": {
                             "SPRITE": "nave"
+                          }
+                        },
+                        "R": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        },
+                        "VY": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "max": 0,
+                              "maxExclusive": true
+                            }
                           }
                         }
                       },
@@ -4343,7 +4928,7 @@
           },
           {
             "id": "guardar-vidas",
-            "label": "Os corações também ficam dentro de Se jogando.",
+            "label": "Mostre as vidas da nave dentro de Se jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -4357,13 +4942,37 @@
                 "THEN": {
                   "blockType": "sz_g2d_draw_sprite_health",
                   "fields": {
-                    "SPRITE": "nave",
-                    "STYLE": "hearts"
+                    "SPRITE": "nave"
                   },
-                  "inputs": {
-                    "X": 12,
-                    "Y": 48,
-                    "SIZE": 22
+                  "inputBlocks": {
+                    "SIZE": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    },
+                    "X": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "max": 800,
+                          "maxExclusive": true
+                        }
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 1,
+                          "max": 480
+                        }
+                      }
+                    }
                   }
                 }
               },
@@ -4373,13 +4982,10 @@
           },
           {
             "id": "guardar-relogio",
-            "label": "Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.",
+            "label": "No relógio de intervalo positivo, crie asteroides somente se o estado é jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_frames",
-              "inputs": {
-                "N": 40
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -4396,16 +5002,47 @@
                         "GROUP": "asteroides"
                       },
                       "inputs": {
-                        "Y": -30,
-                        "SIZE": 40,
-                        "VX": 0,
-                        "VY": 3
+                        "VX": 0
                       },
                       "inputBlocks": {
                         "X": {
                           "blockType": "sz_g2d_random_x"
+                        },
+                        "Y": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "max": 0
+                            }
+                          }
+                        },
+                        "SIZE": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        },
+                        "VY": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
                         }
                       }
+                    }
+                  }
+                },
+                "N": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1
                     }
                   }
                 }
@@ -4447,9 +5084,7 @@
                         "GROUP": "tiros"
                       },
                       "inputs": {
-                        "R": 5,
-                        "VX": 0,
-                        "VY": -9
+                        "VX": 0
                       },
                       "inputBlocks": {
                         "X": {
@@ -4462,6 +5097,24 @@
                           "blockType": "sz_g2d_sprite_y",
                           "fields": {
                             "SPRITE": "nave"
+                          }
+                        },
+                        "R": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        },
+                        "VY": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "max": 0,
+                              "maxExclusive": true
+                            }
                           }
                         }
                       },
@@ -4505,8 +5158,15 @@
                 },
                 "ELSEIF_THEN0": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte Enter para começar"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -4757,7 +5417,7 @@
           },
           {
             "id": "alvo",
-            "label": "Crie a constante alvo = 26 em Ao iniciar.",
+            "label": "Crie uma meta positiva na constante alvo, em Ao iniciar.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_const_create",
@@ -4765,8 +5425,16 @@
               "fields": {
                 "NAME": "alvo"
               },
-              "inputs": {
-                "VALUE": 26
+              "inputBlocks": {
+                "VALUE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
               }
             }
           }
@@ -4847,8 +5515,15 @@
                 },
                 "ELSEIF_THEN0": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte Enter para começar"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -4877,8 +5552,15 @@
                 },
                 "ELSEIF_THEN1": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte Enter para voltar ao início"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -4907,8 +5589,15 @@
                 },
                 "ELSEIF_THEN2": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte Enter para voltar ao início"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -4976,7 +5665,10 @@
             },
             "cenario": "nave",
             "setup": {
-              "goals": ["screen-only", "back-to-menu"],
+              "goals": [
+                "screen-only",
+                "back-to-menu"
+              ],
               "goalCopy": {
                 "screen-only": {
                   "label": "Mudando só o momento, as pedras da partida anterior continuaram caindo",
@@ -5111,7 +5803,9 @@
                 "label": "A tela de vitória."
               }
             ],
-            "correctChoiceIds": ["b"],
+            "correctChoiceIds": [
+              "b"
+            ],
             "explanation": "Reiniciar executa Ao iniciar novamente, que define inicio. O próximo Enter muda de inicio para jogando."
           },
           {
@@ -5131,7 +5825,9 @@
                 "label": "Para dar pontos sem acertar."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "A condição controla se o criador pode agir. A contagem do intervalo e a permissão para criar pedras são coisas diferentes."
           },
           {
@@ -5151,7 +5847,9 @@
                 "label": "Pontos ficar maior ou igual ao alvo de 26."
               }
             ],
-            "correctChoiceIds": ["c"],
+            "correctChoiceIds": [
+              "c"
+            ],
             "explanation": "A comparação usa o valor atual de pontos e a constante alvo. Quando pontos chega a 26, a condição pode mudar o estado para vitoria."
           }
         ],
@@ -5172,7 +5870,7 @@
         "checks": [
           {
             "id": "alvo",
-            "label": "Crie a constante alvo = 26 em Ao iniciar.",
+            "label": "Crie uma meta positiva na constante alvo, em Ao iniciar.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_const_create",
@@ -5180,8 +5878,16 @@
               "fields": {
                 "NAME": "alvo"
               },
-              "inputs": {
-                "VALUE": 26
+              "inputBlocks": {
+                "VALUE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
               }
             }
           },
@@ -5245,7 +5951,7 @@
           },
           {
             "id": "guardar-vidas",
-            "label": "Os corações também ficam dentro de Se jogando.",
+            "label": "Mostre as vidas da nave dentro de Se jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -5259,13 +5965,37 @@
                 "THEN": {
                   "blockType": "sz_g2d_draw_sprite_health",
                   "fields": {
-                    "SPRITE": "nave",
-                    "STYLE": "hearts"
+                    "SPRITE": "nave"
                   },
-                  "inputs": {
-                    "X": 12,
-                    "Y": 48,
-                    "SIZE": 22
+                  "inputBlocks": {
+                    "SIZE": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    },
+                    "X": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "max": 800,
+                          "maxExclusive": true
+                        }
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 1,
+                          "max": 480
+                        }
+                      }
+                    }
                   }
                 }
               },
@@ -5275,13 +6005,10 @@
           },
           {
             "id": "guardar-relogio",
-            "label": "Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.",
+            "label": "No relógio de intervalo positivo, crie asteroides somente se o estado é jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_frames",
-              "inputs": {
-                "N": 40
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -5298,16 +6025,47 @@
                         "GROUP": "asteroides"
                       },
                       "inputs": {
-                        "Y": -30,
-                        "SIZE": 40,
-                        "VX": 0,
-                        "VY": 3
+                        "VX": 0
                       },
                       "inputBlocks": {
                         "X": {
                           "blockType": "sz_g2d_random_x"
+                        },
+                        "Y": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "max": 0
+                            }
+                          }
+                        },
+                        "SIZE": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        },
+                        "VY": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
                         }
                       }
+                    }
+                  }
+                },
+                "N": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1
                     }
                   }
                 }
@@ -5349,9 +6107,7 @@
                         "GROUP": "tiros"
                       },
                       "inputs": {
-                        "R": 5,
-                        "VX": 0,
-                        "VY": -9
+                        "VX": 0
                       },
                       "inputBlocks": {
                         "X": {
@@ -5364,6 +6120,24 @@
                           "blockType": "sz_g2d_sprite_y",
                           "fields": {
                             "SPRITE": "nave"
+                          }
+                        },
+                        "R": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        },
+                        "VY": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "max": 0,
+                              "maxExclusive": true
+                            }
                           }
                         }
                       },
@@ -5541,8 +6315,15 @@
                 },
                 "ELSEIF_THEN0": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte Enter para começar"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -5571,8 +6352,15 @@
                 },
                 "ELSEIF_THEN1": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte Enter para voltar ao início"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -5601,8 +6389,15 @@
                 },
                 "ELSEIF_THEN2": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte Enter para voltar ao início"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -5672,20 +6467,45 @@
                 },
                 "THEN": {
                   "blockType": "sz_g2d_draw_score",
-                  "fields": {
-                    "LABEL": "Pontos:"
-                  },
-                  "inputs": {
-                    "X": 12,
-                    "Y": 30,
-                    "SIZE": 24
-                  },
                   "inputBlocks": {
                     "VALUE": {
                       "blockType": "sz_val_variable",
                       "fields": {
                         "NAME": "pontos"
                       }
+                    },
+                    "SIZE": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    },
+                    "X": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "max": 800,
+                          "maxExclusive": true
+                        }
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 1,
+                          "max": 480
+                        }
+                      }
+                    }
+                  },
+                  "fieldText": {
+                    "LABEL": {
+                      "nonBlank": true
                     }
                   }
                 }
@@ -5757,10 +6577,20 @@
                         "SPRITE": "nave"
                       },
                       "inputs": {
-                        "AMOUNT": 1,
-                        "FRAMES": 45
+                        "AMOUNT": 1
                       },
-                      "beforeBlock": "sz_g2d_shake"
+                      "beforeBlock": "sz_g2d_shake",
+                      "inputBlocks": {
+                        "FRAMES": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }

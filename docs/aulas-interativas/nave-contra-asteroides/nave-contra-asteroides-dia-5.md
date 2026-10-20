@@ -50,7 +50,7 @@ ID video-finais-avatar-05. Professora até “e o Se as vidas do sprite nave aca
 - No final da partida, se pontos ≥ alvo, vá para vitoria.
 - Na partida, coloque a pergunta de vitória antes da pergunta de derrota.
 - Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.
-- Crie a constante alvo = 26 em Ao iniciar.
+- Crie uma meta positiva na constante alvo, em Ao iniciar.
 
 ### Seção 2. Mostre a vitória e a derrota
 
@@ -134,12 +134,12 @@ ID video-ciclo-completo-avatar-02. Professora até “Seu jogo está no Mural! Q
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
-- Crie a constante alvo = 26 em Ao iniciar.
+- Crie uma meta positiva na constante alvo, em Ao iniciar.
 - Vá para inicio em Ao iniciar.
 - Leve a sequência para o então de Se jogando, começando por Limpar.
 - O movimento da nave fica dentro de Se jogando.
-- Os corações também ficam dentro de Se jogando.
-- Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.
+- Mostre as vidas da nave dentro de Se jogando.
+- No relógio de intervalo positivo, crie asteroides somente se o estado é jogando.
 - Não deixe outro criador de asteroides fora da condição.
 - Dentro de Espaço, coloque criar tiro e som no então de Se jogando.
 - Não deixe outro criador de tiro fora da condição.

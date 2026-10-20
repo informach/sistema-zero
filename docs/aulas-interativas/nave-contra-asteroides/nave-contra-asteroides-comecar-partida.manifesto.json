@@ -1297,7 +1297,7 @@
           },
           {
             "id": "guardar-vidas",
-            "label": "Os corações também ficam dentro de Se jogando.",
+            "label": "Mostre as vidas da nave dentro de Se jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -1311,13 +1311,37 @@
                 "THEN": {
                   "blockType": "sz_g2d_draw_sprite_health",
                   "fields": {
-                    "SPRITE": "nave",
-                    "STYLE": "hearts"
+                    "SPRITE": "nave"
                   },
-                  "inputs": {
-                    "X": 12,
-                    "Y": 48,
-                    "SIZE": 22
+                  "inputBlocks": {
+                    "SIZE": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    },
+                    "X": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "max": 800,
+                          "maxExclusive": true
+                        }
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 1,
+                          "max": 480
+                        }
+                      }
+                    }
                   }
                 }
               },
@@ -1348,8 +1372,15 @@
                 },
                 "ELSEIF_THEN0": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte Enter para começar"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -1373,13 +1404,10 @@
         "projectChecks": [
           {
             "id": "guardar-relogio",
-            "label": "Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.",
+            "label": "No relógio de intervalo positivo, crie asteroides somente se o estado é jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_frames",
-              "inputs": {
-                "N": 40
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -1396,16 +1424,47 @@
                         "GROUP": "asteroides"
                       },
                       "inputs": {
-                        "Y": -30,
-                        "SIZE": 40,
-                        "VX": 0,
-                        "VY": 3
+                        "VX": 0
                       },
                       "inputBlocks": {
                         "X": {
                           "blockType": "sz_g2d_random_x"
+                        },
+                        "Y": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "max": 0
+                            }
+                          }
+                        },
+                        "SIZE": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        },
+                        "VY": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
                         }
                       }
+                    }
+                  }
+                },
+                "N": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1
                     }
                   }
                 }
@@ -1447,9 +1506,7 @@
                         "GROUP": "tiros"
                       },
                       "inputs": {
-                        "R": 5,
-                        "VX": 0,
-                        "VY": -9
+                        "VX": 0
                       },
                       "inputBlocks": {
                         "X": {
@@ -1462,6 +1519,24 @@
                           "blockType": "sz_g2d_sprite_y",
                           "fields": {
                             "SPRITE": "nave"
+                          }
+                        },
+                        "R": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        },
+                        "VY": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "max": 0,
+                              "maxExclusive": true
+                            }
                           }
                         }
                       },
@@ -1558,7 +1633,7 @@
           },
           {
             "id": "guardar-vidas",
-            "label": "Os corações também ficam dentro de Se jogando.",
+            "label": "Mostre as vidas da nave dentro de Se jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -1572,13 +1647,37 @@
                 "THEN": {
                   "blockType": "sz_g2d_draw_sprite_health",
                   "fields": {
-                    "SPRITE": "nave",
-                    "STYLE": "hearts"
+                    "SPRITE": "nave"
                   },
-                  "inputs": {
-                    "X": 12,
-                    "Y": 48,
-                    "SIZE": 22
+                  "inputBlocks": {
+                    "SIZE": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "minExclusive": true
+                        }
+                      }
+                    },
+                    "X": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 0,
+                          "max": 800,
+                          "maxExclusive": true
+                        }
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_val_number",
+                      "fieldRanges": {
+                        "NUM": {
+                          "min": 1,
+                          "max": 480
+                        }
+                      }
+                    }
                   }
                 }
               },
@@ -1588,13 +1687,10 @@
           },
           {
             "id": "guardar-relogio",
-            "label": "Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.",
+            "label": "No relógio de intervalo positivo, crie asteroides somente se o estado é jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_frames",
-              "inputs": {
-                "N": 40
-              },
               "inputBlocks": {
                 "BODY": {
                   "blockType": "sz_js_if_else",
@@ -1611,16 +1707,47 @@
                         "GROUP": "asteroides"
                       },
                       "inputs": {
-                        "Y": -30,
-                        "SIZE": 40,
-                        "VX": 0,
-                        "VY": 3
+                        "VX": 0
                       },
                       "inputBlocks": {
                         "X": {
                           "blockType": "sz_g2d_random_x"
+                        },
+                        "Y": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "max": 0
+                            }
+                          }
+                        },
+                        "SIZE": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        },
+                        "VY": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
                         }
                       }
+                    }
+                  }
+                },
+                "N": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1
                     }
                   }
                 }
@@ -1662,9 +1789,7 @@
                         "GROUP": "tiros"
                       },
                       "inputs": {
-                        "R": 5,
-                        "VX": 0,
-                        "VY": -9
+                        "VX": 0
                       },
                       "inputBlocks": {
                         "X": {
@@ -1677,6 +1802,24 @@
                           "blockType": "sz_g2d_sprite_y",
                           "fields": {
                             "SPRITE": "nave"
+                          }
+                        },
+                        "R": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "min": 0,
+                              "minExclusive": true
+                            }
+                          }
+                        },
+                        "VY": {
+                          "blockType": "sz_val_number",
+                          "fieldRanges": {
+                            "NUM": {
+                              "max": 0,
+                              "maxExclusive": true
+                            }
                           }
                         }
                       },
@@ -1720,8 +1863,15 @@
                 },
                 "ELSEIF_THEN0": {
                   "blockType": "sz_g2d_show_screen",
-                  "inputs": {
-                    "HINT": "Aperte Enter para começar"
+                  "inputBlocks": {
+                    "HINT": {
+                      "blockType": "sz_val_text",
+                      "fieldText": {
+                        "TEXT": {
+                          "nonBlank": true
+                        }
+                      }
+                    }
                   }
                 }
               }

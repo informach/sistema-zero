@@ -60,7 +60,7 @@ ID video-pontos-e-placar-avatar-04. Professora até “Olha só: Pontos vai para
 - Crie a variável pontos com 0 em Ao iniciar.
 - Some 1 em pontos dentro da colisão tiros × asteroides.
 - Mantenha um único Somar 1 em pontos.
-- Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.
+- Mostre o valor de pontos em um placar com texto e tamanho positivo.
 
 ## Blocos disponíveis
 

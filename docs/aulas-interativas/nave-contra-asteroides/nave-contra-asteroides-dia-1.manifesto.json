@@ -540,7 +540,7 @@
         "projectChecks": [
           {
             "id": "setas",
-            "label": "Mova nave com as setas, velocidade 7, antes de desenhá-la.",
+            "label": "Mova nave com as setas, com velocidade positiva, antes de desenhá-la.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_arrows_x",
@@ -549,10 +549,18 @@
               "fields": {
                 "SPRITE": "nave"
               },
-              "inputs": {
-                "SPEED": 7
-              },
-              "beforeBlock": "sz_g2d_draw_sprite"
+              "beforeBlock": "sz_g2d_draw_sprite",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           }
         ]
@@ -623,10 +631,18 @@
               "fields": {
                 "SPRITE": "nave"
               },
-              "inputs": {
-                "SPEED": 7
-              },
-              "beforeBlock": "sz_g2d_clamp_to_screen"
+              "beforeBlock": "sz_g2d_clamp_to_screen",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -686,16 +702,24 @@
           },
           {
             "id": "estrelas",
-            "label": "Desenhe as estrelas com velocidade 1 antes da nave.",
+            "label": "Desenhe o fundo de estrelas em movimento a cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_starfield",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 1
-              },
-              "beforeBlock": "sz_g2d_arrows_x"
+              "beforeBlock": "sz_g2d_arrows_x",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           }
         ]
@@ -730,7 +754,7 @@
         "projectChecks": [
           {
             "id": "tela",
-            "label": "Deixe a tela de 800 × 480 em Ao iniciar.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -743,21 +767,55 @@
           },
           {
             "id": "nave",
-            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "label": "Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_ship",
               "fields": {
                 "NAME": "nave"
               },
-              "inputs": {
-                "X": 400,
-                "Y": 410,
-                "W": 54,
-                "H": 62
-              },
               "area": "start",
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "W": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "H": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 480,
+                      "maxExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -773,20 +831,28 @@
           },
           {
             "id": "estrelas",
-            "label": "Desenhe as estrelas com velocidade 1 a cada quadro.",
+            "label": "Desenhe o fundo de estrelas em movimento a cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_starfield",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 1
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
               }
             }
           },
           {
             "id": "setas",
-            "label": "Mova nave com as setas, velocidade 7, antes de prender à tela.",
+            "label": "Mova nave com as setas, com velocidade positiva, antes de desenhá-la.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_arrows_x",
@@ -795,10 +861,18 @@
               "fields": {
                 "SPRITE": "nave"
               },
-              "inputs": {
-                "SPEED": 7
-              },
-              "beforeBlock": "sz_g2d_clamp_to_screen"
+              "beforeBlock": "sz_g2d_clamp_to_screen",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {

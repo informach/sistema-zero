@@ -2054,7 +2054,7 @@
           },
           {
             "id": "tela",
-            "label": "Deixe a tela de 800 × 480 em Ao iniciar.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -2111,26 +2111,60 @@
         "projectChecks": [
           {
             "id": "nave",
-            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "label": "Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_ship",
               "fields": {
                 "NAME": "nave"
               },
-              "inputs": {
-                "X": 400,
-                "Y": 410,
-                "W": 54,
-                "H": 62
-              },
               "area": "start",
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "W": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "H": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 480,
+                      "maxExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
             "id": "tela",
-            "label": "Deixe a tela de 800 × 480 em Ao iniciar.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -2173,21 +2207,55 @@
         "projectChecks": [
           {
             "id": "nave",
-            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "label": "Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_ship",
               "fields": {
                 "NAME": "nave"
               },
-              "inputs": {
-                "X": 400,
-                "Y": 410,
-                "W": 54,
-                "H": 62
-              },
               "area": "start",
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "W": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "H": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 480,
+                      "maxExclusive": true
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -2215,7 +2283,7 @@
           },
           {
             "id": "tela",
-            "label": "Deixe a tela de 800 × 480 em Ao iniciar.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",

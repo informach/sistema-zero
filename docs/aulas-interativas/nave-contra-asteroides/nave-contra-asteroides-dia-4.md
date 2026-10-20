@@ -53,7 +53,7 @@ ID video-vidas-avatar-01. Professora até “Agora abra Jogo 2D, depois Vida e p
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Dê 3 vidas à nave em Ao iniciar.
-- Desenhe corações da nave em x 12, y 48, tamanho 22.
+- Mostre as vidas atuais da nave a cada quadro.
 
 ### Seção 3. Compare as batidas com proteção
 
@@ -89,7 +89,7 @@ ID video-batida-e-coracoes-avatar-03. Professora até “Olha só: a pedra sai, 
 
 - Na colisão nave × asteroides, remova inimigo antes da explosão.
 - A explosão da batida usa inimigo, antes de machucar a nave.
-- Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.
+- Nessa colisão, tire 1 vida da nave e dê um tempo positivo de proteção.
 
 ### Seção 5. Confira o que você construiu
 
@@ -114,13 +114,13 @@ ID video-batida-e-coracoes-avatar-03. Professora até “Olha só: a pedra sai, 
 - Crie a variável pontos com 0 em Ao iniciar.
 - Some 1 em pontos dentro da colisão tiros × asteroides.
 - Mantenha um único Somar 1 em pontos.
-- Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.
+- Mostre o valor de pontos em um placar com texto e tamanho positivo.
 - Dê 3 vidas à nave em Ao iniciar.
 - Na colisão nave × asteroides, remova inimigo antes da explosão.
-- Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.
+- Nessa colisão, tire 1 vida da nave e dê um tempo positivo de proteção.
 - A explosão da batida usa inimigo, antes de machucar a nave.
-- Desenhe corações da nave em x 12, y 48, tamanho 22.
-- Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.
+- Mostre as vidas atuais da nave a cada quadro.
+- Toque um efeito dentro da colisão entre tiros e asteroides.
 - Na colisão tiros × asteroides, remova o tiro do grupo tiros.
 - Na mesma colisão, remova o asteroide e depois solte a explosão.
 - Exploda o asteroide atingido e toque o som de explosão dentro da colisão.

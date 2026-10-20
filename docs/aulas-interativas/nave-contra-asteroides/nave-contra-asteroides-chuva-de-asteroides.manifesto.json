@@ -681,15 +681,22 @@
           },
           {
             "id": "relogio",
-            "label": "Use A cada 40 quadros como vizinho de A cada quadro do jogo.",
+            "label": "Crie os asteroides em um relógio com intervalo positivo, fora de A cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_frames",
               "area": "loops",
-              "inputs": {
-                "N": 40
-              },
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "N": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -734,7 +741,7 @@
         "projectChecks": [
           {
             "id": "asteroide",
-            "label": "No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.",
+            "label": "No relógio, crie asteroides com x sorteado, acima da tela e descendo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_asteroid",
@@ -742,14 +749,37 @@
                 "GROUP": "asteroides"
               },
               "inputs": {
-                "Y": -30,
-                "SIZE": 40,
-                "VX": 0,
-                "VY": 3
+                "VX": 0
               },
               "inputBlocks": {
                 "X": {
                   "blockType": "sz_g2d_random_x"
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "max": 0
+                    }
+                  }
+                },
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "VY": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
                 }
               },
               "area": "loops",
@@ -838,15 +868,22 @@
           },
           {
             "id": "relogio",
-            "label": "Use A cada 40 quadros como vizinho de A cada quadro do jogo.",
+            "label": "Crie os asteroides em um relógio com intervalo positivo, fora de A cada quadro.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_frames",
               "area": "loops",
-              "inputs": {
-                "N": 40
-              },
-              "count": 1
+              "count": 1,
+              "inputBlocks": {
+                "N": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 1
+                    }
+                  }
+                }
+              }
             }
           },
           {
@@ -861,7 +898,7 @@
           },
           {
             "id": "asteroide",
-            "label": "No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.",
+            "label": "No relógio, crie asteroides com x sorteado, acima da tela e descendo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_asteroid",
@@ -869,14 +906,37 @@
                 "GROUP": "asteroides"
               },
               "inputs": {
-                "Y": -30,
-                "SIZE": 40,
-                "VX": 0,
-                "VY": 3
+                "VX": 0
               },
               "inputBlocks": {
                 "X": {
                   "blockType": "sz_g2d_random_x"
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "max": 0
+                    }
+                  }
+                },
+                "SIZE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "VY": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
                 }
               },
               "area": "loops",

@@ -76,7 +76,7 @@ ID video-montar-areas-tela-avatar-02. Professora até “Agora olhe a prévia: a
 
 - Coloque Ao iniciar.
 - Coloque Enquanto estiver rodando.
-- Deixe a tela de 800 × 480 em Ao iniciar.
+- Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.
 
 ### Seção 5. Escolha onde a nave aparece
 
@@ -116,8 +116,8 @@ ID video-criar-nave-avatar-01. Professora até “Agora abra Jogo 2D, depois Kit
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
-- Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.
-- Deixe a tela de 800 × 480 em Ao iniciar.
+- Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.
+- Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.
 
 ### Seção 8. Compare o desenho no começo e em cada quadro
 
@@ -151,10 +151,10 @@ ID video-motor-e-nave-avatar-02. Professora até “porque o seu jogo só desenh
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
-- Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.
+- Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.
 - Coloque A cada quadro do jogo em Enquanto estiver rodando.
 - Desenhe o sprite nave dentro de A cada quadro do jogo.
-- Deixe a tela de 800 × 480 em Ao iniciar.
+- Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.
 
 ## Blocos disponíveis
 

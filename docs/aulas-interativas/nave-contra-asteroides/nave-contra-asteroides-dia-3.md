@@ -55,7 +55,7 @@ ID video-colisao-avatar-03. Professora até “aparece a explosão e os outros c
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
-- Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.
+- Toque um efeito dentro da colisão entre tiros e asteroides.
 - Na colisão tiros × asteroides, remova o tiro do grupo tiros.
 - Na mesma colisão, remova o asteroide e depois solte a explosão.
 - Exploda o asteroide atingido e toque o som de explosão dentro da colisão.
@@ -80,18 +80,18 @@ ID video-colisao-avatar-03. Professora até “aparece a explosão e os outros c
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
-- No evento Espaço, use Tocar efeito e escolha tiro grande.
-- No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.
+- Toque um efeito no mesmo evento de disparar com Espaço.
+- No evento Espaço, crie o tiro a partir da nave, para cima, e toque um efeito.
 - Mantenha apenas um comando de criar tiro.
 - Crie o grupo asteroides em Ao iniciar.
-- Use A cada 40 quadros como vizinho de A cada quadro do jogo.
+- Crie os asteroides em um relógio com intervalo positivo, fora de A cada quadro.
 - Os dois relógios são vizinhos em Enquanto estiver rodando.
-- No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.
+- No relógio, crie asteroides com x sorteado, acima da tela e descendo.
 - Mantenha um único comando de criar asteroide.
 - Mova asteroides antes de limpar o grupo.
 - Retire os asteroides que saem e depois desenhe esse grupo.
 - Desenhe o grupo asteroides a cada quadro.
-- Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.
+- Toque um efeito dentro da colisão entre tiros e asteroides.
 - Na colisão tiros × asteroides, remova o tiro do grupo tiros.
 - Na mesma colisão, remova o asteroide e depois solte a explosão.
 - Exploda o asteroide atingido e toque o som de explosão dentro da colisão.
