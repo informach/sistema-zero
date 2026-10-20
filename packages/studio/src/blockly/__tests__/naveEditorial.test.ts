@@ -197,7 +197,7 @@ function all(value: unknown): Block[] {
     ...Object.values(object).flatMap(all),
   ]
 }
-const mistakes = [
+const creativeChoices = [
   {
     day: 2,
     name: 'shot event plays jump instead of shoot',
@@ -214,6 +214,60 @@ const mistakes = [
         'shoot'
     },
   },
+]
+function deliveryResults(day: number, project: (typeof projects)[number]) {
+  const workspace = new Blockly.Workspace()
+  try {
+    Blockly.serialization.workspaces.load(project.blocksState, workspace)
+    return evaluateStudioSectionProject(
+      javascriptChecks(
+        manifest(day).sections.find((s) => s.intent === 'delivery')!.completion!.projectChecks!,
+      ),
+      { blocksState: Blockly.serialization.workspaces.save(workspace) },
+    )
+  } finally {
+    workspace.dispose()
+  }
+}
+test.each(creativeChoices)('accepts creative choice: $name', ({ day, edit }) => {
+  const project = structuredClone(projects[day]!)
+  edit(all(project))
+  expect(deliveryResults(day, project).filter((check) => !check.passed)).toEqual([])
+})
+test.each([
+  { day: 2, fx: 'shoot', checkId: 'efeito-tiro' },
+  { day: 3, fx: 'explosion', checkId: 'efeito-explosao' },
+])('day $day: $checkId requires an effect in its own event', ({ day, fx, checkId }) => {
+  const project = structuredClone(projects[day]!)
+  const nodes = all(project)
+  const effect = nodes.find((block) => block.type === 'sz_g2d_play_fx' && block.fields?.FX === fx)
+  const prior = nodes.find((block) => block.next?.block === effect)
+  if (!effect || !prior) throw new Error('Expected an authored effect in a statement chain')
+  // Remove only the effect, keeping every following statement connected.
+  if (effect.next) prior.next = effect.next
+  else delete prior.next
+  delete effect.next
+  expect(deliveryResults(day, project).find((check) => check.checkId === checkId)).toMatchObject({
+    passed: false,
+  })
+
+  const events = nodes.find((block) => block.type === 'sz_frame_events')
+  let lastEvent = events?.inputs?.CHILDREN?.block
+  if (!lastEvent) throw new Error('Expected the authored events area')
+  while (lastEvent.next) lastEvent = lastEvent.next.block
+  lastEvent.next = {
+    block: {
+      type: 'sz_g2d_on_key',
+      fields: { KEY: 'Enter' },
+      inputs: { BODY: { block: effect } },
+    },
+  }
+  // The identical effect on Enter cannot fulfill the shot or collision objective.
+  expect(deliveryResults(day, project).find((check) => check.checkId === checkId)).toMatchObject({
+    passed: false,
+  })
+})
+const mistakes = [
   {
     day: 5,
     name: 'victory checked after defeat reverses the simultaneous outcome',

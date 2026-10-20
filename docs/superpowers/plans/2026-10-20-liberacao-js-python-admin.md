@@ -45,9 +45,11 @@
 
 **Files:** cenários existentes Studio/Pensa, configuração de CI e registros de QA.
 
-- [ ] Concluir no CI os sete cenários JavaScript reais de edição/persistência/Pensa, preservando negativos locais anteriores e seus limites. O build local r4 excedeu o orçamento RSS e foi encerrado antes de qualquer teste; não conta como falha funcional nem como aceite.
+- [x] Concluir no CI os sete cenários JavaScript reais de edição/persistência/Pensa, preservando negativos locais anteriores e seus limites. No commit `a5ac64b14`, workflow `39495346790`, tentativa 1, os sete cenários e o cenário Pro de edição por teclado passaram, sem repetição nem skips. Os três shards Chromium somaram 325 testes aprovados e 10 skips fora desses alvos. O build local r4 excedeu o orçamento RSS antes de qualquer teste; não conta como falha funcional nem como aceite.
 - [ ] Conferir o CI do commit que reúne este lote; corrigir falhas reais sem enfraquecer critérios.
 - [ ] Corrigir a dependência Vite apontada por `audit:image`, atualizar o perfil canônico e verificar a implantação coerente do Worker e da imagem antes de declarar o Pro validado.
 - [ ] Conferir a atualização de projetos Pro existentes: os arquivos e a exportação são preservados, mas um manifesto/lock com Vite 8.0.16 precisa ser atualizado para a revisão canônica 8.1.6 antes de compilar. O fluxo existente do Builder prepara manifest+lock juntos; ainda não há recuperação determinística gratuita para todos os hosts. Não tratar abertura/exportação como prova de compilação.
-- [ ] Revisar o lote completo, conciliar qualquer avanço remoto e integrar/push em staging.
+- [x] Revisar o lote de conciliação pedagógica, seletor administrativo, layout das missões e dependências; integrar/push em staging (`a5ac64b14`). Essa publicação no Git não equivale à atualização dos serviços nem à homologação completa do Python.
 - [ ] Informar separadamente o estado da liberação JavaScript e o que continua pendente na homologação Python.
+
+Verificações adicionais em 20/10: a imagem local com Vite 8.1.6 e perfil `9e33e74e…` passou pelo smoke sem rede e pelos seis kits, com usuário não root, compilação, comportamento e captura PNG. O bundle correspondente do Worker foi produzido por dry-run. Isso não comprova publicação no registry ou implantação de staging. A tentativa 2 do CI passou por Molda e Windows e revelou dois testes editoriais desatualizados: os sons alternativos passaram a controles positivos; ausência do efeito e efeito apenas em evento alheio continuam controles negativos, com serialização Blockly real. O foco corrigido passou com 19 testes e 245 asserções; o CI completo da correção ainda precisa concluir.
