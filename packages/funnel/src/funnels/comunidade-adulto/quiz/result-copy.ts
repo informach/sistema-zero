@@ -158,8 +158,7 @@ export const OPENING_ATTEMPT: Record<string, string> = {
   nao_apareceu: `e que ${m(MARCAS.tentativa.nao_apareceu)}`,
 }
 
-export const OPENING_CLOSE =
-  'Essa história tem uma explicação simples.'
+export const OPENING_CLOSE = 'Essa história tem uma explicação simples.'
 /** "Nenhuma dessas" na P5: a carta diz que se guiou pelas outras respostas. */
 export const OPENING_CLOSE_NO_SCENE = `Das frases sobre jogar, ${m(MARCAS.cena.nenhum)}, então a gente se guiou pelas outras respostas, e elas contam uma história com uma explicação simples.`
 

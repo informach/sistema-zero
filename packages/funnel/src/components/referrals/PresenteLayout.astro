@@ -2,7 +2,7 @@
 import '../../styles/kids-oferta.css'
 import '../../styles/comunidade-oferta.css'
 import '../../styles/presente.css'
-import { DESAFIO_PRIMEIRO_JOGO } from '../../funnels/desafio-primeiro-jogo'
+import { COMUNIDADE_DOS_CRIADORES } from '../../funnels/comunidade-dos-criadores'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import Footer from '../Footer.astro'
 
@@ -26,7 +26,9 @@ const { title, description, action, canonical, noindex = true } = Astro.props
     <main id="conteudo"><slot /></main>
     <dialog class="zoom" data-gift-zoom aria-label="Imagem ampliada"><form method="dialog"><button class="zoom-fechar" aria-label="Fechar a imagem ampliada"><span class="material-symbols-rounded" aria-hidden="true">close</span></button></form><img alt="" decoding="async" /></dialog>
   </div>
-  <Footer audience="kids" termosHref={`${DESAFIO_PRIMEIRO_JOGO.basePath}/termos`} />
+  <!-- O mesmo Termo do aceite no formulário do presente (`BolsaResgate`): as regras de uso da área
+       Kids estão no Termo da Comunidade Kids. Um Termo próprio do presente fica para a revisão jurídica. -->
+  <Footer audience="kids" termosHref={`${COMUNIDADE_DOS_CRIADORES.basePath}/termos`} />
 </BaseLayout>
 <script>
   const zoom = document.querySelector<HTMLDialogElement>('[data-gift-zoom]')

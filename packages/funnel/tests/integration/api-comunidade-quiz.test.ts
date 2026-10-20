@@ -184,6 +184,16 @@ describe('API do quiz da Comunidade', () => {
     expect(responses.map((r) => r.status).sort()).toEqual([200, 409])
     expect((await repo.getLead(id))?.quizAnswers?._quiz_revision).toBe(10)
   })
+  test('feedback só vale para quizzes com resultado em carta (o NCI não tem o formulário)', async () => {
+    const fake = createFakeRepo()
+    const { id } = await fake.repo.createLead('pro/no-comando-da-ia')
+    const deps = { repo: fake.repo, secureCookie: false }
+    const response = await quizFeedback(request('POST', { feedback: 'sim', revision: 0 }, id), deps)
+    expect(response.status).toBe(409)
+    // Recusado pelo tipo de quiz, antes de olhar as respostas.
+    expect((await response.json()).error.code).toBe('QUIZ_SESSION_CHANGED')
+    expect(fake.events.filter((e) => e.eventName === 'quiz_feedback')).toHaveLength(0)
+  })
   test('feedback só é gravado para resultado completo na revisão atual', async () => {
     const { deps, id, events, repo } = await setup(fixture())
     expect(

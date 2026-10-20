@@ -28,7 +28,8 @@ export async function quizFeedback(request: Request, deps: LeadDeps): Promise<Re
   const lead = await deps.repo.getLead(id)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
   const quiz = getFunnelByKey(lead.funnel)?.content.quiz
-  if (!quiz?.computePerfil)
+  // Só os quizzes com resultado em carta pedem a opinião (o NCI e o Desafio não têm o formulário).
+  if (!quiz?.conversa || !quiz.computePerfil)
     return jsonError('A sessão pertence a outro quiz.', 409, 'QUIZ_SESSION_CHANGED')
   const answers = lead.quizAnswers ?? {}
   const profile = isQuizComplete(quiz, answers) ? quiz.computePerfil(answers) : null
