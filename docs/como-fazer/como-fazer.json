@@ -234,9 +234,7 @@
             "imageAlt": "Experiência ampliada ocupando a tela, com o botão Voltar à fase destacado."
           }
         ],
-        "related": [
-          "plataforma-ampliar-a-atividade"
-        ]
+        "related": ["plataforma-ampliar-a-atividade"]
       }
     },
     {
@@ -289,9 +287,7 @@
             "imageAlt": "Aviso Pedido enviado, a resposta aparecerá nos seus recados, com o link Ver conversa destacado."
           }
         ],
-        "related": [
-          "plataforma-ler-recados"
-        ]
+        "related": ["plataforma-ler-recados"]
       }
     },
     {
@@ -333,9 +329,7 @@
             "imageAlt": "Cor do seu perfil com a nova cor marcada e o aviso Cor escolhida logo abaixo, sem botão de salvar."
           }
         ],
-        "related": [
-          "plataforma-montar-o-avatar"
-        ]
+        "related": ["plataforma-montar-o-avatar"]
       }
     },
     {
@@ -550,10 +544,7 @@
             "imageAlt": "Caminho das fases da aventura com uma fase concluída, marcada com confirmação, e uma fase bloqueada com cadeado."
           }
         ],
-        "related": [
-          "plataforma-abrir-uma-aula",
-          "plataforma-publicar-no-mural"
-        ]
+        "related": ["plataforma-abrir-uma-aula", "plataforma-publicar-no-mural"]
       }
     },
     {
@@ -615,10 +606,7 @@
             "imageAlt": "Fase na tela do celular com as abas Ver exemplo e Criar destacadas no alto da parte."
           }
         ],
-        "related": [
-          "plataforma-mostrar-o-menu",
-          "plataforma-pausar-e-rever-video"
-        ]
+        "related": ["plataforma-mostrar-o-menu", "plataforma-pausar-e-rever-video"]
       }
     },
     {
@@ -628,12 +616,7 @@
       "draft": {
         "title": "Como encontrar uma ajuda no Como fazer",
         "summary": "Procure o que você quer fazer e abra o passo a passo.",
-        "keywords": [
-          "ajuda",
-          "como fazer",
-          "tutorial",
-          "buscar"
-        ],
+        "keywords": ["ajuda", "como fazer", "tutorial", "buscar"],
         "steps": [
           {
             "id": "abrir",
@@ -664,9 +647,7 @@
             "imageAlt": "Tutorial aberto a partir de uma fase, com o botão Voltar para a fase destacado."
           }
         ],
-        "related": [
-          "plataforma-pedir-ajuda"
-        ]
+        "related": ["plataforma-pedir-ajuda"]
       }
     },
     {
@@ -676,13 +657,7 @@
       "draft": {
         "title": "Como escolher ou trocar seu perfil",
         "summary": "Entre no seu perfil para encontrar suas aventuras e suas criações.",
-        "keywords": [
-          "perfil",
-          "trocar",
-          "criança",
-          "irmão",
-          "avatar"
-        ],
+        "keywords": ["perfil", "trocar", "criança", "irmão", "avatar"],
         "steps": [
           {
             "id": "escolher",
@@ -778,9 +753,7 @@
             "imageAlt": "Parte Seu Mapa da Aventura com o mapa destacado para consultar durante as fases."
           }
         ],
-        "related": [
-          "plataforma-abrir-uma-aula"
-        ]
+        "related": ["plataforma-abrir-uma-aula"]
       }
     },
     {
@@ -960,10 +933,7 @@
             "imageAlt": "Parte da fase depois do envio, com o aviso Recebido! e o botão Enviar outra versão destacado."
           }
         ],
-        "related": [
-          "plataforma-enviar-atividade",
-          "plataforma-ler-recados"
-        ]
+        "related": ["plataforma-enviar-atividade", "plataforma-ler-recados"]
       }
     },
     {
@@ -1014,10 +984,7 @@
             "imageAlt": "Conversa com a equipe com o link Voltar à parte destacado, acima das mensagens."
           }
         ],
-        "related": [
-          "plataforma-enviar-atividade",
-          "plataforma-pedir-ajuda"
-        ]
+        "related": ["plataforma-enviar-atividade", "plataforma-pedir-ajuda"]
       }
     },
     {
@@ -1027,13 +994,7 @@
       "draft": {
         "title": "Como jogar os jogos do Mural",
         "summary": "Abra um jogo da comunidade e conheça as criações da turma.",
-        "keywords": [
-          "mural",
-          "jogar",
-          "jogos",
-          "remix",
-          "copiar link"
-        ],
+        "keywords": ["mural", "jogar", "jogos", "remix", "copiar link"],
         "steps": [
           {
             "id": "mural",
@@ -1063,9 +1024,7 @@
             "imageAlt": "Jogo aberto no Mural com o botão Fazer a minha versão destacado."
           }
         ],
-        "related": [
-          "plataforma-publicar-no-mural"
-        ]
+        "related": ["plataforma-publicar-no-mural"]
       }
     },
     {
@@ -1075,15 +1034,7 @@
       "draft": {
         "title": "Como pausar e rever o vídeo da fase",
         "summary": "Pare o vídeo para acompanhar um passo ou volte para ouvir de novo.",
-        "keywords": [
-          "pausar",
-          "vídeo",
-          "rever",
-          "voltar vídeo",
-          "ouvir de novo",
-          "play",
-          "aula"
-        ],
+        "keywords": ["pausar", "vídeo", "rever", "voltar vídeo", "ouvir de novo", "play", "aula"],
         "steps": [
           {
             "id": "controles",
@@ -1114,10 +1065,7 @@
             "imageAlt": "Vídeo parado com o botão de reprodução, com um triângulo, destacado para continuar assistindo."
           }
         ],
-        "related": [
-          "plataforma-abrir-uma-aula",
-          "plataforma-ampliar-a-atividade"
-        ]
+        "related": ["plataforma-abrir-uma-aula", "plataforma-ampliar-a-atividade"]
       }
     },
     {
@@ -1231,10 +1179,7 @@
             "imageAlt": "Bloco Certificado de Criador na fase Seu certificado, com o botão Baixar certificado (PDF) destacado."
           }
         ],
-        "related": [
-          "plataforma-abrir-uma-aula",
-          "plataforma-baixar-materiais"
-        ]
+        "related": ["plataforma-abrir-uma-aula", "plataforma-baixar-materiais"]
       }
     },
     {
@@ -1546,10 +1491,7 @@
             "imageAlt": "Depois de um acesso Encerrado na lista, o botão Autorizar aparelho destacado para preparar um acesso novo."
           }
         ],
-        "related": [
-          "plataforma-preparar-acesso-da-crianca",
-          "plataforma-nao-consigo-entrar"
-        ]
+        "related": ["plataforma-preparar-acesso-da-crianca", "plataforma-nao-consigo-entrar"]
       }
     },
     {
@@ -1948,9 +1890,7 @@
             "body": "Depois da data, o encontro mostra que o prazo terminou. Sua criação continua guardada e aparece em **Criar**, em **Criações das oficinas ao vivo**."
           }
         ],
-        "related": [
-          "plataforma-entrar-na-oficina"
-        ]
+        "related": ["plataforma-entrar-na-oficina"]
       }
     },
     {
@@ -2070,10 +2010,7 @@
             "imageAlt": "Editor Meu quarto com o botão Salvar quarto destacado."
           }
         ],
-        "related": [
-          "plataforma-montar-o-avatar",
-          "plataforma-resgatar-missoes"
-        ]
+        "related": ["plataforma-montar-o-avatar", "plataforma-resgatar-missoes"]
       }
     },
     {
@@ -2125,9 +2062,7 @@
             "imageAlt": "Menu Mais opções aberto com Console destacado na parte Mostrar."
           }
         ],
-        "related": [
-          "estudio-salvar-e-reabrir"
-        ],
+        "related": ["estudio-salvar-e-reabrir"],
         "toolRef": "estudio-completo"
       }
     },
@@ -2178,10 +2113,7 @@
             "imageAlt": "Projeto novo aberto no Estúdio, com a caixa de blocos destacada à esquerda e a área de montar ao lado."
           }
         ],
-        "related": [
-          "estudio-instalar-jogo-2d",
-          "estudio-salvar-e-reabrir"
-        ],
+        "related": ["estudio-instalar-jogo-2d", "estudio-salvar-e-reabrir"],
         "toolRef": "estudio-completo"
       }
     },
@@ -2232,10 +2164,7 @@
             "imageAlt": "Estúdio dentro da fase com a caixa de blocos destacada, já trazendo os blocos de Jogo 2D que a fase usa."
           }
         ],
-        "related": [
-          "estudio-criar-um-projeto",
-          "estudio-materiais-do-jogo"
-        ],
+        "related": ["estudio-criar-um-projeto", "estudio-materiais-do-jogo"],
         "toolRef": "estudio-completo"
       }
     },
@@ -2355,10 +2284,7 @@
             "imageAlt": "Janela Materiais do jogo do Estúdio com a aba Modelos 3D destacada."
           }
         ],
-        "related": [
-          "pinta-usar-no-estudio",
-          "molda-usar-no-estudio"
-        ],
+        "related": ["pinta-usar-no-estudio", "molda-usar-no-estudio"],
         "toolRef": "estudio-completo"
       }
     },
@@ -2414,9 +2340,7 @@
             "imageAlt": "Parte Levar o jogo do menu com as três opções de download destacadas e Baixar o projeto em primeiro."
           }
         ],
-        "related": [
-          "estudio-salvar-e-reabrir"
-        ],
+        "related": ["estudio-salvar-e-reabrir"],
         "toolRef": "estudio-completo"
       }
     },
@@ -2588,10 +2512,7 @@
             "imageAlt": "Menu aberto com o botão direito na área de montar, com a opção Organizar blocos destacada."
           }
         ],
-        "related": [
-          "estudio-instalar-jogo-2d",
-          "estudio-perguntar-ao-zappy"
-        ],
+        "related": ["estudio-instalar-jogo-2d", "estudio-perguntar-ao-zappy"],
         "toolRef": "estudio-completo"
       }
     },
@@ -2759,10 +2680,7 @@
             "imageAlt": "Janela de confirmação com o botão Apagar camada destacado."
           }
         ],
-        "related": [
-          "pinta-desfazer",
-          "pinta-ferramentas"
-        ],
+        "related": ["pinta-desfazer", "pinta-ferramentas"],
         "toolRef": "pinta"
       }
     },
@@ -2955,9 +2873,7 @@
             "imageAlt": "Janela de confirmação para apagar um desenho da galeria, com o botão de apagar destacado."
           }
         ],
-        "related": [
-          "pinta-baixar-e-restaurar"
-        ],
+        "related": ["pinta-baixar-e-restaurar"],
         "toolRef": "pinta"
       }
     },
@@ -3034,13 +2950,7 @@
       "draft": {
         "title": "Como guardar uma cópia dos seus desenhos",
         "summary": "Baixe seus desenhos e traga o arquivo de volta ao Pinta quando precisar.",
-        "keywords": [
-          "backup",
-          "cópia",
-          "baixar tudo",
-          "restaurar",
-          "desenho"
-        ],
+        "keywords": ["backup", "cópia", "baixar tudo", "restaurar", "desenho"],
         "steps": [
           {
             "id": "galeria",
@@ -3069,10 +2979,7 @@
             "imageAlt": "Galeria Meus desenhos com o botão Trazer de volta destacado no fim da página."
           }
         ],
-        "related": [
-          "pinta-desfazer",
-          "pinta-criar-um-desenho"
-        ],
+        "related": ["pinta-desfazer", "pinta-criar-um-desenho"],
         "toolRef": "pinta"
       }
     },
@@ -3281,11 +3188,7 @@
             "imageAlt": "Barra de cima do editor de mapa com o botão Jogar meu mapa destacado."
           }
         ],
-        "related": [
-          "pinta-criar-um-desenho",
-          "pinta-usar-no-estudio",
-          "pinta-desfazer"
-        ],
+        "related": ["pinta-criar-um-desenho", "pinta-usar-no-estudio", "pinta-desfazer"],
         "toolRef": "pinta"
       }
     },
@@ -3344,11 +3247,7 @@
             "imageAlt": "Lista de paletas com a parte Minhas paletas e o item Gerenciar paletas destacados."
           }
         ],
-        "related": [
-          "pinta-ferramentas",
-          "pinta-trazer-uma-foto",
-          "pinta-desfazer"
-        ],
+        "related": ["pinta-ferramentas", "pinta-trazer-uma-foto", "pinta-desfazer"],
         "toolRef": "pinta"
       }
     },
@@ -3410,11 +3309,7 @@
             "imageAlt": "Janela de confirmação para apagar um desenho da galeria, com o botão de apagar destacado."
           }
         ],
-        "related": [
-          "pinta-baixar-e-restaurar",
-          "pinta-desfazer",
-          "pinta-criar-um-desenho"
-        ],
+        "related": ["pinta-baixar-e-restaurar", "pinta-desfazer", "pinta-criar-um-desenho"],
         "toolRef": "pinta"
       }
     },
@@ -3464,11 +3359,7 @@
             "imageAlt": "Janela Qual o nome? com um nome escrito e o botão Trazer para a galeria destacado."
           }
         ],
-        "related": [
-          "pinta-criar-um-desenho",
-          "pinta-trocar-as-cores",
-          "pinta-montar-um-mapa"
-        ],
+        "related": ["pinta-criar-um-desenho", "pinta-trocar-as-cores", "pinta-montar-um-mapa"],
         "toolRef": "pinta"
       }
     },
@@ -3809,10 +3700,7 @@
             "body": "No mesmo menu, **Mover para Guardados** tira o jogo de **Em andamento** sem apagar. Ele fica na aba **Guardados**, e **Trazer de volta** devolve o jogo. **Pausar por enquanto** deixa as missões esperando você voltar."
           }
         ],
-        "related": [
-          "pensa-criar-um-plano",
-          "pensa-voltar-uma-versao"
-        ],
+        "related": ["pensa-criar-um-plano", "pensa-voltar-uma-versao"],
         "toolRef": "pensa"
       }
     },
@@ -4343,11 +4231,7 @@
             "imageAlt": "Janela Criar novo do Molda com os modelos prontos Personagem, Carro, Árvore, Casa, Nave espacial e Cristais, e o cartão Carro destacado."
           }
         ],
-        "related": [
-          "molda-montar-e-pintar",
-          "molda-salvar-e-reabrir",
-          "molda-trazer-modelo-3d"
-        ],
+        "related": ["molda-montar-e-pintar", "molda-salvar-e-reabrir", "molda-trazer-modelo-3d"],
         "toolRef": "molda"
       }
     },
@@ -4480,10 +4364,7 @@
             "imageAlt": "Fim da galeria do Molda com o botão Importar projeto destacado no cartão das criações guardadas."
           }
         ],
-        "related": [
-          "molda-criar-uma-criacao",
-          "molda-usar-no-estudio"
-        ],
+        "related": ["molda-criar-uma-criacao", "molda-usar-no-estudio"],
         "toolRef": "molda"
       }
     },
@@ -4494,14 +4375,7 @@
       "draft": {
         "title": "Como levar uma criação do Molda para o Estúdio",
         "summary": "Traga seu modelo, sua textura ou seu céu para um projeto de jogo.",
-        "keywords": [
-          "Molda",
-          "Estúdio",
-          "modelo 3D",
-          "textura",
-          "céu",
-          "trazer"
-        ],
+        "keywords": ["Molda", "Estúdio", "modelo 3D", "textura", "céu", "trazer"],
         "steps": [
           {
             "id": "guardar",
@@ -4539,10 +4413,7 @@
             "imageAlt": "Bloco Criar o objeto com o modelo no Estúdio, com o campo do modelo aberto e a criação minha-nave destacada para escolher."
           }
         ],
-        "related": [
-          "estudio-materiais-do-jogo",
-          "molda-salvar-e-reabrir"
-        ],
+        "related": ["estudio-materiais-do-jogo", "molda-salvar-e-reabrir"],
         "toolRef": "molda"
       }
     },
@@ -4600,10 +4471,7 @@
             "imageAlt": "Painel Pintar de perto com o botão Voltar ao modelo destacado."
           }
         ],
-        "related": [
-          "molda-montar-e-pintar",
-          "molda-apagar-e-vazar"
-        ],
+        "related": ["molda-montar-e-pintar", "molda-apagar-e-vazar"],
         "toolRef": "molda"
       }
     },
@@ -4655,10 +4523,7 @@
             "imageAlt": "Aba Pintar do Molda com o Pincel destacado e parte do buraco pintada de novo."
           }
         ],
-        "related": [
-          "molda-pintar-de-perto",
-          "molda-montar-e-pintar"
-        ],
+        "related": ["molda-pintar-de-perto", "molda-montar-e-pintar"],
         "toolRef": "molda"
       }
     },
@@ -4721,10 +4586,7 @@
             "imageAlt": "Linha do tempo da aba Animar com o botão Reproduzir movimento e a opção Repetir destacados."
           }
         ],
-        "related": [
-          "molda-animar-com-poses",
-          "molda-usar-no-estudio"
-        ],
+        "related": ["molda-animar-com-poses", "molda-usar-no-estudio"],
         "toolRef": "molda"
       }
     },
@@ -4794,10 +4656,7 @@
             "imageAlt": "Lista Movimentos com o menu de opções aberto e Renomear destacado."
           }
         ],
-        "related": [
-          "molda-movimento-pronto",
-          "molda-montar-e-pintar"
-        ],
+        "related": ["molda-movimento-pronto", "molda-montar-e-pintar"],
         "toolRef": "molda"
       }
     },
@@ -4857,10 +4716,7 @@
             "imageAlt": "Alto da área do modelo no Molda com o botão Peça inteira destacado."
           }
         ],
-        "related": [
-          "molda-montar-e-pintar",
-          "molda-pintar-de-perto"
-        ],
+        "related": ["molda-montar-e-pintar", "molda-pintar-de-perto"],
         "toolRef": "molda"
       }
     },
@@ -4915,10 +4771,7 @@
             "imageAlt": "Fim da janela de importação com a caixa de confirmação marcada e o botão Usar modelo nesta criação destacado."
           }
         ],
-        "related": [
-          "molda-criar-uma-criacao",
-          "molda-montar-e-pintar"
-        ],
+        "related": ["molda-criar-uma-criacao", "molda-montar-e-pintar"],
         "toolRef": "molda"
       }
     }
