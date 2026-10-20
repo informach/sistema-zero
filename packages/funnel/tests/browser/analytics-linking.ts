@@ -26,8 +26,10 @@ try {
   const sessionId = (await first).request().postDataJSON().sessionId as string
   assert.equal(await page.locator('#sz-metrics-notice').isVisible(), false)
   assert.ok(!(await context.cookies()).some((c) => c.name === 'sz_metrics'))
+  // A bio leva aos quizzes; o link para a oferta da Comunidade fica no Como funciona.
+  await page.goto(`${base}/como-funciona/`)
   const created = page.waitForResponse((r) => r.url().endsWith('/api/leads') && r.ok())
-  await page.getByRole('link', { name: 'Conhecer a Comunidade e os planos' }).click()
+  await page.getByRole('link', { name: 'Conhecer a Comunidade e os planos' }).first().click()
   await page.waitForURL('**/kids/comunidade-dos-criadores/oferta**')
   await page
     .locator('astro-island[component-url*="PreCheckoutModal"]:not([ssr])')
