@@ -262,6 +262,7 @@ function EditorScreen({
   const adapter = useMemo(() => createLocalPersistenceAdapter(), [])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
   const [guideCollapsed, setGuideCollapsed] = useState(false)
+  const [guideVisible, setGuideVisible] = useState(Boolean(tarefaDemo && tarefaDemo !== 'adiada'))
 
   // Adapter de COMPARTILHAR de DEMONSTRAÇÃO: liga o botão "Compartilhar" na Topbar
   // e simula o servidor (a IA e o publish são mockados; o PRINT é capturado de
@@ -367,7 +368,7 @@ function EditorScreen({
         moldaLibrary={moldaLibraryDemo}
         // `?missao=1` liga o guia do Pensa; `?missao=falha` faz a conferência rejeitar, que é como
         // se vê o recado sobrevivendo ao guia recolhido.
-        {...(tarefaDemo
+        {...(guideVisible
           ? {
               taskSession: {
                 ...taskSessionDemo,
@@ -377,13 +378,23 @@ function EditorScreen({
             }
           : {})}
       />
+      {tarefaDemo === 'adiada' ? (
+        <button
+          type="button"
+          className="fixed bottom-2 left-2 z-[2000] rounded bg-sz-bg p-2 text-sz-fg"
+          onClick={() => setGuideVisible((visible) => !visible)}
+        >
+          {guideVisible ? 'Remover missão de demonstração' : 'Mostrar missão de demonstração'}
+        </button>
+      ) : null}
     </Suspense>
   )
 }
 
 /**
  * A missão funcional do Pensa (`?missao=1`) usa o mesmo painel das oficinas.
- * O host demonstra recolhimento com estado local; não envia progresso ao servidor.
+ * `?missao=adiada` permite anexar/remover a sessão no mesmo editor já aberto.
+ * O host demonstra estado local; não envia progresso ao servidor.
  */
 const tarefaDemo = new URLSearchParams(window.location.search).get('missao')
 const taskSessionDemo: StudioTaskSession = {
