@@ -158,12 +158,20 @@ test('uses conventional keyboard navigation, native commands and reviewed symbol
   await expect(quick).toBeHidden()
   await inspectWorkspaceBuffers(page)
   await expect(page.getByLabel('Buffers da sessão')).toContainText('src/config.ts')
+  await expect(page.getByRole('treeitem', { name: 'src/config.ts', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  await expect(page.locator('.monaco-editor .view-lines').first()).toContainText(
+    /export\s+const\s+speed\s*=\s*4/,
+  )
   await input.focus()
   await input.press('Control+Home')
-  await input.press('Control+ArrowRight')
-  await input.press('Control+ArrowRight')
+  // Entre no nome, sem depender do limite de palavra const/espaço/speed.
+  for (const _ of 'export const s') await input.press('ArrowRight')
   await input.press('F2')
   await expect(page.getByLabel('Novo nome do símbolo')).toBeVisible()
+  await expect(page.getByLabel('Novo nome do símbolo')).toHaveValue('speed')
   await page.getByLabel('Novo nome do símbolo').fill('velocity')
   await page.getByRole('button', { name: 'Conferir referências', exact: true }).click()
   await expect(page.getByRole('dialog', { name: 'Conferir mudança nos arquivos' })).toBeVisible()
