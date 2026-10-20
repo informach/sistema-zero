@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/nave-contra-asteroides-dia-4.md e de qa/adulto/traducoes/nave-contra-asteroides/nave-contra-asteroides-dia-4.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Nave Contra Asteroides · Aula 7 · Dê três vidas à nave
 
 Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md).
@@ -73,13 +75,13 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 
 ### Seção 5. Confira o que você construiu
 
-**Tarefa:** Hora de conferir o que você construiu. Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Tarefa:** Hora de lembrar o que você construiu. Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
 **Blocos na página:** fala-quiz-final → quiz.
 
-**Recado na página (não gravar):** Hora de conferir o que você construiu. Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
-**Revisão formativa:** recado → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
+**Revisão formativa:** recado → quiz, com todas as perguntas numa página só e o botão Enviar quiz. Todas corretas, com explicação e novos envios sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 6. Teste os pontos e as vidas
 
@@ -150,4 +152,4 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 
 Aula 7 na cadeia `nave-contra-asteroides`. Entrada: etapa 6; saída: etapa 7 de `qa/nave-contra-asteroides-etapas.ts`. Os cinco marcos originais e o código do jogo permanecem preservados.
 
-A ordem vídeo → recado → atividade é editorial. Configurar videoBeforeActivity no curso adulto e conferir com um perfil adulto; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos adultos, anexar o PDF do Caderno do Aluno quando existir e ensaiar com adultos antes de declarar o percurso validado.
+A ordem vídeo → recado → atividade é editorial. Configurar videoBeforeActivity no curso adulto e conferir com um perfil adulto; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos adultos, anexar o PDF do caderno do curso quando existir e ensaiar com adultos antes de declarar o percurso validado.

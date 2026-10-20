@@ -57,7 +57,7 @@
   "blocks": [
     {
       "key": "video-seta-e-velocidade",
-      "plannedVideo": "Título: Observe o movimento quadro a quadro\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, duas trilhas de pegadas lado a lado, uma de passadas longas e outra de passos curtos, com a legenda \"Velocidade 3 · Velocidade 1\"; desenho nosso, com os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Observe o movimento quadro a quadro\n\nProduzir no Estúdio atual. Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, duas trilhas de pegadas lado a lado, uma de passadas longas e outra de passos curtos, com a legenda \"Velocidade 3 · Velocidade 1\"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-seta-e-velocidade",
@@ -81,19 +81,14 @@
           "scene": "lighthouse-walk",
           "cenario": "nave",
           "setup": {
-            "goals": [
-              "still-without-arrow",
-              "moves-each-frame",
-              "step-speed-3",
-              "step-speed-1"
-            ]
+            "goals": ["still-without-arrow", "moves-each-frame", "step-speed-3", "step-speed-1"]
           }
         }
       }
     },
     {
       "key": "video-setas-e-rastro",
-      "plannedVideo": "Título: Faça a nave responder às setas\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, segurar uma seta e, no \"Percebe?\", manter a nave parada à vista. Mostrar o destino antes de abrir a paleta. Montar apenas o movimento, testar as setas no fundo liso e mostrar o rastro, ainda sem limpeza.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Faça a nave responder às setas\n\nProduzir no Estúdio atual. Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, segurar uma seta e, no \"Percebe?\", manter a nave parada à vista. Mostrar o destino antes de abrir a paleta. Montar apenas o movimento, testar as setas no fundo liso e mostrar o rastro, ainda sem limpeza.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-setas",
@@ -105,7 +100,7 @@
     },
     {
       "key": "video-limpeza",
-      "plannedVideo": "Título: Tire o rastro da nave\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer bloco: segurar uma seta e, no \"Percebe?\", manter o rastro à vista. Montar somente Limpar a tela antes do movimento, com o primeiro encaixe à vista antes de abrir a paleta, e repetir o mesmo teste. Ainda não há estrelas.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Tire o rastro da nave\n\nProduzir no Estúdio atual. Começar pela retomada, antes de qualquer bloco: segurar uma seta e, no \"Percebe?\", manter o rastro à vista. Montar somente Limpar a tela antes do movimento, com o primeiro encaixe à vista antes de abrir a paleta, e repetir o mesmo teste. Ainda não há estrelas.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-limpeza",
@@ -117,7 +112,7 @@
     },
     {
       "key": "video-limite-da-tela",
-      "plannedVideo": "Título: Observe o que acontece na borda\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Manter dentro da tela desligado, ligar Segurar a seta para a direita, clicar em Rodar e acompanhar a nave até sair inteira da tela. Clicar em Recomeçar, ligar Manter dentro da tela, clicar em Rodar e mostrar a nave parada inteira na borda, com x 416. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Observe o que acontece na borda\n\nProduzir no Estúdio atual. Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Manter dentro da tela desligado, ligar Segurar a seta para a direita, clicar em Rodar e acompanhar a nave até sair inteira da tela. Clicar em Recomeçar, ligar Manter dentro da tela, clicar em Rodar e mostrar a nave parada inteira na borda, com x 416. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-limite-da-tela",
@@ -141,17 +136,14 @@
           "scene": "lighthouse-walk",
           "cenario": "nave",
           "setup": {
-            "goals": [
-              "left-the-screen",
-              "stayed-inside"
-            ]
+            "goals": ["left-the-screen", "stayed-inside"]
           }
         }
       }
     },
     {
       "key": "video-limite-da-nave",
-      "plannedVideo": "Título: Mantenha a nave na tela\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer bloco: segurar uma seta até a nave passar da borda e, no \"Percebe?\", manter a saída à vista. Depois deixar à vista o espaço entre o movimento e o desenho, montar o limite e repetir os dois testes. Conferir o sprite escolhido no bloco de limite.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mantenha a nave na tela\n\nProduzir no Estúdio atual. Começar pela retomada, antes de qualquer bloco: segurar uma seta até a nave passar da borda e, no \"Percebe?\", manter a saída à vista. Depois deixar à vista o espaço entre o movimento e o desenho, montar o limite e repetir os dois testes. Conferir o sprite escolhido no bloco de limite.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-borda",
@@ -163,7 +155,7 @@
     },
     {
       "key": "video-ordem-dos-desenhos",
-      "plannedVideo": "Título: Compare a ordem dos desenhos\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar a lista A ordem de desenhar, com a nave em 1º a desenhar, e o pedaço da nave que aparece. Clicar em Subir no fundo de estrelas e mostrar a nave inteira na frente. Trocar a ordem de novo, mostrar a nave escondida e voltar o fundo para antes da nave. Meme na comparação: na frase da pilha de fotos, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma mão pondo a foto de um céu estrelado por cima da foto de uma nave, numa pilha, com a legenda \"quem vem por último fica por cima\"; desenho nosso, com os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare a ordem dos desenhos\n\nProduzir no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar a lista A ordem de desenhar, com a nave em 1º a desenhar, e o pedaço da nave que aparece. Clicar em Subir no fundo de estrelas e mostrar a nave inteira na frente. Trocar a ordem de novo, mostrar a nave escondida e voltar o fundo para antes da nave. Meme na comparação: na frase de pintar no papel, mostrar por 2 a 3 segundos o meme ilustrado nosso, um pincel pintando um céu estrelado por cima do desenho de uma nave, com a legenda \"quem vem por último fica por cima\"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-ordem-dos-desenhos",
@@ -198,18 +190,14 @@
           },
           "cenario": "nave",
           "setup": {
-            "goals": [
-              "front",
-              "covered",
-              "back-in-front"
-            ]
+            "goals": ["front", "covered", "back-in-front"]
           }
         }
       }
     },
     {
       "key": "video-fundo-estrelado",
-      "plannedVideo": "Título: Coloque as estrelas atrás da nave\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer bloco: no \"Percebe?\", mostrar o fundo liso. Mostrar a cobertura real do canvas pelo starfield e mover o mesmo bloco, sem duplicar. Não dizer que ausência de rastro com estrelas comprova a presença de Limpar.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Coloque as estrelas atrás da nave\n\nProduzir no Estúdio atual. Começar pela retomada, antes de qualquer bloco: no \"Percebe?\", mostrar o fundo liso. Mostrar a cobertura real do canvas pelo starfield e mover o mesmo bloco, sem duplicar. Não dizer que ausência de rastro com estrelas comprova a presença de Limpar.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-fundo-estrelado",
@@ -224,7 +212,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de conferir o que você construiu. Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+        "text": "Hora de lembrar o que você construiu. Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
       }
     },
     {
@@ -250,9 +238,7 @@
                 "label": "Aumentar a velocidade da nave."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "O fundo de estrelas cobre a tela inteira. Desenhando o fundo primeiro e a nave depois, a nave fica visível na frente."
           },
           {
@@ -272,9 +258,7 @@
                 "label": "Para fazer as estrelas pararem."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O movimento pode levar a nave além da borda. O limite corrige a posição antes de o desenho mostrar o resultado."
           }
         ]
@@ -282,14 +266,14 @@
     },
     {
       "key": "video-teste-e-envio",
-      "plannedVideo": "Título: Teste e envie sua nave\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Conferir a sequência e os testes, depois demonstrar a verificação e a confirmação de envio.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Teste e envie sua nave\n\nProduzir no Estúdio atual. Conferir a sequência e os testes, depois demonstrar a verificação e a confirmação de envio.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrega",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de testar a sua nave. Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta etapa e envie o seu projeto para o professor. Depois, clique em Concluir aula."
+        "text": "Hora de testar a sua nave. Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula."
       }
     },
     {
@@ -299,9 +283,7 @@
         "purpose": "submission",
         "chain": "nave-contra-asteroides",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_loops",
@@ -540,10 +522,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-seta-e-velocidade",
-          "experiencia-seta-e-velocidade"
-        ]
+        "blockIds": ["video-seta-e-velocidade", "experiencia-seta-e-velocidade"]
       }
     },
     {
@@ -551,18 +530,13 @@
       "title": "Faça a nave responder às setas",
       "intent": "application",
       "objective": "Agora faça a sua nave andar. Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar esta etapa. Depois, clique em Próxima seção.",
-      "blockKeys": [
-        "video-setas-e-rastro",
-        "fala-setas"
-      ],
+      "blockKeys": ["video-setas-e-rastro", "fala-setas"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-setas-e-rastro"
-        ],
+        "blockIds": ["video-setas-e-rastro"],
         "projectChecks": [
           {
             "id": "setas",
@@ -589,18 +563,13 @@
       "title": "Tire o rastro da nave",
       "intent": "application",
       "objective": "Agora tire o rastro da nave. Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar esta etapa. Depois, clique em Próxima seção.",
-      "blockKeys": [
-        "video-limpeza",
-        "fala-limpeza"
-      ],
+      "blockKeys": ["video-limpeza", "fala-limpeza"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-limpeza"
-        ],
+        "blockIds": ["video-limpeza"],
         "projectChecks": [
           {
             "id": "borracha",
@@ -621,20 +590,13 @@
       "title": "Observe o que acontece na borda",
       "intent": "exploration",
       "objective": "Sua vez: rode sem o limite, depois recomece, ligue Manter dentro da tela e rode de novo. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-limite-da-tela",
-        "fala-limite-da-tela",
-        "experiencia-limite-da-tela"
-      ],
+      "blockKeys": ["video-limite-da-tela", "fala-limite-da-tela", "experiencia-limite-da-tela"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-limite-da-tela",
-          "experiencia-limite-da-tela"
-        ]
+        "blockIds": ["video-limite-da-tela", "experiencia-limite-da-tela"]
       }
     },
     {
@@ -642,18 +604,13 @@
       "title": "Mantenha a nave na tela",
       "intent": "application",
       "objective": "Agora mantenha a sua nave na tela. Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar esta etapa. Depois, clique em Próxima seção.",
-      "blockKeys": [
-        "video-limite-da-nave",
-        "fala-borda"
-      ],
+      "blockKeys": ["video-limite-da-nave", "fala-borda"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-limite-da-nave"
-        ],
+        "blockIds": ["video-limite-da-nave"],
         "projectChecks": [
           {
             "id": "setas-antes-do-limite",
@@ -694,20 +651,13 @@
       "title": "Compare a ordem dos desenhos",
       "intent": "exploration",
       "objective": "Sua vez: troque a ordem do fundo e da nave, compare a tela e termine com o fundo antes da nave. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-ordem-dos-desenhos",
-        "fala-ordem-dos-desenhos",
-        "experiencia-camadas"
-      ],
+      "blockKeys": ["video-ordem-dos-desenhos", "fala-ordem-dos-desenhos", "experiencia-camadas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-ordem-dos-desenhos",
-          "experiencia-camadas"
-        ]
+        "blockIds": ["video-ordem-dos-desenhos", "experiencia-camadas"]
       }
     },
     {
@@ -715,18 +665,13 @@
       "title": "Coloque as estrelas atrás da nave",
       "intent": "application",
       "objective": "Agora coloque as estrelas no seu jogo. Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar esta etapa. Depois, clique em Próxima seção.",
-      "blockKeys": [
-        "video-fundo-estrelado",
-        "fala-fundo-estrelado"
-      ],
+      "blockKeys": ["video-fundo-estrelado", "fala-fundo-estrelado"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fundo-estrelado"
-        ],
+        "blockIds": ["video-fundo-estrelado"],
         "projectChecks": [
           {
             "id": "borracha-primeiro",
@@ -760,40 +705,28 @@
       "key": "quiz-final",
       "title": "Confira o que você construiu",
       "intent": "explanation",
-      "objective": "Hora de conferir o que você construiu. Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.",
-      "blockKeys": [
-        "fala-quiz-final",
-        "quiz"
-      ],
+      "objective": "Hora de lembrar o que você construiu. Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.",
+      "blockKeys": ["fala-quiz-final", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
       "key": "entrega",
       "title": "Teste e envie sua nave",
       "intent": "delivery",
-      "objective": "Hora de testar a sua nave. Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta etapa e envie o seu projeto para o professor. Depois, clique em Concluir aula.",
-      "blockKeys": [
-        "video-teste-e-envio",
-        "fala-entrega",
-        "projeto"
-      ],
+      "objective": "Hora de testar a sua nave. Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula.",
+      "blockKeys": ["video-teste-e-envio", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-teste-e-envio",
-          "projeto"
-        ],
+        "blockIds": ["video-teste-e-envio", "projeto"],
         "projectChecks": [
           {
             "id": "tela",

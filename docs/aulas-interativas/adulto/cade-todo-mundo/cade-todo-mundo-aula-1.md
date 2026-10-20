@@ -1,6 +1,8 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/cade-todo-mundo/cade-todo-mundo-aula-1.md e de qa/adulto/traducoes/cade-todo-mundo/cade-todo-mundo-aula-1.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Cadê Todo Mundo? | Aula 1: O primeiro achado
 
-**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. primeiro-achado: entrada sem reação; solução com a reação no toque. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. A versão adulta ainda não foi gravada, publicada nem ensaiada.
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. primeiro-achado: entrada sem reação; solução com a reação no toque. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Não informa gravação, publicação ou ensaio.
 
 ## Direção da revisão
 
@@ -38,7 +40,6 @@ Usar **Professora** e **Recado na página (não gravar)** para distinguir a fala
 da página.
 
 A fala completa de cada vídeo está no [roteiro completo](cade-todo-mundo-aula-1.roteiro.md).
-Gravação, edição e publicação da versão adulta ainda não foram feitas.
 
 ## Sequência
 
@@ -86,14 +87,14 @@ Apenas este bloco recebe o PDF; a Aula 2 continua usando a mesma referência.
 O vídeo é uma demonstração que explica enquanto faz (Diretrizes, seção 2): o narrador faz os testes na primeira pessoa e só no fim passa a vez. Dizer que a experiência mostra ação e
 reação e apontar para ela. Tocar no arbusto: nada acontece ("Percebe?"), porque o jogo ainda não
 sabe o que fazer quando alguém toca no arbusto, e a gente precisa dizer isso para ele. Comparar com
-o dia a dia: toda ação tem uma reação, como apertar o interruptor e a luz acender. No jogo, o toque é a
+o dia a dia: toda ação tem uma reação, como a cócega e a risada. No jogo, o toque é a
 ação, e a reação que a gente quer é o arbusto ficar invisível; para o jogo ter essa reação, a gente
 precisa ligá-la ao toque. Clicar em **Ligar a reação ao toque**, tocar de novo e mostrar o arbusto
 invisível com o coelho atrás ("Olha só: agora sim…"), dizendo que essa é a reação ligada ao toque.
 Tudo numa conversa contínua, sem frases soltas. Terminar em "Agora é a sua vez": a pessoa repete
 os dois testes, e a experiência cobra as metas.
 
-Na frase do interruptor, um meme ilustrado nosso por 2 a 3 segundos, sem mascote e sem voz. Não esconder os passos
+Na frase das cócegas, um meme ilustrado nosso por 2 a 3 segundos, sem mascote e sem voz. Não esconder os passos
 obrigatórios nas pistas. Manter a experiência existente, sem palpite ou pergunta final. A fala
 não inclui campainha, tour de controles ou retorno à seção do caderno.
 
@@ -123,7 +124,7 @@ Depois do teste, iniciar a conferência com "Se algo não funcionou no seu jogo,
 Após o teste, clicar em **Verificar esta etapa**. Se faltar algo, corrigir os blocos e verificar
 novamente. Quando aparecer **Objetivo da etapa cumprido!**, esperar **Salvo**, usar **Enviar
 para o professor**, confirmar em **Enviar** e aguardar a conclusão do envio antes de **Concluir
-aula**. O recado é opcional. Entre o envio e **Concluir aula**, reconhecer a etapa com
+aula**. O campo Recado para o professor é opcional. Entre o envio e **Concluir aula**, reconhecer a etapa com
 "Pronto, você já programou a primeira regra do seu jogo.", sem pedir que a pessoa olhe para o jogo
 novamente. Retomar a surpresa como parte da conversa, uma vez só, sem mostrar nada dela:
 "E lembra da surpresa que eu comentei no começo do curso? Ela está chegando: na próxima aula,
@@ -144,7 +145,7 @@ caderno real anexado e a sua presença na captura; não substituir o anexo pela 
 
 O ensaio da abertura deve comprovar que quem faz a aula reconhece o jogo a construir, começa a
 jogar sem explicação adicional e sabe como seguir. Conferir na versão editada que a fala não cobre
-os controles nem corta um gesto. A versão adulta ainda não foi gravada. Os manifestos locais
+os controles nem corta um gesto. Os manifestos locais
 continuam como moldes de autoria.
 
 ## Ritmo e entendimento

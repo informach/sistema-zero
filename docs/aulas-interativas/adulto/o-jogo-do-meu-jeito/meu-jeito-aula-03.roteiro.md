@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/o-jogo-do-meu-jeito/meu-jeito-aula-03.roteiro.md e de qa/adulto/traducoes/o-jogo-do-meu-jeito/meu-jeito-aula-03.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · O Jogo do Meu Jeito · Aula 3
 
 **Faça o motor da nave pulsar**
@@ -8,7 +10,7 @@ Entrada: Nave em pixel art com espaço reservado para o fogo. Saída: Nave com a
 
 **Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
 
-Retomar o trabalho de quem faz a aula na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página e não entra na narração. A versão adulta ainda não foi gravada. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
+Retomar o trabalho de quem faz a aula na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página e não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
 Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
 
@@ -66,7 +68,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Depois confira o seu fogo: a chama precisa encostar no motor, porque um fogo solto embaixo da nave parece que não sai dela. Confira também se ela continua dentro da grade e se o corpo e a cabine ficaram como estavam.
 >
-> Pause aqui e faça este passo no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica salvo para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora desenhe o primeiro fogo da sua nave. No quadro 1, faça uma chama pequena logo abaixo do motor. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.
 
@@ -132,7 +134,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Para conferir, troque entre os quadros 1 e 2: o corpo e a cabine ficam no mesmo lugar, e só o fogo cresce. Depois desligue o fantasma para ver o desenho sem ele.
 >
-> Pause aqui e faça este passo no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica salvo para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora mude só o fogo no segundo quadro. Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.
 
@@ -152,15 +154,15 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Se no seu desenho não ficou assim, confira: a nave fica no lugar, a chama não é cortada na borda e a animação voando tem dois quadros. Para achar o que mudou, pare a Prévia e compare os dois quadros.
 >
-> Pause aqui e faça este passo no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica salvo para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora dê nome e ritmo à animação. Nomeie a animação voando e deixe dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.
 
 ## Seção 6. Confira sua nave animada
 
-**Recado na página (não gravar):** Agora vamos relembrar o que você fez na sua nave, com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam do que você fez na sua nave. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
-Sem vídeo nem ferramenta. O quiz vem imediatamente depois do recado. Correção com explicação, tentativas ilimitadas e sem espera.
+Sem vídeo nem ferramenta. O quiz vem imediatamente depois do recado, com todas as perguntas numa página só e o botão Enviar quiz. Correção com explicação, tentativas ilimitadas e sem espera.
 
 ## Seção 7. Envie a nave animada
 
@@ -172,9 +174,9 @@ Sem vídeo nem ferramenta. O quiz vem imediatamente depois do recado. Correção
 
 **Professora:**
 
-> “Hora de enviar a sua nave animada. Antes, confira na sua nave: a nave tem quadros de 32 por 32, a animação voando tem dois quadros a 8 por segundo, e só o fogo muda, sempre inteiro dentro da grade. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da aula só mostra o que já está salvo na sua conta.
+> “Hora de enviar a sua nave animada. Antes, confira na sua nave: a nave tem quadros de 32 por 32, a animação voando tem dois quadros a 8 por segundo, e só o fogo muda, sempre inteiro dentro da grade. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da aula só mostra o que já está guardado na sua conta.
 >
-> Agora volte para a aba da aula e clique em Escolher no Pinta. Na janela Meus trabalhos do Pinta, selecione a sua nave. Se o seu trabalho não aparecer, confira se ele ficou salvo na sua conta e clique em Atualizar galeria.
+> Agora volte para a aba da aula e clique em Escolher no Pinta. Na janela Meus trabalhos do Pinta, selecione a sua nave. Se o seu trabalho não aparecer, confira se ele ficou guardado na sua conta e clique em Atualizar galeria.
 >
 > Se quiser, escreva uma mensagem no campo Recado para o professor. Depois clique em Enviar ao professor (1) e espere aparecer Trabalho recebido pelo professor.
 >

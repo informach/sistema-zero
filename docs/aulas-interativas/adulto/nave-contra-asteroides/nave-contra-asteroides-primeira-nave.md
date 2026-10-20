@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.md e de qa/adulto/traducoes/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Nave Contra Asteroides · Aula 1 · Faça a nave aparecer
 
 Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md).
@@ -113,11 +115,11 @@ Anexar ao bloco caderno o PDF do Caderno do Aluno adulto, ainda em produção; n
 
 ### Seção 9. Mostre a nave a cada quadro
 
-**Tarefa:** Agora faça a sua nave aparecer. Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta etapa e envie o seu projeto para o professor. Depois, clique em Concluir aula.
+**Tarefa:** Agora faça a sua nave aparecer. Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula.
 
 **Blocos na página:** video-motor-e-nave → fala-motor-e-nave → projeto.
 
-**Recado na página (não gravar):** Agora faça a sua nave aparecer. Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta etapa e envie o seu projeto para o professor. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Agora faça a sua nave aparecer. Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com o envio confirmado em Enviar para o professor → Enviar.
 

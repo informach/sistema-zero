@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/o-jogo-do-meu-jeito/modulos.md e de qa/adulto/traducoes/o-jogo-do-meu-jeito/_curso.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # O Jogo do Meu Jeito
 
 **Título do curso:** O Jogo do Meu Jeito
@@ -8,7 +10,7 @@
 
 ## Módulo 1 — Seu jogo e sua nave
 
-**Resumo:** Salve uma cópia do jogo, desenhe a sua nave e faça o motor pulsar.
+**Resumo:** Guarde uma cópia do jogo, desenhe a sua nave e faça o motor pulsar.
 
 - [Guarde uma cópia para criar do seu jeito](meu-jeito-aula-01.md)
 - [Desenhe sua nave em pixel art](meu-jeito-aula-02.md)

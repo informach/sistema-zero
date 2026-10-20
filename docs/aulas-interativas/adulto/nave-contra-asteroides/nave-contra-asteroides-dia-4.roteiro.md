@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/nave-contra-asteroides-dia-4.roteiro.md e de qa/adulto/traducoes/nave-contra-asteroides/nave-contra-asteroides-dia-4.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Nave Contra Asteroides · Aula 7
 
 **Dê três vidas à nave**
@@ -8,7 +10,7 @@ Entrada: Variável pontos começa em zero, aumenta somente no acerto e aparece n
 
 **Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
 
-Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página. A versão adulta ainda não foi gravada.
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página.
 
 Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Percebe?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. O recado da página começa convidando ("Sua vez:", "Agora…", "Hora de…") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Percebe?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, quem faz a aula testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …").
 
@@ -156,9 +158,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ## Seção 5. Confira o que você construiu
 
-**Recado na página (não gravar):** Hora de conferir o que você construiu. Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
-Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do recado. Leia a explicação após enviar; tentativas ilimitadas, sem espera.
+Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do recado, com todas as perguntas numa página só. Leia as explicações depois de clicar em Enviar quiz; envios ilimitados, sem espera.
 
 ## Seção 6. Teste os pontos e as vidas
 

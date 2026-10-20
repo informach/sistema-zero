@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/o-jogo-do-meu-jeito/meu-jeito-aula-02.roteiro.md e de qa/adulto/traducoes/o-jogo-do-meu-jeito/meu-jeito-aula-02.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · O Jogo do Meu Jeito · Aula 2
 
 **Desenhe sua nave em pixel art**
@@ -22,7 +24,7 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir de Aproximar em 1 vez, deixar ver as duas pedras parecidas. Aumentar Aproximar devagar até 4 e parar para mostrar os degraus da pedra de pixel e a borda lisa da pedra de vetor. Seguir até 6 e mostrar a grade da pedra de pixel e os pontos e curvas da pedra de vetor. Voltar para 1 e mostrar as duas parecidas de novo. Meme na comparação: na frase da foto ampliada, um celular com a foto de uma pedra que, pequena, parece redonda e, ampliada com os dedos, mostra os degraus dos pixels, com a legenda "de longe: redonda · de perto: degraus". Desenho nosso no formato de meme, sem mascote; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir de Aproximar em 1 vez, deixar ver as duas pedras parecidas. Aumentar Aproximar devagar até 4 e parar para mostrar os degraus da pedra de pixel e a borda lisa da pedra de vetor. Seguir até 6 e mostrar a grade da pedra de pixel e os pontos e curvas da pedra de vetor. Voltar para 1 e mostrar as duas parecidas de novo. Meme na comparação: na frase da foto ampliada, um celular com a foto de uma pedra que, pequena, parece redonda e, ampliada com os dedos, mostra os degraus dos quadradinhos, com a legenda "de longe: redonda · de perto: degraus". Desenho nosso no formato de meme, sem mascote; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo.
 
@@ -36,13 +38,13 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Professora:**
 
-> “Sabe quando você amplia demais uma foto no celular? De longe, ela parece lisa. De perto, ela fica quadriculada. A pedra de pixel é assim: ela é feita de pequenos quadrados, os pixels. Quando eu aumento Aproximar, é como ampliar a foto com os dedos.
+> “Sabe quando você amplia demais uma foto pequena no celular? De longe, ela parece lisa. De perto, ela fica quadriculada. A pedra de pixel é assim: ela é feita de quadradinhos, os pixels. Quando eu aumento Aproximar, é como ampliar a foto com os dedos.
 >
-> Eu continuo até 6. Olha só: na pedra de pixel aparece a grade dos quadrados, e na pedra de vetor aparecem pontos e curvas. É que a pedra de vetor é feita de pontos ligados por linhas, e o computador desenha essa linha de novo em qualquer tamanho. Por isso ela continua lisa.
+> Eu continuo até 6. Olha só: na pedra de pixel aparece a grade dos quadradinhos, e na pedra de vetor aparecem pontos e curvas. É que a pedra de vetor é feita de pontos ligados por linhas, e o computador desenha essa linha de novo em qualquer tamanho. Por isso ela continua lisa.
 >
-> Quando eu volto Aproximar para 1, as duas parecem iguais de novo, porque de longe os quadrados ficam pequenos demais para a gente ver.
+> Quando eu volto Aproximar para 1, as duas parecem iguais de novo, porque de longe os quadradinhos ficam pequenos demais para a gente ver.
 >
-> Daqui a pouco, você vai desenhar a sua nave em Pixel art, pixel por pixel. E, na aula 4, a sua pedra vai ser em Vetor, feita com pontos.
+> Daqui a pouco, você vai desenhar a sua nave em Pixel art, quadradinho por quadradinho. E, na aula 4, a sua pedra vai ser em Vetor, feita com pontos.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
@@ -60,7 +62,7 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Professora:**
 
-> “Lembra da experiência da seção anterior? De perto, a pedra de pixel mostrava os degraus dos quadrados. Agora a gente vai desenhar a sua nave desse jeito, em Pixel art, por isso você vai pintar pixel por pixel.
+> “Lembra da experiência da seção anterior? De perto, a pedra de pixel mostrava os degraus dos quadradinhos. Agora a gente vai desenhar a sua nave desse jeito, em Pixel art, por isso você vai pintar quadradinho por quadradinho.
 >
 > Clique em Abrir meu Pinta nesta seção. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Pixel art. Em O que você quer criar?, escolha Personagem. Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Depois clique em Começar a desenhar.”
 
@@ -94,13 +96,13 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 >
 > Agora eu ligo só o Espelho lado a lado, e aparece uma linha marcada como meio. Quando eu clico em Pintar a asa de novo, olha só: uma cópia da asa surge do outro lado dessa linha. Um traço meu virou dois, porque o espelho copia cada traço para o outro lado da linha do meio.
 >
-> Sabe aquelas manchas de tinta do teste de psicólogo? Pinga-se tinta numa folha, dobra-se a folha no meio e, ao abrir, a mancha aparece igual dos dois lados da dobra. O Espelho lado a lado faz isso com cada traço, e a dobra é a linha do meio.”
+> Sabe aquelas manchas de tinta do teste de psicólogo? Você pinga tinta numa folha, dobra no meio e, quando abre, a mancha aparece igual dos dois lados da dobra. O Espelho lado a lado faz isso com cada traço, e a dobra é a linha do meio.”
 
 **Na tela:** Desligar o espelho lateral, ligar só o vertical e pintar a ponta; depois comparar o comportamento do Balde.
 
 **Professora:**
 
-> “E o outro espelho? Eu desligo esse espelho, ligo só o Espelho de cima e de baixo e clico em Pintar a ponta. Percebe? Agora a cópia da ponta aparece embaixo, de cabeça para baixo, porque é o espelho que está ligado que decide onde a cópia cai.
+> “E o outro espelho? Eu desligo o Espelho lado a lado, ligo só o Espelho de cima e de baixo e clico em Pintar a ponta. Percebe? Agora a cópia da ponta aparece embaixo, de cabeça para baixo, porque é o espelho que está ligado que decide onde a cópia cai.
 >
 > Por último, eu deixo só o Espelho lado a lado ligado e clico em Balde de tinta: encher a asa. Repare: o Balde enche só a asa esquerda. O espelho continua ligado, mas não copia a tinta do Balde.
 >
@@ -130,7 +132,7 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Professora:**
 
-> “Feche a base acima das quatro linhas reservadas para o fogo. Depois aproxime a imagem e confira se não ficou nenhuma abertura entre os trechos do contorno, porque, por uma abertura, a tinta do Balde escapa para fora da nave. Se faltar um pixel, feche com o Lápis.
+> “Feche a base acima das quatro linhas reservadas para o fogo. Depois aproxime a imagem e confira se não ficou nenhuma abertura entre os trechos do contorno, porque, por uma abertura, a tinta do Balde escapa para fora da nave. Se faltar um quadradinho, feche com o Lápis.
 >
 > Quando terminar, desligue o espelho e confira se a nave cabe na grade e se o espaço do motor continua livre.
 >
@@ -174,9 +176,9 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da bola com um tom de azul e o sol na esquerda: ligar A sombra e a luz e deixar ver os três tons e a bola redonda. Desligar e mostrar a bola chapada, com um tom. Ligar de novo, mudar O sol para a direita e deixar ver o azul claro passar para a direita e o escuro para a esquerda. Meme na comparação: na frase da laranja, uma laranja na mesa ao lado de uma janela com sol, com o lado da janela claro e o outro lado escuro, com a legenda "lado do sol: claro · outro lado: escuro". Desenho nosso no formato de meme, sem mascote; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da bola com um tom de azul e o sol na esquerda: ligar A sombra e a luz e deixar ver os três tons e a bola redonda. Desligar e mostrar a bola chapada, com um tom. Ligar de novo, mudar O sol para a direita e deixar ver o azul claro passar para a direita e o escuro para a esquerda. Meme na comparação: na frase da bola no quintal, uma bola num quintal ao sol, com o lado virado para o sol claro e o outro lado escuro, com a legenda "lado do sol: claro · outro lado: escuro". Desenho nosso no formato de meme, sem mascote; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente.
 
-**Na tela:** Concluir a comparação com a laranja perto da janela e manter o sol à esquerda.
+**Na tela:** Concluir a comparação com a bola no quintal e manter o sol à esquerda.
 
 **Professora:**
 
@@ -186,7 +188,7 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 >
 > Quando eu desligo, a bola volta a ter um tom só e fica chapada, como um adesivo.
 >
-> Sabe uma laranja em cima da mesa, perto de uma janela com sol? O lado virado para a janela fica mais claro, e o outro lado fica mais escuro. É isso que A sombra e a luz desenha.”
+> Sabe uma bola no quintal, num dia de sol? O lado virado para o sol fica mais claro, e o outro lado fica mais escuro. É isso que A sombra e a luz desenha.”
 
 **Na tela:** Ligar luz e sombra e mover o sol para a direita; mostrar os tons trocando de lado.
 
@@ -238,9 +240,9 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Professora:**
 
-> “Hora de enviar a sua nave. Antes, confira na sua nave: a arte se chama nave, tem 32 por 32, corpo e cabine legíveis, espaço livre embaixo e a luz vindo de um lado só. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da aula só mostra o que já está salvo na sua conta.
+> “Hora de enviar a sua nave. Antes, confira na sua nave: a arte se chama nave, tem 32 por 32, corpo e cabine legíveis, espaço livre embaixo e a luz vindo de um lado só. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da aula só mostra o que já está guardado na sua conta.
 >
-> Agora volte para a aba da aula e clique em Escolher no Pinta. Na janela Meus trabalhos do Pinta, selecione a sua nave. Se o seu trabalho não aparecer, confira se ele ficou salvo na sua conta e clique em Atualizar galeria.
+> Agora volte para a aba da aula e clique em Escolher no Pinta. Na janela Meus trabalhos do Pinta, selecione a sua nave. Se o seu trabalho não aparecer, confira se ele ficou guardado na sua conta e clique em Atualizar galeria.
 >
 > Se quiser, escreva uma mensagem no campo Recado para o professor. Depois clique em Enviar ao professor (1) e espere aparecer Trabalho recebido pelo professor.
 >

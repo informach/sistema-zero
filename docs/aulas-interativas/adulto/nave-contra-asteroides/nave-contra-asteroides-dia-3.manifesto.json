@@ -60,7 +60,7 @@
   "blocks": [
     {
       "key": "video-apelidos",
-      "plannedVideo": "Título: Escolha quem sai no acerto\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os seletores reais e o botão de tempo da cena collision-pair. Com tiros (o grupo inteiro) e asteroides (o grupo inteiro), clicar em Deixar a trombada acontecer e mostrar pedras no grupo e tiros no grupo em 0. Clicar em Voltar ao começo, escolher tiro (o apelido) e asteroide (o apelido), deixar a trombada acontecer e mostrar 2 pedras e 2 tiros. Clicar em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo. Meme na comparação: na frase da sinuca, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma mesa de sinuca com asteroides no lugar das bolas: um asteroide só cai na caçapa e sai da mesa, e os outros continuam, com a legenda \"só quem foi acertado sai\"; desenho nosso, com os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Escolha quem sai no acerto\n\nProduzir no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os seletores reais e o botão de tempo da cena collision-pair. Com tiros (o grupo inteiro) e asteroides (o grupo inteiro), clicar em Deixar a trombada acontecer e mostrar pedras no grupo e tiros no grupo em 0. Clicar em Voltar ao começo, escolher tiro (o apelido) e asteroide (o apelido), deixar a trombada acontecer e mostrar 2 pedras e 2 tiros. Clicar em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo. Meme na comparação: na frase do tiro ao alvo, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma barraca de tiro ao alvo de parque com asteroides no lugar dos patinhos: só o asteroide atingido cai, e os outros continuam passando, com a legenda \"só quem foi acertado sai\"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-trombada",
@@ -93,11 +93,7 @@
           },
           "cenario": "nave",
           "setup": {
-            "goals": [
-              "whole-group",
-              "just-the-pair",
-              "others-stay"
-            ]
+            "goals": ["whole-group", "just-the-pair", "others-stay"]
           }
         },
         "semPerguntaFinal": true
@@ -105,7 +101,7 @@
     },
     {
       "key": "video-colisao",
-      "plannedVideo": "Título: Programe o acerto\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar pela retomada: atirar numa pedra e, no \"Percebe?\", mostrar o tiro atravessando. Mostrar os nomes dos dois grupos e os dois apelidos sem inverter. Seletores de objetos locais devem ser preenchidos dentro da colisão.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Programe o acerto\n\nProduzir no Estúdio atual. Começar pela retomada: atirar numa pedra e, no \"Percebe?\", mostrar o tiro atravessando. Mostrar os nomes dos dois grupos e os dois apelidos sem inverter. Seletores de objetos locais devem ser preenchidos dentro da colisão.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-colisao",
@@ -120,7 +116,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de conferir o que você construiu. Responda sobre o acerto e o lugar de onde o tiro sai, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima seção."
+        "text": "Hora de lembrar o que você construiu. Responda sobre o acerto e o lugar de onde o tiro sai, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
       }
     },
     {
@@ -146,9 +142,7 @@
                 "label": "O tiro e o asteroide envolvidos naquele acerto."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "Os apelidos tiro e asteroide apontam para os dois objetos da colisão. Os demais objetos dos grupos continuam no jogo."
           },
           {
@@ -168,9 +162,7 @@
                 "label": "Se o som está mais alto."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O número 400 não acompanha o movimento. O bloco o centro x do sprite nave lê a posição atual a cada disparo."
           }
         ]
@@ -178,7 +170,7 @@
     },
     {
       "key": "video-fecho",
-      "plannedVideo": "Título: Confira os acertos e envie\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Usar o projeto completo desta etapa. Testar sem pontos ou vidas, que ainda não foram construídos.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Confira os acertos e envie\n\nProduzir no Estúdio atual. Usar o projeto completo desta etapa. Testar sem pontos ou vidas, que ainda não foram construídos.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrega",
@@ -195,9 +187,7 @@
         "purpose": "submission",
         "chain": "nave-contra-asteroides",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -873,20 +863,13 @@
       "title": "Escolha quem sai no acerto",
       "intent": "exploration",
       "objective": "Sua vez: compare os grupos inteiros com os apelidos e, no teste dos apelidos, deixe o tempo passar até as outras duas pedras saírem. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-apelidos",
-        "fala-trombada",
-        "experiencia-trombada"
-      ],
+      "blockKeys": ["video-apelidos", "fala-trombada", "experiencia-trombada"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-apelidos",
-          "experiencia-trombada"
-        ]
+        "blockIds": ["video-apelidos", "experiencia-trombada"]
       }
     },
     {
@@ -894,18 +877,13 @@
       "title": "Programe o acerto",
       "intent": "application",
       "objective": "Agora faça o tiro acertar a pedra. Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar esta etapa. Depois, clique em Próxima seção.",
-      "blockKeys": [
-        "video-colisao",
-        "fala-colisao"
-      ],
+      "blockKeys": ["video-colisao", "fala-colisao"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-colisao"
-        ],
+        "blockIds": ["video-colisao"],
         "projectChecks": [
           {
             "id": "efeito-explosao",
@@ -1014,19 +992,14 @@
       "key": "quiz-final",
       "title": "Confira o que você construiu",
       "intent": "explanation",
-      "objective": "Hora de conferir o que você construiu. Responda sobre o acerto e o lugar de onde o tiro sai, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.",
-      "blockKeys": [
-        "fala-quiz-final",
-        "quiz"
-      ],
+      "objective": "Hora de lembrar o que você construiu. Responda sobre o acerto e o lugar de onde o tiro sai, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.",
+      "blockKeys": ["fala-quiz-final", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -1034,20 +1007,13 @@
       "title": "Confira os acertos e envie",
       "intent": "delivery",
       "objective": "Hora de testar os acertos. Acerte pedras em lugares diferentes, confira se as outras continuam caindo, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula.",
-      "blockKeys": [
-        "video-fecho",
-        "fala-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-fecho", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho",
-          "projeto"
-        ],
+        "blockIds": ["video-fecho", "projeto"],
         "projectChecks": [
           {
             "id": "efeito-tiro",

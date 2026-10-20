@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/cade-todo-mundo/cade-todo-mundo-certificado.roteiro.md e de qa/adulto/traducoes/cade-todo-mundo/cade-todo-mundo-certificado.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro falado: Cadê Todo Mundo? | Certificado
 
 Um vídeo, somente na celebração. **Status:** a versão adulta ainda não foi gravada. Só a professora fala; não há participação de avatar. A duração abaixo é um alvo; medir o vídeo final com a pausa e os gestos, sem acelerar.
@@ -10,7 +12,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Seção sem vídeo. Não gravar clipe de quiz.** O recado aparece na página antes das perguntas.
 
-**Recado na página (não gravar):** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora vamos relembrar essas regras com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam do toque que faz os personagens aparecerem e da contagem dos achados. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
 **Conferência de produção:** usar as perguntas e explicações do quiz final do manifesto. O quiz mostra as três perguntas numa página só. Depois de clicar em Enviar quiz, a pessoa lê as explicações e, se alguma resposta não estiver certa, troca a resposta e clica em Enviar quiz de novo. Com todas as respostas corretas, avança em Próxima seção. Não acrescentar vídeo, material ou certificado nesta seção.
 

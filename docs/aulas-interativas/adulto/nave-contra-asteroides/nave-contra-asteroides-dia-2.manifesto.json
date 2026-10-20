@@ -38,7 +38,7 @@
   "blocks": [
     {
       "key": "video-tecla-e-repeticao",
-      "plannedVideo": "Título: Compare esperar a tecla e repetir tiros\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Criar um tiro em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado sem clicar em Apertar a tecla, mostrando a peça em 0 vezes. Clicar em Apertar a tecla e mostrar um tiro e a peça em 1 vez. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar 5 tiros no fim do teste. Meme na comparação: na frase da campainha, mostrar por 2 a 3 segundos o meme ilustrado nosso, um dedo apertando a campainha de uma porta, com a legenda \"chegou, tocou\"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare esperar a tecla e repetir tiros\n\nProduzir no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Criar um tiro em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado sem clicar em Apertar a tecla, mostrando a peça em 0 vezes. Clicar em Apertar a tecla e mostrar um tiro e a peça em 1 vez. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar 5 tiros no fim do teste. Meme na comparação: na frase da campainha, mostrar por 2 a 3 segundos o meme ilustrado nosso, um dedo apertando a campainha de uma porta, com a legenda \"chegou, tocou\"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-tecla-e-repeticao",
@@ -73,11 +73,7 @@
           "setup": {
             "preset": {
               "id": "tres-caixas-tiro",
-              "areas": [
-                "start",
-                "loop",
-                "event"
-              ],
+              "areas": ["start", "loop", "event"],
               "cards": [
                 {
                   "id": "paint",
@@ -101,11 +97,7 @@
                 }
               ]
             },
-            "goals": [
-              "on-event",
-              "key-fires",
-              "flood"
-            ]
+            "goals": ["on-event", "key-fires", "flood"]
           }
         },
         "semPerguntaFinal": true
@@ -113,7 +105,7 @@
     },
     {
       "key": "video-escrito-e-lido",
-      "plannedVideo": "Título: Faça o tiro acompanhar a nave\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A nave se move pelo controle x da nave, não por arrastar o desenho. Com O número 400, clicar em Atirar, mudar x da nave para 640 e atirar de novo, mostrando as duas marcas em 400. Trocar para O centro x da nave, atirar, mudar a nave para 200 e atirar, mostrando as marcas em 640 e 200. Ligar Marcas da caixa e atirar, apontando o centro x e a borda de cima da caixa. Meme na comparação: na frase do relógio, mostrar por 2 a 3 segundos o meme ilustrado nosso, um pulso virado para conferir o relógio antes de responder, com a legenda \"ler na hora\"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Faça o tiro acompanhar a nave\n\nProduzir no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A nave se move pelo controle x da nave, não por arrastar o desenho. Com O número 400, clicar em Atirar, mudar x da nave para 640 e atirar de novo, mostrando as duas marcas em 400. Trocar para O centro x da nave, atirar, mudar a nave para 200 e atirar, mostrando as marcas em 640 e 200. Ligar Marcas da caixa e atirar, apontando o centro x e a borda de cima da caixa. Meme na comparação: na frase do relógio, mostrar por 2 a 3 segundos o meme ilustrado nosso, um pulso virado para conferir o relógio antes de responder, com a legenda \"ler na hora\"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-escrito-e-lido",
@@ -136,11 +128,7 @@
           "scene": "fixed-vs-read",
           "cenario": "nave",
           "setup": {
-            "goals": [
-              "same-spot",
-              "follows",
-              "box-marks"
-            ]
+            "goals": ["same-spot", "follows", "box-marks"]
           }
         },
         "semPerguntaFinal": true
@@ -148,7 +136,7 @@
     },
     {
       "key": "video-direcao-do-tiro",
-      "plannedVideo": "Título: Compare a direção do tiro\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A velocidade para o lado fica fechada em 0 nesta experiência. Colocar velocidade para baixo em -9, clicar em Avançar 1 quadro algumas vezes e mostrar o y caindo de 135 para 126, 117 e 108, com o tiro subindo. Trocar para 9, avançar outros quadros e mostrar o y crescendo e o tiro descendo. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare a direção do tiro\n\nProduzir no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A velocidade para o lado fica fechada em 0 nesta experiência. Colocar velocidade para baixo em -9, clicar em Avançar 1 quadro algumas vezes e mostrar o y caindo de 135 para 126, 117 e 108, com o tiro subindo. Trocar para 9, avançar outros quadros e mostrar o y crescendo e o tiro descendo. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-direcao-do-tiro",
@@ -193,10 +181,7 @@
                 "vy": 0
               }
             ],
-            "goals": [
-              "up",
-              "down"
-            ]
+            "goals": ["up", "down"]
           }
         },
         "semPerguntaFinal": true
@@ -204,7 +189,7 @@
     },
     {
       "key": "video-criar-tiro",
-      "plannedVideo": "Título: Monte o disparo da barra de espaço\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, tocar na barra de espaço e, no \"Percebe?\", mostrar que nada acontece. Abrir cada caminho com o destino à vista antes. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Monte o disparo da barra de espaço\n\nProduzir no Estúdio atual. Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, apertar a barra de espaço e, no \"Percebe?\", mostrar que nada acontece. Abrir cada caminho com o destino à vista antes. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-criar-tiro",
@@ -216,7 +201,7 @@
     },
     {
       "key": "video-tiros-voam",
-      "plannedVideo": "Título: Mova e desenhe os tiros\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar mostrando o som sem tiro: clicar na área do jogo e tocar na barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mova e desenhe os tiros\n\nProduzir no Estúdio atual. Começar mostrando o som sem tiro: clicar na área do jogo e apertar a barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-tiros-voam",
@@ -228,7 +213,7 @@
     },
     {
       "key": "video-tiro-fora-da-tela",
-      "plannedVideo": "Título: O tiro saiu da tela. E do grupo?\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Começar no estado inicial. Clicar em Tempo e deixar os tiros saírem pela borda de cima, mostrando a prateleira Fora da tela, no grupo encher e o número no grupo crescer. A chave Tirar do grupo quem sair da tela só abre depois da saída de dois tiros. Ligar a chave e deixar o tempo passar (se o tempo estiver parado, clicar em Tempo), mostrando a prateleira vazia, Removidos do grupo e o número no grupo igual ao da tela. Meme na comparação: na frase da lista de convidados, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma prancheta na porta de uma festa, com uma caneta riscando da lista de convidados um tiro que saiu pela porta, com a legenda \"saiu da tela, sai da lista\"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: O tiro saiu da tela. E do grupo?\n\nProduzir no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Começar no estado inicial. Clicar em Tempo e deixar os tiros saírem pela borda de cima, mostrando a prateleira Fora da tela, no grupo encher e o número no grupo crescer. A chave Tirar do grupo quem sair da tela só abre depois da saída de dois tiros. Ligar a chave e deixar o tempo passar (se o tempo estiver parado, clicar em Tempo), mostrando a prateleira vazia, Removidos do grupo e o número no grupo igual ao da tela. Meme na comparação: na frase da lista de convidados, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma prancheta na porta de uma festa, com uma caneta riscando da lista de convidados um tiro que saiu pela porta, com a legenda \"saiu da tela, sai da lista\"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-tiro-que-sai-da-tela",
@@ -262,10 +247,7 @@
               "exit": "top",
               "incoming": false
             },
-            "goals": [
-              "invisible-stored",
-              "rule-removes"
-            ]
+            "goals": ["invisible-stored", "rule-removes"]
           }
         },
         "semPerguntaFinal": true
@@ -273,7 +255,7 @@
     },
     {
       "key": "video-faxina",
-      "plannedVideo": "Título: Retire os tiros que saíram\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar pela retomada: atirar algumas vezes e, no \"Percebe?\", mostrar os tiros sumindo pela borda de cima, sem prometer que o grupo foi limpo. Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Retire os tiros que saíram\n\nProduzir no Estúdio atual. Começar pela retomada: atirar algumas vezes e, no \"Percebe?\", mostrar os tiros sumindo pela borda de cima, sem prometer que o grupo foi limpo. Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-faxina",
@@ -290,9 +272,7 @@
         "purpose": "submission",
         "chain": "nave-contra-asteroides",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -611,20 +591,13 @@
       "title": "Compare esperar a tecla e repetir tiros",
       "intent": "exploration",
       "objective": "Sua vez: compare Criar um tiro em Quando acontecer e em Enquanto estiver rodando. No primeiro teste, espere parar e só depois clique em Apertar a tecla. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-tecla-e-repeticao",
-        "fala-tecla-e-repeticao",
-        "experiencia-tres-areas"
-      ],
+      "blockKeys": ["video-tecla-e-repeticao", "fala-tecla-e-repeticao", "experiencia-tres-areas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-tecla-e-repeticao",
-          "experiencia-tres-areas"
-        ]
+        "blockIds": ["video-tecla-e-repeticao", "experiencia-tres-areas"]
       }
     },
     {
@@ -632,20 +605,13 @@
       "title": "Faça o tiro acompanhar a nave",
       "intent": "exploration",
       "objective": "Sua vez: atire de dois lugares com cada opção de x e depois ligue Marcas da caixa e atire de novo. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-escrito-e-lido",
-        "fala-escrito-e-lido",
-        "experiencia-escrito-e-lido"
-      ],
+      "blockKeys": ["video-escrito-e-lido", "fala-escrito-e-lido", "experiencia-escrito-e-lido"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-escrito-e-lido",
-          "experiencia-escrito-e-lido"
-        ]
+        "blockIds": ["video-escrito-e-lido", "experiencia-escrito-e-lido"]
       }
     },
     {
@@ -653,20 +619,13 @@
       "title": "Compare a direção do tiro",
       "intent": "exploration",
       "objective": "Sua vez: compare -9 e 9 em velocidade para baixo, avançando os quadros e olhando o y. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-direcao-do-tiro",
-        "fala-direcao-do-tiro",
-        "experiencia-direcao"
-      ],
+      "blockKeys": ["video-direcao-do-tiro", "fala-direcao-do-tiro", "experiencia-direcao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-direcao-do-tiro",
-          "experiencia-direcao"
-        ]
+        "blockIds": ["video-direcao-do-tiro", "experiencia-direcao"]
       }
     },
     {
@@ -674,18 +633,13 @@
       "title": "Monte o disparo da barra de espaço",
       "intent": "application",
       "objective": "Agora faça a sua nave atirar. Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar esta etapa. Depois, clique em Próxima seção.",
-      "blockKeys": [
-        "video-criar-tiro",
-        "fala-criar-tiro"
-      ],
+      "blockKeys": ["video-criar-tiro", "fala-criar-tiro"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-criar-tiro"
-        ],
+        "blockIds": ["video-criar-tiro"],
         "projectChecks": [
           {
             "id": "grupo-tiros",
@@ -827,18 +781,13 @@
       "title": "Mova e desenhe os tiros",
       "intent": "application",
       "objective": "Agora faça os tiros voarem. Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta etapa. Depois, clique em Próxima seção.",
-      "blockKeys": [
-        "video-tiros-voam",
-        "fala-tiros-voam"
-      ],
+      "blockKeys": ["video-tiros-voam", "fala-tiros-voam"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-tiros-voam"
-        ],
+        "blockIds": ["video-tiros-voam"],
         "projectChecks": [
           {
             "id": "mover-tiros",
@@ -874,20 +823,13 @@
       "title": "O tiro saiu da tela. E do grupo?",
       "intent": "exploration",
       "objective": "Sua vez: deixe dois tiros saírem com a limpeza desligada, depois ligue a regra e compare o grupo. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-tiro-fora-da-tela",
-        "fala-tiro-que-sai-da-tela",
-        "experiencia-faxina"
-      ],
+      "blockKeys": ["video-tiro-fora-da-tela", "fala-tiro-que-sai-da-tela", "experiencia-faxina"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-tiro-fora-da-tela",
-          "experiencia-faxina"
-        ]
+        "blockIds": ["video-tiro-fora-da-tela", "experiencia-faxina"]
       }
     },
     {
@@ -895,20 +837,13 @@
       "title": "Retire os tiros que saíram",
       "intent": "delivery",
       "objective": "Agora limpe o grupo dos tiros. Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula.",
-      "blockKeys": [
-        "video-faxina",
-        "fala-faxina",
-        "projeto"
-      ],
+      "blockKeys": ["video-faxina", "fala-faxina", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-faxina",
-          "projeto"
-        ],
+        "blockIds": ["video-faxina", "projeto"],
         "projectChecks": [
           {
             "id": "nave",

@@ -25,7 +25,7 @@
     {
       "onde": "desafio-certificado.md",
       "kids": "**Dedé** participa em 1 entrada, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-certificado.roteiro.md) identifica **Professora**, **Dedé (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.",
-      "adulto": "**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada."
+      "adulto": "Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada."
     },
     {
       "onde": "desafio-certificado.md",
@@ -60,7 +60,7 @@
     {
       "onde": "desafio-certificado.md",
       "kids": "A revisão final tem quatro perguntas em seção própria, antes da celebração. A seção de celebração não recebe quiz nem conteúdo comercial.",
-      "adulto": "A revisão final tem quatro perguntas em seção própria, antes da celebração. A seção de celebração não recebe quiz nem conteúdo comercial."
+      "adulto": "A revisão final tem quatro perguntas em seção própria, antes do encerramento. A seção de encerramento não recebe quiz nem conteúdo comercial. **Revisão formativa:** recado → quiz, com todas as perguntas numa página só e o botão Enviar quiz."
     },
     {
       "onde": "desafio-certificado.md",
@@ -100,7 +100,7 @@
     {
       "onde": "desafio-certificado.md",
       "kids": "**Zappy na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos relembrar essas regras com quatro perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.",
-      "adulto": "**Recado na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos revisar essas regras com quatro perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo."
+      "adulto": "**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam do personagem que anda, da coleta da chave e do farol que confere se você tem a chave. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
     },
     {
       "onde": "desafio-certificado.md",
@@ -215,7 +215,7 @@
     {
       "onde": "desafio-certificado.roteiro.md",
       "kids": "**Conferência de produção:** usar as perguntas e explicações do quiz final do manifesto. Depois de enviar, a pessoa lê as explicações e pode corrigir na hora. Com todas as respostas corretas, avança em Próxima parte. Não acrescentar vídeo, material ou certificado nesta seção.",
-      "adulto": "**Conferência de produção:** usar as perguntas e explicações do quiz final do manifesto. Todas as perguntas aparecem numa página só; depois de clicar em Enviar quiz, a pessoa lê as explicações e pode trocar a resposta e enviar de novo na hora. Com todas as respostas corretas, avança em Próxima seção. Não acrescentar vídeo, material ou certificado nesta seção."
+      "adulto": "**Conferência de produção:** usar as perguntas e explicações do quiz final do manifesto. Todas as perguntas aparecem numa página só; depois de clicar em Enviar quiz, a pessoa lê as explicações e, se precisar, troca a resposta e clica em Enviar quiz outra vez. Com todas as respostas corretas, avança em Próxima seção. Não acrescentar vídeo, material ou certificado nesta seção."
     },
     {
       "onde": "desafio-certificado.roteiro.md",
@@ -285,7 +285,7 @@
     {
       "onde": "desafio-certificado.manifesto.json",
       "kids": "Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos relembrar essas regras com quatro perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.",
-      "adulto": "Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos revisar essas regras com quatro perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo."
+      "adulto": "Hora de lembrar o que você construiu. As perguntas falam do personagem que anda, da coleta da chave e do farol que confere se você tem a chave. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
     },
     {
       "onde": "desafio-certificado.manifesto.json",
@@ -390,7 +390,7 @@
     {
       "onde": "desafio-certificado.manifesto.json",
       "kids": "Título: Comemore sua criação\n\nComemorar o jogo do jeito que a criança escolheu e as regras que ela programou (o personagem que anda, a coleta da chave e o farol que confere a chave) com a fala: \"Você terminou A Chave do Farol! Olha só o seu jogo, do jeito que você escolheu, e o que você programou: o personagem que anda, o jogo que guarda a chave e o farol que confere se ela foi encontrada. São essas regras que fazem o seu jogo funcionar, e quem montou foi você!\". Esta parte não tem Estúdio: no \"Olha só\", mostrar o jogo da demonstração do Dia 3 (pirata, barco pirata, chave de estrela, farol de pedra, noite na ilha), gravado antes na conta de ensaio, com o farol aceso e o barco chegando. O preparo do cenário, dos desenhos e do barco é informação interna da equipe, sem ressalva na comemoração. Mostrar Pegar meu certificado numa conta com os Dias 1 a 3 concluídos, a revisão aprovada e nenhum certificado emitido; esperar o certificado baixar e encerrar em Concluir fase. Não incluir pitch comercial. Participações de Dedé, na ordem de corte: FCP2-D01, depois de \"São essas regras que fazem o seu jogo funcionar, e quem montou foi você!\", Dedé diz \"Eu fiz o jogo funcionar!\"; a professora retoma \"Parabéns pelo seu jogo! Agora clique em Pegar meu certificado\". Quando a entrada vem depois de um gesto, concluir o gesto antes de Dedé entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-certificado.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.",
-      "adulto": "Título: Comemore sua criação\n\nReconhecer o jogo do jeito que a pessoa escolheu e as regras que ela programou (o personagem que anda, a coleta da chave e o farol que confere a chave) com a fala: \"Você terminou A Chave do Farol. Olha só o seu jogo, do jeito que você escolheu, e o que você programou: o personagem que anda, o jogo que guarda a chave e o farol que confere se ela foi encontrada. São essas regras que fazem o seu jogo funcionar, e quem montou foi você.\". Esta seção não tem Estúdio: no \"Olha só\", mostrar o jogo da demonstração do Dia 3 (pirata, barco pirata, chave de estrela, farol de pedra, noite na ilha), gravado antes na conta de ensaio, com o farol aceso e o barco chegando. O preparo do cenário, dos desenhos e do barco é informação interna da equipe, sem ressalva na fala. Mostrar Emitir meu certificado numa conta com os Dias 1 a 3 concluídos, a revisão aprovada e nenhum certificado emitido; esperar o certificado baixar e encerrar em Concluir aula. Não incluir pitch comercial.\n\nRoteiro falado: desafio-certificado.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "adulto": "Título: Comemore sua criação\n\nReconhecer o jogo do jeito que a pessoa escolheu e as regras que ela programou (o personagem que anda, a coleta da chave e o farol que confere a chave) com a fala: \"Você terminou A Chave do Farol. Olha só o seu jogo, do jeito que você escolheu, e o que você programou: o personagem que anda, o jogo que guarda a chave e o farol que confere se ela foi encontrada. São essas regras que fazem o seu jogo funcionar, e quem montou foi você.\". Esta seção não tem Estúdio: no \"Olha só\", mostrar o jogo da demonstração do Dia 3 (pirata, barco pirata, chave de estrela, farol de pedra, noite na ilha), gravado antes na conta de ensaio, com o farol aceso e o barco chegando. O preparo do cenário, dos desenhos e do barco é informação interna da equipe, sem ressalva na fala. Mostrar Emitir meu certificado numa conta com os Dias 1 a 3 concluídos, a revisão aprovada e nenhum certificado emitido; esperar o certificado baixar e encerrar em Concluir aula. Não incluir pitch comercial.\n\nRoteiro falado: desafio-certificado.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "onde": "desafio-certificado.manifesto.json",

@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/o-jogo-do-meu-jeito/meu-jeito-aula-07.md e de qa/adulto/traducoes/o-jogo-do-meu-jeito/meu-jeito-aula-07.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # O Jogo do Meu Jeito · Aula 7 · Faça suas pedras nascerem animadas
 
 Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`. Consulte [o mapa do curso](modulos.md).
@@ -58,15 +60,15 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 
 ### Seção 5. Confira as artes dentro do jogo
 
-**Tarefa / Recado na página:** Agora vamos relembrar como as suas artes entraram no jogo, com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
+**Tarefa / Recado na página:** Hora de lembrar o que você construiu. As perguntas falam de como as suas artes entraram no jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
 **Blocos na página:** fala-revisao → quiz.
 
-**Quiz formativo:** somente recado → quiz, sem vídeo ou ferramenta. Todas as perguntas numa página só, com o botão Enviar quiz. Todas corretas, explicação após enviar e tentativas ilimitadas, sem espera.
+**Revisão formativa:** recado → quiz, com todas as perguntas numa página só e o botão Enviar quiz, sem vídeo ou ferramenta. Todas corretas, explicação após enviar e tentativas ilimitadas, sem espera.
 
 ### Seção 6. Envie o jogo com as duas artes
 
-**Tarefa / Recado na página:** Hora de enviar o seu jogo com as duas artes. Confira se a nave e as pedras usam as suas animações. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer a mensagem Trabalho recebido pelo professor, clique em Concluir aula.
+**Tarefa / Recado na página:** Hora de enviar o seu jogo com as duas artes. Confira se a nave e as pedras usam as suas animações. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 
@@ -78,4 +80,4 @@ Os oito slugs e a chave de entrega `entrega-galeria-v6` são preservados. Aula 5
 
 O programa de referência permanece em `qa/meu-jeito-projetos-qa.ts`; as etapas e artes de demonstração ficam em `qa/meu-jeito-etapas.ts`. Usar Programação e Jogo 2D já trazidos com o projeto de Nave Contra Asteroides. Não acrescentar HTML/CSS nem instalar extensão em um projeto vazio só para cumprir uma tarefa.
 
-A ordem vídeo → recado → atividade não configura sozinha o bloqueio: conferir videoBeforeActivity no curso adulto durante a importação. Gravar os clipes adultos, vincular o PDF do Caderno do Aluno quando existir, testar com um perfil adulto e ensaiar com adultos antes de declarar o percurso validado.
+A ordem vídeo → recado → atividade não configura sozinha o bloqueio: conferir videoBeforeActivity no curso adulto durante a importação. Gravar os clipes adultos, vincular o PDF do caderno do curso quando existir, testar com um perfil adulto e ensaiar com adultos antes de declarar o percurso validado.

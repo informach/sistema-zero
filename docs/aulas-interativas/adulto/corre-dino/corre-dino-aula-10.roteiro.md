@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-10.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-10.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 10
 
 **Ajuste a área da batida**

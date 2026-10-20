@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/modulos.md e de qa/adulto/traducoes/corre-dino/_curso.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Corre, Dino!
 
 **Título do curso:** Corre, Dino!

@@ -7,7 +7,7 @@
   "blocks": [
     {
       "key": "video-estado-do-jogo",
-      "plannedVideo": "Título: Escolha quando o jogo pode agir\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Confirmar rótulo Criar asteroide via cast. A cena game-state usa Toque para começar, no palco, diferente do Enter que será construído no projeto. Com Criar asteroide no relógio, fora do Se, clicar em Tempo na abertura e mostrar o contador de asteroides criados subindo. Levar a peça para dentro de Se o estado do jogo é jogando, deixar passar uns quatro segundos e mostrar o contador em esperando, com os toques do relógio subindo na faixa. Clicar em Toque para começar e mostrar as pedras nascendo de novo. A caixa do relógio mostra No relógio, a cada 40 quadros, o mesmo intervalo do projeto. Meme na comparação: na frase do semáforo, mostrar por 2 a 3 segundos o meme ilustrado nosso, os asteroides parados diante de um semáforo vermelho, com a legenda \"só depois do verde\"; desenho nosso, com os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Escolha quando o jogo pode agir\n\nProduzir no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Confirmar rótulo Criar asteroide via cast. A cena game-state usa Toque para começar, no palco, diferente do Enter que será construído no projeto. Com Criar asteroide no relógio, fora do Se, clicar em Tempo na abertura e mostrar o contador de asteroides criados subindo. Levar a peça para dentro de Se o estado do jogo é jogando, deixar passar uns quatro segundos e mostrar o contador em esperando, com os toques do relógio subindo na faixa. Clicar em Toque para começar e mostrar as pedras nascendo de novo. A caixa do relógio mostra No relógio, a cada 40 quadros, o mesmo intervalo do projeto. Meme na comparação: na frase da corrida, mostrar por 2 a 3 segundos o meme ilustrado nosso, os asteroides parados atrás da linha de largada e a nave segurando a bandeira, com a legenda \"só depois da largada\"; desenho nosso, com os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-estado-do-jogo",
@@ -46,11 +46,7 @@
               "waitingSeconds": 4,
               "moment": "screen"
             },
-            "goals": [
-              "outside",
-              "waiting",
-              "playing"
-            ],
+            "goals": ["outside", "waiting", "playing"],
             "goalCopy": {
               "outside": {
                 "label": "Sem a pergunta, as pedras nasceram antes de começar"
@@ -70,7 +66,7 @@
     },
     {
       "key": "video-embrulhar",
-      "plannedVideo": "Título: Separe a abertura da partida\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar pela retomada: abrir o jogo e, no \"Percebe?\", mostrar as pedras caindo desde o começo. A pergunta x > 0 do Se é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos antes de encaixar a pergunta nova; conferir antes da gravação onde fica a lixeira. O bloco de estado inicial entra depois de criar os ramos, para reduzir tempo em tela vazia. Mostrar toda a pilha transferida. No \"Olha aqui\", apontar os dois + da linha de baixo do Se e clicar no que fica antes de senão se. Não colocar o relógio de 40 quadros dentro do quadro principal.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Separe a abertura da partida\n\nProduzir no Estúdio atual. Começar pela retomada: abrir o jogo e, no \"Percebe?\", mostrar as pedras caindo desde o começo. A pergunta x > 0 do Se é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos antes de encaixar a pergunta nova; conferir antes da gravação onde fica a lixeira. O bloco de estado inicial entra depois de criar os ramos, para reduzir tempo em tela vazia. Mostrar toda a pilha transferida. No \"Olha aqui\", apontar os dois + da linha de baixo do Se e clicar no que fica antes de senão se. Não colocar o relógio de 40 quadros dentro do quadro principal.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-embrulhar",
@@ -82,7 +78,7 @@
     },
     {
       "key": "video-relogio-e-tiro",
-      "plannedVideo": "Título: Espere a partida para criar pedras e tiros\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar tocando na barra de espaço com a abertura na tela e, no \"Percebeu?\", deixar ouvir o som do tiro, sem música por cima. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Espere a partida para criar pedras e tiros\n\nProduzir no Estúdio atual. Começar apertando a barra de espaço com a abertura na tela e, no \"Percebeu?\", deixar ouvir o som do tiro, sem música por cima. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-relogio-e-tiro",
@@ -94,14 +90,14 @@
     },
     {
       "key": "video-enter",
-      "plannedVideo": "Título: Use Enter para começar\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar tocando em Enter com a abertura na tela e, no \"Percebe?\", mostrar que nada muda. Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Use Enter para começar\n\nProduzir no Estúdio atual. Começar apertando Enter com a abertura na tela e, no \"Percebe?\", mostrar que nada muda. Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-enter",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça o Enter começar a partida. Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta etapa e envie para o professor. Depois, clique em Concluir aula."
+        "text": "Agora faça o Enter começar a partida. Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula."
       }
     },
     {
@@ -111,9 +107,7 @@
         "purpose": "submission",
         "chain": "nave-contra-asteroides",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -1221,20 +1215,13 @@
       "title": "Escolha quando o jogo pode agir",
       "intent": "exploration",
       "objective": "Sua vez: compare Criar asteroide fora e dentro de Se jogando, antes e depois de começar. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-estado-do-jogo",
-        "fala-estado-do-jogo",
-        "experiencia-estado"
-      ],
+      "blockKeys": ["video-estado-do-jogo", "fala-estado-do-jogo", "experiencia-estado"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-estado-do-jogo",
-          "experiencia-estado"
-        ]
+        "blockIds": ["video-estado-do-jogo", "experiencia-estado"]
       }
     },
     {
@@ -1242,18 +1229,13 @@
       "title": "Separe a abertura da partida",
       "intent": "application",
       "objective": "Agora separe a abertura da partida. Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar esta etapa. Depois, clique em Próxima seção.",
-      "blockKeys": [
-        "video-embrulhar",
-        "fala-embrulhar"
-      ],
+      "blockKeys": ["video-embrulhar", "fala-embrulhar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-embrulhar"
-        ],
+        "blockIds": ["video-embrulhar"],
         "projectChecks": [
           {
             "id": "tela-inicial",
@@ -1381,18 +1363,13 @@
       "title": "Espere a partida para criar pedras e tiros",
       "intent": "application",
       "objective": "Agora faça as pedras e os tiros esperarem a partida. Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta etapa. Depois, clique em Próxima seção.",
-      "blockKeys": [
-        "video-relogio-e-tiro",
-        "fala-relogio-e-tiro"
-      ],
+      "blockKeys": ["video-relogio-e-tiro", "fala-relogio-e-tiro"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-relogio-e-tiro"
-        ],
+        "blockIds": ["video-relogio-e-tiro"],
         "projectChecks": [
           {
             "id": "guardar-relogio",
@@ -1512,21 +1489,14 @@
       "key": "enter",
       "title": "Use Enter para começar",
       "intent": "delivery",
-      "objective": "Agora faça o Enter começar a partida. Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta etapa e envie para o professor. Depois, clique em Concluir aula.",
-      "blockKeys": [
-        "video-enter",
-        "fala-enter",
-        "projeto"
-      ],
+      "objective": "Agora faça o Enter começar a partida. Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula.",
+      "blockKeys": ["video-enter", "fala-enter", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-enter",
-          "projeto"
-        ],
+        "blockIds": ["video-enter", "projeto"],
         "projectChecks": [
           {
             "id": "tela-inicial",

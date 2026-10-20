@@ -13,6 +13,7 @@ import {
   markdownAdulto,
   Pendencias,
   palavrasDoKids,
+  procedencia,
   sufixoSlugAdulto,
   textosManifesto,
   trechosMarkdown,
@@ -34,6 +35,24 @@ describe('a camada de tradução', () => {
       ['Depois.', 'Depois.'],
     ])
     expect(markdownAdulto(kids, d, 'x')).toBe('Antes.\n\nDepois.\n')
+  })
+
+  test('sem o avatar, duas falas seguidas da professora viram uma só', () => {
+    const kids =
+      '**Professora:**\n\n> “Primeira.”\n\n**Debinha (avatar):**\n\n> “E aí?”\n\n**Professora:**\n\n> “Segunda.”\n'
+    const d = new Map([
+      ['**Professora:**', '**Professora:**'],
+      ['> “Primeira.”', '> “Primeira.”'],
+      ['**Debinha (avatar):**', ''],
+      ['> “E aí?”', ''],
+      ['> “Segunda.”', '> “Segunda.”'],
+    ])
+    expect(markdownAdulto(kids, d, 'x')).toBe('**Professora:**\n\n> “Primeira.\n>\n> Segunda.”\n')
+    // Com uma nota de tela no meio, as falas continuam separadas.
+    const comNota =
+      '**Professora:**\n\n> “Um.”\n\n**Na tela:** gesto.\n\n**Professora:**\n\n> “Dois.”\n'
+    const identidade = new Map(trechosMarkdown(comNota).map((t) => [t, t]))
+    expect(markdownAdulto(comNota, identidade, 'x')).toBe(comNota)
   })
 
   test('trecho kids sem par para a geração em vez de passar adiante a frase infantil', () => {
@@ -94,7 +113,35 @@ describe('a camada de tradução', () => {
     expect(() => manifestoAdulto(solto, new Map(), 'x')).toThrow(Pendencias)
   })
 
+  test('campo de tela vazio e campo de texto novo param a geração', () => {
+    const kids = { blocks: [{ key: 'fala', content: { kind: 'dialogue', text: 'Oi.' } }] }
+    expect(() => manifestoAdulto(kids, new Map([['Oi.', '']]), 'x')).toThrow(Pendencias)
+    expect(() => manifestoAdulto(kids, new Map([['Oi.', 'Olá.']]), 'x')).not.toThrow()
+    const novo = { blocks: [{ key: 'img', content: { kind: 'image', alt: 'Uma nave.' } }] }
+    expect(() => manifestoAdulto(novo, new Map(), 'x')).toThrow(/campo novo/)
+  })
+
+  test('o Markdown adulto começa dizendo de onde vem', () => {
+    const d = new Map([['Oi.', 'Olá.']])
+    const saida = markdownAdulto('Oi.\n', d, 'x', procedencia('corre-dino', 'a.md', 'a'))
+    expect(saida.startsWith('<!-- Versão adulta gerada')).toBe(true)
+    expect(saida.endsWith('Olá.\n')).toBe(true)
+  })
+
   test('a régua do vocabulário morde e deixa passar a fase do jogo', () => {
+    for (const kids of [
+      'Clique em próxima parte.',
+      'A criançada adora.',
+      'O ZAPPY ajuda.',
+      'Partes da aula',
+      'Ainda falta um objetivo.',
+      'No cabeçalho Seu projeto no Estúdio.',
+      'Escreva no campo Recado (opcional).',
+      'Clique em Mostrar menu.',
+    ])
+      expect(palavrasDoKids(kids)).not.toEqual([])
+    expect(palavrasDoKids('Compare com o quadro O jogo da fase.')).toEqual([])
+    expect(palavrasDoKids('Ainda falta cumprir um objetivo desta etapa.')).toEqual([])
     expect(palavrasDoKids('Clique em Próxima parte.')).toEqual(['Próxima seção'])
     expect(palavrasDoKids('Termine esta fase.')).toHaveLength(1)
     expect(palavrasDoKids('Dedé sai antes da resposta.')).toEqual(['avatar infantil'])

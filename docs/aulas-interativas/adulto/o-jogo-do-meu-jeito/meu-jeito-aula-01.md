@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/o-jogo-do-meu-jeito/meu-jeito-aula-01.md e de qa/adulto/traducoes/o-jogo-do-meu-jeito/meu-jeito-aula-01.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # O Jogo do Meu Jeito · Aula 1 · Guarde uma cópia para criar do seu jeito
 
 Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`. Consulte [o mapa do curso](modulos.md).
@@ -38,7 +40,7 @@ Jogo derivado do marco original 8, com artes ilustrativas de dois quadros. Concl
 
 **Blocos na página:** video-caderno → fala-caderno → materiais-caderno.
 
-Anexar a `materiais-caderno` o PDF do Caderno do Aluno adulto, ainda em produção; não anexar o PDF do kids. Ler, baixar e imprimir são opcionais e não entram na conclusão; a fala oferece ler aqui ou baixar como convite.
+Anexar a `materiais-caderno` o PDF do caderno do curso adulto, ainda em produção; não anexar o PDF do kids. Ler, baixar e imprimir são opcionais e não entram na conclusão; a fala oferece ler aqui ou baixar como convite.
 
 ### Seção 3. Troque a história, observe as regras
 
@@ -54,7 +56,7 @@ Anexar a `materiais-caderno` o PDF do Caderno do Aluno adulto, ainda em produç�
 
 **Blocos na página:** video-copias → fala-copias → experiencia-copia.
 
-**Experiência existente:** `copy-vs-original`. Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados. Sem palpite, pistas ou pergunta final.
+**Experiência existente:** `copy-vs-original`. Clique em Exportar e observe o arquivo e o quadro O jogo da fase. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados. Sem palpite, pistas ou pergunta final.
 
 ### Seção 5. Baixe o seu jogo concluído
 
@@ -86,4 +88,4 @@ Os oito slugs e a chave de entrega `entrega-galeria-v6` são preservados. Aula 5
 
 O programa de referência permanece em `qa/meu-jeito-projetos-qa.ts`; as etapas e artes de demonstração ficam em `qa/meu-jeito-etapas.ts`. Usar Programação e Jogo 2D já trazidos com o projeto de Nave Contra Asteroides. Não acrescentar HTML/CSS nem instalar extensão em um projeto vazio só para cumprir uma tarefa.
 
-A ordem vídeo → recado → atividade não configura sozinha o bloqueio: conferir videoBeforeActivity no curso adulto durante a importação. Gravar os clipes adultos, vincular o PDF do Caderno do Aluno quando existir, testar com um perfil adulto e ensaiar com adultos antes de declarar o percurso validado.
+A ordem vídeo → recado → atividade não configura sozinha o bloqueio: conferir videoBeforeActivity no curso adulto durante a importação. Gravar os clipes adultos, vincular o PDF do caderno do curso quando existir, testar com um perfil adulto e ensaiar com adultos antes de declarar o percurso validado.

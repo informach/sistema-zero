@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/nave-contra-asteroides-dia-5.roteiro.md e de qa/adulto/traducoes/nave-contra-asteroides/nave-contra-asteroides-dia-5.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Nave Contra Asteroides · Aula 9
 
 **Termine e recomece a partida**
@@ -34,7 +36,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Ou seja, para ganhar, a partida precisa chegar a 26 pontos. Agora a pergunta da vitória, que o jogo faz em todo quadro, durante a partida. Ela vai no fim do então de Se o estado do jogo é jogando, dentro de A cada quadro do jogo, logo depois de Desenhar as vidas do sprite: deixe esse lugar à vista. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse lugar.
+> “Com a meta pronta, agora a pergunta da vitória, que o jogo faz em todo quadro, durante a partida. Ela vai no fim do então de Se o estado do jogo é jogando, dentro de A cada quadro do jogo, logo depois de Desenhar as vidas do sprite: deixe esse lugar à vista. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse lugar.
 >
 > Desta vez, a pergunta que vem no Se vai ser usada. Ela é uma comparação: um valor, um sinal e outro valor. No lado esquerdo, clique em x e escolha pontos. No sinal, clique em > e escolha ≥, que quer dizer maior ou igual.”
 
@@ -106,7 +108,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Deixe à vista o espaço do então do ramo fim. Pegue outro Mostrar tela com título subtítulo dica fundo, na mesma categoria, e solte nesse espaço. No título, escreva Você perdeu, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro.
 >
-> Agora teste: clique na área do jogo, comece com Enter e deixe as vidas acabarem. Olha só: aparece a tela Você perdeu!”
+> Agora teste: clique na área do jogo, comece com Enter e deixe as vidas acabarem. Olha só: aparece a tela Você perdeu.”
 
 **Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
@@ -126,9 +128,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A experiência restart usa Apertar Enter. A abertura pode cobrir indicadores: compará-los quando a partida começa. Com Mudar o estado do jogo para inicio, clicar em Apertar Enter, esperar a batida e o fim, clicar em Apertar Enter para voltar à abertura com as pedras ainda na pista e clicar de novo para mostrar a partida que acaba na hora. No fim, trocar para Reiniciar o jogo, clicar em Apertar Enter para mostrar a abertura com a pista vazia e clicar outra vez para mostrar a partida com a pista limpa. Meme na comparação: na frase da sinuca, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma mão arrumando as bolas de sinuca no triângulo, no meio da mesa, com a legenda "Reiniciar o jogo: tudo no lugar"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A experiência restart usa Apertar Enter. A abertura pode cobrir indicadores: compará-los quando a partida começa. Com Mudar o estado do jogo para inicio, clicar em Apertar Enter, esperar a batida e o fim, clicar em Apertar Enter para voltar à abertura com as pedras ainda na pista e clicar de novo para mostrar a partida que acaba na hora. No fim, trocar para Reiniciar o jogo, clicar em Apertar Enter para mostrar a abertura com a pista vazia e clicar outra vez para mostrar a partida com a pista limpa. Meme na comparação: na frase do jogo de tabuleiro, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma mão arrumando as peças de um tabuleiro de volta na saída, com a legenda "Reiniciar o jogo: tudo no lugar"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
 
-**Na tela:** Concluir o teste em que mudar o estado mantém as pedras antigas e terminar a comparação com a sinuca.
+**Na tela:** Concluir o teste em que mudar o estado mantém as pedras antigas e terminar a comparação com o tabuleiro.
 
 **Professora:**
 
@@ -136,7 +138,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olha aqui: em No fim, o Enter faz, eu escolho Mudar o estado do jogo para inicio. Clico em Apertar Enter, e a partida começa. Uma pedra bate na nave, e a partida termina. Clico em Apertar Enter, e o jogo volta para a abertura, mas percebe? As pedras da partida continuam na pista. Clico de novo para jogar, e a partida nova começa com as pedras velhas e acaba na hora, com uma batida. Ou seja, mudar só o estado não arruma o que ficou da partida anterior.
 >
-> É como uma partida de sinuca: para jogar de novo, alguém junta todas as bolas no triângulo. Se ninguém arruma as bolas, a partida nova já começa bagunçada.”
+> É como um jogo de tabuleiro: para jogar de novo, você volta todas as peças para a saída. Se ninguém arruma as peças, a partida nova já começa bagunçada.”
 
 **Na tela:** Trocar para Reiniciar o jogo e mostrar abertura e nova partida com a pista limpa.
 
@@ -154,13 +156,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada: perder, tocar em Enter e, no "Percebe?", mostrar que a tela Você perdeu continua. Ampliar o evento existente, sem criar um segundo Enter, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Começar pela retomada: perder, apertar Enter e, no "Percebe?", mostrar que a tela Você perdeu continua. Ampliar o evento existente, sem criar um segundo Enter, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo.
 
 **Professora:**
 
-> “No seu jogo, comece uma partida, perca e toque em Enter. Percebe? Você perdeu continua na tela, porque o Enter só sabe começar a partida.
+> “No seu jogo, comece uma partida, perca e aperte Enter. Percebe? Você perdeu continua na tela, porque o Enter só sabe começar a partida.
 >
 > Lembra da experiência da seção anterior? Reiniciar o jogo deixava tudo limpo para outra partida. Agora a gente vai ensinar isso ao Enter do seu jogo.
 >
@@ -180,7 +182,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Depois de ganhar, também dá para jogar de novo. Por isso, agora a vitória, do mesmo jeito. Clique de novo no + que fica antes de senão se. Arraste a pergunta x maior que 0 do ramo novo para a lixeira e deixe à vista o lugar vazio. Na mesma categoria, pegue o estado do jogo é, solte nesse lugar e escolha vitoria. Depois, deixe à vista o então do ramo vitoria, pegue outro Reiniciar o jogo e solte nesse espaço.
 >
-> Agora teste: perca uma partida e toque em Enter. Olha só: a abertura volta. Toque em Enter outra vez, porque é esse segundo Enter que começa a partida nova. Repare que o placar está em zero e os três corações voltaram, porque Reiniciar o jogo fez a preparação de novo.”
+> Agora teste: perca uma partida e aperte Enter. Olha só: a abertura volta. Aperte Enter outra vez, porque é esse segundo Enter que começa a partida nova. Repare que o placar está em zero e os três corações voltaram, porque Reiniciar o jogo fez a preparação de novo.”
 
 **Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
@@ -194,7 +196,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ## Seção 5. Confira o que você construiu
 
-**Recado na página (não gravar):** Hora de conferir o que você construiu. Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
 Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do recado, com todas as perguntas numa página só. Leia as explicações depois de clicar em Enviar quiz; envios ilimitados, sem espera.
 
@@ -210,15 +212,15 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do recad
 
 **Professora:**
 
-> “Agora teste o ciclo completo do seu jogo. Na abertura, clique na área do jogo e toque na barra de espaço. Repare: não sai som de tiro, porque criar tiros e criar asteroides ficam dentro de Se jogando. Confira também nos blocos se os dois estão lá.
+> “Agora teste o ciclo completo do seu jogo. Na abertura, clique na área do jogo e aperte a barra de espaço. Repare: não sai som de tiro, porque criar tiros e criar asteroides ficam dentro de Se jogando. Confira também nos blocos se os dois estão lá.
 >
-> Toque em Enter, mova a nave e atire. Depois, deixe as três vidas acabarem e confira a tela Você perdeu. Toque em Enter para voltar à abertura e mais uma vez para começar, e confira se a partida nova começa com zero pontos e três corações.”
+> Aperte Enter, mova a nave e atire. Depois, deixe as três vidas acabarem e confira a tela Você perdeu. Aperte Enter para voltar à abertura e mais uma vez para começar, e confira se a partida nova começa com zero pontos e três corações.”
 
 **Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. No fim da fala, mostrar a tela Publicado!, com Copiar link à vista, e manter a janela parada.
 
 **Professora:**
 
-> “Agora tente a vitória: nessa nova partida, tente chegar a 26 pontos para ver a tela Você ganhou!. Se perder antes, recomece e tente de novo. Na vitória, toque na barra de espaço: não pode sair nenhum tiro. Toque em Enter para voltar à abertura e outra vez para jogar, e confira de novo os pontos e as vidas. Se algum final não funcionar, reveja a pergunta que muda o estado e o ramo que mostra aquela tela.
+> “Agora vá atrás da vitória: nessa nova partida, tente chegar a 26 pontos para ver a tela Você ganhou!. Se perder antes, recomece e tente de novo. Na vitória, aperte a barra de espaço: não pode sair nenhum tiro. Aperte Enter para voltar à abertura e outra vez para jogar, e confira de novo os pontos e as vidas. Se algum final não funcionar, reveja a pergunta que muda o estado e o ramo que mostra aquela tela.
 >
 > Olha só o que você programou: os controles, os tiros, os acertos, os pontos, as vidas e as telas. É com essas regras que a sua nave enfrenta os asteroides do começo ao fim da partida. Pronto: o seu jogo está completo.
 >
@@ -230,4 +232,4 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do recad
 
 > “Agora qualquer pessoa pode jogar o jogo que você criou. Clique em Copiar link e mande para os amigos, para o grupo, para quem você quiser: quem receber joga direto, até no celular. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula.”
 
-**Recado na página (não gravar):** Hora do teste final. Confira a derrota, a vitória e o recomeço, clique em Verificar esta etapa e envie para o professor. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Hora do teste final. Confira a derrota, a vitória e o recomeço, clique em Verificar esta etapa e envie o seu projeto ao professor. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula.

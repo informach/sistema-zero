@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.roteiro.md e de qa/adulto/traducoes/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Nave Contra Asteroides · Aula 1
 
 **Faça a nave aparecer**
@@ -18,13 +20,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar somente a versão pronta. Na primeira fala, apresentar o jogo, o acerto, a vitória e a derrota. O narrador faz um gesto de exemplo e para: clicar na área do jogo, tocar em Enter para começar e tocar na barra de espaço uma vez, mostrando o tiro subir. Não mover a nave, não jogar uma partida inteira e não mostrar vitória, derrota ou volta à abertura. A atividade comprova participação, não vitória. Terminar em Agora é a sua vez e Próxima seção.
+**Na tela:** Mostrar somente a versão pronta. Na primeira fala, apresentar o jogo, o acerto, a vitória e a derrota. O narrador faz um gesto de exemplo e para: clicar na área do jogo, apertar Enter para começar e apertar a barra de espaço uma vez, mostrando o tiro subir. Não mover a nave, não jogar uma partida inteira e não mostrar vitória, derrota ou volta à abertura. A atividade comprova participação, não vitória. Terminar em Agora é a sua vez e Próxima seção.
 
 **Professora:**
 
 > “Oi! Neste curso, você vai construir um jogo chamado Nave Contra Asteroides. Nesse jogo, a nave atira nas pedras que caem do espaço, e cada acerto vale um ponto. Você ganha ao chegar a 26 pontos e perde se as três vidas acabarem. Antes de montar o seu, vamos ver como ele funciona nesta versão pronta.
 >
-> Olha aqui: eu clico na área do jogo e toco em Enter, e a partida começa: as pedras começam a cair. Quando eu toco na barra de espaço, a nave atira para cima, na direção das pedras. O resto você descobre jogando.
+> Olha aqui: eu clico na área do jogo e aperto Enter, e a partida começa: as pedras começam a cair. Quando eu aperto a barra de espaço, a nave atira para cima, na direção das pedras. O resto você descobre jogando.
 >
 > Agora é a sua vez: jogue até conhecer os controles. As setas para a esquerda e para a direita movem a nave, e a barra de espaço atira. Não precisa ganhar para seguir. Quando terminar, clique em Próxima seção.”
 
@@ -54,7 +56,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Mover a nave um pouquinho em Ao iniciar, clicar em Começar o jogo e mostrar a nave andar um pouco e parar, com Ações feitas em 1 e o botão em Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar a nave até sair da cena, com Ações feitas em 24. Meme na comparação: na frase do carro, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma mão girando a chave do carro uma vez e depois o carro seguindo pela estrada, com a legenda "Ao iniciar: uma vez · Enquanto estiver rodando: sempre"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Mover a nave um pouquinho em Ao iniciar, clicar em Começar o jogo e mostrar a nave andar um pouco e parar, com Ações feitas em 1 e o botão em Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar a nave até sair da cena, com Ações feitas em 24. Meme na comparação: na frase da mochila e da bicicleta, mostrar por 2 a 3 segundos o meme ilustrado nosso, um ciclista fechando a mochila uma vez e depois pedalando sem parar, com a legenda "Ao iniciar: uma vez · Enquanto estiver rodando: sempre"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir o teste em Ao iniciar com Ações feitas em 1 e a nave parada antes de seguir para o próximo teste.
 
@@ -70,7 +72,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “E para a nave continuar andando? Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo de novo. Olha só: a nave anda, anda, anda e sai da tela, e o contador chega a 24. Isso acontece porque Enquanto estiver rodando repete a ação o tempo todo, enquanto o jogo roda.
 >
-> É como dirigir: você liga o carro uma vez, na saída, mas acelera o caminho inteiro. No seu jogo, Ao iniciar vai preparar a tela uma vez, e o que precisa continuar vai em Enquanto estiver rodando.
+> Na vida também é assim: você arruma a mochila uma vez, antes de sair, mas, para andar de bicicleta, precisa pedalar o tempo todo. No seu jogo, Ao iniciar vai preparar a tela uma vez, e o que precisa continuar vai em Enquanto estiver rodando.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
@@ -100,7 +102,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Repare: a preparação fica separada do que acontece durante a partida. A tela do jogo só precisa ser preparada uma vez, quando o jogo começa. Por isso, ela vai dentro de Ao iniciar: deixe à vista o espaço de dentro dessa área. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste para dentro de Ao iniciar e solte quando aparecer o encaixe.
+> “A preparação fica separada do que acontece durante a partida: a tela do jogo só precisa ser preparada uma vez, quando o jogo começa. Por isso, ela vai dentro de Ao iniciar: deixe à vista o espaço de dentro dessa área. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste para dentro de Ao iniciar e solte quando aparecer o encaixe.
 >
 > Repare nos dois números do bloco: a largura mede a tela de um lado ao outro, e a altura, de cima até embaixo. Eles já vêm em 800 e 480, o tamanho certo para o seu jogo: é só manter.
 >
@@ -210,7 +212,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Desenhar a nave em Só no começo, clicar em Avançar 1 quadro e mostrar o x da faixa mudar de 10 para 54 com a imagem igual. Trocar para A cada quadro, avançar alguns quadros e mostrar o rastro de naves. Ligar Limpar a tela antes, avançar mais quadros e mostrar uma nave só, no lugar novo. Meme na comparação: na frase do desenho animado, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma mão folheando um bloco de papel com a nave desenhada um pouco mais à frente em cada folha, com a legenda "1 quadro, 2 quadros, 3 quadros"; desenho nosso, com os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Desenhar a nave em Só no começo, clicar em Avançar 1 quadro e mostrar o x da faixa mudar de 10 para 54 com a imagem igual. Trocar para A cada quadro, avançar alguns quadros e mostrar o rastro de naves. Ligar Limpar a tela antes, avançar mais quadros e mostrar uma nave só, no lugar novo. Meme na comparação: na frase do desenho animado, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma mão folheando um bloco de papel com a nave desenhada um pouco mais à frente em cada folha, com a legenda "1 quadro, 2 quadros, 3 quadros"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo.
 
@@ -274,4 +276,4 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula.”
 
-**Recado na página (não gravar):** Agora faça a sua nave aparecer. Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta etapa e envie o seu projeto para o professor. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Agora faça a sua nave aparecer. Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula.

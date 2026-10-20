@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/desafio-primeiro-jogo/desafio-dia-1.md e de qa/adulto/traducoes/desafio-primeiro-jogo/desafio-dia-1.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # A Chave do Farol · Dia 1 · O personagem ganha movimento
 
 **Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. andar: entrada sem movimento e solução que anda sem borda. borda: entrada que já anda e solução com limite. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Não informa gravação, publicação nem ensaio com adultos.
@@ -15,7 +17,7 @@
 
 **Vocabulário da versão adulta:** a tela adulta diz aula, seção, caderno do curso e professor. A seção 2 se chama **Seu caderno do curso**, e o material, **Caderno do curso: A Chave do Farol**. As falas citam **Próxima seção**, **Verificar esta etapa**, **Objetivo da etapa cumprido!**, **Enviar para o professor** e **Concluir aula**. Chaves, seções e critérios são os mesmos do kids. Quem recebe e responde o envio é o professor; o tutorial de ajuda é **Como pedir ajuda sem sair da aula**.
 
-**Full review de 06/10/2026:** "então" saiu de todas as falas como palavra de ligação (no Farol inteiro ele é o nome de um espaço do bloco Se); no lugar ficaram "por isso" ou duas frases. Os links da ajuda da seção 2 usam exatamente os títulos de `docs/como-fazer-adulto/como-fazer.json`: **Como baixar os materiais da aula**, **Como abrir uma aula e passar de seção**, **Como usar o Estúdio dentro da aula**, **Como andar pelo menu do alto**, **Como continuar o seu curso de onde parou** e **Como pedir ajuda sem sair da aula**. As falas das experiências terminam em "Quando terminar, clique em Próxima seção.". Na experiência do quadro, "Olha a regra aqui embaixo" virou "Olha a regra do movimento", porque a posição muda com o tamanho da tela. Essa revisão de fala antecedeu a retirada das seções de velocidade registrada abaixo.
+**Full review de 06/10/2026:** "então" saiu de todas as falas como palavra de ligação (no Farol inteiro ele é o nome de um espaço do bloco Se); no lugar ficaram "por isso" ou duas frases. Os links da ajuda da seção 2 usam exatamente os títulos de `docs/como-fazer-adulto/como-fazer.json`: **Como baixar os materiais da aula**, **Como abrir uma aula e passar de seção**, **Como usar o Estúdio dentro da aula**, **Como andar pelo menu do alto**, **Como continuar o seu curso de onde parou** e **Como pedir ajuda sem sair da aula**. Os recados das experiências terminam em "Quando terminar, clique em Próxima seção.". Na experiência do quadro, "Olha a regra aqui embaixo" virou "Olha a regra do movimento", porque a posição muda com o tamanho da tela. Essa revisão de fala antecedeu a retirada das seções de velocidade registrada abaixo.
 
 **Personalização ampliada, 06/10/2026:** as seções `tanto` e `velocidade` foram retiradas por decisão do responsável. Seus vídeos, pontes e experiência estão em `retireBlockKeys`. O movimento usa 3 na demonstração; esse número não é uma resposta obrigatória. A personalização se concentra no Dia 3: visuais, avisos e lugar da chave. As demais chaves e o progresso são preservados.
 
@@ -23,7 +25,7 @@
 
 ## Vozes e gravação
 
-**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
+Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
 
 As durações da tabela cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Manter o passo a passo completo, sem cortes durante um arraste.
 
@@ -64,13 +66,13 @@ O vídeo é uma demonstração, como nas experiências: apresenta o jogo, mostra
 - **Intenção:** material (`material`).
 - **Por que existe:** apresentar o apoio que acompanha as aulas.
 - **Conclui quando:** vídeo; leitura, impressão e download opcionais.
-- **Blocos:** `video-intro-caderno`, `ponte-intro-caderno` e `materiais-farol` com bookPreview: o único bloco de materiais da aula, com o PDF do Caderno do Aluno (anexado no Admin), um recado curto e os seis links do Como Fazer (07/10/2026).
+- **Blocos:** `video-intro-caderno`, `ponte-intro-caderno` e `materiais-farol` com bookPreview: o único bloco de materiais da aula, com o PDF do caderno do curso (anexado no Admin), um recado curto e os seis links do Como Fazer (07/10/2026).
 
 **Recado na página (não gravar):** Este é o seu caderno do curso. Quando precisar conferir um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção.
 
 O vídeo chama a atenção para o caderno ("Olha aqui: este é o seu caderno do curso.") e oferece as duas escolhas como convite: ler aqui mesmo ou clicar em **Baixar** para guardar o caderno e consultar onde quiser. A fala não diz que a pessoa não precisa baixar ou imprimir, porque soa como uma ordem para não fazer (ajuste do responsável, 06/10/2026).
 
-Anexar ao leitor o PDF do Caderno do Aluno adulto, ainda em produção; não anexar o PDF do kids. Como o do kids, de 29 páginas, ele deve acompanhar a memória, a montagem da porta em duas etapas, as galerias de personalização, a posição da chave, os testes, a publicação e o certificado.
+Anexar ao leitor o PDF do caderno do curso adulto, ainda em produção; não anexar o PDF do kids. Como o do kids, de 29 páginas, ele deve acompanhar a memória, a montagem da porta em duas etapas, as galerias de personalização, a posição da chave, os testes, a publicação e o certificado.
 
 ### Seção 3. Como o personagem anda
 
@@ -142,4 +144,4 @@ Preservar as seções `apresentacao`, `caderno` e `borda` (agora a última, com 
 
 Valores da demonstração: controles com as quatro direções, personagem, velocidade 3 e movimento antes do limite de tela. A magnitude pode variar, desde que respeite a direção pedida; zero não demonstra movimento. O Dia 2 assume esse trabalho enviado; a retomada preparada só é alternativa quando não há envio anterior.
 
-No curso adulto, a aula antiga `boas-vindas` não entra; ver [Atualização de aulas existentes](../../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md#atualização-de-aulas-existentes). Anexar o PDF do Caderno do Aluno antes de gravar a seção 2. Os links do Como Fazer abrem na mesma aba e voltam para a aula.
+No curso adulto, a aula antiga `boas-vindas` não entra; ver [Atualização de aulas existentes](../../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md#atualização-de-aulas-existentes). Anexar o PDF do caderno do curso antes de gravar a seção 2. Os links do Como Fazer abrem na mesma aba e voltam para a aula.

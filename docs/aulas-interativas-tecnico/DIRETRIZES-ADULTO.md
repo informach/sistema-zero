@@ -21,18 +21,19 @@ Fonte: `docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/quiz-dados.j
 
 ## Exemplos e analogias
 
-Troque comparações do mundo da criança por comparações do dia a dia de um adulto, mantendo a mesma ideia e o mesmo tamanho. Algumas trocas que funcionam:
+Mantenha a analogia do kids sempre que ela já serve para um adulto: placar de futebol, jogo de tabuleiro, desenho animado, álbum de figurinhas, corrida com sinal de largada, freio da bicicleta, campainha, termômetro, cronômetro, porta com chave. Troque só o que é do mundo da criança (brinquedo, escola, brincadeira infantil) e tire os diminutivos, mesmo quando a analogia fica ("anotar num bloquinho" vira "anotar num papel"). A comparação nova precisa ensinar a mesma ideia e ter o mesmo tamanho.
 
-| Kids | Adulto |
+| Kids (trocar) | Adulto |
 | --- | --- |
-| cócegas e risada (ação e reação) | apertar o interruptor e a luz acender; tocar a campainha e alguém atender |
-| placar de futebol, cada gol soma um | contador de passos do celular; a conta do bar somando cada pedido |
-| calçar o tênis uma vez e dar passos o caminho inteiro | ligar o carro uma vez e acelerar o caminho inteiro; montar a mesa uma vez e servir o jantar todo |
+| fila do escorregador | fila do caixa, carros entrando numa rodovia |
+| brincar de pega-pega com bambolê | carrinhos de bate-bate: o para-choque encosta antes da lataria |
+| pular na cama elástica | arremessar uma bola de basquete |
+| mochila de passeio com o brinquedo que não se usa | carteira com a nota que não se usa |
+| livro de colorir | mapa com a fronteira em linha e o país pintado |
 | brincar de esconde-esconde com os amigos | jogo de achar objetos escondidos, como os que você jogava no celular |
-| mochila, lancheira, recreio | carteira, bolso, agenda, mercado, trabalho, cozinha |
-| mostrar para a família | mandar o link para os amigos, para o grupo, para quem você quiser |
+| mostrar para a família, com ajuda de um adulto | mandar o link para os amigos, para o grupo, para quem você quiser |
 
-Prefira referências de jogos que um adulto conhece (fliperama, videogame da infância, jogos de celular), sem citar marcas registradas como se fossem nossas. Os memes ilustrados continuam desenhados por nós, sem foto de pessoa real e sem meme da internet; troque a cena infantil por uma cena adulta equivalente.
+Prefira referências de jogos que um adulto conhece (fliperama, videogame da infância, jogos de celular), sem citar marcas registradas como se fossem nossas. Os memes ilustrados continuam desenhados por nós, sem foto de pessoa real e sem meme da internet; quando a analogia muda, o meme muda junto, e sem o Zappy.
 
 ## Os nomes da plataforma adulta
 
@@ -56,14 +57,20 @@ A plataforma adulta mostra outros nomes de botões e partes. O texto precisa diz
 | Guardado na sua conta (selo do rascunho dentro da aula) | Salvo na sua conta (o selo do Estúdio e do Pinta completos continua Guardado na sua conta nas duas plataformas) |
 | Concluir fase | Concluir aula |
 | Pegar meu certificado | Emitir meu certificado |
+| Recado (opcional), no envio | Recado para o professor |
+| Seu projeto no Estúdio (cabeçalho do bloco) | Atividade no Estúdio |
+| Minhas criações do Estúdio/Pinta, Recebido! (galeria) | Meus trabalhos do Estúdio/Pinta, Trabalho recebido pelo professor |
+| Mostrar menu | não existe no adulto (o Estúdio abre sem o menu do alto) |
 | Responder! / Próxima (quiz, uma pergunta por vez) | Enviar quiz (o quiz adulto mostra todas as perguntas numa página só) |
 | Tentar de novo! (quiz) | troque a resposta errada e clique em Enviar quiz de novo |
-| Mapa da Aventura | caderno do curso (o bloco de materiais mostra "Caderno do Aluno"; na fala, diga "caderno") |
+| Mapa da Aventura | caderno do curso (o bloco de materiais tem o título "Caderno do curso: <curso>"; o PDF se chama Caderno do Aluno) |
 | a equipe (quem recebe o projeto) | o professor |
 | Enviar para a equipe (pedido de ajuda) | Enviar ao professor |
 | Parte concluída! | Etapa concluída! |
 
-"Fase" continua valendo quando é a fase do JOGO (nível), como em "a fase do chefe". Nunca para falar da aula.
+"Fase" continua valendo quando é a fase do JOGO (nível), escrita "fase do jogo". Nunca para falar da aula. Exceção: a experiência copy-vs-original mostra os rótulos "O jogo da fase" e "Cor da nave na fase" nos dois públicos, e a fala cita o que está na tela.
+
+Nome de ferramenta que aparece na tela fica como está, mesmo com diminutivo ("quadradinhos" no Pinta, a peça "Mover o Dino um pouquinho").
 
 ### O Zappy e os avatares
 

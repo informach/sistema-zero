@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-09.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-09.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 9
 
 **Termine e recomece a corrida**
@@ -18,7 +20,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a área em 100% e o cacto longe. Diminuir a Distância do cacto um passo por vez, com as áreas pontilhadas à vista. Parar no primeiro BATEU! e apontar o vão entre os desenhos. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino dando ré num carro, com uma área pontilhada em volta do para-choque chegando no cacto e o sensor apitando antes de a lataria encostar. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a área em 100% e o cacto longe. Diminuir a Distância do cacto um passo por vez, com as áreas pontilhadas à vista. Parar no primeiro BATEU! e apontar o vão entre os desenhos. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino e o cacto em carrinhos de bate-bate, com os para-choques de borracha se encostando e as latarias ainda separadas. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Aproximar até BATEU! e apontar o vão entre os desenhos e as áreas que se tocam.
 
@@ -36,7 +38,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Repare: os desenhos nem se encostaram. O jogo não olha o desenho: ele confere se as áreas se encostaram.
 >
-> É como o sensor de ré do carro: ele apita quando a área em volta do para-choque chega no obstáculo, mesmo antes de a lataria encostar. No seu jogo, você vai usar essa batida para encerrar a partida.
+> É como carrinho de bate-bate: quando um para-choque encosta no outro, a batida já valeu, mesmo sem a lataria encostar. No seu jogo, você vai usar essa batida para encerrar a partida.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
@@ -158,7 +160,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Mudar o estado do jogo para inicio escolhido em No fim, o toque faz. Clicar em Tocar na tela, deixar o tempo passar até a batida e mostrar os cactos que ficam na pista ao voltar e ao jogar de novo. Trocar para Reiniciar o jogo e mostrar a pista vazia na abertura e a partida começando só com um cacto novo, com os números da faixa à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino arrumando as peças de um tabuleiro de xadrez antes de começar outra partida. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Mudar o estado do jogo para inicio escolhido em No fim, o toque faz. Clicar em Tocar na tela, deixar o tempo passar até a batida e mostrar os cactos que ficam na pista ao voltar e ao jogar de novo. Trocar para Reiniciar o jogo e mostrar a pista vazia na abertura e a partida começando só com um cacto novo, com os números da faixa à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino arrumando as peças de um tabuleiro antes de começar outra partida. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir a segunda partida com os cactos antigos e deixar a batida visível.
 
@@ -176,7 +178,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Percebe? Comecei de novo e já perdi. É porque os cactos da outra partida ficaram ali. Agora, no fim, eu troco a ação para Reiniciar o jogo. Clico em Tocar na tela: a abertura volta com a pista vazia. Clico de novo, e a partida começa limpa. Reiniciar o jogo repete a preparação do começo.
 >
-> É como começar outra partida de xadrez: não basta dizer que começou, é preciso arrumar as peças no tabuleiro outra vez. No seu jogo, você vai usar Reiniciar o jogo quando alguém tocar na tela de fim.
+> É como jogar de novo um jogo de tabuleiro: não basta voltar para a casa de início, é preciso arrumar as peças outra vez. No seu jogo, você vai usar Reiniciar o jogo quando alguém tocar na tela de fim.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 

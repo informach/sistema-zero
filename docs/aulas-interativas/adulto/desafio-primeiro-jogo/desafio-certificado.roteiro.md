@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/desafio-primeiro-jogo/desafio-certificado.roteiro.md e de qa/adulto/traducoes/desafio-primeiro-jogo/desafio-certificado.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · A Chave do Farol · Certificado
 
 **Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada. As notas **Na tela** não são locução.
@@ -16,9 +18,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Seção sem vídeo. Não gravar clipe de quiz.** O recado aparece na página antes das perguntas.
 
-**Recado na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos revisar essas regras com quatro perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam do personagem que anda, da coleta da chave e do farol que confere se você tem a chave. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
-**Conferência de produção:** usar as perguntas e explicações do quiz final do manifesto. Todas as perguntas aparecem numa página só; depois de clicar em Enviar quiz, a pessoa lê as explicações e pode trocar a resposta e enviar de novo na hora. Com todas as respostas corretas, avança em Próxima seção. Não acrescentar vídeo, material ou certificado nesta seção.
+**Conferência de produção:** usar as perguntas e explicações do quiz final do manifesto. Todas as perguntas aparecem numa página só; depois de clicar em Enviar quiz, a pessoa lê as explicações e, se precisar, troca a resposta e clica em Enviar quiz outra vez. Com todas as respostas corretas, avança em Próxima seção. Não acrescentar vídeo, material ou certificado nesta seção.
 
 ## Seção 2. Comemore sua criação
 

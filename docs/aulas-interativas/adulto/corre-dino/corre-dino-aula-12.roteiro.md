@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-12.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-12.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 12
 
 **Varie o lugar e a velocidade dos cactos**
@@ -18,7 +20,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem sorteios. Clicar em Sortear lugar até aparecerem lugares diferentes e uma repetição marcada na régua. Clicar em Sortear velocidade até aparecerem um -5 e um -6 nas raias. Na frase da conta, mostrar a legenda -5 - 0 = -5 e -5 - 1 = -6 ao lado das raias, sem cobrir a experiência: a cena não escreve essas contas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma mão rolando um dado sobre a mesa, com os números 500, 530 e 560 nas faces à vista. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem sorteios. Clicar em Sortear lugar até aparecerem lugares diferentes e uma repetição marcada na régua. Clicar em Sortear velocidade até aparecerem um -5 e um -6 nas raias. Na frase da conta, mostrar a legenda -5 - 0 = -5 e -5 - 1 = -6 ao lado das raias, sem cobrir a experiência: a cena não escreve essas contas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino tirando papéis de um saco, com os números 500, 530 e 560. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Sortear até aparecer uma repetição e apontar a marca na régua; não avançar para as velocidades.
 
@@ -36,7 +38,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Depois eu clico em Sortear velocidade (lugar fica 500) até sair um cacto -5 e um -6. Nas raias, o -6 chega mais longe em um segundo: ele é mais rápido. A conta é -5 menos o número sorteado: se sair 0, fica -5, e, se sair 1, fica -6.
 >
-> É como rolar um dado: cada vez sai um número, e o mesmo número pode sair de novo. No seu jogo, você vai trocar o x 560 por um sorteio de 500 a 560.
+> É como tirar um papel de um saco e devolver: cada vez sai um, e o mesmo pode sair de novo. No seu jogo, você vai trocar o x 560 por um sorteio de 500 a 560.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 

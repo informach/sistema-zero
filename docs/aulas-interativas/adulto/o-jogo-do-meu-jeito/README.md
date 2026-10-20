@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/o-jogo-do-meu-jeito/README.md e de qa/adulto/traducoes/o-jogo-do-meu-jeito/_curso.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # O Jogo do Meu Jeito
 
 Materiais do curso para consulta, gravação e importação.

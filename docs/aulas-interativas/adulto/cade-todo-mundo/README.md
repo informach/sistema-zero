@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/cade-todo-mundo/README.md e de qa/adulto/traducoes/cade-todo-mundo/_curso.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Cadê Todo Mundo?
 
 Materiais do curso para consulta, gravação e importação.

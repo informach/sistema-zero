@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-11.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-11.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 11
 
 **Conte e mostre os pontos**
@@ -18,7 +20,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem a caixa pontos. Colocar o número guardado em 1 e depois em 0. Com Mostrar placar desligado, clicar duas vezes em Somar 1 em pontos, mostrando a caixa mudar e a tela sem número. Ligar Mostrar placar e somar mais uma vez, com a caixa e a tela à vista juntas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma comanda de bar virada para baixo e, depois, virada para cima, mostrando pontos: 2. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem a caixa pontos. Colocar o número guardado em 1 e depois em 0. Com Mostrar placar desligado, clicar duas vezes em Somar 1 em pontos, mostrando a caixa mudar e a tela sem número. Ligar Mostrar placar e somar mais uma vez, com a caixa e a tela à vista juntas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino abrindo um caderno em que está escrito pontos: 2. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Somar duas vezes com Mostrar placar desligado; comparar a caixa pontos com a tela sem número.
 
@@ -36,7 +38,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Ou seja, o jogo já contou dois, só falta mostrar. Quando eu ligo Mostrar placar, a tela mostra 2, o mesmo número da caixa. Eu clico em Somar 1 em pontos mais uma vez, e os dois vão para 3. Mostrar só lê o que está guardado.
 >
-> É como a comanda de um bar: a conta fica anotada mesmo com a comanda virada para baixo, e mostrar o placar é virar a comanda para todo mundo ver. No seu jogo, você vai criar a variável pontos com 0 e, depois, mostrar o placar.
+> É como anotar os pontos num caderno: a conta fica guardada mesmo com o caderno fechado, e mostrar o placar é abrir o caderno para todo mundo ver. No seu jogo, você vai criar a variável pontos com 0 e, depois, mostrar o placar.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
@@ -208,7 +210,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ## Seção 7. Confira o que você construiu
 
-**Recado na página (não gravar):** Hora de revisar o que você construiu. As perguntas falam da variável pontos e do placar. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, troque a resposta e clique em Enviar quiz outra vez. Quando acertar todas, clique em Próxima seção.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam da variável pontos e do placar. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
 Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do recado. Leia a explicação após enviar; tentativas ilimitadas, sem espera.
 

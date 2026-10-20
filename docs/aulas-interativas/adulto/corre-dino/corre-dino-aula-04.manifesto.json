@@ -52,7 +52,7 @@
   "blocks": [
     {
       "key": "video-area-que-espera",
-      "plannedVideo": "Título: Compare esperar e repetir\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com as peças em Ações disponíveis. Colocar Tocar efeito · pulo em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado, com o contador da peça em 0 vezes. Clicar em Apertar a tecla e mostrar a nota ♪ no palco e o contador em 1 vez. Meme ilustrado na frase da comparação, por 2 a 3 segundos: um dedo tocando a campainha de uma casa, com uma nota musical saindo dela. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-04.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare esperar e repetir\n\nProduzir no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com as peças em Ações disponíveis. Colocar Tocar efeito · pulo em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado, com o contador da peça em 0 vezes. Clicar em Apertar a tecla e mostrar a nota ♪ no palco e o contador em 1 vez. Meme ilustrado na frase da comparação, por 2 a 3 segundos: um dedo tocando a campainha de uma casa, com uma nota musical saindo dela. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-04.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-area-que-espera",
@@ -77,11 +77,7 @@
           "setup": {
             "preset": {
               "id": "tres-caixas-som",
-              "areas": [
-                "start",
-                "loop",
-                "event"
-              ],
+              "areas": ["start", "loop", "event"],
               "cards": [
                 {
                   "id": "paint",
@@ -105,10 +101,7 @@
                 }
               ]
             },
-            "goals": [
-              "on-event",
-              "key-fires"
-            ]
+            "goals": ["on-event", "key-fires"]
           }
         },
         "semPerguntaFinal": true
@@ -116,7 +109,7 @@
     },
     {
       "key": "video-dedo-e-pulo",
-      "plannedVideo": "Título: Compare a tecla com o pulo\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Tocar efeito em Quando apertar Espaço e os contadores de pulos e sons em 0. Fazer os gestos no ritmo da fala, esperando o pouso entre os testes, e manter os contadores à vista depois de cada clique. Levar Tocar efeito para Quando o Dino pular e repetir os testes. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-04.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare a tecla com o pulo\n\nProduzir no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Tocar efeito em Quando apertar Espaço e os contadores de pulos e sons em 0. Fazer os gestos no ritmo da fala, esperando o pouso entre os testes, e manter os contadores à vista depois de cada clique. Levar Tocar efeito para Quando o Dino pular e repetir os testes. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-04.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-dedo-e-pulo",
@@ -144,7 +137,7 @@
     },
     {
       "key": "video-som-no-pulo",
-      "plannedVideo": "Título: Ligue o som ao pulo do Dino\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebeu?”, deixar ouvir que o pulo está sem som. No teste final, em “Escute”, deixar o som do pulo ser ouvido, sem fala nem música por cima. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-04.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Ligue o som ao pulo do Dino\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebeu?”, deixar ouvir que o pulo está sem som. No teste final, em “Escute”, deixar o som do pulo ser ouvido, sem fala nem música por cima. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-04.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-som-no-pulo",
@@ -156,7 +149,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-04.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-04.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrega",
@@ -173,9 +166,7 @@
         "purpose": "submission",
         "chain": "corre-dino",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -488,20 +479,13 @@
       "title": "Compare esperar e repetir",
       "intent": "exploration",
       "objective": "Sua vez: comece o teste sem clicar em Apertar a tecla e só depois clique nesse botão, de olho no contador. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-area-que-espera",
-        "fala-area-que-espera",
-        "experiencia-tres-areas"
-      ],
+      "blockKeys": ["video-area-que-espera", "fala-area-que-espera", "experiencia-tres-areas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-area-que-espera",
-          "experiencia-tres-areas"
-        ]
+        "blockIds": ["video-area-que-espera", "experiencia-tres-areas"]
       }
     },
     {
@@ -509,20 +493,13 @@
       "title": "Compare a tecla com o pulo",
       "intent": "exploration",
       "objective": "Sua vez: teste a tecla repetida e o toque com o som nos dois lugares e compare os contadores. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-dedo-e-pulo",
-        "fala-dedo-e-pulo",
-        "experiencia-dedo-e-pulo"
-      ],
+      "blockKeys": ["video-dedo-e-pulo", "fala-dedo-e-pulo", "experiencia-dedo-e-pulo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-dedo-e-pulo",
-          "experiencia-dedo-e-pulo"
-        ]
+        "blockIds": ["video-dedo-e-pulo", "experiencia-dedo-e-pulo"]
       }
     },
     {
@@ -530,18 +507,13 @@
       "title": "Ligue o som ao pulo do Dino",
       "intent": "application",
       "objective": "Agora ligue o som ao pulo do seu Dino. Crie a área Quando acontecer e coloque um único Tocar efeito pulo dentro de Quando o sprite pular. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.",
-      "blockKeys": [
-        "video-som-no-pulo",
-        "fala-som-no-pulo"
-      ],
+      "blockKeys": ["video-som-no-pulo", "fala-som-no-pulo"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-som-no-pulo"
-        ],
+        "blockIds": ["video-som-no-pulo"],
         "projectChecks": [
           {
             "id": "som-pulo",
@@ -586,20 +558,13 @@
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
       "objective": "Hora de testar e enviar o seu jogo. Teste um salto com cada controle, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
-      "blockKeys": [
-        "video-entrega",
-        "fala-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "projeto"
-        ],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "som-pulo",

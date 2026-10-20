@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-07.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-07.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 7
 
 **Separe a abertura da partida**
@@ -32,7 +34,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Repare que ninguém começou a jogar ainda. Vamos fazer os cactos esperarem a partida. Agora eu levo Criar cacto para dentro de Se o estado do jogo é jogando, e tudo recomeça do zero. Na tela de início, eu deixo passar três segundos. O relógio continua tocando, mas os nascimentos ficam em 0. A pergunta responde não, porque o estado ainda é inicio.
+> “Vamos fazer os cactos esperarem a partida. Agora eu levo Criar cacto para dentro de Se o estado do jogo é jogando, e tudo recomeça do zero. Na tela de início, eu deixo passar três segundos. O relógio continua tocando, mas os nascimentos ficam em 0. A pergunta responde não, porque o estado ainda é inicio.
 >
 > Quando eu clico em Toque para começar, a partida começa, e os cactos voltam a nascer: agora a resposta é sim. É como a porta de casa, que só abre com a chave certa. Aqui, a chave é o estado jogando. No seu jogo, você vai guardar o estado inicio e colocar as ações da corrida dentro de um Se jogando.
 >
@@ -94,7 +96,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Repare que a pilha veio inteira. Agora deixe à vista o espaço logo depois de Desenhar fundo de floresta, dentro do quadro. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço.
+> “Pronto: a pilha veio inteira. Agora deixe à vista o espaço logo depois de Desenhar fundo de floresta, dentro do quadro. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço.
 >
 > Repare: o Se chega com a pergunta x > 0. Arraste essa pergunta para a lixeira, para o lugar dela ficar vazio. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ? e solte no lugar vazio da pergunta. No menu dele, escolha jogando.”
 
@@ -152,7 +154,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Ou seja, a floresta continua passando, mas os cactos esperam. Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”
+> “Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora faça o relógio esperar a partida. Coloque a criação dos cactos num Se jogando, dentro do relógio, e termine com inicio em Ao iniciar. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.
 

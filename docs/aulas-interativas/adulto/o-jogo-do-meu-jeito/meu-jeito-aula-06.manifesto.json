@@ -32,7 +32,7 @@
   "blocks": [
     {
       "key": "video-nomes",
-      "plannedVideo": "Título: Separe os nomes que os blocos procuram\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase dos colegas, alguém na porta do escritório chamando \"nave!\", e a nave e a folha da nave, com o mesmo crachá escrito nave, olhando ao mesmo tempo, com a legenda \"nave? qual das duas?\". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Separe os nomes que os blocos procuram\n\nProduzir nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase do time, um técnico com apito chamando \"nave!\", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda \"nave? qual das duas?\". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-nomes",
@@ -55,11 +55,7 @@
           "scene": "unique-names",
           "cenario": "meu-jeito",
           "setup": {
-            "goals": [
-              "missing",
-              "clash",
-              "own-name"
-            ]
+            "goals": ["missing", "clash", "own-name"]
           }
         },
         "semPerguntaFinal": true
@@ -67,7 +63,7 @@
     },
     {
       "key": "video-trazer-artes",
-      "plannedVideo": "Título: Traga seus desenhos para o projeto\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Traga seus desenhos para o projeto\n\nProduzir nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-trazer-artes",
@@ -79,7 +75,7 @@
     },
     {
       "key": "video-recorte",
-      "plannedVideo": "Título: Separe o quadro do tamanho no jogo\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase das etiquetas, uma mão destacando uma etiqueta com a nave de uma cartela com duas naves, com a legenda \"um quadro de cada vez\". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Separe o quadro do tamanho no jogo\n\nProduzir nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase dos adesivos, uma mão destacando um adesivo da nave de uma cartela com duas naves, com a legenda \"um quadro de cada vez\". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-recorte",
@@ -102,12 +98,7 @@
           "scene": "sheet-vs-sprite",
           "cenario": "meu-jeito",
           "setup": {
-            "goals": [
-              "squeezed",
-              "crop-half",
-              "crop-whole",
-              "size-apart"
-            ]
+            "goals": ["squeezed", "crop-half", "crop-whole", "size-apart"]
           }
         },
         "semPerguntaFinal": true
@@ -115,7 +106,7 @@
     },
     {
       "key": "video-trocar-nave",
-      "plannedVideo": "Título: Use sua imagem no criador da nave\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista: primeiro o teste, com o resultado que o Percebe? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Use sua imagem no criador da nave\n\nProduzir nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista: primeiro o teste, com o resultado que o Percebe? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-trocar-nave",
@@ -127,7 +118,7 @@
     },
     {
       "key": "video-folha-nave",
-      "plannedVideo": "Título: Prepare o recorte da nave\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista: primeiro o teste, com o resultado que o Percebe? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Prepare o recorte da nave\n\nProduzir nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista: primeiro o teste, com o resultado que o Percebe? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-folha-nave",
@@ -139,7 +130,7 @@
     },
     {
       "key": "video-animar-nave",
-      "plannedVideo": "Título: Ligue a animação voando\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Ligue a animação voando\n\nProduzir nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-animar-nave",
@@ -151,14 +142,14 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie o jogo com sua nave\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Envie o jogo com sua nave\n\nProduzir nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-entrega",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de enviar o seu jogo com a sua nave. Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer a mensagem Trabalho recebido pelo professor, clique em Concluir aula."
+        "text": "Hora de enviar o seu jogo com a sua nave. Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula."
       }
     },
     {
@@ -219,20 +210,13 @@
       "title": "Separe os nomes que os blocos procuram",
       "objective": "Sua vez: tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima seção.",
       "intent": "exploration",
-      "blockKeys": [
-        "video-nomes",
-        "fala-nomes",
-        "experimento-nomes"
-      ],
+      "blockKeys": ["video-nomes", "fala-nomes", "experimento-nomes"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-nomes",
-          "experimento-nomes"
-        ]
+        "blockIds": ["video-nomes", "experimento-nomes"]
       }
     },
     {
@@ -240,18 +224,13 @@
       "title": "Traga seus desenhos para o projeto",
       "objective": "Agora traga os seus desenhos para o jogo. Adicione nave e asteroide aos materiais da cópia do seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.",
       "intent": "application",
-      "blockKeys": [
-        "video-trazer-artes",
-        "fala-trazer-artes"
-      ],
+      "blockKeys": ["video-trazer-artes", "fala-trazer-artes"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-trazer-artes"
-        ]
+        "blockIds": ["video-trazer-artes"]
       }
     },
     {
@@ -259,20 +238,13 @@
       "title": "Separe o quadro do tamanho no jogo",
       "objective": "Sua vez: mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima seção.",
       "intent": "exploration",
-      "blockKeys": [
-        "video-recorte",
-        "fala-recorte",
-        "experimento-recorte"
-      ],
+      "blockKeys": ["video-recorte", "fala-recorte", "experimento-recorte"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-recorte",
-          "experimento-recorte"
-        ]
+        "blockIds": ["video-recorte", "experimento-recorte"]
       }
     },
     {
@@ -280,18 +252,13 @@
       "title": "Use sua imagem no criador da nave",
       "objective": "Agora use a sua imagem no criador da nave. Troque o criador por um sprite com imagem, conservando o nome nave. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.",
       "intent": "application",
-      "blockKeys": [
-        "video-trocar-nave",
-        "fala-trocar-nave"
-      ],
+      "blockKeys": ["video-trocar-nave", "fala-trocar-nave"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-trocar-nave"
-        ]
+        "blockIds": ["video-trocar-nave"]
       }
     },
     {
@@ -299,18 +266,13 @@
       "title": "Prepare o recorte da nave",
       "objective": "Agora prepare o recorte da sua nave. Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.",
       "intent": "application",
-      "blockKeys": [
-        "video-folha-nave",
-        "fala-folha-nave"
-      ],
+      "blockKeys": ["video-folha-nave", "fala-folha-nave"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-folha-nave"
-        ]
+        "blockIds": ["video-folha-nave"]
       }
     },
     {
@@ -318,39 +280,27 @@
       "title": "Ligue a animação voando",
       "objective": "Agora ligue a animação voando. Anime nave com folha-nave e confira os dois quadros no jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.",
       "intent": "application",
-      "blockKeys": [
-        "video-animar-nave",
-        "fala-animar-nave"
-      ],
+      "blockKeys": ["video-animar-nave", "fala-animar-nave"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-animar-nave"
-        ]
+        "blockIds": ["video-animar-nave"]
       }
     },
     {
       "key": "entrega",
       "title": "Envie o jogo com sua nave",
-      "objective": "Hora de enviar o seu jogo com a sua nave. Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer a mensagem Trabalho recebido pelo professor, clique em Concluir aula.",
+      "objective": "Hora de enviar o seu jogo com a sua nave. Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula.",
       "intent": "delivery",
-      "blockKeys": [
-        "video-entrega",
-        "fala-entrega",
-        "entrega-galeria-v6"
-      ],
+      "blockKeys": ["video-entrega", "fala-entrega", "entrega-galeria-v6"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "entrega-galeria-v6"
-        ]
+        "blockIds": ["video-entrega", "entrega-galeria-v6"]
       }
     }
   ]

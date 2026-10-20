@@ -1,6 +1,8 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md e de qa/adulto/traducoes/cade-todo-mundo/cade-todo-mundo-aula-2.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro falado: Cadê Todo Mundo? | Aula 2
 
-**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. contar-achados: entrada que já revela; solução que também soma 1. A regra de reação é preservação legítima. A conferência estrutural localiza a soma no evento; não comprova sozinha a ordem dos efeitos ou toda a partida. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. A versão adulta ainda não foi gravada, publicada nem ensaiada.
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. contar-achados: entrada que já revela; solução que também soma 1. A regra de reação é preservação legítima. A conferência estrutural localiza a soma no evento; não comprova sozinha a ordem dos efeitos ou toda a partida. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Não informa gravação, publicação ou ensaio.
 
 Um vídeo por seção. **Status:** a versão adulta ainda não foi gravada. Só a professora fala; não há participações de avatar. A seção 3 confere a montagem sem envio, e o único envio fica no fim da personalização, na seção 4. Comandos da atividade e montagem completa ficam na fala. Tours da plataforma ficam no Como Fazer. As durações abaixo cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a versão final sem acelerar.
 
@@ -28,7 +30,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “E por que o número ficou no zero? É que o jogo ainda não conta quem você encontra. Então, agora a gente vai fazer esse número contar cada personagem encontrado. Clique em Próxima seção para começar.”
+> “Mas repare no número Achados: ele ficou no zero. Por quê? É que o jogo ainda não conta quem você encontra. Então, agora a gente vai fazer esse número contar cada personagem encontrado. Clique em Próxima seção para começar.”
 
 **Recado na página (não gravar):** “Seus personagens já aparecem, mas Achados ainda fica em zero. Então vamos ensinar o jogo a contar: clique em Próxima seção para começar.”
 
@@ -36,7 +38,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 75 a 95 segundos.
 
-**Na tela:** mostrar a experiência com **Achados: 0**. Tocar em um esconderijo e depois em outro, deixando ver 1 e 2. Com o placar em 2, deixar um espaço vazio do jardim à vista, sem tocar nele ainda. **Meme na comparação:** na frase do contador de passos, a tela de um celular com o contador de passos virando de 0 para 1, com o coelho dando um passo, e a legenda "+1". Desenho nosso no formato de meme, com objetos do dia a dia ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a professora explica sozinha.
+**Na tela:** mostrar a experiência com **Achados: 0**. Tocar em um esconderijo e depois em outro, deixando ver 1 e 2. Com o placar em 2, deixar um espaço vazio do jardim à vista, sem tocar nele ainda. **Meme na comparação:** na frase do placar, um placar de futebol virando de 0 para 1, com o coelho comemorando, com a legenda "+1". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a professora explica sozinha.
 
 **Professora:**
 
@@ -44,7 +46,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Repare no número Achados. Ele guarda quantos personagens a gente já encontrou, e esse número vai mudando durante a busca. É isso que é uma variável: um lugar onde o jogo guarda um número que pode mudar.
 >
-> Sabe o contador de passos do celular? A cada passo, ele soma um. Aqui no jardim é parecido: cada personagem encontrado é como um passo, e o jogo soma um em Achados.
+> Sabe o placar de um jogo de futebol? A cada gol, o placar soma um. Aqui no jardim é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados.
 >
 > Olha aqui: quando eu toco num esconderijo, Achados vai para 1, porque eu encontrei um personagem e o jogo somou um. Se eu toco em outro, ele soma de novo, e agora é 2.”
 
@@ -54,13 +56,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “E se eu tocar num espaço vazio do jardim? Olha aqui: eu toco num espaço vazio. Percebe? O número não muda. Isso acontece porque a regra que soma está ligada aos esconderijos: ela só funciona quando eu toco num esconderijo. Ali não tinha nenhum, então nada foi somado.
 >
-> Por último, eu clico em Recomeçar a busca, e Achados volta para zero, igual ao contador de passos quando começa um dia novo.
+> Por último, eu clico em Recomeçar a busca, e Achados volta para zero, igual ao placar no começo de um jogo novo.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
 **Recado na página (não gravar):** “Sua vez: procure no jardim e fique de olho no número Achados. Quando terminar, clique em Próxima seção.”
 
-**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e chega ao jogo: cada passo soma um no contador do celular, e cada personagem encontrado soma um em Achados. Sem palpite nem pergunta final.
+**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e chega ao jogo: o gol soma um no placar, e cada personagem encontrado soma um em Achados. Sem palpite nem pergunta final.
 
 ## 3. Cada personagem vale um achado
 
@@ -106,7 +108,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “E se você tocar de novo no mesmo lugar? Vamos ver. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.
+> “E se você tocar de novo no mesmo lugar? Vamos ver: toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.
 >
 > Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: os dois blocos estão dentro de Quando clicar ou tocar, primeiro o esconderijo escolhido fica invisível e, logo abaixo, o jogo soma 1 em achados. Depois de corrigir, teste de novo.
 >
@@ -128,11 +130,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “A surpresa chegou: olha quem mais pode se esconder no seu jogo. Agora você vai escolher os bichos e os esconderijos do seu jardim.”
 
-**Na tela:** com a galeria ainda à vista, a professora apresenta as escolhas e depois volta aos blocos. O gato é o exemplo da demonstração, não uma escolha obrigatória para quem assiste. Depois voltar ao mesmo Estúdio e trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso. Apontar os blocos **Criar sprite**. Num bloco que cria um bicho, apontar o fim do bloco: depois de **com imagem** está o nome da imagem, **coelho**. Clicar nesse nome, mostrar a lista que se abre com as imagens do jogo e o nome de cada uma (sem título; rolar a lista se for preciso) e clicar em **gato**. Fazer o mesmo num bloco que cria um esconderijo: clicar em **arbusto** e escolher **toco**. Mostrar que o gato e o toco ficaram no mesmo lugar e do mesmo tamanho. Trocar também os outros bichos e esconderijos, em ritmo rápido. Depois trazer à vista a área **Enquanto estiver rodando**, arrastando um espaço vazio se for preciso, e, dentro do bloco **Se**, o bloco **Escrever** com a frase **Você achou todo mundo!** Clicar no texto e trocar por uma frase curta. Olhar o jardim antes de testar. Testar encontrando todo mundo de novo e mostrar a mensagem nova. Clicar em **Enviar para o professor**, confirmar em **Enviar** sem preencher o recado opcional e aguardar **Projeto enviado ao professor**. Só então apontar **Próxima seção**. Na gravação, usar uma sessão sem envio anterior nesta aula para mostrar os rótulos do primeiro envio.
+**Na tela:** com a galeria ainda à vista, a professora apresenta as escolhas e depois volta aos blocos. O gato é o exemplo da demonstração, não uma escolha obrigatória para quem assiste. Depois voltar ao mesmo Estúdio e trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso. Apontar os blocos **Criar sprite**. Num bloco que cria um bicho, apontar o fim do bloco: depois de **com imagem** está o nome da imagem, **coelho**. Clicar nesse nome, mostrar a lista que se abre com as imagens do jogo e o nome de cada uma (sem título; rolar a lista se for preciso) e clicar em **gato**. Fazer o mesmo num bloco que cria um esconderijo: clicar em **arbusto** e escolher **toco**. Mostrar que o gato e o toco ficaram no mesmo lugar e do mesmo tamanho. Trocar também os outros bichos e esconderijos, em ritmo rápido. Depois trazer à vista a área **Enquanto estiver rodando**, arrastando um espaço vazio se for preciso, e, dentro do bloco **Se**, o bloco **Escrever** com a frase **Você achou todo mundo!** Clicar no texto e trocar por uma frase curta. Olhar o jardim antes de testar. Testar encontrando todo mundo de novo e mostrar a mensagem nova. Clicar em **Enviar para o professor**, confirmar em **Enviar** sem preencher o campo opcional Recado para o professor e aguardar **Projeto enviado ao professor**. Só então apontar **Próxima seção**. Na gravação, usar uma sessão sem envio anterior nesta aula para mostrar os rótulos do primeiro envio.
 
 **Professora:**
 
-> “Os bichos e os esconderijos estão no seu caderno do curso, com o nome de cada um. E a mensagem do final também pode ser sua. Tudo o que você mudar fica no seu jogo.
+> “Todos eles estão no seu caderno do curso, com o nome de cada um. E a mensagem do final também pode ser sua. Tudo o que você mudar fica no seu jogo.
 >
 > Vamos começar pelos bichos. Encontre a área Ao iniciar. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer. Repare nos blocos Criar sprite que estão nela: cada um cria um bicho ou um esconderijo do jardim.
 >
@@ -164,7 +166,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Recado na página (não gravar):** “A surpresa chegou. Escolha os bichos e os esconderijos do seu jogo: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Próxima seção.”
 
-**Conferência de produção:** é a revelação da surpresa anunciada no vídeo de abertura da Aula 1 e lembrada no fim dela (decisão do responsável, 07/10/2026): a fala diz que a surpresa chegou e apresenta a galeria do caderno como os novos personagens que podem se esconder no jogo (decisão do responsável, 07/10/2026: cada curso revela o que tem de próprio). Não chamar de surpresa nenhuma outra coisa do curso. É também a seção de mexa e veja e o único ponto de entrega da Aula 2 (11/10/2026): vem depois da verificação da contagem e antes de publicar. As mudanças ficam no jogo e as escolhas não viram critério. A seção conclui pelo vídeo, pelo envio do projeto e pelo envio em dia (`submissionUpToDate`). O envio é pedido ao final, mesmo para quem manteve as imagens ou a mensagem. Se a pessoa editar novamente depois de enviar, antes de avançar, o critério pede a versão atualizada; isso não cria outro ponto de entrega no roteiro. O professor recebe o jogo que será publicado na seção 5. Mover blocos não conta como mudança; trocar imagem ou mensagem conta. O bloco é Criar sprite ___ em x ___ y ___ largura ___ altura ___ com imagem ___. No fim dele, depois de **com imagem**, o Estúdio mostra o NOME da imagem num campo, e não um desenho: clicar no nome abre a lista com as miniaturas e o nome de cada imagem; com 14 imagens, a lista rola. Embaixo da lista há um campo para digitar um nome e o botão OK; não usar na gravação. Ao escolher outra imagem, o Estúdio ajusta largura e altura ao tamanho da imagem nova e mantém x e y, o canto de cima do sprite. No projeto novo, todos os bichos têm a caixa 72 × 87 e todos os esconderijos 161 × 144, então trocar bicho por bicho ou esconderijo por esconderijo não muda tamanho nem lugar. O erro provável é escolher uma imagem do outro tipo: um esconderijo no bloco de um bicho fica grande e aparece antes do toque; um bicho no bloco de um esconderijo fica pequeno e deixa o bicho de trás à vista. A correção da fala resolve: escolhendo de novo uma imagem do tipo certo, o tamanho volta. Os sprites se chamam bicho1, bicho2, bicho3 e esconderijo1, esconderijo2, esconderijo3 nos projetos novos. Projetos salvos antes de 05/10/2026 recebem as imagens novas ao abrir (o Estúdio da aula acrescenta as imagens do curso que faltam, sem trocar as que já existem), mas guardam os nomes antigos dos sprites (coelho, arbusto e os outros) e as caixas antigas (coelho 54 × 87, raposa 66 × 84, coruja 72 × 81, arbusto 154 × 116, pedras 161 × 112, flores 133 × 144). Neles, como o Estúdio ajusta o tamanho à imagem nova mantendo o canto de cima, o desenho trocado pode ficar um pouco fora do lugar: um bicho novo fica até 18 pixels mais largo para a direita e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para a direita ou até 32 pixels mais baixo que o antigo. A fala serve aos dois porque cita nomes de imagens, que existem nos dois, e não nomes de sprites. A mensagem é o texto do bloco Escrever ___ em x ___ y ___, dentro do Se de A cada quadro do jogo; frase curta para caber na tela.
+**Conferência de produção:** é a revelação da surpresa anunciada no vídeo de abertura da Aula 1 e lembrada no fim dela (decisão do responsável, 07/10/2026): a fala diz que a surpresa chegou e apresenta a galeria do caderno como os novos bichos e esconderijos do jogo (decisão do responsável, 07/10/2026: cada curso revela o que tem de próprio). Não chamar de surpresa nenhuma outra coisa do curso. É também a seção de mexa e veja e o único ponto de entrega da Aula 2 (11/10/2026): vem depois da verificação da contagem e antes de publicar. As mudanças ficam no jogo e as escolhas não viram critério. A seção conclui pelo vídeo, pelo envio do projeto e pelo envio em dia (`submissionUpToDate`). O envio é pedido ao final, mesmo para quem manteve as imagens ou a mensagem. Se a pessoa editar novamente depois de enviar, antes de avançar, o critério pede a versão atualizada; isso não cria outro ponto de entrega no roteiro. O professor recebe o jogo que será publicado na seção 5. Mover blocos não conta como mudança; trocar imagem ou mensagem conta. O bloco é Criar sprite ___ em x ___ y ___ largura ___ altura ___ com imagem ___. No fim dele, depois de **com imagem**, o Estúdio mostra o NOME da imagem num campo, e não um desenho: clicar no nome abre a lista com as miniaturas e o nome de cada imagem; com 14 imagens, a lista rola. Embaixo da lista há um campo para digitar um nome e o botão OK; não usar na gravação. Ao escolher outra imagem, o Estúdio ajusta largura e altura ao tamanho da imagem nova e mantém x e y, o canto de cima do sprite. No projeto novo, todos os bichos têm a caixa 72 × 87 e todos os esconderijos 161 × 144, então trocar bicho por bicho ou esconderijo por esconderijo não muda tamanho nem lugar. O erro provável é escolher uma imagem do outro tipo: um esconderijo no bloco de um bicho fica grande e aparece antes do toque; um bicho no bloco de um esconderijo fica pequeno e deixa o bicho de trás à vista. A correção da fala resolve: escolhendo de novo uma imagem do tipo certo, o tamanho volta. Os sprites se chamam bicho1, bicho2, bicho3 e esconderijo1, esconderijo2, esconderijo3 nos projetos novos. Projetos salvos antes de 05/10/2026 recebem as imagens novas ao abrir (o Estúdio da aula acrescenta as imagens do curso que faltam, sem trocar as que já existem), mas guardam os nomes antigos dos sprites (coelho, arbusto e os outros) e as caixas antigas (coelho 54 × 87, raposa 66 × 84, coruja 72 × 81, arbusto 154 × 116, pedras 161 × 112, flores 133 × 144). Neles, como o Estúdio ajusta o tamanho à imagem nova mantendo o canto de cima, o desenho trocado pode ficar um pouco fora do lugar: um bicho novo fica até 18 pixels mais largo para a direita e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para a direita ou até 32 pixels mais baixo que o antigo. A fala serve aos dois porque cita nomes de imagens, que existem nos dois, e não nomes de sprites. A mensagem é o texto do bloco Escrever ___ em x ___ y ___, dentro do Se de A cada quadro do jogo; frase curta para caber na tela.
 
 ## 5. Publique seu jogo
 
@@ -180,7 +182,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Depois, clique em Gerar capa e espere a imagem aparecer. Olha só: essa é a capa que vai apresentar o seu jogo.”
 
-**Na tela:** conferir a capa, clicar em **Publicar** e esperar a tela **Publicado!**, com **Seu projeto já está no Mural dos Criadores.** e os botões **Ver no Mural**, **Abrir o jogo** e **Copiar link**. Deixar a confirmação e Copiar link visíveis, sem copiar ainda.
+**Na tela:** conferir a capa, clicar em **Publicar** e esperar a tela **Publicado!**, com **Seu projeto já está no Mural dos Criadores.** e os botões **Ver no Mural**, **Abrir o jogo**, **Copiar link** e **Fechar**. Deixar a confirmação e Copiar link visíveis, sem copiar ainda.
 
 **Professora:**
 
@@ -192,7 +194,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “E para mandar o jogo para alguém? Clique em Copiar link e mande esse link para os seus amigos, no grupo ou para quem você quiser. Quem receber pode jogar direto, até no celular.
+> “E para mandar o jogo para alguém? Clique em Copiar link e mande esse link para os seus amigos, para o grupo ou para quem você quiser. Quem receber pode jogar direto, até no celular.
 >
 > Depois de copiar o link, clique em Fechar e, por fim, em Concluir aula.”
 
@@ -200,4 +202,4 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Ajuda escrita junto ao vídeo, fora da narração:** Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/comunidade-publicar-no-mural), a área de ajuda.
 
-**Conferência de produção:** publicar é a tarefa esperada da seção. O vídeo continua sendo o critério técnico de conclusão; publicação e acesso ao Mural não viram bloqueios. O envio da seção anterior libera Compartilhar. Gerar capa já inclui a imagem na publicação, sem download nem upload manual. Conferir o resumo pronto antes da gravação; o título vem do curso e não aparece na janela da aula, então a fala não o cita. A ajuda abre diretamente o tutorial; não exigir sua leitura. Outras capas e solução de problemas ficam no Como fazer. Copiar o link faz parte do fechamento e aparece no vídeo: o link é público, e a fala sugere mandar para os amigos, para o grupo ou para quem a pessoa quiser. A fala termina em Concluir aula, sem antecipar certificado ou próxima aula. Sem oferta comercial. Gravar e ensaiar o caminho completo com adultos.
+**Conferência de produção:** publicar é a tarefa esperada da seção. O vídeo continua sendo o critério técnico de conclusão; publicação e acesso ao Mural não viram bloqueios. O envio da seção anterior libera Compartilhar. Gerar capa já inclui a imagem na publicação, sem download nem upload manual. Conferir o resumo pronto antes da gravação; o título vem do curso e não aparece na janela da aula, então a fala não o cita. A ajuda abre diretamente o tutorial; não exigir sua leitura. Outras capas e solução de problemas ficam no Como fazer. Copiar o link faz parte do fechamento e aparece no vídeo: o link é público, e a fala sugere mandar para os amigos, para o grupo ou para quem a pessoa quiser. A fala termina em Concluir aula, sem antecipar certificado ou próxima aula. Sem oferta comercial. Ensaiar o caminho completo com adultos.

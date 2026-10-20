@@ -1,12 +1,14 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/desafio-primeiro-jogo/desafio-dia-2.roteiro.md e de qa/adulto/traducoes/desafio-primeiro-jogo/desafio-dia-2.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · A Chave do Farol · Dia 2
 
-**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. recolher, guardar e programar-chave têm soluções distintas: retirar a chave; guardar a informação sem aviso; acrescentar o aviso. Cada entrada conserva a etapa anterior. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. A versão adulta ainda não foi gravada, publicada nem ensaiada com adultos.
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. recolher, guardar e programar-chave têm soluções distintas: retirar a chave; guardar a informação sem aviso; acrescentar o aviso. Cada entrada conserva a etapa anterior. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Não informa gravação, publicação nem ensaio com adultos.
 
 **Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada. As notas **Na tela** não são locução.
 
 **Gravação:** não cobrir controles, blocos, mostradores ou resultados. As durações cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala; conferir a montagem final sem acelerar.
 
-**Notas de gravação:** gravar a experiência da seção 1 numa sessão sem progresso nesse bloco, com o estado inicial da cena: chave no chão, Guardar a coleta desligado, temChave falso e o aviso Encontre a chave e vá ao farol. Abrir a aula numa aba nova depois do último deploy. Gravar o envio da seção 4 numa sessão sem envio anterior nesta aula: Recomeçar não apaga o envio; para repetir a tomada, usar outro perfil de ensaio. Mostrar o selo **Salvo na sua conta** só quando ele aparecer de verdade. Confirmar em **Enviar** sem preencher o **Recado (opcional)**.
+**Notas de gravação:** gravar a experiência da seção 1 numa sessão sem progresso nesse bloco, com o estado inicial da cena: chave no chão, Guardar a coleta desligado, temChave falso e o aviso Encontre a chave e vá ao farol. Abrir a aula numa aba nova depois do último deploy. Gravar o envio da seção 4 numa sessão sem envio anterior nesta aula: Recomeçar não apaga o envio; para repetir a tomada, usar outro perfil de ensaio. Mostrar o selo **Salvo na sua conta** só quando ele aparecer de verdade. Confirmar em **Enviar** sem preencher o **Recado para o professor**.
 
 Quatro seções, quatro vídeos: a experiência da memória e, depois, uma montagem para cada ideia, sempre no mesmo projeto (recolher a chave, guardar a coleta e avisar quem joga). As seções 2 e 3 verificam sem enviar; a seção 4 verifica e envia. Retomar o projeto enviado no Dia 1; o projeto preparado do Dia 2 só é a alternativa quando não houver envio anterior. Não reconstruir nem substituir um projeto já feito pela pessoa. O vídeo da experiência é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. Cada montagem tem tempo para os encaixes.
 
@@ -20,7 +22,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 160 a 190 segundos.
 
-**Na tela:** abrir direto na experiência `collect-and-remember`, com a chave no chão. Na primeira frase, apontar o personagem e a chave da cena; o teste no projeto da pessoa fica para a retomada da seção 2. Depois demonstrar a coleta com Guardar a coleta desligado, no ritmo da fala. No "Repare neste nome aqui", apontar o mostrador `temChave`. No "Olha só", deixar ver a chave subindo e sumindo e o aviso novo na faixa do jogo. No "A regra da coleta", apontar a regra na bancada, começando pelo bloco do evento. No "percebe?", manter `temChave` em falso à vista. **Meme na comparação:** na frase da agenda, o personagem anotando "peguei a chave ✔" na agenda do celular; ao lado, o mesmo personagem sem anotar, com cara de "esqueci…". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
+**Na tela:** abrir direto na experiência `collect-and-remember`, com a chave no chão. Na primeira frase, apontar o personagem e a chave da cena; o teste no projeto da pessoa fica para a retomada da seção 2. Depois demonstrar a coleta com Guardar a coleta desligado, no ritmo da fala. No "Repare neste nome aqui", apontar o mostrador `temChave`. No "Olha só", deixar ver a chave subindo e sumindo e o aviso novo na faixa do jogo. No "A regra da coleta", apontar a regra na bancada, começando pelo bloco do evento. No "percebe?", manter `temChave` em falso à vista. **Meme na comparação:** na frase do caderno, o personagem anotando "peguei a chave ✔" num caderno; ao lado, o mesmo personagem sem anotar, com cara de "esqueci…". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Professora:**
 
@@ -28,7 +30,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Repare neste nome aqui: temChave. temChave é uma variável: um lugar com nome onde o jogo guarda uma informação. O próprio nome é uma pergunta: o personagem tem chave? E a resposta só pode ser verdadeiro, que quer dizer sim, ou falso, que quer dizer não. Agora está falso, porque ele ainda não pegou a chave.
 >
-> Guardar uma informação é como anotar na agenda do celular para não esquecer: se ninguém anota, ninguém lembra depois. No seu jogo, temChave é a agenda, e anotar é mudar temChave para verdadeiro.
+> Guardar uma informação é como anotar num caderno para não esquecer: se ninguém anota, ninguém lembra depois. No seu jogo, temChave é o caderno, e anotar é mudar temChave para verdadeiro.
 >
 > Olha aqui: com Guardar a coleta desligado, eu clico em Encostar na chave. Olha só: a chave saiu do chão, e o aviso mudou. Encostar na chave é um evento, que é uma coisa que acontece no jogo. A regra da coleta responde a esse evento: ela tira a chave do chão e muda o aviso. Mas percebe? temChave continua falso."
 
@@ -42,7 +44,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > E quando eu clico em Afastar, temChave continua verdadeiro, mesmo longe da chave. É que a anotação fica guardada.
 >
-> Por último, eu clico em Recomeçar a partida, e temChave volta para falso, porque uma partida nova começa com a agenda em branco.
+> Por último, eu clico em Recomeçar a partida, e temChave volta para falso, porque uma partida nova começa com o caderno em branco.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
@@ -136,7 +138,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso."
 
-**Na tela:** Trazer à vista a área **Quando acontecer**, arrastando um espaço vazio se for preciso, e mostrar o encontro que vai mudar a informação depois da coleta. Deixar à vista o bloco **Destruir o sprite chave**, dentro do encontro. Abrir **Programação → Variáveis**, pegar **Alterar variável ... para ...** e soltar logo abaixo dele, ainda dentro do evento. Clicar em `contador` (o nome com que o bloco nasce) e escolher `temChave` na lista. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o `1` e manter **verdadeiro**.
+**Na tela:** No "Repare", manter à vista **Criar variável temChave com valor falso**, no fim de **Ao iniciar**. Depois trazer à vista a área **Quando acontecer**, arrastando um espaço vazio se for preciso, e mostrar o encontro que vai mudar a informação depois da coleta. Deixar à vista o bloco **Destruir o sprite chave**, dentro do encontro. Abrir **Programação → Variáveis**, pegar **Alterar variável ... para ...** e soltar logo abaixo dele, ainda dentro do evento. Clicar em `contador` (o nome com que o bloco nasce) e escolher `temChave` na lista. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o `1` e manter **verdadeiro**.
 
 **Professora:**
 
@@ -198,7 +200,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro com a chave estão três blocos, primeiro Destruir o sprite chave, depois Alterar temChave para verdadeiro e, por último, Alterar aviso para a sua mensagem. Depois de corrigir, teste de novo."
 
-**Na tela:** clicar em **Verificar esta etapa**, mostrar o resultado ou uma pendência real e corrigir antes de verificar de novo. Depois de **Objetivo da etapa cumprido!**, clicar em **Enviar para o professor**, confirmar em **Enviar** sem preencher o **Recado (opcional)** e aguardar. Gravar numa sessão sem envio anterior nesta aula (ver as notas de gravação). No "lembra da surpresa", lembrar sem mostrar nada dela. Apontar **Concluir aula**.
+**Na tela:** clicar em **Verificar esta etapa**, mostrar o resultado ou uma pendência real e corrigir antes de verificar de novo. Depois de **Objetivo da etapa cumprido!**, clicar em **Enviar para o professor**, confirmar em **Enviar** sem preencher o **Recado para o professor** e aguardar. Gravar numa sessão sem envio anterior nesta aula (ver as notas de gravação). No "lembra da surpresa", lembrar sem mostrar nada dela. Apontar **Concluir aula**.
 
 **Professora:**
 

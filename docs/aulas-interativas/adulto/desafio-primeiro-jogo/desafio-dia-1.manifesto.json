@@ -17,7 +17,7 @@
   "blocks": [
     {
       "key": "video-intro-farol",
-      "plannedVideo": "Título: Seu primeiro jogo: A Chave do Farol\n\nAnunciar o jogo que será programado e o contexto do barco e do farol apagado. Demonstração na primeira pessoa com um gesto só (Olha aqui: quando eu seguro a seta da tela para a direita…), sem resolver o percurso, e o aviso no alto do jogo apontado como o lugar que diz o que fazer na partida. Antes de passar a vez, plantar a surpresa do final, sem dizer o que é (E tem uma coisa esperando por você lá no fim deste curso: uma surpresa para deixar o jogo do seu jeito.); só no fim passar a vez: jogar até o farol acender e o barco chegar. Não fazer tour de interface. A participação permite avançar; vencer não é requisito.\n\nRoteiro falado: desafio-dia-1.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Seu primeiro jogo: A Chave do Farol\n\nAnunciar o jogo que será programado e o contexto do barco e do farol apagado. Demonstração na primeira pessoa com um gesto só (Olha aqui: quando eu seguro a seta da tela para a direita…), sem resolver o percurso, e o aviso no alto do jogo apontado como o lugar que diz o que fazer na partida. Antes de passar a vez, plantar a surpresa do final, sem dizer o que é (E tem uma coisa esperando por você lá no fim deste curso: uma surpresa para deixar o jogo do seu jeito.); só no fim passar a vez: jogar até o farol acender e o barco chegar. Não fazer tour de interface. A participação permite avançar; vencer não é requisito.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-intro-farol",
@@ -33,7 +33,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Jogue A Chave do Farol",
-        "instructions": "Segure as setas da tela ou, no computador, clique no jogo e use as setas do teclado. Pegue a chave e leve o personagem até o farol. Não precisa terminar a partida para seguir.",
+        "instructions": "Segure as setas da tela ou, no computador, clique no jogo e use as setas do teclado. Pegue a chave e leve o personagem até o farol. Você pode seguir mesmo sem terminar a partida.",
         "hints": [],
         "activity": {
           "type": "project-play",
@@ -1647,7 +1647,7 @@
     },
     {
       "key": "video-intro-caderno",
-      "plannedVideo": "Título: Seu caderno do curso\n\nChamar a atenção para o caderno (Olha aqui: este é o seu caderno do curso.), a consulta que acompanha as seções do curso: montagem, testes, publicação e certificado. Oferecer as duas escolhas como convite: ler aqui mesmo ou clicar em Baixar para guardar o caderno e consultar onde quiser. Não dizer que não precisa baixar ou imprimir: soa como uma ordem para não fazer. Apontar Baixar sem demonstrar o download. Não inventar outro material nem ensinar o leitor. A professora conduz este vídeo sozinha, para manter a explicação direta.\n\nRoteiro falado: desafio-dia-1.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Seu caderno do curso\n\nChamar a atenção para o caderno (Olha aqui: este é o seu caderno do curso.), a consulta que acompanha as seções do curso: montagem, testes, publicação e certificado. Oferecer as duas escolhas como convite: ler aqui mesmo ou clicar em Baixar para guardar o caderno e consultar onde quiser. Não dizer que não precisa baixar ou imprimir: soa como uma ordem para não fazer. Apontar Baixar sem demonstrar o download. Não inventar outro material nem ensinar o leitor. A professora conduz este vídeo sozinha, para manter a explicação direta.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-intro-caderno",
@@ -1710,7 +1710,7 @@
     },
     {
       "key": "video-d1-quadro",
-      "plannedVideo": "Título: Como o personagem anda\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: o jogo é como um filme, quadro a quadro. Fazer cada gesto no ritmo da fala, sem a seta (o quadro passa de 0 para 1 e o x fica igual) e com a seta (o x sobe 3 a cada quadro, como mostra o +3 embaixo do personagem), depois Rodar, nomeando o que aconteceu e por quê. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-1.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Como o personagem anda\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: o jogo é como um desenho animado, quadro a quadro. Fazer cada gesto no ritmo da fala, sem a seta (o quadro passa de 0 para 1 e o x fica igual) e com a seta (o x sobe 3 a cada quadro, como mostra o +3 embaixo do personagem), depois Rodar, nomeando o que aconteceu e por quê. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-d1-quadro",
@@ -1734,10 +1734,7 @@
           "scene": "lighthouse-walk",
           "cenario": "farol",
           "setup": {
-            "goals": [
-              "still-without-arrow",
-              "moves-each-frame"
-            ],
+            "goals": ["still-without-arrow", "moves-each-frame"],
             "goalCopy": {
               "still-without-arrow": {
                 "label": "Sem a seta, o personagem ficou parado"
@@ -1752,7 +1749,7 @@
     },
     {
       "key": "video-d1-andar",
-      "plannedVideo": "Título: Faça o personagem andar\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (a pessoa procura as setas na tela ou usa as do teclado: não há setas e o personagem não sai do lugar), a lembrança da experiência (com a seta segurada, ele andava a cada quadro) e o anúncio da montagem. Antes de pedir para encontrar Ao iniciar, apresentar os comandos e os blocos com a fala: \"Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como blocos de encaixar. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.\" Apontar a paleta no \"Olha aqui: neste menu\", sem pegar nenhum bloco ainda. No projeto inicial, guiar com o destino à vista: controles com só as quatro direções no fim de Ao iniciar (o bloco chega com automáticos no celular: clicar nesse nome e trocar) e o movimento dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário praia-tropical, com velocidade 3 na demonstração, sem exigir esse número como resposta única (o bloco chega com heroi: clicar em heroi e escolher personagem). Procurar primeiro a área Enquanto estiver rodando, com o socorro de arrastar um espaço vazio, e depois o bloco dentro dela. Testar as quatro setas uma de cada vez e soltar para conferir que o personagem fica parado; deixar claro que cores, arte e tamanho do passo podem variar quando a direção continua coerente; explicar que o Estúdio salva o jogo automaticamente (mostrar o selo Salvo na sua conta só quando ele aparecer de verdade) e que o envio fica no fim da aula, Verificar esta etapa, Objetivo da etapa cumprido! e Próxima seção, sem envio.\n\nRoteiro falado: desafio-dia-1.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Faça o personagem andar\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (a pessoa procura as setas na tela ou usa as do teclado: não há setas e o personagem não sai do lugar), a lembrança da experiência (com a seta segurada, ele andava a cada quadro) e o anúncio da montagem. Antes de pedir para encontrar Ao iniciar, apresentar os comandos e os blocos com a fala: \"Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como blocos de encaixar. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.\" Apontar a paleta no \"Olha aqui: neste menu\", sem pegar nenhum bloco ainda. No projeto inicial, guiar com o destino à vista: controles com só as quatro direções no fim de Ao iniciar (o bloco chega com automáticos no celular: clicar nesse nome e trocar) e o movimento dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário praia-tropical, com velocidade 3 na demonstração, sem exigir esse número como resposta única (o bloco chega com heroi: clicar em heroi e escolher personagem). Procurar primeiro a área Enquanto estiver rodando, com o socorro de arrastar um espaço vazio, e depois o bloco dentro dela. Testar as quatro setas uma de cada vez e soltar para conferir que o personagem fica parado; deixar claro que cores, arte e tamanho do passo podem variar quando a direção continua coerente; explicar que o Estúdio salva o jogo automaticamente (mostrar o selo Salvo na sua conta só quando ele aparecer de verdade) e que o envio fica no fim da aula, Verificar esta etapa, Objetivo da etapa cumprido! e Próxima seção, sem envio.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-d1-andar",
@@ -1764,7 +1761,7 @@
     },
     {
       "key": "video-d1-limite",
-      "plannedVideo": "Título: Até onde ele pode ir?\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a tela é uma janela, e o limite, uma parede invisível. Apontar a faixa fora da tela, onde a experiência ainda mostra, em tom claro, o que saiu. Rodar sem o limite até o personagem sair e depois com Manter dentro da tela ligado; no fim, apontar na regra o bloco Manter o sprite personagem dentro da tela, logo abaixo do bloco que move. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-1.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Até onde ele pode ir?\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a tela é uma janela, e o limite, uma parede invisível. Apontar a faixa fora da tela, onde a experiência ainda mostra, em tom claro, o que saiu. Rodar sem o limite até o personagem sair e depois com Manter dentro da tela ligado; no fim, apontar na regra o bloco Manter o sprite personagem dentro da tela, logo abaixo do bloco que move. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-d1-limite",
@@ -1788,17 +1785,14 @@
           "scene": "lighthouse-walk",
           "cenario": "farol",
           "setup": {
-            "goals": [
-              "left-the-screen",
-              "stayed-inside"
-            ]
+            "goals": ["left-the-screen", "stayed-inside"]
           }
         }
       }
     },
     {
       "key": "video-d1-borda",
-      "plannedVideo": "Título: Mantenha o personagem na tela\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (o personagem sai pela beirada, porque ainda não há limite), a lembrança da experiência (com Manter dentro da tela ligado, ele parava na borda) e o anúncio. Depois deixar à vista o bloco de movimento e encaixar Manter o sprite dentro da tela logo abaixo (o bloco chega com heroi: clicar em heroi e escolher personagem). Testar as beiradas, Verificar esta etapa, Objetivo da etapa cumprido!, envio com confirmação, um reconhecimento curto do que a pessoa programou e Concluir aula. Gravar o envio numa sessão sem envio anterior nesta aula.\n\nRoteiro falado: desafio-dia-1.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Mantenha o personagem na tela\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (o personagem sai pela beirada, porque ainda não há limite), a lembrança da experiência (com Manter dentro da tela ligado, ele parava na borda) e o anúncio. Depois deixar à vista o bloco de movimento e encaixar Manter o sprite dentro da tela logo abaixo (o bloco chega com heroi: clicar em heroi e escolher personagem). Testar as beiradas, Verificar esta etapa, Objetivo da etapa cumprido!, envio com confirmação, um reconhecimento curto do que a pessoa programou e Concluir aula. Gravar o envio numa sessão sem envio anterior nesta aula.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-d1-borda",
@@ -1815,9 +1809,7 @@
         "purpose": "submission",
         "chain": "desafio-primeiro-jogo",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_start",
@@ -7140,20 +7132,13 @@
       "title": "A Chave do Farol",
       "intent": "presentation",
       "objective": "Experimentar o jogo pronto antes de construir suas regras, sem exigir vitória.",
-      "blockKeys": [
-        "video-intro-farol",
-        "ponte-intro-farol",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-intro-farol", "ponte-intro-farol", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-intro-farol",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-intro-farol", "jogo-pronto"]
       }
     },
     {
@@ -7161,19 +7146,13 @@
       "title": "Seu caderno do curso",
       "intent": "material",
       "objective": "Conhecer o caderno opcional que acompanha o conteúdo das aulas e a ajuda disponível.",
-      "blockKeys": [
-        "video-intro-caderno",
-        "ponte-intro-caderno",
-        "materiais-farol"
-      ],
+      "blockKeys": ["video-intro-caderno", "ponte-intro-caderno", "materiais-farol"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-intro-caderno"
-        ]
+        "blockIds": ["video-intro-caderno"]
       }
     },
     {
@@ -7181,20 +7160,13 @@
       "title": "Como o personagem anda",
       "intent": "exploration",
       "objective": "Ver que o jogo repete a cada quadro e que, com a seta, o personagem anda um pouco em cada repetição.",
-      "blockKeys": [
-        "video-d1-quadro",
-        "ponte-d1-quadro",
-        "experiencia-quadro"
-      ],
+      "blockKeys": ["video-d1-quadro", "ponte-d1-quadro", "experiencia-quadro"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d1-quadro",
-          "experiencia-quadro"
-        ]
+        "blockIds": ["video-d1-quadro", "experiencia-quadro"]
       }
     },
     {
@@ -7202,18 +7174,13 @@
       "title": "Faça o personagem andar",
       "intent": "application",
       "objective": "Ativar as quatro setas e mover o personagem dentro de A cada quadro do jogo.",
-      "blockKeys": [
-        "video-d1-andar",
-        "ponte-d1-andar"
-      ],
+      "blockKeys": ["video-d1-andar", "ponte-d1-andar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d1-andar"
-        ],
+        "blockIds": ["video-d1-andar"],
         "projectChecks": [
           {
             "id": "direcional",
@@ -7356,20 +7323,13 @@
       "title": "Até onde ele pode ir?",
       "intent": "exploration",
       "objective": "Ver o personagem sair da tela sem limite e ficar inteiro com o limite ligado.",
-      "blockKeys": [
-        "video-d1-limite",
-        "ponte-d1-limite",
-        "experiencia-limite"
-      ],
+      "blockKeys": ["video-d1-limite", "ponte-d1-limite", "experiencia-limite"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d1-limite",
-          "experiencia-limite"
-        ]
+        "blockIds": ["video-d1-limite", "experiencia-limite"]
       }
     },
     {
@@ -7377,20 +7337,13 @@
       "title": "Mantenha o personagem na tela",
       "intent": "delivery",
       "objective": "Manter o personagem dentro da tela, depois do movimento, e enviar a atividade.",
-      "blockKeys": [
-        "video-d1-borda",
-        "ponte-d1-borda",
-        "projeto"
-      ],
+      "blockKeys": ["video-d1-borda", "ponte-d1-borda", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d1-borda",
-          "projeto"
-        ],
+        "blockIds": ["video-d1-borda", "projeto"],
         "projectChecks": [
           {
             "id": "direcional",

@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-02.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-02.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 2
 
 **Mostre o Dino e a floresta**
@@ -18,7 +20,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Desenhar o Dino em Só no começo e Limpar a tela antes desligado. Clicar em Avançar 1 quadro e mostrar o x mudando na faixa, com o desenho do Dino no mesmo lugar (o contorno tracejado dos bastidores mostra o x novo). Trocar para A cada quadro, avançar e mostrar os dois Dinos. Ligar Limpar a tela antes, avançar e mostrar um Dino só, no lugar novo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma mão folheando um bloco de notas em que cada folha tem o Dino um pouco mais à frente. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Desenhar o Dino em Só no começo e Limpar a tela antes desligado. Clicar em Avançar 1 quadro e mostrar o x mudando na faixa, com o desenho do Dino no mesmo lugar (o contorno tracejado dos bastidores mostra o x novo). Trocar para A cada quadro, avançar e mostrar os dois Dinos. Ligar Limpar a tela antes, avançar e mostrar um Dino só, no lugar novo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma mão folheando um caderno em que cada folha tem o Dino um pouco mais à frente. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Professora:**
 
@@ -28,7 +30,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Quando eu troco para A cada quadro e avanço, aparece um Dino novo no lugar novo, e o desenho velho continua lá. Agora são dois Dinos na tela.
 >
-> Por último, eu ligo Limpar a tela antes e avanço de novo. Fica um Dino só, no lugar novo: o jogo apaga a imagem velha e desenha a nova. É como aquela animação no canto de um bloco de notas: um desenho novo em cada folha. No seu jogo, você vai colocar Desenhar o sprite dentro de A cada quadro do jogo e, depois, Limpar a tela antes dele.
+> Por último, eu ligo Limpar a tela antes e avanço de novo. Fica um Dino só, no lugar novo: o jogo apaga a imagem velha e desenha a nova. É como um desenho animado, feito com um desenho novo em cada folha. No seu jogo, você vai colocar Desenhar o sprite dentro de A cada quadro do jogo e, depois, Limpar a tela antes dele.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
@@ -54,15 +56,15 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora deixe à vista o espaço vazio dentro de Enquanto estiver rodando. Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada quadro do jogo e solte dentro dessa área. Tudo o que ficar dentro dele vai acontecer de novo em cada quadro.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Esperar o Dino aparecer na prévia antes de seguir.
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
-> “Assim, o desenho acompanha o Dino enquanto ele se mexe. Agora deixe à vista o espaço vazio dentro de A cada quadro do jogo. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro do quadro. No nome, escolha dino.
+> “Agora deixe à vista o espaço vazio dentro de A cada quadro do jogo. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro do quadro. No nome, escolha dino. Como ele fica dentro de A cada quadro do jogo, o desenho vai acompanhar o Dino quando ele se mexer.
 >
 > Agora olhe a área do jogo: o Dino aparece, parado no lugar em que foi criado.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Esperar o Dino aparecer na prévia e seguir no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
@@ -108,7 +110,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a lista A ordem de desenhar com o Dino em 1º e a Floresta em 2º, e o Dino quase escondido. Trocar a ordem três vezes, no ritmo da fala, e manter o palco à vista a cada troca. Terminar com o Dino depois da Floresta. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma mão pondo a foto do Dino por cima da foto da floresta, numa pilha de fotos sobre a mesa. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a lista A ordem de desenhar com o Dino em 1º e a Floresta em 2º, e o Dino quase escondido. Trocar a ordem três vezes, no ritmo da fala, e manter o palco à vista a cada troca. Terminar com o Dino depois da Floresta. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma mão colando a figurinha do Dino por cima da figurinha da floresta, num álbum aberto. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Mostrar a floresta cobrindo quase todo o Dino; manter a ordem inicial.
 
@@ -124,7 +126,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Para trazer o Dino para a frente, eu coloco o Dino depois da Floresta, e ele aparece inteiro, sem nada na frente. Ninguém foi apagado: só a ordem mudou.
 >
-> Se eu volto o Dino para antes da Floresta, ele se esconde de novo. Quando eu coloco o Dino depois da Floresta outra vez, ele volta para a frente. Quem é desenhado por último fica por cima. É como empilhar fotos na mesa: a última cobre a que já estava ali. No seu jogo, você vai encaixar Desenhar fundo de floresta antes de Desenhar o sprite.
+> Se eu volto o Dino para antes da Floresta, ele se esconde de novo. Quando eu coloco o Dino depois da Floresta outra vez, ele volta para a frente. Quem é desenhado por último fica por cima. É como colar figurinhas no álbum: a última cobre a que já estava ali. No seu jogo, você vai encaixar Desenhar fundo de floresta antes de Desenhar o sprite.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
@@ -226,7 +228,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > A descrição vale para o jogo inteiro, desde o começo. Por isso, ela vai em Ao iniciar, logo abaixo de Preparar o jogo em tela cheia. Deixe à vista o espaço entre Preparar o jogo em tela cheia e Criar dinossauro. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Esperar o Dino aparecer na prévia e seguir no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 

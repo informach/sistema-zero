@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-01.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-01.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Corre, Dino! · Aula 1 · Prepare a tela e crie o Dino
 
 Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md).
@@ -43,7 +45,7 @@ Versão completa do mesmo jogo, derivada do marco original 13. Conclusão por pa
 
 **Recado na página (não gravar):** Este é o seu caderno do curso. Quando precisar conferir um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção.
 
-Anexar ao bloco caderno o PDF do Caderno do Aluno adulto, ainda em produção; não anexar o PDF do kids. Ler, baixar e imprimir são opcionais; não entram na conclusão.
+Anexar ao bloco caderno o PDF adulto do caderno do curso, ainda em produção; não anexar o PDF do kids. Ler, baixar e imprimir são opcionais; não entram na conclusão.
 
 ### Seção 3. Compare uma vez e sempre
 
@@ -153,4 +155,4 @@ Anexar ao bloco caderno o PDF do Caderno do Aluno adulto, ainda em produção; n
 
 Aula 1 na cadeia `corre-dino`. Entrada: etapa 0; saída: etapa 1 de `qa/corre-dino-etapas.ts`. Os 13 marcos originais e o código do jogo permanecem preservados.
 
-A ordem vídeo → recado → atividade é editorial. Configurar videoBeforeActivity no curso adulto e conferir com um perfil adulto; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos adultos, anexar o PDF do Caderno do Aluno quando existir e ensaiar com adultos antes de declarar o percurso validado.
+A ordem vídeo → recado → atividade é editorial. Configurar videoBeforeActivity no curso adulto e conferir com um perfil adulto; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos adultos, anexar o PDF do caderno do curso quando existir e ensaiar com adultos antes de declarar o percurso validado.

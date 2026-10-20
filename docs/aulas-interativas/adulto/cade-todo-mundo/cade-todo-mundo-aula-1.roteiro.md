@@ -1,6 +1,8 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md e de qa/adulto/traducoes/cade-todo-mundo/cade-todo-mundo-aula-1.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro falado: Cadê Todo Mundo? | Aula 1
 
-**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. primeiro-achado: entrada sem reação; solução com a reação no toque. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. A versão adulta ainda não foi gravada, publicada nem ensaiada.
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. primeiro-achado: entrada sem reação; solução com a reação no toque. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Não informa gravação, publicação ou ensaio.
 
 Um vídeo por seção. **Status:** a versão adulta ainda não foi gravada. Só a professora fala; não há inserções de avatar. As durações abaixo cobrem a fala estimada a 137 palavras por minuto e, na montagem, os gestos sem fala. São alvos para a montagem, não tempos medidos.
 
@@ -28,11 +30,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “E os outros dois? Esses eu deixo para você descobrir.
 >
-> Ah, e tem mais uma coisa: no fim do curso tem uma surpresa esperando por você. Ela vai deixar o seu jogo ainda mais seu.”
-
-**Professora:**
-
-> “Agora é a sua vez: jogue até encontrar os três personagens. Quando terminar, clique em Próxima seção.”
+> Ah, e tem mais uma coisa: no fim do curso tem uma surpresa esperando por você. Ela vai deixar o seu jogo ainda mais seu.
+>
+> Agora é a sua vez: jogue até encontrar os três personagens. Quando terminar, clique em Próxima seção.”
 
 **Recado na página (não gravar):** “Sua vez: jogue a versão pronta e encontre os três personagens. Depois, clique em Próxima seção.”
 
@@ -42,7 +42,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 35 a 45 segundos.
 
-**Na tela:** mostrar a capa e a página de orientação do Caderno do Aluno, o caderno real. No "Olha aqui", apontar o caderno. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão, a divisória nem os controles do leitor. O PDF precisa estar anexado antes da gravação.
+**Na tela:** mostrar a capa e a página de orientação do caderno real (na tela, Caderno do curso: Cadê Todo Mundo?). No "Olha aqui", apontar o caderno. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão, a divisória nem os controles do leitor. O PDF precisa estar anexado antes da gravação.
 
 **Professora:**
 
@@ -58,13 +58,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Recado na página (não gravar):** “Este é o seu caderno do curso. Quando precisar conferir um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção.”
 
-**Conferência de produção:** o caderno, que aparece na tela como Caderno do Aluno, é consulta opcional, e a fala oferece as duas escolhas como convite: ler aqui mesmo ou baixar para guardar. A fala não diz que a pessoa não precisa baixar ou imprimir: quem ouve entende como uma ordem para não fazer. Só o vídeo é necessário para avançar. O tutorial de materiais ensina a folhear e a baixar o PDF.
+**Conferência de produção:** o caderno, que aparece na tela como Caderno do curso: Cadê Todo Mundo?, é consulta opcional, e a fala oferece as duas escolhas como convite: ler aqui mesmo ou baixar para guardar. A fala não diz que a pessoa não precisa baixar ou imprimir: quem ouve entende como uma ordem para não fazer. Só o vídeo é necessário para avançar. O tutorial de materiais ensina a folhear e a baixar o PDF.
 
 ## 3. O que um toque faz?
 
 **Duração alvo:** 70 a 90 segundos.
 
-**Na tela:** mostrar a experiência com a reação desligada. No "Olha aqui", tocar no arbusto e deixar ver que nada acontece; no "Percebe?", manter o arbusto parado na tela. Clicar em **Ligar a reação ao toque**, tocar de novo e, no "Olha só", deixar ver o arbusto invisível e o coelho. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase do interruptor, uma mão apertando o interruptor e a lâmpada acendendo, com a legenda "ação: apertar · reação: a luz acende". Desenho nosso no formato de meme, com objetos do dia a dia ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a professora explica sozinha.
+**Na tela:** mostrar a experiência com a reação desligada. No "Olha aqui", tocar no arbusto e deixar ver que nada acontece; no "Percebe?", manter o arbusto parado na tela. Clicar em **Ligar a reação ao toque**, tocar de novo e, no "Olha só", deixar ver o arbusto invisível e o coelho. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase das cócegas, o coelho do jogo morrendo de rir com uma pena fazendo cócegas, com a legenda "ação: cócega · reação: risada". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a professora explica sozinha.
 
 **Professora:**
 
@@ -72,7 +72,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olha aqui: quando eu toco no arbusto, nada acontece. Percebe? É que o jogo ainda não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele.
 >
-> Na vida é assim também: toda ação tem uma reação. Por exemplo, quando você aperta o interruptor, a luz acende. Apertar o interruptor é a ação, e a luz acender é a reação.
+> Na vida é assim também: toda ação tem uma reação. Por exemplo, se alguém faz cócegas em você, você ri. A cócega é a ação, e a risada é a reação.
 >
 > No seu jogo, o toque é a ação. E a reação que a gente quer é o arbusto ficar invisível, para aparecer quem está escondido atrás dele. Mas, para o jogo ter essa reação, a gente precisa ligar a reação ao toque.”
 
@@ -98,11 +98,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Aqui no seu jogo, toque num esconderijo. Percebe? Nada acontece, porque o toque ainda não tem nenhuma reação ligada a ele.
 >
-> Lembra da experiência da seção anterior? O arbusto só ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso com os esconderijos do seu jogo.”
-
-**Professora:**
-
-> “Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como blocos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.
+> Lembra da experiência da seção anterior? O arbusto só ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso com os esconderijos do seu jogo.
+>
+> Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como blocos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.
 >
 > Para começar, encontre a área Quando acontecer. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.
 >
@@ -122,21 +120,15 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora falta o número. Clique no 50 e troque por 0. Com zero de visibilidade, o esconderijo fica invisível, e aí dá para ver o personagem que está atrás dele.”
 
-**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e, no "Olha só", deixar ver o personagem; depois tocar em outro. Deixar visíveis o resultado e os blocos. Após o teste, clicar em **Verificar esta etapa** e mostrar **Objetivo da etapa cumprido!**. Mostrar **Salvo**, abrir **Enviar para o professor**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. No "lembra da surpresa", lembrar sem mostrar nada dela. Apontar **Concluir aula**.
+**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e, no "Olha só", deixar ver o personagem; depois tocar em outro. Deixar visíveis o resultado e os blocos. Após o teste, clicar em **Verificar esta etapa** e mostrar **Objetivo da etapa cumprido!**. Mostrar **Salvo**, abrir **Enviar para o professor**, confirmar em **Enviar** sem preencher o campo opcional Recado para o professor e aguardar a confirmação. No "lembra da surpresa", lembrar sem mostrar nada dela. Apontar **Concluir aula**.
 
 **Professora:**
 
-> “Agora vamos testar no seu jogo. Toque num esconderijo. Olha só: ele fica invisível, e o personagem que estava atrás aparece. Achados continua em zero por enquanto, porque o jogo ainda não conta quem você encontra. Depois, toque em outro esconderijo também.”
-
-**Professora:**
-
-> “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0. Depois de corrigir, teste de novo.
+> “Agora vamos testar no seu jogo. Toque num esconderijo. Olha só: ele fica invisível, e o personagem que estava atrás aparece. Achados continua em zero por enquanto, porque o jogo ainda não conta quem você encontra. Depois, toque em outro esconderijo também.
 >
-> Funcionou?”
-
-**Professora:**
-
-> “Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
+> Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0. Depois de corrigir, teste de novo.
+>
+> Funcionou? Então clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
 > Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o professor e confirme em Enviar.
 >
@@ -144,6 +136,6 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Quando o envio terminar, clique em Concluir aula.”
 
-**Recado na página (não gravar):** “Agora monte a regra do toque no seu jogo. Depois, teste nos esconderijos e clique em Verificar esta etapa antes de enviar o seu projeto.”
+**Recado na página (não gravar):** “Agora monte a regra do toque no seu jogo. Depois, teste nos esconderijos, clique em Verificar esta etapa e envie o seu projeto ao professor.”
 
 **Conferência de produção:** a Pré-visualização atualiza automaticamente. O bloco é Deixar o sprite ___ com ___% de visibilidade e nasce com jogador e 50. A opção escolhido só existe com o bloco dentro do evento preparado e aparece no fim da lista de sprites, depois dos seis sprites com imagem; é preciso rolar a lista. A fala não diz que o jardim e os personagens estão preparados: quem faz a aula vê o que já está no projeto. O que vem pronto entra na conversa só quando ajuda a ação, como o evento que já está na área Quando acontecer. A seção exige vídeo, aprovação em **Verificar esta etapa** e envio. A verificação depende desse clique; o envio não a executa automaticamente. Manter o projeto de quem faz a aula, sem abrir Pinta ou o Estúdio completo.

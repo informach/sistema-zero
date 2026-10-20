@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-13.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-13.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Corre, Dino! · Aula 13 · Aumente a dificuldade com um limite
 
 Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md).
@@ -97,13 +99,13 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 
 ### Seção 7. Confira o que você construiu
 
-**Tarefa:** Hora de revisar o que você construiu. As perguntas falam dos sorteios e da dificuldade da corrida. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, troque a resposta e clique em Enviar quiz outra vez. Quando acertar todas, clique em Próxima seção.
+**Tarefa:** Hora de lembrar o que você construiu. As perguntas falam dos sorteios e da dificuldade da corrida. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
 **Blocos na página:** fala-revisao → quiz.
 
-**Recado na página (não gravar):** Hora de revisar o que você construiu. As perguntas falam dos sorteios e da dificuldade da corrida. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, troque a resposta e clique em Enviar quiz outra vez. Quando acertar todas, clique em Próxima seção.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam dos sorteios e da dificuldade da corrida. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
-**Revisão formativa:** recado → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
+**Revisão formativa:** recado → quiz, com todas as perguntas numa página só e o botão Enviar quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 8. Teste e envie seu jogo
 
@@ -179,4 +181,4 @@ Publicação opcional após o envio: Compartilhar → resumo já preenchido → 
 
 Aula 13 na cadeia `corre-dino`. Entrada: etapa 12; saída: etapa 13 de `qa/corre-dino-etapas.ts`. Os 13 marcos originais e o código do jogo permanecem preservados.
 
-A ordem vídeo → recado → atividade é editorial. Configurar videoBeforeActivity no curso adulto e conferir com um perfil adulto; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos adultos, anexar o PDF do Caderno do Aluno quando existir e ensaiar com adultos antes de declarar o percurso validado.
+A ordem vídeo → recado → atividade é editorial. Configurar videoBeforeActivity no curso adulto e conferir com um perfil adulto; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos adultos, anexar o PDF do caderno do curso quando existir e ensaiar com adultos antes de declarar o percurso validado.

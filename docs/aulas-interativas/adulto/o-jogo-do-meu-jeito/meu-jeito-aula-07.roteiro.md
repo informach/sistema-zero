@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/o-jogo-do-meu-jeito/meu-jeito-aula-07.roteiro.md e de qa/adulto/traducoes/o-jogo-do-meu-jeito/meu-jeito-aula-07.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · O Jogo do Meu Jeito · Aula 7
 
 **Faça suas pedras nascerem animadas**
@@ -72,7 +74,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 
 > “Se você usar aqui o tamanho da nave, a pedra sai cortada. Por isso, confira as duas folhas: folha-nave continua 32 por 32, e folha-asteroide usa 64 por 64. Depois, clique na prévia e comece uma partida com Enter. Repare que as pedras ainda usam o desenho antigo, porque carregar a folha só deixa os quadros prontos. Ainda falta trocar o criador das pedras.
 >
-> Pause aqui e faça esta seção no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora prepare a folha do seu asteroide. Carregue folha-asteroide com quadros de 64 por 64 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.
 
@@ -104,7 +106,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, dentro do Se jogando do A cada 40 quadros, com grupo asteroides, nome asteroide, imagem asteroide e o sorteio no x, e os outros blocos ligados. O grupo junta todas as pedras, e o nome é de cada pedra que nasce. Depois de corrigir, teste de novo.
 >
-> Pause aqui e faça esta seção no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora troque a imagem das pedras que nascem. Substitua o criador das pedras, conservando o grupo, o sorteio e a velocidade. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.
 
@@ -134,13 +136,13 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite asteroide com a folha folha-asteroide na animação girando, do quadro 0 ao 1, a 8 fps, logo abaixo do criador, dentro do mesmo Se, e folha-asteroide com quadros de 64 por 64. Depois de corrigir, teste de novo.
 >
-> Pause aqui e faça esta seção no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora anime cada pedra depois de criar. Coloque a animação girando logo abaixo do criador, dentro do mesmo Se. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.
 
 ## Seção 5. Confira as artes dentro do jogo
 
-**Recado na página (não gravar):** Agora vamos relembrar como as suas artes entraram no jogo, com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam de como as suas artes entraram no jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
 Sem vídeo nem ferramenta. O quiz vem imediatamente depois do recado, com todas as perguntas numa página só e o botão Enviar quiz. Correção com explicação, tentativas ilimitadas e sem espera.
 
@@ -154,12 +156,12 @@ Sem vídeo nem ferramenta. O quiz vem imediatamente depois do recado, com todas 
 
 **Professora:**
 
-> “Hora de enviar o seu jogo com as duas artes. Antes, confira no seu jogo: a nave e as pedras usam as suas animações, pelo menos três pedras nasceram animadas, e o tiro, os pontos e a perda de vida continuam funcionando. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da aula só mostra o que já está salvo na sua conta.
+> “Hora de enviar o seu jogo com as duas artes. Antes, confira no seu jogo: a nave e as pedras usam as suas animações, pelo menos três pedras nasceram animadas, e o tiro, os pontos e a perda de vida continuam funcionando. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da aula só mostra o que já está guardado na sua conta.
 >
-> Agora volte para a aba da aula e clique em Escolher no Estúdio. Na janela Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se o seu trabalho não aparecer, confira se ele ficou salvo na sua conta e clique em Atualizar galeria.
+> Agora volte para a aba da aula e clique em Escolher no Estúdio. Na janela Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se o seu trabalho não aparecer, confira se ele ficou guardado na sua conta e clique em Atualizar galeria.
 >
 > Se quiser, escreva uma mensagem no campo Recado para o professor. Depois clique em Enviar ao professor (1) e espere aparecer Trabalho recebido pelo professor.
 >
 > Esse envio guarda uma cópia deste momento, e você continua criando no Estúdio. Por último, clique em Concluir aula.”
 
-**Recado na página (não gravar):** Hora de enviar o seu jogo com as duas artes. Confira se a nave e as pedras usam as suas animações. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer a mensagem Trabalho recebido pelo professor, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de enviar o seu jogo com as duas artes. Confira se a nave e as pedras usam as suas animações. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula.

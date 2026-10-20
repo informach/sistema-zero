@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.roteiro.md e de qa/adulto/traducoes/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Nave Contra Asteroides · Aula 4
 
 **Faça os asteroides cair**
@@ -8,7 +10,7 @@ Entrada: Tiros saem da nave, sobem, têm som e são retirados do grupo ao sair d
 
 **Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
 
-Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página. A versão adulta ainda não foi gravada.
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página.
 
 Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Percebe?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. O recado da página começa convidando ("Sua vez:", "Agora…", "Hora de…") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Percebe?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, quem faz a aula testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …"). Tom adulto em DIRETRIZES-ADULTO.md.
 
@@ -18,7 +20,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Criar asteroide em A cada quadro, clicar em Tempo, deixar passar cerca de um segundo e mostrar umas 30 pedras amontoadas. Levar a peça para a caixa A cada 40 quadros, deixar passar cerca de quatro segundos e mostrar as pedras nascendo separadas e a marca relógio 40: 180 em 60 quadros. Escolher 20 quadros, deixar passar mais três segundos e mostrar relógio 20: 180 em 60 quadros abaixo da primeira marca. A faixa mostra o intervalo em segundos (1,33 s); a fala usa quadros, como o bloco. Meme na comparação: na frase dos carros entrando na rodovia, mostrar por 2 a 3 segundos o meme ilustrado nosso, asteroides parados num engarrafamento na entrada de uma rodovia e depois entrando um de cada vez, com a legenda "um de cada vez"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Criar asteroide em A cada quadro, clicar em Tempo, deixar passar cerca de um segundo e mostrar umas 30 pedras amontoadas. Levar a peça para a caixa A cada 40 quadros, deixar passar cerca de quatro segundos e mostrar as pedras nascendo separadas e a marca relógio 40: 180 em 60 quadros. Escolher 20 quadros, deixar passar mais três segundos e mostrar relógio 20: 180 em 60 quadros abaixo da primeira marca. A faixa mostra o intervalo em segundos (1,33 s); a fala usa quadros, como o bloco. Meme na comparação: na frase dos carros entrando na rodovia, mostrar por 2 a 3 segundos o meme ilustrado nosso, asteroides colados uns nos outros na entrada de uma rodovia e depois entrando um de cada vez, com espaço entre eles, com a legenda "um de cada vez"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir o teste de 40 quadros, com espaços entre as pedras.
 
@@ -28,7 +30,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olha aqui: Criar asteroide está em A cada quadro. Eu clico em Tempo e deixo passar mais ou menos um segundo. Percebe? Nascem umas 30 pedras, uma em cada quadro, grudadas umas nas outras. Vira um amontoado, e ninguém conseguiria passar por ali.
 >
-> É como carros entrando numa rodovia: se todos entram juntos, vira um engarrafamento, mas, se cada um espera a sua vez, sobra espaço entre um e outro.
+> É como carros entrando numa rodovia: se todos entram de uma vez, um cola no outro, mas, se cada um espera a sua vez, sobra espaço entre um e outro.
 >
 > Agora eu levo Criar asteroide para a caixa A cada 40 quadros, e tudo recomeça do zero. Deixo passar uns quatro segundos. Olha só: nasce uma pedra, depois outra, depois outra, com espaço entre elas, porque o relógio espera 40 quadros antes de criar a próxima.”
 

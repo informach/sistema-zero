@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-01.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-01.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 1
 
 **Prepare a tela e crie o Dino**
@@ -24,7 +26,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Oi! Neste curso, você vai construir um jogo chamado Corre, Dino! Nele, o Dino corre pela floresta e precisa pular os cactos que vêm na direção dele. Cada segundo de corrida vale um ponto, e a corrida fica cada vez mais rápida. Se um cacto bater no Dino, a partida acaba, e aí é só jogar de novo para tentar bater a sua marca. Antes de montar o seu, vamos ver como ele funciona nesta versão pronta.
 >
-> Olha aqui: quando eu clico na área do jogo, a abertura some e a corrida começa. Quando um cacto chega perto, eu toco na barra de espaço, e o Dino pula por cima dele. A seta para cima e um toque na parte de cima da tela também fazem o Dino pular.
+> Olha aqui: quando eu clico na área do jogo, a abertura some e a corrida começa. Quando um cacto chega perto, eu aperto a barra de espaço, e o Dino pula por cima dele. A seta para cima e um toque na parte de cima da tela também fazem o Dino pular.
 >
 > Agora é a sua vez: jogue o Corre, Dino! pronto e tente passar pelo máximo de cactos. Não precisa bater recorde para seguir. Quando terminar, clique em Próxima seção.”
 
@@ -36,7 +38,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o PDF real do Caderno do Aluno, anexado ao curso. No Olha aqui, apontar o caderno. Ao falar em baixar, apontar o botão Baixar, sem clicar. Não demonstrar o download nem ensinar os controles do leitor.
+**Na tela:** Mostrar o PDF real do caderno do curso, já anexado. No Olha aqui, apontar o caderno. Ao falar em baixar, apontar o botão Baixar, sem clicar. Não demonstrar o download nem ensinar os controles do leitor.
 
 **Professora:**
 
@@ -54,7 +56,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Mover o Dino um pouquinho em Ações disponíveis. Colocar a peça em Ao iniciar, clicar em Começar o jogo e manter à vista o passo curto do Dino, o contador da peça em 1 vez e Teste encerrado. Levar a mesma peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar o Dino até sair da cena, com o contador subindo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma mão girando a chave do carro, com a legenda Ao iniciar: uma vez, e o carro seguindo pela estrada, com a legenda Enquanto estiver rodando: sempre. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Mover o Dino um pouquinho em Ações disponíveis. Colocar a peça em Ao iniciar, clicar em Começar o jogo e manter à vista o passo curto do Dino, o contador da peça em 1 vez e Teste encerrado. Levar a mesma peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar o Dino até sair da cena, com o contador subindo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: um tênis sendo calçado, com a legenda Ao iniciar: uma vez, e o Dino correndo com marcas de passos, com a legenda Enquanto estiver rodando: sempre. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Professora:**
 
@@ -64,7 +66,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo de novo. O Dino anda, anda e anda, até sair da cena. O contador sobe a cada passo e chega a 24 quando o teste termina. Enquanto estiver rodando repete a peça o tempo todo, enquanto o jogo está ligado.
 >
-> É como dirigir: você liga o carro uma vez, na saída, e acelera o caminho inteiro. No seu jogo, a preparação da tela vai em Ao iniciar, porque basta fazer uma vez.
+> É como sair para correr: o tênis você calça uma vez, antes de sair, e os passos você repete o caminho inteiro. No seu jogo, a preparação da tela vai em Ao iniciar, porque basta fazer uma vez.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
@@ -76,7 +78,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de 800 por 480, com a borda escondida. Clicar em Ligue a borda e mostrar o contorno. Mudar a largura para 600 e a altura para 300, com o contorno acompanhando os números. Terminar em 480 por 270, com os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: duas molduras na parede, uma grande e outra menor, com o Dino dentro da menor e a legenda 480 por 270. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de 800 por 480, com a borda escondida. Clicar em Ligue a borda e mostrar o contorno. Mudar a largura para 600 e a altura para 300, com o contorno acompanhando os números. Terminar em 480 por 270, com os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma folha grande e outra menor, com o Dino desenhado dentro da menor e a legenda 480 por 270. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Professora:**
 
@@ -86,7 +88,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora eu mudo a largura para 600 e a altura para 300. O contorno fica mais estreito e mais baixo: a largura mede de um lado ao outro, e a altura, de cima a baixo.
 >
-> Por último, eu coloco largura 480 e altura 270. Essa é a tela do seu jogo. É como escolher a moldura antes de pendurar um quadro: tudo o que o jogo mostrar vai caber dentro dela. Na montagem, você vai escrever 480 e 270 no bloco que prepara a tela e depois mostrar a borda para ver esse limite.
+> Por último, eu coloco largura 480 e altura 270. Essa é a tela do seu jogo. É como escolher o tamanho da folha antes de desenhar: tudo o que o jogo mostrar vai caber dentro dela. Na montagem, você vai escrever 480 e 270 no bloco que prepara a tela e depois mostrar a borda para ver esse limite.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
@@ -112,7 +114,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > A tela só precisa ser preparada uma vez, por isso ela vai em Ao iniciar, que faz cada peça uma vez só, no começo do jogo. Deixe à vista um espaço vazio do projeto, abra Áreas do projeto, pegue Ao iniciar e solte nesse espaço.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Manter o fundo azul à vista, depois da atualização do jogo.
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
@@ -120,15 +122,15 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Repare nos números do bloco: ele chega com 800 e 480. O primeiro número é a largura, e o segundo, a altura. Troque 800 por 480 e 480 por 270. Depois, no campo fundo, escolha um azul claro, que vai pintar o fundo do seu jogo.
 >
-> Agora olhe a área do jogo: a cor aparece!”
+> Agora olhe a área do jogo: a cor aparece.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Manter o fundo azul à vista, depois da atualização do jogo, e seguir no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
 > “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Preparar o jogo em tela cheia está dentro de Ao iniciar, com largura 480 e altura 270. Depois de corrigir, teste de novo.
 >
-> O Estúdio salva o seu jogo automaticamente enquanto você monta. Você só envia para o professor no fim desta aula.
+> O Estúdio guarda o seu jogo automaticamente enquanto você monta. Você só envia o seu projeto ao professor no fim desta aula.
 >
 > Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”
 
@@ -152,7 +154,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > A borda aparece junto com a tela, logo depois de ela ser preparada. Por isso, deixe à vista o lugar logo abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar. Depois, abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Manter o fundo azul à vista, depois da atualização do jogo, e seguir no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
@@ -170,7 +172,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o Dino em x 110, y 150. Pelo deslizante (os botões − e + andam de 20 em 20), aumentar só o x até 300, depois só o y até 200, e mostrar o Dino mudando de lugar a cada número. Terminar em x 0, y 0, com o Dino no canto de cima, à esquerda, e os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino apontando uma célula numa planilha, com uma seta x para a direita, ao longo das colunas, e uma seta y para baixo, ao longo das linhas. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o Dino em x 110, y 150. Pelo deslizante (os botões − e + andam de 20 em 20), aumentar só o x até 300, depois só o y até 200, e mostrar o Dino mudando de lugar a cada número. Terminar em x 0, y 0, com o Dino no canto de cima, à esquerda, e os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino com um mapa do tesouro, com uma seta x para a direita e uma seta y para baixo. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Mostrar o Dino indo para a direita ao aumentar somente x, com y ainda em 150.
 
@@ -186,7 +188,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “E para fazer o Dino descer? Quando eu aumento só o y, para 200, o Dino desce. Isso pode surpreender: no jogo, y maior leva para baixo, porque o y conta a partir do alto da tela.
 >
-> Por último, eu coloco x em 0 e y em 0. O Dino vai para o canto de cima, à esquerda. É dali que o jogo começa a contar. É como achar uma célula numa planilha: tantas colunas para o lado e tantas linhas para baixo. Quando você criar o Dino, vai escrever x 110 e y 150 para escolher o lugar dele.
+> Por último, eu coloco x em 0 e y em 0. O Dino vai para o canto de cima, à esquerda. É dali que o jogo começa a contar. É como explicar onde está um tesouro: tantos passos para o lado e tantos passos para baixo. Quando você criar o Dino, vai escrever x 110 e y 150 para escolher o lugar dele.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
@@ -240,7 +242,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > O bloco chega com x 120: troque por 110. O y já vem 150 e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Manter o fundo azul à vista, depois da atualização do jogo, e seguir no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 

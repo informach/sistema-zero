@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-13.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-13.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 13
 
 **Aumente a dificuldade com um limite**
@@ -48,7 +50,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a base em -5 e a condição ligada. Clicar em Passar 5 segundos cinco vezes, com a base e o número de cada cacto à vista. Continuar até nascer um cacto -10 com a base em -9. Desligar a condição e clicar mais cinco vezes. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o painel de um carro com o ponteiro do velocímetro parado no limite e a luz do limitador de velocidade acesa. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a base em -5 e a condição ligada. Clicar em Passar 5 segundos cinco vezes, com a base e o número de cada cacto à vista. Continuar até nascer um cacto -10 com a base em -9. Desligar a condição e clicar mais cinco vezes. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino descendo uma ladeira de bicicleta, apertando o freio. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Passar cinco intervalos com a condição ligada; deixar a base em -9 e os números dos cactos visíveis.
 
@@ -66,7 +68,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Por último, eu desligo a condição e clico em Passar 5 segundos mais cinco vezes. Agora a base passa do -9 e continua diminuindo.
 >
-> É como o limitador de velocidade do carro: com ele ligado, você acelera e a velocidade para de crescer no limite, e, sem ele, ela só aumenta. No seu jogo, você vai guardar a base numa variável e diminuir esse número a cada 5 segundos, só enquanto velocidade > -9.
+> É como o freio da bicicleta numa descida: com o freio, a velocidade para de crescer, e sem ele, ela só aumenta. No seu jogo, você vai guardar a base numa variável e diminuir esse número a cada 5 segundos, só enquanto velocidade > -9.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
@@ -196,7 +198,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ## Seção 7. Confira o que você construiu
 
-**Recado na página (não gravar):** Hora de revisar o que você construiu. As perguntas falam dos sorteios e da dificuldade da corrida. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, troque a resposta e clique em Enviar quiz outra vez. Quando acertar todas, clique em Próxima seção.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam dos sorteios e da dificuldade da corrida. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
 Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do recado. Leia a explicação após enviar; tentativas ilimitadas, sem espera.
 
@@ -224,6 +226,6 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do recad
 
 **Professora:**
 
-> “Se quiser mostrar a sua corrida para outras pessoas, dá para publicar no Mural, mas primeiro vamos conferir e enviar o seu projeto. Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando o envio terminar, se quiser mostrar o seu jogo no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido; pode deixar como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar e espere a confirmação. Quando aparecer Publicado!, o seu jogo já está no Mural dos Criadores. Clique em Copiar link e mande para os amigos, para o grupo, para quem você quiser. Quem receber pode jogar direto, até no celular. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula.”
+> “Funcionou? Primeiro, confira e envie o seu projeto: clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando o envio terminar, se quiser mostrar o seu jogo para outras pessoas no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido; pode deixar como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar e espere a confirmação. Quando aparecer Publicado!, o seu jogo já está no Mural dos Criadores. Clique em Copiar link e mande para os amigos, para o grupo, para quem você quiser. Quem receber pode jogar direto, até no celular. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula.”
 
 **Recado na página (não gravar):** Hora de testar e enviar o seu Corre, Dino! Teste a corrida inteira, clique em Verificar esta etapa e depois em Enviar para o professor, confirmando em Enviar. Se quiser, mostre o seu jogo no Mural e, por último, clique em Concluir aula.

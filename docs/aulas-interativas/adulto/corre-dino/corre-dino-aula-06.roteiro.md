@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-06.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-06.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 6
 
 **Retire os cactos que saíram**
@@ -18,7 +20,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a regra desligada, a tela do jogo e os bastidores lado a lado. Clicar em Tempo e deixar dois cactos saírem pela esquerda, mostrando a prateleira dos bastidores enchendo e os números da tela e do grupo na faixa. Ligar a chave e deixar o tempo passar até os dois números ficarem iguais. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino com uma carteira estufada, cheia de cactos no lugar das notinhas. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a regra desligada, a tela do jogo e os bastidores lado a lado. Clicar em Tempo e deixar dois cactos saírem pela esquerda, mostrando a prateleira dos bastidores enchendo e os números da tela e do grupo na faixa. Ligar a chave e deixar o tempo passar até os dois números ficarem iguais. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino com uma carteira estufada, cheia de cactos no lugar dos comprovantes. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Deixar dois cactos saírem; mostrar a prateleira Fora da tela, no grupo, antes de ligar a chave.
 
@@ -34,7 +36,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Parece que sair da tela já tira o cacto do jogo, mas não tira. Fora da tela, o cacto continua guardado no grupo. Para tirar, o jogo precisa de uma regra. Depois que dois cactos saem, a chave abre. Eu ligo Tirar do grupo quem sair da tela e deixo o tempo passar. Agora quem sai da tela é tirado do grupo, e o número do grupo fica igual ao da tela. Sair da tela não apaga um cacto. Quem tira do grupo é essa regra.
 >
-> É como a carteira: a notinha que você não usa mais continua lá dentro, fazendo volume, até alguém tirar. No seu jogo, você vai encaixar Tirar do grupo quem sair da tela depois do desenho dos cactos.
+> É como a carteira: o comprovante que você não usa mais continua lá dentro, fazendo volume, até alguém tirar. No seu jogo, você vai encaixar Tirar do grupo quem sair da tela depois do desenho dos cactos.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 

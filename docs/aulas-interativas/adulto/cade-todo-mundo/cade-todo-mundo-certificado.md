@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/cade-todo-mundo/cade-todo-mundo-certificado.md e de qa/adulto/traducoes/cade-todo-mundo/cade-todo-mundo-certificado.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Cadê Todo Mundo? | Certificado
 
 Duas seções na mesma aula: revisão final e certificado. O quiz tem três perguntas e não leva vídeo. A celebração conserva o vídeo, o recado da página e o bloco de certificado existentes.
@@ -9,10 +11,10 @@ Duas seções na mesma aula: revisão final e certificado. O quiz tem três perg
 - **Intenção:** revisão de conceito (`explanation`).
 - **Por que existe:** retomar as regras construídas e explicar as dúvidas antes da celebração.
 - **Conclui quando:** todas as respostas corretas. O quiz mostra as três perguntas numa página só; depois de clicar em **Enviar quiz**, aparecem as explicações, e quem errou troca a resposta e clica em **Enviar quiz** de novo.
-- **Blocos, nesta ordem:** `fala-revisao-final` (recado da página), `quiz-revisao-final` (quiz). Sem vídeo, ferramenta ou texto adicional.
+- **Blocos, nesta ordem:** `fala-revisao-final` (recado), `quiz-revisao-final` (quiz, com todas as perguntas numa página só e o botão Enviar quiz). Sem vídeo, ferramenta ou texto adicional.
 - **Conteúdo:** [perguntas, alternativas e explicações](../../../aulas-interativas-tecnico/proposta-quizzes-cursos-curtos-2026-10-03.md).
 
-**Recado na página (não gravar):** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora vamos relembrar essas regras com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam do toque que faz os personagens aparecerem e da contagem dos achados. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
 ### Seção 2. Comemore sua criação
 

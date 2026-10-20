@@ -7,7 +7,7 @@
   "blocks": [
     {
       "key": "video-variavel",
-      "plannedVideo": "Título: Guarde e mostre um número\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Mudar número guardado em pontos para 1 e voltar para 0. Com Mostrar placar desligado, clicar em Somar 1 em pontos duas vezes e mostrar o número guardado em 2, com a tela sem placar. Ligar Mostrar placar e mostrar Pontos: 2 na tela; somar 1 e mostrar os dois em 3. A comparação ajuda, mas não substitui os testes nos controles reais. Meme na comparação: na frase do contador de passos, mostrar por 2 a 3 segundos o meme ilustrado nosso, um celular de tela apagada no bolso, ainda contando passos, e, ao lado, o mesmo celular de tela acesa mostrando o número contado, com a legenda \"guardar · mostrar\"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-pontos.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Guarde e mostre um número\n\nProduzir no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Mudar número guardado em pontos para 1 e voltar para 0. Com Mostrar placar desligado, clicar em Somar 1 em pontos duas vezes e mostrar o número guardado em 2, com a tela sem placar. Ligar Mostrar placar e mostrar Pontos: 2 na tela; somar 1 e mostrar os dois em 3. A comparação ajuda, mas não substitui os testes nos controles reais. Meme na comparação: na frase do placar do estádio, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma mão anotando pontos: 2 num caderno, ao lado de um placar de estádio mostrando 2, com a legenda \"guardar · mostrar\"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-pontos.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-caixa-de-pontos",
@@ -40,11 +40,7 @@
           },
           "cenario": "nave",
           "setup": {
-            "goals": [
-              "stored",
-              "changed-hidden",
-              "shown"
-            ]
+            "goals": ["stored", "changed-hidden", "shown"]
           }
         },
         "semPerguntaFinal": true
@@ -52,7 +48,7 @@
     },
     {
       "key": "video-pontos-e-placar",
-      "plannedVideo": "Título: Some um ponto a cada acerto\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar pela retomada: acertar uma pedra e, no \"Percebe?\", mostrar que nenhum placar aparece. Mostrar o contador inicial, um erro e dois acertos. O bloco de placar fica fora da colisão e depois dela.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-pontos.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Some um ponto a cada acerto\n\nProduzir no Estúdio atual. Começar pela retomada: acertar uma pedra e, no \"Percebe?\", mostrar que nenhum placar aparece. Mostrar o contador inicial, um erro e dois acertos. O bloco de placar fica fora da colisão e depois dela.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-pontos.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-placar",
@@ -69,9 +65,7 @@
         "purpose": "submission",
         "chain": "nave-contra-asteroides",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -836,20 +830,13 @@
       "title": "Guarde e mostre um número",
       "intent": "exploration",
       "objective": "Sua vez: mude pontos com o placar desligado, depois ligue Mostrar placar e compare. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-variavel",
-        "fala-caixa-de-pontos",
-        "experiencia-variavel"
-      ],
+      "blockKeys": ["video-variavel", "fala-caixa-de-pontos", "experiencia-variavel"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-variavel",
-          "experiencia-variavel"
-        ]
+        "blockIds": ["video-variavel", "experiencia-variavel"]
       }
     },
     {
@@ -857,20 +844,13 @@
       "title": "Some um ponto a cada acerto",
       "intent": "delivery",
       "objective": "Agora faça o seu jogo contar os pontos. Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta etapa e envie o seu projeto ao professor. Por último, clique em Concluir aula.",
-      "blockKeys": [
-        "video-pontos-e-placar",
-        "fala-placar",
-        "projeto"
-      ],
+      "blockKeys": ["video-pontos-e-placar", "fala-placar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-pontos-e-placar",
-          "projeto"
-        ],
+        "blockIds": ["video-pontos-e-placar", "projeto"],
         "projectChecks": [
           {
             "id": "pontos",

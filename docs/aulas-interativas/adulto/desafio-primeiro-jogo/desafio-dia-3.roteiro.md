@@ -1,12 +1,14 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/desafio-primeiro-jogo/desafio-dia-3.roteiro.md e de qa/adulto/traducoes/desafio-primeiro-jogo/desafio-dia-3.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · A Chave do Farol · Dia 3
 
-**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. sem-chave tem solução transitória com então vazio; decisao completa o caminho com chave. personalizar reutiliza o jogo funcional: o aviso de objetivos já atendidos não exige trocar uma imagem só para criar uma diferença. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. A versão adulta ainda não foi gravada, publicada nem ensaiada com adultos.
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. sem-chave tem solução transitória com então vazio; decisao completa o caminho com chave. personalizar reutiliza o jogo funcional: o aviso de objetivos já atendidos não exige trocar uma imagem só para criar uma diferença. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Não informa gravação, publicação nem ensaio com adultos.
 
 **Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada. As notas **Na tela** não são locução.
 
 **Gravação:** não cobrir controles, blocos, mostradores ou resultados. Cada alvo de duração cobre a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala; conferir a montagem final sem acelerar nada.
 
-**Antes de gravar:** abrir a aula numa aba nova, depois do último deploy; não gravar numa aba aberta antes de um deploy. Gravar cada experiência numa sessão sem progresso naquele bloco, com o estado inicial certo: na porta, `temChave` falso, porta fechada, botão **Levar a chave** e nenhuma resposta escolhida; na posição, x da chave 211, y da chave 53 e sem quadrado pontilhado (quem já fez a experiência vê a revisita, em "Você descobriu"). Gravar o envio numa sessão sem envio anterior nesta aula: **Recomeçar** não apaga o envio; para repetir a tomada, usar outro perfil de ensaio. Confirmar em **Enviar** sem preencher o **Recado (opcional)**. Mostrar o selo **Salvo na sua conta** só quando ele aparecer de verdade. Pronunciar então e senão como nomes de partes do bloco, com a ênfase de um rótulo e sem pausa depois ("o então", "dentro do senão"). Nos testes, o personagem encosta na porta do farol, na base da torre: é ali que fica o contato do farol, e encostar só na torre não faz nada acontecer.
+**Antes de gravar:** abrir a aula numa aba nova, depois do último deploy; não gravar numa aba aberta antes de um deploy. Gravar cada experiência numa sessão sem progresso naquele bloco, com o estado inicial certo: na porta, `temChave` falso, porta fechada, botão **Levar a chave** e nenhuma resposta escolhida; na posição, x da chave 211, y da chave 53 e sem quadrado pontilhado (quem já fez a experiência vê a revisita, em "Você descobriu"). Gravar o envio numa sessão sem envio anterior nesta aula: **Recomeçar** não apaga o envio; para repetir a tomada, usar outro perfil de ensaio. Confirmar em **Enviar** sem preencher o **Recado para o professor**. Mostrar o selo **Salvo na sua conta** só quando ele aparecer de verdade. Pronunciar então e senão como nomes de partes do bloco, com a ênfase de um rótulo e sem pausa depois ("o então", "dentro do senão"). Nos testes, o personagem encosta na porta do farol, na base da torre: é ali que fica o contato do farol, e encostar só na torre não faz nada acontecer.
 
 Oito seções: experiência com a porta, resposta sem chave, resposta com chave, escolha das imagens (com o par do farol), avisos, experiência de posição, posição da chave e publicação. Manter o projeto enviado no Dia 2 e o mesmo Estúdio em todas as montagens e personalizações. A experiência de posição é separada e não modifica o projeto. A verificação intermediária não pede envio; o envio único do dia fica no fim de Escolha onde fica a chave, depois das imagens, dos avisos e da posição. O salvamento automático mantém o mesmo projeto entre as seções. Ajustar as durações no ensaio, sem acelerar encaixes, percursos ou a entrada do barco (ele chega em cerca de 1 segundo). Não atribuir à pessoa a arte ou a animação preparada.
 
@@ -184,9 +186,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora, sem recomeçar a partida, busque a chave e volte até a porta do farol, lá na base da torre. Olha só: a luz acende, o aviso muda, e o barco já chegou perto do farol."
 
-**Na tela:** O barco entra em cerca de 1 segundo. Gravar o farol acendendo e o barco entrando sem corte e manter o barco parado e o farol aceso à vista antes da próxima fala.
-
-**Na tela:** Clicar em Atualizar, mostrar a chave de volta e testar novamente sem ela. Manter a conferência e a verificação depois dos testes.
+**Na tela:** O barco entra em cerca de 1 segundo. Gravar o farol acendendo e o barco entrando sem corte e manter o barco parado e o farol aceso à vista por um instante. Depois clicar em Atualizar, mostrar a chave de volta e testar novamente sem ela. Manter a conferência e a verificação depois dos testes.
 
 **Professora:**
 
@@ -198,7 +198,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do então estão ganhou verdadeiro, a imagem farol listrado aceso e o aviso de chegada, e dentro do senão está o aviso de que falta a chave. Depois de corrigir, teste de novo."
 
-**Na tela:** clicar em **Verificar esta etapa**, mostrar eventuais pendências reais e corrigir. Depois de **Objetivo da etapa cumprido!**, apontar **Próxima seção**. O projeto é salvo automaticamente e continua nas próximas seções; o envio fica no fim de **Escolha onde fica a chave**. No "salvo automaticamente", mostrar o selo **Salvo na sua conta**, no cabeçalho do bloco **Seu projeto no Estúdio**, só se ele já tiver aparecido de verdade; não simular o selo na edição.
+**Na tela:** clicar em **Verificar esta etapa**, mostrar eventuais pendências reais e corrigir. Depois de **Objetivo da etapa cumprido!**, apontar **Próxima seção**. O projeto é salvo automaticamente e continua nas próximas seções; o envio fica no fim de **Escolha onde fica a chave**. No "salvo automaticamente", mostrar o selo **Salvo na sua conta**, no cabeçalho do bloco **Atividade no Estúdio**, só se ele já tiver aparecido de verdade; não simular o selo na edição.
 
 **Professora:**
 
@@ -342,7 +342,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 2 a 3 minutos, incluindo o percurso e o reinício.
 
-**Na tela:** retomar o mesmo projeto, mantendo as escolhas anteriores. Mostrar a chave no lugar atual e deixar à vista **Ao iniciar → Criar sprite chave**. Apontar somente os campos x e y. Abrir o PDF do Caderno do Aluno (ele fica na seção Seu caderno do curso do Dia 1; o Dia 3 não tem o caderno) na página **Escolha onde fica a chave**, quadro **Três lugares para experimentar**: perto da trilha x 211/y 53; na parte de baixo x 160/y 250; perto da ponte x 280/y 160. Manter o projeto sem alterações enquanto a fala apresenta os três lugares.
+**Na tela:** retomar o mesmo projeto, mantendo as escolhas anteriores. Mostrar a chave no lugar atual e deixar à vista **Ao iniciar → Criar sprite chave**. Apontar somente os campos x e y. Abrir o PDF do caderno do curso (ele fica na seção Seu caderno do curso do Dia 1; o Dia 3 não tem o caderno) na página **Escolha onde fica a chave**, quadro **Três lugares para experimentar**: perto da trilha x 211/y 53; na parte de baixo x 160/y 250; perto da ponte x 280/y 160. Manter o projeto sem alterações enquanto a fala apresenta os três lugares.
 
 **Professora:**
 
@@ -362,7 +362,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora teste o novo caminho. Clique em Atualizar, busque a chave no lugar escolhido e leve até a porta do farol. A luz deve acender, e o barco deve chegar."
 
-**Na tela:** Concluir o novo percurso, a coleta e a chegada do barco. Reiniciar para conferir se a chave volta ao lugar escolhido. Depois clicar em **Enviar para o professor**, confirmar em **Enviar** sem preencher o **Recado (opcional)** e aguardar **Projeto enviado ao professor** antes de apontar **Próxima seção**. Gravar numa sessão sem envio anterior nesta aula. Para repetir a tomada depois de enviar, usar outro perfil de ensaio com as seções 1 a 6 feitas (o **Recomeçar** do bloco não apaga o envio): depois do envio, o botão vira **Reenviar ao professor** e a confirmação, **Reenviar**.
+**Na tela:** Concluir o novo percurso, a coleta e a chegada do barco. Reiniciar para conferir se a chave volta ao lugar escolhido. Depois clicar em **Enviar para o professor**, confirmar em **Enviar** sem preencher o **Recado para o professor** e aguardar **Projeto enviado ao professor** antes de apontar **Próxima seção**. Gravar numa sessão sem envio anterior nesta aula. Para repetir a tomada depois de enviar, usar outro perfil de ensaio com as seções 1 a 6 feitas (o **Recomeçar** do bloco não apaga o envio): depois do envio, o botão vira **Reenviar ao professor** e a confirmação, **Reenviar**.
 
 **Professora:**
 
@@ -388,7 +388,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Depois, clique em Gerar capa e espere a imagem aparecer. Olha só: essa é a capa que vai apresentar o seu jogo."
 
-**Na tela:** conferir a capa, clicar em **Publicar** e esperar a tela do Estúdio com **Publicado!** e **Seu projeto já está no Mural dos Criadores.**, com os botões **Ver no Mural**, **Abrir o jogo** e **Copiar link**. Manter **Copiar link** à vista até a fala seguinte.
+**Na tela:** conferir a capa, clicar em **Publicar** e esperar a tela do Estúdio com **Publicado!** e **Seu projeto já está no Mural dos Criadores.**, com os botões **Ver no Mural**, **Abrir o jogo**, **Copiar link** e **Fechar**. Manter **Copiar link** à vista até a fala seguinte.
 
 **Professora:**
 

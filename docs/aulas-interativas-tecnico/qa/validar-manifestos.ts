@@ -1,6 +1,7 @@
 /**
  * Valida os manifestos do redesenho didático contra o validador REAL do core.
- * Uso: bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts [filtro]
+ * Uso: bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts [--adulto] [filtro]
+ * Com `--adulto`, valida os manifestos da versão adulta (docs/aulas-interativas/adulto).
  */
 import { readFileSync } from 'node:fs'
 import {
@@ -13,7 +14,7 @@ import {
   isSectionCompletion,
   submissionUpToDateWorkspace,
 } from '../../../packages/core/src/learning/section-progression'
-import { caminhoAula, listarArquivosAulas, PASTA_CURSOS } from './caminhos'
+import { caminhoAula, listarArquivosAulas, PASTA_CURSOS, PASTA_CURSOS_ADULTO } from './caminhos'
 import { CURSOS_DIRETRIZES_ATUAIS, problemasPedagogicos } from './diretrizes-pedagogicas'
 import { MANIFESTOS_NOVO_MODELO } from './novo-modelo'
 
@@ -31,10 +32,11 @@ function cenasAusentes(m: Record<string, unknown>): string[] {
   return [...faltando].sort()
 }
 
-const DIR = PASTA_CURSOS
+const adulto = process.argv.includes('--adulto')
+const DIR = adulto ? PASTA_CURSOS_ADULTO : PASTA_CURSOS
 
-const filtro = process.argv[2] ?? ''
-const arquivos = listarArquivosAulas()
+const filtro = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? ''
+const arquivos = listarArquivosAulas(DIR)
   .filter((f) => f.endsWith('.manifesto.json') && f.includes(filtro))
   .sort()
 
@@ -333,7 +335,7 @@ let avisosTotal = 0
 for (const nome of arquivos) {
   let dados: unknown
   try {
-    dados = JSON.parse(readFileSync(caminhoAula(nome), 'utf8'))
+    dados = JSON.parse(readFileSync(caminhoAula(nome, DIR), 'utf8'))
   } catch (e) {
     falhas.push(`${nome}\n    JSON inválido: ${(e as Error).message}`)
     continue
@@ -361,7 +363,8 @@ for (const nome of arquivos) {
     sections: Array<Record<string, unknown>>
   }
   const avisos: string[] = []
-  if (CURSOS_DIRETRIZES_ATUAIS.has(dados.courseSlug))
+  // O curso adulto tem a estrutura do kids, então segue as mesmas regras pedagógicas.
+  if (CURSOS_DIRETRIZES_ATUAIS.has(dados.courseSlug.replace(/-adulto$/, '')))
     avisos.push(...problemasPedagogicos(dados, true))
   avisos.push(...diagnosticarNovoModelo(nome, m))
   for (const b of m.blocks)

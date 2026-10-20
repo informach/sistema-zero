@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/o-jogo-do-meu-jeito/meu-jeito-aula-08.roteiro.md e de qa/adulto/traducoes/o-jogo-do-meu-jeito/meu-jeito-aula-08.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · O Jogo do Meu Jeito · Aula 8
 
 **Teste e compartilhe sua versão**
@@ -40,7 +42,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 
 **Professora:**
 
-> “Ou seja, para quem joga ver a nave rosa, é preciso publicar de novo. Por isso, eu clico em Publicar de novo. Repare: aparece a Publicação 2, rosa, ao lado da Publicação 1, que continua azul. Ou seja, cada publicação é um cartão novo, e o anterior fica no Mural.
+> “Para quem joga ver a nave rosa, é preciso publicar de novo. Eu clico em Publicar de novo. Repare: aparece a Publicação 2, rosa, ao lado da Publicação 1, que continua azul. Ou seja, cada publicação é um cartão novo, e o anterior fica no Mural.
 >
 > Mais adiante, publicar o seu jogo de verdade vai ser uma escolha sua.
 >
@@ -62,9 +64,9 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 
 > “Lembra da experiência da seção anterior? Cada publicação guardou o jogo do jeito que ele estava naquele momento. Por isso, agora a gente vai testar o seu jogo inteiro, antes de você decidir se quer publicar.
 >
-> Clique em Abrir meu Estúdio nesta seção e retome o seu jogo. Clique na prévia e toque na tecla Enter para começar. Mova a nave para os lados, atire e acerte uma pedra. Confira se os pontos mudam e se as duas animações aparecem.
+> Clique em Abrir meu Estúdio nesta seção e retome o seu jogo. Clique na prévia e aperte Enter para começar. Mova a nave para os lados, atire e acerte uma pedra. Confira se os pontos mudam e se as duas animações aparecem.
 >
-> Depois deixe as pedras acertarem a nave até acabar a última vida. Percebe? A partida acaba e aparece a tela de fim, porque as vidas acabaram. Toque na tecla Enter para voltar à abertura e em outro Enter para começar de novo. Confira se os pontos e as vidas recomeçam e se não sobraram pedras da partida anterior.”
+> Depois deixe as pedras acertarem a nave até acabar a última vida. Percebe? A partida acaba e aparece a tela de fim, porque as vidas acabaram. Aperte Enter para voltar à abertura e outro Enter para começar de novo. Confira se os pontos e as vidas recomeçam e se não sobraram pedras da partida anterior.”
 
 **Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
@@ -72,7 +74,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 
 > “E se alguma regra falhar? Volte à aula em que ela funcionava e compare os blocos, sem trocar o projeto inteiro por outro. Se precisar de ajuda, clique em Preciso de ajuda, aqui na aula, e conte o que você queria, o que tentou e o que aconteceu. Depois dos ajustes, teste de novo.
 >
-> Pause aqui e faça esta seção no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora jogue o seu jogo do começo ao reinício. Teste a partida completa no mesmo cartão, com as suas duas artes. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.
 
@@ -106,7 +108,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 
 ## Seção 4. Confira o que você transformou
 
-**Recado na página (não gravar):** Agora vamos relembrar o que você transformou no seu jogo, com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam do que você transformou no seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
 Sem vídeo nem ferramenta. O quiz vem imediatamente depois do recado, com todas as perguntas numa página só e o botão Enviar quiz. Correção com explicação, tentativas ilimitadas e sem espera.
 
@@ -120,12 +122,12 @@ Sem vídeo nem ferramenta. O quiz vem imediatamente depois do recado, com todas 
 
 **Professora:**
 
-> “Hora de enviar o seu jogo do seu jeito. Antes, confira no seu jogo: as duas artes aparecem inteiras e animadas, e uma partida completa termina e recomeça do jeito certo. Publicar e escrever um recado ficam à sua escolha. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da aula só mostra o que já está salvo na sua conta.
+> “Hora de enviar o seu jogo do seu jeito. Antes, confira no seu jogo: as duas artes aparecem inteiras e animadas, e uma partida completa termina e recomeça do jeito certo. Publicar e escrever um recado ficam à sua escolha. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da aula só mostra o que já está guardado na sua conta.
 >
-> Agora volte para a aba da aula e clique em Escolher no Estúdio. Na janela Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se o seu trabalho não aparecer, confira se ele ficou salvo na sua conta e clique em Atualizar galeria.
+> Agora volte para a aba da aula e clique em Escolher no Estúdio. Na janela Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se o seu trabalho não aparecer, confira se ele ficou guardado na sua conta e clique em Atualizar galeria.
 >
 > Se quiser, escreva uma mensagem no campo Recado para o professor. Depois clique em Enviar ao professor (1) e espere aparecer Trabalho recebido pelo professor.
 >
 > Esse envio guarda uma cópia deste momento, e você continua criando no Estúdio. Por último, clique em Concluir aula.”
 
-**Recado na página (não gravar):** Hora de enviar o seu jogo do seu jeito. Confira se uma partida completa termina e recomeça do jeito certo. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer a mensagem Trabalho recebido pelo professor, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de enviar o seu jogo do seu jeito. Confira se uma partida completa termina e recomeça do jeito certo. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula.

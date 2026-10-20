@@ -38,7 +38,7 @@
   "blocks": [
     {
       "key": "video-preenchimento-contorno",
-      "plannedVideo": "Título: Separe o miolo da borda\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do mapa, um país desenhado num mapa, com a fronteira numa linha laranja e o interior pintado de azul, com a legenda \"linha: Contorno · dentro: Preenchimento\". Desenho nosso no formato de meme, com objetos do dia a dia ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Separe o miolo da borda\n\nProduzir nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do mapa, um país desenhado num mapa, com a fronteira numa linha laranja e o interior pintado de azul, com a legenda \"linha: Contorno · dentro: Preenchimento\". Desenho nosso no formato de meme, com objetos do dia a dia; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-preenchimento-contorno",
@@ -61,11 +61,7 @@
           "scene": "fill-stroke",
           "cenario": "meu-jeito",
           "setup": {
-            "goals": [
-              "only-fill",
-              "only-stroke",
-              "both"
-            ]
+            "goals": ["only-fill", "only-stroke", "both"]
           }
         },
         "semPerguntaFinal": true
@@ -73,7 +69,7 @@
     },
     {
       "key": "video-novo-asteroide",
-      "plannedVideo": "Título: Prepare o desenho em vetor\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Prepare o desenho em vetor\n\nProduzir nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-novo-asteroide",
@@ -85,7 +81,7 @@
     },
     {
       "key": "video-forma-pedra",
-      "plannedVideo": "Título: Feche a forma da pedra\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Feche a forma da pedra\n\nProduzir nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-forma-pedra",
@@ -97,7 +93,7 @@
     },
     {
       "key": "video-curvas",
-      "plannedVideo": "Título: Arredonde os pontos\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Arredonde os pontos\n\nProduzir nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-curvas",
@@ -109,7 +105,7 @@
     },
     {
       "key": "video-crateras",
-      "plannedVideo": "Título: Acrescente crateras\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Acrescente crateras\n\nProduzir nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-crateras",
@@ -121,7 +117,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie seu asteroide\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Envie seu asteroide\n\nProduzir nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-entrega",
@@ -160,10 +156,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-preenchimento-contorno",
-          "experiencia-cores"
-        ]
+        "blockIds": ["video-preenchimento-contorno", "experiencia-cores"]
       }
     },
     {
@@ -171,18 +164,13 @@
       "title": "Prepare o desenho em vetor",
       "objective": "Agora prepare o desenho do seu asteroide. Crie um personagem em Vetor, tamanho Médio, chamado asteroide. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.",
       "intent": "application",
-      "blockKeys": [
-        "video-novo-asteroide",
-        "fala-novo-asteroide"
-      ],
+      "blockKeys": ["video-novo-asteroide", "fala-novo-asteroide"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-novo-asteroide"
-        ]
+        "blockIds": ["video-novo-asteroide"]
       }
     },
     {
@@ -190,18 +178,13 @@
       "title": "Feche a forma da pedra",
       "objective": "Agora feche a forma da sua pedra. Desenhe a pedra com a Caneta e termine no primeiro ponto. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.",
       "intent": "application",
-      "blockKeys": [
-        "video-forma-pedra",
-        "fala-forma-pedra"
-      ],
+      "blockKeys": ["video-forma-pedra", "fala-forma-pedra"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-forma-pedra"
-        ]
+        "blockIds": ["video-forma-pedra"]
       }
     },
     {
@@ -209,18 +192,13 @@
       "title": "Arredonde os pontos",
       "objective": "Agora arredonde os pontos da sua pedra. Transforme alguns cantos em curvas para dar forma a ela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.",
       "intent": "application",
-      "blockKeys": [
-        "video-curvas",
-        "fala-curvas"
-      ],
+      "blockKeys": ["video-curvas", "fala-curvas"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-curvas"
-        ]
+        "blockIds": ["video-curvas"]
       }
     },
     {
@@ -228,18 +206,13 @@
       "title": "Acrescente crateras",
       "objective": "Agora acrescente crateras à sua pedra. Desenhe pequenas formas dentro dela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.",
       "intent": "application",
-      "blockKeys": [
-        "video-crateras",
-        "fala-crateras"
-      ],
+      "blockKeys": ["video-crateras", "fala-crateras"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-crateras"
-        ]
+        "blockIds": ["video-crateras"]
       }
     },
     {
@@ -247,20 +220,13 @@
       "title": "Envie seu asteroide",
       "objective": "Hora de enviar o seu asteroide. Confira se ele é Vetor de 64 por 64, com forma fechada e crateras dentro do corpo. Depois clique em Escolher no Pinta, selecione o asteroide e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula.",
       "intent": "delivery",
-      "blockKeys": [
-        "video-entrega",
-        "fala-entrega",
-        "entrega-galeria-v6"
-      ],
+      "blockKeys": ["video-entrega", "fala-entrega", "entrega-galeria-v6"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "entrega-galeria-v6"
-        ]
+        "blockIds": ["video-entrega", "entrega-galeria-v6"]
       }
     }
   ]

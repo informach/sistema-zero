@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-d3-condicao",
-      "plannedVideo": "Título: Quando a porta pode abrir?\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz e mostrando antes de definir: testar a porta sem a chave, ver que ela não abre e só então dizer a pergunta que ela faz (temChave é verdadeiro? Ou seja, o personagem está com a chave?), que se chama condição, como a porta de casa que só abre com a chave. Sem a chave a resposta é não e a porta escolhe o senão; com a chave a resposta é sim e ela escolhe o então, apontando a resposta escolhida no painel A regra da porta. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-3.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Quando a porta pode abrir?\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz e mostrando antes de definir: testar a porta sem a chave, ver que ela não abre e só então dizer a pergunta que ela faz (temChave é verdadeiro? Ou seja, o personagem está com a chave?), que se chama condição, como a porta de casa que só abre com a chave. Sem a chave a resposta é não e a porta escolhe o senão; com a chave a resposta é sim e ela escolhe o então, apontando a resposta escolhida no painel A regra da porta. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-d3-condicao",
@@ -34,7 +34,7 @@
     },
     {
       "key": "video-d3-sem-chave",
-      "plannedVideo": "Título: Avise quando faltar a chave\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (o personagem chega à porta do farol, na base da torre, e nada acontece), a lembrança da experiência (a porta conferia temChave) e o anúncio colado ao primeiro passo. No projeto enviado no Dia 2, guiar evento separado personagem/farol (o bloco chega com jogador e inimigo), Se consultando temChave (a pergunta x > 0 vai para a lixeira e o valor da variável chega com x) e aviso no senão, aberto pelo segundo sinal de mais, antes da palavra senão. Explicitar o então ainda vazio. Testar sem chave, Verificar esta etapa, corrigir pendências e, depois de Objetivo da etapa cumprido!, Próxima seção. Não enviar nesta etapa intermediária.\n\nRoteiro falado: desafio-dia-3.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Avise quando faltar a chave\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (o personagem chega à porta do farol, na base da torre, e nada acontece), a lembrança da experiência (a porta conferia temChave) e o anúncio colado ao primeiro passo. No projeto enviado no Dia 2, guiar evento separado personagem/farol (o bloco chega com jogador e inimigo), Se consultando temChave (a pergunta x > 0 vai para a lixeira e o valor da variável chega com x) e aviso no senão, aberto pelo segundo sinal de mais, antes da palavra senão. Explicitar o então ainda vazio. Testar sem chave, Verificar esta etapa, corrigir pendências e, depois de Objetivo da etapa cumprido!, Próxima seção. Não enviar nesta etapa intermediária.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-d3-sem-chave",
@@ -46,7 +46,7 @@
     },
     {
       "key": "video-d3-decisao",
-      "plannedVideo": "Título: Acenda o farol com a chave\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (com a chave, a luz não acende, porque o espaço do então está vazio), a lembrança da experiência (com temChave verdadeiro, a porta acendia o farol) e o anúncio colado ao primeiro passo. Continuar no mesmo Se e projeto da seção anterior. Dizer de saída que a resposta com a chave tem três blocos e completar o então com ganhou, imagem (o Trocar imagem chega com heroi nos dois nomes) e aviso. Testar sem chave, buscar e voltar até a porta do farol na mesma partida (o barco entra em cerca de 1 segundo), depois reiniciar e conferir sem chave. Verificação cumulativa e Próxima seção, sem envio. O jogo é salvo automaticamente e o único envio fica no fim de Escolha onde fica a chave.\n\nRoteiro falado: desafio-dia-3.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Acenda o farol com a chave\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (com a chave, a luz não acende, porque o espaço do então está vazio), a lembrança da experiência (com temChave verdadeiro, a porta acendia o farol) e o anúncio colado ao primeiro passo. Continuar no mesmo Se e projeto da seção anterior. Dizer de saída que a resposta com a chave tem três blocos e completar o então com ganhou, imagem (o Trocar imagem chega com heroi nos dois nomes) e aviso. Testar sem chave, buscar e voltar até a porta do farol na mesma partida (o barco entra em cerca de 1 segundo), depois reiniciar e conferir sem chave. Verificação cumulativa e Próxima seção, sem envio. O jogo é salvo automaticamente e o único envio fica no fim de Escolha onde fica a chave.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-d3-decisao",
@@ -58,7 +58,7 @@
     },
     {
       "key": "video-d3-personalizar",
-      "plannedVideo": "Título: Deixe o jogo com a sua cara\n\nRevelar a surpresa plantada na abertura do Dia 1: começar com Sua missão deu certo. E a surpresa chegou: olha quantas versões esse jogo pode ter, mostrar duas versões completas já montadas, em dois trechos curtos gravados em dois perfis de teste com o farol acendendo e o barco entrando (robo, lancha, chave-prateada, farol-colorido e ilha-nevada; mergulhador, veleiro, chave-dourada, farol-de-madeira e costa-rochosa), perguntar Que combinação você vai criar? e só então mostrar as galerias do caderno do curso (A surpresa do final); depois voltar ao Estúdio, no mesmo projeto verificado. Uma ideia só: trocar cada imagem por outra do mesmo tipo, pelos nomes da galeria do caderno. No mesmo projeto, em Ao iniciar, trocar a imagem de Criar sprite personagem, barco e chave; o farol em par, o modelo apagado no Criar sprite farol e o mesmo modelo aceso no Trocar imagem do sprite farol, dentro de então; o cenário em Desenhar o cenário, dentro de A cada quadro do jogo. Demonstrar pirata, barco-pirata, chave-de-estrela, farol-de-pedra e noite-na-ilha como exemplo, dizendo que a pessoa troca o que quiser e o que ela gostou pode ficar como está; clicar no nome da imagem (como aventureiro), mostrar logo depois da primeira troca que o pirata fica no mesmo lugar e do mesmo tamanho e avisar que o barco novo só aparece no teste; mantendo nomes dos sprites, posição, largura e altura. Dizer que, se misturar os modelos, o farol muda de tipo quando acende. Testar sem a chave e com a chave na mesma partida, levando o personagem até a porta do farol, e dizer que é com essa cara que o jogo vai para o Mural; conferir uma vez só, depois do teste. Verificar esta etapa, Objetivo da etapa cumprido! e Próxima seção. As escolhas ficam no jogo e não viram critério.\n\nRoteiro falado: desafio-dia-3.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Deixe o jogo com a sua cara\n\nRevelar a surpresa plantada na abertura do Dia 1: começar com Sua missão deu certo. E a surpresa chegou: olha quantas versões esse jogo pode ter, mostrar duas versões completas já montadas, em dois trechos curtos gravados em dois perfis de teste com o farol acendendo e o barco entrando (robo, lancha, chave-prateada, farol-colorido e ilha-nevada; mergulhador, veleiro, chave-dourada, farol-de-madeira e costa-rochosa), perguntar Que combinação você vai criar? e só então mostrar as galerias do caderno do curso (A surpresa do final); depois voltar ao Estúdio, no mesmo projeto verificado. Uma ideia só: trocar cada imagem por outra do mesmo tipo, pelos nomes da galeria do caderno. No mesmo projeto, em Ao iniciar, trocar a imagem de Criar sprite personagem, barco e chave; o farol em par, o modelo apagado no Criar sprite farol e o mesmo modelo aceso no Trocar imagem do sprite farol, dentro de então; o cenário em Desenhar o cenário, dentro de A cada quadro do jogo. Demonstrar pirata, barco-pirata, chave-de-estrela, farol-de-pedra e noite-na-ilha como exemplo, dizendo que a pessoa troca o que quiser e o que ela gostou pode ficar como está; clicar no nome da imagem (como aventureiro), mostrar logo depois da primeira troca que o pirata fica no mesmo lugar e do mesmo tamanho e avisar que o barco novo só aparece no teste; mantendo nomes dos sprites, posição, largura e altura. Dizer que, se misturar os modelos, o farol muda de tipo quando acende. Testar sem a chave e com a chave na mesma partida, levando o personagem até a porta do farol, e dizer que é com essa cara que o jogo vai para o Mural; conferir uma vez só, depois do teste. Verificar esta etapa, Objetivo da etapa cumprido! e Próxima seção. As escolhas ficam no jogo e não viram critério.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-d3-personalizar",
@@ -70,7 +70,7 @@
     },
     {
       "key": "video-d3-farol-mensagens",
-      "plannedVideo": "Título: Escreva seus avisos\n\nDuração alvo: 120 a 150 segundos. Uma ideia só: os avisos do jogo com as palavras da pessoa, que ficam no jogo. Mudar só o texto dos quatro avisos: o de Ao iniciar, o do encontro com a chave e os do senão e do então no encontro com o farol, com frases curtas. Narrar as quatro edições, cada uma com o lugar e a frase de exemplo, sem digitação calada; se Quando acontecer começar fora da tela, arrastar um espaço vazio entre os blocos. Testar os quatro na mesma partida, levando o personagem até a porta do farol, na base da torre; conferir uma vez só, depois do teste, inclusive o aviso que não mudou. O jogo é salvo automaticamente; terminar em Próxima seção. As frases ficam livres.\n\nRoteiro falado: desafio-dia-3.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Escreva seus avisos\n\nDuração alvo: 120 a 150 segundos. Uma ideia só: os avisos do jogo com as palavras da pessoa, que ficam no jogo. Mudar só o texto dos quatro avisos: o de Ao iniciar, o do encontro com a chave e os do senão e do então no encontro com o farol, com frases curtas. Narrar as quatro edições, cada uma com o lugar e a frase de exemplo, sem digitação calada; se Quando acontecer começar fora da tela, arrastar um espaço vazio entre os blocos. Testar os quatro na mesma partida, levando o personagem até a porta do farol, na base da torre; conferir uma vez só, depois do teste, inclusive o aviso que não mudou. O jogo é salvo automaticamente; terminar em Próxima seção. As frases ficam livres.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-d3-farol-mensagens",
@@ -82,7 +82,7 @@
     },
     {
       "key": "video-d3-posicao",
-      "plannedVideo": "Título: Como escolher um lugar para a chave\n\nDemonstrar na primeira pessoa a experiência lighthouse-position: observar x211/y53, mudar só Posição horizontal x para 160, depois só Posição vertical y para 250. Cada número pelo campo de digitar: clicar no número, apagar, escrever e clicar fora do campo (a chave só se move depois desse clique); não usar os botões − e +, que andam de 20 em 20 e não chegam a 160 nem a 250. Explicar enquanto faz: x leva para os lados, y para cima e para baixo; números maiores levam à direita e para baixo, porque na tela do jogo a contagem do y começa no 0, lá em cima. Nomear o quadrado pontilhado que marca o lugar anterior. Manter o outro valor visível, mostrar que tamanho e desenho não mudam. Só no fim passar a vez, sem repetir os passos; terminar em Próxima seção.\n\nRoteiro falado: desafio-dia-3.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Como escolher um lugar para a chave\n\nDemonstrar na primeira pessoa a experiência lighthouse-position: observar x211/y53, mudar só Posição horizontal x para 160, depois só Posição vertical y para 250. Cada número pelo campo de digitar: clicar no número, apagar, escrever e clicar fora do campo (a chave só se move depois desse clique); não usar os botões − e +, que andam de 20 em 20 e não chegam a 160 nem a 250. Explicar enquanto faz: x leva para os lados, y para cima e para baixo; números maiores levam à direita e para baixo, porque na tela do jogo a contagem do y começa no 0, lá em cima. Nomear o quadrado pontilhado que marca o lugar anterior. Manter o outro valor visível, mostrar que tamanho e desenho não mudam. Só no fim passar a vez, sem repetir os passos; terminar em Próxima seção.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-d3-posicao",
@@ -106,17 +106,14 @@
           "scene": "lighthouse-position",
           "cenario": "farol",
           "setup": {
-            "goals": [
-              "mover-horizontal",
-              "mover-vertical"
-            ]
+            "goals": ["mover-horizontal", "mover-vertical"]
           }
         }
       }
     },
     {
       "key": "video-d3-posicionar-chave",
-      "plannedVideo": "Título: Escolha onde fica a chave\n\nRetomar a experiência de x/y e mostrar a chave no jogo. Em Ao iniciar, no Criar sprite chave, trocar só x/y, mantendo nome, imagem, largura e altura. Oferecer pontos do caderno, mostrados no PDF do Caderno do Aluno (ele fica no Dia 1): perto da trilha 211/53, na parte de baixo 160/250 e perto da ponte 280/160. Dar o número como exemplo (\"pelo x do lugar que você escolheu, como 160\"), não como ordem. Conferir se a chave aparece inteira: atrás do farol ou da faixa do aviso ela some, e em cima do personagem ele já começa com ela; nesses casos, escolher um ponto sugerido. Testar a coleta no lugar novo, a chegada à porta do farol, na base da torre, o barco e o reinício, sem repetir a ida ao farol sem a chave (a posição não muda a resposta do senão). As escolhas não viram critério; esta é a única entrega do dia, depois das imagens, avisos e posição. Clicar em Enviar para o professor, confirmar em Enviar sem preencher o Recado (opcional) e aguardar Projeto enviado ao professor antes de Próxima seção. Exigir vídeo, envio e envio em dia; uma edição posterior ao envio pede atualização da mesma entrega (Reenviar ao professor, confirmado em Reenviar). Gravar numa sessão sem envio anterior nesta aula; para repetir a tomada, usar outro perfil de ensaio.\n\nRoteiro falado: desafio-dia-3.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Escolha onde fica a chave\n\nRetomar a experiência de x/y e mostrar a chave no jogo. Em Ao iniciar, no Criar sprite chave, trocar só x/y, mantendo nome, imagem, largura e altura. Oferecer pontos do caderno, mostrados no PDF do caderno do curso (ele fica no Dia 1): perto da trilha 211/53, na parte de baixo 160/250 e perto da ponte 280/160. Dar o número como exemplo (\"pelo x do lugar que você escolheu, como 160\"), não como ordem. Conferir se a chave aparece inteira: atrás do farol ou da faixa do aviso ela some, e em cima do personagem ele já começa com ela; nesses casos, escolher um ponto sugerido. Testar a coleta no lugar novo, a chegada à porta do farol, na base da torre, o barco e o reinício, sem repetir a ida ao farol sem a chave (a posição não muda a resposta do senão). As escolhas não viram critério; esta é a única entrega do dia, depois das imagens, avisos e posição. Clicar em Enviar para o professor, confirmar em Enviar sem preencher o Recado para o professor e aguardar Projeto enviado ao professor antes de Próxima seção. Exigir vídeo, envio e envio em dia; uma edição posterior ao envio pede atualização da mesma entrega (Reenviar ao professor, confirmado em Reenviar). Gravar numa sessão sem envio anterior nesta aula; para repetir a tomada, usar outro perfil de ensaio.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-d3-posicionar-chave",
@@ -128,7 +125,7 @@
     },
     {
       "key": "video-d3-fecho",
-      "plannedVideo": "Título: Publique seu jogo\n\nUsar o mesmo projeto da seção anterior. Compartilhar, manter o resumo (na aula o título vem do curso e não aparece), Gerar capa, conferir, Publicar e esperar a tela Publicado! (Seu projeto já está no Mural dos Criadores.), Copiar link e convidar a mandar para os amigos ou para quem a pessoa quiser, Fechar e Concluir aula. Outra capa fica no Como Fazer. Depois de publicar, Compartilhar fica travado neste navegador; para repetir a tomada, usar outro perfil de ensaio com o projeto já enviado e acesso ao Mural. O aviso amarelo de que a versão do Mural é uma cópia não precisa ser lido.\n\nRoteiro falado: desafio-dia-3.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Publique seu jogo\n\nUsar o mesmo projeto da seção anterior. Compartilhar, manter o resumo (na aula o título vem do curso e não aparece), Gerar capa, conferir, Publicar e esperar a tela Publicado! (Seu projeto já está no Mural dos Criadores.), Copiar link e convidar a mandar para os amigos ou para quem a pessoa quiser, Fechar e Concluir aula. Outra capa fica no Como Fazer. Depois de publicar, Compartilhar fica travado neste navegador; para repetir a tomada, usar outro perfil de ensaio com o projeto já enviado e acesso ao Mural. O aviso amarelo de que a versão do Mural é uma cópia não precisa ser lido.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "ponte-d3-publicar",
@@ -145,9 +142,7 @@
         "purpose": "submission",
         "chain": "desafio-primeiro-jogo",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_start",
@@ -6278,20 +6273,13 @@
       "title": "O que a porta precisa?",
       "intent": "exploration",
       "objective": "Experimentar a mesma porta sem e com chave antes de programar a condição.",
-      "blockKeys": [
-        "video-d3-condicao",
-        "ponte-d3-condicao",
-        "experiencia-porta"
-      ],
+      "blockKeys": ["video-d3-condicao", "ponte-d3-condicao", "experiencia-porta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-condicao",
-          "experiencia-porta"
-        ]
+        "blockIds": ["video-d3-condicao", "experiencia-porta"]
       }
     },
     {
@@ -6299,18 +6287,13 @@
       "title": "Avise quando faltar a chave",
       "intent": "application",
       "objective": "Programar o encontro com o farol e a resposta sem chave, mantendo então vazio por enquanto.",
-      "blockKeys": [
-        "video-d3-sem-chave",
-        "ponte-d3-sem-chave"
-      ],
+      "blockKeys": ["video-d3-sem-chave", "ponte-d3-sem-chave"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-sem-chave"
-        ],
+        "blockIds": ["video-d3-sem-chave"],
         "projectChecks": [
           {
             "id": "direcional",
@@ -6538,18 +6521,13 @@
       "title": "Acenda o farol com a chave",
       "intent": "application",
       "objective": "Completar então, testar os dois caminhos e o reinício e verificar as regras antes de personalizar.",
-      "blockKeys": [
-        "video-d3-decisao",
-        "ponte-d3-decisao"
-      ],
+      "blockKeys": ["video-d3-decisao", "ponte-d3-decisao"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-decisao"
-        ],
+        "blockIds": ["video-d3-decisao"],
         "projectChecks": [
           {
             "id": "direcional",
@@ -6926,18 +6904,13 @@
       "title": "Deixe o jogo com a sua cara",
       "intent": "application",
       "objective": "Escolher personagem, barco, chave, o par do farol e cenário com imagens do mesmo tipo e testar.",
-      "blockKeys": [
-        "video-d3-personalizar",
-        "ponte-d3-personalizar"
-      ],
+      "blockKeys": ["video-d3-personalizar", "ponte-d3-personalizar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-personalizar"
-        ],
+        "blockIds": ["video-d3-personalizar"],
         "projectChecks": [
           {
             "id": "acender",
@@ -6988,18 +6961,13 @@
       "title": "Escreva seus avisos",
       "intent": "closing",
       "objective": "Escrever os quatro avisos do jogo com as próprias palavras e testar.",
-      "blockKeys": [
-        "video-d3-farol-mensagens",
-        "ponte-d3-farol-mensagens"
-      ],
+      "blockKeys": ["video-d3-farol-mensagens", "ponte-d3-farol-mensagens"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-farol-mensagens"
-        ]
+        "blockIds": ["video-d3-farol-mensagens"]
       }
     },
     {
@@ -7007,20 +6975,13 @@
       "title": "Como escolher um lugar para a chave",
       "intent": "exploration",
       "objective": "Experimentar a posição horizontal e vertical antes de escolher onde a chave fica no jogo.",
-      "blockKeys": [
-        "video-d3-posicao",
-        "ponte-d3-posicao",
-        "experiencia-posicao"
-      ],
+      "blockKeys": ["video-d3-posicao", "ponte-d3-posicao", "experiencia-posicao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-posicao",
-          "experiencia-posicao"
-        ]
+        "blockIds": ["video-d3-posicao", "experiencia-posicao"]
       }
     },
     {
@@ -7028,20 +6989,13 @@
       "title": "Escolha onde fica a chave",
       "intent": "delivery",
       "objective": "Escolher uma posição visível e alcançável para a chave, testar o percurso completo e enviar o jogo.",
-      "blockKeys": [
-        "video-d3-posicionar-chave",
-        "ponte-d3-posicionar-chave",
-        "projeto"
-      ],
+      "blockKeys": ["video-d3-posicionar-chave", "ponte-d3-posicionar-chave", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-posicionar-chave",
-          "projeto"
-        ],
+        "blockIds": ["video-d3-posicionar-chave", "projeto"],
         "submissionUpToDate": true
       }
     },
@@ -7050,19 +7004,13 @@
       "title": "Publique seu jogo",
       "intent": "closing",
       "objective": "Publicar o projeto construído no Mural e concluir a aula.",
-      "blockKeys": [
-        "video-d3-fecho",
-        "ponte-d3-publicar",
-        "ajuda-publicar"
-      ],
+      "blockKeys": ["video-d3-fecho", "ponte-d3-publicar", "ajuda-publicar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-fecho"
-        ]
+        "blockIds": ["video-d3-fecho"]
       }
     }
   ]

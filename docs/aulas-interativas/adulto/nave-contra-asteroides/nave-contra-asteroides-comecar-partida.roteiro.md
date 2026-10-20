@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/nave-contra-asteroides-comecar-partida.roteiro.md e de qa/adulto/traducoes/nave-contra-asteroides/nave-contra-asteroides-comecar-partida.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Nave Contra Asteroides · Aula 8
 
 **Comece a partida com Enter**
@@ -18,7 +20,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Confirmar rótulo Criar asteroide via cast. A cena game-state usa Toque para começar, no palco, diferente do Enter que será construído no projeto. Com Criar asteroide no relógio, fora do Se, clicar em Tempo na abertura e mostrar o contador de asteroides criados subindo. Levar a peça para dentro de Se o estado do jogo é jogando, deixar passar uns quatro segundos e mostrar o contador em esperando, com os toques do relógio subindo na faixa. Clicar em Toque para começar e mostrar as pedras nascendo de novo. A caixa do relógio mostra No relógio, a cada 40 quadros, o mesmo intervalo do projeto. Meme na comparação: na frase do semáforo, mostrar por 2 a 3 segundos o meme ilustrado nosso, os asteroides parados diante de um semáforo vermelho, com a legenda "só depois do verde"; desenho nosso, com os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Confirmar rótulo Criar asteroide via cast. A cena game-state usa Toque para começar, no palco, diferente do Enter que será construído no projeto. Com Criar asteroide no relógio, fora do Se, clicar em Tempo na abertura e mostrar o contador de asteroides criados subindo. Levar a peça para dentro de Se o estado do jogo é jogando, deixar passar uns quatro segundos e mostrar o contador em esperando, com os toques do relógio subindo na faixa. Clicar em Toque para começar e mostrar as pedras nascendo de novo. A caixa do relógio mostra No relógio, a cada 40 quadros, o mesmo intervalo do projeto. Meme na comparação: na frase da corrida, mostrar por 2 a 3 segundos o meme ilustrado nosso, os asteroides parados atrás da linha de largada e a nave segurando a bandeira, com a legenda "só depois da largada"; desenho nosso, com os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Deixar passar quatro segundos na abertura, com a peça dentro do Se e o contador esperando.
 
@@ -28,7 +30,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olha aqui: a peça Criar asteroide está em No relógio, a cada 40 quadros, fora de Se o estado do jogo é jogando. Eu clico em Tempo, ainda na abertura. Percebe? O relógio toca e as pedras nascem, e o contador de asteroides criados sobe, mesmo sem ninguém jogando.
 >
-> Agora eu levo a peça para dentro de Se o estado do jogo é jogando, e tudo recomeça do zero. Deixo o tempo passar uns quatro segundos na abertura. Repare: o relógio continua tocando, mas o contador mostra esperando, e nenhuma pedra nasce. É que o Se pergunta se o estado é jogando, e, na abertura, a resposta é não, por isso Criar asteroide espera. É como um semáforo: os carros esperam o sinal verde, e ninguém arranca antes.”
+> Agora eu levo a peça para dentro de Se o estado do jogo é jogando, e tudo recomeça do zero. Deixo o tempo passar uns quatro segundos na abertura. Repare: o relógio continua tocando, mas o contador mostra esperando, e nenhuma pedra nasce. É que o Se pergunta se o estado é jogando, e, na abertura, a resposta é não, por isso Criar asteroide espera. É como uma corrida: todo mundo espera o sinal de largada, e ninguém sai correndo antes.”
 
 **Na tela:** Começar por toque na experiência e distinguir esse começo pronto do Enter que será programado no projeto.
 
@@ -62,7 +64,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Repare que a sequência saiu inteira, sem apagar nada. Agora deixe à vista o espaço de dentro de A cada quadro do jogo, que ficou vazio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte dentro de A cada quadro do jogo.
+> “Pronto: a sequência saiu inteira, sem apagar nada. Agora deixe à vista o espaço de dentro de A cada quadro do jogo, que ficou vazio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte dentro de A cada quadro do jogo.
 >
 > Repare que o Se vem com uma pergunta pronta: x maior que 0. Mas não é isso que o seu jogo precisa perguntar, por isso arraste essa pergunta para a lixeira do espaço dos blocos. O lugar ao lado de Se fica vazio, e é ali que vai a pergunta certa. Deixe esse lugar à vista.
 >
@@ -82,7 +84,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Essa é a tela que quem abrir o seu jogo vai ver primeiro. Deixe à vista o espaço do então desse senão se. Na mesma categoria Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse espaço.
+> “Esse ramo inicio é a tela que quem abrir o seu jogo vai ver primeiro. Deixe à vista o espaço do então desse senão se. Na mesma categoria Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse espaço.
 >
 > O bloco já vem com o título Nave contra Asteroides e o subtítulo Destrua os asteroides! Mantenha os dois. A dica já vem Aperte Enter para começar: mantenha também, porque é ela que avisa quem joga como começar a partida. O fundo já vem escuro, e o texto aparece bem nele: é só manter.”
 
@@ -92,7 +94,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Falta dizer em que estado o jogo começa, e isso acontece uma vez, no fim de Ao iniciar: deixe esse lugar à vista. Ainda em Jogo 2D, Jogo e telas e Telas e partida, pegue o bloco Mudar o estado do jogo para, solte no fim de Ao iniciar e deixe inicio no menu.
 >
-> Olha só: a abertura aparece!”
+> Olha só: a abertura aparece.”
 
 **Na tela:** Seguir para a conferência dos blocos, no ritmo da próxima fala.
 
@@ -112,13 +114,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar tocando na barra de espaço com a abertura na tela e, no "Percebeu?", deixar ouvir o som do tiro, sem música por cima. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Começar apertando a barra de espaço com a abertura na tela e, no "Percebeu?", deixar ouvir o som do tiro, sem música por cima. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo.
 
 **Professora:**
 
-> “Com a abertura na tela, clique na área do jogo e toque na barra de espaço. Percebeu? O som do tiro toca antes de a partida começar. É que o relógio das pedras e o evento da barra de espaço ficam fora do Se que você montou. Agora vamos fazer essas duas ações esperarem a partida também.
+> “Com a abertura na tela, clique na área do jogo e aperte a barra de espaço. Percebeu? O som do tiro toca antes de a partida começar. É que o relógio das pedras e o evento da barra de espaço ficam fora do Se que você montou. Agora vamos fazer essas duas ações esperarem a partida também.
 >
 > Comece pelas pedras. Deixe à vista o bloco A cada 40 quadros e um espaço livre perto dele. Pegue o bloco que cria asteroides, de dentro do relógio, e solte nesse espaço livre por enquanto.
 >
@@ -140,7 +142,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando. Depois, leve Criar tiro e Tocar efeito, juntos, para dentro do então, nessa ordem.
 >
-> Agora teste: clique na área do jogo e toque na barra de espaço com a abertura na tela. Dessa vez não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio.”
+> Agora teste: clique na área do jogo e aperte a barra de espaço com a abertura na tela. Dessa vez não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio.”
 
 **Na tela:** Voltar aos blocos e conferir o Se jogando no relógio e no evento da barra de espaço.
 
@@ -158,13 +160,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar tocando em Enter com a abertura na tela e, no "Percebe?", mostrar que nada muda. Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Começar apertando Enter com a abertura na tela e, no "Percebe?", mostrar que nada muda. Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo.
 
 **Professora:**
 
-> “Primeiro, clique na área do jogo e toque em Enter. Percebe? A abertura continua na tela, porque o seu jogo ainda não sabe o que fazer quando alguém toca nessa tecla. Agora programe o Enter para começar a partida.
+> “Primeiro, clique na área do jogo e aperte Enter. Percebe? A abertura continua na tela, porque o seu jogo ainda não sabe o que fazer quando alguém aperta essa tecla. Agora programe o Enter para começar a partida.
 >
 > O Enter é uma tecla, ou seja, um evento, igual à barra de espaço. Por isso, ele vai em Quando acontecer, abaixo do evento inteiro da barra de espaço: deixe esse lugar à vista.
 >
@@ -184,16 +186,16 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Agora teste: clique na área do jogo e toque em Enter. Olha só: a abertura some e a partida começa. Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas.”
+> “Agora teste: clique na área do jogo e aperte Enter. Olha só: a abertura some e a partida começa. Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas.”
 
 **Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
-> “Agora toque em Enter durante a partida. Repare: ela continua, sem recomeçar, porque o Se só muda o estado quando ele é inicio. Por enquanto, ficar sem vidas ainda não muda de tela, porque você ainda não montou o encerramento.
+> “Agora aperte Enter durante a partida. Repare: ela continua, sem recomeçar, porque o Se só muda o estado quando ele é inicio. Por enquanto, ficar sem vidas ainda não muda de tela, porque você ainda não montou o encerramento.
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: em Quando acontecer, abaixo do evento da barra de espaço, está Quando apertar a tecla Enter. Dentro dele, o Se pergunta se o estado do jogo é inicio e, no então, está Mudar o estado do jogo para jogando. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula.”
 
-**Recado na página (não gravar):** Agora faça o Enter começar a partida. Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta etapa e envie para o professor. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Agora faça o Enter começar a partida. Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula.

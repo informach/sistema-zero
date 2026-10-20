@@ -1,11 +1,13 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/cade-todo-mundo/cade-todo-mundo-aula-2.md e de qa/adulto/traducoes/cade-todo-mundo/cade-todo-mundo-aula-2.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Cadê Todo Mundo? | Aula 2: Complete a busca
 
-**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. contar-achados: entrada que já revela; solução que também soma 1. A regra de reação é preservação legítima. A conferência estrutural localiza a soma no evento; não comprova sozinha a ordem dos efeitos ou toda a partida. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. A versão adulta ainda não foi gravada, publicada nem ensaiada.
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. contar-achados: entrada que já revela; solução que também soma 1. A regra de reação é preservação legítima. A conferência estrutural localiza a soma no evento; não comprova sozinha a ordem dos efeitos ou toda a partida. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Não informa gravação, publicação ou ensaio.
 
 ## Direção da revisão
 
 Quem faz a aula retoma o projeto da Aula 1 e acrescenta a contagem. A experiência,
-o projeto inicial de retomada, a cadeia de continuidade e os critérios de conclusão são os do kids.
+o projeto inicial de retomada, a cadeia de continuidade e os critérios de conclusão permanecem.
 A aula dá comandos diretos, deixa os tutoriais gerais de interface no Como fazer e fecha com uma
 publicação guiada pelo caminho mínimo, com saída em **Concluir aula**.
 A experiência explica enquanto faz, a montagem abre com a retomada no próprio jogo e
@@ -70,13 +72,13 @@ A seção tem vídeo e recado da página, sem ferramenta. A fala não pode pedir
 
 O vídeo é uma demonstração que explica enquanto faz, como na Aula 1: o narrador faz os testes na primeira pessoa e só no fim passa a vez. Dizer que a experiência mostra como o jogo conta e
 explicar variável em uma frase: um lugar onde o jogo guarda um número que pode mudar. A comparação
-do contador de passos do celular chega ao jogo: a cada passo, o contador soma um; cada personagem
-encontrado é como um passo, e o jogo soma um em Achados. Sem lista de conceitos.
+do placar de futebol chega ao jogo: a cada gol, o placar soma um; cada personagem encontrado é
+como um gol, e o jogo soma um em Achados. Sem lista de conceitos.
 Fazer os quatro testes das metas no ritmo da fala: primeiro esconderijo (1), outro esconderijo
 (2), espaço vazio (o número fica igual) e **Recomeçar a busca** (volta a zero). Terminar em
 "Agora é a sua vez": a pessoa repete os testes, e a experiência cobra as metas.
 
-Na frase do contador de passos, um meme ilustrado nosso por 2 a 3 segundos. Manter um único valor atual, as
+Na frase do placar, um meme ilustrado nosso por 2 a 3 segundos. Manter um único valor atual, as
 pistas, o retorno de cada toque e a ausência de palpite ou quiz.
 
 ### Cada personagem vale um achado
@@ -163,7 +165,7 @@ Começar com a tarefa de publicar o jogo para os amigos jogarem. No mesmo Estúd
 abrir **Compartilhar** e deixar o **Resumo do projeto**, que já vem preenchido, como está. Na aula,
 a janela não mostra o campo Título: o título vem do curso, e a fala não o cita. Clicar em
 **Gerar capa**, esperar a imagem e conferir. Clicar em **Publicar** e mostrar a tela **Publicado!**
-(**Seu projeto já está no Mural dos Criadores.**): agora qualquer pessoa com o link pode jogar.
+(**Seu projeto já está no Mural dos Criadores.**): agora os amigos podem jogar.
 Clicar em **Copiar link** e convidar a mandar o link para os amigos, para o grupo ou para quem
 quiser. Clicar em **Fechar** e terminar em **Concluir aula**.
 
@@ -204,8 +206,7 @@ pixels mais baixo. Conferir uma troca num projeto salvo antes da revisão.
 Conferir Compartilhar liberado após o envio, resumo preenchido, capa gerada, publicação, a tela
 **Publicado!**, **Copiar link** e **Link copiado!**, Fechar e Concluir aula. Manter a conclusão possível sem publicação ou visita ao Mural.
 O tutorial de compartilhamento deve acompanhar a orientação da aula e conservar as alternativas
-de capa e link público. As falas adultas ainda precisam ser gravadas, e o caminho precisa de
-ensaio com adultos.
+de capa e link público. O caminho precisa de ensaio com adultos.
 
 ## Ritmo e entendimento
 

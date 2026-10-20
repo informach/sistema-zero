@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/o-jogo-do-meu-jeito/meu-jeito-aula-04.roteiro.md e de qa/adulto/traducoes/o-jogo-do-meu-jeito/meu-jeito-aula-04.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · O Jogo do Meu Jeito · Aula 4
 
 **Desenhe um asteroide com formas**
@@ -8,7 +10,7 @@ Entrada: Nave animada salva no Pinta. Saída: Arte asteroide em vetor, 64 × 64,
 
 **Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
 
-Retomar o trabalho de quem faz a aula na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página e não entra na narração. A versão adulta ainda não foi gravada. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
+Retomar o trabalho de quem faz a aula na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página e não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
 Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
 
@@ -22,7 +24,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do mapa, um país desenhado num mapa, com a fronteira numa linha laranja e o interior pintado de azul, com a legenda "linha: Contorno · dentro: Preenchimento". Desenho nosso no formato de meme, com objetos do dia a dia ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do mapa, um país desenhado num mapa, com a fronteira numa linha laranja e o interior pintado de azul, com a legenda "linha: Contorno · dentro: Preenchimento". Desenho nosso no formato de meme, com objetos do dia a dia; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Tirar a cor do preenchimento e deixar a borda laranja e o xadrez à vista.
 
@@ -66,7 +68,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Confira o nome asteroide e a área quadrada. Por último, deixe a parte de cima livre para as chamas que você vai desenhar depois, porque a pedra vai ocupar o centro e a parte de baixo.
 >
-> Pause aqui e faça este passo no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica salvo para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora prepare o desenho do seu asteroide. Crie um personagem em Vetor, tamanho Médio, chamado asteroide. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.
 
@@ -86,7 +88,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Para fechar, clique no primeiro ponto. Olha só: o interior ganha a cor que você escolheu, porque agora a forma está fechada. Depois confira se toda a pedra está dentro da área do desenho.
 >
-> Pause aqui e faça este passo no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica salvo para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora feche a forma da sua pedra. Desenhe a pedra com a Caneta e termine no primeiro ponto. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.
 
@@ -104,7 +106,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Depois afaste a imagem e confira o contorno. A pedra pode ser irregular, mas precisa continuar fechada, inteira no quadro e com espaço em cima. Se uma curva criou uma ponta comprida, ajuste as alças ou use Desfazer e tente uma mudança menor, porque alça puxada demais estica a curva para fora.
 >
-> Pause aqui e faça este passo no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica salvo para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora arredonde os pontos da sua pedra. Transforme alguns cantos em curvas para dar forma a ela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.
 
@@ -130,7 +132,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Para conferir, veja se todas as crateras ficaram dentro do corpo e com tamanhos que você consiga distinguir.
 >
-> Pause aqui e faça este passo no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica salvo para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora acrescente crateras à sua pedra. Desenhe pequenas formas dentro dela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.
 
@@ -144,9 +146,9 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 
 **Professora:**
 
-> “Hora de enviar o seu asteroide. Antes, confira no seu asteroide: o asteroide é Vetor de 64 por 64, tem forma fechada, curvas e crateras dentro do corpo, e sobra espaço em cima para as chamas. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da aula só mostra o que já está salvo na sua conta.
+> “Hora de enviar o seu asteroide. Antes, confira no seu asteroide: o asteroide é Vetor de 64 por 64, tem forma fechada, curvas e crateras dentro do corpo, e sobra espaço em cima para as chamas. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da aula só mostra o que já está guardado na sua conta.
 >
-> Agora volte para a aba da aula e clique em Escolher no Pinta. Na janela Meus trabalhos do Pinta, selecione o seu asteroide. Se o seu trabalho não aparecer, confira se ele ficou salvo na sua conta e clique em Atualizar galeria.
+> Agora volte para a aba da aula e clique em Escolher no Pinta. Na janela Meus trabalhos do Pinta, selecione o seu asteroide. Se o seu trabalho não aparecer, confira se ele ficou guardado na sua conta e clique em Atualizar galeria.
 >
 > Se quiser, escreva uma mensagem no campo Recado para o professor. Depois clique em Enviar ao professor (1) e espere aparecer Trabalho recebido pelo professor.
 >

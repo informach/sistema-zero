@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/nave-contra-asteroides-dia-2.roteiro.md e de qa/adulto/traducoes/nave-contra-asteroides/nave-contra-asteroides-dia-2.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Nave Contra Asteroides · Aula 3
 
 **Faça a nave atirar**
@@ -8,7 +10,7 @@ Entrada: Nave com setas, limpeza, bordas e estrelas; mesmo resultado do primeiro
 
 **Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
 
-Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página. A versão adulta ainda não foi gravada.
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página.
 
 Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Percebe?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. O recado da página começa convidando ("Sua vez:", "Agora…", "Hora de…") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Percebe?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, quem faz a aula testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …"). Tom adulto em DIRETRIZES-ADULTO.md.
 
@@ -102,13 +104,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 6 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, tocar na barra de espaço e, no "Percebe?", mostrar que nada acontece. Abrir cada caminho com o destino à vista antes. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, apertar a barra de espaço e, no "Percebe?", mostrar que nada acontece. Abrir cada caminho com o destino à vista antes. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo.
 
 **Professora:**
 
-> “Clique no seu jogo e toque na barra de espaço. Percebe? Nada acontece, porque o jogo ainda não tem nada ligado a essa tecla.
+> “Clique no seu jogo e aperte a barra de espaço. Percebe? Nada acontece, porque o jogo ainda não tem nada ligado a essa tecla.
 >
 > Lembra das três experiências desta aula? O tiro esperava a tecla, nascia na nave e subia. Agora a gente vai montar esse disparo no seu jogo.
 >
@@ -120,7 +122,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Com o grupo dos tiros pronto, agora o disparo. Tocar numa tecla é um evento, que é algo que acontece no jogo, e os blocos que ficam dentro de um evento só funcionam quando ele acontece. Os eventos ficam numa área própria, Quando acontecer, que o seu projeto ainda não tem. Para criar essa área, deixe à vista um lugar vazio do espaço dos blocos. Se não tiver nenhum à vista, é só arrastar um espaço vazio entre os blocos até aparecer um. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse lugar.
+> “Com o grupo dos tiros pronto, agora o disparo. Apertar uma tecla é um evento, que é algo que acontece no jogo, e os blocos que ficam dentro de um evento só funcionam quando ele acontece. Os eventos ficam numa área própria, Quando acontecer, que o seu projeto ainda não tem. Para criar essa área, deixe à vista um lugar vazio do espaço dos blocos. Se não tiver nenhum à vista, é só arrastar um espaço vazio entre os blocos até aparecer um. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse lugar.
 >
 > Deixe à vista o espaço de dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe. No menu da tecla, escolha barra de espaço.”
 
@@ -160,13 +162,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar mostrando o som sem tiro: clicar na área do jogo e tocar na barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Começar mostrando o som sem tiro: clicar na área do jogo e apertar a barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo.
 
 **Professora:**
 
-> “Clique na área do seu jogo e toque na barra de espaço. Dá para ouvir o disparo, mas nenhum tiro aparece, porque o jogo já cria o tiro e ainda não manda mover nem desenhar o grupo. Agora vamos fazer esses tiros aparecerem e subirem.
+> “Clique na área do seu jogo e aperte a barra de espaço. Dá para ouvir o disparo, mas nenhum tiro aparece, porque o jogo já cria o tiro e ainda não manda mover nem desenhar o grupo. Agora vamos fazer esses tiros aparecerem e subirem.
 >
 > Os tiros andam e aparecem em todo quadro, por isso os dois blocos vão no fim de A cada quadro do jogo, depois do desenho da nave. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave.
 >
@@ -178,7 +180,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Os tiros já têm movimento, mas falta desenhar. Deixe à vista o encaixe logo abaixo do movimento dos tiros. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe. Escolha tiros nesse bloco também.
 >
-> Agora teste: clique na área do jogo, toque na barra de espaço e solte. Olha só: o tiro sai da nave e sobe.”
+> Agora teste: clique na área do jogo, aperte a barra de espaço e solte. Olha só: o tiro sai da nave e sobe.”
 
 **Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 

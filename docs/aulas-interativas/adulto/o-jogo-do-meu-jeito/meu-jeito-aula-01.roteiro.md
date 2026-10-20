@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/o-jogo-do-meu-jeito/meu-jeito-aula-01.roteiro.md e de qa/adulto/traducoes/o-jogo-do-meu-jeito/meu-jeito-aula-01.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · O Jogo do Meu Jeito · Aula 1
 
 **Guarde uma cópia para criar do seu jeito**
@@ -30,7 +32,7 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 > “Oi! Neste curso, você vai criar a sua versão do jogo da nave: vai desenhar a sua nave e o seu asteroide no Pinta e colocar os dois no jogo que você terminou em Nave Contra Asteroides. Antes de criar as suas artes, vamos ver como o jogo fica com artes novas nesta versão pronta.
 >
-> Olha aqui: eu clico no jogo e toco na tecla Enter para começar. Quando eu seguro a seta para a direita, a nave anda para a direita. O objetivo é atirar nas pedras para fazer pontos antes de perder as vidas.
+> Olha aqui: eu clico no jogo e aperto Enter para começar. Quando eu seguro a seta para a direita, a nave anda para a direita. O objetivo é atirar nas pedras para fazer pontos antes de perder as vidas.
 >
 > Olha só: o fogo da nave pulsa, e as pedras também mudam um pouco enquanto caem. É que cada desenho deste exemplo tem duas versões, que se revezam bem rápido. E as regras continuam as mesmas do jogo que você terminou em Nave Contra Asteroides: só os desenhos são novos, e é isso que você vai fazer com as suas próprias artes.”
 
@@ -38,7 +40,7 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Professora:**
 
-> “Agora é a sua vez: jogue um pouco. Use as setas para mover a nave e Espaço para atirar. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida nova. Não precisa vencer para seguir. Quando terminar, clique em Próxima seção.”
+> “Agora é a sua vez: jogue um pouco. Use as setas para mover a nave e a barra de espaço para atirar. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida nova. Não precisa vencer para seguir. Quando terminar, clique em Próxima seção.”
 
 **Recado na página (não gravar):** Sua vez: jogue um pouco, mova a nave, atire e repare nos desenhos e no fogo, porque logo você vai criar as suas próprias artes. Quando terminar, clique em Próxima seção.
 
@@ -48,7 +50,7 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar o PDF real do Caderno do Aluno anexado ao bloco, com a capa e a página da cópia. No Olha aqui, apontar o caderno. Ao falar em baixar, apontar o botão Baixar, sem clicar; não demonstrar o download nem a impressão. Gravar depois de vincular o arquivo revisado.
+**Na tela:** Mostrar o PDF real do caderno do curso anexado ao bloco, com a capa e a página da cópia. No Olha aqui, apontar o caderno. Ao falar em baixar, apontar o botão Baixar, sem clicar; não demonstrar o download nem a impressão. Gravar depois de vincular o arquivo revisado.
 
 **Professora:**
 
@@ -98,7 +100,7 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da nave azul no jogo da aula, sem arquivo e sem projeto no Estúdio: clicar em Exportar e deixar ver o arquivo jogo-da-nave com azul e a nave do jogo da aula no lugar. Clicar em Importar e deixar ver a nave azul no lado do Estúdio. Em Cor da nave no Estúdio, escolher rosa e deixar ver a nave do Estúdio rosa e a do jogo da aula azul. Meme na comparação: na frase da xerox, uma folha saindo da copiadora com a nave desenhada e uma mão pintando a cópia de rosa, enquanto a nave da folha original continua azul, com a legenda "a cópia é sua". Desenho nosso no formato de meme, sem mascote; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da nave azul no quadro O jogo da fase, sem arquivo e sem projeto no Estúdio: clicar em Exportar e deixar ver o arquivo jogo-da-nave com azul e a nave de O jogo da fase no lugar. Clicar em Importar e deixar ver a nave azul no lado do Estúdio. Em Cor da nave no Estúdio, escolher rosa e deixar ver a nave do Estúdio rosa e a de O jogo da fase azul. Meme na comparação: na frase da xerox, uma folha saindo da copiadora com a nave desenhada e uma mão pintando a cópia de rosa, enquanto a nave da folha original continua azul, com a legenda "a cópia é sua". Desenho nosso no formato de meme, sem mascote; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir Exportar e Importar na experiência; mostrar as duas naves ainda azuis.
 
@@ -106,15 +108,15 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 > “Esta é uma experiência para a gente entender o que é uma cópia de um jogo.
 >
-> Olha aqui: quando eu clico em Exportar, aparece o arquivo jogo-da-nave, guardando a nave azul. E o jogo da aula continua no lugar, com a mesma nave azul, porque exportar não leva o jogo embora: só faz uma cópia dele num arquivo.
+> Olha aqui: quando eu clico em Exportar, aparece o arquivo jogo-da-nave, guardando a nave azul. E o jogo original, no quadro O jogo da fase, continua no lugar, com a mesma nave azul, porque exportar não leva o jogo embora: só faz uma cópia dele num arquivo.
 >
 > Depois eu clico em Importar, e o mesmo jogo aparece no lado do Estúdio, também com a nave azul. Ou seja, o arquivo virou um projeto no Estúdio.”
 
-**Na tela:** Mudar só a cor da nave do Estúdio para rosa e comparar com a nave azul do jogo da aula.
+**Na tela:** Mudar só a cor da nave do Estúdio para rosa e comparar com a nave azul de O jogo da fase.
 
 **Professora:**
 
-> “E se eu mudar essa cópia, o outro jogo muda também? Em Cor da nave no Estúdio, eu escolho rosa. Olha só: a nave do Estúdio fica rosa, e a nave do jogo da aula continua azul. É que, depois da cópia, cada um segue o seu caminho, por isso mudar um lado não muda o outro.
+> “E se eu mudar essa cópia, o outro jogo muda também? Em Cor da nave no Estúdio, eu escolho rosa. Olha só: a nave do Estúdio fica rosa, e a nave de O jogo da fase continua azul. É que, depois da cópia, cada um segue o seu caminho, por isso mudar um lado não muda o outro.
 >
 > É como tirar uma xerox de um documento. Se você rabisca a xerox, o original continua igual. Com o seu jogo vai ser assim: Exportar faz a cópia, e Importar leva essa cópia para o Estúdio, onde você muda o que quiser sem mexer no original.
 >
@@ -134,9 +136,9 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Professora:**
 
-> “Lembra da experiência da seção anterior? Exportar fez uma cópia do jogo num arquivo, e o jogo da aula ficou no lugar. Agora a gente vai fazer isso com o seu jogo de verdade, porque é na cópia que você vai criar do seu jeito.
+> “Lembra da experiência da seção anterior? Exportar fez uma cópia do jogo num arquivo, e o jogo original ficou no lugar. Agora a gente vai fazer isso com o seu jogo de verdade, porque é na cópia que você vai criar do seu jeito.
 >
-> No Estúdio, esse comando se chama Baixar o projeto. Para começar, clique em Abrir meu Estúdio nesta seção. Na outra aba, se o menu estiver escondido, clique em Mostrar menu. Depois abra Cursos, clique no cartão do curso Nave Contra Asteroides e entre na última aula, Termine e recomece a partida.
+> No Estúdio, esse comando se chama Baixar o projeto. Numa nova aba, clique em Cursos no menu do alto, abra o cartão do curso Nave Contra Asteroides e entre na última aula, Termine e recomece a partida.
 >
 > Retome ali o projeto que você concluiu e confira início, pontos, vidas e reinício. Se ele abriu vazio, traga o que você enviou em Mais opções, O meu jogo, Trazer o que eu enviei. E, se ainda falta terminar, conclua esse jogo antes de fazer a cópia, porque a cópia guarda o jogo do jeito que ele está agora.”
 
@@ -144,9 +146,9 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Professora:**
 
-> “Com o jogo pronto, abra Mais opções, no botão de três pontinhos do Estúdio dessa aula. Em Levar o jogo, clique em Baixar o projeto e espere o arquivo que termina em .szproject.json chegar à pasta de downloads do seu aparelho. Olha só: esse arquivo é a cópia do projeto que você está vendo. Confira o nome do arquivo antes de voltar à aba desta aula.
+> “Com o jogo pronto, abra Mais opções, no botão de três pontinhos do Estúdio daquela aula. Em Levar o jogo, clique em Baixar o projeto e espere o arquivo que termina em .szproject.json chegar à pasta de downloads do seu aparelho. Olha só: esse arquivo é a cópia do projeto que você está vendo. Confira o nome do arquivo antes de voltar à aba desta aula.
 >
-> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o nome do arquivo com a conferência que a gente acabou de fazer. Quando o arquivo .szproject.json estiver nos seus downloads, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu jogo. Se a última aula de Nave Contra Asteroides não estiver aberta, volte a ela por Cursos, no menu do alto. Depois compare o nome do arquivo com a conferência que a gente acabou de fazer. Quando o arquivo .szproject.json estiver nos seus downloads, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora baixe o jogo que você terminou em Nave Contra Asteroides. No Estúdio da última aula desse curso, abra Mais opções e clique em Baixar o projeto. Quando o arquivo .szproject.json aparecer nos seus downloads, volte a esta aba e clique em Próxima seção.
 
@@ -168,7 +170,7 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Professora:**
 
-> “Agora dê um nome a essa cópia. Clique no nome do projeto no alto, escreva um nome que você reconheça, como Minha nave, e confirme a edição. Depois confira a prévia: Enter começa, as setas movem e Espaço atira. Se aparecer um jogo diferente, volte a Meus Jogos e confira qual arquivo você importou. Não apague os seus outros jogos.
+> “Agora dê um nome a essa cópia. Clique no nome do projeto no alto, escreva um nome que você reconheça, como Minha nave, e confirme a edição. Depois confira a prévia: Enter começa, as setas movem e a barra de espaço atira. Se aparecer um jogo diferente, volte a Meus Jogos e confira qual arquivo você importou. Não apague os seus outros jogos.
 >
 > Por último, volte a Meus Jogos pelo nome do Estúdio na barra de cima e abra esse cartão de novo. Percebe? O nome e os blocos continuam lá, porque o Estúdio salvou a sua cópia. É esse cartão que você vai retomar nas próximas aulas.
 >
@@ -186,9 +188,9 @@ Vocabulário da versão adulta: na narração, no recado da página e nos títul
 
 **Professora:**
 
-> “Hora de enviar a cópia do seu jogo. Antes, confira no seu jogo: o cartão tem o nome que você escolheu, e o jogo abre, move a nave e atira. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da aula só mostra o que já está salvo na sua conta.
+> “Hora de enviar a cópia do seu jogo. Antes, confira no seu jogo: o cartão tem o nome que você escolheu, e o jogo abre, move a nave e atira. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da aula só mostra o que já está guardado na sua conta.
 >
-> Agora volte para a aba da aula e clique em Escolher no Estúdio. Na janela Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se o seu trabalho não aparecer, confira se ele ficou salvo na sua conta e clique em Atualizar galeria.
+> Agora volte para a aba da aula e clique em Escolher no Estúdio. Na janela Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se o seu trabalho não aparecer, confira se ele ficou guardado na sua conta e clique em Atualizar galeria.
 >
 > Se quiser, escreva uma mensagem no campo Recado para o professor. Depois clique em Enviar ao professor (1) e espere aparecer Trabalho recebido pelo professor.
 >

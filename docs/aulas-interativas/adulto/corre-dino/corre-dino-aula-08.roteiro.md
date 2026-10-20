@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-08.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-08.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 8
 
 **Comece por tecla ou toque**
@@ -86,7 +88,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Atualizar e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta etapa, mostrar Objetivo da etapa cumprido! e seguir o encaminhamento narrado (Próxima seção). Executar cada gesto junto da fala correspondente.
 
-**Na tela:** Concluir o encaixe do evento e soltar o mouse antes da entrada; mostrar o evento vazio.
+**Na tela:** Concluir o encaixe do evento e soltar o mouse; mostrar o evento vazio antes de seguir.
 
 **Professora:**
 
@@ -100,7 +102,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Repare que você também usa uma tecla para pular, e esse evento também acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de agir. Deixe à vista o espaço vazio dentro do novo evento. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.
+> “Só que você também usa uma tecla para pular, e esse evento acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de agir. Deixe à vista o espaço vazio dentro do novo evento. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.
 >
 > Agora deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e mantenha inicio, que já vem escolhido.”
 
@@ -110,7 +112,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Assim, a tecla do pulo não começa a partida de novo. Agora deixe à vista o espaço vazio do então desse Se. Na mesma categoria, Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no então. Ele chega com inicio: troque por jogando.
 >
-> Agora clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque na barra de espaço. Olha só: a abertura some, e o Dino aparece.”
+> Agora clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, aperte a barra de espaço. Olha só: a abertura some, e o Dino aparece.”
 
 **Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 

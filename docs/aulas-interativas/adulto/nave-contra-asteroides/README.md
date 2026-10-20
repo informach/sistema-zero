@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/README.md e de qa/adulto/traducoes/nave-contra-asteroides/_curso.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Nave Contra Asteroides
 
 Materiais do curso para consulta, gravação e importação.

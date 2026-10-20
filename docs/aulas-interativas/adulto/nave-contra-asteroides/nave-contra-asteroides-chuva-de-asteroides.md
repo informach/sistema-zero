@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.md e de qa/adulto/traducoes/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Nave Contra Asteroides · Aula 4 · Faça os asteroides cair
 
 Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](modulos.md).

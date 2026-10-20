@@ -14,20 +14,20 @@ export const CURSOS_POR_PREFIXO = {
 } as const
 
 /** Resolve os nomes editoriais preservados para a pasta do respectivo curso. */
-export function caminhoAula(nome: string): string {
+export function caminhoAula(nome: string, pasta: string = PASTA_CURSOS): string {
   if (basename(nome) !== nome) throw new Error(`Nome de aula inválido: ${nome}`)
   const curso = Object.entries(CURSOS_POR_PREFIXO).find(([prefixo]) =>
     nome.startsWith(`${prefixo}-`),
   )?.[1]
   if (!curso) throw new Error(`Curso desconhecido para a aula: ${nome}`)
-  return resolve(PASTA_CURSOS, curso, nome)
+  return resolve(pasta, curso, nome)
 }
 
 /** Só os trios de autoria; índices, projetos e mapas não são aulas. */
-export function listarArquivosAulas(): string[] {
+export function listarArquivosAulas(pasta: string = PASTA_CURSOS): string[] {
   return Object.entries(CURSOS_POR_PREFIXO)
     .flatMap(([prefixo, curso]) =>
-      readdirSync(resolve(PASTA_CURSOS, curso)).filter(
+      readdirSync(resolve(pasta, curso)).filter(
         (nome) => nome.startsWith(`${prefixo}-`) && /\.(?:md|manifesto\.json)$/.test(nome),
       ),
     )

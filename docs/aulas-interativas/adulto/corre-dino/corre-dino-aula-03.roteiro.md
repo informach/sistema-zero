@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-03.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-03.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 3
 
 **Faça o Dino cair e pular**
@@ -18,7 +20,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a gravidade desligada e o Dino no chão. Tocar no Dino e deixar a altura crescer até o tempo parar, com o Dino no alto. Ligar o fio da Gravidade ao Dino com ele no ar e acompanhar a subida mais lenta, a parada e a queda até o chão, com a altura à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma mão jogando um molho de chaves para cima e as chaves voltando para a mão. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a gravidade desligada e o Dino no chão. Tocar no Dino e deixar a altura crescer até o tempo parar, com o Dino no alto. Ligar o fio da Gravidade ao Dino com ele no ar e acompanhar a subida mais lenta, a parada e a queda até o chão, com a altura à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: uma mão jogando uma bola para cima e a bola voltando para a mão. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Tocar no Dino sem gravidade e esperar a experiência parar com ele no alto.
 
@@ -34,7 +36,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “E como ele volta para o chão? Com o Dino no ar, eu ligo a Gravidade ao Dino. Ele ainda sobe um pouco, cada vez mais devagar, para e cai até o chão. A gravidade puxa o Dino para baixo um pouco em cada quadro.
 >
-> É como jogar o molho de chaves para cima: ele sobe, perde força e volta para a sua mão. No seu jogo, você vai encaixar Aplicar a gravidade do mundo ao sprite dentro de A cada quadro do jogo, para puxar o Dino em todos os quadros.
+> É como jogar uma bola para cima: ela sobe, perde força e volta para a sua mão. No seu jogo, você vai encaixar Aplicar a gravidade do mundo ao sprite dentro de A cada quadro do jogo, para puxar o Dino em todos os quadros.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
@@ -94,31 +96,31 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Clique na área do seu jogo e toque na barra de espaço. Percebe? O Dino não pula, porque ainda não tem controle.
+> “Clique na área do seu jogo e aperte a barra de espaço. Percebe? O Dino não pula, porque ainda não tem controle.
 >
 > Lembra da experiência da seção anterior? Com impulso 14, o pulo foi bem mais alto. Agora a gente vai dar os controles de pulo ao seu Dino.
 >
 > O controle vai depois da gravidade e antes do desenho, dentro de A cada quadro do jogo: a gravidade puxa o Dino para baixo, o controle move o Dino, faz ele pousar na grama e confere o pulo, e só então o Dino é desenhado no lugar novo. Deixe à vista o espaço entre Aplicar a gravidade do mundo ao sprite e Desenhar o sprite. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco Controlar o dinossauro e solte nesse espaço. O bloco já chega com o nome dino: mantenha. Na força do pulo, troque 15 por 14.
 >
-> Agora teste. Clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque e solte a barra de espaço e espere o Dino pousar. Olha só: ele pula e volta para o chão.”
+> Agora teste. Clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, aperte e solte a barra de espaço e espere o Dino pousar. Olha só: ele pula e volta para o chão.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Concluir os saltos com espaço, seta para cima e toque na parte de cima; esperar o pouso.
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
 > “Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles.”
 
-**Na tela:** Retomar com o toque embaixo: tocar perto do chão junto da fala e mostrar o Dino se abaixando em vez de pular. Terminar o toque embaixo com o Dino no chão. Não começar o salto com dois toques antes da próxima fala.
+**Na tela:** Concluir os saltos com espaço, seta para cima e toque na parte de cima e esperar o pouso. Depois, tocar perto do chão junto da fala e mostrar o Dino se abaixando em vez de pular.
 
 **Professora:**
 
 > “Agora vamos conferir mais duas coisas. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”
 
-**Na tela:** Tocar duas vezes na barra de espaço durante o mesmo salto e manter à vista que o segundo toque não faz o Dino pular de novo no ar.
+**Na tela:** Terminar o toque embaixo com o Dino no chão. Só então apertar duas vezes a barra de espaço durante o mesmo salto e manter à vista que a segunda vez não faz o Dino pular de novo no ar.
 
 **Professora:**
 
-> “E dá para pular de novo lá no alto? Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino pular de novo no ar, porque ele só começa um salto quando está no chão.
+> “E dá para pular de novo lá no alto? Vamos ver. Agora aperte duas vezes a barra de espaço durante o mesmo salto. Repare: a segunda vez não faz o Dino pular de novo no ar, porque ele só começa um salto quando está no chão.
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, a ordem é floresta, gravidade, controle e desenho do Dino, com o nome dino. Depois de corrigir, teste de novo.
 >

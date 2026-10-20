@@ -1,6 +1,8 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/desafio-primeiro-jogo/desafio-dia-3.md e de qa/adulto/traducoes/desafio-primeiro-jogo/desafio-dia-3.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # A Chave do Farol · Dia 3 · A luz do farol
 
-**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. sem-chave tem solução transitória com então vazio; decisao completa o caminho com chave. personalizar reutiliza o jogo funcional: o aviso de objetivos já atendidos não exige trocar uma imagem só para criar uma diferença. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. A versão adulta ainda não foi gravada, publicada nem ensaiada com adultos.
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. sem-chave tem solução transitória com então vazio; decisao completa o caminho com chave. personalizar reutiliza o jogo funcional: o aviso de objetivos já atendidos não exige trocar uma imagem só para criar uma diferença. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Não informa gravação, publicação nem ensaio com adultos.
 
 ## Resumo
 
@@ -25,7 +27,7 @@
 
 ## Vozes e gravação
 
-**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
+Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
 
 A montagem da resposta com chave segue numa fala contínua da professora, com o resultado à vista antes de cada explicação. As escolhas de imagens, frases e posição continuam livres.
 
@@ -167,14 +169,14 @@ Retomar x/y da experiência. Em **Ao iniciar → Criar sprite chave**, editar so
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d3-condicao` | Demonstração explicada: testar a porta sem e com a chave | Cena ampliada | 80 a 95 s | Gravar |
-| `video-d3-sem-chave` | Evento, condição, senão, teste e verificação intermediária | Vídeo novo | 5,5 a 6,5 min | Gravar |
-| `video-d3-decisao` | Completar então, testar o jogo e verificar | Roteiro revisado | 4,5 a 5,5 min, sem acelerar os percursos | Gravar |
-| `video-d3-personalizar` | Revelar a surpresa do final; trocar personagem, barco, chave, o par do farol e cenário; testar e verificar | Mesmo projeto em construção | 4,5 a 5,5 min | Gravar |
-| `video-d3-farol-mensagens` | Escrever os quatro avisos e testar | Mesmo projeto em construção | 120 a 150 s | Gravar |
-| `video-d3-posicao` | Mudar x e y separadamente na experiência | Cena nova | 85 a 105 s | Gravar |
-| `video-d3-posicionar-chave` | Escolher um lugar, testar o percurso e enviar o jogo | Mesmo projeto em construção | 2 a 3 min | Gravar |
-| `video-d3-fecho` | Publicar e copiar o link para mandar aos amigos | Mesmo projeto enviado | 75 a 95 s, incluindo espera | Gravar |
+| `video-d3-condicao` | Demonstração explicada: testar a porta sem e com a chave | Cena ampliada | 80 a 95 s | Gravar a versão adulta |
+| `video-d3-sem-chave` | Evento, condição, senão, teste e verificação intermediária | Vídeo novo | 5,5 a 6,5 min | Gravar a versão adulta |
+| `video-d3-decisao` | Completar então, testar o jogo e verificar | Roteiro revisado | 4,5 a 5,5 min, sem acelerar os percursos | Gravar a versão adulta |
+| `video-d3-personalizar` | Revelar a surpresa do final; trocar personagem, barco, chave, o par do farol e cenário; testar e verificar | Mesmo projeto em construção | 4,5 a 5,5 min | Gravar a versão adulta |
+| `video-d3-farol-mensagens` | Escrever os quatro avisos e testar | Mesmo projeto em construção | 120 a 150 s | Gravar a versão adulta |
+| `video-d3-posicao` | Mudar x e y separadamente na experiência | Cena nova | 85 a 105 s | Gravar a versão adulta |
+| `video-d3-posicionar-chave` | Escolher um lugar, testar o percurso e enviar o jogo | Mesmo projeto em construção | 2 a 3 min | Gravar a versão adulta |
+| `video-d3-fecho` | Publicar e copiar o link para mandar aos amigos | Mesmo projeto enviado | 75 a 95 s, incluindo espera | Gravar a versão adulta |
 
 ## Continuidade
 

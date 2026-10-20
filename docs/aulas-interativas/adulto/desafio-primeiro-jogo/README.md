@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/desafio-primeiro-jogo/README.md e de qa/adulto/traducoes/desafio-primeiro-jogo/_curso.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Desafio do Primeiro Jogo · A Chave do Farol
 
 Materiais do curso para consulta, gravação e importação.

@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/nave-contra-asteroides-dia-1.roteiro.md e de qa/adulto/traducoes/nave-contra-asteroides/nave-contra-asteroides-dia-1.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Nave Contra Asteroides · Aula 2
 
 **Mova a nave pelo espaço**
@@ -18,7 +20,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, duas trilhas de pegadas lado a lado, uma de passadas longas e outra de passos curtos, com a legenda "Velocidade 3 · Velocidade 1"; desenho nosso, com os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, duas trilhas de pegadas lado a lado, uma de passadas longas e outra de passos curtos, com a legenda "Velocidade 3 · Velocidade 1"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Mostrar os três avanços com velocidade 3 e deixar x em 217.
 
@@ -182,13 +184,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar a lista A ordem de desenhar, com a nave em 1º a desenhar, e o pedaço da nave que aparece. Clicar em Subir no fundo de estrelas e mostrar a nave inteira na frente. Trocar a ordem de novo, mostrar a nave escondida e voltar o fundo para antes da nave. Meme na comparação: na frase da pilha de fotos, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma mão pondo a foto de um céu estrelado por cima da foto de uma nave, numa pilha, com a legenda "quem vem por último fica por cima"; desenho nosso, com os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar a lista A ordem de desenhar, com a nave em 1º a desenhar, e o pedaço da nave que aparece. Clicar em Subir no fundo de estrelas e mostrar a nave inteira na frente. Trocar a ordem de novo, mostrar a nave escondida e voltar o fundo para antes da nave. Meme na comparação: na frase de pintar no papel, mostrar por 2 a 3 segundos o meme ilustrado nosso, um pincel pintando um céu estrelado por cima do desenho de uma nave, com a legenda "quem vem por último fica por cima"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Professora:**
 
 > “Esta é uma experiência para a gente entender por que a ordem dos desenhos muda o que aparece na tela.
 >
-> Olha aqui: na lista A ordem de desenhar, a nave está em 1º a desenhar, e o fundo de estrelas, em 2º. Percebe? Só aparece um pedaço da nave, porque o fundo foi desenhado por cima dela. É como empilhar fotos na mesa: se você põe a foto da nave e depois a do céu por cima, o céu cobre a nave.
+> Olha aqui: na lista A ordem de desenhar, a nave está em 1º a desenhar, e o fundo de estrelas, em 2º. Percebe? Só aparece um pedaço da nave, porque o fundo foi desenhado por cima dela. É como pintar no papel: se você desenha a nave e depois pinta o céu por cima, o céu cobre a nave.
 >
 > Agora eu clico em Subir, no fundo de estrelas. Olha só: o fundo passa a ser desenhado primeiro, e a nave aparece inteira, na frente das estrelas. É que quem é desenhado por último fica por cima.
 >
@@ -222,7 +224,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Repare que a nave sumiu. Olha só: as estrelas cobriram a nave. Isso acontece porque elas foram desenhadas depois da nave, do mesmo jeito que você viu na experiência. Mas o bloco da nave continua no projeto, e é só mudar a ordem.
+> “Olha só: a nave sumiu, as estrelas cobriram a nave. Isso acontece porque elas foram desenhadas depois da nave, do mesmo jeito que você viu na experiência. Mas o bloco da nave continua no projeto, e é só mudar a ordem.
 >
 > Solte qualquer peça que estiver segurando e deixe Limpar a tela à vista. Depois, arraste o bloco das estrelas e solte logo abaixo de Limpar a tela, antes do movimento. Agora a nave aparece de novo, na frente das estrelas, porque as estrelas passaram a ser desenhadas antes dela.”
 
@@ -242,7 +244,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ## Seção 8. Confira o que você construiu
 
-**Recado na página (não gravar):** Hora de conferir o que você construiu. Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
 Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do recado, com todas as perguntas numa página só e o botão Enviar quiz. Leia a explicação após enviar; tentativas ilimitadas, sem espera.
 
@@ -262,4 +264,4 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do recad
 >
 > Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula.”
 
-**Recado na página (não gravar):** Hora de testar a sua nave. Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta etapa e envie o seu projeto para o professor. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de testar a sua nave. Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula.

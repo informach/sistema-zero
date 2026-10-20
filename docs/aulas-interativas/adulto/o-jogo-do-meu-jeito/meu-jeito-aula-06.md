@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/o-jogo-do-meu-jeito/meu-jeito-aula-06.md e de qa/adulto/traducoes/o-jogo-do-meu-jeito/meu-jeito-aula-06.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # O Jogo do Meu Jeito · Aula 6 · Coloque sua nave animada no jogo
 
 Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`. Consulte [o mapa do curso](modulos.md).
@@ -74,7 +76,7 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 ### Seção 7. Envie o jogo com sua nave
 
-**Tarefa / Recado na página:** Hora de enviar o seu jogo com a sua nave. Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer a mensagem Trabalho recebido pelo professor, clique em Concluir aula.
+**Tarefa / Recado na página:** Hora de enviar o seu jogo com a sua nave. Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 
@@ -86,4 +88,4 @@ Os oito slugs e a chave de entrega `entrega-galeria-v6` são preservados. Aula 5
 
 O programa de referência permanece em `qa/meu-jeito-projetos-qa.ts`; as etapas e artes de demonstração ficam em `qa/meu-jeito-etapas.ts`. Usar Programação e Jogo 2D já trazidos com o projeto de Nave Contra Asteroides. Não acrescentar HTML/CSS nem instalar extensão em um projeto vazio só para cumprir uma tarefa.
 
-A ordem vídeo → recado → atividade não configura sozinha o bloqueio: conferir videoBeforeActivity no curso adulto durante a importação. Gravar os clipes adultos, vincular o PDF do Caderno do Aluno quando existir, testar com um perfil adulto e ensaiar com adultos antes de declarar o percurso validado.
+A ordem vídeo → recado → atividade não configura sozinha o bloqueio: conferir videoBeforeActivity no curso adulto durante a importação. Gravar os clipes adultos, vincular o PDF do caderno do curso quando existir, testar com um perfil adulto e ensaiar com adultos antes de declarar o percurso validado.

@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-04.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-04.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 4
 
 **Toque um som em cada pulo**
@@ -82,7 +84,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora deixe à vista o espaço vazio dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando o sprite pular e solte nessa área. No nome, escolha dino. É esse bloco que percebe o pulo do Dino, venha ele da tecla ou do toque.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Tocar o efeito do salto inteiro antes da próxima fala; não sobrepor as vozes ao som.
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
@@ -90,19 +92,19 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora teste. Clique em Atualizar e pule com a barra de espaço. Escute: agora o pulo vem com som.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Concluir os testes sem sobrepor vozes ao som; esperar o Dino pousar.
+**Na tela:** Deixar tocar o efeito do salto inteiro, sem sobrepor a voz ao som, e seguir no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
 > “Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som.
 >
-> Por último, toque duas vezes na barra de espaço com o Dino no ar. Repare: o segundo toque não faz outro salto nem outro som, porque o som está ligado ao pulo, e não à tecla.”
+> Por último, aperte duas vezes a barra de espaço com o Dino no ar. Repare: a segunda vez não faz outro salto nem outro som, porque o som está ligado ao pulo, e não à tecla.”
 
-**Na tela:** Apontar o evento e o efeito na conferência; mostrar também o clique que libera o áudio, se necessário.
+**Na tela:** Concluir os testes sem sobrepor a voz ao som e esperar o Dino pousar. Depois, apontar o evento e o efeito na conferência; mostrar também o clique que libera o áudio, se necessário.
 
 **Professora:**
 
-> “Vamos conferir onde o som ficou. Se no seu jogo não aconteceu isso, por exemplo, se o segundo toque também fez som, volte aos blocos e confira se ficou assim: o projeto tem um único Tocar efeito, com pulo, e ele está dentro de Quando o sprite dino pular, em Quando acontecer. Se os blocos estiverem certos e o jogo continuar mudo, clique uma vez na área do jogo, porque o navegador só libera o som depois de um clique ou de uma tecla. Depois de corrigir, teste de novo.
+> “Vamos conferir onde o som ficou. Se no seu jogo não aconteceu isso, por exemplo, se apertar duas vezes também fez dois sons, volte aos blocos e confira se ficou assim: o projeto tem um único Tocar efeito, com pulo, e ele está dentro de Quando o sprite dino pular, em Quando acontecer. Se os blocos estiverem certos e o jogo continuar mudo, clique uma vez na área do jogo, porque o navegador só libera o som depois de um clique ou de uma tecla. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”
 
@@ -120,7 +122,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Agora o seu Dino pula com som. Antes de enviar o seu projeto, teste um salto com a barra de espaço, outro com a seta para cima e outro com um toque na parte de cima da tela, esperando o Dino pousar entre eles. Cada salto tem que tocar um som.
 >
-> Confira também que dois toques na barra de espaço durante o mesmo salto não fazem dois sons. A gravidade e o desenho continuam como antes.
+> Confira também que apertar duas vezes a barra de espaço durante o mesmo salto não faz dois sons. A gravidade e o desenho continuam como antes.
 >
 > Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Enviar para o professor e confirme em Enviar. Quando aparecer Projeto enviado ao professor, clique em Concluir aula.”
 

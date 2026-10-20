@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md e de qa/adulto/traducoes/desafio-primeiro-jogo/desafio-dia-1.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · A Chave do Farol · Dia 1
 
 **Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por seção, conforme o manifesto e sua fonte geradora. andar: entrada sem movimento e solução que anda sem borda. borda: entrada que já anda e solução com limite. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Não informa gravação, publicação nem ensaio com adultos.
@@ -38,7 +40,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> "E como se leva o personagem até a chave? Olha aqui: quando eu seguro a seta da tela para a direita, o personagem anda para a direita. E, no computador, também dá para clicar dentro do jogo e usar as setas do teclado. E repare neste aviso aqui em cima: ele diz o que você precisa fazer na partida.
+> "E como você leva o personagem até a chave? Olha aqui: quando eu seguro a seta da tela para a direita, o personagem anda para a direita. E, no computador, também dá para clicar dentro do jogo e usar as setas do teclado. E repare neste aviso aqui em cima: ele diz o que você precisa fazer na partida.
 >
 > Já o caminho até a chave e depois até o farol, esse eu deixo para você descobrir.
 >
@@ -56,7 +58,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 30 a 40 segundos.
 
-**Na tela:** capa e uma página de montagem do Caderno do Aluno, o caderno anexado a `materiais-farol`. No "Olha aqui", apontar o caderno. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão nem os controles do leitor. Não apresentar outro material além do caderno nem simular arquivo disponível se o PDF ainda não estiver anexado. No fim, apontar **Próxima seção**.
+**Na tela:** capa e uma página de montagem do caderno do curso, o PDF anexado a `materiais-farol`. No "Olha aqui", apontar o caderno. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão nem os controles do leitor. Não apresentar outro material além do caderno nem simular arquivo disponível se o PDF ainda não estiver anexado. No fim, apontar **Próxima seção**.
 
 **Professora:**
 
@@ -76,13 +78,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 100 a 120 segundos.
 
-**Na tela:** mostrar a experiência `lighthouse-walk` com a seta desligada. No "repare neste x aqui", apontar o **x** na faixa dos números da experiência. Fazer cada gesto no ritmo da fala: Avançar 1 quadro sem a seta (o quadro vai de 0 para 1 e o x fica igual; no "Percebe?", apontar o **quadro** e depois o **x**), ligar a seta e avançar alguns quadros (o x sobe 3 de cada vez; no "como mostra o +3", apontar o **+3** embaixo do personagem). Só clicar em Rodar depois de mostrar a regra. No "Olha a regra do movimento", apontar a regra com o bloco que move o personagem dentro de A cada quadro do jogo. **Meme na comparação:** na frase do filme, uma tira de película em que o personagem dá um passo curto em cada quadro. Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
+**Na tela:** mostrar a experiência `lighthouse-walk` com a seta desligada. No "repare neste x aqui", apontar o **x** na faixa dos números da experiência. Fazer cada gesto no ritmo da fala: Avançar 1 quadro sem a seta (o quadro vai de 0 para 1 e o x fica igual; no "Percebe?", apontar o **quadro** e depois o **x**), ligar a seta e avançar alguns quadros (o x sobe 3 de cada vez; no "como mostra o +3", apontar o **+3** embaixo do personagem). Só clicar em Rodar depois de mostrar a regra. No "Olha a regra do movimento", apontar a regra com o bloco que move o personagem dentro de A cada quadro do jogo. **Meme na comparação:** na frase do desenho animado, um flipbook em que o personagem dá um passo curto em cada folha. Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Professora:**
 
 > "Esta é uma experiência para a gente entender os quadros do jogo e como o personagem anda.
 >
-> Sabe como funciona um filme? Ele é feito de muitas imagens, uma depois da outra, passando bem rápido. O jogo funciona do mesmo jeito: mostra muitas imagens por segundo, e cada imagem é um quadro. E repare neste x aqui: ele mostra onde o personagem está. Quanto maior o x, mais para a direita ele fica.
+> Sabe desenho animado? Ele é feito de muitas imagens, uma depois da outra, passando bem rápido. O jogo funciona do mesmo jeito: mostra muitas imagens por segundo, e cada imagem é um quadro. E repare neste x aqui: ele mostra onde o personagem está. Quanto maior o x, mais para a direita ele fica.
 >
 > Olha aqui: com Segurar a seta para a direita desligado, eu clico em Avançar 1 quadro. Percebe? O quadro passou de 0 para 1, mas o x não muda, porque, sem a seta, o personagem fica parado.
 >
@@ -92,7 +94,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> "E se eu clicar em Rodar? Olha só: os quadros passam bem rápido, e o personagem parece andar sozinho, como num filme. Ele anda até sair da tela, e, para ver tudo de novo, eu clico em Recomeçar.
+> "E se eu clicar em Rodar? Olha só: os quadros passam bem rápido, e o personagem parece andar sozinho, como num desenho animado. Ele anda até sair da tela, e, para ver tudo de novo, eu clico em Recomeçar.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
@@ -128,9 +130,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Repare que o bloco chega com automáticos no celular. Clique em automáticos no celular e escolha só as quatro direções, porque o seu personagem só precisa das setas. Depois espere o jogo atualizar. Olha só: as setas de cima, de baixo, da esquerda e da direita aparecem na tela. Segure uma delas."
 
-**Na tela:** Com apenas os controles montados, segurar uma seta da tela por um instante e mostrar que o personagem não sai do lugar; pausar para a pessoa testar. Ainda não há bloco de movimento.
-
-**Na tela:** Apontar primeiro a área **Enquanto estiver rodando**, arrastando um espaço vazio entre os blocos se ela começar fora da tela; na frase seguinte, apontar o bloco **A cada quadro do jogo** e o **Desenhar o cenário praia-tropical** dentro dele. Só então abrir **Jogo 2D → Movimento → Movimentos prontos**, pegar **Mover sprite em 4 direções com setas, velocidade** e soltar logo depois de **Desenhar o cenário praia-tropical** quando aparecer o encaixe, antes dos blocos preparados do barco. Deixar **heroi** à vista antes do clique, clicar em **heroi**, escolher `personagem` na lista e manter a velocidade `3`.
+**Na tela:** Com apenas os controles montados, segurar uma seta da tela por um instante e mostrar que o personagem não sai do lugar; pausar para a pessoa testar. Ainda não há bloco de movimento. Depois, apontar primeiro a área **Enquanto estiver rodando**, arrastando um espaço vazio entre os blocos se ela começar fora da tela; na frase seguinte, apontar o bloco **A cada quadro do jogo** e o **Desenhar o cenário praia-tropical** dentro dele. Só então abrir **Jogo 2D → Movimento → Movimentos prontos**, pegar **Mover sprite em 4 direções com setas, velocidade** e soltar logo depois de **Desenhar o cenário praia-tropical** quando aparecer o encaixe, antes dos blocos preparados do barco. Deixar **heroi** à vista antes do clique, clicar em **heroi**, escolher `personagem` na lista e manter a velocidade `3`.
 
 **Professora:**
 
@@ -162,7 +162,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Teste uma de cada vez: direita, esquerda, cima e baixo. Depois solte as setas. Sem nenhuma seta segurada, o personagem fica parado."
 
-**Na tela:** Retomar a orientação condicional para quem precisa conferir os blocos. No "O Estúdio salva o seu jogo automaticamente", mostrar o selo **Salvo na sua conta**, no cabeçalho do bloco **Seu projeto no Estúdio**, só depois de ele aparecer de verdade; não simular o selo na edição. No lugar do botão de envio, o Estúdio desta seção mostra "Continue construindo. A entrega do projeto fica no fechamento.", que combina com a fala.
+**Na tela:** Retomar a orientação condicional para quem precisa conferir os blocos. No "O Estúdio salva o seu jogo automaticamente", mostrar o selo **Salvo na sua conta**, no cabeçalho do bloco **Atividade no Estúdio**, só depois de ele aparecer de verdade; não simular o selo na edição. No lugar do botão de envio, o Estúdio desta seção mostra "Continue construindo. A entrega do projeto fica no fechamento.", que combina com a fala.
 
 **Professora:**
 
@@ -170,7 +170,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> O Estúdio salva o seu jogo automaticamente enquanto você monta. Você só envia para o professor no fim desta aula. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção."
+> O Estúdio salva o seu jogo automaticamente enquanto você monta. Você só envia o seu projeto ao professor no fim desta aula. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção."
 
 **Recado na página (não gravar):** Hora de fazer o seu personagem andar. Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta etapa. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.
 
@@ -192,11 +192,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. Percebe? O personagem chega na borda e continua andando até sair da tela, porque nada segura ele dentro da janela."
 
-**Na tela:** Só agora recomeçar, ligar o limite e rodar de novo. Mostrar a parada na borda. No "repare na regra do movimento", apontar a terceira linha da regra, **Manter o sprite personagem dentro da tela**, que perdeu o "(desligado)", logo abaixo do bloco que move, sem cobrir o palco. Depois passar a vez. **Meme na comparação:** na frase da parede invisível, o personagem com as mãos espalmadas numa parede invisível na borda da tela, como no limite do mapa de um videogame. Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
+**Na tela:** Só agora recomeçar, ligar o limite e rodar de novo. Mostrar a parada na borda. No "repare na regra do movimento", apontar a terceira linha da regra, **Manter o sprite personagem dentro da tela**, que perdeu o "(desligado)", logo abaixo do bloco que move, sem cobrir o palco. Depois passar a vez. **Meme na comparação:** na frase da parede invisível, o personagem fazendo mímica com as mãos espalmadas numa parede invisível na borda da tela. Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Professora:**
 
-> "Para ele parar na borda, eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: dessa vez ele para na borda e fica inteiro na tela. É que Manter dentro da tela funciona como uma parede invisível na borda da janela, igual às do limite do mapa nos videogames. E repare na regra do movimento: Manter o sprite personagem dentro da tela fica logo abaixo do bloco que move, para conferir a borda logo depois que o personagem anda.
+> "Para ele parar na borda, eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: dessa vez ele para na borda e fica inteiro na tela. É que Manter dentro da tela funciona como uma parede invisível na borda da janela. E repare na regra do movimento: Manter o sprite personagem dentro da tela fica logo abaixo do bloco que move, para conferir a borda logo depois que o personagem anda.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
@@ -230,9 +230,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora teste as quatro direções até chegar às beiradas. Olha só: ele para em cada beirada e não sai mais da tela."
 
-**Na tela:** Mostrar o personagem parando nas beiradas da direita, da esquerda e de baixo. A de baixo, pelo meio da tela, longe das setas, que ficam no canto de baixo à esquerda. Na beirada de cima, a faixa do aviso fica na frente da cabeça do personagem: não terminar o teste ali. Soltar a seta antes da fala seguinte.
-
-**Na tela:** Conferir os dois blocos na ordem indicada, mantendo os testes e o envio.
+**Na tela:** Mostrar o personagem parando nas beiradas da direita, da esquerda e de baixo. A de baixo, pelo meio da tela, longe das setas, que ficam no canto de baixo à esquerda. Na beirada de cima, a faixa do aviso fica na frente da cabeça do personagem: não terminar o teste ali. Soltar a seta e conferir os dois blocos na ordem indicada, mantendo os testes e o envio.
 
 **Professora:**
 

@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/nave-contra-asteroides/nave-contra-asteroides-pontos.roteiro.md e de qa/adulto/traducoes/nave-contra-asteroides/nave-contra-asteroides-pontos.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Nave Contra Asteroides · Aula 6
 
 **Conte os acertos**
@@ -8,7 +10,7 @@ Entrada: Cada colisão retira somente o tiro e o asteroide envolvidos, com explo
 
 **Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
 
-Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página. A versão adulta ainda não foi gravada.
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar só as falas marcadas como Professora; o recado é texto da página.
 
 Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Percebe?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. O recado da página começa convidando ("Sua vez:", "Agora…", "Hora de…") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Percebe?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, quem faz a aula testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …").
 
@@ -18,9 +20,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Mudar número guardado em pontos para 1 e voltar para 0. Com Mostrar placar desligado, clicar em Somar 1 em pontos duas vezes e mostrar o número guardado em 2, com a tela sem placar. Ligar Mostrar placar e mostrar Pontos: 2 na tela; somar 1 e mostrar os dois em 3. A comparação ajuda, mas não substitui os testes nos controles reais. Meme na comparação: na frase do contador de passos, mostrar por 2 a 3 segundos o meme ilustrado nosso, um celular de tela apagada no bolso, ainda contando passos, e, ao lado, o mesmo celular de tela acesa mostrando o número contado, com a legenda "guardar · mostrar"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Mudar número guardado em pontos para 1 e voltar para 0. Com Mostrar placar desligado, clicar em Somar 1 em pontos duas vezes e mostrar o número guardado em 2, com a tela sem placar. Ligar Mostrar placar e mostrar Pontos: 2 na tela; somar 1 e mostrar os dois em 3. A comparação ajuda, mas não substitui os testes nos controles reais. Meme na comparação: na frase do placar do estádio, mostrar por 2 a 3 segundos o meme ilustrado nosso, uma mão anotando pontos: 2 num caderno, ao lado de um placar de estádio mostrando 2, com a legenda "guardar · mostrar"; desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente.
 
-**Na tela:** Somar dois pontos com o placar desligado e concluir a comparação com o contador de passos.
+**Na tela:** Somar dois pontos com o placar desligado e concluir a comparação com o caderno e o placar do estádio.
 
 **Professora:**
 
@@ -28,7 +30,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olha aqui: eu mudo número guardado em pontos para 1 e depois volto para 0. Agora pontos existe e começa em 0, como no começo de uma partida. Com Mostrar placar desligado, eu clico em Somar 1 em pontos duas vezes. Percebe? O número guardado vai para 1 e depois para 2, mas a tela do jogo não mostra nada. Ou seja, o jogo guardou e mudou o número sem mostrar.
 >
-> É como o contador de passos do celular: ele conta cada passo, mesmo com a tela apagada no seu bolso. A tela só mostra o que já foi contado.”
+> É como anotar os gols de um jogo num caderno: o número fica anotado, mesmo que ninguém esteja vendo. O placar do estádio só mostra o que já foi anotado.”
 
 **Na tela:** Ligar Mostrar placar e comparar o valor da tela com o valor guardado.
 
@@ -78,7 +80,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > O número do placar precisa ler o valor guardado em pontos. Deixe à vista o número do campo valor do placar. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima desse número e escolha pontos. Assim, o placar mostra o número que o jogo guardou, em vez de mostrar sempre o mesmo número.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Manter o primeiro ponto visível, sem fazer outro disparo durante a fala.
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
@@ -86,7 +88,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora teste: clique na área do jogo e deixe um tiro passar sem acertar. O placar tem que ficar igual, porque nenhum tiro acertou. Depois, acerte uma pedra. Olha só: Pontos vai para 1.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Manter o primeiro ponto visível, sem fazer outro disparo antes desta fala.
 
 **Professora:**
 

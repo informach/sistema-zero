@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/o-jogo-do-meu-jeito/meu-jeito-aula-06.roteiro.md e de qa/adulto/traducoes/o-jogo-do-meu-jeito/meu-jeito-aula-06.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · O Jogo do Meu Jeito · Aula 6
 
 **Coloque sua nave animada no jogo**
@@ -22,7 +24,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase dos colegas, alguém na porta do escritório chamando "nave!", e a nave e a folha da nave, com o mesmo crachá escrito nave, olhando ao mesmo tempo, com a legenda "nave? qual das duas?". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase do time, um técnico com apito chamando "nave!", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda "nave? qual das duas?". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar antes de seguir para o próximo passo.
 
@@ -34,13 +36,13 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Agora eu clico em Tirar este bloco. Percebe? Os três blocos ganham um ponto de exclamação, e o aviso diz que o nome nave ainda não foi criado neste jogo. É que os blocos procuram nave, e ninguém criou esse nome. Por isso, a prévia para na última versão que funcionava.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Concluir os testes de nome ausente e repetido e a comparação com os colegas; manter o aviso de nome repetido visível.
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Concluir os testes de nome ausente e repetido e a comparação com os jogadores; manter o aviso de nome repetido visível.
 
 **Professora:**
 
 > “Eu clico em Pôr de volta, e os avisos somem. Depois, em Nome do bloco de baixo, eu escolho nave. Repare: aparece outro aviso, dizendo que o nome nave já foi criado neste trecho, e o Estúdio pede um nome diferente. Isso acontece porque, com dois blocos criando o mesmo nome, os outros blocos não sabem qual procurar.
 >
-> Sabe quando dois colegas de trabalho têm o mesmo nome? Se alguém chama esse nome, os dois olham. Por isso, cada um ganha um jeito próprio de ser chamado, como o sobrenome ou um apelido. No seu jogo, a nave e a folha são os dois colegas: cada um precisa de um nome só dele.”
+> Sabe quando dois jogadores do mesmo time têm o mesmo nome? Se o técnico chama esse nome, os dois olham. Por isso, cada um ganha um jeito próprio de ser chamado, como o sobrenome ou um apelido. No seu jogo, a nave e a folha são os dois jogadores: cada um precisa de um nome só dele.”
 
 **Na tela:** Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite.
 
@@ -70,15 +72,15 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Clique em Abrir meu Estúdio nesta seção. Em Meus Jogos, abra o cartão que você nomeou e enviou na aula 1. Depois abra Mais opções, Materiais e Imagens. Na janela Materiais do jogo, clique em Trazer do Pinta.
 >
-> Nos cartões nave e asteroide, clique em Adicionar ao projeto e confira a marca no projeto nos dois. Depois feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou salva na sua conta.”
+> Nos cartões nave e asteroide, clique em Adicionar ao projeto e confira a marca no projeto nos dois. Depois feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.”
 
 **Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
-> “Os desenhos já estão no projeto, mas será que já aparecem? Clique na prévia e toque na tecla Enter para começar uma partida. Percebe? Os desenhos ainda são os antigos. As suas imagens já estão nos materiais, mas nenhum bloco mandou o jogo usar essas imagens ainda. É isso que a gente vai fazer nas próximas seções.
+> “Os desenhos já estão no projeto, mas será que já aparecem? Clique na prévia e aperte Enter para começar uma partida. Percebe? Os desenhos ainda são os antigos. As suas imagens já estão nos materiais, mas nenhum bloco mandou o jogo usar essas imagens ainda. É isso que a gente vai fazer nas próximas seções.
 >
-> Pause aqui e faça esta seção no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora traga os seus desenhos para o jogo. Adicione nave e asteroide aos materiais da cópia do seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.
 
@@ -88,7 +90,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase das etiquetas, uma mão destacando uma etiqueta com a nave de uma cartela com duas naves, com a legenda "um quadro de cada vez". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase dos adesivos, uma mão destacando um adesivo da nave de uma cartela com duas naves, com a legenda "um quadro de cada vez". Desenho nosso no formato de meme, com os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção. Executar cada gesto junto da fala correspondente.
 
 **Na tela:** Concluir o recorte correto de 32 e comparar os quadros 1 e 2.
 
@@ -100,7 +102,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Quando eu coloco Largura do recorte em 64, o jogo mostra a folha inteira, com as duas naves espremidas num quadrado só. Com 16, aparece só metade de uma nave, esticada. E, com 32, olha só: aparece uma nave inteira, porque o recorte ficou do tamanho de um quadro da folha.
 >
-> Sabe uma cartela de etiquetas adesivas? Para colar uma etiqueta, você destaca só aquela, do tamanho dela. Se pegar a cartela inteira, vêm todas juntas. Se cortar no meio, sai meia etiqueta. A Largura do recorte é o tamanho da etiqueta que o jogo destaca da folha.
+> Sabe uma cartela de adesivos? Para colar um adesivo, você destaca só aquele, do tamanho dele. Se pegar a cartela inteira, vêm todos juntos. Se cortar no meio, sai meio adesivo. A Largura do recorte é o tamanho do adesivo que o jogo destaca da folha.
 >
 > Com 32, eu escolho o Quadro 1, e o jogo mostra a nave com o fogo pequeno. Depois escolho o Quadro 2, e aparece a nave com o fogo grande. São esses dois quadros que vão se revezar na animação.”
 
@@ -146,7 +148,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 
 > “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, com nome nave, x 400, y 410, largura 54, altura 54 e imagem nave, abaixo de Preparar o jogo em tela cheia e com os blocos de baixo ligados. Depois de corrigir, teste de novo. Na próxima seção, a gente vai recortar cada quadro.
 >
-> Pause aqui e faça esta seção no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora use a sua imagem no criador da nave. Troque o criador por um sprite com imagem, conservando o nome nave. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.
 
@@ -176,7 +178,7 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 >
 > Confira o nome folha-nave e o recorte 32 por 32. Não troque o tamanho 54 por 54 no criador, porque aquele é o tamanho da nave na tela, e não o do recorte. Com isso, a folha está preparada. Para a nave animar, ainda falta ligar essa folha ao sprite, e é isso que você vai fazer na próxima seção.
 >
-> Pause aqui e faça esta seção no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora prepare o recorte da sua nave. Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.
 
@@ -204,11 +206,11 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 
 > “No Pinta, os desenhos aparecem como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1.
 >
-> Agora clique na prévia e comece a partida com Enter. Mova a nave com as setas e atire com Espaço. Olha só: agora a nave aparece inteira, com o fogo pulsando.
+> Agora clique na prévia e comece a partida com Enter. Mova a nave com as setas e atire com a barra de espaço. Olha só: agora a nave aparece inteira, com o fogo pulsando.
 >
-> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite nave com a folha folha-nave na animação voando, do quadro 0 ao 1, a 8 fps, logo abaixo de Carregar folha de quadros folha-nave. Depois de corrigir, teste de novo. E, se voando não aparecer na lista, confira se a animação ficou salva no Pinta e se a imagem foi trazida ao projeto antes de escolher de novo.
+> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite nave com a folha folha-nave na animação voando, do quadro 0 ao 1, a 8 fps, logo abaixo de Carregar folha de quadros folha-nave. Depois de corrigir, teste de novo. E, se voando não aparecer na lista, confira se a animação ficou guardada no Pinta e se a imagem foi trazida ao projeto antes de escolher de novo.
 >
-> Pause aqui e faça esta seção no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
+> Pause aqui e faça esta etapa no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima seção. Quando aparecer, volte a esta aba e clique em Próxima seção.”
 
 **Recado na página (não gravar):** Agora ligue a animação voando. Anime nave com folha-nave e confira os dois quadros no jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima seção.
 
@@ -222,12 +224,12 @@ Vocabulário da versão adulta (20/10/2026): na narração, no recado da página
 
 **Professora:**
 
-> “Hora de enviar o seu jogo com a sua nave. Antes, confira no seu jogo: a nave aparece inteira, com a sua imagem e a animação voando; as setas e o tiro funcionam; e as pedras continuam as originais por enquanto. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da aula só mostra o que já está salvo na sua conta.
+> “Hora de enviar o seu jogo com a sua nave. Antes, confira no seu jogo: a nave aparece inteira, com a sua imagem e a animação voando; as setas e o tiro funcionam; e as pedras continuam as originais por enquanto. Se alguma coisa estiver diferente, volte à seção em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da aula só mostra o que já está guardado na sua conta.
 >
-> Agora volte para a aba da aula e clique em Escolher no Estúdio. Na janela Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se o seu trabalho não aparecer, confira se ele ficou salvo na sua conta e clique em Atualizar galeria.
+> Agora volte para a aba da aula e clique em Escolher no Estúdio. Na janela Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se o seu trabalho não aparecer, confira se ele ficou guardado na sua conta e clique em Atualizar galeria.
 >
 > Se quiser, escreva uma mensagem no campo Recado para o professor. Depois clique em Enviar ao professor (1) e espere aparecer Trabalho recebido pelo professor.
 >
 > Esse envio guarda uma cópia deste momento, e você continua criando no Estúdio. Por último, clique em Concluir aula.”
 
-**Recado na página (não gravar):** Hora de enviar o seu jogo com a sua nave. Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer a mensagem Trabalho recebido pelo professor, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de enviar o seu jogo com a sua nave. Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula.

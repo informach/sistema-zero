@@ -32,7 +32,7 @@
   "blocks": [
     {
       "key": "video-contato",
-      "plannedVideo": "Título: Observe quando o jogo reconhece a batida\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a área em 100% e o cacto longe. Diminuir a Distância do cacto um passo por vez, com as áreas pontilhadas à vista. Parar no primeiro BATEU! e apontar o vão entre os desenhos. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino dando ré num carro, com uma área pontilhada em volta do para-choque chegando no cacto e o sensor apitando antes de a lataria encostar. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Observe quando o jogo reconhece a batida\n\nProduzir no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a área em 100% e o cacto longe. Diminuir a Distância do cacto um passo por vez, com as áreas pontilhadas à vista. Parar no primeiro BATEU! e apontar o vão entre os desenhos. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino e o cacto em carrinhos de bate-bate, com os para-choques de borracha se encostando e as latarias ainda separadas. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-contato",
@@ -55,9 +55,7 @@
           "scene": "hitbox",
           "cenario": "corre-dino",
           "setup": {
-            "goals": [
-              "contact"
-            ]
+            "goals": ["contact"]
           }
         },
         "semPerguntaFinal": true
@@ -65,7 +63,7 @@
     },
     {
       "key": "video-batida-acaba-partida",
-      "plannedVideo": "Título: Encerre a partida na batida\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Encerre a partida na batida\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-batida-acaba-partida",
@@ -77,7 +75,7 @@
     },
     {
       "key": "video-mapa-do-jogo",
-      "plannedVideo": "Título: Mostre a tela de fim\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mostre a tela de fim\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-mapa-do-jogo",
@@ -89,7 +87,7 @@
     },
     {
       "key": "video-batida-sentida",
-      "plannedVideo": "Título: Dê som e imagem à batida\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Dê som e imagem à batida\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-batida-sentida",
@@ -101,7 +99,7 @@
     },
     {
       "key": "video-trocar-nao-limpa",
-      "plannedVideo": "Título: Compare voltar e reiniciar\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Mudar o estado do jogo para inicio escolhido em No fim, o toque faz. Clicar em Tocar na tela, deixar o tempo passar até a batida e mostrar os cactos que ficam na pista ao voltar e ao jogar de novo. Trocar para Reiniciar o jogo e mostrar a pista vazia na abertura e a partida começando só com um cacto novo, com os números da faixa à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino arrumando as peças de um tabuleiro de xadrez antes de começar outra partida. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare voltar e reiniciar\n\nProduzir no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Mudar o estado do jogo para inicio escolhido em No fim, o toque faz. Clicar em Tocar na tela, deixar o tempo passar até a batida e mostrar os cactos que ficam na pista ao voltar e ao jogar de novo. Trocar para Reiniciar o jogo e mostrar a pista vazia na abertura e a partida começando só com um cacto novo, com os números da faixa à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino arrumando as peças de um tabuleiro antes de começar outra partida. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-trocar-nao-limpa",
@@ -129,7 +127,7 @@
     },
     {
       "key": "video-caminho-de-volta",
-      "plannedVideo": "Título: Prepare uma nova partida\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Prepare uma nova partida\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebe?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-caminho-de-volta",
@@ -170,9 +168,7 @@
                 "label": "Retirar o desenho do Dino."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Cada regra fica onde foi montada. A condição do quadro não envolve automaticamente outro relógio."
           },
           {
@@ -192,9 +188,7 @@
                 "label": "Um som dentro de Ao iniciar."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Mudar o estado guarda o momento do jogo. O desenho da tela precisa de uma regra nesse estado."
           },
           {
@@ -214,9 +208,7 @@
                 "label": "Reiniciar o jogo."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "Reiniciar repete a preparação e refaz o grupo. Trocar o estado sozinho conserva os objetos anteriores."
           }
         ]
@@ -224,7 +216,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em corre-dino-aula-09.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrega",
@@ -241,9 +233,7 @@
         "purpose": "submission",
         "chain": "corre-dino",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -959,20 +949,13 @@
       "title": "Observe quando o jogo reconhece a batida",
       "intent": "exploration",
       "objective": "Sua vez: aproxime o cacto aos poucos até aparecer BATEU! Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-contato",
-        "fala-contato",
-        "experiencia-contato"
-      ],
+      "blockKeys": ["video-contato", "fala-contato", "experiencia-contato"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-contato",
-          "experiencia-contato"
-        ]
+        "blockIds": ["video-contato", "experiencia-contato"]
       }
     },
     {
@@ -980,18 +963,13 @@
       "title": "Encerre a partida na batida",
       "intent": "application",
       "objective": "Agora faça a batida terminar a partida. Coloque a colisão entre o Dino e os cactos dentro do Se jogando, mudando o estado para fim. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.",
-      "blockKeys": [
-        "video-batida-acaba-partida",
-        "fala-batida-acaba-partida"
-      ],
+      "blockKeys": ["video-batida-acaba-partida", "fala-batida-acaba-partida"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-batida-acaba-partida"
-        ],
+        "blockIds": ["video-batida-acaba-partida"],
         "projectChecks": [
           {
             "id": "colisao",
@@ -1036,18 +1014,13 @@
       "title": "Mostre a tela de fim",
       "intent": "application",
       "objective": "Agora mostre a tela de fim. Acrescente mais um senão se ao Se do quadro, para o estado fim, com a tela de fim dentro dele. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.",
-      "blockKeys": [
-        "video-mapa-do-jogo",
-        "fala-mapa-do-jogo"
-      ],
+      "blockKeys": ["video-mapa-do-jogo", "fala-mapa-do-jogo"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-mapa-do-jogo"
-        ],
+        "blockIds": ["video-mapa-do-jogo"],
         "projectChecks": [
           {
             "id": "tela-fim",
@@ -1078,18 +1051,13 @@
       "title": "Dê som e imagem à batida",
       "intent": "application",
       "objective": "Agora dê som e imagem à batida. Dentro da colisão, antes de mudar para fim, exploda o cacto, trema a tela em 8 e toque o som de derrota. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.",
-      "blockKeys": [
-        "video-batida-sentida",
-        "fala-batida-sentida"
-      ],
+      "blockKeys": ["video-batida-sentida", "fala-batida-sentida"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-batida-sentida"
-        ],
+        "blockIds": ["video-batida-sentida"],
         "projectChecks": [
           {
             "id": "explodir",
@@ -1141,20 +1109,13 @@
       "title": "Compare voltar e reiniciar",
       "intent": "exploration",
       "objective": "Sua vez: compare os dois jeitos de voltar e repare em como começa a partida seguinte. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-trocar-nao-limpa",
-        "fala-trocar-nao-limpa",
-        "experiencia-restart"
-      ],
+      "blockKeys": ["video-trocar-nao-limpa", "fala-trocar-nao-limpa", "experiencia-restart"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-trocar-nao-limpa",
-          "experiencia-restart"
-        ]
+        "blockIds": ["video-trocar-nao-limpa", "experiencia-restart"]
       }
     },
     {
@@ -1162,18 +1123,13 @@
       "title": "Prepare uma nova partida",
       "intent": "application",
       "objective": "Agora prepare uma nova partida. No evento de qualquer tecla ou toque, acrescente um senão se fim com Reiniciar o jogo. Depois, clique em Verificar esta etapa e, em seguida, em Próxima seção.",
-      "blockKeys": [
-        "video-caminho-de-volta",
-        "fala-caminho-de-volta"
-      ],
+      "blockKeys": ["video-caminho-de-volta", "fala-caminho-de-volta"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-caminho-de-volta"
-        ],
+        "blockIds": ["video-caminho-de-volta"],
         "projectChecks": [
           {
             "id": "reiniciar",
@@ -1229,18 +1185,13 @@
       "title": "Confira o que você construiu",
       "intent": "explanation",
       "objective": "Hora de lembrar o que você construiu. As perguntas falam do começo da partida, da batida e do recomeço. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.",
-      "blockKeys": [
-        "fala-revisao",
-        "quiz"
-      ],
+      "blockKeys": ["fala-revisao", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -1248,20 +1199,13 @@
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
       "objective": "Hora de testar e enviar o seu jogo. Jogue uma partida inteira, do começo ao recomeço, clique em Verificar esta etapa e depois em Enviar para o professor. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
-      "blockKeys": [
-        "video-entrega",
-        "fala-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "projeto"
-        ],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "colisao",

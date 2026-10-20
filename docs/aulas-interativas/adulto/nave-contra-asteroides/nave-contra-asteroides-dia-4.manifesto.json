@@ -59,7 +59,7 @@
   "blocks": [
     {
       "key": "video-vidas-no-comeco",
-      "plannedVideo": "Título: Compare quando dar as vidas\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Dar três vidas à nave em Ao iniciar, clicar em Começar o jogo e acompanhar os corações apagando até Vidas: 0 · Batidas: 3 e Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar os corações voltando para 3 no quadro depois de cada batida e Vidas: 2 no fim, porque a última batida cai no último quadro. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare quando dar as vidas\n\nProduzir no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Dar três vidas à nave em Ao iniciar, clicar em Começar o jogo e acompanhar os corações apagando até Vidas: 0 · Batidas: 3 e Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar os corações voltando para 3 no quadro depois de cada batida e Vidas: 2 no fim, porque a última batida cai no último quadro. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-vidas-no-comeco",
@@ -94,10 +94,7 @@
           "setup": {
             "preset": {
               "id": "uma-ficha-vidas",
-              "areas": [
-                "start",
-                "loop"
-              ],
+              "areas": ["start", "loop"],
               "cards": [
                 {
                   "id": "lives",
@@ -117,10 +114,7 @@
                 "pedido": "Depois de testar Ao iniciar, ponha Dar três vidas à nave em Enquanto estiver rodando e comece o jogo."
               }
             },
-            "goals": [
-              "once",
-              "lives-loop"
-            ]
+            "goals": ["once", "lives-loop"]
           }
         },
         "semPerguntaFinal": true
@@ -128,7 +122,7 @@
     },
     {
       "key": "video-vidas",
-      "plannedVideo": "Título: Dê e mostre as três vidas\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar pela retomada: no \"Percebe?\", mostrar a tela sem corações. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Dê e mostre as três vidas\n\nProduzir no Estúdio atual. Começar pela retomada: no \"Percebe?\", mostrar a tela sem corações. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-vidas",
@@ -140,7 +134,7 @@
     },
     {
       "key": "video-protecao",
-      "plannedVideo": "Título: Compare as batidas com proteção\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar 0, 45 e 15 no seletor. A cena tem batidas nos quadros 1, 10 e 30; 15 permite ver expirar. Com 0 quadros, clicar três vezes em Avançar até a próxima pedra e mostrar as vidas de 3 a 0. Voltar ao começo, repetir com 45 e mostrar 36 e 16 quadros restando nas batidas 10 e 30, com 2 vidas no fim. Voltar ao começo, repetir com 15 e mostrar 6 quadros restando na batida 10 e a vida caindo na batida 30. Não prometer que a cena reproduz 45 quadros de jogo real em segundos. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare as batidas com proteção\n\nProduzir no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar 0, 45 e 15 no seletor. A cena tem batidas nos quadros 1, 10 e 30; 15 permite ver expirar. Com 0 quadros, clicar três vezes em Avançar até a próxima pedra e mostrar as vidas de 3 a 0. Voltar ao começo, repetir com 45 e mostrar 36 e 16 quadros restando nas batidas 10 e 30, com 2 vidas no fim. Voltar ao começo, repetir com 15 e mostrar 6 quadros restando na batida 10 e a vida caindo na batida 30. Não prometer que a cena reproduz 45 quadros de jogo real em segundos. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-respiro",
@@ -173,11 +167,7 @@
           },
           "cenario": "nave",
           "setup": {
-            "goals": [
-              "no-shield",
-              "window",
-              "expires"
-            ]
+            "goals": ["no-shield", "window", "expires"]
           }
         },
         "semPerguntaFinal": true
@@ -185,7 +175,7 @@
     },
     {
       "key": "video-batida-e-coracoes",
-      "plannedVideo": "Título: Programe as vidas e a batida\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Começar pela retomada: deixar uma pedra bater na nave e, no \"Percebe?\", mostrar que os corações continuam três. Encaixar a colisão entre o placar e o desenho dos corações, com o destino à vista antes de abrir a paleta. Confirmar a ordem final original: placar, colisão da nave, corações.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Programe as vidas e a batida\n\nProduzir no Estúdio atual. Começar pela retomada: deixar uma pedra bater na nave e, no \"Percebe?\", mostrar que os corações continuam três. Encaixar a colisão entre o placar e o desenho dos corações, com o destino à vista antes de abrir a paleta. Confirmar a ordem final original: placar, colisão da nave, corações.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-batida",
@@ -200,7 +190,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de conferir o que você construiu. Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima seção."
+        "text": "Hora de lembrar o que você construiu. Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
       }
     },
     {
@@ -226,9 +216,7 @@
                 "label": "Solto no começo de A cada quadro do jogo."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "A soma fica dentro da colisão para acompanhar os acertos. Solta em cada quadro, ela aumentaria sem depender de um tiro acertar."
           },
           {
@@ -248,9 +236,7 @@
                 "label": "Não diminui outra vida enquanto a proteção está ativa."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "A proteção impede um novo dano durante os 45 quadros. Depois que esse tempo termina, uma nova batida pode tirar outra vida."
           }
         ]
@@ -258,7 +244,7 @@
     },
     {
       "key": "video-fecho",
-      "plannedVideo": "Título: Teste os pontos e as vidas\n\nProduzir no Estúdio atual. A versão adulta ainda não foi gravada. Testar as duas colisões e inspecionar os encaixes, preservando os blocos anteriores.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Teste os pontos e as vidas\n\nProduzir no Estúdio atual. Testar as duas colisões e inspecionar os encaixes, preservando os blocos anteriores.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrega",
@@ -275,9 +261,7 @@
         "purpose": "submission",
         "chain": "nave-contra-asteroides",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -1173,20 +1157,13 @@
       "title": "Compare quando dar as vidas",
       "intent": "exploration",
       "objective": "Sua vez: compare Dar três vidas à nave em Ao iniciar e em Enquanto estiver rodando, esperando cada teste parar e olhando os corações. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-vidas-no-comeco",
-        "fala-vidas-no-comeco",
-        "experiencia-uma-vez"
-      ],
+      "blockKeys": ["video-vidas-no-comeco", "fala-vidas-no-comeco", "experiencia-uma-vez"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-vidas-no-comeco",
-          "experiencia-uma-vez"
-        ]
+        "blockIds": ["video-vidas-no-comeco", "experiencia-uma-vez"]
       }
     },
     {
@@ -1194,18 +1171,13 @@
       "title": "Dê e mostre as três vidas",
       "intent": "application",
       "objective": "Agora dê três vidas à sua nave. Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta etapa. Depois, clique em Próxima seção.",
-      "blockKeys": [
-        "video-vidas",
-        "fala-vidas"
-      ],
+      "blockKeys": ["video-vidas", "fala-vidas"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-vidas"
-        ],
+        "blockIds": ["video-vidas"],
         "projectChecks": [
           {
             "id": "vida",
@@ -1249,20 +1221,13 @@
       "title": "Compare as batidas com proteção",
       "intent": "exploration",
       "objective": "Sua vez: teste as três batidas com 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes. Quando terminar, clique em Próxima seção.",
-      "blockKeys": [
-        "video-protecao",
-        "fala-respiro",
-        "experiencia-protecao"
-      ],
+      "blockKeys": ["video-protecao", "fala-respiro", "experiencia-protecao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-protecao",
-          "experiencia-protecao"
-        ]
+        "blockIds": ["video-protecao", "experiencia-protecao"]
       }
     },
     {
@@ -1270,18 +1235,13 @@
       "title": "Programe as vidas e a batida",
       "intent": "application",
       "objective": "Agora programe a batida na nave. Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta etapa. Depois, clique em Próxima seção.",
-      "blockKeys": [
-        "video-batida-e-coracoes",
-        "fala-batida"
-      ],
+      "blockKeys": ["video-batida-e-coracoes", "fala-batida"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-batida-e-coracoes"
-        ],
+        "blockIds": ["video-batida-e-coracoes"],
         "projectChecks": [
           {
             "id": "remover-inimigo",
@@ -1367,19 +1327,14 @@
       "key": "quiz-final",
       "title": "Confira o que você construiu",
       "intent": "explanation",
-      "objective": "Hora de conferir o que você construiu. Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.",
-      "blockKeys": [
-        "fala-quiz-final",
-        "quiz"
-      ],
+      "objective": "Hora de lembrar o que você construiu. Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.",
+      "blockKeys": ["fala-quiz-final", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -1387,20 +1342,13 @@
       "title": "Teste os pontos e as vidas",
       "intent": "delivery",
       "objective": "Hora de testar os pontos e as vidas. Confira um erro, um acerto e uma batida, clique em Verificar esta etapa e envie o seu projeto ao professor. Depois, clique em Concluir aula.",
-      "blockKeys": [
-        "video-fecho",
-        "fala-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-fecho", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho",
-          "projeto"
-        ],
+        "blockIds": ["video-fecho", "projeto"],
         "projectChecks": [
           {
             "id": "pontos",

@@ -3,19 +3,14 @@
   "courseSlug": "desafio-primeiro-jogo-adulto",
   "lessonSlug": "certificado",
   "title": "Seu certificado",
-  "retireBlockKeys": [
-    "video-pitch",
-    "fala-pitch",
-    "video-pitch-farol",
-    "link-comunidade"
-  ],
+  "retireBlockKeys": ["video-pitch", "fala-pitch", "video-pitch-farol", "link-comunidade"],
   "blocks": [
     {
       "key": "fala-revisao-final",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos revisar essas regras com quatro perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo."
+        "text": "Hora de lembrar o que você construiu. As perguntas falam do personagem que anda, da coleta da chave e do farol que confere se você tem a chave. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
       }
     },
     {
@@ -41,9 +36,7 @@
                 "label": "Conferir o limite da tela uma vez só, quando o jogo começa."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Dentro de A cada quadro do jogo, primeiro o personagem anda e, logo depois, Manter o sprite personagem dentro da tela segura ele na borda. Se o limite viesse antes, o personagem andaria depois da conferência, e um pedaço dele passaria da borda. E, conferido só no começo, o limite não seguraria nada depois. Por isso ele fica dentro de A cada quadro do jogo."
           },
           {
@@ -63,9 +56,7 @@
                 "label": "Se o bloco Destruir o sprite tira a chave do chão."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Destruir o sprite já funcionou: a chave sumiu do chão. Alterar aviso também: a mensagem mudou. Essas duas ações não guardam a coleta em temChave. Dentro do encontro com a chave, o bloco que altera temChave precisa guardar verdadeiro. É essa informação que o farol consulta depois."
           },
           {
@@ -85,9 +76,7 @@
                 "label": "Manter o farol apagado e avisar que falta a chave."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "A porta confere temChave. Se você não pegou a chave, temChave ainda é falso, e o jogo segue o senão: avisa que falta a chave. Antes de você montar o senão, era isso que acontecia: nada. O então, que acende o farol e chama o barco, só acontece quando temChave é verdadeiro."
           },
           {
@@ -107,9 +96,7 @@
                 "label": "Recolher a chave e repetir exatamente o caminho que já funcionou."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "A porta tem duas respostas, a do então e a do senão. Você já conferiu o caminho com a chave. Na mesma partida, temChave continua verdadeiro, por isso o farol escolheria o então de novo. Só numa partida nova temChave volta a ser falso: clique em Atualizar e vá direto até a porta do farol. A luz deve continuar apagada, e o aviso deve dizer que falta a chave. Testar só o caminho que dá certo pode esconder uma regra montada no lugar errado."
           }
         ]
@@ -117,7 +104,7 @@
     },
     {
       "key": "video-certificado-farol",
-      "plannedVideo": "Título: Comemore sua criação\n\nReconhecer o jogo do jeito que a pessoa escolheu e as regras que ela programou (o personagem que anda, a coleta da chave e o farol que confere a chave) com a fala: \"Você terminou A Chave do Farol. Olha só o seu jogo, do jeito que você escolheu, e o que você programou: o personagem que anda, o jogo que guarda a chave e o farol que confere se ela foi encontrada. São essas regras que fazem o seu jogo funcionar, e quem montou foi você.\". Esta seção não tem Estúdio: no \"Olha só\", mostrar o jogo da demonstração do Dia 3 (pirata, barco pirata, chave de estrela, farol de pedra, noite na ilha), gravado antes na conta de ensaio, com o farol aceso e o barco chegando. O preparo do cenário, dos desenhos e do barco é informação interna da equipe, sem ressalva na fala. Mostrar Emitir meu certificado numa conta com os Dias 1 a 3 concluídos, a revisão aprovada e nenhum certificado emitido; esperar o certificado baixar e encerrar em Concluir aula. Não incluir pitch comercial.\n\nRoteiro falado: desafio-certificado.roteiro.md. A versão adulta ainda não foi gravada. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
+      "plannedVideo": "Título: Comemore sua criação\n\nReconhecer o jogo do jeito que a pessoa escolheu e as regras que ela programou (o personagem que anda, a coleta da chave e o farol que confere a chave) com a fala: \"Você terminou A Chave do Farol. Olha só o seu jogo, do jeito que você escolheu, e o que você programou: o personagem que anda, o jogo que guarda a chave e o farol que confere se ela foi encontrada. São essas regras que fazem o seu jogo funcionar, e quem montou foi você.\". Esta seção não tem Estúdio: no \"Olha só\", mostrar o jogo da demonstração do Dia 3 (pirata, barco pirata, chave de estrela, farol de pedra, noite na ilha), gravado antes na conta de ensaio, com o farol aceso e o barco chegando. O preparo do cenário, dos desenhos e do barco é informação interna da equipe, sem ressalva na fala. Mostrar Emitir meu certificado numa conta com os Dias 1 a 3 concluídos, a revisão aprovada e nenhum certificado emitido; esperar o certificado baixar e encerrar em Concluir aula. Não incluir pitch comercial.\n\nRoteiro falado: desafio-certificado.roteiro.md. Somente a professora neste clipe. O recado fica na página, sem voz no vídeo. Conferir a duração com os gestos, sem acelerar. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com quem faz a aula: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Percebe?) nos momentos que importam."
     },
     {
       "key": "fala-certificado",
@@ -144,18 +131,13 @@
       "title": "As regras do seu jogo",
       "intent": "explanation",
       "objective": "Conferir as regras do próprio jogo e corrigir dúvidas antes do certificado.",
-      "blockKeys": [
-        "fala-revisao-final",
-        "quiz-revisao-final"
-      ],
+      "blockKeys": ["fala-revisao-final", "quiz-revisao-final"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-revisao-final"
-        ]
+        "blockIds": ["quiz-revisao-final"]
       }
     },
     {
@@ -163,20 +145,13 @@
       "title": "Comemore sua criação",
       "intent": "delivery",
       "objective": "Emitir e guardar o certificado do curso concluído.",
-      "blockKeys": [
-        "video-certificado-farol",
-        "fala-certificado",
-        "certificado"
-      ],
+      "blockKeys": ["video-certificado-farol", "fala-certificado", "certificado"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-certificado-farol",
-          "certificado"
-        ]
+        "blockIds": ["video-certificado-farol", "certificado"]
       }
     }
   ]

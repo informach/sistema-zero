@@ -32,7 +32,7 @@
   "blocks": [
     {
       "key": "video-quadros",
-      "plannedVideo": "Título: Compare dois desenhos e uma animação\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia parada no quadro 1, com a Velocidade em 4: escolher Quadro 1 e Quadro 2 e deixar ver o fogo pequeno e o grande. Colocar a Velocidade em 2, ligar a Prévia e deixar ver duas trocas lentas. Mudar para 8, deixar o fogo pulsar por um segundo e parar a Prévia, mostrando um quadro só. Ligar de novo, ligar Quadro 2 igual ao quadro 1 e deixar ver, por um segundo, a Prévia trocando sem o fogo pulsar. Meme na comparação: na frase do cinema, uma tira de filme em que a nave aparece com o fogo pequeno num fotograma e grande no outro, com a legenda \"fotos rápidas viram movimento\". Desenho nosso no formato de meme, com objetos do dia a dia ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Compare dois desenhos e uma animação\n\nProduzir nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia parada no quadro 1, com a Velocidade em 4: escolher Quadro 1 e Quadro 2 e deixar ver o fogo pequeno e o grande. Colocar a Velocidade em 2, ligar a Prévia e deixar ver duas trocas lentas. Mudar para 8, deixar o fogo pulsar por um segundo e parar a Prévia, mostrando um quadro só. Ligar de novo, ligar Quadro 2 igual ao quadro 1 e deixar ver, por um segundo, a Prévia trocando sem o fogo pulsar. Meme na comparação: na frase do cinema, uma tira de filme em que a nave aparece com o fogo pequeno num fotograma e grande no outro, com a legenda \"fotos rápidas viram movimento\". Desenho nosso no formato de meme, com objetos do dia a dia ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-quadros",
@@ -55,13 +55,7 @@
           "scene": "frames",
           "cenario": "meu-jeito",
           "setup": {
-            "goals": [
-              "two-drawings",
-              "movement",
-              "paused-one",
-              "slow-shows-two",
-              "same-frames"
-            ]
+            "goals": ["two-drawings", "movement", "paused-one", "slow-shows-two", "same-frames"]
           }
         },
         "semPerguntaFinal": true
@@ -69,7 +63,7 @@
     },
     {
       "key": "video-primeiro-fogo",
-      "plannedVideo": "Título: Desenhe o primeiro fogo\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Desenhe o primeiro fogo\n\nProduzir nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-primeiro-fogo",
@@ -81,7 +75,7 @@
     },
     {
       "key": "video-fantasma",
-      "plannedVideo": "Título: Desenhe olhando o quadro anterior\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 1, com o Fantasma desligado: escolher Quadro 2 e deixar ver o fogo 2 cortado na borda. Ainda sem o Fantasma, levar tamanho do fogo 2 até 7 quadradinhos e soltar. Ligar o Fantasma e deixar ver o fogo 1 tracejado, as marcas fogo 1 e fogo 2 quase juntas e a faixa dizendo quase nada. Levar tamanho do fogo 2 até 10 quadradinhos e soltar; deixar ver o fogo 2 um pouco maior que o tracejado e inteiro no quadro. Meme na comparação: na frase do papel vegetal, uma mão desenhando o fogo da nave num papel vegetal posto por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"dá para ver o de baixo\". Desenho nosso no formato de meme, com objetos do dia a dia ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Desenhe olhando o quadro anterior\n\nProduzir nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 1, com o Fantasma desligado: escolher Quadro 2 e deixar ver o fogo 2 cortado na borda. Ainda sem o Fantasma, levar tamanho do fogo 2 até 7 quadradinhos e soltar. Ligar o Fantasma e deixar ver o fogo 1 tracejado, as marcas fogo 1 e fogo 2 quase juntas e a faixa dizendo quase nada. Levar tamanho do fogo 2 até 10 quadradinhos e soltar; deixar ver o fogo 2 um pouco maior que o tracejado e inteiro no quadro. Meme na comparação: na frase do papel vegetal, uma mão desenhando o fogo da nave num papel vegetal posto por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"dá para ver o de baixo\". Desenho nosso no formato de meme, com objetos do dia a dia ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-fantasma",
@@ -104,11 +98,7 @@
           "scene": "onion-skin",
           "cenario": "meu-jeito",
           "setup": {
-            "goals": [
-              "blind-move",
-              "ghost-on",
-              "even-step"
-            ]
+            "goals": ["blind-move", "ghost-on", "even-step"]
           }
         },
         "semPerguntaFinal": true
@@ -116,7 +106,7 @@
     },
     {
       "key": "video-segundo-fogo",
-      "plannedVideo": "Título: Mude só o fogo no segundo quadro\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista: primeiro o teste, com o resultado que o Percebe? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Mude só o fogo no segundo quadro\n\nProduzir nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho de quem faz a aula à vista: primeiro o teste, com o resultado que o Percebe? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-segundo-fogo",
@@ -128,7 +118,7 @@
     },
     {
       "key": "video-voando",
-      "plannedVideo": "Título: Dê nome e ritmo à animação\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Dê nome e ritmo à animação\n\nProduzir nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-voando",
@@ -143,7 +133,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora vamos relembrar o que você fez na sua nave, com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
+        "text": "Hora de lembrar o que você construiu. As perguntas falam do que você fez na sua nave. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção."
       }
     },
     {
@@ -169,9 +159,7 @@
                 "label": "Ele desaparece quando a cópia é salva."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Exportar e importar criam uma cópia independente. Continuar na cópia não altera o jogo original."
           },
           {
@@ -191,9 +179,7 @@
                 "label": "A nave andando para a direita."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "A animação alterna os quadros. Para enxergar uma mudança, alguma parte do desenho precisa ser diferente entre eles."
           },
           {
@@ -213,9 +199,7 @@
                 "label": "A posição do corpo nos dois quadros, comparando com o fantasma."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "O fantasma permite comparar posições. Neste projeto o corpo permanece no lugar; a mudança pequena fica no fogo."
           }
         ]
@@ -223,7 +207,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie a nave animada\n\nProduzir nas ferramentas atuais. A versão adulta ainda não foi gravada. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Envie a nave animada\n\nProduzir nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Percebe?), apontar na tela o que ela mostra.\n\nSomente a professora neste clipe. O recado fica na página, sem voz no vídeo.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-entrega",
@@ -252,20 +236,13 @@
       "title": "Compare dois desenhos e uma animação",
       "objective": "Sua vez: mude a Velocidade da Prévia e veja quando o fogo pulsa. Quando terminar, clique em Próxima seção.",
       "intent": "exploration",
-      "blockKeys": [
-        "video-quadros",
-        "fala-quadros",
-        "experiencia-quadros"
-      ],
+      "blockKeys": ["video-quadros", "fala-quadros", "experiencia-quadros"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-quadros",
-          "experiencia-quadros"
-        ]
+        "blockIds": ["video-quadros", "experiencia-quadros"]
       }
     },
     {
@@ -273,18 +250,13 @@
       "title": "Desenhe o primeiro fogo",
       "objective": "Agora desenhe o primeiro fogo da sua nave. No quadro 1, faça uma chama pequena logo abaixo do motor. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.",
       "intent": "application",
-      "blockKeys": [
-        "video-primeiro-fogo",
-        "fala-primeiro-fogo"
-      ],
+      "blockKeys": ["video-primeiro-fogo", "fala-primeiro-fogo"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-primeiro-fogo"
-        ]
+        "blockIds": ["video-primeiro-fogo"]
       }
     },
     {
@@ -292,20 +264,13 @@
       "title": "Desenhe olhando o quadro anterior",
       "objective": "Sua vez: use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1. Quando terminar, clique em Próxima seção.",
       "intent": "exploration",
-      "blockKeys": [
-        "video-fantasma",
-        "fala-fantasma",
-        "experiencia-fantasma"
-      ],
+      "blockKeys": ["video-fantasma", "fala-fantasma", "experiencia-fantasma"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fantasma",
-          "experiencia-fantasma"
-        ]
+        "blockIds": ["video-fantasma", "experiencia-fantasma"]
       }
     },
     {
@@ -313,18 +278,13 @@
       "title": "Mude só o fogo no segundo quadro",
       "objective": "Agora mude só o fogo no segundo quadro. Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.",
       "intent": "application",
-      "blockKeys": [
-        "video-segundo-fogo",
-        "fala-segundo-fogo"
-      ],
+      "blockKeys": ["video-segundo-fogo", "fala-segundo-fogo"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-segundo-fogo"
-        ]
+        "blockIds": ["video-segundo-fogo"]
       }
     },
     {
@@ -332,37 +292,27 @@
       "title": "Dê nome e ritmo à animação",
       "objective": "Agora dê nome e ritmo à animação. Nomeie a animação voando e deixe dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima seção.",
       "intent": "application",
-      "blockKeys": [
-        "video-voando",
-        "fala-voando"
-      ],
+      "blockKeys": ["video-voando", "fala-voando"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-voando"
-        ]
+        "blockIds": ["video-voando"]
       }
     },
     {
       "key": "revisao",
       "title": "Confira sua nave animada",
-      "objective": "Agora vamos relembrar o que você fez na sua nave, com três perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.",
+      "objective": "Hora de lembrar o que você construiu. As perguntas falam do que você fez na sua nave. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.",
       "intent": "explanation",
-      "blockKeys": [
-        "fala-revisao",
-        "quiz"
-      ],
+      "blockKeys": ["fala-revisao", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -370,20 +320,13 @@
       "title": "Envie a nave animada",
       "objective": "Hora de enviar a sua nave animada. Confira se a animação voando tem dois quadros a 8 por segundo. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar ao professor (1). Quando aparecer Trabalho recebido pelo professor, clique em Concluir aula.",
       "intent": "delivery",
-      "blockKeys": [
-        "video-entrega",
-        "fala-entrega",
-        "entrega-galeria-v6"
-      ],
+      "blockKeys": ["video-entrega", "fala-entrega", "entrega-galeria-v6"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "entrega-galeria-v6"
-        ]
+        "blockIds": ["video-entrega", "entrega-galeria-v6"]
       }
     }
   ]

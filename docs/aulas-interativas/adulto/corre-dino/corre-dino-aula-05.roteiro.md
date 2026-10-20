@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/corre-dino/corre-dino-aula-05.roteiro.md e de qa/adulto/traducoes/corre-dino/corre-dino-aula-05.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # Roteiro de gravação · Corre, Dino! · Aula 5
 
 **Faça os cactos entrar na pista**
@@ -146,17 +148,17 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora deixe à vista o lugar logo abaixo de Mover os sprites do grupo. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte logo abaixo. Escolha cactos.”
 
-**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste. Concluir a montagem e os testes do movimento dos cactos; deixar um cacto atravessar o Dino sem mudar regras.
+**Na tela:** Seguir a demonstração no ritmo da próxima fala, sem corte. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
 > “Agora espere alguns cactos nascerem. Olha só: eles entram pela direita e passam para a esquerda. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, a ordem é desenhar o Dino, mover os cactos e desenhar os cactos, com o grupo cactos. No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.”
 
-**Na tela:** Retomar o teste de pulo e a explicação de que a batida ainda não foi programada.
+**Na tela:** Deixar os cactos atravessarem a tela e um deles passar pelo Dino, sem mudar regras. Depois, retomar o teste de pulo e a explicação de que a batida ainda não foi programada.
 
 **Professora:**
 
-> “Repare que um cacto pode passar por dentro do Dino. Neste ponto, isso pode acontecer. Agora pule um deles. Se um cacto atravessar o Dino, tudo bem, porque a batida ainda não foi programada.
+> “Agora pule um deles. Repare: se um cacto atravessar o Dino, tudo bem. Neste ponto isso pode acontecer, porque a batida ainda não foi programada.
 >
 > Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, clique em Próxima seção.”
 

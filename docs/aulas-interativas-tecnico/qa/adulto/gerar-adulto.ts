@@ -32,10 +32,11 @@ if (process.argv.includes('--mostrar') || process.argv.includes('--aplicar')) {
   if (process.argv.includes('--mostrar')) {
     traducao.trechos.forEach((t, i) => {
       const estado = t.adulto === null ? 'PENDENTE' : t.adulto === '' ? 'SAI' : 'feito'
-      console.log(`### [${i}] ${t.onde} (${estado})
-${t.kids}
-`)
+      console.log(`### [${i}] ${t.onde} (${estado})\n${t.kids}\n`)
     })
+    // Versões adultas de trechos kids que mudaram: referência para reescrever os pendentes.
+    for (const o of traducao.obsoletos ?? [])
+      console.log(`### OBSOLETO (kids antigo)\n${o.kids}\n--- versão adulta antiga:\n${o.adulto}\n`)
     process.exit(0)
   }
   if (!arquivo) throw new Error('Informe o arquivo com as versões adultas.')
@@ -48,8 +49,7 @@ ${t.kids}
   }
   writeFileSync(
     caminhoTraducao(pasta as string, grupo as string),
-    `${JSON.stringify(traducao, null, 2)}
-`,
+    `${JSON.stringify(traducao, null, 2)}\n`,
   )
   const pendentes = traducao.trechos.filter((t) => t.adulto === null).length
   console.log(`${pasta}/${grupo}: ${Object.keys(versoes).length} gravados, ${pendentes} pendentes.`)

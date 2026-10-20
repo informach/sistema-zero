@@ -14,7 +14,10 @@ A criança precisa saber o que fazer agora. Uma fala acolhedora pode ser direta 
   adaptar qualquer curso. Ele é a referência única e prevalece sobre esta lista.
 - Leia docs/aulas-interativas-tecnico/BRIEFING.md e ESPEC-ROTEIRO.md.
 - Para uma aula existente, leia o trio de proposta, manifesto e roteiro em
-  docs/aulas-interativas/<curso>/. Confira se há gerador em docs/aulas-interativas-tecnico/qa/.
+  docs/aulas-interativas/kids/<curso>/. Confira se há gerador em docs/aulas-interativas-tecnico/qa/.
+- A versão adulta (docs/aulas-interativas/adulto/<curso>/) é gerada a partir do kids. Depois de
+  mudar o kids, rode docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts --preparar, escreva
+  os trechos adultos pendentes (DIRETRIZES-ADULTO.md) e gere de novo.
 - Confira rótulos e comportamento no código. REFERENCIA-PLATAFORMA.md e
   REFERENCIA-BLOCOS-JOGO-2D.json são apoio.
 - Cadê Todo Mundo? é a primeira aplicação desta revisão. Não copie a voz dos roteiros

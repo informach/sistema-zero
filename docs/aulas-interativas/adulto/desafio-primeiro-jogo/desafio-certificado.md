@@ -1,3 +1,5 @@
+<!-- Versão adulta gerada por docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts a partir de kids/desafio-primeiro-jogo/desafio-certificado.md e de qa/adulto/traducoes/desafio-primeiro-jogo/desafio-certificado.json. Não edite este arquivo: edite a tradução e gere de novo. -->
+
 # A Chave do Farol · Certificado · Comemore sua criação
 
 ## Resumo
@@ -9,7 +11,7 @@
 
 ## Vozes e gravação
 
-**Vozes e gravação:** Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
+Só a professora fala nos vídeos; não há avatar nem mascote. O recado da página é texto, sem personagem e sem voz no vídeo. A versão adulta ainda não foi gravada.
 
 A professora reconhece as regras que a pessoa fez funcionar antes da orientação de emissão. O quiz permanece sem vídeo. Não acrescentar convite comercial nem fala depois de Concluir aula.
 
@@ -24,7 +26,7 @@ As durações da tabela cobrem a fala estimada a 137 palavras por minuto e, nas 
 
 As escolhas de personalização são livres: não acrescentar pergunta que cobre um desenho, frase ou lugar escolhido. A pessoa escolheu entre artes preparadas; não atribuir a ela o desenho dos personagens ou dos cenários.
 
-A revisão final tem quatro perguntas em seção própria, antes da celebração. A seção de celebração não recebe quiz nem conteúdo comercial.
+A revisão final tem quatro perguntas em seção própria, antes do encerramento. A seção de encerramento não recebe quiz nem conteúdo comercial. **Revisão formativa:** recado → quiz, com todas as perguntas numa página só e o botão Enviar quiz.
 
 ## Diagnóstico do desenho atual
 
@@ -44,7 +46,7 @@ A gravação precisa usar uma conta sem emissão anterior para mostrar **Emitir 
 - **Blocos, nesta ordem:** `fala-revisao-final` (recado da página), `quiz-revisao-final` (quiz). Sem vídeo, ferramenta ou texto adicional.
 - **Conteúdo:** [perguntas, alternativas e explicações](../../../aulas-interativas-tecnico/proposta-quizzes-cursos-curtos-2026-10-03.md).
 
-**Recado na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos revisar essas regras com quatro perguntas. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo.
+**Recado na página (não gravar):** Hora de lembrar o que você construiu. As perguntas falam do personagem que anda, da coleta da chave e do farol que confere se você tem a chave. Depois de clicar em Enviar quiz, leia as explicações: se alguma resposta não estiver certa, é só trocar a resposta e clicar em Enviar quiz de novo. Quando acertar todas, clique em Próxima seção.
 
 ### Seção 2. Comemore sua criação
 
