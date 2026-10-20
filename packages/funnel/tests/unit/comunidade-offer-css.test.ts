@@ -74,7 +74,7 @@ describe('Comunidade: o CSS da oferta só fala por tokens', () => {
     const seletores = (css: string) =>
       [...semComentarios(css).matchAll(/^\s*([^@{}\s][^{}]*)\{/gm)].map((m) => (m[1] ?? '').trim())
     for (const sel of seletores(receitas)) {
-      expect(sel).toMatch(/^(html\.kof-js )?\.theme-kids\b/)
+      expect(sel).toMatch(/^\.theme-kids\b/)
     }
     for (const sel of seletores(layoutCss)) {
       for (const parte of sel.split(',')) expect(parte.trim()).toMatch(/^\.cdc\b/)
@@ -116,11 +116,11 @@ describe('Comunidade: o CSS da oferta só fala por tokens', () => {
     expect(receitas).toMatch(/\.theme-kids \.kof-display \{[^}]*font-weight: 800/)
   })
 
-  test('o reveal e a barra fixa degradam sem JS e com menos movimento', () => {
-    // O reveal só anima com `kof-js` no <html>; sem ele (hoje nenhuma página liga), tudo aparece.
-    expect(receitas).toContain('html.kof-js .theme-kids .kof-reveal {')
+  test('menos movimento para o botão e o topo sticky sem scroll container', () => {
+    // O reveal ao rolar saiu com a continuidade antiga (a única página que ligava `kof-js`).
+    expect(receitas).not.toContain('kof-reveal')
     expect(receitas).toMatch(
-      /@media \(prefers-reduced-motion: reduce\) \{[^}]*html\.kof-js \.theme-kids \.kof-reveal \{[^}]*opacity: 1/,
+      /@media \(prefers-reduced-motion: reduce\) \{[^}]*\.theme-kids \.kof-btn,[^}]*transition: none/,
     )
     // `overflow-x: clip`, nunca `hidden`: o topo é sticky e `hidden` criaria um scroll container.
     expect(layoutCss).toContain('overflow-x: clip')

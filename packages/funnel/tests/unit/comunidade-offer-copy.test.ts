@@ -23,8 +23,12 @@ import {
   ICONES_DE_CAPITULO,
   ICONES_DE_GRUPO,
 } from '../../src/funnels/comunidade-dos-criadores/oferta/arte'
+import { cupomDaOferta } from '../../src/funnels/comunidade-dos-criadores/oferta/cupom'
 import { DESTAQUES } from '../../src/funnels/comunidade-dos-criadores/oferta/destaques'
-import { calcularEconomiaAnual } from '../../src/funnels/comunidade-dos-criadores/oferta/economia'
+import {
+  calcularEconomiaAnual,
+  precoPorDiaCents,
+} from '../../src/funnels/comunidade-dos-criadores/oferta/economia'
 import {
   PAGINA_9A17,
   RELATOS_9A17,
@@ -126,6 +130,13 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     const sitemap = readFileSync(join(SRC, '..', 'astro.config.mjs'), 'utf8')
     expect(sitemap).not.toContain('como-funciona')
     expect(sitemap).toContain('/kids/comunidade-dos-criadores/oferta/continuar`')
+    expect(sitemap).toContain('/pro/comunidade-dos-criadores/oferta/continuar`')
+    // Nenhum link do funil aponta para a URL antiga: só a própria rota do 301 e o reconhecimento
+    // histórico do analytics a citam.
+    const citam: string[] = []
+    for (const arquivo of new Bun.Glob('**/*.{astro,ts,tsx}').scanSync(SRC))
+      if (source(arquivo).includes('/como-funciona')) citam.push(arquivo)
+    expect(citam.sort()).toEqual(['analytics/page-context.ts', 'pages/como-funciona.astro'])
   })
 
   test('as páginas: sem "Jogue um jogo", sem preço escrito à mão, termos da oferta', () => {
@@ -248,6 +259,53 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     expect(calcularEconomiaAnual(9_700, null)).toBe(0)
   })
 
+  test('"menos de R$ X por dia": sempre acima da conta exata, uma função para as cinco páginas', () => {
+    // 97 / 30 = 3,233… → R$ 3,30; num valor exato (90 / 30 = 3,00) sobe para R$ 3,10.
+    expect(precoPorDiaCents(9_700)).toBe(330)
+    expect(precoPorDiaCents(9_000)).toBe(310)
+    expect(precoPorDiaCents(10_900)).toBe(370)
+    for (const mensal of [100, 2_990, 9_700, 12_345, 19_990])
+      expect(precoPorDiaCents(mensal)).toBeGreaterThan(mensal / 30)
+    for (const corpo of [raw917, rawMenor9, rawContinuar])
+      expect(corpo).toContain('precoPorDiaCents(mensalCents)')
+  })
+
+  test('o cupom da URL chega ao checkout e a página avisa sem inventar desconto', () => {
+    expect(cupomDaOferta({ status: 'none' })).toEqual({ codigo: null, aviso: null })
+    const valido = cupomDaOferta({
+      status: 'valid',
+      code: 'VOLTA10',
+      listPriceCents: 9_700,
+      discountCents: 970,
+      finalPriceCents: 8_730,
+    })
+    expect(valido.codigo).toBe('VOLTA10')
+    expect(valido.aviso?.alerta).toBe(false)
+    // O cupom foi cotado contra a oferta principal: a página não promete o desconto no outro plano.
+    expect(valido.aviso?.texto).toContain('se ele vale para o plano escolhido')
+    expect(valido.aviso?.texto).not.toMatch(/R\$\s*\d/)
+    const invalido = cupomDaOferta({
+      status: 'invalid',
+      code: 'NOPE',
+      message: 'Cupom não encontrado.',
+    })
+    expect(invalido).toEqual({
+      codigo: 'NOPE',
+      aviso: {
+        texto:
+          'Cupom não encontrado. No checkout, o cupom é conferido de novo, e você pode trocar o código ou continuar sem ele.',
+        alerta: true,
+      },
+    })
+    for (const aviso of [valido.aviso, invalido.aviso])
+      expect(lintLightCopy(aviso?.texto ?? '')).toEqual([])
+    for (const corpo of [raw917, rawMenor9, rawContinuar]) {
+      expect(corpo).toContain('const cupom = cupomDaOferta(coupon)')
+      expect(corpo).toContain('couponCode={cupom.codigo}')
+      expect(corpo).toContain("role={cupom.aviso.alerta ? 'alert' : undefined}")
+    }
+  })
+
   test('preços vêm do catálogo e cada plano mantém sua seleção no pré-checkout', () => {
     for (const corpo of [raw917, rawMenor9, rawContinuar]) {
       expect(corpo).toContain('plans?.main.intervalMonths === n')
@@ -263,6 +321,11 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
       expect(corpo).toContain(`termosHref={\`${'$'}{f.basePath}/termos\`}`)
     }
     expect(publicCopy).not.toMatch(/R\$\s*\d/)
+    // Só a continuidade pede o mesmo e-mail no pré-checkout: a família já tem conta e perfil.
+    expect(rawContinuar).toContain(
+      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} continuidade />',
+    )
+    for (const corpo of [raw917, rawMenor9]) expect(corpo).not.toContain(' continuidade />')
   })
 
   test('toda tela do manifesto é REAL; o que falta capturar fica declarado e não aparece', () => {
@@ -324,7 +387,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
   })
 
   test('motor de seções (presente e embaixador): ícones e destaques só para seções que existem', () => {
-    // As entradas da continuidade antiga saíram com ela; uma entrada nova tem que apontar para uma
+    // As entradas só da continuidade antiga saíram com ela; toda entrada tem que apontar para uma
     // seção das páginas que ainda usam o motor, senão seria ignorada em silêncio.
     const secoes = new Set([...GIFT_SECTIONS, ...AMBASSADOR_SECTIONS].map((secao) => secao.id))
     for (const id of [
@@ -333,6 +396,9 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
       ...Object.keys(DESTAQUES),
     ])
       expect([id, secoes.has(id)]).toEqual([id, true])
+    // O capítulo "experiencia" do presente e do embaixador guarda o ícone dele (o da posição seria
+    // outro); a limpeza de 20/10/2026 quase o levou junto com as entradas da continuidade antiga.
+    expect(ICONES_DE_CAPITULO.experiencia).toBe('extension')
   })
 
   test('relatos: falas reais com retrato, sem repetir na mesma página', () => {

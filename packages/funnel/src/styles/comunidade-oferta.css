@@ -115,6 +115,15 @@
 .cdc .fundo-alt {
   background: var(--kof-chao-alt);
 }
+/* O azul da ação não passa sobre o chão-alt (4,27): sobre esse fundo o link fica na tinta, com o
+   traço azul; dentro de uma carta branca ele volta ao azul (`comunidade-offer-contrast.test.ts`). */
+.cdc .fundo-alt .kof-link {
+  color: var(--kof-tinta);
+  text-decoration-color: var(--kof-acao);
+}
+.cdc .fundo-alt .kof-carta .kof-link {
+  color: var(--kof-acao);
+}
 .cdc .fundo-folha {
   padding-block: clamp(0.75rem, 2vw, 1.5rem);
 }

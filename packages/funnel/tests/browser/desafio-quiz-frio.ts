@@ -76,7 +76,8 @@ const scenarios: Array<{ name: string; overrides: Record<string, string[]>; path
   {
     name: 'outra-atividade',
     overrides: { motivos: ['C'], abertura_criacao: ['outra_atividade'], desencontro: ['desenho'] },
-    path: '/kids/comunidade-dos-criadores/oferta/expressao-visual',
+    // Quem procura outra atividade conhece a plataforma pela experiência da página de 9 a 17.
+    path: '/kids/comunidade-dos-criadores/oferta#experiencia',
   },
   {
     name: 'sem-computador',

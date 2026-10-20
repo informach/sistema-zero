@@ -89,20 +89,25 @@ describe('Comunidade: contraste dos pares novos da oferta', () => {
     expect(contrast(t('action'), fundo)).toBeGreaterThanOrEqual(grande)
   })
 
-  test('⚠️ o link azul NÃO passa sobre o chão-alt: as páginas da Comunidade não usam o kof-link', () => {
+  test('⚠️ o link azul NÃO passa sobre o chão-alt: no texto ele fica na tinta, solto ele mora numa carta', () => {
     // Documenta a restrição (4,27 hoje). Se um dia passar, o aviso no kids-oferta.css pode sair.
     expect(contrast(t('action'), t('ground-alt'))).toBeLessThan(texto)
-    // As três páginas de oferta da Comunidade (9 a 17, criar junto e continuidade) desenham os
-    // próprios links e botões; o `kof-link` azul fica com as páginas do Desafio e do presente.
+    expect(contrast(t('ink'), t('ground-alt'))).toBeGreaterThanOrEqual(texto)
+    const SRC = join(import.meta.dir, '..', '..', 'src')
+    const layout = readFileSync(join(SRC, 'styles', 'comunidade-oferta.css'), 'utf8')
+    // Nas páginas do layout `.cdc` (Desafio, presente, embaixador), todo link sobre o chão-alt fica
+    // na tinta; dentro de uma carta branca ele volta ao azul da ação.
+    expect(layout).toMatch(/\.cdc \.fundo-alt \.kof-link \{[^}]*color: var\(--kof-tinta\)/)
+    expect(layout).toMatch(
+      /\.cdc \.fundo-alt \.kof-carta \.kof-link \{[^}]*color: var\(--kof-acao\)/,
+    )
+    // As páginas de oferta da Comunidade desenham os próprios links e botões: nenhum kof-link.
     for (const corpo of [
       'Comunidade917Body.astro',
       'ComunidadeMenor9Body.astro',
       'ComunidadeContinuarBody.astro',
     ]) {
-      const body = readFileSync(
-        join(import.meta.dir, '..', '..', 'src', 'components', 'funnel', 'oferta', corpo),
-        'utf8',
-      )
+      const body = readFileSync(join(SRC, 'components', 'funnel', 'oferta', corpo), 'utf8')
       expect([corpo, body.includes('kof-link')]).toEqual([corpo, false])
     }
   })

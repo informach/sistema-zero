@@ -12,7 +12,7 @@
 import { type CorAdulto, type ImagemAdulto, PAGINA_ADULTO } from './pagina'
 
 const GARANTIA = '7 dias de garantia. Cancele quando quiser.'
-const CTA_CONTINUAR = 'Continuar de onde parei'
+const CTA_CONTINUAR = 'Ir para a próxima fase'
 
 /** Uma situação de quem chega à página, como um slot de save, com o próximo passo. */
 export interface CasoAdulto {
@@ -94,9 +94,9 @@ export interface PaginaAdultoContinuar {
 }
 
 export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
-  seoTitle: 'Continue de onde parou na Comunidade dos Criadores | Sistema Zero',
+  seoTitle: 'Continue na Comunidade dos Criadores | Sistema Zero',
   description:
-    'Para quem já conhece o Sistema Zero: com o mesmo e-mail, os projetos, o progresso e os jogos publicados continuam na conta, e a próxima fase começa de onde você parou. 7 dias de garantia. Cancele quando quiser.',
+    'Para quem já conhece o Sistema Zero: quem já tem conta continua nela, com o mesmo e-mail, e a próxima fase é o seu jogo. 7 dias de garantia. Cancele quando quiser.',
   pularParaConteudo: PAGINA_ADULTO.pularParaConteudo,
   topo: {
     marcaAria: PAGINA_ADULTO.topo.marcaAria,
@@ -112,15 +112,15 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
   hero: {
     rotulo: 'CONTINUE · PARA QUEM JÁ CONHECE O SISTEMA ZERO',
     titulo: {
-      antes: 'Seu save continua na conta. A próxima fase começa ',
-      destaque: 'de onde você parou.',
+      antes: 'Você já conhece o Sistema Zero. Agora a próxima fase é ',
+      destaque: 'o seu jogo.',
     },
     texto:
-      'Entre com o mesmo e-mail e está tudo lá: os projetos em Meus Jogos, os jogos publicados no Mural e o progresso nos cursos. Com a assinatura, os cursos voltam a abrir, e cada etapa concluída põe mais uma ferramenta no seu Estúdio.',
+      'Quem já tem conta continua nela, com o mesmo e-mail: os projetos em Meus Jogos, os jogos publicados e o progresso nos cursos ficam lá. Com a assinatura, os cursos abrem na sua conta. Cada etapa concluída põe blocos novos na sua paleta, e algumas abrem uma ferramenta nova no Estúdio. Se você criava na Comunidade Kids ou acompanha alguém lá, o seu caso está logo abaixo.',
     beneficios: [
-      'A mesma conta e o mesmo e-mail, com tudo o que você já fez.',
-      'Todos os cursos, inclusive os que entraram enquanto você esteve fora.',
-      '7 dias de garantia para ver se esta é a hora de voltar.',
+      'Quem já tem conta continua nela, com o mesmo e-mail.',
+      'Todos os cursos adultos, os de hoje e os que entrarem.',
+      '7 dias de garantia para testar a próxima fase.',
     ],
     cta: CTA_CONTINUAR,
     garantia: GARANTIA,
@@ -134,7 +134,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
         rotulo: 'SAVE 1',
         nome: 'SEU NOME',
         linhas: [
-          { chave: 'ETAPA', valor: 'SALVA' },
+          { chave: 'PROGRESSO', valor: 'SALVO' },
           { chave: 'MEUS JOGOS', valor: 'GUARDADOS' },
           { chave: 'NO MURAL', valor: 'PUBLICADOS' },
         ],
@@ -154,7 +154,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
         rotulo: 'SAVE 1 · VOLTANDO DE UMA PAUSA',
         titulo: 'Você cancelou ou deixou a assinatura vencer',
         texto:
-          'Os projetos, o progresso e os jogos publicados continuam na conta. Entre com o mesmo e-mail, e a assinatura nova começa no dia em que o pagamento é aprovado.',
+          'Os projetos, o progresso e os jogos publicados continuam na conta. Assine com o mesmo e-mail, e a assinatura nova começa no dia em que o pagamento é aprovado.',
         proximo: 'ABRIR O CURSO EM QUE VOCÊ PAROU',
       },
       {
@@ -170,12 +170,12 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
         rotulo: 'SAVE 3 · FEZ 18 ANOS NO KIDS',
         titulo: 'Você criava na Comunidade Kids',
         texto:
-          'A conta Kids fica no nome do responsável. A partir dos 18, a conta é sua, com o mesmo Estúdio que você já conhece, outra aparência e o caminho até o código. Os projetos do perfil Kids não passam para a conta nova.',
+          'A conta Kids fica no nome do responsável. A partir dos 18, a conta é sua, com o mesmo Estúdio que você já conhece, outra aparência e uma escada de etapas própria. Os projetos do perfil Kids não passam para a conta nova.',
         proximo: 'UMA CONTA NO SEU NOME',
       },
       {
         cor: 'rosa',
-        rotulo: 'SAVE 4 · SEU FILHO OU FILHA NO KIDS',
+        rotulo: 'SAVE 4 · ALGUÉM DA FAMÍLIA NO KIDS',
         titulo: 'Você acompanha alguém da família na Comunidade Kids',
         texto:
           'Você já viu de perto como funciona. Na área adulta, a conta é sua, com outra aparência, os mesmos clássicos no começo e o caminho até o código. São assinaturas separadas, e a do Kids continua como está.',
@@ -192,9 +192,9 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
       itens: [
         'A conta, o e-mail e o seu perfil',
         'Os projetos em Meus Jogos',
-        'Os jogos publicados no Mural',
+        'Os jogos publicados, que continuam no Mural para visita',
         'Os certificados já emitidos',
-        'O progresso nos cursos e a etapa que você alcançou',
+        'O progresso nos cursos',
       ],
     },
     volta: {
@@ -209,7 +209,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
         'O Pensa e o Zappy nas etapas avançadas, com limite mensal',
       ],
     },
-    escada: { ...PAGINA_ADULTO.etapas.escada, titulo: 'As 7 etapas: a sua fica salva' },
+    escada: { ...PAGINA_ADULTO.etapas.escada, titulo: 'As 7 etapas da área adulta' },
   },
   prova: {
     rotulo: 'A PROVA É SUA',
@@ -250,19 +250,18 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
           'Se você já tem conta adulta no Sistema Zero, não. Use o mesmo e-mail no checkout, e a Comunidade entra nessa conta.',
       },
       {
-        pergunta: 'Já tenho No Comando da IA. Pago de novo?',
+        pergunta: 'Já tenho No Comando da IA. A Comunidade está incluída?',
         resposta:
-          'A Comunidade dos Criadores é uma assinatura à parte, com os cursos e as ferramentas de criação de jogos. O curso que você já comprou continua na sua conta, do jeito que está.',
+          'Não. A Comunidade dos Criadores é uma assinatura à parte, com os cursos e as ferramentas de criação de jogos. No Comando da IA continua na sua conta, do jeito que está.',
       },
       {
         pergunta: 'Usava a Comunidade Kids e fiz 18 anos. Levo meus jogos?',
         resposta:
-          'A conta Kids é do seu responsável, e os projetos do perfil Kids não passam para a área adulta. Aqui você abre uma conta no seu nome, com o mesmo Estúdio que já conhece e o caminho até o código.',
+          'A conta Kids é do seu responsável, e os projetos do perfil Kids não passam para a área adulta. Aqui você abre uma conta no seu nome, com o mesmo Estúdio que já conhece e uma escada de etapas própria.',
       },
       {
         pergunta: 'Meu filho tem a assinatura Kids. Ela inclui a minha?',
-        resposta:
-          'Não. São assinaturas separadas, cada uma com a sua conta. A do Kids continua como está.',
+        resposta: 'Não. São assinaturas separadas, e a do Kids continua como está.',
       },
       {
         pergunta: 'Os cursos que entraram enquanto eu estava fora estão incluídos?',
@@ -283,9 +282,8 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
   },
   fechamento: {
     rotulo: 'CONTINUE',
-    titulo: 'O save está aqui. Falta apertar start.',
-    texto:
-      'A fase em que você parou, e a ideia que ficou para depois, continuam esperando por você.',
+    titulo: 'A próxima fase está aqui. Falta apertar start.',
+    texto: 'Quem parou continua de onde estava, e quem está chegando começa pelo primeiro jogo.',
     cta: CTA_CONTINUAR,
     garantia: GARANTIA,
     legal: PAGINA_ADULTO.fechamento.legal,

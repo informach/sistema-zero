@@ -35,7 +35,7 @@ export interface PostoJornada {
 export const PAGINA_CONTINUAR = {
   seoTitle: 'Continue criando jogos na Comunidade dos Criadores | Sistema Zero',
   description:
-    'Para quem já começou no Sistema Zero Kids: com o mesmo e-mail, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados, e segue até o jogo que ele inventa.',
+    'Para quem já começou no Sistema Zero Kids: assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados, e segue até o jogo que ele inventa.',
   cta: CTA_PLANOS,
   garantiaCurta: GARANTIA_CURTA,
 
@@ -53,14 +53,14 @@ export const PAGINA_CONTINUAR = {
 
   /** Para a criança que chega pelas telas de ferramenta fechada do app Kids. */
   aviso:
-    'Se você é o aluno e chegou aqui por uma ferramenta fechada, chame o seu responsável para ver esta página com você.',
+    'Se você é aluno ou aluna e chegou aqui pelo aviso de uma ferramenta fechada, chame o seu responsável para ver esta página junto com você.',
 
   hero: {
     eyebrow: 'Para quem já começou no Sistema Zero Kids',
     title: 'O que seu filho começou está guardado. Agora ele segue até o ',
     destaque: 'jogo que ele inventa.',
     description:
-      'Com o mesmo e-mail, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. A assinatura abre os outros cursos, e cada curso concluído e publicado leva a um posto novo da Jornada, com ferramentas para os jogos dele. Você segue acompanhando pela sua área.',
+      'Assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. A assinatura abre os outros cursos. Cada curso concluído põe peças novas na caixa dele, e concluir e publicar os cursos de um degrau leva a um posto novo da Jornada, com ferramentas para os jogos dele. Você segue acompanhando pela sua área.',
     benefits: [
       'Continua no mesmo perfil, com tudo o que já fez',
       'Todos os cursos, inclusive os lançados durante a assinatura',
@@ -82,7 +82,7 @@ export const PAGINA_CONTINUAR = {
         },
         {
           title: 'Os próximos cursos',
-          text: 'Nave Contra Asteroides, O Jogo do Meu Jeito, Corre, Dino e os que vierem.',
+          text: 'Nave Contra Asteroides, O Jogo do Meu Jeito e o Corre, Dino. Depois, os lançados durante a assinatura.',
           imagem: {
             file: 'jogo-nave.webp',
             width: 1180,
@@ -97,7 +97,7 @@ export const PAGINA_CONTINUAR = {
             file: 'tela-estudio-lista.webp',
             width: 1280,
             height: 800,
-            alt: 'Meus Jogos: a lista dos projetos que a criança começou no Estúdio',
+            alt: 'A tela Meus Jogos do Estúdio, com o botão Novo projeto e os projetos próprios de um perfil de teste',
           },
         },
       ] satisfies readonly PassoCaminho[],
@@ -141,13 +141,13 @@ export const PAGINA_CONTINUAR = {
         },
       },
       {
-        title: 'Concluiu e ainda não publicou',
+        title: 'Concluiu A Chave do Farol e ainda não publicou',
         text: 'Falta publicar no Mural: é a publicação, junto com o curso concluído, que leva ao posto Construtor. Com a assinatura, ele publica, e o Estúdio livre e o Pinta abrem.',
         imagem: {
           file: 'tela-mural.webp',
           width: 1280,
           height: 800,
-          alt: 'Mural dos Criadores com os jogos publicados pelos alunos',
+          alt: 'Mural dos Criadores com cartões de jogos e botões para jogar, copiar o link e fazer uma versão.',
         },
       },
       {
@@ -155,6 +155,7 @@ export const PAGINA_CONTINUAR = {
         text: 'A criação da oficina continua guardada em Criar. Com a assinatura, ele segue pelos cursos gravados, um projeto de cada vez, e leva para os jogos dele o que aprender em cada um.',
       },
     ] satisfies readonly SituacaoContinuar[],
+    telasNota: 'As telas são do perfil de teste da equipe.',
   },
 
   fica: {
@@ -166,10 +167,10 @@ export const PAGINA_CONTINUAR = {
       title: 'Continua na conta, sem custo',
       itens: [
         'O perfil e o progresso nos cursos',
-        'Os projetos guardados, para ver e baixar',
+        'A lista dos projetos guardados, para baixar quando quiser',
         'Os certificados já emitidos',
-        'O posto da Jornada que ele alcançou',
-        'Os jogos publicados, enquanto a publicação estiver no ar',
+        'O posto da Jornada que ele alcançou e os blocos que conquistou',
+        'Os jogos publicados, que continuam no Mural para visita',
         'Depois do Desafio ou do presente, o Mural para ver e jogar',
       ],
     },
@@ -179,9 +180,9 @@ export const PAGINA_CONTINUAR = {
         'Todos os cursos, inclusive o do Desafio',
         'Publicar, comentar e reagir no Mural',
         'As ferramentas de cada posto: Estúdio livre, Pinta, Pensa e Molda',
-        'Clube dos Criadores e Desafio do mês',
+        'O Clube dos Criadores, só de alunos',
         'Dúvidas por escrito com a equipe, nos Recados',
-        'Até 2 perfis e a área do responsável',
+        'Até 2 perfis, cada um com seus jogos e sua Jornada',
       ],
     },
     inicio: {
@@ -192,9 +193,9 @@ export const PAGINA_CONTINUAR = {
 
   jornada: {
     eyebrow: 'A Jornada do Criador',
-    title: 'Depois de A Chave do Farol, cada posto abre uma ferramenta nova',
+    title: 'Depois de A Chave do Farol, cada posto põe algo novo na caixa dele',
     paragraph:
-      'Para subir de posto, ele conclui os cursos e publica os jogos no Mural. A ordem é de propósito: ele nunca fica diante de uma ferramenta que ainda não sabe usar. O tempo de cada posto depende do ritmo dele.',
+      'Para subir de posto, ele conclui e publica no Mural os cursos de cada degrau. A ordem é de propósito: ele nunca fica diante de uma ferramenta que ainda não sabe usar. O tempo de cada posto depende do ritmo dele.',
     postoLabel: 'Posto',
     /** O posto que a família alcança ao concluir e publicar A Chave do Farol. */
     marco: { posto: 'Construtor', label: 'Depois do Farol' },
@@ -212,16 +213,15 @@ export const PAGINA_CONTINUAR = {
 
   relatos: {
     eyebrow: 'Quem seguiu criando',
-    title: 'Quando o primeiro jogo dá certo, a próxima ideia aparece',
-    paragraph:
-      'Três falas reais, de um aluno e de dois pais, sobre o que acontece quando ele segue criando.',
+    title: 'Depois do primeiro jogo, eles quiseram inventar, mudar e mostrar',
+    paragraph: 'Um aluno e dois pais contam o que veio depois do primeiro jogo.',
     falas: [{ id: 'N18' }, { id: 'AV11' }, { id: 'N15' }] satisfies readonly Relato917[],
   },
 
   planos: {
     title: 'Escolham o plano, e ele continua no mesmo perfil',
     paragraph:
-      'Os dois planos dão acesso a tudo, e a diferença está só na forma de pagar. No checkout, use o mesmo e-mail da conta do responsável: é ele que liga a assinatura ao perfil que já existe.',
+      'Os dois planos dão acesso a tudo, e a diferença está só na forma de pagar. No checkout, use o mesmo e-mail da sua conta: é esse e-mail que liga a assinatura ao perfil que já existe.',
     inclui: [
       'Todos os cursos publicados e os lançados durante a assinatura',
       'O curso do Desafio do Primeiro Jogo incluído',
@@ -250,9 +250,9 @@ export const PAGINA_CONTINUAR = {
     },
     depoisTitle: 'Para continuar no mesmo perfil',
     depois: [
-      'No checkout, use o mesmo e-mail da conta do responsável.',
+      'No checkout, use o mesmo e-mail da sua conta.',
       'A assinatura entra na mesma conta, no dia em que o pagamento é aprovado.',
-      'Ele entra no perfil de sempre e segue do ponto em que parou.',
+      'Ele entra no perfil de sempre e segue do ponto em que parou. Se a autorização do computador venceu, você autoriza de novo na sua área.',
     ],
     garantia: {
       strong: 'Sete dias para ver como ele segue no próximo curso.',
@@ -265,12 +265,12 @@ export const PAGINA_CONTINUAR = {
     {
       question: 'O que ele já fez continua lá?',
       answer:
-        'Continua. O perfil, o progresso, os projetos guardados, os certificados e os jogos publicados ficam na conta. Com a assinatura, ele segue no mesmo perfil, desde que você use o mesmo e-mail no checkout.',
+        'Continua. O perfil, o progresso, o posto da Jornada, os projetos guardados, os certificados e os jogos publicados ficam na conta. Com a assinatura, ele segue no mesmo perfil, desde que você use o mesmo e-mail no checkout.',
     },
     {
       question: 'Ele já fez o Desafio. O que a assinatura acrescenta?',
       answer:
-        'Os outros cursos, as ferramentas de cada posto da Jornada, publicar e comentar no Mural, o Clube, o Desafio do mês e os Recados. O curso do Desafio também continua incluído enquanto a assinatura estiver ativa.',
+        'Os outros cursos, as ferramentas de cada posto da Jornada, publicar e comentar no Mural, o Clube e os Recados. O curso do Desafio também continua incluído enquanto a assinatura estiver ativa.',
     },
     {
       question: 'Ainda restam dias no Desafio. Assino agora ou espero?',
@@ -289,12 +289,12 @@ export const PAGINA_CONTINUAR = {
     {
       question: 'E se ele perder o interesse?',
       answer:
-        'Você cancela na sua área, sem multa, e o acesso segue até o fim do período pago. Os 7 dias de garantia servem para ver como ele se sai no próximo curso.',
+        'Você cancela na sua área, sem multa, e o acesso segue até o fim do período pago. O que ele fez continua na conta. Os 7 dias de garantia servem para ver como ele se sai no próximo curso.',
     },
     {
       question: 'Até que idade vale a Comunidade Kids?',
       answer:
-        'De 9 a 17 anos, criando sozinho, e abaixo de 9, criando junto com um adulto. As instruções têm o Zappy e uma linguagem de aventura, e o que ele faz é jogo de verdade: regras, personagens, publicação e, mais adiante, código. A partir dos 18, existe a área adulta, com conta própria.',
+        'Até os 17. De 9 a 17 anos, ele cria sozinho depois das primeiras aulas, e abaixo de 9 cria junto com um adulto. As instruções têm o Zappy e uma linguagem de aventura, e o que ele faz é jogo de verdade: regras, personagens, publicação e, mais adiante, código. A partir dos 18, existe a área adulta, com conta própria, e os projetos do perfil Kids não passam para ela.',
     },
     {
       question: 'Tenho outro filho.',

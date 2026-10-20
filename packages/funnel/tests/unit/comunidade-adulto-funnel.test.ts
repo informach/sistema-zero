@@ -113,8 +113,11 @@ describe('a página de oferta adulta', () => {
     expect(body).toContain('data-checkout-oferta={mensal?.slug}')
     expect(body).toContain('data-checkout-oferta={anual?.slug}')
     expect(body).toContain(
-      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} assinatura />',
+      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} assinatura />',
     )
+    // O cupom da URL segue para o checkout; o preço mensal do herói só aparece com o plano mensal.
+    expect(body).toContain('const cupom = cupomDaOferta(coupon)')
+    expect(body).toContain("mostraMensal || !item.texto.includes('{{preco_mensal}}')")
     expect(body).toContain(`termosHref={\`${'$'}{f.basePath}/termos\`}`)
     expect(body).not.toContain('<style')
   })
@@ -173,9 +176,14 @@ describe('a continuidade adulta (/oferta/continuar)', () => {
     expect(body).toContain('data-checkout-oferta={anual?.slug}')
     expect(body).toContain('mensal?.priceCents ?? COMUNIDADE_ADULTO_PRECO_FALLBACK.mensalCents')
     expect(body).toContain('calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)')
+    // A continuidade pede o mesmo e-mail da conta no pré-checkout.
     expect(body).toContain(
-      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} assinatura />',
+      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} assinatura continuidade />',
     )
+    expect(body).toContain('const cupom = cupomDaOferta(coupon)')
+    expect(body).toContain("mostraMensal || !item.texto.includes('{{preco_mensal}}')")
+    // A tela de save é ilustração (a legenda diz): leitor de tela não ouve um menu que não funciona.
+    expect(body).toContain('<div class="cda-save" aria-hidden="true">')
     expect(body).toContain(`termosHref={\`${'$'}{f.basePath}/termos\`}`)
     expect(body).not.toContain('<style')
   })
@@ -252,6 +260,9 @@ describe('etapas compartilhadas do funil adulto', () => {
     expect(pre).toContain(
       "? 'Assinatura mensal ou anual, com 7 dias de garantia. As formas de pagamento aparecem na próxima tela.'",
     )
+    // Na continuidade adulta, o pré-checkout pede o mesmo e-mail da conta (o Kids tem o seu aviso).
+    expect(pre).toContain('{!isKids && continuidade && (')
+    expect(pre).toContain('Se você já tem conta no Sistema Zero, use o mesmo e-mail.')
   })
 
   test('o quiz adulto tem a sua ilha, e as saídas cruzadas ligam os dois quizzes', () => {

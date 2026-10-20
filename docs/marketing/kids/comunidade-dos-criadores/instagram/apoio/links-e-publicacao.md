@@ -4,6 +4,8 @@
 
 ## Destinos canônicos
 
+> **Atualização de 20/10/2026:** a página inicial mudou. Hoje ela tem dois caminhos, cada um para um quiz: o adulto (`bio-quiz-adulto`, `/pro/comunidade-dos-criadores/quiz`) e o infantil (`bio-quiz-infantil`, `/kids/comunidade-dos-criadores/quiz`). A `/como-funciona` responde 301 para `/kids/comunidade-dos-criadores/oferta#experiencia`, mantendo a origem. O que segue descreve a página inicial de antes e fica como referência deste ciclo até a revisão da bio e do calendário.
+
 | Código | Quando usar | Destino |
 | --- | --- | --- |
 | LB | Bio e entrada com Como funciona, Desafio e Comunidade | https://sistemazero.com.br/ |
@@ -63,7 +65,7 @@ Resposta D02 (outros cursos e ferramentas), com origem: `https://sistemazero.com
 
 O caminho principal tem duas DMs: abertura contextual com botão interno **Ver o projeto**, seguida da apresentação com o botão **Conhecer o Desafio**, que abre L0. Os posts mostram possibilidades variadas da plataforma; a mensagem explica o projeto incluído no acesso inicial. Copy, legenda, objetivo e referência ficam juntos no documento para revisão antes da produção. O [fluxo curto](../campanhas/manychat-desafio/fluxo-curto.md) contém as respostas públicas e os caminhos opcionais.
 
-**Atribuição da bio:** os três botões preservam as UTMs sanitizadas da entrada. Os cliques usam os identificadores `bio-como-funciona`, `bio-desafio-oferta` e `bio-comunidade`; separar o novo acesso à oferta do antigo `bio-desafio-quiz` nos relatórios.
+**Atribuição da bio:** desde 20/10/2026 os dois botões (`bio-quiz-adulto` e `bio-quiz-infantil`) preservam as UTMs sanitizadas da entrada. Até essa data, os três botões usavam `bio-como-funciona`, `bio-desafio-oferta` e `bio-comunidade`; nos relatórios, separar esses acessos dos novos e do antigo `bio-desafio-quiz`.
 
 **Limite de atribuição:** o link comum da bio não identifica sozinho qual Reel ou carrossel provocou a visita. A origem de um sticker ajuda a localizar a sequência, mas salvá-lo num destaque não cria uma medição separada. Não usar a campanha de Instagram em palestras presenciais.
 

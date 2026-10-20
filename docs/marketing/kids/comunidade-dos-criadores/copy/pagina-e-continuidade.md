@@ -2,7 +2,7 @@
 
 **seoTitle**: Continue criando jogos na Comunidade dos Criadores | Sistema Zero
 
-**description**: Para quem já começou no Sistema Zero Kids: com o mesmo e-mail, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados, e segue até o jogo que ele inventa.
+**description**: Para quem já começou no Sistema Zero Kids: assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados, e segue até o jogo que ele inventa.
 
 **cta**: Ver os planos para continuar
 
@@ -22,7 +22,7 @@
 
 **topo.cta.label**: Ver os planos
 
-**aviso**: Se você é o aluno e chegou aqui por uma ferramenta fechada, chame o seu responsável para ver esta página com você.
+**aviso**: Se você é aluno ou aluna e chegou aqui pelo aviso de uma ferramenta fechada, chame o seu responsável para ver esta página junto com você.
 
 **hero.eyebrow**: Para quem já começou no Sistema Zero Kids
 
@@ -30,7 +30,7 @@
 
 **hero.destaque**: jogo que ele inventa.
 
-**hero.description**: Com o mesmo e-mail, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. A assinatura abre os outros cursos, e cada curso concluído e publicado leva a um posto novo da Jornada, com ferramentas para os jogos dele. Você segue acompanhando pela sua área.
+**hero.description**: Assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. A assinatura abre os outros cursos. Cada curso concluído põe peças novas na caixa dele, e concluir e publicar os cursos de um degrau leva a um posto novo da Jornada, com ferramentas para os jogos dele. Você segue acompanhando pela sua área.
 
 **hero.benefits[0]**: Continua no mesmo perfil, com tudo o que já fez
 
@@ -50,7 +50,7 @@
 
 **hero.caminho.passos[1].title**: Os próximos cursos
 
-**hero.caminho.passos[1].text**: Nave Contra Asteroides, O Jogo do Meu Jeito, Corre, Dino e os que vierem.
+**hero.caminho.passos[1].text**: Nave Contra Asteroides, O Jogo do Meu Jeito e o Corre, Dino. Depois, os lançados durante a assinatura.
 
 **hero.caminho.passos[1].imagem.alt**: Nave Contra Asteroides: a nave, os asteroides e o placar
 
@@ -58,7 +58,7 @@
 
 **hero.caminho.passos[2].text**: Em Meus Jogos, com as peças dos cursos que ele terminou.
 
-**hero.caminho.passos[2].imagem.alt**: Meus Jogos: a lista dos projetos que a criança começou no Estúdio
+**hero.caminho.passos[2].imagem.alt**: A tela Meus Jogos do Estúdio, com o botão Novo projeto e os projetos próprios de um perfil de teste
 
 **proximo.eyebrow**: Onde ele parou
 
@@ -84,15 +84,17 @@
 
 **proximo.situacoes[2].imagem.alt**: Jornada do Criador com os postos Faísca e Construtor
 
-**proximo.situacoes[3].title**: Concluiu e ainda não publicou
+**proximo.situacoes[3].title**: Concluiu A Chave do Farol e ainda não publicou
 
 **proximo.situacoes[3].text**: Falta publicar no Mural: é a publicação, junto com o curso concluído, que leva ao posto Construtor. Com a assinatura, ele publica, e o Estúdio livre e o Pinta abrem.
 
-**proximo.situacoes[3].imagem.alt**: Mural dos Criadores com os jogos publicados pelos alunos
+**proximo.situacoes[3].imagem.alt**: Mural dos Criadores com cartões de jogos e botões para jogar, copiar o link e fazer uma versão.
 
 **proximo.situacoes[4].title**: Fez uma oficina ao vivo
 
 **proximo.situacoes[4].text**: A criação da oficina continua guardada em Criar. Com a assinatura, ele segue pelos cursos gravados, um projeto de cada vez, e leva para os jogos dele o que aprender em cada um.
+
+**proximo.telasNota**: As telas são do perfil de teste da equipe.
 
 **fica.eyebrow**: O que fica e o que a assinatura acrescenta
 
@@ -104,13 +106,13 @@
 
 **fica.semCusto.itens[0]**: O perfil e o progresso nos cursos
 
-**fica.semCusto.itens[1]**: Os projetos guardados, para ver e baixar
+**fica.semCusto.itens[1]**: A lista dos projetos guardados, para baixar quando quiser
 
 **fica.semCusto.itens[2]**: Os certificados já emitidos
 
-**fica.semCusto.itens[3]**: O posto da Jornada que ele alcançou
+**fica.semCusto.itens[3]**: O posto da Jornada que ele alcançou e os blocos que conquistou
 
-**fica.semCusto.itens[4]**: Os jogos publicados, enquanto a publicação estiver no ar
+**fica.semCusto.itens[4]**: Os jogos publicados, que continuam no Mural para visita
 
 **fica.semCusto.itens[5]**: Depois do Desafio ou do presente, o Mural para ver e jogar
 
@@ -122,11 +124,11 @@
 
 **fica.comAssinatura.itens[2]**: As ferramentas de cada posto: Estúdio livre, Pinta, Pensa e Molda
 
-**fica.comAssinatura.itens[3]**: Clube dos Criadores e Desafio do mês
+**fica.comAssinatura.itens[3]**: O Clube dos Criadores, só de alunos
 
 **fica.comAssinatura.itens[4]**: Dúvidas por escrito com a equipe, nos Recados
 
-**fica.comAssinatura.itens[5]**: Até 2 perfis e a área do responsável
+**fica.comAssinatura.itens[5]**: Até 2 perfis, cada um com seus jogos e sua Jornada
 
 **fica.inicio.strong**: Quando a assinatura começa:
 
@@ -134,9 +136,9 @@
 
 **jornada.eyebrow**: A Jornada do Criador
 
-**jornada.title**: Depois de A Chave do Farol, cada posto abre uma ferramenta nova
+**jornada.title**: Depois de A Chave do Farol, cada posto põe algo novo na caixa dele
 
-**jornada.paragraph**: Para subir de posto, ele conclui os cursos e publica os jogos no Mural. A ordem é de propósito: ele nunca fica diante de uma ferramenta que ainda não sabe usar. O tempo de cada posto depende do ritmo dele.
+**jornada.paragraph**: Para subir de posto, ele conclui e publica no Mural os cursos de cada degrau. A ordem é de propósito: ele nunca fica diante de uma ferramenta que ainda não sabe usar. O tempo de cada posto depende do ritmo dele.
 
 **jornada.postoLabel**: Posto
 
@@ -178,13 +180,13 @@
 
 **relatos.eyebrow**: Quem seguiu criando
 
-**relatos.title**: Quando o primeiro jogo dá certo, a próxima ideia aparece
+**relatos.title**: Depois do primeiro jogo, eles quiseram inventar, mudar e mostrar
 
-**relatos.paragraph**: Três falas reais, de um aluno e de dois pais, sobre o que acontece quando ele segue criando.
+**relatos.paragraph**: Um aluno e dois pais contam o que veio depois do primeiro jogo.
 
 **planos.title**: Escolham o plano, e ele continua no mesmo perfil
 
-**planos.paragraph**: Os dois planos dão acesso a tudo, e a diferença está só na forma de pagar. No checkout, use o mesmo e-mail da conta do responsável: é ele que liga a assinatura ao perfil que já existe.
+**planos.paragraph**: Os dois planos dão acesso a tudo, e a diferença está só na forma de pagar. No checkout, use o mesmo e-mail da sua conta: é esse e-mail que liga a assinatura ao perfil que já existe.
 
 **planos.inclui[0]**: Todos os cursos publicados e os lançados durante a assinatura
 
@@ -228,11 +230,11 @@
 
 **planos.depoisTitle**: Para continuar no mesmo perfil
 
-**planos.depois[0]**: No checkout, use o mesmo e-mail da conta do responsável.
+**planos.depois[0]**: No checkout, use o mesmo e-mail da sua conta.
 
 **planos.depois[1]**: A assinatura entra na mesma conta, no dia em que o pagamento é aprovado.
 
-**planos.depois[2]**: Ele entra no perfil de sempre e segue do ponto em que parou.
+**planos.depois[2]**: Ele entra no perfil de sempre e segue do ponto em que parou. Se a autorização do computador venceu, você autoriza de novo na sua área.
 
 **planos.garantia.strong**: Sete dias para ver como ele segue no próximo curso.
 
@@ -242,11 +244,11 @@
 
 **faq[0].question**: O que ele já fez continua lá?
 
-**faq[0].answer**: Continua. O perfil, o progresso, os projetos guardados, os certificados e os jogos publicados ficam na conta. Com a assinatura, ele segue no mesmo perfil, desde que você use o mesmo e-mail no checkout.
+**faq[0].answer**: Continua. O perfil, o progresso, o posto da Jornada, os projetos guardados, os certificados e os jogos publicados ficam na conta. Com a assinatura, ele segue no mesmo perfil, desde que você use o mesmo e-mail no checkout.
 
 **faq[1].question**: Ele já fez o Desafio. O que a assinatura acrescenta?
 
-**faq[1].answer**: Os outros cursos, as ferramentas de cada posto da Jornada, publicar e comentar no Mural, o Clube, o Desafio do mês e os Recados. O curso do Desafio também continua incluído enquanto a assinatura estiver ativa.
+**faq[1].answer**: Os outros cursos, as ferramentas de cada posto da Jornada, publicar e comentar no Mural, o Clube e os Recados. O curso do Desafio também continua incluído enquanto a assinatura estiver ativa.
 
 **faq[2].question**: Ainda restam dias no Desafio. Assino agora ou espero?
 
@@ -262,11 +264,11 @@
 
 **faq[5].question**: E se ele perder o interesse?
 
-**faq[5].answer**: Você cancela na sua área, sem multa, e o acesso segue até o fim do período pago. Os 7 dias de garantia servem para ver como ele se sai no próximo curso.
+**faq[5].answer**: Você cancela na sua área, sem multa, e o acesso segue até o fim do período pago. O que ele fez continua na conta. Os 7 dias de garantia servem para ver como ele se sai no próximo curso.
 
 **faq[6].question**: Até que idade vale a Comunidade Kids?
 
-**faq[6].answer**: De 9 a 17 anos, criando sozinho, e abaixo de 9, criando junto com um adulto. As instruções têm o Zappy e uma linguagem de aventura, e o que ele faz é jogo de verdade: regras, personagens, publicação e, mais adiante, código. A partir dos 18, existe a área adulta, com conta própria.
+**faq[6].answer**: Até os 17. De 9 a 17 anos, ele cria sozinho depois das primeiras aulas, e abaixo de 9 cria junto com um adulto. As instruções têm o Zappy e uma linguagem de aventura, e o que ele faz é jogo de verdade: regras, personagens, publicação e, mais adiante, código. A partir dos 18, existe a área adulta, com conta própria, e os projetos do perfil Kids não passam para ela.
 
 **faq[7].question**: Tenho outro filho.
 

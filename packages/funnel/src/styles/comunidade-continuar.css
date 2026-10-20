@@ -87,16 +87,19 @@
   align-items: center;
   gap: 14px;
 }
-/* A linha tracejada liga o marco de um passo ao do seguinte. */
-.c917 .c9c-caminho__passo + .c9c-caminho__passo::before {
+/* A linha tracejada liga o centro do marco de um passo ao do seguinte (o marco fica no meio da altura
+   do passo e os passos têm quase a mesma altura; a diferença some atrás do marco, que vem por cima). */
+.c917 .c9c-caminho__passo:not(:last-child)::after {
   content: "";
   position: absolute;
-  bottom: 100%;
+  top: 50%;
   left: 18px;
-  height: 22px;
+  height: calc(100% + 22px);
   border-left: 3px dashed var(--c9-tinta);
 }
 .c917 .c9c-caminho__marca {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex: none;
   align-items: center;

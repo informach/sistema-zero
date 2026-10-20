@@ -89,6 +89,8 @@ A bio apresenta público, atividade e próximo passo. O link abre a página inic
 
 ### Copy dos três caminhos na página inicial
 
+> **Atualização de 20/10/2026:** a página inicial mudou. Hoje ela tem dois caminhos, cada um para um quiz: o adulto (`bio-quiz-adulto`, `/pro/comunidade-dos-criadores/quiz`) e o infantil (`bio-quiz-infantil`, `/kids/comunidade-dos-criadores/quiz`). A `/como-funciona` responde 301 para `/kids/comunidade-dos-criadores/oferta#experiencia`, mantendo a origem. O que segue descreve a página inicial de antes e fica como referência deste ciclo até a revisão da bio e do calendário.
+
 | Botão | Explicação completa | Informação complementar | Destino |
 | --- | --- | --- | --- |
 | Como funciona | Veja como seu filho aprende criando jogos. | — | `/como-funciona/` (desde 20/10/2026, 301 para `/kids/comunidade-dos-criadores/oferta#experiencia`) |
@@ -97,7 +99,7 @@ A bio apresenta público, atividade e próximo passo. O link abre a página inic
 
 Cada botão usa o nome da opção, uma frase curta e a informação essencial da contratação. Manter os detalhes da experiência nas páginas de destino. A explicação aparece junto ao botão, antes do clique. O Desafio é uma primeira experiência paga; a Comunidade também recebe iniciantes e pode ser contratada diretamente. O cadastro acontece no fluxo de contratação, não é a promessa desses botões. O prazo do Desafio começa na aprovação do pagamento; sua inclusão na Comunidade vale durante a assinatura ativa, conforme as ofertas.
 
-Nos fixados e destaques que apresentam uma oferta, indicar o botão ou sticker correspondente. As postagens e os stories do calendário entregam orientação e conduzem à criação, sem chamada obrigatória à bio. O calendário comum termina em convite para seguir; as palavras-chave pertencem às [Postagens ManyChat](04-postagens-manychat.md). A página Como funciona oferece os dois produtos diretamente. Os acessos estão em [index.astro](../../../../../packages/funnel/src/pages/index.astro) e [como-funciona.astro](../../../../../packages/funnel/src/pages/como-funciona.astro).
+Nos fixados e destaques que apresentam uma oferta, indicar o botão ou sticker correspondente. As postagens e os stories do calendário entregam orientação e conduzem à criação, sem chamada obrigatória à bio. O calendário comum termina em convite para seguir; as palavras-chave pertencem às [Postagens ManyChat](04-postagens-manychat.md). Até 20/10/2026, a página Como funciona oferecia os dois produtos diretamente. Os acessos estão em [index.astro](../../../../../packages/funnel/src/pages/index.astro) e [como-funciona.astro](../../../../../packages/funnel/src/pages/como-funciona.astro).
 
 ## Documentos para produzir
 

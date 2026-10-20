@@ -224,8 +224,15 @@
   .cda .cda-save__linha {
     font-size: 0.625rem;
   }
+  .cda .cda-save__titulo {
+    font-size: clamp(1.125rem, 6vw, 1.625rem);
+  }
   .cda .cda-save__menu {
     gap: 0.25rem;
     font-size: 0.75rem;
+  }
+  /* No celular a tela tem a altura do conteúdo, sem folga: fica só a opção marcada. */
+  .cda .cda-save__menu li:not(.cda-save__atual) {
+    display: none;
   }
 }

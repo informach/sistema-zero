@@ -1048,6 +1048,20 @@
   flex: none;
   color: var(--kof-verde);
 }
+/* O cupom da URL: o aviso de que foi recebido, ou o alerta quando não vale. */
+.cm9 .cm9-cupom {
+  margin: 0;
+  padding: 12px 20px;
+  border-radius: 20px;
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.cm9 .cm9-cupom--alerta {
+  background: var(--kof-amarelo-fundo);
+}
 
 /* ── Dúvidas ────────────────────────────────────────────────────────────────── */
 .cm9 .cm9-duvidas {

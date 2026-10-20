@@ -9,13 +9,18 @@ import '../../../styles/kids-oferta.css'
 import '../../../styles/comunidade-917.css'
 import '../../../styles/comunidade-continuar.css'
 import { COMUNIDADE_PRECO_FALLBACK } from '../../../funnels/comunidade-dos-criadores/content'
-import { calcularEconomiaAnual } from '../../../funnels/comunidade-dos-criadores/oferta/economia'
+import { cupomDaOferta } from '../../../funnels/comunidade-dos-criadores/oferta/cupom'
+import {
+  calcularEconomiaAnual,
+  precoPorDiaCents,
+} from '../../../funnels/comunidade-dos-criadores/oferta/economia'
 import { legendaDoRelato } from '../../../funnels/comunidade-dos-criadores/oferta/pagina-9a17'
 import { PAGINA_CONTINUAR as P } from '../../../funnels/comunidade-dos-criadores/oferta/pagina-continuar'
 import { RELATOS } from '../../../funnels/comunidade-dos-criadores/oferta/relatos'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import type { CouponPresentation } from '../../../lib/coupon-query'
 import { formatBRLFromCents, formatBRLFromCents2 } from '../../../lib/money'
 import { funnelOgImage } from '../../../lib/seo'
 import type { OfferPlans } from '../../../server/catalog'
@@ -33,8 +38,10 @@ interface Props {
   quer?: string | null
   ofertaUrl: string
   plans: OfferPlans | null
+  coupon: CouponPresentation
 }
-const { f, productName, imagesBase, ofertaUrl, plans } = Astro.props
+const { f, productName, imagesBase, ofertaUrl, plans, coupon } = Astro.props
+const cupom = cupomDaOferta(coupon)
 const img = (file: string) => `${imagesBase}/${file}`
 
 // A resolução por intervalo conserva qual oferta é a principal e qual é a irmã.
@@ -54,8 +61,8 @@ const mensalCents = mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents
 const anualCents = anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents
 // Economia só com os dois preços AO VIVO (nunca contra o fallback); sem ela o selo sai.
 const economiaAnualCents = calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)
-// "Menos de R$ X por dia": a mensalidade em 30 dias, levada à dezena de centavos SEGUINTE.
-const precoDiaCents = (Math.floor(mensalCents / 300) + 1) * 10
+// "Menos de R$ X por dia" (`precoPorDiaCents`: sempre acima da conta exata).
+const precoDiaCents = precoPorDiaCents(mensalCents)
 const precos: Record<string, string> = {
   '{{preco_mensal}}': formatBRLFromCents(mensalCents),
   '{{preco_anual}}': formatBRLFromCents(anualCents),
@@ -99,14 +106,13 @@ const relatos = P.relatos.falas.map((r) => ({
         </nav>
       </div>
     </header>
-    <div class="c9c-aviso">
-      <p class="c9c-aviso__texto">
-        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>
-        <span>{P.aviso}</span>
-      </p>
-    </div>
-
     <main id="conteudo">
+      <div class="c9c-aviso">
+        <p class="c9c-aviso__texto">
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>
+          <span>{P.aviso}</span>
+        </p>
+      </div>
       <section class="c9-sec c9-heroi" aria-labelledby="c9c-titulo">
         <div class="c9-wrap c9-heroi__grade">
           <div class="c9-heroi__texto">
@@ -173,6 +179,7 @@ const relatos = P.relatos.falas.map((r) => ({
               )
             })}
           </div>
+          <span class="c9-legenda">{P.proximo.telasNota}</span>
         </div>
       </section>
 
@@ -256,6 +263,7 @@ const relatos = P.relatos.falas.map((r) => ({
           <div class="c9-pilha c9-gap-12 c9-cabeca--860">
             <h2 id="c9c-planos" class="c9-h2 c9-h2--planos">{P.planos.title}</h2>
             <p class="c9-p">{P.planos.paragraph}</p>
+            {cupom.aviso && <p class:list={['c9-cupom', { 'c9-cupom--alerta': cupom.aviso.alerta }]} role={cupom.aviso.alerta ? 'alert' : undefined}>{cupom.aviso.texto}</p>}
           </div>
           <div class="c9-linha c9-gap-24 c9-linha--esticada">
             <ul class="c9-inclui" aria-label={P.planos.incluiLabel}>
@@ -277,8 +285,8 @@ const relatos = P.relatos.falas.map((r) => ({
             )}
             {mostraAnual && (
             <article class="c9-plano c9-plano--anual">
-              {economiaAnualCents > 0 && <span class="c9-economia">{fill(P.planos.anual.selo)}</span>}
               <h3 class="c9-plano__nome">{P.planos.anual.title}</h3>
+              {economiaAnualCents > 0 && <span class="c9-economia">{fill(P.planos.anual.selo)}</span>}
               <p class="c9-plano__preco">{fill(P.planos.anual.preco)}<span>{P.planos.anual.sufixo}</span></p>
               <p class="c9-plano__texto">{fill(P.planos.anual.text)}</p>
               <button type="button" class="c9-plano__btn" data-checkout-cta data-checkout-oferta={anual?.slug}>{P.planos.anual.cta}</button>
@@ -340,7 +348,7 @@ const relatos = P.relatos.falas.map((r) => ({
     </div>
   </div>
   <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
-  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} continuidade />
 </BaseLayout>
 
 <script>

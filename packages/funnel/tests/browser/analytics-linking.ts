@@ -28,8 +28,9 @@ try {
   assert.ok(!(await context.cookies()).some((c) => c.name === 'sz_metrics'))
   // A bio leva aos quizzes; na mesma visita, a pessoa abre a oferta da Comunidade (a Como funciona,
   // que fazia essa ponte, virou redirecionamento em 20/10/2026).
-  await page.goto(`${base}/kids/comunidade-dos-criadores/oferta`)
+  // O pré-checkout cria o lead assim que hidrata (`client:idle`): a espera vem antes da navegação.
   const created = page.waitForResponse((r) => r.url().endsWith('/api/leads') && r.ok())
+  await page.goto(`${base}/kids/comunidade-dos-criadores/oferta`)
   await page
     .locator('astro-island[component-url*="PreCheckoutModal"]:not([ssr])')
     .waitFor({ state: 'attached' })

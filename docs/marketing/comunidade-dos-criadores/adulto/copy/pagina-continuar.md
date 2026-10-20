@@ -4,9 +4,9 @@
 
 _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…): a página os preenche com os planos ao vivo do catálogo. As imagens aparecem pelo texto alternativo._
 
-**seoTitle**: Continue de onde parou na Comunidade dos Criadores | Sistema Zero
+**seoTitle**: Continue na Comunidade dos Criadores | Sistema Zero
 
-**description**: Para quem já conhece o Sistema Zero: com o mesmo e-mail, os projetos, o progresso e os jogos publicados continuam na conta, e a próxima fase começa de onde você parou. 7 dias de garantia. Cancele quando quiser.
+**description**: Para quem já conhece o Sistema Zero: quem já tem conta continua nela, com o mesmo e-mail, e a próxima fase é o seu jogo. 7 dias de garantia. Cancele quando quiser.
 
 **pularParaConteudo**: Ir para o conteúdo
 
@@ -26,19 +26,19 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.rotulo**: CONTINUE · PARA QUEM JÁ CONHECE O SISTEMA ZERO
 
-**hero.titulo.antes**: Seu save continua na conta. A próxima fase começa 
+**hero.titulo.antes**: Você já conhece o Sistema Zero. Agora a próxima fase é 
 
-**hero.titulo.destaque**: de onde você parou.
+**hero.titulo.destaque**: o seu jogo.
 
-**hero.texto**: Entre com o mesmo e-mail e está tudo lá: os projetos em Meus Jogos, os jogos publicados no Mural e o progresso nos cursos. Com a assinatura, os cursos voltam a abrir, e cada etapa concluída põe mais uma ferramenta no seu Estúdio.
+**hero.texto**: Quem já tem conta continua nela, com o mesmo e-mail: os projetos em Meus Jogos, os jogos publicados e o progresso nos cursos ficam lá. Com a assinatura, os cursos abrem na sua conta. Cada etapa concluída põe blocos novos na sua paleta, e algumas abrem uma ferramenta nova no Estúdio. Se você criava na Comunidade Kids ou acompanha alguém lá, o seu caso está logo abaixo.
 
-**hero.beneficios[0]**: A mesma conta e o mesmo e-mail, com tudo o que você já fez.
+**hero.beneficios[0]**: Quem já tem conta continua nela, com o mesmo e-mail.
 
-**hero.beneficios[1]**: Todos os cursos, inclusive os que entraram enquanto você esteve fora.
+**hero.beneficios[1]**: Todos os cursos adultos, os de hoje e os que entrarem.
 
-**hero.beneficios[2]**: 7 dias de garantia para ver se esta é a hora de voltar.
+**hero.beneficios[2]**: 7 dias de garantia para testar a próxima fase.
 
-**hero.cta**: Continuar de onde parei
+**hero.cta**: Ir para a próxima fase
 
 **hero.garantia**: 7 dias de garantia. Cancele quando quiser.
 
@@ -58,9 +58,9 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.tela.slot.nome**: SEU NOME
 
-**hero.tela.slot.linhas[0].chave**: ETAPA
+**hero.tela.slot.linhas[0].chave**: PROGRESSO
 
-**hero.tela.slot.linhas[0].valor**: SALVA
+**hero.tela.slot.linhas[0].valor**: SALVO
 
 **hero.tela.slot.linhas[1].chave**: MEUS JOGOS
 
@@ -90,7 +90,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **casos.itens[0].titulo**: Você cancelou ou deixou a assinatura vencer
 
-**casos.itens[0].texto**: Os projetos, o progresso e os jogos publicados continuam na conta. Entre com o mesmo e-mail, e a assinatura nova começa no dia em que o pagamento é aprovado.
+**casos.itens[0].texto**: Os projetos, o progresso e os jogos publicados continuam na conta. Assine com o mesmo e-mail, e a assinatura nova começa no dia em que o pagamento é aprovado.
 
 **casos.itens[0].proximo**: ABRIR O CURSO EM QUE VOCÊ PAROU
 
@@ -106,11 +106,11 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **casos.itens[2].titulo**: Você criava na Comunidade Kids
 
-**casos.itens[2].texto**: A conta Kids fica no nome do responsável. A partir dos 18, a conta é sua, com o mesmo Estúdio que você já conhece, outra aparência e o caminho até o código. Os projetos do perfil Kids não passam para a conta nova.
+**casos.itens[2].texto**: A conta Kids fica no nome do responsável. A partir dos 18, a conta é sua, com o mesmo Estúdio que você já conhece, outra aparência e uma escada de etapas própria. Os projetos do perfil Kids não passam para a conta nova.
 
 **casos.itens[2].proximo**: UMA CONTA NO SEU NOME
 
-**casos.itens[3].rotulo**: SAVE 4 · SEU FILHO OU FILHA NO KIDS
+**casos.itens[3].rotulo**: SAVE 4 · ALGUÉM DA FAMÍLIA NO KIDS
 
 **casos.itens[3].titulo**: Você acompanha alguém da família na Comunidade Kids
 
@@ -130,11 +130,11 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **save.fica.itens[1]**: Os projetos em Meus Jogos
 
-**save.fica.itens[2]**: Os jogos publicados no Mural
+**save.fica.itens[2]**: Os jogos publicados, que continuam no Mural para visita
 
 **save.fica.itens[3]**: Os certificados já emitidos
 
-**save.fica.itens[4]**: O progresso nos cursos e a etapa que você alcançou
+**save.fica.itens[4]**: O progresso nos cursos
 
 **save.volta.rotulo**: VOLTA COM A ASSINATURA
 
@@ -152,7 +152,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **save.volta.itens[5]**: O Pensa e o Zappy nas etapas avançadas, com limite mensal
 
-**save.escada.titulo**: As 7 etapas: a sua fica salva
+**save.escada.titulo**: As 7 etapas da área adulta
 
 **save.escada.legenda[0].texto**: fase 1, blocos
 
@@ -312,17 +312,17 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **duvidas.itens[1].resposta**: Se você já tem conta adulta no Sistema Zero, não. Use o mesmo e-mail no checkout, e a Comunidade entra nessa conta.
 
-**duvidas.itens[2].pergunta**: Já tenho No Comando da IA. Pago de novo?
+**duvidas.itens[2].pergunta**: Já tenho No Comando da IA. A Comunidade está incluída?
 
-**duvidas.itens[2].resposta**: A Comunidade dos Criadores é uma assinatura à parte, com os cursos e as ferramentas de criação de jogos. O curso que você já comprou continua na sua conta, do jeito que está.
+**duvidas.itens[2].resposta**: Não. A Comunidade dos Criadores é uma assinatura à parte, com os cursos e as ferramentas de criação de jogos. No Comando da IA continua na sua conta, do jeito que está.
 
 **duvidas.itens[3].pergunta**: Usava a Comunidade Kids e fiz 18 anos. Levo meus jogos?
 
-**duvidas.itens[3].resposta**: A conta Kids é do seu responsável, e os projetos do perfil Kids não passam para a área adulta. Aqui você abre uma conta no seu nome, com o mesmo Estúdio que já conhece e o caminho até o código.
+**duvidas.itens[3].resposta**: A conta Kids é do seu responsável, e os projetos do perfil Kids não passam para a área adulta. Aqui você abre uma conta no seu nome, com o mesmo Estúdio que já conhece e uma escada de etapas própria.
 
 **duvidas.itens[4].pergunta**: Meu filho tem a assinatura Kids. Ela inclui a minha?
 
-**duvidas.itens[4].resposta**: Não. São assinaturas separadas, cada uma com a sua conta. A do Kids continua como está.
+**duvidas.itens[4].resposta**: Não. São assinaturas separadas, e a do Kids continua como está.
 
 **duvidas.itens[5].pergunta**: Os cursos que entraram enquanto eu estava fora estão incluídos?
 
@@ -338,11 +338,11 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **fechamento.rotulo**: CONTINUE
 
-**fechamento.titulo**: O save está aqui. Falta apertar start.
+**fechamento.titulo**: A próxima fase está aqui. Falta apertar start.
 
-**fechamento.texto**: A fase em que você parou, e a ideia que ficou para depois, continuam esperando por você.
+**fechamento.texto**: Quem parou continua de onde estava, e quem está chegando começa pelo primeiro jogo.
 
-**fechamento.cta**: Continuar de onde parei
+**fechamento.cta**: Ir para a próxima fase
 
 **fechamento.garantia**: 7 dias de garantia. Cancele quando quiser.
 

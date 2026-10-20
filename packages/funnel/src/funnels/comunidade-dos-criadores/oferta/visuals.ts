@@ -222,7 +222,7 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
   },
   // A captura inteira (`tela-catalogo`) traz no alto o fim do mapa, com "Mais 6 postos estão
   // sendo construídos": entra só o RECORTE da lista de aventuras (`tela-catalogo-trilha`, caixa
-  // 600,330–2560,1600 do @2x). Recapturou? Refaça o recorte (vale também para a faixa TOUR).
+  // 600,330–2560,1600 do @2x). Recapturou? Refaça o recorte.
   catalogo: {
     frames: [
       tela(

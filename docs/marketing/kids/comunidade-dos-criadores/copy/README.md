@@ -2,7 +2,7 @@
 
 **Atualização de 20/10/2026.** As cinco páginas de perfil deram lugar à página de 9 a 17 e à do menor de 9, e a continuidade foi redesenhada no mesmo dia (Canvas "Três páginas de oferta · proposta", quadros PaginaContinuarKids e EstrategiaContinuar). Os espelhos atuais, gerados por `bun scripts/espelho-copy-comunidade.ts` em `packages/funnel`, são três: [pagina-9-a-17.md](pagina-9-a-17.md), [pagina-menor-9.md](pagina-menor-9.md) e [pagina-e-continuidade.md](pagina-e-continuidade.md). As cinco páginas de perfil estão em [historico/2026-10-20-cinco-paginas](historico/2026-10-20-cinco-paginas/) e a continuidade anterior em [historico/2026-10-20-continuidade-antiga](historico/2026-10-20-continuidade-antiga/). O restante deste texto é registro das versões anteriores.
 
-**Atualização de 16/10/2026.** A copy das seis páginas foi reescrita pela [proposta de melhoria](proposta-melhoria-2026-10-16/README.md), aprovada e implementada no funil (`packages/funnel/src/funnels/comunidade-dos-criadores/oferta/`). Os arquivos `pagina-*.md` desta pasta passaram a ser o ESPELHO gerado da copy tipada: para mudar uma frase, edite o código e rode `bun scripts/espelho-copy-comunidade.ts` dentro de `packages/funnel` (o teste `comunidade-offer-copy` reprova espelho desatualizado). As versões anteriores, inclusive a proposta da página F, estão em [historico/2026-10-16-antes-da-proposta](historico/2026-10-16-antes-da-proposta/). O texto abaixo descreve as versões de 01/10 e fica como registro; números como "40 respostas" e "50 respostas" valiam para elas (hoje são 26 comuns, mais as próprias de cada página).
+**Atualização de 16/10/2026.** A copy das seis páginas foi reescrita pela [proposta de melhoria](proposta-melhoria-2026-10-16/README.md), aprovada e implementada no funil (`packages/funnel/src/funnels/comunidade-dos-criadores/oferta/`). Os arquivos `pagina-*.md` desta pasta passaram a ser o ESPELHO gerado da copy tipada: para mudar uma frase, edite o código e rode `bun scripts/espelho-copy-comunidade.ts` dentro de `packages/funnel` (o teste `comunidade-offer-copy` reprova espelho desatualizado). As versões anteriores, inclusive a proposta da página F, estão em [historico/2026-10-16-antes-da-proposta](historico/2026-10-16-antes-da-proposta/). O texto abaixo descreve as versões de 01/10 e fica como registro; números como "40 respostas" e "50 respostas" valiam para elas (de 16/10 a 20/10 eram 26 comuns, mais as próprias de cada página; desde 20/10 cada página tem as suas).
 
 | Página | Espelho de 16/10/2026 (histórico) |
 | --- | --- |
@@ -17,13 +17,15 @@ Data: 01/10/2026. Versão: revisão integral 2, com argumentação desenvolvida 
 
 ## Páginas para leitura
 
+Versões de 01/10/2026, guardadas em [historico/2026-10-16-antes-da-proposta](historico/2026-10-16-antes-da-proposta/).
+
 | Página | Arquivo | Motivo que conduz a conversa |
 | --- | --- | --- |
-| A, padrão | [Aprendizagem no tempo de tela permitido](pagina-a-tempo-de-tela.md) | Conhecer uma atividade que a criança possa querer fazer e cujo aprendizado a família consiga perceber. |
-| B | [Criação dos próprios jogos](pagina-b-criacao-de-jogos.md) | Apoiar a vontade de construir, modificar e mostrar um jogo. |
-| C | [Expressão visual](pagina-c-expressao-visual.md) | Explorar personagens e desenhos em projetos interativos. |
-| D | [Formação tecnológica complementar](pagina-d-formacao-tecnologica.md) | Avaliar conteúdo, aplicação, sequência e acompanhamento da iniciação em programação. |
-| E, continuidade | [Famílias que já conhecem a plataforma](pagina-e-continuidade.md) | Entender o que a assinatura acrescenta e como continuar a partir da experiência inicial. Página própria implementada localmente; não é um quinto avatar. |
+| A, padrão | [Aprendizagem no tempo de tela permitido](historico/2026-10-16-antes-da-proposta/pagina-a-tempo-de-tela.md) | Conhecer uma atividade que a criança possa querer fazer e cujo aprendizado a família consiga perceber. |
+| B | [Criação dos próprios jogos](historico/2026-10-16-antes-da-proposta/pagina-b-criacao-de-jogos.md) | Apoiar a vontade de construir, modificar e mostrar um jogo. |
+| C | [Expressão visual](historico/2026-10-16-antes-da-proposta/pagina-c-expressao-visual.md) | Explorar personagens e desenhos em projetos interativos. |
+| D | [Formação tecnológica complementar](historico/2026-10-16-antes-da-proposta/pagina-d-formacao-tecnologica.md) | Avaliar conteúdo, aplicação, sequência e acompanhamento da iniciação em programação. |
+| E, continuidade | [Famílias que já conhecem a plataforma](historico/2026-10-16-antes-da-proposta/pagina-e-continuidade.md) | Entender o que a assinatura acrescenta e como continuar a partir da experiência inicial. Página própria implementada localmente; não é um quinto avatar. |
 
 As aberturas aplicam a decisão da conversa: **a promessa orienta a headline; headline e subheadline juntas desenvolvem a superpromessa**. O texto de apoio explica mecanismo e consequência, evitando repetir a primeira frase.
 

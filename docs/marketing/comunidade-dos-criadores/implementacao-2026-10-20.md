@@ -86,12 +86,33 @@ Proposta no mesmo Canvas (quadros `EstrategiaContinuar`, `PaginaContinuarKids` e
   (`home-comunidade.ts`) e o CSS (`comunidade-home.css`) saíram. Os links do Desafio (oferta,
   resultado, cabeçalho do resultado e o botão de quem o quiz não recomenda) vão direto para a seção
   de experiência da página de 9 a 17; o menu da oferta do Desafio ficou com a própria seção. A página
-  saiu do sitemap, das métricas e das capturas.
+  saiu do sitemap e das capturas; o painel de métricas ainda abre os dados dela de antes do 301.
 - **Limpeza:** a continuidade antiga (`ComunidadeOfertaBody`, `ComunidadeTour`, `continuidade.ts`,
   `continuidade-faq.ts` e `shared.ts`) saiu. O motor de seções continua, porque o presente e o
   embaixador o usam. As falas que só a continuidade antiga usava (AV02, N4, N6, N7 e N19) foram para
   a reserva, com o motivo. O espelho antigo está em
   `kids/comunidade-dos-criadores/copy/historico/2026-10-20-continuidade-antiga/`.
+
+### Revisão completa da segunda rodada
+
+Três revisões (código, copy, documentação e testes). O que mudou por causa delas:
+
+- **Pré-checkout da continuidade:** a página Kids voltou a pedir o mesmo e-mail do responsável no
+  pré-checkout (a versão nova tinha perdido o aviso), e a adulta ganhou o aviso dela.
+- **Cupom da URL:** as cinco páginas da Comunidade (9 a 17, menor de 9, continuidade Kids, adulta e
+  continuidade adulta) passaram a levar `?cupom=` ao checkout e a avisar na seção dos planos que o
+  receberam, ou que ele não vale. Antes o cupom se perdia em silêncio. Os preços continuam os do
+  catálogo: o cupom é cotado contra a oferta principal e o checkout confere o plano escolhido.
+- **Presente e embaixador:** o capítulo "experiencia" voltou a ter o ícone dele (a limpeza tinha
+  levado junto). O reveal ao rolar, que só a continuidade antiga ligava, saiu do CSS e das classes.
+- **Adulta:** a tela de save cabe a partir de 320 px (no celular fica só a opção marcada), é
+  ilustração para o leitor de tela, e o preço mensal do herói só aparece com o plano mensal no ar.
+- **Kids:** a faixa para a criança entrou no `<main>`; a linha tracejada do painel liga os marcos.
+- **Contraste:** sobre o fundo alternativo das páginas do Desafio, do presente e do embaixador, todo
+  link fica na tinta com o traço azul; dentro de uma carta ele volta ao azul.
+- **Preço por dia:** uma função só (`precoPorDiaCents`) para as cinco páginas, com teste.
+- **Métricas:** o clique do cabeçalho do quiz do Desafio passou a `desafio-quiz-experiencia`.
+- **Copy:** ajustes de Light Copy e de clareza nas duas continuidades, já nos espelhos.
 
 ## Verificação
 
@@ -109,12 +130,13 @@ Proposta no mesmo Canvas (quadros `EstrategiaContinuar`, `PaginaContinuarKids` e
 
 - **Continuidade adulta:** confirmar que a etapa e os blocos adultos não voltam para trás depois do
   cancelamento (no Kids isso vale; a jornada adulta depende de rodar a configuração adulta com a
-  dona). A página não tem link de entrada ainda: ligar no e-mail de assinatura encerrada, na tela
-  de produto fechado da área adulta e num cartão em Cursos para quem só tem No Comando da IA.
+  dona). Hoje a página só promete o que fica na conta (projetos, jogos publicados, certificados e o
+  progresso nos cursos) e não diz que a etapa fica guardada; confirmado isso, a frase pode entrar.
+  A página não tem link de entrada ainda: ligar no e-mail de assinatura encerrada, na tela de produto
+  fechado da área adulta e num cartão em Cursos para quem só tem No Comando da IA.
 - **Continuidade Kids:** o aviso de ferramenta fechada do app Kids diz à criança que "fica tudo
   liberado pra você", o que contradiz a Jornada; faltam o e-mail de fim do presente de 7 dias e o
   de assinatura encerrada; decidir o que acontece com o perfil que completa 18 anos.
-
 - **Capturas reais da área adulta.** As telas da página adulta são prévias com dados de teste. A
   prévia do Mural ainda mostra o nome antigo "Mostra dos criadores".
 - **Cursos adultos** publicados com os blocos da paleta, e a política da jornada adulta, que exige
