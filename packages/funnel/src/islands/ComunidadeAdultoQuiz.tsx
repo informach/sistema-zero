@@ -64,12 +64,23 @@ function Topo({ exitPath }: { exitPath: string }) {
 }
 
 /** A manchete com o trecho em destaque. */
-function Manchete({ id }: { id: keyof typeof QUIZ_HEADLINES }) {
+function Manchete({
+  id,
+  headingRef,
+}: {
+  id: keyof typeof QUIZ_HEADLINES
+  headingRef?: React.Ref<HTMLHeadingElement>
+}) {
   const { title, emphasis } = QUIZ_HEADLINES[id]
   const at = title.indexOf(emphasis)
-  if (at < 0) return <h1 className="qz-manchete">{title}</h1>
+  if (at < 0)
+    return (
+      <h1 className="qz-manchete" ref={headingRef} tabIndex={-1}>
+        {title}
+      </h1>
+    )
   return (
-    <h1 className="qz-manchete">
+    <h1 className="qz-manchete" ref={headingRef} tabIndex={-1}>
       {title.slice(0, at)}
       <em>{emphasis}</em>
       {title.slice(at + emphasis.length)}
@@ -92,9 +103,13 @@ export default function ComunidadeAdultoQuiz({
   const [minor, setMinor] = useState(false)
   const cursor = minor ? MINOR : quiz.cursor
   const heading = useRef<HTMLHeadingElement>(null)
+  const anterior = useRef(cursor)
 
+  // O foco vai ao título de cada tela; na entrada, só quando se volta a ela (na primeira abertura a
+  // página começa do topo, sem roubar o foco).
   useEffect(() => {
-    if (cursor !== INTRO) heading.current?.focus()
+    if (cursor !== INTRO || anterior.current !== INTRO) heading.current?.focus()
+    anterior.current = cursor
   }, [cursor])
 
   const go = (key: string) => {
@@ -157,7 +172,7 @@ export default function ComunidadeAdultoQuiz({
     return shell(
       <main id="quiz" className="qz-corpo qz-entrada">
         <span className="qz-selo">{QUIZ_ENTRY.eyebrow}</span>
-        <Manchete id={headline} />
+        <Manchete id={headline} headingRef={heading} />
         <p className="qz-descricao">{QUIZ_ENTRY.description}</p>
         <ul className="qz-chips">
           {QUIZ_ENTRY.chips.map((chip) => (
@@ -281,8 +296,13 @@ export default function ComunidadeAdultoQuiz({
   if (!step) return null
   const shown = stepOnScreen(step, current)
   const position = steps.findIndex((s) => s.key === step.key)
-  const total = steps.length
-  const numero = position + 1
+  // A pergunta extra de um perfil só se abre no fim; ela aparece como "Pergunta extra", sem mudar o
+  // total (antes, quem caía em B ou D via "10 de 10" e depois "11 de 11").
+  const contadas = steps.filter((s) => !s.condicional)
+  const total = contadas.length
+  const extra = step.condicional === true
+  const numero = extra ? total : contadas.findIndex((s) => s.key === step.key) + 1
+  const rotulo = extra ? 'Pergunta extra' : `Pergunta ${numero} de ${total}`
   const etapa = QUIZ_STAGES[step.etapa as keyof typeof QUIZ_STAGES] ?? ''
   const voltar = position === 0 ? INTRO : (steps[position - 1]?.key ?? INTRO)
   return shell(
@@ -292,13 +312,11 @@ export default function ComunidadeAdultoQuiz({
       data-analytics-question={step.key}
       data-analytics-quiz={quizDefinitionId}
       data-analytics-attempt={session?.id}
-      data-analytics-position={numero}
+      data-analytics-position={position + 1}
     >
       <div className="qz-progresso">
         <div className="qz-progresso-linha">
-          <span>
-            {numero} de {total}
-          </span>
+          <span>{extra ? 'Pergunta extra' : `${numero} de ${total}`}</span>
           <span className="qz-etapa">{etapa}</span>
         </div>
         <div
@@ -307,7 +325,7 @@ export default function ComunidadeAdultoQuiz({
           aria-valuemin={0}
           aria-valuemax={total}
           aria-valuenow={numero}
-          aria-label={`Pergunta ${numero} de ${total}`}
+          aria-label={rotulo}
         >
           <span style={{ width: `${Math.round((numero / total) * 100)}%` }} />
         </div>

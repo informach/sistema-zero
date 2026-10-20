@@ -133,7 +133,9 @@ export function useSpinQuiz({
   }, [funnel, quizDefinitionId])
 
   function go(key: string) {
-    setError('')
+    // Num conflito (outra aba salvou) ou com o quiz atualizado, o aviso e o botão de retomar ficam:
+    // sem eles, as opções seguem desativadas e a pessoa não tem saída além de recarregar.
+    if (!conflict && !updated) setError('')
     setCursor(key)
   }
 

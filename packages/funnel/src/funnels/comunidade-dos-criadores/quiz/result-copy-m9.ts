@@ -202,7 +202,7 @@ export const COMPUTADOR_M9: Record<string, string> = {
   celular_tablet:
     'Você contou que vocês têm [[só celular ou tablet]]. Para criar, é preciso um computador com internet, mouse e teclado: no tablet dá para jogar, mas não para montar o jogo. Vale organizar isso antes de assinar.',
   organizar:
-    'E, como vocês têm computador e [[precisam organizar o horário]], basta combinar um momento da semana em que ele esteja livre.',
+    'E, como vocês têm computador e [[precisam organizar o horário]], basta combinar um momento da semana em que o computador esteja livre.',
   verificar:
     'E você [[ainda vai ver o computador]]: vocês vão precisar de um com internet, mouse e teclado, que pode ser o da família.',
 }

@@ -10,7 +10,7 @@ _Perfil `adulto-horas-livres`, destino /pro/comunidade-dos-criadores/oferta._
 
 ### Você joga há anos. O que falta é uma noite de jogo que termine com alguma coisa sua
 
-Você contou que **joga há anos e nunca fez nada além de jogar**, que o jogo ocupa **de 7 a 14 horas por semana** e que, quando tentou, **abriu um programa e fechou no mesmo dia**. A gente vê essa história com frequência, e ela tem uma explicação simples.
+Você contou que **joga há anos e nunca fez nada além de jogar**, que o jogo ocupa **de 7 a 14 horas por semana** e que, quando tentou, **abriu um programa e fechou no mesmo dia**. Essa história tem uma explicação simples.
 
 #### Por que a noite livre acaba em mais uma partida
 
@@ -44,11 +44,11 @@ _Perfil `adulto-ideia`, destino /pro/comunidade-dos-criadores/oferta._
 
 ### A sua ideia de jogo já existe. O que falta é um começo pequeno
 
-Você contou que **tem uma ideia de jogo há anos e nunca começou**, que joga **de 7 a 14 horas por semana** e que, quando tentou, **abriu um programa e fechou no mesmo dia**. A gente vê essa história com frequência, e ela tem uma explicação simples.
+Você contou que **tem uma ideia de jogo há anos e nunca começou**, que joga **de 7 a 14 horas por semana** e que, quando tentou, **abriu um programa e fechou no mesmo dia**. Essa história tem uma explicação simples.
 
 #### Por que a ideia continua na gaveta
 
-De 7 a 14 horas por semana dão entre 364 e 728 horas por ano jogando, e você disse que **quase nada disso virou alguma coisa sua**. Não é falta de vontade: você já tentou. O problema é o ponto de partida. A ideia costuma ser grande, com mundo, história e dezenas de fases, e o programa que você abriu foi feito para estúdios: dezenas de janelas e nenhum próximo passo claro. Com o trabalho, a família e o cansaço da noite, o projeto fica para depois, e a ideia volta para onde estava. É isso que incomoda você: **ela continuar na gaveta**.
+De 7 a 14 horas por semana dão entre 364 e 728 horas por ano jogando, e você disse que **quase nada disso virou alguma coisa sua**. Vontade você tem, porque já tentou. O que trava é o ponto de partida. A ideia costuma ser grande, com mundo, história e dezenas de fases, e o programa que você abriu foi feito para estúdios: dezenas de janelas e nenhum próximo passo claro. Com o trabalho, a família e o cansaço da noite, o projeto fica para depois, e a ideia volta para onde estava. É isso que incomoda você: **ela continuar na gaveta**.
 
 #### O que muda quando o primeiro jogo é pequeno
 
@@ -78,7 +78,7 @@ _Perfil `adulto-por-dentro`, destino /pro/comunidade-dos-criadores/oferta._
 
 ### Você quer ver como um jogo é feito por dentro. O que falta é alguma coisa para apertar e testar
 
-Você contou que **joga e fica pensando em como fizeram aquilo**, que o jogo ocupa **de 7 a 14 horas por semana** e que, quando tentou, **abriu um programa e fechou no mesmo dia**. A gente vê essa história com frequência, e ela tem uma explicação simples.
+Você contou que **joga e fica pensando em como fizeram aquilo**, que o jogo ocupa **de 7 a 14 horas por semana** e que, quando tentou, **abriu um programa e fechou no mesmo dia**. Essa história tem uma explicação simples.
 
 #### Por que jogar não mostra como um jogo é feito
 

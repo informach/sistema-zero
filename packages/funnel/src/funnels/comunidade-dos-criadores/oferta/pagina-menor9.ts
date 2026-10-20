@@ -327,7 +327,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
   seuPapel: {
     titulo: 'O seu papel é mais simples do que parece: ler, perguntar e deixar a escolha com ela',
     texto:
-      'Jogar o que ela criou já é um jeito de participar, mesmo para quem nunca programou. E quatro cuidados ajudam a sessão a render.',
+      'Jogar o que ela criou já é um jeito de participar, para qualquer adulto. E quatro cuidados ajudam a sessão a render.',
     cuidados: [
       {
         titulo: 'Pergunte antes de clicar',

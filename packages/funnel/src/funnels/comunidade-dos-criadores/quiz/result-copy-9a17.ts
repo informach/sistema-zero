@@ -325,7 +325,7 @@ export const CONDITION_SENTENCE: Record<Condition, Record<string, string>> = {
     celular_tablet:
       'Você contou que, por enquanto, ele tem [[só celular ou tablet]]. Para criar, ele precisa de um computador com internet, mouse e teclado, que pode ser o da família. Vale organizar isso antes de assinar.',
     organizar:
-      'E, como vocês têm computador e [[você precisa organizar os horários]], basta combinar um horário em que ele esteja livre: as aulas são gravadas.',
+      'E, como vocês têm computador e [[você precisa organizar os horários]], basta combinar um horário em que o computador esteja livre: as aulas são gravadas.',
     verificar:
       'E você [[ainda precisa ver o computador]]: ele vai precisar de um com internet, mouse e teclado, que pode ser o da família.',
   },

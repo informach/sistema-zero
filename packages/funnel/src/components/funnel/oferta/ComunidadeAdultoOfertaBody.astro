@@ -43,6 +43,10 @@ const byInterval = (n: number) =>
       : null
 const mensal = byInterval(1)
 const anual = byInterval(12)
+// Com o catálogo no ar, um plano sem oferta ao vivo não é oferecido: o botão dele não teria slug e o
+// checkout abriria no outro plano. Sem catálogo (plans nulo), os dois aparecem com o preço de reserva.
+const mostraMensal = !plans || mensal !== null
+const mostraAnual = !plans || anual !== null
 const mensalCents = mensal?.priceCents ?? COMUNIDADE_ADULTO_PRECO_FALLBACK.mensalCents
 const anualCents = anual?.priceCents ?? COMUNIDADE_ADULTO_PRECO_FALLBACK.anualCents
 // "Menos de X por dia": a mensalidade dividida por 30, levada aos PRÓXIMOS 10 centavos acima
@@ -403,6 +407,7 @@ const cartao = P.oferta.cartao
                   ))}
                 </ul>
                 <div class="cda-planos">
+                  {mostraMensal && (
                   <div class="cda-plano">
                     <h3 class="cda-rotulo cda-rotulo--13 cor-azul">{cartao.mensal.rotulo}</h3>
                     <p class="cda-plano__preco">{preencher(cartao.mensal.preco)}<span>{cartao.mensal.sufixo}</span></p>
@@ -410,6 +415,8 @@ const cartao = P.oferta.cartao
                     <button type="button" class="cda-plano__btn" data-checkout-cta data-checkout-oferta={mensal?.slug}>{cartao.mensal.cta}</button>
                     <p class="cda-plano__garantia">{cartao.mensal.garantia}</p>
                   </div>
+                  )}
+                  {mostraAnual && (
                   <div class="cda-plano cda-plano--anual">
                     {economiaAnualCents > 0 && <p class="cda-plano__selo">{preencher(cartao.anual.selo)}</p>}
                     <h3 class="cda-rotulo cda-rotulo--13 cor-amarelo">{cartao.anual.rotulo}</h3>
@@ -418,6 +425,7 @@ const cartao = P.oferta.cartao
                     <button type="button" class="cda-plano__btn" data-checkout-cta data-checkout-oferta={anual?.slug}>{cartao.anual.cta}</button>
                     <p class="cda-plano__garantia">{cartao.anual.garantia}</p>
                   </div>
+                  )}
                 </div>
                 <p class="cda-cartao__nota">{cartao.nota}</p>
               </div>
@@ -457,7 +465,7 @@ const cartao = P.oferta.cartao
     </main>
 
     <div class="cda-barra" data-cda-barra aria-hidden="true">
-      <p class="cda-barra__preco"><strong>{preencher(P.barra.preco)}</strong><span>{preencher(P.barra.alternativa)}</span></p>
+      <p class="cda-barra__preco">{mostraMensal && <strong>{preencher(P.barra.preco)}</strong>}{mostraMensal && mostraAnual && <span>{preencher(P.barra.alternativa)}</span>}</p>
       <a class="cda-btn cda-btn--barra" href="#oferta" tabindex="-1">{P.barra.cta}</a>
     </div>
   </div>

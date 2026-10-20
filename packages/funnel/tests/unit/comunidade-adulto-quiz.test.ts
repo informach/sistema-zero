@@ -283,11 +283,10 @@ describe('Quiz adulto v1: perguntas e entrada', () => {
       s.subtitulo ?? '',
       ...s.opcoes.map((o) => o.label),
     ])
-    // "Ter aula ao vivo" é a necessidade que a pessoa declara (aprovada no Canvas), não a oferta.
-    expect(perguntas.join('\n').replaceAll('Ter aula ao vivo', '')).not.toMatch(OFERTA)
-    expect(perguntas.filter((t) => /aula/i.test(t))).toEqual(
-      telas.filter((s) => s.key === 'garantia').map(() => 'Ter aula ao vivo'),
-    )
+    // "Ter professor ao vivo" é a necessidade que a pessoa declara; nenhuma tela cita aula (o Canvas
+    // trazia "Ter aula ao vivo", trocado na revisão de 20/10/2026, como no Kids).
+    expect(perguntas.join('\n')).not.toMatch(OFERTA)
+    expect(perguntas.filter((t) => /aula/i.test(t))).toEqual([])
     // A entrada também não, exceto a assinatura da orientação ("Uma orientação do Sistema Zero").
     const { minor, note, ...entrada } = QUIZ_ENTRY
     expect(JSON.stringify([entrada, QUIZ_HEADLINES, QUIZ_STAGES])).not.toMatch(OFERTA)
@@ -491,13 +490,13 @@ describe('Quiz adulto v1: o resultado em conversa', () => {
       {
         tipo: 'p',
         texto:
-          'Você contou que [[tem uma ideia de jogo há anos e nunca começou]], que joga [[de 7 a 14 horas por semana]] e que, quando tentou, [[abriu um programa e fechou no mesmo dia]]. A gente vê essa história com frequência, e ela tem uma explicação simples.',
+          'Você contou que [[tem uma ideia de jogo há anos e nunca começou]], que joga [[de 7 a 14 horas por semana]] e que, quando tentou, [[abriu um programa e fechou no mesmo dia]]. Essa história tem uma explicação simples.',
       },
       { tipo: 'h', texto: 'Por que a ideia continua na gaveta' },
       {
         tipo: 'p',
         texto:
-          'De 7 a 14 horas por semana dão entre 364 e 728 horas por ano jogando, e você disse que [[quase nada disso virou alguma coisa sua]]. Não é falta de vontade: você já tentou. O problema é o ponto de partida. A ideia costuma ser grande, com mundo, história e dezenas de fases, e o programa que você abriu foi feito para estúdios: dezenas de janelas e nenhum próximo passo claro. Com o trabalho, a família e o cansaço da noite, o projeto fica para depois, e a ideia volta para onde estava. É isso que incomoda você: [[ela continuar na gaveta]].',
+          'De 7 a 14 horas por semana dão entre 364 e 728 horas por ano jogando, e você disse que [[quase nada disso virou alguma coisa sua]]. Vontade você tem, porque já tentou. O que trava é o ponto de partida. A ideia costuma ser grande, com mundo, história e dezenas de fases, e o programa que você abriu foi feito para estúdios: dezenas de janelas e nenhum próximo passo claro. Com o trabalho, a família e o cansaço da noite, o projeto fica para depois, e a ideia volta para onde estava. É isso que incomoda você: [[ela continuar na gaveta]].',
       },
       { tipo: 'h', texto: 'O que muda quando o primeiro jogo é pequeno' },
       {
@@ -528,7 +527,7 @@ describe('Quiz adulto v1: o resultado em conversa', () => {
       {
         tipo: 'p',
         texto:
-          'Você precisa [[aprender sozinho, no seu horário]]. As aulas são gravadas, o vídeo fica ao lado do editor e o projeto fica salvo na sua conta: você para hoje e continua amanhã do mesmo ponto. E você [[usa um computador compartilhado]]: como as aulas são gravadas, basta combinar um horário em que ele esteja livre. Você disse também que [[qualquer ferramenta serve, se conseguir terminar]]. É por aí que a gente começa.',
+          'Você precisa [[aprender sozinho, no seu horário]]. As aulas são gravadas, o vídeo fica ao lado do editor e o projeto fica salvo na sua conta: você para hoje e continua amanhã do mesmo ponto. E você [[usa um computador compartilhado]]: como as aulas são gravadas, basta combinar um horário em que o computador esteja livre. Você disse também que [[qualquer ferramenta serve, se conseguir terminar]]. É por aí que a gente começa.',
       },
       {
         tipo: 'cta',
@@ -693,9 +692,9 @@ describe('Quiz adulto v1: o resultado em conversa', () => {
             expect(porque).toContain(COPY.WHY[p].attempt[tentativa]!)
             expect(porque).toEndWith(COPY.WORRY[p])
           }
-    // "Não é falta de vontade: você já tentou" só para quem tentou.
+    // "Vontade você tem, porque já tentou" só para quem tentou.
     for (const tentativa of ['vontade', 'terminei', 'nao_apareceu'])
-      expect(paragraphs(result(respostas({ tentativa })))[1]).not.toContain('você já tentou')
+      expect(paragraphs(result(respostas({ tentativa })))[1]).not.toContain('porque já tentou')
     // "Nada, está bom assim": sem inventar um incômodo.
     const semIncomodo = paragraphs(result(respostas({ preocupacao: 'nenhum' })))[1]!
     expect(semIncomodo).toEndWith(COPY.NO_WORRY)

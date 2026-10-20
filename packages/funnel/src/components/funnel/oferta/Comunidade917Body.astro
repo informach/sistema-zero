@@ -46,6 +46,10 @@ const byInterval = (n: number) =>
       : null
 const mensal = byInterval(1)
 const anual = byInterval(12)
+// Com o catálogo no ar, um plano sem oferta ao vivo não é oferecido: o botão dele não teria slug e o
+// checkout abriria no outro plano. Sem catálogo (plans nulo), os dois aparecem com o preço de reserva.
+const mostraMensal = !plans || mensal !== null
+const mostraAnual = !plans || anual !== null
 const mensalCents = mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents
 const anualCents = anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents
 // Economia só com os dois preços AO VIVO (nunca contra o fallback); sem ela o selo sai.
@@ -421,6 +425,7 @@ const andre = relato(P.fundadores.relato)
                 </li>
               ))}
             </ul>
+            {mostraMensal && (
             <article class="c9-plano">
               <h3 class="c9-plano__nome">{P.planos.mensal.title}</h3>
               <p class="c9-plano__preco">{fill(P.planos.mensal.preco)}<span>{P.planos.mensal.sufixo}</span></p>
@@ -428,6 +433,8 @@ const andre = relato(P.fundadores.relato)
               <button type="button" class="c9-plano__btn" data-checkout-cta data-checkout-oferta={mensal?.slug}>{P.planos.mensal.cta}</button>
               <span class="c9-plano__nota">{P.planos.mensal.nota}</span>
             </article>
+            )}
+            {mostraAnual && (
             <article class="c9-plano c9-plano--anual">
               {economiaAnualCents > 0 && <span class="c9-economia">{fill(P.planos.anual.selo)}</span>}
               <h3 class="c9-plano__nome">{P.planos.anual.title}</h3>
@@ -436,6 +443,7 @@ const andre = relato(P.fundadores.relato)
               <button type="button" class="c9-plano__btn" data-checkout-cta data-checkout-oferta={anual?.slug}>{P.planos.anual.cta}</button>
               <span class="c9-plano__nota">{P.planos.anual.nota}</span>
             </article>
+            )}
           </div>
           <div class="c9-linha c9-gap-18 c9-linha--esticada">
             <div class="c9-depois">
@@ -486,7 +494,7 @@ const andre = relato(P.fundadores.relato)
     </main>
 
     <div class="kof-mobar c9-barra" data-mobar aria-hidden="true">
-      <span class="c9-barra__preco"><strong>{fill(P.barra.preco)}</strong><span>{fill(P.barra.alternativa)}</span></span>
+      <span class="c9-barra__preco">{mostraMensal && <strong>{fill(P.barra.preco)}</strong>}{mostraMensal && mostraAnual && <span>{fill(P.barra.alternativa)}</span>}</span>
       <a class="c9-btn" href="#planos" tabindex="-1">{P.barra.cta}</a>
     </div>
   </div>

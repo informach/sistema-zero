@@ -52,7 +52,7 @@
 
 **caso.title**: Ele vive no jogo. E você já se pegou pensando: se ele usasse esse tempo para aprender alguma coisa
 
-**caso.paragraph**: Muita família passa por isso. Você procura curso de programação para criança e esbarra sempre nas mesmas coisas: o horário não encaixa, o gratuito é uma aula experimental que para ali, o pago é caro e você nem sabe se é bom. Ele tenta sozinho pelo YouTube, trava e larga. E fica a dúvida que ninguém responde: se ele está só jogando ou aprendendo alguma coisa.
+**caso.paragraph**: Muita família passa por isso. Você procura curso de programação para criança e esbarra sempre nas mesmas coisas: o horário não encaixa, o gratuito é uma aula experimental que para ali, o pago pesa no orçamento e é difícil avaliar antes de começar. Ele tenta sozinho pelo YouTube, trava e larga. E fica a dúvida que ninguém responde: se ele está só jogando ou aprendendo alguma coisa.
 
 **caso.callout**: Interesse ele tem de sobra. O que falta é um curso que ele comece, se interesse e não queira parar.
 
@@ -224,7 +224,7 @@
 
 **jornada.fases[1].title**: Ponte
 
-**jornada.fases[1].text**: Cada bloco aparece ao lado do código que ele gera. Ele aprende o que cada um significa em código, ainda sem escrever.
+**jornada.fases[1].text**: Cada bloco aparece ao lado do código correspondente. Ele aprende o que cada um significa em código, ainda sem escrever.
 
 **jornada.fases[1].postos**: Posto Gênio da Criação
 
@@ -262,7 +262,7 @@
 
 **responsavel.itens[0].text**:  mostra os cursos, as atividades, as entregas e o posto da Jornada.
 
-**responsavel.itens[1].strong**: Toda sexta, às 17h,
+**responsavel.itens[1].strong**: Toda sexta, no fim da tarde,
 
 **responsavel.itens[1].text**:  chega um resumo da semana por e-mail, com os jogos que ele publicou. Dá para desligar.
 

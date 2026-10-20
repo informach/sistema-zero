@@ -74,12 +74,23 @@ function Topo({ imagesBase, exitPath }: { imagesBase: string; exitPath: string }
 }
 
 /** A manchete com o trecho em destaque. */
-function Manchete({ id }: { id: keyof typeof QUIZ_HEADLINES }) {
+function Manchete({
+  id,
+  headingRef,
+}: {
+  id: keyof typeof QUIZ_HEADLINES
+  headingRef?: React.Ref<HTMLHeadingElement>
+}) {
   const { title, emphasis } = QUIZ_HEADLINES[id]
   const at = title.indexOf(emphasis)
-  if (at < 0) return <h1 className="qz-manchete">{title}</h1>
+  if (at < 0)
+    return (
+      <h1 className="qz-manchete" ref={headingRef} tabIndex={-1}>
+        {title}
+      </h1>
+    )
   return (
-    <h1 className="qz-manchete">
+    <h1 className="qz-manchete" ref={headingRef} tabIndex={-1}>
       {title.slice(0, at)}
       <em>{emphasis}</em>
       {title.slice(at + emphasis.length)}
@@ -100,12 +111,16 @@ export default function ComunidadeQuiz({
   const quiz = useSpinQuiz({ funnel, basePath, quizDefinitionId, headline, engine: ENGINE })
   const { current, steps, cursor, busy, error, conflict, updated, session } = quiz
   const heading = useRef<HTMLHeadingElement>(null)
+  const anterior = useRef(cursor)
   const genero = childGender(current)
   const branch = communityBranch(current)
   const pele = branch === 'm9' ? 'qz--m9' : 'qz--kids'
 
+  // O foco vai ao título de cada tela; na entrada, só quando se volta a ela (na primeira abertura a
+  // página começa do topo, sem roubar o foco).
   useEffect(() => {
-    if (cursor !== INTRO) heading.current?.focus()
+    if (cursor !== INTRO || anterior.current !== INTRO) heading.current?.focus()
+    anterior.current = cursor
   }, [cursor])
 
   const errorView = error && (
@@ -144,7 +159,7 @@ export default function ComunidadeQuiz({
     return shell(
       <main id="quiz" className="qz-corpo qz-entrada">
         <span className="qz-selo">{QUIZ_ENTRY.eyebrow}</span>
-        <Manchete id={headline} />
+        <Manchete id={headline} headingRef={heading} />
         <p className="qz-descricao">{QUIZ_ENTRY.description}</p>
         {errorView}
         {started ? (
@@ -292,9 +307,13 @@ export default function ComunidadeQuiz({
   if (!step) return null
   const shown = stepOnScreen(step, current)
   const position = steps.findIndex((s) => s.key === step.key)
-  // A carta de filho ou filha fica fora da contagem: a idade é a primeira pergunta.
-  const total = branch === '9a17' || branch === 'm9' ? steps.length - 1 : 10
-  const numero = Math.max(position, 1)
+  // A carta de filho ou filha fica fora da contagem: a idade é a primeira pergunta. A pergunta extra
+  // de um perfil só se abre no fim; ela aparece como "Pergunta extra", sem mudar o total.
+  const contadas = steps.filter((s) => !s.condicional && s.key !== GENERO_STEP.key)
+  const total = branch === '9a17' || branch === 'm9' ? contadas.length : 10
+  const extra = step.condicional === true
+  const numero = extra ? total : Math.max(contadas.findIndex((s) => s.key === step.key) + 1, 1)
+  const rotulo = extra ? 'Pergunta extra' : `Pergunta ${numero} de ${total}`
   const etapa =
     step.key === IDADE_STEP.key
       ? flexionar(QUIZ_ENTRY.sobre, genero)
@@ -304,7 +323,10 @@ export default function ComunidadeQuiz({
           ] ?? '',
           genero,
         )
-  const voltar = position <= 1 ? INTRO : (steps[position - 1]?.key ?? INTRO)
+  // Da idade, Voltar leva à pergunta de filho ou filha (na entrada ela não aparece mais depois de
+  // respondida); dela, à entrada.
+  const voltar = position === 0 ? INTRO : (steps[position - 1]?.key ?? INTRO)
+  const contagem = step.key !== GENERO_STEP.key
   return shell(
     <main
       id="quiz"
@@ -314,24 +336,25 @@ export default function ComunidadeQuiz({
       data-analytics-attempt={session?.id}
       data-analytics-position={position + 1}
     >
-      <div className="qz-progresso">
-        <div className="qz-progresso-linha">
-          <span>
-            {numero} de {total}
-          </span>
-          <span className="qz-etapa">{etapa}</span>
+      {/* A pergunta de filho ou filha fica fora da contagem, como na entrada. */}
+      {contagem && (
+        <div className="qz-progresso">
+          <div className="qz-progresso-linha">
+            <span>{extra ? 'Pergunta extra' : `${numero} de ${total}`}</span>
+            <span className="qz-etapa">{etapa}</span>
+          </div>
+          <div
+            className="qz-barra"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={total}
+            aria-valuenow={numero}
+            aria-label={rotulo}
+          >
+            <span style={{ width: `${Math.round((numero / total) * 100)}%` }} />
+          </div>
         </div>
-        <div
-          className="qz-barra"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={total}
-          aria-valuenow={numero}
-          aria-label={`Pergunta ${numero} de ${total}`}
-        >
-          <span style={{ width: `${Math.round((numero / total) * 100)}%` }} />
-        </div>
-      </div>
+      )}
       <h1 className="qz-titulo" ref={heading} tabIndex={-1}>
         {shown.titulo}
       </h1>

@@ -81,7 +81,7 @@ export const MARCAS = {
     recorrer: 'ter a quem recorrer quando travar',
     tempo: 'caiba em poucas horas por semana',
     orcamento: 'caiba no seu orçamento',
-    ao_vivo: 'ter aula ao vivo',
+    ao_vivo: 'ter professor ao vivo',
     trabalho: 'sirva para trabalhar com jogos',
   },
   sintese: {
@@ -159,7 +159,7 @@ export const OPENING_ATTEMPT: Record<string, string> = {
 }
 
 export const OPENING_CLOSE =
-  'A gente vê essa história com frequência, e ela tem uma explicação simples.'
+  'Essa história tem uma explicação simples.'
 /** "Nenhuma dessas" na P5: a carta diz que se guiou pelas outras respostas. */
 export const OPENING_CLOSE_NO_SCENE = `Das frases sobre jogar, ${m(MARCAS.cena.nenhum)}, então a gente se guiou pelas outras respostas, e elas contam uma história com uma explicação simples.`
 
@@ -179,7 +179,7 @@ export const calculatorSentence = (porSemana: string, criacao: string): string =
   `${porSemana} por ano jogando, e você disse que ${m(criacao)}.`
 
 const RUSH = 'Com o trabalho, a família e o cansaço da noite,'
-const TRIED = 'Não é falta de vontade: você já tentou. O problema é o ponto de partida.'
+const TRIED = 'Vontade você tem, porque já tentou. O que trava é o ponto de partida.'
 const BIG_IDEA = 'A ideia costuma ser grande, com mundo, história e dezenas de fases,'
 
 export interface WhyCopy {
@@ -366,20 +366,20 @@ export const FOUNDERS =
 /** A garantia e o computador sempre entram; a pergunta extra vem com "Você disse também". */
 export const NEEDS_HEADING = 'Duas coisas que você disse e que importam'
 
-/** A N9. "Ter aula ao vivo" e "Servir para trabalhar com jogos": o que a página diz que não faz. */
+/** A N9. "Ter professor ao vivo" e "Servir para trabalhar com jogos": o que a página diz que não faz. */
 export const NEED: Record<string, string> = {
   sozinho: `Você precisa ${m(MARCAS.garantia.sozinho)}. As aulas são gravadas, o vídeo fica ao lado do editor e o projeto fica salvo na sua conta: você para hoje e continua amanhã do mesmo ponto.`,
   recorrer: `Você precisa ${m(MARCAS.garantia.recorrer)}. As dúvidas vão para a equipe pelos Recados, o canal de mensagens da plataforma, e o botão Verificar esta etapa diz o que já está certo antes de você seguir.`,
   tempo: `Você precisa que ${m(MARCAS.garantia.tempo)}. Quem decide o ritmo é você: as aulas são gravadas, o projeto fica salvo e você continua de onde parou.`,
   orcamento: `Você precisa que ${m(MARCAS.garantia.orcamento)}. Os dois planos dão acesso a tudo, e muda só a forma de pagar. Você tem 7 dias para testar: se não for para você, é só pedir o reembolso integral por e-mail dentro desse prazo.`,
-  ao_vivo: `Você precisa ${m(MARCAS.garantia.ao_vivo)}. Aqui as aulas são gravadas, para caber no seu horário, e as dúvidas vão para a equipe pelos Recados. Se a aula ao vivo for indispensável, este ainda não é o formato para você.`,
+  ao_vivo: `Você precisa ${m(MARCAS.garantia.ao_vivo)}. Aqui as aulas são gravadas, para caber no seu horário, e as dúvidas vão para a equipe pelos Recados. Se o professor ao vivo for indispensável, este ainda não é o formato para você.`,
   trabalho: `Você precisa que ${m(MARCAS.garantia.trabalho)}. Aqui a proposta é terminar o seu primeiro jogo nas horas livres, sem prometer uma profissão. Se o objetivo é trabalhar com jogos, este ainda não é o caminho para você.`,
 }
 
 /** A S3: o requisito do computador, dito também quando já está atendido. */
 export const COMPUTER: Record<string, string> = {
   meu: `E você ${m(MARCAS.computador.meu)}: tudo roda no navegador, sem instalar nada.`,
-  compartilhado: `E você ${m(MARCAS.computador.compartilhado)}: como as aulas são gravadas, basta combinar um horário em que ele esteja livre.`,
+  compartilhado: `E você ${m(MARCAS.computador.compartilhado)}: como as aulas são gravadas, basta combinar um horário em que o computador esteja livre.`,
   celular_tablet: `E você ${m(MARCAS.computador.celular_tablet)}. Para criar, é preciso um computador com mouse e teclado; o celular serve para jogar e mostrar o que você publicou.`,
   verificar: `E você ${m(MARCAS.computador.verificar)}: é nele que tudo roda, no navegador e sem instalar nada, com internet, mouse e teclado.`,
 }

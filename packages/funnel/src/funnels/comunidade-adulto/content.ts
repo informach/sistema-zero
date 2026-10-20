@@ -38,7 +38,7 @@ export const COMUNIDADE_ADULTO_CHECKOUT: FunnelCheckoutIntro = {
 // vista; o cartão recorrente não recebe aviso prévio.
 export const COMUNIDADE_ADULTO_OBRIGADO: FunnelObrigado = {
   titulo: 'Sua assinatura está confirmada.',
-  intro: 'Você pode começar pelo primeiro curso hoje mesmo.',
+  intro: 'O primeiro curso fica na sua conta assim que o acesso for liberado.',
   acesso:
     'Se já tem conta, entre com seu acesso habitual. No primeiro acesso, siga as instruções enviadas ao e-mail da compra para criar a senha.',
   passosTitulo: 'Os primeiros passos',
@@ -63,7 +63,7 @@ export const COMUNIDADE_ADULTO_OBRIGADO: FunnelObrigado = {
     {
       titulo: 'Acompanhe a assinatura na sua conta',
       texto:
-        'O plano e os pagamentos ficam em Compras, na sua conta. Por ali, você pode cancelar quando quiser, e o acesso continua até o fim do período já pago.',
+        'O plano e os pagamentos ficam em Compras e assinatura, na sua conta. Por ali, você pode cancelar quando quiser, e o acesso continua até o fim do período já pago.',
     },
   ],
 }

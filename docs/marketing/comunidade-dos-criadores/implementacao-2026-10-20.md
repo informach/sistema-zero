@@ -48,8 +48,14 @@ A dona autorizou seguir sem consulta. Cada decisão abaixo seguiu a recomendaç�
 - **Saída de menor de 18 no quiz adulto:** é uma tela, não uma pergunta. Nada sobre idade é gravado.
 - **Selo de produto no quiz adulto:** ficou de fora antes do resultado; o topo mostra só a marca e
   o selo de HUD "COMUNIDADE DOS CRIADORES", como no Canvas.
-- **"Ter aula ao vivo"** é uma necessidade que a pessoa declara no quiz adulto, aprovada no Canvas;
-  no resultado, ela vira condição não atendida e o botão leva a conferir os requisitos.
+- **"Ter professor ao vivo"** é a necessidade que a pessoa declara no quiz adulto. O Canvas trazia
+  "Ter aula ao vivo", trocado para nenhuma tela antes do resultado citar aula, como no Kids. No
+  resultado, ela vira condição não atendida e o botão leva a conferir os requisitos.
+- **Revisão de copy de 20/10/2026:** as cartas adultas não dizem mais "a gente vê essa história com
+  frequência" (ainda não há alunos adultos); "Não é falta de vontade" virou "Vontade você tem, porque
+  já tentou"; o relatório semanal sai "toda sexta, no fim da tarde"; o menu adulto é "Compras e
+  assinatura"; o obrigado adulto não promete começar "hoje mesmo"; frases em que "ele" era o
+  computador ou o bloco ficaram explícitas, para não virarem "ela" na versão da filha.
 - **Relatos sem lugar nas páginas novas** ficaram numa lista de reserva com o motivo
   (`RELATOS_RESERVA`), em vez de saírem do código.
 - **Checkout e obrigado** passaram a ler os textos do conteúdo de cada funil. O texto do Desafio e o
@@ -73,7 +79,13 @@ A dona autorizou seguir sem consulta. Cada decisão abaixo seguiu a recomendaç�
   prévia do Mural ainda mostra o nome antigo "Mostra dos criadores".
 - **Cursos adultos** publicados com os blocos da paleta, e a política da jornada adulta, que exige
   rodar `journey:seed-adult --apply` com a dona.
-- **Espaços adultos no Hub:** Clube e Mural adulto.
+- **Espaços adultos no Hub:** Clube, Mural adulto e Desafio do mês, que a página e as cartas adultas
+  já citam, assim como os tutoriais adultos.
+- **Ferramentas das fases seguintes no Kids:** as páginas descrevem Pensa, Molda, Ponte e código como
+  parte da Jornada (texto aprovado no Canvas), mas os cursos publicados chegam ao Construtor.
+- **Botão do resultado do menor de 9, perfil B:** o quadro do Canvas diz "Ver como criar o primeiro
+  jogo de vocês" e o `quiz-dados.json` (fonte única) diz "Ver as ideias dela virando jogo". Ficou o
+  segundo; a dona confirma qual vale.
 - **Revisão jurídica** dos quatro Termos e da Política de Privacidade.
 - **Links antigos:** Instagram, ManyChat e documentos que apontam para as páginas de perfil. Eles
   funcionam pelo redirecionamento.

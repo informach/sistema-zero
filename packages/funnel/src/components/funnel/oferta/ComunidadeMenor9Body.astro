@@ -52,6 +52,10 @@ const byInterval = (n: number) =>
       : null
 const mensal = byInterval(1)
 const anual = byInterval(12)
+// Com o catálogo no ar, um plano sem oferta ao vivo não é oferecido: o botão dele não teria slug e o
+// checkout abriria no outro plano. Sem catálogo (plans nulo), os dois aparecem com o preço de reserva.
+const mostraMensal = !plans || mensal !== null
+const mostraAnual = !plans || anual !== null
 const mensalCents = mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents
 const anualCents = anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents
 // A economia só existe com os DOIS preços ao vivo; sem economia, o selo do anual sai.
@@ -344,6 +348,7 @@ const CORES_DEPOIS = ['amarelo', 'rosa', 'azul', 'menta']
             <p class="cm9-texto cm9-texto--forte">{P.planos.destaque}</p>
           </div>
           <div class="cm9-planos">
+            {mostraMensal && (
             <article class="cm9-plano" aria-labelledby="cm9-plano-mensal">
               <h3 id="cm9-plano-mensal" class="cm9-plano__nome">{P.planos.mensal.nome}</h3>
               <p class="cm9-plano__preco">{preencher(P.planos.mensal.preco)}<span>{P.planos.mensal.periodo}</span></p>
@@ -351,6 +356,8 @@ const CORES_DEPOIS = ['amarelo', 'rosa', 'azul', 'menta']
               <button type="button" class="cm9-plano__botao" data-checkout-cta data-checkout-oferta={mensal?.slug}>{P.planos.mensal.cta}</button>
               <p class="cm9-plano__nota">{P.planos.mensal.nota}</p>
             </article>
+            )}
+            {mostraAnual && (
             <article class="cm9-plano cm9-plano--anual" aria-labelledby="cm9-plano-anual">
               {economiaAnualCents > 0 && <p class="cm9-plano__selo">{preencher(P.planos.anual.selo)}</p>}
               <h3 id="cm9-plano-anual" class="cm9-plano__nome">{P.planos.anual.nome}</h3>
@@ -359,6 +366,7 @@ const CORES_DEPOIS = ['amarelo', 'rosa', 'azul', 'menta']
               <button type="button" class="cm9-plano__botao cm9-plano__botao--escuro" data-checkout-cta data-checkout-oferta={anual?.slug}>{P.planos.anual.cta}</button>
               <p class="cm9-plano__nota">{P.planos.anual.nota}</p>
             </article>
+            )}
           </div>
           <div class="cm9-depois">
             <div class="cm9-depois__passos">
@@ -417,7 +425,7 @@ const CORES_DEPOIS = ['amarelo', 'rosa', 'azul', 'menta']
     </div>
 
     <div class="kof-mobar cm9-barra" data-mobar aria-hidden="true">
-      <p class="kof-mobar__preco"><strong>{preencher(P.barra.preco)}</strong>{preencher(P.barra.alternativa)}</p>
+      <p class="kof-mobar__preco">{mostraMensal && <strong>{preencher(P.barra.preco)}</strong>}{mostraMensal && mostraAnual && preencher(P.barra.alternativa)}</p>
       <a class="cm9-cta cm9-cta--barra" href="#planos" tabindex="-1">{P.barra.cta}</a>
     </div>
   </div>

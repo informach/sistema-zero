@@ -3,8 +3,8 @@
 // (chave `adulto`) e as telas do Canvas `QuizAdultoTelas.html`.
 //
 // Regras da copy (decisão da dona): nenhuma tela antes do resultado cita a área adulta, curso,
-// plataforma, assinatura ou preço. A única "aula" é a da pessoa ("Ter aula ao vivo"), uma
-// necessidade que ela declara, aprovada no Canvas. O portão de idade (P1) não é pergunta gravada:
+// plataforma, assinatura ou preço (o Canvas trazia "Ter aula ao vivo"; virou "Ter professor ao
+// vivo", como no Kids, na revisão de 20/10/2026). O portão de idade (P1) não é pergunta gravada:
 // a entrada tem o botão "Começar" e o link "Tenho menos de 18 anos", tratados pela ilha.
 import type { Opcao, SelecaoStep } from '../../../content/quiz-config'
 
@@ -139,7 +139,7 @@ export const ADULT_QUESTIONS: SelecaoStep[] = [
     ],
     { shuffle: true },
   ),
-  // N9. Necessidade: a objeção. "Ter aula ao vivo" e "Servir para trabalhar com jogos" são
+  // N9. Necessidade: a objeção. "Ter professor ao vivo" e "Servir para trabalhar com jogos" são
   // condições que a oferta não atende; ficam no fim para a posição não puxar a escolha.
   pergunta(
     9,
@@ -152,7 +152,7 @@ export const ADULT_QUESTIONS: SelecaoStep[] = [
       ['recorrer', 'Ter a quem recorrer quando travar'],
       ['tempo', 'Caber em poucas horas por semana'],
       ['orcamento', 'Caber no meu orçamento'],
-      ['ao_vivo', 'Ter aula ao vivo'],
+      ['ao_vivo', 'Ter professor ao vivo'],
       ['trabalho', 'Servir para trabalhar com jogos'],
     ],
     { shuffle: true, fixedLast: ['ao_vivo', 'trabalho'] },

@@ -724,7 +724,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
       {
         pergunta: 'Posso cancelar quando quiser?',
         resposta:
-          'Pode. O cancelamento fica na sua conta, em Compras, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e os jogos publicados continuam no Mural.',
+          'Pode. O cancelamento fica na sua conta, em Compras e assinatura, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e os jogos publicados continuam no Mural.',
       },
     ],
   },

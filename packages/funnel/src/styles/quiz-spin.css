@@ -218,21 +218,6 @@
   color: var(--qz-tinta);
   opacity: 0.88;
 }
-.qz .qz-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.qz .qz-chip {
-  padding: 4px 8px;
-  border: 2px solid var(--qz-trilho);
-  color: var(--qz-suave);
-  font-family: var(--qz-rotulo);
-  font-size: 0.6875rem;
-}
-.qz--adulto .qz-chip {
-  border-color: var(--cda-linha-forte);
-}
 .qz .qz-pergunta-entrada {
   margin-top: 8px;
   font-family: var(--qz-titulo);
@@ -522,9 +507,12 @@
   font-family: var(--qz-rotulo);
   font-size: 0.6875rem;
   color: var(--qz-suave);
-  border: 2px solid var(--cda-linha-forte);
+  border: 2px solid var(--qz-trilho);
   padding: 4px 8px;
   text-transform: uppercase;
+}
+.qz--adulto .qz-chip {
+  border-color: var(--cda-linha-forte);
 }
 
 @media (min-width: 640px) {

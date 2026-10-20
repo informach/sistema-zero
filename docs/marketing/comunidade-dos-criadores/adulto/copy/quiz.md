@@ -120,7 +120,7 @@ _Etapa: O QUE VOCÊ QUER. Chave `garantia`. No /admin: O que precisa estar garan
 - `recorrer`: Ter a quem recorrer quando travar
 - `tempo`: Caber em poucas horas por semana
 - `orcamento`: Caber no meu orçamento
-- `ao_vivo`: Ter aula ao vivo
+- `ao_vivo`: Ter professor ao vivo
 - `trabalho`: Servir para trabalhar com jogos
 
 ### Juntando tudo, o que você quer?
