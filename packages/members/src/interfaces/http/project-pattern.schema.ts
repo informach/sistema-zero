@@ -1,3 +1,5 @@
+import { ValidationError } from '@sistemazero/core/errors'
+import { isProjectBlockPattern } from '@sistemazero/core/learning'
 import { t } from 'elysia'
 
 const values = () =>
@@ -17,11 +19,35 @@ export const fieldOptionsSchema = () =>
     t.Array(t.String({ minLength: 1, maxLength: 200 }), { minItems: 1, maxItems: 50 }),
     { maxProperties: 20 },
   )
+// Keep the raw maps until the canonical guard checks them: normalization must not
+// remove a misspelled bound or flag and silently widen an objective.
+export const fieldRangesSchema = () =>
+  t
+    .Transform(t.Unknown())
+    .Decode((value) => {
+      const pattern = { blockType: '', fieldRanges: value }
+      if (!isProjectBlockPattern(pattern))
+        throw new ValidationError('O intervalo do campo é inválido.')
+      return pattern.fieldRanges
+    })
+    .Encode((value) => value)
+export const fieldTextSchema = () =>
+  t
+    .Transform(t.Unknown())
+    .Decode((value) => {
+      const pattern = { blockType: '', fieldText: value }
+      if (!isProjectBlockPattern(pattern))
+        throw new ValidationError('O critério de texto do campo é inválido.')
+      return pattern.fieldText
+    })
+    .Encode((value) => value)
 const base = () => ({
   // Empty selections are valid drafts; publication requires a selected block.
   blockType: t.String({ maxLength: 200 }),
   fields: t.Optional(values()),
   fieldOptions: t.Optional(fieldOptionsSchema()),
+  fieldRanges: t.Optional(fieldRangesSchema()),
+  fieldText: t.Optional(fieldTextSchema()),
   inputs: t.Optional(values()),
   beforeBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
 })

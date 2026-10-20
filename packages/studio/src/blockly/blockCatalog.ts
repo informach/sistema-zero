@@ -53,6 +53,8 @@ export interface ServerBlockCatalogEntry extends BlockCatalogEntry {
     label: string
     kind: 'fields' | 'inputs'
     numeric: boolean
+    /** A free text field, not a dropdown, color, picker or value socket. */
+    textual?: boolean
     options?: [string, string][]
     min?: number
     max?: number
@@ -367,6 +369,7 @@ export const SERVER_BLOCK_CATALOG: readonly ServerBlockCatalogEntry[] = GROUPS.f
                 label: labels[arg.name] ?? `Valor ${index + 1}`,
                 kind: input ? ('inputs' as const) : ('fields' as const),
                 numeric: data.type === 'field_number' || data.check === 'Number',
+                textual: data.type === 'field_input',
                 min: typeof data.min === 'number' ? data.min : undefined,
                 max: typeof data.max === 'number' ? data.max : undefined,
                 precision: typeof data.precision === 'number' ? data.precision : undefined,

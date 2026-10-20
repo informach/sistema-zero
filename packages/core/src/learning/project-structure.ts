@@ -3,6 +3,7 @@ import { isExecutionRule } from './project-execution'
 import {
   isProjectBlockPattern,
   type ProjectBlockPattern,
+  type ProjectFieldRange,
   type SectionStructureRule,
 } from './section-progression'
 
@@ -20,6 +21,27 @@ const enabled = (n: Record<string, unknown>) =>
   n.disabled !== true &&
   n.enabled !== false &&
   !(Array.isArray(n.disabledReasons) && n.disabledReasons.length)
+
+/** Blockly serializes numbers as either numbers or decimal text, never JS expressions. */
+function fieldNumber(value: unknown): number | undefined {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined
+  if (
+    typeof value !== 'string' ||
+    !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value.trim())
+  )
+    return undefined
+  const number = Number(value)
+  return Number.isFinite(number) ? number : undefined
+}
+
+function inRange(value: unknown, range: ProjectFieldRange): boolean {
+  const number = fieldNumber(value)
+  return (
+    number !== undefined &&
+    (range.min === undefined || (range.minExclusive ? number > range.min : number >= range.min)) &&
+    (range.max === undefined || (range.maxExclusive ? number < range.max : number <= range.max))
+  )
+}
 
 function literal(node: unknown): unknown {
   if (!record(node) || !enabled(node) || !record(node.fields)) return undefined
@@ -93,6 +115,13 @@ function matchesBlock(
       Object.entries(pattern.fieldOptions ?? {}).every(
         ([key, options]) => Object.hasOwn(fields, key) && options.includes(String(fields[key])),
       ) &&
+      Object.entries(pattern.fieldRanges ?? {}).every(
+        ([key, range]) => Object.hasOwn(fields, key) && inRange(fields[key], range),
+      ) &&
+      Object.keys(pattern.fieldText ?? {}).every((key) => {
+        const value = fields[key]
+        return Object.hasOwn(fields, key) && typeof value === 'string' && value.trim().length > 0
+      }) &&
       Object.entries(pattern.inputs ?? {}).every(([key, value]) => {
         const actual = literal(child(inputs[key]))
         return actual !== undefined && String(actual) === String(value)

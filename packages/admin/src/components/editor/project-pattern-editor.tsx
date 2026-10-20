@@ -9,6 +9,25 @@ type Model = {
   inputs: (block: ServerBlockCatalogEntry) => ServerBlockCatalogEntry['connections']['children']
 }
 
+/** Imported flexible criteria stay visible instead of being edited as exact literals. */
+export function projectFieldConstraintText(
+  pattern: ProjectBlockPattern,
+  name: string,
+): string | null {
+  const options = pattern.fieldOptions?.[name]
+  if (options) return `Valores aceitos: ${options.join(', ')}`
+  const range = pattern.fieldRanges?.[name]
+  if (range) {
+    const bounds: string[] = []
+    if (range.min !== undefined)
+      bounds.push(`${range.minExclusive ? 'maior que' : 'maior ou igual a'} ${range.min}`)
+    if (range.max !== undefined)
+      bounds.push(`${range.maxExclusive ? 'menor que' : 'menor ou igual a'} ${range.max}`)
+    return `Número ${bounds.join(' e ')}`
+  }
+  return pattern.fieldText?.[name] ? 'Texto não vazio' : null
+}
+
 function inputLabel(name: string) {
   const fixed: Record<string, string> = {
     BODY: 'Ações dentro do bloco',
@@ -74,15 +93,15 @@ export function ProjectPatternEditor({
       )}
       {depth > 0 &&
         block.parameters.map((parameter) => {
-          const options =
-            parameter.kind === 'fields' ? pattern.fieldOptions?.[parameter.name] : undefined
-          if (options)
+          const constraint =
+            parameter.kind === 'fields' ? projectFieldConstraintText(pattern, parameter.name) : null
+          if (constraint)
             return (
               <div key={`fields:${parameter.name}`} className="text-sm">
                 <span>
                   {parameter.label} ({parameter.name})
                 </span>
-                <p className="text-muted-foreground">Valores aceitos: {options.join(', ')}</p>
+                <p className="text-muted-foreground">{constraint}</p>
               </div>
             )
           const value = String(pattern[parameter.kind]?.[parameter.name] ?? '')

@@ -4,7 +4,7 @@ import type { ServerBlockCatalogEntry } from '@sistemazero/studio/server-catalog
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
 import { useEffect, useMemo, useState } from 'react'
-import { ProjectPatternEditor } from './project-pattern-editor'
+import { ProjectPatternEditor, projectFieldConstraintText } from './project-pattern-editor'
 
 type Rule = Extract<SectionStructureRule, { type: 'usesBlock' }>
 export function ProjectRuleEditor({
@@ -121,8 +121,8 @@ export function ProjectRuleEditor({
         </Select>
       </label>
       <p className="text-xs text-muted-foreground">
-        Blocos soltos ou desativados não contam. Valores abaixo são opcionais e exigem uma
-        configuração literal.
+        Blocos soltos ou desativados não contam. Valores exatos são opcionais; intervalos e
+        critérios de texto já configurados aparecem descritos abaixo.
       </p>
       <label className="block text-sm">
         Quantidade exata (opcional; zero confere a retirada)
@@ -163,10 +163,8 @@ export function ProjectRuleEditor({
       {selected?.parameters.map((param) => (
         <label className="block text-sm" key={`${param.kind}:${param.name}`}>
           {param.label}
-          {param.kind === 'fields' && rule.fieldOptions?.[param.name] ? (
-            <p className="text-muted-foreground">
-              Valores aceitos: {rule.fieldOptions[param.name]?.join(', ')}
-            </p>
+          {param.kind === 'fields' && projectFieldConstraintText(rule, param.name) ? (
+            <p className="text-muted-foreground">{projectFieldConstraintText(rule, param.name)}</p>
           ) : param.options?.length ? (
             <Select
               value={String(rule[param.kind]?.[param.name] ?? '')}

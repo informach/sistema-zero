@@ -38,6 +38,135 @@ const solutionExamples = (solution: object) => ({
 })
 
 describe('objective authoring uses the actual workspace contracts', () => {
+  test('numeric ranges and free text require real fields and a realizable field domain', () => {
+    const model = projectCheckAuthoring({
+      initialProject: { installedExtensions: [{ id: 'game-2d' }] },
+    })
+    const numeric = (
+      fieldRanges: Extract<SectionStructureRule, { type: 'usesBlock' }>['fieldRanges'],
+    ): SectionStructureRule => ({ type: 'usesBlock', blockType: 'sz_val_color_alpha', fieldRanges })
+    for (const range of [
+      { min: 0, minExclusive: true as const },
+      { min: 99, max: 100 },
+      { min: 0, max: 0 },
+    ])
+      expect(model.issues(numeric({ ALPHA: range }))).toEqual([])
+    for (const range of [
+      { max: -1 },
+      { min: 100, minExclusive: true as const },
+      { min: 0.1, max: 0.9 },
+    ])
+      expect(model.issues(numeric({ ALPHA: range })).length).toBeGreaterThan(0)
+    expect(model.issues(numeric({ COLOR: { min: 0 } })).length).toBeGreaterThan(0)
+    expect(model.issues(numeric({ UNKNOWN: { min: 0 } })).length).toBeGreaterThan(0)
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_set_stage_description',
+        fieldText: { DESCRIPTION: { nonBlank: true } },
+      }),
+    ).toEqual([])
+    for (const [blockType, name] of [
+      ['sz_val_number', 'NUM'],
+      ['sz_val_color', 'COLOR'],
+      ['sz_g2d_enable_classic_controls', 'MODE'],
+      ['sz_val_variable', 'NAME'],
+      ['sz_g2d_set_stage_description', 'MISSING'],
+    ])
+      if (blockType && name)
+        expect(
+          model.issues({ type: 'usesBlock', blockType, fieldText: { [name]: { nonBlank: true } } })
+            .length,
+        ).toBeGreaterThan(0)
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_track_travel',
+        fieldRanges: { SPEED: { min: 0 } },
+      }).length,
+    ).toBeGreaterThan(0)
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_track_travel',
+        fieldOptions: { SPEED: ['160', '320', '480'] },
+      }),
+    ).toEqual([])
+    // Fractional precision belongs to the actual field; no invented integer-only restriction.
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_css_opacity',
+        fieldRanges: { VALUE: { min: 0.3, max: 0.3 } },
+      }),
+    ).toEqual([])
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_css_opacity',
+        fieldRanges: { VALUE: { min: 0.3, max: 0.4, minExclusive: true, maxExclusive: true } },
+      }).length,
+    ).toBeGreaterThan(0)
+  })
+  test('numeric sockets use their active number block, never a field fallback or a replaced shadow', () => {
+    const model = projectCheckAuthoring({
+      initialProject: { installedExtensions: [{ id: 'game-2d' }] },
+    })
+    const rule: SectionStructureRule = {
+      type: 'usesBlock',
+      blockType: 'sz_g2d_top_down',
+      inputBlocks: {
+        SPEED: { blockType: 'sz_val_number', fieldRanges: { NUM: { min: 0, minExclusive: true } } },
+      },
+    }
+    expect(model.issues(rule)).toEqual([])
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_top_down',
+        fieldRanges: { SPEED: { min: 0 } },
+      }).length,
+    ).toBeGreaterThan(0)
+    const project = (speed: unknown) => ({
+      blocksState: {
+        blocks: {
+          blocks: [
+            {
+              type: 'sz_frame_start',
+              inputs: {
+                CHILDREN: { block: { type: 'sz_g2d_top_down', inputs: { SPEED: speed } } },
+              },
+            },
+          ],
+        },
+      },
+    })
+    const shadow = { type: 'sz_val_number', fields: { NUM: 2 } }
+    expect(evaluateStudioProjectStructure(rule, project({ shadow }))).toBe(true)
+    expect(
+      evaluateStudioProjectStructure(
+        rule,
+        project({ shadow, block: { type: 'sz_val_number', fields: { NUM: 0 } } }),
+      ),
+    ).toBe(false)
+    expect(
+      evaluateStudioProjectStructure(
+        rule,
+        project({ shadow, block: { type: 'sz_val_variable', fields: { NAME: 'velocidade' } } }),
+      ),
+    ).toBe(false)
+    expect(
+      evaluateStudioProjectStructure(rule, project({ shadow: { ...shadow, disabled: true } })),
+    ).toBe(false)
+    expect(
+      model.issues({
+        ...rule,
+        inputBlocks: {
+          SPEED: { blockType: 'sz_val_number', fieldText: { NUM: { nonBlank: true } } },
+        },
+      }).length,
+    ).toBeGreaterThan(0)
+  })
   test('validates every allowed field option against the real block parameter', () => {
     const model = projectCheckAuthoring({
       initialProject: { installedExtensions: [{ id: 'game-2d' }] },

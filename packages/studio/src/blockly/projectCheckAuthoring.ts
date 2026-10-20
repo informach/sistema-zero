@@ -12,6 +12,7 @@ import {
   type LessonSection,
   PROJECT_CHECK_AREAS,
   type ProjectEntryReport,
+  type ProjectFieldRange,
   type ProjectObjectiveVerdictRow,
   projectEntryReport,
   resolveStudioSectionExamples,
@@ -239,6 +240,28 @@ const strings = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 const compatible = (a: string[] | null, b: string[] | null) =>
   a === null || b === null || a.some((check) => b.includes(check))
+
+/** The interval must contain a value the real Blockly number field can represent. */
+function possibleFieldRange(
+  range: ProjectFieldRange,
+  parameter: ServerBlockCatalogEntry['parameters'][number],
+): boolean {
+  const lower = Math.max(range.min ?? -Infinity, parameter.min ?? -Infinity)
+  const upper = Math.min(range.max ?? Infinity, parameter.max ?? Infinity)
+  const lowerOpen = range.min === lower && range.minExclusive === true
+  const upperOpen = range.max === upper && range.maxExclusive === true
+  if (lower > upper || (lower === upper && (lowerOpen || upperOpen))) return false
+  const precision = parameter.precision
+  if (!precision || precision < 0) return true
+  const step = (bound: number, lowerBound: boolean, open: boolean) => {
+    const quotient = bound / precision
+    const rounded = Math.round(quotient)
+    if (Number.isFinite(quotient) && Math.abs(quotient - rounded) < 1e-8)
+      return rounded + (open ? (lowerBound ? 1 : -1) : 0)
+    return lowerBound ? Math.ceil(quotient) : Math.floor(quotient)
+  }
+  return step(lower, true, lowerOpen) <= step(upper, false, upperOpen)
+}
 
 const namedInputsCache = new WeakMap<
   ServerBlockCatalogEntry,
@@ -584,6 +607,23 @@ export function projectCheckAuthoring(workspace: unknown) {
         }
         if (!valid) errors.push(`O parâmetro ${name} não existe ou não aceita o valor configurado.`)
       }
+    for (const [name, range] of Object.entries(rule.fieldRanges ?? {})) {
+      const parameter = block.parameters.find(
+        (param) => param.kind === 'fields' && param.name === name,
+      )
+      if (!parameter?.numeric || !possibleFieldRange(range, parameter))
+        errors.push(
+          `O campo ${name} não é numérico ou o intervalo não aceita nenhum valor deste bloco.`,
+        )
+    }
+    for (const name of Object.keys(rule.fieldText ?? {})) {
+      if (
+        !block.parameters.some(
+          (param) => param.kind === 'fields' && param.name === name && param.textual,
+        )
+      )
+        errors.push(`O campo ${name} não aceita texto livre neste bloco.`)
+    }
     for (const [name, pattern] of Object.entries(rule.inputBlocks ?? {})) {
       const socket = projectCheckInputs(block).find((input) => input.name === name)
       const child = byType.get(pattern.blockType)

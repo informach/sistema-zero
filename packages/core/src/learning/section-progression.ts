@@ -14,11 +14,22 @@ import {
 } from './python-project-checks'
 import type { LessonRequirementReason } from './requirements'
 
+export interface ProjectFieldRange {
+  min?: number
+  max?: number
+  minExclusive?: true
+  maxExclusive?: true
+}
+
 export interface ProjectBlockPattern {
   blockType: string
   fields?: Record<string, string | number | boolean>
   /** A field may match any of these explicit names, e.g. alternative lit lighthouse images. */
   fieldOptions?: Record<string, string[]>
+  /** Finite numeric bounds on a field; an exclusive bound requires its endpoint. */
+  fieldRanges?: Record<string, ProjectFieldRange>
+  /** Accept the learner's own nonblank text without prescribing its contents. */
+  fieldText?: Record<string, { nonBlank: true }>
   inputs?: Record<string, string | number | boolean>
   /** A later enabled sibling in this same statement chain, never another branch. */
   beforeBlock?: string
@@ -229,6 +240,25 @@ const label = (v: unknown): v is string =>
 /** Authors save half-filled objectives; an empty block type is the placeholder, not a broken draft. */
 const blockName = (v: unknown): v is string => typeof v === 'string' && v.length <= 200
 
+export function isProjectFieldRange(value: unknown): value is ProjectFieldRange {
+  if (
+    !record(value) ||
+    Object.keys(value).some((key) => !['min', 'max', 'minExclusive', 'maxExclusive'].includes(key))
+  )
+    return false
+  const { min, max, minExclusive, maxExclusive } = value
+  if (min === undefined && max === undefined) return false
+  if (min !== undefined && (typeof min !== 'number' || !Number.isFinite(min))) return false
+  if (max !== undefined && (typeof max !== 'number' || !Number.isFinite(max))) return false
+  if (minExclusive !== undefined && (minExclusive !== true || min === undefined)) return false
+  if (maxExclusive !== undefined && (maxExclusive !== true || max === undefined)) return false
+  return !(
+    typeof min === 'number' &&
+    typeof max === 'number' &&
+    (min > max || (min === max && (minExclusive || maxExclusive)))
+  )
+}
+
 export function isProjectBlockPattern(value: unknown): value is ProjectBlockPattern {
   let remaining = 64
   function valid(v: unknown, depth: number): boolean {
@@ -250,6 +280,15 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
       )
     )
       return false
+    const constrainedFields = new Set<string>()
+    for (const map of [v.fields, v.fieldOptions, v.fieldRanges, v.fieldText]) {
+      if (map === undefined) continue
+      if (!record(map) || Object.keys(map).length > 20) return false
+      for (const key of Object.keys(map)) {
+        if (!label(key) || constrainedFields.has(key)) return false
+        constrainedFields.add(key)
+      }
+    }
     if (
       v.fieldOptions !== undefined &&
       (!record(v.fieldOptions) ||
@@ -257,13 +296,25 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
         !Object.entries(v.fieldOptions).every(
           ([key, options]) =>
             label(key) &&
-            !(record(v.fields) && Object.hasOwn(v.fields, key)) &&
             Array.isArray(options) &&
             options.length > 0 &&
             options.length <= 50 &&
             options.every(label) &&
             new Set(options).size === options.length,
         ))
+    )
+      return false
+    if (record(v.fieldRanges) && !Object.values(v.fieldRanges).every(isProjectFieldRange))
+      return false
+    if (
+      record(v.fieldText) &&
+      !Object.values(v.fieldText).every(
+        (text) =>
+          record(text) &&
+          Object.keys(text).length === 1 &&
+          Object.hasOwn(text, 'nonBlank') &&
+          text.nonBlank === true,
+      )
     )
       return false
     return (

@@ -31,7 +31,12 @@ import {
   SYMMETRY_PIECES,
 } from '@sistemazero/core/learning/scene'
 import { getSchemaValidator, t } from 'elysia'
-import { fieldOptionsSchema, ProjectBlockRelationshipsSchema } from './project-pattern.schema'
+import {
+  fieldOptionsSchema,
+  fieldRangesSchema,
+  fieldTextSchema,
+  ProjectBlockRelationshipsSchema,
+} from './project-pattern.schema'
 
 const Id = t.String({ format: 'uuid' })
 const ExecutionJsonValue = t
@@ -771,6 +776,8 @@ function sectionRuleSchema(context: ExecutionStepValidationContext) {
       ),
       // Declarado: sem ele, salvar a estrutura apagava a lista de valores aceitos (06/10/2026).
       fieldOptions: t.Optional(fieldOptionsSchema()),
+      fieldRanges: t.Optional(fieldRangesSchema()),
+      fieldText: t.Optional(fieldTextSchema()),
       inputs: t.Optional(
         t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
           maxProperties: 20,
