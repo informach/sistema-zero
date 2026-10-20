@@ -249,3 +249,58 @@ browser/runtime final, instalação em máquina limpa, desempenho, partida de de
 minutos ou 30 reinícios. Os 42 casos novos de Pac-Man continuam preparados e
 não executados. O lote continua sujeito ao review do coordenador; a matriz
 S01–S10 e o aceite integral permanecem abertos.
+
+## Pac-Man: embedding nativo pronto, ainda sem execução gráfica
+
+`qualification/pacman_native.py` executa o mesmo observer de geometria/IA sobre
+o ZIP baseline canônico, com seus 32 arquivos intactos. O observer é compilado
+externamente, com configuração explícita; nenhum arquivo é acrescentado ou
+reescrito na árvore exportada. Os cinco imports do jogo devem vir desse ZIP.
+As duas configurações produzidas têm exatamente os mesmos bytes que
+`preparePacmanScenario` entrega para browser, conferidos por SHA:
+
+- `geometry`: `4ab4c0691c951b6c4d39beee27d049b9324aeb7eb084c41e2c9cc67208eaba73`;
+- `ai`: `22c2c8305b76d98f1164d662e06fb55857ae9bc3c7d5d7ae1e61b9ae2dea39df`.
+
+O runner verifica preparation SHA `7fe7d174…`, ZIP baseline SHA `d67e8f17…`,
+main portátil SHA `8bd91529…`, inventário completo, sete arquivos do áudio instalado,
+declarações build/runtime e versões exatas das três dependências. A instalação
+própria é reutilizada, sem alegar instalação fresca para cada caso. O modo
+`--preflight` não importa Turtle nem o backend de áudio e não cria Tk/temporário.
+Ambos os preflights passaram e estão em
+`games-functional-r1/pacman-native-{geometry,ai}-preflight-r1/`; recibos nativos SHA
+`7716fceb7645b6ef818106a77024eed5752b29a7d975532b75ac79d0236c3c5d` e
+`5ddc43eb9770a5c18b03622d558661b6ed4e53c3caf5769dcec45ed9897338fd`.
+
+A execução gráfica futura usa o root Tk oficial ocultado antes do primeiro pump,
+captura erros dos callbacks, exige os 32/10 nomes completos e ordenados, todos os
+imports vindos do export, Map0/Destroy1, áudio/temporário liberados e árvore
+inalterada mesmo no caminho de falha. Há deadline QA adicional de 12 s, sem
+substituir os timers autorais. O supervisor externo tem 20 s por processo;
+deadline/sinal é negativo. As fixtures atuais precisam terminar antes do início
+autoral de 2,5 s; se isso não ocorrer, o teste falha e preserva o negativo, sem
+acelerar/interceptar o timer.
+
+`run_pacman_native.mjs` exige, para abrir Tk, um prazo absoluto UTC válido e ainda
+com pelo menos 20 s disponíveis antes do spawn. Mensagem atrasada/prazo expirado,
+saldo insuficiente, data ambígua ou data inexistente são recusados antes de criar
+o diretório da tentativa. O valor `preflight` permite somente o modo sem Tk.
+Quatro testes de processo/admissão passaram, sem criar GUI; incluem a preservação
+de falha de spawn e recusa de sobrescrever uma tentativa existente.
+
+Exemplo para uma janela nova explicitamente combinada; substituir o último
+argumento pelo prazo UTC efetivamente concedido, sem reutilizar horários vencidos:
+
+```powershell
+node experiments/studio-python-runtime/qualification/run_pacman_native.mjs `
+  C:/Users/tocha/projects/sistema-zero-python-games/.cache/studio-python-l0/games-native-env-r1/Scripts/python.exe `
+  C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/pacman-native-r1 `
+  .cache/studio-python-l0/games-functional-r1/pacman-native-geometry-r1 geometry PRAZO_UTC_CONCEDIDO
+```
+
+Orçamento solicitado para os dois casos seriais: até 60 s, incluindo inspeção e
+cleanup entre eles, parando no primeiro negativo. Nenhum recurso é reservado
+durante preparação/review. Esses dois preflights e a paridade de fonte **não**
+executam ou aprovam os 42 casos geométricos/IA; a janela gráfica permanece pendente.
+O remoto `2744bab0c` foi buscado e conferido sem merge/rebase/reset na branch;
+não houve delta nas receitas/corpus ou fontes Core/Runtime conferidas.
