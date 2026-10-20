@@ -1,0 +1,382 @@
+/*
+ * comunidade-continuar.css: as peças próprias da página de continuidade da Comunidade Kids
+ * (`/kids/comunidade-dos-criadores/oferta/continuar`, proposta de 20/10/2026; desenho em
+ * docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/canvas/PaginaContinuarKids.html).
+ * Body: `ComunidadeContinuarBody.astro`; copy: `oferta/pagina-continuar.ts`.
+ *
+ * A página veste o layout da de 9 a 17 (`comunidade-917.css`, sob `.c917`) e só acrescenta o que
+ * ela não tem: a faixa para a criança, o painel "O caminho dele", as cartas de situação, as duas
+ * listas do que fica e do que a assinatura acrescenta e a fita dos postos. Mesmas regras: nenhuma
+ * cor própria, só os aliases `--kof-*` e as variáveis `--c9-*`; a cor de cada peça vem de `--c9-cor`.
+ * A cor que conduz a página é o verde, a cor de guardado e de pode seguir.
+ */
+
+.c917 .c9c-destaque {
+  background: var(--c9-verde);
+}
+
+.c917 .c9c-sec--pontos {
+  background-color: var(--kof-chao);
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--c9-tinta) 8%, var(--kof-chao)) 1.5px,
+    var(--kof-chao) 1.5px
+  );
+  background-size: 22px 22px;
+}
+
+/* ── Faixa para a criança que chega pela tela de ferramenta fechada ─────────── */
+.c917 .c9c-aviso {
+  border-bottom: var(--c9-borda);
+  background: var(--kof-amarelo-fundo);
+}
+.c917 .c9c-aviso__texto {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px var(--c9-margem);
+  box-sizing: border-box;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.c917 .c9c-aviso__texto svg {
+  flex: none;
+}
+
+/* ── O caminho dele (painel do herói) ───────────────────────────────────────── */
+.c917 .c9c-caminho {
+  position: relative;
+  flex: 1 1 520px;
+  min-width: 0;
+  margin: 26px 10px 10px 0;
+  padding: 26px 22px 22px;
+  border: var(--c9-borda);
+  border-radius: 22px;
+  background: var(--kof-carta);
+  box-shadow: 10px 10px 0 var(--c9-verde);
+  transform: rotate(0.8deg);
+}
+.c917 .c9c-caminho__titulo {
+  position: absolute;
+  top: -20px;
+  left: 22px;
+  margin: 0;
+  padding: 4px 14px;
+  border-radius: 12px;
+  background: var(--c9-tinta);
+  color: var(--kof-carta);
+  font-family: var(--kof-display);
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.3;
+  transform: rotate(-2deg);
+}
+.c917 .c9c-caminho__passos {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.c917 .c9c-caminho__passo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+/* A linha tracejada liga o marco de um passo ao do seguinte. */
+.c917 .c9c-caminho__passo + .c9c-caminho__passo::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 18px;
+  height: 22px;
+  border-left: 3px dashed var(--c9-tinta);
+}
+.c917 .c9c-caminho__marca {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  box-sizing: border-box;
+  border: var(--c9-borda);
+  border-radius: 50%;
+  background: var(--c9-cor);
+  color: var(--c9-tinta);
+  font-family: var(--kof-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+.c917 .c9c-caminho__passo img {
+  flex: none;
+  width: clamp(88px, 30%, 160px);
+  height: auto;
+  aspect-ratio: 16 / 10;
+  box-sizing: border-box;
+  border: var(--c9-borda);
+  border-radius: 10px;
+  object-fit: cover;
+  object-position: top left;
+}
+.c917 .c9c-caminho__texto {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.c917 .c9c-caminho__texto strong {
+  font-family: var(--kof-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.c917 .c9c-caminho__texto span {
+  color: var(--c9-suave);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+/* ── Onde ele parou: uma carta por situação ─────────────────────────────────── */
+.c917 .c9c-situacao {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 20px;
+  border: var(--c9-borda);
+  border-radius: 20px;
+  background: var(--kof-chao);
+  box-shadow: 6px 6px 0 var(--c9-cor);
+}
+.c917 .c9c-situacao__titulo {
+  align-self: flex-start;
+  margin: 0;
+  padding: 4px 12px;
+  border: var(--c9-borda);
+  border-radius: 10px;
+  background: var(--c9-cor);
+  color: var(--c9-tinta);
+  font-family: var(--kof-corpo);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.4;
+  transform: rotate(-1.5deg);
+}
+.c917 .c9c-situacao:nth-child(even) .c9c-situacao__titulo {
+  transform: rotate(1.5deg);
+}
+.c917 .c9c-situacao__titulo--clara {
+  color: var(--kof-carta);
+}
+.c917 .c9c-situacao__texto {
+  margin: 0;
+  color: var(--c9-suave);
+  font-size: 1.0625rem;
+}
+.c917 .c9c-situacao__tela {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: auto;
+  aspect-ratio: 16 / 10;
+  box-sizing: border-box;
+  border: var(--c9-borda);
+  border-radius: 12px;
+  background: var(--kof-carta);
+  object-fit: cover;
+  object-position: top left;
+}
+/* Sem tela (a oficina ao vivo): três blocos de montar no lugar da imagem. */
+.c917 .c9c-situacao__blocos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 120px;
+  margin-top: auto;
+  border: 3px dashed var(--c9-tinta);
+  border-radius: 12px;
+  background: var(--kof-carta);
+}
+.c917 .c9c-situacao__blocos span {
+  width: 46px;
+  height: 30px;
+  border: var(--c9-borda);
+  border-radius: 8px;
+  background: var(--c9-amarelo);
+  transform: rotate(-6deg);
+}
+.c917 .c9c-situacao__blocos span:nth-child(2) {
+  background: var(--c9-verde);
+  transform: rotate(4deg);
+}
+.c917 .c9c-situacao__blocos span:nth-child(3) {
+  background: var(--c9-azul-claro);
+  transform: rotate(-3deg);
+}
+
+/* ── O que fica × o que a assinatura acrescenta ─────────────────────────────── */
+.c917 .c9c-lista {
+  display: flex;
+  flex: 1 1 420px;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 24px;
+  border: var(--c9-borda);
+  border-radius: 22px;
+  background: var(--kof-carta);
+  box-shadow: 8px 8px 0 var(--c9-tinta);
+}
+.c917 .c9c-lista__titulo {
+  align-self: flex-start;
+  margin: 0;
+  padding: 4px 12px;
+  border: var(--c9-borda);
+  border-radius: 10px;
+  background: var(--kof-chao);
+  font-family: var(--kof-corpo);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+.c917 .c9c-lista ul {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1.125rem;
+}
+.c917 .c9c-lista li {
+  display: flex;
+  gap: 12px;
+}
+.c917 .c9c-lista li svg {
+  flex: none;
+  margin-top: 4px;
+  color: var(--c9-suave);
+}
+.c917 .c9c-lista--assinatura {
+  --c9-foco: var(--kof-carta);
+  background: var(--c9-azul);
+  color: var(--kof-carta);
+}
+.c917 .c9c-lista--assinatura .c9c-lista__titulo {
+  background: var(--c9-amarelo);
+  color: var(--c9-tinta);
+  transform: rotate(-1.5deg);
+}
+.c917 .c9c-lista--assinatura li svg {
+  color: var(--c9-verde);
+}
+.c917 .c9c-inicio {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: 16px 20px;
+  border: 3px dashed var(--c9-tinta);
+  border-radius: 18px;
+  background: var(--kof-carta);
+  font-size: 1.0625rem;
+}
+.c917 .c9c-inicio svg {
+  flex: none;
+}
+
+/* ── A Jornada daqui para frente: a fita dos oito postos ────────────────────── */
+/* Quatro por linha: os oito postos em duas fileiras (com o auto-fit, a Lenda ficava sozinha). */
+.c917 .c9c-postos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 18px 0 0;
+  list-style: none;
+}
+.c917 .c9c-posto {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: var(--c9-borda);
+  border-radius: 16px;
+  background: var(--kof-carta);
+}
+.c917 .c9c-posto__numero {
+  color: var(--c9-suave);
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+.c917 .c9c-posto__nome {
+  font-family: var(--kof-display);
+  font-size: 1.1875rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.c917 .c9c-posto__libera {
+  color: var(--c9-suave);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+.c917 .c9c-posto--marco {
+  background: var(--c9-verde);
+  box-shadow: 5px 5px 0 var(--c9-tinta);
+}
+.c917 .c9c-posto--marco .c9c-posto__numero,
+.c917 .c9c-posto--marco .c9c-posto__libera {
+  color: var(--c9-tinta);
+}
+.c917 .c9c-posto__marco {
+  position: absolute;
+  top: -18px;
+  right: -6px;
+  padding: 2px 10px;
+  border: var(--c9-borda);
+  border-radius: 999px;
+  background: var(--c9-rosa);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.5;
+  white-space: nowrap;
+  transform: rotate(3deg);
+}
+.c917 .c9c-posto--lenda {
+  background: var(--kof-navy);
+  color: var(--kof-carta);
+}
+.c917 .c9c-posto--lenda .c9c-posto__numero {
+  color: var(--c9-amarelo);
+}
+.c917 .c9c-posto--lenda .c9c-posto__libera {
+  color: var(--kof-navy-texto);
+}
+
+@media (max-width: 760px) {
+  .c917 .c9c-postos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .c917 .c9c-caminho {
+    margin-right: 6px;
+    padding: 24px 16px 18px;
+    transform: none;
+  }
+  .c917 .c9c-caminho__passo {
+    gap: 10px;
+  }
+  .c917 .c9c-caminho__texto strong {
+    font-size: 1.0625rem;
+  }
+  .c917 .c9c-caminho__texto span {
+    font-size: 0.9375rem;
+  }
+}

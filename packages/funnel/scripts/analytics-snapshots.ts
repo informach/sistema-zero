@@ -54,11 +54,7 @@ try {
         width: Number(row.viewport),
         expected: String(row.revision),
       })
-  for (const path of [
-    '/',
-    '/como-funciona',
-    ...Object.values(FUNNELS).map((f) => `${f.basePath}/oferta`),
-  ])
+  for (const path of ['/', ...Object.values(FUNNELS).map((f) => `${f.basePath}/oferta`)])
     for (const width of [390, 1280])
       if (!jobs.has(`${path}:${width}`)) jobs.set(`${path}:${width}`, { page: path, width })
   let captured = 0

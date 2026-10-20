@@ -42,7 +42,7 @@ const srcset = (imagem: ImagemMenor9) =>
 if (!P.heroi.titulo.includes(P.heroi.enfase)) throw new Error('Ênfase fora do título do herói')
 const [tituloInicio = '', tituloFim = ''] = P.heroi.titulo.split(P.heroi.enfase)
 
-// Preços AO VIVO, como na ComunidadeOfertaBody: a resolução por intervalo conserva qual oferta é a
+// Preços AO VIVO, como na Comunidade917Body: a resolução por intervalo conserva qual oferta é a
 // principal e qual é a irmã; sem catálogo, vale o fallback da Comunidade (nunca o do NCI).
 const byInterval = (n: number) =>
   plans?.main.intervalMonths === n
@@ -434,7 +434,7 @@ const CORES_DEPOIS = ['amarelo', 'rosa', 'azul', 'menta']
 </BaseLayout>
 
 <script>
-  // A barra fixa do celular, a mesma da ComunidadeOfertaBody: aparece depois da dobra e some
+  // A barra fixa do celular, a mesma da Comunidade917Body: aparece depois da dobra e some
   // quando os planos ou o rodapé entram na tela. Sem JS ela nasce escondida e `aria-hidden`.
   const barra = document.querySelector<HTMLElement>('[data-mobar]')
   const planos = document.getElementById('planos')

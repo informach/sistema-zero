@@ -74,13 +74,13 @@ recebem tudo por prop: `Quiz` (steps/total/landing/funnel/donePath), `PreCheckou
 cartões, um para cada quiz: "É para mim" → `/pro/comunidade-dos-criadores/quiz`
 (`data-analytics-id="bio-quiz-adulto"`) e "É para meu filho ou filha" →
 `/kids/comunidade-dos-criadores/quiz` (`bio-quiz-infantil`). Sem atalho para oferta, por decisão da
-dona; o cartão adulto leva a classe `theme-arcade` só para ler os tokens `--cda-*`. A apresentação
-com prints reais, percurso jogar → experimentar → programar → continuar → criar, recursos e FAQ
-fica em `/como-funciona/` (`src/pages/como-funciona.astro`), com seção própria para orientação pelas
-atividades, Como fazer, Pensa, Zappy, Mural/Clube e equipe via Recados. Reutiliza tokens das ofertas, conteúdo
-em `src/content/home-comunidade.ts` e estilos `comunidade-home.css`; desde 20/10/2026 fala só da
-faixa de 9 a 17 anos e leva à página nova da Comunidade. Links preservam a
+dona; o cartão adulto leva a classe `theme-arcade` só para ler os tokens `--cda-*`. Links preservam a
 atribuição sanitizada, com HTML `no-store`; a raiz não cria lead. URLs planas antigas → 301.
+**`/como-funciona/` saiu em 20/10/2026** (decisão da dona): as páginas de oferta já explicam como a
+plataforma funciona e a bio leva aos quizzes. `src/pages/como-funciona.astro` só faz 301 para
+`/kids/comunidade-dos-criadores/oferta#experiencia`, com a query; os links do Desafio apontam direto
+para lá (o menu do Desafio usa a própria seção `#experiencia`), e a página saiu do sitemap e das
+métricas (`analyticsPage` reconhece só a bio fora dos funis).
 
 **Métricas próprias (03/10/2026):** `src/analytics/`, `components/Analytics.astro` no BaseLayout,
 `/api/analytics/*`, `/api/admin/analytics` e aba Métricas. Por decisão explícita de 03/10/2026,
@@ -194,15 +194,17 @@ especificidade decrescente).
 preço/perfil e `components/funnel/OfertaPage.astro` escolhe o body pela CHAVE do funil, nunca por
 exclusão (funil sem body declarado lança): `content.sales` → `NoComandoOfertaBody`; Comunidade Kids →
 `Comunidade917Body` (`/oferta`), `ComunidadeMenor9Body` (`/oferta/criar-junto`) ou
-`ComunidadeOfertaBody` (`/oferta/continuar`); Comunidade adulta → `ComunidadeAdultoOfertaBody`;
-Desafio → `DesafioOfertaBody`. `content.sales` (shape `SalesSections`) é
+`ComunidadeContinuarBody` (`/oferta/continuar`); Comunidade adulta → `ComunidadeAdultoOfertaBody`
+ou `ComunidadeAdultoContinuarBody` (`/oferta/continuar`, prop `comunidadeAdultoPage`); Desafio →
+`DesafioOfertaBody`. `content.sales` (shape `SalesSections`) é
 **opcional** — funis com layout de vendas próprio (Desafio, Comunidade) trazem a cópia no próprio
 body e ficam sem `sales`. Cada body monta o seu PRÓPRIO `<BaseLayout>` (título/tema/JSON-LD/
 preload). `src/components/funnel/oferta/NoComandoOfertaBody.astro` = template padrão (16 seções a
 partir de `SALES`); `DesafioOfertaBody.astro` compartilha `kids-oferta.css` e
 `comunidade-oferta.css`, com complementos em `desafio-farol.css` sob `.df`, sem duplicar os
-valores dos tokens. Usa Material Symbols self-hosted; `ComunidadeOfertaBody.astro` = layout em `src/styles/comunidade-oferta.css`, prefixado por `.cdc`
-(sem o escopo do Astro; ver "Direção de arte das quatro páginas"). ⚠️ Astro escopa somando um
+valores dos tokens. Usa Material Symbols self-hosted; o layout `.cdc` mora em
+`src/styles/comunidade-oferta.css` (sem o escopo do Astro; ver "Direção de arte das quatro páginas"),
+hoje vestido pelo Desafio e pelas páginas do presente e do embaixador. ⚠️ Astro escopa somando um
 atributo por elo do seletor: um override tipo `.kid.verde .name` só vence a base `.kid .char .name`
 se incluir os MESMOS elos (`.kid.verde .char .name`). Os CTAs de compra levam `data-checkout-cta` →
 o `PreCheckoutModal` (mesma ilha do NCI) abre o checkout; opcionalmente levam também
@@ -247,8 +249,8 @@ Ofertas: `/kids/desafio-primeiro-jogo/oferta` (primeiro jogo), `/oferta/tempo-de
 usam `no-store` e conferem o contrato antes de vender; indisponibilidade não recebe preço fictício.
 O quiz não mostra preço; o resultado continua informativo quando não consegue consultar o preço.
 
-A raiz é a bio, `/como-funciona/` apresenta a plataforma e a Comunidade continua sendo a
-opção ampla, que pode ser contratada diretamente. Links usam `funnelLinkWithAttribution`.
+A raiz é a bio e a Comunidade continua sendo a opção ampla, que pode ser contratada diretamente
+(`/como-funciona/` virou 301 para a experiência da página de 9 a 17 em 20/10/2026). Links usam `funnelLinkWithAttribution`.
 Capturas do Farol e do caderno são reais; telas compartilhadas identificam a interface e o
 curso usado no exemplo. Não recolocar nave, asteroides, Mapa dos Pais ou depoimentos antigos
 como prova do Farol. Detalhes, testes e pendências operacionais em
@@ -276,9 +278,25 @@ quadros em `docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/`; regis
   `oferta/pagina-9a17.ts` + `styles/comunidade-917.css` sob `.c917`) e `/oferta/criar-junto` (menor de
   9 criando com um adulto, `ComunidadeMenor9Body` + `pagina-menor9.ts` + `comunidade-menor9.css` sob
   `.cm9`). Copy em módulos tipados, preços dos planos ao vivo, dois CTAs com `data-checkout-oferta`,
-  sem os botões "Jogue um jogo". `/oferta/continuar` não mudou. Espelhos: `copy/pagina-9-a-17.md` e
-  `copy/pagina-menor-9.md` (`bun scripts/espelho-copy-comunidade.ts`). Relato fora de todas as páginas
-  e resultados vai para `RELATOS_RESERVA` (`oferta/relatos.ts`) com o motivo.
+  sem os botões "Jogue um jogo". Espelhos: `copy/pagina-9-a-17.md`, `copy/pagina-menor-9.md` e
+  `copy/pagina-e-continuidade.md` (`bun scripts/espelho-copy-comunidade.ts`). Relato fora de todas as
+  páginas e resultados vai para `RELATOS_RESERVA` (`oferta/relatos.ts`) com o motivo.
+- **Continuidades (20/10/2026, Canvas "PaginaContinuarKids" e "PaginaContinuarAdulto"):** para quem já
+  conhece a plataforma, na ordem alívio (o que ficou guardado) → situações com o próximo passo → o que
+  fica × o que a assinatura acrescenta → Jornada ou etapas → prova → planos com quando começa, mesmo
+  e-mail e garantia. Kids: `/oferta/continuar`, `ComunidadeContinuarBody` + `oferta/pagina-continuar.ts`
+  + `comunidade-continuar.css` (sob `.c917`, vestindo o layout da 9 a 17; o verde conduz), faixa no
+  topo para a criança que chega pela tela de ferramenta fechada, cinco situações (a primeira é "ainda
+  no primeiro projeto"), os oito postos conferidos contra `initialKidsJourneyPolicy` no teste, falas
+  N18, AV11 e N15, 9 dúvidas, faixa 9 a 17. Adulta: `/pro/comunidade-dos-criadores/oferta/continuar`
+  (`isComunidadeAdultoSubpagina`, `comunidade-adulto/oferta/index.ts`), `ComunidadeAdultoContinuarBody`
+  + `comunidade-adulto/oferta/continuar.ts` + `comunidade-adulto-continuar.css` (sob `.cda`), metáfora
+  do save (tela de carregar jogo, SAVE 1 a 4: quem cancelou, quem já tem conta, quem fez 18 no Kids,
+  quem acompanha alguém no Kids), sem contagem regressiva; o que a página adulta já diz (requisitos,
+  cartão dos planos, escada, tela do Mural, links legais) vem de `PAGINA_ADULTO` por referência.
+  Espelho adulto em `adulto/copy/pagina-continuar.md`. A continuidade antiga (motor de seções,
+  `ComunidadeOfertaBody`, `continuidade*.ts`, `shared.ts`, faixa `TOUR`) saiu; o espelho dela ficou em
+  `copy/historico/2026-10-20-continuidade-antiga/`.
 - **Quiz Kids v6** (`comunidade-dos-criadores/quiz/`): entrada com cartas filho/filha e a idade em
   cartas; ramos `9a17` (chaves da v5) e `m9` (chaves `m9_*`, pontuação própria); "18 ou mais" sai para
   o quiz adulto. Eventos `respondeu_comunidade_v6_*`, `entrou_ramo_<id>` ao entrar num ramo (cadeias
@@ -322,9 +340,8 @@ página levam `data-checkout-oferta` com o slug de cada oferta. Registrado DEPOI
 "acesso AO Desafio" × "acesso À Comunidade"). Imagens em `public/img/comunidade-dos-criadores/`
 (capa do checkout = `checkout-capa.webp`, arte "Corre, Dino!"; hero/ilustras começaram como cópias
 dos assets do Desafio — a arte nova substitui por cima com os MESMOS nomes). A página bio da raiz
-(`/`) apresenta Como funciona primeiro, o Desafio como primeiro passo e a Comunidade como
-continuidade ou contratação direta. A ampliação dos prints é compartilhada
-entre a raiz e as ofertas pelo componente `ComunidadeImageZoom.astro`.
+(`/`) leva aos dois quizzes desde 20/10/2026 (ver acima). A ampliação dos prints
+(`ComunidadeImageZoom.astro`) é compartilhada pelo Desafio e pelo quiz do Desafio.
 **Copies da Comunidade:** a copy vive no código, em
 `src/funnels/comunidade-dos-criadores/oferta/`; `docs/marketing/kids/comunidade-dos-criadores/copy/pagina-*.md`
 é o espelho gerado por `bun scripts/espelho-copy-comunidade.ts` (o teste reprova espelho velho). Conteúdo tipado em
@@ -360,14 +377,10 @@ páginas de perfil (`tempo-de-tela`, `criacao-de-jogos`, `expressao-visual`, `fo
 retornar na ROTA, nunca no componente Astro compartilhado. `OfertaPage.astro` despacha os bodies.
 CTA principal aponta para `#planos`; link secundário para `#experiencia`.
 A página pública `/oferta/continuar` atende famílias que já conhecem a plataforma, sem presumir
-conclusão: copy e cerca de 25 respostas em `continuidade.ts`/`continuidade-faq.ts` (desde 16/10), com as mesmas telas,
-componentes e estilos dos quatro perfis. É uma etapa de relacionamento, não um quinto avatar.
-O parâmetro antigo de origem foi removido, sem redirecionamento especial. Os convites de assinatura
-no Kids e nos serviços de continuidade/expiração do Members apontam para a nova rota.
-A página E usa `#proximo-passo`, `#experiencia` e `#garantia`, compara os acessos e explica o início
-do período contratado. O pré-checkout lembra de usar o mesmo e-mail do responsável. Seus dados
-sobrescrevem somente a oferta e as respostas desta página; as quatro copies anteriores permanecem.
-Registro e validação: `docs/marketing/kids/comunidade-dos-criadores/implementacao-continuidade.md`.
+conclusão; desde 20/10/2026 é a `ComunidadeContinuarBody` (ver "Comunidade dos Criadores em três
+públicos"). É uma etapa de relacionamento, não um quinto avatar. Os convites de assinatura no Kids e
+nos serviços de continuidade/expiração do Members apontam para ela. Histórico da versão de 01/10 a
+20/10: `docs/marketing/kids/comunidade-dos-criadores/implementacao-continuidade.md`.
 **Habilidades escolares (15/10/2026, até 20/10/2026; hoje a URL faz 301):** `/oferta/habilidades-escolares` era uma sexta apresentação
 da assinatura, em `habilidades-escolares.ts`/`habilidades-escolares-faq.ts`; desde a v5 do quiz
 (16/10/2026) é o destino do perfil F. A dor e a explicação ficam imediatamente abaixo do hero; `tourAfterSection: 'f01'` coloca
@@ -391,7 +404,7 @@ alternativo. **Só telas REAIS (01/10/2026, decisão da dona):** as 28 prévias 
 ainda não tem captura fica em `PENDING_VISUALS` e NÃO renderiza (a seção ou a resposta segue só
 com o texto). ⚠️ **Nada de "em construção" nas telas (16/10/2026):** as capturas da Jornada trazem
 o cartão "Mais 6 postos estão sendo construídos"; o visual `jornada` usa só o RECORTE
-`tela-jornada-meus-postos` (Faísca + Construtor) e o mapa saiu; o `catalogo` (e a faixa TOUR) usa
+`tela-jornada-meus-postos` (Faísca + Construtor) e o mapa saiu; o `catalogo` usa
 o recorte `tela-catalogo-trilha`, sem o fim do mapa. Recapturou, refaça o recorte
 (caixa no comentário de `visuals.ts`); `comunidade-offer-copy.test.ts` reprova a tela inteira. Ligar uma pendente = capturar e mover a chave para `COMUNIDADE_VISUALS`; os vínculos
 com as quatro páginas e com `FAQ_VISUALS` já existem. Ver "Direção de arte das quatro páginas".
@@ -530,8 +543,8 @@ palavra; mudou a composição, e todas as imagens passaram a ser telas reais.
   outra pendente), o texto fica inteiro ao lado dela, sem parágrafo solto. As pendentes saem
   DEPOIS do vínculo. Mexer em `visuals`/`heroVisual`/`layout` é decisão de desenho; os textos não
   se tocam.
-- **Página de continuidade (`continuar`, 01/10/2026):** mesma direção de arte, com três peças
-  próprias. (1) `layout: 'cases'` em `#proximo-passo`: uma carta por SITUAÇÃO (`.situacoes`), com
+- **Página de continuidade (`continuar`, 01/10/2026 a 20/10/2026; hoje tem corpo próprio):** mesma
+  direção de arte, com três peças próprias. (1) `layout: 'cases'` em `#proximo-passo`: uma carta por SITUAÇÃO (`.situacoes`), com
   o marco na cor do grupo ligado por uma linha, texto e a tela dela (`only="first"`); na folha
   branca a carta vira painel na cor do chão. (2) A comparação de acessos
   (`ComunidadeComparacao.astro`, `group.comparison`) é uma carta por PAR, metade neutra → seta →
@@ -540,11 +553,13 @@ palavra; mudou a composição, e todas as imagens passaram a ser telas reais.
   layout (`.cdc .comparacao-*`), sem `<style>` no componente. (3) `ENFASE_NUMA_LINHA` em
   `oferta/arte.ts` (largura da ênfase do título em `em`: o h1 encolhe por `cqi` até a frase azul
   caber inteira numa linha; antes o equilíbrio de linhas deixava "continuar" sozinho). Desde 16/10
-o mapa está vazio (nenhuma ênfase atual precisa); o mecanismo e a guarda ficam para títulos futuros.
-- **`oferta/arte.ts` (o que depende do ASSUNTO, não da posição), nas cinco páginas:**
-  `ICONES_DE_CAPITULO` (chip do capítulo, por id de seção), `ICONES_DE_GRUPO` (ícone de cada
-  subtítulo) e `ICONES_DE_DUVIDAS` (assuntos das dúvidas, por página). Sem entrada vale o ícone
-  pela posição; seção nova com assunto que a posição não acerta ganha uma linha ali.
+o mapa ficou vazio, e saiu em 20/10 com a continuidade antiga (os cartões `cases` e a comparação
+seguem no motor de seções, sem página que os use).
+- **`oferta/arte.ts` (o que depende do ASSUNTO, não da posição), no motor de seções:**
+  `ICONES_DE_CAPITULO` (chip do capítulo, por id de seção) e `ICONES_DE_GRUPO` (ícone de cada
+  subtítulo). Sem entrada vale o ícone pela posição; hoje os dois estão vazios (as entradas eram da
+  continuidade antiga) e o teste exige que uma entrada nova aponte para uma seção do presente ou do
+  embaixador.
 - **Revisão das cinco páginas (01/10/2026):** o TEXTO fica ao lado da tela que ele descreve. Ao
   mexer em `visuals`, confira o par de cada bloco (o grupo sem subtítulo se divide: a 1ª tela vai
   com a primeira metade dos parágrafos, as demais com a segunda): o parágrafo do Clube estava ao
@@ -560,15 +575,12 @@ o mapa está vazio (nenhuma ênfase atual precisa); o mecanismo e a guarda ficam
   outra aba). ⚠️ O `<dialog>` precisa de `margin: auto`: o reset do Tailwind zera a margem e ele
   ia para o canto.
 - **Destaques** (`oferta/destaques.ts` + `destacar.ts` + `ComunidadeProsa.astro`): trechos
-  LITERAIS da copy em `<strong>` (marca-texto amarelo), por id de seção, `<perfil>:convite`,
-  `origem` e `assinatura`. O teste exige que cada trecho exista uma única vez no texto da seção e
-  que o parágrafo, remontado, seja idêntico: editar a copy quebra o destaque em voz alta.
-- **Faixa "Por dentro da Comunidade"** (`TOUR`): dez telas com o nome da área e UMA linha
-  PESSOAL de função, sempre o filho fazendo algo ali ("Onde seu filho monta e testa os jogos",
-  "Onde ele desenha personagens e cenários"). Decisão da dona (01/10/2026): frase que descreve a
-  FERRAMENTA ("Desenhos digitais que podem participar dos projetos") foi recusada como genérica.
-  Sem condição de acesso: a faixa mostra o que existe; quem explica a liberação é o capítulo da
-  Jornada.
+  LITERAIS da copy em `<strong>` (marca-texto amarelo), por id de seção do motor. O mapa ficou vazio
+  em 20/10 (as entradas eram da continuidade antiga); o mecanismo segue para as seções do presente.
+- **Faixa "Por dentro da Comunidade"** (`TOUR`, até 20/10/2026): dez telas com o nome da área e UMA
+  linha PESSOAL de função ("Onde seu filho monta e testa os jogos"); saiu com a continuidade antiga.
+  A regra da dona continua valendo para frases novas: descrever o filho fazendo algo ali, nunca a
+  ferramenta.
 - **Capturas** (`scripts/captura-telas-kids.ts`, reescrito em roteiros): cada roteiro leva a
   plataforma a um estado e tira 1x e @2x, inteira ou recortada. `KIDS_SO` aceita nome de foto ou
   de roteiro; `KIDS_CDP_PORT` anexa a um Chrome já logado. ⚠️⚠️ **O token de sessão do kids GIRA**:

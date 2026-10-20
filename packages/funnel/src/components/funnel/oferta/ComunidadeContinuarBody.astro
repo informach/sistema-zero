@@ -1,0 +1,385 @@
+---
+// Página de continuidade da Comunidade Kids (`/kids/comunidade-dos-criadores/oferta/continuar`), para
+// a família que já começou na plataforma. Proposta de 20/10/2026 (desenho em docs/marketing/
+// comunidade-dos-criadores/proposta-2026-10-19/canvas/PaginaContinuarKids.html), na família visual da
+// página de 9 a 17: a copy mora em `pagina-continuar.ts`, as receitas em kids-oferta.css, o layout
+// comum em comunidade-917.css (`.c917`) e as peças próprias em comunidade-continuar.css.
+// Preços ao vivo dos planos (fallback COMUNIDADE_PRECO_FALLBACK), falas só de `RELATOS`.
+import '../../../styles/kids-oferta.css'
+import '../../../styles/comunidade-917.css'
+import '../../../styles/comunidade-continuar.css'
+import { COMUNIDADE_PRECO_FALLBACK } from '../../../funnels/comunidade-dos-criadores/content'
+import { calcularEconomiaAnual } from '../../../funnels/comunidade-dos-criadores/oferta/economia'
+import { legendaDoRelato } from '../../../funnels/comunidade-dos-criadores/oferta/pagina-9a17'
+import { PAGINA_CONTINUAR as P } from '../../../funnels/comunidade-dos-criadores/oferta/pagina-continuar'
+import { RELATOS } from '../../../funnels/comunidade-dos-criadores/oferta/relatos'
+import type { FunnelDef } from '../../../funnels/registry'
+import PreCheckoutModal from '../../../islands/PreCheckoutModal'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { formatBRLFromCents, formatBRLFromCents2 } from '../../../lib/money'
+import { funnelOgImage } from '../../../lib/seo'
+import type { OfferPlans } from '../../../server/catalog'
+import Footer from '../../Footer.astro'
+import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+
+interface Props {
+  f: FunnelDef
+  productName: string
+  priceLabel: string
+  priceLabelShort: string
+  priceReais: string
+  imagesBase: string
+  perfil: string | null
+  quer?: string | null
+  ofertaUrl: string
+  plans: OfferPlans | null
+}
+const { f, productName, imagesBase, ofertaUrl, plans } = Astro.props
+const img = (file: string) => `${imagesBase}/${file}`
+
+// A resolução por intervalo conserva qual oferta é a principal e qual é a irmã.
+const byInterval = (n: number) =>
+  plans?.main.intervalMonths === n
+    ? plans.main
+    : plans?.alt?.intervalMonths === n
+      ? plans.alt
+      : null
+const mensal = byInterval(1)
+const anual = byInterval(12)
+// Com o catálogo no ar, um plano sem oferta ao vivo não é oferecido: o botão dele não teria slug e o
+// checkout abriria no outro plano. Sem catálogo (plans nulo), os dois aparecem com o preço de reserva.
+const mostraMensal = !plans || mensal !== null
+const mostraAnual = !plans || anual !== null
+const mensalCents = mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents
+const anualCents = anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents
+// Economia só com os dois preços AO VIVO (nunca contra o fallback); sem ela o selo sai.
+const economiaAnualCents = calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)
+// "Menos de R$ X por dia": a mensalidade em 30 dias, levada à dezena de centavos SEGUINTE.
+const precoDiaCents = (Math.floor(mensalCents / 300) + 1) * 10
+const precos: Record<string, string> = {
+  '{{preco_mensal}}': formatBRLFromCents(mensalCents),
+  '{{preco_anual}}': formatBRLFromCents(anualCents),
+  '{{equivalente_mensal_anual}}': formatBRLFromCents2(Math.round(anualCents / 12)),
+  '{{economia_anual}}': formatBRLFromCents(economiaAnualCents),
+  '{{preco_dia}}': formatBRLFromCents2(precoDiaCents),
+}
+const fill = (text: string) =>
+  Object.entries(precos).reduce((acc, [marcador, valor]) => acc.replaceAll(marcador, valor), text)
+const priceReais = ((plans?.main.priceCents ?? mensalCents) / 100).toFixed(2)
+
+// Cores do desenho, por posição (as classes `c9-cor--*` só apontam para os aliases `--kof-*`).
+const CORES_HEROI = ['verde', 'amarelo', 'azul-claro']
+const CORES_CAMINHO = ['verde', 'amarelo', 'rosa']
+const CORES_SITUACOES = ['azul', 'amarelo', 'verde', 'rosa', 'roxo']
+const CORES_RELATOS = ['verde', 'amarelo', 'rosa']
+const CORES_DEPOIS = ['verde', 'amarelo', 'rosa']
+// Etiqueta com o texto claro sobre as cores escuras da paleta.
+const TAG_CLARA = new Set(['azul', 'roxo'])
+
+const relatos = P.relatos.falas.map((r) => ({
+  id: r.id,
+  fala: RELATOS[r.id].fala,
+  retrato: img(RELATOS[r.id].retrato),
+  legenda: legendaDoRelato(r.id),
+}))
+---
+
+<BaseLayout title={P.seoTitle} description={P.description} canonical={ofertaUrl} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} htmlClass="theme-kids">
+  <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={ofertaUrl} image={img(P.capa)} />
+  <div class="c917">
+    <a class="c9-pular" href="#conteudo">{P.topo.pular}</a>
+    <header class="c9-topo">
+      <div class="c9-topo__barra">
+        <a class="c9-marca" href="#topo" aria-label={P.topo.logoLabel}>
+          <img src={img(P.topo.logo.file)} alt={P.topo.logo.alt} width={P.topo.logo.width} height={P.topo.logo.height} decoding="async" />
+        </a>
+        <nav class="c9-nav" aria-label={P.topo.navLabel}>
+          {P.topo.links.map((link) => <a class="c9-nav__link" href={link.href}>{link.label}</a>)}
+          <a class="c9-btn c9-btn--topo" href={P.topo.cta.href}>{P.topo.cta.label}</a>
+        </nav>
+      </div>
+    </header>
+    <div class="c9c-aviso">
+      <p class="c9c-aviso__texto">
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>
+        <span>{P.aviso}</span>
+      </p>
+    </div>
+
+    <main id="conteudo">
+      <section class="c9-sec c9-heroi" aria-labelledby="c9c-titulo">
+        <div class="c9-wrap c9-heroi__grade">
+          <div class="c9-heroi__texto">
+            <span class="c9-selo">{P.hero.eyebrow}</span>
+            <h1 id="c9c-titulo" class="c9-h1">{P.hero.title}<span class="c9-h1__destaque c9c-destaque">{P.hero.destaque}</span></h1>
+            <p class="c9-heroi__lead">{P.hero.description}</p>
+            <ul class="c9-checks">
+              {P.hero.benefits.map((benefit, index) => (
+                <li>
+                  <span class:list={['c9-ladrilho', `c9-cor--${CORES_HEROI[index]}`]} aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                  </span>
+                  <span>{benefit}</span>
+                </li>
+              ))}
+            </ul>
+            <div class="c9-heroi__acao">
+              <a class="c9-btn c9-btn--grande" href="#planos">{P.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+              <span class="c9-nota">{P.garantiaCurta}</span>
+            </div>
+            <span class="c9-heroi__requisitos">{P.hero.requirements}</span>
+          </div>
+          <div class="c9c-caminho">
+            <h2 class="c9c-caminho__titulo">{P.hero.caminho.title}</h2>
+            <ol class="c9c-caminho__passos">
+              {P.hero.caminho.passos.map((passo, index) => (
+                <li class:list={['c9c-caminho__passo', `c9-cor--${CORES_CAMINHO[index]}`]}>
+                  <span class="c9c-caminho__marca" aria-hidden="true">
+                    {index === 0 ? (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                    ) : (
+                      index + 1
+                    )}
+                  </span>
+                  <img src={img(passo.imagem.file)} alt={passo.imagem.alt} width={passo.imagem.width} height={passo.imagem.height} loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />
+                  <span class="c9c-caminho__texto"><strong>{passo.title}</strong><span>{passo.text}</span></span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section id="proximo" class="c9-sec c9-sec--branco" aria-labelledby="c9c-proximo">
+        <div class="c9-wrap c9-pilha c9-gap-26">
+          <div class="c9-cabeca">
+            <span class="c9-tag c9-cor--creme">{P.proximo.eyebrow}</span>
+            <h2 id="c9c-proximo" class="c9-h2">{P.proximo.title}</h2>
+            <p class="c9-p">{P.proximo.paragraph}</p>
+          </div>
+          <div class="c9-grade c9-min-330 c9-grade--20">
+            {P.proximo.situacoes.map((situacao, index) => {
+              const cor = CORES_SITUACOES[index] ?? 'azul'
+              return (
+                <article class:list={['c9c-situacao', `c9-cor--${cor}`]}>
+                  <h3 class:list={['c9c-situacao__titulo', { 'c9c-situacao__titulo--clara': TAG_CLARA.has(cor) }]}>{situacao.title}</h3>
+                  <p class="c9c-situacao__texto">{situacao.text}</p>
+                  {'imagem' in situacao && situacao.imagem ? (
+                    <img class="c9c-situacao__tela" src={img(situacao.imagem.file)} alt={situacao.imagem.alt} width={situacao.imagem.width} height={situacao.imagem.height} loading="lazy" decoding="async" />
+                  ) : (
+                    <div class="c9c-situacao__blocos" aria-hidden="true"><span></span><span></span><span></span></div>
+                  )}
+                </article>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section id="fica" class="c9-sec c9-sec--creme" aria-labelledby="c9c-fica">
+        <div class="c9-wrap c9-pilha c9-gap-26">
+          <div class="c9-cabeca">
+            <span class="c9-tag c9-cor--branco">{P.fica.eyebrow}</span>
+            <h2 id="c9c-fica" class="c9-h2">{P.fica.title}</h2>
+            <p class="c9-p">{P.fica.paragraph}</p>
+          </div>
+          <div class="c9-linha c9-gap-24 c9-linha--esticada">
+            <div class="c9c-lista">
+              <h3 class="c9c-lista__titulo">{P.fica.semCusto.title}</h3>
+              <ul>
+                {P.fica.semCusto.itens.map((item) => (
+                  <li><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg><span>{item}</span></li>
+                ))}
+              </ul>
+            </div>
+            <div class="c9c-lista c9c-lista--assinatura">
+              <h3 class="c9c-lista__titulo">{P.fica.comAssinatura.title}</h3>
+              <ul>
+                {P.fica.comAssinatura.itens.map((item) => (
+                  <li><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg><span>{item}</span></li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <p class="c9c-inicio">
+            <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
+            <span><strong>{P.fica.inicio.strong}</strong>{P.fica.inicio.text}</span>
+          </p>
+        </div>
+      </section>
+
+      <section class="c9-sec c9c-sec--pontos" aria-labelledby="c9c-jornada">
+        <div class="c9-wrap c9-pilha c9-gap-26">
+          <div class="c9-cabeca">
+            <span class="c9-tag c9-cor--branco">{P.jornada.eyebrow}</span>
+            <h2 id="c9c-jornada" class="c9-h2">{P.jornada.title}</h2>
+            <p class="c9-p">{P.jornada.paragraph}</p>
+          </div>
+          <ol class="c9c-postos">
+            {P.jornada.postos.map((posto, index) => {
+              const marco = posto.nome === P.jornada.marco.posto
+              const lenda = index === P.jornada.postos.length - 1
+              return (
+                <li class:list={['c9c-posto', { 'c9c-posto--marco': marco, 'c9c-posto--lenda': lenda }]}>
+                  {marco && <span class="c9c-posto__marco">{P.jornada.marco.label}</span>}
+                  <span class="c9c-posto__numero">{P.jornada.postoLabel} {index + 1}</span>
+                  <strong class="c9c-posto__nome">{posto.nome}</strong>
+                  <span class="c9c-posto__libera">{posto.libera}</span>
+                </li>
+              )
+            })}
+          </ol>
+        </div>
+      </section>
+
+      <section class="c9-sec c9-sec--navy" aria-labelledby="c9c-relatos">
+        <div class="c9-wrap c9-pilha c9-gap-26">
+          <div class="c9-cabeca">
+            <span class="c9-tag c9-cor--amarelo">{P.relatos.eyebrow}</span>
+            <h2 id="c9c-relatos" class="c9-h2">{P.relatos.title}</h2>
+            <p class="c9-p">{P.relatos.paragraph}</p>
+          </div>
+          <div class="c9-grade c9-min-320 c9-grade--20">
+            {relatos.map((r, index) => (
+              <figure class:list={['c9-relato', 'c9-relato--grande', `c9-cor--${CORES_RELATOS[index]}`]} data-relato={r.id}>
+                <img src={r.retrato} alt="" width="320" height="320" loading="lazy" decoding="async" />
+                <blockquote><p>"{r.fala}"</p></blockquote>
+                <figcaption>{r.legenda}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="planos" class="c9-sec c9-sec--azul" aria-labelledby="c9c-planos">
+        <div class="c9-wrap c9-wrap--planos c9-pilha c9-gap-26">
+          <div class="c9-pilha c9-gap-12 c9-cabeca--860">
+            <h2 id="c9c-planos" class="c9-h2 c9-h2--planos">{P.planos.title}</h2>
+            <p class="c9-p">{P.planos.paragraph}</p>
+          </div>
+          <div class="c9-linha c9-gap-24 c9-linha--esticada">
+            <ul class="c9-inclui" aria-label={P.planos.incluiLabel}>
+              {P.planos.inclui.map((item) => (
+                <li>
+                  <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            {mostraMensal && (
+            <article class="c9-plano">
+              <h3 class="c9-plano__nome">{P.planos.mensal.title}</h3>
+              <p class="c9-plano__preco">{fill(P.planos.mensal.preco)}<span>{P.planos.mensal.sufixo}</span></p>
+              <p class="c9-plano__texto">{fill(P.planos.mensal.text)}</p>
+              <button type="button" class="c9-plano__btn" data-checkout-cta data-checkout-oferta={mensal?.slug}>{P.planos.mensal.cta}</button>
+              <span class="c9-plano__nota">{P.planos.mensal.nota}</span>
+            </article>
+            )}
+            {mostraAnual && (
+            <article class="c9-plano c9-plano--anual">
+              {economiaAnualCents > 0 && <span class="c9-economia">{fill(P.planos.anual.selo)}</span>}
+              <h3 class="c9-plano__nome">{P.planos.anual.title}</h3>
+              <p class="c9-plano__preco">{fill(P.planos.anual.preco)}<span>{P.planos.anual.sufixo}</span></p>
+              <p class="c9-plano__texto">{fill(P.planos.anual.text)}</p>
+              <button type="button" class="c9-plano__btn" data-checkout-cta data-checkout-oferta={anual?.slug}>{P.planos.anual.cta}</button>
+              <span class="c9-plano__nota">{P.planos.anual.nota}</span>
+            </article>
+            )}
+          </div>
+          <div class="c9-linha c9-gap-18 c9-linha--esticada">
+            <div class="c9-depois">
+              <h3 class="c9-depois__titulo">{P.planos.depoisTitle}</h3>
+              <ol>
+                {P.planos.depois.map((passo, index) => (
+                  <li><span class:list={['c9-depois__num', `c9-cor--${CORES_DEPOIS[index]}`]} aria-hidden="true">{index + 1}</span><span>{passo}</span></li>
+                ))}
+              </ol>
+            </div>
+            <p class="c9-garantia">
+              <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+              <span><strong>{P.planos.garantia.strong}</strong>{P.planos.garantia.text}</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="duvidas" class="c9-sec c9-sec--chao" aria-labelledby="c9c-duvidas">
+        <div class="c9-wrap c9-wrap--estreito c9-pilha c9-gap-12">
+          <h2 id="c9c-duvidas" class="c9-h2 c9-h2--menor c9-duvidas__titulo">{P.faqTitle}</h2>
+          {P.faq.map((item) => (
+            <details class="c9-duvida">
+              <summary>{item.question}</summary>
+              <p>{item.answer}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section class="c9-fim" aria-labelledby="c9c-fim">
+        <div class="c9-wrap c9-fim__grade">
+          <div class="c9-pilha c9-gap-14 c9-b520">
+            <h2 id="c9c-fim" class="c9-h2 c9-h2--fim">{P.closing.title}</h2>
+            <a class="c9-btn c9-btn--grande c9-btn--amarelo" href="#planos">{P.cta}</a>
+            <span class="c9-nota">{P.garantiaCurta}</span>
+          </div>
+          <img class="c9-fim__zappy" src={img(P.closing.zappy.file)} alt={P.closing.zappy.alt} width={P.closing.zappy.width} height={P.closing.zappy.height} loading="lazy" decoding="async" />
+        </div>
+        <div class="c9-rodape">
+          <div class="c9-rodape__barra">
+            <img src={img(P.rodape.logo.file)} alt={P.rodape.logo.alt} width={P.rodape.logo.width} height={P.rodape.logo.height} loading="lazy" decoding="async" />
+            <span>{P.rodape.aviso}</span>
+            <span class="c9-rodape__links">{P.rodape.links.map((link) => <a href={link.href}>{link.label}</a>)}</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="kof-mobar c9-barra" data-mobar aria-hidden="true">
+      <span class="c9-barra__preco">{mostraMensal && <strong>{fill(P.barra.preco)}</strong>}{mostraMensal && mostraAnual && <span>{fill(P.barra.alternativa)}</span>}</span>
+      <a class="c9-btn" href="#planos" tabindex="-1">{P.barra.cta}</a>
+    </div>
+  </div>
+  <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} />
+</BaseLayout>
+
+<script>
+  // Barra fixa do celular (só abaixo de 760px, pelo CSS): aparece depois da dobra e some enquanto
+  // os planos ou o rodapé estão à vista. Sem JS ela nunca aparece (nasce escondida e aria-hidden).
+  const barra = document.querySelector<HTMLElement>('[data-mobar]')
+  const planos = document.getElementById('planos')
+  const rodape = document.querySelector('footer')
+  if (barra && planos && 'IntersectionObserver' in window) {
+    const link = barra.querySelector('a')
+    let planosAVista = false
+    let rodapeAVista = false
+    let roladoAlemDaDobra = false
+    let ultimo: boolean | null = null
+    const aplicar = () => {
+      const mostra = roladoAlemDaDobra && !planosAVista && !rodapeAVista
+      if (mostra === ultimo) return
+      ultimo = mostra
+      barra.classList.toggle('is-visible', mostra)
+      barra.setAttribute('aria-hidden', mostra ? 'false' : 'true')
+      link?.setAttribute('tabindex', mostra ? '0' : '-1')
+    }
+    new IntersectionObserver(
+      ([e]) => {
+        planosAVista = Boolean(e?.isIntersecting)
+        aplicar()
+      },
+      { rootMargin: '0px 0px -40% 0px' },
+    ).observe(planos)
+    if (rodape)
+      new IntersectionObserver(([e]) => {
+        rodapeAVista = Boolean(e?.isIntersecting)
+        aplicar()
+      }).observe(rodape)
+    const aoRolar = () => {
+      roladoAlemDaDobra = window.scrollY > window.innerHeight * 0.9
+      aplicar()
+    }
+    window.addEventListener('scroll', aoRolar, { passive: true })
+    aoRolar()
+  }
+</script>

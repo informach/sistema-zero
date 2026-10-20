@@ -202,10 +202,15 @@ export const RELATOS: Record<RelatoId, Relato> = {
 
 /**
  * Falas autorizadas que ficaram sem lugar nas páginas e nas cartas de 20/10/2026 (9 a 17, criar
- * junto, continuidade e resultados do quiz). Ficam guardadas para anúncios, e-mails e próximas
+ * junto, continuidade e resultados do quiz; a continuidade foi redesenhada no mesmo dia). Ficam guardadas para anúncios, e-mails e próximas
  * versões; o teste de copy exige que toda fala esteja numa página ou aqui, com o motivo.
  */
 export const RELATOS_RESERVA: Partial<Record<RelatoId, string>> = {
+  AV02: 'O Rafael mandando o link para o amigo: saiu com a continuidade antiga; a nova usa falas sobre seguir criando.',
+  N4: 'O receio do Daniel com o curso online: estava numa resposta da continuidade antiga; guardada para dúvidas sobre aula gravada.',
+  N6: 'A assinatura como investimento, pelo Daniel: a continuidade antiga a punha antes dos planos; a nova não tem fala ali.',
+  N7: 'O Rafa que começou e não quis parar: saiu com a continuidade antiga; a página de 9 a 17 diz a ideia na chamada do caso.',
+  N19: 'O Fernando focado num jogo antes do próximo: saiu com a continuidade antiga; guardada para a próxima versão dela.',
   AV06: 'A alegria do Fernando ao criar: as páginas novas usam falas de responsáveis nesse ponto.',
   AV07: 'O Jeffrey sobre expressar as ideias: a carta do perfil C usa a fala dele sobre os personagens.',
   N1: 'O Rafael contando o que aprendeu: a página de 9 a 17 usa o Daniel em outros trechos.',

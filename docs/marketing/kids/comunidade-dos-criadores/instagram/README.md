@@ -91,7 +91,7 @@ A bio apresenta público, atividade e próximo passo. O link abre a página inic
 
 | Botão | Explicação completa | Informação complementar | Destino |
 | --- | --- | --- | --- |
-| Como funciona | Veja como seu filho aprende criando jogos. | — | `/como-funciona/` |
+| Como funciona | Veja como seu filho aprende criando jogos. | — | `/como-funciona/` (desde 20/10/2026, 301 para `/kids/comunidade-dos-criadores/oferta#experiencia`) |
 | Desafio do Primeiro Jogo | Um primeiro jogo para conhecer as aulas na prática. | Pagamento único · 30 dias de acesso | `/kids/desafio-primeiro-jogo/oferta` |
 | Comunidade dos Criadores | Cursos e ferramentas para criar novos projetos. | Assinatura · inclui o Desafio | `/kids/comunidade-dos-criadores/oferta` |
 

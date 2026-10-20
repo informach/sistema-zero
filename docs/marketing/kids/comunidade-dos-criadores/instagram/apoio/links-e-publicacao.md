@@ -12,7 +12,7 @@
 
 LB identifica a página da bio. L0 e L5 preservam os destinos comerciais; L6 e os antigos L1 a L4 e L7 ficam fora deste ciclo. Os quizzes do Desafio e da Comunidade continuam disponíveis para campanhas específicas, com links e origem definidos na respectiva campanha. Não reutilizar um convite ao quiz nas peças do Instagram por hábito.
 
-A bio continua em LB durante todo o ciclo. Na página inicial, Como funciona abre `/como-funciona/`; Desafio do Primeiro Jogo abre a oferta do Desafio; Comunidade dos Criadores abre a oferta da Comunidade desde o início da página. A copy completa dos botões está no [guia principal](../README.md#copy-dos-três-caminhos-na-página-inicial). Nos stories, L5 pode abrir a seção de planos conforme o sticker. As postagens principais conduzem à criação como atividade. A oferta é apresentada nos destaques, fixados e no direct quando solicitada.
+A bio continua em LB durante todo o ciclo. Na página inicial, Como funciona abre `/como-funciona/` (desde 20/10/2026, um 301 para a seção de experiência da página de 9 a 17; a bio de hoje leva só aos dois quizzes); Desafio do Primeiro Jogo abre a oferta do Desafio; Comunidade dos Criadores abre a oferta da Comunidade desde o início da página. A copy completa dos botões está no [guia principal](../README.md#copy-dos-três-caminhos-na-página-inicial). Nos stories, L5 pode abrir a seção de planos conforme o sticker. As postagens principais conduzem à criação como atividade. A oferta é apresentada nos destaques, fixados e no direct quando solicitada.
 
 ## Links prontos
 

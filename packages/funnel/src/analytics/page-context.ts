@@ -5,14 +5,9 @@ import type { PageContext } from './types'
 export function analyticsPage(path: string): PageContext | null {
   if (!/^\/[a-z0-9/_-]*$/.test(path) || path.length > 220) return null
   const normalized = path.replace(/\/$/, '') || '/'
-  if (normalized === '/' || normalized === '/como-funciona')
-    return {
-      id: normalized === '/' ? 'bio' : 'como-funciona',
-      path: normalized,
-      kind: normalized === '/' ? 'bio' : 'explicacao',
-      funnel: null,
-      publicText: true,
-    }
+  // `/como-funciona` virou redirecionamento (20/10/2026): só a bio fica fora dos funis.
+  if (normalized === '/')
+    return { id: 'bio', path: normalized, kind: 'bio', funnel: null, publicText: true }
   const [, audience, product, step, ...variant] = normalized.split('/')
   const f = getFunnel(audience, product)
   if (

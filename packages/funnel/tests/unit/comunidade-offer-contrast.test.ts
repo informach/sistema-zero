@@ -89,30 +89,21 @@ describe('Comunidade: contraste dos pares novos da oferta', () => {
     expect(contrast(t('action'), fundo)).toBeGreaterThanOrEqual(grande)
   })
 
-  test('⚠️ o link azul NÃO passa sobre o chão-alt: a oferta só o usa sobre o chão ou numa carta', () => {
+  test('⚠️ o link azul NÃO passa sobre o chão-alt: as páginas da Comunidade não usam o kof-link', () => {
     // Documenta a restrição (4,27 hoje). Se um dia passar, o aviso no kids-oferta.css pode sair.
     expect(contrast(t('action'), t('ground-alt'))).toBeLessThan(texto)
-    const body = readFileSync(
-      join(
-        import.meta.dir,
-        '..',
-        '..',
-        'src',
-        'components',
-        'funnel',
-        'oferta',
-        'ComunidadeOfertaBody.astro',
-      ),
-      'utf8',
-    )
-    // Na seção de chão-alt (os planos) todo kof-link mora dentro da carta da garantia.
-    const ini = body.indexOf('class="planos section fundo-alt')
-    const fim = body.indexOf('id="duvidas"')
-    expect(ini).toBeGreaterThan(-1)
-    expect(fim).toBeGreaterThan(ini)
-    const alt = body.slice(ini, fim)
-    const trechos = alt.split('class="kof-link').slice(0, -1)
-    expect(trechos.length).toBeGreaterThan(0)
-    for (const trecho of trechos) expect(trecho.slice(-900)).toContain('class="guarantee kof-carta')
+    // As três páginas de oferta da Comunidade (9 a 17, criar junto e continuidade) desenham os
+    // próprios links e botões; o `kof-link` azul fica com as páginas do Desafio e do presente.
+    for (const corpo of [
+      'Comunidade917Body.astro',
+      'ComunidadeMenor9Body.astro',
+      'ComunidadeContinuarBody.astro',
+    ]) {
+      const body = readFileSync(
+        join(import.meta.dir, '..', '..', 'src', 'components', 'funnel', 'oferta', corpo),
+        'utf8',
+      )
+      expect([corpo, body.includes('kof-link')]).toEqual([corpo, false])
+    }
   })
 })

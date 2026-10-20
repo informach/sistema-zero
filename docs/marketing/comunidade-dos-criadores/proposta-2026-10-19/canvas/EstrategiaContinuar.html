@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Estratégia das páginas de continuidade</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600..800&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F6FA}
+a{color:#1B5CF3}a:hover{color:#1343B8}
+</style>
+</helmet>
+<div style="background:#F4F6FA;color:#0F1A33;font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',system-ui,sans-serif;font-size:18px;line-height:1.55">
+
+<header style="background:#0F1A33;color:#FFFFFF">
+  <div style="max-width:1240px;margin:0 auto;padding:56px clamp(16px,4vw,48px) 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;justify-content:space-between">
+      <img src="/logo_dark.svg" alt="Sistema Zero" style="height:20px;width:auto;display:block">
+      <span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:15px;color:#CBD4E8">Proposta de 20/10/2026 · base para decisão</span>
+    </div>
+    <h1 style="margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:clamp(2rem,4vw,3.2rem);line-height:1.06;letter-spacing:-0.015em;max-width:960px">Duas páginas de continuidade: uma para a família Kids, outra para o adulto</h1>
+    <p style="margin:0;max-width:880px;color:#DCE3F2;font-size:1.08em">A página de continuidade fala com quem já conhece a plataforma. Ela não apresenta o produto do zero: mostra o que ficou guardado, o próximo passo de cada situação e o que a assinatura acrescenta. Hoje só existe a versão Kids, com o desenho antigo e a faixa de 9 a 14 anos. Este quadro propõe a Kids no desenho novo, cria a adulta e traz a recomendação sobre a página Como funciona.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px">
+      <span style="display:inline-flex;align-items:center;min-height:34px;padding:0 14px;border-radius:999px;background:#34C38F;color:#0F1A33;font-weight:700;font-size:15px">Continuidade Kids · /kids/comunidade-dos-criadores/oferta/continuar</span>
+      <span style="display:inline-flex;align-items:center;min-height:34px;padding:0 14px;border-radius:999px;background:#FFC02E;color:#0F1A33;font-weight:700;font-size:15px">Continuidade adulta · /pro/comunidade-dos-criadores/oferta/continuar</span>
+      <span style="display:inline-flex;align-items:center;min-height:34px;padding:0 14px;border-radius:999px;background:#CBD4E8;color:#0F1A33;font-weight:700;font-size:15px">Como funciona · recomendação: retirar</span>
+    </div>
+  </div>
+</header>
+
+<main style="max-width:1240px;margin:0 auto;padding:48px clamp(16px,4vw,48px) 72px;box-sizing:border-box;display:flex;flex-direction:column;gap:56px">
+
+  <section aria-labelledby="quem" style="display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;color:#46536E">1 · Quem chega e de onde</span>
+      <h2 id="quem" style="margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:clamp(1.6rem,2.6vw,2.2rem);line-height:1.12">No Kids, a página já recebe tráfego de cinco lugares. No adulto, ela nasce antes do primeiro link.</h2>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:stretch">
+      <div style="flex:1 1 520px;min-width:0;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:20px;padding:26px;display:flex;flex-direction:column;gap:14px">
+        <strong style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:22px">Kids · links que já existem</strong>
+        <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;font-size:16px;color:#2A3550">
+          <li style="display:flex;gap:10px"><span aria-hidden="true" style="flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:#34C38F;margin-top:8px"></span><span><strong style="color:#0F1A33">E-mail do Desafio concluído</strong>, com o acesso ainda ativo: "Ver o caminho depois do primeiro jogo".</span></li>
+          <li style="display:flex;gap:10px"><span aria-hidden="true" style="flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:#34C38F;margin-top:8px"></span><span><strong style="color:#0F1A33">E-mail do Desafio vencido</strong>: "Conhecer a continuidade na Comunidade". O Mural fica no modo visitante.</span></li>
+          <li style="display:flex;gap:10px"><span aria-hidden="true" style="flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:#34C38F;margin-top:8px"></span><span><strong style="color:#0F1A33">Telas de ferramenta fechada</strong> no app Kids (Estúdio, Clube, Pensa, Pinta, Mural). Quem clica é a criança.</span></li>
+          <li style="display:flex;gap:10px"><span aria-hidden="true" style="flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:#34C38F;margin-top:8px"></span><span><strong style="color:#0F1A33">Área dos pais</strong> sem perfil disponível ou no limite de perfis.</span></li>
+          <li style="display:flex;gap:10px"><span aria-hidden="true" style="flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:#34C38F;margin-top:8px"></span><span><strong style="color:#0F1A33">Criar, depois de uma oficina ao vivo</strong>: "Sua criação está guardada".</span></li>
+        </ul>
+        <p style="margin:0;font-size:15px;color:#46536E;background:#F4F6FA;border-radius:12px;padding:12px 14px">Sem link hoje: o fim do presente de 7 dias (não existe e-mail) e a assinatura cancelada ou vencida (não existe mensagem). São as duas lacunas de recuperação.</p>
+      </div>
+      <div style="flex:1 1 520px;min-width:0;background:#0F1A33;color:#FFFFFF;border-radius:20px;padding:26px;display:flex;flex-direction:column;gap:14px">
+        <strong style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:22px">Adulto · para quem a página nasce</strong>
+        <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;font-size:16px;color:#DCE3F2">
+          <li style="display:flex;gap:10px"><span aria-hidden="true" style="flex:0 0 auto;width:10px;height:10px;background:#FFC02E;margin-top:8px"></span><span><strong style="color:#FFFFFF">Quem cancelou ou deixou vencer</strong>. É o caso central de toda assinatura, e a área adulta começa a ter esse público agora.</span></li>
+          <li style="display:flex;gap:10px"><span aria-hidden="true" style="flex:0 0 auto;width:10px;height:10px;background:#6E9BFF;margin-top:8px"></span><span><strong style="color:#FFFFFF">Quem já tem conta adulta</strong> por No Comando da IA, por uma oficina ao vivo ou por outro curso. A Comunidade entra na mesma conta.</span></li>
+          <li style="display:flex;gap:10px"><span aria-hidden="true" style="flex:0 0 auto;width:10px;height:10px;background:#7CE38B;margin-top:8px"></span><span><strong style="color:#FFFFFF">Quem fez 18 anos na Comunidade Kids</strong>. A conta Kids é do responsável; a adulta é no nome da pessoa.</span></li>
+          <li style="display:flex;gap:10px"><span aria-hidden="true" style="flex:0 0 auto;width:10px;height:10px;background:#F368A6;margin-top:8px"></span><span><strong style="color:#FFFFFF">Pai ou mãe de aluno Kids</strong> que viu o filho criar e quer criar também. No curto prazo, é o maior grupo de adultos que já conhece a plataforma.</span></li>
+        </ul>
+        <p style="margin:0;font-size:15px;color:#CBD4E8;background:#1B2540;border-radius:12px;padding:12px 14px">Onde ligar depois: e-mail de assinatura encerrada, tela de produto fechado na área adulta, um cartão em Cursos para quem só tem No Comando da IA e, no Kids, um aviso ao responsável quando o perfil chega aos 18 anos.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="sente" style="display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;color:#46536E">2 · O que a pessoa pensa nessa hora</span>
+      <h2 id="sente" style="margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:clamp(1.6rem,2.6vw,2.2rem);line-height:1.12">Quem já começou tem menos dúvida sobre o produto e mais medo de perder o que fez</h2>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:stretch">
+      <div style="flex:1 1 520px;min-width:0;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:20px;padding:26px;display:flex;flex-direction:column;gap:12px">
+        <span style="align-self:flex-start;font-family:'Geist Mono',ui-monospace,monospace;font-size:13px;padding:4px 10px;border-radius:8px;background:#E3F7EE;color:#0F5E3F">Responsável Kids</span>
+        <p style="margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;font-size:24px;line-height:1.2">"Ele gostou. Mas vale pagar de novo, se ele já fez o Desafio?"</p>
+        <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:16px;color:#2A3550">
+          <li>Pagar outra vez pelo que parece já ter.</li>
+          <li>Travas novas: a Jornada libera as ferramentas aos poucos.</li>
+          <li>Medo de ele largar no segundo curso.</li>
+          <li>Os dias que restam do Desafio: assina agora ou espera.</li>
+          <li>Outro e-mail no checkout e um perfil novo, sem o que ele já fez.</li>
+        </ul>
+      </div>
+      <div style="flex:1 1 520px;min-width:0;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:20px;padding:26px;display:flex;flex-direction:column;gap:12px">
+        <span style="align-self:flex-start;font-family:'Geist Mono',ui-monospace,monospace;font-size:13px;padding:4px 10px;border-radius:8px;background:#FFF3C4;color:#5C4000">Adulto</span>
+        <p style="margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;font-size:24px;line-height:1.2">"Parei por falta de tempo. Se eu voltar, começo do zero?"</p>
+        <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:16px;color:#2A3550">
+          <li>Perder os projetos e a etapa em que parou.</li>
+          <li>Ter que criar outra conta e outra senha.</li>
+          <li>Pagar de novo e parar de novo.</li>
+          <li>Já ter outro curso no Sistema Zero e não saber se é a mesma coisa.</li>
+          <li>Ter usado o Kids e não saber o que acontece aos 18.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="argumento" style="display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;color:#46536E">3 · O argumento, na ordem da página</span>
+      <h2 id="argumento" style="margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:clamp(1.6rem,2.6vw,2.2rem);line-height:1.12">Primeiro o alívio, depois o próximo passo, e só então o preço</h2>
+      <p style="margin:0;max-width:880px;color:#2A3550">As duas páginas seguem a mesma sequência. Muda a voz, a pele e as situações de cada público.</p>
+    </div>
+    <ol style="margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px">
+      <li style="background:#FFFFFF;border:1px solid #D6DEEA;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:13px;color:#46536E">01 · Alívio</span><strong style="font-size:19px">O que foi feito continua na conta</strong><span style="font-size:16px;color:#2A3550">Abre a página respondendo ao maior medo: perder o que fez. Mesmo e-mail, mesmo perfil, mesmos projetos.</span></li>
+      <li style="background:#FFFFFF;border:1px solid #D6DEEA;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:13px;color:#46536E">02 · Reconhecimento</span><strong style="font-size:19px">Cartões por situação</strong><span style="font-size:16px;color:#2A3550">A página não sabe quem está do outro lado. A pessoa se encontra num cartão, e cada um diz o próximo passo concreto.</span></li>
+      <li style="background:#FFFFFF;border:1px solid #D6DEEA;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:13px;color:#46536E">03 · Troca justa</span><strong style="font-size:19px">O que fica e o que a assinatura acrescenta</strong><span style="font-size:16px;color:#2A3550">Lado a lado, sem custo de um lado e com assinatura do outro. Responde ao "pagar de novo" com fatos.</span></li>
+      <li style="background:#FFFFFF;border:1px solid #D6DEEA;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:13px;color:#46536E">04 · Caminho</span><strong style="font-size:19px">A Jornada ou as etapas daqui para frente</strong><span style="font-size:16px;color:#2A3550">No Kids, os oito postos com o marco "depois de A Chave do Farol". No adulto, as sete etapas com a sua salva.</span></li>
+      <li style="background:#FFFFFF;border:1px solid #D6DEEA;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:13px;color:#46536E">05 · Prova</span><strong style="font-size:19px">Relato no Kids, experiência própria no adulto</strong><span style="font-size:16px;color:#2A3550">Kids: Jeffrey, Daniel e Harle, de relatos.ts. Adulto: não há relato, então a página convida a jogar de novo o que a pessoa publicou.</span></li>
+      <li style="background:#FFFFFF;border:1px solid #D6DEEA;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:13px;color:#46536E">06 · Transparência</span><strong style="font-size:19px">Quando começa, o que não se soma, qual e-mail</strong><span style="font-size:16px;color:#2A3550">A assinatura começa na aprovação do pagamento, os dias do Desafio não se somam, o mesmo e-mail liga tudo e a garantia vale 7 dias.</span></li>
+    </ol>
+    <p style="margin:0;font-size:16px;color:#2A3550;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:14px;padding:14px 18px"><strong>Métrica:</strong> assinatura aprovada por visitante elegível, separada por origem (cada e-mail e cada tela do app com o seu utm). Teste A/B sugerido no Kids: herói com o painel O caminho dele contra o herói com a tela do Estúdio, que é o da página de hoje.</p>
+  </section>
+
+  <section aria-labelledby="arte" style="display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;color:#46536E">4 · Direção de arte</span>
+      <h2 id="arte" style="margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:clamp(1.6rem,2.6vw,2.2rem);line-height:1.12">Cada continuidade veste a pele da sua página de oferta e ganha uma metáfora própria</h2>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:stretch">
+      <div style="flex:1 1 520px;min-width:0;background:#F4F6FB;border:3px solid #121A30;border-radius:20px;padding:24px;box-shadow:6px 6px 0 #34C38F;display:flex;flex-direction:column;gap:12px">
+        <strong style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:22px;color:#121A30">Kids · o caminho dele</strong>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="width:44px;height:44px;border-radius:10px;background:#34C38F;border:3px solid #121A30"></span>
+          <span style="width:44px;height:44px;border-radius:10px;background:#1B5CF3;border:3px solid #121A30"></span>
+          <span style="width:44px;height:44px;border-radius:10px;background:#FFC02E;border:3px solid #121A30"></span>
+          <span style="width:44px;height:44px;border-radius:10px;background:#F368A6;border:3px solid #121A30"></span>
+          <span style="width:44px;height:44px;border-radius:10px;background:#121A30;border:3px solid #121A30"></span>
+        </div>
+        <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:16px;color:#2A3550">
+          <li>Mesma família visual da página de 9 a 17: Baloo 2 e Nunito, contorno de 3 px, sombras deslocadas, selos inclinados.</li>
+          <li>A cor que conduz é o verde, a cor de guardado e de pode seguir. O marca-texto do título é verde, e não rosa.</li>
+          <li>O herói troca a tela grande pelo painel O caminho dele: três quadros reais ligados por linha tracejada (o que ele já fez, os próximos cursos, os jogos dele).</li>
+          <li>Uma faixa fina no topo fala com a criança que chega pela tela de ferramenta fechada e pede para chamar o responsável.</li>
+        </ul>
+      </div>
+      <div style="flex:1 1 520px;min-width:0;background:#0B0E1A;border:3px solid #2C3563;padding:24px;box-shadow:6px 6px 0 #F368A6;display:flex;flex-direction:column;gap:12px;color:#F2F4FA">
+        <strong style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:22px">Adulto · o save</strong>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="width:44px;height:44px;background:#FFC02E"></span>
+          <span style="width:44px;height:44px;background:#F368A6"></span>
+          <span style="width:44px;height:44px;background:#7CE38B"></span>
+          <span style="width:44px;height:44px;background:#6E9BFF"></span>
+          <span style="width:44px;height:44px;background:#121733;border:2px solid #2C3563;box-sizing:border-box"></span>
+        </div>
+        <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:16px;color:#C9D1E6">
+          <li>Mesmo tema arcade da página adulta: Bricolage, Silkscreen e Atkinson, fundo escuro com linhas de tela, botão amarelo com sombra rosa.</li>
+          <li>A metáfora é o save. O herói mostra a tela de carregar jogo com CONTINUAR selecionado e o slot com SEU NOME, o mesmo recurso da tela de título aprovada.</li>
+          <li>Os casos viram SAVE 1 a SAVE 4, e o fechamento diz que falta apertar start.</li>
+          <li>Sem contagem regressiva de CONTINUE: ela sugere um prazo que não existe.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="copy" style="display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;color:#46536E">5 · Decisões de copy</span>
+      <h2 id="copy" style="margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:clamp(1.6rem,2.6vw,2.2rem);line-height:1.12">Curtas, na voz de cada público, e só com o que a conta guarda de verdade</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;font-size:16px;color:#2A3550">
+      <p style="margin:0;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:14px;padding:16px"><strong style="color:#0F1A33">Kids sobe para 9 a 17</strong>, como a página padrão. Hoje a continuidade e uma resposta das dúvidas ainda dizem 9 a 14. O Desafio e o presente seguem em 9 a 14.</p>
+      <p style="margin:0;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:14px;padding:16px"><strong style="color:#0F1A33">Nenhum cartão presume que ele terminou.</strong> O primeiro é "ainda no primeiro projeto", e o último é a oficina ao vivo.</p>
+      <p style="margin:0;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:14px;padding:16px"><strong style="color:#0F1A33">O fechamento Kids fica</strong>: "Peça para ele contar o que mudaria no primeiro jogo", aprovado em 16/10. Ele põe a criança na decisão.</p>
+      <p style="margin:0;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:14px;padding:16px"><strong style="color:#0F1A33">Dúvidas enxutas</strong>: 9 no Kids (hoje são 25) e 8 no adulto. O que é dúvida de quem não conhece fica nas páginas de oferta.</p>
+      <p style="margin:0;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:14px;padding:16px"><strong style="color:#0F1A33">Adulto sem promessa de atalho.</strong> "Save" e "etapa salva" só dizem o que a conta guarda. Nada de "volta mais rápido".</p>
+      <p style="margin:0;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:14px;padding:16px"><strong style="color:#0F1A33">Aos 18, a verdade inteira</strong>: os projetos do perfil Kids não passam para a conta adulta, e a página diz isso no cartão e nas dúvidas.</p>
+      <p style="margin:0;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:14px;padding:16px"><strong style="color:#0F1A33">Assinaturas separadas</strong>: a do Kids não inclui a do adulto. O cartão do pai ou da mãe diz isso de forma direta.</p>
+      <p style="margin:0;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:14px;padding:16px"><strong style="color:#0F1A33">Preços ao vivo</strong> do catálogo nas duas, com a economia do anual calculada. Os valores do quadro são os do seed: R$ 97 e R$ 797.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="antes" style="display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;color:#46536E">6 · Antes de publicar</span>
+      <h2 id="antes" style="margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:clamp(1.6rem,2.6vw,2.2rem);line-height:1.12">O que conferir no produto e o que ligar</h2>
+    </div>
+    <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;font-size:16px;color:#2A3550">
+      <li style="background:#FFFFFF;border:1px solid #D6DEEA;border-left:6px solid #F368A6;border-radius:12px;padding:14px 16px"><strong style="color:#0F1A33">Adulto, etapa salva:</strong> no Kids, o posto e os blocos conquistados não voltam para trás depois que o acesso acaba. Confirmar o mesmo na jornada adulta, que depende de rodar a configuração adulta com a dona.</li>
+      <li style="background:#FFFFFF;border:1px solid #D6DEEA;border-left:6px solid #F368A6;border-radius:12px;padding:14px 16px"><strong style="color:#0F1A33">Adulto, espaços citados:</strong> Clube, Mural adulto e Desafio do mês ainda não existem no Hub. É a mesma pendência da página adulta. A prévia do Mural ainda mostra o nome antigo.</li>
+      <li style="background:#FFFFFF;border:1px solid #D6DEEA;border-left:6px solid #FFC02E;border-radius:12px;padding:14px 16px"><strong style="color:#0F1A33">Kids, tela de ferramenta fechada:</strong> hoje ela diz à criança que "fica tudo liberado pra você", o que contradiz a Jornada. Proposta: "Chame o seu responsável para ver como continuar".</li>
+      <li style="background:#FFFFFF;border:1px solid #D6DEEA;border-left:6px solid #FFC02E;border-radius:12px;padding:14px 16px"><strong style="color:#0F1A33">Kids, recuperação:</strong> criar o e-mail de fim do presente de 7 dias e o de assinatura encerrada, os dois apontando para esta página.</li>
+      <li style="background:#FFFFFF;border:1px solid #D6DEEA;border-left:6px solid #6E9BFF;border-radius:12px;padding:14px 16px"><strong style="color:#0F1A33">Kids aos 18:</strong> decidir o que acontece com o perfil que completa 18 anos e se o responsável recebe um aviso com o link da continuidade adulta.</li>
+      <li style="background:#FFFFFF;border:1px solid #D6DEEA;border-left:6px solid #6E9BFF;border-radius:12px;padding:14px 16px"><strong style="color:#0F1A33">Rota adulta:</strong> /pro/comunidade-dos-criadores/oferta/continuar, com os mesmos preços ao vivo e os dois botões de plano da página adulta.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="comofunciona" style="display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;color:#46536E">7 · A página Como funciona</span>
+      <h2 id="comofunciona" style="margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:clamp(1.6rem,2.6vw,2.2rem);line-height:1.12">Recomendação: retirar, com redirecionamento para a página de 9 a 17</h2>
+      <p style="margin:0;max-width:880px;color:#2A3550">A bio deixou de levar a ela em 20/10, e as páginas de oferta já explicam aula, Estúdio, Jornada, área do responsável e segurança. Manter as duas é repetir o mesmo conteúdo em dois lugares, com dois jeitos de envelhecer.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:stretch">
+      <div style="flex:1 1 520px;min-width:0;background:#FFFFFF;border:1px solid #D6DEEA;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:10px">
+        <strong style="font-size:18px">Quem ainda manda para /como-funciona/</strong>
+        <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:16px;color:#2A3550">
+          <li>Página de oferta do Desafio: 4 links (menu, experiência, autores e continuidade).</li>
+          <li>Resultado do quiz do Desafio: o link "Ver o jeito de aprender da plataforma" e o "Como funciona" do cabeçalho.</li>
+          <li>Botão principal de quem o quiz do Desafio não recomenda: "Conhecer a proposta da plataforma".</li>
+          <li>O sitemap.</li>
+        </ul>
+        <p style="margin:0;font-size:15px;color:#46536E">Não levam a ela: a bio, as quatro páginas da Comunidade, os e-mails, o ManyChat e o destaque Como funciona do Instagram, que aponta para a oferta do Desafio.</p>
+      </div>
+      <div style="flex:1 1 520px;min-width:0;background:#0F1A33;color:#FFFFFF;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:10px">
+        <strong style="font-size:18px">Como retirar sem quebrar nada</strong>
+        <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:16px;color:#DCE3F2">
+          <li>301 de /como-funciona/ para /kids/comunidade-dos-criadores/oferta#experiencia, mantendo a query.</li>
+          <li>No Desafio, o menu vai para a seção de experiência da própria página, e os links de plataforma vão para a página de 9 a 17.</li>
+          <li>Tirar do sitemap e atualizar os dois testes que dependem dela.</li>
+          <li>Se fizer falta algo que só ela mostrava com tela (experimento, Recados, créditos, certificado), vira uma dúvida na página de 9 a 17.</li>
+        </ol>
+        <p style="margin:0;font-size:15px;color:#CBD4E8">Não há dado de visitas da página no repositório. Antes de apagar o código, vale olhar em Métricas quantas visitas ela recebeu desde 20/10.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":4600}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -11,8 +11,9 @@ import { join } from 'node:path'
 
 const SRC = join(import.meta.dir, '..', '..', 'src')
 const receitas = readFileSync(join(SRC, 'styles', 'kids-oferta.css'), 'utf8')
+// A oferta do Desafio é a página que hoje veste o layout `.cdc` (as páginas da Comunidade têm o seu).
 const body = readFileSync(
-  join(SRC, 'components', 'funnel', 'oferta', 'ComunidadeOfertaBody.astro'),
+  join(SRC, 'components', 'funnel', 'oferta', 'DesafioOfertaBody.astro'),
   'utf8',
 )
 // O layout saiu do <style> do body para um arquivo próprio (01/10/2026): continua prefixado por `.cdc`.
@@ -30,6 +31,9 @@ const novos = {
   'quiz-spin.css': '.qz',
   // A página adulta (arcade): as cores moram só nos tokens `--cda-*` do theme-arcade.css.
   'comunidade-adulto.css': '.cda',
+  // As continuidades (20/10/2026) vestem o layout das páginas irmãs, com o mesmo prefixo.
+  'comunidade-continuar.css': '.c917',
+  'comunidade-adulto-continuar.css': '.cda',
 } as const
 const novosCss = Object.fromEntries(
   Object.keys(novos).map((nome) => [nome, readFileSync(join(SRC, 'styles', nome), 'utf8')]),
@@ -113,12 +117,11 @@ describe('Comunidade: o CSS da oferta só fala por tokens', () => {
   })
 
   test('o reveal e a barra fixa degradam sem JS e com menos movimento', () => {
+    // O reveal só anima com `kof-js` no <html>; sem ele (hoje nenhuma página liga), tudo aparece.
     expect(receitas).toContain('html.kof-js .theme-kids .kof-reveal {')
     expect(receitas).toMatch(
       /@media \(prefers-reduced-motion: reduce\) \{[^}]*html\.kof-js \.theme-kids \.kof-reveal \{[^}]*opacity: 1/,
     )
-    expect(body).toContain("document.documentElement.classList.add('kof-js')")
-    expect(body).toContain("window.matchMedia('(prefers-reduced-motion: reduce)')")
     // `overflow-x: clip`, nunca `hidden`: o topo é sticky e `hidden` criaria um scroll container.
     expect(layoutCss).toContain('overflow-x: clip')
     expect(layoutCss).not.toContain('overflow-x: hidden')

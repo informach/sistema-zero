@@ -1,5 +1,6 @@
 ---
 import OfertaPage from '../../../../components/funnel/OfertaPage.astro'
+import { isComunidadeAdultoSubpagina } from '../../../../funnels/comunidade-adulto/oferta'
 import {
   isComunidadeOfertaAntiga,
   isComunidadeSubpagina,
@@ -13,12 +14,16 @@ const profile = Astro.params.perfilOferta
 const kids = Astro.params.audience === 'kids'
 const desafio = kids && Astro.params.produto === 'desafio-primeiro-jogo' && isDesafioOffer(profile)
 const comunidade = kids && Astro.params.produto === 'comunidade-dos-criadores'
+const comunidadeAdulto =
+  Astro.params.audience === 'pro' &&
+  Astro.params.produto === 'comunidade-dos-criadores' &&
+  isComunidadeAdultoSubpagina(profile)
 
 // As cinco páginas de perfil da Comunidade (até 20/10/2026) viraram a página de 9 a 17: os links
 // antigos chegam lá com a mesma query (atribuição e cupom).
 if (comunidade && isComunidadeOfertaAntiga(profile))
   return Astro.redirect(`/kids/comunidade-dos-criadores/oferta${Astro.url.search}`, 301)
-if (!desafio && !(comunidade && isComunidadeSubpagina(profile)))
+if (!desafio && !(comunidade && isComunidadeSubpagina(profile)) && !comunidadeAdulto)
   return new Response(null, { status: 404 })
 if (desafio && profile === 'primeiro-jogo')
   return Astro.redirect(`/kids/desafio-primeiro-jogo/oferta${Astro.url.search}`, 301)
@@ -30,4 +35,9 @@ Astro.response.headers.set(
 )
 ---
 
-<OfertaPage {...page} comunidadePage={comunidade && isComunidadeSubpagina(profile) ? profile : undefined} desafioProfile={desafio && isDesafioOffer(profile) ? profile : undefined}/>
+<OfertaPage
+  {...page}
+  comunidadePage={comunidade && isComunidadeSubpagina(profile) ? profile : undefined}
+  comunidadeAdultoPage={comunidadeAdulto ? profile : undefined}
+  desafioProfile={desafio && isDesafioOffer(profile) ? profile : undefined}
+/>

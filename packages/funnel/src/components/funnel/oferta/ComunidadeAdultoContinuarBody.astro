@@ -1,0 +1,387 @@
+---
+// Página de continuidade adulta da Comunidade dos Criadores (`/pro/comunidade-dos-criadores/oferta/
+// continuar`), para quem já conhece o Sistema Zero. Proposta de 20/10/2026 (desenho em docs/marketing/
+// comunidade-dos-criadores/proposta-2026-10-19/canvas/PaginaContinuarAdulto.html), no tema arcade da
+// página adulta: a copy mora em `oferta/continuar.ts`, o layout comum em comunidade-adulto.css (`.cda`)
+// e as peças próprias (tela de save, casos, o que ficou salvo) em comunidade-adulto-continuar.css.
+import atkinsonCorpo from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff2?url'
+import bricolageTitulo from '@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff2?url'
+import silkscreenPixel from '@fontsource/silkscreen/files/silkscreen-latin-400-normal.woff2?url'
+import '../../../styles/comunidade-adulto.css'
+import '../../../styles/comunidade-adulto-continuar.css'
+import { COMUNIDADE_ADULTO_PRECO_FALLBACK } from '../../../funnels/comunidade-adulto/content'
+import { PAGINA_ADULTO_CONTINUAR as P } from '../../../funnels/comunidade-adulto/oferta/continuar'
+import { calcularEconomiaAnual } from '../../../funnels/comunidade-dos-criadores/oferta/economia'
+import type { FunnelDef } from '../../../funnels/registry'
+import PreCheckoutModal from '../../../islands/PreCheckoutModal'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { formatBRLFromCents, formatBRLFromCents2 } from '../../../lib/money'
+import { funnelOgImage } from '../../../lib/seo'
+import type { OfferPlans } from '../../../server/catalog'
+import Footer from '../../Footer.astro'
+import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+
+interface Props {
+  f: FunnelDef
+  productName: string
+  priceLabel: string
+  priceLabelShort: string
+  priceReais: string
+  imagesBase: string
+  perfil: string | null
+  quer?: string | null
+  ofertaUrl: string
+  plans: OfferPlans | null
+}
+const { f, productName, imagesBase, ofertaUrl, plans } = Astro.props
+
+// Planos ao vivo, normalizados por intervalo (sem assumir qual é a principal da env).
+const byInterval = (n: number) =>
+  plans?.main.intervalMonths === n
+    ? plans.main
+    : plans?.alt?.intervalMonths === n
+      ? plans.alt
+      : null
+const mensal = byInterval(1)
+const anual = byInterval(12)
+// Com o catálogo no ar, um plano sem oferta ao vivo não é oferecido: o botão dele não teria slug e o
+// checkout abriria no outro plano. Sem catálogo (plans nulo), os dois aparecem com o preço de reserva.
+const mostraMensal = !plans || mensal !== null
+const mostraAnual = !plans || anual !== null
+const mensalCents = mensal?.priceCents ?? COMUNIDADE_ADULTO_PRECO_FALLBACK.mensalCents
+const anualCents = anual?.priceCents ?? COMUNIDADE_ADULTO_PRECO_FALLBACK.anualCents
+// "Menos de X por dia": a mensalidade dividida por 30, levada aos PRÓXIMOS 10 centavos acima.
+const precoDiaCents = Math.floor(mensalCents / 30 / 10) * 10 + 10
+// A economia só existe com os DOIS preços ao vivo; sem ela, o selo do anual sai.
+const economiaAnualCents = calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)
+const precos: Record<string, string> = {
+  '{{preco_mensal}}': formatBRLFromCents(mensalCents),
+  '{{preco_anual}}': formatBRLFromCents(anualCents),
+  '{{equivalente_mensal_anual}}': formatBRLFromCents2(Math.round(anualCents / 12)),
+  '{{economia_anual}}': formatBRLFromCents(economiaAnualCents),
+  '{{preco_dia}}': formatBRLFromCents2(precoDiaCents),
+}
+const preencher = (texto: string) =>
+  Object.entries(precos).reduce((acc, [marcador, valor]) => acc.replaceAll(marcador, valor), texto)
+const priceReais = ((plans?.main.priceCents ?? mensalCents) / 100).toFixed(2)
+const tela = P.hero.tela
+const escada = P.save.escada
+const cartao = P.oferta.cartao
+---
+
+<BaseLayout title={P.seoTitle} description={P.description} canonical={ofertaUrl} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} htmlClass="theme-arcade">
+  <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={ofertaUrl} image={`${imagesBase}/checkout-capa.webp`} />
+  {[bricolageTitulo, atkinsonCorpo, silkscreenPixel].map((href) => <link slot="head" rel="preload" as="font" href={href} type="font/woff2" crossorigin="anonymous" />)}
+  <div class="cda">
+    <a class="cda-pular" href="#conteudo">{P.pularParaConteudo}</a>
+    <header class="cda-topo">
+      <div class="cda-wrap cda-topo__linha">
+        <a class="cda-topo__marca" href="#topo" aria-label={P.topo.marcaAria}>
+          <img src="/logo_dark.svg" alt={P.topo.logoAlt} width="515" height="44" decoding="async" />
+          <span class="cda-topo__selo">{P.topo.selo}</span>
+        </a>
+        <nav class="cda-topo__nav" aria-label={P.topo.navAria}>
+          {P.topo.links.map((link) => <a class="cda-topo__link" href={link.href}>{link.label}</a>)}
+          <a class="cda-btn cda-btn--compacta" href="#oferta">{P.topo.cta}</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <section class="cda-secao cda-hero cda-hero--continuar" aria-labelledby="cda-hero-titulo">
+        <div class="cda-wrap cda-hero__grade">
+          <div class="cda-hero__texto">
+            <p class="cda-rotulo cor-verde">{P.hero.rotulo}</p>
+            <h1 id="cda-hero-titulo" class="cda-h1">{P.hero.titulo.antes}<span class="cda-destaque">{P.hero.titulo.destaque}</span></h1>
+            <p class="cda-hero__lead">{P.hero.texto}</p>
+            <ul class="cda-checks">
+              {P.hero.beneficios.map((beneficio) => (
+                <li>
+                  <svg class="cda-check" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></svg>
+                  <span>{beneficio}</span>
+                </li>
+              ))}
+            </ul>
+            <div class="cda-hero__acao">
+              <a class="cda-btn cda-btn--grande" href="#oferta">{P.hero.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+              <p class="cda-garantia">{P.hero.garantia}</p>
+            </div>
+            <ul class="cda-requisitos">
+              {P.hero.requisitos.map((item) => <li class={`cor-${item.cor}`}><span class="cda-quadradinho" aria-hidden="true"></span>{preencher(item.texto)}</li>)}
+            </ul>
+          </div>
+          <figure class="cda-monitor">
+            <div class="cda-monitor__moldura">
+              <div class="cda-monitor__barra">
+                <span>{tela.rotulo}</span>
+                <span class="cda-coracoes" aria-hidden="true">
+                  {[0, 1, 2].map(() => <svg width="21" height="18" viewBox="0 0 7 6" shape-rendering="crispEdges"><rect x="1" y="0" width="2" height="1"></rect><rect x="4" y="0" width="2" height="1"></rect><rect x="0" y="1" width="7" height="2"></rect><rect x="1" y="3" width="5" height="1"></rect><rect x="2" y="4" width="3" height="1"></rect><rect x="3" y="5" width="1" height="1"></rect></svg>)}
+                </span>
+              </div>
+              <div class="cda-monitor__tela cda-monitor__tela--save">
+                <img src={tela.fundo.src} alt={tela.fundo.alt} width={tela.fundo.width} height={tela.fundo.height} loading="eager" decoding="async" />
+                <div class="cda-save">
+                  <span class="cda-save__titulo">{tela.titulo}</span>
+                  <dl class="cda-save__slot">
+                    <div class="cda-save__cabeca"><dt>{tela.slot.rotulo}</dt><dd>{tela.slot.nome}</dd></div>
+                    {tela.slot.linhas.map((linha) => <div class="cda-save__linha"><dt>{linha.chave}</dt><dd>{linha.valor}</dd></div>)}
+                  </dl>
+                  <ul class="cda-save__menu">
+                    <li class="cda-save__atual"><span class="cda-pisca" aria-hidden="true">▶ </span>{tela.menu.atual}</li>
+                    {tela.menu.outras.map((opcao) => <li>{opcao}</li>)}
+                  </ul>
+                </div>
+                <div class="cda-monitor__linhas" aria-hidden="true"></div>
+              </div>
+            </div>
+            <div class="cda-monitor__pe" aria-hidden="true"></div>
+            <figcaption class="cda-legenda cda-legenda--centro">{tela.legenda}</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="caso" class="cda-secao cda-secao--fundo-2" aria-labelledby="cda-casos-titulo">
+        <div class="cda-wrap cda-coluna cda-coluna--larga">
+          <div class="cda-cabeca cda-cabeca--larga">
+            <p class="cda-rotulo cor-rosa">{P.casos.rotulo}</p>
+            <h2 id="cda-casos-titulo" class="cda-h2">{P.casos.titulo}</h2>
+            <p class="cda-suave">{P.casos.texto}</p>
+          </div>
+          <div class="cda-casos">
+            {P.casos.itens.map((caso) => (
+              <article class={`cda-caso cor-${caso.cor}`}>
+                <p class="cda-rotulo cda-rotulo--13">{caso.rotulo}</p>
+                <h3 class="cda-caso__titulo">{caso.titulo}</h3>
+                <p class="cda-caso__texto">{caso.texto}</p>
+                <p class="cda-caso__proximo"><span class="cda-caso__proximo-rotulo">{P.casos.proximoRotulo}</span> {caso.proximo}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="save" class="cda-secao cda-secao--grade" aria-labelledby="cda-save-titulo">
+        <div class="cda-wrap cda-coluna cda-coluna--larga">
+          <div class="cda-cabeca cda-cabeca--larga">
+            <p class="cda-rotulo cor-verde">{P.save.rotulo}</p>
+            <h2 id="cda-save-titulo" class="cda-h2">{P.save.titulo}</h2>
+          </div>
+          <div class="cda-salvo">
+            <div class="cda-salvo__painel">
+              <div class="cda-salvo__topo">
+                <h3 class="cda-rotulo cda-salvo__rotulo">{P.save.fica.rotulo}</h3>
+                <span class="cda-salvo__selo">{P.save.fica.selo}</span>
+              </div>
+              <ul class="cda-checks cda-salvo__itens">
+                {P.save.fica.itens.map((item) => (
+                  <li>
+                    <svg class="cda-check" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></svg>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div class="cda-salvo__painel cda-salvo__painel--volta">
+              <div class="cda-salvo__topo">
+                <h3 class="cda-rotulo cda-salvo__rotulo cor-amarelo">{P.save.volta.rotulo}</h3>
+                <span class="cda-salvo__selo">{P.save.volta.selo}</span>
+              </div>
+              <ul class="cda-checks cda-salvo__itens">
+                {P.save.volta.itens.map((item) => (
+                  <li>
+                    <svg class="cda-check" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></svg>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div class="cda-escada">
+            <div class="cda-escada__topo">
+              <h3 class="cda-escada__titulo">{escada.titulo}</h3>
+              <p class="cda-escada__legenda">
+                {escada.legenda.map((item) => <span class={`cor-${item.cor}`}><span class="cda-escada__marca" aria-hidden="true"></span>{item.texto}</span>)}
+              </p>
+            </div>
+            <ol class="cda-escada__etapas">
+              {escada.etapas.map((etapa) => (
+                <li class={`cda-etapa cor-${etapa.cor}`}>
+                  <div class="cda-etapa__faixa" aria-hidden="true"></div>
+                  <div class="cda-etapa__corpo">
+                    <span class="cda-rotulo cda-rotulo--12">{etapa.rotulo}</span>
+                    <strong>{etapa.nome}</strong>
+                    <span class="cda-etapa__nivel">{etapa.nivel}</span>
+                    <span class="cda-etapa__libera"><span>{escada.libera}</span> {etapa.libera}</span>
+                  </div>
+                </li>
+              ))}
+              <li class="cda-etapa cda-etapa--lenda cor-dourado">
+                <div class="cda-etapa__faixa" aria-hidden="true"></div>
+                <div class="cda-etapa__corpo">
+                  <span class="cda-rotulo cda-rotulo--12">{escada.fim.rotulo}</span>
+                  <strong>{escada.fim.nome}</strong>
+                  <span class="cda-etapa__nivel">{escada.fim.nivel}</span>
+                  <span class="cda-etapa__libera">{escada.fim.texto}</span>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="cda-secao cda-secao--fundo-2" aria-labelledby="cda-prova-titulo">
+        <div class="cda-wrap cda-dupla cda-dupla--prova">
+          <div class="cda-cabeca">
+            <p class="cda-rotulo cor-amarelo">{P.prova.rotulo}</p>
+            <h2 id="cda-prova-titulo" class="cda-h2">{P.prova.titulo}</h2>
+            <p class="cda-suave">{P.prova.texto}</p>
+            <div class="cda-caixa"><p>{P.prova.nota}</p></div>
+          </div>
+          <figure class="cda-mural cda-mural--prova">
+            <div class="cda-mural__quadro">
+              <img src={P.prova.tela.imagem.src} alt={P.prova.tela.imagem.alt} width={P.prova.tela.imagem.width} height={P.prova.tela.imagem.height} loading="lazy" decoding="async" />
+            </div>
+            <figcaption class="cda-legenda">{P.prova.tela.legenda}</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="oferta" class="cda-secao cda-secao--grade cda-oferta" aria-labelledby="cda-oferta-titulo">
+        <div class="cda-wrap cda-dupla cda-dupla--oferta">
+          <div class="cda-cabeca cda-cabeca--oferta">
+            <p class="cda-rotulo cor-amarelo">{P.oferta.rotulo}</p>
+            <h2 id="cda-oferta-titulo" class="cda-h2 cda-h2--oferta">{P.oferta.titulo}</h2>
+            <p class="cda-suave">{P.oferta.texto}</p>
+            <div class="cda-caixa cda-caixa--depois">
+              <h3 class="cda-rotulo cda-rotulo--pequeno cor-verde">{P.oferta.comeco.rotulo}</h3>
+              <ol class="cda-depois">
+                {P.oferta.comeco.passos.map((passo, index) => <li><span class="cda-depois__numero" aria-hidden="true">{index + 1}</span><span>{passo}</span></li>)}
+              </ol>
+            </div>
+            <div class="cda-caixa cda-caixa--garantia">
+              <span class="cda-coracoes" aria-hidden="true"><svg width="28" height="24" viewBox="0 0 7 6" shape-rendering="crispEdges"><rect x="1" y="0" width="2" height="1"></rect><rect x="4" y="0" width="2" height="1"></rect><rect x="0" y="1" width="7" height="2"></rect><rect x="1" y="3" width="5" height="1"></rect><rect x="2" y="4" width="3" height="1"></rect><rect x="3" y="5" width="1" height="1"></rect></svg></span>
+              <p><strong>{P.oferta.garantia.destaque}</strong>{P.oferta.garantia.texto}</p>
+            </div>
+          </div>
+          <div class="cda-oferta__lado">
+            <div class="cda-cartao">
+              <div class="cda-cartao__topo">
+                <span class="cda-cartao__marca">{cartao.marca}</span>
+                <span class="cda-cartao__empresa">{cartao.empresa}</span>
+              </div>
+              <div class="cda-cartao__corpo">
+                <ul class="cda-checks cda-checks--cartao">
+                  {cartao.inclui.map((item) => (
+                    <li>
+                      <svg class="cda-check" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></svg>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div class="cda-planos">
+                  {mostraMensal && (
+                  <div class="cda-plano">
+                    <h3 class="cda-rotulo cda-rotulo--13 cor-azul">{cartao.mensal.rotulo}</h3>
+                    <p class="cda-plano__preco">{preencher(cartao.mensal.preco)}<span>{cartao.mensal.sufixo}</span></p>
+                    <p class="cda-plano__texto">{preencher(cartao.mensal.texto)}</p>
+                    <button type="button" class="cda-plano__btn" data-checkout-cta data-checkout-oferta={mensal?.slug}>{cartao.mensal.cta}</button>
+                    <p class="cda-plano__garantia">{cartao.mensal.garantia}</p>
+                  </div>
+                  )}
+                  {mostraAnual && (
+                  <div class="cda-plano cda-plano--anual">
+                    {economiaAnualCents > 0 && <p class="cda-plano__selo">{preencher(cartao.anual.selo)}</p>}
+                    <h3 class="cda-rotulo cda-rotulo--13 cor-amarelo">{cartao.anual.rotulo}</h3>
+                    <p class="cda-plano__preco">{preencher(cartao.anual.preco)}<span>{cartao.anual.sufixo}</span></p>
+                    <p class="cda-plano__texto">{preencher(cartao.anual.texto)}</p>
+                    <button type="button" class="cda-plano__btn" data-checkout-cta data-checkout-oferta={anual?.slug}>{cartao.anual.cta}</button>
+                    <p class="cda-plano__garantia">{cartao.anual.garantia}</p>
+                  </div>
+                  )}
+                </div>
+                <p class="cda-cartao__nota">{cartao.nota}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cda-secao cda-secao--fundo-2" aria-labelledby="cda-duvidas-titulo">
+        <div class="cda-wrap cda-duvidas">
+          <p class="cda-rotulo cor-azul">{P.duvidas.rotulo}</p>
+          <h2 id="cda-duvidas-titulo" class="cda-h2 cda-h2--duvidas">{P.duvidas.titulo}</h2>
+          {P.duvidas.itens.map((item) => (
+            <details class="cda-duvida">
+              <summary>{item.pergunta}</summary>
+              <p>{item.resposta}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section class="cda-fechamento" aria-labelledby="cda-fechamento-titulo">
+        <div class="cda-wrap cda-fechamento__corpo">
+          <p class="cda-rotulo cda-rotulo--18 cor-verde">{P.fechamento.rotulo}</p>
+          <h2 id="cda-fechamento-titulo" class="cda-h2 cda-h2--fechamento">{P.fechamento.titulo}</h2>
+          <p class="cda-suave cda-fechamento__texto">{P.fechamento.texto}</p>
+          <a class="cda-btn cda-btn--grande cda-btn--larga" href="#oferta">{P.fechamento.cta}</a>
+          <p class="cda-garantia">{P.fechamento.garantia}</p>
+        </div>
+        <nav class="cda-legal" aria-label={P.fechamento.legal.aria}>
+          <div class="cda-wrap cda-legal__linha">
+            <a href={P.fechamento.legal.termos.href}>{P.fechamento.legal.termos.label}</a>
+            <a href={P.fechamento.legal.privacidade.href}>{P.fechamento.legal.privacidade.label}</a>
+          </div>
+        </nav>
+      </section>
+    </main>
+
+    <div class="cda-barra" data-cda-barra aria-hidden="true">
+      <p class="cda-barra__preco">{mostraMensal && <strong>{preencher(P.barra.preco)}</strong>}{mostraMensal && mostraAnual && <span>{preencher(P.barra.alternativa)}</span>}</p>
+      <a class="cda-btn cda-btn--barra" href="#oferta" tabindex="-1">{P.barra.cta}</a>
+    </div>
+  </div>
+  <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} assinatura />
+</BaseLayout>
+
+<script>
+  // Barra fixa do celular (padrão `.kof-mobar` da Comunidade Kids): aparece depois da primeira dobra
+  // e some com os planos ou o rodapé à vista. Sem JS ela nasce escondida e `aria-hidden`.
+  const barra = document.querySelector<HTMLElement>('[data-cda-barra]')
+  const planos = document.getElementById('oferta')
+  const rodape = document.querySelector('footer')
+  if (barra && planos && 'IntersectionObserver' in window) {
+    const link = barra.querySelector('a')
+    let planosAVista = false
+    let rodapeAVista = false
+    let roladoAlemDaDobra = false
+    let ultimo: boolean | null = null
+    const aplicar = () => {
+      const mostra = roladoAlemDaDobra && !planosAVista && !rodapeAVista
+      if (mostra === ultimo) return
+      ultimo = mostra
+      barra.classList.toggle('is-visible', mostra)
+      barra.setAttribute('aria-hidden', mostra ? 'false' : 'true')
+      link?.setAttribute('tabindex', mostra ? '0' : '-1')
+    }
+    new IntersectionObserver(
+      ([e]) => {
+        planosAVista = Boolean(e?.isIntersecting)
+        aplicar()
+      },
+      { rootMargin: '0px 0px -40% 0px' },
+    ).observe(planos)
+    if (rodape)
+      new IntersectionObserver(([e]) => {
+        rodapeAVista = Boolean(e?.isIntersecting)
+        aplicar()
+      }).observe(rodape)
+    const aoRolar = () => {
+      roladoAlemDaDobra = window.scrollY > window.innerHeight * 0.9
+      aplicar()
+    }
+    window.addEventListener('scroll', aoRolar, { passive: true })
+    aoRolar()
+  }
+</script>

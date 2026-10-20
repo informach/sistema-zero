@@ -1,15 +1,17 @@
 # Copy das páginas da Comunidade dos Criadores
 
+**Atualização de 20/10/2026.** As cinco páginas de perfil deram lugar à página de 9 a 17 e à do menor de 9, e a continuidade foi redesenhada no mesmo dia (Canvas "Três páginas de oferta · proposta", quadros PaginaContinuarKids e EstrategiaContinuar). Os espelhos atuais, gerados por `bun scripts/espelho-copy-comunidade.ts` em `packages/funnel`, são três: [pagina-9-a-17.md](pagina-9-a-17.md), [pagina-menor-9.md](pagina-menor-9.md) e [pagina-e-continuidade.md](pagina-e-continuidade.md). As cinco páginas de perfil estão em [historico/2026-10-20-cinco-paginas](historico/2026-10-20-cinco-paginas/) e a continuidade anterior em [historico/2026-10-20-continuidade-antiga](historico/2026-10-20-continuidade-antiga/). O restante deste texto é registro das versões anteriores.
+
 **Atualização de 16/10/2026.** A copy das seis páginas foi reescrita pela [proposta de melhoria](proposta-melhoria-2026-10-16/README.md), aprovada e implementada no funil (`packages/funnel/src/funnels/comunidade-dos-criadores/oferta/`). Os arquivos `pagina-*.md` desta pasta passaram a ser o ESPELHO gerado da copy tipada: para mudar uma frase, edite o código e rode `bun scripts/espelho-copy-comunidade.ts` dentro de `packages/funnel` (o teste `comunidade-offer-copy` reprova espelho desatualizado). As versões anteriores, inclusive a proposta da página F, estão em [historico/2026-10-16-antes-da-proposta](historico/2026-10-16-antes-da-proposta/). O texto abaixo descreve as versões de 01/10 e fica como registro; números como "40 respostas" e "50 respostas" valiam para elas (hoje são 26 comuns, mais as próprias de cada página).
 
-| Página | Espelho atual |
+| Página | Espelho de 16/10/2026 (histórico) |
 | --- | --- |
-| A | [pagina-a-tempo-de-tela.md](pagina-a-tempo-de-tela.md) |
-| B | [pagina-b-criacao-de-jogos.md](pagina-b-criacao-de-jogos.md) |
-| C | [pagina-c-expressao-visual.md](pagina-c-expressao-visual.md) |
-| D | [pagina-d-formacao-tecnologica.md](pagina-d-formacao-tecnologica.md) |
-| E | [pagina-e-continuidade.md](pagina-e-continuidade.md) |
-| F | [pagina-f-habilidades-escolares.md](pagina-f-habilidades-escolares.md) |
+| A | [pagina-a-tempo-de-tela.md](historico/2026-10-20-cinco-paginas/pagina-a-tempo-de-tela.md) |
+| B | [pagina-b-criacao-de-jogos.md](historico/2026-10-20-cinco-paginas/pagina-b-criacao-de-jogos.md) |
+| C | [pagina-c-expressao-visual.md](historico/2026-10-20-cinco-paginas/pagina-c-expressao-visual.md) |
+| D | [pagina-d-formacao-tecnologica.md](historico/2026-10-20-cinco-paginas/pagina-d-formacao-tecnologica.md) |
+| E | [pagina-e-continuidade.md](historico/2026-10-20-continuidade-antiga/pagina-e-continuidade.md) |
+| F | [pagina-f-habilidades-escolares.md](historico/2026-10-20-cinco-paginas/pagina-f-habilidades-escolares.md) |
 
 Data: 01/10/2026. Versão: revisão integral 2, com argumentação desenvolvida no corpo das quatro páginas, dúvidas separadas e demonstrações alinhadas. Referência editorial; a implementação local posterior está registrada no [relatório de implementação](../implementacao-paginas.md). Os arquivos abaixo contêm páginas completas e independentes, com texto dirigido à família.
 
@@ -34,6 +36,8 @@ As quatro páginas por motivação têm argumento central, demonstração descri
 Os resultados são uma biblioteca condicional: cada família recebe o texto pertinente às respostas e o botão da oferta correspondente. Na versão 4, o quiz fala com quem não conhece o produto: entrega a orientação e apresenta a Comunidade depois. Mantém oito perguntas principais e até três adicionais, interesses combinados e atividades com papel antes da compra. Empate, procura aberta e objetivo fora das opções têm textos próprios, sem inventar um perfil dominante. Não publicar todos os complementos como uma página única. Consulte a [visão geral](../quiz/README.md), a [pesquisa](../quiz/pesquisa-e-estrategia.md), a [lógica e validação](../quiz/logica-e-validacao.md) e a [revisão para tráfego frio](../quiz/revisao-trafego-frio.md). A [revisão da argumentação e das perguntas](../quiz/revisao-argumentacao-personalizada.md) explica os ajustes mais recentes, e os [exemplos completos da v4](historico/2026-10-16-quiz-v4/exemplos-de-resultado-v4.md) permitem ler os resultados montados. O quiz é opcional e não altera o quiz do Desafio.
 
 ## Página de continuidade
+
+**20/10/2026:** a página foi redesenhada na família visual da página de 9 a 17, com a ordem alívio (o que ficou guardado), situações com o próximo passo, o que fica e o que a assinatura acrescenta, os oito postos da Jornada, três relatos (Jeffrey, Daniel e Harle), planos com o início da assinatura e o mesmo e-mail, e 9 dúvidas. A faixa passou a 9 a 17 anos. A copy mora em `packages/funnel/src/funnels/comunidade-dos-criadores/oferta/pagina-continuar.ts`, e o espelho é [pagina-e-continuidade.md](pagina-e-continuidade.md). Existe também uma continuidade adulta, com espelho em [`../../../comunidade-dos-criadores/adulto/copy/pagina-continuar.md`](../../../comunidade-dos-criadores/adulto/copy/pagina-continuar.md). Os parágrafos abaixo descrevem a versão de 01/10.
 
 A página E reconhece a primeira experiência e explica o próximo passo, com destaque para a mesma conta, a diferença entre acesso específico e assinatura, os requisitos da Jornada e o valor do conjunto integrado. Ela atende às entradas pelo Desafio, Cadê Todo Mundo e outras experiências, sem presumir conclusão ou satisfação.
 

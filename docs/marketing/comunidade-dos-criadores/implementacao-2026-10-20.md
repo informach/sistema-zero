@@ -11,12 +11,14 @@ três públicos".
 | `/` | Bio do Instagram: "Criar jogos não tem idade." e dois cartões, um para cada quiz |
 | `/kids/comunidade-dos-criadores/oferta` | Página de 9 a 17 anos |
 | `/kids/comunidade-dos-criadores/oferta/criar-junto` | Página do menor de 9, criando com um adulto |
-| `/kids/comunidade-dos-criadores/oferta/continuar` | Continuidade, sem mudança |
+| `/kids/comunidade-dos-criadores/oferta/continuar` | Continuidade Kids, redesenhada na segunda rodada |
 | `/kids/comunidade-dos-criadores/oferta/{tempo-de-tela,criacao-de-jogos,expressao-visual,formacao-tecnologica,habilidades-escolares}` | 301 para `/oferta`, com a mesma query |
 | `/kids/comunidade-dos-criadores/quiz` | Quiz Kids v6 |
 | `/pro/comunidade-dos-criadores/oferta` | Página adulta |
 | `/pro/comunidade-dos-criadores/quiz` | Quiz adulto v1 |
+| `/pro/comunidade-dos-criadores/oferta/continuar` | Continuidade adulta, nova na segunda rodada |
 | `/pro/comunidade-dos-criadores/checkout` e `/obrigado` | Assinatura adulta, mensal ou anual |
+| `/como-funciona/` | 301 para `/kids/comunidade-dos-criadores/oferta#experiencia`, com a query |
 | `/termos` | Índice dos Termos, um por oferta |
 | `/<audience>/<produto>/termos` | O Termo de cada oferta |
 | `/privacidade` | Política de Privacidade única |
@@ -65,6 +67,32 @@ A dona autorizou seguir sem consulta. Cada decisão abaixo seguiu a recomendaç�
 - **Build do funil:** o pacote fixa a versão do Vite usada pelo Astro. Sem isso, o build do Railway
   quebrava desde 16/10, por causa de uma atualização em outro pacote do monorepo.
 
+## Segunda rodada: continuidades e Como funciona
+
+Proposta no mesmo Canvas (quadros `EstrategiaContinuar`, `PaginaContinuarKids` e
+`PaginaContinuarAdulto`, exportados em `proposta-2026-10-19/canvas/`) e implementada no mesmo dia.
+
+- **Continuidade Kids:** corpo novo `ComunidadeContinuarBody`, copy em `oferta/pagina-continuar.ts`,
+  peças próprias em `comunidade-continuar.css` sobre o layout da página de 9 a 17. Faixa para a
+  criança que chega pela tela de ferramenta fechada, painel "O caminho dele", cinco situações, o que
+  fica sem custo e o que a assinatura acrescenta, os oito postos (conferidos no teste contra a
+  política da Jornada no core), relatos N18, AV11 e N15, planos ao vivo, 9 dúvidas, faixa 9 a 17.
+- **Continuidade adulta:** subpágina nova do funil adulto (`isComunidadeAdultoSubpagina`), corpo
+  `ComunidadeAdultoContinuarBody`, copy em `comunidade-adulto/oferta/continuar.ts` (requisitos, cartão
+  dos planos, escada, tela do Mural e links legais vêm de `PAGINA_ADULTO` por referência), peças em
+  `comunidade-adulto-continuar.css`. Tela de save no herói, quatro casos, o que fica salvo, a prova
+  pela experiência própria, planos ao vivo e 8 dúvidas. No sitemap.
+- **Como funciona:** `src/pages/como-funciona.astro` só redireciona; o conteúdo
+  (`home-comunidade.ts`) e o CSS (`comunidade-home.css`) saíram. Os links do Desafio (oferta,
+  resultado, cabeçalho do resultado e o botão de quem o quiz não recomenda) vão direto para a seção
+  de experiência da página de 9 a 17; o menu da oferta do Desafio ficou com a própria seção. A página
+  saiu do sitemap, das métricas e das capturas.
+- **Limpeza:** a continuidade antiga (`ComunidadeOfertaBody`, `ComunidadeTour`, `continuidade.ts`,
+  `continuidade-faq.ts` e `shared.ts`) saiu. O motor de seções continua, porque o presente e o
+  embaixador o usam. As falas que só a continuidade antiga usava (AV02, N4, N6, N7 e N19) foram para
+  a reserva, com o motivo. O espelho antigo está em
+  `kids/comunidade-dos-criadores/copy/historico/2026-10-20-continuidade-antiga/`.
+
 ## Verificação
 
 - Testes do funil, typecheck, lint e build passaram.
@@ -72,8 +100,20 @@ A dona autorizou seguir sem consulta. Cada decisão abaixo seguiu a recomendaç�
   checkout com o plano e a atribuição, 301 das páginas antigas, cinco larguras sem rolagem lateral.
 - Os três caminhos de quiz foram percorridos até o resultado, num servidor local com banco local.
   Também foram conferidos checkout, obrigado, bio, Termos e Privacidade em 390 e 1440 px.
+- Segunda rodada: testes do funil, typecheck, lint, build e o teste de navegador com as cinco
+  páginas (incluindo as duas continuidades, preços ao vivo, os dois planos até o checkout e cinco
+  larguras sem rolagem lateral), o 301 da Como funciona com a query e a âncora, e os links da oferta
+  do Desafio no build local. Conferência visual das duas continuidades em 390 e 1440 px.
 
 ## Pendências para produção
+
+- **Continuidade adulta:** confirmar que a etapa e os blocos adultos não voltam para trás depois do
+  cancelamento (no Kids isso vale; a jornada adulta depende de rodar a configuração adulta com a
+  dona). A página não tem link de entrada ainda: ligar no e-mail de assinatura encerrada, na tela
+  de produto fechado da área adulta e num cartão em Cursos para quem só tem No Comando da IA.
+- **Continuidade Kids:** o aviso de ferramenta fechada do app Kids diz à criança que "fica tudo
+  liberado pra você", o que contradiz a Jornada; faltam o e-mail de fim do presente de 7 dias e o
+  de assinatura encerrada; decidir o que acontece com o perfil que completa 18 anos.
 
 - **Capturas reais da área adulta.** As telas da página adulta são prévias com dados de teste. A
   prévia do Mural ainda mostra o nome antigo "Mostra dos criadores".
