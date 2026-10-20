@@ -35,7 +35,7 @@ EX_917 = dict(doc_title='Quiz infantil · resultado em conversa 9 a 17 (perfil B
         ('relato', B['daniel'], 'Vai criando, vai sendo mais criativo. ‘Eu quero mudar isso aqui no jogo.’', 'Daniel, pai do Rafael'),
         ('h', 'O que você disse que precisa'),
         ('p', 'Você quer [[conseguir acompanhar]]. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ela aprendeu é a mais simples: me mostra o que você mudou. Você disse também que [[qualquer ferramenta serve, se ela gostar]]; aqui a ferramenta é o Estúdio, da própria plataforma.'),
-        ('cta', 'Na próxima página, você vê os cinco primeiros jogos, como é uma aula, o caminho até o jogo dela e até o código, como você acompanha e os dois planos.', 'Ver como ela tira os jogos do papel'),
+        ('cta', 'Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dela e até o código, como você acompanha e os dois planos.', 'Ver como ela tira os jogos do papel'),
     ])
 
 EX_M9 = dict(doc_title='Quiz infantil · resultado em conversa menor de 9 (perfil B, filha)', kicker='Seu resultado',
@@ -54,5 +54,5 @@ EX_M9 = dict(doc_title='Quiz infantil · resultado em conversa menor de 9 (perfi
         ('relato', B['debora'], 'Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No último dia chamei a minha mãe pra ver o meu jogo.', 'Débora, aluna, 7 anos'),
         ('h', 'O que você disse que precisa'),
         ('p', 'Você precisa [[conseguir conduzir sem saber programar]]. O vídeo mostra cada passo, o Zappy lê as falas e os blocos dizem o que fazem, em português. O seu papel é ler, perguntar e deixar a escolha com ela.'),
-        ('cta', 'Na próxima página, você vê como é uma sessão de vocês, do vídeo ao teste, o seu papel, as regras de segurança e os dois planos.', 'Ver como vocês criam os primeiros jogos juntos'),
+        ('cta', 'Na próxima página, você vê como é uma sessão de vocês, do vídeo ao teste, o seu papel, as regras de segurança e os dois planos.', 'Ver como vocês criam jogos juntos'),
     ])

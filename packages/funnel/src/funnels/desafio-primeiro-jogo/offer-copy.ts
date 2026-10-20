@@ -1,7 +1,7 @@
 // Conteúdo aprovado, desenvolvido em docs/marketing/kids/desafio-primeiro-jogo/copy-proposta.md.
 export const DESAFIO_SECTIONS = {
   aventura: {
-    title: 'Um personagem, uma chave e um farol que só acende com a chave',
+    title: 'Um personagem, uma chave e um farol apagado',
     paragraphs: [
       'Um barco precisa chegar à costa, mas o farol está apagado. Para acender a luz, o personagem precisa encontrar a chave e chegar à porta. Essa é a aventura que seu filho vai conhecer e aprender a programar.',
       'Ele começa jogando uma versão pronta para entender o que está construindo. Depois encontra o cenário preparado e monta as regras que fazem a aventura acontecer. Se o personagem encosta na chave, o jogo precisa recolhê-la e guardar essa informação. Quando chega ao farol, precisa conferir se a chave foi encontrada.',
@@ -11,7 +11,7 @@ export const DESAFIO_SECTIONS = {
   experiencia: {
     title: 'O vídeo da aula fica ao lado de onde ele monta o jogo',
     paragraphs: [
-      'Imagine seu filho assistindo à parte em que a chave deve desaparecer quando o personagem encosta nela. Ele pausa a explicação, encontra o bloco indicado e encaixa no encontro entre os dois. Ali mesmo, leva o personagem até a chave e vê se a regra funcionou. Cada explicação termina com uma parte do jogo para ele montar e testar.',
+      'Imagine seu filho assistindo à parte em que a chave deve desaparecer quando o personagem encosta nela. Ele pausa a explicação, encontra o bloco indicado e encaixa no encontro entre os dois. Ali mesmo, leva o personagem até a chave e vê se a regra funcionou. As explicações levam a uma parte do jogo para ele montar e testar.',
       'No Estúdio que abre dentro da aula, seu filho encontra os blocos e o jogo para testar. Ele acompanha a demonstração, pausa no momento de montar e retoma a explicação quando estiver pronto para continuar.',
       'Essa pausa faz diferença porque assistir a um encaixe pode ser rápido, mas localizar o bloco e fazê-lo pode levar mais tempo. A orientação gravada permite voltar exatamente ao trecho em que ele se perdeu, durante o período de acesso.',
       'O caderno também acompanha as aulas. Ele mostra caminhos dos blocos, encaixes e testes para consultar quando faltar um passo. Pode ser lido na tela; imprimir e preencher não são tarefas obrigatórias.',
@@ -74,7 +74,7 @@ export const DESAFIO_SECTIONS = {
     ],
   },
   convite: {
-    title: 'Para começar, mostre a aventura do Farol ao seu filho',
+    title: 'Antes de comprar, converse com seu filho',
     paragraphs: [
       'Mostre o Farol ao seu filho e conversem sobre o que ele gostaria de experimentar. Se fizer sentido para vocês, o Desafio oferece a orientação para construir as regras, testar o jogo e aprender a mostrá-lo.',
       '{{preco}} uma vez. Inclui, por 30 dias, o projeto guiado, a ajuda por mensagens e o Mural completo; depois, Mural visitante. Para crianças e adolescentes de 9 a 14 anos, no computador.',

@@ -32,9 +32,9 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.titulo.depois**: , cada vez maiores, até o jogo com a sua ideia.
 
-**hero.texto**: Você desenha o herói, decide as regras e escolhe quanto vale cada ponto. Depois manda o link, e os amigos jogam a fase que você inventou. A vontade de entender como um jogo funciona por dentro, que você tem desde criança, vira jogos feitos por você.
+**hero.texto**: Você desenha o herói, decide as regras e escolhe quanto vale cada ponto. A vontade de entender como um jogo funciona por dentro, que você tem desde criança, vira jogos feitos por você.
 
-**hero.beneficios[0]**: O primeiro jogo pronto já no primeiro curso, com o seu nome como criador na abertura.
+**hero.beneficios[0]**: O primeiro jogo pronto já no primeiro curso.
 
 **hero.beneficios[1]**: Depois, novos jogos: cada curso ensina uma parte nova, como placar, vidas e personagens desenhados por você.
 
@@ -54,7 +54,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.tela.rotulo**: ABERTURA DO JOGO
 
-**hero.tela.imagem.alt**: Jogo de arena em pixel art ao fundo da abertura, com o nome do jogo e o nome de quem criou por cima
+**hero.tela.imagem.alt**: Jogo de arena em pixel art ao fundo de uma abertura de exemplo, com o nome do jogo e um texto com o nome de quem criou
 
 **hero.tela.jogo**: GUARDIÕES DA ARENA
 
@@ -68,7 +68,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.tela.direitos**: © VOCÊ
 
-**hero.tela.legenda**: Assim fica a abertura do seu jogo, com o seu nome como criador. Imagem de exemplo.
+**hero.tela.legenda**: Exemplo de abertura que você pode montar no Estúdio, escrevendo o seu nome num texto do jogo. Imagem de exemplo, com dados fictícios.
 
 **problema.rotulo**: A IDEIA QUE FICOU NA CABEÇA
 
@@ -88,7 +88,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **levelUp.cartas[0].titulo**: A ideia vira um jogo terminado
 
-**levelUp.cartas[0].texto**: Com começo, meio e fim, rodando no navegador e com o seu nome na abertura do jogo. O "um dia eu faço" sai da lista.
+**levelUp.cartas[0].texto**: Com começo, meio e fim, rodando no navegador e pronto para mandar o link. O "um dia eu faço" sai da lista.
 
 **levelUp.cartas[1].titulo**: Você ouve "foi você que fez?"
 
@@ -260,7 +260,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **etapas.escada.etapas[1].nivel**: Jogos 2D · Iniciante
 
-**etapas.escada.etapas[1].libera**: Blocos novos na paleta
+**etapas.escada.etapas[1].libera**: Blocos novos no Estúdio
 
 **etapas.escada.etapas[2].rotulo**: ETAPA 3
 
@@ -276,7 +276,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **etapas.escada.etapas[3].nivel**: Jogos 2D · Intermediário
 
-**etapas.escada.etapas[3].libera**: Blocos novos na paleta
+**etapas.escada.etapas[3].libera**: Blocos novos no Estúdio
 
 **etapas.escada.etapas[4].rotulo**: ETAPA 5
 
@@ -284,7 +284,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **etapas.escada.etapas[4].nivel**: Jogos 3D · Intermediário
 
-**etapas.escada.etapas[4].libera**: Blocos novos na paleta
+**etapas.escada.etapas[4].libera**: Blocos novos no Estúdio
 
 **etapas.escada.etapas[5].rotulo**: ETAPA 6
 
@@ -406,7 +406,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **oferta.rotulo**: INSERT COIN
 
-**oferta.titulo**: Tudo o que você precisa para fazer o primeiro jogo e os próximos fica num lugar só
+**oferta.titulo**: Cursos, ferramentas, Mural e ajuda para fazer o primeiro jogo e os próximos, num lugar só
 
 **oferta.texto**: Os cursos levam você do primeiro jogo ao código. Com o Estúdio, o Pinta e o Molda, você faz as regras, os desenhos e o 3D. O Mural publica o seu jogo com um link que abre no celular de quem você quiser. O Clube e o Desafio do mês juntam gente que também está criando. Os tutoriais e os Recados ajudam quando você trava. As etapas definem a ordem, e cada ferramenta abre quando você já sabe usar. Os cursos lançados durante a assinatura entram sem custo extra. Os dois planos dão acesso a tudo: muda só a forma de pagar.
 

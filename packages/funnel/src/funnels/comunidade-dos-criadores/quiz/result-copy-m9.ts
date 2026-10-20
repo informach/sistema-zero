@@ -86,7 +86,7 @@ export const PERFIS_M9: Record<M9Profile, PerfilM9Copy> = {
     changeTitle: 'O que muda quando vocês criam juntos',
     change:
       'Criar um jogo é montar a regra da brincadeira com blocos: se tocar, some; se achar, conta mais um. Em vez de apertar o que aparece, ele decide o que vai aparecer.',
-    cta: 'Ver como vocês criam os primeiros jogos juntos',
+    cta: 'Ver como vocês criam jogos juntos',
   },
   B: {
     title:

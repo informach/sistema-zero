@@ -2,7 +2,7 @@
 
 **seoTitle**: Criar junto, para crianças menores de 9 anos | Comunidade dos Criadores | Sistema Zero
 
-**description**: O primeiro jogo dela e os próximos, feitos com você do lado. Ela decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.
+**description**: Os jogos dela, um depois do outro, feitos com você do lado. Ela decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.
 
 **topo.pular**: Ir para o conteúdo
 
@@ -18,17 +18,17 @@
 
 **heroi.selo**: Para crianças menores de 9 anos, com um adulto ao lado
 
-**heroi.titulo**: O primeiro jogo dela e os próximos, feitos com você do lado.
+**heroi.titulo**: Os jogos dela, um depois do outro, feitos com você do lado.
 
 **heroi.enfase**: com você do lado.
 
-**heroi.texto**: Imagine a cara dela quando o personagem que ela escolheu aparece na tela e faz exatamente o que ela mandou. Ela decide, e você lê e ajuda com o mouse. Cada jogo pronto vai para os avós jogarem. Cada aula ensina peças novas, e os próximos jogos ficam maiores, até o jogo que ela inventar.
+**heroi.texto**: Imagine a cara dela quando o personagem que ela escolheu aparece na tela e faz exatamente o que ela mandou. Ela decide, e você lê e ajuda com o mouse. Cada jogo pronto pode ir para os avós jogarem, por um link. Cada aula ensina peças novas, e os próximos jogos ficam maiores, até o jogo que ela inventar.
 
 **heroi.beneficios[0]**: Tela junto com você, e não sozinha no tablet
 
 **heroi.beneficios[1]**: A ideia dela na tela, do jeito que ela inventou
 
-**heroi.beneficios[2]**: Um jogo depois do outro, e quando aprender a ler ela segue sozinha no mesmo perfil
+**heroi.beneficios[2]**: Um jogo depois do outro
 
 **heroi.cta**: Ver os planos para criarmos juntos
 
@@ -306,7 +306,7 @@
 
 **duvidas.itens[8].resposta**: Na sua área, em Conta e depois em Minhas compras, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e os jogos publicados continuam no Mural.
 
-**fechamento.titulo**: A próxima brincadeira que ela inventar pode virar o primeiro jogo de vocês
+**fechamento.titulo**: A próxima brincadeira que ela inventar pode virar um jogo de vocês
 
 **fechamento.cta**: Ver os planos para criarmos juntos
 

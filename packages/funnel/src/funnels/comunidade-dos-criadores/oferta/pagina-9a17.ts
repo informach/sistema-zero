@@ -68,9 +68,9 @@ export const PAGINA_9A17 = {
     title: 'Seu filho conhece os jogos de cor. Imagine ele dizendo: ',
     destaque: 'esse aqui fui eu que fiz.',
     description:
-      'Nas aulas, ele faz o primeiro jogo completo e depois os próximos, numa plataforma feita para crianças e adolescentes. Cada curso que ele termina libera peças novas no Estúdio, a área onde ele monta os jogos. Com elas, os jogos ficam maiores, até o jogo que ele mesmo inventou. O jogo vai para o Mural, onde outros alunos jogam e comentam. No Clube, ele troca ideias com outros criadores, e a equipe responde quando ele trava. Você acompanha pela sua área, e não precisa entender de programação para isso.',
+      'Nas aulas, ele começa pelo Cadê Todo Mundo, um jogo completo, e segue para os próximos, numa plataforma feita para crianças e adolescentes. Cada curso que ele termina libera peças novas no Estúdio, a área onde ele monta os jogos. Com elas, os jogos ficam maiores, até o jogo que ele mesmo inventou. O jogo vai para o Mural, onde outros alunos jogam e comentam. No Clube, ele troca ideias com outros criadores, e a equipe responde quando ele trava. Você acompanha pela sua área, e não precisa entender de programação para isso.',
     benefits: [
-      'O primeiro jogo dele pronto já no primeiro curso, para mostrar quando você chega em casa',
+      'Um jogo pronto já no primeiro curso, o Cadê Todo Mundo, para mostrar quando você chega em casa',
       'Depois, os próximos: cada curso ensina uma parte nova, como placar, vidas e personagens desenhados por ele',
       'Até o jogo que ele inventou, com as regras dele: ele monta sozinho no Estúdio livre e chama você para ver',
     ],
@@ -104,7 +104,7 @@ export const PAGINA_9A17 = {
 
   muda: {
     eyebrow: 'O que muda',
-    title: 'Quando ele encontra esse lugar, ele para de só jogar e começa a criar',
+    title: 'Quando ele aprende a criar jogos, ele para de só jogar e começa a fazer os seus.',
     paragraph:
       'Ele passa a decidir como o jogo funciona, e você começa a ver isso aparecer no dia a dia.',
     cards: [

@@ -112,7 +112,8 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
   hero: {
     rotulo: 'CONTINUE · PARA QUEM JÁ CONHECE O SISTEMA ZERO',
     titulo: {
-      antes: 'Você já conhece o Sistema Zero. Agora é continuar criando jogos, ',
+      antes:
+        'Você já conhece o Sistema Zero. Agora você continua criando jogos, cada vez maiores, ',
       destaque: 'até o jogo com a sua ideia.',
     },
     texto:

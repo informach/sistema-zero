@@ -106,7 +106,7 @@ export const COMMUNITY_OPENING =
 
 /** O que a próxima página mostra (a mesma página de 9 a 17 para todos os perfis). */
 export const NEXT_917 =
-  'Na próxima página, você vê os cinco primeiros jogos, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.'
+  'Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.'
 
 export const PERFIS_917: Record<CommunityProfile, Perfil917Copy> = {
   A: {

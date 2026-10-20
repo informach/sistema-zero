@@ -167,7 +167,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
   seoTitle:
     'Criar junto, para crianças menores de 9 anos | Comunidade dos Criadores | Sistema Zero',
   description:
-    'O primeiro jogo dela e os próximos, feitos com você do lado. Ela decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.',
+    'Os jogos dela, um depois do outro, feitos com você do lado. Ela decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.',
   capa: 'checkout-capa.webp',
   topo: {
     pular: 'Ir para o conteúdo',
@@ -179,14 +179,14 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
   },
   heroi: {
     selo: 'Para crianças menores de 9 anos, com um adulto ao lado',
-    titulo: 'O primeiro jogo dela e os próximos, feitos com você do lado.',
+    titulo: 'Os jogos dela, um depois do outro, feitos com você do lado.',
     enfase: 'com você do lado.',
     texto:
-      'Imagine a cara dela quando o personagem que ela escolheu aparece na tela e faz exatamente o que ela mandou. Ela decide, e você lê e ajuda com o mouse. Cada jogo pronto vai para os avós jogarem. Cada aula ensina peças novas, e os próximos jogos ficam maiores, até o jogo que ela inventar.',
+      'Imagine a cara dela quando o personagem que ela escolheu aparece na tela e faz exatamente o que ela mandou. Ela decide, e você lê e ajuda com o mouse. Cada jogo pronto pode ir para os avós jogarem, por um link. Cada aula ensina peças novas, e os próximos jogos ficam maiores, até o jogo que ela inventar.',
     beneficios: [
       'Tela junto com você, e não sozinha no tablet',
       'A ideia dela na tela, do jeito que ela inventou',
-      'Um jogo depois do outro, e quando aprender a ler ela segue sozinha no mesmo perfil',
+      'Um jogo depois do outro',
     ],
     cta: CTA_PLANOS,
     garantia: GARANTIA_CURTA,
@@ -537,7 +537,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
     ],
   },
   fechamento: {
-    titulo: 'A próxima brincadeira que ela inventar pode virar o primeiro jogo de vocês',
+    titulo: 'A próxima brincadeira que ela inventar pode virar um jogo de vocês',
     cta: CTA_PLANOS,
     garantia: GARANTIA_CURTA,
     zappy: { arquivo: 'zappy-festa.webp', alt: '', largura: 640, altura: 640 },

@@ -205,8 +205,8 @@ export const PAINEL_EMBAIXADOR = {
       },
       {
         item: 'Fica para a assinatura',
-        kids: 'Outros cursos, o Estúdio livre e fazer a própria versão de jogos do Mural',
-        adult: 'Outros cursos, o Estúdio livre e fazer a sua versão de jogos do Mural',
+        kids: 'Outros cursos, o Estúdio livre e a opção de fazer a própria versão de um jogo do Mural',
+        adult: 'Outros cursos, o Estúdio livre e a opção de fazer a sua versão de um jogo do Mural',
       },
       {
         item: 'Custo',
@@ -258,7 +258,7 @@ export const EMBAIXADOR_DUVIDAS = {
       pergunta: 'Quem recebe precisa assinar alguma coisa?',
       paragrafos: [
         'Não. Quem recebe ganha 7 dias do Cadê Todo Mundo e do Mural do seu público, contados do cadastro, sem cartão e sem assinatura automática. Depois, o link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
-        'Explique isso no convite e lembre que o curso pede um computador com mouse e teclado. Os outros cursos, a criação livre e fazer a própria versão de jogos do Mural fazem parte da Comunidade dos Criadores, Kids ou adulta, que a pessoa pode escolher contratar depois.',
+        'Explique isso no convite e lembre que o curso pede um computador com mouse e teclado. Os outros cursos, a criação livre e a opção de fazer a própria versão de um jogo do Mural fazem parte da Comunidade dos Criadores, Kids ou adulta, que a pessoa pode escolher contratar depois.',
       ],
     },
     {

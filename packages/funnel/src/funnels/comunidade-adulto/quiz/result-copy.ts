@@ -416,11 +416,11 @@ export const STILL_LOOKING = `E, juntando tudo, você disse que ${m(MARCAS.sinte
 export const CTA_TEXT: Record<AdultProfile, string> = {
   A: 'Na próxima página, você vê como é uma aula, do jogo pronto à primeira regra que você muda, os primeiros jogos, os que vêm depois, o Mural onde o jogo fica publicado e os dois planos.',
   B: 'Na próxima página, você vê como é a aula da Nave Contra Asteroides, os primeiros jogos, o caminho dos blocos ao código até o jogo com a sua ideia e os dois planos.',
-  D: 'Na próxima página, você vê quatro regras dos primeiros jogos montadas com blocos, como é a aula da Nave Contra Asteroides, o caminho dos blocos ao código e os dois planos.',
+  D: 'Na próxima página, você vê quatro regras dos primeiros jogos montadas com blocos, como é a aula da Nave Contra Asteroides, o caminho dos blocos ao código, os jogos que vêm depois e os dois planos.',
 }
 /** Spec: `perfis.X.cta`. */
 export const CTA_LABEL: Record<AdultProfile, string> = {
-  A: 'Ver como a noite de jogo vira uma fase pronta',
+  A: 'Ver como uma noite livre vira uma fase pronta',
   B: 'Ver como a ideia vira jogo',
   D: 'Ver o caminho para entender um jogo por dentro',
 }

@@ -34,7 +34,7 @@ A Flávia, mãe do Fernando, viu isso acontecer em casa:
 
 Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou.
 
-Na próxima página, você vê os cinco primeiros jogos, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
+Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
 
 [Ver como o tempo de tela vira criação](/kids/comunidade-dos-criadores/oferta)
 
@@ -70,7 +70,7 @@ O Daniel, pai do Rafael, viu isso acontecer em casa:
 
 Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou. Você disse também que **qualquer ferramenta serve, se ele gostar**; aqui a ferramenta é o Estúdio, da própria plataforma.
 
-Na próxima página, você vê os cinco primeiros jogos, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
+Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
 
 [Ver como ele tira os jogos do papel](/kids/comunidade-dos-criadores/oferta)
 
@@ -106,7 +106,7 @@ O Jeffrey, aluno, contou assim:
 
 Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou. Você disse também que quer **que os personagens façam coisas: andem, pulem, reajam**, e é exatamente isso que as regras do jogo fazem.
 
-Na próxima página, você vê os cinco primeiros jogos, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
+Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
 
 [Ver o desenho dele entrando no jogo](/kids/comunidade-dos-criadores/oferta)
 
@@ -142,7 +142,7 @@ O Jeffrey, aluno, contou assim:
 
 Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou.
 
-Na próxima página, você vê os cinco primeiros jogos, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
+Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
 
 [Ver o caminho para ele aprender a programar](/kids/comunidade-dos-criadores/oferta)
 
@@ -178,7 +178,7 @@ O Daniel, pai do Rafael, viu isso acontecer em casa:
 
 Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou.
 
-Na próxima página, você vê os cinco primeiros jogos, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
+Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
 
 [Ver a escola dentro do jogo](/kids/comunidade-dos-criadores/oferta)
 
@@ -216,7 +216,7 @@ Você precisa **conseguir conduzir sem saber programar**. O vídeo mostra cada p
 
 Na próxima página, você vê como é uma sessão de vocês, do vídeo ao teste, o seu papel, as regras de segurança e os dois planos.
 
-[Ver como vocês criam os primeiros jogos juntos](/kids/comunidade-dos-criadores/oferta/criar-junto)
+[Ver como vocês criam jogos juntos](/kids/comunidade-dos-criadores/oferta/criar-junto)
 
 _Helena e Júlio, Sistema Zero Kids_
 

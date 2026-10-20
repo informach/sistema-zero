@@ -57,8 +57,9 @@ export const PAGINA_CONTINUAR = {
 
   hero: {
     eyebrow: 'Para quem já começou no Sistema Zero Kids',
-    title: 'O que seu filho começou está guardado. Agora ele segue até o ',
-    destaque: 'jogo que ele inventa.',
+    title:
+      'O que seu filho começou está guardado. Agora ele faz os próximos jogos, cada vez maiores, até o ',
+    destaque: 'jogo que ele inventar.',
     description:
       'Assinando com o mesmo e-mail da sua conta, ele continua no mesmo perfil, com o progresso, os projetos e os jogos publicados. Com a assinatura, ele volta a ter os outros cursos, as ferramentas que a Jornada vai liberando, o Mural para publicar, o Clube e as dúvidas respondidas pela equipe nos Recados. Cada curso concluído ensina peças novas para os jogos dele. Quando ele conclui e publica os cursos de um posto, sobe para o próximo posto da Jornada do Criador, que libera ferramentas novas. Você segue acompanhando pela sua área.',
     benefits: [
@@ -214,8 +215,8 @@ export const PAGINA_CONTINUAR = {
 
   relatos: {
     eyebrow: 'Quem seguiu criando',
-    title: 'Depois do primeiro jogo, eles quiseram inventar, mudar e mostrar',
-    paragraph: 'Um aluno e dois pais contam o que veio depois do primeiro jogo.',
+    title: 'Depois de terminar um jogo, eles quiseram inventar, mudar e mostrar',
+    paragraph: 'Um aluno e dois pais contam o que veio depois do jogo terminado.',
     falas: [{ id: 'N18' }, { id: 'AV11' }, { id: 'N15' }] satisfies readonly Relato917[],
   },
 
@@ -312,7 +313,7 @@ export const PAGINA_CONTINUAR = {
 
   closing: {
     title:
-      'Peça para ele contar o que mudaria no primeiro jogo. Essa ideia pode virar o próximo jogo dele.',
+      'Peça para ele contar o que mudaria no jogo que já fez. Essa ideia pode virar o próximo jogo dele.',
     zappy: { file: 'zappy-festa.webp', width: 640, height: 640, alt: '' },
   },
 

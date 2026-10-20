@@ -26,7 +26,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.rotulo**: CONTINUE · PARA QUEM JÁ CONHECE O SISTEMA ZERO
 
-**hero.titulo.antes**: Você já conhece o Sistema Zero. Agora é continuar criando jogos, 
+**hero.titulo.antes**: Você já conhece o Sistema Zero. Agora você continua criando jogos, cada vez maiores, 
 
 **hero.titulo.destaque**: até o jogo com a sua ideia.
 
@@ -178,7 +178,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **save.escada.etapas[1].nivel**: Jogos 2D · Iniciante
 
-**save.escada.etapas[1].libera**: Blocos novos na paleta
+**save.escada.etapas[1].libera**: Blocos novos no Estúdio
 
 **save.escada.etapas[2].rotulo**: ETAPA 3
 
@@ -194,7 +194,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **save.escada.etapas[3].nivel**: Jogos 2D · Intermediário
 
-**save.escada.etapas[3].libera**: Blocos novos na paleta
+**save.escada.etapas[3].libera**: Blocos novos no Estúdio
 
 **save.escada.etapas[4].rotulo**: ETAPA 5
 
@@ -202,7 +202,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **save.escada.etapas[4].nivel**: Jogos 3D · Intermediário
 
-**save.escada.etapas[4].libera**: Blocos novos na paleta
+**save.escada.etapas[4].libera**: Blocos novos no Estúdio
 
 **save.escada.etapas[5].rotulo**: ETAPA 6
 

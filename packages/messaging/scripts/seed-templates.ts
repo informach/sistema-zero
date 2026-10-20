@@ -1069,7 +1069,7 @@ const seeds = [
         ),
         p('O acesso ao curso dura 7 dias a partir do cadastro pelo link, não da primeira aula.'),
         p(
-          'Durante os sete dias, seu filho também pode <strong>publicar o jogo do curso, comentar e reagir no Mural dos Criadores</strong>. Depois, vocês continuam podendo ver e jogar enquanto a conta existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível, para compartilhar com a família e os amigos. Ferramentas de criação livre e fazer a própria versão de jogos do Mural não estão incluídas.',
+          'Durante os sete dias, seu filho também pode <strong>publicar o jogo do curso, comentar e reagir no Mural dos Criadores</strong>. Depois, vocês continuam podendo ver e jogar enquanto a conta existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível, para compartilhar com a família e os amigos. Ferramentas de criação livre e a opção de fazer a própria versão de um jogo do Mural não estão incluídas.',
         ),
         p(
           'Para receber o curso, confirme seus dados de responsável no link abaixo. Não pedimos cartão:',
@@ -1323,7 +1323,7 @@ const seeds = [
           'Depois dos sete dias, o curso e as ações de publicar, comentar e reagir deixam de estar liberados por este convite. Sua conta continua podendo <strong>ver e jogar no Mural</strong> enquanto existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
         ),
         p(
-          'O presente não inclui outros cursos, ferramentas de criação livre nem fazer a própria versão de jogos do Mural. Não há cobrança automática nem obrigação de assinar a Comunidade dos Criadores.',
+          'O presente não inclui outros cursos, ferramentas de criação livre nem a opção de fazer a própria versão de um jogo do Mural. Não há cobrança automática nem obrigação de assinar a Comunidade dos Criadores.',
         ),
         divider,
         ...(newAccount

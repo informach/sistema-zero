@@ -173,9 +173,9 @@ export const PAGINA_ADULTO: PaginaAdulto = {
       depois: ', cada vez maiores, até o jogo com a sua ideia.',
     },
     texto:
-      'Você desenha o herói, decide as regras e escolhe quanto vale cada ponto. Depois manda o link, e os amigos jogam a fase que você inventou. A vontade de entender como um jogo funciona por dentro, que você tem desde criança, vira jogos feitos por você.',
+      'Você desenha o herói, decide as regras e escolhe quanto vale cada ponto. A vontade de entender como um jogo funciona por dentro, que você tem desde criança, vira jogos feitos por você.',
     beneficios: [
-      'O primeiro jogo pronto já no primeiro curso, com o seu nome como criador na abertura.',
+      'O primeiro jogo pronto já no primeiro curso.',
       'Depois, novos jogos: cada curso ensina uma parte nova, como placar, vidas e personagens desenhados por você.',
       'Até o seu próprio jogo: você monta a sua ideia no Estúdio livre, e mais adiante o Pensa ajuda a dividi-la em partes.',
       'Um link para mandar aos amigos. O jogo abre no celular deles, sem cadastro.',
@@ -191,7 +191,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
       rotulo: 'ABERTURA DO JOGO',
       imagem: {
         src: `${IMG_ADULTO}/previa-arena.webp`,
-        alt: 'Jogo de arena em pixel art ao fundo da abertura, com o nome do jogo e o nome de quem criou por cima',
+        alt: 'Jogo de arena em pixel art ao fundo de uma abertura de exemplo, com o nome do jogo e um texto com o nome de quem criou',
         width: 1100,
         height: 909,
       },
@@ -200,7 +200,8 @@ export const PAGINA_ADULTO: PaginaAdulto = {
       start: 'PRESS START',
       recorde: '1P · RECORDE 00450',
       direitos: '© VOCÊ',
-      legenda: 'Assim fica a abertura do seu jogo, com o seu nome como criador. Imagem de exemplo.',
+      legenda:
+        'Exemplo de abertura que você pode montar no Estúdio, escrevendo o seu nome num texto do jogo. Imagem de exemplo, com dados fictícios.',
     },
   },
   problema: {
@@ -223,7 +224,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
         cor: 'amarelo',
         titulo: 'A ideia vira um jogo terminado',
         texto:
-          'Com começo, meio e fim, rodando no navegador e com o seu nome na abertura do jogo. O "um dia eu faço" sai da lista.',
+          'Com começo, meio e fim, rodando no navegador e pronto para mandar o link. O "um dia eu faço" sai da lista.',
       },
       {
         cor: 'rosa',
@@ -439,7 +440,7 @@ export const PAGINA_ADULTO: PaginaAdulto = {
           rotulo: 'ETAPA 2',
           nome: 'Construtor',
           nivel: 'Jogos 2D · Iniciante',
-          libera: 'Blocos novos na paleta',
+          libera: 'Blocos novos no Estúdio',
         },
         {
           cor: 'azul',
@@ -453,14 +454,14 @@ export const PAGINA_ADULTO: PaginaAdulto = {
           rotulo: 'ETAPA 4',
           nome: 'Explorador de Mundos',
           nivel: 'Jogos 2D · Intermediário',
-          libera: 'Blocos novos na paleta',
+          libera: 'Blocos novos no Estúdio',
         },
         {
           cor: 'azul',
           rotulo: 'ETAPA 5',
           nome: 'Mestre dos Jogos',
           nivel: 'Jogos 3D · Intermediário',
-          libera: 'Blocos novos na paleta',
+          libera: 'Blocos novos no Estúdio',
         },
         {
           cor: 'amarelo',
@@ -612,7 +613,8 @@ export const PAGINA_ADULTO: PaginaAdulto = {
   },
   oferta: {
     rotulo: 'INSERT COIN',
-    titulo: 'Tudo o que você precisa para fazer o primeiro jogo e os próximos fica num lugar só',
+    titulo:
+      'Cursos, ferramentas, Mural e ajuda para fazer o primeiro jogo e os próximos, num lugar só',
     texto:
       'Os cursos levam você do primeiro jogo ao código. Com o Estúdio, o Pinta e o Molda, você faz as regras, os desenhos e o 3D. O Mural publica o seu jogo com um link que abre no celular de quem você quiser. O Clube e o Desafio do mês juntam gente que também está criando. Os tutoriais e os Recados ajudam quando você trava. As etapas definem a ordem, e cada ferramenta abre quando você já sabe usar. Os cursos lançados durante a assinatura entram sem custo extra. Os dois planos dão acesso a tudo: muda só a forma de pagar.',
     depois: {

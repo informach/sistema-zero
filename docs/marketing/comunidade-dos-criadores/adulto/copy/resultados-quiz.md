@@ -34,7 +34,7 @@ Você precisa **aprender sozinho, no seu horário**. As aulas são gravadas, o v
 
 Na próxima página, você vê como é uma aula, do jogo pronto à primeira regra que você muda, os primeiros jogos, os que vêm depois, o Mural onde o jogo fica publicado e os dois planos.
 
-[Ver como a noite de jogo vira uma fase pronta](/pro/comunidade-dos-criadores/oferta)
+[Ver como uma noite livre vira uma fase pronta](/pro/comunidade-dos-criadores/oferta)
 
 _Helena e Júlio, Sistema Zero_
 
@@ -100,7 +100,7 @@ Quem prepara as aulas somos nós, Helena e Júlio, formados em Sistemas de Infor
 
 Você precisa **aprender sozinho, no seu horário**. As aulas são gravadas, o vídeo fica ao lado do Estúdio, onde você monta o jogo, e o projeto fica salvo na sua conta: você para hoje e continua amanhã do mesmo ponto. E você **tem o seu computador**: tudo roda no navegador, sem instalar nada. Você disse também que aprender a programar é **entender a lógica primeiro**. É assim que o caminho começa: blocos primeiro, para você ver cada regra montada, e código depois.
 
-Na próxima página, você vê quatro regras dos primeiros jogos montadas com blocos, como é a aula da Nave Contra Asteroides, o caminho dos blocos ao código e os dois planos.
+Na próxima página, você vê quatro regras dos primeiros jogos montadas com blocos, como é a aula da Nave Contra Asteroides, o caminho dos blocos ao código, os jogos que vêm depois e os dois planos.
 
 [Ver o caminho para entender um jogo por dentro](/pro/comunidade-dos-criadores/oferta)
 

@@ -118,7 +118,7 @@ export const PRESENTE_ADULTO = {
   depois: {
     rotulo: 'DEPOIS DOS 7 DIAS',
     titulo:
-      'O presente é o primeiro jogo. Na Comunidade dos Criadores, você segue criando outros, cada vez maiores.',
+      'No presente, você faz o primeiro jogo. Na Comunidade dos Criadores, você segue criando outros, cada vez maiores.',
     paragrafos: [
       'Na assinatura, cada curso ensina uma parte nova, do primeiro jogo ao código. Com o Estúdio, o Pinta e o Molda, você faz as regras, os desenhos e o 3D. No Estúdio livre, você monta o jogo com a sua ideia, e mais adiante o Pensa ajuda a dividi-la em partes. O Mural, o Clube e o Desafio do mês juntam gente que também está criando. Os tutoriais e os Recados ajudam quando você trava. São 7 etapas, e cada uma libera blocos ou ferramentas novas no Estúdio.',
       'Os seus projetos ficam guardados na conta. Se quiser seguir, a assinatura começa quando você decidir.',
@@ -149,7 +149,7 @@ export const PRESENTE_ADULTO = {
         texto: 'Quando os 7 dias terminam, nenhuma cobrança começa.',
       },
     ] satisfies { cor: CorAdulto; rotulo: string; texto: string }[],
-    nota: 'Quando os 7 dias terminam, o curso e o Mural fecham para este presente e os projetos ficam guardados na conta. O link do jogo que você publicou continua funcionando enquanto a publicação estiver disponível. Outros cursos, o Estúdio livre e fazer a sua versão de jogos do Mural fazem parte da assinatura.',
+    nota: 'Quando os 7 dias terminam, o curso e o Mural fecham para este presente e os projetos ficam guardados na conta. O link do jogo que você publicou continua funcionando enquanto a publicação estiver disponível. Outros cursos, o Estúdio livre e a opção de fazer a sua versão de um jogo do Mural fazem parte da assinatura.',
     cta: 'Liberar o meu presente',
   },
   duvidas: {
