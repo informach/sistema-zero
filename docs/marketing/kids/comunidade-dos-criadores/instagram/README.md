@@ -1,6 +1,6 @@
 # Instagram: posicionamento e guia de execução
 
-**Novo posicionamento, aprovado pela dona em 20/10/2026:** o perfil fala com **pais de crianças e adolescentes** e com **adultos que querem fazer jogos**, num perfil só, com duas portas: “para o seu filho” e “para você”. Mudaram o posicionamento, a bio, os destaques (agora sete), os fixados (F04, F01 e F05) e o feed (três linhas). [Posicionamento](#posicionamento) · [Bio](#perfil-e-bio-completos) · [Dependências da dona](#dependências-da-dona). Regra de copy nova, que vale antes de todas: [bater o olho e entender](postagens/13-guia-de-copy.md#regra-1--bater-o-olho-e-entender). Nada foi publicado.
+**Novo posicionamento, aprovado pela dona em 20/10/2026:** o perfil fala com **pais de crianças e adolescentes** e com **adultos que querem fazer jogos**, num perfil só, com duas portas: “para o seu filho” e “para você”. Mudaram o posicionamento, a bio, os destaques (agora sete), os fixados (F04, F01 e F05) e o feed (três linhas). [Posicionamento](#posicionamento) · [Bio](#perfil-e-bio-completos) · [Dependências da dona](#dependências-da-dona). Regra de copy nova, que vale antes de todas: [bater o olho e entender](../../../../../.claude/skills/marketing-sistema-zero/references/contexto.md#voz-bater-o-olho-e-entender). Nada foi publicado.
 
 **Revisão de copy do calendário: 13/10/2026. Perfil: @criecomhelenaejulio.** O calendário contém 60 publicações principais, uma para cada uma das 30 dores e dos 30 desejos pesquisados, seis extras para famílias que já começaram e 80 telas de stories. Os três fixados ficam separados. O ciclo ainda está em preparação. Esta revisão atualiza os documentos e materiais locais; aplicação no perfil, gravação e publicação são etapas de produção. Os acessos da página inicial do funil já foram tratados na revisão anterior.
 
@@ -36,7 +36,7 @@ O perfil @criecomhelenaejulio fala com dois públicos: **pais** de crianças e a
 | Feed | Linha Famílias, as 60 publicações | Linha Adultos; Por dentro dos jogos serve aos dois |
 | Direct | Postagens ManyChat Kids, sem mudança | Palavra MEUJOGO, só documentada |
 
-**Continuidade à vista (dona, 20/10/2026):** “o primeiro jogo” é a promessa do Desafio do Primeiro Jogo. Sempre que um material apresentar a Comunidade dos Criadores, Kids ou adulta, deixar óbvio o caminho: faz o primeiro jogo, vê que consegue e segue criando outros, cada vez maiores, até o jogo com a própria ideia. Sem inventar quantidade de cursos nem prazos.
+**Continuidade à vista (dona, 20/10/2026):** “o primeiro jogo” é a promessa do Desafio do Primeiro Jogo, com A Chave do Farol. Na assinatura Kids, o primeiro curso é Cadê Todo Mundo; por isso, ao falar da Comunidade Kids, não chamar nenhum jogo dela de “o primeiro jogo”. Sempre que um material apresentar a Comunidade dos Criadores, Kids ou adulta, deixar óbvio o caminho: faz o primeiro jogo, vê que consegue e segue criando outros, cada vez maiores, até o jogo com a própria ideia. Sem inventar quantidade de cursos nem prazos.
 
 **Visual:** cada público na sua identidade. Kids, colorido, como a página de 9 a 17. Adulto, arcade, como a página adulta. A metáfora de jogo fica na arte; o texto continua literal.
 
@@ -113,7 +113,7 @@ O jeito de ensinar aparece com sutileza, ligado às escolhas e à responsabilida
 
 ```text
 🎮 Criar jogos não tem idade
-👦 Crianças de 9 a 17 criando seus jogos
+🧒 Crianças de 9 a 17 criando seus jogos
 🕹️ Adultos que sempre quiseram criar um jogo
 👇 Para você ou para seu filho
 ```
@@ -182,7 +182,7 @@ O que falta para produzir e publicar o novo posicionamento:
 
 ## Direção de escrita e pedagogia
 
-**Regra 1, desde 20/10/2026:** [bater o olho e entender](postagens/13-guia-de-copy.md#regra-1--bater-o-olho-e-entender). Frases literais, nas palavras do público, sem metáfora de jogo ou termo técnico que precise ser decifrado, sem frase que só funciona ao lado da imagem, uma ideia por frase. As orientações abaixo continuam valendo para a linha Famílias.
+**Regra 1, desde 20/10/2026:** [bater o olho e entender](../../../../../.claude/skills/marketing-sistema-zero/references/contexto.md#voz-bater-o-olho-e-entender). As orientações abaixo continuam valendo para a linha Famílias.
 
 A voz comercial tem fonte única nas [regras de copy](../../../../../packages/marketing/src/domain/copy/light-copy-rules.ts). A pedagogia continua nas [Diretrizes Pedagógicas](../../../../aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md), na [especificação dos roteiros](../../../../aulas-interativas-tecnico/ESPEC-ROTEIRO.md) e nos [módulos do Desafio](../../../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md). As orientações abaixo aplicam essas fontes ao Instagram, sem substituí-las.
 

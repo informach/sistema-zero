@@ -58,13 +58,13 @@ Todas as frases destinadas às artes estão nos blocos de citação de cada slid
 >
 > Cada um estuda numa área feita para a sua idade, com aulas e conversa próprias.
 
-**Cena:** dois quadros separados. À esquerda, uma criança fictícia diante do Estúdio (imagem gerada, rotulada). À direita, Helena e Júlio no computador, em foto real. A arte não diz a idade de Helena e Júlio.
+**Cena:** Helena e Júlio apresentam o slide, como professores, num canto da arte. No centro, uma ilustração com duas pessoas fictícias, uma criança e um adulto, cada uma num computador com a mesma regra da nave na tela. Helena e Júlio não aparecem como alunos nem como o “adulto de 50”. Ilustração identificada como imagem gerada.
 
 **Fonte:** a área adulta usa os mesmos clássicos e o mesmo Estúdio (dúvida “É a mesma plataforma das crianças?” e “Quem criou” da página adulta). A ideia proposta de “o que muda é o ritmo” não está nas páginas; ficou o que elas afirmam: área, aulas e conversa próprias.
 
 ### Slide 5 · Para quem é.
 
-> Para seu filho, de 9 a 17 anos: ele faz o primeiro jogo e segue criando outros, até o jogo que ele inventou.
+> Para seu filho, de 9 a 17 anos: ele faz um jogo e segue criando outros, cada vez maiores, até o jogo que ele inventou.
 >
 > Para você, com 18 anos ou mais: você faz o primeiro jogo e segue para os próximos, cada vez maiores, até o jogo com a sua ideia.
 
@@ -76,7 +76,7 @@ Todas as frases destinadas às artes estão nos blocos de citação de cada slid
 
 > Diga para quem é no link da bio.
 >
-> Toque em É para mim ou em É para meu filho ou filha. Em 3 minutos, a gente mostra por onde começar.
+> No link da bio, escolha: É para mim ou É para meu filho ou filha. Em 3 minutos, a gente mostra por onde começar.
 
 **Chamada:**
 
@@ -90,15 +90,15 @@ Todas as frases destinadas às artes estão nos blocos de citação de cada slid
 >
 > Num jogo de nave, cada asteroide acertado soma um ponto no placar. Quem cria o jogo pode trocar esse valor para cinco, rodar e ver o placar subir mais rápido. É assim que a gente ensina: você muda uma regra e vê o resultado no jogo.
 >
-> Seu filho, de 9 a 17 anos, faz o primeiro jogo numa área feita para crianças e adolescentes e segue criando outros, até o jogo que ele inventou. Você, com 18 anos ou mais, faz o primeiro jogo numa área adulta, com conta própria, e segue para os próximos, até o jogo com a sua ideia.
+> Seu filho, de 9 a 17 anos, cria numa área feita para crianças e adolescentes e segue fazendo jogos cada vez maiores, até o jogo que ele inventou. Você, com 18 anos ou mais, faz o primeiro jogo numa área adulta, com conta própria, e segue para os próximos, até o jogo com a sua ideia.
 >
 > No link da bio, toque em É para mim ou em É para meu filho ou filha. Em 3 minutos, a gente mostra por onde começar.
 
-**Texto alternativo (base):** slide 1, “Jogo de nave atirando em asteroides, com o placar no canto”; slide 2, “Bloco do jogo: se acertar o asteroide, o placar soma um”; slide 3, “O mesmo bloco com o número cinco e o placar mais alto”; slide 4, “Criança no computador, à esquerda; Helena e Júlio no computador, à direita”; slide 5, “Dois cartões: um para o filho, um para você”; slide 6, “Helena e Júlio olhando para a câmera”.
+**Texto alternativo (base):** slide 1, “Jogo de nave atirando em asteroides, com o placar no canto”; slide 2, “Bloco do jogo: se acertar o asteroide, o placar soma um”; slide 3, “O mesmo bloco com o número cinco e o placar mais alto”; slide 4, “Ilustração de uma criança e de um adulto, cada um no seu computador, com a mesma regra na tela; Helena e Júlio no canto”; slide 5, “Dois cartões: um para o filho, um para você”; slide 6, “Helena e Júlio olhando para a câmera”.
 
 ## F01 · O primeiro jogo do seu filho
 
-**Posição:** segundo fixado. **Formato:** carrossel de 8 slides, 4:5. **Objetivo:** Apresentar A Chave do Farol, o primeiro jogo, mostrando experimentar, montar, testar e personalizar. **Destino desde 20/10/2026:** bio LB → É para meu filho ou filha → quiz infantil → página Kids. Slides 1 a 7 continuam iguais (falam do primeiro jogo, que o Desafio promete e a Comunidade inclui); o slide 8 e os dois últimos parágrafos da legenda mudaram.
+**Posição:** segundo fixado. **Formato:** carrossel de 8 slides, 4:5. **Objetivo:** Apresentar A Chave do Farol, o jogo do Desafio do Primeiro Jogo, mostrando experimentar, montar, testar e personalizar. **Destino desde 20/10/2026:** bio LB → É para meu filho ou filha → quiz infantil → página Kids. Slides 1 a 7 continuam iguais (falam do primeiro jogo, que o Desafio promete e a Comunidade inclui); o slide 8 e os dois últimos parágrafos da legenda mudaram.
 
 ### Slide 1 · Capa
 
@@ -170,9 +170,9 @@ Todas as frases destinadas às artes estão nos blocos de citação de cada slid
 
 **Cena:** Captura real de uma versão personalizada do Farol, com cenário noturno, personagem robô e outro modelo de farol. Mostrar o jogo inteiro, preservando o personagem e o cenário. As opções correspondem ao catálogo do Dia 3.
 
-### Slide 8 · Depois do primeiro, os próximos.
+### Slide 8 · Depois da Chave do Farol, os próximos.
 
-> Depois do primeiro jogo, os próximos.
+> Depois da Chave do Farol, os próximos.
 >
 > Na Comunidade dos Criadores, seu filho segue criando outros jogos, até o jogo que ele inventou.
 >
@@ -196,7 +196,7 @@ Todas as frases destinadas às artes estão nos blocos de citação de cada slid
 >
 > Depois de entender as regras e fazer o jogo funcionar, seu filho pode personalizar a aventura. Ele escolhe entre opções de cenários, personagens, barcos, chaves e faróis.
 >
-> A Chave do Farol é o primeiro jogo. Na Comunidade dos Criadores, para quem tem de 9 a 17 anos, seu filho segue criando outros jogos. Cada curso que ele termina abre peças novas no Estúdio, onde ele faz o jogo que inventou. As aulas são gravadas e precisam de computador com internet, mouse e teclado.
+> A Chave do Farol é o jogo do Desafio do Primeiro Jogo, que vem incluído na Comunidade dos Criadores. Na Comunidade, para quem tem de 9 a 17 anos, seu filho segue criando outros jogos. Cada curso que ele termina abre peças novas no Estúdio, onde ele faz o jogo que inventou. As aulas são gravadas e precisam de computador com internet, mouse e teclado.
 >
 > Abra o link da bio e toque em É para meu filho ou filha. Você responde algumas perguntas sobre a rotina dele e vê por onde começar.
 
@@ -286,7 +286,7 @@ Todas as frases destinadas às artes estão nos blocos de citação de cada slid
 >
 > Aqui você começa por clássicos pequenos: uma nave contra asteroides, um dino que pula cactos, um farol que só acende com a chave. Na nave, você muda quanto vale cada acerto, roda o jogo e vê o placar mudar.
 >
-> Seu primeiro jogo fica pronto, com o seu nome como criador na abertura e um link que abre no celular dos amigos. Depois vêm os próximos. Cada curso ensina uma parte nova do jogo, como o pulo, o placar e o fim da fase. Mais adiante, você monta no Estúdio o jogo com a sua ideia.
+> Seu primeiro jogo fica pronto, com um link que abre no celular dos amigos. Depois vêm os próximos. Cada curso ensina uma parte nova do jogo, como o pulo, o placar e o fim da fase. No Estúdio livre, você monta o jogo com a sua ideia.
 >
 > É para quem tem 18 anos ou mais, no navegador do computador. É uma assinatura, mensal ou anual, com 7 dias de garantia. Você cancela quando quiser.
 >

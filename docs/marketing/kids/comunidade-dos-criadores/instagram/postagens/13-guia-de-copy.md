@@ -4,14 +4,7 @@
 
 ## Regra 1 · Bater o olho e entender
 
-Regra da dona, 20/10/2026, para toda a copy, de todos os lugares: “Toda a nossa copy, de todos os lugares, não pode exigir que a pessoa fique pensando, interpretando. Tem que bater o olho e já entender o que quer dizer.”
-
-- Frases literais, com as palavras do público.
-- Nada de metáfora de jogo ou termo técnico que precise ser decifrado.
-- Nenhuma frase que só funciona ao lado de uma imagem.
-- Uma ideia por frase.
-
-Esta regra vem antes de todas as outras deste guia. Na dúvida entre uma frase bonita e uma frase óbvia, fica a óbvia.
+A [regra da dona de 20/10/2026](../../../../../../.claude/skills/marketing-sistema-zero/references/contexto.md#voz-bater-o-olho-e-entender) vem antes de todas as outras deste guia.
 
 ## Dois públicos no mesmo perfil (20/10/2026)
 

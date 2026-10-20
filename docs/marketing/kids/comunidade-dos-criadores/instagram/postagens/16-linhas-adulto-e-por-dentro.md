@@ -28,7 +28,7 @@ Nada aqui foi publicado ou agendado. Os textos em citação e as falas são a co
 | PD01 | Por dentro | Carrossel, 6 | Toda fase difícil tem uma regra escondida. | O Chefão |
 | PD02 | Por dentro | Carrossel, 6 | O placar só soma porque alguém escreveu: acertou, mais um. | Cadê Todo Mundo |
 | PD03 | Por dentro | Reel, cerca de 35 s | O dino pula o cacto porque uma regra manda. | Corre Dino, pulo |
-| PD04 | Por dentro | Carrossel, 6 | O jogo sabe que você venceu porque alguém escreveu quando a vitória acontece. | Caça Estelar |
+| PD04 | Por dentro | Carrossel, 6 | O jogo sabe que você venceu porque alguém montou a regra da vitória. | Caça Estelar |
 | PD05 | Por dentro | Reel, cerca de 35 s | O bichinho segue você porque uma regra diz quando. | Reunir o Rebanho |
 | PD06 | Por dentro | Carrossel, 5 | O personagem volta para o chão porque uma regra puxa ele para baixo. | Base da Lua |
 
@@ -150,7 +150,7 @@ Nada aqui foi publicado ou agendado. Os textos em citação e as falas são a co
 
 ### Slide 6
 
-> Termine o pequeno primeiro.
+> Termine primeiro um jogo pequeno.
 >
 > Depois, faça o próximo um pouco maior. Siga o perfil para ver como.
 
@@ -188,7 +188,7 @@ Nada aqui foi publicado ou agendado. Os textos em citação e as falas são a co
 
 > Quem passou anos jogando já conhece as regras de um jogo por dentro.
 >
-> Você sabe que precisa pular na hora certa. Sabe que a porta só abre depois de pegar a chave. Sabe que encostar no inimigo tira uma vida. Fazer um jogo é escrever essas mesmas regras e ver o jogo funcionar do jeito que você decidiu.
+> Você sabe que precisa pular na hora certa. Sabe que a porta só abre depois de pegar a chave. Sabe que encostar no inimigo tira uma vida. Fazer um jogo é montar essas mesmas regras e ver o jogo funcionar do jeito que você decidiu.
 >
 > Se você quer fazer um jogo nas horas livres, a idade conta a seu favor: você já tem a lista de regras na cabeça.
 >
@@ -313,7 +313,7 @@ Nada aqui foi publicado ou agendado. Os textos em citação e as falas são a co
 
 ### Legenda
 
-> Todo jogo que você jogou tem regras escritas por alguém.
+> Todo jogo que você jogou tem regras que alguém montou.
 >
 > No jogo de nave, a nave tem três vidas. Por dentro, a regra diz: se a nave tocar no asteroide, as vidas diminuem um. Quando as vidas acabam, a partida termina.
 >
@@ -381,7 +381,7 @@ Nada aqui foi publicado ou agendado. Os textos em citação e as falas são a co
 
 ### Legenda
 
-> A parte da luta em que o chefe fica mais bravo foi escrita por alguém.
+> A parte da luta em que o chefe fica mais bravo foi montada por alguém.
 >
 > Num jogo de dragão, cada golpe tira um pouco da vida dele. Quando a vida cai pela metade, uma regra troca o ataque, e a luta muda. Quem faz o jogo escolhe esse momento.
 >
@@ -449,7 +449,7 @@ Nada aqui foi publicado ou agendado. Os textos em citação e as falas são a co
 
 ### Legenda
 
-> Todo placar soma porque alguém escreveu uma regra para ele.
+> Todo placar soma porque alguém montou uma regra para ele.
 >
 > No Cadê Todo Mundo, um jogo de procurar bichinhos, a regra diz: quando alguém toca no esconderijo, o bichinho aparece e o contador soma um. Quem faz o jogo toca nos três esconderijos e confere se a conta chega a três.
 >
@@ -491,13 +491,13 @@ Nada aqui foi publicado ou agendado. Os textos em citação e as falas são a co
 
 <a id="pd04"></a>
 
-## PD04 · O jogo sabe que você venceu porque alguém escreveu quando a vitória acontece.
+## PD04 · O jogo sabe que você venceu porque alguém montou a regra da vitória.
 
-**Linha:** Por dentro dos jogos. **Formato:** Carrossel, 6 slides. **Etapa:** Atração. **Convite final:** seguir o perfil. **Gancho:** O jogo sabe que você venceu porque alguém escreveu quando a vitória acontece. **Exemplo:** Caça Estelar (Jogo 3D, vitrine): vitória ao derrubar dez naves, contador “Naves: X de 10” (conferido na produção de P42).
+**Linha:** Por dentro dos jogos. **Formato:** Carrossel, 6 slides. **Etapa:** Atração. **Convite final:** seguir o perfil. **Gancho:** O jogo sabe que você venceu porque alguém montou a regra da vitória. **Exemplo:** Caça Estelar (Jogo 3D, vitrine): vitória ao derrubar dez naves, contador “Naves: X de 10” (conferido na produção de P42).
 
 ### Slide 1 · Capa
 
-> O jogo sabe que você venceu porque alguém escreveu quando a vitória acontece.
+> O jogo sabe que você venceu porque alguém montou a regra da vitória.
 
 **Visual:** Caça Estelar em plena perseguição, com o contador de naves visível.
 
@@ -543,7 +543,7 @@ Nada aqui foi publicado ou agendado. Os textos em citação e as falas são a co
 
 ### Legenda
 
-> Quando você vence um jogo, é porque alguém escreveu quando a vitória acontece.
+> Quando você vence um jogo, é porque alguém montou a regra que diz quando a vitória acontece.
 >
 > Num jogo de naves, a regra diz: se o contador chegar a dez, mostre a vitória. Quem faz o jogo testa com nove, para ver o jogo continuar, e com dez, para ver a vitória aparecer.
 >
@@ -551,7 +551,7 @@ Nada aqui foi publicado ou agendado. Os textos em citação e as falas são a co
 >
 > Siga o perfil para ver outras regras por dentro dos jogos.
 
-**Produção:** exemplo da vitrine, feito pela equipe; não é curso. P42 da linha Famílias usa o mesmo jogo e a mesma regra: manter pelo menos quatro semanas entre os dois.
+**Produção:** o gancho de PD02 (“alguém escreveu: acertou, mais um”) foi aprovado pela dona com essas palavras e ficou; nas outras peças, “montar as regras”, como nas páginas. Exemplo da vitrine, feito pela equipe; não é curso. P42 da linha Famílias usa o mesmo jogo e a mesma regra: manter pelo menos quatro semanas entre os dois.
 
 ---
 
@@ -573,7 +573,7 @@ Nada aqui foi publicado ou agendado. Os textos em citação e as falas são a co
 
 ### Legenda
 
-> Quando um personagem segue você num jogo, alguém escreveu a regra que decide quando.
+> Quando um personagem segue você num jogo, alguém montou a regra que decide quando.
 >
 > Num jogo de levar o rebanho ao curral, o bichinho fica girando parado enquanto você está longe. Quando você chega perto, ele começa a seguir. Por dentro, a regra diz: se o jogador estiver perto, siga o jogador.
 >

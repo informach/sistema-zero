@@ -22,7 +22,7 @@ Links L0 e L5, os quizzes LK (infantil) e LA (adulto) e o destino da bio, LB, es
 
 ## Kids
 
-**Nome até 20/10/2026:** Como funciona. **Função:** mostrar ao pai como o filho faz o primeiro jogo e o que vem depois dele. CF01 a CF06 contam o primeiro jogo, A Chave do Farol, e continuam valendo. CF07 a CF09 apresentam a Comunidade dos Criadores Kids com as condições da [página de 9 a 17](../../../../../packages/funnel/src/funnels/comunidade-dos-criadores/oferta/pagina-9a17.ts) e levam ao quiz infantil, como a bio. Nove telas.
+**Nome até 20/10/2026:** Como funciona. **Função:** mostrar ao pai como o filho cria um jogo e o que vem depois. CF01 a CF06 contam A Chave do Farol, o jogo do Desafio do Primeiro Jogo, que vem incluído na Comunidade, e continuam valendo. CF07 a CF09 apresentam a Comunidade dos Criadores Kids com as condições da [página de 9 a 17](../../../../../packages/funnel/src/funnels/comunidade-dos-criadores/oferta/pagina-9a17.ts) e levam ao quiz infantil, como a bio. Nove telas.
 
 **Artes estáticas:** as nove telas estão em [produção do destaque Como funciona](producao/destaques/como-funciona). Cada PNG contém a copy completa; as cenas do jogo usam capturas do Farol e de seus blocos. Na CF06, a cena da família no computador acompanha a conversa sobre as escolhas da criança. Adicionar o sticker de link à CF09 conforme `publicacao.txt`. Desde 20/10/2026 o sticker da CF09 é “É para meu filho ou filha” → LK; o `publicacao.txt` da pasta ainda descreve o sticker antigo, e as artes de CF07 a CF09 precisam ser refeitas.
 
@@ -70,9 +70,9 @@ Links L0 e L5, os quizzes LK (infantil) e LA (adulto) e o destino da bio, LB, es
 
 **Fonte:** requisitos e faixa da página de 9 a 17 (“Para quem lê com autonomia · Computador com internet, mouse e teclado”).
 
-### CF08 · Depois do primeiro jogo
+### CF08 · Depois da Chave do Farol
 
-**Cartela. Título:** Depois do primeiro jogo, os próximos.
+**Cartela. Título:** Depois da Chave do Farol, os próximos.
 
 > Depois da Chave do Farol, seu filho segue criando outros jogos. Cada curso que ele termina abre peças novas no Estúdio dele. É lá que ele faz o jogo que inventou. A Comunidade é uma assinatura, mensal ou anual, com 7 dias de garantia. Você cancela quando quiser, sem multa.
 
@@ -112,21 +112,21 @@ Links L0 e L5, os quizzes LK (infantil) e LA (adulto) e o destino da bio, LB, es
 
 **Cartela com três capturas** (Nave Contra Asteroides, Corre Dino, A Chave do Farol), com o rótulo das telas Kids. **Título:** Comece pelos clássicos pequenos.
 
-> Aqui você começa por jogos pequenos, de propósito. Uma nave contra asteroides. Um dino que pula cactos. Um farol que só acende com a chave. São os primeiros jogos que você termina e publica com o seu nome.
+> Aqui você começa por jogos pequenos, de propósito. Uma nave contra asteroides. Um dino que pula cactos. Um farol que só acende com a chave. São os primeiros jogos que você termina e publica.
 
 ### AD04 · Um exemplo
 
 **Cartela com duas capturas:** o bloco do placar com +1 e com +5, e o placar da partida em cada caso. Captura real a fazer; rótulo das telas Kids. **Título:** Uma regra que você muda.
 
-> Na Nave Contra Asteroides, cada asteroide acertado vale um ponto. Você troca esse valor para cinco. Roda o jogo e vê o placar subir mais rápido. Quando o jogo fica pronto, você manda o link, e ele abre no celular dos amigos, sem cadastro.
+> Na Nave Contra Asteroides, cada asteroide acertado vale um ponto. Você troca esse valor para cinco. Roda o jogo e vê o placar subir mais rápido.
 
 ### AD05 · Depois do primeiro, os próximos
 
 **Cartela. Título:** Depois do primeiro jogo, os próximos.
 
-> Seu primeiro jogo fica pronto, com o seu nome como criador na abertura. Depois vêm os próximos, cada vez maiores. Cada curso ensina uma parte nova do jogo, como o pulo, o placar e o fim da fase. Mais adiante, o Pensa ajuda a dividir a sua ideia em partes, e você monta o seu jogo no Estúdio.
+> Seu primeiro jogo fica pronto, com um link que abre no celular dos amigos. Depois vêm os próximos, cada vez maiores. Cada curso ensina uma parte nova do jogo, como o pulo, o placar e o fim da fase. No Estúdio livre, você monta o jogo com a sua ideia. Mais adiante, o Pensa ajuda a dividi-la em partes.
 
-**Fonte:** hero novo; “Como funciona” (“os blocos que decidem o pulo, o valor da moeda e o fim da fase”); “Selecione a etapa” (cada curso vira ferramenta no Estúdio; “do clássico de uma tela ao jogo de várias fases”; o Pensa “conversa sobre a ideia do seu jogo e a divide em missões”). Não citar quantidade de cursos nem prazo: o Pensa chega numa etapa avançada.
+**Fonte:** hero novo e passo “Por fim, publica” (link sem cadastro); “Como funciona” (“os blocos que decidem o pulo, o valor da moeda e o fim da fase”); “Selecione a etapa” (cada curso vira ferramenta no Estúdio; “do clássico de uma tela ao jogo de várias fases”; o Pensa “conversa sobre a ideia do seu jogo e a divide em missões”). Não citar quantidade de cursos nem prazo: o Estúdio livre abre ao concluir a primeira etapa e o Pensa chega numa etapa avançada. Não prometer tela de abertura com o nome: o Estúdio não gera essa tela; só é possível escrever o próprio nome num texto do jogo.
 
 ### AD06 · Antes de começar
 
@@ -483,7 +483,7 @@ Cada novo story mostra um registro real de uma criança em atividade, com nome, 
 
 ### DA05 · E se eu largar?
 
-> Você tem 7 dias de garantia para pedir o reembolso integral. Depois, cancela quando quiser na sua conta, sem multa. Os jogos que você publicou continuam no Mural.
+> Você tem 7 dias de garantia para pedir o reembolso integral. E você cancela quando quiser, na sua conta, sem multa. Os jogos que você publicou continuam no Mural.
 
 **Fonte:** garantia da oferta e dúvida “Posso cancelar quando quiser?”.
 
