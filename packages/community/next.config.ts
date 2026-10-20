@@ -29,7 +29,7 @@ const pythonFrameOrigins = studioPythonCspOrigins(process.env.STUDIO_PYTHON_FRAM
  * — iframe de vídeo nunca aponta p/ host arbitrário; srcdoc não passa por
  * frame-src). `worker-src blob:` é o pdf.js do livro 3D (worker do bundle).
  */
-const csp = withStudioPythonCsp(
+const pythonCsp = withStudioPythonCsp(
   [
     "default-src 'self'",
     "base-uri 'self'",
@@ -57,6 +57,8 @@ const csp = withStudioPythonCsp(
   ].join('; '),
   pythonFrameOrigins,
 )
+// Next client navigation keeps the original document policy for every Pro consumer.
+const csp = withStudioPublishedProCsp(pythonCsp, process.env.STUDIO_PRO_RUNTIME_URL, isDev)
 
 const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -114,15 +116,6 @@ const nextConfig: NextConfig = {
       {
         source: '/((?!estudio/pro/).*)',
         headers: [{ key: 'Content-Security-Policy', value: csp }],
-      },
-      {
-        source: '/jogar/:id',
-        headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: withStudioPublishedProCsp(csp, process.env.STUDIO_PRO_RUNTIME_URL, isDev),
-          },
-        ],
       },
       {
         source: '/estudio/pro/:path*',

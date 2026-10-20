@@ -7,7 +7,7 @@ import {
   withStudioPythonCsp,
 } from './runtime-csp'
 
-test('published Pro CSP rejects unsafe origins and limits HTTP to local development', () => {
+test('Pro CSP rejects unsafe origins and limits HTTP to local development', () => {
   const csp = "default-src 'self'; frame-src 'self' blob:; connect-src 'self'; script-src 'self'"
   expect(withStudioPublishedProCsp(csp, undefined, false)).toBe(csp)
   expect(withStudioPublishedProCsp(csp, 'https://pro.test/', false)).toBe(
@@ -32,9 +32,10 @@ test('published Pro CSP rejects unsafe origins and limits HTTP to local developm
 })
 
 test.each([
+  'admin',
   'community',
   'community-kids',
-])('actual %s public player admits only its configured Pro frame without changing other directives', (app) => {
+])('actual %s document and route CSPs admit only the configured Pro executor across client navigation', (app) => {
   const cwd = fileURLToPath(new URL('../../../../', import.meta.url))
   const read = (runtime: string) => {
     const child = spawnSync(
@@ -55,27 +56,43 @@ test.each([
       },
     )
     expect(child.status).toBe(0)
+    if (child.status !== 0) throw new Error(child.stderr)
     const routes = JSON.parse(child.stdout) as {
       source: string
       headers: { key: string; value: string }[]
     }[]
     return routes
-      .find((route) => route.source === '/jogar/:id')
-      ?.headers.find((header) => header.key === 'Content-Security-Policy')?.value
   }
   const before = read('')
   const after = read('https://pro-runtime.test')
-  expect(before).toBeDefined()
-  expect(after).toBeDefined()
-  const directives = after!.split('; ')
-  expect(directives.find((part) => part.startsWith('frame-src '))?.split(' ')).toContain(
-    'https://pro-runtime.test',
+  const cspHeaders = after.flatMap((route) =>
+    route.headers.filter((header) => header.key === 'Content-Security-Policy'),
   )
-  expect(directives.find((part) => part.startsWith('frame-src '))?.split(' ')).not.toContain(
-    'https:',
-  )
-  expect(directives.filter((part) => !part.startsWith('frame-src '))).toEqual(
-    before!.split('; ').filter((part) => !part.startsWith('frame-src ')),
+  expect(cspHeaders.length).toBeGreaterThan(0)
+  for (const header of cspHeaders) {
+    const frame = header.value.split('; ').find((part) => part.startsWith('frame-src '))
+    expect(frame?.split(' ')).toContain('https://pro-runtime.test')
+    expect(frame?.split(' ')).not.toContain('https:')
+    expect(frame?.split(' ')).toContain('https://python-runtime.test')
+  }
+  // The full comparison also preserves camera/COEP and the route-specific R2 origins.
+  expect(after).toEqual(
+    before.map((route) => ({
+      ...route,
+      headers: route.headers.map((header) =>
+        header.key !== 'Content-Security-Policy'
+          ? header
+          : {
+              ...header,
+              value: header.value
+                .split('; ')
+                .map((part) =>
+                  part.startsWith('frame-src ') ? `${part} https://pro-runtime.test` : part,
+                )
+                .join('; '),
+            },
+      ),
+    })),
   )
 })
 

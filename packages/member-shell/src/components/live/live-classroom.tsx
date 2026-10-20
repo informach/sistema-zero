@@ -63,6 +63,7 @@ export function LiveClassroom({
     initialRoom?.session.id === sessionId ? initialRoom : null,
   )
   const [deviceId, setDeviceId] = useState('')
+  const [deviceInitializationFailed, setDeviceInitializationFailed] = useState(false)
   const [joined, setJoined] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [connectionError, setConnectionError] = useState<string | null>(null)
@@ -109,7 +110,18 @@ export function LiveClassroom({
     setStale(false)
   }, [])
   useEffect(() => {
-    void resolveLiveDeviceId().then(setDeviceId)
+    let active = true
+    void resolveLiveDeviceId().then(
+      (id) => {
+        if (active) setDeviceId(id)
+      },
+      () => {
+        if (active) setDeviceInitializationFailed(true)
+      },
+    )
+    return () => {
+      active = false
+    }
   }, [])
   // biome-ignore lint/correctness/useExhaustiveDependencies: Moderation commands restart polling immediately with a fresh snapshot.
   useEffect(() => {
@@ -329,6 +341,8 @@ export function LiveClassroom({
   const teacherLesson = useMemo(() => {
     if (!teacher || !renderLesson || !lessonCourseId || !lessonCourseSlug || !lessonLessonId)
       return null
+    // Without the device context the shared lesson would mount its recorded-course editor.
+    if (!liveWorkspace) return <p role="status">Preparando seu projeto…</p>
     const [opened = '', current = ''] = teacherControlKey ? teacherControlKey.split('|') : []
     return renderLesson({
       lesson: { courseId: lessonCourseId, courseSlug: lessonCourseSlug, lessonId: lessonLessonId },
@@ -368,6 +382,21 @@ export function LiveClassroom({
   )
   const back = teacher ? '/admin/professor/ao-vivo' : '/oficinas'
   const displayedError = error ?? connectionError
+  if (deviceInitializationFailed)
+    return (
+      <div className="space-y-5 p-4 md:p-6">
+        <Link
+          href={back}
+          className="inline-flex min-h-10 items-center gap-2 font-bold text-primary"
+        >
+          <ArrowLeft className="size-4" />
+          Voltar às oficinas
+        </Link>
+        <p role="alert">
+          Não foi possível preparar este aparelho. Recarregue a página para tentar novamente.
+        </p>
+      </div>
+    )
   if (!teacher && (!room || room.role === 'learner'))
     return (
       <LiveLearnerRoom

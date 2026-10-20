@@ -63,7 +63,7 @@ function buildCsp({ pro }: { pro: boolean }): string {
   const frameSrc = pro
     ? "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com https://*.webcontainer-api.io https://stackblitz.com https://*.staticblitz.com"
     : "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com"
-  return withStudioPythonCsp(
+  const pythonCsp = withStudioPythonCsp(
     [
       "default-src 'self'",
       "base-uri 'self'",
@@ -96,6 +96,8 @@ function buildCsp({ pro }: { pro: boolean }): string {
     ].join('; '),
     pythonFrameOrigins,
   )
+  // Next client navigation keeps the original document policy for every Pro consumer.
+  return withStudioPublishedProCsp(pythonCsp, process.env.STUDIO_PRO_RUNTIME_URL, isDev)
 }
 
 const strictCsp = buildCsp({ pro: false })
@@ -219,15 +221,6 @@ const nextConfig: NextConfig = {
       },
       // Rota isolada do modo Código (PRO/WebContainer): CSP relaxada (WASM) + COEP
       // credentialless — escopados AQUI para não vazar p/ as páginas com vídeo.
-      {
-        source: '/jogar/:id',
-        headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: withStudioPublishedProCsp(strictCsp, process.env.STUDIO_PRO_RUNTIME_URL, isDev),
-          },
-        ],
-      },
       {
         source: '/estudio/pro/:path*',
         headers: [

@@ -125,6 +125,13 @@ test('reposição preserva seleção da gravação original e dos seus capítulo
     createElement(LiveLearnerRoom, {
       room,
       deviceId: 'device',
+      liveWorkspace: {
+        sessionId: room.session.id,
+        role: 'learner',
+        actorId: room.actorId,
+        learnerId: room.actorId,
+        deviceId: 'device',
+      },
       joined: false,
       takeover: false,
       stale: false,

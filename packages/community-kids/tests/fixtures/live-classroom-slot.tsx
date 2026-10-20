@@ -5,8 +5,17 @@
  */
 import { afterEach, expect, mock, test } from 'bun:test'
 import type { LiveRoomView } from '@sistemazero/core/live'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { createElement } from 'react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { type ChangeEvent, createElement, useState } from 'react'
+
+const { resolveLiveDeviceId: resolveDevice, ...liveClient } = await import(
+  '../../../member-shell/src/lib/live/client'
+)
+let pendingDevice: Promise<string> | null = null
+mock.module('../../../member-shell/src/lib/live/client', () => ({
+  ...liveClient,
+  resolveLiveDeviceId: () => pendingDevice ?? resolveDevice(),
+}))
 
 mock.module('../../../member-shell/src/components/live/live-media-panel', () => ({
   LiveMediaPanel: () => createElement('p', null, 'Painel da professora'),
@@ -39,6 +48,7 @@ const originalFetch = globalThis.fetch
 afterEach(() => {
   cleanup()
   globalThis.fetch = originalFetch
+  pendingDevice = null
 })
 
 function room(
@@ -252,3 +262,110 @@ test('a professora recebe a aula com todas as partes abertas e as anotações de
   expect(slot.sectionControl).toEqual({ openedIds: ['a', 'b'], currentId: 'a' })
   expect(slot.liveWorkspace?.role).toBe('teacher')
 })
+
+for (const variant of [
+  { audience: 'kids', teacher: false },
+  { audience: 'adult', teacher: false },
+  { audience: 'kids', teacher: true },
+] as const) {
+  test(`${variant.audience}/${variant.teacher ? 'professora' : 'aluno'}: o slot aguarda o aparelho e conserva o trabalho após a inicialização`, async () => {
+    const device = Promise.withResolvers<string>()
+    pendingDevice = device.promise
+    const baseline = room()
+    if (!baseline.cohort.course) throw new Error('O teste precisa de um curso publicado.')
+    const initialRoom = room({
+      role: variant.teacher ? 'teacher' : 'learner',
+      actorId: variant.teacher ? 'teacher' : 'child',
+      cohort: {
+        ...baseline.cohort,
+        course: { ...baseline.cohort.course, audience: variant.audience },
+      },
+    })
+    globalThis.fetch = Object.assign(
+      async (input: RequestInfo | URL) => {
+        const path = String(input).split('?')[0]
+        if (path === `/api/live/sessions/${SESSION}`) return Response.json(initialRoom)
+        if (variant.teacher && path === `/api/live/sessions/${SESSION}/teacher-notes`)
+          return Response.json({ notes: {} })
+        throw new Error(`Pedido inesperado durante a abertura: ${path}`)
+      },
+      { preconnect: originalFetch.preconnect },
+    )
+    const slots: Slot[] = []
+    function Lesson() {
+      const [source, setSource] = useState('')
+      return createElement('input', {
+        'aria-label': 'Código em edição',
+        value: source,
+        onChange: (event: ChangeEvent<HTMLInputElement>) => setSource(event.target.value),
+      })
+    }
+    const renderLesson = (slot: Slot) => {
+      slots.push(slot)
+      return createElement(Lesson)
+    }
+    const props = { sessionId: SESSION, teacher: variant.teacher, initialRoom, renderLesson }
+    const view = render(createElement(LiveClassroom, props))
+    expect(slots).toEqual([])
+    expect(screen.queryByRole('textbox', { name: 'Código em edição' })).toBeNull()
+    expect(screen.getByText('Preparando seu projeto…').getAttribute('role')).toBe('status')
+    await act(async () => device.resolve('device-ready'))
+    await screen.findByRole('textbox', { name: 'Código em edição' })
+    expect(slots.length).toBeGreaterThan(0)
+    for (const slot of slots)
+      expect(slot.liveWorkspace).toMatchObject({
+        sessionId: SESSION,
+        role: initialRoom.role,
+        actorId: initialRoom.actorId,
+        deviceId: 'device-ready',
+      })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Código em edição' }), {
+      target: { value: 'meu trabalho continua aqui' },
+    })
+    view.rerender(createElement(LiveClassroom, { ...props }))
+    const field = screen.getByRole('textbox', { name: 'Código em edição' })
+    if (!(field instanceof HTMLInputElement)) throw new Error('Editor de teste ausente.')
+    expect(field.value).toBe('meu trabalho continua aqui')
+  })
+}
+
+for (const teacher of [false, true]) {
+  test(`falha no aparelho encerra a abertura sem montar a aula (${teacher ? 'professora' : 'aluno'})`, async () => {
+    const device = Promise.withResolvers<string>()
+    pendingDevice = device.promise
+    const initialRoom = room({
+      role: teacher ? 'teacher' : 'learner',
+      actorId: teacher ? 'teacher' : 'child',
+    })
+    globalThis.fetch = Object.assign(
+      async (input: RequestInfo | URL) => {
+        const path = String(input).split('?')[0]
+        if (path === `/api/live/sessions/${SESSION}`) return Response.json(initialRoom)
+        if (teacher && path === `/api/live/sessions/${SESSION}/teacher-notes`)
+          return Response.json({ notes: {} })
+        throw new Error(`Pedido inesperado durante a abertura: ${path}`)
+      },
+      { preconnect: originalFetch.preconnect },
+    )
+    const slots: Slot[] = []
+    render(
+      createElement(LiveClassroom, {
+        sessionId: SESSION,
+        teacher,
+        initialRoom,
+        renderLesson: (slot: Slot) => {
+          slots.push(slot)
+          return createElement('p', null, 'Aula aberta')
+        },
+      }),
+    )
+    expect(screen.getByText('Preparando seu projeto…')).toBeDefined()
+    await act(async () => device.reject(new Error('Device initialization failed')))
+    await screen.findByText(
+      'Não foi possível preparar este aparelho. Recarregue a página para tentar novamente.',
+    )
+    expect(screen.queryByText('Preparando seu projeto…')).toBeNull()
+    expect(screen.queryByText('Aula aberta')).toBeNull()
+    expect(slots).toEqual([])
+  })
+}

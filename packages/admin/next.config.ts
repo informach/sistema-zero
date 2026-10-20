@@ -1,6 +1,10 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { studioPythonCspOrigins, withStudioPythonCsp } from '@sistemazero/core/studio/runtime-csp'
+import {
+  studioPythonCspOrigins,
+  withStudioPublishedProCsp,
+  withStudioPythonCsp,
+} from '@sistemazero/core/studio/runtime-csp'
 import type { NextConfig } from 'next'
 
 // Raiz do MONOREPO: o file tracing do standalone precisa enxergar o workspace
@@ -32,7 +36,7 @@ const pythonFrameOrigins = studioPythonCspOrigins(process.env.STUDIO_PYTHON_FRAM
  *    `beacon.min.js` e o reporta em `cloudflareinsights.com/cdn-cgi/rum`. O script é coberto por
  *    `script-src https:`; o report fica explícito no `connect-src`. (Desligável no dashboard.)
  */
-const csp = withStudioPythonCsp(
+const pythonCsp = withStudioPythonCsp(
   [
     "default-src 'self'",
     "base-uri 'self'",
@@ -67,6 +71,8 @@ const csp = withStudioPythonCsp(
   ].join('; '),
   pythonFrameOrigins,
 )
+// Next client navigation keeps the original document policy for every Pro consumer.
+const csp = withStudioPublishedProCsp(pythonCsp, process.env.STUDIO_PRO_RUNTIME_URL, isDev)
 
 const securityHeaders = [
   { key: 'Content-Security-Policy', value: csp },

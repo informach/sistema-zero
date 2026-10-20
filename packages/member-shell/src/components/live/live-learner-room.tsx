@@ -774,6 +774,8 @@ function LessonRoom({
   const audience = room.cohort.course?.audience
   const lessonElement = useMemo(() => {
     if (!renderLesson || !courseId || !courseSlug || !lessonId) return null
+    // Keep the lesson closed until its live authority exists; absence means recorded elsewhere.
+    if (!liveWorkspace) return <p role="status">Preparando seu projeto…</p>
     const [opened = '', current = ''] = controlKey ? controlKey.split('|') : []
     return renderLesson({
       lesson: { courseId, courseSlug, lessonId },
