@@ -6,7 +6,7 @@ import { resolvePaletteColors } from '../../../core/sanitize'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { RequiresTool } from '../../toolAccess'
 import { Button } from '../../ui/Button'
-import { Grid3x3, Plus } from '../../ui/icons'
+import { Grid3x3, Layers, Plus } from '../../ui/icons'
 import { swatchClass } from '../../ui/interaction'
 import { SceneColorPicker } from './SceneColorPicker'
 import type { useScenePaint } from './useScenePaint'
@@ -39,11 +39,13 @@ export function ScenePaintPalette({
   palette,
   preparation,
   mapping,
+  interior,
 }: {
   paint: ReturnType<typeof useScenePaint>
   palette: MoldaPaletteFields
   preparation?: { faces: readonly string[]; apply(): void } | null
   mapping?: { apply(): void; disabled: boolean } | null
+  interior?: { apply(): void; disabled: boolean } | null
 }) {
   const busy = paint.drawing || paint.busy
   const hex = rgbToHex(paint.ink[0], paint.ink[1], paint.ink[2])
@@ -78,6 +80,22 @@ export function ScenePaintPalette({
         aria-label={SCENE_PAINT_COPY.colors}
         className="mld-paint-palette shrink-0 space-y-3 py-2"
       >
+        {interior && (
+          <div className="space-y-2 rounded-xl border border-mld-border bg-mld-surface p-3">
+            <p className="text-sm font-bold">Pintar o lado interno separadamente</p>
+            <p className="text-xs text-mld-muted">
+              Crie faces internas para usar outra cor no verso. Isso também mostra o interior
+              transparente. A pintura de fora fica como está.
+            </p>
+            <Button
+              className="w-full text-sm"
+              disabled={busy || interior.disabled}
+              onClick={interior.apply}
+            >
+              <Layers aria-hidden="true" className="size-4" /> Criar lado interno pintável
+            </Button>
+          </div>
+        )}
         <div className="space-y-3 rounded-xl border border-mld-border bg-mld-surface p-3">
           <div className="flex items-center gap-3">
             <span

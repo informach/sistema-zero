@@ -199,6 +199,52 @@ const material = (document: MoldaSceneDocument, nodeId: string) => {
 }
 
 describe('a aba Pintar', () => {
+  test('um modelo aberto pode ganhar interior pintável em um passo de desfazer', async () => {
+    const { document, door } = twoBoxes()
+    const converted = convertSceneNodesToMesh(document, [door])
+    const open = editSceneMesh(converted, door, (mesh) => {
+      const faces = { ...mesh.faces }
+      delete faces.py
+      return { ...mesh, faces }
+    })
+    const { editor, stage, view, tap } = mount(open)
+    try {
+      await waitFor(() => expect(stage.callbacks).not.toBeNull())
+      tap(door, 'px')
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      fireEvent.click(screen.getByRole('button', { name: 'Criar lado interno pintável' }))
+      const current = editor.getState().asset
+      const node = current.nodes.find((entry) => entry.id === door)!
+      if (node.kind !== 'mesh') throw new Error('Expected mesh')
+      const mesh = current.geometries.find((entry) => entry.id === node.geometryId)!
+      if (mesh.kind !== 'mesh') throw new Error('Expected mesh')
+      expect(Object.keys(mesh.faces)).toHaveLength(10)
+      expect(screen.queryByRole('button', { name: 'Criar lado interno pintável' })).toBeNull()
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.geometries).toEqual(open.geometries)
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+      const insideFace = Object.keys(mesh.faces).find(
+        (id) => mesh.faces[id]!.materialId !== undefined,
+      )!
+      const triangle = buildSceneGeometry(mesh).faceIds.indexOf(insideFace)
+      act(() => {
+        stage.callbacks!.paint!.begin({
+          kind: 'surface',
+          nodeId: door,
+          faceId: insideFace,
+          triangle,
+          barycentric: [1 / 3, 1 / 3, 1 / 3],
+          frame: 0,
+        })
+        stage.callbacks!.paint!.end(true)
+      })
+      expect(editor.getState().asset.images.length).toBeGreaterThan(open.images.length)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
   test('um traço direto numa peça torta oferece preparação junto das cores, sem mudar a criação antes da escolha', async () => {
     const { document, nodeId } = sceneBentPaint()
     const { editor, stage, view } = mount(document)
