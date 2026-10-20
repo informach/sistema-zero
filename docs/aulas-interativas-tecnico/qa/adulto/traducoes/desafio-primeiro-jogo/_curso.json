@@ -3,9 +3,29 @@
   "grupo": "_curso",
   "trechos": [
     {
-      "onde": "modulos.md",
+      "onde": "README.md",
       "kids": "# Desafio do Primeiro Jogo · A Chave do Farol",
       "adulto": "# Desafio do Primeiro Jogo · A Chave do Farol"
+    },
+    {
+      "onde": "README.md",
+      "kids": "Materiais do curso para consulta, gravação e importação.",
+      "adulto": "Materiais do curso para consulta, gravação e importação."
+    },
+    {
+      "onde": "README.md",
+      "kids": "| Material | Arquivo |\n| --- | --- |\n| Título, descrições, módulos e aulas | [Módulos](modulos.md) |\n| Blocos do projeto | [JSON dos blocos](blocos.json) |\n| Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |\n| Mapa da Aventura para consultar ou anexar | [PDF do mapa](mapa-da-aventura.pdf) |",
+      "adulto": "| Material | Arquivo |\n| --- | --- |\n| Título, descrições, módulos e aulas | [Módulos](modulos.md) |\n| Blocos do projeto | [JSON dos blocos](blocos.json) |\n| Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |\n| Caderno do Aluno para consultar ou anexar | [PDF do caderno](caderno-do-aluno.pdf) |"
+    },
+    {
+      "onde": "README.md",
+      "kids": "Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as orientações; **roteiro** traz as falas e a direção dos vídeos; **manifesto** é o JSON para importar no Admin.",
+      "adulto": "Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as orientações; **roteiro** traz as falas e a direção dos vídeos; **manifesto** é o JSON para importar no Admin."
+    },
+    {
+      "onde": "README.md",
+      "kids": "| Aula | Conteúdo | Roteiro | Manifesto |\n| --- | --- | --- | --- |\n| O personagem ganha movimento | [Abrir](desafio-dia-1.md) | [Abrir](desafio-dia-1.roteiro.md) | [JSON](desafio-dia-1.manifesto.json) |\n| A chave muda a aventura | [Abrir](desafio-dia-2.md) | [Abrir](desafio-dia-2.roteiro.md) | [JSON](desafio-dia-2.manifesto.json) |\n| A luz do farol | [Abrir](desafio-dia-3.md) | [Abrir](desafio-dia-3.roteiro.md) | [JSON](desafio-dia-3.manifesto.json) |\n| Seu certificado | [Abrir](desafio-certificado.md) | [Abrir](desafio-certificado.roteiro.md) | [JSON](desafio-certificado.manifesto.json) |",
+      "adulto": "| Aula | Conteúdo | Roteiro | Manifesto |\n| --- | --- | --- | --- |\n| O personagem ganha movimento | [Abrir](desafio-dia-1.md) | [Abrir](desafio-dia-1.roteiro.md) | [JSON](desafio-dia-1.manifesto.json) |\n| A chave muda o jogo | [Abrir](desafio-dia-2.md) | [Abrir](desafio-dia-2.roteiro.md) | [JSON](desafio-dia-2.manifesto.json) |\n| A luz do farol | [Abrir](desafio-dia-3.md) | [Abrir](desafio-dia-3.roteiro.md) | [JSON](desafio-dia-3.manifesto.json) |\n| Seu certificado | [Abrir](desafio-certificado.md) | [Abrir](desafio-certificado.roteiro.md) | [JSON](desafio-certificado.manifesto.json) |"
     },
     {
       "onde": "modulos.md",
@@ -36,26 +56,6 @@
       "onde": "modulos.md",
       "kids": "- [O personagem ganha movimento](desafio-dia-1.md)\n- [A chave muda a aventura](desafio-dia-2.md)\n- [A luz do farol](desafio-dia-3.md)\n- [Seu certificado](desafio-certificado.md)",
       "adulto": "- [O personagem ganha movimento](desafio-dia-1.md)\n- [A chave muda o jogo](desafio-dia-2.md)\n- [A luz do farol](desafio-dia-3.md)\n- [Seu certificado](desafio-certificado.md)"
-    },
-    {
-      "onde": "README.md",
-      "kids": "Materiais do curso para consulta, gravação e importação.",
-      "adulto": "Materiais do curso para consulta, gravação e importação."
-    },
-    {
-      "onde": "README.md",
-      "kids": "| Material | Arquivo |\n| --- | --- |\n| Título, descrições, módulos e aulas | [Módulos](modulos.md) |\n| Blocos do projeto | [JSON dos blocos](blocos.json) |\n| Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |\n| Mapa da Aventura para consultar ou anexar | [PDF do mapa](mapa-da-aventura.pdf) |",
-      "adulto": "| Material | Arquivo |\n| --- | --- |\n| Título, descrições, módulos e aulas | [Módulos](modulos.md) |\n| Blocos do projeto | [JSON dos blocos](blocos.json) |\n| Jogo completo para importar no Estúdio | [Projeto final](projeto-final.szproject.json) |\n| Caderno do Aluno para consultar ou anexar | [PDF do caderno](caderno-do-aluno.pdf) |"
-    },
-    {
-      "onde": "README.md",
-      "kids": "Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as orientações; **roteiro** traz as falas e a direção dos vídeos; **manifesto** é o JSON para importar no Admin.",
-      "adulto": "Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as orientações; **roteiro** traz as falas e a direção dos vídeos; **manifesto** é o JSON para importar no Admin."
-    },
-    {
-      "onde": "README.md",
-      "kids": "| Aula | Conteúdo | Roteiro | Manifesto |\n| --- | --- | --- | --- |\n| O personagem ganha movimento | [Abrir](desafio-dia-1.md) | [Abrir](desafio-dia-1.roteiro.md) | [JSON](desafio-dia-1.manifesto.json) |\n| A chave muda a aventura | [Abrir](desafio-dia-2.md) | [Abrir](desafio-dia-2.roteiro.md) | [JSON](desafio-dia-2.manifesto.json) |\n| A luz do farol | [Abrir](desafio-dia-3.md) | [Abrir](desafio-dia-3.roteiro.md) | [JSON](desafio-dia-3.manifesto.json) |\n| Seu certificado | [Abrir](desafio-certificado.md) | [Abrir](desafio-certificado.roteiro.md) | [JSON](desafio-certificado.manifesto.json) |",
-      "adulto": "| Aula | Conteúdo | Roteiro | Manifesto |\n| --- | --- | --- | --- |\n| O personagem ganha movimento | [Abrir](desafio-dia-1.md) | [Abrir](desafio-dia-1.roteiro.md) | [JSON](desafio-dia-1.manifesto.json) |\n| A chave muda o jogo | [Abrir](desafio-dia-2.md) | [Abrir](desafio-dia-2.roteiro.md) | [JSON](desafio-dia-2.manifesto.json) |\n| A luz do farol | [Abrir](desafio-dia-3.md) | [Abrir](desafio-dia-3.roteiro.md) | [JSON](desafio-dia-3.manifesto.json) |\n| Seu certificado | [Abrir](desafio-certificado.md) | [Abrir](desafio-certificado.roteiro.md) | [JSON](desafio-certificado.manifesto.json) |"
     }
   ]
 }
