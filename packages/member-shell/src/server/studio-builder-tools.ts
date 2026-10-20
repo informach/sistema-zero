@@ -11,6 +11,8 @@ import {
   studioProGameGuide,
 } from '@sistemazero/core/studio'
 import { isStudioPortablePath } from '@sistemazero/core/studio/portable-path'
+import type { StudioPythonBuilderPolicyResult } from '@sistemazero/core/studio/python-builder-authorization'
+import { renderPythonProvidedModuleReference } from '@sistemazero/core/studio/python-provided-modules-render'
 import { studioTutorModeViolation } from '@sistemazero/studio/tutor-mode'
 import { isStudioTutorSensitivePath } from '@sistemazero/studio/tutor-safety'
 import { z } from 'zod'
@@ -47,6 +49,7 @@ export const studioBuilderAnswerSchema = z
   })
   .strict()
 export type StudioBuilderAnswer = z.infer<typeof studioBuilderAnswerSchema>
+const sourceContextChars = 14000
 
 function builderSystem(python: boolean) {
   return `Você é Zappy, construtor de jogos do Studio Pro para alunos. Responda em português.
@@ -76,13 +79,58 @@ function pythonConfiguration(revision: StudioProRevision) {
 
 /** Legacy callers keep the exact JavaScript prompt; new jobs dispatch from their immutable revision. */
 export const STUDIO_BUILDER_SYSTEM = builderSystem(false)
-export function studioBuilderSystem(revision: StudioProRevision) {
-  return builderSystem(pythonConfiguration(revision) !== null)
+export function studioBuilderSystem(
+  revision: StudioProRevision,
+  policy?: StudioPythonBuilderPolicyResult,
+) {
+  const environment = pythonEnvironment(revision, policy)
+  return (
+    builderSystem(environment !== null) +
+    (environment
+      ? '\nMódulos fornecidos pelo runtime aparecem somente em environment.providedModules, com referência aprovada para esta revisão. São separados da biblioteca padrão, extensões e pacotes instaláveis; respeite todos os limites e o lifetime descritos. Nomes em shadowedProvidedModules pertencem aos arquivos autorais, cuja API não deve ser substituída pela oficial.'
+      : '')
+  )
 }
 
-function pythonEnvironment(revision: StudioProRevision) {
+function pythonEnvironment(revision: StudioProRevision, policy?: StudioPythonBuilderPolicyResult) {
   const configuration = pythonConfiguration(revision)
   if (!configuration) return null
+  if (!policy) throw new Error('A autorização Python da geração está ausente.')
+  const release = policy.runtimeRelease
+  if (
+    release &&
+    (release.profileId !== configuration.runtime.profileId ||
+      release.releaseId !== configuration.runtime.releaseId ||
+      release.manifestSha256 !== configuration.runtime.manifestSha256 ||
+      release.manifest.python?.providedModules === undefined)
+  )
+    throw new Error('A autorização Python não corresponde à revisão de trabalho.')
+  const entrypoint = configuration.python.entrypoint
+  const prefix = entrypoint.includes('/')
+    ? entrypoint.slice(0, entrypoint.lastIndexOf('/') + 1)
+    : ''
+  const modules = release?.manifest.python?.providedModules ?? []
+  // Inspect the complete immutable working tree, including protected/non-excerpted
+  // paths. A namespace without __init__ does not shadow a regular provided package.
+  const shadowedProvidedModules = modules
+    .filter(({ descriptor: { importName } }) =>
+      [
+        `${prefix}${importName}.py`,
+        `${prefix}${importName}.pyi`,
+        `${prefix}${importName}/__init__.py`,
+        `${prefix}${importName}/__init__.pyi`,
+      ].some((path) => Object.hasOwn(revision.files, path)),
+    )
+    .map(({ descriptor }) => descriptor.importName)
+  const providedModules = modules
+    .filter(({ descriptor }) => !shadowedProvidedModules.includes(descriptor.importName))
+    .map(({ descriptor }) => ({
+      importName: descriptor.importName,
+      version: descriptor.version,
+      reference: renderPythonProvidedModuleReference(descriptor),
+    }))
+  if (JSON.stringify({ providedModules, shadowedProvidedModules }).length > sourceContextChars)
+    throw new Error('A referência dos módulos excede o orçamento de contexto desta geração.')
   return {
     programmingLanguage: 'python',
     runtime: configuration.runtime,
@@ -95,6 +143,8 @@ function pythonEnvironment(revision: StudioProRevision) {
     })),
     packagesTruncated: configuration.python.dependencyLock.packages.length > 32,
     installationAvailable: false,
+    providedModules,
+    shadowedProvidedModules,
   }
 }
 
@@ -116,9 +166,12 @@ export async function builderWorkingRevision(job: StudioProBuilderJob) {
 }
 
 /** Index first; select relevant bounded excerpts instead of relying on filesystem insertion order. */
-export async function prepareStudioBuilderContext(job: StudioProBuilderJob) {
+export async function prepareStudioBuilderContext(
+  job: StudioProBuilderJob,
+  policy?: StudioPythonBuilderPolicyResult,
+) {
   const revision = await builderWorkingRevision(job)
-  const environment = pythonEnvironment(revision)
+  const environment = pythonEnvironment(revision, policy)
   const view = sourceView(revision)
   const words = job.objective.toLowerCase().match(/[a-zá-ú0-9_-]{3,}/g) ?? []
   const ranked = Object.entries(view)
@@ -147,7 +200,14 @@ export async function prepareStudioBuilderContext(job: StudioProBuilderJob) {
       protected: file.protectedFile,
     })),
   )
-  let remaining = 14000
+  let remaining =
+    sourceContextChars -
+    (environment
+      ? JSON.stringify({
+          providedModules: environment.providedModules,
+          shadowedProvidedModules: environment.shadowedProvidedModules,
+        }).length
+      : 0)
   const sources = ranked
     .filter((file) => !file.protectedFile && !/lock\.json$/.test(file.path))
     .slice(0, 5)
@@ -183,14 +243,16 @@ export async function prepareStudioBuilderContext(job: StudioProBuilderJob) {
 export async function inspectStudioBuilder(
   job: StudioProBuilderJob,
   answer: StudioBuilderAnswer,
+  policy?: StudioPythonBuilderPolicyResult,
 ): Promise<string> {
   if (answer.action !== 'inspect' || !answer.inspections.length || answer.edits.length)
     throw new Error('A inspeção precisa conter somente consultas.')
   const revision = await builderWorkingRevision(job),
     view = sourceView(revision)
+  const environment = pythonEnvironment(revision, policy)
   const validPath = pythonConfiguration(revision) ? isStudioPortablePath : isStudioProRevisionPath
   const results: unknown[] = []
-  let budget = 14000
+  let budget = sourceContextChars
   for (const request of answer.inspections) {
     if (request.path && !validPath(request.path)) throw new Error('Caminho de consulta inválido.')
     let result: unknown
@@ -230,7 +292,6 @@ export async function inspectStudioBuilder(
         break
       }
       case 'dependencies': {
-        const environment = pythonEnvironment(revision)
         if (environment) {
           const requirements = view['requirements.txt']
           result = {

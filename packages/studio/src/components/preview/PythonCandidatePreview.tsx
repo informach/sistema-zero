@@ -1,5 +1,6 @@
 import {
   STUDIO_PYTHON_PREVIEW_SANDBOX,
+  StudioPythonPreviewAudioReadySchema,
   StudioPythonPreviewMessageSchema,
 } from '@sistemazero/core/studio/python-preview-bridge'
 import { StudioPythonPreviewReferenceSchema } from '@sistemazero/core/studio/python-preview-reference'
@@ -7,6 +8,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { Button } from '#ui'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStoreApi } from '../../state/projectStore'
+import { useStudioExecution } from '../../studio/observation'
 import {
   type ProCandidatePreview,
   useProCandidatePreview,
@@ -70,7 +72,15 @@ function ProtectedPythonCandidate({
     container = useRef<HTMLDivElement>(null),
     [status, setStatus] = useState<'loading' | 'ready' | 'expired' | 'unavailable'>('loading')
   const { projectId, jobId, revisionHash, version, reference } = candidate,
-    { id, sha256, expiresAt, revision, runtimeManifestSha256 } = reference
+    { id, sha256, expiresAt, revision, runtimeManifestSha256, previewHostAudioVersion } = reference
+  const [incompatible, setIncompatible] = useState(false)
+  const execution = useStudioExecution()
+  const muted = useRef(execution.muted)
+  const audioSender = useRef<(() => void) | null>(null)
+  useLayoutEffect(() => {
+    muted.current = execution.muted
+    audioSender.current?.()
+  }, [execution.muted])
   useLayoutEffect(() => {
     const controller = new AbortController(),
       scope = captureProjectStorageScope(),
@@ -84,6 +94,8 @@ function ProtectedPythonCandidate({
     let frame: HTMLIFrameElement | undefined,
       loadingDeadline: ReturnType<typeof setTimeout> | undefined,
       expiration: ReturnType<typeof setTimeout> | undefined
+    let audioRequest: string | undefined
+    let audioSequence = 0
     const valid = () =>
       !lifetime.aborted &&
       scope === captureProjectStorageScope() &&
@@ -111,21 +123,54 @@ function ProtectedPythonCandidate({
     })
     lifetime.addEventListener('abort', retire, { once: true })
     setStatus('loading')
+    setIncompatible(false)
+    const sendAudio = () => {
+      if (!valid() || !frame || !audioRequest) return
+      frame.contentWindow?.postMessage(
+        {
+          type: 'studio-python-preview-audio',
+          version: 1,
+          session,
+          previewId: id,
+          requestId: audioRequest,
+          sequence: audioSequence++,
+          muted: muted.current,
+        },
+        new URL(frame.src).origin,
+      )
+    }
+    audioSender.current = sendAudio
     const message = (event: MessageEvent) => {
       if (
         !valid() ||
-        !frame ||
+        !frame?.contentWindow ||
         event.source !== frame.contentWindow ||
         event.origin !== new URL(frame.src).origin
       )
         return
+      const audioReady = StudioPythonPreviewAudioReadySchema.safeParse(event.data)
+      if (audioReady.success) {
+        if (
+          audioReady.data.session !== session ||
+          audioReady.data.previewId !== id ||
+          audioReady.data.requestId === audioRequest
+        )
+          return
+        audioRequest = audioReady.data.requestId
+        audioSequence = 0
+        sendAudio()
+        return
+      }
       const parsed = StudioPythonPreviewMessageSchema.safeParse(event.data)
       if (!parsed.success || parsed.data.session !== session || parsed.data.previewId !== id) return
       if (parsed.data.status !== 'loading') clearTimeout(loadingDeadline)
       update(parsed.data.status)
     }
     window.addEventListener('message', message)
-    if (!authorize || !host || !valid()) {
+    if (previewHostAudioVersion !== 1) {
+      setIncompatible(true)
+      update('unavailable')
+    } else if (!authorize || !host || !valid()) {
       if (!lifetime.aborted) update('unavailable')
     } else if (expiresAt <= Date.now()) update('expired')
     else {
@@ -145,6 +190,11 @@ function ProtectedPythonCandidate({
             approved.runtimeManifestSha256 !== runtimeManifestSha256
           )
             throw new Error('A prévia autorizada mudou.')
+          if (approved.previewHostAudioVersion !== 1) {
+            setIncompatible(true)
+            update('unavailable')
+            return
+          }
           if (approved.expiresAt <= Date.now()) {
             update('expired')
             return
@@ -173,6 +223,7 @@ function ProtectedPythonCandidate({
         })
     }
     return () => {
+      if (audioSender.current === sendAudio) audioSender.current = null
       controller.abort()
       retire()
       unsubscribe()
@@ -193,6 +244,7 @@ function ProtectedPythonCandidate({
     expiresAt,
     revision,
     runtimeManifestSha256,
+    previewHostAudioVersion,
   ])
   return (
     <div className="relative h-full min-h-0">
@@ -206,7 +258,9 @@ function ProtectedPythonCandidate({
             ? 'Abrindo proposta Python…'
             : status === 'expired'
               ? 'A prévia venceu. Renove a prévia na proposta.'
-              : 'Não foi possível abrir esta prévia. Consulte a proposta e tente novamente.'}
+              : incompatible
+                ? 'Esta prévia precisa ser atualizada. Continue em Jogo atual ou peça ajuda ao professor. Seu código está preservado.'
+                : 'Não foi possível abrir esta prévia. Consulte a proposta e tente novamente.'}
         </p>
       )}
     </div>

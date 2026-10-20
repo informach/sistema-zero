@@ -10,15 +10,21 @@ import { InMemoryLiveCourses, InMemoryLiveRepository } from './live-in-memory'
 import { InMemoryLiveWorkspaceRepository } from './live-workspace-in-memory'
 import { authoringFixture } from './studio-authoring-policy'
 
-export async function studioLiveRuntimeFixture(kind: 'classic' | 'pro' = 'classic') {
+export async function studioLiveRuntimeFixture(
+  kind: 'classic' | 'pro' = 'classic',
+  language: 'javascript' | 'python' = 'python',
+) {
   let now = new Date('2026-11-07T17:00:00Z')
   const clock = () => now
-  const fixture = await authoringFixture('python', kind)
+  const fixture = await authoringFixture(language, kind)
   const policy = await createStudioRuntimePolicy(
     fixture.configuration,
-    createStudioRuntimeHosts(fixture.configuration.catalog, [
-      { runtime: fixture.project.runtime, origin: 'https://runtime.example.test' },
-    ]),
+    createStudioRuntimeHosts(
+      fixture.configuration.catalog,
+      language === 'python'
+        ? [{ runtime: fixture.project.runtime, origin: 'https://runtime.example.test' }]
+        : [],
+    ),
   )
   const rooms = new InMemoryLiveRepository()
   const courses = new InMemoryLiveCourses()

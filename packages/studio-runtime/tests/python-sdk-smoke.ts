@@ -72,7 +72,13 @@ const release = await createStudioRuntimeRelease({
   sourceTargets: ['browser', 'desktop'],
   requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
   artifacts: build.manifest.files.map(({ path, sha256 }) => ({ path, sha256 })),
-  python: { version: build.manifest.pythonVersion, packages: [] },
+  python: {
+    version: build.manifest.pythonVersion,
+    packages: [],
+    ...(build.manifest.providedModules === undefined
+      ? {}
+      : { providedModules: build.manifest.providedModules }),
+  },
 })
 const deployment = await verifyStudioPythonDeployment({ release, distribution: build.manifest })
 const directory = path.join(root, '.cache/studio-python-l0/inspection-sdk', crypto.randomUUID())

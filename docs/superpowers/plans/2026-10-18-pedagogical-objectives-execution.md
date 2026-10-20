@@ -1,6 +1,10 @@
 # Execução dos objetivos pedagógicos por parte
 
-Base isolada: `6f4efe553`, branch `feat/pedagogical-objectives`, worktree `C:/Users/tocha/projects/sistema-zero-pedagogy`.
+Situação em 20/10/2026: contratos, autoria privada por parte e fluxo produtivo de salvar/executar/publicar estão implementados; a prova nativa r7 fechou8/8cenários Chrome/Edge. Cinco manifestos piloto, dez bindings e quatorze snapshots foram atualizados, mas os objetivos dos pilotos ainda são estruturais. A família de direção por comportamento e a revisão curricular mais ampla continuam abertas. Esses conteúdos não foram ativados remotamente por esta frente.
+
+O próximo recorte aprovado é Farol Dia1/parte andar: quatro direções, liberdade de cor/arte/posição/magnitude e recusa de zero, sentido oposto ou movimento automático já existente. O desenho usa quatro contextos, com observação sem tecla e gesto no próprio contexto; nenhuma igualdade de posição entre execuções. Sua implementação será isolada da composição Python atual. Tipos/imagem/HTTP/SQL e integração desse novo recorte ainda não foram executados.
+
+Base isolada histórica: `6f4efe553`, branch `feat/pedagogical-objectives`, worktree `C:/Users/tocha/projects/sistema-zero-pedagogy`. O fechamento posterior no worktree integrado está registrado ao final deste documento. Os recibos de um lote não qualificam automaticamente uma composição posterior.
 
 O responsável aprovou o desenho e os lotes em 18/10/2026. A proposta e o P0 revisados permanecem no worktree principal em `docs/superpowers/plans/2026-10-18-pedagogical-objectives/`. Não modificar fontes do worktree Python nem reservar a migration0137 da jornada.
 
@@ -8,11 +12,11 @@ O responsável aprovou o desenho e os lotes em 18/10/2026. A proposta e o P0 rev
 
 - [x] L1: contrato e resolvedor puros, diagnóstico agregado, allowlists públicas e provas de privacidade/contexto.
 - [x] Review L1, correções, testes focados e tipagem antes de L2.
-- [ ] L2: comandos com CAS, snapshots imutáveis, limites agregados, hashes/migração operacional e import/export.
-- [ ] Review L2 e correções antes de L3.
-- [ ] L3: UI por parte, Testar agora e identidade estável da cópia de trabalho.
-- [ ] Review L3 e correções antes de L4.
-- [ ] L4: pilotos Cadê/Farol com alternativas válidas e contraexemplos.
+- [x] L2: comandos com CAS, snapshots imutáveis, limites agregados, hashes/migração operacional e import/export.
+- [x] Review L2 e correções antes de L3, no recorte registrado abaixo.
+- [x] L3: UI por parte, Testar agora e identidade estável da cópia de trabalho; salvar/executar/publicar comprovados no r7.
+- [x] Review L3 e correções de reconciliação, editor e publicação, com os limites dos respectivos recibos.
+- [ ] L4: pilotos Cadê/Farol — manifestos e exemplos estruturais feitos; direção real, equivalências e contraexemplos comportamentais ainda pendentes.
 - [ ] Review completo, correções e integração pelo responsável; sem commit/push nesta frente.
 
 ## Preparação

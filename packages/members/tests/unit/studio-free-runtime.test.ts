@@ -6,21 +6,53 @@ import {
   type KidsCreatorCapability,
   projectKidsJourney,
 } from '@sistemazero/core/journey'
+import { StudioAuthoringCatalogSchema } from '@sistemazero/core/studio/authoring-catalog'
 import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python-pro-execution'
 import type { StudioFreeRuntimeRequest } from '@sistemazero/core/studio/runtime-authorization'
+import {
+  createStudioRuntimeRelease,
+  type StudioRuntimeRelease,
+} from '@sistemazero/core/studio/runtime-catalog'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
+import { providedPythonRelease } from '../../../core/tests/fixtures/python-provided-release'
 import { capturePythonProRevisionPayload } from '../../../studio/src/state/pythonProRevision'
 import { AuthorizeFreeRuntimeService } from '../../src/application/studio/authorize-free-runtime.service'
 import { FreeStudioAccessService } from '../../src/application/studio/free-studio-access.service'
 import { StudioPythonBuilderPolicy } from '../../src/application/studio-pro/python-builder-policy'
 import { KidsJourneyUnavailableError } from '../../src/domain/kids-journey/kids-journey.errors'
+import { createStudioAuthoringPolicy } from '../../src/domain/studio/authoring-policy'
 import { createStudioRuntimeHosts } from '../../src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../src/domain/studio/runtime-policy'
 import { authoringFixture } from '../fakes/studio-authoring-policy'
 
-async function setup(kind: 'classic' | 'pro' = 'classic') {
+async function setup(kind: 'classic' | 'pro' = 'classic', provided?: StudioRuntimeRelease) {
   const fixture = await authoringFixture('python', kind)
+  if (provided) {
+    const runtime = {
+      profileId: provided.profileId,
+      releaseId: provided.releaseId,
+      manifestSha256: provided.manifestSha256,
+    }
+    fixture.project.runtime = runtime
+    if (fixture.project.programmingLanguage !== 'python') throw new Error('Expected Python')
+    fixture.project.python.dependencyLock.runtimeManifestSha256 = provided.manifestSha256
+    fixture.configuration = StudioAuthoringCatalogSchema.parse({
+      ...fixture.configuration,
+      catalog: {
+        profiles: [
+          {
+            ...fixture.configuration.catalog.profiles[0],
+            id: provided.profileId,
+            releases: [{ id: provided.releaseId, manifestSha256: provided.manifestSha256 }],
+          },
+        ],
+        releases: [provided],
+      },
+      releases: [{ ...fixture.configuration.releases[0], runtime }],
+    })
+    fixture.policy = await createStudioAuthoringPolicy(fixture.configuration)
+  }
   if (kind === 'classic') fixture.project.mode = 'blocks'
   const actor = {
     audience: 'kids' as const,
@@ -173,7 +205,9 @@ test('builder Python shares fresh Complete Studio product/Pro capability/catalog
   if (prepared.base.version !== 2) throw new Error('Expected canonical Python revision')
   const policy = new StudioPythonBuilderPolicy(f.service, true),
     signal = new AbortController().signal
-  await policy.execute(f.actor, prepared.base, prepared.metadata, 'analyze', signal)
+  expect(
+    await policy.execute(f.actor, prepared.base, prepared.metadata, 'analyze', signal),
+  ).toEqual({})
   await policy.execute(f.actor, prepared.base, prepared.metadata, 'execute', signal)
   expect(f.state.reads.filter(({ port }) => port === 'product')).toHaveLength(2)
   expect(f.state.reads.filter(({ port }) => port === 'journey')).toHaveLength(2)
@@ -187,6 +221,34 @@ test('builder Python shares fresh Complete Studio product/Pro capability/catalog
   await expect(
     policy.execute(f.actor, prepared.base, prepared.metadata, 'analyze', signal),
   ).rejects.toThrow('Pro')
+})
+
+test.each([
+  'module',
+  'declared-empty',
+] as const)('Builder policy returns only the exact approved %s release', async (mode) => {
+  const provided = await providedPythonRelease()
+  const release =
+    mode === 'module'
+      ? provided
+      : await createStudioRuntimeRelease({
+          ...provided.manifest,
+          python: { ...provided.manifest.python!, providedModules: [] },
+        })
+  const f = await setup('pro', release)
+  f.state.capabilities = ['studio', 'bridge', 'pro']
+  const payload = await capturePythonProRevisionPayload(f.project)
+  const prepared = await prepareStudioPythonProExecution(payload.base, payload.binaries)
+  const policy = new StudioPythonBuilderPolicy(f.service, true)
+  expect(
+    await policy.execute(
+      f.actor,
+      prepared.base,
+      prepared.metadata,
+      'analyze',
+      new AbortController().signal,
+    ),
+  ).toEqual({ runtimeRelease: release })
 })
 
 test('builder Python denies missing execution configuration, mismatched metadata and unapproved releases', async () => {

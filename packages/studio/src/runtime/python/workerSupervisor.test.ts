@@ -33,6 +33,7 @@ async function session(
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
   ) => Promise<string>,
   onActivityResult?: (requestId: string, feedback: StudioPythonActivityFeedback) => void,
+  audio?: (request: string) => Promise<string>,
 ) {
   const project = documentFixture('python', 'pro')
   project.assets = []
@@ -50,6 +51,7 @@ async function session(
     },
     onReady: () => ready++,
     onRelease: () => releases++,
+    ...(audio ? { audio } : {}),
     ...(graphics ? { graphics } : {}),
     ...(onActivityResult
       ? {
@@ -124,6 +126,77 @@ test('graphics is opt-in, single-flight and cannot deliver a late response after
   duplicate.transport.emit(event)
   duplicate.transport.emit({ ...event, requestId: 'graphics-2' })
   expect(duplicate.supervisor.phase).toBe('failed')
+})
+
+test('audio is serialized, correlated and cannot deliver a late response after stop', async () => {
+  const event = {
+    type: 'audio',
+    requestId: 'audio-1',
+    request: JSON.stringify({ version: 1, op: 'stop', id: null }),
+  }
+  const unavailable = await session()
+  unavailable.boot()
+  unavailable.supervisor.run()
+  unavailable.transport.emit(event)
+  expect(unavailable.supervisor.phase).toBe('failed')
+
+  let complete!: (value: string) => void
+  let observed = ''
+  const active = await session(undefined, undefined, undefined, (request) => {
+    observed = request
+    return new Promise((resolve) => {
+      complete = resolve
+    })
+  })
+  active.boot()
+  active.supervisor.run()
+  active.transport.emit(event)
+  await Promise.resolve()
+  expect(observed).toBe(event.request)
+  active.supervisor.stop()
+  complete('{"version":1,"ok":true}')
+  await Promise.resolve()
+  await Promise.resolve()
+  expect(active.transport.commands.some((command) => command.type === 'audio-response')).toBe(false)
+  expect(active.transport.terminated).toBe(1)
+
+  const success = await session(
+    undefined,
+    undefined,
+    undefined,
+    async () => '{"version":1,"ok":true}',
+  )
+  success.boot()
+  success.supervisor.run()
+  success.transport.emit(event)
+  await new Promise<void>((resolve) => setTimeout(resolve, 0))
+  expect(success.transport.commands.at(-1)).toEqual({
+    type: 'audio-response',
+    requestId: 'audio-1',
+    response: '{"version":1,"ok":true}',
+  })
+})
+
+test('pending audio refuses duplicate media, graphics, forged completion and input', async () => {
+  const event = {
+    type: 'audio',
+    requestId: 'audio-1',
+    request: JSON.stringify({ version: 1, op: 'stop', id: null }),
+  }
+  for (const forged of [
+    { ...event, requestId: 'audio-2' },
+    { type: 'graphics', requestId: 'graphics-1', request: '{}', images: [] },
+    { type: 'input-request', requestId: 'input-1' },
+    { type: 'result', requestId: 'entrypoint', ok: true, text: '' },
+  ]) {
+    const active = await session(undefined, undefined, undefined, () => new Promise(() => {}))
+    active.boot()
+    active.supervisor.run()
+    active.transport.emit(event)
+    active.transport.emit(forged)
+    expect(active.supervisor.phase).toBe('failed')
+    expect(active.transport.terminated).toBe(1)
+  }
 })
 
 test('an input or completion forged while rendering cannot change the active operation', async () => {

@@ -35,7 +35,9 @@ export function decodeProjectAsset(dataUrl: string): {
   mime: string
   bytes: Uint8Array<ArrayBuffer>
 } {
-  const match = /^data:([^;,]+)(;base64)?,([\s\S]*)$/.exec(dataUrl)
+  // Pinta serializes SVG as UTF-8 with an explicit charset (RFC2397).
+  // Media bytes stay unchanged; other text encodings are not supported here.
+  const match = /^data:([^;,]+)(?:;charset=(?:utf-8|us-ascii))?(;base64)?,([\s\S]*)$/i.exec(dataUrl)
   if (!match) throw new Error('O arquivo do material tem um formato inválido.')
   const mime = match[1]!.toLowerCase()
   const raw = match[3]!

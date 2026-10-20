@@ -663,13 +663,16 @@ export function CtrlBar({
   fullscreenTargetRef,
   onRestart,
   screenshotEnabled = true,
+  muted,
+  onMutedChange,
 }: {
   iframeRef: RefObject<HTMLIFrameElement | null>
   fullscreenTargetRef: RefObject<HTMLDivElement | null>
   onRestart: () => void
   screenshotEnabled?: boolean
+  muted: boolean
+  onMutedChange(muted: boolean): void
 }) {
-  const [muted, setMuted] = useState(false)
   const mutedRef = useRef(muted)
   mutedRef.current = muted
   const [shooting, setShooting] = useState(false)
@@ -722,7 +725,7 @@ export function CtrlBar({
 
   function toggleMute() {
     const next = !muted
-    setMuted(next)
+    onMutedChange(next)
     iframeRef.current?.contentWindow?.postMessage({ type: 'sz:audio', muted: next }, '*')
   }
 

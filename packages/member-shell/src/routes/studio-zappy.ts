@@ -6,7 +6,11 @@ import { STUDIO_PRO_ASSISTANCE_LIMITS } from '@sistemazero/core/studio/pro-assis
 import { StudioProjectIdSchema } from '@sistemazero/core/studio/project-document'
 import { STUDIO_READABLE_PROJECT_ID_PATTERN } from '@sistemazero/core/studio/project-format'
 import { StudioPythonAnalysisAuthorizationSchema } from '@sistemazero/core/studio/python-language-authorization'
-import { createStudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
+import type { StudioPythonProvidedModuleDescriptor } from '@sistemazero/core/studio/python-provided-modules'
+import {
+  createStudioRuntimeCatalog,
+  selectStudioRuntimeRelease,
+} from '@sistemazero/core/studio/runtime-catalog'
 import { StudioTutorEnvironmentSchema } from '@sistemazero/core/studio/tutor-environment'
 import type { PythonCatalogEntry } from '@sistemazero/studio/python-authoring'
 import { studioTutorContextHint } from '@sistemazero/studio/tutor-mode'
@@ -392,6 +396,7 @@ export function createStudioZappyRoutes(deps: {
       )
         return error('INVALID_INPUT', 400)
       let pythonCatalog: readonly PythonCatalogEntry[] | undefined
+      let pythonProvidedModules: readonly StudioPythonProvidedModuleDescriptor[] | undefined
       let pythonAuthorizationExpiresAt: number | undefined
       if (python) {
         const authorization = parsed.data.authorization
@@ -429,6 +434,12 @@ export function createStudioZappyRoutes(deps: {
             '@sistemazero/studio/python-authoring'
           )
           const catalog = await createStudioRuntimeCatalog(decision.catalog)
+          const release = selectStudioRuntimeRelease(catalog, decision.runtime)
+          if (release?.manifest.programmingLanguage !== 'python')
+            return error('ZAPPY_UNAVAILABLE', 503)
+          pythonProvidedModules = release.manifest.python?.providedModules?.map(
+            (module) => module.descriptor,
+          )
           const loaded = await loadPythonAuthoring(subject, {
             catalog,
             pythonAuthoring: [{ runtime: decision.runtime, blockIds: decision.blockIds }],
@@ -657,6 +668,7 @@ export function createStudioZappyRoutes(deps: {
             audience,
             question: safeQuestion.text,
             pythonCatalog,
+            pythonProvidedModules,
             context: {
               ...context,
               ...(pensaMission ? { pensaMission } : {}),

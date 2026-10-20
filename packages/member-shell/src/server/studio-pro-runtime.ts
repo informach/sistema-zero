@@ -136,7 +136,7 @@ export function proProjectTemplateId(project: Project): StudioProTemplateId | nu
 }
 
 export async function opaqueStudioRuntimeExecutionId(
-  prefix: 'lesson' | 'admin' | 'publication',
+  prefix: 'lesson' | 'admin' | 'publication' | 'live',
   ...parts: string[]
 ): Promise<string> {
   const bytes = new TextEncoder().encode(parts.join('\u0000'))

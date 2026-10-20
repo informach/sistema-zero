@@ -2,6 +2,31 @@ import { cp, mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { awaitWithSignal } from '@sistemazero/core/http'
 
+/** Copies source inputs, excluding dependencies installed in the developer's checkout. */
+export async function copyPythonSdkProofSources(options: {
+  root: string
+  directory: string
+  signal: AbortSignal
+}) {
+  for (const entry of [
+    'packages/core/src',
+    'packages/core/package.json',
+    'packages/studio-runtime/src',
+    'packages/studio-runtime/runtime',
+    'packages/studio-runtime/Dockerfile',
+    'packages/studio-runtime/tests/fixtures/python-sdk-worker.ts',
+    'packages/studio-runtime/tests/fixtures/python-sdk-workerd.cjs',
+  ]) {
+    options.signal.throwIfAborted()
+    const target = path.join(options.directory, entry)
+    await mkdir(path.dirname(target), { recursive: true })
+    await cp(path.join(options.root, entry), target, {
+      recursive: true,
+      filter: (source) => !source.split(path.sep).includes('node_modules'),
+    })
+  }
+}
+
 /** Packages only this proof's sources/assets; never mounts the user's workspace or credentials. */
 export async function preparePythonSdkLinux(options: {
   root: string
@@ -19,20 +44,7 @@ export async function preparePythonSdkLinux(options: {
   const containerName = `sz-${workerName}`
   const image = 'sz-python-sdk-linux-qa:verify'
   await mkdir(directory, { recursive: true })
-  for (const entry of [
-    'packages/core/src',
-    'packages/core/package.json',
-    'packages/studio-runtime/src',
-    'packages/studio-runtime/runtime',
-    'packages/studio-runtime/Dockerfile',
-    'packages/studio-runtime/tests/fixtures/python-sdk-worker.ts',
-    'packages/studio-runtime/tests/fixtures/python-sdk-workerd.cjs',
-  ]) {
-    options.signal.throwIfAborted()
-    const target = path.join(directory, entry)
-    await mkdir(path.dirname(target), { recursive: true })
-    await cp(path.join(root, entry), target, { recursive: true })
-  }
+  await copyPythonSdkProofSources({ root, directory, signal: options.signal })
   options.signal.throwIfAborted()
   await cp(options.runtimeDirectory, path.join(directory, 'distribution'), { recursive: true })
   if (options.builderHost) await cp(options.builderHost, path.join(directory, 'builder-host.mjs'))

@@ -28,6 +28,44 @@ const dobro: SectionExecutionRule = {
 }
 
 describe('a forma das regras que rodam o jogo', () => {
+  test('cliques em alvos usam caminhos fechados e só repetem um ponto anterior', () => {
+    const rule = (steps: unknown[]) => ({ ...anda, steps })
+    const sprite = {
+      action: 'clickTarget',
+      target: { kind: 'sprite', path: 'esconderijo1', groupPath: 'esconderijos' },
+    }
+    const empty = { action: 'clickTarget', target: { kind: 'outsideGroup', path: 'esconderijos' } }
+    const repeat = { action: 'clickTarget', target: { kind: 'lastPoint' } }
+    expect(isSectionExecutionRule(rule([sprite, repeat]))).toBe(true)
+    expect(isSectionExecutionRule(rule([empty]))).toBe(true)
+    expect(isSectionExecutionRule(rule([repeat]))).toBe(false)
+    expect(isSectionExecutionRule(rule([{ action: 'click', x: 2, y: 3 }, repeat]))).toBe(false)
+    expect(
+      isSectionExecutionRule(rule([sprite, { ...repeat, target: { kind: 'lastPoint', x: 2 } }])),
+    ).toBe(false)
+    for (const path of [
+      'a.__proto__',
+      'a.constructor',
+      'prototype',
+      'a.b.c.d.e',
+      'a[0]',
+      'a'.repeat(201),
+    ]) {
+      expect(
+        isSectionExecutionRule(rule([{ ...sprite, target: { ...sprite.target, path } }])),
+      ).toBe(false)
+      expect(
+        isSectionExecutionRule(
+          rule([{ ...sprite, target: { ...sprite.target, groupPath: path } }]),
+        ),
+      ).toBe(false)
+    }
+    expect(
+      isSectionExecutionRule(rule([{ ...sprite, target: { ...sprite.target, expected: 1 } }])),
+    ).toBe(false)
+    expect(isSectionExecutionRule(rule(Array.from({ length: 21 }, () => sprite)))).toBe(false)
+  })
+
   test('aceita o que a autoria monta e recusa o que estoura os limites', () => {
     expect(isSectionExecutionRule(anda)).toBe(true)
     expect(isSectionExecutionRule(dobro)).toBe(true)

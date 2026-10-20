@@ -2,6 +2,8 @@ import limits from './limits.json'
 
 /** Data protocol between untrusted Python and the frame-owned Turtle renderer. */
 export const TURTLE_GRAPHICS_LIMITS = Object.freeze(limits)
+/** Per-image native decoder bound, shared with authoring before raster allocation. */
+export const TURTLE_IMAGE_DIMENSION_LIMIT = 4096
 
 export type TurtlePoint = readonly [number, number]
 export type TurtleFont = readonly [string, number, string]

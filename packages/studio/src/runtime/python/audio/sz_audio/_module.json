@@ -1,0 +1,69 @@
+{
+  "descriptorVersion": 1,
+  "kind": "portable-audio",
+  "importName": "sz_audio",
+  "version": "1.0.0",
+  "provider": "sistema-zero",
+  "summary": "Som portátil do Sistema Zero. É um módulo separado de Turtle e da biblioteca padrão do Python.",
+  "api": [
+    {
+      "name": "play",
+      "signature": "(path: str, *, loop: bool = False, volume: float = 1.0) -> int",
+      "summary": "Começa um WAV sem esperar seu fim e devolve o identificador do som. loop repete; volume vai de 0 a 1."
+    },
+    {
+      "name": "stop",
+      "signature": "(handle: int | None = None) -> None",
+      "summary": "Para o som indicado por play. Sem argumento, para todos os sons desta execução."
+    }
+  ],
+  "browser": {
+    "installation": "runtime-bundled",
+    "paths": "captured-project-assets",
+    "requiresUserGesture": true,
+    "lifetime": "execution-session",
+    "notes": [
+      "Disponível somente quando a release aprovada fornece este módulo; não precisa instalar pelo pip no navegador.",
+      "Use o caminho relativo de um WAV dos materiais capturados do projeto. Não aceita URL, comando de shell ou arquivo externo.",
+      "Clique em Jogar ou Executar para permitir o som. Stop, reinício ou fechamento da execução encerram as vozes.",
+      "No navegador, a página e a sessão podem continuar abertas para o REPL depois que o arquivo inicial termina; o áudio acompanha essa sessão.",
+      "Um módulo autoral com esse nome mantém a precedência normal do Python; não atribua a ele esta API."
+    ]
+  },
+  "audio": {
+    "container": "RIFF/WAVE",
+    "encoding": "PCM16",
+    "channels": [1, 2],
+    "assetsTotalBytes": 33554432,
+    "policy": {
+      "version": 1,
+      "requestBytes": 2048,
+      "voices": 16,
+      "commandsPerSecond": 64,
+      "wavChunks": 256,
+      "fileBytes": 33554432,
+      "durationSeconds": 600,
+      "minimumSampleRate": 8000,
+      "maximumSampleRate": 96000
+    }
+  },
+  "native": {
+    "distribution": "sistema-zero-audio",
+    "requiresPython": ">=3.14.2,<3.15",
+    "installation": "exported-package",
+    "lifetime": "process",
+    "dependencies": {
+      "setuptools": "84.2.0",
+      "miniaudio": "1.71",
+      "cffi": "2.1.1",
+      "pycparser": "3.11"
+    },
+    "notes": [
+      "Instale o pacote local e suas dependências pelo install.txt indicado no LEIA-ME da exportação, usando o Python do ambiente virtual na pasta principal do projeto.",
+      "A instalação separada permite importar sz_audio mesmo quando o arquivo inicial está em uma subpasta; os requisitos e módulos autorais são preservados.",
+      "As dependências nativas são separadas do lock do navegador. É necessário um dispositivo de saída disponível; a exportação não certifica a execução neste computador.",
+      "play não bloqueia nem mantém o processo Python aberto. Um script curto pode terminar antes de o som tocar; no desktop, mantenha o laço normal do programa, como turtle.done() ou turtle.mainloop(). Encerrar o processo encerra o áudio.",
+      "Não instale um pacote chamado turtle pelo pip. Turtle nativo usa a biblioteca padrão e o suporte gráfico Tk do computador."
+    ]
+  }
+}

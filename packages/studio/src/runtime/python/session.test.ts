@@ -3,6 +3,7 @@ import { StudioPythonDistributionSchema } from '@sistemazero/core/studio/python-
 import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import type { StudioRuntimeSession } from '../types'
+import type { PythonFrameCommand, PythonFrameInitialization } from './frameProtocol'
 import { preparePythonFrameSession } from './session'
 import { preparePythonExecutionSnapshot } from './snapshot'
 import { pythonWebBytesSha256 } from './webFiles'
@@ -228,6 +229,58 @@ async function fixture() {
     },
   }
 }
+
+test('routes audio over the authenticated session channel and correlates its response', async () => {
+  const value = await fixture()
+  value.complete()
+  value.hello(false)
+  await value.admitted()
+  const transfer = value.transfers[0]!
+  const initialization = transfer.data as PythonFrameInitialization
+  const remote = transfer.ports[0] as MessagePort
+  let sequence = 2
+  const emit = (body: Record<string, unknown>) =>
+    remote.postMessage({
+      ...body,
+      protocol: 1,
+      challenge: initialization.challenge,
+      identity: initialization.identity,
+      sequence: ++sequence,
+    })
+  let received!: (value: Extract<PythonFrameCommand, { type: 'audio-response' }>) => void
+  const response = new Promise<Extract<PythonFrameCommand, { type: 'audio-response' }>>(
+    (resolve) => {
+      received = resolve
+    },
+  )
+  remote.onmessage = (event: MessageEvent<PythonFrameCommand>) => {
+    const command = event.data
+    if (command.type === 'run') emit({ type: 'event', event: { type: 'state', state: 'running' } })
+    if (command.type === 'audio-response') received(command)
+    emit({ type: 'ack', commandId: command.commandId, ok: true })
+  }
+  remote.start()
+  const session = await value.prepared()
+  await session.run()
+  emit({
+    type: 'audio-request',
+    requestId: 'audio-1',
+    request: '{"version":1,"op":"stop","id":null}',
+  })
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    const result = await Promise.race([
+      response,
+      new Promise<never>((_resolve, reject) => {
+        timer = setTimeout(() => reject(new Error('Missing correlated audio response')), 1500)
+      }),
+    ])
+    expect(result.requestId).toBe('audio-1')
+    expect(JSON.parse(result.response)).toEqual({ version: 1, ok: true })
+  } finally {
+    clearTimeout(timer)
+  }
+})
 
 test('prepares pinned public metadata in parallel but transfers nothing before a valid frame hello', async () => {
   const f = await fixture()

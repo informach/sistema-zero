@@ -2,8 +2,11 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import type { JSX } from 'react'
 import { createEmptyProject } from '#core'
+import { documentFixture } from '../../state/fixtures/projectDocuments'
 import { useProjectStore } from '../../state/projectStore'
+import { refinePythonProjectDocument } from '../../state/pythonProjectValidation'
 import { useUIStore } from '../../state/uiStore'
+import { StudioMoldaLibraryProvider } from '../../studio/molda-library'
 import { AssetsPanel } from './AssetsPanel'
 import { useAssetsPanelWiring } from './useAssetsPanel'
 
@@ -127,6 +130,32 @@ describe('addAsset — kinds 3D (model3d/environment3d)', () => {
  * para importar um som era clicar em "Imagens".
  */
 describe('Materiais do jogo — as abas', () => {
+  for (const kind of ['classic', 'pro'] as const) {
+    it(`does not offer Molda to Python ${kind}, and restores it when opening JavaScript`, async () => {
+      const source = documentFixture('python', kind)
+      source.assets = []
+      delete source.coverAssetName
+      const python = await refinePythonProjectDocument(source)
+      useProjectStore.setState({ project: python, isDirty: false })
+      render(
+        <StudioMoldaLibraryProvider
+          value={{ list: async () => [], import: async () => ({ ok: false, error: 'unused' }) }}
+        >
+          <AssetsPanel open onClose={() => {}} />
+        </StudioMoldaLibraryProvider>,
+      )
+      expect(screen.queryByRole('tab', { name: 'Modelos 3D' }) === null).toBe(true)
+      act(() => seedProject())
+      fireEvent.click(screen.getByRole('tab', { name: 'Modelos 3D' }))
+      expect(screen.getByRole('button', { name: /Trazer do Molda/ }) !== null).toBe(true)
+      act(() => useProjectStore.setState({ project: python }))
+      expect(screen.queryByRole('tab', { name: 'Modelos 3D' }) === null).toBe(true)
+      expect(screen.getByRole('tab', { name: 'Imagens' }).getAttribute('aria-selected')).toBe(
+        'true',
+      )
+    })
+  }
+
   /** Abre a janela e vai para a aba pedida pelo GESTO (clicando nela). */
   function abrir(tab?: 'Sons' | 'Modelos 3D') {
     const view = render(<AssetsPanel open onClose={() => {}} />)

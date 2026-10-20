@@ -331,6 +331,92 @@ test('proxy setup failure removes only its temporary configuration and never tou
   expect(f.storage.objects.size).toBe(0)
 })
 
+test.each([
+  { name: 'upload error', uploadFails: true, disposeFails: false, primary: new Error('upload') },
+  { name: 'undefined rejection', uploadFails: true, disposeFails: false, primary: undefined },
+  { name: 'disposal error', uploadFails: false, disposeFails: true, primary: undefined },
+  { name: 'both errors', uploadFails: true, disposeFails: true, primary: new Error('upload') },
+  {
+    name: 'undefined primary and disposal error',
+    uploadFails: true,
+    disposeFails: true,
+    primary: undefined,
+  },
+])('upload preserves failure identities and cleans its config: $name', async (scenario) => {
+  const f = await fixture()
+  const plan = await preparePythonPromotion(f.input)
+  const cleanup = new Error('dispose')
+  let disposed = 0
+  let configPath = ''
+  let rejected = false
+  let failure: unknown
+  try {
+    await uploadPythonPromotion(plan, plan.planSha256, async (path) => {
+      configPath = path
+      return {
+        env: {
+          PYTHON_RUNTIME: {
+            ...f.storage.bucket,
+            async put(...args: Parameters<typeof f.storage.bucket.put>) {
+              if (scenario.uploadFails) throw scenario.primary
+              return f.storage.bucket.put(...args)
+            },
+          },
+        },
+        async dispose() {
+          disposed++
+          if (scenario.disposeFails) throw cleanup
+        },
+      }
+    })
+  } catch (error) {
+    rejected = true
+    failure = error
+  }
+  expect(rejected).toBe(true)
+  expect(disposed).toBe(1)
+  expect(configPath).not.toBe('')
+  await expect(readFile(configPath)).rejects.toThrow()
+  if (scenario.uploadFails && scenario.disposeFails) {
+    expect(failure).toBeInstanceOf(AggregateError)
+    if (!(failure instanceof AggregateError)) throw new Error('Expected aggregate failure')
+    expect(failure.errors).toHaveLength(2)
+    expect(failure.errors[0]).toBe(scenario.primary)
+    expect(failure.errors[1]).toBe(cleanup)
+    expect(failure.cause).toBe(scenario.primary)
+  } else {
+    expect(failure).toBe(scenario.uploadFails ? scenario.primary : cleanup)
+  }
+  expect(f.storage.objects.has(`${plan.prefix}complete.json`)).toBe(!scenario.uploadFails)
+  expect(f.storage.objects.has(plan.workerCatalog.key)).toBe(!scenario.uploadFails)
+})
+
+test.each([
+  'connect',
+  'upload',
+  'dispose',
+  'success',
+])('directory removal failure preserves every failure after %s', async (mode) => {
+  const f = await fixture()
+  const plan = await preparePythonPromotion(f.input)
+  const child = Bun.spawn(
+    [process.execPath, join(import.meta.dir, 'fixtures/python-promotion-cleanup.ts'), mode],
+    { stdin: new TextEncoder().encode(JSON.stringify(plan)), stdout: 'pipe', stderr: 'pipe' },
+  )
+  const [exit, stdout, stderr] = await Promise.all([
+    child.exited,
+    new Response(child.stdout).text(),
+    new Response(child.stderr).text(),
+  ])
+  expect({ exit, stderr }).toEqual({ exit: 0, stderr: '' })
+  expect(JSON.parse(stdout)).toEqual({
+    mode,
+    removalAttempts: 1,
+    disposals: mode === 'connect' ? 0 : 1,
+    failures: mode === 'upload' ? 3 : mode === 'success' ? 1 : 2,
+  })
+})
+
 test('manifest mismatch, path escape, gzip mismatch and bytes drift fail offline', async () => {
   const f = await fixture()
   await expect(

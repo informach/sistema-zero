@@ -12,6 +12,16 @@ const identity = {
 }
 const packet = { protocol: 1 as const, challenge: 'c'.repeat(64), sequence: 1, identity }
 
+test('audio requests preserve the session envelope without accepting media URLs or extra commands', () => {
+  const request = JSON.stringify({ version: 1, op: 'stop', id: null })
+  const message = { ...packet, type: 'audio-request' as const, requestId: 'sound-1', request }
+  expect(readPythonFrameMessage({ ...message, url: 'https://evil.test' })).toEqual(message)
+  expect(
+    readPythonFrameMessage({ ...message, request: '{"version":1,"op":"shell"}' }),
+  ).toBeUndefined()
+  expect(readPythonFrameMessage({ ...message, requestId: 'bad\n' })).toBeUndefined()
+})
+
 test('capture responses validate the actual PNG header and bounded presentation identity', () => {
   const snapshot = {
     dataUrl:

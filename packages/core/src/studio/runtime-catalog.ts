@@ -15,6 +15,11 @@ import {
   StudioSha256Schema,
   studioPortableFileConflict,
 } from './project-environment'
+import {
+  StudioPythonProvidedModulesSchema,
+  studioPythonProvidedModuleArtifactIssue,
+} from './python-provided-modules'
+import { verifyPythonProvidedModuleArtifacts } from './python-provided-modules-render'
 
 export const STUDIO_PROJECT_CAPABILITIES = [
   'edit',
@@ -61,6 +66,7 @@ export const StudioRuntimeManifestSchema = z
       .strictObject({
         version: z.string().regex(/^\d+\.\d+\.\d+$/),
         packages: StudioDependencyResolutionsSchema,
+        providedModules: StudioPythonProvidedModulesSchema.optional(),
       })
       .optional(),
   })
@@ -112,6 +118,15 @@ export const StudioRuntimeManifestSchema = z
             message: 'A distribuição referencia um artefato ausente ou diferente da release.',
           })
       }
+    }
+    for (const [index, module] of (manifest.python?.providedModules ?? []).entries()) {
+      const issue = studioPythonProvidedModuleArtifactIssue(module, manifest.artifacts)
+      if (issue)
+        context.addIssue({
+          code: 'custom',
+          path: ['python', 'providedModules', index],
+          message: issue,
+        })
     }
   })
 export type StudioRuntimeManifest = z.infer<typeof StudioRuntimeManifestSchema>
@@ -168,11 +183,17 @@ function freezeData<T extends object>(data: T): DeepReadonly<T> {
   return Object.freeze(data) as DeepReadonly<T>
 }
 
+async function verifyProvidedModules(manifest: StudioRuntimeManifest) {
+  for (const module of manifest.python?.providedModules ?? [])
+    await verifyPythonProvidedModuleArtifacts(module, manifest.artifacts)
+}
+
 /** For trusted release assembly only; computing a digest does not approve a release. */
 export async function createStudioRuntimeRelease(
   manifest: DeepReadonly<StudioRuntimeManifest>,
 ): Promise<StudioRuntimeRelease> {
   const parsed = StudioRuntimeManifestSchema.parse(manifest)
+  await verifyProvidedModules(parsed)
   return freezeData({
     profileId: parsed.profileId,
     releaseId: parsed.releaseId,
@@ -234,6 +255,7 @@ export async function createStudioRuntimeCatalog(input: {
       release.manifest.modes.some((mode) => !profile.modes.includes(mode))
     )
       throw new Error('A release não corresponde ao perfil aprovado.')
+    await verifyProvidedModules(release.manifest)
     if ((await sha256Hex(canonicalJson(release.manifest))) !== release.manifestSha256)
       throw new Error('O conteúdo da release não corresponde ao hash aprovado.')
   }

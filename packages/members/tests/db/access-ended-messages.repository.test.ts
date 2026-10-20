@@ -79,9 +79,9 @@ describe.skipIf(!url)('fim do acesso: consultas no Postgres real', () => {
   }) {
     const id = randomUUID()
     await conn.sql`insert into members.entitlements
-      (id, user_id, source_kind, source_id, access_type, course_ref, status, subscription_id,
+      (id, user_id, product_id, source_kind, source_id, access_type, course_ref, status, subscription_id,
        expires_at, updated_at, snapshot)
-      values (${id}, ${row.userId}, ${row.sourceKind ?? 'payment'}, ${row.sourceId ?? 'ae-test'},
+      values (${id}, ${row.userId}, ${randomUUID()}, ${row.sourceKind ?? 'payment'}, ${row.sourceId ?? 'ae-test'},
         ${row.accessType ?? 'course'}, ${row.courseRef ?? null}, ${row.status ?? 'active'},
         ${row.subscriptionId ?? null}, ${row.expiresAt?.toISOString() ?? null},
         ${(row.updatedAt ?? NOW).toISOString()},

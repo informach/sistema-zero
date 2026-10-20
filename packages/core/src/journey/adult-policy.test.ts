@@ -128,11 +128,68 @@ test('o piso da posição não volta quando a política ganha curso numa etapa j
   expect(floored.stages[0]).toMatchObject({ completed: true, available: true, missing: [] })
   expect(floored.stages[1]).toMatchObject({ completed: false, available: true })
   expect(floored.capabilities).toEqual(['studio', 'pinta'])
-  // A etapa seguinte continua sendo liberada pela conclusão real dela.
+  // A conclusão visual seguinte não concede capacidades enquanto faltar requisito anterior.
   const advancedDone = [...firstDone, { courseId: advanced, completed: true, showcased: true }]
   const next = projectAdultJourney(edited, 2, advancedDone, ['studio', 'pinta'], reached)
   expect(adultJourneyPosition(next)?.position).toBe(3)
-  expect(next.capabilities).toEqual(['studio', 'pinta', 'pro', 'ai', 'pensa'])
+  expect(next.capabilities).toEqual(['studio', 'pinta'])
+  const allDone = [...advancedDone, { courseId: extra, completed: true, showcased: false }]
+  expect(
+    projectAdultJourney(edited, 2, allDone, ['studio', 'pinta'], reached).capabilities,
+  ).toEqual(['studio', 'pinta', 'pro', 'ai', 'pensa'])
+})
+
+test('piso visual não substitui requisito avançado anterior para novas capacidades', () => {
+  const edited: AdultJourneyPolicy = {
+    schemaVersion: 1,
+    stages: [
+      {
+        id: 'novo-avancado',
+        title: 'Novo avançado',
+        requirements: [{ courseId: advanced, milestone: 'showcase' }],
+        capabilities: ['molda'],
+      },
+      {
+        id: 'primeiro-jogo',
+        title: 'Primeiro jogo',
+        requirements: [{ courseId: first, milestone: 'complete' }],
+        capabilities: ['studio', 'ai', 'pensa'],
+      },
+    ],
+  }
+  const firstDone = [{ courseId: first, completed: true, showcased: false }]
+  const withoutFloor = projectAdultJourney(edited, 2, firstDone, ['studio'])
+  expect(withoutFloor.capabilities).toEqual(['studio'])
+  expect(adultJourneyPosition(withoutFloor)?.position).toBe(1)
+  for (const reached of [2, 3, 9]) {
+    const floored = projectAdultJourney(edited, 2, firstDone, ['studio'], reached)
+    expect(floored.capabilities).toEqual(['studio'])
+    expect(floored.stages.map(({ completed, available }) => ({ completed, available }))).toEqual([
+      { completed: true, available: true },
+      { completed: true, available: true },
+    ])
+    expect(adultJourneyPosition(floored)?.position).toBe(3)
+    const missingShowcase = [
+      ...firstDone,
+      { courseId: advanced, completed: true, showcased: false },
+    ]
+    expect(
+      projectAdultJourney(edited, 2, missingShowcase, ['studio'], reached).capabilities,
+    ).toEqual(['studio'])
+    expect(
+      projectAdultJourney(
+        edited,
+        2,
+        [...firstDone, { courseId: advanced, completed: true, showcased: true }],
+        ['studio'],
+        reached,
+      ).capabilities,
+    ).toEqual(['studio', 'molda', 'ai', 'pensa'])
+    // Conquistas anteriores permanecem mesmo se a nova política tiver requisitos pendentes.
+    expect(
+      projectAdultJourney(edited, 2, firstDone, ['studio', 'ai', 'pensa'], reached).capabilities,
+    ).toEqual(['studio', 'ai', 'pensa'])
+  }
 })
 
 test('o piso não concede capacidade, vale o maior entre calculada e piso e respeita o total', () => {

@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { createHash } from 'node:crypto'
+import type { PintaImageRecipe } from '@sistemazero/core/studio/pinta-image'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { StrictMode } from 'react'
 import { fakeUseStore } from '../../../testing/fakeIdbStore'
 
 /**
@@ -57,9 +60,37 @@ const { StudioPintaLibraryProvider } = await import('../../../studio/pinta-libra
 type PintaLibraryAdapter = import('../../../studio/pinta-library').StudioPintaLibraryAdapter
 type DrawingSummary = import('../../../studio/pinta-library').StudioPintaDrawingSummary
 const { AssetsPanel } = await import('../AssetsPanel')
-const { filterPintaDrawings } = await import('../PintaImportDialog')
+const { filterPintaDrawings, PintaImportDialog } = await import('../PintaImportDialog')
+const { documentFixture } = await import('../../../state/fixtures/projectDocuments')
+const { refinePythonProjectDocument } = await import('../../../state/pythonProjectValidation')
+const { addPintaCreationToProject } = await import('../addCreationToProject')
 
 const PNG = 'data:image/png;base64,AAAA'
+const PORTABLE_PNG =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII='
+const portableBytes = Buffer.from(PORTABLE_PNG.split(',')[1]!, 'base64')
+function portableImage(recipe: PintaImageRecipe) {
+  return {
+    dataUrl: PORTABLE_PNG,
+    derivation: {
+      recipe: structuredClone(recipe),
+      provenance: {
+        sourceSha256: 'a'.repeat(64),
+        dependencies:
+          recipe.selection.kind === 'tilemap'
+            ? [{ drawingId: 'tileset', sha256: 'c'.repeat(64) }]
+            : [],
+      },
+      output: {
+        mime: 'image/png' as const,
+        width: 1,
+        height: 1,
+        bytes: portableBytes.length,
+        sha256: createHash('sha256').update(portableBytes).digest('hex'),
+      },
+    },
+  }
+}
 const SVG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"/>')}`
 
 const DRAWINGS: DrawingSummary[] = [
@@ -100,6 +131,64 @@ function fakeAdapter(
     },
     ...overrides,
   }
+}
+
+function pythonAdapter(overrides: Partial<PintaLibraryAdapter> = {}): PintaLibraryAdapter {
+  return fakeAdapter({
+    list: async () => [
+      {
+        ...DRAWINGS[0]!,
+        imageSelection: {
+          kind: 'frame',
+          width: 1,
+          height: 1,
+          animations: [{ id: 'andar', name: 'andar', frameCount: 2 }],
+        },
+      },
+    ],
+    previewImage: async (recipe) => portableImage(recipe),
+    import: async (id, options) => {
+      if (!options?.image) throw new Error('Explicit recipe required')
+      const image = portableImage(options.image.recipe)
+      return {
+        ok: true,
+        asset: {
+          id,
+          name: 'dragao-pintado',
+          dataUrl: image.dataUrl,
+          pintaImage: image.derivation,
+          width: 1,
+          height: 1,
+        },
+      }
+    },
+    ...overrides,
+  })
+}
+
+async function choosePythonImage() {
+  fireEvent.click((await screen.findAllByRole('button', { name: 'Escolher imagem' }))[0]!)
+  await screen.findByAltText('Prévia da imagem escolhida')
+}
+
+function selectedValue(label: string): string {
+  const element = screen.getByLabelText(label)
+  if (!(element instanceof HTMLSelectElement)) throw new Error(`Expected a select: ${label}`)
+  return element.value
+}
+
+function buttonDisabled(name: string): boolean {
+  const element = screen.getByRole('button', { name })
+  if (!(element instanceof HTMLButtonElement)) throw new Error(`Expected a button: ${name}`)
+  return element.disabled
+}
+
+async function seedPythonProject(kind: 'classic' | 'pro' = 'classic') {
+  const raw = documentFixture('python', kind)
+  raw.assets = []
+  const project = await refinePythonProjectDocument(raw)
+  useProjectStore.setState({ project, editingAccess: 'author', isDirty: false })
+  return project
 }
 
 function seedProject(): void {
@@ -310,5 +399,614 @@ describe('filterPintaDrawings (puro)', () => {
     expect(filterPintaDrawings(DRAWINGS, 'céu').map((d) => d.id)).toEqual(['d2'])
     expect(filterPintaDrawings(DRAWINGS, 'meu-jogo').map((d) => d.id)).toEqual(['d2'])
     expect(filterPintaDrawings(DRAWINGS, 'nada')).toHaveLength(0)
+  })
+})
+
+describe('Pinta import intent lifetime', () => {
+  for (const change of ['close', 'profile-aba'] as const) {
+    it(`discards a pending gallery response after ${change}`, async () => {
+      const pending = Promise.withResolvers<DrawingSummary[]>()
+      let signal: AbortSignal | undefined
+      render(
+        <StudioPintaLibraryProvider
+          value={fakeAdapter({
+            list: (options) => {
+              signal = options?.signal
+              return pending.promise
+            },
+          })}
+        >
+          <PintaImportDialog onClose={() => {}} />
+        </StudioPintaLibraryProvider>,
+      )
+      await act(async () => {
+        if (change === 'close')
+          fireEvent.click(screen.getAllByRole('button', { name: 'Fechar' }).at(-1)!)
+        else {
+          setStorageNamespace('perfil-2')
+          setStorageNamespace('perfil-1')
+        }
+        pending.resolve(DRAWINGS)
+        await pending.promise
+      })
+      expect(signal?.aborted).toBe(true)
+      expect(screen.queryByText('dragao-pintado') === null).toBe(true)
+    })
+  }
+
+  for (const change of [
+    'close',
+    'unmount',
+    'project',
+    'project-aba',
+    'adapter',
+    'possession',
+    'profile-aba',
+    'observer-aba',
+  ] as const) {
+    it(`discards an imported image after ${change}`, async () => {
+      const raw = documentFixture('python', 'classic')
+      raw.assets = []
+      delete raw.coverAssetName
+      const original = await refinePythonProjectDocument(raw)
+      useProjectStore.setState({ project: original, editingAccess: 'author', isDirty: false })
+      const pending = Promise.withResolvers<Awaited<ReturnType<PintaLibraryAdapter['import']>>>()
+      let signal: AbortSignal | undefined
+      const adapter = pythonAdapter({
+        import: (_id, options) => {
+          signal = options?.signal
+          return pending.promise
+        },
+      })
+      const imported = mock(() => {})
+      const closed = mock(() => {})
+      const content = (value: PintaLibraryAdapter | null) => (
+        <StudioPintaLibraryProvider value={value}>
+          <PintaImportDialog onClose={closed} onImported={imported} />
+        </StudioPintaLibraryProvider>
+      )
+      const view = render(content(adapter))
+      await choosePythonImage()
+      fireEvent.click(await screen.findByRole('button', { name: 'Adicionar imagem' }))
+      await waitFor(() => expect(signal).toBeDefined())
+      await act(async () => {
+        if (change === 'close')
+          fireEvent.click(screen.getAllByRole('button', { name: 'Fechar' }).at(-1)!)
+        else if (change === 'unmount') view.unmount()
+        else if (change === 'adapter' || change === 'possession')
+          view.rerender(content(change === 'adapter' ? fakeAdapter() : null))
+        else if (change === 'profile-aba') {
+          setStorageNamespace('perfil-2')
+          setStorageNamespace('perfil-1')
+        } else if (change === 'observer-aba') {
+          useProjectStore.getState().setEditingAccess('observer')
+          useProjectStore.getState().setEditingAccess('author')
+        } else {
+          useProjectStore.setState({ project: { ...original, id: 'project-B' } })
+          if (change === 'project-aba') useProjectStore.setState({ project: original })
+        }
+      })
+      expect(signal?.aborted).toBe(true)
+      await act(async () => {
+        pending.resolve({ ok: true, asset: { id: 'd1', name: 'dragao-pintado', dataUrl: PNG } })
+        await pending.promise
+      })
+      expect(useProjectStore.getState().project?.assets).toEqual([])
+      expect(useProjectStore.getState().isDirty).toBe(false)
+      expect(imported).not.toHaveBeenCalled()
+      if (change === 'close') expect(closed).toHaveBeenCalledTimes(1)
+    })
+  }
+
+  it('admits one synchronous import and preserves ordinary source edits in StrictMode', async () => {
+    const pending = Promise.withResolvers<Awaited<ReturnType<PintaLibraryAdapter['import']>>>()
+    const run = mock(() => pending.promise)
+    const imported = mock(() => {})
+    render(
+      <StrictMode>
+        <StudioPintaLibraryProvider value={fakeAdapter({ import: run })}>
+          <PintaImportDialog onClose={() => {}} onImported={imported} />
+        </StudioPintaLibraryProvider>
+      </StrictMode>,
+    )
+    const add = (await screen.findAllByRole('button', { name: 'Adicionar ao projeto' }))[0]!
+    await act(async () => {
+      add.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      add.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      const project = useProjectStore.getState().project!
+      useProjectStore.setState({ project: { ...project, name: 'Nome editado durante importação' } })
+    })
+    expect(run).toHaveBeenCalledTimes(1)
+    await act(async () => {
+      pending.resolve({ ok: true, asset: { id: 'd1', name: 'dragao-pintado', dataUrl: PNG } })
+      await pending.promise
+    })
+    expect(useProjectStore.getState().project?.name).toBe('Nome editado durante importação')
+    expect(useProjectStore.getState().project?.assets).toHaveLength(1)
+    expect(imported).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not show a late failure after closing even if the parent keeps the component mounted', async () => {
+    const pending = Promise.withResolvers<Awaited<ReturnType<PintaLibraryAdapter['import']>>>()
+    render(
+      <StudioPintaLibraryProvider value={fakeAdapter({ import: () => pending.promise })}>
+        <PintaImportDialog onClose={() => {}} />
+      </StudioPintaLibraryProvider>,
+    )
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Adicionar ao projeto' }))[0]!)
+    fireEvent.click(screen.getAllByRole('button', { name: 'Fechar' }).at(-1)!)
+    await act(async () => {
+      pending.resolve({ ok: false, error: 'falha tardia' })
+      await pending.promise
+    })
+    expect(screen.queryByText('falha tardia') === null).toBe(true)
+  })
+})
+
+describe('Python image selection through the real modal and project store', () => {
+  it('making the legacy JavaScript default explicit does not revoke an ordinary pending import', async () => {
+    const original = createEmptyProject('legacy-js', 'JavaScript antigo')
+    useProjectStore.setState({ project: original, editingAccess: 'author', isDirty: false })
+    const pending = Promise.withResolvers<Awaited<ReturnType<PintaLibraryAdapter['import']>>>()
+    let signal: AbortSignal | undefined
+    const imported = mock(() => {})
+    render(
+      <StudioPintaLibraryProvider
+        value={fakeAdapter({
+          import: (_id, options) => {
+            signal = options?.signal
+            return pending.promise
+          },
+        })}
+      >
+        <PintaImportDialog onClose={() => {}} onImported={imported} />
+      </StudioPintaLibraryProvider>,
+    )
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Adicionar ao projeto' }))[0]!)
+    await waitFor(() => expect(signal).toBeDefined())
+    act(() => {
+      useProjectStore.setState({ project: { ...original, programmingLanguage: 'javascript' } })
+    })
+    expect(signal?.aborted).toBe(false)
+    await act(async () => {
+      pending.resolve({ ok: true, asset: { id: 'd1', name: 'dragao-pintado', dataUrl: PNG } })
+      await pending.promise
+    })
+    expect(useProjectStore.getState().project?.assets).toHaveLength(1)
+    expect(imported).toHaveBeenCalledTimes(1)
+  })
+
+  for (const kind of ['classic', 'pro'] as const) {
+    for (const phase of ['preview-pending', 'import-pending', 'preview-ready'] as const) {
+      it(`${kind}: same-ID programmingLanguage ABA revokes ${phase}`, async () => {
+        const original = await seedPythonProject(kind)
+        const middle = createEmptyProject(original.id, 'JavaScript no mesmo ID')
+        middle.programmingLanguage = 'javascript'
+        const previewPending = Promise.withResolvers<ReturnType<typeof portableImage>>()
+        const importPending =
+          Promise.withResolvers<Awaited<ReturnType<PintaLibraryAdapter['import']>>>()
+        let previewSignal: AbortSignal | undefined
+        let importSignal: AbortSignal | undefined
+        let recipe: PintaImageRecipe | undefined
+        const importer = mock(
+          (_id: string, options?: Parameters<PintaLibraryAdapter['import']>[1]) => {
+            importSignal = options?.signal
+            return importPending.promise
+          },
+        )
+        const imported = mock(() => {})
+        render(
+          <StudioPintaLibraryProvider
+            value={pythonAdapter({
+              previewImage: (input, _limits, options) => {
+                recipe = structuredClone(input)
+                previewSignal = options?.signal
+                return phase === 'preview-pending'
+                  ? previewPending.promise
+                  : Promise.resolve(portableImage(input))
+              },
+              import: importer,
+            })}
+          >
+            <PintaImportDialog onClose={() => {}} onImported={imported} />
+          </StudioPintaLibraryProvider>,
+        )
+        fireEvent.click((await screen.findAllByRole('button', { name: 'Escolher imagem' }))[0]!)
+        await waitFor(() => expect(previewSignal).toBeDefined())
+        let confirm: HTMLElement | undefined
+        if (phase !== 'preview-pending') {
+          await screen.findByAltText('Prévia da imagem escolhida')
+          confirm = screen.getByRole('button', { name: 'Adicionar imagem' })
+          if (phase === 'import-pending') {
+            fireEvent.click(confirm)
+            await waitFor(() => expect(importSignal).toBeDefined())
+          }
+        }
+        act(() => {
+          useProjectStore.setState({ project: middle })
+          useProjectStore.setState({ project: original })
+        })
+        // Same project id and final language must not revive the old intention.
+        await act(async () => {
+          if (phase === 'preview-pending') {
+            previewPending.resolve(portableImage(recipe!))
+            await previewPending.promise
+          } else if (phase === 'import-pending') {
+            const image = portableImage(recipe!)
+            importPending.resolve({
+              ok: true,
+              asset: {
+                id: 'd1',
+                name: 'imagem-tardia',
+                dataUrl: image.dataUrl,
+                width: 1,
+                height: 1,
+                pintaImage: image.derivation,
+              },
+            })
+            await importPending.promise
+          } else if (confirm) {
+            fireEvent.click(confirm)
+          }
+        })
+        expect(useProjectStore.getState().project).toEqual(original)
+        expect(useProjectStore.getState().isDirty).toBe(false)
+        expect(imported).not.toHaveBeenCalled()
+        expect(screen.queryByAltText('Prévia da imagem escolhida') === null).toBe(true)
+        expect(previewSignal?.aborted).toBe(true)
+        if (phase === 'import-pending') expect(importSignal?.aborted).toBe(true)
+        else expect(importer).not.toHaveBeenCalled()
+      })
+    }
+  }
+
+  it('the asset panel reopens the recorded frame for review, preserving the other image', async () => {
+    await seedPythonProject('pro')
+    for (const frameIndex of [0, 1]) {
+      const image = portableImage({
+        version: 1,
+        algorithm: 'pinta-image-1',
+        drawingId: 'd1',
+        selection: { kind: 'frame', animationId: 'andar', frameIndex },
+        scale: 1,
+      })
+      expect(
+        addPintaCreationToProject(useProjectStore.getState(), {
+          id: 'd1',
+          name: 'heroi',
+          dataUrl: image.dataUrl,
+          width: 1,
+          height: 1,
+          pintaImage: image.derivation,
+        }),
+      ).toBeNull()
+    }
+    const previous = structuredClone(useProjectStore.getState().project!.assets!)
+    const importer = mock(async () => ({ ok: false as const, error: 'preview only' }))
+    renderPanel(pythonAdapter({ import: importer }))
+    const review = await screen.findAllByRole('button', { name: 'Rever imagem escolhida' })
+    expect(review).toHaveLength(2)
+    expect(screen.queryByRole('button', { name: /fatiar/ })).toBeNull()
+    fireEvent.click(review[1]!)
+    await screen.findByAltText('Prévia da imagem escolhida')
+    expect(selectedValue('Quadro')).toBe('1')
+    expect(importer).not.toHaveBeenCalled()
+    expect(useProjectStore.getState().project?.assets).toEqual(previous)
+  })
+
+  for (const change of ['rename', 'remove'] as const) {
+    it(`an import awaiting preparation cannot overwrite a concurrent ${change}`, async () => {
+      await seedPythonProject('pro')
+      const recipe: PintaImageRecipe = {
+        version: 1,
+        algorithm: 'pinta-image-1',
+        drawingId: 'd1',
+        selection: { kind: 'frame', animationId: 'andar', frameIndex: 1 },
+        scale: 1,
+      }
+      const image = portableImage(recipe)
+      expect(
+        addPintaCreationToProject(useProjectStore.getState(), {
+          id: 'd1',
+          name: 'heroi',
+          dataUrl: image.dataUrl,
+          width: 1,
+          height: 1,
+          pintaImage: image.derivation,
+        }),
+      ).toBeNull()
+      const target = structuredClone(useProjectStore.getState().project!.assets![0]!)
+      const pending = Promise.withResolvers<Awaited<ReturnType<PintaLibraryAdapter['import']>>>()
+      const importer = mock(() => pending.promise)
+      const onImported = mock(() => {})
+      render(
+        <StudioPintaLibraryProvider value={pythonAdapter({ import: importer })}>
+          <PintaImportDialog initialTarget={target} onClose={() => {}} onImported={onImported} />
+        </StudioPintaLibraryProvider>,
+      )
+      await screen.findByAltText('Prévia da imagem escolhida')
+      fireEvent.click(screen.getByRole('button', { name: 'Atualizar esta imagem' }))
+      await waitFor(() => expect(importer).toHaveBeenCalledTimes(1))
+      act(() => {
+        if (change === 'rename') useProjectStore.getState().renameAsset(target.id, 'renomeado')
+        else useProjectStore.getState().removeAsset(target.id)
+      })
+      const afterEdit = structuredClone(useProjectStore.getState().project)
+      await act(async () => {
+        pending.resolve({
+          ok: true,
+          asset: {
+            id: 'd1',
+            name: 'heroi',
+            dataUrl: image.dataUrl,
+            width: 1,
+            height: 1,
+            pintaImage: image.derivation,
+            libRevision: 999,
+          },
+        })
+        await pending.promise
+      })
+      await screen.findByText(
+        'Esta imagem mudou durante a preparação. Confira a seleção novamente.',
+      )
+      expect(useProjectStore.getState().project).toEqual(afterEdit)
+      expect(onImported).not.toHaveBeenCalled()
+    })
+  }
+
+  for (const kind of ['classic', 'pro'] as const) {
+    it(`${kind}: preview does not import; explicit frames coexist and repeat selection updates only itself`, async () => {
+      await seedPythonProject(kind)
+      const selections: PintaImageRecipe[] = []
+      const imports: PintaImageRecipe[] = []
+      const listing = mock(async (options?: { includeImageSelection?: boolean }) => {
+        expect(options?.includeImageSelection).toBe(true)
+        return (await pythonAdapter().list()).map((item) => structuredClone(item))
+      })
+      const adapter = pythonAdapter({
+        list: listing,
+        previewImage: async (recipe) => {
+          selections.push(structuredClone(recipe))
+          return portableImage(recipe)
+        },
+        import: async (id, options) => {
+          if (!options?.image) throw new Error('Explicit recipe required')
+          imports.push(structuredClone(options.image.recipe))
+          const image = portableImage(options.image.recipe)
+          if (imports.length === 3) image.derivation.provenance.sourceSha256 = 'b'.repeat(64)
+          return {
+            ok: true,
+            asset: {
+              id,
+              name: 'heroi',
+              dataUrl: image.dataUrl,
+              width: 1,
+              height: 1,
+              pintaImage: image.derivation,
+              libRevision: imports.length,
+            },
+          }
+        },
+      })
+      render(
+        <StudioPintaLibraryProvider value={adapter}>
+          <PintaImportDialog onClose={() => {}} />
+        </StudioPintaLibraryProvider>,
+      )
+      await choosePythonImage()
+      expect(imports).toEqual([])
+      expect(useProjectStore.getState().project?.assets).toEqual([])
+      expect(selectedValue('Quadro')).toBe('0')
+      expect(selectedValue('Tamanho')).toBe('1')
+      fireEvent.click(screen.getByRole('button', { name: 'Adicionar imagem' }))
+      await waitFor(() => expect(useProjectStore.getState().project?.assets).toHaveLength(1))
+      const first = structuredClone(useProjectStore.getState().project!.assets![0]!)
+      fireEvent.change(screen.getByLabelText('Quadro'), { target: { value: '1' } })
+      await waitFor(() => expect(buttonDisabled('Adicionar imagem')).toBe(false))
+      fireEvent.click(screen.getByRole('button', { name: 'Adicionar imagem' }))
+      await waitFor(() => expect(useProjectStore.getState().project?.assets).toHaveLength(2))
+      const second = structuredClone(useProjectStore.getState().project!.assets![1]!)
+      expect(first.id).not.toBe(second.id)
+      expect(first.proPath).toBe('assets/heroi.png')
+      expect(second.proPath).toBe('assets/heroi-2.png')
+      fireEvent.change(screen.getByLabelText('Quadro'), { target: { value: '0' } })
+      await waitFor(() => expect(buttonDisabled('Atualizar esta imagem')).toBe(false))
+      fireEvent.click(screen.getByRole('button', { name: 'Atualizar esta imagem' }))
+      await waitFor(() =>
+        expect(useProjectStore.getState().project?.assets?.[0]?.libRevision).toBe(3),
+      )
+      expect(useProjectStore.getState().project?.assets?.[0]?.id).toBe(first.id)
+      expect(useProjectStore.getState().project?.assets?.[0]?.proPath).toBe(first.proPath)
+      expect(useProjectStore.getState().project?.assets?.[1]).toEqual(second)
+      expect(selections.map((recipe) => recipe.selection)).toEqual([
+        { kind: 'frame', animationId: 'andar', frameIndex: 0 },
+        { kind: 'frame', animationId: 'andar', frameIndex: 1 },
+        { kind: 'frame', animationId: 'andar', frameIndex: 0 },
+      ])
+    })
+  }
+
+  it('a changed frame revokes its pending preview; the late image never replaces the current choice', async () => {
+    await seedPythonProject()
+    const first = Promise.withResolvers<ReturnType<typeof portableImage>>()
+    const requests: Array<{ recipe: PintaImageRecipe; signal?: AbortSignal }> = []
+    const importer = mock(async () => ({ ok: false as const, error: 'must not import' }))
+    render(
+      <StudioPintaLibraryProvider
+        value={pythonAdapter({
+          import: importer,
+          previewImage: (recipe, _limits, options) => {
+            requests.push({ recipe: structuredClone(recipe), signal: options?.signal })
+            return requests.length === 1 ? first.promise : Promise.resolve(portableImage(recipe))
+          },
+        })}
+      >
+        <PintaImportDialog onClose={() => {}} />
+      </StudioPintaLibraryProvider>,
+    )
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Escolher imagem' }))[0]!)
+    await waitFor(() => expect(requests).toHaveLength(1))
+    fireEvent.change(screen.getByLabelText('Quadro'), { target: { value: '1' } })
+    await screen.findByAltText('Prévia da imagem escolhida')
+    expect(requests[0]?.signal?.aborted).toBe(true)
+    await act(async () => {
+      first.resolve({
+        ...portableImage(requests[0]!.recipe),
+        dataUrl: 'data:image/png;base64,b2xk',
+      })
+      await first.promise
+    })
+    expect(screen.getByAltText('Prévia da imagem escolhida').getAttribute('src')).toBe(PORTABLE_PNG)
+    expect(selectedValue('Quadro')).toBe('1')
+    expect(importer).not.toHaveBeenCalled()
+    expect(useProjectStore.getState().project?.assets).toEqual([])
+  })
+
+  for (const change of [
+    'close',
+    'unmount',
+    'project-aba',
+    'adapter',
+    'profile-aba',
+    'observer-aba',
+  ] as const) {
+    it(`pending preview cannot update the old modal after ${change}`, async () => {
+      const original = await seedPythonProject()
+      const pending = Promise.withResolvers<ReturnType<typeof portableImage>>()
+      let recipe: PintaImageRecipe | undefined
+      let signal: AbortSignal | undefined
+      const importer = mock(async () => ({ ok: false as const, error: 'must not import' }))
+      const adapter = pythonAdapter({
+        import: importer,
+        previewImage: (input, _limits, options) => {
+          recipe = input
+          signal = options?.signal
+          return pending.promise
+        },
+      })
+      const content = (value: PintaLibraryAdapter) => (
+        <StudioPintaLibraryProvider value={value}>
+          <PintaImportDialog onClose={() => {}} />
+        </StudioPintaLibraryProvider>
+      )
+      const view = render(content(adapter))
+      fireEvent.click((await screen.findAllByRole('button', { name: 'Escolher imagem' }))[0]!)
+      await waitFor(() => expect(signal).toBeDefined())
+      await act(async () => {
+        if (change === 'close')
+          fireEvent.click(screen.getAllByRole('button', { name: 'Fechar' }).at(-1)!)
+        else if (change === 'unmount') view.unmount()
+        else if (change === 'adapter') view.rerender(content(fakeAdapter()))
+        else if (change === 'profile-aba') {
+          setStorageNamespace('perfil-2')
+          setStorageNamespace('perfil-1')
+        } else if (change === 'observer-aba') {
+          useProjectStore.getState().setEditingAccess('observer')
+          useProjectStore.getState().setEditingAccess('author')
+        } else {
+          useProjectStore.setState({ project: { ...original, id: 'other' } })
+          useProjectStore.setState({ project: original })
+        }
+      })
+      expect(signal?.aborted).toBe(true)
+      await act(async () => {
+        pending.resolve(portableImage(recipe!))
+        await pending.promise
+      })
+      expect(screen.queryByAltText('Prévia da imagem escolhida')).toBeNull()
+      expect(importer).not.toHaveBeenCalled()
+      expect(useProjectStore.getState().project?.assets).toEqual([])
+    })
+  }
+
+  it('removed positional selection stays unavailable until explicitly chosen; review preserves id and path', async () => {
+    await seedPythonProject('pro')
+    const old = portableImage({
+      version: 1,
+      algorithm: 'pinta-image-1',
+      drawingId: 'd1',
+      selection: { kind: 'frame', animationId: 'andar', frameIndex: 5 },
+      scale: 1,
+    })
+    expect(
+      addPintaCreationToProject(useProjectStore.getState(), {
+        id: 'd1',
+        name: 'heroi',
+        dataUrl: old.dataUrl,
+        width: 1,
+        height: 1,
+        pintaImage: old.derivation,
+      }),
+    ).toBeNull()
+    const target = structuredClone(useProjectStore.getState().project!.assets![0]!)
+    const preview = mock(async (recipe: PintaImageRecipe) => portableImage(recipe))
+    const close = mock(() => {})
+    render(
+      <StudioPintaLibraryProvider value={pythonAdapter({ previewImage: preview })}>
+        <PintaImportDialog initialTarget={target} onClose={close} />
+      </StudioPintaLibraryProvider>,
+    )
+    await screen.findByLabelText('Quadro')
+    expect(selectedValue('Quadro')).toBe('5')
+    expect(preview).not.toHaveBeenCalled()
+    expect(buttonDisabled('Atualizar esta imagem')).toBe(true)
+    expect(useProjectStore.getState().project?.assets?.[0]).toEqual(target)
+    fireEvent.change(screen.getByLabelText('Quadro'), { target: { value: '0' } })
+    await screen.findByAltText('Prévia da imagem escolhida')
+    fireEvent.click(screen.getByRole('button', { name: 'Atualizar esta imagem' }))
+    await waitFor(() => expect(close).toHaveBeenCalledTimes(1))
+    const revised = useProjectStore.getState().project?.assets?.[0]
+    expect(revised?.id).toBe(target.id)
+    expect(revised?.name).toBe(target.name)
+    expect(revised?.proPath).toBe(target.proPath)
+    expect(revised?.pintaImage?.recipe.selection).toEqual({
+      kind: 'frame',
+      animationId: 'andar',
+      frameIndex: 0,
+    })
+  })
+
+  it('checks full map dimensions before preview allocation and uses only an explicit smaller scale', async () => {
+    await seedPythonProject()
+    const preview = mock(async (recipe: PintaImageRecipe) => portableImage(recipe))
+    const map: DrawingSummary = {
+      ...DRAWINGS[0]!,
+      role: 'tilemap',
+      imageSelection: { kind: 'tilemap', width: 6144, height: 6144 },
+    }
+    render(
+      <StudioPintaLibraryProvider
+        value={pythonAdapter({ list: async () => [map], previewImage: preview })}
+      >
+        <PintaImportDialog onClose={() => {}} />
+      </StudioPintaLibraryProvider>,
+    )
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Escolher imagem' }))[0]!)
+    await screen.findByText(/ultrapassa o limite de resolução/)
+    expect(preview).not.toHaveBeenCalled()
+    expect(selectedValue('Tamanho')).toBe('1')
+    fireEvent.change(screen.getByLabelText('Tamanho'), { target: { value: '0.25' } })
+    await screen.findByAltText('Prévia da imagem escolhida')
+    expect(preview).toHaveBeenCalledTimes(1)
+    expect(preview.mock.calls[0]?.[0].scale).toBe(0.25)
+    expect(useProjectStore.getState().project?.assets).toEqual([])
+  })
+
+  it('the JavaScript gallery requests no image topology and never invokes the Python preview', async () => {
+    const list = mock(async (options?: { includeImageSelection?: boolean }) => {
+      expect(options?.includeImageSelection).toBeUndefined()
+      return DRAWINGS
+    })
+    const preview = mock(async (recipe: PintaImageRecipe) => portableImage(recipe))
+    render(
+      <StudioPintaLibraryProvider value={fakeAdapter({ list, previewImage: preview })}>
+        <PintaImportDialog onClose={() => {}} />
+      </StudioPintaLibraryProvider>,
+    )
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Adicionar ao projeto' }))[0]!)
+    await waitFor(() => expect(useProjectStore.getState().project?.assets).toHaveLength(1))
+    expect(preview).not.toHaveBeenCalled()
+    expect(screen.queryByRole('button', { name: 'Escolher imagem' })).toBeNull()
   })
 })

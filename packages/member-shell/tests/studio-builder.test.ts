@@ -203,6 +203,18 @@ async function fixture() {
 }
 
 describe('durable builder orchestration', () => {
+  test('JavaScript generation keeps the exact prompt and never requests Python authorization', async () => {
+    const f = await fixture()
+    const { STUDIO_BUILDER_SYSTEM } = await import('../src/server/studio-builder-tools')
+    network(async (_url, init) => {
+      const body = JSON.parse(String(init?.body))
+      expect(body.messages[0].content).toBe(STUDIO_BUILDER_SYSTEM)
+      expect(body.messages[1].content).not.toContain('providedModules')
+      return provider(proposal(f.hash))
+    })
+    expect((await f.advance())?.phase).toBe('validating')
+    expect(f.commands.some((command) => command.operation === 'authorize-generation')).toBe(false)
+  })
   test('refreshes the retained candidate with new proof without calling the model or ledger', async () => {
     const f = await fixture()
     let modelCalls = 0,

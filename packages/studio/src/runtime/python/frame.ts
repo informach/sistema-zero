@@ -1,3 +1,5 @@
+import './configureProtectedSchemas'
+
 import {
   type StudioPythonActivity,
   type StudioPythonActivityFeedback,
@@ -17,6 +19,7 @@ import { createProtectedPythonWorker } from './protectedWorker'
 import { hasTurtleExtension } from './turtle/contract'
 import type { TurtleRenderer } from './turtle/renderer'
 import { readPythonWireSnapshot } from './wireSnapshot'
+import { isPythonRequestId } from './workerEvents'
 import { createPythonWorkerSupervisor } from './workerSupervisor'
 
 const challenge = location.hash.slice(1)
@@ -62,12 +65,17 @@ async function initialize(event: MessageEvent<unknown>) {
   let prepared = false
   let activity: StudioPythonActivity | undefined
   let activityControlsApplied = false
+  let audioSequence = 0
+  let pendingAudio:
+    | { id: string; resolve(value: string): void; reject(reason: unknown): void }
+    | undefined
   const playerBridge = new AbortController()
   function send(
     message:
       | { type: 'prepared' }
       | { type: 'event'; event: PythonRuntimePayload }
       | { type: 'activity-result'; requestId: string; feedback: StudioPythonActivityFeedback }
+      | { type: 'audio-request'; requestId: string; request: string }
       | {
           type: 'ack'
           commandId: number
@@ -89,6 +97,8 @@ async function initialize(event: MessageEvent<unknown>) {
   function close() {
     if (closed) return
     closed = true
+    pendingAudio?.reject(new DOMException('Execução encerrada.', 'AbortError'))
+    pendingAudio = undefined
     playerBridge.abort()
     supervisor?.stop()
     if (!supervisor) bootstrap?.worker.terminate()
@@ -172,7 +182,19 @@ async function initialize(event: MessageEvent<unknown>) {
         return
       }
       if (command.type === 'run') supervisor.run()
-      else if (command.type === 'activity-controls') {
+      else if (
+        command.type === 'audio-response' &&
+        'requestId' in command &&
+        isPythonRequestId(command.requestId) &&
+        pendingAudio?.id === command.requestId &&
+        'response' in command &&
+        typeof command.response === 'string' &&
+        command.response.length <= 2048
+      ) {
+        const pending = pendingAudio
+        pendingAudio = undefined
+        pending.resolve(command.response)
+      } else if (command.type === 'activity-controls') {
         if (!activity || activityControlsApplied)
           throw new Error('Os controles da tarefa não estão disponíveis nesta execução.')
         activityControlsApplied = true
@@ -303,6 +325,17 @@ async function initialize(event: MessageEvent<unknown>) {
         bootstrap?.release()
         playerBridge.abort()
         disposeRenderer()
+        pendingAudio?.reject(new DOMException('Execução encerrada.', 'AbortError'))
+        pendingAudio = undefined
+      },
+      audio(request) {
+        if (!prepared || closed || pendingAudio)
+          return Promise.reject(new Error('O canal de áudio não está disponível.'))
+        return new Promise((resolve, reject) => {
+          const id = `audio-${++audioSequence}`
+          pendingAudio = { id, resolve, reject }
+          send({ type: 'audio-request', requestId: id, request })
+        })
       },
       ...(turtle
         ? {

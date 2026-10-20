@@ -1,3 +1,4 @@
+import { encodeOwnedUtf8 } from '@sistemazero/core/creations'
 import {
   parseStudioArtifactManifest,
   STUDIO_PRO_ARTIFACT_LIMITS,
@@ -73,7 +74,7 @@ export async function storeArtifact(options: {
     id,
     url: `${options.origin}/v1/artifacts/${id}/index.html`,
     expiresAt,
-    sha256: await sha256(new TextEncoder().encode(JSON.stringify(manifest))),
+    sha256: await sha256(encodeOwnedUtf8(JSON.stringify(manifest))),
   }
 }
 

@@ -10,12 +10,18 @@ import {
   type StudioProBuilderResult,
   studioProChangeScopeIssue,
 } from '@sistemazero/core/studio'
+import {
+  createPythonBuilderPolicyResult,
+  StudioPythonBuilderAuthorizationSchema,
+  type StudioPythonBuilderPolicyResult,
+} from '@sistemazero/core/studio/python-builder-authorization'
 import { z } from 'zod'
 import type { MembersClient } from './clients'
 import { completePensaJson, PensaLlmError } from './pensa-llm'
 import { createStudioAiTransport } from './studio-ai-transport'
 import type { StudioBuilderRuntimeOptions } from './studio-builder-runtime'
 import {
+  builderWorkingRevision,
   inspectStudioBuilder,
   prepareStudioBuilderContext,
   proposeStudioBuilder,
@@ -159,6 +165,60 @@ export async function advanceStudioBuilder(
             ? `Não foi possível reservar o uso de IA (${reservation.scope}). Confira os limites e a conexão na área da família.`
             : 'O registro de consumo está indisponível. Nenhuma chamada ao modelo foi enviada.',
         )
+      let policy: StudioPythonBuilderPolicyResult | undefined
+      let workingRevision = job.base
+      if (python) {
+        signal.throwIfAborted()
+        workingRevision = await builderWorkingRevision(job)
+        if (
+          workingRevision.version !== 2 ||
+          workingRevision.configuration.programmingLanguage !== 'python'
+        )
+          throw new Error('A revisão de trabalho não é Python.')
+        const authorized = await call(
+          {
+            operation: 'authorize-generation',
+            id: job.id,
+            projectId: job.projectId,
+            token,
+            version: job.version,
+            revisionHash: workingRevision.hash,
+          },
+          signal,
+        )
+        const authorization = StudioPythonBuilderAuthorizationSchema.parse(
+          authorized?.authorization,
+        )
+        const fresh = authorized?.job
+        const now = Date.now()
+        if (
+          !fresh ||
+          fresh.id !== job.id ||
+          fresh.projectId !== job.projectId ||
+          fresh.version !== job.version ||
+          fresh.phase !== 'generating' ||
+          fresh.base.hash !== job.base.hash ||
+          (fresh.result?.revisionHash ?? fresh.base.hash) !== workingRevision.hash ||
+          fresh.assistance?.disposition === 'discarded' ||
+          fresh.leaseUntil !== job.leaseUntil ||
+          fresh.deadlineAt !== job.deadlineAt ||
+          fresh.expiresAt !== job.expiresAt ||
+          ![fresh.leaseUntil, fresh.deadlineAt, fresh.expiresAt].every((value) => {
+            const until = Date.parse(value ?? '')
+            return Number.isFinite(until) && until > now
+          }) ||
+          authorization.revisionHash !== workingRevision.hash ||
+          authorization.parentOrigin !== input.parentOrigin
+        )
+          throw new Error('A autorização desta geração foi retirada ou pertence a outra revisão.')
+        // Generation never receives private media. Members derives executionRevision
+        // from those bytes; this path binds the revision, origin and exact release.
+        policy = await createPythonBuilderPolicyResult(
+          authorization.policy,
+          workingRevision.configuration.runtime,
+        )
+        signal.throwIfAborted()
+      }
       const execution = createStudioAiTransport({
         members: input.members,
         actor: input.actor,
@@ -167,9 +227,10 @@ export async function advanceStudioBuilder(
         completedAttempts: job.modelCalls - 1,
         signal,
       })
-      const context = await prepareStudioBuilderContext(job)
+      const context = await prepareStudioBuilderContext(job, policy)
+      signal.throwIfAborted()
       const answer = await completePensaJson({
-        system: studioBuilderSystem(job.base),
+        system: studioBuilderSystem(workingRevision, policy),
         user: JSON.stringify(context),
         schema: studioBuilderAnswerSchema,
         jsonSchema: z.toJSONSchema(studioBuilderAnswerSchema),
@@ -180,6 +241,7 @@ export async function advanceStudioBuilder(
         temperature: 0.2,
         bodyTimeoutMs: 60_000,
         transport: async (...args) => {
+          signal.throwIfAborted()
           const data = await execution.transport(...args)
           responseReceived = true
           return data
@@ -193,7 +255,8 @@ export async function advanceStudioBuilder(
             job.result,
             'O limite de consultas terminou antes de uma proposta. Seus arquivos estão preservados.',
           )
-        const note = await inspectStudioBuilder(job, answer)
+        signal.throwIfAborted()
+        const note = await inspectStudioBuilder(job, answer, policy)
         return checkpoint('queued', job.result, null, [...job.notes, note])
       }
       const result = await proposeStudioBuilder(

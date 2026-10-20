@@ -48,6 +48,7 @@ export function PythonEditorPreview() {
       canExecute={execution.editingAccess === 'author'}
       canExecuteNow={() => store.getState().editingAccess === 'author'}
       autoRun={execution.autoRun}
+      muted={execution.muted}
       writerEpoch={execution.writerEpoch}
       capture={capture}
       onControllerReady={connectConsole}

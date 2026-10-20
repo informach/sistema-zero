@@ -13,7 +13,12 @@ import { createStore, del, get, getMany, keys, setMany, update } from 'idb-keyva
 import type { PaletteLibrary } from '../core/paletteLibrary'
 import { mergePaletteLibraries, sanitizePaletteLibrary } from '../core/paletteLibrary'
 import { perfSpan, perfSpanAsync } from '../core/perf'
-import { type PintaAsset, sanitizePintaAsset } from '../core/project'
+import {
+  type AnyTilesetAsset,
+  isTilesetKind,
+  type PintaAsset,
+  sanitizePintaAsset,
+} from '../core/project'
 import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 
 const ASSET_KEY_PREFIX = 'pinta:asset:'
@@ -480,6 +485,37 @@ export function deleteAsset(id: string): Promise<void> {
 
 export function loadAssetById(id: string): Promise<PintaAsset | null> {
   return createPintaPersistence().loadAssetById(id)
+}
+
+/** A map and its tileset must come from one readonly transaction in the captured profile. */
+export async function capturePintaAssetForImage(
+  id: string,
+  options: { namespace?: string; signal?: AbortSignal } = {},
+): Promise<
+  | { ok: true; source: PintaAsset; tileset: AnyTilesetAsset | null }
+  | { ok: false; reason: 'not-found' | 'source-changed' | 'needs-tileset' }
+> {
+  const store = getStoreHandle(options.namespace?.trim())
+  const signal = options.signal
+  signal?.throwIfAborted()
+  const first = safeSanitize(await get<unknown>(assetKey(id), store))
+  signal?.throwIfAborted()
+  if (!first || first.id !== id) return { ok: false, reason: 'not-found' }
+  if (first.kind !== 'tilemap') return { ok: true, source: first, tileset: null }
+  const values = await getMany<unknown>([assetKey(id), assetKey(first.tilesetId)], store)
+  signal?.throwIfAborted()
+  const source = safeSanitize(values[0])
+  const tileset = safeSanitize(values[1])
+  if (
+    !source ||
+    source.id !== id ||
+    source.kind !== 'tilemap' ||
+    source.tilesetId !== first.tilesetId
+  )
+    return { ok: false, reason: 'source-changed' }
+  if (!tileset || tileset.id !== source.tilesetId || !isTilesetKind(tileset))
+    return { ok: false, reason: 'needs-tileset' }
+  return { ok: true, source, tileset }
 }
 
 /** Carrega todos os assets saneados do perfil atual, do mais novo ao mais antigo. */

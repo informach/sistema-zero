@@ -31,7 +31,14 @@ export async function pythonRemixCapabilities(
 }
 
 /** Preflight for a new private copy, never a reusable execution grant. */
-export async function authorizePythonRemix(input: {
+export async function authorizePythonPrivateCopy({
+  snapshot: rawSnapshot,
+  viewerId,
+  audience,
+  options,
+  request,
+  signal,
+}: {
   snapshot: unknown
   viewerId: string
   audience: 'kids' | 'adult'
@@ -39,10 +46,11 @@ export async function authorizePythonRemix(input: {
   request: (request: StudioFreeRuntimeRequest) => Promise<unknown>
   signal: AbortSignal
 }) {
-  input.signal.throwIfAborted()
-  const project = await refinePythonProjectDocument(input.snapshot)
-  const python = await pythonRemixCapabilities(input.options)
-  input.signal.throwIfAborted()
+  signal.throwIfAborted()
+  const project = await refinePythonProjectDocument(rawSnapshot)
+  signal.throwIfAborted()
+  const python = await pythonRemixCapabilities(options)
+  signal.throwIfAborted()
   if (
     !studioRemixCovered(
       { pro: true, allowedExtensions: [], python },
@@ -52,22 +60,22 @@ export async function authorizePythonRemix(input: {
     throw new Error('Este ambiente Python ainda não está disponível para criar sua versão.')
   const subject = studioRuntimeSubject(project)
   const snapshot = await preparePythonExecutionSnapshot(project)
-  const context = { kind: 'free' as const, audience: input.audience, projectId: project.id }
-  input.signal.throwIfAborted()
+  const context = { kind: 'free' as const, audience, projectId: project.id }
+  signal.throwIfAborted()
   const decision = StudioFreeRuntimeDecisionSchema.parse(
-    await input.request({
+    await request({
       context,
       operation: 'analyze',
       subject,
       revision: snapshot.revision,
     }),
   )
-  input.signal.throwIfAborted()
+  signal.throwIfAborted()
   const subjectSha256 = await sha256Hex(canonicalJson(subject))
-  input.signal.throwIfAborted()
+  signal.throwIfAborted()
   const now = Date.now()
   if (
-    decision.actor.userId !== input.viewerId ||
+    decision.actor.userId !== viewerId ||
     canonicalJson(decision.context) !== canonicalJson(context) ||
     decision.operation !== 'analyze' ||
     decision.projectId !== project.id ||
@@ -83,6 +91,11 @@ export async function authorizePythonRemix(input: {
     decision.expiresAt <= now ||
     decision.expiresAt - decision.issuedAt > 30_000
   )
-    throw new Error('O acesso mudou. Reabra o Mural para criar sua versão.')
+    throw new Error('O acesso mudou. Reabra a criação do projeto.')
   return project
+}
+
+/** Existing Mural callers keep the same owner/revision-bound preflight. */
+export function authorizePythonRemix(input: Parameters<typeof authorizePythonPrivateCopy>[0]) {
+  return authorizePythonPrivateCopy(input)
 }

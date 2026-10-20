@@ -44,6 +44,7 @@ import { useStudioHostChrome } from '../../studio/host-chrome'
 import { useT } from '../../studio/i18n'
 import { useStudioLayout } from '../../studio/layoutContext'
 import { useStudioMoldaLibrary } from '../../studio/molda-library'
+import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share'
 import { useStudioTheme } from '../../studio/theme'
 import { useStudioTutor } from '../../studio/tutor'
@@ -138,6 +139,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const showTerminal = useUIStore((s) => s.showTerminal)
   const setShowTerminal = useUIStore((s) => s.setShowTerminal)
   const config = useStudioConfig()
+  const runtimeEnvironment = useStudioRuntimeEnvironment()
   const showConsole = resolveConsoleVisibility(projectMode, consoleVisibilityOverride)
   const { width, isNarrow, isCompact } = useStudioLayout()
   const theme = useStudioTheme()
@@ -236,6 +238,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
         store,
         stores?.pendingEditorEdits,
         controller.signal,
+        { runtimeCatalog: runtimeEnvironment?.catalog },
       )
       controller.signal.throwIfAborted()
       triggerDownload(blob, filename)

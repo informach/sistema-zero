@@ -77,6 +77,8 @@ export interface ProjectListProps {
       kind: 'classic' | 'pro'
       environmentKey: string
     }) => Promise<StudioProjectFactoryContext>
+    signal?: AbortSignal
+    authorizeExample?: import('../examples/pythonCatalog').PythonExampleCreationPort['authorizeExample']
   }
   /** Extensões instaladas automaticamente num projeto básico novo. */
   initialExtensions?: readonly string[]
@@ -92,8 +94,8 @@ export interface ProjectListProps {
   /**
    * Mostra a vitrine de "jogos prontos" (KitGallery) — os EXEMPLOS das extensões
    * + os clássicos. Default `false`: os exemplos são material de teste do admin e
-   * podem estar desatualizados/com erro, então ficam escondidos para clientes; só
-   * o playground local liga. Espelha `showExamples` do editor (a lista vive fora
+   * podem estar desatualizados/com erro, então ficam escondidos para alunos.
+   * O host libera para sua equipe admitida ou no playground. Espelha `showExamples` do editor (a lista vive fora
    * do StudioCore, então recebe a flag por prop). Sem os kits, o estado vazio
    * mantém o "criar do zero".
    */
@@ -650,7 +652,19 @@ export function ProjectList({
                         </p>
                       }
                     >
-                      <LazyKitGallery onOpenProject={onOpenProject} />
+                      <LazyKitGallery
+                        onOpenProject={onOpenProject}
+                        professional={professional}
+                        pythonCreation={
+                          pythonCreation?.authorizeExample
+                            ? {
+                                ...pythonCreation,
+                                authorizeExample: pythonCreation.authorizeExample,
+                              }
+                            : undefined
+                        }
+                        pythonDiscovery={pythonDiscovery}
+                      />
                     </Suspense>
                   </div>
                 ) : null}
@@ -682,7 +696,19 @@ export function ProjectList({
                             </p>
                           }
                         >
-                          <LazyKitGallery onOpenProject={onOpenProject} />
+                          <LazyKitGallery
+                            onOpenProject={onOpenProject}
+                            professional={professional}
+                            pythonCreation={
+                              pythonCreation?.authorizeExample
+                                ? {
+                                    ...pythonCreation,
+                                    authorizeExample: pythonCreation.authorizeExample,
+                                  }
+                                : undefined
+                            }
+                            pythonDiscovery={pythonDiscovery}
+                          />
                         </Suspense>
                       </div>
                     ) : null}

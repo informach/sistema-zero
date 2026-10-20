@@ -5,6 +5,15 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { chromium } from 'playwright-core'
+import {
+  CLICK_TARGET_LIMITS,
+  chooseTargetPoint,
+  createClickTargetHandle,
+  createClickTargetReaderInPage,
+  observeSpriteMotion,
+  readStageGeometryInPage,
+  stagePointToViewport,
+} from './check-click-target.mjs'
 import { createExecutionObservationCodec } from './execution-observation.generated.mjs'
 
 const root = process.cwd()
@@ -162,6 +171,17 @@ async function runObjective(objective, index) {
     const probe = await openProbe(page)
     await startGame(page, probe)
     const rule = objective.rule
+    if (rule.type === 'behavior' && rule.observation?.type === 'idleBeforeAction') {
+      if (mode !== 'classic') throw new Error('Movimento observado exige o Jogo 2D clássico.')
+      const outcome = await observeSpriteMotion(
+        probe,
+        { scope, target: rule.expect.target, idleMs: rule.observation.idleMs },
+        (ms) => page.waitForTimeout(ms),
+        () => runSteps(page, rule.steps, probe),
+      )
+      const screenshot = await shoot(page, index)
+      return { id: objective.id, type: rule.type, ...outcome, screenshot, errors }
+    }
     if (rule.type === 'functionReturns') {
       // Só os ARGUMENTOS entram na página: a resposta esperada fica aqui fora. A página é da
       // criança, e um jogo que mexesse nos protótipos leria o gabarito e o devolveria.
@@ -176,13 +196,13 @@ async function runObjective(objective, index) {
       return { id: objective.id, type: rule.type, ...outcome, errors }
     }
     if (rule.type === 'script') {
-      await runSteps(page, rule.steps)
+      await runSteps(page, rule.steps, probe)
       const outcome = await runScriptRule(probe, rule.code, lines)
       const screenshot = await shoot(page, index)
       return { id: objective.id, type: rule.type, ...outcome, screenshot, errors }
     }
     const initial = await readTarget(probe, rule.expect.target, lines)
-    await runSteps(page, rule.steps)
+    await runSteps(page, rule.steps, probe)
     const final = await readTarget(probe, rule.expect.target, lines)
     const screenshot = await shoot(page, index)
     return { id: objective.id, type: rule.type, initial, final, screenshot, errors }
@@ -266,6 +286,8 @@ async function openProbe(page) {
     return reply.result.value
   }
   return {
+    /** Per-objective private references. Released even when an input/protocol call fails. */
+    handle: (factory, arg) => createClickTargetHandle(cdp, factory, arg),
     /** No mundo da página (onde estão as variáveis e o kit), sem `eval` nem `then` dela. */
     main: (fn, arg) =>
       run(
@@ -336,18 +358,54 @@ ${code}
   return { verdict: returned === 'true', returned }
 }
 
-async function runSteps(page, steps) {
-  for (const step of steps) {
-    if (step.action === 'wait') await page.waitForTimeout(step.ms)
-    else if (step.action === 'click') await page.mouse.click(step.x, step.y)
-    else if (step.action === 'press') {
-      // Jogo que lê a tecla a cada quadro perde um toque de zero milissegundos.
-      await page.keyboard.down(step.key)
-      await page.waitForTimeout(step.holdMs ?? 80)
-      await page.keyboard.up(step.key)
+async function runSteps(page, steps, probe) {
+  let targets
+  try {
+    for (const step of steps) {
+      if (step.action === 'wait') await page.waitForTimeout(step.ms)
+      else if (step.action === 'click') await page.mouse.click(step.x, step.y)
+      else if (step.action === 'press') {
+        // Jogo que lê a tecla a cada quadro perde um toque de zero milissegundos.
+        await page.keyboard.down(step.key)
+        try {
+          await page.waitForTimeout(step.holdMs ?? 80)
+        } finally {
+          await page.keyboard.up(step.key)
+        }
+      } else if (step.action === 'clickTarget') {
+        if (mode !== 'classic')
+          throw new Error('Este executor não oferece o alvo adaptativo neste ambiente.')
+        // Observe the existing stage BEFORE calling stageWidth/Height (which can create one).
+        const geometry = await probe.isolated(`(${readStageGeometryInPage.toString()})(null)`)
+        targets ??= await probe.handle(createClickTargetReaderInPage, {
+          scope,
+          ...CLICK_TARGET_LIMITS,
+        })
+        await waitForPaint(probe)
+        const scene = await targets.read(step.target)
+        const point = chooseTargetPoint(scene)
+        const viewport = stagePointToViewport(point, scene, geometry)
+        const currentGeometry = await probe.isolated(
+          `(${readStageGeometryInPage.toString()})(${JSON.stringify(viewport)})`,
+        )
+        if (Object.keys(geometry).some((key) => currentGeometry[key] !== geometry[key]))
+          throw new Error('O palco mudou durante a observação do gesto.')
+        await page.mouse.click(viewport.x, viewport.y)
+        await targets.call('admit', point)
+        await waitForPaint(probe)
+      } else throw new Error('O executor não oferece esta ação de teste.')
     }
+    await page.waitForTimeout(SETTLE_MS)
+  } finally {
+    if (targets) await targets.dispose().catch(() => undefined)
   }
-  await page.waitForTimeout(SETTLE_MS)
+}
+
+async function waitForPaint(probe) {
+  await probe.isolated(`new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Não foi possível observar quadros do jogo.')), 1000);
+    requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(timer); resolve(true) }));
+  })`)
 }
 
 async function readTarget(probe, target, lines) {

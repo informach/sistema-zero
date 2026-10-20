@@ -1,8 +1,11 @@
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
+import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
 import { isPythonProject, type EditableStudioProject as Project } from '../core/editableProject'
 import { buildClassicFileMap, buildProFileMap, type ExportFileMap } from './fileMap'
 import { identityMinifiers } from './minify'
 import { proSourceInstructions } from './proSourceInstructions'
 import { sanitizeBaseFilename } from './sanitize'
+import { captureSourceExportCatalog } from './sourceRuntimeCatalog'
 import { zipFiles } from './zip'
 
 export interface SourceFilesResult {
@@ -15,6 +18,12 @@ export interface SourceExportResult {
   blob: Blob
   filename: string
   warnings: string[]
+}
+
+export interface SourceExportOptions {
+  signal?: AbortSignal
+  /** Host-owned metadata only; absence must not prevent rescuing the source snapshot. */
+  runtimeCatalog?: StudioRuntimeCatalog | null
 }
 
 /**
@@ -67,11 +76,15 @@ Divirta-se programando! 🚀
  * Acrescenta um `LEIA-ME.txt` explicando como rodar. NÃO inclui Dockerfile/
  * railway.json (isso é coisa do pacote de deploy, não do "continuar editando").
  */
-export async function buildSourceFiles(project: Project): Promise<SourceFilesResult> {
+export async function buildSourceFiles(
+  project: Project,
+  options: SourceExportOptions = {},
+): Promise<SourceFilesResult> {
   if (isPythonProject(project)) {
     const captured = copyStudioProjectJson(project)
+    const runtimeCatalog = captureSourceExportCatalog(options.runtimeCatalog)
     const { buildPythonSourceFiles } = await import('./pythonSource')
-    return buildPythonSourceFiles(captured)
+    return buildPythonSourceFiles(captured, runtimeCatalog)
   }
   const isPro = project.kind === 'pro' && !!project.tree
   const warnings: string[] = []
@@ -109,11 +122,11 @@ export async function buildSourceFiles(project: Project): Promise<SourceFilesRes
  */
 export async function exportProjectSource(
   project: Project,
-  options: { signal?: AbortSignal } = {},
+  options: SourceExportOptions = {},
 ): Promise<SourceExportResult> {
   options.signal?.throwIfAborted()
   const name = project.name
-  const { files, warnings } = await buildSourceFiles(project)
+  const { files, warnings } = await buildSourceFiles(project, options)
   options.signal?.throwIfAborted()
   const bytes = await zipFiles(files, options)
   // Cópia para um Uint8Array com ArrayBuffer "comum" (o retorno do fflate pode ser
@@ -123,5 +136,3 @@ export async function exportProjectSource(
   const blob = new Blob([blobBytes], { type: 'application/zip' })
   return { blob, filename: `${sanitizeBaseFilename(name)}.zip`, warnings }
 }
-
-import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'

@@ -1,4 +1,6 @@
 import { expect, mock, spyOn, test } from 'bun:test'
+import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
+import { providedPythonRelease } from '../../core/tests/fixtures/python-provided-release'
 import { describePythonCatalog } from '../../studio/src/python/blocks/selection'
 
 mock.module('server-only', () => ({}))
@@ -8,6 +10,103 @@ const { buildStudioZappyPrompt } = await import('../src/server/zappy-ai')
 const { resolveStudioTier } = await import('./fixtures/legacy-studio-tier')
 
 import { pythonZappyFixture } from './fixtures/zappy-python'
+
+test('HTTP assistance uses the approved exact-release audio descriptor and ignores client availability claims', async () => {
+  const originalFetch = globalThis.fetch
+  const prompts: Array<{ providedModules: Array<{ importName: string; reference: string }> }> = []
+  globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+    const body = JSON.parse(String(init?.body))
+    prompts.push(JSON.parse(body.messages[1].content))
+    return Response.json({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              text: 'Confira os comandos e o caminho do som no seu projeto.',
+              scope: 'concept',
+              blockReferences: [],
+              fileReferences: [],
+              lessonReferences: [],
+              helpReferences: [],
+              suggestions: [],
+            }),
+          },
+        },
+      ],
+    })
+  }) as typeof fetch
+  try {
+    const current = await pythonZappyFixture('pro', 'kids', {
+      runtimeRelease: await providedPythonRelease(),
+    })
+    const historical = await pythonZappyFixture('pro')
+    for (const fixture of [current, historical]) {
+      const response = await fixture.request({
+        ...fixture.input,
+        // This field is not part of the HTTP availability contract.
+        pythonProvidedModules: [{ ...SZ_AUDIO_MODULE_DESCRIPTOR, version: '9.9.9' }],
+      })
+      const envelope = await response.json()
+      expect(envelope.status, JSON.stringify(envelope)).toBe(200)
+      expect(fixture.state.policies).toBe(1)
+      expect(fixture.state.reservations).toBe(1)
+    }
+    expect(prompts).toHaveLength(2)
+    expect(prompts[0]!.providedModules).toHaveLength(1)
+    expect(prompts[0]!.providedModules[0]!.importName).toBe('sz_audio')
+    expect(prompts[0]!.providedModules[0]!.reference).toContain('sz_audio.play(path: str')
+    expect(JSON.stringify(prompts[0])).not.toContain('9.9.9')
+    expect(prompts[1]!.providedModules).toEqual([])
+
+    const mismatched = await pythonZappyFixture('pro', 'kids', {
+      runtimeRelease: await providedPythonRelease(),
+    })
+    mismatched.state.mutate = (value) => ({
+      ...(value as object),
+      catalog: { profiles: [], releases: [] },
+    })
+    expect((await mismatched.request()).status).toBe(503)
+    expect(mismatched.state.reservations).toBe(0)
+    expect(prompts).toHaveLength(2)
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
+test('Python assistance receives provided audio APIs only from server-curated release metadata', async () => {
+  const f = await pythonZappyFixture('pro')
+  const input = {
+    context: f.input.context,
+    tier: resolveStudioTier('hacker', 'user'),
+    question: 'Como tocar meu WAV com sz_audio?',
+    pythonCatalog: describePythonCatalog(),
+  }
+  const historical = buildStudioZappyPrompt(input)
+  expect(JSON.parse(historical.user).providedModules).toEqual([])
+  expect(historical.user).not.toContain('miniaudio==1.71')
+  const current = buildStudioZappyPrompt({
+    ...input,
+    pythonProvidedModules: [SZ_AUDIO_MODULE_DESCRIPTOR],
+  })
+  const modules = JSON.parse(current.user).providedModules
+  expect(modules).toHaveLength(1)
+  expect(modules[0].importName).toBe('sz_audio')
+  expect(modules[0].reference).toContain(
+    'sz_audio.play(path: str, *, loop: bool = False, volume: float = 1.0) -> int',
+  )
+  expect(modules[0].reference).toContain('play não bloqueia nem mantém o processo Python aberto')
+  expect(current.system).toContain('um módulo não cria blocos novos')
+  expect(current.allowed).toEqual([])
+  expect(Buffer.byteLength(current.user)).toBeLessThanOrEqual(20_000)
+  if (input.context.environment?.programmingLanguage !== 'python') throw new Error('Python fixture')
+  input.context.environment.shadowedModules = ['sz_audio']
+  const local = buildStudioZappyPrompt({
+    ...input,
+    pythonProvidedModules: [SZ_AUDIO_MODULE_DESCRIPTOR],
+  })
+  expect(JSON.parse(local.user).providedModules).toEqual([])
+  expect(local.user).not.toContain('miniaudio==1.71')
+})
 
 test('a Python approval that expires during the rank read cannot reserve a question or call AI', async () => {
   const f = await pythonZappyFixture('pro')

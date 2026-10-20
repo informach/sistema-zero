@@ -13,3 +13,22 @@ export function pensaPlanIdFromStudioProjectId(studioProjectId: string): string 
   const hex = match[1].toLowerCase()
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
 }
+
+export class PensaProjectLanguageRefused extends Error {
+  readonly code = 'PENSA_PROJECT_UNSUPPORTED'
+  constructor() {
+    super(
+      'O Pensa usa JavaScript. Este projeto Python continua guardado e não pode ser usado nesta missão.',
+    )
+    this.name = 'PensaProjectLanguageRefused'
+  }
+}
+
+/** Only called with a document already validated by the local persistence reader. */
+export function assertPensaJavaScriptProject(project: {
+  readonly id: string
+  readonly programmingLanguage?: 'javascript' | 'python'
+}): void {
+  if (pensaPlanIdFromStudioProjectId(project.id) && project.programmingLanguage === 'python')
+    throw new PensaProjectLanguageRefused()
+}

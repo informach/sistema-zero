@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createPythonNativeSha256 } from './python-native-sha256'
 
 /** Deterministic byte/identity rejection, distinct from a transient upstream storage error. */
 export class PythonFileVerificationError extends Error {}
@@ -15,7 +15,7 @@ export function verifiedPythonFileStream(options: {
     throw new PythonFileVerificationError('Identidade do arquivo Python inválida.')
   signal.throwIfAborted()
   const reader = body.getReader()
-  const hash = createHash('sha256')
+  const hash = createPythonNativeSha256()
   let received = 0,
     closed = false
   let reject!: (error: unknown) => void, resolve!: () => void
@@ -57,7 +57,7 @@ export function verifiedPythonFileStream(options: {
           if (closed) return
           signal.throwIfAborted()
           if (next.done) {
-            if (received !== expected || hash.digest('hex') !== sha256)
+            if (received !== expected || hash.digestHex() !== sha256)
               throw new PythonFileVerificationError(
                 'O tamanho ou hash do arquivo Python não corresponde ao input.',
               )

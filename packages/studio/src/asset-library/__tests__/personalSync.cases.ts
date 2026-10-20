@@ -1,4 +1,12 @@
-import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
+import { createHash } from 'node:crypto'
+import type { PintaImageDerivation } from '@sistemazero/core/studio/pinta-image'
+import type { UseStore } from 'idb-keyval'
+import { documentFixture } from '../../state/fixtures/projectDocuments'
+import { beginProjectOpening, isProjectOpening } from '../../state/projectOpening'
+import { projectHeadKey } from '../../state/projectStorageKeys'
+import { refinePythonProjectDocument } from '../../state/pythonProjectValidation'
+import type { StudioPintaLibraryAdapter } from '../../studio/pinta-library'
 import { fakeUseStore } from '../../testing/fakeIdbStore'
 
 /**
@@ -10,8 +18,8 @@ import { fakeUseStore } from '../../testing/fakeIdbStore'
  */
 type KV = Map<IDBValidKey, unknown>
 const dbs = new Map<string, KV>()
-const kvOf = (store?: { name?: string }): KV => {
-  const key = store?.name ?? ''
+const kvOf = (store?: UseStore | { name?: string }): KV => {
+  const key = store && 'name' in store && typeof store.name === 'string' ? store.name : ''
   let kv = dbs.get(key)
   if (!kv) {
     kv = new Map()
@@ -69,12 +77,14 @@ const {
   loadProjectAssetsById,
   loadProjectMetaById,
   persistProject,
+  persistProjectAssets,
   setStorageNamespace,
   setStudioCloudMirror,
   writeProjectThumb,
 } = await import('../../state/persistence')
 const { useProjectStore } = await import('../../state/projectStore')
-const { getProjectStorageScope } = await import('../../state/projectStorageRuntime')
+const { getProjectStorageScope, captureProjectStorageScope, runSerializedProjectWrite } =
+  await import('../../state/projectStorageRuntime')
 const {
   drawingNeedsSync,
   mergeDrawingIntoAsset,
@@ -134,6 +144,7 @@ beforeEach(() => {
   setPersonalAssetsNamespace(namespace)
   takeDrawingSyncFailures()
   useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  useProjectStore.getState().setEditingAccess('author')
 })
 
 // ⚠️ O registro de módulos do bun:test NÃO é isolado por arquivo, e a ORDEM dos
@@ -585,6 +596,684 @@ const moldaRecord = (dataUrl: string, originalFileName = 'nave.glb') =>
   })
 
 const { reconcileDrawingsFromRestoredProject } = await import('../personalSync')
+
+function derivedPintaAsset(): ProjectAsset {
+  const dataUrl =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII='
+  const bytes = Buffer.from(dataUrl.split(',')[1]!, 'base64')
+  return drawingAsset({
+    dataUrl,
+    libOrigin: 'pinta',
+    libRevision: 2,
+    width: 1,
+    height: 1,
+    pintaImage: {
+      recipe: {
+        version: 1,
+        algorithm: 'pinta-image-1',
+        drawingId: 'd1',
+        selection: { kind: 'frame', animationId: 'andar', frameIndex: 1 },
+        scale: 1,
+      },
+      provenance: { sourceSha256: 'a'.repeat(64), dependencies: [] },
+      output: {
+        mime: 'image/png',
+        width: 1,
+        height: 1,
+        bytes: bytes.length,
+        sha256: createHash('sha256').update(bytes).digest('hex'),
+      },
+    },
+  })
+}
+
+function imageResolver() {
+  let provenance: PintaImageDerivation['provenance'] = {
+    sourceSha256: 'b'.repeat(64),
+    dependencies: [],
+  }
+  let inspections = 0
+  const recipes: PintaImageDerivation['recipe'][] = []
+  const adapter: StudioPintaLibraryAdapter = {
+    list: async () => [],
+    import: async () => {
+      throw new Error('Synchronization must never save a canonical import')
+    },
+    inspectImage: async () => {
+      inspections++
+      return structuredClone(provenance)
+    },
+    previewImage: async (recipe, _limits, options) => {
+      expect(options?.expectedProvenance).toEqual(provenance)
+      recipes.push(structuredClone(recipe))
+      const source = derivedPintaAsset()
+      if (!source.pintaImage) throw new Error('Fixture must carry a recipe')
+      return {
+        dataUrl: source.dataUrl,
+        derivation: { ...source.pintaImage, recipe, provenance: structuredClone(provenance) },
+      }
+    },
+  }
+  return {
+    adapter,
+    recipes,
+    inspections: () => inspections,
+    setProvenance: (value: PintaImageDerivation['provenance']) => {
+      provenance = structuredClone(value)
+    },
+  }
+}
+
+async function seedPythonProject(assets: ProjectAsset[], kind: 'classic' | 'pro' = 'classic') {
+  const project = await refinePythonProjectDocument({
+    ...documentFixture('python', kind),
+    assets,
+  })
+  useProjectStore.setState({ project, isDirty: false, saveError: null })
+  return project
+}
+
+describe('C3 recipe sync', () => {
+  for (const kind of ['classic', 'pro'] as const) {
+    it(`${kind}: synchronized recipes survive storage, execution materialization and offline source export`, async () => {
+      const { loadProjectById } = await import('../../state/persistence')
+      const { buildPythonSourceFiles } = await import('../../export/pythonSource')
+      const { preparePythonExecutionSnapshot } = await import('../../runtime/python/snapshot')
+      const first = { ...derivedPintaAsset(), proPath: 'art/heroi.png' }
+      const firstDerivation = first.pintaImage
+      if (!firstDerivation) throw new Error('First recipe fixture required')
+      const second = structuredClone(first)
+      second.id = 'asset-second'
+      second.name = 'segundo-quadro'
+      second.proPath = 'art/segundo-quadro.png'
+      if (!second.pintaImage) throw new Error('Recipe fixture required')
+      second.pintaImage.recipe.selection = {
+        kind: 'frame',
+        animationId: 'andar',
+        frameIndex: 0,
+      }
+      const original = await seedPythonProject([first, second], kind)
+      const sourceBefore = structuredClone(original.kind === 'pro' ? original.tree : original.files)
+      // Same canonical personal sheet for both project recipes. Sync must not
+      // replace this record with a selected frame or remove its animation range.
+      const svg =
+        'data:image/svg+xml;charset=utf-8,' +
+        encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="2" height="1"/>')
+      await savePersonalAsset({
+        id: 'd1',
+        name: 'heroi',
+        dataUrl: svg,
+        origin: 'pinta',
+        width: 2,
+        height: 1,
+        sprite: {
+          frameW: 1,
+          frameH: 1,
+          animations: [{ name: 'andar', from: 0, to: 1, fps: 8, loop: true }],
+        },
+      })
+      const canonical = await getPersonalAsset('d1')
+      expect(canonical?.dataUrl).toBe(svg)
+      // Trusted byte fixture also used by verify-python-preview-browser. The
+      // renderer boundary supplies PNGs; native/browser pixel tests live in Pinta.
+      const updated =
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg=='
+      const resolver = imageResolver()
+      const preview = resolver.adapter.previewImage
+      if (!preview) throw new Error('Preview fixture required')
+      resolver.adapter.previewImage = async (...args) => {
+        const result = await preview(...args)
+        const selection = args[0].selection
+        if (selection.kind !== 'frame') throw new Error('Frame fixture required')
+        const dataUrl = selection.frameIndex === 1 ? updated : second.dataUrl
+        const bytes = Buffer.from(dataUrl.split(',')[1]!, 'base64')
+        return {
+          dataUrl,
+          derivation: {
+            ...result.derivation,
+            output: {
+              ...result.derivation.output,
+              bytes: bytes.length,
+              sha256: createHash('sha256').update(bytes).digest('hex'),
+            },
+          },
+        }
+      }
+      const synced = await syncDrawingsIntoProjects(useProjectStore, {
+        pintaLibrary: resolver.adapter,
+      })
+      expect(synced).toMatchObject({ updatedInOpenProject: 2, failures: [] })
+      expect(resolver.inspections()).toBe(1)
+      expect(resolver.recipes).toEqual([firstDerivation.recipe, second.pintaImage.recipe])
+      const live = useProjectStore.getState().project
+      if (!live) throw new Error('Synchronized project required')
+      await persistProject(live)
+      // No adapter survives into read/export. Any unexpected derivation would fail.
+      resolver.adapter.inspectImage = async () => {
+        throw new Error('Offline read/export must not inspect Pinta')
+      }
+      resolver.adapter.previewImage = async () => {
+        throw new Error('Offline read/export must not rasterize Pinta')
+      }
+      useProjectStore.setState({ project: null })
+      const restored = await refinePythonProjectDocument(await loadProjectById(original.id))
+      expect(restored.kind === 'pro' ? restored.tree : restored.files).toEqual(sourceBefore)
+      expect(
+        restored.assets?.map(({ id, name, libId, libRevision, proPath }) => ({
+          id,
+          name,
+          libId,
+          libRevision,
+          proPath,
+        })),
+      ).toEqual(
+        [first, second].map(({ id, name, libId, libRevision, proPath }) => ({
+          id,
+          name,
+          libId,
+          libRevision,
+          proPath,
+        })),
+      )
+      const snapshot = await preparePythonExecutionSnapshot(restored)
+      const exported = await buildPythonSourceFiles(restored, null)
+      const manifestPath = Object.keys(exported.files).find((path) =>
+        path.endsWith('/export-manifest.json'),
+      )
+      if (!manifestPath) throw new Error('Source export manifest required')
+      const manifest = JSON.parse(exported.files[manifestPath] as string)
+      for (const [index, { input, dataUrl }] of [
+        { input: first, dataUrl: updated },
+        { input: second, dataUrl: second.dataUrl },
+      ].entries()) {
+        const bytes = new Uint8Array(Buffer.from(dataUrl.split(',')[1]!, 'base64'))
+        const derivation = input.pintaImage
+        if (!derivation) throw new Error('Restored recipe fixture required')
+        const expected: PintaImageDerivation = {
+          ...derivation,
+          provenance: { sourceSha256: 'b'.repeat(64), dependencies: [] },
+          output: {
+            ...derivation.output,
+            bytes: bytes.length,
+            sha256: createHash('sha256').update(bytes).digest('hex'),
+          },
+        }
+        expect(restored.assets?.[index]?.pintaImage).toEqual(expected)
+        expect(snapshot.files.find((file) => file.path === input.proPath)?.bytes).toEqual(bytes)
+        expect(exported.files[input.proPath]).toEqual(bytes)
+        expect(manifest.assets.assets[index]).toMatchObject({
+          path: input.proPath,
+          pintaImage: expected,
+          sha256: expected.output.sha256,
+        })
+      }
+      expect(await getPersonalAsset('d1')).toEqual(canonical)
+      expect(resolver.inspections()).toBe(1)
+      expect(resolver.recipes).toHaveLength(2)
+    })
+  }
+
+  for (const language of ['javascript', 'python'] as const) {
+    for (const kind of ['classic', 'pro'] as const) {
+      it(`${language} ${kind}: a canonical copy skipped during opening catches up with the same marker`, async () => {
+        const { prepareEditableStudioProject } = await import(
+          '../../state/editableProjectValidation'
+        )
+        const { personalAssetsChangedAt } = await import('../personal')
+        const old = drawingAsset({})
+        const closed = await prepareEditableStudioProject({
+          ...documentFixture(language, kind),
+          assets: [old],
+          coverAssetName: old.name,
+        })
+        if (!closed) throw new Error('Canonical fixture was refused')
+        await persistProject(closed)
+        await savePersonalAsset({ id: 'd1', name: 'heroi', origin: 'pinta', dataUrl: PNG_NOVO })
+        const marker = personalAssetsChangedAt()
+        const scope = captureProjectStorageScope()
+        const release = beginProjectOpening(scope, closed.id)
+        try {
+          const first = await syncDrawingsIntoProjects(useProjectStore)
+          expect(first.updatedInOtherProjects).toBe(0)
+          expect((await loadProjectAssetsById(closed.id))[0]?.dataUrl).toBe(PNG)
+          // The real watcher schedules another sweep on this hydration transition.
+          useProjectStore.getState().hydrateProject(closed)
+          release()
+          expect(personalAssetsChangedAt()).toBe(marker)
+          const second = await syncDrawingsIntoProjects(useProjectStore)
+          expect(second.updatedInOpenProject).toBe(1)
+          expect(useProjectStore.getState().project?.assets?.[0]?.dataUrl).toBe(PNG_NOVO)
+          expect(personalAssetsChangedAt()).toBe(marker)
+          const readsBeforeThird = reads
+          const third = await syncDrawingsIntoProjects(useProjectStore)
+          expect(third.updatedInOpenProject).toBe(0)
+          expect(third.updatedInOtherProjects).toBe(0)
+          expect(reads).toBe(readsBeforeThird)
+        } finally {
+          release()
+        }
+      })
+    }
+  }
+
+  it('historical closed JS with an observed absent head still updates atomically', async () => {
+    const project = createEmptyProject('historical-js', 'JavaScript histórico')
+    project.assets = [drawingAsset({})]
+    await persistProject(project)
+    const scope = captureProjectStorageScope()
+    kvOf(scope.store).delete(projectHeadKey(project.id))
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
+    seedOpenProject([])
+    expect((await syncDrawingsIntoProjects(useProjectStore)).updatedInOtherProjects).toBe(1)
+    expect((await loadProjectAssetsById(project.id))[0]?.dataUrl).toBe(PNG_NOVO)
+    expect(kvOf(scope.store).has(projectHeadKey(project.id))).toBe(true)
+  })
+
+  it('an observed absent head refuses a competing writer that created the first head', async () => {
+    const project = createEmptyProject('historical-cas', 'JavaScript histórico')
+    project.assets = [drawingAsset({})]
+    await persistProject(project)
+    const scope = captureProjectStorageScope()
+    kvOf(scope.store).delete(projectHeadKey(project.id))
+    const absent = await loadProjectAssetsById(project.id, scope)
+    const winner = [{ ...drawingAsset({}), name: 'vencedor' }]
+    expect(await persistProjectAssets(project.id, winner, scope, absent)).toBe(true)
+    const error = await persistProjectAssets(
+      project.id,
+      [{ ...drawingAsset({}), name: 'atrasado' }],
+      scope,
+      absent,
+    ).then(
+      () => null,
+      (cause: unknown) => cause,
+    )
+    expect(error).toBeInstanceOf(Error)
+    expect(await loadProjectAssetsById(project.id, scope)).toEqual(winner)
+  })
+
+  it('an opening project cannot hydrate a stale material snapshot after the closed sync committed', async () => {
+    const asset = derivedPintaAsset()
+    const closed = await refinePythonProjectDocument({
+      ...documentFixture('python', 'pro'),
+      assets: [asset],
+    })
+    await persistProject(closed)
+    seedOpenProject([])
+    const resolver = imageResolver()
+    const previewEntered = Promise.withResolvers<void>(),
+      previewRelease = Promise.withResolvers<void>(),
+      loadCaptured = Promise.withResolvers<void>(),
+      loadRelease = Promise.withResolvers<void>()
+    const preview = resolver.adapter.previewImage
+    if (!preview) throw new Error('Fixture preview required')
+    resolver.adapter.previewImage = async (...args) => {
+      previewEntered.resolve()
+      await previewRelease.promise
+      return preview(...args)
+    }
+    const sync = syncDrawingsIntoProjects(useProjectStore, { pintaLibrary: resolver.adapter })
+    await previewEntered.promise
+    const digest = crypto.subtle.digest.bind(crypto.subtle)
+    let held = false
+    const probe = spyOn(crypto.subtle, 'digest').mockImplementation(async (...args) => {
+      const result = await digest(...args)
+      if (!held) {
+        held = true
+        loadCaptured.resolve()
+        await loadRelease.promise
+      }
+      return result
+    })
+    let opening: ReturnType<ReturnType<typeof useProjectStore.getState>['loadProject']> | undefined
+    try {
+      opening = useProjectStore.getState().loadProject(closed.id)
+      await loadCaptured.promise
+      previewRelease.resolve()
+      const synced = await sync
+      expect([0, 1]).toContain(synced.updatedInOtherProjects)
+      // Either opening wins before the write, or it adopts the committed revision.
+      const expectedHash = (synced.updatedInOtherProjects === 1 ? 'b' : 'a').repeat(64)
+      loadRelease.resolve()
+      await opening
+      expect(
+        useProjectStore.getState().project?.assets?.[0]?.pintaImage?.provenance.sourceSha256,
+      ).toBe(expectedHash)
+      const live = useProjectStore.getState().project
+      if (!live) throw new Error('Opened project required')
+      await persistProject(live)
+      expect((await loadProjectAssetsById(closed.id))[0]?.pintaImage?.provenance.sourceSha256).toBe(
+        expectedHash,
+      )
+    } finally {
+      probe.mockRestore()
+      previewRelease.resolve()
+      loadRelease.resolve()
+      await sync
+      await opening
+    }
+  })
+
+  it('updates open and closed PNG recipes through one native inspection while keeping canonical personal bytes and project identities', async () => {
+    const first = derivedPintaAsset()
+    const firstDerivation = first.pintaImage
+    if (!firstDerivation) throw new Error('First recipe fixture required')
+    const second = structuredClone(first)
+    second.id = 'asset-second'
+    second.name = 'segundo-quadro'
+    if (!second.pintaImage) throw new Error('Fixture must carry a recipe')
+    second.pintaImage.recipe.selection = {
+      kind: 'frame',
+      animationId: 'andar',
+      frameIndex: 0,
+    }
+    const closed = await refinePythonProjectDocument({
+      ...documentFixture('python', 'pro'),
+      assets: [{ ...second, proPath: 'assets/segundo-quadro.png' }],
+    })
+    await persistProject(closed)
+    await savePersonalAsset({ id: 'd1', name: 'heroi', origin: 'pinta', dataUrl: PNG_NOVO })
+    const canonical = await getPersonalAsset('d1')
+    await seedPythonProject([first, second])
+    const resolver = imageResolver()
+    const result = await syncDrawingsIntoProjects(useProjectStore, {
+      pintaLibrary: resolver.adapter,
+    })
+    expect(result.updatedInOpenProject).toBe(2)
+    expect(result.updatedInOtherProjects).toBe(1)
+    expect(result.failures).toEqual([])
+    expect(resolver.inspections()).toBe(1)
+    expect(resolver.recipes).toEqual([firstDerivation.recipe, second.pintaImage.recipe])
+    const open = useProjectStore.getState().project?.assets ?? []
+    expect(open.map(({ id, name, libId }) => ({ id, name, libId }))).toEqual(
+      [first, second].map(({ id, name, libId }) => ({ id, name, libId })),
+    )
+    expect(open[0]?.pintaImage?.provenance.sourceSha256).toBe('b'.repeat(64))
+    const closedAssets = await loadProjectAssetsById(closed.id)
+    expect(closedAssets[0]?.proPath).toBe('assets/segundo-quadro.png')
+    expect(closedAssets[0]?.pintaImage?.provenance.sourceSha256).toBe('b'.repeat(64))
+    expect(await getPersonalAsset('d1')).toEqual(canonical)
+  })
+
+  it('detects a dependency change with unchanged source and personal marker, without loading JS asset partitions or rasterizing unchanged recipes', async () => {
+    const asset = derivedPintaAsset()
+    if (!asset.pintaImage) throw new Error('Fixture must carry a recipe')
+    asset.pintaImage.recipe.selection = { kind: 'tilemap' }
+    asset.pintaImage.provenance.dependencies = [{ drawingId: 'tiles', sha256: 'c'.repeat(64) }]
+    await seedPythonProject([asset])
+    const js = createEmptyProject('js-unchanged', 'JS intacto')
+    js.assets = [drawingAsset({})]
+    await persistProject(js)
+    const resolver = imageResolver()
+    resolver.setProvenance(asset.pintaImage.provenance)
+    const options = { pintaLibrary: resolver.adapter }
+    expect((await syncDrawingsIntoProjects(useProjectStore, options)).updatedInOpenProject).toBe(0)
+    expect(resolver.recipes).toEqual([])
+    askedKeys.length = 0
+    resolver.setProvenance({
+      ...asset.pintaImage.provenance,
+      dependencies: [{ drawingId: 'tiles', sha256: 'd'.repeat(64) }],
+    })
+    expect((await syncDrawingsIntoProjects(useProjectStore, options)).updatedInOpenProject).toBe(1)
+    expect(resolver.inspections()).toBe(2)
+    expect(resolver.recipes).toEqual([asset.pintaImage.recipe])
+    expect(askedKeys.filter((key) => key.includes('assets') && key.includes(js.id))).toEqual([])
+    expect(
+      useProjectStore.getState().project?.assets?.[0]?.pintaImage?.provenance.dependencies,
+    ).toEqual([{ drawingId: 'tiles', sha256: 'd'.repeat(64) }])
+  })
+
+  for (const change of [
+    'project-aba',
+    'language-aba',
+    'owner-aba',
+    'profile-aba',
+    'cancel',
+    'edit',
+    'remove',
+    'adapter',
+  ] as const) {
+    it(`a pending PNG cannot commit after ${change}`, async () => {
+      const asset = derivedPintaAsset()
+      const project = await seedPythonProject([asset])
+      const resolver = imageResolver()
+      const release = Promise.withResolvers<void>()
+      const entered = Promise.withResolvers<void>()
+      const preview = resolver.adapter.previewImage
+      if (!preview) throw new Error('Fixture preview required')
+      resolver.adapter.previewImage = async (...args) => {
+        entered.resolve()
+        await release.promise
+        return preview(...args)
+      }
+      const controller = new AbortController()
+      const pending = syncDrawingsIntoProjects(useProjectStore, {
+        pintaLibrary: resolver.adapter,
+        signal: controller.signal,
+      })
+      await entered.promise
+      if (change === 'project-aba') {
+        useProjectStore.setState({ project: { ...project, id: 'another' } })
+        useProjectStore.setState({ project })
+      } else if (change === 'language-aba') {
+        useProjectStore.setState({ project: createEmptyProject(project.id, 'JavaScript') })
+        useProjectStore.setState({ project })
+      } else if (change === 'owner-aba') {
+        useProjectStore.getState().setEditingAccess('observer')
+        useProjectStore.getState().setEditingAccess('author')
+      } else if (change === 'profile-aba') {
+        const namespace = captureProjectStorageScope().namespace
+        setStorageNamespace('another-profile')
+        setPersonalAssetsNamespace('another-profile')
+        setStorageNamespace(namespace)
+        setPersonalAssetsNamespace(namespace)
+      } else if (change === 'cancel') controller.abort()
+      else if (change === 'edit') {
+        useProjectStore.setState({
+          project: { ...project, assets: [{ ...asset, name: 'manual' }] },
+        })
+      } else if (change === 'remove') {
+        useProjectStore.setState({ project: { ...project, assets: [] } })
+      } else {
+        const nextOwner = imageResolver()
+        nextOwner.setProvenance({ sourceSha256: 'c'.repeat(64), dependencies: [] })
+        expect(
+          (await syncDrawingsIntoProjects(useProjectStore, { pintaLibrary: nextOwner.adapter }))
+            .updatedInOpenProject,
+        ).toBe(1)
+      }
+      const expected = structuredClone(useProjectStore.getState().project?.assets)
+      release.resolve()
+      const result = await pending
+      expect(result.updatedInOpenProject).toBe(0)
+      expect(result.updatedInOtherProjects).toBe(0)
+      expect(useProjectStore.getState().project?.assets).toEqual(expected)
+    })
+  }
+
+  for (const failure of ['missing', 'recipe', 'digest', 'quota'] as const) {
+    it(`preserves the last PNG and reports ${failure} instead of adopting a substitute`, async () => {
+      const asset = derivedPintaAsset()
+      await seedPythonProject([asset])
+      const resolver = imageResolver()
+      if (failure === 'missing')
+        resolver.adapter.inspectImage = async () => {
+          throw new Error('O desenho não está disponível.')
+        }
+      else {
+        const preview = resolver.adapter.previewImage
+        if (!preview) throw new Error('Fixture preview required')
+        resolver.adapter.previewImage = async (...args) => {
+          const image = await preview(...args)
+          if (failure === 'recipe')
+            image.derivation.recipe = { ...image.derivation.recipe, scale: 2 }
+          if (failure === 'digest') image.derivation.output.sha256 = 'f'.repeat(64)
+          if (failure === 'quota') image.derivation.output.width = 4097
+          return image
+        }
+      }
+      const result = await syncDrawingsIntoProjects(useProjectStore, {
+        pintaLibrary: resolver.adapter,
+      })
+      expect(result.updatedInOpenProject).toBe(0)
+      expect(result.failures.length).toBeGreaterThan(0)
+      expect(result.failures.join(' ')).toContain('mantida')
+      expect(useProjectStore.getState().project?.assets).toEqual([asset])
+    })
+  }
+
+  it('closed material/head changes win over a pending derivation', async () => {
+    const asset = derivedPintaAsset()
+    const closed = await refinePythonProjectDocument({
+      ...documentFixture('python', 'pro'),
+      assets: [asset],
+    })
+    await persistProject(closed)
+    seedOpenProject([])
+    const resolver = imageResolver()
+    const entered = Promise.withResolvers<void>(),
+      release = Promise.withResolvers<void>()
+    const preview = resolver.adapter.previewImage
+    if (!preview) throw new Error('Fixture preview required')
+    resolver.adapter.previewImage = async (...args) => {
+      entered.resolve()
+      await release.promise
+      return preview(...args)
+    }
+    const pending = syncDrawingsIntoProjects(useProjectStore, { pintaLibrary: resolver.adapter })
+    await entered.promise
+    const expected = await loadProjectAssetsById(closed.id)
+    const manual = [{ ...asset, name: 'manual-fechado' }]
+    expect(await persistProjectAssets(closed.id, manual, undefined, expected)).toBe(true)
+    release.resolve()
+    expect((await pending).updatedInOtherProjects).toBe(0)
+    expect(await loadProjectAssetsById(closed.id)).toEqual(manual)
+  })
+
+  it('closed writes require an observed head and recheck their guard inside the transaction', async () => {
+    const asset = derivedPintaAsset()
+    const closed = await refinePythonProjectDocument({
+      ...documentFixture('python', 'pro'),
+      assets: [asset],
+    })
+    await persistProject(closed)
+    const expected = await loadProjectAssetsById(closed.id)
+    const replacement = [{ ...asset, name: 'substituto' }]
+    expect(await persistProjectAssets(closed.id, replacement, undefined, [...expected])).toBe(false)
+    let guardCalls = 0
+    expect(
+      await persistProjectAssets(
+        closed.id,
+        replacement,
+        undefined,
+        expected,
+        () => ++guardCalls < 2,
+      ),
+    ).toBe(false)
+    expect(guardCalls).toBe(2)
+    expect(await loadProjectAssetsById(closed.id)).toEqual([asset])
+  })
+
+  it('a queued closed write is revoked before its turn without touching its observed head', async () => {
+    const asset = derivedPintaAsset()
+    const closed = await refinePythonProjectDocument({
+      ...documentFixture('python', 'pro'),
+      assets: [asset],
+    })
+    await persistProject(closed)
+    const scope = captureProjectStorageScope()
+    const expected = await loadProjectAssetsById(closed.id, scope)
+    const release = Promise.withResolvers<void>()
+    const first = runSerializedProjectWrite(scope, closed.id, async () => {
+      await release.promise
+      return undefined
+    })
+    let allowed = true
+    const pending = persistProjectAssets(
+      closed.id,
+      [{ ...asset, name: 'late' }],
+      scope,
+      expected,
+      () => allowed,
+    )
+    allowed = false
+    release.resolve()
+    await first
+    expect(await pending).toBe(false)
+    expect(await loadProjectAssetsById(closed.id, scope)).toEqual([asset])
+    // The revoked operation did not advance the head: the same observed CAS remains usable.
+    expect(
+      await persistProjectAssets(closed.id, [{ ...asset, name: 'valid' }], scope, expected),
+    ).toBe(true)
+  })
+
+  it('an opening acquired after queue admission still fences the conditional transaction', async () => {
+    const project = createEmptyProject('opening-transaction', 'JS')
+    const asset = drawingAsset({})
+    project.assets = [asset]
+    await persistProject(project)
+    const scope = captureProjectStorageScope()
+    const expected = await loadProjectAssetsById(project.id, scope)
+    let release = () => {}
+    try {
+      expect(
+        await persistProjectAssets(
+          project.id,
+          [{ ...asset, name: 'late' }],
+          scope,
+          expected,
+          () => {
+            release = beginProjectOpening(scope, project.id)
+            return true
+          },
+        ),
+      ).toBe(false)
+      expect(isProjectOpening(scope, project.id)).toBe(true)
+      expect(await loadProjectAssetsById(project.id, scope)).toEqual(expected)
+    } finally {
+      release()
+    }
+    expect(isProjectOpening(scope, project.id)).toBe(false)
+  })
+})
+
+describe('Pinta derived images retain their source link until recipe-aware synchronization', () => {
+  it('restoring a frame never creates a personal copy of its PNG or changes its drawing link', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', origin: 'pinta', dataUrl: PNG })
+    const library = await listPersonalAssets()
+    const project = { assets: [derivedPintaAsset()], updatedAt: 3 }
+    const before = structuredClone(project)
+    expect(await reconcileDrawingsFromRestoredProject(project)).toEqual({ projectChanged: false })
+    expect(project).toEqual(before)
+    expect(await listPersonalAssets()).toEqual(library)
+    // Legacy JavaScript drawings still retain both sides of an actual divergence.
+    const javascript = { assets: [drawingAsset({ dataUrl: PNG_NOVO })] }
+    expect(await reconcileDrawingsFromRestoredProject(javascript)).toEqual({ projectChanged: true })
+    expect(javascript.assets[0]?.libId).not.toBe('personal:d1')
+    expect((await getPersonalAsset('d1'))?.dataUrl).toBe(PNG)
+  })
+
+  it('open and closed derived frames keep PNG, recipe and source identity when canonical artwork changes', async () => {
+    const derived = derivedPintaAsset()
+    const closed = await refinePythonProjectDocument({
+      ...documentFixture('python', 'pro'),
+      name: 'Quadro Python fechado',
+      assets: [derived],
+    })
+    await persistProject(closed)
+    await savePersonalAsset({ id: 'd1', name: 'heroi', origin: 'pinta', dataUrl: PNG_NOVO })
+    await savePersonalAsset({ id: 'js', name: 'legado', origin: 'pinta', dataUrl: PNG_NOVO })
+    seedOpenProject([derived, drawingAsset({ id: 'legacy', name: 'legado', libId: 'personal:js' })])
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+    expect(result.updatedInOpenProject).toBe(1)
+    expect(result.updatedInOtherProjects).toBe(0)
+    expect(result.failures.join(' ')).toContain('receita do Pinta')
+    expect(useProjectStore.getState().project?.assets?.[0]).toEqual(derived)
+    expect(useProjectStore.getState().project?.assets?.[1]?.dataUrl).toBe(PNG_NOVO)
+    expect(await loadProjectAssetsById(closed.id)).toEqual([derived])
+    expect(mergeDrawingIntoAsset(derived, (await getPersonalAsset('d1'))!)).toBeNull()
+    expect((await getPersonalAsset('d1'))?.dataUrl).toBe(PNG_NOVO)
+  })
+})
 type UpdateAssetImageInput = import('../../state/projectStore').UpdateAssetImageInput
 
 describe('criações 3D do Molda (model3d/environment3d)', () => {

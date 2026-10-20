@@ -21,6 +21,8 @@ export type StudioProRuntimeBuildResult = (
  * Ausente, o Estúdio mantém o runtime local do modo Pro completo.
  */
 export interface StudioProRuntimeAdapter {
+  /** Revoking this authority also withdraws an already compiled preview. */
+  signal?: AbortSignal
   /** Cotas do compilador remoto; o Studio as impõe antes de persistir/compilar. */
   limits?: StudioProBuildLimits
   build(input: StudioProRuntimeBuildInput): Promise<StudioProRuntimeBuildResult>

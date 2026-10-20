@@ -1,3 +1,5 @@
+import type { PintaImageDerivation } from '@sistemazero/core/studio/pinta-image'
+import { readPintaImageAssetMetadata } from './pintaImageAsset'
 import { validProAssetPath } from './proAssetPaths'
 
 /** Uma animação nomeada de uma spritesheet (vinda do Pinta). */
@@ -141,6 +143,8 @@ export interface ProjectAsset {
   libOrigin?: 'pinta' | 'molda'
   /** Token de igualdade dos bytes copiados da biblioteca; nunca ordene entre aparelhos. */
   libRevision?: number
+  /** Explicit portable image recipe, native-source provenance and captured PNG output. */
+  pintaImage?: PintaImageDerivation
   /**
    * Metadados de SPRITESHEET vindos do Pinta (animações nomeadas com faixa de
    * quadros/fps). Alimenta o SELETOR de animação por nome no bloco "Animar sprite"
@@ -520,6 +524,7 @@ export function sanitizeProjectAssets(
     if (out.length >= MAX_ASSETS_COUNT) break
     if (!item || typeof item !== 'object' || Array.isArray(item)) continue
     const a = item as Record<string, unknown>
+    const pintaImage = readPintaImageAssetMetadata(a)
     if (a.kind !== 'image' && a.kind !== 'audio' && !isAsset3DKind(a.kind)) continue
     const kind: ProjectAsset['kind'] = a.kind
     // 3D: a validação cruza extensão × MIME × assinatura, então o nome do
@@ -536,6 +541,7 @@ export function sanitizeProjectAssets(
       kind,
       dataUrl: a.dataUrl,
       source,
+      ...(pintaImage ? { pintaImage } : {}),
     }
     if (materialPath(a.proPath)) asset.proPath = a.proPath
     const license = sanitizeProjectAssetLicense(a.license)

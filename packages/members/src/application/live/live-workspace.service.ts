@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { ValidationError } from '@sistemazero/core/errors'
 import {
   assistanceRequestExpired,
@@ -10,6 +11,8 @@ import {
   supervisionStatus,
 } from '@sistemazero/core/live'
 import { codeAnchorMatchesSource, studioSourceAtPath } from '@sistemazero/core/studio/code-anchor'
+import type { StudioLiveProBuildRequest } from '@sistemazero/core/studio/live-pro-runtime'
+import { isStudioProTemplateId } from '@sistemazero/core/studio/pro-templates'
 import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
 import type { StudioLiveRuntimeRequest } from '@sistemazero/core/studio/runtime-authorization'
 import {
@@ -380,6 +383,57 @@ export class LiveWorkspaceService {
       'context' | 'operation' | 'subject' | 'expectedWorkspaceRevision'
     >,
   ) {
+    const snapshot = await this.runtimeAuthority(actor, request)
+    if (
+      request.subject.id !== snapshot.workspace.id ||
+      studioProjectContinuityIssue(request.subject, snapshot.environment)
+    )
+      throw new LiveConflictError('A execução precisa manter o ambiente do projeto salvo.')
+    return snapshot
+  }
+
+  /** Sources are fetched only after authority, then fenced by another fresh permission read. */
+  async proBuildSnapshot(actor: LiveActor, request: StudioLiveProBuildRequest) {
+    const authorityRequest = { ...request, operation: 'execute' as const }
+    const first = await this.runtimeAuthority(actor, authorityRequest)
+    const stored = await this.repository.find(request.context.workspaceId)
+    if (
+      !stored ||
+      stored.revision !== first.workspace.revision ||
+      stored.writerEpoch !== first.workspace.writerEpoch ||
+      stored.learnerId !== first.workspace.learnerId ||
+      stored.accountId !== first.workspace.accountId
+    )
+      throw new LiveConflictError('O projeto mudou. Aguarde a sincronização.')
+    const project = validateSnapshot(stored.project, stored.id)
+    const proMeta = project.proMeta
+    const templateId =
+      proMeta && typeof proMeta === 'object' && 'templateId' in proMeta
+        ? proMeta.templateId
+        : undefined
+    if (
+      project.programmingLanguage === 'python' ||
+      project.kind !== 'pro' ||
+      !isStudioProTemplateId(templateId)
+    )
+      throw new ValidationError('Esta execução precisa de um projeto JavaScript Pro.')
+    if (studioProjectContinuityIssue(project, first.environment))
+      throw new LiveConflictError('A execução precisa manter o ambiente do projeto salvo.')
+    const projectSha256 = await sha256Hex(canonicalJson(project))
+    const current = await this.runtimeAuthority(actor, authorityRequest)
+    if (
+      studioProjectContinuityIssue(project, current.environment) ||
+      current.workspace.learnerId !== first.workspace.learnerId ||
+      current.workspace.accountId !== first.workspace.accountId
+    )
+      throw new LiveConflictError('O ambiente ou a autoria mudou durante a leitura.')
+    return { ...current, project, projectSha256, templateId }
+  }
+
+  private async runtimeAuthority(
+    actor: LiveActor,
+    request: Pick<StudioLiveRuntimeRequest, 'context' | 'operation' | 'expectedWorkspaceRevision'>,
+  ) {
     const context = request.context
     if (this.contextSessionId !== (context.sessionId ?? undefined))
       throw new LiveAccessError('O encontro da execução não corresponde ao projeto aberto.')
@@ -458,11 +512,6 @@ export class LiveWorkspaceService {
         throw new LiveConflictError(
           'Há uma revisão mais recente deste projeto. Aguarde a sincronização.',
         )
-      if (
-        request.subject.id !== workspace.id ||
-        studioProjectContinuityIssue(request.subject, snapshot.environment)
-      )
-        throw new LiveConflictError('A execução precisa manter o ambiente do projeto salvo.')
       if (context.sessionId) {
         const session = cohort?.sessions.find((item) => item.id === context.sessionId)
         if (
@@ -470,7 +519,7 @@ export class LiveWorkspaceService {
           !session ||
           binding.lessonId !== session.lessonId ||
           binding.courseId !== cohort?.cohort.courseId ||
-          studioProjectContinuityIssue(request.subject, binding.environment)
+          studioProjectContinuityIssue(snapshot.environment, binding.environment)
         )
           throw new LiveAccessError('O bloco não está vinculado a este projeto e encontro.')
       }

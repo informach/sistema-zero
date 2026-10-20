@@ -1,11 +1,18 @@
 import { DurableObject } from 'cloudflare:workers'
 import { getSandbox, Sandbox } from '@cloudflare/sandbox'
+import { canonicalJson } from '@sistemazero/core/creations'
 import { readJsonBodyWithLimit } from '@sistemazero/core/http'
 import { PYTHON_LANGUAGE_LIMITS } from '@sistemazero/core/studio/python-language'
 import {
   StudioPythonLanguageOpenSchema,
   StudioPythonLanguageStartSchema,
 } from '@sistemazero/core/studio/python-language-authorization'
+import {
+  assertPythonLanguageBootstrapSize,
+  createPythonLanguageBootstrap,
+  STUDIO_PYTHON_LANGUAGE_BOOTSTRAP_MAX_BYTES,
+} from '@sistemazero/core/studio/python-language-bootstrap'
+import type { StudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import { checkPythonLanguageHealth, PythonLanguageCommand } from './language-transport'
 import { LanguageStartupFailure, languageStartupDiagnostic } from './startup-diagnostics'
 
@@ -19,8 +26,26 @@ export class PythonLanguageSandbox extends Sandbox {
       retain: (promise) => this.ctx.waitUntil(promise),
     })
   }
-  async checkLanguageHealth(token: string) {
-    return checkPythonLanguageHealth(token, (request) => this.containerFetch(request, 8789))
+  async checkLanguageHealth(token: string, timeoutMs = 5000) {
+    return checkPythonLanguageHealth(
+      token,
+      (request) => this.containerFetch(request, 8789),
+      timeoutMs,
+    )
+  }
+  createLanguageConfiguration(
+    body: ReadableStream<Uint8Array> | null,
+    token: string,
+    timeoutMs: number,
+  ) {
+    return new PythonLanguageCommand({
+      body,
+      token,
+      target: 'configure',
+      timeoutMs,
+      send: (request) => this.containerFetch(request, 8789),
+      retain: (promise) => this.ctx.waitUntil(promise),
+    })
   }
 }
 interface RateLimitBinding {
@@ -42,6 +67,7 @@ type Lease = {
   phase: string
   cleanup_ms: number
   binding: string | null
+  bootstrap: string | null
 }
 const secret = (bytes: number) =>
   [...crypto.getRandomValues(new Uint8Array(bytes))]
@@ -73,6 +99,8 @@ export class PythonLanguageOwner extends DurableObject<Env> {
       const columns = ctx.storage.sql.exec<{ name: string }>('PRAGMA table_info(leases)').toArray()
       if (!columns.some((column) => column.name === 'binding'))
         ctx.storage.sql.exec('ALTER TABLE leases ADD COLUMN binding TEXT')
+      if (!columns.some((column) => column.name === 'bootstrap'))
+        ctx.storage.sql.exec('ALTER TABLE leases ADD COLUMN bootstrap TEXT')
     })
   }
   private lease(id: string) {
@@ -155,9 +183,29 @@ export class PythonLanguageOwner extends DurableObject<Env> {
     }
     await this.schedule()
   }
-  async open(projectId: string, binding: string): Promise<Response> {
-    if (!StudioPythonLanguageOpenSchema.safeParse({ projectId, binding }).success)
-      return json({ error: 'invalid-project' }, 400)
+  async open(
+    projectId: string,
+    binding: string,
+    runtimeRelease?: StudioRuntimeRelease,
+  ): Promise<Response> {
+    const parsed = StudioPythonLanguageOpenSchema.safeParse({
+      projectId,
+      binding,
+      ...(runtimeRelease ? { runtimeRelease } : {}),
+    })
+    if (!parsed.success) return json({ error: 'invalid-project' }, 400)
+    let bootstrap: string | null = null
+    try {
+      assertPythonLanguageBootstrapSize(canonicalJson(parsed.data))
+      const validated = await createPythonLanguageBootstrap({
+        protocolVersion: 1,
+        ...(parsed.data.runtimeRelease ? { runtimeRelease: parsed.data.runtimeRelease } : {}),
+      })
+      if (validated.runtimeRelease) bootstrap = canonicalJson(validated)
+    } catch {
+      return json({ error: 'invalid-configuration' }, 400)
+    }
+    // Reserve quota only after asynchronous integrity checks; no await between count and INSERT.
     const count = this.ctx.storage.sql
       .exec<{ count: number }>('SELECT count(*) AS count FROM leases')
       .one().count
@@ -175,24 +223,32 @@ export class PythonLanguageOwner extends DurableObject<Env> {
       token = secret(32),
       now = Date.now()
     this.ctx.storage.sql.exec(
-      "INSERT INTO leases (id, project_id, token, created_ms, used_ms, phase, cleanup_ms, binding) VALUES (?,?,?,?,?,'reserved',0,?)",
+      "INSERT INTO leases (id, project_id, token, created_ms, used_ms, phase, cleanup_ms, binding, bootstrap) VALUES (?,?,?,?,?,'reserved',0,?,?)",
       id,
       projectId,
       token,
       now,
       now,
       binding,
+      bootstrap,
     )
     await this.schedule()
     return json({ version: 1, sessionId: id, projectId })
   }
   private async boot(id: string, token: string) {
     const assertOpening = () => {
-      if (this.lease(id)?.phase !== 'opening') throw new Error('Language startup cancelled')
+      const row = this.lease(id)
+      if (row?.phase !== 'opening' || this.deadline(row) <= Date.now())
+        throw new Error('Language startup cancelled')
+      return row
     }
-    assertOpening()
-    let stage: 'sandbox' | 'process' | 'port' | 'health' = 'sandbox'
+    const initial = assertOpening()
+    let stage: 'sandbox' | 'process' | 'port' | 'configure' | 'health' = 'sandbox'
     try {
+      const metadata = initial.bootstrap ?? '{"protocolVersion":1}'
+      assertPythonLanguageBootstrapSize(metadata)
+      const bootstrap = canonicalJson(await createPythonLanguageBootstrap(JSON.parse(metadata)))
+      assertOpening()
       const sandbox = this.sandbox(id)
       stage = 'process'
       const process = await sandbox.startProcess(
@@ -203,8 +259,48 @@ export class PythonLanguageOwner extends DurableObject<Env> {
       stage = 'port'
       await process.waitForPort(8789, { mode: 'tcp', timeout: 30_000 })
       assertOpening()
+      stage = 'configure'
+      const timeoutMs = Math.min(5000, this.deadline(assertOpening()) - Date.now())
+      const controller = new AbortController()
+      const signal = AbortSignal.any([
+        controller.signal,
+        AbortSignal.timeout(Math.max(1, timeoutMs)),
+      ])
+      const pending = (async () => {
+        const handle = await sandbox.createLanguageConfiguration(
+          new Response(bootstrap).body,
+          token,
+          Math.max(1, timeoutMs),
+        )
+        const cancel = () => this.ctx.waitUntil(handle.cancel().catch(() => {}))
+        signal.addEventListener('abort', cancel, { once: true })
+        try {
+          if (signal.aborted) await handle.cancel()
+          return await handle.run()
+        } finally {
+          signal.removeEventListener('abort', cancel)
+          handle[Symbol.dispose]()
+        }
+      })()
+      const entry = { promise: pending, controller }
+      const requests = this.requests.get(id) ?? new Set()
+      requests.add(entry)
+      this.requests.set(id, requests)
+      try {
+        const response = await pending
+        await response.body?.cancel()
+        assertOpening()
+        if (signal.aborted || response.status !== 200)
+          throw new Error('Language configuration failed')
+      } finally {
+        requests.delete(entry)
+        if (!requests.size) this.requests.delete(id)
+      }
       stage = 'health'
-      const healthy = await sandbox.checkLanguageHealth(token)
+      const healthy = await sandbox.checkLanguageHealth(
+        token,
+        Math.max(1, Math.min(5000, this.deadline(assertOpening()) - Date.now())),
+      )
       assertOpening()
       if (!healthy) throw new Error('Language startup failed')
     } catch (error) {
@@ -235,7 +331,9 @@ export class PythonLanguageOwner extends DurableObject<Env> {
       await this.schedule()
       await boot
       if (this.lease(id)?.phase === 'ready') return json({ ready: true })
-      if (this.lease(id)?.phase !== 'opening') throw new Error('Language startup cancelled')
+      const current = this.lease(id)
+      if (current?.phase !== 'opening' || this.deadline(current) <= Date.now())
+        throw new Error('Language startup cancelled')
       this.ctx.storage.sql.exec(
         "UPDATE leases SET phase='ready',used_ms=? WHERE id=?",
         Date.now(),
@@ -389,8 +487,10 @@ export default {
       if (!(await env.LANGUAGE_OPEN_LIMIT.limit({ key: owner })).success)
         return json({ error: 'rate-limit' }, 429)
       try {
-        const body = StudioPythonLanguageOpenSchema.parse(await readJsonBodyWithLimit(request, 512))
-        return await stub.open(body.projectId, body.binding)
+        const body = StudioPythonLanguageOpenSchema.parse(
+          await readJsonBodyWithLimit(request, STUDIO_PYTHON_LANGUAGE_BOOTSTRAP_MAX_BYTES),
+        )
+        return await stub.open(body.projectId, body.binding, body.runtimeRelease)
       } catch {
         return json({ error: 'invalid-request' }, 400)
       }

@@ -116,10 +116,10 @@ export function normalizeAdultJourneyFloor(reached: number | null | undefined): 
  * Exige as etapas anteriores e os marcos reais; XP e licença não substituem conclusão.
  *
  * `reachedPosition` é o piso gravado (a posição mais alta já alcançada). As etapas ABAIXO dele
- * aparecem concluídas (sem `missing`) e contam como anteriores concluídas para a seguinte; a posição
- * resultante é `max(calculada, piso)`, limitada a `stages.length + 1`. O piso NÃO concede
- * capacidade: elas vêm só da conclusão real e do que já foi congelado (`frozen`), para que uma etapa
- * nova inserida abaixo do piso nunca libere ferramenta (por exemplo IA sem curso avançado).
+ * aparecem concluídas (sem `missing`) e contam como anteriores concluídas na apresentação; a posição
+ * resultante é `max(calculada, piso)`, limitada a `stages.length + 1`. Capacidades novas exigem a
+ * cadeia REAL de requisitos, inclusive abaixo do piso. O que já foi congelado (`frozen`) permanece;
+ * uma etapa nova abaixo do piso nunca substitui um requisito real (por exemplo IA sem curso avançado).
  */
 export function projectAdultJourney(
   policy: AdultJourneyPolicy,
@@ -132,6 +132,7 @@ export function projectAdultJourney(
   const earned = new Set(frozen)
   const floor = normalizeAdultJourneyFloor(reachedPosition)
   let previousComplete = true
+  let previousReallyComplete = true
   const stages = policy.stages.map((stage, index) => {
     const belowFloor = index + 1 < floor
     const realMissing = stage.requirements
@@ -143,9 +144,10 @@ export function projectAdultJourney(
       })
       .map((requirement) => ({ ...requirement }))
     const available = belowFloor || previousComplete
-    const reallyCompleted = available && realMissing.length === 0
+    const reallyCompleted = previousReallyComplete && realMissing.length === 0
     if (reallyCompleted) for (const capability of stage.capabilities) earned.add(capability)
-    const completed = belowFloor || reallyCompleted
+    previousReallyComplete = reallyCompleted
+    const completed = belowFloor || (available && realMissing.length === 0)
     previousComplete = completed
     return {
       id: stage.id,

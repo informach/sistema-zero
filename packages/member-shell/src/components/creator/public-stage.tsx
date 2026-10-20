@@ -11,6 +11,8 @@ interface PublicStageProps {
   rootRef: RefObject<HTMLDivElement | null>
   iframeRef: RefObject<HTMLIFrameElement | null>
   onRestart: () => void
+  muted: boolean
+  onMutedChange(muted: boolean): void
   /** Console de fliperama (direcional + A/B + barra) em volta do jogo. */
   showControls: boolean
   screenshotEnabled?: boolean
@@ -43,6 +45,8 @@ export function PublicStage({
   rootRef,
   iframeRef,
   onRestart,
+  muted,
+  onMutedChange,
   showControls,
   screenshotEnabled,
   rotated,
@@ -303,6 +307,8 @@ export function PublicStage({
               iframeRef={iframeRef}
               fullscreenTargetRef={consoleRef}
               onRestart={onRestart}
+              muted={muted}
+              onMutedChange={onMutedChange}
               screenshotEnabled={screenshotEnabled}
             />
           ) : null}

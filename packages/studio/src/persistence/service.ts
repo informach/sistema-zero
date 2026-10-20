@@ -61,6 +61,8 @@ export interface PersistenceHandlers {
 
 export interface PersistenceService {
   handlers: PersistenceHandlers
+  /** Optional local lifecycle capability; never infers authority for remote adapters. */
+  beginOpening(id: string, options?: { signal?: AbortSignal }): () => void
   /**
    * Liga autosave (subscribe no store) + flush em pagehide/beforeunload e quando a aba fica
    * escondida. Devolve o detach.
@@ -299,6 +301,7 @@ export function createPersistenceService(
   let suspended = false
   const service: PersistenceService = {
     handlers: {},
+    beginOpening: (id, options) => adapter?.beginOpening?.(id, options) ?? (() => {}),
     attach,
     hydrateAfterLoad,
     save,

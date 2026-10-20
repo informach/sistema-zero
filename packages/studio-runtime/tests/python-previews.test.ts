@@ -3,6 +3,11 @@ import { canonicalJson } from '@sistemazero/core/creations'
 import { studioPythonExecutionRevision } from '@sistemazero/core/studio/python-execution-content'
 import { StudioPythonPlaytestRecipeSchema } from '@sistemazero/core/studio/python-playtest'
 import { STUDIO_PYTHON_PREVIEW_LIMITS } from '@sistemazero/core/studio/python-preview'
+import {
+  studioPythonDeploymentRoute,
+  studioPythonRuntimeRoute,
+  verifyStudioPythonDeployment,
+} from '@sistemazero/core/studio/python-runtime-distribution'
 import { StudioPythonValidationReportSchema } from '@sistemazero/core/studio/python-validation'
 import { sha256 } from '../src/artifacts'
 import { createPythonDistributionRegistry } from '../src/python-distributions'
@@ -17,9 +22,9 @@ import {
 import { pythonDistributionFixture } from './python-distribution-fixture'
 import { pythonInputFixture } from './python-input-fixture'
 
-async function fixture() {
+async function fixture(hostAudio = true) {
   const input = await pythonInputFixture()
-  const runtime = await pythonDistributionFixture({ standalone: true })
+  const runtime = await pythonDistributionFixture({ standalone: true, hostAudio })
   await runtime.store()
   let active = true
   const registry = await createPythonDistributionRegistry({
@@ -153,9 +158,55 @@ async function fixture() {
   }
 }
 
+test('legacy launcher cannot create a preview before any preview PUT or project read', async () => {
+  const f = await fixture(false)
+  let reads = 0
+  await expect(
+    storePythonPreview({
+      ...f.options,
+      readProject: async (path) => {
+        reads++
+        return f.options.readProject(path)
+      },
+    }),
+  ).rejects.toThrow('controle de som')
+  expect(reads).toBe(0)
+  expect(f.writes).toEqual([])
+})
+
+test('serving admission rejects unsupported approved distribution even with a forged reference claim', async () => {
+  const f = await fixture()
+  const reference = await storePythonPreview(f.options)
+  const { previewHostAudioVersion: _version, ...legacyDistribution } =
+    f.runtime.deployment.distribution
+  const legacy = await verifyStudioPythonDeployment({
+    release: f.runtime.deployment.release,
+    distribution: legacyDistribution,
+  })
+  // Make the runtime marker genuinely match the unsupported declaration; rejection must
+  // not be an incidental marker mismatch. No old real distribution is relabelled.
+  const marker = new TextEncoder().encode(legacy.marker)
+  f.runtime.objects.set(`${f.runtime.prefix}complete.json`, {
+    bytes: marker,
+    hash: await crypto.subtle.digest('SHA-256', marker),
+  })
+  const registry = await createPythonDistributionRegistry({
+    approvedDeployments: [{ release: legacy.release, distribution: legacy.distribution }],
+    parentOrigins: ['https://app.example'],
+    status: () => 'active',
+  })
+  const response = await servePythonPreview(
+    new Request({ ...reference, previewHostAudioVersion: 1 }.url),
+    { ...f.serving, registry },
+  )
+  expect(response.status).toBe(404)
+  expect(await response.text()).not.toContain('<html')
+})
+
 test('preview streams exact project bytes, commits last, shares runtime and keeps authored files inert', async () => {
   const f = await fixture()
   const ref = await storePythonPreview(f.options)
+  expect(ref.previewHostAudioVersion).toBe(1)
   expect(f.writes[0]).toBe(pythonPreviewRecordKey(ref.id))
   expect(f.writes.at(-1)).toBe(`${pythonPreviewPrefix(ref.id)}complete.json`)
   expect(f.writes.some((key) => key.includes('wasm'))).toBe(false)
@@ -167,6 +218,26 @@ test('preview streams exact project bytes, commits last, shares runtime and keep
     'sandbox allow-scripts allow-same-origin',
   )
   expect(page.headers.get('Content-Security-Policy')).not.toContain('unsafe-inline')
+  // The parent supplies verified boot bytes; its CSP must permit the exact
+  // deployment metadata as well as artifacts, without opening other releases.
+  expect(
+    page.headers
+      .get('Content-Security-Policy')
+      ?.split('; ')
+      .find((part) => part.startsWith('connect-src '))
+      ?.split(' ')
+      .slice(1),
+  ).toEqual([
+    new URL('./', ref.url).href,
+    `${f.options.serviceOrigin}${studioPythonRuntimeRoute(f.snapshot.configuration.runtime.manifestSha256)}`,
+    `${f.options.serviceOrigin}${studioPythonDeploymentRoute(f.snapshot.configuration.runtime.manifestSha256)}`,
+  ])
+  expect(
+    page.headers
+      .get('Content-Security-Policy')
+      ?.split('; ')
+      .find((part) => part.startsWith('media-src ')),
+  ).toBe('media-src blob:')
   const launcher = await page.text()
   expect(launcher).not.toContain('parent.attacked')
   expect(launcher).toContain(

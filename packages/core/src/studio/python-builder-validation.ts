@@ -1,5 +1,9 @@
 import type { StudioProBuilderEvidence } from './pro-builder'
 import {
+  pythonBuilderPolicyFence,
+  type StudioPythonBuilderPolicyResult,
+} from './python-builder-authorization'
+import {
   type StudioPythonBuilderPreview,
   StudioPythonBuilderPreviewSchema,
 } from './python-builder-preview'
@@ -27,7 +31,7 @@ export interface StudioPythonBuilderValidationOptions
     metadata: Prepared['metadata'],
     operation: 'analyze' | 'execute',
     signal: AbortSignal,
-  ): Promise<void>
+  ): Promise<StudioPythonBuilderPolicyResult>
   runtimeCleanupFailed(): void
 }
 export type StudioPythonBuilderValidationOutcome =
@@ -75,6 +79,20 @@ export async function validateStudioPythonBuilderCandidate(
   )
     throw new Error('O serviço de execução Python não está configurado corretamente.')
   const recipe = StudioPythonPlaytestRecipeSchema.parse(recipeInput)
+  let verifyPolicy: ReturnType<typeof pythonBuilderPolicyFence> | undefined
+  const checkedAuthorize: StudioPythonBuilderValidationOptions['authorize'] = async (
+    base,
+    metadata,
+    operation,
+    operationSignal,
+  ) => {
+    verifyPolicy ??= pythonBuilderPolicyFence(metadata.configuration.runtime)
+    const policy = await authorize(base, metadata, operation, operationSignal)
+    operationSignal.throwIfAborted()
+    const verified = await verifyPolicy(policy)
+    operationSignal.throwIfAborted()
+    return verified
+  }
   const previewRequest = StudioPythonPreviewRequestSchema.parse({ parentOrigin })
   if (runtimeUrl.origin === previewRequest.parentOrigin || !token)
     throw new Error('A prévia Python exige seu serviço de execução em uma origem própria.')
@@ -90,7 +108,7 @@ export async function validateStudioPythonBuilderCandidate(
     fetchImpl,
     cleanupFailed,
     authorize: (base, metadata, operationSignal) =>
-      authorize(base, metadata, 'analyze', operationSignal),
+      checkedAuthorize(base, metadata, 'analyze', operationSignal),
   })
   signal.throwIfAborted()
   if (types.status !== 'passed') {
@@ -124,8 +142,9 @@ export async function validateStudioPythonBuilderCandidate(
     cleanupFailed: runtimeCleanupFailed,
     recipe,
     preview: previewRequest,
-    authorize: (metadata, operationSignal) =>
-      authorize(structuredClone(prepared.base), metadata, 'execute', operationSignal),
+    authorize: async (metadata, operationSignal) => {
+      await checkedAuthorize(structuredClone(prepared.base), metadata, 'execute', operationSignal)
+    },
   })
   try {
     signal.throwIfAborted()

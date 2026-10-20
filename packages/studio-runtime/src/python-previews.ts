@@ -18,7 +18,10 @@ import {
   verifyStudioPythonPreviewManifest,
   verifyStudioPythonPreviewReference,
 } from '@sistemazero/core/studio/python-preview'
-import { studioPythonRuntimeRoute } from '@sistemazero/core/studio/python-runtime-distribution'
+import {
+  studioPythonDeploymentRoute,
+  studioPythonRuntimeRoute,
+} from '@sistemazero/core/studio/python-runtime-distribution'
 import {
   StudioPythonValidationReportSchema,
   verifyStudioPythonValidationReport,
@@ -86,6 +89,8 @@ export async function storePythonPreview(options: {
       !registry.allowsParentOrigin(preview.parentOrigin)
     )
       throw new Error('O ambiente ou a origem do preview Python foi retirado.')
+    if (deployment.distribution.previewHostAudioVersion !== 1)
+      throw new Error('A prévia exige um ambiente compatível com o controle de som do editor.')
   }
   if (!isStudioPythonWebOrigin(origin) || origin === preview.parentOrigin)
     throw new Error('O preview Python exige uma origem de serviço distinta do aplicativo.')
@@ -252,6 +257,7 @@ export async function storePythonPreview(options: {
         projectId: snapshot.projectId,
         revision: snapshot.revision,
         runtimeManifestSha256: snapshot.configuration.runtime.manifestSha256,
+        previewHostAudioVersion: 1,
         url: `${origin}${studioPythonPreviewRoute(id)}index.html`,
         sha256: manifestHash,
         expiresAt: manifest.expiresAt,
@@ -386,7 +392,7 @@ export async function servePythonPreview(
       manifest.expiresAt > (now?.() ?? Date.now()) &&
       manifest.parentOrigin !== url.origin &&
       registry.allowsParentOrigin(manifest.parentOrigin) &&
-      Boolean(registry.resolve(manifest.runtime))
+      registry.resolve(manifest.runtime)?.distribution.previewHostAudioVersion === 1
     if (!valid()) return unavailableArtifact()
     if (!(await inputAwait(authorize(structuredClone(manifest)), signal)))
       return unavailableArtifact()
@@ -446,6 +452,7 @@ export async function servePythonPreview(
     if (!valid()) return unavailableArtifact()
     const base = `${url.origin}${studioPythonPreviewRoute(manifest.id)}`
     const runtime = `${url.origin}${studioPythonRuntimeRoute(manifest.runtime.manifestSha256)}`
+    const deployment = `${url.origin}${studioPythonDeploymentRoute(manifest.runtime.manifestSha256)}`
     const executable = file.role === 'launcher'
     const csp = executable
       ? [
@@ -457,9 +464,10 @@ export async function servePythonPreview(
           `frame-ancestors ${manifest.parentOrigin}`,
           `script-src ${runtime}`,
           `style-src ${base}player.css`,
-          `connect-src ${base} ${runtime}`,
+          `connect-src ${base} ${runtime} ${deployment}`,
           `frame-src ${runtime}`,
           'img-src data: blob:',
+          'media-src blob:',
         ].join('; ')
       : "default-src 'none'; sandbox; frame-ancestors 'none'; base-uri 'none'"
     const type = executable

@@ -1,3 +1,4 @@
+import { encodeOwnedUtf8 } from '../creations/utf8'
 import { parseStudioProRevision } from './pro-revision'
 import { pythonExternalDependenciesIssue } from './python-dependency-policy'
 import {
@@ -91,7 +92,7 @@ export async function prepareStudioPythonProExecution(
     files.push({ path, kind, sha256, byteLength: bytes.byteLength })
   }
   for (const [path, source] of Object.entries(base.files))
-    await admit(path, 'source', new TextEncoder().encode(source))
+    await admit(path, 'source', encodeOwnedUtf8(source))
   for (const [path, expected] of Object.entries(base.assetFiles)) {
     const binary = binaries.get(path)
     if (!binary || binary.sha256 !== expected)

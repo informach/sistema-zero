@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import type { StudioRuntimeEnvironment } from '../environment'
 import { createStudioRuntimeRegistry } from '../registry'
-import type { StudioRuntimeEvent, StudioRuntimeSession } from '../types'
+import type { StudioHostAudioPreference, StudioRuntimeEvent, StudioRuntimeSession } from '../types'
 import { createPythonExecutionController } from './controller'
 import { preparePythonExecutionSnapshot } from './snapshot'
 
@@ -16,6 +16,9 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
   let evaluations = 0
   let allowRepl = true
   let epoch = 1
+  let muted = false
+  const audioPreferences: (StudioHostAudioPreference | undefined)[] = []
+  const runMutes: boolean[] = []
   const sessions: StudioRuntimeSession[] = []
   const listeners = new Map<StudioRuntimeSession, Set<(event: StudioRuntimeEvent) => void>>()
   let beforePrepare = async () => {}
@@ -38,7 +41,8 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
         kinds: ['classic', 'pro'],
         load: async () => ({
           id: 'test-controller',
-          prepare: async ({ identity }) => {
+          prepare: async ({ identity, hostAudio }) => {
+            audioPreferences.push(hostAudio)
             await beforePrepare()
             const callbacks = new Set<(event: StudioRuntimeEvent) => void>()
             const session: StudioRuntimeSession = {
@@ -51,6 +55,7 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
                 },
               },
               run: async () => {
+                runMutes.push(hostAudio?.getMuted() ?? false)
                 expect(revoked).toBe(false)
                 runs++
                 for (const callback of callbacks)
@@ -84,6 +89,7 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
     project: () => currentProject,
     canExecute: () => true,
     writerEpoch: () => epoch,
+    audioMuted: () => muted,
     mountFrame: () => {
       frames++
       let removed = false
@@ -101,6 +107,12 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
     environment,
     controller,
     sessions,
+    audioPreferences,
+    runMutes,
+    mute: (value: boolean) => {
+      muted = value
+      controller.syncAudioPreference()
+    },
     listeners,
     runs: () => runs,
     inputs: () => inputs,
@@ -126,6 +138,37 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
     },
   }
 }
+
+test('host audio preference follows pending prepare without restarting and retired capabilities cannot unmute', async () => {
+  const f = await fixture()
+  const entered = Promise.withResolvers<void>(),
+    gate = Promise.withResolvers<void>()
+  f.beforePrepare(async () => {
+    entered.resolve()
+    await gate.promise
+  })
+  const running = f.controller.run()
+  await entered.promise
+  f.mute(true)
+  gate.resolve()
+  await running
+  expect(f.runMutes).toEqual([true])
+  const preference = f.audioPreferences[0]
+  expect(preference).toBeDefined()
+  if (!preference) throw new Error('Host audio preference was not forwarded')
+  const observed: boolean[] = []
+  preference.subscribe(() => observed.push(preference.getMuted()))
+  f.mute(false)
+  f.mute(true)
+  expect(observed).toEqual([false, true])
+  expect(f.runs()).toBe(1)
+  expect(f.frames()).toBe(1)
+  await f.controller.stop()
+  f.mute(false)
+  expect(observed).toEqual([false, true])
+  expect(() => preference.getMuted()).toThrow()
+  await f.controller.dispose()
+})
 
 test('context disposal stops an existing run and prevents starting another in the revoked environment', async () => {
   const f = await fixture()

@@ -8,9 +8,12 @@ type ContainerRequest = (request: Request) => Promise<Response>
 export async function checkPythonLanguageHealth(
   token: string,
   send: ContainerRequest,
+  timeoutMs = 5000,
 ): Promise<boolean> {
   if (!/^[a-f0-9]{64}$/.test(token)) throw new Error('Invalid language credential')
-  const signal = AbortSignal.timeout(5000)
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 5000)
+    throw new Error('Invalid language deadline')
+  const signal = AbortSignal.timeout(timeoutMs)
   const response = await send(
     new Request('http://language/healthz', {
       headers: { authorization: `Bearer ${token}` },
@@ -78,11 +81,15 @@ export class PythonLanguageCommand extends RpcTarget {
   #retain: (promise: Promise<unknown>) => void
   #reply: Promise<BufferedReply> | undefined
   #inputCancelled: Promise<void> | undefined
+  #target: 'command' | 'configure'
+  #timeoutMs: number
   constructor(input: {
     body: ReadableStream<Uint8Array> | null
     token: string
     send: ContainerRequest
     retain(promise: Promise<unknown>): void
+    target?: 'command' | 'configure'
+    timeoutMs?: number
   }) {
     super()
     if (!/^[a-f0-9]{64}$/.test(input.token)) throw new Error('Invalid language credential')
@@ -90,16 +97,20 @@ export class PythonLanguageCommand extends RpcTarget {
     this.#token = input.token
     this.#send = input.send
     this.#retain = input.retain
+    this.#target = input.target ?? 'command'
+    this.#timeoutMs =
+      this.#target === 'configure'
+        ? Math.min(5000, input.timeoutMs ?? 5000)
+        : PYTHON_LANGUAGE_LIMITS.requestTimeoutMs + 2000
+    if (!Number.isSafeInteger(this.#timeoutMs) || this.#timeoutMs < 1)
+      throw new Error('Invalid language deadline')
   }
   async #execute(): Promise<BufferedReply> {
-    const signal = AbortSignal.any([
-      this.#controller.signal,
-      AbortSignal.timeout(PYTHON_LANGUAGE_LIMITS.requestTimeoutMs + 2000),
-    ])
+    const signal = AbortSignal.any([this.#controller.signal, AbortSignal.timeout(this.#timeoutMs)])
     try {
       signal.throwIfAborted()
       const response = await this.#send(
-        new Request('http://language/command', {
+        new Request(`http://language/${this.#target}`, {
           method: 'POST',
           headers: { 'content-type': 'application/json', authorization: `Bearer ${this.#token}` },
           body: this.#body,

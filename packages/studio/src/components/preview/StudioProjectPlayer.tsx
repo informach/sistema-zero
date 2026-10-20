@@ -16,6 +16,8 @@ const PythonPlayer = lazy(() =>
 export interface StudioProjectPlayerProps
   extends Omit<JavaScriptPlayerProps, 'project' | 'published' | 'onError'> {
   project: EditableStudioProject
+  /** Trusted host UI output preference; never read from learner source. */
+  muted?: boolean
   /** Python supplies a bounded runtime diagnostic; legacy JS may report no detail. */
   onError?(error?: Error): void
   published?:

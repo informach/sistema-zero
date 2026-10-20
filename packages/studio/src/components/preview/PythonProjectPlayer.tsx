@@ -1,6 +1,7 @@
-import { forwardRef, type Ref, useEffect, useRef, useState } from 'react'
+import { forwardRef, type Ref, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { PythonProjectDocument } from '../../core/editableProject'
 import { createPublicPythonRuntimeEnvironment } from '../../runtime/publicEnvironment'
+import { pythonProjectNeedsAudioGesture } from '../../runtime/python/audio/activation'
 import { createPythonConsoleBuffer } from '../../runtime/python/consoleBuffer'
 import {
   createPythonExecutionController,
@@ -21,12 +22,15 @@ export const PythonProjectPlayer = forwardRef<
 >(function PythonProjectPlayer(props, ref) {
   const mount = useRef<HTMLDivElement>(null)
   const latest = useRef(props)
-  latest.current = props
   const [view, setView] = useState<PythonExecutionView>({ status: 'loading' })
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [output, setOutput] = useState<PythonConsoleBatch[]>([])
   const current = useRef<PythonExecutionController | null>(null)
+  useLayoutEffect(() => {
+    latest.current = props
+    current.current?.syncAudioPreference()
+  })
   const pendingInput = useRef<object | null>(null)
   const publication =
     props.published && 'programmingLanguage' in props.published ? props.published : undefined
@@ -93,6 +97,7 @@ export const PythonProjectPlayer = forwardRef<
           project: () => props.project,
           environment: () => environment,
           canExecute: () => !scope.signal.aborted,
+          audioMuted: () => latest.current.muted ?? false,
           mountFrame: () => {
             if (!mount.current) throw new Error('A página de jogar foi fechada.')
             const frame = document.createElement('iframe')
@@ -161,7 +166,8 @@ export const PythonProjectPlayer = forwardRef<
           if (next.status === 'failed')
             fail(new Error(next.error ?? 'Não foi possível executar este jogo.'))
         })
-        await instance.run()
+        if (pythonProjectNeedsAudioGesture(props.project)) setView({ status: 'ready' })
+        else await instance.run()
       } catch (cause) {
         fail(cause)
       }
@@ -186,6 +192,35 @@ export const PythonProjectPlayer = forwardRef<
       style={{ position: 'relative', width: '100%', height: '100%', ...props.style }}
     >
       <div ref={mount} style={{ position: 'absolute', inset: 0 }} />
+      {view.status === 'ready' &&
+        !view.identity &&
+        pythonProjectNeedsAudioGesture(props.project) && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#fff',
+              color: '#172033',
+              gap: 12,
+            }}
+          >
+            <p role="status">Clique em Jogar para começar com som.</p>
+            <button
+              type="button"
+              onClick={() => {
+                const instance = current.current
+                // The controller publishes the current generation's failure to its subscription.
+                if (instance) void instance.run().catch(() => {})
+              }}
+            >
+              Jogar
+            </button>
+          </div>
+        )}
       {view.status === 'loading' && (
         <p
           role="status"

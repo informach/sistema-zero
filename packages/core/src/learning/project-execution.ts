@@ -42,6 +42,7 @@ export const EXECUTION_LIMITS = {
    */
   maxSectionWaitMs: 40_000,
   maxHoldMs: 5_000,
+  maxIdleBaselineMs: 250,
   /** Coordenada de clique, na tela do jogo. */
   maxCoordinate: 4_000,
   maxCases: 8,
@@ -57,6 +58,13 @@ export type ExecutionStep =
   | { action: 'wait'; ms: number }
   | { action: 'press'; key: ExecutionKey; holdMs?: number }
   | { action: 'click'; x: number; y: number }
+  | { action: 'clickTarget'; target: ExecutionClickTarget }
+
+/** Um gesto no palco atual, nunca uma posição ou aparência da solução da professora. */
+export type ExecutionClickTarget =
+  | { kind: 'sprite'; path: string; groupPath: string }
+  | { kind: 'outsideGroup'; path: string }
+  | { kind: 'lastPoint' }
 
 /**
  * O que olhar no fim:
@@ -67,6 +75,7 @@ export type ExecutionStep =
  */
 export type ExecutionTarget =
   | { kind: 'value'; path: string }
+  | { kind: 'spritePosition'; path: string; axis: 'x' | 'y' }
   | { kind: 'text' }
   | { kind: 'console' }
   | { kind: 'game'; field: ExecutionGameField }
@@ -85,12 +94,19 @@ export const EXECUTION_COMPARES = [
   'contains',
   'notContains',
   'changed',
+  'increased',
+  'decreased',
   'truthy',
 ] as const
 export type ExecutionCompare = (typeof EXECUTION_COMPARES)[number]
 
 /** Comparações que não usam valor: `changed` compara com o começo e `truthy` só pergunta "tem?". */
-export const EXECUTION_COMPARES_WITHOUT_VALUE: readonly ExecutionCompare[] = ['changed', 'truthy']
+export const EXECUTION_COMPARES_WITHOUT_VALUE: readonly ExecutionCompare[] = [
+  'changed',
+  'truthy',
+  'increased',
+  'decreased',
+]
 
 export interface ExecutionExpectation {
   target: ExecutionTarget
@@ -113,7 +129,12 @@ export interface FunctionCase {
 }
 
 export type SectionExecutionRule =
-  | { type: 'behavior'; steps: ExecutionStep[]; expect: ExecutionExpectation }
+  | {
+      type: 'behavior'
+      steps: ExecutionStep[]
+      expect: ExecutionExpectation
+      observation?: { type: 'idleBeforeAction'; idleMs: number }
+    }
   | {
       type: 'functionReturns'
       name: string
@@ -191,7 +212,13 @@ export function isExecutionJson(value: unknown): value is ExecutionJson {
   return true
 }
 
-function isStep(step: unknown): step is ExecutionStep {
+export type ExecutionStepValidationContext = 'draft' | 'final'
+
+/** Draft permits only unfinished adaptive-path text; execution is always final. */
+export function isExecutionStep(
+  step: unknown,
+  context: ExecutionStepValidationContext = 'final',
+): step is ExecutionStep {
   if (!record(step)) return false
   switch (step.action) {
     case 'wait':
@@ -221,6 +248,26 @@ function isStep(step: unknown): step is ExecutionStep {
             n <= EXECUTION_LIMITS.maxCoordinate,
         )
       )
+    case 'clickTarget': {
+      if (Object.keys(step).length !== 2 || !record(step.target)) return false
+      const target = step.target
+      const safePath = (path: unknown) =>
+        context === 'draft'
+          ? typeof path === 'string' && path.length <= 200
+          : isExecutionValuePath(path) &&
+            !path
+              .split('.')
+              .some((part) => ['__proto__', 'constructor', 'prototype'].includes(part))
+      if (target.kind === 'lastPoint') return Object.keys(target).length === 1
+      if (target.kind === 'outsideGroup')
+        return Object.keys(target).length === 2 && safePath(target.path)
+      return (
+        target.kind === 'sprite' &&
+        Object.keys(target).length === 3 &&
+        safePath(target.path) &&
+        safePath(target.groupPath)
+      )
+    }
     default:
       return false
   }
@@ -231,6 +278,7 @@ export function executionRuleBudgetMs(rule: SectionExecutionRule): number {
   if (rule.type === 'functionReturns') return rule.cases.length * FUNCTION_CASE_BUDGET_MS
   return (
     (rule.type === 'script' ? SCRIPT_BUDGET_MS : 0) +
+    (rule.type === 'behavior' ? (rule.observation?.idleMs ?? 0) : 0) +
     rule.steps.reduce(
       (sum, step) =>
         sum +
@@ -244,8 +292,19 @@ const FUNCTION_CASE_BUDGET_MS = 2_000
 const SCRIPT_BUDGET_MS = 3_000
 
 function areSteps(steps: unknown): steps is ExecutionStep[] {
-  if (!Array.isArray(steps) || steps.length > EXECUTION_LIMITS.maxSteps || !steps.every(isStep))
+  if (
+    !Array.isArray(steps) ||
+    steps.length > EXECUTION_LIMITS.maxSteps ||
+    !steps.every((step) => isExecutionStep(step, 'final'))
+  )
     return false
+  // Um clique absoluto não identifica um alvo nem admite uma repetição adaptativa.
+  let hasPoint = false
+  for (const step of steps) {
+    if (step.action !== 'clickTarget') continue
+    if (step.target.kind === 'lastPoint' && !hasPoint) return false
+    hasPoint = true
+  }
   const waited = steps.reduce(
     (sum: number, step: ExecutionStep) =>
       sum + (step.action === 'wait' ? step.ms : step.action === 'press' ? (step.holdMs ?? 0) : 0),
@@ -254,9 +313,23 @@ function areSteps(steps: unknown): steps is ExecutionStep[] {
   return waited <= EXECUTION_LIMITS.maxTotalWaitMs
 }
 
-function isTarget(target: unknown): target is ExecutionTarget {
+function isTarget(
+  target: unknown,
+  context: ExecutionStepValidationContext,
+): target is ExecutionTarget {
   if (!record(target)) return false
   switch (target.kind) {
+    case 'spritePosition':
+      return (
+        Object.keys(target).length === 3 &&
+        (context === 'draft'
+          ? typeof target.path === 'string' && target.path.length <= 200
+          : isExecutionValuePath(target.path) &&
+            !target.path
+              .split('.')
+              .some((part) => ['__proto__', 'prototype', 'constructor'].includes(part))) &&
+        (target.axis === 'x' || target.axis === 'y')
+      )
     case 'value':
       return isExecutionValuePath(target.path) && Object.keys(target).length === 2
     case 'text':
@@ -272,10 +345,25 @@ function isTarget(target: unknown): target is ExecutionTarget {
   }
 }
 
-function isExpectation(expect: unknown): expect is ExecutionExpectation {
-  if (!record(expect) || !isTarget(expect.target)) return false
+function isExpectation(
+  expect: unknown,
+  context: ExecutionStepValidationContext,
+): expect is ExecutionExpectation {
+  if (!record(expect) || !isTarget(expect.target, context)) return false
+  if (
+    expect.target.kind === 'spritePosition' &&
+    Object.keys(expect).some((key) => !['target', 'compare', 'value'].includes(key))
+  )
+    return false
   if (!EXECUTION_COMPARES.some((compare) => compare === expect.compare)) return false
   const compare = expect.compare as ExecutionCompare
+  if (
+    (compare === 'increased' || compare === 'decreased') &&
+    (expect.target.kind === 'text' ||
+      expect.target.kind === 'console' ||
+      (expect.target.kind === 'game' && expect.target.field === 'phase'))
+  )
+    return false
   if (EXECUTION_COMPARES_WITHOUT_VALUE.includes(compare)) return expect.value === undefined
   const value = expect.value
   const fits =
@@ -292,14 +380,33 @@ function isExpectation(expect: unknown): expect is ExecutionExpectation {
 }
 
 /** A forma de uma regra de execução. Onde ela vale (Pro ou clássico) é da autoria do Estúdio. */
-export function isSectionExecutionRule(rule: unknown): rule is SectionExecutionRule {
+export function isSectionExecutionRule(
+  rule: unknown,
+  context: ExecutionStepValidationContext = 'final',
+): rule is SectionExecutionRule {
   if (!record(rule)) return false
   switch (rule.type) {
     case 'behavior':
       return (
-        Object.keys(rule).every((key) => ['type', 'steps', 'expect'].includes(key)) &&
+        Object.keys(rule).every((key) =>
+          ['type', 'steps', 'expect', 'observation'].includes(key),
+        ) &&
         areSteps(rule.steps) &&
-        isExpectation(rule.expect)
+        isExpectation(rule.expect, context) &&
+        (rule.observation === undefined
+          ? rule.expect.target.kind !== 'spritePosition'
+          : record(rule.observation) &&
+            Object.keys(rule.observation).length === 2 &&
+            rule.observation.type === 'idleBeforeAction' &&
+            typeof rule.observation.idleMs === 'number' &&
+            Number.isInteger(rule.observation.idleMs) &&
+            rule.observation.idleMs > 0 &&
+            rule.observation.idleMs <= EXECUTION_LIMITS.maxIdleBaselineMs &&
+            rule.expect.target.kind === 'spritePosition' &&
+            ['increased', 'decreased'].includes(rule.expect.compare) &&
+            rule.steps.length === 1 &&
+            rule.steps[0]?.action === 'press' &&
+            (rule.steps[0].holdMs ?? 80) > 0)
       )
     case 'functionReturns':
       return (
@@ -414,10 +521,23 @@ export function compareExecutionValue(
   observedInitial?: unknown,
 ): boolean {
   if (isInconclusiveObservedValue(observed)) return false
-  if (compare === 'changed' && isInconclusiveObservedValue(observedInitial)) return false
+  if (
+    (compare === 'changed' || compare === 'increased' || compare === 'decreased') &&
+    isInconclusiveObservedValue(observedInitial)
+  )
+    return false
   const actual = fromObserved(observed)
   const initial = fromObserved(observedInitial)
   switch (compare) {
+    case 'increased':
+    case 'decreased':
+      return (
+        typeof actual === 'number' &&
+        Number.isFinite(actual) &&
+        typeof initial === 'number' &&
+        Number.isFinite(initial) &&
+        (compare === 'increased' ? actual > initial : actual < initial)
+      )
     case 'truthy':
       return Boolean(actual) && !(Array.isArray(actual) && actual.length === 0)
     case 'changed':
@@ -502,6 +622,12 @@ export interface ExecutionObservation {
   type: SectionExecutionRule['type']
   initial?: ExecutionObservedValue
   final?: ExecutionObservedValue
+  motion?: {
+    baselineInitial: ExecutionMotionSample
+    baselineFinal: ExecutionMotionSample
+    actionInitial: ExecutionMotionSample
+    actionFinal: ExecutionMotionSample
+  }
   /** `functionReturns`: a função não existe (ou não é função). */
   missing?: boolean
   cases?: { ok: boolean; value?: unknown; error?: string }[]
@@ -515,6 +641,94 @@ export interface ExecutionObservation {
   errors?: string[]
   /** O teste em si não terminou (página não abriu, tempo esgotado). */
   error?: string
+}
+
+/** Primitive copies from the official motor, never authored callbacks or accessors. */
+export interface ExecutionMotionSample {
+  x: number
+  y: number
+  frame: number
+  generation: number
+  errors: number
+  paused: boolean
+}
+
+function isMotionSample(value: unknown): value is ExecutionMotionSample {
+  if (!record(value) || Object.keys(value).length !== 6) return false
+  return (
+    typeof value.x === 'number' &&
+    Number.isFinite(value.x) &&
+    typeof value.y === 'number' &&
+    Number.isFinite(value.y) &&
+    ['frame', 'generation', 'errors'].every(
+      (key) =>
+        typeof value[key] === 'number' && Number.isSafeInteger(value[key]) && value[key] >= 0,
+    ) &&
+    typeof value.paused === 'boolean'
+  )
+}
+
+/** Falha de observação não é uma resposta falsa do programa e não pode virar progresso salvo. */
+export function executionObservationUnavailableReason(
+  rule: SectionExecutionRule,
+  observation: ExecutionObservation | undefined,
+): string | undefined {
+  if (!observation || observation.type !== rule.type) return 'O teste não relatou este objetivo.'
+  if (observation.error) return observation.error
+  if (rule.type !== 'behavior') return undefined
+  if (rule.expect.compare === 'increased' || rule.expect.compare === 'decreased') {
+    for (const value of [observation.initial, observation.final])
+      if (
+        !value?.found ||
+        value.error ||
+        isInconclusiveObservedValue(value.value) ||
+        typeof fromObserved(value.value) !== 'number' ||
+        !Number.isFinite(fromObserved(value.value))
+      )
+        return 'Não foi possível observar a coordenada inteira.'
+    if (observation.errors?.length) return 'O jogo relatou erro durante a observação.'
+  }
+  if (rule.observation) {
+    const motion = observation.motion
+    if (!motion) return 'O teste não relatou o controle sem tecla.'
+    const samples = [
+      motion.baselineInitial,
+      motion.baselineFinal,
+      motion.actionInitial,
+      motion.actionFinal,
+    ]
+    if (!samples.every(isMotionSample)) return 'A observação do motor está incompleta.'
+    if (
+      samples.some(
+        (sample) =>
+          sample.paused ||
+          sample.errors !== 0 ||
+          sample.generation !== motion.baselineInitial.generation,
+      )
+    )
+      return 'O motor pausou, reiniciou ou relatou erro.'
+    if (
+      motion.baselineFinal.frame <= motion.baselineInitial.frame ||
+      motion.actionInitial.frame < motion.baselineFinal.frame ||
+      motion.actionFinal.frame <= motion.actionInitial.frame
+    )
+      return 'O motor não avançou durante a observação.'
+    if (
+      rule.expect.target.kind !== 'spritePosition' ||
+      fromObserved(observation.initial?.value) !== motion.actionInitial[rule.expect.target.axis] ||
+      fromObserved(observation.final?.value) !== motion.actionFinal[rule.expect.target.axis]
+    )
+      return 'A coordenada não corresponde à observação do motor.'
+  }
+  const final = observation.final
+  if (!final || final.error || (final.found && isInconclusiveObservedValue(final.value)))
+    return final?.error || 'Não foi possível observar o resultado inteiro.'
+  if (rule.expect.compare === 'changed') {
+    const initial = observation.initial
+    if (!initial || initial.error || (initial.found && isInconclusiveObservedValue(initial.value)))
+      return initial?.error || 'Não foi possível observar o início inteiro.'
+  }
+  return undefined
 }
 
 const shortJson = (value: unknown) => {
@@ -547,6 +761,8 @@ const COMPARE_WORDS: Record<ExecutionCompare, string> = {
   contains: 'contendo',
   notContains: 'sem',
   changed: 'que mudasse',
+  increased: 'que aumentasse',
+  decreased: 'que diminuísse',
   truthy: 'que existisse',
 }
 
@@ -554,6 +770,8 @@ function targetName(target: ExecutionTarget): string {
   switch (target.kind) {
     case 'value':
       return target.path
+    case 'spritePosition':
+      return `${target.path}.${target.axis}`
     case 'text':
       return 'o texto da página'
     case 'console':
@@ -615,6 +833,24 @@ export function judgeExecutionObservation(
           : `A regra em JavaScript precisa devolver true ou false; devolveu ${observation.returned ?? 'nada'}.`,
     }
   }
+  if (
+    rule.observation ||
+    rule.expect.compare === 'increased' ||
+    rule.expect.compare === 'decreased'
+  ) {
+    const unavailable = executionObservationUnavailableReason(rule, observation)
+    if (unavailable) return { passed: false, detail: unavailable }
+    const motion = observation.motion
+    if (
+      rule.observation &&
+      motion &&
+      (motion.baselineInitial.x !== motion.baselineFinal.x ||
+        motion.baselineInitial.y !== motion.baselineFinal.y ||
+        motion.baselineFinal.x !== motion.actionInitial.x ||
+        motion.baselineFinal.y !== motion.actionInitial.y)
+    )
+      return { passed: false, detail: 'O personagem se moveu antes de apertar a tecla.' }
+  }
   const { target, compare, value } = rule.expect
   const final = observation.final
   if (!final?.found)
@@ -664,3 +900,37 @@ export type ProjectCheckResponse =
       message: string
       output?: string
     }
+
+function isExecutionObjectiveResult(value: unknown): value is ExecutionObjectiveResult {
+  return (
+    record(value) &&
+    typeof value.id === 'string' &&
+    value.id.length > 0 &&
+    value.id.length <= 100 &&
+    typeof value.passed === 'boolean' &&
+    (value.detail === undefined || typeof value.detail === 'string')
+  )
+}
+
+/** A transport response is evidence only when its verdicts have the canonical wire shape. */
+export function isProjectCheckResponse(value: unknown): value is ProjectCheckResponse {
+  if (!record(value)) return false
+  if (value.ok === false)
+    return (
+      ['INVALID_REQUEST', 'BUILD_FAILED', 'RATE_LIMITED', 'CHECK_FAILED'].some(
+        (code) => code === value.code,
+      ) &&
+      typeof value.message === 'string' &&
+      (value.output === undefined || typeof value.output === 'string')
+    )
+  return (
+    value.ok === true &&
+    Array.isArray(value.results) &&
+    value.results.length <= EXECUTION_LIMITS.maxObjectives &&
+    value.results.every(isExecutionObjectiveResult) &&
+    new Set(value.results.map((item) => item.id)).size === value.results.length &&
+    (value.screenshots === undefined ||
+      (record(value.screenshots) &&
+        Object.values(value.screenshots).every((item) => typeof item === 'string')))
+  )
+}

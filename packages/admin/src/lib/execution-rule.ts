@@ -14,6 +14,8 @@ import {
  */
 export const COMPARE_LABELS: Record<ExecutionCompare, string> = {
   changed: 'mudou',
+  increased: 'aumentou',
+  decreased: 'diminuiu',
   truthy: 'existe (não está vazio)',
   equals: 'é igual a',
   notEquals: 'é diferente de',
@@ -48,6 +50,15 @@ export function stepLabel(step: ExecutionStep): string {
       return `${step.holdMs ? `segurar ${keyLabel(step.key)} por ${step.holdMs} ms` : `apertar ${keyLabel(step.key)}`}`
     case 'click':
       return `clicar em ${step.x}, ${step.y}`
+    case 'clickTarget':
+      switch (step.target.kind) {
+        case 'sprite':
+          return `clicar no lugar de ${step.target.path || '(personagem)'} (grupo ${step.target.groupPath || '(grupo)'})`
+        case 'outsideGroup':
+          return `clicar fora do grupo ${step.target.path || '(grupo)'}`
+        case 'lastPoint':
+          return 'repetir o último lugar clicado'
+      }
   }
 }
 
@@ -55,6 +66,8 @@ export function targetLabel(target: ExecutionTarget): string {
   switch (target.kind) {
     case 'value':
       return target.path || '(variável)'
+    case 'spritePosition':
+      return `${target.path || '(personagem)'}.${target.axis}`
     case 'text':
       return 'o texto da página'
     case 'console':
@@ -82,10 +95,13 @@ export function describeExecutionRule(rule: SectionExecutionRule): string {
   }
   const steps = rule.steps.length ? rule.steps.map(stepLabel).join(', ') : 'sem passos'
   const { target, compare, value } = rule.expect
+  const baseline = rule.observation
+    ? `observar parado por ${rule.observation.idleMs} ms antes da tecla; `
+    : ''
   const tail = EXECUTION_COMPARES_WITHOUT_VALUE.includes(compare)
     ? ''
     : ` ${formatJson(value ?? '')}`
-  return `O jogo faz algo: ${steps}; conferir se ${targetLabel(target)} ${COMPARE_LABELS[compare]}${tail}`
+  return `O jogo faz algo: ${baseline}${steps}; conferir se ${targetLabel(target)} ${COMPARE_LABELS[compare]}${tail}`
 }
 
 /**

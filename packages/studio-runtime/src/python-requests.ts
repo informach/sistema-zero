@@ -288,6 +288,8 @@ export async function handlePythonRequest(
     const input = await store.resolve(reference, signal)
     check()
     const deployment = await approve(input.snapshot)
+    if (previewRequest && deployment.distribution.previewHostAudioVersion !== 1)
+      return reply({ ok: false, code: 'PYTHON_PREVIEW_UNAVAILABLE' }, 503)
     if (validation && !deployment.distribution.files.some((file) => file.path === 'playtest.mjs'))
       throw new PythonInputError(409, 'O ambiente Python não oferece execução protegida aprovada.')
     if (file) {

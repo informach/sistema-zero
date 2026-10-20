@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { documentFixture } from '../../packages/studio/src/state/fixtures/projectDocuments'
+import { portableGameSource } from './gameVariants'
 import { TURTLE_EXTENSION } from './turtleFixtures'
 
 const root = resolve(import.meta.dirname, '../..')
@@ -13,11 +14,25 @@ const definitions = {
     prefix: 'episodes/episode09/',
     entrypoint: 'main.py',
   },
+  pacmanPortable: {
+    manifest: 'pacman',
+    checkout: 'pacman-upstream',
+    prefix: 'episodes/episode09/',
+    entrypoint: 'main.py',
+    portable: true,
+  },
   spaceArenaOriginal: {
     manifest: 'space-arena',
     checkout: 'space-arena-upstream',
     prefix: 'Space Arena/',
     entrypoint: 'space_arena.py',
+  },
+  spaceArenaPortable: {
+    manifest: 'space-arena',
+    checkout: 'space-arena-upstream',
+    prefix: 'Space Arena/',
+    entrypoint: 'space_arena.py',
+    portable: true,
   },
 } as const
 export function isGameFixture(name: string): name is keyof typeof definitions {
@@ -27,6 +42,7 @@ export function isGameFixture(name: string): name is keyof typeof definitions {
 /** External, licensed test corpus stays in ignored cache. Every input blob is pinned. */
 export async function gameFixtureProject(name: keyof typeof definitions) {
   const definition = definitions[name]
+  const portable = 'portable' in definition && definition.portable
   const pinned = JSON.parse(
     await readFile(
       resolve(root, `experiments/studio-python-l0/corpus/${definition.manifest}.json`),
@@ -36,7 +52,7 @@ export async function gameFixtureProject(name: keyof typeof definitions) {
   const project = documentFixture('python', 'pro')
   assert.ok(project.programmingLanguage === 'python' && project.kind === 'pro')
   project.id = name
-  project.name = `${name} — unchanged external qualification corpus`
+  project.name = `${name} — ${portable ? 'explicit portable variant, not qualified' : 'unchanged external qualification corpus'}`
   project.tree = {}
   project.assets = []
   project.python.entrypoint = definition.entrypoint
@@ -44,7 +60,7 @@ export async function gameFixtureProject(name: keyof typeof definitions) {
   for (const file of pinned.files) {
     assert.ok(file.path === 'LICENSE' || file.path.startsWith(definition.prefix))
     const path = file.path === 'LICENSE' ? file.path : file.path.slice(definition.prefix.length)
-    const bytes = await readFile(
+    let bytes = await readFile(
       resolve(root, '.cache/studio-python-l0', definition.checkout, file.path),
     )
     const hash = (data: Uint8Array) => createHash('sha256').update(data).digest('hex')
@@ -53,6 +69,7 @@ export async function gameFixtureProject(name: keyof typeof definitions) {
       const lf = Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'))
       assert.equal(hash(lf), file.sha256)
       assert.equal(lf.byteLength, file.bytes)
+      bytes = lf
     } else assert.equal(bytes.byteLength, file.bytes)
     if (/\.(gif|wav)$/i.test(path)) {
       const image = path.toLowerCase().endsWith('.gif')
@@ -65,7 +82,14 @@ export async function gameFixtureProject(name: keyof typeof definitions) {
         dataUrl: `data:${image ? 'image/gif' : 'audio/wav'};base64,${bytes.toString('base64')}`,
         source: 'upload',
       })
-    } else project.tree[path] = { kind: 'file', content: bytes.toString('utf8') }
+    } else {
+      const source = bytes.toString('utf8')
+      const content =
+        portable && path === definition.entrypoint
+          ? portableGameSource(definition.manifest, source).content
+          : source
+      project.tree[path] = { kind: 'file', content }
+    }
   }
   return project
 }

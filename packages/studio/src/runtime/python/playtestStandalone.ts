@@ -1,3 +1,5 @@
+import './configureProtectedSchemas'
+
 import { createPythonPlaytestCollector } from './playtestCollector'
 import { startStandalonePythonPlayer } from './standalonePlayer'
 import { fetchPythonWebBytes } from './webFiles'

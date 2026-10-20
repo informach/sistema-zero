@@ -52,6 +52,7 @@ export type PythonWorkerCommand =
   | { type: 'evaluate'; requestId: string; source: string }
   | { type: 'input'; requestId: string; response: { kind: 'line'; text: string } | { kind: 'eof' } }
   | { type: 'graphics-response'; requestId: string; response: string }
+  | { type: 'audio-response'; requestId: string; response: string }
 
 /** Worker output is always untrusted at the supervisor boundary, including these events. */
 export type PythonWorkerEvent =
@@ -62,6 +63,7 @@ export type PythonWorkerEvent =
   | { type: 'input-request'; requestId: string }
   | { type: 'result'; requestId: string; ok: boolean; text: string; traceback?: string }
   | { type: 'failed'; message: string }
+  | { type: 'audio'; requestId: string; request: string }
   | {
       type: 'graphics'
       requestId: string

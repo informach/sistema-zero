@@ -144,6 +144,21 @@ test('preview references bind revision, exact service route, distinct origins an
     expect(StudioPythonPreviewReferenceSchema.safeParse({ ...ref, url }).success).toBe(false)
 })
 
+test('historical preview reader preserves missing audio contract without inventing executable support', async () => {
+  const { ref } = await fixture()
+  expect(
+    Object.hasOwn(StudioPythonPreviewReferenceSchema.parse(ref), 'previewHostAudioVersion'),
+  ).toBe(false)
+  expect(
+    StudioPythonPreviewReferenceSchema.parse({ ...ref, previewHostAudioVersion: 1 })
+      .previewHostAudioVersion,
+  ).toBe(1)
+  for (const previewHostAudioVersion of [0, 2, '1', true])
+    expect(
+      StudioPythonPreviewReferenceSchema.safeParse({ ...ref, previewHostAudioVersion }).success,
+    ).toBe(false)
+})
+
 test('preview accepts only exact generated paths and a portable nonoverlapping project tree', async () => {
   const { manifest } = await fixture()
   for (const path of [

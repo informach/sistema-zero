@@ -96,9 +96,9 @@ describe.skipIf(!url)('jornada sobrevive ao fim do acesso (Postgres real)', () =
       label: string,
     ) => {
       await conn.sql`insert into members.entitlements
-        (id, user_id, access_type, product_kind, course_ref, status, source_kind, source_id,
+        (id, user_id, product_id, access_type, product_kind, course_ref, status, source_kind, source_id,
          subscription_id, expires_at, idempotency_key, snapshot)
-        values (${randomUUID()}, ${userId}, 'community', 'tool', ${ref}, 'active', 'payment',
+        values (${randomUUID()}, ${userId}, ${randomUUID()}, 'community', 'tool', ${ref}, 'active', 'payment',
           ${`${marca}${label}`}, ${subscriptionId}, ${expiresAt}, ${`${marca}${label}`},
           ${JSON.stringify({ sku: ref, accessType: 'community', courseRef: ref })}::jsonb)`
     }

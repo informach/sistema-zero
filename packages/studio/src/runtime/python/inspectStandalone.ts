@@ -1,3 +1,5 @@
+import './configureProtectedSchemas'
+
 import { STUDIO_PYTHON_INSPECTION_LIMITS } from '@sistemazero/core/studio/python-inspection'
 import { preparePythonAnalysisSession } from '../../python/language/session'
 import { inspectPythonSnapshot } from './inspection'

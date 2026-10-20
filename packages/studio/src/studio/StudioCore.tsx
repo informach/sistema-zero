@@ -153,6 +153,7 @@ function StudioCoreBody({
   onError,
   onModeChange,
   onReady,
+  onProjectOpeningSettled,
   theme,
   onExit,
   onPromoteToPro,
@@ -182,11 +183,10 @@ function StudioCoreBody({
   // "Editar a criação no Molda": o gêmeo do Pinta, mesmo latch. `null` → sem botão.
   const [editCreationValue] = useState(() => onEditCreation ?? null)
 
-  // "Trazer do Pinta" — mesmo latch; a janela dos materiais mostra o botão e a
-  // modal quando presente (e esconde a seção "Meus desenhos"). `null` → nada.
-  const [pintaLibraryValue] = useState(() => pintaLibrary ?? null)
+  // Perfil/posse podem mudar sem remontar o editor. A modal cancela o owner antigo.
+  const pintaLibraryValue = pintaLibrary ?? null
 
-  // "Trazer do Molda" — o mesmo latch do Pinta; a janela dos materiais mostra o botão e
+  // "Trazer do Molda" — valor inicial; a janela dos materiais mostra o botão e
   // a modal das criações 3D quando presente. `null` → nada.
   const [moldaLibraryValue] = useState(() => moldaLibrary ?? null)
 
@@ -196,9 +196,9 @@ function StudioCoreBody({
   // referência estável (memo), então o Provider só muda quando a disponibilidade muda.
   const teamLibraryValue = teamLibrary ?? null
 
-  // Runtime Pro da aula é um adapter estático, como os demais contratos de I/O
-  // do host. Ausente mantém o WebContainer local do Estúdio Completo.
-  const [proRuntimeValue] = useState(() => proRuntime ?? null)
+  // A autoridade do host pode trocar sem remontar o editor.
+  // Ausente mantém o WebContainer local do Estúdio Completo.
+  const proRuntimeValue = proRuntime ?? null
 
   // Visibilidade dos exemplos prontos — latcha uma vez por instância. Default
   // `false`: só o playground/admin de teste liga (ver examples-visibility.ts).
@@ -248,40 +248,66 @@ function StudioCoreBody({
   const observationGeneration = useRef(0)
   const isObserver = editingAccess === 'observer' || handoffFrozen
   const sourceProject = replacedProject ?? initialProject
+  const projectStoreApi = useProjectStoreApi()
+  const persistence = useStudioPersistence()
+  const preparationGeneration = useRef(0)
   const [preparationLimits] = useState(() => proRuntime?.limits)
   const preparationErrorHandler = useRef(onError)
+  const openingSettledHandler = useRef(onProjectOpeningSettled)
   useEffect(() => {
     preparationErrorHandler.current = onError
-  }, [onError])
+    openingSettledHandler.current = onProjectOpeningSettled
+  }, [onError, onProjectOpeningSettled])
   const [prepared, setPrepared] = useState<{
     source: Project
     project: Project | null
     error: string | null
+    generation: number
+    settleOpening: (status: 'ready' | 'blocked' | 'error') => void
   } | null>(null)
   useEffect(() => {
     let active = true
+    const generation = ++preparationGeneration.current
+    const lifetime = new AbortController()
+    const releaseOpening = persistence.beginOpening(sourceProject.id, { signal: lifetime.signal })
+    const notifySettled = openingSettledHandler.current
+    let settled = false
+    const settleOpening = (status: 'ready' | 'blocked' | 'error') => {
+      releaseOpening()
+      if (!active || settled) return
+      settled = true
+      notifySettled?.({ projectId: sourceProject.id, status })
+    }
     void prepareEditableStudioProject(sourceProject, { proBuildLimits: preparationLimits }).then(
       (project) => {
+        if (!project) settleOpening('error')
         if (active)
           setPrepared({
             source: sourceProject,
             project,
             error: project ? null : 'Este projeto não pôde ser aberto.',
+            generation,
+            settleOpening,
           })
       },
       (cause: unknown) => {
+        settleOpening('error')
         if (active)
           setPrepared({
             source: sourceProject,
             project: null,
             error: cause instanceof Error ? cause.message : 'Não foi possível abrir este projeto.',
+            generation,
+            settleOpening,
           })
       },
     )
     return () => {
       active = false
+      lifetime.abort()
+      releaseOpening()
     }
-  }, [sourceProject, preparationLimits])
+  }, [sourceProject, preparationLimits, persistence])
   const preparedProject = prepared?.source === sourceProject ? prepared.project : null
   const preparationError = prepared?.source === sourceProject ? prepared.error : null
   useEffect(() => {
@@ -309,8 +335,6 @@ function StudioCoreBody({
   )
   const projectAccessBlocked = disallowedExtensions.length > 0
 
-  const projectStoreApi = useProjectStoreApi()
-  const persistence = useStudioPersistence()
   // O guia v2 GRAVA o jogo antes de concluir, continuar e pedir ajuda (ver o módulo). Memoizado
   // pela sessão: o `taskSession` NÃO é latchado (o `collapsed` do host precisa chegar vivo).
   const sessaoDoGuia = useMemo(
@@ -427,22 +451,39 @@ function StudioCoreBody({
   )
 
   useEffect(() => {
-    if (!sanitized || projectAccessBlocked) return
-    hydrateProject(sanitized)
-    // Projeto trocado pelo HOST (`handle.replaceProject`, o "Trazer o que eu enviei" da aula) é a
-    // versão que deve ficar guardada: entra como edição, e o autosave grava por cima do rascunho
-    // do aparelho. Antes isso acontecia por acaso, na regravação que o editor fazia ao abrir, e
-    // abrir deixou de regravar (abrir não é editar, e não muda o "Atualizado em").
-    if (replacedProject !== null)
-      projectStoreApi.setState((state) =>
-        state.project ? { project: { ...state.project }, isDirty: true } : {},
-      )
-    // Restaura, EM SEGUNDO PLANO, o `blocksState` pesado que a abertura rápida
-    // (shell load) omitiu — sem isto o editor abria com o workspace VAZIO (os
-    // blocos só voltavam ao forçar um reparse na Ponte). No-op quando o projeto já
-    // veio com blocksState (host passou o projeto completo) ou sem adapter.
-    persistence.hydrateAfterLoad(sanitized)
-    setPreviewRunning(autoRun && projectStoreApi.getState().editingAccess === 'author')
+    if (
+      !sanitized ||
+      prepared?.source !== sourceProject ||
+      prepared.generation !== preparationGeneration.current
+    )
+      return
+    try {
+      if (projectAccessBlocked) {
+        prepared.settleOpening('blocked')
+        return
+      }
+      hydrateProject(sanitized)
+      // Projeto trocado pelo HOST (`handle.replaceProject`, o "Trazer o que eu enviei" da aula) é a
+      // versão que deve ficar guardada: entra como edição, e o autosave grava por cima do rascunho
+      // do aparelho. Antes isso acontecia por acaso, na regravação que o editor fazia ao abrir, e
+      // abrir deixou de regravar (abrir não é editar, e não muda o "Atualizado em").
+      if (replacedProject !== null)
+        projectStoreApi.setState((state) =>
+          state.project ? { project: { ...state.project }, isDirty: true } : {},
+        )
+      // Restaura, EM SEGUNDO PLANO, o `blocksState` pesado que a abertura rápida
+      // (shell load) omitiu — sem isto o editor abria com o workspace VAZIO (os
+      // blocos só voltavam ao forçar um reparse na Ponte). No-op quando o projeto já
+      // veio com blocksState (host passou o projeto completo) ou sem adapter.
+      persistence.hydrateAfterLoad(sanitized)
+      setPreviewRunning(autoRun && projectStoreApi.getState().editingAccess === 'author')
+    } catch (cause) {
+      prepared.settleOpening('error')
+      throw cause
+    } finally {
+      // Release this preparation, even for same-id replacements. onReady is only an id latch.
+      prepared.settleOpening('ready')
+    }
     return () => {
       unloadProject()
     }
@@ -456,6 +497,8 @@ function StudioCoreBody({
     replacedProject,
     projectStoreApi,
     autoRun,
+    prepared,
+    sourceProject,
   ])
 
   useEffect(() => {

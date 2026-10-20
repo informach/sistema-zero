@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 import { createStudioProRevision } from '@sistemazero/core/studio/pro-revision'
 import { inspectStudioPythonBuilderTypes } from '@sistemazero/core/studio/python-builder-types'
 import { parsePythonLanguageCommand } from '@sistemazero/core/studio/python-language'
+import { providedPythonRelease } from '../../../core/tests/fixtures/python-provided-release'
 import { capturePythonProRevisionPayload } from '../../../studio/src/state/pythonProRevision'
 import { PythonLanguageSession } from '../../../studio-language-service/runtime/pyright'
 import { authoringFixture } from '../fakes/studio-authoring-policy'
@@ -108,6 +109,7 @@ async function service(
     signal: new AbortController().signal,
     async authorize() {
       checks++
+      return {}
     },
     cleanupFailed(error: Error) {
       cleanupErrors.push(error)
@@ -146,6 +148,57 @@ test('builder types uses actual TCP protocol, complete sources and distinct CAS/
     expect(f.requests[2]?.headers.get('x-studio-python-binding')).toBe('b'.repeat(64))
     expect(f.checks()).toBe(6)
     expect(f.cleanupErrors).toEqual([])
+  } finally {
+    f.stop()
+  }
+})
+
+test('provided-module authorization reaches Open without accepting an unknown policy result', async () => {
+  const f = await service()
+  try {
+    const runtimeRelease = await providedPythonRelease()
+    const configuration = f.options.revision.configuration
+    if (configuration.programmingLanguage !== 'python') throw new Error('Expected Python')
+    const revision = await createStudioProRevision({
+      ...f.options.revision,
+      configuration: {
+        ...configuration,
+        runtime: {
+          profileId: runtimeRelease.profileId,
+          releaseId: runtimeRelease.releaseId,
+          manifestSha256: runtimeRelease.manifestSha256,
+        },
+        python: {
+          ...configuration.python,
+          dependencyLock: {
+            ...configuration.python.dependencyLock,
+            runtimeManifestSha256: runtimeRelease.manifestSha256,
+          },
+        },
+      },
+    })
+    const output = await inspectStudioPythonBuilderTypes({
+      ...f.options,
+      revision,
+      authorize: async () => ({ runtimeRelease }),
+    })
+    expect(output.types.status).toBe('passed')
+    expect(f.requests[0]?.body).toMatchObject({ runtimeRelease })
+  } finally {
+    f.stop()
+  }
+})
+
+test('unknown policy result is refused before any reservation', async () => {
+  const f = await service()
+  try {
+    await expect(
+      inspectStudioPythonBuilderTypes({
+        ...f.options,
+        authorize: async () => JSON.parse('null'),
+      }),
+    ).rejects.toThrow()
+    expect(f.requests).toEqual([])
   } finally {
     f.stop()
   }
@@ -276,6 +329,7 @@ test('fresh authorization refusal prevents the next operation and still releases
       ...f.options,
       async authorize() {
         if (++count === 3) throw new Error('revoked')
+        return {}
       },
     }).then(
       () => null,
@@ -409,7 +463,7 @@ test.each([
       nodePath,
       serverPath: createRequire(
         new URL('../../../studio-language-service/runtime/package.json', import.meta.url),
-      ).resolve('pyright/dist/pyright-langserver.js'),
+      ).resolve('pyright/langserver.index.js'),
     })
     const f = await service({
       helperSource,

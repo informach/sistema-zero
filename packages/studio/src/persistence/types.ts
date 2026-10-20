@@ -13,6 +13,8 @@ export interface StudioPersistenceAdapter {
    * perfis mantêm o mesmo id de projeto na mesma página.
    */
   scopeIdentity?: string
+  /** Holds local closed-project writers until this exact opening hydrates or is cancelled. */
+  beginOpening?(id: string, options?: { signal?: AbortSignal }): () => void
   /** Carrega um projeto por id (usado pelo host/ProjectList; o Studio em si recebe initialProject). */
   load(id: string): Promise<Project | null>
   /**

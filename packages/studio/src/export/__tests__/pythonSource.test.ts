@@ -1,8 +1,204 @@
 import { expect, test } from 'bun:test'
+import { buildPythonProvidedModuleMetadata } from '@sistemazero/core/studio/python-provided-modules-render'
+import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
+import {
+  createStudioRuntimeCatalog,
+  createStudioRuntimeRelease,
+} from '@sistemazero/core/studio/runtime-catalog'
 import { unzipSync } from 'fflate'
 import { documentFixture } from '../../state/fixtures/projectDocuments'
+import { registerProjectOperation } from '../../state/projectOperations'
 import { refinePythonProjectDocument } from '../../state/pythonProjectValidation'
+import { createStudioStores } from '../../state/studioStores'
+import { prepareSourceDownload } from '../sourceDownload'
 import { buildSourceFiles, exportProjectSource } from '../sourceExport'
+
+async function runtimeContext(
+  raw: ReturnType<typeof documentFixture>,
+  descriptor: typeof SZ_AUDIO_MODULE_DESCRIPTOR | 'absent' | 'empty' = SZ_AUDIO_MODULE_DESCRIPTOR,
+) {
+  if (raw.programmingLanguage !== 'python') throw new Error('fixture')
+  const worker = { path: 'worker.mjs', sha256: 'b'.repeat(64) }
+  const metadata =
+    typeof descriptor === 'object' ? await buildPythonProvidedModuleMetadata(descriptor) : null
+  const modules = metadata
+    ? [
+        {
+          descriptor: metadata.descriptor,
+          descriptorArtifact: {
+            path: metadata.descriptorFile.path,
+            sha256: metadata.descriptorFile.sha256,
+          },
+          typingArtifact: { path: metadata.typingFile.path, sha256: metadata.typingFile.sha256 },
+          browserArtifacts: [worker],
+        },
+      ]
+    : []
+  const release = await createStudioRuntimeRelease({
+    manifestVersion: 1,
+    profileId: raw.runtime.profileId,
+    releaseId: raw.runtime.releaseId,
+    programmingLanguage: 'python',
+    kinds: [raw.kind],
+    modes: [raw.mode],
+    capabilities: ['export-source'],
+    extensions: [],
+    sourceTargets: ['desktop'],
+    requiredBrowserFeatures: [],
+    artifacts: [
+      worker,
+      ...modules.flatMap((module) => [module.descriptorArtifact, module.typingArtifact]),
+    ],
+    python: {
+      version: '3.14.2',
+      packages: [],
+      ...(descriptor === 'absent' ? {} : { providedModules: modules }),
+    },
+  })
+  raw.runtime.manifestSha256 = release.manifestSha256
+  raw.python.dependencyLock.runtimeManifestSha256 = release.manifestSha256
+  return createStudioRuntimeCatalog({
+    profiles: [
+      {
+        id: release.profileId,
+        languages: ['python'],
+        kinds: [raw.kind],
+        modes: [raw.mode],
+        levels: [],
+        releases: [{ id: release.releaseId, manifestSha256: release.manifestSha256 }],
+      },
+    ],
+    releases: [release],
+  })
+}
+
+for (const metadata of ['absent', 'empty'] as const)
+  test(`a known release with ${metadata} provided modules does not invent a native audio package`, async () => {
+    const raw = documentFixture('python', 'classic')
+    raw.assets = []
+    const runtimeCatalog = await runtimeContext(raw, metadata)
+    const { files, warnings } = await buildSourceFiles(await refinePythonProjectDocument(raw), {
+      runtimeCatalog,
+    })
+    expect(Object.keys(files).some((path) => path.includes('python-audio'))).toBe(false)
+    const manifest = JSON.parse(files['.sistemazero/export-manifest.json'] as string)
+    expect(manifest.runtimeModules).toEqual({ status: 'known-release', modules: [] })
+    expect(manifest.portableAudio).toBeUndefined()
+    expect(files['LEIA-ME-Sistema-Zero.txt']).not.toContain('import sz_audio')
+    expect(warnings).toEqual([])
+  })
+
+test('an unresolved or different runtime preserves a downloadable snapshot without guessing a module version', async () => {
+  const raw = documentFixture('python', 'classic')
+  raw.assets = []
+  const other = structuredClone(raw)
+  const otherCatalog = await runtimeContext(other)
+  for (const runtimeCatalog of [undefined, null, otherCatalog]) {
+    const { files, warnings } = await buildSourceFiles(await refinePythonProjectDocument(raw), {
+      runtimeCatalog,
+    })
+    expect(files['main.py']).toBe(
+      raw.programmingLanguage === 'python' && raw.kind === 'classic' ? raw.files['main.py'] : '',
+    )
+    expect(files['requirements.txt']).toBe('')
+    expect(Object.keys(files).some((path) => path.includes('python-audio'))).toBe(false)
+    expect(
+      JSON.parse(files['.sistemazero/export-manifest.json'] as string).runtimeModules.status,
+    ).toBe('unresolved-release')
+    expect(warnings.join(' ')).toContain('não foi possível conferir')
+  }
+})
+
+test('an unavailable historical implementation is never replaced with the current native audio package', async () => {
+  const raw = documentFixture('python', 'pro')
+  raw.assets = []
+  const descriptor = { ...SZ_AUDIO_MODULE_DESCRIPTOR, version: '0.9.0' }
+  const runtimeCatalog = await runtimeContext(raw, descriptor)
+  const { files, warnings } = await buildSourceFiles(await refinePythonProjectDocument(raw), {
+    runtimeCatalog,
+  })
+  expect(Object.keys(files).some((path) => path.includes('python-audio'))).toBe(false)
+  expect(warnings.join(' ')).toContain('sz_audio 0.9.0')
+  const manifest = JSON.parse(files['.sistemazero/export-manifest.json'] as string)
+  expect(manifest.runtimeModules.modules).toEqual([
+    { importName: 'sz_audio', version: '0.9.0', nativePackage: 'unavailable' },
+  ])
+})
+
+test('native module selection captures the host catalog before lazy loading and rejects tampered metadata', async () => {
+  const raw = documentFixture('python', 'pro')
+  raw.assets = []
+  const original = await runtimeContext(raw)
+  const runtimeCatalog = structuredClone(original)
+  const project = await refinePythonProjectDocument(raw)
+  const pending = buildSourceFiles(project, { runtimeCatalog })
+  Reflect.set(
+    runtimeCatalog.releases[0]!.manifest.python!.providedModules![0]!.descriptor,
+    'version',
+    '9.9.9',
+  )
+  const { files } = await pending
+  expect(
+    JSON.parse(files['.sistemazero/export-manifest.json'] as string).portableAudio.version,
+  ).toBe('1.0.0')
+  const invalid = await buildSourceFiles(project, { runtimeCatalog })
+  expect(Object.keys(invalid.files).some((path) => path.includes('python-audio'))).toBe(false)
+  expect(invalid.warnings.join(' ')).toContain('não foi possível conferir')
+})
+
+test('the download preserves runtime metadata while asynchronous writers flush the project', async () => {
+  const raw = documentFixture('python', 'pro')
+  raw.assets = []
+  const runtimeCatalog = structuredClone(await runtimeContext(raw))
+  const project = await refinePythonProjectDocument(raw)
+  const stores = createStudioStores({ persistence: 'none' })
+  stores.project.setState({ project })
+  const descriptor = runtimeCatalog.releases[0]!.manifest.python!.providedModules![0]!.descriptor
+  const unregister = registerProjectOperation(stores.project, {
+    projectId: project.id,
+    flush: async () => {
+      Reflect.set(descriptor, 'version', '9.9.9')
+    },
+  })
+  try {
+    const result = await prepareSourceDownload(
+      stores.project,
+      stores.pendingEditorEdits,
+      new AbortController().signal,
+      { runtimeCatalog },
+    )
+    const files = unzipSync(new Uint8Array(await result.blob.arrayBuffer()))
+    const manifest = JSON.parse(
+      new TextDecoder().decode(files['.sistemazero/export-manifest.json']),
+    )
+    expect(descriptor.version).toBe('9.9.9')
+    expect(manifest.portableAudio.version).toBe('1.0.0')
+    expect(result.warnings).toEqual([])
+  } finally {
+    unregister()
+  }
+})
+
+test('unreadable runtime metadata cannot block rescuing authored source or execute a metadata getter', async () => {
+  const raw = documentFixture('python', 'classic')
+  raw.assets = []
+  const runtimeCatalog = structuredClone(await runtimeContext(raw))
+  let getterCalls = 0
+  Object.defineProperty(runtimeCatalog.releases[0]!.manifest.python!, 'providedModules', {
+    get() {
+      getterCalls++
+      throw new Error('must not run')
+    },
+    enumerable: true,
+  })
+  const { files, warnings } = await buildSourceFiles(await refinePythonProjectDocument(raw), {
+    runtimeCatalog,
+  })
+  expect(getterCalls).toBe(0)
+  expect(typeof files['main.py']).toBe('string')
+  expect(Object.keys(files).some((path) => path.includes('python-audio'))).toBe(false)
+  expect(warnings.join(' ')).toContain('não foi possível conferir')
+})
 
 for (const kind of ['classic', 'pro'] as const)
   test(`Python ${kind}: source ZIP preserves the actual program and materials without a browser adapter`, async () => {
@@ -156,4 +352,49 @@ test('case-variant native requirements preserve their name and prevent an invent
   expect(files['pyproject.toml']).toBeUndefined()
   expect(warnings.join(' ')).toContain('dependências nativas')
   expect(files['LEIA-ME-Sistema-Zero.txt']).toContain('-r REQUIREMENTS.TXT')
+})
+
+test('nested source ZIP includes installable audio without rewriting authored modules or dependency files', async () => {
+  const raw = documentFixture('python', 'pro')
+  if (raw.programmingLanguage !== 'python' || raw.kind !== 'pro') throw new Error('fixture')
+  raw.assets = []
+  raw.tree['src/main.py'] = {
+    kind: 'file',
+    content: 'import sz_audio\nprint(sz_audio.__version__)\n',
+  }
+  raw.tree['src/sz_audio.py'] = { kind: 'file', content: 'author = True\n' }
+  raw.tree['requirements.txt'] = { kind: 'file', content: 'author-package==1.2.3\n' }
+  raw.tree['pyproject.toml'] = { kind: 'file', content: '[project]\nname="author-game"\n' }
+  raw.tree['.SISTEMAZERO'] = { kind: 'dir' }
+  raw.tree['.SISTEMAZERO/python-audio'] = { kind: 'dir' }
+  const runtimeCatalog = await runtimeContext(raw)
+  const project = await refinePythonProjectDocument(raw)
+  const zip = await exportProjectSource(project, { runtimeCatalog })
+  const unzipped = unzipSync(new Uint8Array(await zip.blob.arrayBuffer()))
+  const text = (path: string) => new TextDecoder().decode(unzipped[path])
+  const manifest = JSON.parse(text('.sistemazero-2/export-manifest.json'))
+  const audio = manifest.portableAudio
+  expect(manifest.entrypoint).toBe('src/main.py')
+  expect(text('src/main.py')).toBe(raw.tree['src/main.py'].content)
+  expect(text('src/sz_audio.py')).toBe('author = True\n')
+  expect(text('requirements.txt')).toBe('author-package==1.2.3\n')
+  expect(text('pyproject.toml')).toBe('[project]\nname="author-game"\n')
+  expect(audio.requirementsPath).toBe('.sistemazero-2/python-audio/install.txt')
+  expect(text(audio.requirementsPath)).toBe('./.sistemazero-2/python-audio\n')
+  expect(audio.files).toHaveLength(10)
+  expect(text('.sistemazero-2/python-audio/sz_audio/__init__.pyi')).toContain('def stop(')
+  expect(text('.sistemazero-2/python-audio/sz_audio/py.typed')).toBe('')
+  expect(text(audio.referencePath)).toContain('turtle.done() ou turtle.mainloop()')
+  for (const entry of audio.files) {
+    const bytes = unzipped[entry.path]!
+    expect(bytes.byteLength).toBe(entry.bytes)
+    const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))
+    expect(entry.sha256).toBe(
+      Array.from(hash, (value) => value.toString(16).padStart(2, '0')).join(''),
+    )
+  }
+  expect(text('LEIA-ME-Sistema-Zero.txt')).toContain(
+    `python -m pip install -r ${audio.requirementsPath}`,
+  )
+  expect(text('LEIA-ME-Sistema-Zero.txt')).toContain('subpasta')
 })

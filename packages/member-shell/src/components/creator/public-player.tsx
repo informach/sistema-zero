@@ -129,6 +129,7 @@ function PublicPlayerForProject({
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [muted, setMuted] = useState(false)
   const [gamepadOverride, setGamepadOverride] = useState<GamepadVisibilityOverride>(null)
   const [stageAspect, setStageAspect] = useState<StageAspect>(DEFAULT_STAGE_ASPECT)
   const iframeRef = useRef<HTMLIFrameElement>(null)
@@ -471,6 +472,8 @@ function PublicPlayerForProject({
           rootRef={stageRootRef}
           iframeRef={iframeRef}
           onRestart={handleRestart}
+          muted={muted}
+          onMutedChange={setMuted}
           showControls={gamepadVisible}
           screenshotEnabled={project.programmingLanguage === 'python' || project.kind !== 'pro'}
           rotated={rotated}
@@ -484,6 +487,7 @@ function PublicPlayerForProject({
             key={reloadKey}
             ref={iframeRef}
             project={project}
+            muted={muted}
             published={published}
             pythonRuntimeRequest={pythonRuntimeRequest}
             onReady={focarJogo}

@@ -1,3 +1,5 @@
+import './configureProtectedSchemas'
+
 import { StudioPythonActivitySchema } from '@sistemazero/core/studio/python-activity'
 import { createPythonConsoleBuffer } from './consoleBuffer'
 import { createPythonInterpreter, PYODIDE_VERSION, PYTHON_VERSION } from './interpreter'
@@ -14,6 +16,8 @@ let pendingInput: { id: string; resolve(value: string): void } | undefined
 let inputSequence = 0
 let graphicsSequence = 0
 let pendingGraphics: { id: string; resolve(value: string): void } | undefined
+let audioSequence = 0
+let pendingAudio: { id: string; resolve(value: string): void } | undefined
 let activityRequest: string | undefined
 let activityFinished = false
 let hasActivity = false
@@ -68,7 +72,7 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
         return consumed
       },
       requestLine() {
-        if (phase !== 'running' || pendingInput)
+        if (phase !== 'running' || pendingInput || pendingAudio || pendingGraphics)
           return Promise.reject(new Error('Entrada fora de uma execução ativa.'))
         flush()
         return new Promise((resolve) => {
@@ -78,7 +82,7 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
         })
       },
       graphics(request, images) {
-        if (phase !== 'running' || pendingGraphics)
+        if (phase !== 'running' || pendingGraphics || pendingAudio || pendingInput)
           return Promise.reject(new Error('Atualização Turtle fora de ordem.'))
         return new Promise((resolve) => {
           const id = `graphics-${++graphicsSequence}`
@@ -86,6 +90,15 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
           post({ type: 'graphics', requestId: id, request, images } satisfies PythonWorkerEvent, {
             transfer: images.map((image) => image.bytes.buffer),
           })
+        })
+      },
+      audio(request) {
+        if (phase !== 'running' || pendingAudio || pendingGraphics || pendingInput)
+          return Promise.reject(new Error('Pedido de áudio fora de ordem.'))
+        return new Promise((resolve) => {
+          const id = `audio-${++audioSequence}`
+          pendingAudio = { id, resolve }
+          send({ type: 'audio', requestId: id, request })
         })
       },
       activityRequested: () => activityRequest !== undefined && !activityFinished,
@@ -103,6 +116,21 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
       try {
         if (!message || typeof message !== 'object' || !('type' in message))
           throw new Error('Comando Python inválido.')
+        if (message.type === 'audio-response') {
+          if (
+            !pendingAudio ||
+            !('requestId' in message) ||
+            message.requestId !== pendingAudio.id ||
+            !('response' in message) ||
+            typeof message.response !== 'string' ||
+            message.response.length > 2048
+          )
+            throw new Error('Resposta de áudio fora de ordem.')
+          const pending = pendingAudio
+          pendingAudio = undefined
+          pending.resolve(message.response)
+          return
+        }
         if (message.type === 'graphics-response') {
           if (
             !pendingGraphics ||

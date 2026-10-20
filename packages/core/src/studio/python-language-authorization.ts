@@ -8,6 +8,7 @@ import {
   StudioFreeRuntimeContextSchema,
   StudioLiveRuntimeContextSchema,
 } from './runtime-authorization'
+import { StudioRuntimeReleaseSchema } from './runtime-catalog'
 import { StudioRuntimeSubjectSchema } from './runtime-subject'
 
 /** Analysis shares contextual rights, but has its own request/quota boundary. */
@@ -54,6 +55,7 @@ export type StudioPythonAnalysisAuthorization = z.infer<
 export const StudioPythonLanguageOpenSchema = z.strictObject({
   projectId: StudioProjectIdSchema,
   binding: StudioSha256Schema,
+  runtimeRelease: StudioRuntimeReleaseSchema.optional(),
 })
 export const StudioPythonLanguageStartSchema = z.strictObject({ binding: StudioSha256Schema })
 

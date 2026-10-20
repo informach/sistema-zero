@@ -38,7 +38,8 @@ export async function uploadPythonPromotion(
   const temporaryRoot = `${resolve(tmpdir())}${sep}sz-python-runtime-promotion-`
   if (!resolve(directory).startsWith(temporaryRoot))
     throw new Error('Diretório temporário inesperado.')
-  try {
+  let platform: PromotionPlatform | undefined
+  const upload = async () => {
     // A dedicated config cannot inherit application secrets, extra bindings or local R2 state.
     const configPath = join(directory, 'wrangler.json')
     await writeFile(
@@ -51,42 +52,65 @@ export async function uploadPythonPromotion(
       }),
       { flag: 'wx' },
     )
-    const platform = await connect(configPath)
-    try {
-      const files = new Map(plan.deployment.distribution.files.map((file) => [file.path, file]))
-      const stored = await storePythonRuntimeDistribution({
-        bucket: platform.env.PYTHON_RUNTIME,
-        deployment: plan.deployment,
-        read: async (path) => {
-          const file = files.get(path)
-          if (!file) throw new Error('Arquivo fora da distribuição aprovada.')
-          return readPromotionFile(plan.input.distribution.directory, path, file.bytes)
-        },
-      })
-      // Approval is the deployed digest, never this object. Publish only after complete.json.
-      const workerCatalog = await storePythonRuntimeConfiguration({
-        bucket: platform.env.PYTHON_RUNTIME,
-        configuration: plan.configuration.worker,
-      })
-      if (canonicalJson(workerCatalog) !== canonicalJson(plan.workerCatalog))
-        throw new Error('O catálogo armazenado diverge do plano aprovado.')
-      return {
-        version: 1,
-        environment: plan.input.environment,
-        bucketName: target.bucketName,
-        planSha256: plan.planSha256,
-        releaseManifestSha256: stored.release.manifestSha256,
-        distributionSha256: stored.distributionSha256,
-        markerSha256: stored.markerSha256,
-        workerCatalog,
-        prefix: plan.prefix,
-        files: stored.distribution.files.length,
-        bytes: stored.distribution.files.reduce((sum, file) => sum + file.bytes, 0),
-      }
-    } finally {
-      await platform.dispose()
+    platform = await connect(configPath)
+    const files = new Map(plan.deployment.distribution.files.map((file) => [file.path, file]))
+    const stored = await storePythonRuntimeDistribution({
+      bucket: platform.env.PYTHON_RUNTIME,
+      deployment: plan.deployment,
+      read: async (path) => {
+        const file = files.get(path)
+        if (!file) throw new Error('Arquivo fora da distribuição aprovada.')
+        return readPromotionFile(plan.input.distribution.directory, path, file.bytes)
+      },
+    })
+    // Approval is the deployed digest, never this object. Publish only after complete.json.
+    const workerCatalog = await storePythonRuntimeConfiguration({
+      bucket: platform.env.PYTHON_RUNTIME,
+      configuration: plan.configuration.worker,
+    })
+    if (canonicalJson(workerCatalog) !== canonicalJson(plan.workerCatalog))
+      throw new Error('O catálogo armazenado diverge do plano aprovado.')
+    return {
+      version: 1,
+      environment: plan.input.environment,
+      bucketName: target.bucketName,
+      planSha256: plan.planSha256,
+      releaseManifestSha256: stored.release.manifestSha256,
+      distributionSha256: stored.distributionSha256,
+      markerSha256: stored.markerSha256,
+      workerCatalog,
+      prefix: plan.prefix,
+      files: stored.distribution.files.length,
+      bytes: stored.distribution.files.reduce((sum, file) => sum + file.bytes, 0),
     }
-  } finally {
-    await rm(directory, { recursive: true, force: true })
   }
+  let outcome:
+    | { ok: true; value: Awaited<ReturnType<typeof upload>> }
+    | { ok: false; error: unknown }
+  try {
+    outcome = { ok: true, value: await upload() }
+  } catch (error) {
+    outcome = { ok: false, error }
+  }
+  // Track presence separately: JavaScript may reject with undefined or another non-Error value.
+  const failures: unknown[] = outcome.ok ? [] : [outcome.error]
+  if (platform) {
+    try {
+      await platform.dispose()
+    } catch (error) {
+      failures.push(error)
+    }
+  }
+  try {
+    await rm(directory, { recursive: true, force: true })
+  } catch (error) {
+    failures.push(error)
+  }
+  if (failures.length === 1) throw failures[0]
+  if (failures.length > 1)
+    throw new AggregateError(failures, 'Falha na promoção e/ou na limpeza dos recursos.', {
+      cause: failures[0],
+    })
+  if (!outcome.ok) throw outcome.error
+  return outcome.value
 }

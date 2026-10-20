@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { defaultProjectControls } from '@sistemazero/studio/controls'
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { createRef } from 'react'
+import { type ComponentProps, createRef, useState } from 'react'
 import {
   CtrlBar,
   DPad,
@@ -13,6 +13,11 @@ import {
 
 const CRUZ = { left: 0, top: 0, width: 132, height: 132 }
 const meio = 66
+
+function ControlledCtrlBar(props: Omit<ComponentProps<typeof CtrlBar>, 'muted' | 'onMutedChange'>) {
+  const [muted, setMuted] = useState(false)
+  return <CtrlBar {...props} muted={muted} onMutedChange={setMuted} />
+}
 
 describe('a cruz aponta para onde o dedo está', () => {
   it('o centro é zona morta: encostar no meio não anda', () => {
@@ -282,7 +287,7 @@ describe('o botão de tela cheia vira botão de VOLTAR', () => {
       messages.push(message)
     }) as typeof target.postMessage
     render(
-      <CtrlBar
+      <ControlledCtrlBar
         iframeRef={iframeRef}
         fullscreenTargetRef={createRef<HTMLDivElement>()}
         onRestart={() => {}}
@@ -320,7 +325,7 @@ describe('o botão de tela cheia vira botão de VOLTAR', () => {
     render(
       <>
         <div ref={alvo} />
-        <CtrlBar iframeRef={iframeRef} fullscreenTargetRef={alvo} onRestart={() => {}} />
+        <ControlledCtrlBar iframeRef={iframeRef} fullscreenTargetRef={alvo} onRestart={() => {}} />
       </>,
     )
 
@@ -337,7 +342,7 @@ describe('o botão de tela cheia vira botão de VOLTAR', () => {
     render(
       <>
         <div ref={alvo} />
-        <CtrlBar iframeRef={iframeRef} fullscreenTargetRef={alvo} onRestart={() => {}} />
+        <ControlledCtrlBar iframeRef={iframeRef} fullscreenTargetRef={alvo} onRestart={() => {}} />
       </>,
     )
 
@@ -356,7 +361,7 @@ describe('o botão de tela cheia vira botão de VOLTAR', () => {
     render(
       <>
         <div ref={alvo} />
-        <CtrlBar iframeRef={iframeRef} fullscreenTargetRef={alvo} onRestart={() => {}} />
+        <ControlledCtrlBar iframeRef={iframeRef} fullscreenTargetRef={alvo} onRestart={() => {}} />
       </>,
     )
     const antes = screen.getByRole('button', { name: 'Tela cheia' })
@@ -381,7 +386,7 @@ describe('o botão de tela cheia vira botão de VOLTAR', () => {
     render(
       <>
         <div ref={alvo} />
-        <CtrlBar iframeRef={iframeRef} fullscreenTargetRef={alvo} onRestart={() => {}} />
+        <ControlledCtrlBar iframeRef={iframeRef} fullscreenTargetRef={alvo} onRestart={() => {}} />
       </>,
     )
 

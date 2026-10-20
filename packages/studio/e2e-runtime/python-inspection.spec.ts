@@ -30,7 +30,11 @@ for (const scenario of [
     request,
   }, testInfo) => {
     const pageErrors: string[] = []
+    const consoleErrors: string[] = []
     page.on('pageerror', (error) => pageErrors.push(error.message))
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text())
+    })
     await page.goto(`/inspection-probe/${scenario}/`)
     await page.waitForFunction(() => Reflect.has(globalThis, '__studioPythonInspection'))
     const outcome = outcomeSchema.parse(
@@ -79,6 +83,7 @@ for (const scenario of [
       } else expect(outcome.report.files.every((file) => file.structure === undefined)).toBe(true)
     }
     expect(pageErrors).toEqual([])
+    expect(consoleErrors).toEqual([])
     await expect(page.locator('iframe')).toHaveCount(0)
     // The valid fixture imports an absent package and raises if executed; compilation must still pass.
     await expect(page.locator('body')).toHaveText('')

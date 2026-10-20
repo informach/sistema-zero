@@ -92,6 +92,9 @@ jobs:
       - name: Instalar dependências (lockfile congelado)
         run: bun install --frozen-lockfile
 
+      - name: Verificar tipos do promotor operacional Python
+        run: bun run --cwd packages/studio-runtime typecheck:promoter
+
       - name: Verificar barreira de manutenção
         run: bun test scripts/release scripts/ci
 
@@ -123,6 +126,7 @@ jobs:
         run: |
           bun packages/studio/scripts/build-python-runtime.ts
           bun test ./packages/studio/scripts/python/prepare-stdlib.test.ts
+          bun test ./packages/studio/scripts/python/provided-modules.test.ts
 
       - name: Preparar testes de mídia das oficinas
         working-directory: packages/live-recorder
@@ -187,6 +191,7 @@ jobs:
         run: |
           bun run check:pro-kits
           bun run check:pro-typescript-libs
+          bun run check:python-text-sources
           bun run test:canvas-survival
           bun run test:grid-games
           bun run verify:canvas-export

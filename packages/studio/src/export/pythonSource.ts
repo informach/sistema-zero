@@ -1,12 +1,18 @@
+import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
 import { buildPythonAssetBundle } from '../core/pythonAssets'
 import { assertPythonVisualDraftSettled } from '../python/blocks/workspaceDraft'
 import { pythonFilesToTree, refinePythonProjectDocument } from '../state/pythonProjectValidation'
 import type { ExportFileMap } from './fileMap'
 import { buildPythonSourceMetadata } from './pythonSourceMetadata'
 import type { SourceFilesResult } from './sourceExport'
+import { captureSourceExportCatalog } from './sourceRuntimeCatalog'
 
 /** Desktop source uses the learner's Python files and native libraries, never the browser adapter. */
-export async function buildPythonSourceFiles(raw: unknown): Promise<SourceFilesResult> {
+export async function buildPythonSourceFiles(
+  raw: unknown,
+  catalog?: StudioRuntimeCatalog | null,
+): Promise<SourceFilesResult> {
+  const runtimeCatalog = captureSourceExportCatalog(catalog)
   const project = await refinePythonProjectDocument(raw)
   assertPythonVisualDraftSettled(project)
   const tree = project.kind === 'pro' ? project.tree : pythonFilesToTree(project.files)
@@ -30,6 +36,7 @@ export async function buildPythonSourceFiles(raw: unknown): Promise<SourceFilesR
     directories,
     assets: bundle.manifest,
     occupiedFiles: Object.keys(files),
+    runtimeCatalog,
   })
   Object.assign(files, metadata.files)
   for (const path of directories) files[`${path}/`] = new Uint8Array()

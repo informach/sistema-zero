@@ -1,4 +1,5 @@
 import 'server-only'
+import { ProjectDocumentError } from '@sistemazero/studio/project-document'
 import { validateStudioCreationSnapshot } from '@sistemazero/studio/project-validation'
 import type { CreationDownloadTicketView } from '../../lib/types'
 import { r2ReadCreationJson } from '../r2'
@@ -32,7 +33,18 @@ export async function inspectPensaGame(
       409,
     )
   const document = await readJson(ticket.storageKey)
-  const project = validateStudioCreationSnapshot(document, expectedCreationId)
+  const project = (() => {
+    try {
+      return validateStudioCreationSnapshot(document, expectedCreationId)
+    } catch (cause) {
+      if (!(cause instanceof ProjectDocumentError)) throw cause
+      throw new PensaUnavailable(
+        'Esta criação não é compatível com o Pensa. Seu projeto continua guardado.',
+        'PENSA_PROJECT_UNSUPPORTED',
+        409,
+      )
+    }
+  })()
   const installedExtensionIds = [...new Set(project.installedExtensions.map((item) => item.id))]
   const runtimes = installedExtensionIds.filter((id) => PENSA_RUNTIME_EXTENSIONS.includes(id))
   if (runtimes.length > 1)

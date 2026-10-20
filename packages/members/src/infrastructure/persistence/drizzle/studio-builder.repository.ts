@@ -496,6 +496,40 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
         .orderBy(desc(jobs.createdAt))
         .limit(1)
       if (!found) return null
+      // Authorization is strictly read-only, even for an expired generation. Keep
+      // this before the expiry transition, which intentionally persists failures.
+      if (command.operation === 'authorize-generation') {
+        if (
+          found.phase !== 'generating' ||
+          journalFor(found).disposition === 'discarded' ||
+          command.token !== found.leaseToken ||
+          command.version !== found.version ||
+          !found.leaseUntil ||
+          found.leaseUntil <= now ||
+          found.deadlineAt <= now
+        )
+          throw new StudioBuilderConflictError('A autorização desta geração foi retirada.')
+        const revision = found.result
+          ? (await applyStudioProChange(found.base, found.result.change)).revision
+          : found.base
+        if (
+          revision.hash !== command.revisionHash ||
+          (found.result && found.result.revisionHash !== revision.hash) ||
+          revision.version !== 2 ||
+          revision.configuration.programmingLanguage !== 'python'
+        )
+          throw new StudioBuilderConflictError('A revisão não corresponde à geração Python.')
+        signal?.throwIfAborted()
+        return {
+          job: await view(tx, found),
+          token: null,
+          binaries: found.binaries,
+          generationLease: {
+            revisionHash: revision.hash,
+            parentOrigin: found.execution.parentOrigin,
+          },
+        }
+      }
       let row = found
       const update = async (data: Partial<typeof jobs.$inferInsert>) => {
         signal?.throwIfAborted()

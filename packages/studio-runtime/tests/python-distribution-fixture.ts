@@ -16,7 +16,13 @@ import {
 } from '../src/python-distributions'
 
 export async function pythonDistributionFixture(
-  options: { playtest?: boolean; standalone?: boolean; boot?: boolean; compressed?: boolean } = {},
+  options: {
+    playtest?: boolean
+    standalone?: boolean
+    boot?: boolean
+    compressed?: boolean
+    hostAudio?: boolean
+  } = {},
 ) {
   const contents = new Map<string, Uint8Array<ArrayBuffer>>()
   for (const path of [
@@ -38,6 +44,9 @@ export async function pythonDistributionFixture(
     'SOURCES.txt',
   ])
     contents.set(path, new TextEncoder().encode(`fixture:${path}`))
+  // Synthetic storage-contract fixture, never native launcher qualification.
+  if (options.hostAudio)
+    contents.set('standalone.mjs', new TextEncoder().encode('fixture:standalone:host-audio-v1'))
   const httpRepresentations: { path: string; encoding: 'gzip'; artifactPath: string }[] = []
   if (options.compressed) {
     const bytes = new Uint8Array(gzipSync(contents.get('frame.mjs')!))
@@ -49,6 +58,7 @@ export async function pythonDistributionFixture(
     version: 1,
     pyodideVersion: '314.0.7',
     pythonVersion: '3.14.2',
+    ...(options.hostAudio ? { previewHostAudioVersion: 1 } : {}),
     ...(httpRepresentations.length ? { httpRepresentations } : {}),
     files: await Promise.all(
       [...contents].map(async ([path, bytes]) => ({

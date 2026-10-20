@@ -241,6 +241,9 @@ export const ptBR: Record<string, string> = {
   'kits.search.label': 'Buscar jogos',
   'kits.search.placeholder': 'Nome, gênero ou conceito…',
   'kits.filter.difficulty': 'Dificuldade',
+  'kits.filter.language': 'Linguagem',
+  'kits.python.loading': 'Consultando os ambientes Python…',
+  'kits.python.unavailable': 'Python Pro ainda não está disponível neste ambiente.',
   'kits.filter.experience': 'Tipo',
   'kits.filter.all': 'Todos',
   'kits.difficulty.beginner': 'Primeiros passos',
@@ -274,6 +277,30 @@ export const ptBR: Record<string, string> = {
   'pintaImport.kind.tileset': '🧩 peças',
   'pintaImport.kind.tilemap': '🗺️ mapa',
   'pintaImport.close': 'Fechar',
+  'pintaImport.image.choose': 'Escolher imagem',
+  'pintaImport.image.chooseAnother': 'Escolher outra imagem',
+  'pintaImport.image.selection': 'Escolher a imagem do desenho',
+  'pintaImport.image.animation': 'Animação',
+  'pintaImport.image.frame': 'Quadro',
+  'pintaImport.image.tile': 'Peça',
+  'pintaImport.image.scale': 'Tamanho',
+  'pintaImport.image.staticFrame':
+    'Este quadro é uma imagem parada. A posição escolhida acompanha a ordem dos quadros no Pinta.',
+  'pintaImport.image.fullMap':
+    'O mapa inteiro vira uma imagem, com todas as camadas visíveis, incluindo a camada da frente.',
+  'pintaImport.image.preparing': 'Preparando a imagem…',
+  'pintaImport.image.preview': 'Prévia da imagem escolhida',
+  'pintaImport.image.add': 'Adicionar imagem',
+  'pintaImport.image.update': 'Atualizar esta imagem',
+  'pintaImport.image.review': 'Rever imagem escolhida',
+  'pintaImport.image.back': 'Voltar',
+  'pintaImport.image.unavailable': 'Não é possível preparar imagens do Pinta neste ambiente agora.',
+  'pintaImport.image.needsTileset':
+    'Este mapa precisa do conjunto de peças dele. Recupere o conjunto no Pinta.',
+  'pintaImport.image.selectionMissing':
+    'Esta animação, quadro ou peça não está disponível. Escolha novamente.',
+  'pintaImport.image.selectionChanged':
+    'A imagem recebida não corresponde à sua escolha. Confira a seleção novamente.',
 
   'moldaImport.button': '🧊 Trazer do Molda',
   'moldaImport.title': 'Trazer do Molda',

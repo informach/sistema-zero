@@ -4,7 +4,7 @@ import { getSchemaValidator, type TSchema, t } from 'elysia'
 import type { LessonBlockContent } from '../../domain/course/lesson-block'
 import { LESSON_BLOCK_KINDS } from '../../domain/course/lesson-block'
 import { LessonBlockContentSchema } from './dtos'
-import { LessonSectionSchema } from './learning.dtos'
+import { LessonSectionSchema, SectionCompletionDraftSchema } from './learning.dtos'
 
 /** Keep the editor's structural contract while allowing unfinished text, choices and URLs. */
 function authoringSchema(schema: TSchema): TSchema {
@@ -38,6 +38,7 @@ const Id = t.String({ format: 'uuid' })
 const DraftSection = t.Object({
   ...LessonSectionSchema.properties,
   title: t.String({ maxLength: 200 }),
+  completion: t.Optional(SectionCompletionDraftSchema),
 })
 const Attachment = t.Object({
   id: Id,

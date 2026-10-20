@@ -1,4 +1,12 @@
+import { canonicalJson } from '@sistemazero/core/creations'
+import {
+  PintaImageDerivationSchema,
+  type PintaImageRecipe,
+  pintaImageRecipeKey,
+} from '@sistemazero/core/studio/pinta-image'
+import type { ProjectAsset } from '#core'
 import { personalIdOf } from '../../asset-library/personalSync'
+import { isPythonProject } from '../../core/editableProject'
 import type { ProjectStoreApi } from '../../state/projectStore'
 import type { StudioMoldaImportResult } from '../../studio/molda-library'
 import type { StudioPintaImportResult } from '../../studio/pinta-library'
@@ -33,12 +41,48 @@ export function projectAssetFromCreation(
   return (state.project?.assets ?? []).find((asset) => personalIdOf(asset) === creationId)
 }
 
+/** Portable images sharing a drawing retain distinct frame/scale identities. */
+export function projectPintaImageFromRecipe(
+  state: Pick<ProjectStoreState, 'project'>,
+  recipe: PintaImageRecipe,
+) {
+  const key = pintaImageRecipeKey(recipe)
+  return state.project?.assets?.find(
+    (asset) => asset.pintaImage && pintaImageRecipeKey(asset.pintaImage.recipe) === key,
+  )
+}
+
 /** Desenho do Pinta (imagem + animações/peças/mapa). */
 export function addPintaCreationToProject(
   state: ProjectStoreActions,
   asset: PintaCreationAsset,
+  /** Captured before preparing an update; unrelated project edits do not invalidate it. */
+  expectedTarget?: ProjectAsset | null,
 ): string | null {
-  const existing = projectAssetFromCreation(state, asset.id)
+  const python = state.project && isPythonProject(state.project)
+  const parsed =
+    asset.pintaImage === undefined
+      ? undefined
+      : PintaImageDerivationSchema.safeParse(asset.pintaImage)
+  if (python && (!parsed?.success || parsed.data.recipe.drawingId !== asset.id))
+    return 'Escolha uma imagem do desenho antes de adicionar ao projeto Python.'
+  if (!python && parsed) return 'A seleção de imagem pertence a um projeto Python.'
+  const pintaImage = parsed?.success ? parsed.data : undefined
+  let existing = pintaImage
+    ? projectPintaImageFromRecipe(state, pintaImage.recipe)
+    : projectAssetFromCreation(state, asset.id)
+  if (expectedTarget === null && existing)
+    return 'Esta seleção foi adicionada durante a preparação. Confira a imagem novamente.'
+  if (expectedTarget) {
+    const current = state.project?.assets?.find((item) => item.id === expectedTarget.id)
+    if (!pintaImage || !current || canonicalJson(current) !== canonicalJson(expectedTarget))
+      return 'Esta imagem mudou durante a preparação. Confira a seleção novamente.'
+    if (existing && existing.id !== current.id)
+      return 'Esta seleção já está em outra imagem do projeto.'
+    if (personalIdOf(current) !== asset.id || !current.pintaImage)
+      return 'A seleção não corresponde à imagem do projeto.'
+    existing = current
+  }
   if (existing) {
     return state.updateAssetImage(existing.id, {
       dataUrl: asset.dataUrl,
@@ -48,6 +92,7 @@ export function addPintaCreationToProject(
       tileset: asset.tileset,
       tilemap: asset.tilemap,
       libRevision: asset.libRevision,
+      ...(pintaImage ? { pintaImage } : {}),
     })
   }
   const taken = new Set((state.project?.assets ?? []).map((a) => a.name))
@@ -64,6 +109,7 @@ export function addPintaCreationToProject(
     sprite: asset.sprite,
     tileset: asset.tileset,
     tilemap: asset.tilemap,
+    ...(pintaImage ? { pintaImage } : {}),
   })
 }
 

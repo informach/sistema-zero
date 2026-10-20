@@ -10,6 +10,7 @@ import {
   type StudioTutorSelection,
   studioProGameGuide,
 } from '@sistemazero/core/studio'
+import type { StudioPythonProvidedModuleDescriptor } from '@sistemazero/core/studio/python-provided-modules'
 import type { StudioTutorEnvironment } from '@sistemazero/core/studio/tutor-environment'
 import type { PythonCatalogEntry } from '@sistemazero/studio/python-authoring'
 import {
@@ -1158,6 +1159,7 @@ export function buildStudioZappyPrompt(input: {
   recentTurns?: readonly ZappyRecentTurn[]
   /** Server-curated Python catalog, never deserialized from the question. */
   pythonCatalog?: readonly PythonCatalogEntry[]
+  pythonProvidedModules?: readonly StudioPythonProvidedModuleDescriptor[]
 }): {
   system: string
   user: string
@@ -1173,6 +1175,7 @@ export function buildStudioZappyPrompt(input: {
       input.question,
       input.pythonCatalog,
       input.recentTurns,
+      input.pythonProvidedModules,
     )
   }
   if (input.context.kind === 'pro') {
@@ -1440,6 +1443,7 @@ export function validatedStudioZappyResponse(
 export interface StudioZappyAnswerInput {
   audience?: 'adult' | 'kids'
   pythonCatalog?: readonly PythonCatalogEntry[]
+  pythonProvidedModules?: readonly StudioPythonProvidedModuleDescriptor[]
   question: string
   context: ZappyContextInput
   tier: StudioTier

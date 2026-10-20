@@ -409,3 +409,71 @@ test('a etapa alcançada não volta quando a política ganha um curso numa etapa
   // Quem nunca abriu a jornada não tem piso: a lista usa a posição calculada.
   expect((await ctx.adultJourney.positions([accountId])).get(accountId)?.position).toBe(1)
 })
+
+test('piso visual não congela IA nova antes do requisito avançado real', async () => {
+  const ctx = buildApp()
+  const first = seedSampleCourse(ctx.courses, 'piso-conquista-real')
+  const advanced = seedSampleCourse(ctx.courses, 'piso-avancado-novo')
+  const advancedRow = ctx.courses.courses.find((course) => course.id === advanced.courseId)
+  if (!advancedRow) throw new Error('Curso avançado ausente')
+  advancedRow.level = 'avancado'
+  await ctx.adultJourney.configure(policy(first.courseId), 0)
+  ctx.gamification.events.push({
+    userId,
+    audience: 'adult',
+    sourceType: 'course_complete',
+    sourceId: first.courseId,
+    amount: 0,
+    createdAt: ctx.clockRef.now,
+  })
+  expect((await ctx.adultJourney.get(userId)).capabilities).toEqual(['studio'])
+  expect(ctx.adultJourneyRepository.reached.get(userId)).toBe(2)
+
+  await ctx.adultJourney.configure(
+    {
+      schemaVersion: 1,
+      stages: [
+        {
+          id: 'novo-avancado',
+          title: 'Novo avançado',
+          requirements: [{ courseId: advanced.courseId, milestone: 'showcase' }],
+          capabilities: [],
+        },
+        ...policy(first.courseId, ['studio', 'ai', 'pensa']).stages,
+      ],
+    },
+    1,
+  )
+  // Ler pode elevar o piso visual, mas nenhuma leitura pode congelar o ganho indevido.
+  for (let read = 0; read < 2; read++) {
+    const view = await ctx.adultJourney.get(userId)
+    expect(view.capabilities).toEqual(['studio'])
+    expect(view.stages.every((stage) => stage.completed)).toBe(true)
+    expect(await ctx.adultJourneyRepository.listGranted(userId)).toEqual(['studio'])
+    expect(ctx.adultJourneyRepository.reached.get(userId)).toBe(3)
+  }
+  expect((await ctx.adultJourney.positions([userId])).get(userId)?.position).toBe(3)
+
+  ctx.gamification.events.push({
+    userId,
+    audience: 'adult',
+    sourceType: 'course_complete',
+    sourceId: advanced.courseId,
+    amount: 0,
+    createdAt: ctx.clockRef.now,
+  })
+  expect((await ctx.adultJourney.get(userId)).capabilities).toEqual(['studio'])
+  expect(await ctx.adultJourneyRepository.listGranted(userId)).toEqual(['studio'])
+  ctx.gamification.events.push({
+    userId,
+    audience: 'adult',
+    sourceType: 'course_showcased',
+    sourceId: advanced.courseId,
+    amount: 0,
+    createdAt: ctx.clockRef.now,
+  })
+  expect((await ctx.adultJourney.get(userId)).capabilities).toEqual(['studio', 'ai', 'pensa'])
+  expect(await ctx.adultJourneyRepository.listGranted(userId)).toEqual(['studio', 'ai', 'pensa'])
+  await ctx.adultJourney.configure(policy(first.courseId), 2)
+  expect((await ctx.adultJourney.get(userId)).capabilities).toEqual(['studio', 'ai', 'pensa'])
+})

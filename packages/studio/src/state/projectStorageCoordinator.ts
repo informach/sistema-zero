@@ -525,7 +525,7 @@ export function mutateProjectRecord(
   id: string,
   extraKeys: readonly IDBValidKey[],
   mutation: (meta: Record<string, unknown>, values: unknown[]) => IdbWrite,
-  expectedToken?: string,
+  expectedToken?: string | null,
 ): Promise<boolean> {
   return conditionalWrite(
     scope.store,
@@ -535,7 +535,10 @@ export function mutateProjectRecord(
     ([meta, rawHead, ...values]) => {
       const head = isLocalHead(rawHead) ? rawHead : undefined
       if (!meta || typeof meta !== 'object' || head?.deleted) return { write: {}, result: false }
-      if (expectedToken !== undefined && head?.token !== expectedToken)
+      if (
+        expectedToken !== undefined &&
+        (expectedToken === null ? rawHead != null : head?.token !== expectedToken)
+      )
         throw new ProjectWriteConflict()
       const write = mutation(meta as Record<string, unknown>, values)
       return {

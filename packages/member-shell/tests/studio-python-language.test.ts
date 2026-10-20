@@ -4,8 +4,13 @@ import {
   StudioPythonAnalysisAuthorizationSchema,
   studioPythonAnalysisBinding,
 } from '@sistemazero/core/studio/python-language-authorization'
+import {
+  createStudioRuntimeRelease,
+  StudioRuntimeReleaseSchema,
+} from '@sistemazero/core/studio/runtime-catalog'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import { NextResponse } from 'next/server'
+import { providedPythonRelease } from '../../core/tests/fixtures/python-provided-release'
 import { AuthorizeAuthoringRuntimeService } from '../../members/src/application/studio/authorize-authoring-runtime.service'
 import { AuthorizePythonAnalysisService } from '../../members/src/application/studio/authorize-python-analysis.service'
 import { createStudioRuntimeHosts } from '../../members/src/domain/studio/runtime-hosts'
@@ -40,8 +45,29 @@ const request = (body: unknown) =>
   })
 const params = { params: Promise.resolve({ id: session }) }
 
-async function fixture() {
+async function fixture(withModules = false) {
   const f = await authoringFixture('python', 'pro')
+  if (withModules) {
+    const provided = await providedPythonRelease()
+    const release = await createStudioRuntimeRelease({
+      ...f.configuration.catalog.releases[0]!.manifest,
+      python: provided.manifest.python,
+      artifacts: provided.manifest.artifacts,
+    })
+    const runtime = {
+      profileId: release.profileId,
+      releaseId: release.releaseId,
+      manifestSha256: release.manifestSha256,
+    }
+    f.project.runtime = runtime
+    if (f.project.programmingLanguage === 'python')
+      f.project.python.dependencyLock.runtimeManifestSha256 = release.manifestSha256
+    f.configuration.catalog.releases = [StudioRuntimeReleaseSchema.parse(release)]
+    f.configuration.catalog.profiles[0]!.releases = [
+      { id: release.releaseId, manifestSha256: release.manifestSha256 },
+    ]
+    f.configuration.releases[0]!.runtime = runtime
+  }
   const draftRevision = crypto.randomUUID()
   const authorization = StudioPythonAnalysisAuthorizationSchema.parse({
     operation: 'analyze',
@@ -252,6 +278,8 @@ it('rejects grants, invalid commands, unscoped callers, oversize bodies and unsa
     { authorization: { ...f.authorization, capabilities: ['edit'] } },
     { authorization: { ...f.authorization, operation: 'execute' } },
     { authorization: f.authorization, binding: 'a'.repeat(64) },
+    { authorization: f.authorization, runtimeRelease: {} },
+    { authorization: f.authorization, providedModules: [] },
   ])
     expect((await f.routes.studioPythonLanguage.POST(request(body))).status).toBe(400)
   expect(
@@ -300,6 +328,27 @@ it('rejects grants, invalid commands, unscoped callers, oversize bodies and unsa
   }
   expect(f.state.checks).toBe(0)
   expect(f.calls).toHaveLength(0)
+})
+
+it('forwards only the exact validated decision release and rejects tampered catalog bytes', async () => {
+  const f = await fixture(true)
+  const response = await f.routes.studioPythonLanguage.POST(
+    request({ authorization: f.authorization }),
+  )
+  expect(response.status).toBe(200)
+  await response.arrayBuffer()
+  const forwarded = JSON.parse(String(f.calls[0]!.init!.body))
+  expect(forwarded.runtimeRelease).toEqual(f.configuration.catalog.releases[0])
+  expect(forwarded.runtimeRelease.manifest.python.providedModules).toHaveLength(1)
+  f.state.mutate = (value) => {
+    const decision = structuredClone(Object(value))
+    decision.catalog.releases[0].manifest.python.providedModules[0].descriptor.summary = 'forged'
+    return decision
+  }
+  expect(
+    (await f.routes.studioPythonLanguage.POST(request({ authorization: f.authorization }))).status,
+  ).toBe(503)
+  expect(f.calls).toHaveLength(1)
 })
 
 it('sanitizes upstream failures and separates profile/account identities', async () => {

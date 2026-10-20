@@ -1,6 +1,6 @@
 import { expect } from 'bun:test'
 import { createHash } from 'node:crypto'
-
+import type { StudioPythonBuilderPolicyResult } from '@sistemazero/core/studio/python-builder-authorization'
 import {
   type StudioPythonExecutionMetadata,
   verifyStudioPythonExecutionMetadata,
@@ -9,6 +9,7 @@ import {
   StudioPythonInputOpenSchema,
   StudioPythonValidationRequestSchema,
 } from '@sistemazero/core/studio/python-validation-input'
+import type { StudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import { capturePythonProRevisionPayload } from '../../../studio/src/state/pythonProRevision'
 import { PNG } from './gallery-python-source'
 import { controlledPythonBuilderReport } from './python-builder-report'
@@ -21,10 +22,21 @@ type Mode =
   | 'compile-failed'
   | 'playtest-failed'
   | 'bad-origin'
-export async function pythonBuilderNetworkFixture(mode: Mode) {
+export async function pythonBuilderNetworkFixture(
+  mode: Mode,
+  runtimeRelease?: StudioRuntimeRelease,
+) {
   const { project } = await authoringFixture('python', 'pro')
   if (project.programmingLanguage !== 'python' || project.kind !== 'pro')
     throw new Error('Python Pro expected')
+  if (runtimeRelease) {
+    project.runtime = {
+      profileId: runtimeRelease.profileId,
+      releaseId: runtimeRelease.releaseId,
+      manifestSha256: runtimeRelease.manifestSha256,
+    }
+    project.python.dependencyLock.runtimeManifestSha256 = runtimeRelease.manifestSha256
+  }
   project.tree['src/main.py'] = {
     kind: 'file',
     content: 'from helper import n\nprint("ação", n)\n',
@@ -41,6 +53,7 @@ export async function pythonBuilderNetworkFixture(mode: Mode) {
   ]
   const { base, binaries } = await capturePythonProRevisionPayload(project)
   const requests: string[] = [],
+    opened: unknown[] = [],
     uploaded = new Map<string, Uint8Array>(),
     operations: string[] = []
   let snapshot: StudioPythonExecutionMetadata | undefined
@@ -52,8 +65,10 @@ export async function pythonBuilderNetworkFixture(mode: Mode) {
       requests.push(`${req.method} ${path}`)
       if (path.startsWith('/v1/python-language/')) {
         if (req.method === 'DELETE') return Response.json({ closed: true })
-        if (path.endsWith('/open'))
+        if (path.endsWith('/open')) {
+          opened.push(await req.json())
           return Response.json({ version: 1, projectId: base.projectId, sessionId: 'c'.repeat(32) })
+        }
         if (path.endsWith('/start')) return Response.json({ ready: true })
         if (req.headers.get('x-studio-python-operation') === 'sync')
           return Response.json({ version: 1, id: 'builder_sync', kind: 'synced', revision: 1 })
@@ -167,10 +182,11 @@ export async function pythonBuilderNetworkFixture(mode: Mode) {
       candidate: { hash: string },
       metadata: { revision: string },
       operation: 'analyze' | 'execute',
-    ) {
+    ): Promise<StudioPythonBuilderPolicyResult> {
       expect(candidate.hash).toBe(base.hash)
       expect(metadata.revision).not.toBe(base.hash)
       operations.push(operation)
+      return runtimeRelease ? { runtimeRelease } : {}
     },
     cleanupFailed() {
       cleanup.push('analysis')
@@ -179,5 +195,5 @@ export async function pythonBuilderNetworkFixture(mode: Mode) {
       cleanup.push('execution')
     },
   }
-  return { options, requests, uploaded, operations, cleanup, stop: () => server.stop(true) }
+  return { options, requests, opened, uploaded, operations, cleanup, stop: () => server.stop(true) }
 }

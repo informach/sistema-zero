@@ -1,9 +1,15 @@
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
+import {
+  type StudioLiveProBuildRequest,
+  StudioLiveProSnapshotSchema,
+} from '@sistemazero/core/studio/live-pro-runtime'
 import { StudioProjectCurationSchema } from '@sistemazero/core/studio/project-capabilities'
+import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-document'
 import {
   StudioLiveRuntimeDecisionSchema,
   type StudioLiveRuntimeRequest,
 } from '@sistemazero/core/studio/runtime-authorization'
+import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import type { LiveActor } from '../../domain/ports/live-repository.port'
 import type { StudioRuntimePolicy } from '../../domain/studio/runtime-policy'
@@ -15,6 +21,36 @@ export class AuthorizeLiveRuntimeService {
     private readonly policy: StudioRuntimePolicy | undefined,
     private readonly clock: () => number = Date.now,
   ) {}
+
+  async proSnapshot(actor: LiveActor, raw: StudioLiveProBuildRequest) {
+    const request = structuredClone(raw)
+    const snapshot = await this.workspace
+      .forSession(request.context.sessionId ?? undefined)
+      .proBuildSnapshot(actor, request)
+    if (snapshot.project.formatVersion === 3) {
+      if (!this.policy)
+        throw new AccessDeniedError('O ambiente de execução ainda não está disponível.')
+      this.policy.authorizeProBuild({
+        project: studioRuntimeSubject(StudioProjectDocumentSchema.parse(snapshot.project)),
+        operation: 'execute',
+        curation: StudioProjectCurationSchema.parse(snapshot.binding?.curation ?? {}),
+        grantedCapabilities: ['edit', 'execute', 'export-source'],
+      })
+    }
+    const now = this.clock()
+    const lease = Date.parse(snapshot.workspace.leaseExpiresAt ?? '')
+    if (!Number.isFinite(lease) || lease <= now)
+      throw new AccessDeniedError('A autoria mudou. Reabra o projeto para continuar.')
+    return StudioLiveProSnapshotSchema.parse({
+      context: request.context,
+      actor: { userId: actor.id, accountId: actor.accountId },
+      workspaceRevision: snapshot.workspace.revision,
+      project: snapshot.project,
+      projectSha256: snapshot.projectSha256,
+      templateId: snapshot.templateId,
+      expiresAt: Math.min(now + 30_000, lease),
+    })
+  }
 
   async execute(actor: LiveActor, request: StudioLiveRuntimeRequest) {
     if (!this.policy)

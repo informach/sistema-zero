@@ -235,6 +235,7 @@ async function pythonProposal() {
   f.job.version = 4
   f.job.result = { change, revisionHash: revision.hash, preview, evidence: [], plan: ['Editar'] }
   options.authorization = {
+    policy: {},
     revisionHash: revision.hash,
     executionRevision: snapshot.revision,
     parentOrigin: 'https://kids.test',
@@ -260,6 +261,7 @@ test('Python preview authorization returns only the canonical reference after a 
   expect(body).not.toContain('PRIVATE')
   expect(body).not.toContain('main.py')
   expect(body).not.toContain('private-python-token')
+  expect(body).not.toContain('policy')
   expect(f.commands.map((item) => item.command.operation)).toEqual(['authorize-proposal'])
   expect(f.commands[0]?.command).toMatchObject({
     purpose: 'preview',
@@ -315,6 +317,9 @@ test('a browser cannot supply a preview URL, executor token or private authoriza
     { ...f.previewInput, url: 'https://attacker.test' },
     { ...f.previewInput, token: crypto.randomUUID() },
     { ...f.previewInput, operation: 'authorize-proposal', purpose: 'preview' },
+    { ...f.previewInput, operation: 'authorize-generation', token: crypto.randomUUID() },
+    { ...f.previewInput, policy: {} },
+    { ...f.previewInput, runtimeRelease: {} },
   ])
     expect((await f.post(input)).status).toBe(400)
   expect(f.commands).toHaveLength(0)

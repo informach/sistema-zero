@@ -1,4 +1,5 @@
 import { ValidationError } from '@sistemazero/core/errors'
+import { StudioLiveProBuildRequestSchema } from '@sistemazero/core/studio/live-pro-runtime'
 import { StudioLiveRuntimeRequestSchema } from '@sistemazero/core/studio/runtime-authorization'
 import { Elysia, t } from 'elysia'
 import type { LiveWorkspaceService } from '../../../application/live/live-workspace.service'
@@ -63,6 +64,17 @@ export function liveWorkspaceRoutes(deps: {
   const student = new Elysia({ prefix: '/members/live' })
     .onBeforeHandle(guard)
     .onBeforeHandle(support)
+    .post(
+      '/workspaces/:id/pro-build-snapshot',
+      ({ params, body, headers }) => {
+        if (params.id !== body.context.workspaceId)
+          throw new ValidationError('O contexto não corresponde ao projeto aberto.')
+        if (!deps.runtime)
+          throw new AccessDeniedError('O ambiente de execução ainda não está disponível.')
+        return deps.runtime.proSnapshot(actor(headers), body)
+      },
+      { params: Params, body: StudioLiveProBuildRequestSchema },
+    )
     .post(
       '/workspaces/:id/runtime',
       ({ params, body, headers, request }) => {

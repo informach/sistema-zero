@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
 import { readJsonBodyWithLimit } from '@sistemazero/core/http'
-import type { ProjectCheckResponse } from '@sistemazero/core/learning'
+import { isProjectCheckResponse } from '@sistemazero/core/learning'
 import type { Logger } from '@sistemazero/core/logging'
 import {
   createCheckScope,
@@ -118,9 +118,8 @@ export function createStudioRuntimeChecker(
       opts.logger?.warn('studio-runtime check unreachable', { error: String(error) })
       throw new ProjectCheckUnavailableError()
     }
-    const result = (await readJsonBodyWithLimit(response, 6_000_000).catch(
-      () => null,
-    )) as ProjectCheckResponse | null
+    const raw: unknown = await readJsonBodyWithLimit(response, 6_000_000).catch(() => null)
+    const result = isProjectCheckResponse(raw) ? raw : null
     if (response.status === 429) throw new ProjectCheckBusyError()
     // Recusa do executor é de AUTORIA (ou de tamanho): a criança lê "não consegui testar", a
     // equipe lê o motivo. Nunca é guardada (só o sucesso entra no cache).
@@ -128,21 +127,20 @@ export function createStudioRuntimeChecker(
       throw new ProjectCheckRejectedError(result.message || 'O projeto não pode ser testado.')
     if (response.status === 413)
       throw new ProjectCheckRejectedError('O projeto ficou grande demais para o teste.')
-    if (!response.ok || !result?.ok || !Array.isArray(result.results)) {
+    if (!response.ok || !result?.ok || result.results.length !== input.objectives.length) {
       opts.logger?.warn('studio-runtime check failed', { status: response.status })
       throw new ProjectCheckUnavailableError()
     }
     const byId = new Map(result.results.map((item) => [item.id, item]))
-    // Cada objetivo pedido precisa voltar: resposta incompleta não aprova nada.
-    if (input.objectives.some((objective) => !byId.has(objective.id)))
-      throw new ProjectCheckUnavailableError()
     return {
       results: input.objectives.map((objective) => {
         const item = byId.get(objective.id)
+        // Exact cardinality plus unique canonical IDs forbids missing/extra verdicts.
+        if (!item) throw new ProjectCheckUnavailableError()
         return {
           id: objective.id,
-          passed: item?.passed === true,
-          ...(typeof item?.detail === 'string' ? { detail: item.detail.slice(0, 1000) } : {}),
+          passed: item.passed,
+          ...(item.detail !== undefined ? { detail: item.detail.slice(0, 1000) } : {}),
         }
       }),
       ...(result.screenshots ? { screenshots: result.screenshots } : {}),

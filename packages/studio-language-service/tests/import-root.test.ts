@@ -15,7 +15,7 @@ async function fixture(entrypoint: string, files: Record<string, string>) {
   const session = new PythonLanguageSession({
     root,
     nodePath: Bun.which('node')!,
-    serverPath: createRequire(import.meta.url).resolve('pyright/dist/pyright-langserver.js'),
+    serverPath: createRequire(import.meta.url).resolve('pyright/langserver.index.js'),
   })
   let sequence = 0
   const send = (input: object) =>

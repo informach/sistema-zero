@@ -58,7 +58,7 @@ test.each([
     () => new Date(),
     true,
     false,
-    async () => {},
+    async () => ({}),
   )
   let late: Promise<StudioProBuilderClaim | null> | undefined
   try {

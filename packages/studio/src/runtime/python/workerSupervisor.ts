@@ -31,6 +31,7 @@ export function createPythonWorkerSupervisor(options: {
   onReady(): void
   /** Releases bootstrap URLs and other frame-owned resources, never learner cleanup. */
   onRelease(): void
+  audio?(request: string): Promise<string>
   graphics?(
     request: string,
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
@@ -52,6 +53,7 @@ export function createPythonWorkerSupervisor(options: {
   let consoleChunks = 0
   let released = false
   let pendingGraphics: string | undefined
+  let pendingAudio: string | undefined
   let activityRequested = false
   let pendingActivity:
     | { id: string; idle: boolean; timer: ReturnType<typeof setTimeout> }
@@ -70,6 +72,7 @@ export function createPythonWorkerSupervisor(options: {
     operation = undefined
     inputId = undefined
     pendingGraphics = undefined
+    pendingAudio = undefined
     if (pendingActivity) clearTimeout(pendingActivity.timer)
     pendingActivity = undefined
     worker.removeEventListener('message', message)
@@ -126,7 +129,8 @@ export function createPythonWorkerSupervisor(options: {
           value.requestId !== pending.id ||
           phase !== 'running' ||
           inputId ||
-          pendingGraphics
+          pendingGraphics ||
+          pendingAudio
         )
           break
         let feedback: StudioPythonActivityFeedback
@@ -146,7 +150,7 @@ export function createPythonWorkerSupervisor(options: {
         return
       }
       case 'graphics': {
-        if (phase !== 'running' || !options.graphics || pendingGraphics) break
+        if (phase !== 'running' || !options.graphics || pendingGraphics || pendingAudio) break
         pendingGraphics = value.requestId
         Promise.resolve()
           .then(() => {
@@ -164,6 +168,30 @@ export function createPythonWorkerSupervisor(options: {
             fail(
               'program-error',
               error instanceof Error ? error.message.slice(0, 4000) : 'Falha Turtle.',
+            ),
+          )
+        return
+      }
+      case 'audio': {
+        if (phase !== 'running' || !options.audio || pendingAudio || pendingGraphics || inputId)
+          break
+        pendingAudio = value.requestId
+        Promise.resolve()
+          .then(() => {
+            if (terminal()) return undefined
+            return options.audio!(value.request)
+          })
+          .then((response) => {
+            if (terminal() || pendingAudio !== value.requestId) return
+            if (typeof response !== 'string' || response.length > 2048)
+              throw new Error('Resposta de áudio inválida.')
+            pendingAudio = undefined
+            send({ type: 'audio-response', requestId: value.requestId, response })
+          })
+          .catch((error: unknown) =>
+            fail(
+              'program-error',
+              error instanceof Error ? error.message.slice(0, 4000) : 'Falha do áudio.',
             ),
           )
         return
@@ -203,7 +231,7 @@ export function createPythonWorkerSupervisor(options: {
         if (state('ready')) options.onReady()
         return
       case 'input-request':
-        if (phase !== 'running' || !operation || inputId || pendingGraphics) break
+        if (phase !== 'running' || !operation || inputId || pendingGraphics || pendingAudio) break
         inputId = value.requestId
         if (state('waiting-input'))
           options.emit({ type: 'input-request', requestId: value.requestId, prompt: '' })
@@ -214,7 +242,8 @@ export function createPythonWorkerSupervisor(options: {
           !operation ||
           value.requestId !== operation.id ||
           inputId ||
-          pendingGraphics
+          pendingGraphics ||
+          pendingAudio
         )
           break
         const kind = operation.kind

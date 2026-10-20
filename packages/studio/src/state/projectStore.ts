@@ -1,3 +1,4 @@
+import { canonicalJson } from '@sistemazero/core/creations'
 import { isStudioPythonAssetPath } from '@sistemazero/core/studio/portable-path'
 import { isStudioPublicationId } from '@sistemazero/core/studio/project-format'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
@@ -44,6 +45,7 @@ import {
   type PythonProjectDocument,
   type PythonProProjectDocument,
 } from '../core/editableProject'
+import { readPintaImageAssetMetadata } from '../core/pintaImageAsset'
 import { parseProAssistance } from '../core/proAssistance'
 import {
   assertProjectContentPreserved,
@@ -73,6 +75,7 @@ import {
   persistProject,
   renameProjectMeta,
 } from './persistence'
+import { beginProjectOpening } from './projectOpening'
 import { bindProjectToDurableHead } from './projectStorageCoordinator'
 import {
   advanceLocalRevision,
@@ -317,6 +320,8 @@ export interface NewAssetInput {
   libRevision?: number
   /** Origem da criação quando `libId` é `personal:<id>` (ver `ProjectAsset.libOrigin`). */
   libOrigin?: 'pinta' | 'molda'
+  /** Strict captured-image metadata, validated before committing the asset. */
+  pintaImage?: unknown
   /** Attribution travels with the bytes through native/web export and publication. */
   license?: ProjectAsset['license']
   /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
@@ -346,6 +351,7 @@ export interface UpdateAssetImageInput {
   tilemap?: unknown
   /** Revisão dos bytes na biblioteca pessoal. */
   libRevision?: number
+  pintaImage?: unknown
 }
 
 function bump<T extends Project>(p: T): T {
@@ -491,6 +497,7 @@ export function createProjectStore(
   // Por instância (no closure do factory), não module-global: stores separadas
   // não disputam o mesmo contador.
   let loadSeq = 0
+  let releasePendingOpening = () => {}
   const store = createStore<ProjectStore>((rawSet, get) => {
     const set: typeof rawSet = (update) => {
       const patch = typeof update === 'function' ? update(get()) : update
@@ -547,29 +554,39 @@ export function createProjectStore(
       loadProject: async (id) => {
         loadSeq += 1
         const seq = loadSeq
-        const existing = await loadSanitizedProjectById(id, undefined, true)
-        // Um load mais novo começou enquanto este aguardava o disco: a corrida foi
-        // perdida — não toca o store (o load mais novo é a verdade), mas devolve o
-        // que ESTE load leu para o chamador que o aguardava (sem efeito colateral).
-        if (seq !== loadSeq) return existing
-        if (!existing) {
-          set({ project: null, isDirty: false, saveError: null, blocksHydration: 'idle' })
-          return null
+        releasePendingOpening()
+        const scope = captureProjectStorageScope()
+        const release = beginProjectOpening(scope, id)
+        releasePendingOpening = release
+        try {
+          const existing = await loadSanitizedProjectById(id, scope, true)
+          // Um load mais novo começou enquanto este aguardava o disco: a corrida foi
+          // perdida — não toca o store (o load mais novo é a verdade), mas devolve o
+          // que ESTE load leu para o chamador que o aguardava (sem efeito colateral).
+          if (seq !== loadSeq || scope.signal?.aborted) return existing
+          if (!existing) {
+            set({ project: null, isDirty: false, saveError: null, blocksHydration: 'idle' })
+            return null
+          }
+          set({
+            project: existing,
+            isDirty: readLocalRevision(existing)?.lineage.recovery === true,
+            saveError: readLocalRevision(existing)?.lineage.recovery
+              ? 'Uma edição preservada foi reaberta. A gravação local ainda está pendente.'
+              : null,
+            blocksHydration: 'idle',
+            bridgeCodeEditEpoch: 0,
+            bridgeBlocksSyncedEpoch: 0,
+          })
+          return existing
+        } finally {
+          release()
+          if (releasePendingOpening === release) releasePendingOpening = () => {}
         }
-        set({
-          project: existing,
-          isDirty: readLocalRevision(existing)?.lineage.recovery === true,
-          saveError: readLocalRevision(existing)?.lineage.recovery
-            ? 'Uma edição preservada foi reaberta. A gravação local ainda está pendente.'
-            : null,
-          blocksHydration: 'idle',
-          bridgeCodeEditEpoch: 0,
-          bridgeBlocksSyncedEpoch: 0,
-        })
-        return existing
       },
       hydrateProject: (p) => {
         loadSeq++
+        releasePendingOpening()
         rawSet({
           project: forkLocalRevision(p),
           isDirty: readLocalRevision(p)?.lineage.recovery === true,
@@ -621,6 +638,7 @@ export function createProjectStore(
       },
       unloadProject: () => {
         loadSeq++
+        releasePendingOpening()
         rawSet({
           project: null,
           isDirty: false,
@@ -1261,6 +1279,12 @@ export function createProjectStore(
         const sprite = isImage ? sanitizeSpriteMeta(input.sprite) : undefined
         const tileset = isImage ? sanitizeTilesetMeta(input.tileset) : undefined
         const tilemap = isImage ? sanitizeTilemapMeta(input.tilemap) : undefined
+        let pintaImage: ProjectAsset['pintaImage']
+        try {
+          pintaImage = readPintaImageAssetMetadata({ ...input, kind })
+        } catch (error) {
+          return error instanceof Error ? error.message : 'A receita do Pinta é inválida.'
+        }
         const asset: ProjectAsset = {
           id: ulid(),
           name,
@@ -1291,6 +1315,7 @@ export function createProjectStore(
           ...(sprite ? { sprite } : {}),
           ...(tileset ? { tileset } : {}),
           ...(tilemap ? { tilemap } : {}),
+          ...(pintaImage ? { pintaImage } : {}),
         }
         if (isPythonProject(p)) {
           const mime = input.dataUrl.slice(5).split(/[;,]/, 1)[0]!.toLowerCase()
@@ -1326,6 +1351,8 @@ export function createProjectStore(
         if (!p?.assets) return 'Sem imagens no projeto.'
         const target = p.assets.find((a) => a.id === id)
         if (!target) return 'Imagem não encontrada.'
+        if (target.pintaImage)
+          return 'Esta imagem é um PNG capturado do Pinta. Altere sua seleção no Pinta.'
         const next: ProjectAsset = { ...target }
         if ('tileset' in meta) {
           const tileset = sanitizeTilesetMeta(meta.tileset)
@@ -1353,6 +1380,23 @@ export function createProjectStore(
         const target = p.assets.find((a) => a.id === id)
         if (!target) return 'Imagem não encontrada.'
         if (target.kind === 'audio') return 'Esse arquivo não é uma imagem.'
+        if (target.pintaImage && image.pintaImage === undefined)
+          return 'Prepare a imagem usando a receita do Pinta antes de atualizar este material.'
+        let pintaImage: ProjectAsset['pintaImage']
+        try {
+          pintaImage = readPintaImageAssetMetadata({
+            ...target,
+            dataUrl: image.dataUrl,
+            width: image.width ?? target.width,
+            height: image.height ?? target.height,
+            pintaImage: image.pintaImage,
+            sprite: image.sprite,
+            tileset: image.tileset,
+            tilemap: image.tilemap,
+          })
+        } catch (error) {
+          return error instanceof Error ? error.message : 'A receita do Pinta é inválida.'
+        }
         const is3D = target.kind === 'model3d' || target.kind === 'environment3d'
         // 3D: a validação cruza extensão × MIME × assinatura, então o nome do arquivo faz
         // parte do contrato (o da criação nova, senão o que o asset já tinha).
@@ -1371,7 +1415,9 @@ export function createProjectStore(
             : undefined
         if (
           target.dataUrl === image.dataUrl &&
-          (libRevision === undefined || target.libRevision === libRevision)
+          (libRevision === undefined || target.libRevision === libRevision) &&
+          (pintaImage === undefined ||
+            canonicalJson(target.pintaImage ?? null) === canonicalJson(pintaImage))
         ) {
           return null
         }
@@ -1406,12 +1452,15 @@ export function createProjectStore(
         // aqui pelo TileConfigDialog não existem no Pinta). Não traz e a geometria
         // MUDOU → descarta: frameW/frameH e os índices de `solid` apontariam para
         // quadros que não existem mais.
-        const sprite =
-          sanitizeSpriteMeta(image.sprite) ?? (sameGeometry ? target.sprite : undefined)
-        const tileset =
-          sanitizeTilesetMeta(image.tileset) ?? (sameGeometry ? target.tileset : undefined)
-        const tilemap =
-          sanitizeTilemapMeta(image.tilemap) ?? (sameGeometry ? target.tilemap : undefined)
+        const sprite = pintaImage
+          ? undefined
+          : (sanitizeSpriteMeta(image.sprite) ?? (sameGeometry ? target.sprite : undefined))
+        const tileset = pintaImage
+          ? undefined
+          : (sanitizeTilesetMeta(image.tileset) ?? (sameGeometry ? target.tileset : undefined))
+        const tilemap = pintaImage
+          ? undefined
+          : (sanitizeTilemapMeta(image.tilemap) ?? (sameGeometry ? target.tilemap : undefined))
 
         // ⚠️ `name`, `id`, `libId` e `source` ficam INTOCADOS: os blocos referenciam
         // o asset PELO NOME (FieldAssetPicker serializa a string), então renomear
@@ -1422,6 +1471,7 @@ export function createProjectStore(
           dataUrl: image.dataUrl,
           ...(width ? { width } : {}),
           ...(height ? { height } : {}),
+          ...(pintaImage ? { pintaImage } : {}),
         }
         if (libRevision !== undefined) next.libRevision = libRevision
         if (originalFileName) next.originalFileName = originalFileName
@@ -1725,6 +1775,7 @@ export function createLocalPersistenceAdapter(
       : getProjectStorageScope(options.namespace)
   return {
     scopeIdentity: scope.identity,
+    beginOpening: (id, options) => beginProjectOpening(scope, id, options?.signal),
     // ABERTURA RÁPIDA: lê só meta+arquivos+assets (ir/blocksState voltam null). Ler
     // o `blocksState` (que pode ser ENORME) de forma síncrona aqui trava a tela
     // "Carregando projeto…" no structured clone do IndexedDB. O `blocksState` é

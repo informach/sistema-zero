@@ -2,6 +2,7 @@ import type { StudioAiActor, StudioAiFundingSource } from '../ai-credits'
 import type { StudioProArtifact, StudioProValidationIdentity } from './pro-artifact'
 import type { StudioProAssistanceJournal, StudioProAssistanceRequest } from './pro-assistance'
 import type { StudioProChange, StudioProRevision } from './pro-revision'
+import type { StudioPythonBuilderPolicyResult } from './python-builder-authorization'
 import type { StudioPythonBuilderPreview } from './python-builder-preview'
 import type { StudioPythonPreviewReference } from './python-preview'
 
@@ -92,12 +93,19 @@ export interface StudioProBuilderJob {
 export interface StudioProBuilderClaim {
   job: StudioProBuilderJob
   token: string | null
-  /** Private worker payload, returned only with a validation lease. Never part of prompts. */
+  /** Private validation payload, also used within repository-to-service authorization. Never a prompt. */
   binaries?: Record<string, { base64: string; sha256: string }>
   /** Fresh internal lease/policy check; never a bearer grant or public project metadata. */
-  authorization?: { revisionHash: string; executionRevision: string; parentOrigin: string }
+  authorization?: {
+    policy: StudioPythonBuilderPolicyResult
+    revisionHash: string
+    executionRevision: string
+    parentOrigin: string
+  }
   /** Repository-to-service payload, consumed before returning the policy decision. */
   validationLease?: { revisionHash: string; parentOrigin: string }
+  /** Repository-to-service generation scope; consumed before returning to the BFF. */
+  generationLease?: { revisionHash: string; parentOrigin: string }
   /** Repository-to-service proposal scope, independent of an executor lease. */
   proposalScope?: { revisionHash: string; parentOrigin: string }
 }
@@ -220,6 +228,14 @@ export type StudioProBuilderCommand =
       evidence: StudioProBuilderEvidence[]
     }
   | { operation: 'claim'; id: string; projectId: string }
+  | {
+      operation: 'authorize-generation'
+      id: string
+      projectId: string
+      token: string
+      version: number
+      revisionHash: string
+    }
   | {
       operation: 'authorize-validation'
       id: string

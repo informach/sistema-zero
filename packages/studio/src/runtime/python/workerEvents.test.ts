@@ -1,6 +1,26 @@
 import { expect, test } from 'bun:test'
 import { readPythonWorkerEvent } from './workerEvents'
 
+test('audio messages carry only a bounded request and request identity', () => {
+  const request = JSON.stringify({ version: 1, op: 'stop', id: null })
+  expect(
+    readPythonWorkerEvent({
+      type: 'audio',
+      requestId: 'sound-1',
+      request,
+      url: 'https://evil.test',
+    }),
+  ).toEqual({ type: 'audio', requestId: 'sound-1', request })
+  for (const change of [
+    { requestId: 'bad\n' },
+    { request: JSON.stringify({ version: 1, op: 'stop', id: null, url: 'https://evil.test' }) },
+    { request: ' '.repeat(2049) },
+  ])
+    expect(
+      readPythonWorkerEvent({ type: 'audio', requestId: 'sound-1', request, ...change }),
+    ).toBeUndefined()
+})
+
 test('graphics bounds reject shared memory, duplicate images and excessive payloads', () => {
   const event = {
     type: 'graphics' as const,

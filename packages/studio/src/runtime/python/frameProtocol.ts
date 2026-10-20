@@ -79,6 +79,7 @@ export type PythonFrameCommand = {
   | { type: 'evaluate'; requestId: string; source: string }
   | { type: 'activity-check'; requestId: string }
   | { type: 'input'; requestId: string; response: StudioRuntimeInput }
+  | { type: 'audio-response'; requestId: string; response: string }
 )
 export type PythonFrameMessage = {
   protocol: 1
@@ -89,6 +90,7 @@ export type PythonFrameMessage = {
   | { type: 'prepared' }
   | { type: 'event'; event: PythonRuntimePayload }
   | { type: 'activity-result'; requestId: string; feedback: StudioPythonActivityFeedback }
+  | { type: 'audio-request'; requestId: string; request: string }
   | {
       type: 'ack'
       commandId: number

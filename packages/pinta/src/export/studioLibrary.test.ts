@@ -1,12 +1,15 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import {
+  createBitmap,
+  createPixelBackgroundAsset,
+  createPixelLayer,
   createPixelSpriteAsset,
   createTilemapAsset,
   createTilesetAsset,
   createVectorBackgroundAsset,
   createVectorTilesetAsset,
 } from '../core/project'
-import { clearIdbMock, idbMockStats, resetIdbMockStats } from '../testing/idbMock'
+import { clearIdbMock, idbMockStats, resetIdbMockStats, setIdbReadGuard } from '../testing/idbMock'
 import { makeEllipse, makeRect } from '../vector/shapes'
 import type { StudioPayload } from './studioBridge'
 import { validateStudioPayloadSize } from './studioBridge'
@@ -31,6 +34,61 @@ function redRect() {
 }
 
 describe('listGalleryForStudio', () => {
+  it('pixel backgrounds report canonical cel dimensions even when the first layer is hidden', async () => {
+    const background = createPixelBackgroundAsset({ name: 'ceu-pixel', width: 30, height: 12 })
+    background.layers[0]!.visible = false
+    background.layers.push(createPixelLayer(1))
+    background.cels.push(createBitmap(30, 12))
+    await persistAsset(background)
+    const legacy = await listGalleryForStudio()
+    expect(legacy).toHaveLength(1)
+    expect(Object.hasOwn(legacy[0]!, 'imageSelection')).toBe(false)
+    const selected = await listGalleryForStudio({ includeImageSelection: true })
+    expect(selected[0]?.imageSelection).toEqual({
+      kind: 'background',
+      width: 30,
+      height: 12,
+    })
+    const { imageSelection: _selection, ...summary } = selected[0]!
+    expect(summary).toEqual(legacy[0]!)
+  })
+
+  it('only exposes lightweight positional image choices when explicitly requested', async () => {
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    const animation = sprite.animations[0]!
+    animation.frames.push(structuredClone(animation.frames[0]!))
+    const tileset = createVectorTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const map = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 3, rows: 2 })
+    const missing = createTilemapAsset({
+      name: 'sem-pecas',
+      tilesetId: 'missing',
+      cols: 1,
+      rows: 1,
+    })
+    const background = createVectorBackgroundAsset({ name: 'ceu', width: 30, height: 20 })
+    await persistAssets([sprite, tileset, map, missing, background])
+    expect((await listGalleryForStudio()).every((item) => !('imageSelection' in item))).toBe(true)
+    const summaries = await listGalleryForStudio({ includeImageSelection: true })
+    const choices = new Map(summaries.map((item) => [item.id, item.imageSelection]))
+    expect(choices.get(sprite.id)).toEqual({
+      kind: 'frame',
+      width: 8,
+      height: 8,
+      animations: [{ id: animation.id, name: animation.name, frameCount: 2 }],
+    })
+    expect(choices.get(tileset.id)).toEqual({
+      kind: 'tile',
+      width: 16,
+      height: 16,
+      tileCount: 1,
+    })
+    expect(choices.get(map.id)).toEqual({ kind: 'tilemap', width: 48, height: 32 })
+    expect(choices.get(missing.id)).toEqual({ kind: 'unavailable', reason: 'needs-tileset' })
+    expect(choices.get(background.id)).toEqual({ kind: 'background', width: 30, height: 20 })
+    expect(JSON.stringify([...choices.values()])).not.toContain('dataUrl')
+    expect(JSON.stringify([...choices.values()])).not.toContain('shapes')
+  })
+
   it('resume todos os desenhos com papel/estilo e ordena por mais recente', async () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
@@ -151,6 +209,63 @@ describe('listGalleryForStudio', () => {
 })
 
 describe('exportAssetForStudio', () => {
+  it('keeps a map and its tileset in the captured profile across an intervening profile change', async () => {
+    const tileset = createVectorTilesetAsset({ name: 'pecas-a', tileSize: 16 })
+    const map = createTilemapAsset({ name: 'mapa-a', tilesetId: tileset.id, cols: 1, rows: 1 })
+    setPintaStorageNamespace('profile-a')
+    await persistAssets([tileset, map])
+    setPintaStorageNamespace('profile-b')
+    await persistAssets([
+      { ...tileset, name: 'pecas-b' },
+      { ...map, name: 'mapa-b' },
+    ])
+    setPintaStorageNamespace('profile-a')
+    const databases: string[] = []
+    setIdbReadGuard((_key, database) => {
+      databases.push(database)
+      if (databases.length === 1) setPintaStorageNamespace('profile-b')
+    })
+    await exportAssetForStudio(map.id)
+    expect(databases).toEqual(['sistema-zero-pinta-profile-a', 'sistema-zero-pinta-profile-a'])
+  })
+
+  it('uses an explicit namespace for listing/export without changing the active profile', async () => {
+    const vector = createVectorBackgroundAsset({ name: 'fonte-a', width: 8, height: 8 })
+    setPintaStorageNamespace('profile-a')
+    await persistAsset(vector)
+    setPintaStorageNamespace('profile-b')
+    expect(
+      (await listGalleryForStudio({ namespace: 'profile-a' })).map((item) => item.name),
+    ).toEqual(['fonte-a'])
+    const exported = await exportAssetForStudio(vector.id, { namespace: 'profile-a' })
+    expect(exported.ok).toBe(true)
+    expect(await listGalleryForStudio()).toEqual([])
+  })
+
+  it('does not read the linked tileset after cancellation of the captured source read', async () => {
+    const tileset = createVectorTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const map = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 1, rows: 1 })
+    await persistAssets([tileset, map])
+    const entered = Promise.withResolvers<void>(),
+      release = Promise.withResolvers<void>()
+    const controller = new AbortController()
+    const reads: IDBValidKey[] = []
+    setIdbReadGuard(async (key) => {
+      reads.push(key)
+      entered.resolve()
+      await release.promise
+    })
+    const pending = exportAssetForStudio(map.id, { signal: controller.signal }).then(
+      () => null,
+      (error: unknown) => error,
+    )
+    await entered.promise
+    controller.abort()
+    release.resolve()
+    expect(await pending).toBeInstanceOf(DOMException)
+    expect(reads).toEqual([`pinta:asset:${map.id}`])
+  })
+
   it('desenho apagado → not-found', async () => {
     expect(await exportAssetForStudio('nao-existe')).toEqual({ ok: false, reason: 'not-found' })
   })

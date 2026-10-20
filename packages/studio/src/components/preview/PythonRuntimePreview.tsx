@@ -3,6 +3,7 @@ import { Button } from '#ui'
 import type { PythonProjectDocument } from '../../core/editableProject'
 import type { StudioRuntimeCapture } from '../../runtime/capture'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
+import { pythonProjectNeedsAudioGesture } from '../../runtime/python/audio/activation'
 import {
   createPythonExecutionController,
   type PythonExecutionController,
@@ -14,6 +15,7 @@ export interface PythonRuntimePreviewProps {
   project: PythonProjectDocument
   environment: StudioRuntimeEnvironment | null
   canExecute: boolean
+  muted?: boolean
   canExecuteNow?(): boolean
   autoRun?: boolean
   writerEpoch?: number | null
@@ -65,6 +67,7 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
 
   useLayoutEffect(() => {
     latest.current = props
+    currentController.current?.syncAudioPreference()
   })
   useLayoutEffect(() => {
     const instance = createPythonExecutionController({
@@ -74,6 +77,7 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
       environment: () => latest.current.environment,
       canExecute: () => latest.current.canExecute && (latest.current.canExecuteNow?.() ?? true),
       writerEpoch: () => latest.current.writerEpoch ?? null,
+      audioMuted: () => latest.current.muted ?? false,
       onEvent: (event) => latest.current.onEvent?.(event),
       mountFrame: () => {
         if (!mount.current) throw new Error('A área de execução foi fechada.')
@@ -115,6 +119,7 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: only a new owner/project may auto-start; editing source must not restart the game.
   useEffect(() => {
     if (!controller || !props.autoRun || !props.canExecute || !props.environment) return
+    if (pythonProjectNeedsAudioGesture(latest.current.project)) return
     try {
       latest.current.beforeRun?.()
     } catch (cause) {

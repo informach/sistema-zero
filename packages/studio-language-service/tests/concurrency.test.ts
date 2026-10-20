@@ -16,7 +16,7 @@ it('preserves ordered syncs and queries for the new revision while cancelling ob
   const session = new PythonLanguageSession({
     root,
     nodePath: Bun.which('node')!,
-    serverPath: createRequire(import.meta.url).resolve('pyright/dist/pyright-langserver.js'),
+    serverPath: createRequire(import.meta.url).resolve('pyright/langserver.index.js'),
   })
   try {
     const first = session.handle(
@@ -221,7 +221,7 @@ it('counts physically queued updates until they drain even after their callers c
   const session = new PythonLanguageSession({
     root,
     nodePath: Bun.which('node')!,
-    serverPath: createRequire(import.meta.url).resolve('pyright/dist/pyright-langserver.js'),
+    serverPath: createRequire(import.meta.url).resolve('pyright/langserver.index.js'),
   })
   let release = () => {}
   try {

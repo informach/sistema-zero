@@ -10,8 +10,10 @@ import {
   StudioPythonActivitySchema,
   verifyStudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
+import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
 import activitySource from './activity-grader.py'
 import { createPythonActivityConsoleMatcher } from './activityConsole'
+import audioSource from './audio/sz_audio/__init__.py'
 import bridgeSource from './interpreter.py'
 import type { PythonConsoleStream, PythonExecutionSnapshot } from './protocol'
 import { hasTurtleExtension } from './turtle/contract'
@@ -33,6 +35,7 @@ interface ExecutionBridge {
   execute: PythonCallable
   evaluate: PythonCallable
   install_turtle: PythonCallable
+  install_audio: PythonCallable
   install_activity: PythonCallable
   grade_activity: PythonCallable
   destroy(): void
@@ -114,6 +117,7 @@ export async function createPythonInterpreter(options: {
     request: string,
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
   ): Promise<string>
+  audio?(request: string): Promise<string>
 }) {
   const base = new URL('./', import.meta.url)
   const resourceScope = new AbortController()
@@ -161,6 +165,7 @@ export async function createPythonInterpreter(options: {
   const execute = bridge.execute
   const evaluate = bridge.evaluate
   const installTurtle = bridge.install_turtle
+  const installAudio = bridge.install_audio
   const installActivity = bridge.install_activity
   const gradeActivity = bridge.grade_activity
   let prepared = false
@@ -207,6 +212,19 @@ export async function createPythonInterpreter(options: {
         runtime.FS.writeFile(path, file.bytes)
       }
       prepare(PROJECT_ROOT, snapshot.configuration.python.entrypoint, options.requestLine)
+      if (options.audio) {
+        const directory = `/studio/media/python-audio-${SZ_AUDIO_MODULE_DESCRIPTOR.version}`
+        runtime.FS.mkdirTree(`${directory}/sz_audio`)
+        runtime.FS.writeFile(
+          `${directory}/sz_audio/__init__.py`,
+          new TextEncoder().encode(audioSource),
+        )
+        runtime.FS.writeFile(
+          `${directory}/sz_audio/_module.json`,
+          new TextEncoder().encode(JSON.stringify(SZ_AUDIO_MODULE_DESCRIPTOR)),
+        )
+        installAudio(directory, options.audio)
+      }
       if (activity) {
         if (!options.activityRequested || !options.onActivityResult)
           throw new Error('O canal de correção da tarefa não está disponível.')
@@ -295,6 +313,7 @@ export async function createPythonInterpreter(options: {
       execute.destroy()
       evaluate.destroy()
       installTurtle.destroy()
+      installAudio.destroy()
       installActivity.destroy()
       gradeActivity.destroy()
       bridge.destroy()

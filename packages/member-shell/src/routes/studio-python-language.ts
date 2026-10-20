@@ -16,6 +16,12 @@ import {
   StudioPythonAnalysisAuthorizationSchema,
   studioPythonAnalysisBinding,
 } from '@sistemazero/core/studio/python-language-authorization'
+import { assertPythonLanguageBootstrapSize } from '@sistemazero/core/studio/python-language-bootstrap'
+import {
+  createStudioRuntimeCatalog,
+  type StudioRuntimeRelease,
+  selectStudioRuntimeRelease,
+} from '@sistemazero/core/studio/runtime-catalog'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { type Env, getEnv } from '../lib/env'
@@ -131,18 +137,30 @@ export function createStudioPythonLanguageRoutes(
             signal: request.signal,
           })
           if (response.status !== 200) return json(response.body, response.status)
-          if (
-            !(await validatePythonAnalysisDecision(response.body, authorization, {
-              userId: user.id,
-              accountId: user.activeProfile?.accountId ?? user.id,
-            }))
-          )
-            return unavailable()
+          const decision = await validatePythonAnalysisDecision(response.body, authorization, {
+            userId: user.id,
+            accountId: user.activeProfile?.accountId ?? user.id,
+          })
+          if (!decision) return unavailable()
+          let runtimeRelease: StudioRuntimeRelease | undefined
+          if (!sessionId) {
+            const catalog = await createStudioRuntimeCatalog(decision.catalog)
+            const release = selectStudioRuntimeRelease(catalog, decision.runtime)
+            if (!release) return unavailable()
+            if (release.manifest.python?.providedModules !== undefined) runtimeRelease = release
+          }
           request.signal.throwIfAborted()
           binding = await studioPythonAnalysisBinding(pythonLanguageOwner(user), authorization)
           body = JSON.stringify(
-            start ? { binding } : (command ?? { projectId: authorization.subject.id, binding }),
+            start
+              ? { binding }
+              : (command ?? {
+                  projectId: authorization.subject.id,
+                  binding,
+                  ...(runtimeRelease ? { runtimeRelease } : {}),
+                }),
           )
+          if (!sessionId) assertPythonLanguageBootstrapSize(body)
         }
       }
     } catch (error) {

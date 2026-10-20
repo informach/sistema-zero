@@ -20,6 +20,8 @@ export default defineConfig({
           'python-profile.spec.ts',
           'python-turtle.spec.ts',
           'python-games.spec.ts',
+          'python-pacman-portable.spec.ts',
+          'python-audio.spec.ts',
           'python-material-profile.spec.ts',
           'python-analysis.spec.ts',
           'python-inspection.spec.ts',

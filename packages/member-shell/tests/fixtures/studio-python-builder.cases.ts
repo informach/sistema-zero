@@ -6,13 +6,15 @@ import {
   studioProDigest,
 } from '@sistemazero/core/studio'
 import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python-pro-execution'
+import type { StudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
+import { providedPythonRelease } from '../../../core/tests/fixtures/python-provided-release'
 import { pythonBuilderNetworkFixture } from '../../../members/tests/fakes/python-builder-network'
 
 mock.module('server-only', () => ({}))
 const { runStudioPythonBuilderValidation } = await import('../../src/server/studio-python-builder')
 
-async function fixture() {
-  const network = await pythonBuilderNetworkFixture('passed'),
+async function fixture(runtimeRelease?: StudioRuntimeRelease) {
+  const network = await pythonBuilderNetworkFixture('passed', runtimeRelease),
     revision = network.options.revision
   const original = await createStudioProRevision({
     ...revision,
@@ -92,6 +94,7 @@ async function fixture() {
                 job,
                 token: null,
                 authorization: {
+                  policy: runtimeRelease ? { runtimeRelease } : {},
                   revisionHash: revision.hash,
                   executionRevision: metadata.revision,
                   parentOrigin: 'https://kids.test',
@@ -143,6 +146,45 @@ test('owned preview transfers to an acknowledged job with exact revision, bytes 
     expect(f.authorizations()).toBeGreaterThan(6)
     expect(f.recoveries()).toBe(0)
     expect(f.network.requests).not.toContain('POST /v1/python/previews/remove')
+  } finally {
+    f.network.stop()
+  }
+})
+
+test('private Members metadata reaches the actual Builder Open and keeps the source revision pinned', async () => {
+  const release = await providedPythonRelease()
+  const f = await fixture(release)
+  try {
+    expect((await runStudioPythonBuilderValidation(f.input)).status).toBe('checkpointed')
+    expect(f.network.opened).toHaveLength(1)
+    expect(f.network.opened[0]).toMatchObject({ runtimeRelease: release })
+  } finally {
+    f.network.stop()
+  }
+})
+
+test.each([
+  'missing-policy',
+  'foreign-release',
+  'unknown-field',
+] as const)('private Builder authorization refuses %s before allocating Language or execution', async (mode) => {
+  const f = await fixture()
+  const member = f.input.members.studioBuilder
+  const foreign = await providedPythonRelease()
+  f.input.members.studioBuilder = async (owner, command, signal) => {
+    const response = await member(owner, command, signal)
+    const authorization = response.body?.state?.authorization
+    if (authorization) {
+      if (mode === 'missing-policy') Reflect.deleteProperty(authorization, 'policy')
+      else if (mode === 'foreign-release') authorization.policy = { runtimeRelease: foreign }
+      else Reflect.set(authorization.policy, 'providedModules', [])
+    }
+    return response
+  }
+  try {
+    await expect(runStudioPythonBuilderValidation(f.input)).rejects.toThrow()
+    expect(f.network.requests).toEqual([])
+    expect(f.persisted()).toBeNull()
   } finally {
     f.network.stop()
   }

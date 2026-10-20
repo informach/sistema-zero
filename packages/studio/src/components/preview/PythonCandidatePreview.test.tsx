@@ -1,11 +1,13 @@
-import { afterEach, expect, test } from 'bun:test'
+import { afterEach, expect, spyOn, test } from 'bun:test'
 import type { StudioProBuilderAdapter } from '@sistemazero/core/studio/pro-builder'
 import type { StudioPythonPreviewReference } from '@sistemazero/core/studio/python-preview'
 import { act, cleanup, render, screen } from '@testing-library/react'
+import { useState } from 'react'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import { setProjectStorageNamespace } from '../../state/projectStorageRuntime'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
+import { StudioExecutionProvider } from '../../studio/observation'
 import {
   StudioProCandidatePreviewProvider,
   useProCandidatePreview,
@@ -14,11 +16,40 @@ import { StudioRuntimeEnvironmentProvider } from '../../studio/runtime-environme
 import { StudioTutorProvider } from '../../studio/tutor'
 import { PythonProPreview } from './PythonCandidatePreview'
 
+function blankFrameWindow() {
+  if (!('happyDOM' in window) || !window.happyDOM || typeof window.happyDOM !== 'object')
+    throw new Error('Happy DOM required')
+  const dom = window.happyDOM
+  if (!('settings' in dom) || !dom.settings || typeof dom.settings !== 'object')
+    throw new Error('DOM settings required')
+  const settings = dom.settings
+  if (
+    !('disableIframePageLoading' in settings) ||
+    typeof settings.disableIframePageLoading !== 'boolean'
+  )
+    throw new Error('DOM iframe settings required')
+  const original = settings.disableIframePageLoading
+  const frame = document.createElement('iframe')
+  settings.disableIframePageLoading = false
+  try {
+    document.body.append(frame)
+    const result = frame.contentWindow
+    if (!result) throw new Error('Native-shaped Window fixture missing')
+    return result
+  } finally {
+    frame.remove()
+    settings.disableIframePageLoading = original
+  }
+}
+
 afterEach(() => {
   cleanup()
   setProjectStorageNamespace('')
 })
-async function fixture(authorize?: StudioProBuilderAdapter['authorizePythonPreview']) {
+async function fixture(
+  authorize?: StudioProBuilderAdapter['authorizePythonPreview'],
+  hostAudio = true,
+) {
   const f = await pythonEnvironmentFixture('pro'),
     stores = createStudioStores({ persistence: 'none' }),
     lifetime = new AbortController()
@@ -30,6 +61,7 @@ async function fixture(authorize?: StudioProBuilderAdapter['authorizePythonPrevi
       projectId: f.project.id,
       revision: 'b'.repeat(64),
       runtimeManifestSha256: f.project.runtime.manifestSha256,
+      ...(hostAudio ? { previewHostAudioVersion: 1 as const } : {}),
       sha256: 'c'.repeat(64),
       url: `https://python.test/v1/python-previews/${'a'.repeat(64)}/index.html`,
       expiresAt: Date.now() + 60000,
@@ -59,32 +91,48 @@ async function fixture(authorize?: StudioProBuilderAdapter['authorizePythonPrevi
     api = useProCandidatePreview()
     return api.candidate ? <PythonProPreview /> : null
   }
-  const view = render(
-    <StudioStoresContext.Provider value={stores}>
-      <StudioRuntimeEnvironmentProvider value={{ ...f.environment, signal: lifetime.signal }}>
-        <StudioTutorProvider
-          value={{
-            adapter: {
-              builder,
-              loadHistory: async () => ({ messages: [], nextCursor: null }),
-              deleteHistory: async () => {},
-              ask: async () => {
-                throw new Error('Unexpected inference')
-              },
-              feedback: async () => {},
-            },
-          }}
-        >
-          <StudioProCandidatePreviewProvider>
-            <Probe />
-          </StudioProCandidatePreviewProvider>
-        </StudioTutorProvider>
-      </StudioRuntimeEnvironmentProvider>
-    </StudioStoresContext.Provider>,
-  )
+  let mute = (_value: boolean) => {}
+  function Root() {
+    const [muted, setMuted] = useState(false)
+    mute = setMuted
+    return (
+      <StudioExecutionProvider
+        value={{ editingAccess: 'author', autoRun: false, requireIsolatedPreview: false, muted }}
+      >
+        <StudioStoresContext.Provider value={stores}>
+          <StudioRuntimeEnvironmentProvider value={{ ...f.environment, signal: lifetime.signal }}>
+            <StudioTutorProvider
+              value={{
+                adapter: {
+                  builder,
+                  loadHistory: async () => ({ messages: [], nextCursor: null }),
+                  deleteHistory: async () => {},
+                  ask: async () => {
+                    throw new Error('Unexpected inference')
+                  },
+                  feedback: async () => {},
+                },
+              }}
+            >
+              <StudioProCandidatePreviewProvider>
+                <Probe />
+              </StudioProCandidatePreviewProvider>
+            </StudioTutorProvider>
+          </StudioRuntimeEnvironmentProvider>
+        </StudioStoresContext.Provider>
+      </StudioExecutionProvider>
+    )
+  }
+  const view = render(<Root />)
   await act(async () => {
     expect(api.show(input)).toBe(true)
   })
+  const mounted = view.container.querySelector<HTMLIFrameElement>('iframe[title="Proposta Python"]')
+  if (mounted)
+    Object.defineProperty(mounted, 'contentWindow', {
+      configurable: true,
+      value: blankFrameWindow(),
+    })
   return {
     f,
     stores,
@@ -92,11 +140,96 @@ async function fixture(authorize?: StudioProBuilderAdapter['authorizePythonPrevi
     view,
     api: () => api,
     calls: () => calls,
+    mute: (value: boolean) => act(() => mute(value)),
     reference,
     input,
     frame: () => view.container.querySelector<HTMLIFrameElement>('iframe[title="Proposta Python"]'),
   }
 }
+
+test('legacy selected preview cannot invoke authorization or attach an old launcher', async () => {
+  const f = await fixture(undefined, false)
+  expect(f.frame() === null).toBe(true)
+  expect(f.calls()).toBe(0)
+  expect(f.stores.project.getState().project).toBe(f.f.project)
+  expect(screen.getByRole('status').textContent).toContain('Continue em Jogo atual')
+})
+
+test('forged selected support cannot mount an authorized historical reference', async () => {
+  const pending = Promise.withResolvers<StudioPythonPreviewReference>()
+  const f = await fixture(() => pending.promise)
+  const { previewHostAudioVersion: _version, ...legacy } = f.reference
+  await act(async () => pending.resolve(legacy))
+  expect(f.calls()).toBe(1)
+  expect(f.frame() === null).toBe(true)
+  expect(f.stores.project.getState().project).toBe(f.f.project)
+  expect(screen.getByRole('status').textContent).toContain('Seu código está preservado')
+})
+
+test('proposal audio handshake sends latest host preference only to exact launcher and updates without restarting', async () => {
+  const f = await fixture(),
+    frame = f.frame()
+  if (!frame?.contentWindow) throw new Error('Frame missing')
+  const source = frame.contentWindow
+  const messages: unknown[] = []
+  const posted = spyOn(source, 'postMessage').mockImplementation((value) => {
+    messages.push(value)
+  })
+  try {
+    const session = new URLSearchParams(new URL(frame.src).hash.slice(1)).get(
+      'studio-preview-session',
+    )
+    const requestId = crypto.randomUUID()
+    const ready = {
+      type: 'studio-python-preview-audio-ready',
+      version: 1,
+      previewId: f.reference.id,
+      session,
+      requestId,
+    }
+    const send = (data: unknown, origin = 'https://python.test', sender: Window | null = source) =>
+      act(() => {
+        window.dispatchEvent(new MessageEvent('message', { data, origin, source: sender }))
+      })
+    f.mute(true)
+    send(ready, 'https://attacker.test')
+    send(ready, 'https://python.test', window)
+    send(ready, 'https://python.test', null)
+    send({ ...ready, session: crypto.randomUUID() })
+    send({ ...ready, previewId: 'b'.repeat(64) })
+    expect(messages).toEqual([])
+    send(ready)
+    expect(messages).toEqual([
+      {
+        type: 'studio-python-preview-audio',
+        version: 1,
+        previewId: f.reference.id,
+        session,
+        requestId,
+        sequence: 0,
+        muted: true,
+      },
+    ])
+    f.mute(false)
+    expect(messages.at(-1)).toEqual({
+      type: 'studio-python-preview-audio',
+      version: 1,
+      previewId: f.reference.id,
+      session,
+      requestId,
+      sequence: 1,
+      muted: false,
+    })
+    expect(f.frame()).toBe(frame)
+    expect(f.calls()).toBe(1)
+    act(() => f.api().close())
+    f.mute(true)
+    send(ready)
+    expect(messages).toHaveLength(2)
+  } finally {
+    posted.mockRestore()
+  }
+})
 
 test('Python proposal uses a fresh authorized service reference and waits for the trusted execution acknowledgement', async () => {
   const f = await fixture(),

@@ -5,6 +5,10 @@ import { awaitWithSignal } from '@sistemazero/core/http'
 import type { StudioProBuilderJob } from '@sistemazero/core/studio/pro-builder'
 import type { StudioProRevision } from '@sistemazero/core/studio/pro-revision'
 import {
+  createPythonBuilderPolicyResult,
+  StudioPythonBuilderAuthorizationSchema,
+} from '@sistemazero/core/studio/python-builder-authorization'
+import {
   type StudioPythonBuilderValidationOutcome,
   validateStudioPythonBuilderCandidate,
 } from '@sistemazero/core/studio/python-builder-validation'
@@ -129,7 +133,9 @@ export async function runStudioPythonBuilderValidation(input: {
         operationSignal,
       )
       operationSignal.throwIfAborted()
-      const authorized = response.status === 200 ? response.body?.state?.authorization : undefined
+      const authorized = StudioPythonBuilderAuthorizationSchema.parse(
+        response.status === 200 ? response.body?.state?.authorization : undefined,
+      )
       if (
         !authorized ||
         authorized.revisionHash !== base.hash ||
@@ -137,6 +143,12 @@ export async function runStudioPythonBuilderValidation(input: {
         authorized.parentOrigin !== parentOrigin
       )
         throw new Error('A autorização desta revisão Python foi retirada.')
+      const result = await createPythonBuilderPolicyResult(
+        authorized.policy,
+        metadata.configuration.runtime,
+      )
+      operationSignal.throwIfAborted()
+      return result
     },
     cleanupFailed() {
       console.warn('[studio-python-builder] language retirement pending', { jobId: job.id })

@@ -12,3 +12,21 @@ export const StudioPythonPreviewMessageSchema = z.strictObject({
   previewId: z.string().regex(/^[a-f0-9]{64}$/),
   status: z.enum(['loading', 'ready', 'unavailable']),
 })
+
+/** Host/outer-launcher channel only. Opaque learner frames have no authority here. */
+export const StudioPythonPreviewAudioReadySchema = z.strictObject({
+  type: z.literal('studio-python-preview-audio-ready'),
+  version: z.literal(1),
+  session: z.string().uuid(),
+  previewId: z.string().regex(/^[a-f0-9]{64}$/),
+  requestId: z.string().uuid(),
+})
+export const StudioPythonPreviewAudioSchema = z.strictObject({
+  type: z.literal('studio-python-preview-audio'),
+  version: z.literal(1),
+  session: z.string().uuid(),
+  previewId: z.string().regex(/^[a-f0-9]{64}$/),
+  requestId: z.string().uuid(),
+  sequence: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
+  muted: z.boolean(),
+})

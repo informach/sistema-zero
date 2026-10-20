@@ -33,6 +33,7 @@ for (const [entry, output, label] of [
 const groups = ['runtime', 'src', '../core/src/studio']
 const files = [
   'Dockerfile',
+  '../core/src/creations/utf8.ts',
   '../core/src/learning/project-execution.ts',
   '../core/src/learning/execution-observation.ts',
 ]

@@ -1,6 +1,9 @@
 import { sha256Hex } from '../../packages/core/src/creations'
 import { StudioPythonWebPayloadSchema } from '../../packages/core/src/studio/python-execution-content'
-import { studioPythonRuntimeRoute } from '../../packages/core/src/studio/python-runtime-distribution'
+import {
+  studioPythonDeploymentRoute,
+  studioPythonRuntimeRoute,
+} from '../../packages/core/src/studio/python-runtime-distribution'
 import {
   createStudioRuntimeCatalog,
   type StudioRuntimeRelease,
@@ -93,13 +96,14 @@ export async function createPythonInspectionProbe(
       return new Response('Not found', { status: 404 })
     if (path === '') {
       const runtime = `${runtimeOrigin}${studioPythonRuntimeRoute(release.manifestSha256)}`
+      const deployment = `${runtimeOrigin}${studioPythonDeploymentRoute(release.manifestSha256)}`
       return new Response(
         `<!doctype html><html data-python-structure="${scenario === 'structure'}"><head><meta charset="utf-8"><title>Inspeção Python</title><script type="module" src="${runtime}inspect.mjs"></script></head><body></body></html>`,
         {
           headers: {
             'content-type': 'text/html; charset=utf-8',
             'cache-control': 'no-store',
-            'content-security-policy': `default-src 'none'; script-src ${runtime}; connect-src 'self'; frame-src ${runtime}; worker-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'`,
+            'content-security-policy': `default-src 'none'; script-src ${runtime}; connect-src 'self' ${runtime} ${deployment}; frame-src ${runtime}; worker-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'`,
           },
         },
       )

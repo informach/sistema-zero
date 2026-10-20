@@ -66,12 +66,8 @@ export function buildJavaScriptClassicDocument({
   const imports = withCoreImports(resources.extensionImports, input.js)
   return buildPreviewDoc({
     ...input,
-    extensionScripts: runtimeInspection
-      ? [
-          'window.__SZSTUDIO_RUNTIME_INSPECTORS = Object.create(null);',
-          ...resources.extensionScripts,
-        ]
-      : resources.extensionScripts,
+    extensionScripts: resources.extensionScripts,
+    runtimeInspection,
     gameUiFont: resources.gameUiFont,
     installedPermissions: resources.installedPermissions,
     extensionImports: runtimeImports

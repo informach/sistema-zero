@@ -18,6 +18,10 @@ import { loadEnv as membersEnv } from '../../src/infrastructure/config/env'
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleEntitlementRepository } from '../../src/infrastructure/persistence/drizzle/entitlement.repository'
 import { DrizzleGamificationRepository } from '../../src/infrastructure/persistence/drizzle/gamification.repository'
+import {
+  qaPythonHostOptionsFromEnvironment,
+  readQaPythonPolicyDirectory,
+} from './create-python-public-qa-policy.ts'
 
 const secret = 'local-qa-internal-secret-2026-only'
 const database =
@@ -36,6 +40,18 @@ if (
   databaseName.length > 60
 )
   throw new Error('Explicit loopback55433 sz_integrated_qa[_attempt] database required')
+const pythonQaConfig =
+  process.env.STUDIO_QA_PYTHON_POLICY === '1'
+    ? await readQaPythonPolicyDirectory(
+        process.env.STUDIO_QA_PYTHON_CONFIG_DIRECTORY,
+        qaPythonHostOptionsFromEnvironment(
+          process.env.STUDIO_QA_PYTHON_HOST_PROFILE,
+          process.env.STUDIO_QA_PYTHON_PROVIDER_ORIGIN,
+          process.env.STUDIO_QA_PYTHON_APPROVAL_DIRECTORY,
+          process.env.STUDIO_QA_PYTHON_APPROVAL_SHA256,
+        ),
+      )
+    : undefined
 const attemptId = `${new Date().toISOString().replaceAll(/[^0-9TZ]/g, '')}-${randomUUID()}`
 const artifactDirectory = resolve(
   '.cache/studio-python-l0/public-chain-qa',
@@ -418,20 +434,16 @@ try {
     COMMUNITY_URL: 'http://127.0.0.1:43107',
     KIDS_COMMUNITY_URL: 'http://127.0.0.1:43108',
   }
-  if (process.env.STUDIO_QA_PYTHON_POLICY === '1') {
-    const directory = resolve('.cache/studio-python-l0/real-public-qa')
-    base.STUDIO_AUTHORING_POLICY_JSON = await Bun.file(resolve(directory, 'policy.json')).text()
-    base.STUDIO_RUNTIME_HOSTS_JSON = await Bun.file(resolve(directory, 'hosts.json')).text()
-    const hosts = JSON.parse(base.STUDIO_RUNTIME_HOSTS_JSON)
-    if (
-      hosts.length !== 1 ||
-      hosts[0]?.runtime?.profileId !== 'python-probe' ||
-      !/^http:\/\/127\.0\.0\.1:\d+$/.test(hosts[0]?.origin ?? '')
-    )
-      throw new Error('A política Python da stack QA exige o host local aprovado.')
-    manifest.pythonRuntime = structuredClone(hosts[0].runtime)
-    manifest.pythonOrigin = hosts[0].origin
-    console.log('Local QA Python policy loaded:', hosts[0].runtime.manifestSha256)
+  if (pythonQaConfig) {
+    base.STUDIO_AUTHORING_POLICY_JSON = pythonQaConfig.policyJson
+    base.STUDIO_RUNTIME_HOSTS_JSON = pythonQaConfig.hostsJson
+    manifest.pythonRuntime = structuredClone(pythonQaConfig.runtime)
+    manifest.pythonOrigin = pythonQaConfig.origin
+    manifest.pythonQaConfiguration = {
+      directory: pythonQaConfig.directory,
+      hashes: pythonQaConfig.hashes,
+    }
+    console.log('Local QA Python policy loaded:', pythonQaConfig.runtime.manifestSha256)
   }
   Object.assign(process.env, base)
   // initialize is operator-only and may run before Members boot; advance requires real Auth cohort HTTP.

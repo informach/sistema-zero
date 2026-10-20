@@ -4,7 +4,10 @@ import {
   RequestBodyTooLargeError,
   readJsonBodyWithLimit,
 } from '@sistemazero/core/http'
-import type { ProjectCheckResponse } from '@sistemazero/core/learning'
+import {
+  executionObservationUnavailableReason,
+  type ProjectCheckResponse,
+} from '@sistemazero/core/learning'
 import {
   buildProRuntimeBridgeScript,
   isStudioProBuilderEvidence,
@@ -984,14 +987,16 @@ async function runProjectCheck(
     // Objetivo que o navegador não conseguiu testar (página não abriu, contêiner lento) é falha do
     // EXECUTOR: devolver "não passou" deixaria a criança presa num resultado guardado que não é
     // dela. Falha nunca aprova e nunca é guardada.
-    const broken = observations.find(
-      (item: unknown) =>
-        typeof item === 'object' &&
-        item !== null &&
-        typeof (item as { error?: unknown }).error === 'string',
-    ) as { error: string } | undefined
+    const broken = input.objectives
+      .map((objective) =>
+        executionObservationUnavailableReason(
+          objective.rule,
+          observations.find((item) => item?.id === objective.id),
+        ),
+      )
+      .find((reason) => reason !== undefined)
     if (broken) {
-      console.error('studio-runtime check objective failed', broken.error)
+      console.error('studio-runtime check objective failed', broken)
       return checkFailed()
     }
     const screenshots: Record<string, string> = {}

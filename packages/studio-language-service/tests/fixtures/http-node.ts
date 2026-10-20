@@ -3,17 +3,205 @@ import { type ClientRequest, request } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { it } from 'node:test'
 import { createPythonLanguageServer } from '../../runtime/http'
+import type { PythonLanguageSession } from '../../runtime/pyright'
+
+function testServer(
+  input: Omit<Parameters<typeof createPythonLanguageServer>[0], 'createSession'> & {
+    session: Pick<PythonLanguageSession, 'handle' | 'dispose'>
+  },
+) {
+  const { session, ...rest } = input
+  return createPythonLanguageServer({ ...rest, createSession: async () => session })
+}
+async function configure(server: ReturnType<typeof createPythonLanguageServer>, token: string) {
+  const response = await fetch(
+    `http://127.0.0.1:${(server.address() as AddressInfo).port}/configure`,
+    {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ protocolVersion: 1 }),
+    },
+  )
+  assert.equal(response.status, 200)
+  await response.arrayBuffer()
+}
+
+it('configuration is private, single-use and required before health or source dispatch', async () => {
+  const token = 'e'.repeat(64)
+  let calls = 0
+  let entered!: () => void, release!: () => void
+  const began = new Promise<void>((resolve) => {
+    entered = resolve
+  })
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const server = createPythonLanguageServer({
+    token,
+    onExpired() {},
+    async createSession(bootstrap) {
+      calls++
+      assert.deepEqual(bootstrap, { protocolVersion: 1 })
+      entered()
+      await gate
+      return {
+        dispose() {},
+        async handle(command) {
+          return { version: 1, id: command.id, kind: 'ack' }
+        },
+      }
+    },
+  })
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
+  const headers = { authorization: `Bearer ${token}`, 'content-type': 'application/json' }
+  const post = (path: string, body: string) =>
+    fetch(`${base}/${path}`, { method: 'POST', headers, body })
+  try {
+    const health = await fetch(`${base}/healthz`, { headers })
+    assert.equal(health.status, 503)
+    await health.arrayBuffer()
+    const early = await post('command', '{}')
+    assert.equal(early.status, 503)
+    await early.arrayBuffer()
+    const unauthorized = await fetch(`${base}/configure`, { method: 'POST', body: '{}' })
+    assert.equal(unauthorized.status, 401)
+    await unauthorized.arrayBuffer()
+    const configured = post('configure', '{"protocolVersion":1}')
+    await began
+    const concurrent = await post('configure', '{"protocolVersion":1}')
+    assert.equal(concurrent.status, 409)
+    await concurrent.arrayBuffer()
+    const waiting = await fetch(`${base}/healthz`, { headers })
+    assert.equal(waiting.status, 503)
+    await waiting.arrayBuffer()
+    release()
+    assert.equal((await configured).status, 200)
+    const ready = await fetch(`${base}/healthz`, { headers })
+    assert.deepEqual(await ready.json(), { ready: true })
+    const repeated = await post('configure', '{"protocolVersion":1}')
+    assert.equal(repeated.status, 409)
+    await repeated.arrayBuffer()
+    assert.equal(calls, 1)
+  } finally {
+    release()
+    server.closeAllConnections()
+    await new Promise<void>((resolve) => server.close(() => resolve()))
+  }
+})
+
+it('disconnect during configuration drains creation, disposes its late result and never becomes ready', async () => {
+  const token = 'f'.repeat(64)
+  let enter!: () => void,
+    release!: () => void,
+    abort!: () => void,
+    disposed!: () => void,
+    expired!: () => void
+  const entered = new Promise<void>((resolve) => {
+    enter = resolve
+  })
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const aborted = new Promise<void>((resolve) => {
+    abort = resolve
+  })
+  const disposal = new Promise<void>((resolve) => {
+    disposed = resolve
+  })
+  const expiration = new Promise<void>((resolve) => {
+    expired = resolve
+  })
+  const server = createPythonLanguageServer({
+    token,
+    onExpired: () => expired(),
+    async createSession(_bootstrap, signal) {
+      signal.addEventListener('abort', abort, { once: true })
+      enter()
+      await gate
+      return {
+        dispose: () => disposed(),
+        async handle(command) {
+          return { version: 1, id: command.id, kind: 'ack' }
+        },
+      }
+    },
+  })
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+  const controller = new AbortController()
+  const pending = fetch(`http://127.0.0.1:${(server.address() as AddressInfo).port}/configure`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+    body: '{"protocolVersion":1}',
+    signal: controller.signal,
+  }).catch(() => null)
+  try {
+    await entered
+    controller.abort()
+    await aborted
+    assert.equal(await pending, null)
+    release()
+    await disposal
+    await expiration
+    assert.equal(server.listening, false)
+  } finally {
+    release()
+    server.closeAllConnections()
+    await new Promise<void>((resolve) => server.close(() => resolve()))
+  }
+})
+
+it('invalid configuration never constructs a legacy session and enforces the global byte ceiling', async () => {
+  for (const [body, expected] of [
+    ['{"protocolVersion":1,"extraPaths":["/author"]}', 400],
+    ['{"protocolVersion":1,"runtimeRelease":null}', 400],
+    [' '.repeat(1_048_577), 413],
+  ] as const) {
+    const token = 'c'.repeat(64)
+    let calls = 0
+    const server = createPythonLanguageServer({
+      token,
+      onExpired() {},
+      async createSession() {
+        calls++
+        throw new Error('Invalid configuration cannot create a session')
+      },
+    })
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:${(server.address() as AddressInfo).port}/configure`,
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+          body,
+        },
+      )
+      assert.equal(response.status, expected)
+      await response.arrayBuffer()
+      assert.equal(calls, 0)
+    } finally {
+      server.closeAllConnections()
+      await new Promise<void>((resolve) => server.close(() => resolve()))
+    }
+  }
+})
 
 it('cancellation does not postpone native idle expiry, while a real query renews it', async (context) => {
   context.mock.timers.enable({ apis: ['setTimeout'] })
   for (const kind of ['cancel', 'query'] as const) {
     let expired = false
+    let markExpired!: () => void
+    const expiration = new Promise<void>((resolve) => {
+      markExpired = resolve
+    })
     const token = 'd'.repeat(64)
-    const server = createPythonLanguageServer({
+    const server = testServer({
       token,
       idleTtlMs: 300_000,
       onExpired() {
         expired = true
+        markExpired()
       },
       session: {
         dispose() {},
@@ -23,6 +211,7 @@ it('cancellation does not postpone native idle expiry, while a real query renews
       },
     })
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+    await configure(server, token)
     try {
       context.mock.timers.tick(290_000)
       await new Promise<void>((resolve, reject) => {
@@ -59,9 +248,11 @@ it('cancellation does not postpone native idle expiry, while a real query renews
         )
       })
       context.mock.timers.tick(10_000)
+      if (kind === 'cancel') await expiration
       assert.equal(expired, kind === 'cancel')
       if (kind === 'query') {
         context.mock.timers.tick(290_000)
+        await expiration
         assert.equal(expired, true)
       }
     } finally {
@@ -74,7 +265,7 @@ it('cancellation does not postpone native idle expiry, while a real query renews
 it('bounds aggregate in-flight and chunked bodies, rejects encoded content and recovers capacity', async () => {
   const token = 'c'.repeat(64)
   let calls = 0
-  const server = createPythonLanguageServer({
+  const server = testServer({
     token,
     onExpired() {},
     session: {
@@ -86,6 +277,7 @@ it('bounds aggregate in-flight and chunked bodies, rejects encoded content and r
     },
   })
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+  await configure(server, token)
   const address = server.address()
   assert.ok(address && typeof address !== 'string')
   const port = address.port
@@ -165,13 +357,18 @@ it('bounds aggregate in-flight and chunked bodies, rejects encoded content and r
 it('protects the private endpoint, validates commands and bounds request bodies before dispatch', async () => {
   let calls = 0,
     disposed = false
+  let markDisposed!: () => void
+  const disposal = new Promise<void>((resolve) => {
+    markDisposed = resolve
+  })
   const token = 'a'.repeat(64)
-  const server = createPythonLanguageServer({
+  const server = testServer({
     token,
     onExpired() {},
     session: {
       dispose() {
         disposed = true
+        markDisposed()
       },
       async handle(command) {
         calls++
@@ -180,6 +377,7 @@ it('protects the private endpoint, validates commands and bounds request bodies 
     },
   })
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+  await configure(server, token)
   const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}/command`
   const headers = { 'content-type': 'application/json', authorization: `Bearer ${token}` }
   try {
@@ -217,6 +415,7 @@ it('protects the private endpoint, validates commands and bounds request bodies 
     server.closeAllConnections()
     await new Promise<void>((resolve) => server.close(() => resolve()))
   }
+  await disposal
   assert.equal(disposed, true)
 })
 
@@ -229,7 +428,7 @@ it('aborts a running analysis when its authenticated HTTP caller disconnects', a
     aborted = resolve
   })
   const token = 'b'.repeat(64)
-  const server = createPythonLanguageServer({
+  const server = testServer({
     token,
     onExpired() {},
     session: {
@@ -251,6 +450,7 @@ it('aborts a running analysis when its authenticated HTTP caller disconnects', a
     },
   })
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+  await configure(server, token)
   const controller = new AbortController()
   try {
     const response = fetch(`http://127.0.0.1:${(server.address() as AddressInfo).port}/command`, {

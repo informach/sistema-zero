@@ -69,10 +69,13 @@ export function ExecutionRuleEditor({
 export function StepsEditor({
   steps,
   index,
+  singlePress = false,
   onChange,
 }: {
   steps: ExecutionStep[]
   index: number
+  /** A posição relativa compara uma única tecla, com controle idle separado. */
+  singlePress?: boolean
   onChange: (steps: ExecutionStep[]) => void
 }) {
   const patch = (at: number, step: ExecutionStep) =>
@@ -91,9 +94,32 @@ export function StepsEditor({
           <span className="w-6 text-muted-foreground">{at + 1}.</span>
           <Select
             aria-label={`Passo ${at + 1} do objetivo ${index + 1}`}
-            value={step.action === 'press' && step.holdMs ? 'hold' : step.action}
+            value={
+              step.action === 'clickTarget'
+                ? step.target.kind
+                : step.action === 'press' && step.holdMs
+                  ? 'hold'
+                  : step.action
+            }
             onChange={(e) => {
               const action = e.target.value
+              if (singlePress && action !== 'press' && action !== 'hold') return
+              if (action === 'sprite') {
+                patch(at, {
+                  action: 'clickTarget',
+                  target: { kind: 'sprite', path: '', groupPath: '' },
+                })
+                return
+              }
+              if (action === 'outsideGroup') {
+                patch(at, { action: 'clickTarget', target: { kind: 'outsideGroup', path: '' } })
+                return
+              }
+              if (action === 'lastPoint') {
+                patch(at, { action: 'clickTarget', target: { kind: 'lastPoint' } })
+                return
+              }
+              if (!['wait', 'click', 'hold', 'press'].includes(action)) return
               patch(
                 at,
                 action === 'wait'
@@ -112,9 +138,60 @@ export function StepsEditor({
           >
             <option value="press">Apertar uma tecla</option>
             <option value="hold">Segurar uma tecla</option>
-            <option value="wait">Esperar</option>
-            <option value="click">Clicar na tela</option>
+            <option value="wait" disabled={singlePress}>
+              Esperar
+            </option>
+            <option value="click" disabled={singlePress}>
+              Clicar na tela
+            </option>
+            <option value="sprite" disabled={singlePress}>
+              Clicar no lugar de um personagem
+            </option>
+            <option value="lastPoint" disabled={singlePress}>
+              Repetir o último lugar clicado
+            </option>
+            <option value="outsideGroup" disabled={singlePress}>
+              Clicar fora de um grupo
+            </option>
           </Select>
+          {step.action === 'clickTarget' && step.target.kind === 'sprite' && (
+            <>
+              <Input
+                aria-label={`Personagem do passo ${at + 1}`}
+                className="w-36"
+                maxLength={200}
+                placeholder="Nome do personagem"
+                value={step.target.path}
+                onChange={(e) => {
+                  if (step.target.kind === 'sprite')
+                    patch(at, { ...step, target: { ...step.target, path: e.target.value } })
+                }}
+              />
+              <Input
+                aria-label={`Grupo do passo ${at + 1}`}
+                className="w-36"
+                maxLength={200}
+                placeholder="Nome do grupo"
+                value={step.target.groupPath}
+                onChange={(e) => {
+                  if (step.target.kind === 'sprite')
+                    patch(at, { ...step, target: { ...step.target, groupPath: e.target.value } })
+                }}
+              />
+            </>
+          )}
+          {step.action === 'clickTarget' && step.target.kind === 'outsideGroup' && (
+            <Input
+              aria-label={`Grupo do passo ${at + 1}`}
+              className="w-36"
+              maxLength={200}
+              placeholder="Nome do grupo"
+              value={step.target.path}
+              onChange={(e) =>
+                patch(at, { ...step, target: { kind: 'outsideGroup', path: e.target.value } })
+              }
+            />
+          )}
           {step.action === 'press' && (
             <Select
               aria-label={`Tecla do passo ${at + 1}`}
@@ -174,6 +251,7 @@ export function StepsEditor({
             variant="ghost"
             size="sm"
             aria-label={`Tirar o passo ${at + 1}`}
+            disabled={singlePress && steps.length === 1}
             onClick={() => onChange(steps.filter((_, i) => i !== at))}
           >
             Tirar
@@ -183,14 +261,15 @@ export function StepsEditor({
       <Button
         variant="outline"
         size="sm"
-        disabled={steps.length >= EXECUTION_LIMITS.maxSteps}
+        disabled={steps.length >= (singlePress ? 1 : EXECUTION_LIMITS.maxSteps)}
         onClick={() => onChange([...steps, { action: 'press', key: 'Space' }])}
       >
         Adicionar passo
       </Button>
       <p className="text-xs text-muted-foreground">
-        Até {EXECUTION_LIMITS.maxSteps} passos e {EXECUTION_LIMITS.maxTotalWaitMs / 1000} s de
-        espera somada. O clique usa a posição na tela do jogo (1024 por 640).
+        {singlePress
+          ? 'Este teste usa uma tecla. A observação sem tecla acontece antes desse passo.'
+          : `Até ${EXECUTION_LIMITS.maxSteps} passos e ${EXECUTION_LIMITS.maxTotalWaitMs / 1000} s de espera somada. O clique na tela usa coordenadas na prévia (1024 por 640). Os cliques em personagens e grupos usam o palco atual do Jogo 2D clássico JavaScript; repetir exige um clique anterior em personagem ou fora do grupo, e mantém aquele lugar.`}
       </p>
     </fieldset>
   )
@@ -213,14 +292,37 @@ function BehaviorEditor({
 }) {
   const kitHas = (field: ExecutionGameField) => isKit && (!kitFields || kitFields.includes(field))
   const { target, compare } = rule.expect
-  const withTarget = (next: ExecutionTarget) =>
-    onChange({ ...rule, expect: { ...rule.expect, target: next } })
+  const motion = target.kind === 'spritePosition'
+  const hasOnePress = rule.steps.length === 1 && rule.steps[0]?.action === 'press'
+  const relative = (value: ExecutionCompare) => value === 'increased' || value === 'decreased'
+  const comparisons = EXECUTION_COMPARES.filter((value) =>
+    motion ? relative(value) : !relative(value),
+  )
+  const comparisonFits = comparisons.includes(compare)
+  const withTarget = (next: ExecutionTarget) => {
+    if (next.kind === 'spritePosition') {
+      if (!hasOnePress || isPro) return
+      const { value: _value, ...expect } = rule.expect
+      onChange({
+        ...rule,
+        observation: rule.observation ?? { type: 'idleBeforeAction', idleMs: 80 },
+        expect: { ...expect, target: next, compare: relative(compare) ? compare : 'increased' },
+      })
+      return
+    }
+    const { observation: _observation, ...rest } = rule
+    onChange({
+      ...rest,
+      expect: { ...rule.expect, target: next, compare: relative(compare) ? 'changed' : compare },
+    })
+  }
   const needsValue = !EXECUTION_COMPARES_WITHOUT_VALUE.includes(compare)
   return (
     <div className="space-y-3">
       <StepsEditor
         steps={rule.steps}
         index={index}
+        singlePress={motion}
         onChange={(steps) => onChange({ ...rule, steps })}
       />
       <fieldset className="space-y-2 text-sm">
@@ -231,6 +333,10 @@ function BehaviorEditor({
             value={target.kind === 'game' ? `game:${target.field}` : target.kind}
             onChange={(e) => {
               const value = e.target.value
+              if (value === 'spritePosition') {
+                withTarget({ kind: 'spritePosition', path: '', axis: 'x' })
+                return
+              }
               withTarget(
                 value === 'value'
                   ? { kind: 'value', path: '' }
@@ -242,6 +348,9 @@ function BehaviorEditor({
           >
             <option value="value" disabled={isPro}>
               Uma variável do jogo
+            </option>
+            <option value="spritePosition" disabled={isPro || !hasOnePress}>
+              A posição de um personagem após uma tecla
             </option>
             <option value="text">O texto da página</option>
             <option value="console">O que o jogo escreveu no console</option>
@@ -268,11 +377,35 @@ function BehaviorEditor({
               onChange={(e) => withTarget({ kind: 'value', path: e.target.value.trim() })}
             />
           )}
+          {target.kind === 'spritePosition' && (
+            <>
+              <Input
+                aria-label={`Personagem do objetivo ${index + 1}`}
+                placeholder="Nome do personagem"
+                className="w-40"
+                maxLength={200}
+                value={target.path}
+                onChange={(e) => withTarget({ ...target, path: e.target.value })}
+              />
+              <Select
+                aria-label={`Eixo do objetivo ${index + 1}`}
+                value={target.axis}
+                onChange={(e) => {
+                  const axis = e.target.value
+                  if (axis === 'x' || axis === 'y') withTarget({ ...target, axis })
+                }}
+              >
+                <option value="x">Horizontal (x)</option>
+                <option value="y">Vertical (y)</option>
+              </Select>
+            </>
+          )}
           <Select
             aria-label={`Comparação do objetivo ${index + 1}`}
             value={compare}
             onChange={(e) => {
-              const next = e.target.value as ExecutionCompare
+              const next = comparisons.find((option) => option === e.target.value)
+              if (!next) return
               const { value: _value, ...expect } = rule.expect
               onChange({
                 ...rule,
@@ -288,7 +421,12 @@ function BehaviorEditor({
               })
             }}
           >
-            {EXECUTION_COMPARES.map((option) => (
+            {!comparisonFits && (
+              <option value={compare} disabled>
+                Comparação incompatível: {COMPARE_LABELS[compare]}
+              </option>
+            )}
+            {comparisons.map((option) => (
               <option key={option} value={option}>
                 {COMPARE_LABELS[option]}
               </option>
@@ -309,9 +447,13 @@ function BehaviorEditor({
             />
           )}
         </div>
+        {!comparisonFits && (
+          <p role="alert">Escolha uma comparação compatível com o que será observado.</p>
+        )}
         <p className="text-xs text-muted-foreground">
-          "Mudou" compara com o começo do jogo, antes dos passos. A variável é o nome que a criança
-          usa nos blocos ou no código (e uma propriedade dela, como heroi.x).
+          {motion
+            ? `Antes da tecla, o teste observa por ${rule.observation?.idleMs ?? 80} ms se o personagem está parado. Depois confere se a coordenada aumentou ou diminuiu, sem exigir uma velocidade exata. No Jogo 2D, y aumenta para baixo.`
+            : '"Mudou" compara com o começo do jogo, antes dos passos. A variável é o nome que a criança usa nos blocos ou no código (e uma propriedade dela, como heroi.x).'}
         </p>
       </fieldset>
     </div>

@@ -25,7 +25,12 @@ import {
   pensaRestoreRevision,
   reconcilePensaOpen,
 } from '../../lib/pensa-restore-pending'
-import { pensaPlanIdFromStudioProjectId, pensaStudioProjectId } from '../../lib/pensa-studio-link'
+import {
+  assertPensaJavaScriptProject,
+  PensaProjectLanguageRefused,
+  pensaPlanIdFromStudioProjectId,
+  pensaStudioProjectId,
+} from '../../lib/pensa-studio-link'
 import { resumeExistingCreation } from '../../lib/resume-creation'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
@@ -190,12 +195,17 @@ export function StudioFullClient({
           setOpeningProject('error')
           return
         }
+        assertPensaJavaScriptProject(project)
         setView({ name: 'editor', projectId: initialProjectId })
         setOpeningProject(null)
       })
       .catch((error: unknown) => {
         if (!active) return
-        setOpeningError(error instanceof PensaOpenRefused ? error.message : null)
+        setOpeningError(
+          error instanceof PensaOpenRefused || error instanceof PensaProjectLanguageRefused
+            ? error.message
+            : null,
+        )
         setOpeningProject('error')
       })
     return () => {
@@ -390,6 +400,7 @@ export function StudioFullClient({
         await persistence.save(project)
       }
       if (!active) return
+      assertPensaJavaScriptProject(project)
       setMissingTaskProject(null)
       if (handoffStatus && handoffStatus !== 'completed') {
         const latest = openingHandoffRef.current
@@ -408,7 +419,7 @@ export function StudioFullClient({
       openedTaskKeyRef.current = null
       if (active)
         setTaskError(
-          error instanceof PensaOpenRefused
+          error instanceof PensaOpenRefused || error instanceof PensaProjectLanguageRefused
             ? error.message
             : 'Não consegui abrir o jogo desta missão.',
         )

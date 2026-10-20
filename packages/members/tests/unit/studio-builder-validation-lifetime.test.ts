@@ -92,6 +92,7 @@ test.each([
     false,
     async () => {
       policies++
+      return {}
     },
   )
   const pending = service

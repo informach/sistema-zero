@@ -42,6 +42,7 @@ export async function prepareClassicCheckDocument(
     throw new Error('Projeto clássico inválido.')
   return renderProjectToPreviewDocAsync(project as Project, {
     securityProfile: 'strict',
+    runtimeInspection: true,
     transformScript: (script) => instrumentCheckScript(script, scope),
   })
 }

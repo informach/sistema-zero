@@ -1,4 +1,4 @@
-import { TURTLE_GRAPHICS_LIMITS } from './graphicsProtocol'
+import { TURTLE_GRAPHICS_LIMITS, TURTLE_IMAGE_DIMENSION_LIMIT } from './graphicsProtocol'
 
 export interface TurtleImageSource {
   type: 'image/png' | 'image/gif'
@@ -15,8 +15,8 @@ function dimensions(width: number, height: number) {
     !width ||
     !height ||
     width * height > TURTLE_GRAPHICS_LIMITS.imagePixels ||
-    width > 4096 ||
-    height > 4096
+    width > TURTLE_IMAGE_DIMENSION_LIMIT ||
+    height > TURTLE_IMAGE_DIMENSION_LIMIT
   )
     fail()
 }

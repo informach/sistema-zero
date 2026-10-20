@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { getPersonalAssetsNamespace } from '../../asset-library/personal'
 import { syncDrawingsIntoProjects } from '../../asset-library/personalSync'
 import { useProjectStoreApi } from '../../state/projectStore'
+import { useStudioPintaLibrary } from '../../studio/pinta-library'
 
 /**
  * Reconcilia os desenhos do Pinta quando a janela do Estúdio volta ao foco — é
@@ -11,12 +12,12 @@ import { useProjectStoreApi } from '../../state/projectStore'
  * ligados) porque a janela dos materiais pode estar fechada justamente quando ela
  * volta para cá — e o que ela quer ver atualizado é o JOGO rodando.
  *
- * O custo real é o portão do `syncDrawingsIntoProjects`: sem desenho novo desde
- * a última passada, a chamada sai sem tocar no IndexedDB. Por isso não há
- * throttle aqui — o trabalho pesado já é condicional.
+ * O portão do `syncDrawingsIntoProjects` evita releitura das cópias canônicas sem mudança.
+ * Receitas Python conferem a proveniência nativa, mas rasterizam apenas quando ela muda.
  */
 export function DrawingSyncWatcher(): null {
   const storeApi = useProjectStoreApi()
+  const pintaLibrary = useStudioPintaLibrary()
 
   useEffect(() => {
     // Só o Estúdio Completo tem biblioteca pessoal (namespace por PERFIL). Na
@@ -24,6 +25,7 @@ export function DrawingSyncWatcher(): null {
     if (!getPersonalAssetsNamespace()) return
 
     let disposed = false
+    const controller = new AbortController()
     const run = () => {
       if (disposed) return
       // A varredura dos projetos FECHADOS é I/O de fundo: espera a aba ficar
@@ -34,7 +36,7 @@ export function DrawingSyncWatcher(): null {
           : setTimeout(cb, 200)
       idle(() => {
         if (disposed) return
-        void syncDrawingsIntoProjects(storeApi)
+        void syncDrawingsIntoProjects(storeApi, { pintaLibrary, signal: controller.signal })
       })
     }
 
@@ -43,14 +45,25 @@ export function DrawingSyncWatcher(): null {
     }
     // A primeira passada cobre "desenhei ontem, abro o Estúdio hoje".
     run()
+    const unsubscribe = storeApi.subscribe((state, previous) => {
+      if (
+        state.project?.id !== previous.project?.id ||
+        state.editingAccess !== previous.editingAccess ||
+        (state.project?.programmingLanguage ?? 'javascript') !==
+          (previous.project?.programmingLanguage ?? 'javascript')
+      )
+        run()
+    })
     window.addEventListener('focus', run)
     document.addEventListener('visibilitychange', onVisible)
     return () => {
       disposed = true
+      controller.abort()
+      unsubscribe()
       window.removeEventListener('focus', run)
       document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [storeApi])
+  }, [storeApi, pintaLibrary])
 
   return null
 }

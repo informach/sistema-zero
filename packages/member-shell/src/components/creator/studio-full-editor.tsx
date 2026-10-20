@@ -12,6 +12,10 @@ import type {
   StudioTutorConfig,
 } from '@sistemazero/studio'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import {
+  assertPensaJavaScriptProject,
+  PensaProjectLanguageRefused,
+} from '../../lib/pensa-studio-link'
 import { reportStudioError } from '../../lib/studio-error'
 import { useFocusMode } from './focus-mode'
 import { useStudioActivity } from './use-studio-activity'
@@ -19,8 +23,9 @@ import { useStudioActivity } from './use-studio-activity'
 type StudioModule = typeof import('@sistemazero/studio')
 type EditorState =
   | { status: 'loading' }
-  | { status: 'ready'; project: Project }
+  | { status: 'ready'; project: Project; releaseOpening: () => void }
   | { status: 'not-found' }
+  | { status: 'pensa-refused'; message: string }
 
 /**
  * "Editar o desenho" nos assets vindos do Pinta: abre o Pinta em aba nova já
@@ -102,18 +107,31 @@ export function StudioFullEditor({
 
   useEffect(() => {
     let active = true
+    const lifetime = new AbortController()
+    const releaseOpening =
+      adapter.beginOpening?.(projectId, { signal: lifetime.signal }) ?? (() => {})
     setState({ status: 'loading' })
     adapter
       .load(projectId)
       .then((project) => {
         if (!active) return
-        setState(project ? { status: 'ready', project } : { status: 'not-found' })
+        if (project) assertPensaJavaScriptProject(project)
+        if (!project || project.kind === 'pro') releaseOpening()
+        setState(project ? { status: 'ready', project, releaseOpening } : { status: 'not-found' })
       })
-      .catch(() => {
-        if (active) setState({ status: 'not-found' })
+      .catch((cause: unknown) => {
+        releaseOpening()
+        if (active)
+          setState(
+            cause instanceof PensaProjectLanguageRefused
+              ? { status: 'pensa-refused', message: cause.message }
+              : { status: 'not-found' },
+          )
       })
     return () => {
       active = false
+      lifetime.abort()
+      releaseOpening()
     }
   }, [adapter, projectId])
 
@@ -134,6 +152,16 @@ export function StudioFullEditor({
     return (
       <div className="grid h-full place-items-center text-muted-foreground text-sm">
         Carregando projeto…
+      </div>
+    )
+  }
+  if (state.status === 'pensa-refused') {
+    return (
+      <div role="alert" className="grid h-full place-content-center gap-3 p-6 text-center">
+        <p>{state.message}</p>
+        <button type="button" onClick={onExit} className="underline">
+          Voltar
+        </button>
       </div>
     )
   }
@@ -170,7 +198,8 @@ export function StudioFullEditor({
       <div className="min-h-0 flex-1">
         <mod.StudioEditor
           initialProject={state.project}
-          persistence="local"
+          persistence={adapter}
+          onProjectOpeningSettled={state.releaseOpening}
           onExit={onExit}
           onChange={handleActivity}
           // Erro que o editor CONTEVE sozinho (ex.: o painel do Zappy caindo na sua

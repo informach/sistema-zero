@@ -76,7 +76,13 @@ const release = await createStudioRuntimeRelease({
   sourceTargets: ['browser', 'desktop'],
   requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
   artifacts: distribution.manifest.files.map(({ path, sha256 }) => ({ path, sha256 })),
-  python: { version: distribution.manifest.pythonVersion, packages: [] },
+  python: {
+    version: distribution.manifest.pythonVersion,
+    packages: [],
+    ...(distribution.manifest.providedModules === undefined
+      ? {}
+      : { providedModules: distribution.manifest.providedModules }),
+  },
 })
 const deployment = { release, distribution: distribution.manifest }
 async function qualifiedProject(name: string) {

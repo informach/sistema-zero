@@ -75,6 +75,8 @@ export interface StudioRuntimeSession {
 }
 
 export interface StudioRuntimePrepareInput {
+  /** Trusted host UI preference. Never supplied by learner source or frame messages. */
+  hostAudio?: StudioHostAudioPreference
   /** Host-owned lesson criteria, separate from the editable project and its execution digest. */
   pythonActivity?: StudioPythonActivity
   /** Captured and semantically validated before requesting execution. */
@@ -83,6 +85,11 @@ export interface StudioRuntimePrepareInput {
   signal: AbortSignal
   /** Host-created and already mounted; never supplied by the learner's document. */
   frame: HTMLIFrameElement
+}
+
+export interface StudioHostAudioPreference {
+  readonly getMuted: () => boolean
+  readonly subscribe: (listener: () => void) => () => void
 }
 
 export interface StudioRuntimeProvider {

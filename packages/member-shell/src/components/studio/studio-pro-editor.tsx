@@ -5,6 +5,7 @@ import type {
   EditableStudioProject as Project,
   StudioEditorProps,
   StudioMoldaLibraryAdapter,
+  StudioPersistenceAdapter,
   StudioPintaLibraryAdapter,
   StudioTaskSession,
   StudioTeamLibraryAdapter,
@@ -14,6 +15,10 @@ import type {
 import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { useEffect, useState } from 'react'
+import {
+  assertPensaJavaScriptProject,
+  PensaProjectLanguageRefused,
+} from '../../lib/pensa-studio-link'
 import {
   loadPreparedStudioProProject,
   loadStudioProModule,
@@ -55,8 +60,16 @@ type Loaded =
   | { kind: 'loading' }
   | { kind: 'load-error' }
   | { kind: 'unsupported' }
-  | { kind: 'ready'; project: Project }
+  | {
+      kind: 'ready'
+      project: Project
+      opening: {
+        release: () => void
+        persistence: StudioPersistenceAdapter
+      }
+    }
   | { kind: 'invalid' }
+  | { kind: 'pensa-refused'; message: string }
 
 /**
  * Editor do modo CÓDIGO (projeto PRO / WebContainer) do Estúdio Completo. Vive no
@@ -119,6 +132,9 @@ function StudioProEditorSession({
 
   useEffect(() => {
     let active = true
+    const lifetime = new AbortController()
+    let opening: Extract<Loaded, { kind: 'ready' }>['opening'] | undefined
+    let retained = false
     if (loadAttempt > 0) setMod(null)
     void (async () => {
       setState({ kind: 'loading' })
@@ -139,6 +155,10 @@ function StudioProEditorSession({
         projectId,
         prepare: prepareProject,
         active: () => active,
+        signal: lifetime.signal,
+        onOpening: (owner) => {
+          opening = owner
+        },
       })
       if (!active) return
       // A rota PRO é só para projetos PRO: um id ausente ou um projeto CLÁSSICO
@@ -147,21 +167,44 @@ function StudioProEditorSession({
         setState({ kind: 'invalid' })
         return
       }
+      assertPensaJavaScriptProject(project)
       if (project.programmingLanguage !== 'python' && !proRuntime && !m.canRunProMode()) {
         setState({ kind: 'unsupported' })
         return
       }
-      setState({ kind: 'ready', project })
-    })().catch((error: unknown) => {
-      if (!active) return
-      console.error('Não foi possível abrir o projeto Pro.', error)
-      setState({ kind: 'load-error' })
-    })
+      if (!opening) throw new Error('A abertura do projeto não foi iniciada.')
+      retained = true
+      setState({ kind: 'ready', project, opening })
+    })()
+      .catch((error: unknown) => {
+        if (!active) return
+        if (error instanceof PensaProjectLanguageRefused) {
+          setState({ kind: 'pensa-refused', message: error.message })
+          return
+        }
+        console.error('Não foi possível abrir o projeto Pro.', error)
+        setState({ kind: 'load-error' })
+      })
+      .finally(() => {
+        if (!retained) opening?.release()
+      })
     return () => {
       active = false
+      lifetime.abort()
+      opening?.release()
     }
   }, [storageNamespace, projectId, loadAttempt, prepareProject, proRuntime])
 
+  if (state.kind === 'pensa-refused') {
+    return (
+      <div role="alert" className="grid h-full place-content-center gap-3 p-6 text-center">
+        <p>{state.message}</p>
+        <Button variant="ghost" size="sm" onClick={onExit}>
+          Voltar
+        </Button>
+      </div>
+    )
+  }
   if (state.kind === 'unsupported') {
     return (
       <div
@@ -232,7 +275,8 @@ function StudioProEditorSession({
       <div className="min-h-0 flex-1">
         <StudioEditor
           initialProject={state.project}
-          persistence="local"
+          persistence={state.opening.persistence}
+          onProjectOpeningSettled={state.opening.release}
           theme={theme}
           features={{ professional: true }}
           tutor={tutor}

@@ -233,7 +233,13 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
       sourceTargets: ['browser', 'desktop'],
       requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
       artifacts: distribution.files.map(({ path, sha256 }) => ({ path, sha256 })),
-      python: { version: distribution.pythonVersion, packages: [] },
+      python: {
+        version: distribution.pythonVersion,
+        packages: [],
+        ...(distribution.providedModules === undefined
+          ? {}
+          : { providedModules: distribution.providedModules }),
+      },
     }),
   )
   const deployment = { release, distribution }

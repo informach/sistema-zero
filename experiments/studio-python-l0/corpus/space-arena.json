@@ -7,14 +7,18 @@
   "distribution": "external test corpus in ignored cache only; not a product template",
   "originalBrowserStatus": "requires explicit OS audio and Python-version compatibility changes",
   "portableVariant": {
-    "status": "pending",
+    "status": "source-adapted-not-game-qualified",
+    "version": "portable-audio-1.1.0",
+    "recipe": "experiments/studio-python-runtime/gameVariants.ts",
+    "entrypointSha256": "9db951e68bd4ce10f3739368d806d2a8a15db3535d9d543f21ddd5f2bd2f38a5",
     "permittedChanges": [
-      "Replace explicit OS-specific audio function with versioned portable audio; preserve all six WAV assets and scheduled background playback.",
+      "Replace explicit OS-specific audio function with versioned portable audio; preserve all five WAV assets and scheduled background playback.",
       "Replace four randint float bounds at source lines 775, 776, 792, 793 with exact integer bounds; CPython 3.14 rejects the original integral floats.",
-      "Replace OS console clearing in the FPS display with an explicit portable diagnostic output, without changing game time or drawing."
+      "Replace OS console clearing in the FPS display with an explicit portable diagnostic output, without changing game time or drawing.",
+      "Pump official Turtle events while paused, without advancing game frames; isolated pinned-loop Tk reproduction confirms the original starvation."
     ],
     "requiresReferenceReproduction": [
-      "Paused loop lacks update: reproduce original desktop behavior before documenting any correction."
+      "Full-game pause/resume, physical input and media behavior remain pending; the native proof isolates the unchanged original loop body with a bounded iteration count."
     ]
   },
   "files": [

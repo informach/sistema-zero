@@ -20,10 +20,16 @@ export class Probe extends DurableObject {
       )
     })
   }
-  create(body: ReadableStream<Uint8Array> | null, hold: boolean, pendingBody = false) {
+  create(
+    body: ReadableStream<Uint8Array> | null,
+    hold: boolean,
+    pendingBody = false,
+    configure = false,
+  ) {
     this.#command = new PythonLanguageCommand({
       body,
       token: 'a'.repeat(64),
+      target: configure ? 'configure' : 'command',
       send: async (request) => {
         this.#count++
         const body = await request.text()
@@ -48,6 +54,7 @@ export class Probe extends DurableObject {
         if (this.#destroyed) throw new Error('Container recreated after destroy')
         return Response.json({
           body,
+          route: request.url,
           authorized: request.headers.get('authorization') === `Bearer ${'a'.repeat(64)}`,
         })
       },
@@ -96,8 +103,9 @@ export default {
     if (mode === 'close') return Response.json(await stub.close())
     const handle = await stub.create(
       new Response('safe-static-analysis-source').body,
-      mode === 'hold',
+      mode === 'hold' || mode === 'configure-hold',
       mode === 'body',
+      mode === 'configure' || mode === 'configure-hold',
     )
     try {
       if (mode === 'cancel') {

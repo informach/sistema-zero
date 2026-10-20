@@ -1,3 +1,4 @@
+import { encodeOwnedUtf8 } from '@sistemazero/core/creations'
 import { StudioRuntimeSelectionSchema } from '@sistemazero/core/studio/project-environment'
 import {
   STUDIO_PYTHON_HTTP_GZIP_PREFIX,
@@ -114,7 +115,7 @@ export async function storePythonRuntimeDistribution(options: {
   // Only a complete, verified upload can make its marker visible.
   await putOnce(
     `${prefix}complete.json`,
-    new TextEncoder().encode(deployment.marker),
+    encodeOwnedUtf8(deployment.marker),
     deployment.markerSha256,
   )
   return deployment

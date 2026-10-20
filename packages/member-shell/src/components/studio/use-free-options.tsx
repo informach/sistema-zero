@@ -1,8 +1,9 @@
 'use client'
 
 import type { prepareStudioFreeOptions } from '@sistemazero/studio/free-project-options'
+import type { PythonProjectDocument } from '@sistemazero/studio/python-project-validation'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { apiGet } from '../../lib/api'
+import { apiGet, apiSend } from '../../lib/api'
 
 type Prepared = Awaited<ReturnType<typeof prepareStudioFreeOptions>>
 
@@ -72,9 +73,43 @@ export function useFreeStudioOptions(
     [owner],
   )
   const current = state?.owner === owner ? state : null
+  const authorizeExample = useCallback(
+    async (project: PythonProjectDocument, signal: AbortSignal) => {
+      const active = authority.current
+      if (!owner.viewerId || currentOwner.current !== owner || active?.owner !== owner)
+        throw new Error('O perfil mudou. Reabra a criação do projeto.')
+      const lifetime = AbortSignal.any([signal, active.controller.signal])
+      lifetime.throwIfAborted()
+      const prepared = await readOptions(lifetime)
+      lifetime.throwIfAborted()
+      if (currentOwner.current !== owner)
+        throw new Error('O perfil mudou. Reabra a criação do projeto.')
+      const { authorizePythonPrivateCopy } = await import('../../lib/studio-python-remix')
+      lifetime.throwIfAborted()
+      await authorizePythonPrivateCopy({
+        snapshot: project,
+        viewerId: owner.viewerId,
+        audience: owner.audience,
+        options: prepared.options,
+        signal: lifetime,
+        request: (request) =>
+          apiSend('/api/studio/free-runtime', 'POST', request, undefined, { signal: lifetime }),
+      })
+      lifetime.throwIfAborted()
+      if (currentOwner.current !== owner)
+        throw new Error('O perfil mudou. Reabra a criação do projeto.')
+    },
+    [owner],
+  )
   return {
     creation: current?.prepared
-      ? { environments: current.prepared.environments, prepare }
+      ? {
+          environments: current.prepared.environments,
+          prepare,
+          authorizeExample,
+          signal:
+            authority.current?.owner === owner ? authority.current.controller.signal : undefined,
+        }
       : undefined,
     curation: current?.prepared?.options.pythonCuration,
     loading: Boolean(viewerId && enabled && !current),

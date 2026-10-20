@@ -85,6 +85,17 @@ export function readPythonFrameMessage(raw: unknown): PythonFrameMessage | undef
     identity,
   }
   if (raw.type === 'prepared') return { ...common, type: 'prepared' }
+  if (raw.type === 'audio-request') {
+    const parsed = readPythonWorkerEvent({ ...raw, type: 'audio' })
+    if (parsed?.type === 'audio')
+      return {
+        ...common,
+        type: 'audio-request',
+        requestId: parsed.requestId,
+        request: parsed.request,
+      }
+    return
+  }
   if (raw.type === 'activity-result') {
     const parsed = readPythonWorkerEvent(raw)
     if (parsed?.type === 'activity-result') return { ...common, ...parsed }

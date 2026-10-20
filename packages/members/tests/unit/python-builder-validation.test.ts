@@ -1,7 +1,27 @@
 import { expect, test } from 'bun:test'
 import { validateStudioPythonBuilderCandidate } from '@sistemazero/core/studio/python-builder-validation'
+import { providedPythonRelease } from '../../../core/tests/fixtures/python-provided-release'
 import { PNG } from '../fakes/gallery-python-source'
 import { pythonBuilderNetworkFixture as fixture } from '../fakes/python-builder-network'
+
+test('provided metadata cannot disappear between type analysis and execution', async () => {
+  const release = await providedPythonRelease()
+  const f = await fixture('passed', release)
+  const authorize = f.options.authorize
+  f.options.authorize = async (base, metadata, operation) => {
+    const result = await authorize(base, metadata, operation)
+    return operation === 'execute' ? {} : result
+  }
+  try {
+    await expect(validateStudioPythonBuilderCandidate(f.options)).rejects.toThrow('mudou')
+    expect(f.operations).toContain('analyze')
+    expect(f.operations).toContain('execute')
+    expect(f.requests.some((path) => path.startsWith('DELETE /v1/python-language/'))).toBe(true)
+    expect(f.requests.some((path) => path.includes('/v1/python/'))).toBe(false)
+  } finally {
+    f.stop()
+  }
+})
 
 test('candidate pipeline uses real TCP clients and immutable Pinta/source bytes for controlled receipts', async () => {
   const f = await fixture('passed')
@@ -111,6 +131,7 @@ test.each([
       }
       queueMicrotask(tick)
     }
+    return {}
   }
   try {
     const outcome = await validateStudioPythonBuilderCandidate(f.options).then(

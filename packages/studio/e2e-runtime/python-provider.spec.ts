@@ -28,6 +28,50 @@ async function completed(page: Page, slot: string) {
   )
 }
 
+for (const fixture of ['portable', 'turtleDrawing'])
+  test(`${fixture}: prepares and executes under strict CSP without validation eval probes`, async ({
+    page,
+  }, info) => {
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(String(error)))
+    page.on('console', (message) => {
+      if (message.type() === 'error') errors.push(message.text())
+    })
+    const failures: unknown[] = []
+    try {
+      await prepare(page, 'csp-validation', fixture)
+      await page.evaluate(() => globalThis.providerProbe.run('csp-validation'))
+      await completed(page, 'csp-validation')
+    } catch (error) {
+      failures.push(error)
+    }
+    try {
+      await info.attach('strict-csp-validation', {
+        body: JSON.stringify({
+          fixture,
+          errors,
+          state: await page.evaluate(() => globalThis.providerProbe.read('csp-validation')),
+        }),
+        contentType: 'application/json',
+      })
+    } catch (error) {
+      failures.push(error)
+    }
+    try {
+      await page.evaluate(() => globalThis.providerProbe.dispose('csp-validation'))
+      expect(errors).toEqual([])
+    } catch (error) {
+      failures.push(error)
+    }
+    if (failures.length)
+      throw new AggregateError(
+        failures,
+        failures
+          .map((error) => (error instanceof Error ? error.message : String(error)))
+          .join('\n'),
+      )
+  })
+
 for (const fixture of ['turtleDrawing', 'classic-turtleDrawing'])
   test(`${fixture}: captures presented pixels with the current revision and refuses capture after Stop`, async ({
     page,

@@ -1,6 +1,11 @@
 import { afterAll, expect, mock, test } from 'bun:test'
 import { documentFixture } from '../../state/fixtures/projectDocuments'
-import type { StudioExecutionIdentity, StudioRuntimeEvent, StudioRuntimeSession } from '../types'
+import type {
+  StudioExecutionIdentity,
+  StudioHostAudioPreference,
+  StudioRuntimeEvent,
+  StudioRuntimeSession,
+} from '../types'
 import { preparePythonExecutionSnapshot } from './snapshot'
 
 // This fixture runs in its own module realm; mock.module must never replace real runtime tests.
@@ -39,6 +44,7 @@ const sessions: {
   disposed: number
   emit(event: StudioRuntimeEvent): void
   signal: AbortSignal
+  hostAudio?: StudioHostAudioPreference
 }[] = []
 let prepareGate: Promise<void> | undefined
 let loaderGate: Promise<void> | undefined
@@ -61,6 +67,7 @@ mock.module('./session', () => ({
     const owned = {
       disposed: 0,
       signal: options.signal,
+      hostAudio: options.hostAudio,
       emit(event: StudioRuntimeEvent) {
         for (const listener of listeners) listener(event)
       },
@@ -269,4 +276,55 @@ test('a failed observer can restart without the obsolete catch stopping the new 
   expect(document.querySelectorAll('iframe')).toHaveLength(1)
   expect(sessions.at(-1)?.disposed).toBe(0)
   expect(document.querySelector('#status')?.textContent).toBe('Executando')
+})
+
+test('audio waits for Jogar and labels subsequent runs as Reiniciar', async () => {
+  const start = resetPlayerDOM()
+  const count = sessions.length
+  snapshot.files.push({
+    path: 'tone.wav',
+    kind: 'asset',
+    sha256: 'a'.repeat(64),
+    bytes: new Uint8Array(44),
+  })
+  try {
+    const { startStandalonePythonPlayer } = await import('./standalonePlayer')
+    startStandalonePythonPlayer(
+      `https://runtime.test/v1/runtimes/${snapshot.configuration.runtime.manifestSha256}/standalone.mjs`,
+    )
+    await settle()
+    expect(sessions).toHaveLength(count)
+    expect(start.disabled).toBe(false)
+    expect(start.textContent).toBe('Jogar')
+    expect(document.querySelector('#status')?.textContent).toContain('Clique em Jogar')
+    start.click()
+    await settle()
+    expect(sessions).toHaveLength(count + 1)
+    expect(start.textContent).toBe('Reiniciar')
+  } finally {
+    transition('pagehide')
+    snapshot.files.pop()
+  }
+})
+
+// Last in this isolated realm: each mount intentionally registers a page-level BFCache listener.
+test('trusted launcher initialization gate precedes preparation/run and preference is passed intact', async () => {
+  resetPlayerDOM()
+  const before = sessions.length
+  const ready = Promise.withResolvers<StudioHostAudioPreference>()
+  const preference = { getMuted: () => true, subscribe: () => () => {} }
+  const { startStandalonePythonPlayer } = await import('./standalonePlayer')
+  startStandalonePythonPlayer(
+    `https://runtime.test/v1/runtimes/${snapshot.configuration.runtime.manifestSha256}/standalone.mjs`,
+    {},
+    { hostAudio: () => ready.promise },
+  )
+  await settle()
+  expect(sessions).toHaveLength(before)
+  ready.resolve(preference)
+  await settle()
+  expect(sessions).toHaveLength(before + 1)
+  expect(sessions.at(-1)?.hostAudio).toBe(preference)
+  expect(document.querySelector('#status')?.textContent).toBe('Executando')
+  transition('pagehide')
 })

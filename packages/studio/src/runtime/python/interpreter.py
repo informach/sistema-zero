@@ -107,6 +107,16 @@ class _StudioExecution:
         backend.configure(graphics, str(Path.cwd()),
                           self._grader.checkpoint if self._grader is not None else None)
 
+    def install_audio(self, directory, exchange):
+        # Author modules keep precedence. This adds media, not an unofficial turtle method.
+        if self._main is None or '_sz_audio_runtime' in sys.modules:
+            raise RuntimeError('O canal de áudio não pode ser preparado nesta execução.')
+        sys.path.insert(1, directory)
+        transport = types.ModuleType('_sz_audio_runtime')
+        transport.exchange = exchange
+        transport.root = str(Path.cwd())
+        sys.modules[transport.__name__] = transport
+
     def install_activity(self, source, definition, requested, publish, console_matches):
         if self._grader is not None or self._main is None:
             raise RuntimeError('A atividade não pode ser preparada nesta execução.')

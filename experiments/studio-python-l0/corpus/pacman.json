@@ -6,7 +6,10 @@
   "source": "original",
   "originalBrowserStatus": "not-compatible-with-system-audio",
   "portableVariant": {
-    "status": "pending",
+    "status": "source-adapted-not-game-qualified",
+    "version": "portable-audio-1.0.0",
+    "recipe": "experiments/studio-python-runtime/gameVariants.ts",
+    "entrypointSha256": "8bd915293088b0fa85a2313e046711d861f43c481aa691d88ba07402485819d8",
     "permittedChanges": [
       "Replace four explicit os.system(aplay) calls and its import with an explicit portable audio module. Preserve every game feature and record the exact diff."
     ]

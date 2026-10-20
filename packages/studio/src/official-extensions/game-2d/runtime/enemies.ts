@@ -118,7 +118,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     var protegida = _protegerListaDaVista(cache);
     var seloDoCache = -1;
     var group = { _revision: 0, _enemyMirror: true, items: [] };
-    _managedGroups.add(group);
+    _markManagedGroup(group);
     Object.defineProperty(group, 'items', {
       enumerable: true,
       configurable: false,

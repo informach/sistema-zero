@@ -1,9 +1,11 @@
 import { afterEach, expect, test } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { StrictMode } from 'react'
+import { portableAudioAsset } from '../../../../../experiments/studio-python-runtime/audioFixtures'
 import { createPythonConsoleBuffer } from '../../runtime/python/consoleBuffer'
 import { createStudioRuntimeRegistry } from '../../runtime/registry'
 import type {
+  StudioHostAudioPreference,
   StudioRuntimeEvent,
   StudioRuntimeInput,
   StudioRuntimeSession,
@@ -11,14 +13,17 @@ import type {
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
+import { StudioExecutionProvider } from '../../studio/observation'
 import { StudioRuntimeEnvironmentProvider } from '../../studio/runtime-environment'
 import { PythonEditorPreview } from './PythonEditorPreview'
 import { PythonRuntimePreview } from './PythonRuntimePreview'
 
 afterEach(cleanup)
 
-async function fixture() {
-  const { project, environment } = await pythonEnvironmentFixture('classic')
+async function fixture(kind: 'classic' | 'pro' = 'classic') {
+  const { project, environment } = await pythonEnvironmentFixture(kind)
+  const audioPreferences: StudioHostAudioPreference[] = []
+  const runMutes: boolean[] = []
   const sessions: {
     session: StudioRuntimeSession
     emit(event: StudioRuntimeEvent): void
@@ -41,7 +46,8 @@ async function fixture() {
       kinds: ['classic', 'pro'],
       load: async () => ({
         id: 'preview-fixture',
-        prepare: async ({ identity }) => {
+        prepare: async ({ identity, hostAudio }) => {
+          if (hostAudio) audioPreferences.push(hostAudio)
           const callbacks = new Set<(event: StudioRuntimeEvent) => void>()
           const entry = {
             disposed: false,
@@ -55,6 +61,7 @@ async function fixture() {
             playback: { kind: 'stop-only' },
             repl: { kind: 'unavailable' },
             run: async () => {
+              runMutes.push(hostAudio?.getMuted() ?? false)
               runs++
               entry.emit({ type: 'state', state: 'running', identity, sequence: 1 })
             },
@@ -87,8 +94,66 @@ async function fixture() {
       }),
     },
   ])
-  return { project, environment, sessions, inputs, runs: () => runs }
+  return { project, environment, sessions, inputs, audioPreferences, runMutes, runs: () => runs }
 }
+
+test.each([
+  'classic',
+  'pro',
+] as const)('%s Python preview applies current host mute without remount/run', async (kind) => {
+  const f = await fixture(kind)
+  const content = (muted: boolean) => (
+    <PythonRuntimePreview
+      project={f.project}
+      environment={f.environment}
+      canExecute
+      muted={muted}
+    />
+  )
+  const view = render(content(true))
+  fireEvent.click(screen.getByRole('button', { name: 'Executar' }))
+  await screen.findByText('Executando')
+  expect(f.runMutes).toEqual([true])
+  const frame = view.container.querySelector('iframe'),
+    preference = f.audioPreferences[0]
+  if (!preference) throw new Error('Preference missing')
+  const changes: boolean[] = []
+  preference.subscribe(() => {
+    changes.push(preference.getMuted())
+  })
+  view.rerender(content(false))
+  expect(changes).toEqual([false])
+  expect(view.container.querySelector('iframe')).toBe(frame)
+  expect(f.runs()).toBe(1)
+})
+
+test.each([
+  'classic',
+  'pro',
+] as const)('%s editor uses the existing execution.muted preference', async (kind) => {
+  const f = await fixture(kind),
+    stores = createStudioStores({ persistence: 'none' })
+  stores.project.getState().setProject(f.project)
+  const content = (muted: boolean) => (
+    <StudioStoresContext.Provider value={stores}>
+      <StudioRuntimeEnvironmentProvider value={f.environment}>
+        <StudioExecutionProvider
+          value={{ editingAccess: 'author', autoRun: true, requireIsolatedPreview: false, muted }}
+        >
+          <PythonEditorPreview />
+        </StudioExecutionProvider>
+      </StudioRuntimeEnvironmentProvider>
+    </StudioStoresContext.Provider>
+  )
+  const view = render(content(true))
+  await screen.findByText('Executando')
+  expect(f.runMutes).toEqual([true])
+  const preference = f.audioPreferences[0]
+  if (!preference) throw new Error('Preference missing')
+  view.rerender(content(false))
+  expect(preference.getMuted()).toBe(false)
+  expect(f.runs()).toBe(1)
+})
 
 test('the real controls run, answer input, distinguish edited source and restart in StrictMode', async () => {
   const f = await fixture()
@@ -131,6 +196,22 @@ test('the real controls run, answer input, distinguish edited source and restart
   fireEvent.click(screen.getByRole('button', { name: 'Parar' }))
   await screen.findByText('Parado')
   await waitFor(() => expect(rendered.container.querySelectorAll('iframe')).toHaveLength(0))
+})
+
+test('audio projects keep autoRun idle until the child clicks Executar', async () => {
+  const f = await fixture()
+  f.project.assets = [portableAudioAsset()]
+  const rendered = render(
+    <PythonRuntimePreview project={f.project} environment={f.environment} canExecute autoRun />,
+  )
+  await act(async () => {})
+  expect(screen.getByRole('button', { name: 'Executar' }).hasAttribute('disabled')).toBe(false)
+  expect(screen.queryByText('Executando')).toBeNull()
+  expect(f.runs()).toBe(0)
+  expect(rendered.container.querySelector('iframe')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Executar' }))
+  await screen.findByText('Executando')
+  expect(f.runs()).toBe(1)
 })
 
 test('a new writer or observer revokes the mounted execution without an automatic restart', async () => {

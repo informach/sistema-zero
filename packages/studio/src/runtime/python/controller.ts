@@ -34,6 +34,7 @@ export interface PythonExecutionView {
   error?: string
 }
 interface Generation {
+  audioListeners: Set<() => void>
   abort: AbortController
   project: PythonProjectDocument
   writerEpoch: number | null
@@ -53,6 +54,7 @@ export function createPythonExecutionController(options: {
   project(): PythonProjectDocument | null
   canExecute(): boolean
   writerEpoch?(): number | null
+  audioMuted?(): boolean
   mountFrame(): { frame: HTMLIFrameElement; release(): void }
   onEvent?(event: StudioRuntimeEvent): void
   /** A dedicated formative generation; absent for ordinary editor/public playback. */
@@ -98,6 +100,7 @@ export function createPythonExecutionController(options: {
     generation = undefined // revoke authority before any callback or await
     if (!previous) return releasing
     previous.unsubscribe?.()
+    previous.audioListeners.clear()
     previous.releaseAuthority?.()
     previous.abort.abort()
     const prior = releasing
@@ -149,6 +152,7 @@ export function createPythonExecutionController(options: {
       throw new Error(message)
     }
     const current: Generation = {
+      audioListeners: new Set(),
       abort: new AbortController(),
       project,
       environment,
@@ -208,6 +212,21 @@ export function createPythonExecutionController(options: {
         identity,
         signal: current.abort.signal,
         frame: mounted.frame,
+        hostAudio: {
+          getMuted() {
+            requireOwner(current)
+            const value = options.audioMuted ? options.audioMuted() : false
+            if (typeof value !== 'boolean') throw new Error('Preferência de som inválida.')
+            return value
+          },
+          subscribe(listener) {
+            if (!owns(current)) return () => {}
+            current.audioListeners.add(listener)
+            return () => {
+              current.audioListeners.delete(listener)
+            }
+          },
+        },
         ...(activity ? { pythonActivity: activity } : {}),
       })
       current.session = session
@@ -275,6 +294,14 @@ export function createPythonExecutionController(options: {
       }
     },
     run,
+    syncAudioPreference() {
+      const current = generation
+      if (!current || !owns(current)) return
+      for (const listener of [...current.audioListeners]) {
+        if (!owns(current)) break
+        listener()
+      }
+    },
     async applyActivityControls() {
       if (!activity) throw new Error('Esta execução não tem tarefa Python.')
       const { current, session } = await active()

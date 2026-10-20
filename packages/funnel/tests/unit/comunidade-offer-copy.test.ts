@@ -135,7 +135,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     // histórico do analytics a citam.
     const citam: string[] = []
     for (const arquivo of new Bun.Glob('**/*.{astro,ts,tsx}').scanSync(SRC))
-      if (source(arquivo).includes('/como-funciona')) citam.push(arquivo)
+      if (source(arquivo).includes('/como-funciona')) citam.push(arquivo.replaceAll('\\', '/'))
     expect(citam.sort()).toEqual(['analytics/page-context.ts', 'pages/como-funciona.astro'])
   })
 

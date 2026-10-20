@@ -6,6 +6,7 @@ import {
   studioPythonAnalysisBinding,
 } from '@sistemazero/core/studio/python-language-authorization'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
+import { providedPythonRelease } from '../../core/tests/fixtures/python-provided-release'
 import { createPythonLanguageHttpProvider } from '../../studio/src/python/language/httpProvider'
 import { documentFixture } from '../../studio/src/state/fixtures/projectDocuments'
 
@@ -31,11 +32,20 @@ function deferred<T>() {
 const tick = async () => {
   for (let index = 0; index < 80; index++) await Promise.resolve()
 }
-type Stage = 'startProcess' | 'port' | 'health' | 'create' | 'command' | 'none'
+type Stage =
+  | 'startProcess'
+  | 'port'
+  | 'configure'
+  | 'configure-create'
+  | 'health'
+  | 'create'
+  | 'command'
+  | 'none'
 function sandboxProbe(stage: Stage) {
   const gate = deferred<void>(),
     entered = deferred<void>(),
-    trace: string[] = []
+    trace: string[] = [],
+    configurations: unknown[] = []
   let commandAborted = false
   async function visit(current: Stage) {
     trace.push(current)
@@ -46,6 +56,7 @@ function sandboxProbe(stage: Stage) {
   }
   return {
     trace,
+    configurations,
     gate,
     entered,
     aborted: () => commandAborted,
@@ -75,6 +86,30 @@ function sandboxProbe(stage: Stage) {
             })
             await visit('command')
             return Response.json({ ok: true })
+          },
+          retain() {},
+        })
+      },
+      async createLanguageConfiguration(
+        body: ReadableStream<Uint8Array> | null,
+        token: string,
+        timeoutMs: number,
+      ) {
+        if (stage === 'configure-create') await visit('configure-create')
+        return new PythonLanguageCommand({
+          body,
+          token,
+          target: 'configure',
+          timeoutMs,
+          send: async (request) => {
+            request.signal.addEventListener('abort', () => {
+              commandAborted = true
+            })
+            expect(request.url).toBe('http://language/configure')
+            const configuration = await request.json()
+            configurations.push(configuration)
+            await visit('configure')
+            return Response.json({ protocolVersion: 1, ready: true })
           },
           retain() {},
         })
@@ -476,7 +511,7 @@ it('closes a reservation whose caller left before receiving its ID without start
   }
 })
 
-for (const stage of ['startProcess', 'port', 'health'] as const)
+for (const stage of ['startProcess', 'port', 'configure', 'configure-create', 'health'] as const)
   it(`drains ${stage} before destroying a cancelled startup, even if the SDK ignores cancellation`, async () => {
     const env = fixture(stage),
       controller = new AbortController()
@@ -704,6 +739,7 @@ it('migrates legacy SQLite leases additively and idempotently; unbound leases on
   try {
     const owner = f.rehydrate()
     expect(f.database.query('SELECT binding FROM leases').get()).toEqual({ binding: null })
+    expect(f.database.query('SELECT bootstrap FROM leases').get()).toEqual({ bootstrap: null })
     expect((await owner.start('c'.repeat(32), binding)).status).toBe(410)
     expect(
       (
@@ -724,6 +760,36 @@ it('migrates legacy SQLite leases additively and idempotently; unbound leases on
     expect((await owner.open('new-project', binding)).status).toBe(200)
     expect((await owner.open('spoofed', '')).status).toBe(400)
     expect(f.probe.trace).toEqual([])
+  } finally {
+    await f.finish()
+  }
+})
+
+it('pins verified metadata in the lease across restart and refuses a forged release before quota or startup', async () => {
+  const f = fixture()
+  try {
+    const release = await providedPythonRelease()
+    expect(
+      (await f.owner.open('project', binding, { ...release, manifestSha256: '0'.repeat(64) }))
+        .status,
+    ).toBe(400)
+    expect(f.rows()).toEqual([])
+    const opened = (await (await f.owner.open('project', binding, release)).json()) as {
+      sessionId: string
+    }
+    const stored = f.database.query('SELECT bootstrap FROM leases').get() as { bootstrap: string }
+    expect(JSON.parse(stored.bootstrap)).toEqual({ protocolVersion: 1, runtimeRelease: release })
+    expect(f.probe.trace).toEqual([])
+    const owner = f.rehydrate()
+    expect((await owner.start(opened.sessionId, binding)).status).toBe(200)
+    expect(f.probe.configurations).toEqual([{ protocolVersion: 1, runtimeRelease: release }])
+    expect(f.probe.trace).toEqual(['startProcess', 'port', 'configure', 'health'])
+    await owner.close(opened.sessionId)
+    const legacy = (await (await owner.open('legacy', binding)).json()) as { sessionId: string }
+    expect(f.database.query('SELECT bootstrap FROM leases').get()).toEqual({ bootstrap: null })
+    expect((await owner.start(legacy.sessionId, binding)).status).toBe(200)
+    expect(f.probe.configurations.at(-1)).toEqual({ protocolVersion: 1 })
+    await owner.close(legacy.sessionId)
   } finally {
     await f.finish()
   }

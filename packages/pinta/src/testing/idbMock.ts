@@ -13,6 +13,12 @@ const dbs = new Map<string, KV>()
 // Gancho de teste: um guard chamado ANTES de cada `set`; se lançar, o write
 // falha (simula disco cheio/quota p/ testar caminhos de erro). Default no-op.
 let writeGuard: ((key: IDBValidKey, value: unknown) => void | Promise<void>) | null = null
+let readGuard: ((key: IDBValidKey, database: string) => void | Promise<void>) | null = null
+
+/** Pauses a captured read to exercise profile changes between dependent reads. */
+export function setIdbReadGuard(guard: typeof readGuard): void {
+  readGuard = guard
+}
 
 /** Contadores de chamadas (medições de desempenho: "quantas leituras completas por autosave?"). */
 const stats = { get: 0, getMany: 0, getManyKeys: 0, set: 0, setMany: 0, keys: 0, del: 0 }
@@ -48,7 +54,9 @@ mock.module('idb-keyval', () => ({
   createStore: (dbName: string, _storeName: string) => ({ name: dbName }),
   get: async (key: IDBValidKey, store?: { name?: string }) => {
     stats.get += 1
-    return resolveKV(store).get(key)
+    const value = resolveKV(store).get(key)
+    if (readGuard) await readGuard(key, store?.name ?? '')
+    return value
   },
   getMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
     stats.getMany += 1
@@ -90,6 +98,7 @@ mock.module('idb-keyval', () => ({
 export function clearIdbMock(): void {
   dbs.clear()
   writeGuard = null
+  readGuard = null
   resetIdbMockStats()
 }
 

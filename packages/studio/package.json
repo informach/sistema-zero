@@ -71,6 +71,8 @@
     "verify:canvas-export": "bun scripts/verify-canvas-export.ts",
     "gen:pro-typescript-libs": "bun scripts/gen-pro-typescript-libs.ts",
     "check:pro-typescript-libs": "bun scripts/gen-pro-typescript-libs.ts --check",
+    "gen:python-text-sources": "bun scripts/gen-python-text-sources.ts",
+    "check:python-text-sources": "bun scripts/gen-python-text-sources.ts --check",
     "gen:server-examples": "bun scripts/gen-server-examples.ts",
     "gen:snow-descent": "bun scripts/gen-snow-descent.ts",
     "check:snow-descent": "bun scripts/gen-snow-descent.ts --check",

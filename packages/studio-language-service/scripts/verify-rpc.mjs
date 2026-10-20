@@ -88,9 +88,15 @@ try {
   assert.equal(readable.authorized, true)
   assert.equal(readable.body, 'safe-static-analysis-source')
   record('buffered-reply-readable-after-rpc-dispose')
+  const configured = await json('configure')
+  assert.equal(configured.authorized, true)
+  assert.equal(configured.route, 'http://language/configure')
+  assert.equal(configured.body, 'safe-static-analysis-source')
+  record('configuration-uses-private-fixed-route-through-real-rpc')
   for (const [mode, key] of [
     ['hold', 'drain'],
     ['body', 'body-drain'],
+    ['configure-hold', 'configure-drain'],
   ]) {
     const running = mf.dispatchFetch(`http://localhost/${mode}?key=${key}`)
     await entered(key)
@@ -144,7 +150,7 @@ try {
     temporaryRemoved = false
   try {
     if (mf) {
-      for (const key of ['drain', 'body-drain', 'disconnect'])
+      for (const key of ['drain', 'body-drain', 'configure-drain', 'disconnect'])
         await mf
           .dispatchFetch(`http://localhost/release?key=${key}`)
           .then((response) => response.body?.cancel())

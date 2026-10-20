@@ -44,7 +44,9 @@ export function studioPublicProject(project: PythonProjectDocument): PythonProje
 export function studioPublicProject(project: EditableStudioProject): EditableStudioProject
 export function studioPublicProject(project: EditableStudioProject): EditableStudioProject {
   const assets = project.assets?.map(
-    ({ libId: _libId, libOrigin: _origin, libRevision: _revision, ...asset }) => asset,
+    // The published image is detached from the author's private Pinta recipe/provenance.
+    ({ libId: _libId, libOrigin: _origin, libRevision: _revision, pintaImage: _pinta, ...asset }) =>
+      asset,
   )
   if (project.programmingLanguage === 'python') {
     if (project.kind === 'classic') return { ...withoutProjectPublication(project), assets }
@@ -248,9 +250,11 @@ export async function publishStudioPythonRevision(options: {
   signal?: AbortSignal
 }): Promise<StudioPythonPublication> {
   options.signal?.throwIfAborted()
-  const project = await prepareEditableStudioProject(studioPublicProject(options.project))
-  if (project?.programmingLanguage !== 'python')
+  // Validate private metadata and byte hashes before the deliberate privacy projection.
+  const original = await prepareEditableStudioProject(options.project)
+  if (original?.programmingLanguage !== 'python')
     throw new StudioPublicationError(400, 'Projeto Python inválido.')
+  const project = studioPublicProject(original)
   const snapshot = await preparePythonExecutionSnapshot(project)
   const source = JSON.stringify(project)
   const subject = studioRuntimeSubject(project)

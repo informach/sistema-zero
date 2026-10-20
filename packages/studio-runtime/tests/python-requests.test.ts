@@ -17,7 +17,9 @@ import {
 import { pythonDistributionFixture } from './python-distribution-fixture'
 import { pythonInputFixture } from './python-input-fixture'
 
-async function fixture(fixtureOptions: { playtest?: boolean; standalone?: boolean } = {}) {
+async function fixture(
+  fixtureOptions: { playtest?: boolean; standalone?: boolean; hostAudio?: boolean } = {},
+) {
   const f = await pythonInputFixture()
   const runtime = await pythonDistributionFixture(fixtureOptions)
   await runtime.store()
@@ -217,7 +219,7 @@ test('validation checks configuration, release and input generation before start
 })
 
 test('protected preview is generated only after both phases and confirmed sandbox destruction', async () => {
-  const x = await fixture({ playtest: true, standalone: true })
+  const x = await fixture({ playtest: true, standalone: true, hostAudio: true })
   const preview = await pythonInputFixture()
   const put = preview.bucket.put.bind(preview.bucket)
   preview.bucket.put = async (...args) => {
@@ -241,8 +243,62 @@ test('protected preview is generated only after both phases and confirmed sandbo
   const body: unknown = await response.json()
   if (!body || typeof body !== 'object' || !('preview' in body)) throw new Error('Preview missing')
   const result = StudioPythonPreviewReferenceSchema.parse(body.preview)
+  expect(result.previewHostAudioVersion).toBe(1)
   expect(result.revision).toBe(x.request.snapshot.revision)
   expect([...preview.objects.keys()].some((key) => key.endsWith('/complete.json'))).toBe(true)
+})
+
+test('legacy preview environments return unavailable before Sandbox or job without changing authored input', async () => {
+  for (const delegated of [false, true]) {
+    const x = await fixture({ playtest: true, standalone: true })
+    const preview = await pythonInputFixture()
+    x.options.preview = {
+      bucket: preview.bucket,
+      serviceOrigin: 'https://runtime.example',
+      validation: { profileVersion: 1, runtimeFingerprint: 'e'.repeat(64) },
+    }
+    const reference = await x.open()
+    expect((await x.upload(reference)).status).toBe(200)
+    const originalRequest = structuredClone(x.request)
+    const originalObjects = structuredClone(x.f.objects)
+    let jobs = 0
+    const retired: unknown[] = []
+    if (delegated)
+      x.options.jobs = {
+        async inspect() {
+          jobs++
+          throw new Error('Legacy environment cannot start inspection')
+        },
+        async validate() {
+          jobs++
+          throw new Error('Legacy environment cannot start validation')
+        },
+        async cancel() {
+          throw new Error('No job was started')
+        },
+        async discardPreview(owner) {
+          retired.push(owner)
+          return { retired: true, cleanupConfirmed: true }
+        },
+      }
+    const response = await x.send('validate', {
+      version: 1,
+      input: reference,
+      recipe: x.recipe,
+      preview: { parentOrigin: 'https://app.example' },
+    })
+    expect(response.status).toBe(503)
+    expect(await response.json()).toEqual({ ok: false, code: 'PYTHON_PREVIEW_UNAVAILABLE' })
+    expect(x.counts()).toEqual({ created: 0, destroyed: 0, executed: 0 })
+    expect(jobs).toBe(0)
+    expect(retired).toEqual(delegated ? [reference] : [])
+    expect(x.request).toEqual(originalRequest)
+    expect(x.f.objects).toEqual(originalObjects)
+    expect(preview.objects.size).toBe(0)
+    expect((await x.store.resolve(reference, new AbortController().signal)).snapshot).toEqual(
+      originalRequest.snapshot,
+    )
+  }
 })
 
 test('unconfigured or unapproved previews fail before creating a sandbox', async () => {

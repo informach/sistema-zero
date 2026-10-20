@@ -450,6 +450,66 @@ describe('o gabarito da professora na publicação (18/10/2026)', () => {
 })
 
 describe('objetivos que rodam o jogo (etapa 3, 18/10/2026)', () => {
+  test('movimento observado só é oferecido no Jogo 2D clássico JavaScript', () => {
+    const rule: SectionExecutionRule = {
+      type: 'behavior',
+      observation: { type: 'idleBeforeAction', idleMs: 80 },
+      steps: [{ action: 'press', key: 'ArrowUp', holdMs: 80 }],
+      expect: {
+        target: { kind: 'spritePosition', path: 'avatar', axis: 'y' },
+        compare: 'decreased',
+      },
+    }
+    const inspect = (initialProject: unknown) =>
+      projectCheckAuthoring({ initialProject }).issues(rule)
+    expect(inspect({ installedExtensions: [{ id: 'game-2d' }] })).toEqual([])
+    for (const initialProject of [
+      { installedExtensions: [] },
+      { kind: 'pro', installedExtensions: [{ id: 'game-2d' }] },
+      { programmingLanguage: 'python', installedExtensions: [{ id: 'game-2d' }] },
+      { installedExtensions: [{ id: 'game-2d' }, { id: 'game-3d' }] },
+    ])
+      expect(inspect(initialProject)).toContain(
+        'Movimento de sprite só vale no Jogo 2D clássico JavaScript.',
+      )
+  })
+
+  test('alvo adaptativo só é oferecido no Jogo 2D clássico JavaScript', () => {
+    const rule: SectionExecutionRule = {
+      type: 'behavior',
+      steps: [
+        {
+          action: 'clickTarget',
+          target: { kind: 'sprite', path: 'esconderijo1', groupPath: 'esconderijos' },
+        },
+      ],
+      expect: { target: { kind: 'value', path: 'achados' }, compare: 'equals', value: 1 },
+    }
+    const inspect = (initialProject: unknown) =>
+      projectCheckAuthoring({ initialProject }).issues(rule)
+    expect(inspect({ installedExtensions: [{ id: 'game-2d' }] })).toEqual([])
+    expect(
+      inspect({ installedExtensions: [] }).some((issue) =>
+        issue.includes('Jogo 2D clássico JavaScript'),
+      ),
+    ).toBe(true)
+    expect(
+      inspect({ kind: 'pro', installedExtensions: [{ id: 'game-2d' }] }).some((issue) =>
+        issue.includes('Jogo 2D clássico JavaScript'),
+      ),
+    ).toBe(true)
+    expect(
+      inspect({ programmingLanguage: 'python', installedExtensions: [{ id: 'game-2d' }] }).some(
+        (issue) => issue.includes('Jogo 2D clássico JavaScript'),
+      ),
+    ).toBe(true)
+    expect(
+      inspect({ installedExtensions: [{ id: 'game-2d' }, { id: 'game-3d' }] }).some((issue) =>
+        issue.includes('Jogo 2D clássico JavaScript'),
+      ),
+    ).toBe(true)
+  })
+
   const anda: SectionExecutionRule = {
     type: 'behavior',
     steps: [{ action: 'press', key: 'ArrowRight' }],

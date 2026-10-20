@@ -8,6 +8,7 @@ import { gameTwoDAudioRuntime } from './runtime/audio'
 import { gameTwoDCasualKitsRuntime } from './runtime/casualKits'
 import { gameTwoDClassicPlatformerRuntime } from './runtime/classicPlatformer'
 import { gameTwoDInputAndMotionRuntime } from './runtime/inputAndMotion'
+import { gameTwoDInspectionRuntime } from './runtime/inspection'
 import { gameTwoDLifecycleRuntime } from './runtime/lifecycle'
 import { gameTwoDPhysicsRuntime } from './runtime/physics'
 import { gameTwoDSpritesRuntime } from './runtime/sprites'
@@ -119,6 +120,7 @@ export const gameTwoDRuntimeSource =
   basicSceneAdapter +
   basicSpriteSceneAdapter +
   buildGameTwoDRuntimeApiSource() +
+  gameTwoDInspectionRuntime +
   `
 })();`
 

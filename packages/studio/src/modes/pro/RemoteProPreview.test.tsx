@@ -34,6 +34,43 @@ describe('preview Pro remoto', () => {
     useLogsStore.getState().clear()
   })
 
+  test('withdraws a ready frame and cancels work when its author loses the lease', async () => {
+    const authority = new AbortController()
+    const build = mock(async (_input: Parameters<StudioProRuntimeAdapter['build']>[0]) => ({
+      html: '<main>Lease atual</main>',
+    }))
+    const runtime = { build, signal: authority.signal }
+    useProjectStore.setState({ project: project() })
+    const { container } = render(<RemoteProPreview runtime={runtime} />)
+    await waitFor(() => expect(container.querySelector('iframe')).not.toBeNull())
+    act(() => authority.abort())
+    expect(build.mock.calls[0]?.[0].signal?.aborted).toBe(true)
+    expect(container.querySelector('iframe')).toBeNull()
+  })
+
+  test('does not resurrect a previous author result for the same project id', async () => {
+    let finish: (result: StudioProRuntimeBuildResult) => void = () => {}
+    const authority = new AbortController()
+    const runtime = {
+      signal: authority.signal,
+      build: () =>
+        new Promise<StudioProRuntimeBuildResult>((resolve) => {
+          finish = resolve
+        }),
+    }
+    useProjectStore.setState({ project: project() })
+    const view = render(<RemoteProPreview runtime={runtime} />)
+    act(() => authority.abort())
+    const blocked = {
+      signal: AbortSignal.abort(),
+      build: mock(async () => ({ html: '<main>Não autorizado</main>' })),
+    }
+    view.rerender(<RemoteProPreview runtime={blocked} />)
+    await act(async () => finish({ html: '<main>Autoria antiga</main>' }))
+    expect(view.container.querySelector('iframe')).toBeNull()
+    expect(blocked.build).not.toHaveBeenCalled()
+  })
+
   test('compila no adapter e executa o HTML em iframe isolado', async () => {
     const build = mock(async (_input: Parameters<StudioProRuntimeAdapter['build']>[0]) => ({
       html: '<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src none"></head><body>Pronto</body></html>',

@@ -16,6 +16,10 @@ import {
   type StudioProRevisionV2,
 } from '@sistemazero/core/studio'
 import { StudioProRevisionConfigurationSchema } from '@sistemazero/core/studio/pro-revision-configuration'
+import {
+  createPythonBuilderPolicyResult,
+  type StudioPythonBuilderPolicyResult,
+} from '@sistemazero/core/studio/python-builder-authorization'
 import { StudioPythonBuilderPreviewSchema } from '@sistemazero/core/studio/python-builder-preview'
 import type { StudioPythonExecutionMetadata } from '@sistemazero/core/studio/python-execution-content'
 import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python-pro-execution'
@@ -25,6 +29,28 @@ const id = z.string().uuid(),
   projectId = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/),
   hash = z.string().regex(/^[a-f0-9]{64}$/)
 const boundedText = z.string().max(2000)
+function generationAuthorizationIsFresh(
+  state: StudioProBuilderClaim | null,
+  command: Extract<StudioProBuilderCommand, { operation: 'authorize-generation' }>,
+  now: number,
+) {
+  const job = state?.job
+  return Boolean(
+    job &&
+      job.id === command.id &&
+      job.projectId === command.projectId &&
+      job.version === command.version &&
+      job.phase === 'generating' &&
+      job.assistance?.disposition !== 'discarded' &&
+      (job.result?.revisionHash ?? job.base.hash) === command.revisionHash &&
+      state?.generationLease?.revisionHash === command.revisionHash &&
+      Number.isFinite(now) &&
+      [job.leaseUntil, job.deadlineAt, job.expiresAt].every((value) => {
+        const deadline = Date.parse(value ?? '')
+        return Number.isFinite(deadline) && deadline > now
+      }),
+  )
+}
 function builderAuthorizationIsFresh(
   state: StudioProBuilderClaim | null,
   command: Extract<
@@ -163,6 +189,14 @@ const cost = z
   .strict()
   .nullable()
 const commandSchema = z.discriminatedUnion('operation', [
+  z.strictObject({
+    operation: z.literal('authorize-generation'),
+    id,
+    projectId,
+    token: id,
+    version: z.number().int().min(0),
+    revisionHash: hash,
+  }),
   z
     .object({
       operation: z.literal('authorize-proposal'),
@@ -280,7 +314,7 @@ export class StudioBuilderService {
       execution: StudioPythonExecutionMetadata,
       operation: 'analyze' | 'execute',
       signal: AbortSignal,
-    ) => Promise<void>,
+    ) => Promise<StudioPythonBuilderPolicyResult>,
   ) {}
   purgeExpired() {
     return this.repository.purgeExpired(this.clock())
@@ -376,13 +410,16 @@ export class StudioBuilderService {
           ...(callerSignal ? [callerSignal] : []),
           AbortSignal.timeout(45000),
         ])
-        await awaitWithSignal(
+        const policy = await awaitWithSignal(
           () => authorizeRevision(actor, base, metadata, 'execute', signal),
           signal,
         )
+        await createPythonBuilderPolicyResult(policy, metadata.configuration.runtime)
+        signal.throwIfAborted()
       }
     }
     if (
+      command.operation === 'authorize-generation' ||
       command.operation === 'authorize-validation' ||
       command.operation === 'authorize-proposal'
     ) {
@@ -399,22 +436,26 @@ export class StudioBuilderService {
       )
       signal.throwIfAborted()
       const currentScope =
-        command.operation === 'authorize-validation'
-          ? current?.validationLease
-          : current?.proposalScope
+        command.operation === 'authorize-generation'
+          ? current?.generationLease
+          : command.operation === 'authorize-validation'
+            ? current?.validationLease
+            : current?.proposalScope
       if (
-        !current?.job.result ||
+        !current ||
+        (command.operation !== 'authorize-generation' && !current.job.result) ||
         !current.binaries ||
         !currentScope ||
-        !builderAuthorizationIsFresh(current, command, this.clock().getTime())
+        !(command.operation === 'authorize-generation'
+          ? generationAuthorizationIsFresh(current, command, this.clock().getTime())
+          : builderAuthorizationIsFresh(current, command, this.clock().getTime()))
       )
         throw new ValidationError('A autorização desta proposta não está mais disponível.')
-      const candidate = await applyStudioProChange(current.job.base, current.job.result.change)
-      const prepared = await prepareStudioPythonProExecution(
-        candidate.revision,
-        current.binaries,
-        signal,
-      )
+      const parentOrigin = currentScope.parentOrigin
+      const revision = current.job.result
+        ? (await applyStudioProChange(current.job.base, current.job.result.change)).revision
+        : current.job.base
+      const prepared = await prepareStudioPythonProExecution(revision, current.binaries, signal)
       const base = prepared.base
       if (
         base.version !== 2 ||
@@ -422,16 +463,24 @@ export class StudioBuilderService {
         base.hash !== command.revisionHash
       )
         throw new ValidationError('A revisão não corresponde à proposta Python autorizada.')
-      await awaitWithSignal(
+      const policy = await awaitWithSignal(
         () =>
           authorizeRevision(
             actor,
             structuredClone(base),
             structuredClone(prepared.metadata),
-            command.operation === 'authorize-validation' ? command.runtimeOperation : 'execute',
+            command.operation === 'authorize-generation'
+              ? 'analyze'
+              : command.operation === 'authorize-validation'
+                ? command.runtimeOperation
+                : 'execute',
             signal,
           ),
         signal,
+      )
+      const authorized = await createPythonBuilderPolicyResult(
+        policy,
+        prepared.metadata.configuration.runtime,
       )
       // Policy reads can yield. Recheck the same durable lease after them, without
       // claiming a successor or extending the lease of this validation attempt.
@@ -441,12 +490,19 @@ export class StudioBuilderService {
       )
       signal.throwIfAborted()
       const freshScope =
-        command.operation === 'authorize-validation' ? fresh?.validationLease : fresh?.proposalScope
+        command.operation === 'authorize-generation'
+          ? fresh?.generationLease
+          : command.operation === 'authorize-validation'
+            ? fresh?.validationLease
+            : fresh?.proposalScope
       if (
         !fresh ||
         !freshScope ||
         freshScope.revisionHash !== command.revisionHash ||
-        !builderAuthorizationIsFresh(fresh, command, this.clock().getTime())
+        !(command.operation === 'authorize-generation'
+          ? freshScope.parentOrigin === parentOrigin &&
+            generationAuthorizationIsFresh(fresh, command, this.clock().getTime())
+          : builderAuthorizationIsFresh(fresh, command, this.clock().getTime()))
       )
         throw new ValidationError('A autorização desta proposta foi retirada.')
       signal.throwIfAborted()
@@ -454,6 +510,7 @@ export class StudioBuilderService {
         job: fresh.job,
         token: null,
         authorization: {
+          policy: authorized,
           revisionHash: prepared.base.hash,
           executionRevision: prepared.metadata.revision,
           parentOrigin: freshScope.parentOrigin,

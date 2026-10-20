@@ -95,6 +95,7 @@ export function createPythonRuntimeProvider(options: {
         identity,
         snapshot,
         signal,
+        hostAudio: input.hostAudio,
         ...(activity ? { activity } : {}),
       })
     },

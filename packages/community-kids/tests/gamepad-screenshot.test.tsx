@@ -18,6 +18,8 @@ function renderGamepad() {
         rootRef={rootRef}
         iframeRef={iframeRef}
         onRestart={() => {}}
+        muted={false}
+        onMutedChange={() => {}}
         showControls
         rotated={false}
         landscape={false}

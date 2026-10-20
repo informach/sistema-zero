@@ -7,11 +7,13 @@ import {
 } from '@sistemazero/core/studio/python-activity'
 import {
   type StudioExecutionIdentity,
+  type StudioHostAudioPreference,
   type StudioRuntimeEvent,
   type StudioRuntimeImage,
   type StudioRuntimeSession,
   StudioRuntimeUnavailableError,
 } from '../types'
+import { createPythonAudioService } from './audio/service'
 import { createPythonBootResourceBroker } from './bootResourceBroker'
 import { preparePythonBootResourceHost } from './bootResourceHost'
 import { readPythonFrameMessage } from './frameMessages'
@@ -39,6 +41,7 @@ export function preparePythonFrameSession(options: {
   snapshot: PythonExecutionSnapshot
   signal: AbortSignal
   activity?: StudioPythonActivity
+  hostAudio?: StudioHostAudioPreference
 }): Promise<StudioRuntimeSession> {
   const { frame, signal } = options
   const identity = Object.freeze({ ...options.identity })
@@ -82,6 +85,8 @@ export function preparePythonFrameSession(options: {
   const bootOwner = new AbortController()
   const bootSignal = AbortSignal.any([signal, bootOwner.signal])
   let bootBroker: ReturnType<typeof createPythonBootResourceBroker> | undefined
+  let audio: ReturnType<typeof createPythonAudioService> | undefined
+  let pendingAudio: string | undefined
   let active = true
   let prepared = false
   let disposed = false
@@ -146,6 +151,8 @@ export function preparePythonFrameSession(options: {
       closed = true
       bootOwner.abort(new DOMException('Execução encerrada.', 'AbortError'))
       bootBroker?.dispose()
+      audio?.dispose()
+      pendingAudio = undefined
       clearTimeout(preparationTimer)
       window.removeEventListener('message', initialize)
       signal.removeEventListener('abort', aborted)
@@ -266,6 +273,31 @@ export function preparePythonFrameSession(options: {
         pendingActivity = undefined
         clearTimeout(waiting.timer)
         waiting.resolve(feedback)
+        return
+      }
+      if (message.type === 'audio-request') {
+        if (!prepared || state !== 'running' || pendingAudio) {
+          fail('Pedido de áudio fora da execução atual.')
+          return
+        }
+        pendingAudio = message.requestId
+        void Promise.resolve()
+          .then(async () => {
+            if (!active || closed || pendingAudio !== message.requestId) return
+            audio ??= createPythonAudioService({
+              snapshot: options.snapshot,
+              signal: bootSignal,
+              onError: (error) => fail(error.message),
+              hostAudio: options.hostAudio,
+            })
+            const response = await audio.exchange(message.request)
+            if (!active || closed || pendingAudio !== message.requestId) return
+            pendingAudio = undefined
+            await send({ type: 'audio-response', requestId: message.requestId, response })
+          })
+          .catch((error: unknown) => {
+            if (active) fail(error instanceof Error ? error.message : 'Falha do áudio Python.')
+          })
         return
       }
       const payload = message.event

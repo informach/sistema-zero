@@ -95,14 +95,14 @@ describe.skipIf(!testDatabaseUrl)('DrizzleRenewalReminderRepository no Postgres 
     for (const id of samePurchaseIds) {
       await conn.sql`
         insert into members.entitlements
-          (id, user_id, snapshot, status, source_kind, subscription_id, expires_at)
-        values (${id}, ${samePurchaseUserId}, ${snapshot}::jsonb, 'active', 'payment', null, ${expiresAt})
+          (id, user_id, product_id, snapshot, status, source_kind, subscription_id, expires_at)
+        values (${id}, ${samePurchaseUserId}, ${randomUUID()}, ${snapshot}::jsonb, 'active', 'payment', null, ${expiresAt})
       `
     }
     await conn.sql`
       insert into members.entitlements
-        (id, user_id, snapshot, status, source_kind, subscription_id, expires_at)
-      values (${nextPurchaseId}, ${nextPurchaseUserId}, ${snapshot}::jsonb, 'active', 'payment', null, ${nextExpiresAt})
+        (id, user_id, product_id, snapshot, status, source_kind, subscription_id, expires_at)
+      values (${nextPurchaseId}, ${nextPurchaseUserId}, ${randomUUID()}, ${snapshot}::jsonb, 'active', 'payment', null, ${nextExpiresAt})
     `
 
     const rows = await new DrizzleRenewalReminderRepository(conn.db).listExpiringTermEntitlements(
@@ -125,9 +125,9 @@ describe.skipIf(!testDatabaseUrl)('DrizzleRenewalReminderRepository no Postgres 
     })
     await conn.sql`
       insert into members.entitlements
-        (id, user_id, snapshot, status, source_kind, subscription_id, expires_at,
+        (id, user_id, product_id, snapshot, status, source_kind, subscription_id, expires_at,
          access_type, course_ref, granted_at)
-      values (${entitlementId}, ${accountId}, ${snapshot}::jsonb, 'active', 'payment', null,
+      values (${entitlementId}, ${accountId}, ${randomUUID()}, ${snapshot}::jsonb, 'active', 'payment', null,
         '2027-05-30T00:00:00Z', 'course', 'desafio-primeiro-jogo', '2027-04-30T00:00:00Z')
     `
 
@@ -171,9 +171,9 @@ describe.skipIf(!testDatabaseUrl)('DrizzleRenewalReminderRepository no Postgres 
     })
     await conn.sql`
       insert into members.entitlements
-        (id, user_id, snapshot, status, source_kind, subscription_id, expires_at,
+        (id, user_id, product_id, snapshot, status, source_kind, subscription_id, expires_at,
          access_type, course_ref, granted_at)
-      values (${entitlementId}, ${accountId}, ${snapshot}::jsonb, 'active', 'payment', null,
+      values (${entitlementId}, ${accountId}, ${randomUUID()}, ${snapshot}::jsonb, 'active', 'payment', null,
         '2027-05-30T00:00:00Z', 'course', 'oficina-criativa', '2027-05-15T00:00:00Z')
     `
 
@@ -200,16 +200,16 @@ describe.skipIf(!testDatabaseUrl)('DrizzleRenewalReminderRepository no Postgres 
 
     await conn.sql`
       insert into members.entitlements
-        (id, user_id, snapshot, status, source_kind, subscription_id, expires_at,
+        (id, user_id, product_id, snapshot, status, source_kind, subscription_id, expires_at,
          access_type, course_ref, granted_at)
       values
-        (${fixedId}, ${accountId}, ${fixedSnapshot}::jsonb, 'active', 'payment', null,
+        (${fixedId}, ${accountId}, ${randomUUID()}, ${fixedSnapshot}::jsonb, 'active', 'payment', null,
           '2027-05-30T00:00:00Z', 'course', 'desafio-primeiro-jogo', '2027-04-30T00:00:00Z'),
-        (${lifetimeId}, ${randomUUID()}, ${JSON.stringify({ accessPolicy: { mode: 'lifetime' } })}::jsonb,
+        (${lifetimeId}, ${randomUUID()}, ${randomUUID()}, ${JSON.stringify({ accessPolicy: { mode: 'lifetime' } })}::jsonb,
           'active', 'payment', null, null, 'course', 'desafio-primeiro-jogo', now()),
-        (${subscriptionId}, ${accountId}, '{}'::jsonb, 'active', 'subscription', 'sub-1',
+        (${subscriptionId}, ${accountId}, ${randomUUID()}, '{}'::jsonb, 'active', 'subscription', 'sub-1',
           '2027-06-30T00:00:00Z', 'course', 'desafio-primeiro-jogo', now()),
-        (${masterId}, ${accountId}, '{}'::jsonb, 'active', 'manual', null, null,
+        (${masterId}, ${accountId}, ${randomUUID()}, '{}'::jsonb, 'active', 'manual', null, null,
           'all_kids_courses', null, now())
     `
 
@@ -230,9 +230,9 @@ describe.skipIf(!testDatabaseUrl)('DrizzleRenewalReminderRepository no Postgres 
     for (const id of ids) {
       await conn.sql`
         insert into members.entitlements
-          (id, user_id, snapshot, status, source_kind, subscription_id, expires_at,
+          (id, user_id, product_id, snapshot, status, source_kind, subscription_id, expires_at,
            access_type, course_ref, granted_at)
-        values (${id}, ${accountId}, ${snapshot}::jsonb, 'active', 'payment', null,
+        values (${id}, ${accountId}, ${randomUUID()}, ${snapshot}::jsonb, 'active', 'payment', null,
           '2027-05-30T00:00:00Z', 'course', 'desafio-primeiro-jogo', '2027-04-30T00:00:00Z')
       `
     }

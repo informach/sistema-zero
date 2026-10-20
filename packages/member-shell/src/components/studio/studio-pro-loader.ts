@@ -13,15 +13,30 @@ export async function loadPreparedStudioProProject(options: {
   projectId: string
   prepare?: () => Promise<void>
   active: () => boolean
+  signal?: AbortSignal
+  onOpening?: (opening: {
+    release: () => void
+    persistence: Studio.StudioPersistenceAdapter
+  }) => void
 }) {
-  if (!options.active()) return null
+  const current = () => options.active() && !options.signal?.aborted
+  if (!current()) return null
   options.module.setStudioStorageNamespace(options.namespace)
   // The adapter captures its namespace before asynchronous reconciliation.
   const persistence = options.module.createLocalPersistenceAdapter({ namespace: options.namespace })
-  await options.prepare?.()
-  if (!options.active()) return null
-  const project = await persistence.load(options.projectId)
-  return options.active() ? project : null
+  const release =
+    persistence.beginOpening?.(options.projectId, { signal: options.signal }) ?? (() => {})
+  let transferred = false
+  try {
+    options.onOpening?.({ release, persistence })
+    await options.prepare?.()
+    if (!current()) return null
+    const project = await persistence.load(options.projectId)
+    transferred = current() && project !== null && options.onOpening !== undefined
+    return current() ? project : null
+  } finally {
+    if (!transferred) release()
+  }
 }
 
 /**

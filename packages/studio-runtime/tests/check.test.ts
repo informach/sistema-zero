@@ -135,6 +135,70 @@ function setup(
 }
 
 describe('POST /v1/check', () => {
+  test('directional observation remains conclusive only with its complete official idle/action evidence', async () => {
+    const body = {
+      ...classicBody,
+      objectives: [
+        {
+          id: 'subir',
+          rule: {
+            type: 'behavior',
+            observation: { type: 'idleBeforeAction', idleMs: 80 },
+            steps: [{ action: 'press', key: 'ArrowUp', holdMs: 80 }],
+            expect: {
+              target: { kind: 'spritePosition', path: 'avatar', axis: 'y' },
+              compare: 'decreased',
+            },
+          },
+        },
+      ],
+    }
+    const sample = (y: number, frame: number) => ({
+      x: 50,
+      y,
+      frame,
+      generation: 0,
+      errors: 0,
+      paused: false,
+    })
+    const observed = (delta: number) => ({
+      id: 'subir',
+      type: 'behavior',
+      initial: { found: true, value: 70 },
+      final: { found: true, value: 70 + delta },
+      motion: {
+        baselineInitial: sample(70, 1),
+        baselineFinal: sample(70, 4),
+        actionInitial: sample(70, 5),
+        actionFinal: sample(70 + delta, 8),
+      },
+    })
+    for (const delta of [-2, 0, 2]) {
+      const context = setup({ observations: [observed(delta)] })
+      const response = await context.call(body)
+      expect(response.status).toBe(200)
+      expect(await response.json()).toMatchObject({
+        ok: true,
+        results: [{ id: 'subir', passed: delta < 0 }],
+      })
+    }
+    const earlyError = observed(-2)
+    earlyError.motion.baselineInitial.errors = 1
+    const noFrames = observed(-2)
+    noFrames.motion.actionFinal.frame = noFrames.motion.actionInitial.frame
+    for (const observation of [
+      earlyError,
+      noFrames,
+      { id: 'subir', type: 'behavior', error: 'O personagem foi destruído.' },
+    ]) {
+      const context = setup({ observations: [observation] })
+      const response = await context.call(body)
+      expect(response.status).toBe(500)
+      expect(await response.json()).toMatchObject({ ok: false, code: 'CHECK_FAILED' })
+      expect(context.destroyed()).toBe(1)
+    }
+  })
+
   test('clássico: serve o documento, julga com a régua do core e devolve a captura', async () => {
     const context = setup({
       observations: [
@@ -167,15 +231,38 @@ describe('POST /v1/check', () => {
     expect(context.destroyed()).toBe(1)
   })
 
-  test('o objetivo que o navegador não relatou não passa', async () => {
+  test('relatório ausente é indisponibilidade, nunca reprovação guardável', async () => {
     const context = setup({ observations: [] })
-    const body = (await (await context.call(classicBody)).json()) as {
-      results: { id: string; passed: boolean; detail?: string }[]
+    const response = await context.call(classicBody)
+    expect(response.status).toBe(500)
+    expect(await response.json()).toMatchObject({ ok: false, code: 'CHECK_FAILED' })
+  })
+
+  test('leitura truncada/erro é indisponível, mas valor divergente observado reprova', async () => {
+    for (const final of [
+      { found: true, value: { $sz: 'large' } },
+      { found: true, value: 2, error: 'leitura incompleta' },
+    ]) {
+      const context = setup({ observations: [{ id: 'anda', type: 'behavior', final }] })
+      const response = await context.call(classicBody)
+      expect(response.status).toBe(500)
+      expect(await response.json()).toMatchObject({ ok: false, code: 'CHECK_FAILED' })
     }
-    expect(body.results[0]).toEqual({
-      id: 'anda',
-      passed: false,
-      detail: 'O teste não relatou este objetivo.',
+    const context = setup({
+      observations: [
+        {
+          id: 'anda',
+          type: 'behavior',
+          initial: { found: true, value: 2 },
+          final: { found: true, value: 2 },
+        },
+      ],
+    })
+    const response = await context.call(classicBody)
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      ok: true,
+      results: [{ id: 'anda', passed: false }],
     })
   })
 
@@ -250,6 +337,44 @@ describe('POST /v1/check', () => {
 })
 
 describe('o pedido de teste', () => {
+  test('movimento oficial é admitido no clássico e recusado no Pro antes de abrir o jogo', () => {
+    const objective = {
+      id: 'subir',
+      rule: {
+        type: 'behavior',
+        observation: { type: 'idleBeforeAction', idleMs: 80 },
+        steps: [{ action: 'press', key: 'ArrowUp', holdMs: 80 }],
+        expect: {
+          target: { kind: 'spritePosition', path: 'avatar', axis: 'y' },
+          compare: 'decreased',
+        },
+      },
+    }
+    expect(parseCheckRequest({ ...classicBody, objectives: [objective] }).objectives).toHaveLength(
+      1,
+    )
+    expect(() => parseCheckRequest({ ...proBody, objectives: [objective] })).toThrow(
+      'Movimento de sprite só vale no Jogo 2D clássico JavaScript.',
+    )
+  })
+
+  test('clique adaptativo é admitido no clássico e recusado no Pro antes de abrir o jogo', () => {
+    const objective = {
+      id: 'alvo',
+      rule: {
+        type: 'behavior',
+        steps: [{ action: 'clickTarget', target: { kind: 'outsideGroup', path: 'esconderijos' } }],
+        expect: { target: { kind: 'text' }, compare: 'contains', value: 'Achados' },
+      },
+    }
+    expect(parseCheckRequest({ ...classicBody, objectives: [objective] }).objectives).toHaveLength(
+      1,
+    )
+    expect(() => parseCheckRequest({ ...proBody, objectives: [objective] })).toThrow(
+      'Jogo 2D clássico JavaScript',
+    )
+  })
+
   test('recusa objetivo malformado, arquivo inexistente e caminho reservado', () => {
     expect(() => parseCheckRequest({ ...classicBody, objectives: [] })).toThrow()
     expect(() =>

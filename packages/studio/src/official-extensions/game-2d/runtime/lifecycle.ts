@@ -17,6 +17,8 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
   var _consecutiveDroppedTicks = 0;
   var _runningLoopId = null;
   var _activeProjectCallbacks = 0;
+  // Absolute for this loaded motor: errors before the first observation still matter.
+  var _observationErrors = 0;
   var _restartBoundarySignal = {};
   var FIXED_FRAME_MS = 1000 / 60;
   var MAX_CATCH_UP_STEPS = 5;
@@ -96,6 +98,7 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
   }
 
   function _reportHandlerError(kind, id, error) {
+    _observationErrors++;
     var message = error && error.message ? error.message : String(error);
     var key = 'erro:' + kind + ':' + id + ':' + message;
     if (_warnedOnce[key]) return;

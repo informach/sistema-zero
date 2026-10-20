@@ -2,11 +2,16 @@ import { z } from 'zod'
 import { awaitWithSignal, readJsonBodyWithLimit } from '../http'
 import { prepareStudioPythonBuilderAnalysis } from './python-builder-analysis'
 import {
+  pythonBuilderPolicyFence,
+  type StudioPythonBuilderPolicyResult,
+} from './python-builder-authorization'
+import {
   StudioPythonBuilderDiagnosticsSchema as diagnostics,
   StudioPythonBuilderTypesReportSchema,
 } from './python-builder-types-report'
 import { PYTHON_LANGUAGE_LIMITS } from './python-language'
 import { StudioPythonLanguageOpenSchema } from './python-language-authorization'
+import { assertPythonLanguageBootstrapSize } from './python-language-bootstrap'
 import { prepareStudioPythonProExecution } from './python-pro-execution'
 
 type Prepared = Awaited<ReturnType<typeof prepareStudioPythonProExecution>>
@@ -59,7 +64,7 @@ export interface StudioPythonBuilderTypesOptions {
     base: Prepared['base'],
     metadata: Prepared['metadata'],
     signal: AbortSignal,
-  ): Promise<void>
+  ): Promise<StudioPythonBuilderPolicyResult>
   fetchImpl?: (url: string | URL | Request, init?: RequestInit) => Promise<Response>
   /** Records a failed retirement of a reservation received after owner withdrawal. */
   cleanupFailed(error: StudioPythonBuilderTypesError): void
@@ -100,6 +105,7 @@ export async function inspectStudioPythonBuilderTypes(options: StudioPythonBuild
   const root = `${url.href.replace(/\/$/, '')}/v1/python-language/${owner}`
   const signal = AbortSignal.any([callerSignal, AbortSignal.timeout(75000)])
   const prepared = await prepareStudioPythonProExecution(options.revision, options.binaries, signal)
+  const verifyPolicy = pythonBuilderPolicyFence(prepared.metadata.configuration.runtime)
   const { entrypoint, command, snapshot } = (() => {
     try {
       return prepareStudioPythonBuilderAnalysis(prepared.base)
@@ -109,11 +115,14 @@ export async function inspectStudioPythonBuilderTypes(options: StudioPythonBuild
   })()
   const check = async () => {
     signal.throwIfAborted()
-    await awaitWithSignal(
+    const policy = await awaitWithSignal(
       () => authorize(structuredClone(prepared.base), structuredClone(prepared.metadata), signal),
       signal,
     )
     signal.throwIfAborted()
+    const verified = await verifyPolicy(policy)
+    signal.throwIfAborted()
+    return verified
   }
   async function request(
     path: string,
@@ -169,18 +178,17 @@ export async function inspectStudioPythonBuilderTypes(options: StudioPythonBuild
       throw new StudioPythonBuilderTypesError('cleanup-pending')
     }
   }
-  await check()
+  const initialPolicy = await check()
+  const open = StudioPythonLanguageOpenSchema.parse({
+    projectId: prepared.base.projectId,
+    binding,
+    ...initialPolicy,
+  })
+  assertPythonLanguageBootstrapSize(JSON.stringify(open))
   // A lost open response must still be read to obtain the session ID and retire it.
   // The reservation is independently bounded; withdrawal cannot dispatch start/sync/query.
   const reserve = () =>
-    request(
-      'open',
-      StudioPythonLanguageOpenSchema.parse({
-        projectId: prepared.base.projectId,
-        binding,
-      }),
-      AbortSignal.timeout(5000),
-    ).then(async (raw) => {
+    request('open', open, AbortSignal.timeout(5000)).then(async (raw) => {
       const value = opened.parse(raw)
       if (value.projectId !== prepared.base.projectId) {
         await close(value.sessionId)

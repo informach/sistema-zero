@@ -67,6 +67,7 @@ test.each([
       authorizations++
       expect(owner).toEqual(actor)
       expect(base).toEqual(payload.base)
+      return {}
     },
   )
   expect(Object.keys(payload.binaries)).toHaveLength(1)
@@ -131,6 +132,7 @@ test.each([
     false,
     async () => {
       authorizations++
+      return {}
     },
   )
   const outcome = await service.execute(actor, command(payload)).then(

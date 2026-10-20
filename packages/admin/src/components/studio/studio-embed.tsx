@@ -409,10 +409,9 @@ export function StudioEmbed({
             ...features,
             ...(seedKind === 'pro' ? { professional: true, terminal: false } : {}),
           }}
-          // SEMPRE presente: o StudioCore trava o adapter no MOUNT (useState latch) —
-          // condicionar ao kind deixava o preview Pro sem runtime remoto quando o
-          // autor trocava blocos→Pro na mesma sessão (caía no WebContainer, que a
-          // página do admin não suporta sem COOP/COEP). Inerte em projeto de blocos.
+          // Sempre presente para a troca blocos→Pro usar o compilador remoto,
+          // sem depender de WebContainer/COOP/COEP na página do admin. O StudioCore
+          // acompanha as mudanças do adapter; ele fica inerte em projetos de blocos.
           proRuntime={proRuntime}
           blockUnloadWhenDirty={false}
         />

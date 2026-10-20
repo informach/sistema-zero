@@ -23,6 +23,7 @@ import {
 } from 'vscode-jsonrpc/node.js'
 import { BoundedLspStream } from './framing'
 import { sourcePositions } from './positions'
+import { type ProvidedModuleRoot, visibleProvidedModuleRoots } from './provided-modules'
 import { languageResultMapper } from './results'
 
 const settings = Object.freeze({
@@ -79,9 +80,17 @@ export class PythonLanguageSession {
   private child: ChildProcessWithoutNullStreams
   private rpc: MessageConnection
   readonly root: string
+  private settings: typeof settings & { extraPaths?: string[] } = { ...settings }
+  private providedModules: readonly ProvidedModuleRoot[]
 
-  constructor(input: { root: string; serverPath: string; nodePath: string }) {
+  constructor(input: {
+    root: string
+    serverPath: string
+    nodePath: string
+    providedModules?: readonly ProvidedModuleRoot[]
+  }) {
     this.root = resolve(input.root)
+    this.providedModules = (input.providedModules ?? []).map((item) => Object.freeze({ ...item }))
     // Never inherit gateway secrets, NODE_OPTIONS, PYTHONPATH or author configuration.
     this.child = spawn(input.nodePath, ['--max-old-space-size=192', input.serverPath, '--stdio'], {
       cwd: this.root,
@@ -107,9 +116,9 @@ export class PythonLanguageSession {
     this.rpc.onRequest('workspace/configuration', (params: { items: { section?: string }[] }) =>
       params.items.map((item) =>
         item.section === 'python'
-          ? { analysis: settings }
+          ? { analysis: this.settings }
           : item.section === 'python.analysis'
-            ? settings
+            ? this.settings
             : {},
       ),
     )
@@ -195,7 +204,7 @@ export class PythonLanguageSession {
       throw new Error('Unsupported Python language server')
     await this.rpc.sendNotification('initialized', {})
     await this.rpc.sendNotification('workspace/didChangeConfiguration', {
-      settings: { python: { analysis: settings } },
+      settings: { python: { analysis: this.settings } },
     })
   }
 
@@ -255,6 +264,13 @@ export class PythonLanguageSession {
           const previousRoot =
             this.entrypoint === null ? null : dirname(resolve(this.root, this.entrypoint))
           const rootChanged = previousRoot !== importRoot
+          const extraPaths = visibleProvidedModuleRoots(
+            this.providedModules,
+            next.snapshot,
+            command.entrypoint,
+          )
+          const pathsChanged =
+            JSON.stringify(this.settings.extraPaths ?? []) !== JSON.stringify(extraPaths)
           // Queries on the previous revision must not survive a filesystem change.
           for (const pending of this.pending.values())
             if (pending.kind === 'query' && pending.revision < command.revision)
@@ -289,6 +305,12 @@ export class PythonLanguageSession {
                 await mkdir(dirname(path), { recursive: true })
                 await writeFile(path, change.source, { mode: 0o600 })
               }
+            }
+            if (pathsChanged) {
+              this.settings = { ...settings, ...(extraPaths.length ? { extraPaths } : {}) }
+              await this.rpc.sendNotification('workspace/didChangeConfiguration', {
+                settings: { python: { analysis: this.settings } },
+              })
             }
             if (rootChanged) {
               await mkdir(importRoot, { recursive: true })

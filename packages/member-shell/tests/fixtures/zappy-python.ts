@@ -1,8 +1,10 @@
 import { mock } from 'bun:test'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import type { JourneyLevelSlug } from '@sistemazero/core/journey'
+import { StudioAuthoringCatalogSchema } from '@sistemazero/core/studio/authoring-catalog'
 import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
 import { StudioPythonAnalysisAuthorizationSchema } from '@sistemazero/core/studio/python-language-authorization'
+import type { StudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import { AuthorizeLessonRuntimeService } from '../../../members/src/application/studio/authorize-lesson-runtime.service'
 import { AuthorizePythonAnalysisService } from '../../../members/src/application/studio/authorize-python-analysis.service'
@@ -24,6 +26,7 @@ const { createStudioZappyRoutes } = await import('../../src/routes/studio-zappy'
 export async function pythonZappyFixture(
   kind: 'classic' | 'pro',
   audience: 'kids' | 'adult' = 'kids',
+  options: { runtimeRelease?: StudioRuntimeRelease } = {},
 ) {
   const user: SessionUser = {
     id: crypto.randomUUID(),
@@ -37,14 +40,51 @@ export async function pythonZappyFixture(
   const fixture = await authoringFixture('python', kind)
   const document = fixture.project
   if (document.programmingLanguage !== 'python') throw new Error('Python fixture required')
+  const release = options.runtimeRelease
+  const configuration = release
+    ? StudioAuthoringCatalogSchema.parse({
+        ...fixture.configuration,
+        catalog: {
+          profiles: [
+            {
+              ...fixture.configuration.catalog.profiles[0],
+              id: release.profileId,
+              languages: ['python'],
+              kinds: release.manifest.kinds,
+              modes: release.manifest.modes,
+              releases: [{ id: release.releaseId, manifestSha256: release.manifestSha256 }],
+            },
+          ],
+          releases: [release],
+        },
+        releases: [
+          {
+            ...fixture.configuration.releases[0],
+            runtime: {
+              profileId: release.profileId,
+              releaseId: release.releaseId,
+              manifestSha256: release.manifestSha256,
+            },
+          },
+        ],
+      })
+    : fixture.configuration
+  if (release) {
+    document.runtime = {
+      profileId: release.profileId,
+      releaseId: release.releaseId,
+      manifestSha256: release.manifestSha256,
+    }
+    document.python.dependencyLock.runtimeManifestSha256 = release.manifestSha256
+  }
   const project = { ...document, assets: [] }
   const lessonId = crypto.randomUUID(),
     blockId = crypto.randomUUID()
   project.id = lessonStudioProjectId(blockId, user.id)
   fixture.configuration.releases[0]!.blockIds = PYTHON_PROGRAMMING_CODECS.map((codec) => codec.id)
   const policy = await createStudioRuntimePolicy(
-    fixture.configuration,
-    createStudioRuntimeHosts(fixture.configuration.catalog, [
+    configuration,
+    createStudioRuntimeHosts(configuration.catalog, [
       { runtime: project.runtime, origin: 'https://runtime.test' },
     ]),
   )

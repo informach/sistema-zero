@@ -13,3 +13,6 @@ bun.lock -text
 # Preservar bytes emitidos pelo gerador e do código vendorizado upstream.
 packages/studio-runtime/runtime/python-playtest.generated.mjs whitespace=-blank-at-eol
 packages/studio/scripts/turtle/vendor/xcolors.c whitespace=-space-before-tab
+
+# A licença upstream é conferida por hash; preservar os bytes originais também no checkout.
+packages/studio/src/examples/python/maze-lights/LICENSE -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

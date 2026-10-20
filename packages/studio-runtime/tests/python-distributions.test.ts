@@ -17,6 +17,31 @@ import {
 } from '../src/python-distributions'
 import { pythonDistributionFixture as fixture } from './python-distribution-fixture'
 
+test('adding a preview audio declaration cannot repin an existing immutable runtime marker', async () => {
+  const f = await fixture({ standalone: true })
+  await f.store()
+  const marker = f.objects.get(`${f.prefix}complete.json`)
+  if (!marker) throw new Error('Missing legacy marker')
+  const before = new Uint8Array(marker.bytes)
+  // A declaration alone is not a valid upgrade of an already stored old launcher.
+  const distribution = StudioPythonDistributionSchema.parse({
+    ...f.deployment.distribution,
+    previewHostAudioVersion: 1,
+  })
+  await expect(
+    storePythonRuntimeDistribution({
+      bucket: f.bucket,
+      deployment: { release: f.deployment.release, distribution },
+      read: async (path) => {
+        const bytes = f.contents.get(path)
+        if (!bytes) throw new Error('Fixture missing')
+        return bytes
+      },
+    }),
+  ).rejects.toThrow('imutável')
+  expect(f.objects.get(`${f.prefix}complete.json`)?.bytes).toEqual(before)
+})
+
 test('deployment metadata exposes only an approved complete distribution and rechecks revocation', async () => {
   const f = await fixture()
   const url = `https://runtime.example${studioPythonDeploymentRoute(f.deployment.release.manifestSha256)}`

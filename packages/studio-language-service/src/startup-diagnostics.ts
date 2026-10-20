@@ -27,6 +27,7 @@ const reasons: ReadonlyArray<readonly [string, string]> = [
   ['Container is currently provisioning', 'provisioning'],
   ['Language startup cancelled', 'cancelled'],
   ['Language startup failed', 'health-check'],
+  ['Language configuration failed', 'configuration'],
 ]
 
 /** Never log SDK messages/context: they may contain process environments or tokens. */
@@ -64,7 +65,7 @@ export function languageStartupDiagnostic(error: unknown) {
 
 export class LanguageStartupFailure extends Error {
   readonly diagnostic
-  constructor(stage: 'sandbox' | 'process' | 'port' | 'health', cause: unknown) {
+  constructor(stage: 'sandbox' | 'process' | 'port' | 'configure' | 'health', cause: unknown) {
     super('Language startup failed', { cause })
     this.diagnostic = { stage, ...languageStartupDiagnostic(cause) }
   }

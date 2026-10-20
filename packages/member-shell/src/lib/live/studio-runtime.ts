@@ -5,14 +5,14 @@ import type {
 } from '@sistemazero/core/studio/runtime-authorization'
 import { LiveRequestError, liveRequest } from './client'
 
-interface LiveStudioAuthority {
+export interface LiveStudioAuthority {
   context: StudioLiveRuntimeContext
   userId: string
   signal: AbortSignal
   access?: 'author' | 'observer'
   current(): LiveWorkspaceView
 }
-function assertLiveStudioAuthority(input: LiveStudioAuthority, analyze: boolean) {
+export function assertLiveStudioAuthority(input: LiveStudioAuthority, analyze: boolean) {
   input.signal.throwIfAborted()
   const current = input.current()
   if (

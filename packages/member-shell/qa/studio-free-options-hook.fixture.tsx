@@ -1,5 +1,6 @@
 import { expect, spyOn, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
+import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { pythonEnvironmentFixture } from '../../studio/src/state/fixtures/pythonEnvironment'
@@ -138,6 +139,86 @@ test('failed discovery exposes an explicit retry and then restores Python choice
     expect(attempts).toBe(2)
     expect(view.current().error).toBeUndefined()
     expect(view.current().creation?.environments.length).toBe(2)
+  } finally {
+    await view.close()
+    fetch.mockRestore()
+  }
+})
+
+test('example port performs fresh authenticated Pro/Turtle approval and preserves the exact owner/subject', async () => {
+  const raw = await options()
+  const fixture = await pythonEnvironmentFixture('pro')
+  const candidate = {
+    ...fixture.project,
+    installedExtensions: [{ id: 'python-turtle', version: '1.0.0', installedAt: Date.now() }],
+  }
+  const viewerId = crypto.randomUUID()
+  const accountId = crypto.randomUUID()
+  let allowTurtle = false
+  let approvals = 0
+  let reads = 0
+  const original = globalThis.fetch
+  const fetch = spyOn(globalThis, 'fetch').mockImplementation(
+    Object.assign(
+      async (url: RequestInfo | URL, init?: RequestInit) => {
+        if (url.toString() === '/api/studio/free-options') {
+          reads++
+          return Response.json(raw)
+        }
+        expect(url.toString()).toBe('/api/studio/free-runtime')
+        const request = JSON.parse(String(init?.body))
+        expect(init?.method).toBe('POST')
+        expect(init?.signal?.aborted).toBe(false)
+        expect(request.subject.kind).toBe('pro')
+        expect(request.subject.mode).toBe('code')
+        expect(request.subject.installedExtensions).toEqual([
+          { id: 'python-turtle', version: '1.0.0' },
+        ])
+        approvals++
+        const now = Date.now()
+        return Response.json({
+          version: 1,
+          actor: { userId: viewerId, accountId },
+          context: request.context,
+          projectId: request.subject.id,
+          revision: request.revision,
+          subjectSha256: await sha256Hex(canonicalJson(request.subject)),
+          runtime: request.subject.runtime,
+          releaseStatus: 'active',
+          operation: request.operation,
+          capabilities: ['edit'],
+          grantedExtensionIds: allowTurtle ? ['python-turtle'] : [],
+          catalog: fixture.environment.catalog,
+          blockIds: ['py_print'],
+          curation: raw.pythonCuration,
+          frame: {
+            url: 'https://runtime.test/frame.html',
+            allowedOrigins: ['https://runtime.test'],
+          },
+          issuedAt: now,
+          expiresAt: now + 30_000,
+        })
+      },
+      { preconnect: original.preconnect },
+    ),
+  )
+  const view = mount()
+  try {
+    await view.render(viewerId)
+    await settle(() => !!view.current().creation)
+    const port = view.current().creation!
+    await expect(port.authorizeExample(candidate, new AbortController().signal)).rejects.toThrow(
+      'acesso mudou',
+    )
+    allowTurtle = true
+    await port.authorizeExample(candidate, new AbortController().signal)
+    expect(approvals).toBe(2)
+    expect(reads).toBe(3)
+    await view.render(crypto.randomUUID())
+    await expect(port.authorizeExample(candidate, new AbortController().signal)).rejects.toThrow(
+      'perfil',
+    )
+    expect(approvals).toBe(2)
   } finally {
     await view.close()
     fetch.mockRestore()

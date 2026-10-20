@@ -123,6 +123,11 @@ export interface StudioCommonProps {
   onModeChange?: (mode: IDEMode) => void
   /** Editor montado e projeto hidratado. */
   onReady?: () => void
+  /** Terminal result for each prepared snapshot, including same-id replacements. */
+  onProjectOpeningSettled?: (result: {
+    projectId: string
+    status: 'ready' | 'blocked' | 'error'
+  }) => void
   /**
    * Tema visual. Sem a prop, segue o tema das configurações internas do
    * próprio Studio (Settings/toggle da Topbar). Aplicado como data-sz-theme no
@@ -200,7 +205,7 @@ export interface StudioCommonProps {
    * (busca + importar direto ao projeto), e a seção "Meus desenhos" some
    * (substituída pela modal). O host só o passa com posse do Pinta E do
    * Estúdio (produtos vendidos à parte). Ausente (default) → sem botão.
-   * Estável por instância (latchado, igual à `share`).
+   * Mudanças de perfil/posse substituem o adapter e cancelam importações antigas.
    */
   pintaLibrary?: StudioPintaLibraryAdapter
   /**

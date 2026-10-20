@@ -2,6 +2,7 @@ import {
   StudioProjectDocumentSchema,
   StudioProjectIdSchema,
 } from '@sistemazero/core/studio/project-document'
+import { assertPintaImageAssets } from '../core/pintaImageAsset'
 import {
   assertProjectContentPreserved,
   ProjectDocumentError,
@@ -47,6 +48,7 @@ export async function refinePythonProjectDocument(
   const assets = sanitizePythonProjectAssets(document.assets)
   const project = copyLocalRevision(raw as { id: string }, { ...document, id, assets })
   assertProjectContentPreserved(document, project)
+  await assertPintaImageAssets(assets)
   const issue = pythonProjectLayoutIssue(project)
   if (issue?.code === 'too-large') throw new ProjectTooLargeError(issue.message)
   if (issue) throw new ProjectDocumentError(issue.code, issue.message)

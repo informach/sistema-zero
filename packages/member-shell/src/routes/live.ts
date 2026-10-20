@@ -6,6 +6,7 @@ import { type LiveRouteScope, liveUpstreamPath } from '../lib/live-route-policy'
 import type { CallOpts, GatewayModule, GatewayResponse } from '../server/gateway'
 import { r2PresignGetPrivate } from '../server/r2'
 import type { SessionModule } from '../server/session'
+import { createLiveProRuntimeBuild } from './live-pro-runtime'
 
 const error = (status: number, code: string, message: string) =>
   NextResponse.json(
@@ -192,6 +193,10 @@ export function createLiveRoutes({
       : null
   }
   return {
+    liveProBuild: createLiveProRuntimeBuild({
+      gatewayFetch: gateway.gatewayFetch,
+      session: resolveSession,
+    }),
     live: createLiveRouteHandler({
       scope: 'learner',
       gatewayFetch: gateway.gatewayFetch,

@@ -31,6 +31,7 @@ import { sessionFetch as fetch } from '../../lib/session-fetch'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
 import { SectionProjectCheck } from '../studio/section-project-check'
 import { LiveAssistanceCursor } from './live-assistance-cursor'
+import { useLiveProRuntime } from './use-live-pro-runtime'
 import { useLiveStudioRuntime } from './use-live-studio-runtime'
 
 const StudioEditor = dynamic(
@@ -584,7 +585,34 @@ function WorkspaceEditor({
     queue,
     current: () => latest.current,
   })
-  const invalidateRuntime = pythonRuntime.invalidate
+  const proRuntime = useLiveProRuntime({
+    project: initialProject.current,
+    userId: room.actorId,
+    context:
+      room.library || blockId
+        ? {
+            kind: 'live',
+            workspaceId: workspace.id,
+            sessionId: room.library ? null : room.session.id,
+            blockId: room.library ? null : (blockId ?? null),
+            deviceId,
+            writerEpoch: workspace.writerEpoch,
+          }
+        : null,
+    enabled: editing && !recovery && !workspace.readOnly,
+    leaseExpiresAt: workspace.leaseExpiresAt,
+    queue,
+    current: () => latest.current,
+    save: async () => {
+      if (!editor.current || writingBlocked.current)
+        throw new Error('Aguarde o projeto e o rascunho.')
+      await editor.current.save()
+    },
+  })
+  const invalidateRuntime = useCallback(() => {
+    pythonRuntime.invalidate()
+    proRuntime.invalidate()
+  }, [pythonRuntime.invalidate, proRuntime.invalidate])
   const publication = useRef<{ key: string; id: string } | null>(null)
   const [share] = useState<StudioShareAdapter | undefined>(() =>
     teacher || !publishToMural
@@ -672,6 +700,14 @@ function WorkspaceEditor({
       const handle = editor.current
       if (!handle) return
       const previous = latest.current
+      if (
+        previous.id !== next.id ||
+        previous.writerEpoch !== next.writerEpoch ||
+        previous.writerId !== next.writerId ||
+        previous.writerDeviceId !== next.writerDeviceId ||
+        previous.readOnly !== next.readOnly
+      )
+        invalidateRuntime()
       // Prazo vencido sem continuação no Estúdio: só ver e baixar (o servidor recusa escritas).
       const own =
         !next.readOnly &&
@@ -720,7 +756,7 @@ function WorkspaceEditor({
       }
       remember(next)
     },
-    [deviceId, editing, remember, room.actorId, journal],
+    [deviceId, editing, remember, room.actorId, journal, invalidateRuntime],
   )
   useEffect(() => {
     if (!ready) return
@@ -1131,6 +1167,7 @@ function WorkspaceEditor({
           requireIsolatedPreview
           previewOriginAdapter={previewAdapter}
           runtimeEnvironment={pythonRuntime.environment}
+          proRuntime={proRuntime.adapter}
           projectMuted={muted}
           share={share}
           shareDisabledReason={shareDisabledReason}
@@ -1161,6 +1198,7 @@ function WorkspaceEditor({
       workspace.writerEpoch,
       previewAdapter,
       pythonRuntime.environment,
+      proRuntime.adapter,
       muted,
       share,
       shareDisabledReason,

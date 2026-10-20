@@ -97,6 +97,28 @@ const api = {
       })
       entry.session = session
       entry.status = 'ready'
+      if (slot === 'audio') {
+        for (const previous of document.querySelectorAll('[data-audio-control]')) previous.remove()
+        for (const [name, label, action] of [
+          ['start', 'Jogar', () => session.run()],
+          ['stop', 'Parar', () => session.stop()],
+        ] as const) {
+          const button = document.createElement('button')
+          button.dataset.audioControl = name
+          button.textContent = label
+          button.addEventListener(
+            'click',
+            () => {
+              void action().catch((error: unknown) => {
+                entry.status = 'failed'
+                entry.error = String(error)
+              })
+            },
+            { signal: entry.abort.signal },
+          )
+          frame.before(button)
+        }
+      }
       session.subscribe((event) => {
         if (entry.events.length < 2048) entry.events.push(event)
         if (event.type === 'state') entry.status = event.state

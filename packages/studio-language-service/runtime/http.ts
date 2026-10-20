@@ -5,12 +5,22 @@ import {
   PythonLanguageProtocolError,
   parsePythonLanguageCommand,
 } from '@sistemazero/core/studio/python-language'
+import {
+  createPythonLanguageBootstrap,
+  STUDIO_PYTHON_LANGUAGE_BOOTSTRAP_MAX_BYTES,
+  type StudioPythonLanguageBootstrap,
+} from '@sistemazero/core/studio/python-language-bootstrap'
 import type { PythonLanguageReply } from '@sistemazero/core/studio/python-language-results'
 import type { PythonLanguageSession } from './pyright'
 
+type LanguageSession = Pick<PythonLanguageSession, 'handle'> & { dispose(): void | Promise<void> }
+
 export function createPythonLanguageServer(input: {
   token: string
-  session: Pick<PythonLanguageSession, 'handle' | 'dispose'>
+  createSession(
+    bootstrap: StudioPythonLanguageBootstrap,
+    signal: AbortSignal,
+  ): Promise<LanguageSession>
   onExpired(): void
   idleTtlMs?: number
   maxLifetimeMs?: number
@@ -23,12 +33,25 @@ export function createPythonLanguageServer(input: {
   let active = 0,
     expired = false
   let bufferedBytes = 0
-  async function readCommand(request: IncomingMessage) {
+  let session: LanguageSession | undefined
+  let configuring = false
+  let preparation: Promise<void> | undefined
+  let cleanup: Promise<void> | undefined
+  const lifetimeController = new AbortController()
+  const dispose = () => {
+    lifetimeController.abort()
+    cleanup ??= (async () => {
+      await preparation?.catch(() => {})
+      await session?.dispose()
+    })()
+    return cleanup
+  }
+  async function readBody(request: IncomingMessage, limit: number) {
     const chunks: Buffer[] = []
     let bytes = 0
     try {
       for await (const chunk of request.iterator({ destroyOnReturn: false })) {
-        if (bytes + chunk.length > PYTHON_LANGUAGE_LIMITS.maxRequestBytes)
+        if (bytes + chunk.length > limit)
           throw new PythonLanguageProtocolError('quota-exceeded', 'body-too-large')
         if (bufferedBytes + chunk.length > PYTHON_LANGUAGE_LIMITS.maxBufferedRequestBytes)
           throw new PythonLanguageProtocolError('quota-exceeded', 'busy')
@@ -36,7 +59,7 @@ export function createPythonLanguageServer(input: {
         bufferedBytes += chunk.length
         chunks.push(chunk)
       }
-      return parsePythonLanguageCommand(JSON.parse(Buffer.concat(chunks, bytes).toString('utf8')))
+      return JSON.parse(Buffer.concat(chunks, bytes).toString('utf8')) as unknown
     } finally {
       bufferedBytes -= bytes
       chunks.length = 0
@@ -60,10 +83,11 @@ export function createPythonLanguageServer(input: {
     expired = true
     clearTimeout(idle)
     clearTimeout(hard)
-    input.session.dispose()
+    void dispose()
+      .finally(input.onExpired)
+      .catch(() => {})
     server.close()
     server.closeAllConnections()
-    input.onExpired()
   }
   let idle = setTimeout(expire, idleTtl)
   const hard = setTimeout(expire, lifetime)
@@ -80,11 +104,11 @@ export function createPythonLanguageServer(input: {
         return
       }
       if (request.url === '/healthz' && request.method === 'GET') {
-        json(response, 200, { ready: true })
+        json(response, session ? 200 : 503, { ready: !!session })
         return
       }
       if (
-        request.url !== '/command' ||
+        !['/command', '/configure'].includes(request.url ?? '') ||
         request.method !== 'POST' ||
         request.headers['content-encoding'] !== undefined ||
         !/^application\/json(?:;|$)/i.test(request.headers['content-type'] ?? '')
@@ -93,8 +117,19 @@ export function createPythonLanguageServer(input: {
         request.resume()
         return
       }
-      if (Number(request.headers['content-length']) > PYTHON_LANGUAGE_LIMITS.maxRequestBytes) {
+      const configure = request.url === '/configure'
+      const limit = configure
+        ? STUDIO_PYTHON_LANGUAGE_BOOTSTRAP_MAX_BYTES
+        : PYTHON_LANGUAGE_LIMITS.maxRequestBytes
+      if (Number(request.headers['content-length']) > limit) {
         json(response, 413, { error: 'body-too-large' })
+        request.resume()
+        return
+      }
+      if (configure ? configuring || !!session : !session) {
+        json(response, configure ? 409 : 503, {
+          error: configure ? 'already-configured' : 'not-ready',
+        })
         request.resume()
         return
       }
@@ -105,32 +140,68 @@ export function createPythonLanguageServer(input: {
         return
       }
       active++
+      if (configure) configuring = true
       const abort = new AbortController()
+      const signal = AbortSignal.any([abort.signal, lifetimeController.signal])
       const onClose = () => {
         if (!response.writableFinished) abort.abort()
       }
       response.on('close', onClose)
-      const deadline = setTimeout(() => {
-        abort.abort()
-        request.destroy()
-        response.destroy()
-      }, PYTHON_LANGUAGE_LIMITS.requestTimeoutMs + 1500)
+      const deadline = setTimeout(
+        () => {
+          abort.abort()
+          request.destroy()
+          response.destroy()
+        },
+        configure ? 5000 : PYTHON_LANGUAGE_LIMITS.requestTimeoutMs + 1500,
+      )
       let id: string | undefined
       try {
-        const command = await readCommand(request)
+        if (configure) {
+          preparation = (async () => {
+            const bootstrap = await createPythonLanguageBootstrap(await readBody(request, limit))
+            signal.throwIfAborted()
+            const created = await input.createSession(bootstrap, signal)
+            if (signal.aborted || expired) {
+              await created.dispose()
+              signal.throwIfAborted()
+              throw new Error('Language configuration expired')
+            }
+            session = created
+          })()
+          await preparation
+          json(response, 200, { protocolVersion: 1, ready: true })
+          return
+        }
+        const command = parsePythonLanguageCommand(await readBody(request, limit))
         id = command.id
         if (command.kind !== 'cancel' && command.kind !== 'dispose') {
           clearTimeout(idle)
           idle = setTimeout(expire, idleTtl)
         }
-        const result = await input.session.handle(command, abort.signal)
+        signal.throwIfAborted()
+        const result = await session!.handle(command, signal)
         json(response, 200, result)
         if (command.kind === 'dispose') {
           // Finish the acknowledgement before closing the private container listener.
           response.once('finish', expire)
-          if (response.writableFinished) expire()
+          if (response.destroyed || response.writableFinished) expire()
         }
       } catch (error) {
+        if (configure) {
+          json(
+            response,
+            error instanceof PythonLanguageProtocolError && error.code === 'quota-exceeded'
+              ? 413
+              : 400,
+            { error: 'invalid-configuration' },
+          )
+          // A failed declared configuration never falls back to a legacy session.
+          response.once('finish', expire)
+          if (response.destroyed || response.writableFinished) expire()
+          request.resume()
+          return
+        }
         if (
           error instanceof PythonLanguageProtocolError &&
           error.code === 'quota-exceeded' &&
@@ -163,7 +234,7 @@ export function createPythonLanguageServer(input: {
   server.on('close', () => {
     clearTimeout(idle)
     clearTimeout(hard)
-    input.session.dispose()
+    void dispose().catch(() => {})
   })
   return server
 }

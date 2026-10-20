@@ -15,6 +15,7 @@
     "./components/*": "./src/components/*.tsx",
     "./routes": "./src/routes/index.ts",
     "./routes/live": "./src/routes/live.ts",
+    "./routes/live-pro-runtime": "./src/routes/live-pro-runtime.ts",
     "./routes/live-materials": "./src/routes/live-materials.ts",
     "./routes/live-preview": "./src/routes/live-preview.ts",
     "./components/live/*": "./src/components/live/*.tsx",

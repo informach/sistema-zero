@@ -14,7 +14,7 @@ it('admits an empty entrypoint and rejects deleting it atomically without a repl
   await mkdir(root, { recursive: true })
   const session = new PythonLanguageSession({
     root,
-    serverPath: createRequire(import.meta.url).resolve('pyright/dist/pyright-langserver.js'),
+    serverPath: createRequire(import.meta.url).resolve('pyright/langserver.index.js'),
     nodePath: Bun.which('node')!,
   })
   let sequence = 0
@@ -67,7 +67,7 @@ it('analyzes actual Pyright snapshots, imports, Turtle, edits and stale versions
   await mkdir(root, { recursive: true })
   const session = new PythonLanguageSession({
     root,
-    serverPath: createRequire(import.meta.url).resolve('pyright/dist/pyright-langserver.js'),
+    serverPath: createRequire(import.meta.url).resolve('pyright/langserver.index.js'),
     nodePath: Bun.which('node')!,
   })
   let sequence = 0

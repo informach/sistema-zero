@@ -67,6 +67,7 @@ export const basicSpriteSceneAdapter =
       if (s.anim) copy.anim = Object.assign({}, s.anim);
       if (s.textAppearance) copy.textAppearance = Object.assign({}, s.textAppearance, { lines: s.textAppearance.lines.slice() });
       if (s.data) copy.data = Object.assign({}, s.data);
+      _markManagedSprite(copy);
       var owners = _spriteGroupOwners.get(s);
       if (owners) owners.forEach(function (group) { addToGroup(group, copy); });
       return copy;

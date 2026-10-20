@@ -5,10 +5,12 @@ import type {
 import { turtleF1Source } from '../../packages/studio/e2e-python-editor/fixtures/performance'
 import { preparePythonExecutionSnapshot } from '../../packages/studio/src/runtime/python/snapshot'
 import { documentFixture } from '../../packages/studio/src/state/fixtures/projectDocuments'
+import { audioFixtures, portableAudioAsset } from './audioFixtures'
 import { TURTLE_EXTENSION, turtleFixtures } from './turtleFixtures'
 
 /** Behavioral fixtures, never a production runtime catalog or author template. */
 const cases: Record<string, string> = {
+  ...audioFixtures,
   ...turtleFixtures,
   turtleF1: turtleF1Source('red'),
   osSystem: `import os
@@ -116,6 +118,8 @@ export async function runtimeFixtureProject(
       'classic-turtleF1',
       'classic-turtleEvents',
       'classic-turtleImage',
+      'classic-portableAudio',
+      'classic-portableAudioNamespace',
     ].includes(name)
   ) {
     const pro = await runtimeFixtureProject(name.slice('classic-'.length))
@@ -133,7 +137,8 @@ export async function runtimeFixtureProject(
                 [
                   path === 'src/main.py'
                     ? 'main.py'
-                    : name === 'classic-portable' && path.startsWith('src/')
+                    : ['classic-portable', 'classic-portableAudioNamespace'].includes(name) &&
+                        path.startsWith('src/')
                       ? path.slice(4)
                       : path,
                   name === 'classic-portable'
@@ -168,6 +173,14 @@ export async function runtimeFixtureProject(
       proPath: 'hero.gif',
     },
   ]
+  if (name in audioFixtures) {
+    project.assets = name === 'portableAudioNamespace' ? [] : [portableAudioAsset()]
+    if (name === 'portableAudioNamespace')
+      project.tree['src/sz_audio.py'] = {
+        kind: 'file',
+        content: "AUTHOR = 'author audio preserved'\n",
+      }
+  }
   if (name in turtleFixtures || name === 'turtleF1') {
     project.installedExtensions = [{ ...TURTLE_EXTENSION, installedAt: project.createdAt }]
     project.assets = [

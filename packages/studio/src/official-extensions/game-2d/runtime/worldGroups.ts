@@ -8,6 +8,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   // imagem pendente pertence ao SPRITE, não a um vínculo isolado: só o liberamos
   // quando o último grupo gerenciado deixa de possuir aquele objeto.
   var _managedGroups = new WeakSet();
+  var _markManagedGroup = _managedGroups.add.bind(_managedGroups);
   var _spriteGroupOwners = new WeakMap();
   function _trackableGroupItem(sprite) {
     return !!sprite && (typeof sprite === 'object' || typeof sprite === 'function');
@@ -147,7 +148,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   /** Cria um grupo vazio com pertencimento observável inclusive no modo Código. */
   function createGroup() {
     var group = { _revision: 0, items: [] };
-    _managedGroups.add(group);
+    _markManagedGroup(group);
     var items = _trackGroupItems(group, []);
     Object.defineProperty(group, 'items', {
       enumerable: true,

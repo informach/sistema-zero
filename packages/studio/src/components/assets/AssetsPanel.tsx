@@ -16,7 +16,7 @@ import {
   syncDrawingsIntoProjects,
   takeDrawingSyncFailures,
 } from '../../asset-library/personalSync'
-import type { EditableStudioProject as Project } from '../../core/editableProject'
+import { isPythonProject, type EditableStudioProject as Project } from '../../core/editableProject'
 import { captureAndStoreProjectThumb } from '../../cover/thumbCapture'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { retryProApplication } from '../../state/proRevision'
@@ -111,6 +111,7 @@ export function AssetsPanel({
   const runtimeCapture = useStudioRuntimeCapture()
   const t = useT()
   const isPro = useProjectStore((s) => s.project?.kind === 'pro')
+  const isPython = useProjectStore((s) => !!s.project && isPythonProject(s.project))
   const { hasProject, assets, has3DExtension, has3DMaterials, coverAssetName } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
@@ -194,6 +195,7 @@ export function AssetsPanel({
   // "✏️ editar desenho" de "No projeto" sem esperar o próximo focus).
   const pintaLibrary = useStudioPintaLibrary()
   const [pintaOpen, setPintaOpen] = useState(false)
+  const [pintaTarget, setPintaTarget] = useState<ProjectAsset | undefined>()
   // "Trazer do Molda" (modelos .glb, texturas .png, céus .hdr): mesma mecânica, outra
   // galeria. O import também grava na biblioteca pessoal (com `kind`), então a
   // re-listagem abaixo serve aos dois.
@@ -217,11 +219,15 @@ export function AssetsPanel({
     // `personalTick` re-dispara a listagem após um import da modal do Pinta.
     void personalTick
     let cancelled = false
+    const syncLifetime = new AbortController()
     // Reconcilia ANTES de listar: abrir o painel é o momento em que a criança
     // olha para as duas listas lado a lado, então elas têm que concordar. O
     // portão da sincronia deixa isso barato quando nada mudou.
     const refresh = () => {
-      void syncDrawingsIntoProjects(storeApi)
+      void syncDrawingsIntoProjects(storeApi, {
+        pintaLibrary,
+        signal: syncLifetime.signal,
+      })
         .then(() => listPersonalAssets({ namespace: personalNamespace }))
         .then((assets) => {
           if (cancelled) return
@@ -250,9 +256,10 @@ export function AssetsPanel({
     window.addEventListener('focus', refresh)
     return () => {
       cancelled = true
+      syncLifetime.abort()
       window.removeEventListener('focus', refresh)
     }
-  }, [open, personalNamespace, storeApi, personalTick])
+  }, [open, personalNamespace, storeApi, personalTick, pintaLibrary])
 
   // Só as IMAGENS do PINTA na biblioteca pessoal são "desenhos" (a lista e o "editar no
   // Pinta"): um .glb/.hdr trazido do Molda vive lá com o `kind` dele e cairia no
@@ -793,7 +800,22 @@ export function AssetsPanel({
                 allowUpload={allowUpload}
                 busy={busy}
                 onUpload={() => fileRef.current?.click()}
-                onOpenPinta={pintaLibrary ? () => setPintaOpen(true) : null}
+                onOpenPinta={
+                  pintaLibrary
+                    ? () => {
+                        setPintaTarget(undefined)
+                        setPintaOpen(true)
+                      }
+                    : null
+                }
+                onReviewPintaImage={
+                  pintaLibrary && isPython
+                    ? (asset) => {
+                        setPintaTarget(structuredClone(asset))
+                        setPintaOpen(true)
+                      }
+                    : undefined
+                }
                 onOpenTeam={teamLibrary ? () => setTeamOpen(true) : null}
                 onConfigureTiles={(asset, mode) => setTileConfig({ asset, mode })}
                 onRename={handleRename}
@@ -849,6 +871,7 @@ export function AssetsPanel({
       ) : null}
       {pintaOpen && pintaLibrary ? (
         <PintaImportDialog
+          initialTarget={pintaTarget}
           onClose={() => setPintaOpen(false)}
           onImported={() => setPersonalTick((tick) => tick + 1)}
         />

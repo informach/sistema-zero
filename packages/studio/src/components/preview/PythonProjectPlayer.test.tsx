@@ -1,10 +1,15 @@
 import { afterEach, expect, mock, spyOn, test } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { portableAudioAsset } from '../../../../../experiments/studio-python-runtime/audioFixtures'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
 import * as publicEnvironment from '../../runtime/publicEnvironment'
 import { PYTHON_CONSOLE_LIMITS } from '../../runtime/python/protocol'
 import { createStudioRuntimeRegistry } from '../../runtime/registry'
-import type { StudioExecutionIdentity, StudioRuntimeEvent } from '../../runtime/types'
+import type {
+  StudioExecutionIdentity,
+  StudioHostAudioPreference,
+  StudioRuntimeEvent,
+} from '../../runtime/types'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import { PythonProjectPlayer } from './PythonProjectPlayer'
 
@@ -31,6 +36,8 @@ async function setup() {
   const listeners = new Set<(event: StudioRuntimeEvent) => void>()
   let identity: StudioExecutionIdentity | undefined
   let sequence = 0
+  let hostAudio: StudioHostAudioPreference | undefined
+  const runMutes: boolean[] = []
   let disposed = 0
   let inputs = 0
   let inputHandler = async () => {}
@@ -58,12 +65,14 @@ async function setup() {
           return {
             id: 'inert-public-test',
             async prepare(input) {
+              hostAudio = input.hostAudio
               identity = input.identity
               return {
                 identity,
                 playback: { kind: 'stop-only' },
                 repl: { kind: 'unavailable' },
                 async run() {
+                  runMutes.push(hostAudio?.getMuted() ?? false)
                   emit({ type: 'state', state: 'running' })
                 },
                 subscribe(listener) {
@@ -102,6 +111,8 @@ async function setup() {
     published,
     request,
     emit,
+    hostAudio: () => hostAudio,
+    runMutes,
     disposed: () => disposed,
     inputs: () => inputs,
     inputHandler: (handler: typeof inputHandler) => {
@@ -112,6 +123,32 @@ async function setup() {
     },
   }
 }
+
+test('public Python host prop controls pending/new session audio without replacing its game frame', async () => {
+  const f = await setup()
+  spyOn(publicEnvironment, 'createPublicPythonRuntimeEnvironment').mockResolvedValue(f.environment)
+  const content = (muted: boolean) => (
+    <PythonProjectPlayer
+      project={f.project}
+      published={f.published}
+      pythonRuntimeRequest={f.request}
+      muted={muted}
+    />
+  )
+  const view = render(content(true))
+  await waitFor(() => expect(f.runMutes).toEqual([true]))
+  const frame = view.container.querySelector('iframe'),
+    preference = f.hostAudio()
+  if (!preference) throw new Error('Preference not forwarded')
+  const values: boolean[] = []
+  preference.subscribe(() => {
+    values.push(preference.getMuted())
+  })
+  view.rerender(content(false))
+  expect(values).toEqual([false])
+  expect(view.container.querySelector('iframe')).toBe(frame)
+  expect(f.runMutes).toHaveLength(1)
+})
 
 test('Python public surface exposes the actual game iframe ref, ready event and tears it down on failure', async () => {
   const f = await setup()
@@ -143,6 +180,30 @@ test('Python public surface exposes the actual game iframe ref, ready event and 
   await waitFor(() => expect(view.container.querySelector('iframe') === null).toBe(true))
   expect(ref.current).toBeNull()
   expect(errors).toBe(1)
+})
+
+test('published Python with audio waits for an explicit Jogar without opening an execution', async () => {
+  const f = await setup()
+  f.project.assets = [portableAudioAsset()]
+  spyOn(publicEnvironment, 'createPublicPythonRuntimeEnvironment').mockResolvedValue(f.environment)
+  let ready = 0
+  const rendered = render(
+    <PythonProjectPlayer
+      project={f.project}
+      published={f.published}
+      pythonRuntimeRequest={f.request}
+      onReady={() => {
+        ready++
+      }}
+    />,
+  )
+  const play = await screen.findByRole('button', { name: /^Jogar$/ })
+  expect(rendered.container.querySelector('iframe')).toBeNull()
+  expect(ready).toBe(0)
+  fireEvent.click(play)
+  await waitFor(() => expect(ready).toBe(1))
+  expect(rendered.container.querySelectorAll('iframe')).toHaveLength(1)
+  expect(screen.queryByRole('button', { name: /^Jogar$/ })).toBeNull()
 })
 
 test('print-only output survives completion and renders text as text, without authoring tools', async () => {

@@ -7,7 +7,7 @@
     "test": "bun test",
     "verify:rpc": "node scripts/verify-rpc.mjs",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.worker.json && tsc --noEmit -p tsconfig.worker-tests.json",
-    "build:server": "bun build runtime/server.ts --target=node --external pyright --outfile=dist/server.mjs",
+    "build:server": "bun build --cwd ../.. --no-env-file packages/studio-language-service/runtime/server.ts --target=node --external pyright --outfile=packages/studio-language-service/dist/server.mjs",
     "check": "biome check ."
   },
   "dependencies": {

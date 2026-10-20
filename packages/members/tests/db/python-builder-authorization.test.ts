@@ -20,7 +20,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
   let connection: DbConnection
   const actor = { accountId: randomUUID(), userId: randomUUID(), privileged: false }
   let now = new Date('2026-10-18T13:00:00Z')
-  let policy: NonNullable<ConstructorParameters<typeof StudioBuilderService>[4]> = async () => {}
+  let policy: NonNullable<ConstructorParameters<typeof StudioBuilderService>[4]> = async () => ({})
   let service: StudioBuilderService
   beforeAll(() => {
     if (!url)
@@ -44,7 +44,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     if (!connection) return
     await connection.sql`delete from members.studio_builder_jobs where account_id = ${actor.accountId}`
     await connection.sql`delete from members.studio_ai_accounts where account_id = ${actor.accountId}`
-    policy = async () => {}
+    policy = async () => ({})
     now = new Date('2026-10-18T13:00:00Z')
   })
   afterAll(async () => {
@@ -58,6 +58,219 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     })
     return { promise, resolve }
   }
+  async function generation(repair = false) {
+    const { project } = await authoringFixture('python', 'pro')
+    project.id = randomUUID()
+    const payload = await capturePythonProRevisionPayload(project)
+    const id = randomUUID(),
+      projectId = project.id
+    await service.execute(actor, {
+      operation: 'create',
+      id,
+      ...payload,
+      objective: 'Adicionar função',
+      model: 'qa/model',
+      parentOrigin: 'https://kids.test',
+    })
+    let claimed = await service.execute(actor, { operation: 'claim', id, projectId })
+    if (!claimed?.token) throw new Error('Missing generation lease')
+    let revision = payload.base
+    if (repair) {
+      const change = {
+        baseHash: payload.base.hash,
+        summary: 'Adicionar função',
+        patches: [{ path: 'src/proposta.py', before: null, content: 'value = 2\n' }],
+      }
+      const candidate = (await applyStudioProChange(payload.base, change)).revision
+      if (candidate.version !== 2) throw new Error('Python revision required')
+      revision = candidate
+      await service.execute(actor, {
+        operation: 'checkpoint',
+        id,
+        projectId,
+        token: claimed.token,
+        version: claimed.job.version,
+        phase: 'queued',
+        result: { change, revisionHash: revision.hash, plan: ['Adicionar função'], evidence: [] },
+        error: null,
+        cost: null,
+        notes: [],
+      })
+      claimed = await service.execute(actor, { operation: 'claim', id, projectId })
+      if (!claimed?.token) throw new Error('Missing repair lease')
+    }
+    const command: Extract<StudioProBuilderCommand, { operation: 'authorize-generation' }> = {
+      operation: 'authorize-generation',
+      id,
+      projectId,
+      token: claimed.token,
+      version: claimed.job.version,
+      revisionHash: revision.hash,
+    }
+    return { command, revision, binaries: payload.binaries, job: claimed.job }
+  }
+  async function wholeJob(id: string) {
+    const [row] =
+      await connection.sql`select to_jsonb(j) as value from members.studio_builder_jobs j where id = ${id}`
+    if (!row) throw new Error('Missing owned QA job')
+    return row.value
+  }
+
+  test.each([
+    false,
+    true,
+  ])('generation reads the exact base/repair and leaves the entire SQL row unchanged (repair=%s)', async (repair) => {
+    const f = await generation(repair),
+      before = await wholeJob(f.command.id)
+    const prepared = await prepareStudioPythonProExecution(f.revision, f.binaries)
+    let calls = 0
+    policy = async (_actor, base, metadata, operation) => {
+      calls++
+      expect(base.hash).toBe(f.command.revisionHash)
+      expect(metadata.revision).toBe(prepared.metadata.revision)
+      expect(operation).toBe('analyze')
+      return {}
+    }
+    const accepted = await service.execute(actor, f.command)
+    expect(calls).toBe(1)
+    expect(accepted?.authorization).toEqual({
+      policy: {},
+      revisionHash: f.revision.hash,
+      executionRevision: prepared.metadata.revision,
+      parentOrigin: 'https://kids.test',
+    })
+    expect(accepted?.token).toBeNull()
+    expect(accepted).not.toHaveProperty('binaries')
+    expect(accepted).not.toHaveProperty('generationLease')
+    expect(await wholeJob(f.command.id)).toEqual(before)
+  })
+
+  test('generation refuses foreign owners, audiences and stale command bindings without writing any job field', async () => {
+    const f = await generation(),
+      before = await wholeJob(f.command.id)
+    let calls = 0
+    policy = async () => {
+      calls++
+      return {}
+    }
+    for (const [owner, command] of [
+      [{ ...actor, accountId: randomUUID() }, f.command],
+      [{ ...actor, userId: randomUUID() }, f.command],
+      [{ ...actor, audience: 'adult' }, f.command],
+      [actor, { ...f.command, token: randomUUID() }],
+      [actor, { ...f.command, version: f.command.version + 1 }],
+      [actor, { ...f.command, revisionHash: 'f'.repeat(64) }],
+    ] as const) {
+      const error = await service.execute(owner, command).then(
+        () => null,
+        (reason: Error) => reason,
+      )
+      expect(error).toBeInstanceOf(Error)
+      expect(await wholeJob(f.command.id)).toEqual(before)
+    }
+    expect(calls).toBe(0)
+  })
+
+  test.each([
+    'lease',
+    'deadline',
+    'retention',
+    'queued',
+    'cancelled',
+    'discarded',
+  ])('generation is read-only even when %s already makes it unavailable', async (mode) => {
+    const f = await generation()
+    if (mode === 'lease') now = new Date(Date.parse(f.job.leaseUntil!) + 1)
+    if (mode === 'deadline') now = new Date(Date.parse(f.job.deadlineAt) + 1)
+    if (mode === 'retention') now = new Date(Date.parse(f.job.expiresAt) + 1)
+    if (mode === 'queued')
+      await service.execute(actor, {
+        operation: 'checkpoint',
+        id: f.command.id,
+        projectId: f.command.projectId,
+        token: f.command.token,
+        version: f.command.version,
+        phase: 'queued',
+        result: null,
+        error: null,
+        cost: null,
+        notes: [],
+      })
+    if (mode === 'cancelled' || mode === 'discarded') {
+      const cancelled = await service.execute(actor, {
+        operation: 'cancel',
+        id: f.command.id,
+        projectId: f.command.projectId,
+      })
+      if (mode === 'discarded') {
+        if (!cancelled) throw new Error('Missing cancelled job')
+        await service.execute(actor, {
+          operation: 'discard',
+          id: f.command.id,
+          projectId: f.command.projectId,
+          version: cancelled.job.version,
+        })
+      }
+    }
+    const before = await wholeJob(f.command.id)
+    let calls = 0
+    policy = async () => {
+      calls++
+      return {}
+    }
+    const error = await service.execute(actor, f.command).then(
+      () => null,
+      (reason: Error) => reason,
+    )
+    expect(error).toBeInstanceOf(Error)
+    expect(calls).toBe(0)
+    expect(await wholeJob(f.command.id)).toEqual(before)
+  })
+
+  test('generation expiry during policy cannot run the mutable expiry transition', async () => {
+    const f = await generation(),
+      before = await wholeJob(f.command.id)
+    policy = async () => {
+      now = new Date(Date.parse(f.job.leaseUntil!) + 1)
+      return {}
+    }
+    const error = await service.execute(actor, f.command).then(
+      () => null,
+      (reason: Error) => reason,
+    )
+    expect(error).toBeInstanceOf(Error)
+    expect(await wholeJob(f.command.id)).toEqual(before)
+  })
+
+  test('generation cancellation committed during policy wins without additional writes from authorization', async () => {
+    const f = await generation(),
+      entered = gate(),
+      released = gate()
+    policy = async () => {
+      entered.resolve()
+      await released.promise
+      return {}
+    }
+    const pending = service.execute(actor, f.command).then(
+      () => null,
+      (error: Error) => error,
+    )
+    try {
+      await entered.promise
+      await service.execute(actor, {
+        operation: 'cancel',
+        id: f.command.id,
+        projectId: f.command.projectId,
+      })
+      const afterCancellation = await wholeJob(f.command.id)
+      released.resolve()
+      expect(await pending).toBeInstanceOf(Error)
+      expect(await wholeJob(f.command.id)).toEqual(afterCancellation)
+    } finally {
+      released.resolve()
+      await pending
+    }
+  })
   async function validation() {
     const { project } = await authoringFixture('python', 'pro')
     if (project.programmingLanguage !== 'python' || project.kind !== 'pro')
@@ -178,6 +391,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     let policyCalls = 0
     policy = async () => {
       policyCalls++
+      return {}
     }
     const reviewed = await service.execute(actor, command)
     expect(reviewed?.job.phase).toBe('review')
@@ -274,6 +488,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     let policies = 0
     policy = async () => {
       policies++
+      return {}
     }
     const authorized = await service.execute(actor, f.command)
     expect(authorized?.authorization).toMatchObject({
@@ -316,6 +531,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     let policies = 0
     policy = async () => {
       policies++
+      return {}
     }
     const error = await service.execute(actor, command).then(
       () => null,
@@ -347,6 +563,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
           projectId: f.command.projectId,
           version: f.command.version,
         })
+      return {}
     }
     const error = await service.execute(actor, f.command).then(
       () => null,
@@ -467,10 +684,12 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
       expect(base.hash).toBe(f.revision.hash)
       expect(metadata).toEqual(prepared.metadata)
       calls.push(operation)
+      return {}
     }
     for (const runtimeOperation of ['analyze', 'execute'] as const) {
       const accepted = await service.execute(actor, { ...f.command, runtimeOperation })
       expect(accepted?.authorization).toEqual({
+        policy: {},
         revisionHash: f.revision.hash,
         executionRevision: prepared.metadata.revision,
         parentOrigin: 'https://kids.test',
@@ -490,6 +709,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     let calls = 0
     policy = async () => {
       calls++
+      return {}
     }
     for (const [owner, command] of [
       [{ ...actor, accountId: randomUUID() }, f.command],
@@ -514,6 +734,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     policy = async () => {
       entered.resolve()
       await released.promise
+      return {}
     }
     const pending = service.execute(actor, f.command).then(
       () => null,
@@ -539,6 +760,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     const f = await validation()
     policy = async () => {
       now = new Date(now.getTime() + 150001)
+      return {}
     }
     const error = await service.execute(actor, f.command).then(
       () => null,
@@ -559,6 +781,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
         await releaseLock.promise
       })
       await lockAcquired.promise
+      return {}
     }
     const pending = service.execute(actor, f.command).then(
       () => null,
@@ -598,6 +821,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     policy = async () => {
       entered.resolve()
       await released.promise
+      return {}
     }
     const pending = service.execute(actor, f.command, controller.signal).then(
       () => null,

@@ -21,6 +21,7 @@
     "dev": "vite --config playground/vite.config.ts"
   },
   "dependencies": {
+    "@sistemazero/core": "workspace:*",
     "@sistemazero/ui": "workspace:*",
     "clsx": "^2.1.1",
     "fflate": "^0.8.2",

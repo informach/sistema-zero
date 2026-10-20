@@ -9,7 +9,7 @@ export function pythonWebTemplates(runtimeHash: string): ExportFileMap {
     `http://127.0.0.1:1/runtime/${runtimeHash}/`,
   ).replaceAll('http://127.0.0.1:1', '{origin}')
   const pagePolicy =
-    "default-src 'none'; script-src 'self'; connect-src 'self'; frame-src 'self'; img-src data: blob:; style-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'"
+    "default-src 'none'; script-src 'self'; connect-src 'self'; frame-src 'self'; img-src data: blob:; media-src blob:; style-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'"
   return {
     'index.html': launcher.html,
     'player.css': launcher.css,

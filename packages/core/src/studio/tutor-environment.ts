@@ -9,7 +9,7 @@ import {
 const extensions = z
   .array(z.strictObject({ id: StudioCatalogIdSchema, version: StudioExactVersionSchema }))
   .max(100)
-const pythonModule = z.enum(['turtle', 'math', 'random'])
+const pythonModule = z.enum(['turtle', 'math', 'random', 'sz_audio'])
 
 /** Source context for assistance, never a runtime approval or package-install capability. */
 export const StudioTutorEnvironmentSchema = z
@@ -31,8 +31,8 @@ export const StudioTutorEnvironmentSchema = z
       pythonVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
       entrypoint: StudioPythonEntrypointSchema,
       extensions,
-      /** Local files can override an official module. This narrows advice, never grants access. */
-      shadowedModules: z.array(pythonModule).max(3),
+      /** Local overrides narrow advice for stdlib/extensions/provided modules; never grant access. */
+      shadowedModules: z.array(pythonModule).max(4),
     }),
   ])
   .superRefine((value, context) => {

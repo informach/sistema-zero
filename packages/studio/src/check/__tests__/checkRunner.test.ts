@@ -39,6 +39,10 @@ async function check(project: unknown, objectives: ExecutionObjectiveRequest[]) 
   )
   writeFileSync(join(runtime, 'check-objectives.mjs'), readFileSync(RUNNER))
   writeFileSync(
+    join(runtime, 'check-click-target.mjs'),
+    readFileSync(join(dirname(RUNNER), 'check-click-target.mjs')),
+  )
+  writeFileSync(
     join(runtime, 'execution-observation.generated.mjs'),
     readFileSync(join(dirname(RUNNER), 'execution-observation.generated.mjs')),
   )

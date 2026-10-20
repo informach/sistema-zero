@@ -148,6 +148,20 @@ function executionIssues(
       'Jogos 3D do modo Blocos não rodam no teste (ele roda sem internet e o 3D precisa dela). Use uma ideia de programação.',
     )
   if (rule.type === 'behavior' || rule.type === 'script') {
+    if (
+      (rule.steps.some((step) => step.action === 'clickTarget') ||
+        (rule.type === 'behavior' && rule.expect.target.kind === 'spritePosition')) &&
+      ((project.kind !== undefined && project.kind !== 'classic') ||
+        classic3d ||
+        (project.programmingLanguage !== undefined &&
+          project.programmingLanguage !== 'javascript') ||
+        !extensions.has('game-2d'))
+    )
+      errors.push(
+        rule.type === 'behavior' && rule.expect.target.kind === 'spritePosition'
+          ? 'Movimento de sprite só vale no Jogo 2D clássico JavaScript.'
+          : 'Cliques em alvos só valem no Jogo 2D clássico JavaScript.',
+      )
     const outside = rule.steps.some(
       (step) =>
         step.action === 'click' &&

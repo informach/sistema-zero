@@ -16,6 +16,7 @@ import {
   readValues,
 } from './idbTransaction'
 import { notifyProBuilderDeletion, proBuilderDeletionKey } from './proBuilderDeletion'
+import { isProjectOpening } from './projectOpening'
 import {
   coordinatedProjectWrite,
   listPreservedProjectDrafts,
@@ -460,7 +461,8 @@ export async function loadProjectBlocksById(
  * único) devolve `[]` — a sincronia simplesmente não o alcança, e o caminho
  * normal de load segue cuidando dele.
  */
-const assetReadHeads = new WeakMap<ProjectAsset[], string>()
+// null is an observed historical record without a head; missing WeakMap entry means unobserved.
+const assetReadHeads = new WeakMap<ProjectAsset[], string | null>()
 export async function loadProjectAssetsById(
   id: string,
   storageScope?: ProjectStorageScope,
@@ -476,6 +478,7 @@ export async function loadProjectAssetsById(
       ? (await import('../core/pythonAssets')).sanitizePythonProjectAssets(record.assets)
       : (await import('../core/projectAssets')).sanitizeProjectAssets(record.assets)
   if (isLocalHead(head)) assetReadHeads.set(assets, head.token)
+  else if (head == null) assetReadHeads.set(assets, null)
   return assets
 }
 
@@ -492,12 +495,18 @@ export async function persistProjectAssets(
   assets: ProjectAsset[],
   storageScope?: ProjectStorageScope,
   expectedAssets?: ProjectAsset[],
-): Promise<void> {
+  canWrite?: () => boolean,
+): Promise<boolean> {
   const captured = storageScope ?? captureProjectStorageScope()
+  const expectedToken = expectedAssets ? assetReadHeads.get(expectedAssets) : undefined
+  if (expectedAssets && expectedToken === undefined) return false
+  if (isProjectOpening(captured, id)) return false
+  const revoked = new Error('Asset synchronization was revoked before its transaction.')
   let written = false
   await runSerializedWrite(
     id,
     async (scope) => {
+      if (isProjectOpening(scope, id) || (canWrite && !canWrite())) return
       // O meta PRIMEIRO: se o projeto foi apagado entre a leitura da varredura e esta gravação
       // (o delete entrou na mesma fila antes), gravar recriaria uma partição de assets
       // ÓRFÃ (MBs que nenhuma tela alcança) e acordaria a nuvem para um projeto morto.
@@ -510,31 +519,41 @@ export async function persistProjectAssets(
         scope,
         id,
         [],
-        (meta) => ({
-          puts: [
-            [projectAssetsKey(id), { id, assets }],
-            [projectMetaKey(id), { ...meta, updatedAt: Date.now() }],
-          ],
-        }),
-        expectedAssets ? assetReadHeads.get(expectedAssets) : undefined,
-      ).then((changed) => {
-        // O `lastPersistedAssetsRef` é o dirty-check POR REFERÊNCIA do
-        // `persistProject`. Gravamos por fora dele: manter a referência antiga
-        // registrada faria o Map mentir sobre o que está no disco. Esquecer o id
-        // é o lado seguro — no máximo custa uma reescrita da partição.
-        lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
-        written = changed
-      })
+        (meta) => {
+          // This synchronous fence runs inside the same conditional transaction as the write.
+          if (isProjectOpening(scope, id) || (canWrite && !canWrite())) throw revoked
+          return {
+            puts: [
+              [projectAssetsKey(id), { id, assets }],
+              [projectMetaKey(id), { ...meta, updatedAt: Date.now() }],
+            ],
+          }
+        },
+        expectedToken,
+      )
+        .catch((error: unknown) => {
+          if (error === revoked) return false
+          throw error
+        })
+        .then((changed) => {
+          // O `lastPersistedAssetsRef` é o dirty-check POR REFERÊNCIA do
+          // `persistProject`. Gravamos por fora dele: manter a referência antiga
+          // registrada faria o Map mentir sobre o que está no disco. Esquecer o id
+          // é o lado seguro — no máximo custa uma reescrita da partição.
+          if (changed) lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+          written = changed
+        })
       return { done }
     },
     captured,
   )
-  if (!written) return
+  if (!written) return false
   // Uma varredura iniciada no perfil A pode terminar depois de o host ativar B. Os bytes
   // continuam no scope capturado de A, mas eventos/espelho globais já pertencem a B.
-  if (captureProjectStorageScope().identity !== captured.identity) return
+  if (captureProjectStorageScope().identity !== captured.identity) return true
   notifyMirrorChanged(id)
   notifyProjectChanged(id)
+  return true
 }
 
 export async function deleteProject(

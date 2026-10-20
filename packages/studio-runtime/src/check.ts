@@ -91,6 +91,17 @@ export function parseCheckRequest(value: unknown): CheckRequest {
       throw new InvalidBuildRequestError('O projeto usa um caminho reservado ao teste.')
     for (const objective of objectives) {
       const rule = objective.rule
+      if (rule.type === 'behavior' && rule.expect.target.kind === 'spritePosition')
+        throw new InvalidBuildRequestError(
+          'Movimento de sprite só vale no Jogo 2D clássico JavaScript.',
+        )
+      if (
+        rule.type !== 'functionReturns' &&
+        rule.steps.some((step) => step.action === 'clickTarget')
+      )
+        throw new InvalidBuildRequestError(
+          'Cliques em alvos só valem no Jogo 2D clássico JavaScript.',
+        )
       if (
         rule.type === 'functionReturns' &&
         (!rule.module || !Object.hasOwn(build.files, rule.module))

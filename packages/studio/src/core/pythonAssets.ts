@@ -10,6 +10,7 @@ import {
   STUDIO_PYTHON_MATERIAL_LIMITS,
 } from '@sistemazero/core/studio/python-material-policy'
 import { decodeProjectAsset, digestAssetBytes, projectAssetFileExtension } from './assetBinary'
+import { assertPintaImageAssetBytes } from './pintaImageAsset'
 import { type ProjectAsset, sanitizeProjectAssets } from './projectAssets'
 import { assertProjectContentPreserved } from './projectDocumentGuards'
 
@@ -21,12 +22,13 @@ export interface PythonAssetManifestEntry {
   mime: string
   bytes: number
   sha256: string
-  /** Covers all source metadata, including Pinta recipes when introduced. */
+  /** Covers all source metadata, including the captured Pinta recipe/provenance/output. */
   metadataSha256: string
   source: ProjectAsset['source']
   libId?: string
   libOrigin?: ProjectAsset['libOrigin']
   libRevision?: number
+  pintaImage?: ProjectAsset['pintaImage']
   license?: ProjectAsset['license']
   width?: number
   height?: number
@@ -90,6 +92,8 @@ export async function buildPythonAssetBundle(
       throw new Error(`O material ${asset.name} precisa de um formato de mídia portátil.`)
     if (files.has(path)) throw new Error(`Dois materiais usam o caminho ${path}.`)
     const { dataUrl: _dataUrl, ...metadata } = asset
+    const sha256 = await digestAssetBytes(bytes)
+    assertPintaImageAssetBytes(asset, bytes, sha256)
     files.set(path, bytes)
     entries.push({
       id: asset.id,
@@ -98,12 +102,13 @@ export async function buildPythonAssetBundle(
       path,
       mime,
       bytes: bytes.byteLength,
-      sha256: await digestAssetBytes(bytes),
+      sha256,
       metadataSha256: await sha256Hex(canonicalJson(metadata)),
       source: asset.source,
       ...(asset.libId ? { libId: asset.libId } : {}),
       ...(asset.libOrigin ? { libOrigin: asset.libOrigin } : {}),
       ...(asset.libRevision ? { libRevision: asset.libRevision } : {}),
+      ...(asset.pintaImage ? { pintaImage: asset.pintaImage } : {}),
       ...(asset.license ? { license: asset.license } : {}),
       ...(asset.width ? { width: asset.width } : {}),
       ...(asset.height ? { height: asset.height } : {}),

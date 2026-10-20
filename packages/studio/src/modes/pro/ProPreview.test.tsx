@@ -5,6 +5,7 @@ import {
   StudioProCandidatePreviewProvider,
   useProCandidatePreview,
 } from '../../studio/pro-candidate-preview'
+import { StudioProRuntimeProvider } from '../../studio/pro-runtime'
 
 // mock.module NÃO é isolado por arquivo: captura o módulo real do provider e
 // restaura no afterAll para não vazar o stub do useProWebContainer.
@@ -105,6 +106,44 @@ describe('ProPreview — install órfão no cancelamento', () => {
     fireServerReady = () => {}
     useProjectStore.setState({ project: null })
     useLogsStore.getState().clear()
+  })
+
+  it('uses the supplied remote executor without COEP or a WebContainer mount', async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'crossOriginIsolated')
+    Object.defineProperty(globalThis, 'crossOriginIsolated', { configurable: true, value: false })
+    const build = mock(async () => ({ html: '<main>Execução remota</main>' }))
+    useProjectStore.setState({
+      project: {
+        id: 'live-pro',
+        kind: 'pro',
+        mode: 'code',
+        name: 'Oficina',
+        createdAt: 1,
+        updatedAt: 1,
+        files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+        ir: null,
+        blocksState: null,
+        installedExtensions: [],
+        tree: { 'index.html': { kind: 'file', content: '<main>Oficina</main>' } },
+        proMeta: { templateId: 'vanilla-js', devScript: 'dev' },
+      },
+    })
+    try {
+      const view = render(
+        <StudioProRuntimeProvider value={{ build }}>
+          <Harness />
+        </StudioProRuntimeProvider>,
+      )
+      await waitFor(() =>
+        expect(view.container.querySelector('iframe')?.srcdoc).toContain('Execução remota'),
+      )
+      expect(build).toHaveBeenCalledTimes(1)
+      expect(mountAttempts).toBe(0)
+      expect(installSpawned).toBe(false)
+    } finally {
+      if (descriptor) Object.defineProperty(globalThis, 'crossOriginIsolated', descriptor)
+      else Reflect.deleteProperty(globalThis, 'crossOriginIsolated')
+    }
   })
 
   it('switches only the game document while retaining the local dev-server and mounted controller', async () => {

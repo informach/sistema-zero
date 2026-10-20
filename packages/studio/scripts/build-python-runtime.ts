@@ -2,16 +2,19 @@ import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { canonicalJson } from '@sistemazero/core/creations'
+import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
 import { StudioPythonDistributionSchema } from '@sistemazero/core/studio/python-runtime-distribution'
 import { TURTLE_MODULE_FILES } from '../src/runtime/python/turtle/contract'
 import vendor from '../src/runtime/python/vendor-manifest.json'
 import { PYODIDE_VERSION, PYTHON_VERSION } from '../src/runtime/python/versions'
+import { checkPythonAudioMetadata } from './python/audio-metadata'
 import { derivePythonBootLoaders } from './python/derive-boot-loaders'
 import {
   createPythonHTTPRepresentations,
   PYTHON_HTTP_COMPRESSION_RECIPE,
 } from './python/http-representations'
 import { preparePythonStandardLibrary } from './python/prepare-stdlib'
+import { buildPythonProvidedModuleArtifacts } from './python/provided-modules'
 
 const root = resolve(import.meta.dirname, '../../..')
 const digest = (bytes: Uint8Array | string) => createHash('sha256').update(bytes).digest('hex')
@@ -25,6 +28,7 @@ export async function buildPythonRuntimeDistribution(
     standardLibrary?: { path: string; sha256: string; recipe: string }
   } = {},
 ) {
+  await checkPythonAudioMetadata()
   if (vendor.pythonVersion !== PYTHON_VERSION || vendor.pyodideVersion !== PYODIDE_VERSION)
     throw new Error('As versões do compilador e da distribuição Python não correspondem.')
   const vendorDirectory = resolve(
@@ -136,6 +140,7 @@ export async function buildPythonRuntimeDistribution(
         `Pyodide ${vendor.pyodideVersion}: https://github.com/pyodide/pyodide/tree/${vendor.pyodideVersion}`,
         `CPython ${vendor.pythonVersion}: https://github.com/python/cpython/tree/v${vendor.pythonVersion}`,
         'Turtle browser adaptation: licensed CPython 3.14.2 geometry/animation with a Sistema Zero Canvas backend. Recipe: packages/studio/scripts/turtle/derive.py. Tk 8.6.15 color table; see LICENSE-tk.txt. This is not the original Tkinter module.',
+        `Portable audio ${SZ_AUDIO_MODULE_DESCRIPTOR.importName} ${SZ_AUDIO_MODULE_DESCRIPTOR.version} is a separate Sistema Zero module, not part of the Python standard library or Turtle API. Browser requests use the captured session media service; desktop source exports declare their own native package dependencies. Source: packages/studio/src/runtime/python/audio.`,
         `Standard library packaging recipe: ${standardLibrary.recipe}; output SHA-256: ${standardLibrary.sha256}; input source archive remains pinned in vendor-manifest.json. Sources are preserved.`,
         'Pyodide loader modules use scoped lexical fetch injection, not a global fetch replacement. Recipe/tool/input/output hashes: boot-loader-derivation.json. Original vendor inputs remain pinned in vendor-manifest.json. Other vendor artifacts are unchanged.',
         'HTTP gzip representations are additional immutable transport artifacts, not replacements for logical files. Recipe: http-compression-recipe.json and packages/studio/scripts/python/http-representations.ts. Input/output relationships: distribution.httpRepresentations; hashes: distribution.files. Decoded content is verified before upload.',
@@ -147,12 +152,16 @@ export async function buildPythonRuntimeDistribution(
     'http-compression-recipe.json',
     new TextEncoder().encode(canonicalJson(PYTHON_HTTP_COMPRESSION_RECIPE)),
   )
+  const provided = await buildPythonProvidedModuleArtifacts(contents)
+  for (const [path, bytes] of provided.files) contents.set(path, bytes)
   const http = createPythonHTTPRepresentations(contents)
   for (const [path, bytes] of http.files) contents.set(path, bytes)
   const manifest = StudioPythonDistributionSchema.parse({
     version: 1,
     pyodideVersion: vendor.pyodideVersion,
     pythonVersion: vendor.pythonVersion,
+    providedModules: provided.modules,
+    previewHostAudioVersion: 1,
     ...(http.representations.length ? { httpRepresentations: http.representations } : {}),
     files: [...contents]
       .map(([path, bytes]) => ({ path, bytes: bytes.byteLength, sha256: digest(bytes) }))

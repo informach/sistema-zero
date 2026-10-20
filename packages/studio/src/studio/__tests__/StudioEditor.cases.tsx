@@ -1,7 +1,9 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, render, waitFor } from '@testing-library/react'
+import { act, cleanup, render, waitFor } from '@testing-library/react'
 import { createEmptyProject } from '#core'
+import type { ProjectStoreApi } from '../../state/projectStore'
 import { fakeUseStore } from '../../testing/fakeIdbStore'
+import type { StudioProRuntimeAdapter } from '../pro-runtime'
 
 // bun:test não isola module mocks por arquivo: captura o Shell real antes e
 // restaura no afterAll para não vazar o probe para os próximos arquivos.
@@ -22,11 +24,16 @@ mock.module('idb-keyval', () => ({
 
 const { useStudioConfig } = await import('../config')
 const { useStudioTutor } = await import('../tutor')
-const { useProjectStore } = await import('../../state/projectStore')
+const { useProjectStore, useProjectStoreApi } = await import('../../state/projectStore')
+const { useStudioProRuntime } = await import('../pro-runtime')
+let observedRuntime: StudioProRuntimeAdapter | null = null
+let observedStore: ProjectStoreApi | undefined
 
 // Shell vira um PROBE que lê a CONFIG resolvida da instância (renderiza DENTRO
 // dos providers do StudioCore).
 function ConfigProbe(): React.JSX.Element {
+  observedRuntime = useStudioProRuntime()
+  observedStore = useProjectStoreApi()
   const config = useStudioConfig()
   const tutor = useStudioTutor()
   const projectId = useProjectStore((s) => s.project?.id ?? '')
@@ -61,6 +68,34 @@ describe('StudioEditor', () => {
 
   afterEach(() => {
     cleanup()
+    observedStore = undefined
+    observedRuntime = null
+  })
+
+  it('replaces remote authority without reopening the document or replacing its store/draft', async () => {
+    const initial = createEmptyProject('runtime-lifetime', 'Rascunho')
+    const first: StudioProRuntimeAdapter = {
+      build: async () => ({ html: '<main>Primeiro</main>' }),
+    }
+    const second: StudioProRuntimeAdapter = {
+      build: async () => ({ html: '<main>Segundo</main>' }),
+    }
+    const view = render(
+      <StudioEditor initialProject={initial} persistence="none" proRuntime={first} />,
+    )
+    await waitFor(() =>
+      expect(view.getByTestId('config-probe').getAttribute('data-project')).toBe(initial.id),
+    )
+    const store = observedStore
+    if (!store) throw new Error('Expected the actual Studio instance store')
+    act(() => store.getState().setFile('script.js', 'console.log("rascunho não salvo")'))
+    const draft = store.getState().project
+    expect(observedRuntime === first).toBe(true)
+    view.rerender(<StudioEditor initialProject={initial} persistence="none" proRuntime={second} />)
+    expect(observedRuntime === second).toBe(true)
+    expect(observedStore === store).toBe(true)
+    expect(store.getState().project === draft).toBe(true)
+    expect(store.getState().isDirty).toBe(true)
   })
 
   it('abre com os defaults do editor (preview/console/extensões/export ON; terminal/IA/profissional OFF)', async () => {

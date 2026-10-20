@@ -39,6 +39,7 @@ export function RemoteProPreview({
   const [phase, setPhase] = useState<Phase>('building')
   const [compiled, setCompiled] = useState<{
     projectId: string
+    runtime: StudioProRuntimeAdapter
     result: StudioProRuntimeBuildResult
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -48,7 +49,12 @@ export function RemoteProPreview({
   const [builtRevision, setBuiltRevision] = useState<number | null>(null)
   const projectId = project?.id ?? null
   const currentRevision = project?.updatedAt ?? null
-  const result = compiled?.projectId === projectId ? compiled.result : null
+  const [revoked, setRevoked] = useState<StudioProRuntimeAdapter | null>(null)
+  const authorized = !runtime.signal?.aborted && revoked !== runtime
+  const result =
+    authorized && compiled?.projectId === projectId && compiled.runtime === runtime
+      ? compiled.result
+      : null
   const stale = currentRevision !== builtRevision
   const scope = captureProjectStorageScope()
   // biome-ignore lint/correctness/useExhaustiveDependencies: replace the captured backend on profile changes
@@ -64,25 +70,36 @@ export function RemoteProPreview({
     origin: active && result?.html ? 'null' : null,
   })
 
+  useEffect(() => {
+    const revoke = () => setRevoked(runtime)
+    if (runtime.signal?.aborted) revoke()
+    runtime.signal?.addEventListener('abort', revoke, { once: true })
+    return () => runtime.signal?.removeEventListener('abort', revoke)
+  }, [runtime])
+
   // `attempt` é o gatilho manual de recompilação. O snapshot vem do ref para
   // não recompilar automaticamente a cada tecla enquanto a criança edita.
   // biome-ignore lint/correctness/useExhaustiveDependencies: attempt dispara a recompilação manual
   useEffect(() => {
-    if (!started) return
+    if (!started || !authorized) return
     const snapshot = latestProjectRef.current
     if (snapshot?.kind !== 'pro' || snapshot.id !== projectId) return
     const controller = new AbortController()
+    const signal = runtime.signal
+      ? AbortSignal.any([controller.signal, runtime.signal])
+      : controller.signal
     const revision = snapshot.updatedAt
     setPhase('building')
     setError(null)
     setOutput('')
 
     void runtime
-      .build({ project: snapshot, signal: controller.signal })
+      .build({ project: snapshot, signal })
       .then((result) => {
-        if (controller.signal.aborted) return
+        if (signal.aborted) return
         setCompiled({
           projectId: snapshot.id,
+          runtime,
           result: result.artifact
             ? result
             : {
@@ -95,7 +112,7 @@ export function RemoteProPreview({
         setPhase('ready')
       })
       .catch((cause: unknown) => {
-        if (controller.signal.aborted) return
+        if (signal.aborted) return
         const runtimeError = cause as { message?: unknown; output?: unknown }
         setError(
           typeof runtimeError?.message === 'string'
@@ -107,7 +124,7 @@ export function RemoteProPreview({
       })
 
     return () => controller.abort()
-  }, [projectId, attempt, runtime, started])
+  }, [projectId, attempt, runtime, started, authorized])
 
   useEffect(() => {
     if (!active) return
@@ -133,6 +150,9 @@ export function RemoteProPreview({
   }
 
   if (!active) return null
+
+  if (!authorized)
+    return <PreviewOverlay>A autoria mudou. Aguarde a sincronização para executar.</PreviewOverlay>
 
   if (result) {
     return (

@@ -110,6 +110,44 @@ describe('o adaptador do studio-runtime', () => {
     expect((await ctx.run()).results[0]?.passed).toBe(true)
   })
 
+  test.each([
+    ['item nulo', [null]],
+    ['veredito ausente', [{ id: 'anda' }]],
+    ['veredito texto', [{ id: 'anda', passed: 'false' }]],
+    [
+      'IDs duplicados',
+      [
+        { id: 'anda', passed: false },
+        { id: 'anda', passed: true },
+      ],
+    ],
+    [
+      'ID extra não solicitado',
+      [
+        { id: 'anda', passed: true },
+        { id: 'estranho', passed: true },
+      ],
+    ],
+    ['motivo fora do contrato', [{ id: 'anda', passed: false, detail: 7 }]],
+  ])('Runtime200 com %s é indisponível, não falso nem cache', async (_name, results) => {
+    const ctx = setup(() => Response.json({ ok: true, results }))
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const failure = await ctx.run().then(
+        () => undefined,
+        (error: unknown) => error,
+      )
+      expect(failure).toBeInstanceOf(ProjectCheckUnavailableError)
+    }
+    expect(ctx.bodies).toHaveLength(2)
+  })
+
+  test('false boolean continua conclusivo e pode ser reutilizado sem uma nova execução', async () => {
+    const ctx = setup(() => ok(false))
+    expect((await ctx.run()).results).toEqual([{ id: 'anda', passed: false, detail: 'viu' }])
+    expect((await ctx.run()).results[0]?.passed).toBe(false)
+    expect(ctx.bodies).toHaveLength(1)
+  })
+
   test('muitos testes seguidos e pedido recusado têm frases próprias', async () => {
     await expect(
       setup(() =>

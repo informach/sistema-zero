@@ -1,4 +1,9 @@
-import type { StudioExecutionIdentity, StudioRuntimeEvent, StudioRuntimeSession } from '../types'
+import type {
+  StudioExecutionIdentity,
+  StudioHostAudioPreference,
+  StudioRuntimeEvent,
+  StudioRuntimeSession,
+} from '../types'
 import { createPythonConsoleBuffer } from './consoleBuffer'
 import { preparePythonFrameSession } from './session'
 import { standalonePythonFrameURL } from './standaloneRuntime'
@@ -19,7 +24,15 @@ export interface StandalonePythonPlayerObserver {
   failed?(error: unknown): void
 }
 
-async function mount(moduleURL: string, observer: Readonly<StandalonePythonPlayerObserver>) {
+interface StandalonePythonHost {
+  hostAudio?(signal: AbortSignal): Promise<StudioHostAudioPreference>
+}
+
+async function mount(
+  moduleURL: string,
+  observer: Readonly<StandalonePythonPlayerObserver>,
+  host: Readonly<StandalonePythonHost>,
+) {
   const observe = (callback: () => void) => {
     try {
       callback()
@@ -149,6 +162,8 @@ async function mount(moduleURL: string, observer: Readonly<StandalonePythonPlaye
   )
 
   // Verified once; every restart gets a fresh worker, frame, challenge and identity.
+  const hostAudio = await host.hostAudio?.(lifetime.signal)
+  lifetime.signal.throwIfAborted()
   const payload = await loadPythonWebPayload(directory, lifetime.signal)
   lifetime.signal.throwIfAborted()
   title.textContent = document.title = payload.name
@@ -159,6 +174,7 @@ async function mount(moduleURL: string, observer: Readonly<StandalonePythonPlaye
   )
   async function run() {
     if (lifetime.signal.aborted) return
+    start.textContent = 'Reiniciar'
     const token = generation + 1
     dispose()
     if (lifetime.signal.aborted || generation !== token) return
@@ -183,6 +199,7 @@ async function mount(moduleURL: string, observer: Readonly<StandalonePythonPlaye
         frame,
         frameURL,
         snapshot,
+        hostAudio,
         signal: AbortSignal.any([lifetime.signal, current.controller.signal]),
         identity: {
           projectId: snapshot.projectId,
@@ -243,19 +260,26 @@ async function mount(moduleURL: string, observer: Readonly<StandalonePythonPlaye
     }
   }
   start.disabled = false
-  await run()
+  if (
+    snapshot.files.some((file) => file.kind === 'asset' && file.path.toLowerCase().endsWith('.wav'))
+  ) {
+    start.textContent = 'Jogar'
+    status.textContent = 'Clique em Jogar para começar com som'
+  } else await run()
 }
 
 /** Bootstrap uses the trusted module URL; payloads contain no runtime/source URLs. */
 export function startStandalonePythonPlayer(
   moduleURL: string,
   rawObserver: StandalonePythonPlayerObserver = {},
+  rawHost: StandalonePythonHost = {},
 ) {
   const observer = Object.freeze({ ...rawObserver })
+  const host = Object.freeze({ ...rawHost })
   let mountGeneration = 0
   function startMount() {
     const generation = ++mountGeneration
-    void mount(moduleURL, observer).catch((error: unknown) => {
+    void mount(moduleURL, observer, host).catch((error: unknown) => {
       if (generation !== mountGeneration) return
       try {
         observer.failed?.(error)

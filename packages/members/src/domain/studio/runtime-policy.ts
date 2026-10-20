@@ -11,6 +11,13 @@ import { createStudioProjectPolicy } from './project-policy'
 import type { StudioRuntimeHosts } from './runtime-hosts'
 
 export interface StudioRuntimePolicy {
+  /** Saved JS Pro builds have no Python frame; the BFF separately requires compiler config. */
+  authorizeProBuild(input: {
+    project: StudioRuntimeSubject
+    operation: 'execute'
+    curation: StudioProjectCuration
+    grantedCapabilities: readonly StudioProjectCapability[]
+  }): void
   authorize(input: {
     project: StudioRuntimeSubject
     operation: StudioRuntimeOperation
@@ -36,6 +43,28 @@ export async function createStudioRuntimePolicy(
 ): Promise<StudioRuntimePolicy> {
   const policy = await createStudioProjectPolicy(catalog)
   return {
+    authorizeProBuild({ project, operation, ...access }) {
+      if (
+        operation !== 'execute' ||
+        project.programmingLanguage !== 'javascript' ||
+        project.kind !== 'pro'
+      )
+        throw new AccessDeniedError('Esta operação precisa de um projeto JavaScript Pro.')
+      const result = policy.resolve(project, {
+        ...access,
+        hostOperations: [
+          { capability: 'edit', state: 'available' },
+          { capability: 'execute', state: 'available' },
+          { capability: 'export-source', state: 'available' },
+        ],
+      })
+      if (
+        result.releaseStatus === 'revoked' ||
+        !result.capabilities.includes('execute') ||
+        result.extensionIds.length !== project.installedExtensions.length
+      )
+        throw new AccessDeniedError('Este projeto ou ambiente não está autorizado para execução.')
+    },
     authorize({ project, operation, allowReadOnlyAnalysis = false, ...access }) {
       if (allowReadOnlyAnalysis && operation !== 'analyze')
         throw new AccessDeniedError('A observação permite somente analisar o código.')
