@@ -103,18 +103,38 @@ export function adultJourneyPosition(
   return { position: index + 1, total, stageId: stage?.id ?? null, title: stage?.title ?? null }
 }
 
-/** Exige as etapas anteriores e os marcos reais; XP e licença não substituem conclusão. */
+/**
+ * A posição mais alta que a pessoa já alcançou é um PISO: nunca volta, mesmo que a política mude
+ * depois (curso novo numa etapa já concluída, etapa nova no começo). Entra só um inteiro válido
+ * (>= 1); qualquer outra coisa é "sem piso".
+ */
+export function normalizeAdultJourneyFloor(reached: number | null | undefined): number {
+  return typeof reached === 'number' && Number.isInteger(reached) && reached > 1 ? reached : 1
+}
+
+/**
+ * Exige as etapas anteriores e os marcos reais; XP e licença não substituem conclusão.
+ *
+ * `reachedPosition` é o piso gravado (a posição mais alta já alcançada). As etapas ABAIXO dele
+ * aparecem concluídas (sem `missing`) e contam como anteriores concluídas para a seguinte; a posição
+ * resultante é `max(calculada, piso)`, limitada a `stages.length + 1`. O piso NÃO concede
+ * capacidade: elas vêm só da conclusão real e do que já foi congelado (`frozen`), para que uma etapa
+ * nova inserida abaixo do piso nunca libere ferramenta (por exemplo IA sem curso avançado).
+ */
 export function projectAdultJourney(
   policy: AdultJourneyPolicy,
   version: number,
   milestones: readonly AdultCourseMilestone[],
   frozen: readonly AdultCreatorCapability[] = [],
+  reachedPosition: number | null = null,
 ): AdultJourneyView {
   const byCourse = new Map(milestones.map((milestone) => [milestone.courseId, milestone]))
   const earned = new Set(frozen)
+  const floor = normalizeAdultJourneyFloor(reachedPosition)
   let previousComplete = true
-  const stages = policy.stages.map((stage) => {
-    const missing = stage.requirements
+  const stages = policy.stages.map((stage, index) => {
+    const belowFloor = index + 1 < floor
+    const realMissing = stage.requirements
       .filter((requirement) => {
         const milestone = byCourse.get(requirement.courseId)
         return (
@@ -122,9 +142,10 @@ export function projectAdultJourney(
         )
       })
       .map((requirement) => ({ ...requirement }))
-    const available = previousComplete
-    const completed = available && missing.length === 0
-    if (completed) for (const capability of stage.capabilities) earned.add(capability)
+    const available = belowFloor || previousComplete
+    const reallyCompleted = available && realMissing.length === 0
+    if (reallyCompleted) for (const capability of stage.capabilities) earned.add(capability)
+    const completed = belowFloor || reallyCompleted
     previousComplete = completed
     return {
       id: stage.id,
@@ -132,7 +153,7 @@ export function projectAdultJourney(
       completed,
       available,
       requirements: stage.requirements.map((requirement) => ({ ...requirement })),
-      missing,
+      missing: belowFloor ? [] : realMissing,
       capabilities: [...stage.capabilities],
     }
   })

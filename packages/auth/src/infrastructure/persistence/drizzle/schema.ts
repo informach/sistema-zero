@@ -341,6 +341,22 @@ export const profileVoiceInputEvents = auth.table(
 )
 
 /**
+ * Dedupe do aviso "o perfil completou 18 anos" (e-mail `profile-turned-18` ao responsável):
+ * uma linha por perfil, PARA SEMPRE — o PK garante no máximo um aviso. Gravada pelo job
+ * DEPOIS do envio. Só registro: o perfil continua funcionando igual (nunca é cortado).
+ * `account_user_id` é snapshot da conta que recebeu; sai com o perfil (FK em cascata).
+ */
+export const profileAdultNotices = auth.table('profile_adult_notices', {
+  profileId: uuid('profile_id')
+    .primaryKey()
+    .references(() => profiles.id, { onDelete: 'cascade' }),
+  accountUserId: uuid('account_user_id').notNull(),
+  /** 18º aniversário (dia civil). */
+  turnedAdultOn: date('turned_adult_on', { mode: 'string' }).notNull(),
+  notifiedAt: timestamp('notified_at', { withTimezone: true }).notNull(),
+})
+
+/**
  * Trilha de auditoria de AÇÕES ADMINISTRATIVAS (quem fez o quê, quando, de onde).
  * Alimentada pelo GATEWAY (único ponto que autentica o ator e vê toda mutação admin):
  * após uma rota admin MUTANTE responder com sucesso, o gateway emite um registro S2S
@@ -538,5 +554,6 @@ export const schema = {
   profiles,
   profileAdmissions,
   profileVoiceInputEvents,
+  profileAdultNotices,
   auditLogs,
 }

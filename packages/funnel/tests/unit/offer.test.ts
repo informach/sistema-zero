@@ -25,6 +25,19 @@ describe('resolução de oferta (100% por env, com compat de lead legado)', () =
     expect(resolve('kids/comunidade-dos-criadores').offerSlug).toBe('oferta-comunidade-mensal')
   })
 
+  test('a cobrança da Comunidade adulta leva "(adultos)": é o que separa adulto de Kids em Compras', () => {
+    const resolve = makeResolveOffer({
+      offerByFunnel: {
+        'pro/comunidade-dos-criadores': 'comunidade-dos-criadores-adulto-mensal',
+        'kids/comunidade-dos-criadores': 'oferta-comunidade-mensal',
+      },
+    } as unknown as Env)
+    expect(resolve('pro/comunidade-dos-criadores').productName).toBe(
+      'Comunidade dos Criadores (adultos)',
+    )
+    expect(resolve('kids/comunidade-dos-criadores').productName).toBe('Comunidade dos Criadores')
+  })
+
   test('funil nulo é legado e cai no default; funil desconhecido → lança', () => {
     const resolve = makeResolveOffer(env)
     expect(resolve(null).offerSlug).toBe('oferta-nci')

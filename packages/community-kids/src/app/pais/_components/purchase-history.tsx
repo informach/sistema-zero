@@ -1,14 +1,19 @@
 'use client'
 
+import {
+  comebackSubscriptionId,
+  isKidsComunidadeSubscription,
+} from '@sistemazero/member-shell/lib/subscription-comeback'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { CreditCard, Receipt, ShieldCheck } from 'lucide-react'
+import { ArrowUpRight, CreditCard, Receipt, ShieldCheck } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { apiGet, apiSend } from '@/lib/api'
 import { formatCentsStr } from '@/lib/format'
+import { comunidadeContinuarUrl } from '@/lib/links'
 import {
   type MySubscriptionView,
   nextChargeDate,
@@ -28,6 +33,18 @@ function formatDay(value: Date | string): string {
     year: 'numeric',
     timeZone: 'America/Sao_Paulo',
   })
+}
+
+/**
+ * O período já pago de uma assinatura cancelada ainda não terminou: a última cobrança (ou a
+ * criação) mais um intervalo. A data é derivada, como a da próxima cobrança (`nextChargeDate`).
+ */
+function paidPeriodRunning(subscription: MySubscriptionView, now: Date): boolean {
+  if (subscription.status !== 'CANCELED') return false
+  const end = new Date(subscription.lastChargeAt ?? subscription.createdAt)
+  if (Number.isNaN(end.getTime())) return false
+  end.setMonth(end.getMonth() + subscription.intervalMonths)
+  return end > now
 }
 
 const DIALOG_ACTIONS =
@@ -152,6 +169,10 @@ export function ParentSubscriptions() {
   }
 
   if (subs.length === 0) return null
+  // Só a Comunidade Kids Encerrada mais recente leva à continuidade, e nenhuma com outra ativa
+  // (régua do member-shell). A Cancelada ainda tem acesso: o botão ali faria pagar duas vezes.
+  const comebackId = comebackSubscriptionId(subs, isKidsComunidadeSubscription)
+  const now = new Date()
 
   return (
     <>
@@ -188,6 +209,11 @@ export function ParentSubscriptions() {
                 {next ? ` · próxima cobrança por volta de ${formatDay(next)}` : null}
               </span>
             </p>
+            {paidPeriodRunning(subscription, now) ? (
+              <p className="text-muted-foreground text-sm">
+                O acesso continua até o fim do período já pago.
+              </p>
+            ) : null}
             {active ? (
               <button
                 type="button"
@@ -196,6 +222,15 @@ export function ParentSubscriptions() {
               >
                 Cancelar assinatura
               </button>
+            ) : subscription.id === comebackId ? (
+              <a
+                href={comunidadeContinuarUrl('pais-assinatura')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${SECONDARY_ACTION} self-start`}
+              >
+                Ver como continuar <ArrowUpRight className="size-4" aria-hidden="true" />
+              </a>
             ) : null}
           </section>
         )

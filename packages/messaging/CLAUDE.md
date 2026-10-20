@@ -343,3 +343,20 @@ Templates `referrals-campaign-welcome` (conta nova, link de senha) e `referrals-
 ## Acesso infantil por aparelho (10/10/2026)
 
 Templates do Kids, todos com `nome` + `link`: `kids-welcome` (conta nova, link de definir senha), `kids-new-access` (conta existente, link `<kids>/login/responsavel`) e `kids-access-transition` (aviso às famílias atuais de que a entrada mudou, link `<kids>/login/responsavel`), em e-mail e WhatsApp. A preparação do computador (`DEVICE_SETUP`) usa os rótulos reais da Área dos pais e começa por **Adicionar criança**, porque a conta nova nasce sem perfil. Funil e Referrals caem na chave antiga (`welcome`/`new-access`) quando o Messaging ainda responde 404 `TEMPLATE_NOT_FOUND` para a chave nova; os testes de contrato deles conferem as chaves neste seed. O `kids-access-transition` não tem chamador nem script de envio: lista de destinatários e horário dependem de decisão da dona. Não rodar o seed contra um ambiente para conferir a copy.
+
+## Fim do acesso e perfil que fez 18 anos (20/10/2026)
+
+Templates de e-mail (só e-mail), entram pelo `templates:seed` do deploy. Fim do acesso, enviados
+pelo MEMBERS (consumer `members`, `SendAccessEndedMessagesService`): `gift-expiry-2d`
+(`nome`+`data`+`link`, dois dias antes do fim do presente de 7 dias), `gift-expired`
+(`nome`+`link`, no dia), `subscription-ended-kids` e `subscription-ended-adult` (`nome`+`link`, no
+dia em que a assinatura da Comunidade venceu). `data` chega `dd/mm/aaaa` (São Paulo) e `link`
+chega pronto, com UTMs, para a página de continuidade Kids (`/kids/comunidade-dos-criadores/oferta/continuar`)
+ou adulta (`/pro/...`). `profile-turned-18` (`nome` do responsável + `nome_perfil` + `link` da área
+adulta) é enviado pelo AUTH. Light Copy (sem "!", travessão, pergunta, emoji, "carreira"); o teste
+`tests/access-ended-copy.test.ts` confere contrato, textos aprovados e essas regras na fonte.
+O presente é um CURSO + o Mural por tempo limitado, nunca a assinatura da Comunidade: os textos
+de `gift-*` falam em "presente do curso" e não citam a Comunidade (o teste confere). A volta da
+assinatura começa "no dia em que o pagamento é aprovado". O perfil Kids que fez 18 anos continua
+"enquanto a sua assinatura estiver ativa"; a conta adulta começa nova.
+

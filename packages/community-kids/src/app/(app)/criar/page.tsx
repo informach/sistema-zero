@@ -12,7 +12,7 @@ import { KidsPageHeader } from '@/components/kids/kids-page-header'
 import { KidsScene } from '@/components/kids/kids-scene'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { levelInfo } from '@/lib/level-info'
-import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
+import { comunidadeContinuarUrl } from '@/lib/links'
 import { TOOL_SIGNATURE } from '@/lib/tool-signature'
 import { getCreatorJourney } from '@/server/creator-journey'
 
@@ -61,7 +61,7 @@ export default async function CriarPage() {
             </p>
           )}
         </div>
-        <LiveCreationList membershipHref={COMUNIDADE_OFERTA_URL} />
+        <LiveCreationList membershipHref={comunidadeContinuarUrl('criar-oficinas-ao-vivo')} />
       </KidsBand>
 
       {earned.length ? (

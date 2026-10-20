@@ -226,3 +226,116 @@ test('missing or unavailable participant policy cannot fabricate Noob or empty-r
     loadPensaContext(members, PENSA_USER, PENSA_ACTOR, context.view.project.id, ''),
   ).rejects.toThrow('jornada')
 })
+
+function staffPreviewFacts(facts: Awaited<ReturnType<typeof previewFactsSource>>) {
+  facts.code.level = null
+  facts.code.kidsJourney = undefined
+  facts.code.kidsPreview = {
+    audience: 'kids',
+    kind: 'staff-preview',
+    mode: 'active',
+    policyVersion: 2,
+    tierAccess: initialKidsJourneyPolicy().tierAccess,
+    capabilities: ['studio', 'pro', 'bridge', 'ai', 'pensa', 'pinta', 'molda'],
+    readiness: { status: 'incomplete', horizon: 'noob', issues: [] },
+  }
+  facts.code.blocks = []
+  facts.code.access = { studio: false, pinta: false, molda: false }
+  return facts
+}
+async function previewFactsSource(context = pensaContext()) {
+  return (
+    await pensaContextMembers(context).pensaTeamCapabilities(PENSA_ACTOR, context.view.project.id)
+  ).body
+}
+
+test('staff in a Kids profile of its OWN account vouches the session and accepts the preview', async () => {
+  const context = pensaContext(),
+    members = pensaContextMembers(context)
+  // The Kids app forces staff into a profile: `PENSA_USER` is that student session, with the role kept.
+  const actor = { ...PENSA_ACTOR, privileged: true }
+  const user = { ...PENSA_USER, role: 'admin' }
+  const facts = staffPreviewFacts(await previewFactsSource(context))
+  const sent: unknown[] = []
+  members.pensaTeamCapabilities = async (...args) => {
+    sent.push(args[2])
+    return { status: 200, body: facts }
+  }
+  const actual = await loadPensaContext(members, user, actor, context.view.project.id, '')
+  expect(sent).toEqual([{ staffSession: 'own-account' }])
+  expect(actual.capabilities.participants[0]).toMatchObject({
+    rank: null,
+    studio: true,
+    pinta: true,
+    molda: true,
+    tutor: true,
+  })
+})
+
+test('a support session in a staff profile never vouches nor accepts the preview', async () => {
+  const context = pensaContext(),
+    members = pensaContextMembers(context)
+  const actor = { ...PENSA_ACTOR, privileged: true }
+  const facts = staffPreviewFacts(await previewFactsSource(context))
+  const sent: unknown[] = []
+  members.pensaTeamCapabilities = async (...args) => {
+    sent.push(args[2])
+    return { status: 200, body: facts }
+  }
+  const support = {
+    ...PENSA_USER,
+    role: 'staff',
+    kids: undefined,
+    act: { sub: pensaId(95), mode: 'readonly' as const },
+  }
+  await expect(
+    loadPensaContext(members, support, actor, context.view.project.id, ''),
+  ).rejects.toThrow('jornada')
+  // A profile of ANOTHER account, or an inactive staff member, does not vouch either.
+  const foreign = {
+    ...PENSA_USER,
+    role: 'staff',
+    activeProfile: { accountId: pensaId(96) },
+  }
+  await expect(
+    loadPensaContext(members, foreign, actor, context.view.project.id, ''),
+  ).rejects.toThrow('jornada')
+  await expect(
+    loadPensaContext(
+      members,
+      { ...PENSA_USER, role: 'staff', status: 'suspended' },
+      actor,
+      context.view.project.id,
+      '',
+    ),
+  ).rejects.toThrow('jornada')
+  expect(sent).toEqual([undefined, undefined, undefined])
+})
+
+test('a customer profile is unchanged: no vouch, real journey, preview refused', async () => {
+  const context = pensaContext(),
+    members = pensaContextMembers(context)
+  const sent: unknown[] = []
+  const real = await previewFactsSource(context)
+  members.pensaTeamCapabilities = async (...args) => {
+    sent.push(args[2])
+    return { status: 200, body: real }
+  }
+  const actual = await loadPensaContext(
+    members,
+    PENSA_USER,
+    PENSA_ACTOR,
+    context.view.project.id,
+    '',
+  )
+  expect(actual.capabilities.participants[0]?.rank).toBe('god')
+  const preview = staffPreviewFacts(await previewFactsSource(context))
+  members.pensaTeamCapabilities = async (...args) => {
+    sent.push(args[2])
+    return { status: 200, body: preview }
+  }
+  await expect(
+    loadPensaContext(members, PENSA_USER, PENSA_ACTOR, context.view.project.id, ''),
+  ).rejects.toThrow('jornada')
+  expect(sent).toEqual([undefined, undefined])
+})

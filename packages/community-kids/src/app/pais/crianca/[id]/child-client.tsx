@@ -1,21 +1,28 @@
 'use client'
 
+import { saoPauloDayKey } from '@sistemazero/core/time'
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
 import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
-import { computeAgeFromBirthDate } from '@sistemazero/member-shell/lib/user-display'
-import { ArrowLeft, Monitor, Pencil, Sparkles } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, CalendarDays, Monitor, Pencil, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { StudyDeviceManager } from '@/components/kids/study-device-manager'
 import { cn } from '@/lib/cn'
 import { levelInfo } from '@/lib/level-info'
+import { areaAdultaContinuarUrl } from '@/lib/links'
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
+import { profileAgeOn } from '@/lib/profile-age'
 import { grantIsLive } from '@/lib/study-access-view'
 import type { ProfileView } from '@/lib/types'
 import { ChildProgress } from '../../_components/child-progress'
 import { ParentShell } from '../../_components/parent-shell'
-import { LevelChip, SECONDARY_ACTION } from '../../_components/parent-ui'
+import { LevelChip, PRIMARY_ACTION, SECONDARY_ACTION } from '../../_components/parent-ui'
+import {
+  archiveProfile,
+  RemoveProfileDialog,
+  showProfileActionError,
+} from '../../_components/remove-profile'
 import { statsFor, useChildrenStats } from '../../_components/use-children-stats'
 import { childEditHref, familyHref, studentEntryFor } from '../../parent-routes'
 
@@ -58,7 +65,21 @@ export function ChildClient({
   const stats = useChildrenStats()
   const child = statsFor(stats, profile.id)
   const level = child?.career ? levelInfo(child.career.level) : null
-  const age = computeAgeFromBirthDate(profile.birthDate)
+  // O dia de São Paulo, igual no servidor e no navegador: a idade não muda na hidratação.
+  const age = profileAgeOn(profile.birthDate, saoPauloDayKey())
+  const [removing, setRemoving] = useState(false)
+  const [archiving, setArchiving] = useState(false)
+  /** O mesmo arquivamento do editor (com a mesma confirmação): a vaga do plano volta. */
+  async function archive() {
+    setArchiving(true)
+    try {
+      await archiveProfile(profile.id)
+      window.location.assign('/pais')
+    } catch (error) {
+      showProfileActionError(error)
+      setArchiving(false)
+    }
+  }
   const reported = useRef(familyReady !== false)
   const onGrants = useCallback((_profileId: string, grants: StudyGrantView[]) => {
     // A família não tinha nenhum acesso vivo e agora tem: é o passo que o guia dos pais espera.
@@ -151,6 +172,46 @@ export function ChildClient({
           <Pencil className="size-4" aria-hidden="true" /> Editar perfil
         </Link>
       </section>
+      {age !== null && age >= 18 ? (
+        // O perfil Kids não é cortado aos 18 (regra aprovada): ele segue funcionando, e a área
+        // adulta passa a existir como caminho, com conta própria.
+        <section aria-label="Aviso dos 18 anos" className="kids-carta flex flex-col gap-4 p-6">
+          <p className="font-medium text-[0.9375rem]">
+            {profile.name} fez 18 anos. O perfil Kids continua funcionando enquanto a sua assinatura
+            estiver ativa, com os projetos que já estão aqui. Agora {profile.name} também pode ter
+            uma conta própria na área adulta, que começa nova e usa o mesmo Estúdio.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href={areaAdultaContinuarUrl('pais-perfil-18')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={PRIMARY_ACTION}
+            >
+              Conhecer a área adulta <ArrowUpRight className="size-4" aria-hidden="true" />
+            </a>
+            <button type="button" className={SECONDARY_ACTION} onClick={() => setRemoving(true)}>
+              Arquivar perfil
+            </button>
+          </div>
+        </section>
+      ) : null}
+      {profile.birthDate ? null : (
+        // Opcional e discreto: só serve para a plataforma avisar dos 18 anos.
+        <p className="flex flex-wrap items-center gap-x-2 text-muted-foreground text-sm">
+          <CalendarDays className="size-4 shrink-0" aria-hidden="true" />
+          <span>
+            Informe a data de nascimento para a plataforma avisar você quando {profile.name}{' '}
+            completar 18 anos.
+          </span>
+          <Link
+            href={childEditHref(profile.id)}
+            className="inline-flex min-h-11 items-center font-bold text-primary underline-offset-4 hover:underline"
+          >
+            Informar a data
+          </Link>
+        </p>
+      )}
       {/* No celular as duas abas dividem a largura (o rótulo longo quebra dentro da aba, não a
           fileira); do `sm` em diante, a pílula de sempre. */}
       <div
@@ -206,6 +267,13 @@ export function ChildClient({
       >
         <ChildProgress profileId={profile.id} stats={stats} />
       </div>
+      <RemoveProfileDialog
+        name={profile.name}
+        open={removing}
+        busy={archiving}
+        onCancel={() => setRemoving(false)}
+        onConfirm={() => void archive()}
+      />
     </ParentShell>
   )
 }

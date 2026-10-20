@@ -167,6 +167,44 @@ describe('formulário do primeiro perfil', () => {
     )
   })
 
+  it('perfil sem data que já é adulto: a recusa da data diz que o perfil continua', () => {
+    const onSave = mock(() => {})
+    const { container } = render(
+      <ProfileForm
+        editing={{
+          mode: 'edit',
+          profile: {
+            id: '11111111-1111-4111-8111-111111111111',
+            name: 'Sofia',
+            avatarUrl: null,
+            whatsapp: null,
+            birthDate: null,
+            publicProfileEnabled: false,
+            sortOrder: 0,
+          },
+        }}
+        busy={false}
+        onCancel={() => {}}
+        onSave={onSave}
+        onArchive={() => {}}
+      />,
+    )
+    fireEvent.change(screen.getByLabelText('Data de nascimento da criança (opcional)'), {
+      target: { value: '2000-01-01' },
+    })
+    const form = container.querySelector('form')
+    if (!form) throw new Error('form semântico não renderizado')
+    fireEvent.submit(form)
+
+    expect(onSave).not.toHaveBeenCalled()
+    const alert = screen.getByRole('alert').textContent ?? ''
+    expect(alert).toContain(
+      'A plataforma só aceita datas de quem tem menos de 18 anos. O perfil continua funcionando.',
+    )
+    expect(alert).not.toContain('crianças')
+    expect(screen.getByRole('button', { name: 'Arquivar perfil' })).toBeTruthy()
+  })
+
   it('permite editar um perfil antigo que já completou 18 anos sem trocar o nascimento', () => {
     const onSave = mock(() => {})
     const { container } = render(

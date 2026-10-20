@@ -2781,6 +2781,23 @@ export const adultJourneyGrants = members.table(
   ],
 )
 
+/**
+ * Piso da jornada adulta: a posição mais alta que a pessoa já alcançou. Só sobe (`greatest` no
+ * upsert), gravado junto com o congelamento das capacidades; a leitura usa max(calculada, piso),
+ * então editar a política (curso novo numa etapa concluída) não faz ninguém voltar de etapa.
+ */
+export const adultJourneyReached = members.table(
+  'adult_journey_reached',
+  {
+    userId: uuid('user_id').primaryKey(),
+    position: integer('position').notNull(),
+    policyVersion: integer('policy_version').notNull(),
+    reachedAt: timestamp('reached_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [check('adult_journey_reached_position_check', sql`${table.position} >= 1`)],
+)
+
 // Canonical policy: initializing V0 is explicit; normal readers require published V>=1.
 export const kidsJourneyPolicy = members.table(
   'kids_journey_policy',
@@ -2969,6 +2986,7 @@ export const schema = {
   adultProfiles,
   adultJourneyPolicy,
   adultJourneyGrants,
+  adultJourneyReached,
   studioBuilderProjectDeletions,
   adultStudioBuilderProjectDeletions,
   studioBuilderJobs,

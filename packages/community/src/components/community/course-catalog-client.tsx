@@ -1,6 +1,7 @@
 'use client'
 
 import { SearchX } from 'lucide-react'
+import { lockedCourseLink } from '@/lib/continuity'
 import type { CatalogCourseView, CourseProgress } from '@/lib/types'
 import { useCatalogFilters } from '@/lib/use-catalog-filters'
 import { CatalogCourseCard } from './catalog-course-card'
@@ -10,15 +11,13 @@ interface Props {
   courses: CatalogCourseView[]
   /** Aulas feitas por curso, de Meus cursos (a barra do cartão). */
   progressBySlug: Record<string, CourseProgress>
-  /** Fallback da página de vendas (env FUNNEL_URL), resolvido no server. */
-  fallbackSalesUrl: string | null
 }
 
 /**
  * "Todos os cursos" (direção de arte de 18/10/2026): título com a contagem, a barra de filtros e a
  * grade de cartões deitados. Busca e filtros persistidos na URL (`?q=&acesso=&ordem=`).
  */
-export function CourseCatalogClient({ courses, progressBySlug, fallbackSalesUrl }: Props) {
+export function CourseCatalogClient({ courses, progressBySlug }: Props) {
   const { filters, filtered, setFilter, clearFilters, hasActiveFilters } =
     useCatalogFilters(courses)
   const count = hasActiveFilters
@@ -58,7 +57,7 @@ export function CourseCatalogClient({ courses, progressBySlug, fallbackSalesUrl 
               <CatalogCourseCard
                 course={course}
                 progress={progressBySlug[course.courseSlug] ?? null}
-                salesUrl={course.salesPageUrl ?? fallbackSalesUrl}
+                locked={lockedCourseLink(course.salesPageUrl)}
               />
             </li>
           ))}

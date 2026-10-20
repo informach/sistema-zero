@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { KidsRecado } from '../kids-recado'
-import { KidsScene } from '../kids-scene'
+import { KidsMascot } from '../mascot'
 
 /**
  * O members não respondeu. É o irmão do `KidsAccessUnavailable`, mas SEM a frase "se está
@@ -14,7 +14,9 @@ export function HelpUnavailable() {
   const router = useRouter()
   return (
     <KidsRecado
-      art={<KidsScene name="alivio" className="kid-float w-40" />}
+      // Zappy pensativo, como no `KidsAccessUnavailable` e nas outras telas de "a gente
+      // tropeçou": a cena `alivio` (sorriso com coração) contradizia o recado de problema.
+      art={<KidsMascot expression="thinking" className="kid-float size-24" />}
       title="Como fazer"
       actions={
         <button type="button" onClick={() => router.refresh()} className="sz-btn-gradient">

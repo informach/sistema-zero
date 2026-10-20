@@ -288,10 +288,19 @@ export function createPensaClient(
     pensaCheckpoints(id: string) {
       return publicProject<PensaCheckpoint[]>(id, '/checkpoints')
     },
-    pensaTeamCapabilities(actor: PensaActor, id: string) {
+    /**
+     * `staffSession: 'own-account'` vouches (HMAC) that a privileged actor is in a profile of
+     * its OWN account without impersonation; Members then gives that profile the team preview.
+     * Only `loadPensaContext` decides it, from the session; omitted otherwise.
+     */
+    pensaTeamCapabilities(
+      actor: PensaActor,
+      id: string,
+      session?: { staffSession: 'own-account' },
+    ) {
       return gw.gatewayFetchHmac<PensaContextFacts>(`${internal(id)}/context`, {
         method: 'POST',
-        body: { actor },
+        body: session ? { actor, staffSession: session.staffSession } : { actor },
       })
     },
     pensaProtect(

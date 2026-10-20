@@ -1,6 +1,7 @@
 import { StudioProClient } from '@sistemazero/member-shell/components/creator/studio-pro-client'
 import { redirect } from 'next/navigation'
 import { ToolNotice } from '@/components/community/tool-notice'
+import { toolLock } from '@/lib/tool-lock'
 import { getCreativeToolsState } from '@/server/creative-tools'
 import { getAdultCreatorServices } from '@/server/creator-services'
 export const dynamic = 'force-dynamic'
@@ -16,12 +17,13 @@ export default async function AdultProPage({
   if (state.kind !== 'ready')
     return (
       <ToolNotice
-        name="Estúdio Pro"
+        tool="estudio-pro"
         unavailable={state.kind === 'unavailable'}
         readOnly={state.kind === 'readonly'}
       />
     )
-  if (!state.studioAvailable || !state.tier.pro) return <ToolNotice name="Estúdio Pro" />
+  if (!state.studioAvailable || !state.tier.pro)
+    return <ToolNotice tool="estudio-pro" lock={toolLock('estudio-pro', state)} />
   const services = await getAdultCreatorServices()
   return (
     <StudioProClient

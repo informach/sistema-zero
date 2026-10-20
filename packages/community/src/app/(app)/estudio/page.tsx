@@ -1,6 +1,7 @@
 import { StudioFullClient } from '@sistemazero/member-shell/components/creator/studio-full-client'
 import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import { ToolNotice } from '@/components/community/tool-notice'
+import { toolLock } from '@/lib/tool-lock'
 import { getCreativeToolsState } from '@/server/creative-tools'
 import { getAdultCreatorServices } from '@/server/creator-services'
 import { shell } from '@/server/shell'
@@ -20,12 +21,12 @@ export default async function StudioPage({
   if (state.kind !== 'ready')
     return (
       <ToolNotice
-        name="Estúdio"
+        tool="estudio"
         unavailable={state.kind === 'unavailable'}
         readOnly={state.kind === 'readonly'}
       />
     )
-  if (!state.studioAvailable) return <ToolNotice name="Estúdio" />
+  if (!state.studioAvailable) return <ToolNotice tool="estudio" lock={toolLock('estudio', state)} />
   const services = await getAdultCreatorServices()
   return (
     <StudioFullClient

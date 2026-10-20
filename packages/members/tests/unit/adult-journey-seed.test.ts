@@ -3,10 +3,13 @@ import { randomUUID } from 'node:crypto'
 import { adultJourneyPosition, projectAdultJourney } from '@sistemazero/core/journey'
 import { AdultJourneyService } from '../../src/application/adult-journey/adult-journey.service'
 import {
+  ADULT_JOURNEY_STANDALONE_COURSE_SLUGS,
   ADULT_JOURNEY_TEMPLATE,
   buildAdultJourneySeed,
   type SeedCourse,
 } from '../../src/application/adult-journey/adult-journey-seed'
+import { parseAdultJourneySeedArgs } from '../../src/application/adult-journey/adult-journey-seed-args'
+import { runAdultJourneySeedOnce } from '../../src/application/adult-journey/adult-journey-seed-once'
 import type { Course } from '../../src/domain/course/course'
 import { InMemoryAdultJourneyRepository } from '../fakes/adult-journey-in-memory'
 
@@ -133,4 +136,135 @@ test('a validação do Admin aceita o plano montado (IA na etapa avançada)', as
   const saved = await service.configure(plan.policy, 0)
   expect(saved.version).toBe(1)
   expect((await service.policy()).policy.stages).toHaveLength(7)
+})
+
+test('produto avulso (No Comando da IA) nunca vira requisito de etapa, mesmo com nível e trilha', () => {
+  expect(ADULT_JOURNEY_STANDALONE_COURSE_SLUGS).toContain('no-comando-da-ia')
+  const standalone = course('iniciante', '2d', {
+    slug: 'no-comando-da-ia',
+    title: 'No Comando da IA',
+  })
+  const plan = buildAdultJourneySeed([...fullCatalog, standalone])
+  const required = plan.policy.stages.flatMap((stage) => stage.requirements.map((r) => r.courseId))
+  expect(required).not.toContain(standalone.id)
+  expect(plan.policy.stages[1]?.requirements).toHaveLength(2)
+  expect(plan.excluded).toEqual([{ slug: 'no-comando-da-ia', title: 'No Comando da IA' }])
+  // Sozinho no nível, não segura a etapa: o plano para antes dela.
+  const onlyStandalone = buildAdultJourneySeed([course('primeiros-passos', '2d'), standalone])
+  expect(onlyStandalone.stoppedAt?.tier).toBe('iniciante-2d')
+  expect(buildAdultJourneySeed(fullCatalog).excluded).toEqual([])
+})
+
+function seedOnceHarness(catalog: readonly SeedCourse[]) {
+  const byId = new Map(catalog.map((item) => [item.id, item]))
+  const repository = new InMemoryAdultJourneyRepository({ events: [] })
+  const service = new AdultJourneyService(
+    repository,
+    {
+      findCourseById: async (id: string) => (byId.get(id) as unknown as Course | undefined) ?? null,
+    },
+    () => new Date('2026-10-20T12:00:00Z'),
+  )
+  const logs: { level: string; event: string; context?: Record<string, unknown> }[] = []
+  const run = () =>
+    runAdultJourneySeedOnce({
+      service,
+      listCourses: async () => catalog,
+      listShowcaseCourseIds: async () => [],
+      logger: {
+        info: (event, context) => logs.push({ level: 'info', event, context }),
+        warn: (event, context) => logs.push({ level: 'warn', event, context }),
+      },
+    })
+  return { repository, service, logs, run }
+}
+
+test('seed automático: grava quando não há política e vira no-op depois', async () => {
+  const standalone = course('iniciante', '2d', { slug: 'no-comando-da-ia' })
+  const h = seedOnceHarness([...fullCatalog, standalone])
+  expect(await h.run()).toEqual({ status: 'applied', version: 1, stages: 7, partial: false })
+  expect(h.repository.record?.policy.stages).toHaveLength(7)
+  expect(JSON.stringify(h.repository.record)).not.toContain(standalone.id)
+  expect(h.logs.at(-1)?.event).toBe('adult_journey_seed.applied')
+  expect(await h.run()).toEqual({ status: 'skipped', reason: 'already-configured' })
+  expect(h.logs.at(-1)?.context?.detail).toBe('política já configurada, seed ignorado')
+  expect(h.repository.record?.version).toBe(1)
+})
+
+test('seed automático: política do Admin fica byte a byte igual', async () => {
+  const h = seedOnceHarness(fullCatalog)
+  const admin = {
+    schemaVersion: 1 as const,
+    stages: [
+      {
+        id: 'so-um',
+        title: 'Só um',
+        requirements: [{ courseId: at(3).id, milestone: 'showcase' as const }],
+        capabilities: ['studio' as const],
+      },
+    ],
+  }
+  await h.service.configure(admin, 0)
+  await h.service.configure(admin, 1)
+  const before = JSON.stringify(h.repository.record)
+  expect(await h.run()).toEqual({ status: 'skipped', reason: 'already-configured' })
+  expect(JSON.stringify(h.repository.record)).toBe(before)
+})
+
+test('seed automático: sem curso no primeiro nível, só registra e tenta no próximo boot', async () => {
+  const h = seedOnceHarness(fullCatalog.slice(1))
+  expect(await h.run()).toEqual({ status: 'skipped', reason: 'no-courses' })
+  expect(h.repository.record).toBeNull()
+  expect(h.logs.at(-1)?.level).toBe('warn')
+  // Publicado o curso do primeiro nível, o próximo boot grava.
+  const later = seedOnceHarness(fullCatalog)
+  expect((await later.run()).status).toBe('applied')
+})
+
+test('seed automático: plano parcial grava só as etapas com curso e não abre ferramenta das que faltam', async () => {
+  const h = seedOnceHarness([course('primeiros-passos', '2d'), course('iniciante', '2d')])
+  expect(await h.run()).toEqual({ status: 'applied', version: 1, stages: 2, partial: true })
+  const policy = h.repository.record?.policy
+  expect(policy?.stages.map((stage) => stage.id)).toEqual(['aprendiz', 'construtor'])
+  expect(policy?.stages.every((stage) => stage.requirements.length > 0)).toBe(true)
+  // Sem nada concluído, nenhuma ferramenta; mesmo concluindo tudo, só as das etapas gravadas.
+  expect(projectAdultJourney(policy!, 1, []).capabilities).toEqual([])
+  const all = policy!.stages.flatMap((stage) =>
+    stage.requirements.map((r) => ({ courseId: r.courseId, completed: true, showcased: true })),
+  )
+  expect(projectAdultJourney(policy!, 1, all).capabilities).toEqual(['studio', 'pinta'])
+})
+
+test('seed automático: falha de leitura nunca derruba o boot', async () => {
+  const h = seedOnceHarness(fullCatalog)
+  const outcome = await runAdultJourneySeedOnce({
+    service: h.service,
+    listCourses: async () => {
+      throw new Error('banco fora')
+    },
+    listShowcaseCourseIds: async () => [],
+    logger: { info: () => {}, warn: () => {} },
+  })
+  expect(outcome).toEqual({ status: 'skipped', reason: 'error' })
+})
+
+test('argumentos do journey:seed-adult: --once com --milestone é erro explícito', () => {
+  expect(parseAdultJourneySeedArgs([])).toEqual({
+    once: false,
+    apply: false,
+    force: false,
+    allowPartial: false,
+    milestone: 'auto',
+  })
+  expect(parseAdultJourneySeedArgs(['--apply', '--milestone=complete']).milestone).toBe('complete')
+  expect(parseAdultJourneySeedArgs(['--milestone', 'showcase']).milestone).toBe('showcase')
+  expect(parseAdultJourneySeedArgs(['--once', '--force']).once).toBe(true)
+  expect(() => parseAdultJourneySeedArgs(['--milestone='])).toThrow('--milestone=auto')
+  expect(() => parseAdultJourneySeedArgs(['--milestone', 'mural'])).toThrow('--milestone=auto')
+  for (const args of [
+    ['--once', '--milestone=complete'],
+    ['--once', '--milestone', 'showcase'],
+    ['--milestone=auto', '--once'],
+  ])
+    expect(() => parseAdultJourneySeedArgs(args)).toThrow('--once não aceita --milestone')
 })

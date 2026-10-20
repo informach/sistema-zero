@@ -13,6 +13,7 @@ import type { InMemoryGamificationRepository } from './in-memory'
 export class InMemoryAdultJourneyRepository implements AdultJourneyRepository {
   record: AdultJourneyPolicyRecord | null = null
   readonly grants = new Map<string, Set<AdultCreatorCapability>>()
+  readonly reached = new Map<string, number>()
   constructor(private readonly gamification: Pick<InMemoryGamificationRepository, 'events'>) {}
   async getPolicy() {
     return this.record ? structuredClone(this.record) : null
@@ -20,6 +21,11 @@ export class InMemoryAdultJourneyRepository implements AdultJourneyRepository {
   async savePolicy(policy: AdultJourneyPolicy, expectedVersion: number) {
     if ((this.record?.version ?? 0) !== expectedVersion) return null
     this.record = { version: expectedVersion + 1, policy: structuredClone(policy) }
+    return structuredClone(this.record)
+  }
+  async insertPolicyIfAbsent(policy: AdultJourneyPolicy) {
+    if (this.record) return null
+    this.record = { version: 1, policy: structuredClone(policy) }
     return structuredClone(this.record)
   }
   async listMilestones(userId: string): Promise<AdultCourseMilestone[]> {
@@ -45,15 +51,30 @@ export class InMemoryAdultJourneyRepository implements AdultJourneyRepository {
   async listGranted(userId: string) {
     return [...(this.grants.get(userId) ?? [])]
   }
+  async getReached(userId: string) {
+    return this.reached.get(userId) ?? null
+  }
+  async listReachedForUsers(userIds: readonly string[]) {
+    return new Map(
+      userIds.flatMap((userId) => {
+        const position = this.reached.get(userId)
+        return position === undefined ? [] : [[userId, position] as const]
+      }),
+    )
+  }
   async freezeGranted(
     userId: string,
     version: number,
     capabilities: readonly AdultCreatorCapability[],
+    _now?: Date,
+    reachedPosition: number | null = null,
   ) {
     if (this.record?.version !== version) return false
     const owned = this.grants.get(userId) ?? new Set<AdultCreatorCapability>()
     for (const capability of capabilities) owned.add(capability)
     this.grants.set(userId, owned)
+    if (reachedPosition !== null)
+      this.reached.set(userId, Math.max(this.reached.get(userId) ?? 1, reachedPosition))
     return true
   }
 }

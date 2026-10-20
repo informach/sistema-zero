@@ -10,6 +10,7 @@ import { MoldaClient } from '@/components/kids/molda-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import { moldaToolAccessFor } from '@/lib/molda-tool-access'
 import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
+import { toolEarnedInJourney, toolOpensAtLevel } from '@/lib/tool-opens-at'
 import {
   checkMoldaAccessReadonly,
   getGamificationReadonly,
@@ -46,7 +47,12 @@ export default async function MoldaPage() {
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
   if (res.status !== 200) return <ToolRouteRecado screen={KidsMoldaUnavailable} />
   const hasAccess = res.body?.access?.molda === true
-  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedMolda} />
+  if (!hasAccess) {
+    const lockedJourney = gam?.status === 200 ? kidsJourneyAccess(gam.body) : null
+    const opensAt = toolOpensAtLevel('molda', lockedJourney)
+    const earned = toolEarnedInJourney('molda', lockedJourney)
+    return <ToolRouteRecado screen={<KidsLockedMolda opensAt={opensAt} earned={earned} />} />
+  }
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsMoldaUnavailable} />
   const journey = kidsJourneyAccess(gam.body)
   if (!journey) return <ToolRouteRecado screen={KidsMoldaUnavailable} />

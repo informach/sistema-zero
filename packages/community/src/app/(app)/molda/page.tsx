@@ -1,5 +1,6 @@
 import { MoldaClient } from '@sistemazero/member-shell/components/creator/molda-client'
 import { ToolNotice } from '@/components/community/tool-notice'
+import { toolLock } from '@/lib/tool-lock'
 import { getCreativeToolsState } from '@/server/creative-tools'
 export const dynamic = 'force-dynamic'
 export default async function MoldaPage() {
@@ -7,13 +8,13 @@ export default async function MoldaPage() {
   if (state.kind !== 'ready')
     return (
       <ToolNotice
-        name="Molda"
+        tool="molda"
         unavailable={state.kind === 'unavailable'}
         readOnly={state.kind === 'readonly'}
       />
     )
   if (state.access.molda !== true || !state.journey.capabilities.includes('molda'))
-    return <ToolNotice name="Molda" />
+    return <ToolNotice tool="molda" lock={toolLock('molda', state)} />
   return (
     <MoldaClient
       key={state.session.id}

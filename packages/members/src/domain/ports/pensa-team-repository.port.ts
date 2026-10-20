@@ -33,9 +33,19 @@ export interface PensaTeamFacts {
   gameTicket: PensaCreationDownloadTicket | null
 }
 
+/** Trusted session facts the actor itself cannot carry (vouched by the member-shell BFF). */
+export interface PensaTeamContextSession {
+  /** Privileged actor in a profile of its OWN account, without support/impersonation. */
+  ownStaffProfile?: boolean
+}
+
 export interface PensaTeamRepository {
   team(actor: P.PensaActor, projectId: string): Promise<P.PensaTeamView>
-  context(actor: P.PensaActor, projectId: string): Promise<PensaTeamFacts>
+  context(
+    actor: P.PensaActor,
+    projectId: string,
+    session?: PensaTeamContextSession,
+  ): Promise<PensaTeamFacts>
   share(
     actor: P.PensaActor,
     projectId: string,

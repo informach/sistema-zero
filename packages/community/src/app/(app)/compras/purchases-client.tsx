@@ -1,5 +1,6 @@
 'use client'
 
+import { comunidadeAdultoContinuarUrl } from '@sistemazero/member-shell/lib/adult-links'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Skeleton } from '@sistemazero/ui/skeleton'
@@ -8,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { apiGet, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
+import { comebackSubscriptionId } from '@/lib/continuity'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import {
   type MySubscriptionView,
@@ -103,6 +105,7 @@ export function SubscriptionsSection() {
   }
 
   if (subs.length === 0) return null
+  const comebackId = comebackSubscriptionId(subs)
 
   return (
     <section
@@ -141,6 +144,17 @@ export function SubscriptionsSection() {
                 >
                   Cancelar assinatura
                 </button>
+              ) : null}
+              {sub.id === comebackId ? (
+                // A oferta de continuidade é página EXTERNA (funil): outra aba.
+                <a
+                  href={comunidadeAdultoContinuarUrl('compras-assinatura')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="sz-btn sz-btn-sm"
+                >
+                  Voltar para a Comunidade
+                </a>
               ) : null}
             </li>
           )

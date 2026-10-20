@@ -210,10 +210,15 @@ describe('a continuidade adulta (/oferta/continuar)', () => {
   test('os quatro casos dizem a verdade inteira: conta nova aos 18 e assinaturas separadas', () => {
     expect(P.casos.itens).toHaveLength(4)
     const casos = P.casos.itens.map((caso) => caso.texto).join(' ')
-    expect(casos).toContain('Os projetos do perfil Kids não passam para a conta nova.')
+    // Aos 18 o perfil Kids segue funcionando (decisão de 20/10/2026): a conta adulta começa nova.
+    expect(casos).toContain('o perfil Kids continua funcionando depois dos 18')
+    expect(casos).toContain('começa nova')
+    expect(casos).not.toContain('não passam')
     expect(casos).toContain('São assinaturas separadas')
     expect(casos).toContain('mesmo e-mail')
-    expect(JSON.stringify(P.duvidas)).toContain('não passam para a área adulta')
+    expect(JSON.stringify(P.duvidas)).toContain('Os jogos ficam no perfil Kids')
+    // A etapa alcançada fica (o piso da etapa adulta no members).
+    expect(P.save.fica.itens).toContain('A etapa e os blocos que você já liberou')
   })
 
   test('as imagens existem, e a tela de save é uma ilustração que diz isso', () => {

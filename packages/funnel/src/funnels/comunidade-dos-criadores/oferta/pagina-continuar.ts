@@ -294,7 +294,7 @@ export const PAGINA_CONTINUAR = {
     {
       question: 'Até que idade vale a Comunidade Kids?',
       answer:
-        'Até os 17. De 9 a 17 anos, ele cria sozinho depois das primeiras aulas, e abaixo de 9 cria junto com um adulto. As instruções têm o Zappy e uma linguagem de aventura, e o que ele faz é jogo de verdade: regras, personagens, publicação e, mais adiante, código. A partir dos 18, existe a área adulta, com conta própria, e os projetos do perfil Kids não passam para ela.',
+        'Até os 17. De 9 a 17 anos, ele cria sozinho depois das primeiras aulas, e abaixo de 9 cria junto com um adulto. As instruções têm o Zappy e uma linguagem de aventura, e o que ele faz é jogo de verdade: regras, personagens, publicação e, mais adiante, código. A partir dos 18, existe também a área adulta, com conta própria, e o perfil Kids continua funcionando enquanto a assinatura estiver ativa, com os projetos que já estão nele.',
     },
     {
       question: 'Tenho outro filho.',

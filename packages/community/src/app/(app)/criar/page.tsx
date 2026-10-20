@@ -15,6 +15,7 @@ import Link from 'next/link'
 import { challengeMonthName } from '@/components/community/community/challenge-month'
 import { PageBand, PageBody } from '@/components/community/page'
 import { cn } from '@/lib/cn'
+import { type CreativeToolKey, type ToolLockReason, toolLockReason } from '@/lib/tool-lock'
 import { getCreativeToolsState } from '@/server/creative-tools'
 import { shell } from '@/server/shell'
 
@@ -26,7 +27,8 @@ interface Tool {
   href: string
   name: string
   capability: Capability
-  ref: string
+  /** A chave da régua compartilhada com as páginas de cada ferramenta (`lib/tool-lock`). */
+  key: CreativeToolKey
   icon: LucideIcon
   /** Cor de identidade da ferramenta (fixa: não segue a cor escolhida no perfil). */
   color: string
@@ -41,7 +43,7 @@ const TOOLS: readonly Tool[] = [
     href: '/estudio',
     name: 'Estúdio',
     capability: 'studio',
-    ref: 'estudio-completo',
+    key: 'estudio',
     icon: LayoutDashboard,
     color: 'var(--sz-community-blue)',
     description: 'Crie e programe seus jogos com os blocos que conquistou nos cursos.',
@@ -52,7 +54,7 @@ const TOOLS: readonly Tool[] = [
     href: '/pinta',
     name: 'Pinta',
     capability: 'pinta',
-    ref: 'pinta',
+    key: 'pinta',
     icon: Palette,
     color: 'var(--sz-community-pink)',
     description: 'Desenhe personagens, cenários e imagens para seus jogos.',
@@ -63,7 +65,7 @@ const TOOLS: readonly Tool[] = [
     href: '/molda',
     name: 'Molda',
     capability: 'molda',
-    ref: 'molda',
+    key: 'molda',
     icon: Box,
     color: 'var(--sz-community-orange)',
     description: 'Crie modelos, texturas e ambientes 3D.',
@@ -74,7 +76,7 @@ const TOOLS: readonly Tool[] = [
     href: '/pensa',
     name: 'Pensa',
     capability: 'pensa',
-    ref: 'pensa',
+    key: 'pensa',
     icon: Lightbulb,
     color: 'var(--sz-community-purple)',
     description: 'Planeje seus jogos com assistência, disponível após a formação avançada.',
@@ -88,31 +90,25 @@ const AI_ORDER: readonly Capability[] = ['studio', 'pensa', 'pinta', 'molda']
 
 type ToolStatus =
   | { kind: 'available' }
-  | { kind: 'locked'; reason: 'plan' | 'journey' | 'advanced' }
+  | { kind: 'locked'; reason: ToolLockReason }
   | { kind: 'pending' }
 
 type CreativeToolsState = Awaited<ReturnType<typeof getCreativeToolsState>>
 
 /**
  * O estado de cada ferramenta sai dos mesmos dados de `getCreativeToolsState`; o "por quê" do
- * cadeado também: sem o produto na conta é outro plano, sem a capacidade é a jornada, e o Pensa
- * pede a IA da jornada (curso avançado).
+ * cadeado vem de `toolLockReason` (`lib/tool-lock`), a MESMA régua que a página de cada ferramenta
+ * usa para explicar o cadeado a quem chega por "Consultar acesso".
  */
 function toolStatus(tool: Tool, state: CreativeToolsState): ToolStatus {
   if (state.kind !== 'ready') return { kind: 'pending' }
-  if (state.access[tool.ref] !== true) return { kind: 'locked', reason: 'plan' }
-  const capabilities = state.journey.capabilities
-  if (tool.capability === 'pensa' && !capabilities.includes('ai'))
-    return { kind: 'locked', reason: 'advanced' }
-  if (!capabilities.includes(tool.capability)) return { kind: 'locked', reason: 'journey' }
-  if (tool.capability === 'studio' && !state.tier.hasPalette)
-    return { kind: 'locked', reason: 'journey' }
-  return { kind: 'available' }
+  const reason = toolLockReason(tool.key, state)
+  return reason ? { kind: 'locked', reason } : { kind: 'available' }
 }
 
 const LOCK_REASON = {
   plan: 'faz parte de outro plano.',
-  journey: 'abre numa etapa mais adiante da sua jornada.',
+  journey: 'abre conforme você avança nas etapas da jornada.',
   advanced: 'pede um curso avançado concluído.',
 } as const
 

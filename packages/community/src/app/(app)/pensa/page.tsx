@@ -1,5 +1,6 @@
 import { PensaClient } from '@sistemazero/member-shell/components/creator/pensa-client'
 import { ToolNotice } from '@/components/community/tool-notice'
+import { toolLock } from '@/lib/tool-lock'
 import { getCreativeToolsState } from '@/server/creative-tools'
 import { getAdultCreatorServices } from '@/server/creator-services'
 export const dynamic = 'force-dynamic'
@@ -12,7 +13,7 @@ export default async function AdultPensaPage({
   if (state.kind !== 'ready')
     return (
       <ToolNotice
-        name="Pensa"
+        tool="pensa"
         unavailable={state.kind === 'unavailable'}
         readOnly={state.kind === 'readonly'}
       />
@@ -22,7 +23,7 @@ export default async function AdultPensaPage({
     !state.journey.capabilities.includes('pensa') ||
     !state.journey.capabilities.includes('ai')
   )
-    return <ToolNotice name="Pensa" />
+    return <ToolNotice tool="pensa" lock={toolLock('pensa', state)} />
   const services = await getAdultCreatorServices()
   return (
     <PensaClient

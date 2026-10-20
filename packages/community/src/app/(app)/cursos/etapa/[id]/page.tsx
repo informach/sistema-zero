@@ -6,8 +6,8 @@ import type { CSSProperties } from 'react'
 import { CourseCover, ProgressBar } from '@/components/community/courses/course-cover'
 import { JourneyRibbon } from '@/components/community/journey/stage'
 import { BackLink, PageBody } from '@/components/community/page'
+import { type LockedCourseLink, lockedCourseLink } from '@/lib/continuity'
 import { isCourseDone } from '@/lib/course-levels'
-import { getEnv } from '@/lib/env'
 import {
   normalizeJourney,
   type StageBadge,
@@ -112,7 +112,6 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
     return { requirement, course, progress, state }
   })
   const ready = rows.filter((row) => row.state === 'pronto').length
-  const fallbackSalesUrl = getEnv().FUNNEL_URL ?? null
   const unlocks = stage.capabilities.map((capability) => CAPABILITIES[capability])
   const unlockText = unlocks.length
     ? joinPt(unlocks)
@@ -210,7 +209,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
                   progress={progress}
                   state={state}
                   showcase={requirement.milestone === 'showcase'}
-                  salesUrl={course?.salesPageUrl ?? fallbackSalesUrl}
+                  locked={lockedCourseLink(course?.salesPageUrl)}
                 />
               </li>
             ))}
@@ -231,13 +230,13 @@ function StageCourseRow({
   progress,
   state,
   showcase,
-  salesUrl,
+  locked,
 }: {
   course: CatalogCourseView | undefined
   progress: CourseProgress | null
   state: CourseState
   showcase: boolean
-  salesUrl: string | null
+  locked: LockedCourseLink
 }) {
   if (!course)
     return (
@@ -269,12 +268,15 @@ function StageCourseRow({
       </div>
       <div className="flex-none">
         {state === 'sem-acesso' ? (
-          salesUrl ? (
-            <a href={salesUrl} target="_blank" rel="noopener noreferrer" className="sz-btn-outline">
-              Conhecer o curso
-              <ArrowRight aria-hidden />
-            </a>
-          ) : null
+          <a
+            href={locked.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="sz-btn-outline"
+          >
+            {locked.label}
+            <ArrowRight aria-hidden />
+          </a>
         ) : (
           <Link
             href={href}

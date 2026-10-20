@@ -42,6 +42,15 @@ export const ADULT_JOURNEY_TEMPLATE: readonly {
   { id: 'genio-da-criacao', title: 'Gênio da Criação', tier: 'avancado-3d', capabilities: ['pro'] },
 ]
 
+/**
+ * Cursos vendidos como PRODUTO AVULSO que nunca entram na jornada adulta pelo seed, mesmo que
+ * tenham o nível e a trilha de uma etapa. Quem compra só o curso não pode ficar com a etapa
+ * travada esperando outro produto, e quem assina a Comunidade não pode depender de um curso que a
+ * assinatura não inclui. `no-comando-da-ia` ("No Comando da IA") é vendido à parte. A equipe ainda
+ * pode colocá-lo numa etapa pelo Admin, de propósito.
+ */
+export const ADULT_JOURNEY_STANDALONE_COURSE_SLUGS: readonly string[] = ['no-comando-da-ia']
+
 type AdultSeedMilestone = 'complete' | 'showcase'
 
 /**
@@ -71,6 +80,8 @@ export interface AdultJourneySeedPlan {
   }[]
   /** A primeira etapa que ficou de fora por não ter curso publicado (e todas depois dela). */
   stoppedAt: { title: string; tier: CourseTier } | null
+  /** Cursos publicados deixados de fora por serem produto avulso (`ADULT_JOURNEY_STANDALONE_COURSE_SLUGS`). */
+  excluded: { slug: string; title: string }[]
 }
 
 /**
@@ -78,7 +89,7 @@ export interface AdultJourneySeedPlan {
  * primeira etapa sem curso: uma etapa sem requisito não existe (a política exige ao menos um), e
  * pular uma etapa no meio deixaria a cor e o nome de cada posição fora do lugar. Rascunho não entra
  * (ninguém conclui um curso que não está no ar) e os cursos `lenda` ficam fora da jornada, como no
- * Kids.
+ * Kids. Produto avulso (`ADULT_JOURNEY_STANDALONE_COURSE_SLUGS`) também fica fora e sai em `excluded`.
  */
 export function buildAdultJourneySeed(
   courses: readonly SeedCourse[],
@@ -87,9 +98,15 @@ export function buildAdultJourneySeed(
   const milestoneOf = (course: SeedCourse): AdultSeedMilestone =>
     milestone !== 'auto' ? milestone : showcaseCourseIds.has(course.id) ? 'showcase' : 'complete'
   const byTier = new Map<CourseTier, SeedCourse[]>()
+  const excluded: AdultJourneySeedPlan['excluded'] = []
+  const standalone = new Set(ADULT_JOURNEY_STANDALONE_COURSE_SLUGS)
   for (const course of courses) {
     if (course.audience !== 'adult' || course.modality !== 'recorded') continue
     if (course.status !== 'published') continue
+    if (standalone.has(course.slug)) {
+      excluded.push({ slug: course.slug, title: course.title })
+      continue
+    }
     if (course.level === 'lenda') continue
     const tier = courseTier(course.level, course.track)
     if (!tier) continue
@@ -106,6 +123,7 @@ export function buildAdultJourneySeed(
         policy: { schemaVersion: 1, stages: policyStages },
         stages,
         stoppedAt: { title: template.title, tier: template.tier },
+        excluded,
       }
     policyStages.push({
       id: template.id,
@@ -127,5 +145,5 @@ export function buildAdultJourneySeed(
       })),
     })
   }
-  return { policy: { schemaVersion: 1, stages: policyStages }, stages, stoppedAt: null }
+  return { policy: { schemaVersion: 1, stages: policyStages }, stages, stoppedAt: null, excluded }
 }

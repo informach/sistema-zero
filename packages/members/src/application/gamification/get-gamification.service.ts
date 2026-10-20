@@ -1,7 +1,6 @@
 import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import type { KidsJourneyStaffPreview, KidsJourneyView } from '@sistemazero/core/journey'
 import type { CourseAudience } from '../../domain/course/course'
-import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import { BADGE_SLUGS, HIDDEN_UNTIL_UNLOCKED_BADGES } from '../../domain/gamification/badges'
 import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
 import { computeStudentLevel } from '../../domain/gamification/levels'
@@ -45,9 +44,10 @@ export class GetGamificationService {
     const accountId =
       captured.audience === 'kids' ? IdentityUuidSchema.parse(inputAccountId) : inputAccountId
     if (captured.audience !== 'kids') return this.read(userId, accountId, captured, null)
+    // `privileged` here is the team preview already admitted by the HTTP boundary
+    // (`resolveKidsStaffPreviewActor`): the staff account or a profile of the staff's OWN
+    // account, never a support session. XP/streak/badges still come from `userId` (the profile).
     if (captured.privileged) {
-      if (userId !== accountId)
-        throw new AccessDeniedError('Use a conta da equipe, sem perfil de aluno.')
       const preview = await this.kidsJourney.staffPreview()
       return this.read(userId, accountId, captured, null, preview)
     }

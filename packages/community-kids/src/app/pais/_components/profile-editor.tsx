@@ -1,28 +1,22 @@
 'use client'
 
-import { sessionFetch } from '@sistemazero/member-shell/lib/session-fetch'
-import { Button } from '@sistemazero/ui/button'
-import { Dialog } from '@sistemazero/ui/dialog'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { ProfileForm, type ProfileFormValues } from '@/components/kids/profile-management'
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
-import { PROFILE_AGE_ERROR_MESSAGE } from '@/lib/profile-age'
-import { StudyRequestError, studyErrorMessage, studyRequest } from '@/lib/study-access-client'
+import { profileAgeMessage } from '@/lib/profile-age'
+import { StudyRequestError, studyRequest } from '@/lib/study-access-client'
 import type { ProfileView } from '@/lib/types'
 import { childHref } from '../parent-routes'
 import { ParentShell } from './parent-shell'
+import { archiveProfile, RemoveProfileDialog, showProfileActionError } from './remove-profile'
 
 /** O recado para a página da criança viaja no endereço (lido e apagado por ela, `child-client`). */
 function comAviso(href: string, aviso: 'fala-entrar' | 'fala-nao-gravou'): string {
   return `${href}${href.includes('?') ? '&' : '?'}aviso=${aviso}`
 }
-
-/** Os botões do diálogo em pílula de 44px (o ui desenha 32px com cantos de 8px). */
-const DIALOG_ACTIONS =
-  'flex flex-wrap justify-end gap-2 [&_button]:min-h-11 [&_button]:rounded-full [&_button]:px-4'
 
 /**
  * Adicionar e editar o perfil de uma criança, numa página da área dos pais (era uma tela que
@@ -52,18 +46,8 @@ export function ProfileEditor({
     try {
       await action()
     } catch (error) {
-      // ⚠️ Arquivar, mudar o nascimento, ligar o perfil público e ligar a fala pedem login de até 15 min
-      // (`PARENT_REAUTH_REQUIRED`, full review de 10/10/2026): sem o atalho, o responsável lia
-      // o recado e ficava sem caminho. A entrada dos responsáveis volta para esta página.
-      if (error instanceof StudyRequestError && error.code === 'PARENT_REAUTH_REQUIRED') {
-        const next = encodeURIComponent(window.location.pathname)
-        toast.error('Por segurança, entre de novo para salvar essa mudança.', {
-          action: {
-            label: 'Entrar de novo',
-            onClick: () => window.location.assign(`/login/responsavel?next=${next}`),
-          },
-        })
-      } else toast.error(studyErrorMessage(error))
+      // O login recente que arquivar, o nascimento, o perfil público e a fala pedem tem atalho.
+      showProfileActionError(error)
       setBusy(false)
     }
   }
@@ -116,7 +100,7 @@ export function ProfileEditor({
         window.location.assign(falaNaoGravou ? comAviso(destino, 'fala-nao-gravou') : destino)
       } catch (error) {
         if (error instanceof StudyRequestError && error.code === 'PROFILE_AGE_RESTRICTED')
-          throw new StudyRequestError(error.code, PROFILE_AGE_ERROR_MESSAGE)
+          throw new StudyRequestError(error.code, profileAgeMessage(Boolean(existing)))
         throw error
       }
     })
@@ -125,9 +109,7 @@ export function ProfileEditor({
   function remove() {
     if (!profile) return
     void run(async () => {
-      const response = await sessionFetch(`/api/profiles/${profile.id}`, { method: 'DELETE' })
-      if (!response.ok)
-        throw new StudyRequestError('PROFILE_REMOVE_FAILED', 'Não foi possível remover o perfil.')
+      await archiveProfile(profile.id)
       window.location.assign('/pais')
     })
   }
@@ -149,28 +131,13 @@ export function ProfileEditor({
         onSave={save}
         onArchive={() => setRemoving(true)}
       />
-      <Dialog
+      <RemoveProfileDialog
+        name={profile?.name}
         open={removing}
-        onClose={() => {
-          if (!busy) setRemoving(false)
-        }}
-        title="Remover perfil"
-        footer={
-          <div className={DIALOG_ACTIONS}>
-            <Button variant="secondary" disabled={busy} onClick={() => setRemoving(false)}>
-              Cancelar
-            </Button>
-            <Button variant="destructive" disabled={busy} onClick={remove}>
-              Remover
-            </Button>
-          </div>
-        }
-      >
-        <p>
-          Remover o perfil de {profile?.name}? Os acessos dessa criança serão encerrados. O
-          progresso fica guardado.
-        </p>
-      </Dialog>
+        busy={busy}
+        onCancel={() => setRemoving(false)}
+        onConfirm={remove}
+      />
     </ParentShell>
   )
 }

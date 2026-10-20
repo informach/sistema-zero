@@ -106,7 +106,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **casos.itens[2].titulo**: Você criava na Comunidade Kids
 
-**casos.itens[2].texto**: A conta Kids fica no nome do responsável. A partir dos 18, a conta é sua, com o mesmo Estúdio que você já conhece, outra aparência e uma escada de etapas própria. Os projetos do perfil Kids não passam para a conta nova.
+**casos.itens[2].texto**: A conta Kids fica no nome do responsável, e o perfil Kids continua funcionando depois dos 18, com os projetos, enquanto a assinatura dele estiver ativa. Aqui a conta é sua e começa nova, com o mesmo Estúdio que você já conhece, outra aparência e uma escada de etapas própria.
 
 **casos.itens[2].proximo**: UMA CONTA NO SEU NOME
 
@@ -135,6 +135,8 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 **save.fica.itens[3]**: Os certificados já emitidos
 
 **save.fica.itens[4]**: O progresso nos cursos
+
+**save.fica.itens[5]**: A etapa e os blocos que você já liberou
 
 **save.volta.rotulo**: VOLTA COM A ASSINATURA
 
@@ -306,7 +308,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **duvidas.itens[0].pergunta**: Meus projetos ainda estão lá?
 
-**duvidas.itens[0].resposta**: Estão. Os projetos em Meus Jogos, os jogos publicados no Mural, os certificados e o progresso nos cursos ficam na conta. Entre com o mesmo e-mail e continue de onde parou.
+**duvidas.itens[0].resposta**: Estão. Os projetos em Meus Jogos, os jogos publicados no Mural, os certificados, o progresso nos cursos e a etapa que você alcançou ficam na conta. Entre com o mesmo e-mail e continue de onde parou.
 
 **duvidas.itens[1].pergunta**: Preciso criar outra conta?
 
@@ -318,7 +320,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **duvidas.itens[3].pergunta**: Usava a Comunidade Kids e fiz 18 anos. Levo meus jogos?
 
-**duvidas.itens[3].resposta**: A conta Kids é do seu responsável, e os projetos do perfil Kids não passam para a área adulta. Aqui você abre uma conta no seu nome, com o mesmo Estúdio que já conhece e uma escada de etapas própria.
+**duvidas.itens[3].resposta**: Os jogos ficam no perfil Kids, que segue funcionando na conta do seu responsável enquanto a assinatura dele estiver ativa. A conta adulta começa nova, no seu nome, com o mesmo Estúdio que você já conhece e uma escada de etapas própria.
 
 **duvidas.itens[4].pergunta**: Meu filho tem a assinatura Kids. Ela inclui a minha?
 

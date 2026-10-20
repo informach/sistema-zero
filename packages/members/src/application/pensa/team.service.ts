@@ -1,13 +1,16 @@
 import type * as P from '@sistemazero/core/pensa'
-import type { PensaTeamRepository } from '../../domain/ports/pensa-team-repository.port'
+import type {
+  PensaTeamContextSession,
+  PensaTeamRepository,
+} from '../../domain/ports/pensa-team-repository.port'
 
 export class PensaTeamService {
   constructor(private readonly repository: PensaTeamRepository) {}
   team(actor: P.PensaActor, id: string) {
     return this.repository.team(actor, id)
   }
-  context(actor: P.PensaActor, id: string) {
-    return this.repository.context(actor, id)
+  context(actor: P.PensaActor, id: string, session?: PensaTeamContextSession) {
+    return this.repository.context(actor, id, session)
   }
   share(actor: P.PensaActor, id: string, requestId: string, enabled: boolean) {
     return this.repository.share(actor, id, requestId, enabled)

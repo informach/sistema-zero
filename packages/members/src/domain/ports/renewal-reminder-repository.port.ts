@@ -64,3 +64,69 @@ export interface RenewalReminderRepository {
 export function expiresOnKey(expiresAt: Date): string {
   return expiresAt.toISOString().slice(0, 10)
 }
+
+/**
+ * Fim do acesso (20/10/2026). O presente de 7 dias (resgate `scholarship:`) avisa dois dias antes
+ * e no dia em que termina; a assinatura da Comunidade avisa no dia em que o acesso venceu.
+ * Todos usam o mesmo dedupe `entitlement_lifecycle_messages_sent` (matrícula + data + tipo).
+ */
+export const GIFT_LIFECYCLE_KINDS = ['gift_expiry_2d', 'gift_expired'] as const
+export type GiftLifecycleKind = (typeof GIFT_LIFECYCLE_KINDS)[number]
+export const SUBSCRIPTION_ENDED_KIND = 'subscription_ended' as const
+export type AccessEndedKind = GiftLifecycleKind | typeof SUBSCRIPTION_ENDED_KIND
+
+/** Ofertas da assinatura da Comunidade por audiência (snapshot `offerSlug`, igual ao catálogo). */
+export const COMMUNITY_SUBSCRIPTION_OFFER_SLUGS = {
+  kids: ['comunidade-dos-criadores-mensal', 'comunidade-dos-criadores-anual'],
+  adult: ['comunidade-dos-criadores-adulto-mensal', 'comunidade-dos-criadores-adulto-anual'],
+} as const satisfies Record<'kids' | 'adult', readonly string[]>
+
+/** Uma linha de um presente (o curso e o Mural temporário do mesmo resgate vêm juntos). */
+export interface GiftLifecycleEntitlement {
+  id: string
+  userId: string
+  /** `scholarship:<id>`: o resgate; agrupa as matrículas do mesmo presente. */
+  sourceId: string
+  expiresAt: Date
+  messageKind: GiftLifecycleKind
+}
+
+/** Uma matrícula de assinatura da Comunidade que acabou de vencer. */
+export interface EndedSubscriptionEntitlement {
+  id: string
+  userId: string
+  subscriptionId: string
+  audience: 'kids' | 'adult'
+  /** Data-chave do dedupe (`expires_at`, ou o momento em que venceu quando não há validade). */
+  endedAt: Date
+}
+
+export interface AccessEndedMessagesRepository {
+  /**
+   * Presentes de 7 dias com aviso devido e ainda não enviado: `gift_expiry_2d` quando faltam
+   * até 2 dias no calendário de São Paulo e a matrícula segue `active` (revogada ou vencida
+   * antes da hora não recebe "vai terminar"); `gift_expired` quando venceu há no máximo `window`
+   * ms (nunca avisa presentes antigos). Pula quem tem acesso mais forte e duradouro.
+   */
+  listGiftLifecycleEntitlements(
+    now: Date,
+    windowMs: number,
+    limit: number,
+  ): Promise<GiftLifecycleEntitlement[]>
+  /**
+   * Matrículas de assinatura da Comunidade que viraram `expired` nos últimos `windowMs` ms,
+   * sem aviso registrado, de contas SEM outro acesso ativo à Comunidade da mesma audiência.
+   * `limit` conta grupos (conta + assinatura), nunca divide um combo entre ciclos.
+   */
+  listEndedCommunitySubscriptions(
+    now: Date,
+    windowMs: number,
+    limit: number,
+  ): Promise<EndedSubscriptionEntitlement[]>
+  markAccessEndedMessageSent(
+    entitlementId: string,
+    expiresOn: string,
+    messageKind: AccessEndedKind,
+    now: Date,
+  ): Promise<void>
+}

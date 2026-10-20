@@ -18,7 +18,7 @@ import {
   ADULT_COMMUNITY_INSTAGRAM,
   ADULT_COMMUNITY_INSTAGRAM_URL,
   isProfileAgeRestricted,
-  PROFILE_AGE_ERROR_MESSAGE,
+  profileAgeMessage,
 } from '@/lib/profile-age'
 import type { ProfileView } from '@/lib/types'
 
@@ -191,7 +191,7 @@ export function ProfileForm({
           <Field
             label="Data de nascimento da criança (opcional)"
             htmlFor="profileBirthDate"
-            error={ageRestricted ? PROFILE_AGE_ERROR_MESSAGE : undefined}
+            error={ageRestricted ? profileAgeMessage(isEdit) : undefined}
           >
             <Input
               id="profileBirthDate"
@@ -282,7 +282,7 @@ export function ProfileForm({
                 onClick={() => onArchive(profile)}
                 className="text-destructive"
               >
-                <Trash2 className="size-4" /> Remover
+                <Trash2 className="size-4" /> Arquivar perfil
               </Button>
             ) : (
               <span />
