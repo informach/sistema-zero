@@ -26,7 +26,7 @@
 
 **hero.eyebrow**: Para quem já começou no Sistema Zero Kids
 
-**hero.title**: O que seu filho começou está guardado. Agora ele faz os próximos jogos, cada vez maiores, até o
+**hero.title**: O que seu filho começou está guardado. Agora ele faz os próximos jogos, cada vez maiores, até o 
 
 **hero.destaque**: jogo que ele inventar.
 

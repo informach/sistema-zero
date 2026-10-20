@@ -26,7 +26,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.rotulo**: PLAYER 1 · PRESS START
 
-**hero.titulo.antes**: Você sempre quis fazer um jogo. Aqui você faz o primeiro e
+**hero.titulo.antes**: Você sempre quis fazer um jogo. Aqui você faz o primeiro e 
 
 **hero.titulo.destaque**: segue criando outros
 

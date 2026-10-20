@@ -26,7 +26,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **hero.rotulo**: CONTINUE · PARA QUEM JÁ CONHECE O SISTEMA ZERO
 
-**hero.titulo.antes**: Você já conhece o Sistema Zero. Agora você continua criando jogos, cada vez maiores,
+**hero.titulo.antes**: Você já conhece o Sistema Zero. Agora você continua criando jogos, cada vez maiores, 
 
 **hero.titulo.destaque**: até o jogo com a sua ideia.
 
