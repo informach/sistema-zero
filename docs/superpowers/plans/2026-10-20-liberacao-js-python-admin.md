@@ -18,7 +18,7 @@
 - Preservar integralmente as falas gravadas, montagem, sequência e valores ensinados.
 - Serializar testes pesados; não encerrar aplicativos do usuário.
 
-## Task 1: Fechar o lote pedagógico de liberação
+## Task 1: Fechar a revisão pedagógica e o lote de liberação
 
 **Files:** `docs/aulas-interativas-tecnico/qa/pedagogical-project-examples.test.ts`; manifesto e roteiros Farol já integrados.
 
@@ -26,6 +26,8 @@
 - [x] Separar no teste estrutural os critérios que exigem execução real, sem alterar o avaliador de produção.
 - [x] Executar a suíte dos cursos: 219 testes/23.819 asserções passaram em 20/10/2026.
 - [x] Validar os 37 manifestos canônicos, sem ativar os candidatos Cadê pendentes.
+- [ ] Concluir a revisão pedagógica efetiva das 37 aulas: critérios coerentes e trechos de conferência correspondentes, preservando falas e valores ensinados. Inventário e validação de arquivos não substituem esta revisão.
+- [ ] Integrar e verificar as correções justificadas pela revisão, incluindo os contratos compartilhados necessários para aceitar valores coerentes sem exigir os números da demonstração.
 
 ## Task 2: Restringir a oferta de criação Python na interface
 

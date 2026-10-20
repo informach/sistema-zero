@@ -8,7 +8,7 @@ Adicionar Python não exige refazer todas as aulas JavaScript. JavaScript contin
 
 | Área | Mudança | Trechos a conferir |
 |---|---|---|
-| Criação e galeria do Estúdio | Escolha JavaScript/Python, ambientes disponíveis e exemplos por linguagem | Criar projeto, escolher Clássico/Pro e abrir exemplos |
+| Criação e galeria do Estúdio | Oferta Python visível somente para admin/superadmin; JavaScript continua padrão para alunos | Conferir a demonstração com perfil de aluno. A nova oferta administrativa não exige, por si só, regravar a criação de projetos JavaScript |
 | Programação JavaScript | Recursos existentes preservados | A adição de Python, isoladamente, não exige refazer a montagem dos programas JS |
 | Programação Python | Categorias próprias, Turtle como extensão, Blocos/Ponte/código e Pro | Conteúdo novo; validar o percurso completo antes de gravar |
 | Objetivos das aulas | Conferência centralizada nos objetivos da parte, com autoridade no servidor | Apresentação dos objetivos, verificar, feedback e avançar de parte |
@@ -24,6 +24,12 @@ O lote de nove arquivos integrado em `1389d1b4f` alterou o Dia 1 do Desafio Prim
 Mantém dois critérios de montagem e acrescenta quatro verificações de direção. Na avaliação, cor, arte, posição e magnitude da velocidade não precisam copiar a demonstração; os valores precisam produzir o comportamento pedido. No roteiro, a professora mostra a velocidade `3` e manda colocar esse valor, com uma instrução concreta por vez, e testa as quatro setas. Soltar a tecla e mostrar a parada é orientação da demonstração, não um novo critério avaliado.
 
 Esse lote não reescreveu os Dias 2/3, as seções de borda/entrega nem todos os demais cursos. As propostas de Cadê Todo Mundo que ficaram fora do commit não devem ser tratadas como material final ou publicado. Atualizar um arquivo local também não comprova sua importação e publicação no Admin.
+
+## Revisão pedagógica dos cursos
+
+O inventário das 37 aulas e a validação técnica dos manifestos não concluem a revisão pedagógica. A revisão efetiva dos critérios e dos trechos de conferência está em andamento na sessão pedagógica. Ela precisa distinguir os valores da demonstração das condições necessárias para cumprir o objetivo, preservando direção, eventos, estado e contagens relevantes. As falas e a montagem existentes continuam sendo a referência; não há autorização para reescrita geral.
+
+Ainda não há liberação geral para gravação: registrar o resultado por aula e validar o percurso correspondente em staging. O seletor administrativo já integrado ao Git também não comprova que a nova versão foi implantada no site.
 
 ## Liberação por aula
 
