@@ -19,6 +19,40 @@ import { stagingJourney, uuidPattern } from '../release/kids-journey-bootstrap.m
 const preflightFailures = new WeakMap()
 const apiAuthorizationFailures = new WeakSet()
 const probeFailureReasons = new WeakMap()
+const probeFailureSignals = new WeakMap()
+const safeSshSignals = new Set([
+  'auth',
+  'authentication',
+  'authorization',
+  'denied',
+  'deployment',
+  'domain',
+  'environment',
+  'error',
+  'expired',
+  'failed',
+  'forbidden',
+  'host',
+  'identity',
+  'instance',
+  'invalid',
+  'key',
+  'keys',
+  'missing',
+  'not',
+  'permission',
+  'project',
+  'publickey',
+  'registered',
+  'service',
+  'ssh',
+  'target',
+  'timeout',
+  'token',
+  'unauthorized',
+  'unknown',
+  'unreachable',
+])
 export function describeKidsJourneyRolloutFailure(error) {
   return {
     kind: 'kids-journey-rollout-failure',
@@ -290,16 +324,34 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     try {
       output = ssh(service, ['bun', '-e', code])
     } catch (error) {
-      const stderr = String(error?.stderr ?? '')
-      const reason = /Permission denied \(publickey\)/i.test(stderr)
+      const diagnostic = `${String(error?.stderr ?? '')}\n${String(error?.stdout ?? '')}`
+      const reason = /Permission denied \(publickey\)/i.test(diagnostic)
         ? 'ssh-identity-rejected'
-        : /Host key verification failed|REMOTE HOST IDENTIFICATION HAS CHANGED/i.test(stderr)
+        : /Host key verification failed|REMOTE HOST IDENTIFICATION HAS CHANGED/i.test(diagnostic)
           ? 'ssh-host-key-rejected'
-          : /timed out|connection refused|could not connect/i.test(stderr)
-            ? 'ssh-connection-failed'
-            : 'ssh-command-failed'
+          : /No target found|deployment not found/i.test(diagnostic)
+            ? 'ssh-target-unavailable'
+            : /not authorized|unauthorized|invalid token|token expired|authentication failed/i.test(
+                  diagnostic,
+                )
+              ? 'ssh-auth-rejected'
+              : /no ssh keys found|ssh key.*not registered/i.test(diagnostic)
+                ? 'ssh-key-unavailable'
+                : /timed out|connection refused|could not connect/i.test(diagnostic)
+                  ? 'ssh-connection-failed'
+                  : 'ssh-command-failed'
       const failure = new Error('Preflight SSH não executou no artefato esperado')
       probeFailureReasons.set(failure, reason)
+      if (reason === 'ssh-command-failed') {
+        const signals = [
+          ...new Set(
+            (diagnostic.toLowerCase().match(/[a-z_]+/g) ?? []).filter((word) =>
+              safeSshSignals.has(word),
+            ),
+          ),
+        ].sort()
+        if (signals.length) probeFailureSignals.set(failure, signals)
+      }
       throw failure
     }
     let reply
@@ -350,6 +402,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
             reason: apiAuthorizationFailures.has(error)
               ? 'api-authorization-rejected'
               : (probeFailureReasons.get(error) ?? 'operation-failed'),
+            ...(probeFailureSignals.has(error) ? { signals: probeFailureSignals.get(error) } : {}),
           })
         throw error
       }

@@ -170,6 +170,21 @@ describe('actual Railway boundary without remote I/O', () => {
       step: 'members-probe',
       reason: 'ssh-identity-rejected',
     })
+    const unknown = transport({
+      failAt: 'probe',
+      probeStderr: 'Failed to resolve service private-value-123',
+    })
+    try {
+      await unknown.ports.preflight()
+    } catch (error) {
+      caught = error
+    }
+    expect(describeKidsJourneyRolloutFailure(caught)).toEqual({
+      kind: 'kids-journey-rollout-failure',
+      step: 'members-probe',
+      reason: 'ssh-command-failed',
+      signals: ['failed', 'service'],
+    })
   })
   test('missing CI SSH credentials fail before touching the filesystem or deploying', () => {
     expect(() => prepareSsh({ RAILWAY_TOKEN: 'test' })).toThrow('identidade SSH')
