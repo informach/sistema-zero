@@ -2,9 +2,26 @@
 
 **Direção vigente, 13/10/2026.** A revisão aprovada em P01, P07 e P34 foi aplicada às outras 57 postagens principais, aos seis extras e às vinte sequências de stories. As 14 peças ManyChat seguem a mesma clareza, com o [convite próprio daquela categoria](15-guia-manychat.md). P01, P07 e P34 permanecem como referências aprovadas. [Guia anterior](../historico/2026-10-13-antes-clareza-geral/postagens/13-guia-de-copy.md).
 
+## Regra 1 · Bater o olho e entender
+
+Regra da dona, 20/10/2026, para toda a copy, de todos os lugares: “Toda a nossa copy, de todos os lugares, não pode exigir que a pessoa fique pensando, interpretando. Tem que bater o olho e já entender o que quer dizer.”
+
+- Frases literais, com as palavras do público.
+- Nada de metáfora de jogo ou termo técnico que precise ser decifrado.
+- Nenhuma frase que só funciona ao lado de uma imagem.
+- Uma ideia por frase.
+
+Esta regra vem antes de todas as outras deste guia. Na dúvida entre uma frase bonita e uma frase óbvia, fica a óbvia.
+
+## Dois públicos no mesmo perfil (20/10/2026)
+
+O perfil fala com pais de crianças e adolescentes de 9 a 17 anos e com adultos que querem fazer jogos. As 60 publicações deste guia continuam na linha Famílias. As linhas Adultos e Por dentro dos jogos estão em [16 · Linhas Adultos e Por dentro dos jogos](16-linhas-adulto-e-por-dentro.md). Com o adulto, usar “você” e as palavras dele: jogo, fase, chefe, mandar o link, hobby. Evitar com ele “aluno”, “carreira”, “portfólio” e “desenvolvedor”.
+
+**Continuidade à vista (dona, 20/10/2026):** sempre que a peça apresentar a Comunidade dos Criadores, Kids ou adulta, deixar óbvio o caminho: faz o primeiro jogo, vê que consegue e segue criando outros, cada vez maiores, até o jogo com a própria ideia. “O primeiro jogo” é a promessa do Desafio do Primeiro Jogo; a Comunidade é o que vem depois dele. Não inventar quantidade de cursos nem prazos.
+
 ## O que a pessoa precisa entender
 
-Falamos com pais e responsáveis, principalmente por crianças de 9 a 14 anos. A explicação precisa ser simples o suficiente para uma criança de dez anos entender, sem infantilizar o adulto. Conhecer programação não é requisito para acompanhar o raciocínio.
+Na linha Famílias, falamos com pais e responsáveis, principalmente por crianças de 9 a 14 anos, a faixa para a qual as 60 publicações foram escritas (a Comunidade Kids atende de 9 a 17). A explicação precisa ser simples o suficiente para uma criança de dez anos entender, sem infantilizar o adulto. Conhecer programação não é requisito para acompanhar o raciocínio.
 
 Cada peça precisa deixar clara uma ideia: uma situação da família, uma curiosidade, um desejo, um relato ou uma dica. Quando a criação de jogos entra, explicar a relação por uma ação da criança: escolher, organizar, montar, testar, comparar ou contar como fez.
 

@@ -1,8 +1,44 @@
 # Links e publicação do Instagram
 
-**Revisão: 12/10/2026.** Apoio ao [guia principal](../README.md), à copy de [Destaques](../01-destaques.md), aos [Fixados](../02-fixados.md) e ao [único calendário](../03-postagens.md). O ciclo está em preparação. A referência de oferta e acesso foi conferida no produto local; antes de divulgar, verificar os destinos efetivamente publicados.
+**Revisão: 20/10/2026, dois públicos; base de 12/10/2026.** Apoio ao [guia principal](../README.md), à copy de [Destaques](../01-destaques.md), aos [Fixados](../02-fixados.md) e ao [único calendário](../03-postagens.md). O ciclo está em preparação. A referência de oferta e acesso foi conferida no produto local; antes de divulgar, verificar os destinos efetivamente publicados.
 
-## Destinos canônicos
+## Links desde 20/10/2026: dois públicos
+
+A bio leva à página inicial, que tem dois cartões, um para cada quiz: **É para mim** (`bio-quiz-adulto`) e **É para meu filho ou filha** (`bio-quiz-infantil`). A página não tem atalho para as ofertas, por decisão da dona. Os links preservam as UTMs sanitizadas da entrada. Os stickers dos destaques levam direto ao quiz do público da tela.
+
+| Código | Quando usar | Destino |
+| --- | --- | --- |
+| LB | Bio e chamadas dos fixados | https://sistemazero.com.br/ |
+| LK | Stickers para o pai: “É para meu filho ou filha” | https://sistemazero.com.br/kids/comunidade-dos-criadores/quiz |
+| LA | Stickers para o adulto: “É para mim” | https://sistemazero.com.br/pro/comunidade-dos-criadores/quiz |
+
+**Campanha proposta:** `instagram_dois_publicos_2026`, para separar o novo perfil do ciclo `desafio_instagram_ciclo01`. Se a dona preferir manter a campanha antiga, trocar só o nome nos endereços abaixo. Query antes do fragmento; nenhum dado pessoal em UTM.
+
+| Uso | Texto do link ou sticker | Endereço para copiar |
+| --- | --- | --- |
+| Bio | Escolha para quem é | `https://sistemazero.com.br/?utm_source=instagram&utm_medium=organic_social&utm_campaign=instagram_dois_publicos_2026&utm_content=bio` |
+| CF09 (Kids) | É para meu filho ou filha | `https://sistemazero.com.br/kids/comunidade-dos-criadores/quiz?utm_source=instagram&utm_medium=organic_social&utm_campaign=instagram_dois_publicos_2026&utm_content=cf09` |
+| AD07 (Adultos) | É para mim | `https://sistemazero.com.br/pro/comunidade-dos-criadores/quiz?utm_source=instagram&utm_medium=organic_social&utm_campaign=instagram_dois_publicos_2026&utm_content=ad07` |
+| PJ09 (Projetos) | É para mim | `https://sistemazero.com.br/pro/comunidade-dos-criadores/quiz?utm_source=instagram&utm_medium=organic_social&utm_campaign=instagram_dois_publicos_2026&utm_content=pj09` |
+| MEUJOGO (direct, só documentado) | É para mim | `https://sistemazero.com.br/pro/comunidade-dos-criadores/quiz?utm_source=instagram&utm_medium=dm&utm_campaign=instagram_manychat_adulto_2026&utm_content=meujogo` |
+
+F04, F01 e F05 apontam para a bio, sem sticker. As peças das linhas Adultos e Por dentro dos jogos terminam em seguir o perfil, sem link. A palavra MEUJOGO está descrita em [16 · Linhas Adultos e Por dentro dos jogos](../postagens/16-linhas-adulto-e-por-dentro.md#palavra-adulta-no-direct-meujogo); as palavras Kids do ManyChat não mudam.
+
+**Stickers antigos que continuam apontando para o Desafio (L0):** PJ02, AL06, AV05, DU07, DU10 e DU18. A oferta avulsa do Desafio continua no ar, então os links funcionam; a bio é que deixou de levar a ela. Ficam como estão até a revisão da dona. L5 (planos da Comunidade Kids) continua válido em PJ04, PJ06, PJ08, DU16 e DU17.
+
+**Medição:** depois de quatro semanas no novo ritmo, comparar os cliques de `bio-quiz-adulto` e `bio-quiz-infantil`. O `utm_content` dos stickers mostra qual tela levou ao quiz, mas o destaque salvo não separa o story do dia do destaque. Até 20/10/2026, a bio usava `bio-como-funciona`, `bio-desafio-oferta` e `bio-comunidade`; separar esses acessos nos relatórios.
+
+**Resposta manual a quem pergunta o valor (adulto):**
+
+> A área adulta é uma assinatura, mensal ou anual, com 7 dias de garantia, e você cancela quando quiser. O valor de hoje está na página. Antes, responda o quiz e veja por onde começar: https://sistemazero.com.br/pro/comunidade-dos-criadores/quiz
+
+**Resposta manual a quem pergunta o valor (pai), desde 20/10/2026:**
+
+> A Comunidade dos Criadores Kids é uma assinatura, mensal ou anual, com 7 dias de garantia, e você cancela quando quiser, sem multa. O Desafio do Primeiro Jogo vem incluído. O valor de hoje está na página: https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta#planos
+
+As respostas do Desafio avulso mais abaixo continuam corretas para quem perguntar dele.
+
+## Destinos canônicos (ciclo de 12/10/2026, histórico)
 
 > **Atualização de 20/10/2026:** a página inicial mudou. Hoje ela tem dois caminhos, cada um para um quiz: o adulto (`bio-quiz-adulto`, `/pro/comunidade-dos-criadores/quiz`) e o infantil (`bio-quiz-infantil`, `/kids/comunidade-dos-criadores/quiz`). A `/como-funciona` responde 301 para `/kids/comunidade-dos-criadores/oferta#experiencia`, mantendo a origem. O que segue descreve a página inicial de antes e fica como referência deste ciclo até a revisão da bio e do calendário.
 
@@ -75,7 +111,7 @@ O caminho principal tem duas DMs: abertura contextual com botão interno **Ver o
 2. Separar captações reais do produto e do casal. Os relatos de oito pessoas estão distribuídos em dez cartelas no guia de Avaliações, com origem dos cinco novos vídeos em producao/destaques/avaliacoes/fontes-dos-relatos.txt. O usuário confirmou o teste do Farol por Rafael, Débora e André. Fernando e Jeffrey falam sobre criar jogos. As cinco cartelas dos responsáveis abordam organização, criatividade, responsabilidade, independência e uso da tela para criar. Os temas são percepções sobre os próprios filhos, sem atribuição específica ao Farol. Apresentar as falas sem reticências ou colchetes nas cartelas; manter os recortes no arquivo de fontes. Identificar nome, Aluno/Aluna ou relação do responsável com a criança, e contexto do relato.
 3. Produzir conforme os roteiros completos. Reaproveitar capturas mantendo autoria e contexto. Nos novos carrosséis, a origem da demonstração fica no arquivo de produção; a legenda esclarece o contexto quando houver risco de confusão com um relato real; seguir a [direção visual](../postagens/05-direcao-visual-e-producao.md) nos demais formatos. Os assets são arquivos de produção; este documento não declara que vídeos ou artes já tenham sido renderizados.
 4. Conferir oferta e links completos em celular, incluindo o destino depois de tocar e a posição de chegada na seção de planos. Não presumir publicação remota a partir do código local. A conferência de navegação não exige realizar compra nem enviar mensagens.
-5. Aplicar bio, nome do link e materiais no Instagram quando a equipe executar a publicação. Publicar os 60 posts na ordem intercalada do calendário, em três dias semanais, e uma sequência ST por semana, ajustando a frequência à produção. Os seis extras E01–E06 podem ampliar o ciclo conforme as dúvidas das famílias. A formação dos destaques e os três fixados ficam fora dessa contagem. Fixar F01, F02 e F03 depois de publicados. Os três são carrosséis 4:5, com 24 imagens no total. Conferir a apresentação no perfil.
+5. Aplicar bio, nome do link e materiais no Instagram quando a equipe executar a publicação. Publicar os 60 posts na ordem intercalada do calendário, em três dias semanais, e uma sequência ST por semana, ajustando a frequência à produção. Os seis extras E01–E06 podem ampliar o ciclo conforme as dúvidas das famílias. A formação dos destaques e os três fixados ficam fora dessa contagem. Desde 20/10/2026, fixar F04, F01 e F05, nesta ordem (F02 e F03 saíram dos fixados). Conferir a apresentação no perfil.
 6. Deixar a ordem dos destaques acompanhar as atualizações. Projetos, Alunos, Avaliações e Dúvidas podem vir para a frente; Como funciona e Sobre nós podem ficar ao final. Usar nomes reconhecíveis e os fixados como orientação, sem publicar conteúdo vazio para reorganizar posições.
 7. Registrar URL ou ID real, data, versão e arquivo final de cada peça no fluxo existente. Revisão editorial, material produzido, agendamento e publicação são estados diferentes.
 

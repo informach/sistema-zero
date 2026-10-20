@@ -1,5 +1,7 @@
 # Instagram: posicionamento e guia de execução
 
+**Novo posicionamento, aprovado pela dona em 20/10/2026:** o perfil fala com **pais de crianças e adolescentes** e com **adultos que querem fazer jogos**, num perfil só, com duas portas: “para o seu filho” e “para você”. Mudaram o posicionamento, a bio, os destaques (agora sete), os fixados (F04, F01 e F05) e o feed (três linhas). [Posicionamento](#posicionamento) · [Bio](#perfil-e-bio-completos) · [Dependências da dona](#dependências-da-dona). Regra de copy nova, que vale antes de todas: [bater o olho e entender](postagens/13-guia-de-copy.md#regra-1--bater-o-olho-e-entender). Nada foi publicado.
+
 **Revisão de copy do calendário: 13/10/2026. Perfil: @criecomhelenaejulio.** O calendário contém 60 publicações principais, uma para cada uma das 30 dores e dos 30 desejos pesquisados, seis extras para famílias que já começaram e 80 telas de stories. Os três fixados ficam separados. O ciclo ainda está em preparação. Esta revisão atualiza os documentos e materiais locais; aplicação no perfil, gravação e publicação são etapas de produção. Os acessos da página inicial do funil já foram tratados na revisão anterior.
 
 **Atalhos:** [Posicionamento](#posicionamento) · [Bio e perfil](#perfil-e-bio-completos) · [Diretrizes de escrita e pedagogia](#direção-de-escrita-e-pedagogia) · [Orientações de produção](#orientações-de-produção).
@@ -11,6 +13,38 @@
 **Clareza aplicada ao conjunto, 13/10/2026:** a régua aprovada em P01, P07 e P34 foi aplicada às demais postagens principais, aos extras, às vinte sequências de stories e às 14 peças ManyChat. [Registro e conferências](pesquisas/revisao-clareza-geral-2026-10-13.md). As três peças de referência e suas artes foram preservadas; as demais têm textos atualizados para a futura produção.
 
 ## Posicionamento
+
+### Dois públicos, um perfil (20/10/2026)
+
+O perfil @criecomhelenaejulio fala com dois públicos: **pais** de crianças e adolescentes de 9 a 17 anos e **adultos** de 18 anos ou mais que sempre quiseram fazer um jogo. É um perfil só, com duas portas, igual à [página da bio](../../../../../packages/funnel/src/pages/index.astro): “Criar jogos não tem idade”, com os cartões **É para mim** e **É para meu filho ou filha**.
+
+**Por que um perfil só:**
+
+1. Os públicos se misturam. Há pais que também querem criar, e a [continuidade adulta](../../../../../packages/funnel/src/funnels/comunidade-adulto/oferta/continuar.ts) já fala com quem acompanha um filho na área Kids.
+2. Toda a prova real de hoje vem das famílias: os relatos autorizados, os alunos e a história do André.
+3. Um perfil adulto separado começaria vazio, sem seguidores e sem prova.
+
+**Reavaliar com dados:** depois de quatro semanas no novo ritmo, comparar os cliques dos cartões `bio-quiz-adulto` e `bio-quiz-infantil` ([links](apoio/links-e-publicacao.md#links-desde-20102026-dois-públicos)). Se o público adulto crescer a ponto de disputar espaço com as famílias, discutir de novo um perfil próprio.
+
+**Como cada espaço fala com os dois:**
+
+| Espaço | Famílias | Adultos |
+| --- | --- | --- |
+| Bio | Linha “Crianças de 9 a 17 criando seus jogos” | Linha “Adultos que sempre quiseram criar um jogo” |
+| Destaques | Kids, Projetos, Criadores, Dúvidas (Pais perguntam), Avaliações, Sobre nós | Adultos, Projetos (PJ09), Dúvidas (Adultos perguntam), Sobre nós (SN08) |
+| Fixados | F04 (os dois) e F01 | F04 (os dois) e F05 |
+| Feed | Linha Famílias, as 60 publicações | Linha Adultos; Por dentro dos jogos serve aos dois |
+| Direct | Postagens ManyChat Kids, sem mudança | Palavra MEUJOGO, só documentada |
+
+**Continuidade à vista (dona, 20/10/2026):** “o primeiro jogo” é a promessa do Desafio do Primeiro Jogo. Sempre que um material apresentar a Comunidade dos Criadores, Kids ou adulta, deixar óbvio o caminho: faz o primeiro jogo, vê que consegue e segue criando outros, cada vez maiores, até o jogo com a própria ideia. Sem inventar quantidade de cursos nem prazos.
+
+**Visual:** cada público na sua identidade. Kids, colorido, como a página de 9 a 17. Adulto, arcade, como a página adulta. A metáfora de jogo fica na arte; o texto continua literal.
+
+**Fatos adultos:** só os da [página adulta](../../../../../packages/funnel/src/funnels/comunidade-adulto/oferta/pagina.ts). Hoje ela usa prévias com dados de teste; até haver capturas reais, o Instagram usa telas dos cursos Kids com o rótulo “Tela da versão Kids do curso. Na área adulta, a aparência é outra.”
+
+### Posicionamento de 09/10 a 20/10/2026 (vale para a linha Famílias)
+
+O texto abaixo continua valendo para a linha Famílias, os destaques Kids, Projetos, Criadores, Dúvidas (Pais perguntam), Avaliações e Sobre nós. A referência ao Desafio como primeiro passo comercial e à bio com três caminhos é histórico: hoje a bio leva aos dois quizzes.
 
 O feed de Helena e Júlio começa nas **dores, desejos, curiosidades e dicas do cotidiano dos pais**, principalmente de crianças de **9 a 14 anos**. Entrega uma reflexão, curiosidade, história ou dica clara e conduz o raciocínio até mostrar como programar e criar jogos oferece situações para organizar ideias, resolver problemas, inventar e construir com tecnologia.
 
@@ -65,27 +99,36 @@ O jeito de ensinar aparece com sutileza, ligado às escolhas e à responsabilida
 
 ## Perfil e bio completos
 
-**Nome:** Helena e Júlio | Programação Infantil
+**Aprovado pela dona em 20/10/2026.**
 
-**Arroba:** @criecomhelenaejulio
+**Nome:** Helena e Júlio | Criar jogos
 
-**Foto:** foto do casal já escolhida, com os dois rostos legíveis no recorte circular. Os avatares permanecem na identidade das aulas.
+**Arroba:** @criecomhelenaejulio (não muda)
 
-**Categoria:** Educação, se disponível na conta.
+**Foto:** foto do casal já escolhida, com os dois rostos legíveis no recorte circular.
+
+**Categoria:** Educação.
 
 **Bio para aplicar:**
 
 ```text
-🎮 Programação para crianças de 9 a 14 anos
-💡 Seu filho aprende criando o primeiro jogo
-👇 Conheça as aulas e escolha por onde começar
+🎮 Criar jogos não tem idade
+👦 Crianças de 9 a 17 criando seus jogos
+🕹️ Adultos que sempre quiseram criar um jogo
+👇 Para você ou para seu filho
 ```
 
-**Título do link:** Conheça as aulas e escolha por onde começar
+**Limite de 150 caracteres:** a bio tem 142 caracteres contando cada emoji como um (146 em unidades UTF-16, pelo emoji 🕹️ com seletor de variação). Cabe, mas com pouca folga: conferir no aplicativo antes de salvar.
 
-**Destino:** página inicial do funil, `https://sistemazero.com.br/`, com o endereço completo em [Links e publicação](apoio/links-e-publicacao.md#links-prontos).
+**Título do link:** Escolha para quem é
 
-A bio apresenta público, atividade e próximo passo. O link abre a página inicial com três caminhos, nesta ordem: Como funciona, oferta do Desafio e oferta da Comunidade. Os botões dos produtos abrem diretamente suas ofertas. Os quizzes ficam para campanhas específicas e não são destinos dos posts ou destaques deste ciclo. Manter a página inicial como destino da bio durante todo o ciclo, inclusive nas publicações sobre a Comunidade.
+**Destino:** página inicial do funil, `https://sistemazero.com.br/`, com os dois quizzes. Endereço com origem em [Links e publicação](apoio/links-e-publicacao.md#links-desde-20102026-dois-públicos).
+
+A bio repete a página que o link abre: a frase “Criar jogos não tem idade” e as duas portas, para o filho e para você. A ordem das linhas segue a prova que existe hoje: as famílias primeiro.
+
+> **Histórico, de 09/10 a 20/10/2026:** nome “Helena e Júlio | Programação Infantil”; bio “🎮 Programação para crianças de 9 a 14 anos / 💡 Seu filho aprende criando o primeiro jogo / 👇 Conheça as aulas e escolha por onde começar”; título do link “Conheça as aulas e escolha por onde começar”. O texto a seguir descreve aquela bio.
+
+A bio apresentava público, atividade e próximo passo. O link abre a página inicial com três caminhos, nesta ordem: Como funciona, oferta do Desafio e oferta da Comunidade. Os botões dos produtos abrem diretamente suas ofertas. Os quizzes ficam para campanhas específicas e não são destinos dos posts ou destaques deste ciclo. Manter a página inicial como destino da bio durante todo o ciclo, inclusive nas publicações sobre a Comunidade.
 
 ### Copy dos três caminhos na página inicial
 
@@ -105,8 +148,9 @@ Nos fixados e destaques que apresentam uma oferta, indicar o botão ou sticker c
 
 | Material | Fonte única da copy | Conteúdo |
 | --- | --- | --- |
-| Seis destaques | [01 · Destaques](01-destaques.md) | Texto de cada tela, fala, cena, identificação e sticker |
-| Três fixados | [02 · Fixados](02-fixados.md) | F01, F02 e F03 em carrosséis 4:5, com 24 PNGs, copy completa, legendas e texto alternativo |
+| Sete destaques | [01 · Destaques](01-destaques.md) | Kids, Adultos, Projetos, Criadores, Dúvidas, Avaliações e Sobre nós; texto de cada tela, fala, cena, identificação e sticker |
+| Três fixados | [02 · Fixados](02-fixados.md) | F04, F01 e F05 em carrosséis 4:5, com copy completa, legendas e texto alternativo; F02 e F03 ficam como histórico |
+| Linhas novas do feed | [16 · Linhas Adultos e Por dentro dos jogos](postagens/16-linhas-adulto-e-por-dentro.md) | PA01 a PA06 e PD01 a PD06, mais a palavra MEUJOGO para direct |
 | Ciclo de vinte semanas | [03 · Postagens](03-postagens.md) | P01–P60: 30 carrosséis, 18 Reels e 12 imagens; seis extras E01–E06; 20 sequências de quatro stories (80 telas) |
 | Cobertura da pesquisa | [30 dores e 30 desejos](postagens/12-mapa-cobertura.md) | Uma publicação principal exclusiva por necessidade, com copy e base identificadas |
 | Pesquisa e decisões | [50 publicações e análise](pesquisas/kodland-50-publicacoes-2026-10-12.md) | Perfil da Kodland consultado com login, peças examinadas, fontes, limites e hipóteses para o novo ciclo |
@@ -121,13 +165,24 @@ Os três fixados F01–F03 ficam fora das 60 publicações P01–P60. Com os sei
 
 **Três carrosséis com a copy simplificada após leitura das artes:** [P01](producao/postagens/p01-uma-ideia-dele/index.html) (sete slides), [P07](producao/postagens/p07-primeira-dificuldade/index.html) (sete slides) e [P34](producao/postagens/p34-a-ideia-veio-dele/index.html) (oito slides). São 22 PNGs em 1080 × 1350, com a copy atual, legendas e textos alternativos. P01 usa a mesma criança fictícia em cenas diferentes, editor real e comparação do turbo. P07 mantém André e Júlio, com novas capturas do salto, céu e ângulos variados. P34 usa retratos reais de Daniel e Rafael, ilustrações distintas e a comparação da batalha. A paleta azul, branca e amarela foi mantida; a mudança solicitada foi de direção de arte, copy e produção. [Prévia das postagens produzidas](producao/postagens/index.html). Ordem no calendário: P01 e P07 na semana 1, P34 na semana 2. **P04 produzido em 14/10/2026:** [sete slides sobre arquivos no computador](producao/postagens/p04-arquivos-no-computador/index.html), com novas cenas, legenda e textos alternativos. **P37 produzido em 14/10/2026:** [sete slides sobre organizar a ideia de um jogo em três desenhos](producao/postagens/p37-ideia-em-tres-desenhos/index.html), com fotos novas, capturas do jogo de piratas, legenda e textos alternativos. **P20 produzido em 14/10/2026:** [sete slides sobre conversar com a filha a respeito dos jogos](producao/postagens/p20-conversas-sobre-jogos/index.html), com cenas de família e demonstração do Mundo de Blocos Profissional. **P31 produzido em 14/10/2026:** [sete slides sobre criar uma busca pelo tesouro para outra pessoa](producao/postagens/p31-tesouro-no-jogo/index.html), com cenas de família, esboços e capturas reais do Meu Mundo. **P40 produzido em 14/10/2026:** [sete slides sobre explicar um caminho e organizar instruções](producao/postagens/p40-explicar-o-caminho/index.html), com mapa fictício, cenas de família e teste real da sequência de anéis na Corrida do Pôr do Sol. **P44 produzido em 14/10/2026:** [sete slides sobre contas e escolhas na criação de uma batalha](producao/postagens/p44-conta-na-batalha/index.html), com cenas novas e comparação real entre ataques de oito e dez na Batalha de Monstrinhos. **P05 produzido em 14/10/2026:** [oito slides sobre acompanhar as atividades do filho na tela](producao/postagens/p05-chegue-mais-perto/index.html), com cenas novas, um combinado em família e diálogo real na Vila das Vocações. **P11 produzido em 14/10/2026:** [oito slides sobre escolher uma primeira cena para começar um jogo](producao/postagens/p11-primeira-cena/index.html), com novas cenas, duas listas e percurso real na Vila do Dragão. **P35 produzido em 14/10/2026:** [sete slides sobre transformar uma história em uma aventura explorável](producao/postagens/p35-historia-em-jogo/index.html), com cenas em família, ilustrações e percurso real no Reino Aberto. **P46 produzido em 14/10/2026:** [sete slides sobre aprender uma ferramenta começando por uma tarefa pequena](producao/postagens/p46-explorar-uma-ferramenta/index.html), com fotos novas, consulta às dicas do Pinta e movimentos reais na Mini plataforma e no Salto nas Nuvens. **P28 produzido em 14/10/2026:** [sete slides sobre o computador usado para criar](producao/postagens/p28-computador-para-criar/index.html), com cenas novas, exemplo de horário combinado e demonstração real de mouse e teclado na Quadra Maluca. **P54 produzido em 14/10/2026:** [sete slides sobre combinar a parada e preparar a continuação](producao/postagens/p54-combinar-a-hora-de-parar/index.html), com cenas novas de família, bilhete de próximo passo e aviso original de salvamento renderizado em demonstração. **P55 produzido em 14/10/2026:** [sete slides sobre ouvir a criança e conhecer a experiência](producao/postagens/p55-do-que-ele-gostou/index.html), com cenas novas de pai e filho e mudança de cor demonstrada no Estúdio. **P13 produzido em 14/10/2026:** [oito slides sobre separar uma atividade em tarefas](producao/postagens/p13-uma-tarefa-de-cada-vez/index.html), com bilhetes, esboços e sequência real da torre no Defesa do Reino. **P50 produzido em 14/10/2026:** [sete slides sobre compartilhar um jogo e conversar sobre a criação](producao/postagens/p50-um-jogo-para-compartilhar/index.html), com retrato e fala reais do Rafael, novas cenas, corrida em execução e recortes do Mural. **P52 produzido em 14/10/2026:** [nove slides sobre transformar interesses em ideias de regras](producao/postagens/p52-inventar-as-regras/index.html), com cenas de futebol, esboços e batalha real de Bichinhos do Quintal. **P09 produzido em 14/10/2026:** [sete slides sobre explicar uma escolha e testar sua função](producao/postagens/p09-explicar-uma-escolha/index.html), com cenas de mãe e filha e comparação real do jogo da memória com e sem a espera. **P42 produzido em 14/10/2026:** [sete slides sobre combinar o resultado e conferir a tarefa](producao/postagens/p42-combinar-o-que-fica-pronto/index.html), com cenas novas, listas no papel e teste real de nove e dez naves em Caça Estelar. **P25 produzido em 14/10/2026:** [oito slides sobre conhecer a continuação e a ajuda disponível](producao/postagens/p25-depois-da-primeira-aula/index.html), com cenas novas, trilha e Mapa da Aventura reais e demonstração de coleta e comemoração na Base da Lua. **P18 produzido em 14/10/2026:** [oito slides sobre acompanhamento e rotina da família](producao/postagens/p18-acompanhamento-na-rotina/index.html), com seis cenas novas, vídeo real e verificação nativa dos blocos. **P21 produzido em 14/10/2026:** [sete slides sobre conhecer a atividade antes de escolher](producao/postagens/p21-ver-a-atividade/index.html), com cenas novas, blocos reais e teste de energia no Duelo de Cartas. **P15 produzido em 14/10/2026:** [sete slides sobre primeiras escolhas a partir de um modelo](producao/postagens/p15-primeiras-escolhas/index.html), com cenas novas e o mesmo personagem em desenhos de castelo e rua. **P48 produzido em 14/10/2026:** [sete slides sobre o que o placar conta](producao/postagens/p48-o-que-o-placar-conta/index.html), com ilustração, cena em família e comparação real da regra na Mina de Cristais. **P26 produzido em 14/10/2026:** [sete slides sobre conversar com o filho a respeito do que aprendeu](producao/postagens/p26-conversar-sobre-o-que-aprendeu/index.html), com cenas novas em família, blocos reais e comparação do crescimento da ponte no Equilibrista. **P23 produzido em 14/10/2026:** [oito slides sobre pausar a aula para praticar](producao/postagens/p23-pausar-para-praticar/index.html), com cenas novas, player e ajuda reais e teste do disparo na Patrulha Espacial. **P57 produzido em 14/10/2026:** [oito slides sobre ajudar a entender a dúvida](producao/postagens/p57-ajudar-a-entender-a-duvida/index.html), com cenas novas, regra dos dois golpes na Arena dos Goblins e recursos nativos de orientação. **P60 produzido em 14/10/2026:** [sete slides com o relato do André e escolhas de um jogo](producao/postagens/p60-vontade-de-criar-o-proximo/index.html), com retratos reais, cenas novas e regra da casa premiada. Os 30 carrosséis somam 220 PNGs; P04 e P37 são os carrosséis da semana 3, P20 encerra a semana 4, e P31 e P40 são os carrosséis da semana 5. P44 é o segundo post da semana 6. P05 abre a semana 7. P11 abre a semana 8. P35 é o segundo post da semana 9. P46 encerra a semana 9. P28 encerra a semana 10. P54 abre a semana 11. P55 encerra a semana 11. P13 abre a semana 12. P50 é o segundo post da semana 12. P52 é o terceiro post da semana 13. P09 é o primeiro post da semana 14. P42 é o segundo post da semana 14. P25 é o primeiro post da semana 15. P18 é o primeiro post da semana 16. P21 é o segundo post da semana 17. P15 é o primeiro post da semana 18. P48 é o segundo post da semana 18. P26 é o primeiro post da semana 19. P23 é o terceiro post da semana 19. P57 é o primeiro post da semana 20. P60 é o terceiro post da semana 20 e completa os 30 carrosséis previstos no calendário atual. Não há outro carrossel pendente nessa sequência. Nenhuma peça foi publicada ou agendada. As artes antigas do “não consigo” foram apagadas a pedido do usuário.
 
-**Destaques:** Como funciona, Projetos, Alunos, Dúvidas, Avaliações e Sobre nós. Essa é uma referência de organização inicial, não uma posição permanente. A ordem é viva: atualizações podem trazer o destaque para a frente. Como funciona e Sobre nós podem permanecer ao final; os três fixados orientam quem chega. Não republicar stories só para recompor uma ordem. [Prévia das capas](capas/index.html) · [PNGs em ZIP](capas/capas-instagram.zip). Manter as seis capas. Projetos apresenta Farol, Cadê Todo Mundo?, Nave Contra Asteroides e Corre Dino. Alunos é um destaque vivo de crianças em atividade. A produção atual tem sete stories: abertura com as cinco fotos, cenas provisórias de Rafael, Jeffrey, Débora, André e Fernando e convite final. Os [PNGs e as cinco molduras para vídeos](producao/destaques/alunos/) estão prontos. As cenas foram geradas com as referências das crianças a pedido do responsável e serão trocadas pelos vídeos. A abertura não fixa nomes ou quantidade no texto; novos registros entram conforme forem selecionados. Cada criança tem sua identificação e uma legenda correspondente à ação: aprender, explorar, personalizar, testar ou mostrar o que fez.
+**Destaques desde 20/10/2026:** Kids, Adultos, Projetos, Criadores, Dúvidas, Avaliações e Sobre nós, nesta ordem ([detalhes](01-destaques.md)). O parágrafo a seguir descreve a organização de 09/10/2026. **Destaques:** Como funciona, Projetos, Alunos, Dúvidas, Avaliações e Sobre nós. Essa é uma referência de organização inicial, não uma posição permanente. A ordem é viva: atualizações podem trazer o destaque para a frente. Como funciona e Sobre nós podem permanecer ao final; os três fixados orientam quem chega. Não republicar stories só para recompor uma ordem. [Prévia das capas](capas/index.html) · [PNGs em ZIP](capas/capas-instagram.zip). Manter as seis capas. Projetos apresenta Farol, Cadê Todo Mundo?, Nave Contra Asteroides e Corre Dino. Alunos é um destaque vivo de crianças em atividade. A produção atual tem sete stories: abertura com as cinco fotos, cenas provisórias de Rafael, Jeffrey, Débora, André e Fernando e convite final. Os [PNGs e as cinco molduras para vídeos](producao/destaques/alunos/) estão prontos. As cenas foram geradas com as referências das crianças a pedido do responsável e serão trocadas pelos vídeos. A abertura não fixa nomes ou quantidade no texto; novos registros entram conforme forem selecionados. Cada criança tem sua identificação e uma legenda correspondente à ação: aprender, explorar, personalizar, testar ou mostrar o que fez.
 
 Avaliações reúne oito pessoas em doze stories, alternando as cinco crianças com cinco cartelas dos responsáveis. Daniel, pai do Rafael, fala de organização e criatividade; Harle, pai do Jeffrey, de responsabilidade; Flávia, mãe do Fernando, de independência e uso da tela para criar. Daniel e Flávia têm duas telas cada, com um tema por tela. A abertura mostra os oito rostos. Os [PNGs, fontes das falas e orientações](producao/destaques/avaliacoes/) incluem os retratos dos responsáveis extraídos dos vídeos. Nas cartelas, usar nome, Aluno/Aluna ou relação do responsável com a criança, e o tema ou contexto confirmado. As cartelas usam aspas de abertura e fechamento com o mesmo estilo gráfico e não exibem reticências ou colchetes. Os recortes ficam documentados no arquivo de fontes. A copy completa está no guia 01.
 
-Os [três fixados](producao/fixados/) somam 24 imagens de 1080 × 1350: oito em F01, sete em F02 e nove em F03. O slide 7 de F01 apresenta as opções de personalização depois do jogo funcionar; o slide 8 faz o convite final. Os três carrosséis não exibem o rótulo Demonstração da equipe. Cada pasta inclui a legenda completa, o texto alternativo de cada slide e as instruções de publicação.
+**Fixados desde 20/10/2026:** F04 “Criar jogos não tem idade”, F01 “O primeiro jogo do seu filho” e F05 “O jogo que você sempre quis fazer” ([copy](02-fixados.md)). F04 e F05 ainda não têm artes, e o slide 8 de F01 precisa ser refeito. O texto a seguir descreve o lote de 11/10/2026. Os [três fixados](producao/fixados/) somavam 24 imagens de 1080 × 1350: oito em F01, sete em F02 e nove em F03. O slide 7 de F01 apresenta as opções de personalização depois do jogo funcionar; o slide 8 faz o convite final. Os três carrosséis não exibem o rótulo Demonstração da equipe. Cada pasta inclui a legenda completa, o texto alternativo de cada slide e as instruções de publicação.
+
+## Dependências da dona
+
+O que falta para produzir e publicar o novo posicionamento:
+
+1. **Capturas reais da área adulta.** A página adulta ainda usa prévias com dados de teste. Até lá, o Instagram usa telas dos cursos Kids com rótulo, e nada adulto mostra prévia de teste como tela real.
+2. **Um relato adulto autorizado, com resultado concreto** (por exemplo, o jogo que a pessoa terminou e publicou). Sem ele, Avaliações e Criadores ficam só com famílias, e nenhuma peça cita uma fala adulta.
+3. **Revisão de F03, CF08 e CF09.** F03 saiu dos fixados e ficou como histórico; CF07 a CF09 foram reescritas para o funil atual (quiz infantil e página Kids) e precisam do aval da dona e de novas artes. Na mesma revisão: os stickers que ainda levam à oferta avulsa do Desafio (PJ02, AL06, AV05, DU07, DU10, DU18) e as respostas DU06 a DU10.
+4. **Decisões menores:** campanha `instagram_dois_publicos_2026` nos links novos; palavra MEUJOGO; novas capas (Kids, Adultos, Criadores); nova gravação ou corte da fala de SN07, que cita “Como funciona”.
 
 ## Direção de escrita e pedagogia
+
+**Regra 1, desde 20/10/2026:** [bater o olho e entender](postagens/13-guia-de-copy.md#regra-1--bater-o-olho-e-entender). Frases literais, nas palavras do público, sem metáfora de jogo ou termo técnico que precise ser decifrado, sem frase que só funciona ao lado da imagem, uma ideia por frase. As orientações abaixo continuam valendo para a linha Famílias.
 
 A voz comercial tem fonte única nas [regras de copy](../../../../../packages/marketing/src/domain/copy/light-copy-rules.ts). A pedagogia continua nas [Diretrizes Pedagógicas](../../../../aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md), na [especificação dos roteiros](../../../../aulas-interativas-tecnico/ESPEC-ROTEIRO.md) e nos [módulos do Desafio](../../../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md). As orientações abaixo aplicam essas fontes ao Instagram, sem substituí-las.
 

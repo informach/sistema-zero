@@ -9,6 +9,7 @@ Leia [o contexto](../marketing-sistema-zero/references/contexto.md). As doze reg
 
 ## Passagens de revisão
 
+0. **Bater o olho e entender (regra da dona, 20/10/2026):** a pessoa entende cada frase na primeira leitura, sem pensar nem interpretar. Confira: frase literal, nas palavras do público; nenhuma metáfora de jogo ou termo técnico que precise ser decifrado; nenhuma frase que só funciona ao lado da imagem; uma ideia por frase. Reescreva o que falhar antes das outras passagens.
 1. **Oferta e provas:** compare promessa com entrega, suporte, acesso, preço, renovação, garantia e disponibilidade. Confira a fonte de números, depoimentos, comparações e alegações educacionais. Não transforme hipótese em certeza nem corrija uma promessa exagerada inventando outra.
 2. **Argumentação:** verifique situação, mecanismo, resultado e consequência. Remova generalizações, repetições e acusações contra alternativas. Um nome bonito não substitui uma explicação. Demonstração de interface não comprova resultado pedagógico.
 3. **Voz:** aplique as regras locais, português natural, fluidez e especificidade. Perguntas de FAQ ou quiz têm função própria; a restrição de pergunta no gancho não elimina perguntas legítimas. Citações literais permanecem fiéis, mesmo quando não seguem a voz da marca.

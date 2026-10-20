@@ -1,18 +1,30 @@
 # Destaques: copy completa por story
 
-**Revisão: 09/10/2026.** Direção e bio no [guia principal](README.md). Os seis destaques são **Como funciona, Projetos, Alunos, Dúvidas, Avaliações e Sobre nós**. A ordem é viva: uma atualização pode trazer o destaque para a frente. Como funciona e Sobre nós podem ficar ao final; os fixados orientam quem chega. São **61 telas na seleção inicial**, numeradas abaixo; os blocos entram pelo [calendário único](03-postagens.md#vinte-semanas-sugeridas).
+**Revisão: 20/10/2026, dois públicos.** Direção e bio no [guia principal](README.md#posicionamento). O perfil agora fala com pais e com adultos que querem fazer jogos. São **sete destaques, nesta ordem: Kids, Adultos, Projetos, Criadores, Dúvidas, Avaliações e Sobre nós.**
+
+| Destaque | O que mudou em 20/10/2026 | Capa |
+| --- | --- | --- |
+| Kids | Era Como funciona. CF01 a CF06 continuam; CF07 a CF09 seguem o funil atual (bio, quiz infantil, página Kids) | Identidade Kids, colorida |
+| Adultos | Novo, AD01 a AD07 | Identidade adulta, arcade |
+| Projetos | Igual, mais a tela PJ09 sobre a área adulta | Kids |
+| Criadores | Era Alunos; o nome deixa entrar adultos depois | Kids |
+| Dúvidas | Duas partes: Pais perguntam (DU01 a DU18, DU01 atualizada) e Adultos perguntam (DA01 a DA05) | Kids, com selo adulto na segunda parte |
+| Avaliações | Igual; só famílias até existir um relato adulto real e autorizado | Kids |
+| Sobre nós | SN07 ajustada e nova SN08 sobre a área adulta | Kids |
+
+As capas atuais de [capas/](capas/index.html) continuam como histórico. Faltam três capas: Kids (renomear a de Como funciona), Adultos (nova, arcade) e Criadores (renomear a de Alunos). A seleção de 09/10/2026 tinha seis destaques e 61 telas; os textos substituídos ficam em blocos “Histórico” nas seções correspondentes. Até 20/10/2026, a ordem era viva e Como funciona e Sobre nós podiam ficar ao final; agora Kids e Adultos abrem o perfil, porque são as duas portas da bio.
 
 ## Como produzir estas telas
 
 Cada bloco de citação é texto público completo. **Cartela** usa esse texto na arte, sem fala adicional. **Vídeo** usa o texto como fala de Helena ou Júlio e como legenda fiel; a sobreposição indicada é o título curto. Cenas são orientações internas. Manter tempo de leitura e observação; não comprimir dois stories numerados numa tela. As perguntas de Dúvidas são títulos funcionais de FAQ.
 
-Links L0 e L5 e o destino da bio, LB, estão em [Links e publicação](apoio/links-e-publicacao.md). Quando não houver sticker indicado, a tela não tem link nem interação adicional. As cenas do Farol operadas pelo casal recebem o rótulo visível **Demonstração da equipe**. Não narrar depoimentos como se Helena ou Júlio fossem seus autores.
+Links L0 e L5, os quizzes LK (infantil) e LA (adulto) e o destino da bio, LB, estão em [Links e publicação](apoio/links-e-publicacao.md). Quando não houver sticker indicado, a tela não tem link nem interação adicional. As cenas do Farol operadas pelo casal recebem o rótulo visível **Demonstração da equipe**. Não narrar depoimentos como se Helena ou Júlio fossem seus autores.
 
-## Como funciona
+## Kids
 
-**Função:** contar o primeiro passo antes de detalhar ferramentas ou planos. Nove telas: formato e condições foram separados para preservar a leitura.
+**Nome até 20/10/2026:** Como funciona. **Função:** mostrar ao pai como o filho faz o primeiro jogo e o que vem depois dele. CF01 a CF06 contam o primeiro jogo, A Chave do Farol, e continuam valendo. CF07 a CF09 apresentam a Comunidade dos Criadores Kids com as condições da [página de 9 a 17](../../../../../packages/funnel/src/funnels/comunidade-dos-criadores/oferta/pagina-9a17.ts) e levam ao quiz infantil, como a bio. Nove telas.
 
-**Artes estáticas:** as nove telas estão em [produção do destaque Como funciona](producao/destaques/como-funciona). Cada PNG contém a copy completa; as cenas do jogo usam capturas do Farol e de seus blocos. Na CF06, a cena da família no computador acompanha a conversa sobre as escolhas da criança. Adicionar o sticker de link à CF09 conforme `publicacao.txt`.
+**Artes estáticas:** as nove telas estão em [produção do destaque Como funciona](producao/destaques/como-funciona). Cada PNG contém a copy completa; as cenas do jogo usam capturas do Farol e de seus blocos. Na CF06, a cena da família no computador acompanha a conversa sobre as escolhas da criança. Adicionar o sticker de link à CF09 conforme `publicacao.txt`. Desde 20/10/2026 o sticker da CF09 é “É para meu filho ou filha” → LK; o `publicacao.txt` da pasta ainda descreve o sticker antigo, e as artes de CF07 a CF09 precisam ser refeitas.
 
 ### CF01 · O jogo e a regra
 
@@ -54,19 +66,83 @@ Links L0 e L5 e o destino da bio, LB, estão em [Links e publicação](apoio/lin
 
 **Cartela. Título:** Aulas gravadas, no computador.
 
-> O Desafio foi pensado para crianças de 9 a 14 anos e precisa de computador com internet, mouse e teclado. As aulas são gravadas: seu filho pode pausar para fazer cada passo e voltar ao vídeo quando precisar.
+> A Comunidade dos Criadores Kids é para quem tem de 9 a 17 anos e lê com autonomia. Precisa de computador com internet, mouse e teclado. As aulas são gravadas. Seu filho pausa para montar cada passo e volta ao vídeo quando precisar.
 
-### CF08 · Acesso e pagamento
+**Fonte:** requisitos e faixa da página de 9 a 17 (“Para quem lê com autonomia · Computador com internet, mouse e teclado”).
 
-**Cartela. Título:** Pagamento único, 30 dias de acesso.
+### CF08 · Depois do primeiro jogo
 
-> Você paga uma vez e tem 30 dias de acesso, contados da aprovação do pagamento. Nesse tempo, seu filho faz as aulas, monta o jogo e pode compartilhá-lo no Mural, onde outras pessoas podem jogar. A compra não vira uma assinatura.
+**Cartela. Título:** Depois do primeiro jogo, os próximos.
 
-### CF09 · Primeiro passo e continuidade
+> Depois da Chave do Farol, seu filho segue criando outros jogos. Cada curso que ele termina abre peças novas no Estúdio dele. É lá que ele faz o jogo que inventou. A Comunidade é uma assinatura, mensal ou anual, com 7 dias de garantia. Você cancela quando quiser, sem multa.
 
-**Vídeo. Cena:** casal com o projeto e, no fecho, oferta do Desafio. **Sobreposição:** Conheça o Desafio do Primeiro Jogo. **Sticker:** Conhecer o Desafio → L0, origem cf09.
+**Fonte:** hero, “O que muda” e planos da página de 9 a 17. Sem preço na arte: o valor fica na página. O Desafio do Primeiro Jogo vem incluído nos dois planos.
 
-> No botão, veja o jogo, as aulas e o valor do Desafio. É um começo para vocês conhecerem a proposta na prática. Se quiserem outros cursos depois, podem escolher a assinatura da Comunidade dos Criadores, paga separadamente.
+### CF09 · Para começar
+
+**Vídeo. Cena:** Helena e Júlio diante do notebook com o Farol aceso. **Sobreposição:** É para meu filho ou filha. **Sticker:** É para meu filho ou filha → LK, origem cf09.
+
+> Toque em É para meu filho ou filha. Você responde algumas perguntas sobre a rotina dele, e o resultado aparece na hora. Depois, a página mostra as aulas, os planos e o que está incluído.
+
+**Fonte:** entrada do quiz infantil (“Responda sobre a rotina dele. O resultado aparece na hora, sem cadastro.”) e o cartão da bio. O resultado do quiz leva à página Kids.
+
+> **Histórico, até 20/10/2026:** CF07 dizia “O Desafio foi pensado para crianças de 9 a 14 anos e precisa de computador com internet, mouse e teclado. As aulas são gravadas: seu filho pode pausar para fazer cada passo e voltar ao vídeo quando precisar.” CF08 (título “Pagamento único, 30 dias de acesso”) dizia “Você paga uma vez e tem 30 dias de acesso, contados da aprovação do pagamento. Nesse tempo, seu filho faz as aulas, monta o jogo e pode compartilhá-lo no Mural, onde outras pessoas podem jogar. A compra não vira uma assinatura.” CF09 levava ao Desafio (L0) com “No botão, veja o jogo, as aulas e o valor do Desafio. É um começo para vocês conhecerem a proposta na prática. Se quiserem outros cursos depois, podem escolher a assinatura da Comunidade dos Criadores, paga separadamente.” As artes de CF07 a CF09 em `producao/destaques/como-funciona` são dessa versão e precisam ser refeitas. A oferta avulsa do Desafio continua no ar; a bio deixou de levar a ela.
+
+## Adultos
+
+**Novo em 20/10/2026. Função:** falar com quem tem 18 anos ou mais e sempre quis fazer um jogo: por que a ideia fica parada, por onde começar, o primeiro jogo, os próximos, as condições e a porta “É para mim”. Sete telas. **Fonte única dos fatos:** [página adulta](../../../../../packages/funnel/src/funnels/comunidade-adulto/oferta/pagina.ts), incluindo o hero que está sendo reescrito em 20/10/2026 (“Você sempre quis fazer um jogo. Aqui você faz o primeiro e segue criando outros, cada vez maiores, até o jogo com a sua ideia.”). Se a página mudar, conferir estas telas.
+
+**Visual:** identidade adulta da página (tema arcade: fundo escuro, amarelo com sombra rosa, títulos em Bricolage Grotesque). O arcade fica na arte; o texto continua literal, sem “press start”, “level up” ou “insert coin”. Rosto adulto: Helena e Júlio. **Capturas:** a área adulta ainda só tem prévias com dados de teste. Até chegarem capturas reais, usar as telas dos cursos Kids com o rótulo “Tela da versão Kids do curso. Na área adulta, a aparência é outra.”, como no presente adulto. Nunca usar a prévia com dados de teste como se fosse tela real.
+
+### AD01 · Você sempre quis fazer um jogo
+
+**Vídeo. Cena:** Júlio (ou Helena) à câmera, ao lado do computador. **Sobreposição:** Você sempre quis fazer um jogo.
+
+> Você sempre quis fazer um jogo. Talvez já tenha a ideia na cabeça: a fase, o personagem, a regra. Aqui a gente mostra como fazer o primeiro e seguir para os próximos.
+
+### AD02 · Por que a ideia fica parada
+
+**Cartela. Título:** Por que a ideia fica parada.
+
+> As ferramentas profissionais de fazer jogo foram feitas para estúdios. Abrem com dezenas de janelas e nenhum próximo passo. E o primeiro projeto costuma começar grande demais. Com o trabalho e o cansaço da noite, ele fica para depois.
+
+**Fonte:** seção “A ideia que ficou na cabeça” e “O que trava”. A frase pedida sobre “ferramentas que esperam que você já programe antes do primeiro pulo” não aparece na página; ficou a causa que a página afirma.
+
+### AD03 · Comece pelos clássicos pequenos
+
+**Cartela com três capturas** (Nave Contra Asteroides, Corre Dino, A Chave do Farol), com o rótulo das telas Kids. **Título:** Comece pelos clássicos pequenos.
+
+> Aqui você começa por jogos pequenos, de propósito. Uma nave contra asteroides. Um dino que pula cactos. Um farol que só acende com a chave. São os primeiros jogos que você termina e publica com o seu nome.
+
+### AD04 · Um exemplo
+
+**Cartela com duas capturas:** o bloco do placar com +1 e com +5, e o placar da partida em cada caso. Captura real a fazer; rótulo das telas Kids. **Título:** Uma regra que você muda.
+
+> Na Nave Contra Asteroides, cada asteroide acertado vale um ponto. Você troca esse valor para cinco. Roda o jogo e vê o placar subir mais rápido. Quando o jogo fica pronto, você manda o link, e ele abre no celular dos amigos, sem cadastro.
+
+### AD05 · Depois do primeiro, os próximos
+
+**Cartela. Título:** Depois do primeiro jogo, os próximos.
+
+> Seu primeiro jogo fica pronto, com o seu nome como criador na abertura. Depois vêm os próximos, cada vez maiores. Cada curso ensina uma parte nova do jogo, como o pulo, o placar e o fim da fase. Mais adiante, o Pensa ajuda a dividir a sua ideia em partes, e você monta o seu jogo no Estúdio.
+
+**Fonte:** hero novo; “Como funciona” (“os blocos que decidem o pulo, o valor da moeda e o fim da fase”); “Selecione a etapa” (cada curso vira ferramenta no Estúdio; “do clássico de uma tela ao jogo de várias fases”; o Pensa “conversa sobre a ideia do seu jogo e a divide em missões”). Não citar quantidade de cursos nem prazo: o Pensa chega numa etapa avançada.
+
+### AD06 · Antes de começar
+
+**Cartela. Título:** Antes de começar.
+
+> É para quem tem 18 anos ou mais. Você cria no navegador do computador, com mouse e teclado. É uma assinatura, mensal ou anual, e o valor está na página. Você tem 7 dias de garantia e cancela quando quiser.
+
+**Fonte:** requisitos do hero, cartão dos planos e garantia. Preço só na página, nunca nesta arte.
+
+### AD07 · É para mim
+
+**Vídeo. Cena:** Helena e Júlio juntos à câmera. **Sobreposição:** É para mim. **Sticker:** É para mim → LA, origem ad07.
+
+> Se você sempre quis fazer um jogo, toque em É para mim. São algumas perguntas sobre como você joga e o que já tentou. Em 3 minutos, a gente mostra por onde começar.
+
+**Fonte:** cartão adulto da bio e entrada do quiz adulto (“Responda sobre como você joga e o que já tentou”; “3 minutos”).
 
 ## Projetos
 
@@ -201,6 +277,14 @@ Links L0 e L5 e o destino da bio, LB, estão em [Links e publicação](apoio/lin
 
 **Sticker:** Conhecer a Comunidade → L5, origem pj08.
 
+### PJ09 · Os mesmos clássicos na área adulta
+
+**Novo em 20/10/2026. Cartela na identidade adulta, com as quatro capturas pequenas lado a lado. Título:** Os mesmos clássicos estão na área adulta.
+
+> A Chave do Farol, Cadê Todo Mundo, Nave Contra Asteroides e Corre Dino também estão na área adulta. Lá, quem cria é você, com conta própria e outra aparência. Para conhecer, toque em É para mim.
+
+**Sticker:** É para mim → LA, origem pj09. **Fonte:** lista “Os primeiros jogos” da página adulta (os quatro jogos estão lá, mais O Jogo do Meu Jeito) e a dúvida “É a mesma plataforma das crianças?”. Rótulo das telas Kids até haver captura adulta real.
+
 ### Como acrescentar novos projetos
 
 Cada projeto novo recebe **duas telas com copy completa**: montagem com dois momentos do jogo, pelo menos um deles em andamento; depois, recorte de blocos e habilidades praticadas. Se houver telas de abertura e encerramento, escolher uma delas para acompanhar a ação, conforme o que melhor apresenta o jogo. Acrescentar o bloco preservando o catálogo já apresentado. Escrever títulos, rótulos, chamadas, texto da arte e convite antes da produção.
@@ -211,7 +295,9 @@ Usar os próximos IDs PJ disponíveis e acrescentar o bloco ao calendário e aos
 
 Fontes: [Farol](../../../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md), [Cadê Todo Mundo?](../../../../aulas-interativas-tecnico/modulos-cade-todo-mundo.md), [Nave Contra Asteroides](../../../../aulas-interativas-tecnico/modulos-nave-contra-asteroides.md) e [Corre Dino](../../../../aulas-interativas-tecnico/modulos-corre-dino.md). A lista de projetos existentes e a direção visual foram confirmadas pelo responsável nesta conversa.
 
-## Alunos
+## Criadores
+
+**Nome até 20/10/2026:** Alunos. O nome mudou para que adultos possam entrar depois, quando houver registro real e autorizado de um adulto criando. O lote atual continua só com crianças, e as telas AL01 a AL07 não mudam. A capa precisa ser refeita com o novo nome. Ao entrar o primeiro adulto, escrever uma abertura nova que não fale só de crianças; até lá, AL01 vale como está.
 
 **Função:** mostrar crianças fazendo cursos e atividades da Comunidade, com suas reações e participação reais. **Alunos é um destaque vivo**, que recebe novos stories conforme novos registros forem selecionados. A seleção atual indicada pelo responsável reúne **Rafael, Jeffrey, Débora, André e Fernando**. Esses nomes orientam o primeiro lote de produção; a abertura apresenta a atividade, sem anunciar uma lista ou quantidade fixa de crianças. O foco é o envolvimento na atividade, não explicar o curso ou repetir um depoimento. Avaliações é o lugar dos relatos.
 
@@ -275,9 +361,17 @@ Cada novo story mostra um registro real de uma criança em atividade, com nome, 
 
 **Direção das respostas:** responder à pergunta com uma informação que ajude a família a decidir e explicar o benefício concreto quando ele acrescentar algo. Cada resposta tem um assunto: não repetir em várias telas conselhos genéricos para acompanhar a primeira aula, conhecer a proposta ou escolher um horário. Na pergunta sobre idade, explicar o público para quem a Comunidade foi pensada, a intenção de desenvolver autonomia e a participação fora da faixa principal. Equipamento, formato e ajuda tratam da experiência na Comunidade; prazo, pagamento, garantia e conteúdo do curso nomeiam o Desafio. Preservar condições de compra, alcance da ajuda e visibilidade dos jogos. Cortar repetições e frases vagas, sem forçar uma vantagem para cada condição.
 
+**Duas partes desde 20/10/2026:** **Pais perguntam** (DU01 a DU18, abaixo) e **Adultos perguntam** (DA01 a DA05, depois de DU18). As telas da segunda parte usam a identidade adulta, para quem passa pelo destaque perceber a troca de público.
+
+### Pais perguntam
+
+**Atenção, 20/10/2026:** DU06 a DU10 e DU18 falam da compra avulsa do Desafio, que continua no ar, mas a bio e o destaque Kids levam agora ao quiz e à página Kids. Ficam como estão até a revisão da dona (ver dependências no [guia](README.md#dependências-da-dona)).
+
 ### DU01 · Para qual idade é a Comunidade?
 
-> A Comunidade, incluindo o Desafio, foi pensada para crianças de 9 a 14 anos aprenderem a criar jogos com autonomia. Crianças mais novas podem fazer acompanhadas dos pais ou de um responsável. Quem é mais velho também pode participar, se tiver interesse em aprender a criar jogos.
+> A área Kids da Comunidade é para quem tem de 9 a 17 anos e lê com autonomia. Crianças menores de 9 criam junto com um adulto. Quem tem 18 anos ou mais usa a área adulta, com conta própria.
+
+**Fonte:** página de 9 a 17, página “criar junto” (menor de 9 com um adulto) e cartões da bio. **Histórico, até 20/10/2026:** “A Comunidade, incluindo o Desafio, foi pensada para crianças de 9 a 14 anos aprenderem a criar jogos com autonomia. Crianças mais novas podem fazer acompanhadas dos pais ou de um responsável. Quem é mais velho também pode participar, se tiver interesse em aprender a criar jogos.”
 
 ### DU02 · Dá para fazer no celular?
 
@@ -359,7 +453,43 @@ Cada novo story mostra um registro real de uma criança em atividade, com nome, 
 
 **Sticker:** Conhecer o Desafio → L0, origem du18.
 
+### Adultos perguntam
+
+**Novo em 20/10/2026.** Cinco cartelas na identidade adulta. Cada resposta foi conferida com as dúvidas e seções da [página adulta](../../../../../packages/funnel/src/funnels/comunidade-adulto/oferta/pagina.ts). A abertura pede uma cartela própria antes de DA01: **Título:** Adultos perguntam.
+
+### DA01 · É curso de criança?
+
+> A área adulta é separada, com conta própria e outra aparência. As aulas foram feitas para adultos. A conversa no Clube é só entre pessoas de 18 anos ou mais. Os primeiros jogos são os mesmos clássicos da área infantil, porque ensinam as mesmas regras.
+
+**Fonte:** dúvida “É a mesma plataforma das crianças?” e o Clube (“outras pessoas de 18 anos ou mais”). A ideia proposta de “ritmo de adulto” não está na página e ficou de fora.
+
+### DA02 · Preciso saber programar?
+
+> Você começa com blocos: peças na tela que dizem ao jogo o que fazer. Depois, cada bloco aparece ao lado do código que ele gera. Mais adiante, você escreve o jogo em código.
+
+**Fonte:** dúvidas “Nunca programei. Consigo?” e “Bloco de montar não é coisa de criança?”; as três fases (blocos, Ponte, código).
+
+### DA03 · Tenho pouco tempo.
+
+> As aulas são gravadas, e você faz no seu horário. Tudo fica salvo, e você continua de onde parou. Uma noite livre pode virar uma fase nova.
+
+**Fonte:** dúvida “Quanto tempo preciso por semana?” e a carta “A noite livre termina com uma fase nova”.
+
+### DA04 · Funciona no celular?
+
+> Para criar, você usa o computador, com mouse e teclado. O jogo que você publica abre no celular de quem recebe o link.
+
+**Fonte:** dúvida “Que computador eu preciso?” e o passo “Por fim, publica”.
+
+### DA05 · E se eu largar?
+
+> Você tem 7 dias de garantia para pedir o reembolso integral. Depois, cancela quando quiser na sua conta, sem multa. Os jogos que você publicou continuam no Mural.
+
+**Fonte:** garantia da oferta e dúvida “Posso cancelar quando quiser?”.
+
 ## Avaliações
+
+**Dois públicos, 20/10/2026:** Avaliações continua só com famílias. Um relato adulto entra quando existir um depoimento real, autorizado e com resultado concreto (por exemplo, o jogo que a pessoa terminou e publicou). Não usar fala de fórum, de pesquisa ou de pessoa da equipe como avaliação adulta. AV05 leva à oferta avulsa do Desafio (L0) e fica para a revisão da dona.
 
 **Função:** reunir relatos de crianças, adultos e responsáveis sobre suas experiências. A seleção atual reúne oito pessoas em dez cartelas de relatos. As cinco crianças alternam com os responsáveis. Daniel, pai do Rafael, aparece em duas telas sobre organização e criatividade; Harle, pai do Jeffrey, fala de responsabilidade; Flávia, mãe do Fernando, aparece em duas telas sobre independência e uso da tela para criar. As relações familiares foram identificadas pelo usuário. Cada cartela traz uma ideia principal e o trecho que a sustenta, com espaço para leitura.
 
@@ -447,7 +577,7 @@ Cada novo story mostra um registro real de uma criança em atividade, com nome, 
 
 **Função:** apresentar Helena e Júlio, sua experiência profissional e a situação em casa que levou à criação da Comunidade. O fio da história é o interesse do André por jogar e assistir a jogos → a decisão de usar parte desse tempo para ensiná-lo a criar → o aprendizado durante a criação e as mudanças percebidas pela família → a vontade de levar essa experiência a outras famílias. O casal permanece no centro. O jeito de ensinar aparece como parte da história; o funcionamento da Comunidade é explicado no destaque próprio.
 
-**Formato:** sete stories: cinco vídeos com o casal, um vídeo narrado sobre a foto do certificado e uma cartela com a foto do André com as medalhas. O certificado aparece durante o relato das mudanças na escola, com a fala completa e a informação do primeiro lugar. Nos vídeos, usar a fala integral e a legenda fiel, alternando quem fala de forma natural. Na cartela das medalhas, usar apenas o título e a copy indicados, sem narração adicional. Deixar tempo para observar as fotografias. Os títulos abaixo são a copy completa das sobreposições; as notas de cena não são faladas. O casal abre e encerra a história, e um bastidor atual pode acompanhar o último vídeo. O fecho convida a conhecer o destaque Como funciona, citado pelo nome.
+**Formato:** sete stories: cinco vídeos com o casal, um vídeo narrado sobre a foto do certificado e uma cartela com a foto do André com as medalhas. O certificado aparece durante o relato das mudanças na escola, com a fala completa e a informação do primeiro lugar. Nos vídeos, usar a fala integral e a legenda fiel, alternando quem fala de forma natural. Na cartela das medalhas, usar apenas o título e a copy indicados, sem narração adicional. Deixar tempo para observar as fotografias. Os títulos abaixo são a copy completa das sobreposições; as notas de cena não são faladas. O casal abre e encerra a história, e um bastidor atual pode acompanhar o último vídeo. O fecho convida a conhecer o destaque Kids (até 20/10/2026, Como funciona), citado pelo nome, e SN08 apresenta a área adulta.
 
 **Base da apresentação:** formação, profissão e início da criação em família estão na [apresentação dos fundadores na oferta](../../../../../packages/funnel/src/funnels/comunidade-dos-criadores/oferta/shared.ts). Em 08/10/2026, o responsável acrescentou à história o interesse do André por jogar e assistir a jogos e a decisão de usar parte do tempo de tela para ensiná-lo a criar. Também relatou mais interesse por aprender, participação nas aulas, concentração, melhora nas notas e medalhas em olimpíadas de matemática. Esses resultados entram como observações dos pais sobre o André; não atribuir toda a mudança à programação nem prometer que outras crianças terão os mesmos resultados. Não acrescentar notas, quantidade de medalhas, datas ou categorias de premiação. A copy usa “olimpíadas de matemática” para manter a fala simples.
 
@@ -495,15 +625,25 @@ O certificado disponível registra uma dessas conquistas: primeiro lugar na turm
 
 ### SN07 · O trabalho que fazemos hoje
 
-**Cena:** começar e terminar com o casal. Durante a fala sobre preparação, pode entrar um breve bastidor atual de Helena e Júlio revendo um roteiro ou preparando uma gravação. Manter as pessoas como assunto da imagem. **Sobreposição:** As aulas que a gente prepara. **Sem sticker:** o convite é para o destaque Como funciona, sem indicar posição no perfil.
+**Cena:** começar e terminar com o casal. Durante a fala sobre preparação, pode entrar um breve bastidor atual de Helena e Júlio revendo um roteiro ou preparando uma gravação. Manter as pessoas como assunto da imagem. **Sobreposição:** As aulas que a gente prepara. **Sem sticker:** o convite é para o destaque Kids, sem indicar posição no perfil.
 
-> Hoje, somos nós que preparamos as aulas, usando o que sabemos de programação para ensinar as crianças a fazer seus jogos. No destaque Como funciona, você conhece melhor esse trabalho.
+> Hoje, somos nós que preparamos as aulas, usando o que sabemos de programação para ensinar as crianças a fazer seus jogos. No destaque Kids, você conhece melhor esse trabalho.
+
+**Ajuste de 20/10/2026:** o destaque citado passou de “Como funciona” para “Kids”, o novo nome. A arte e a legenda de SN07 precisam ser atualizadas; a fala gravada que diz “Como funciona” precisa de nova gravação ou de um corte antes da última frase.
+
+### SN08 · A área adulta
+
+**Novo em 20/10/2026. Vídeo do casal**, no mesmo cenário de SN07. **Sobreposição:** Agora também para adultos. **Sem sticker:** o convite é para o destaque Adultos, pelo nome.
+
+> Hoje a Comunidade também tem uma área para adultos. O jeito de ensinar é o mesmo: você joga a versão pronta, muda uma regra, testa e publica. Somos nós que preparamos essas aulas também. No destaque Adultos, você vê como funciona.
+
+**Fonte:** “Como funciona” e “Quem criou” da página adulta (“somos nós que preparamos as aulas”).
 
 ## Manutenção e conferência
 
-**Manter a ordem viva.** Projetos, Alunos, Avaliações e Dúvidas recebem atualizações quando houver conteúdo útil. Não republicar aberturas para empurrar Como funciona ou Sobre nós para a frente. Cada destaque tem contexto próprio, e os fixados conduzem aos assuntos pelo nome. Se uma resposta ficar desatualizada, retirar a tela antiga e publicar a substituta; não deixar duas condições conflitantes. Rever o destaque inteiro quando o acúmulo atrapalhar a leitura, preservando apenas o que continua útil.
+**Ordem:** Kids e Adultos ficam na frente, as duas portas da bio. Projetos, Criadores, Avaliações e Dúvidas recebem atualizações quando houver conteúdo útil. Não republicar aberturas só para mudar a posição de um destaque. Cada destaque tem contexto próprio, e os fixados conduzem aos assuntos pelo nome. Se uma resposta ficar desatualizada, retirar a tela antiga e publicar a substituta; não deixar duas condições conflitantes. Rever o destaque inteiro quando o acúmulo atrapalhar a leitura, preservando apenas o que continua útil.
 
-Conferir oferta e interface publicadas antes de gravar. Se uma condição mudar, revisar CF07 a CF09, Dúvidas e F03. A abertura AV01 não fixa nomes, quantidade ou idade de quem dá o relato, para continuar válida com novos participantes. Novos relatos podem ampliar a seleção com sua origem e contexto. Manter as citações literais; ao escolher um trecho, preservar o sentido da fala. Novos vídeos de crianças em atividade ampliam Alunos; novos relatos de crianças, adultos e responsáveis ampliam Avaliações. São funções diferentes, com copy final para cada entrada.
+Conferir oferta e interface publicadas antes de gravar. Se uma condição mudar, revisar CF07 a CF09, AD04 a AD06, Dúvidas (as duas partes) e os fixados F01, F04 e F05. Até 20/10/2026 esta lista citava F03, que saiu dos fixados. A abertura AV01 não fixa nomes, quantidade ou idade de quem dá o relato, para continuar válida com novos participantes. Novos relatos podem ampliar a seleção com sua origem e contexto. Manter as citações literais; ao escolher um trecho, preservar o sentido da fala. Novos vídeos de crianças em atividade ampliam Alunos; novos relatos de crianças, adultos e responsáveis ampliam Avaliações. São funções diferentes, com copy final para cada entrada.
 
 Fonte do curso: [módulos](../../../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md), [movimento](../../../../aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md), [coleta e memória](../../../../aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.roteiro.md) e [condição e personalização](../../../../aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.roteiro.md). Captação e acesso em [Demonstração do Farol](apoio/valor-e-demonstracao-2026-10-03.md).
 
