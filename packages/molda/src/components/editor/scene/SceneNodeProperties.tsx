@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { COPY } from '../../../core/copy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
+import type { SceneBooleanOperation } from '../../../scene/booleanSolids'
 import {
   deleteSceneNodes,
   resizeScenePrimitive,
@@ -14,6 +15,7 @@ import { Copy, Trash2 } from '../../ui/icons'
 import { focusWorkshopStage } from './focusStage'
 import { SceneAdjustmentForm } from './SceneAdjustmentForm'
 import { SceneArrangeTools } from './SceneArrangeTools'
+import { SceneBooleanPanel, type SceneBooleanPreview } from './SceneBooleanPanel'
 import { SceneCurveDetails } from './SceneCurveDetails'
 import { SceneFlipControls } from './SceneFlipControls'
 import { SceneMirrors } from './SceneMirrors'
@@ -36,8 +38,16 @@ const DISCLOSURE = 'mld-disclosure'
  */
 export function SceneNodeProperties({
   workshop,
+  booleanTools,
 }: {
   workshop: ReturnType<typeof useSceneWorkshop>
+  booleanTools?: {
+    preview: SceneBooleanPreview | null
+    busy: boolean
+    prepare(operation: SceneBooleanOperation): void
+    confirm(): void
+    cancel(): void
+  }
 }) {
   const copy = COPY.scene
   const chosenMode = workshop.tool
@@ -168,6 +178,15 @@ export function SceneNodeProperties({
         </div>
       )}
       <SceneSurfaceStrip workshop={workshop} />
+      {selected.length === 2 &&
+        !workshop.components.selection &&
+        can('model.mesh') &&
+        booleanTools && (
+          <SceneBooleanPanel
+            names={selected.map((id) => index.scene.nodes.get(id)?.name ?? id) as [string, string]}
+            {...booleanTools}
+          />
+        )}
       {precise && selected.length > 1 && <SceneArrangeTools workshop={workshop} />}
       {precise && primary && geometry && geometry.kind !== 'mesh' && geometry.kind !== 'path' && (
         <details className={DISCLOSURE}>
