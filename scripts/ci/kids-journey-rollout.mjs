@@ -16,8 +16,8 @@ import { pathToFileURL } from 'node:url'
 import { stagingJourney, uuidPattern } from '../release/kids-journey-bootstrap.mjs'
 
 // Diagnostics are generated locally. Never serialize an exception, command, API body or token.
-const preflightFailures = new WeakMap()
-const apiAuthorizationFailures = new WeakSet()
+const rolloutFailures = new WeakMap()
+const apiFailures = new WeakMap()
 const probeFailureReasons = new WeakMap()
 const probeFailureSignals = new WeakMap()
 const safeSshSignals = new Set([
@@ -56,11 +56,30 @@ const safeSshSignals = new Set([
 export function describeKidsJourneyRolloutFailure(error) {
   return {
     kind: 'kids-journey-rollout-failure',
-    ...(preflightFailures.get(error) ?? {
+    ...(rolloutFailures.get(error) ?? {
       step: 'unclassified',
       reason: 'operation-failed',
     }),
   }
+}
+
+function rolloutFailure(error, detail) {
+  // A transport may reject with a primitive. Do not stringify it or lose the local phase.
+  const failure =
+    error && (typeof error === 'object' || typeof error === 'function')
+      ? error
+      : new Error('Operação Railway falhou')
+  rolloutFailures.set(failure, detail)
+  return failure
+}
+
+function failureDetails(error, reason = 'operation-failed') {
+  return (
+    apiFailures.get(error) ?? {
+      reason: probeFailureReasons.get(error) ?? reason,
+      ...(probeFailureSignals.has(error) ? { signals: probeFailureSignals.get(error) } : {}),
+    }
+  )
 }
 
 /** The returned value is the only barrier that authorizes the caller to deploy apps. */
@@ -230,6 +249,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
   const exec = options.exec ?? execFileSync,
     doFetch = options.fetch ?? fetch
   const sleep = options.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)))
+  const log = options.log ?? ((value) => console.log(JSON.stringify(value)))
   const before = new Map()
   const cliEnv = { ...env, RAILWAY_API_TOKEN: env.RAILWAY_TOKEN }
   delete cliEnv.RAILWAY_TOKEN
@@ -243,29 +263,64 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       timeout: 90000,
       maxBuffer: 262144,
     })
-  const gql = async (query, variables) => {
-    const response = await doFetch('https://backboard.railway.com/graphql/v2', {
-      method: 'POST',
-      headers: { authorization: `Bearer ${env.RAILWAY_TOKEN}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ query, variables }),
-      signal: AbortSignal.timeout(15000),
+  const apiFailure = (reason, status) => {
+    const error = new Error('Railway GraphQL recusou a operação')
+    apiFailures.set(error, {
+      reason,
+      ...(Number.isInteger(status) && status >= 100 && status <= 599 ? { httpStatus: status } : {}),
     })
-    if (response.status === 401 || response.status === 403) {
-      const error = new Error('Railway GraphQL negou a credencial')
-      apiAuthorizationFailures.add(error)
-      throw error
+    return error
+  }
+  const gql = async (query, variables) => {
+    const signal = AbortSignal.timeout(15000)
+    let response
+    try {
+      response = await doFetch('https://backboard.railway.com/graphql/v2', {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${env.RAILWAY_TOKEN}`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ query, variables }),
+        signal,
+      })
+    } catch {
+      throw apiFailure(signal.aborted ? 'api-timeout' : 'api-network-failed')
     }
-    if (!response.ok) throw new Error('Railway GraphQL indisponível')
-    const result = await response.json()
-    if (
-      Array.isArray(result.errors) &&
-      result.errors.some((error) => error?.message === 'Not Authorized')
-    ) {
-      const error = new Error('Railway GraphQL negou a credencial')
-      apiAuthorizationFailures.add(error)
-      throw error
+    if (!response.ok) {
+      const status = response.status
+      const reason =
+        status === 401 || status === 403
+          ? 'api-authorization-rejected'
+          : status === 408 || status === 504
+            ? 'api-timeout'
+            : status === 429
+              ? 'api-rate-limited'
+              : status >= 500 && status <= 599
+                ? 'api-provider-unavailable'
+                : 'api-http-rejected'
+      throw apiFailure(reason, status)
     }
-    if (result.errors || !result.data) throw new Error('Railway GraphQL recusou a operação')
+    let result
+    try {
+      result = await response.json()
+    } catch {
+      throw apiFailure(signal.aborted ? 'api-timeout' : 'api-response-invalid', response.status)
+    }
+    if (!result || typeof result !== 'object' || Array.isArray(result))
+      throw apiFailure('api-response-invalid', response.status)
+    if (result.errors) {
+      // Exact known messages only. In particular, an unknown error is not evidence of a pause.
+      const messages = Array.isArray(result.errors) ? result.errors.map((e) => e?.message) : []
+      const reason = messages.includes('Not Authorized')
+        ? 'api-authorization-rejected'
+        : messages.includes('Commit not found')
+          ? 'api-commit-not-found'
+          : 'api-operation-rejected'
+      throw apiFailure(reason, response.status)
+    }
+    if (!result.data || typeof result.data !== 'object' || Array.isArray(result.data))
+      throw apiFailure('api-response-invalid', response.status)
     return result.data
   }
   const active = async (service) => {
@@ -385,7 +440,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
   }
   return {
     now: () => Date.now(),
-    log: (value) => console.log(JSON.stringify(value)),
+    log,
     async preflight() {
       let step = 'cli-version'
       try {
@@ -401,66 +456,106 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
           probe(service, current)
         }
       } catch (error) {
-        if (error && (typeof error === 'object' || typeof error === 'function'))
-          preflightFailures.set(error, {
-            step,
-            reason: apiAuthorizationFailures.has(error)
-              ? 'api-authorization-rejected'
-              : (probeFailureReasons.get(error) ?? 'operation-failed'),
-            ...(probeFailureSignals.has(error) ? { signals: probeFailureSignals.get(error) } : {}),
-          })
-        throw error
+        throw rolloutFailure(error, { step, ...failureDetails(error) })
       }
     },
     async deploy(service) {
-      // Refresh immediately before the mutation; preflight may precede a long Members wave.
-      before.set(service, [
-        ...new Set([
-          ...(before.get(service) ?? []),
-          ...(await active(service)).map((item) => item.id),
-        ]),
-      ])
-      const data = await gql(
-        'mutation($s:String!,$e:String!,$c:String){serviceInstanceDeployV2(serviceId:$s,environmentId:$e,commitSha:$c)}',
-        { s: stagingJourney[service], e: stagingJourney.environment, c: sha },
-      )
-      if (!uuidPattern.test(data.serviceInstanceDeployV2 ?? ''))
-        throw new Error('Deployment não confirmado')
-      return data.serviceInstanceDeployV2
+      const label = ['members', 'auth'].includes(service) ? service : 'unknown-service'
+      let step = `${label}-active-refresh`
+      let mutationOutcome = 'not-attempted'
+      try {
+        log({ stage: step })
+        // Refresh immediately before the mutation; preflight may precede a long Members wave.
+        before.set(service, [
+          ...new Set([
+            ...(before.get(service) ?? []),
+            ...(await active(service)).map((item) => item.id),
+          ]),
+        ])
+        step = `${label}-deploy-mutation`
+        mutationOutcome = 'unknown'
+        log({ stage: step, mutationOutcome })
+        const data = await gql(
+          'mutation($s:String!,$e:String!,$c:String){serviceInstanceDeployV2(serviceId:$s,environmentId:$e,commitSha:$c)}',
+          { s: stagingJourney[service], e: stagingJourney.environment, c: sha },
+        )
+        step = `${label}-deploy-ack`
+        const id = data.serviceInstanceDeployV2
+        if (typeof id !== 'string' || !uuidPattern.test(id))
+          throw new Error('Deployment não confirmado')
+        log({ stage: step, deployment: id, mutationOutcome: 'acknowledged' })
+        return id
+      } catch (error) {
+        throw rolloutFailure(error, {
+          step,
+          ...failureDetails(error, step === `${label}-deploy-ack` ? 'invalid-ack' : undefined),
+          // A failed request/invalid ACK cannot prove that no deployment was created.
+          mutationOutcome,
+        })
+      }
     },
     async waitRetired(service, id) {
-      for (let index = 0; index < 60; index++) {
-        const current = await deployment(id)
-        if (
-          ['FAILED', 'CRASHED', 'REMOVED', 'SKIPPED', 'CANCELED', 'CANCELLED'].includes(
-            current?.status,
-          )
-        )
-          throw new Error(`Deployment ${service} falhou`)
-        if (current?.status === 'SUCCESS') {
-          if (current.meta?.commitHash !== sha) throw new Error('SHA remoto divergente')
-          const rows = await active(service)
-          before.set(service, [
-            ...new Set([
-              ...(before.get(service) ?? []),
-              ...rows.filter((item) => item.id !== id).map((item) => item.id),
-            ]),
-          ])
-          const old = await Promise.all(
-            (before.get(service) ?? []).filter((oldId) => oldId !== id).map(deployment),
-          )
+      const label = ['members', 'auth'].includes(service) ? service : 'unknown-service'
+      let step = `${label}-first-poll`
+      let reason = 'operation-failed'
+      let deploymentStatus
+      try {
+        log({
+          stage: step,
+          ...(typeof id === 'string' && uuidPattern.test(id) ? { deployment: id } : {}),
+        })
+        for (let index = 0; index < 60; index++) {
+          step = `${label}-${index === 0 ? 'first-poll' : 'deployment-poll'}`
+          const current = await deployment(id)
           if (
-            rows.length === 1 &&
-            rows[0].id === id &&
-            old.every((item) => item?.status === 'REMOVED')
+            ['FAILED', 'CRASHED', 'REMOVED', 'SKIPPED', 'CANCELED', 'CANCELLED'].includes(
+              current?.status,
+            )
           ) {
-            probe(service, current, true)
-            return
+            reason = 'deployment-failed'
+            deploymentStatus = current.status
+            throw new Error(`Deployment ${service} falhou`)
           }
+          if (current?.status === 'SUCCESS') {
+            if (current.meta?.commitHash !== sha) {
+              reason = 'commit-mismatch'
+              throw new Error('SHA remoto divergente')
+            }
+            step = `${label}-retirement-inventory`
+            const rows = await active(service)
+            before.set(service, [
+              ...new Set([
+                ...(before.get(service) ?? []),
+                ...rows.filter((item) => item.id !== id).map((item) => item.id),
+              ]),
+            ])
+            step = `${label}-retirement-poll`
+            const old = await Promise.all(
+              (before.get(service) ?? []).filter((oldId) => oldId !== id).map(deployment),
+            )
+            if (
+              rows.length === 1 &&
+              rows[0].id === id &&
+              old.every((item) => item?.status === 'REMOVED')
+            ) {
+              step = `${label}-admission-probe`
+              probe(service, current, true)
+              return
+            }
+          }
+          await sleep(10000)
         }
-        await sleep(10000)
+        reason = 'retirement-timeout'
+        throw new Error(`Antigos deployments ${service} ainda não retirados; não capturar coorte`)
+      } catch (error) {
+        throw rolloutFailure(error, {
+          step,
+          ...failureDetails(error, reason),
+          mutationOutcome: 'acknowledged',
+          ...(typeof id === 'string' && uuidPattern.test(id) ? { deployment: id } : {}),
+          ...(deploymentStatus ? { deploymentStatus } : {}),
+        })
       }
-      throw new Error(`Antigos deployments ${service} ainda não retirados; não capturar coorte`)
     },
     async remote(action, id, input = {}) {
       const current = await single('members')
