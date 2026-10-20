@@ -11,6 +11,8 @@ import {
   observeSpriteMotion,
 } from '../runtime/check-click-target.mjs'
 
+assert.equal(Number(process.versions.node.split('.')[0]), 24, 'Use the repository Node24 toolchain')
+
 // Real lifecycle/inspection fragments; native full-engine/Chromium remains a later gate.
 function motor(name = 'directional-fixture') {
   const context = vm.createContext({}, { name })
