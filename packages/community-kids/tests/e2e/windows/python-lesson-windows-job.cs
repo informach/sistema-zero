@@ -73,7 +73,9 @@ namespace SzLessonOwned {
   public static JobHandle CreateNamed(string name){
    AssertName(name);IntPtr descriptor=IntPtr.Zero;uint size;
    string sid;using(var identity=WindowsIdentity.GetCurrent()){sid=identity.User.Value;}
-   if(!Api.ConvertStringSecurityDescriptorToSecurityDescriptorW("D:P(A;;0x1F001F;;;"+sid+")",1,out descriptor,out size))throw Error("JobSecurityDescriptor");
+   // The creator ACE requests semantic full control for this SID. Let Windows
+   // map GENERIC_ALL for its job type; readers still open only QUERY (0x4).
+   if(!Api.ConvertStringSecurityDescriptorToSecurityDescriptorW("D:P(A;;GA;;;"+sid+")",1,out descriptor,out size))throw Error("JobSecurityDescriptor");
    try{
     var attributes=new SecurityAttributes{Length=Marshal.SizeOf(typeof(SecurityAttributes)),Descriptor=descriptor,Inherit=0};
     var job=Api.CreateNamedJob(ref attributes,name);int error=Marshal.GetLastWin32Error();

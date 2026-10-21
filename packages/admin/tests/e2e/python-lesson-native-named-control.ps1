@@ -9,7 +9,7 @@ $fixture=Join-Path $PSScriptRoot 'python-lesson-native-named-fixture.ps1'
 foreach($pin in @(@{path=$PwshBinary;sha=$ExpectedPwshSha256},@{path=$fixture;sha=$ExpectedFixtureSha256})){if($pin.sha -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath $pin.path).Hash.ToLowerInvariant() -cne $pin.sha){throw 'Exact native fixture/binary pins required'}}
 if([datetimeoffset]::UtcNow -ge $StartCutoff -or ($WindowEnd-[datetimeoffset]::UtcNow).TotalSeconds -lt 20){throw 'Fresh Root window20s required'}
 $directory=Join-Path $root ('.cache/lesson-native-named/'+[guid]::NewGuid().ToString('N'));New-Item -ItemType Directory -Path $directory -ErrorAction Stop|Out-Null
-$nonce=[guid]::NewGuid().ToString('N');$creator=$null;$query=$null;$process=$null;$reference=$null;$primary=$null;$close=$null;$checks=0
+$nonce=[guid]::NewGuid().ToString('N');$creator=$null;$query=$null;$anchor=$null;$process=$null;$reference=$null;$primary=$null;$close=$null;$checks=0;$collisionAttempt=$null
 function Check([bool]$Value){if(-not $Value){throw 'Named native control refused'};$script:checks++}
 try{
  $creator=New-OwnedJobContext 'qa-native-control' $nonce 'nativeControl' $nonce
@@ -28,12 +28,21 @@ try{
  $query=Open-OwnedJobContext $reference
  Check ((Read-OwnedJobObservation $query).liveProcessIds -contains $process.Id)
  $denied=$false;try{[SzLessonOwned.Native]::Assign($query.job,$process.SafeHandle)}catch{$cause=$_.Exception.GetBaseException();$denied=$cause.GetType().FullName -ceq 'SzLessonOwned.NativeFailure' -and $cause.Operation -ceq 'AssignProcessToJobObject' -and $cause.NativeCode -eq 5};Check $denied
- $collision=$false;try{$unexpected=[SzLessonOwned.Native]::CreateNamed($reference.name);$unexpected.Dispose()}catch{$cause=$_.Exception.GetBaseException();$collision=$cause.GetType().FullName -ceq 'SzLessonOwned.NativeFailure' -and $cause.Operation -ceq 'JobNameCollision'};Check $collision
- Close-OwnedJobContext $query|Out-Null;$query=$null
- # Keep only the exact created Process handle; release ALL job handles while
- # the worker is alive, then prove named reopen still binds the same native root.
+ $collision=$false
+ try{$unexpected=[SzLessonOwned.Native]::CreateNamed($reference.name);$unexpected.Dispose();$collisionAttempt=@{outcome='unexpected-handle';type='none';operation='CreateNamedJob';nativeCode=0}}
+ catch{
+  $cause=$_.Exception.GetBaseException();$native=$cause.GetType().FullName -ceq 'SzLessonOwned.NativeFailure'
+  $collisionAttempt=@{outcome='refused';type=$(if($native){'NativeFailure'}else{'unknown'});operation=$(if($native){$cause.Operation}else{'unknown'});nativeCode=$(if($native){$cause.NativeCode}else{0})}
+  $collision=$native -and $cause.Operation -ceq 'JobNameCollision' -and $cause.NativeCode -eq 183
+ }
+ Check $collision
+ # Transfer custody with overlapping job handles. A live process does not
+ # guarantee that the name remains openable after the last job handle closes.
+ $anchor=$query;$query=$null
  $creator.rootProcess=$null;Close-OwnedJobContext $creator|Out-Null;$creator=$null
  $query=Open-OwnedJobContext $reference
+ Check (Test-OwnedJobRootAlive $query)
+ Close-OwnedJobContext $anchor|Out-Null;$anchor=$null
  Check (Test-OwnedJobRootAlive $query)
  Write-Durable @{nonce=$nonce} (Join-Path $directory 'stop.request') -Exclusive
  Check ($process.WaitForExit(12000) -and $process.ExitCode -eq 0)
@@ -43,9 +52,10 @@ try{
 }catch{$primary=@{type=$_.Exception.GetBaseException().GetType().Name;operation=$(if($_.Exception.GetBaseException().GetType().FullName -ceq 'SzLessonOwned.NativeFailure'){$_.Exception.GetBaseException().Operation}else{'named-control'});nativeCode=$(if($_.Exception.GetBaseException().GetType().FullName -ceq 'SzLessonOwned.NativeFailure'){$_.Exception.GetBaseException().NativeCode}else{0})}}finally{
  if(-not(Test-Path -LiteralPath (Join-Path $directory 'stop.request'))){Write-Durable @{nonce=$nonce} (Join-Path $directory 'stop.request') -Exclusive}
  if($process){$remaining=[math]::Max(0,[math]::Min(12000,($WindowEnd-[datetimeoffset]::UtcNow).TotalMilliseconds));[void]$process.WaitForExit([int]$remaining);$process.Dispose()}
+ if($anchor){$close=Close-OwnedJobContext $anchor -RequireEmpty}
  if($query){$close=Close-OwnedJobContext $query -RequireEmpty}
  if($creator){$close=Close-OwnedJobContext $creator -RequireEmpty}
- $receipt=@{state=$(if(-not $primary -and $close.cleanupConfirmed){'PASS-native-named-only'}else{'NEG'});checks=$checks;primary=$primary;cleanup=$close;reference=$reference;operatorForceUsed=$false;productQualified=$false;completedAt=[datetimeoffset]::UtcNow.ToString('o')}
+ $receipt=@{state=$(if(-not $primary -and $close.cleanupConfirmed){'PASS-native-named-only'}else{'NEG'});checks=$checks;primary=$primary;collisionAttempt=$collisionAttempt;cleanup=$close;reference=$reference;operatorForceUsed=$false;productQualified=$false;completedAt=[datetimeoffset]::UtcNow.ToString('o')}
  Write-Durable $receipt (Join-Path $directory 'receipt.json') -Exclusive
 }
 $receipt|ConvertTo-Json -Depth 8

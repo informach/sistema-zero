@@ -45,11 +45,20 @@ only the OS/browser primitives, not the full lesson flow or a unique Bun cause.
   role-neutral CreateNoWindow/cleared-env launch construction, root/state identity,
   query contexts, native sampled reconciliation and disposal. Import is inert.
 - [x] Add focused inert real-caller controls and a single Plan-default native
-  named-reopen/lifetime/QUERY-only control for Root execution later. No native
+  overlapping named-handoff/lifetime/QUERY-only control for Root execution later. No native
   job or process fixture is started by implementation checks.
 - [x] Compile-only C#, parser/focused inert checks; report paths/diff to Root.
 
-## Batch 2: connect existing supervision and Node scenarios
+## Batch 2a: existing hosted JS Pro scenario first
+
+- [ ] Reuse this same native owner for Core's existing .mjs hosted JS Pro leaf;
+  no Next/PG dependency, browser1024/reserve512 and native WS observation. Preserve
+  normal/emergency result separation, no new product roles or provider grants.
+- [ ] Reserve the private Node stdin for exactly Core R2's one-shot provider
+  envelope; no competing reader, env/argv/file/log credential transport. See
+  the contract below before connecting the existing caller and leaf.
+
+## Batch 2b: connect existing Admin/Kids supervision and Node scenarios
 
 - [ ] Replace process-CIM discovery/ownership in browser-owned/watch and
   memory-watch, including Next/base; preserve locks/latches/ACK/normal stops and
@@ -77,9 +86,73 @@ only the OS/browser primitives, not the full lesson flow or a unique Bun cause.
 
 Batch1 is implemented on the isolated Root8c0bb250-based branch. Fresh inert
 contract14, C# compile-only, parser4 and named-control Plan passed; no native
-job/process fixture was started. The actual named lifecycle control remains
-unexecuted and awaits Root review/window. Batch2 has not started.
+job/process fixture was started by the preparer. Root's actual named lifecycle
+was NEG after2 checks, with cleanup true. Root's subsequent EMPTY-job diagnosis
+confirmed second CreateNamedJob/5 while QUERY4 succeeded; zero processes and all
+handles closed. The old mask-based sources/NEG remain in commit464792077 and the
+immutable diagnosis. Candidate correction uses current-SID SDDL GA, preserves
+QUERY4 and exact collision183 refusal. Root renewed actual proof passed those
+3 checks, then failed OpenJobQuery/2 after all job handles closed. Its original
+NEG/cleanup-null remains unchanged. The next proof retains a QUERY anchor while
+closing the creator, opens/confirms a successor QUERY consumer, and only then
+closes the anchor; it never depends on name reopen after last-handle close.
+Root's actual overlapping-handoff proof passed7 checks at06:21:28.051–28.705Z:
+QUERY binding, Assign denied5, collision183, live successor before/after anchor
+close, normal fixture exit0 and final empty-job/handle cleanup. Receipt
+f25d211babcc897d2d0a8b839bbeea1e535ee00ed468b6083ba2a414cab4a402;
+Flags/UI0, operatorForceUsed=false. Root independently confirmed root41916 and
+its direct children absent at06:21:36Z. Window closed. Earlier NEG receipts are
+not requalified. Batch2a hosted JS Pro is authorized for isolated implementation;
+execution still requires Root review and a new window. Admin/Kids remains later.
 The repository's agent-runtime native launcher was inspected: it uses suspended
 launch, hard limits/KILL_ON_JOB_CLOSE and stdin revocation for a different
 product contract. Reuse its existing Bun.build Node pattern, not those conflicting
 termination/resource semantics or a dependency from QA into product runtime.
+
+## Reserved Node stdin contract for Core R2
+
+Core's `pro-legacy-staging-ui-owned-r2/provider-context.mjs` already defines one
+envelope <=32768 UTF8 bytes including newline, private stdin+EOF, attemptId UUID,
+version1, expiresAt, identityPath and closed env keys. The leaf calls
+receiveRailwayProvider(process.stdin,{attemptId}) exactly once after native claim,
+keeps its capability in closure and passes it to runOwnedScenario with the owner
+browser/signal/requestStop/binding. It never mutates Node/Chrome process.env.
+Core's existing10s read bound, one-shot capability and expiry checks stay intact.
+
+The native Node launch must redirect stdin privately. The owner must not use
+stdin for commands, completion, ACK, diagnostics or a second JSON reader. Existing
+claim/stop/ACK remain their own files. No token/key/config goes in job.json,
+binding, env Node, argv, transcript or logs; close input after the one envelope.
+
+Interface impedance to resolve in batch2a: sendToChild requires a Node ChildProcess;
+the native owner creates its Node through ProcessStartInfo (a .NET Process).
+Use the existing trusted Node caller's private pipe to its own PowerShell owner,
+then an opaque bounded relay to the assigned Node's redirected StandardInput.
+sendToChild can target that caller-created owner ChildProcess; only the final
+Node leaf parses/validates the envelope. The PS relay must not log/parse/persist
+body, must close EOF and enforce the same32KiB/10s bounds. No named broker or
+credential file is introduced. Confirm this small interface with Core before
+implementation; it is a transport composition, not a second ownership mechanism.
+
+Primary basis for the DACL candidate: [SDDL GA](https://learn.microsoft.com/en-us/windows/win32/secauthz/ace-strings),
+[generic access mapping](https://learn.microsoft.com/en-us/windows/win32/secauthz/generic-access-rights),
+and [CreateJobObject existing ALL-access open](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-createjobobjectw).
+No alternate numeric ALL mask is asserted or invented.
+
+## Handle lifetime and owner custody
+
+Microsoft's [Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)
+distinguishes closing handles from job destruction after associated processes
+exit. That lifecycle is not a promise that the name remains reopenable after the
+last handle closes; the actual second proof observed OpenJobQuery/2 in that gap.
+Use explicit overlapping handle custody instead of that disproved assumption.
+
+The hosted Pro PowerShell owner remains running and keeps its original creator
+job handle through the Node/Chrome lifetime, observations, normal drain and
+possible creator-bound emergency teardown. Publishing job.json does not transfer
+custody. A QUERY consumer must open and confirm the same live native root while
+that owner/previous anchor still holds a handle; only then may the previous
+anchor close. A long-lived role must retain a watcher/anchor until all consumers
+have finished or the next confirmed custodian has taken over. A launcher cannot
+return and dispose its last job handle expecting a later stop controller to
+reopen the name. Admin/Kids/Next/base connection remains batch2b, not implemented.
