@@ -21,10 +21,10 @@ function New-OwnedJobWitness([uint32]$ProcessId,[string]$CreationFileTime,[strin
 function Test-SameOwnedJobWitness($Before,$After){
  return $Before -and $After -and $Before.ownershipKind -ceq 'windows-job' -and $After.ownershipKind -ceq 'windows-job' -and $Before.processId -eq $After.processId -and $Before.creationFileTime -ceq $After.creationFileTime -and $Before.binarySha256 -ceq $After.binarySha256 -and $Before.argvSha256 -ceq $After.argvSha256 -and $Before.jobName -ceq $After.jobName
 }
-function New-OwnedJobLaunchInfo([string]$Binary,[string[]]$Arguments,[string]$WorkingDirectory,[hashtable]$Environment){
+function New-OwnedJobLaunchInfo([string]$Binary,[string[]]$Arguments,[string]$WorkingDirectory,[hashtable]$Environment,[switch]$RedirectInput){
  if(-not [IO.Path]::IsPathFullyQualified($Binary) -or -not [IO.Path]::IsPathFullyQualified($WorkingDirectory)){throw 'Absolute own launch paths required'}
  $info=[Diagnostics.ProcessStartInfo]::new($Binary);$info.UseShellExecute=$false;$info.CreateNoWindow=$true;$info.WorkingDirectory=$WorkingDirectory
- $info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true;$info.Environment.Clear()
+ $info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true;$info.RedirectStandardInput=[bool]$RedirectInput;$info.Environment.Clear()
  foreach($entry in $Environment.GetEnumerator()){$info.Environment[$entry.Key]=[string]$entry.Value}
  foreach($argument in $Arguments){if($null -eq $argument){throw 'Own argv contains null'};$info.ArgumentList.Add($argument)}
  return $info

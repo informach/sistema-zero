@@ -18,7 +18,7 @@ existing Bun.build(target=node) for QA-only TS compilation, installed Chrome155,
 Playwright1.60. Bun remains the SUT services runtime.
 
 **Spec:** cache windows-job-integration-design-r1/DESIGN.md, refined by Root's
-actual phase1 PASS and Node+Job actual PASS (2026-10-21 05:44:42â€“44Z). Those prove
+actual phase1 PASS and Node+Job actual PASS (2026-10-21 05:44:42-44Z). Those prove
 only the OS/browser primitives, not the full lesson flow or a unique Bun cause.
 
 ## Constraints
@@ -77,7 +77,7 @@ only the OS/browser primitives, not the full lesson flow or a unique Bun cause.
   same native creator-before-claim and Stop uses QUERY/native proof plus existing
   listener checks. Explicit .cs/.ps1/source/Node artifact pins and pointer checks.
 - [ ] Root reviews and executes the one native named-query lifecycle proof in a
-  granted small window, then one existing Adminâ†’Kids scenario. No implicit Start.
+  granted small window, then one existing Admin->Kids scenario. No implicit Start.
 - [ ] Accept only real functional and cleanup evidence. A missing named job is
   never empty proof; a consumer must capture the still-live expected root or
   retain a previously validated context. No force result becomes normal PASS.
@@ -156,3 +156,50 @@ anchor close. A long-lived role must retain a watcher/anchor until all consumers
 have finished or the next confirmed custodian has taken over. A launcher cannot
 return and dispose its last job handle expecting a later stop controller to
 reopen the name. Admin/Kids/Next/base connection remains batch2b, not implemented.
+
+
+## Batch2a adapter contract (implementation, not an execution receipt)
+
+Files: `python-lesson-native-browser-owner.ps1`, `-common.ps1`, `-worker.mjs`
+under the existing Kids QA Windows directory, plus the Admin inert control.
+The primitive launch helper adds only optional RedirectInput (default false).
+The generic owner has Plan-default/Verify/Run, requires an exact SHA-pinned
+version1 `hosted-js-pro-node-job` plan, and pins its actual C#/PS/worker bytes,
+Node/Chrome, Playwright/provider/scenario imports, dependencies and fresh binding.
+Core assembles the operational packet/binding from real per-service metadata.
+No R1/FACE provider context is an execution authority.
+
+Core's Node caller retains the owner ChildProcess through actual close, sends
+its one capability to private stdin, drains classified/closed output and retains
+all provider-refresh CLI handles in its existing registry outside the browser
+Job. The PS owner reads opaque32KiB/10s, creates the Node root with NoWindow,
+heap768, cleared environment/owned AppData, assigns before claim and samples
+before launch permission. Only the final Node parses the provider envelope.
+Chrome uses the reviewed normal sandbox path and12s launch; no protection flags.
+The unchanged Core scenario owns its300s functional criteria and account/cloud
+retention receipt; browser close belongs to the adapter.
+
+The owner samples native WS every500ms, browser tree<=1024MiB and OS free>=512MiB;
+preflight requires1536MiB free. These are sampled admission/monitoring thresholds,
+not kernel memory caps. Work ends at330s, cooperative normal drain continues to355,
+emergency deallocation may use only the original creator-bound Job after failure,
+and reconciliation ends by360s/windowEnd. Force always means NEG/normalCleanup=false.
+An independent caller must supervise its retained owner process/pipe EOF; owner
+receipt is not proof of the caller's own exit. No operational window is granted
+by this plan.
+
+Completion ACK accepts only matching nonce/PID/schema after native ownership
+observation, including functional NEG receipts so normal cleanup can finish.
+It does not assert cleanup. Final functional PASS additionally requires root
+native exit0, Core passed+SSHclosed, browser.close completed, closed streams and
+no observed Playwright force marker. Native unknown remains sticky. Drain audits
+native membership separately from budget assertions and rechecks immediately
+before emergency; a prior memory refusal cannot cause stale forced teardown of
+an already empty Job. Missing job never becomes empty proof. Primary failure,
+functional result, normal cleanup and resource release remain separate.
+
+Output is closed marker counts/native operation+code; no error message, stack,
+line body, CLI, envelope or credential is persisted. The4096-character line
+classification check happens after ReadLineAsync; it is not a hard allocation cap.
+Playwright internals are not exhaustively attested by public marker observation.
+Admin/Kids/Next/base still use their prior code until the separate batch2b.
