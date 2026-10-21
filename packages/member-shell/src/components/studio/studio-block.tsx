@@ -5,6 +5,7 @@ import { isStudioProArtifact } from '@sistemazero/core/studio'
 import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
 import { createProToolchainPreparer } from '../../lib/pro-toolchain'
 import { sessionFetch as fetch } from '../../lib/session-fetch'
+import { showcaseErrorMessage } from '../../lib/showcase-failure'
 import { createStudioPublicationAdapter } from '../../lib/studio-publication-adapter'
 import { useLessonRuntime } from './use-lesson-runtime'
 
@@ -977,11 +978,8 @@ function LessonStudioBlockView({
           muralUrl?: string
           playUrl?: string
           publicationId?: string
-          error?: { message?: string }
         } | null
-        if (!res.ok) {
-          throw new Error(body?.error?.message ?? 'Não foi possível publicar agora.')
-        }
+        if (!res.ok) throw new Error(showcaseErrorMessage(body))
         return {
           muralUrl: body?.muralUrl,
           playUrl: body?.playUrl,
