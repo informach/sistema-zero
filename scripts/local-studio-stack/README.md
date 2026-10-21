@@ -94,7 +94,7 @@ Cada parte é feita pelo caminho canônico do produto:
   - Mural adulto (`mural-dos-criadores-adulto` + `parede`), criado por `POST /hub/admin/spaces`.
 - **Progresso:**
   - Adulto: a jornada vem de `seed-adult-journey.ts --once` e o cliente conclui a aula.
-  - Criança (`kids-first-course.mjs`): envia o projeto da aula, publica no Mural e conclui a fase.
+  - Criança (`kids-first-course.mjs`): envia o projeto da aula, publica no Mural e conclui a aula.
     A política Kids v1 dá o nível coder por concluir **e** publicar o curso do slot 1.
   - Pro, Ponte e Python não chegam aos clientes: na política real eles vêm em etapas mais
     adiante.

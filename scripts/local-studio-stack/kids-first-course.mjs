@@ -2,7 +2,7 @@
 /**
  * A criança "Crianca QA" faz o curso do slot 1 de primeiros passos como no produto, no
  * navegador: abre a aula, envia o projeto do bloco Estúdio, publica no Mural ("Compartilhar" →
- * Gerar capa → Publicar) e conclui a fase. Pela política Kids v1 isso dá o nível coder
+ * Gerar capa → Publicar) e conclui a aula. Pela política Kids v1 isso dá o nível coder
  * (`studio` + `pinta`) e libera a paleta do curso no Estúdio livre.
  *
  *   node scripts/local-studio-stack/kids-first-course.mjs
@@ -93,7 +93,7 @@ try {
       .first()
       .click()
       .catch(() => {})
-    await click('Concluir fase')
+    await click('Concluir aula')
     await page.goto(`${origin}/estudio`, { timeout: 300_000 })
     const open = await visible(
       page.getByRole('button', { name: '+ Novo projeto' }).first(),
