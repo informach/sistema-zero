@@ -6,11 +6,31 @@ import { closeSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'nod
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const [python, artifact, output, scenario] = process.argv.slice(2)
+const [python, artifact, output, scenario, windowEnd] = process.argv.slice(2)
+const q08 = scenario === 'Q08-pause' || scenario === 'Q08-bgm'
+const childBudgetMs = scenario === 'Q08-bgm' ? 160_000 : 40_000
+let deadlineUtc
 assert(
-  python && artifact && output && /^Q0[2-7]$/.test(scenario),
-  'Usage: node run_space_arena_native.mjs <python> <canonical-dir> <new-output-dir> <Q02..Q07>',
+  python && artifact && output && (/^Q0[2-7]$/.test(scenario) || q08),
+  'Usage: node run_space_arena_native.mjs <python> <canonical-dir> <new-output-dir> <Q02..Q07|Q08-pause|Q08-bgm> <UTC-window-end-required-for-every-child>',
 )
+{
+  assert(
+    typeof windowEnd === 'string' &&
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(windowEnd),
+    'Explicit UTC deadline required for every native child',
+  )
+  deadlineUtc = Date.parse(windowEnd)
+  assert(
+    Number.isFinite(deadlineUtc) &&
+      new Date(deadlineUtc).toISOString() === windowEnd.replace(/(?<=:\d{2})Z$/, '.000Z'),
+    'Invalid UTC date',
+  )
+  assert(
+    deadlineUtc - Date.now() >= childBudgetMs,
+    'Authorized window expired or too short for native child',
+  )
+}
 const here = dirname(fileURLToPath(import.meta.url))
 const destination = resolve(output)
 mkdirSync(destination, { recursive: false })
@@ -39,9 +59,16 @@ const report = {
   pid: null,
   deadline: false,
   signalAttempted: false,
+  childBudgetMs,
+  absoluteWindowEnd: windowEnd,
+  ...(q08 ? { q08ObserverSha256: digest(readFileSync(resolve(here, 'space_arena_q08.py'))) } : {}),
 }
 const out = openSync(resolve(destination, 'stdout.log'), 'wx')
 const err = openSync(resolve(destination, 'stderr.log'), 'wx')
+assert(
+  deadlineUtc - Date.now() >= childBudgetMs,
+  'Authorized window became too short before native spawn',
+)
 const child = spawn(report.python, argv, {
   cwd: here,
   windowsHide: true,
@@ -55,11 +82,14 @@ let spawnError
 child.once('error', (error) => {
   spawnError = String(error)
 })
-const deadline = setTimeout(() => {
-  report.deadline = true
-  report.signalAttempted = true
-  report.signalDelivered = child.kill() // Only the directly owned child handle.
-}, 40_000)
+const deadline = setTimeout(
+  () => {
+    report.deadline = true
+    report.signalAttempted = true
+    report.signalDelivered = child.kill() // Only the directly owned child handle.
+  },
+  Math.min(childBudgetMs, deadlineUtc - Date.now()),
+)
 const [exitCode, exitSignal] = await new Promise((done) =>
   child.once('close', (code, signal) => done([code, signal])),
 )
@@ -87,6 +117,24 @@ try {
     assert.equal(result.ownedTempAbsent, true)
     assert.equal(result.exportTreeUnchanged, true)
     assert.deepEqual(result.errors, [])
+    assert(Date.parse(report.endedAt) <= deadlineUtc, 'Native child outlived the authorized window')
+    if (q08) {
+      assert.equal(result.q08ObserverSha256, report.q08ObserverSha256)
+      assert(Date.parse(report.endedAt) <= deadlineUtc, 'Q08 outlived the authorized window')
+      const pause = result.observations.filter((event) => event.kind === 'pause-proof')
+      const resume = result.observations.filter((event) => event.kind === 'resume-proof')
+      assert.equal(pause.length, 1)
+      assert.equal(resume.length, 1)
+      assert(pause[0].elapsedSeconds >= 1.2 && pause[0].pausedEventPumps > 0)
+      assert(resume[0].originalCalls.sprite > resume[0].previousCalls.sprite)
+      if (scenario === 'Q08-bgm') {
+        const replay = result.observations.filter((event) => event.kind === 'music-replay-proof')
+        assert.equal(replay.length, 1)
+        assert(replay[0].intervalSeconds >= 120)
+        assert.equal(replay[0].plays.length, 2)
+        assert(replay[0].plays[1].activeVoices >= 2 && replay[0].plays[1].activeVoices <= 16)
+      }
+    }
     if (scenario === 'Q03') {
       const lines = readFileSync(resolve(destination, 'stdout.log'), 'utf8').split(/\r?\n/)
       assert.equal(lines.filter((line) => line === 'GAME OVER').length, 1)

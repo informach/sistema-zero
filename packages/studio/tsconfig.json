@@ -42,6 +42,7 @@
     "test-setup.ts",
     "playwright.config.ts",
     "playwright.pro-full.config.ts",
+    "playwright.python-games.config.ts",
     "playwright.python-runtime.config.ts",
     "playwright.python-editor.config.ts",
     "playwright.python-live.config.ts",
