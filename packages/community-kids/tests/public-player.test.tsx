@@ -232,3 +232,31 @@ describe('player público', () => {
     expect(screen.queryByText('Alice')).toBeNull()
   })
 })
+
+describe('perfil publicado na página pública (R09)', () => {
+  for (const kind of ['classic', 'pro'] as const)
+    test(`Python ${kind} mostra o perfil do próprio documento publicado, sem outra busca`, async () => {
+      fakeCelular()
+      const { project } = await pythonEnvironmentFixture(kind)
+      const fetcher = mock(async () =>
+        Response.json(project, { headers: { 'X-Studio-Python-Revision': 'a'.repeat(64) } }),
+      )
+      globalThis.fetch = Object.assign(fetcher, { preconnect: originalFetch.preconnect })
+      const view = await renderPlayer()
+      const badge = view.container.querySelector('[data-runtime-profile]')
+      expect(badge?.textContent).toBe(
+        `${kind === 'pro' ? 'Python Pro' : 'Python Clássico'}. Perfil python-test, versão test-1`,
+      )
+      expect(badge?.getAttribute('title')).toBe('Perfil python-test, versão test-1')
+      // O rótulo sai do documento que o player já baixou: nenhuma chamada a mais.
+      expect(fetcher).toHaveBeenCalledTimes(1)
+    })
+
+  test('JavaScript Clássico continua identificado, sem identidade de runtime inventada', async () => {
+    fakeCelular()
+    const view = await renderPlayer()
+    const badge = view.container.querySelector('[data-runtime-profile]')
+    expect(badge?.textContent).toBe('JavaScript Clássico')
+    expect(badge?.hasAttribute('title')).toBe(false)
+  })
+})

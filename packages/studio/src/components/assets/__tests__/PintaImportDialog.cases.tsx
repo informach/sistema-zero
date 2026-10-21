@@ -526,6 +526,51 @@ describe('Pinta import intent lifetime', () => {
     expect(imported).toHaveBeenCalledTimes(1)
   })
 
+  for (const change of ['edit', 'replace'] as const)
+    it(`a same-id document ${change === 'edit' ? 'edit keeps' : 'replacement cancels'} the pending import`, async () => {
+      const { installLocalRevision } = await import('../../../state/projectStorageRevision')
+      const stamped = installLocalRevision(createEmptyProject('p1', 'Meu Jogo'), 'perfil-1')
+      useProjectStore.setState({ project: stamped, editingAccess: 'author', isDirty: false })
+      const pending = Promise.withResolvers<Awaited<ReturnType<PintaLibraryAdapter['import']>>>()
+      let signal: AbortSignal | undefined
+      const imported = mock(() => {})
+      render(
+        <StudioPintaLibraryProvider
+          value={fakeAdapter({
+            import: (_id, options) => {
+              signal = options?.signal
+              return pending.promise
+            },
+          })}
+        >
+          <PintaImportDialog onClose={() => {}} onImported={imported} />
+        </StudioPintaLibraryProvider>,
+      )
+      fireEvent.click((await screen.findAllByRole('button', { name: 'Adicionar ao projeto' }))[0]!)
+      await waitFor(() => expect(signal).toBeDefined())
+      act(() => {
+        // Reopening the same id (host replacement, another revision) forks the local lineage.
+        if (change === 'replace') useProjectStore.getState().hydrateProject(stamped)
+        else useProjectStore.getState().rename('Nome editado durante importação')
+      })
+      expect(signal?.aborted).toBe(change === 'replace')
+      await act(async () => {
+        pending.resolve({ ok: true, asset: { id: 'd1', name: 'dragao-pintado', dataUrl: PNG } })
+        await pending.promise
+      })
+      const state = useProjectStore.getState()
+      expect(state.project?.id).toBe('p1')
+      if (change === 'replace') {
+        expect(state.project?.assets ?? []).toEqual([])
+        expect(state.isDirty).toBe(false)
+        expect(imported).not.toHaveBeenCalled()
+      } else {
+        expect(state.project?.name).toBe('Nome editado durante importação')
+        expect(state.project?.assets).toHaveLength(1)
+        expect(imported).toHaveBeenCalledTimes(1)
+      }
+    })
+
   it('does not show a late failure after closing even if the parent keeps the component mounted', async () => {
     const pending = Promise.withResolvers<Awaited<ReturnType<PintaLibraryAdapter['import']>>>()
     render(

@@ -398,3 +398,37 @@ test('nested source ZIP includes installable audio without rewriting authored mo
   )
   expect(text('LEIA-ME-Sistema-Zero.txt')).toContain('subpasta')
 })
+
+test('PNG materials record the Tk 8.6 requirement; a project without PNG does not', async () => {
+  const withPng = documentFixture('python', 'classic')
+  withPng.assets = [
+    {
+      id: 'heroi',
+      name: 'heroi',
+      kind: 'image',
+      source: 'upload',
+      dataUrl: 'data:image/png;base64,aGVybw==',
+      proPath: 'assets/heroi.png',
+    },
+  ] as never
+  delete (withPng as { coverAssetName?: string }).coverAssetName
+  const runtimeCatalog = await runtimeContext(withPng)
+  const exported = await buildSourceFiles(await refinePythonProjectDocument(withPng), {
+    runtimeCatalog,
+  })
+  const limit = expect.stringContaining('Tk 8.6 ou mais recente')
+  const manifest = JSON.parse(exported.files['.sistemazero/export-manifest.json'] as string)
+  expect(manifest.knownLimits).toContainEqual(limit)
+  expect(exported.files['LEIA-ME-Sistema-Zero.txt']).toContain('Tk 8.6 ou mais recente')
+  expect(exported.files['LEIA-ME-Sistema-Zero.txt']).toContain('tkinter.TkVersion')
+
+  const withoutPng = documentFixture('python', 'classic')
+  withoutPng.assets = []
+  delete (withoutPng as { coverAssetName?: string }).coverAssetName
+  const plain = await buildSourceFiles(await refinePythonProjectDocument(withoutPng), {
+    runtimeCatalog: await runtimeContext(withoutPng),
+  })
+  const plainManifest = JSON.parse(plain.files['.sistemazero/export-manifest.json'] as string)
+  expect(plainManifest.knownLimits).not.toContainEqual(limit)
+  expect(plain.files['LEIA-ME-Sistema-Zero.txt']).not.toContain('Tk 8.6')
+})

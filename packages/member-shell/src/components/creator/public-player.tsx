@@ -21,6 +21,7 @@ import {
   resolveGamepadVisibility,
   toggledGamepadOverride,
 } from '../../lib/gamepad-visibility'
+import { publicRuntimeLabel } from '../../lib/public-runtime-label'
 import {
   DEFAULT_STAGE_ASPECT,
   STAGE_FILL,
@@ -334,6 +335,8 @@ function PublicPlayerForProject({
   const controls = useMemo(() => describeProjectControls(project), [project])
 
   const title = typeof project?.name === 'string' && project.name.trim() ? project.name : 'Projeto'
+  // R09: a página diz qual perfil publicado ela executa, a partir do próprio documento.
+  const runtime = useMemo(() => (project ? publicRuntimeLabel(project) : null), [project])
   // Tela sensível ao toque OU janela estreita pedem o console. Medido AO VIVO: a
   // versão lida uma vez no mount ficava velha assim que o aparelho girava.
   const automaticGamepad = viewport.coarse || (viewport.w > 0 && viewport.w < 768)
@@ -377,6 +380,7 @@ function PublicPlayerForProject({
   const header = adult ? (
     <AdultHeader
       title={status === 'ready' ? title : null}
+      runtime={status === 'ready' ? runtime : null}
       author={author}
       brandLabel={brandLabel}
       compact={rotated || gamepadVisible}
@@ -400,6 +404,12 @@ function PublicPlayerForProject({
         <span className="truncate font-bold [font-family:var(--font-display)] text-base sm:text-xl">
           {status === 'ready' ? title : 'Sistema Zero'}
         </span>
+        {status === 'ready' && runtime ? (
+          <RuntimeBadge
+            runtime={runtime}
+            className="bg-muted text-muted-foreground text-[11px] sm:text-xs"
+          />
+        ) : null}
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <p className="text-muted-foreground text-xs sm:text-sm">
@@ -561,9 +571,30 @@ function PublicPlayerForProject({
 const ADULT_BUTTON =
   'inline-flex min-h-12 items-center gap-2 rounded-xl px-4 font-bold text-[17px] focus-visible:outline-3 focus-visible:outline-(--sz-community-action-light) focus-visible:outline-offset-2'
 
+/** Linguagem e tipo à vista; a identidade exata do runtime vai no título e para leitores de tela. */
+function RuntimeBadge({
+  runtime,
+  className,
+}: {
+  runtime: ReturnType<typeof publicRuntimeLabel>
+  className: string
+}) {
+  return (
+    <span
+      data-runtime-profile
+      title={runtime.detail ?? undefined}
+      className={`shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 font-bold ${className}`}
+    >
+      {runtime.label}
+      {runtime.detail ? <span className="sr-only">. {runtime.detail}</span> : null}
+    </span>
+  )
+}
+
 /** O cabeçalho marinho da página pública na comunidade adulta. */
 function AdultHeader({
   title,
+  runtime,
   author,
   brandLabel,
   compact,
@@ -574,6 +605,7 @@ function AdultHeader({
   onToggleFullscreen,
 }: {
   title: string | null
+  runtime: ReturnType<typeof publicRuntimeLabel> | null
   author: string | null
   brandLabel: string
   /** Com o console ou o palco girado a altura é disputada: sai a logo. */
@@ -605,9 +637,17 @@ function AdultHeader({
           </>
         )}
         <div className="flex min-w-0 flex-col leading-tight">
-          <h1 className="m-0 truncate font-extrabold text-[22px] text-white [font-family:var(--font-display)]">
-            {title ?? 'Jogo da comunidade'}
-          </h1>
+          <div className="flex min-w-0 items-center gap-2.5">
+            <h1 className="m-0 truncate font-extrabold text-[22px] text-white [font-family:var(--font-display)]">
+              {title ?? 'Jogo da comunidade'}
+            </h1>
+            {runtime ? (
+              <RuntimeBadge
+                runtime={runtime}
+                className="border border-(--topo-borda) text-[17px] text-white"
+              />
+            ) : null}
+          </div>
           <span className="truncate text-[17px]">
             {author ? (
               <>

@@ -6,6 +6,7 @@ import { Button, Modal } from '#ui'
 import { personalIdOf } from '../../asset-library/personalSync'
 import { isPythonProject } from '../../core/editableProject'
 import { normalizeSearchText } from '../../core/searchText'
+import { readLocalRevision } from '../../state/projectStorageRevision'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
@@ -17,6 +18,13 @@ import {
 } from './addCreationToProject'
 
 const PintaImageSelection = lazy(() => import('./PintaImageSelection'))
+
+/**
+ * The local writer lineage changes only when the open document is replaced (reopen,
+ * host replacement, recovered draft), never on an ordinary edit of the same document.
+ */
+const documentLineage = (project: { id: string } | null | undefined) =>
+  project ? readLocalRevision(project)?.lineage : undefined
 
 /**
  * Modal "Trazer do Pinta" — o fluxo PULL de imagens: lista TODOS os desenhos
@@ -110,11 +118,13 @@ export function PintaImportDialog({
     setBusyId(null)
     setError(null)
     // Observe every transition, including A→B→A batched into one React render.
-    // Ordinary source/name edits keep the same project id and remain valid.
+    // Ordinary source/name edits keep the same project id and lineage and remain valid;
+    // replacing the document with another revision cancels like switching projects.
     const unsubscribe = storeApi.subscribe((state, previous) => {
       if (
         state.project?.id !== previous.project?.id ||
         state.editingAccess !== previous.editingAccess ||
+        documentLineage(state.project) !== documentLineage(previous.project) ||
         (state.project?.programmingLanguage ?? 'javascript') !==
           (previous.project?.programmingLanguage ?? 'javascript')
       ) {
@@ -189,6 +199,7 @@ export function PintaImportDialog({
       ? structuredClone(initialTarget ?? projectPintaImageFromRecipe(initial, recipe) ?? null)
       : undefined
     const projectId = initial.project.id
+    const lineage = documentLineage(initial.project)
     const controller = new AbortController()
     const scope = captureProjectStorageScope()
     const signal = AbortSignal.any([
@@ -203,6 +214,8 @@ export function PintaImportDialog({
       owner.pending === controller &&
       !signal.aborted &&
       storeApi.getState().project?.id === projectId &&
+      // A first save stamps an unstamped document in place; the subscription covers replacements.
+      (lineage === undefined || documentLineage(storeApi.getState().project) === lineage) &&
       !!storeApi.getState().project &&
       isPythonProject(storeApi.getState().project!) === !!recipe &&
       storeApi.getState().editingAccess === 'author'

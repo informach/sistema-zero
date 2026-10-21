@@ -120,6 +120,18 @@ function publicationError(error: unknown): NextResponse {
 }
 
 const invalid = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 })
+/** The client shows `error.message`; without it the author only saw a generic failure. */
+const projectTooLarge = () =>
+  NextResponse.json(
+    {
+      error: {
+        code: 'PROJECT_TOO_LARGE',
+        message:
+          'O projeto ficou grande demais para publicar. Use imagens ou sons menores e tente de novo.',
+      },
+    },
+    { status: 413 },
+  )
 
 /** Slug do servidor do Mural (kids). Só a vitrine kids chama estas rotas. */
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
@@ -484,7 +496,7 @@ export function createStudioRoutes(deps: {
       const projectPart = form.get('project')
       if (!(projectPart instanceof File) || projectPart.size === 0) return invalid()
       if (projectPart.size > PROJECT_MAX_BYTES) {
-        return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
+        return projectTooLarge()
       }
       let projectBytes: Buffer
       let publicationProject: EditableStudioProject | null = null
@@ -527,8 +539,7 @@ export function createStudioRoutes(deps: {
         publicationProject = studioPublicProject(project)
         studioMeta = publicMetadata(project)
         projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf8')
-        if (projectBytes.length > PROJECT_MAX_BYTES)
-          return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
+        if (projectBytes.length > PROJECT_MAX_BYTES) return projectTooLarge()
         if (project.programmingLanguage === 'python') {
           const opened = await members.openLessonStudio(lessonId, blockId)
           const baseline = z
@@ -828,7 +839,7 @@ export function createStudioRoutes(deps: {
       if (!liveSnapshot && (!(projectPart instanceof File) || projectPart.size === 0))
         return invalid()
       if (!liveSnapshot && projectPart instanceof File && projectPart.size > PROJECT_MAX_BYTES) {
-        return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
+        return projectTooLarge()
       }
       let projectBytes: Buffer
       let publicationProject: EditableStudioProject | null = null
@@ -846,7 +857,7 @@ export function createStudioRoutes(deps: {
         studioMeta = publicMetadata(project)
         projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf-8')
         if (projectBytes.length > PROJECT_MAX_BYTES) {
-          return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
+          return projectTooLarge()
         }
       } catch {
         return invalid()
