@@ -9,6 +9,19 @@ describe('safeNextPath', () => {
     )
   })
 
+  test('o next do login mantém a autoria em cursos e recusa destinos externos codificados', () => {
+    const origin = 'http://localhost:43107'
+    const login = new URL('/login?next=/admin/membros/cursos', origin)
+    const next = safeNextPath(login.searchParams.get('next'))
+    expect(next).toBe('/admin/membros/cursos')
+    if (next === null) throw new Error('Destino de cursos recusado')
+    expect(new URL(next, origin).href).toBe(`${origin}/admin/membros/cursos`)
+    for (const destination of ['https://example.invalid/admin', '//example.invalid/admin']) {
+      login.searchParams.set('next', destination)
+      expect(safeNextPath(new URL(login.href).searchParams.get('next'))).toBeNull()
+    }
+  })
+
   test('rejeita tudo que não é caminho do painel (anti open-redirect)', () => {
     expect(safeNextPath(null)).toBeNull()
     expect(safeNextPath(undefined)).toBeNull()

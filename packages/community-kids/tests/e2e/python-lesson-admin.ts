@@ -267,11 +267,11 @@ export async function runPythonLessonAdmin() {
       pending.add(work)
       void work.finally(() => pending.delete(work))
     })
-    await page.goto(`${origin}/login`)
+    await page.goto(`${origin}/login?next=/admin/membros/cursos`)
     await page.getByLabel('E-mail', { exact: true }).fill(email)
     await page.getByLabel('Senha', { exact: true }).fill(password)
     await page.getByRole('button', { name: 'Entrar', exact: true }).click()
-    await page.waitForURL(`${origin}/admin`)
+    await page.waitForURL(`${origin}/admin/membros/cursos`)
     receipt.checks.push('real-admin-login')
     const fixture = await createEmptyPythonLesson({
       request: context.request,
