@@ -35,6 +35,7 @@ import { z } from 'zod'
 import { getEnv } from '../lib/env'
 import { UGC_IMAGE_INPUT_MIME } from '../lib/hub-attachments'
 import { hasKidsCapability, kidsJourneyAccess } from '../lib/kids-journey-access'
+import { showcaseFailureBody } from '../lib/showcase-failure'
 import { verifyCleanupSignature, verifyReservationCleanupSignature } from '../lib/studio-cleanup'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { HubClient, MembersClient } from '../server/clients'
@@ -309,7 +310,7 @@ export function createStudioRoutes(deps: {
     expectedPlayId?: string,
   ) {
     if (result.status !== 200 || !result.body)
-      return NextResponse.json(result.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
+      return NextResponse.json(showcaseFailureBody(result.body, 'SHOWCASE_FAILED'), {
         status: result.status === 200 ? 502 : result.status,
       })
     const prepared = result.body
@@ -719,7 +720,7 @@ export function createStudioRoutes(deps: {
         studioMeta,
       })
       if (r.status !== 200 || !r.body) {
-        return NextResponse.json(r.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
+        return NextResponse.json(showcaseFailureBody(r.body, 'SHOWCASE_FAILED'), {
           status: r.status,
         })
       }
@@ -1056,7 +1057,7 @@ export function createStudioRoutes(deps: {
       if (r.status !== 200 || !r.body) {
         // A timeout or even a rejected retry cannot prove Hub did not commit a
         // previous attempt. Keep the stable private object for reconciliation.
-        return NextResponse.json(r.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
+        return NextResponse.json(showcaseFailureBody(r.body, 'SHOWCASE_FAILED'), {
           status: r.status,
         })
       }

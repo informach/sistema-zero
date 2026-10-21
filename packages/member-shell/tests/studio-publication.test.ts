@@ -28,6 +28,7 @@ function fixture(
     journeyStatus?: number
     templateId?: string
     hubFirstFailure?: boolean
+    hubRejection?: { status: number; body: unknown }
     publicOrigin?: string
   } = {},
 ) {
@@ -169,6 +170,7 @@ function fixture(
   const createThread = async (input: { playId: string }) => {
     hubCalls++
     expect(state?.playId).toBe(input.playId)
+    if (options.hubRejection) return options.hubRejection
     publishedThread = { id: crypto.randomUUID(), playId: input.playId, status: 'visible' }
     return hubCalls === 1 && options.hubFirstFailure
       ? { status: 503, body: null }
@@ -438,4 +440,40 @@ test('Pro publication follows custom capabilities even at Noob, while a team rol
   expect(await response.json()).toMatchObject({ error: { code: 'JOURNEY_UNAVAILABLE' } })
   expect(unavailable.builds()).toBe(0)
   expect(unavailable.hubCalls()).toBe(0)
+})
+
+test('a Hub schema rejection reaches the author as a sentence, keeping the code for diagnostics', async () => {
+  // Elysia's validator message is a JSON report; it used to land verbatim on the child's screen.
+  const raw = JSON.stringify({
+    type: 'validation',
+    on: 'body',
+    property: '/coverImageUrl',
+    message: "Expected string to match '^https://'",
+  })
+  for (const lesson of [false, true]) {
+    const f = fixture({
+      hubRejection: { status: 400, body: { error: { code: 'VALIDATION_ERROR', message: raw } } },
+    })
+    const response = await f.publish(lesson)
+    expect(response.status).toBe(400)
+    const body = await response.json()
+    expect(body).toEqual({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Não deu para publicar no Mural agora. Tente de novo daqui a pouco.',
+      },
+    })
+    expect(JSON.stringify(body)).not.toContain('coverImageUrl')
+    mock.restore()
+  }
+  // A Hub domain refusal is already written for people and still reaches the author.
+  const f = fixture({
+    hubRejection: {
+      status: 403,
+      body: { error: { code: 'FORBIDDEN', message: 'Você ainda não tem o Estúdio Completo.' } },
+    },
+  })
+  expect(await (await f.publish()).json()).toEqual({
+    error: { code: 'FORBIDDEN', message: 'Você ainda não tem o Estúdio Completo.' },
+  })
 })
