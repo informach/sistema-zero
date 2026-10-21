@@ -13,6 +13,8 @@ import {
 import { decodeTurtleImage, readTurtleImage, TurtleImageError } from './images'
 import { canvasTurtleFont, layoutTurtleText } from './text'
 
+// Below one 60 Hz frame, so a steady 60 Hz program never waits a whole frame for its paint.
+const IMMEDIATE_PAINT_AFTER_MS = 12
 const KEY_NAMES: Record<string, string> = {
   ArrowLeft: 'Left',
   ArrowRight: 'Right',
@@ -72,6 +74,7 @@ export function createTurtleRenderer(
   let presentedHeight = 0
   let capturing = false
   let raf: number | undefined
+  let lastPaintAt: number | undefined
   let presentationTimer: ReturnType<typeof setTimeout> | undefined
   let pendingPresent: { resolve(): void; reject(error: Error): void } | undefined
   let drag: { item: number; button: number } | undefined
@@ -306,10 +309,24 @@ export function createTurtleRenderer(
     frameSequence++
     presentedWidth = width
     presentedHeight = height
+    lastPaintAt = performance.now()
   }
   function present() {
     active()
     if (closed || !dirty) return Promise.resolve()
+    // Like Tk's update(), a program presenting no faster than the display paints now: waiting
+    // for the next animation frame there only stalls Python for up to a whole frame. A program
+    // that already painted within this frame, and the first paint, still wait for the frame,
+    // which keeps faster producers paced by the display.
+    if (
+      !options.activityPresentation &&
+      raf === undefined &&
+      lastPaintAt !== undefined &&
+      performance.now() - lastPaintAt >= IMMEDIATE_PAINT_AFTER_MS
+    ) {
+      paint()
+      return Promise.resolve()
+    }
     return new Promise<void>((resolve, reject) => {
       pendingPresent = { resolve, reject }
       const render = () => {

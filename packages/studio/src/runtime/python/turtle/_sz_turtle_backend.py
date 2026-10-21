@@ -23,8 +23,12 @@ MAX_OPERATIONS = LIMITS['operations']
 # Fixed envelope and the largest bounded query fit in this reserved space.
 MAX_QUEUE_BYTES = LIMITS['requestBytes'] - 256
 
+# One encoder for every operation: json.dumps with non-default options builds a new
+# JSONEncoder per call, and games queue hundreds of operations per frame. Same bytes.
+_ENCODER = json.JSONEncoder(ensure_ascii=True, allow_nan=False, separators=(',', ':'))
+
 def _encode(value):
-    return json.dumps(value, ensure_ascii=True, allow_nan=False, separators=(',', ':'))
+    return _ENCODER.encode(value)
 
 def configure(transport, project_root, activity_checkpoint=None):
     global _transport, _project_root, _activity_checkpoint
@@ -96,6 +100,7 @@ class TurtleScreenBase:
         self._timer_sequence = 0
         self._incoming = []
         self._activity_update_depth = 0
+        self._just_waited = False
         self._closed = False
         self._queue({'op': 'open'})
         self._viewport = self._flush({'type': 'viewport'})['value']
@@ -122,6 +127,7 @@ class TurtleScreenBase:
             self._flush()
 
     def _flush(self, query=None):
+        self._just_waited = False
         operations, self._operations = self._operations, []
         self._queued_bytes = self._queued_points = self._queued_text = 0
         response = _exchange(operations, query)
@@ -215,7 +221,12 @@ class TurtleScreenBase:
     def _update_events(self):
         if self._closed:
             return
-        self._flush({'type': 'present'})
+        # Right after mainloop's wait the frame has just presented and returned the pending
+        # input; with nothing queued, another present would only repeat that round trip.
+        if self._just_waited and not self._operations:
+            self._just_waited = False
+        else:
+            self._flush({'type': 'present'})
         while self._incoming and not self._closed:
             event = self._incoming.pop(0)
             if event['type'] in ('keypress', 'keyrelease'):
@@ -345,6 +356,7 @@ class TurtleScreenBase:
                     (self._timers[0][0] - time.monotonic()) * 1000)))
                     if self._timers else None)
                 self._flush({'type': 'wait', 'timeoutMs': timeout})
+                self._just_waited = True
 
     def _blankimage(self):
         return BrowserImage(0)
