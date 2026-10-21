@@ -104,7 +104,10 @@ async function prepareRelease() {
     programmingLanguage: 'python',
     kinds: ['classic', 'pro'],
     modes: ['blocks', 'bridge', 'code'],
-    capabilities: ['edit', 'export-source', 'execute', 'python-repl'],
+    // Mirrors the publish+assist candidate (python-browser/2026-10-21-audio-2): the editor,
+    // public-play and Zappy proofs exercise publication and assistance, which now require
+    // the release to declare them.
+    capabilities: ['edit', 'export-source', 'execute', 'python-repl', 'publish', 'assist'],
     extensions: [{ id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] }],
     sourceTargets: ['browser', 'desktop'],
     requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],

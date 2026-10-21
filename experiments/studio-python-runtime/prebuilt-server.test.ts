@@ -341,6 +341,8 @@ test('prebuilt probe serves verified immutable alias bytes after the source file
         'export-source',
         'execute',
         'python-repl',
+        'publish',
+        'assist',
       ])
       const configuration: unknown = await (
         await fetch(`${started.url}/configuration`, { signal: AbortSignal.timeout(5000) })
