@@ -38,6 +38,7 @@ export type ServiceName =
   | 'auth'
   | 'catalog'
   | 'members'
+  | 'hub'
   | 'gateway'
   | 'admin'
   | 'community'
@@ -61,8 +62,8 @@ export type ServiceDef = {
 
 const nextArgs = (port: number) => ['run', 'dev', '--', '-H', '127.0.0.1', '-p', String(port)]
 
-// Portas canônicas de scripts/dev.ts. Payments, messaging, fiscal, funnel, hub etc.
-// ficam DESLIGADOS: as rotas do gateway para eles respondem 502/503 localmente.
+// Portas canônicas de scripts/dev.ts. Payments, messaging, fiscal, funnel, referrals,
+// marketing e helpdesk ficam DESLIGADOS: as rotas do gateway para eles respondem 502/503.
 export const SERVICES: ServiceDef[] = [
   {
     name: 'auth',
@@ -84,6 +85,15 @@ export const SERVICES: ServiceDef[] = [
     name: 'members',
     dir: 'members',
     port: 3004,
+    args: ['run', 'src/index.ts'],
+    health: '/readyz',
+    kind: 'api',
+  },
+  // Fórum/Mural (Clube e Mural dos Criadores): a vitrine do Studio e o marco `showcase`.
+  {
+    name: 'hub',
+    dir: 'hub',
+    port: 3010,
     args: ['run', 'src/index.ts'],
     health: '/readyz',
     kind: 'api',
@@ -164,6 +174,7 @@ const SECRET_NAMES = [
   'METRICS_TOKEN',
   'FUNNEL_HMAC_SECRET',
   'FUNNEL_INTERNAL_TOKEN',
+  'HUB_INTERNAL_TOKEN',
   'STUDIO_PRO_RUNTIME_TOKEN',
   'STUDIO_PYTHON_RUNTIME_TOKEN',
   'STUDIO_PYTHON_LANGUAGE_TOKEN',
@@ -270,8 +281,23 @@ export function serviceEnv(name: ServiceName, s: Secrets): Record<string, string
       // S2S direto ao Auth (coorte de perfis da jornada Kids). Sem GATEWAY_URL +
       // MEMBERS_HMAC_SECRET os jobs de e-mail (report dos pais/renovação) ficam no-op.
       AUTH_BASE_URL: url(3002),
+      // Avisa o hub na concessão (invalida o micro-cache de acesso).
+      HUB_BASE_URL: url(3010),
       AUTH_INTERNAL_TOKEN: s.AUTH_INTERNAL_TOKEN,
       ...studio,
+    },
+    hub: {
+      NODE_ENV: 'development',
+      PORT: '3010',
+      HOST: '127.0.0.1',
+      DATABASE_URL: db,
+      MEMBERS_BASE_URL: url(3004),
+      MEMBERS_INTERNAL_TOKEN: s.MEMBERS_INTERNAL_TOKEN,
+      GATEWAY_HMAC_SECRET: s.GATEWAY_HMAC_SECRET,
+      INTERNAL_API_TOKEN: s.HUB_INTERNAL_TOKEN,
+      REQUIRE_ADMIN: 'true',
+      KIDS_BFF_BASE_URL: url(3008),
+      ADULT_BFF_BASE_URL: url(3007),
     },
     gateway: {
       NODE_ENV: 'development',
@@ -302,6 +328,7 @@ export function serviceEnv(name: ServiceName, s: Secrets): Record<string, string
       FUNNEL_HMAC_SECRET: s.FUNNEL_HMAC_SECRET,
       FUNNEL_INTERNAL_TOKEN: s.FUNNEL_INTERNAL_TOKEN,
       HUB_URL: url(3010),
+      HUB_INTERNAL_TOKEN: s.HUB_INTERNAL_TOKEN,
       MARKETING_URL: url(3011),
       REFERRALS_URL: url(3012),
       HELPDESK_URL: url(3013),

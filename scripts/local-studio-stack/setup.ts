@@ -116,11 +116,16 @@ async function startPostgresAndDb() {
 }
 
 function migrateAndSeed() {
-  for (const pkg of ['auth', 'catalog', 'members']) {
+  for (const pkg of ['auth', 'catalog', 'members', 'hub']) {
     run(process.execPath, [here('migrate.ts'), pkg], {
       env: childEnv({ DATABASE_URL: databaseUrl(secrets) }),
     })
   }
+  // Servidores da comunidade (Clube e Mural dos Criadores), idempotente por slug.
+  run(process.execPath, ['run', 'scripts/seed-community-spaces.ts'], {
+    cwd: join(ROOT, 'packages', 'hub'),
+    env: childEnv(serviceEnv('hub', secrets)),
+  })
   // Seed canônico do catálogo (idempotente por sku/slug): produtos e ofertas Kids e Adulto.
   run(process.execPath, ['run', 'scripts/seed.ts'], {
     cwd: join(ROOT, 'packages', 'catalog'),
