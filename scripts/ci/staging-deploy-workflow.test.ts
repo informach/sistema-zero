@@ -25,19 +25,26 @@ test('workflow resolves before installation, public/provider access, SSH and app
   ]) {
     expect(deploy.indexOf(boundary)).toBeGreaterThan(resolverPosition)
   }
+  expect(deploy).toContain(`BEFORE: \${{ steps.staging-baseline.outputs.before }}`)
   expect(deploy).toContain(
-    `BEFORE: \${{ fromJSON(steps.staging-baseline.outputs.selector).before }}`,
+    `if: \${{ success() && steps.staging-baseline.outcome == 'success' && steps.staging-baseline.outputs.selector != '' }}`,
   )
+  expect(deploy).not.toContain('fromJSON(')
   expect(deploy).not.toContain('github.event.before')
   expect(deploy).toContain(`FORCED: \${{ github.event.inputs.services }}`)
 })
 
-test('real Node CLI preserves dispatch before without Git, bootstrap or GitHub credentials', () => {
+test.each([
+  { label: 'empty', before: '' },
+  { label: 'SHA', before: 'a'.repeat(40) },
+  { label: 'multiline', before: 'existing-dispatch-value\nselector=must-remain-inside-json' },
+])('real Node CLI preserves dispatch $label without Git, bootstrap or GitHub credentials', ({
+  before,
+}) => {
   const directory = mkdtempSync(join(tmpdir(), 'staging-dispatch-cli-'))
   try {
     const event = join(directory, 'event.json')
     const output = join(directory, 'output.txt')
-    const before = 'existing-dispatch-value\nselector=must-remain-inside-json'
     writeFileSync(event, JSON.stringify({ inputs: { services: 'auto', before_sha: before } }))
     const child = spawnSync('node', [resolver], {
       cwd: directory,
@@ -55,8 +62,16 @@ test('real Node CLI preserves dispatch before without Git, bootstrap or GitHub c
     })
     expect(child.status).toBe(0)
     const content = readFileSync(output, 'utf8')
-    expect(content.split('\n')).toHaveLength(2)
-    expect(JSON.parse(content.slice('selector='.length))).toEqual({ before, source: 'dispatch' })
+    const firstNewline = content.indexOf('\n')
+    expect(JSON.parse(content.slice('selector='.length, firstNewline))).toEqual({
+      before,
+      source: 'dispatch',
+    })
+    const remaining = content.slice(firstNewline + 1)
+    const header = /^before<<([a-z0-9_-]+)\n/.exec(remaining)
+    expect(header).not.toBeNull()
+    if (!header) throw new Error('multiline output header required')
+    expect(remaining).toBe(`before<<${header[1]}\n${before}\n${header[1]}\n`)
   } finally {
     rmSync(directory, { recursive: true, force: true })
   }
@@ -86,6 +101,7 @@ test('real Node CLI refuses an unprepared push without producing a selector', ()
     })
     expect(child.status).toBe(1)
     expect(child.stderr).toContain('refused before provider access')
+    expect(child.stderr).toContain('[validation]')
     expect(child.stdout + child.stderr).not.toContain('synthetic-test-token')
     expect(existsSync(output)).toBe(false)
   } finally {

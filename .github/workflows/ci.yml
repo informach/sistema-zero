@@ -593,8 +593,9 @@ jobs:
           node scripts/ci/railway-config.mjs apply staging "$RUNNER_TEMP/railway-staging-plan.json"
 
       - name: Calcular serviços afetados e deployar
+        if: ${{ success() && steps.staging-baseline.outcome == 'success' && steps.staging-baseline.outputs.selector != '' }}
         env:
-          BEFORE: ${{ fromJSON(steps.staging-baseline.outputs.selector).before }}
+          BEFORE: ${{ steps.staging-baseline.outputs.before }}
           FORCED: ${{ github.event.inputs.services }}
           RAILWAY_SSH_PRIVATE_KEY: ${{ secrets.RAILWAY_SSH_PRIVATE_KEY }}
           RAILWAY_SSH_KNOWN_HOSTS: ${{ secrets.RAILWAY_SSH_KNOWN_HOSTS }}
