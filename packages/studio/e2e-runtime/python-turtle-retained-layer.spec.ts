@@ -80,7 +80,10 @@ async function paintScene(browser: Browser, request: APIRequestContext, progress
     const target = globalThis as typeof globalThis & { __szLayerDraws?: number }
     target.__szLayerDraws = 0
     const draw = CanvasRenderingContext2D.prototype.drawImage as (...args: unknown[]) => void
-    CanvasRenderingContext2D.prototype.drawImage = function (...args: unknown[]) {
+    CanvasRenderingContext2D.prototype.drawImage = function (
+      this: CanvasRenderingContext2D,
+      ...args: unknown[]
+    ) {
       if (args[0] instanceof HTMLCanvasElement) target.__szLayerDraws!++
       return draw.apply(this, args)
     } as typeof CanvasRenderingContext2D.prototype.drawImage
