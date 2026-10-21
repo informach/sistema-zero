@@ -72,7 +72,7 @@ Todas as provas são locais nesta máquina. A pilha local (`scripts/local-studio
 
 ## Releases
 
-As mudanças do renderer e do adaptador Turtle (`f81fd9ae2`) geram uma distribuição nova. A `audio-2` ainda aponta para a distribuição `a8a6c625…`. Antes de ativar, gerar a release a partir da distribuição atual para que as melhorias cheguem ao staging, e regenerar o plano offline.
+As mudanças do renderer e do adaptador Turtle (`f81fd9ae2`) geram uma distribuição nova. A candidata `audio-2` foi regenerada com a distribuição atual `542cc502…` (manifesto `8f876d00…`, plano `deb6a002…`), ainda sem promoção nem ativação.
 
 ## O que fazer a seguir
 
