@@ -7,11 +7,15 @@
   "originalBrowserStatus": "not-compatible-with-system-audio",
   "portableVariant": {
     "status": "source-adapted-not-game-qualified",
-    "version": "portable-audio-1.0.0",
+    "version": "portable-audio-1.1.0",
     "recipe": "experiments/studio-python-runtime/gameVariants.ts",
-    "entrypointSha256": "8bd915293088b0fa85a2313e046711d861f43c481aa691d88ba07402485819d8",
+    "entrypointSha256": "3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76",
     "permittedChanges": [
-      "Replace four explicit os.system(aplay) calls and its import with an explicit portable audio module. Preserve every game feature and record the exact diff."
+      "Replace four explicit os.system(aplay) calls and its import with an explicit portable audio module. Preserve every game feature and record the exact diff.",
+      "Schedule the authored3000ms bye at most once per Screen across both ending branches; retain physics/render/order,16ms loop,2500ms start timers and reset_speed timer unchanged. Marker is set only after successful timer registration."
+    ],
+    "requiresReferenceReproduction": [
+      "Proposed1.1 source is not qualified by1.0 receipts. Require fresh named-bye scheduling/firing/natural-close proof and preserve original callbacks/errors."
     ]
   },
   "files": [

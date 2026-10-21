@@ -25,10 +25,28 @@ def observed_screen():
     screen = _original_init()
     real_timer = screen.ontimer
     real_onkeypress = screen.onkeypress
+    real_bye = screen.bye
+
+    def bye():
+        emit("natural-close", {"timersScheduled": dict(_timers)})
+        return real_bye()
+
+    screen.bye = bye
 
     def timer(callback, delay=0):
         key = str(delay)
         _timers[key] = _timers.get(key, 0) + 1
+        if delay == 3000:
+            scheduled = time.monotonic()
+            name = getattr(callback, "__name__", type(callback).__name__)
+            emit("timer-scheduled", {"delay": delay, "callback": name, "scheduledClock": scheduled})
+
+            def observed_callback():
+                emit("timer-fired", {"delay": delay, "callback": name,
+                     "scheduledClock": scheduled, "elapsedSeconds": time.monotonic() - scheduled})
+                return callback()
+
+            return real_timer(observed_callback, delay)
         return real_timer(callback, delay)
 
     screen.ontimer = timer

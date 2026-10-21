@@ -39,7 +39,7 @@ export async function preparePacmanQualification(
   )
   assert.equal(
     pacmanDigest(manifestBytes),
-    'b0d575be9cf6571b750fdf27af75055f51d92e00b73b37c52d3cdb4aa1c56289',
+    '689bbeced12887dd08a44765c0e49151be1cf78e273f910e7e380d9278b1609d',
   )
   const manifest = portableGameRecipes.pacman.manifest
   assert.equal(manifest.commit, '2a4eb7f5963f905b1b80ebf4f3c8eaa50da50103')
@@ -70,7 +70,7 @@ export async function preparePacmanQualification(
   const variant = portableGameSource('pacman', main.toString('utf8'))
   assert.equal(
     pacmanDigest(variant.content),
-    '8bd915293088b0fa85a2313e046711d861f43c481aa691d88ba07402485819d8',
+    '3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76',
   )
   const get = async (path: string) => {
     const response = await http.get(path)

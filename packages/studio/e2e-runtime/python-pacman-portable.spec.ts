@@ -1,6 +1,7 @@
 import { type CDPSession, expect, type Page, type TestInfo, test } from '@playwright/test'
 import { z } from 'zod'
 import type {} from '../../../experiments/studio-python-runtime/providerHost'
+import { decodeGameObservations } from '../../../experiments/studio-python-runtime/qualification/game_observations'
 import {
   type PacmanScenario,
   preparePacmanQualification,
@@ -58,10 +59,7 @@ async function observations(cdp: CDPSession) {
         `globalThis.providerProbe.read('audio').events.filter(e=>e.type==='console').map(e=>e.text).join('')`,
       ),
     )
-  return output
-    .split('\n')
-    .filter((line) => line.startsWith('__SZ_PACMAN_QA__'))
-    .map((line) => Event.parse(JSON.parse(line.slice('__SZ_PACMAN_QA__'.length))))
+  return decodeGameObservations(output, '__SZ_PACMAN_QA__').map((value) => Event.parse(value))
 }
 
 async function waitForObservation(cdp: CDPSession, event: string, tick?: number) {
@@ -245,6 +243,46 @@ for (const scenario of [
               )
               .toBe(true)
           }
+        }
+        if (scenario === 'victory-near-end' || scenario === 'defeat-near-end') {
+          // Wait for the authored callback instead of disposing immediately after scheduling.
+          const fired = z
+            .object({
+              delay: z.literal(3000),
+              callback: z.literal('bye'),
+              elapsedSeconds: z.number(),
+            })
+            .parse((await waitForObservation(cdp, 'timer-fired')).value)
+          expect(fired.elapsedSeconds).toBeGreaterThanOrEqual(3)
+          await waitForObservation(cdp, 'natural-close')
+          await expect
+            .poll(() => evaluate(cdp, `globalThis.providerProbe.read('audio').status`))
+            .toBe('completed')
+          const completedEvents = await observations(cdp)
+          const byeTimers = completedEvents
+            .filter((event) => event.event === 'timer-scheduled' || event.event === 'timer-fired')
+            .map((event) => ({
+              event: event.event,
+              value: z
+                .object({
+                  delay: z.number(),
+                  callback: z.string(),
+                  scheduledClock: z.number(),
+                  elapsedSeconds: z.number().optional(),
+                })
+                .parse(event.value),
+            }))
+            .filter(({ value }) => value.delay === 3000 && value.callback === 'bye')
+          const scheduledBye = byeTimers.filter((event) => event.event === 'timer-scheduled')
+          const firedBye = byeTimers.filter((event) => event.event === 'timer-fired')
+          expect(scheduledBye).toHaveLength(1)
+          expect(firedBye).toHaveLength(1)
+          const scheduled = scheduledBye[0]
+          const completed = firedBye[0]
+          if (!scheduled || !completed) throw new Error('Missing authored bye timer observation')
+          expect(completed.value.scheduledClock).toBe(scheduled.value.scheduledClock)
+          expect(completed.value.elapsedSeconds).toBeGreaterThanOrEqual(3)
+          expect(completedEvents.filter((event) => event.event === 'natural-close')).toHaveLength(1)
         }
       }
       expect(await evaluate(cdp, `globalThis.providerProbe.read('audio').status`)).not.toBe(
