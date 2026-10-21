@@ -5,11 +5,14 @@
  * Gerar capa → Publicar) e conclui a aula. Pela política Kids v1 isso dá o nível coder
  * (`studio` + `pinta`) e libera a paleta do curso no Estúdio livre.
  *
- *   node scripts/local-studio-stack/kids-first-course.mjs
+ *   node scripts/local-studio-stack/kids-first-course.mjs [--new-child]
  *
  * Pré-requisito: `bun scripts/local-studio-stack/curriculum.ts author`. Se o Estúdio livre já
- * abre para a criança, não faz nada.
+ * abre para a criança, não faz nada. `--new-child` cria antes um perfil novo na conta do
+ * responsável (`POST /auth/profiles` pelo gateway, como no setup) e faz o curso com ele, para
+ * repetir o fluxo inteiro depois que "Crianca QA" já concluiu.
  */
+import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
@@ -36,23 +39,64 @@ const click = async (name, wait = 8000) => {
   await shot(name.replace(/[^a-z0-9]/gi, '_'))
 }
 
+/** Um perfil novo na conta do responsável, já admitido no Members. */
+async function newChild(parent) {
+  const gateway = 'http://localhost:3000'
+  const api = async (method, path, body, token) => {
+    const res = await fetch(gateway + path, {
+      method,
+      headers: {
+        'content-type': 'application/json',
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+    return { status: res.status, data: await res.json().catch(() => ({})) }
+  }
+  const login = await api('POST', '/auth/login', { ...parent, platform: 'kids' })
+  const token = login.data.tokens?.accessToken
+  if (!token) throw new Error(`login do responsável: ${login.status}`)
+  const name = `Crianca QA ${Date.now().toString(36)}`
+  const created = await api(
+    'POST',
+    '/auth/profiles',
+    { requestId: randomUUID(), name, birthDate: '2015-05-10' },
+    token,
+  )
+  if (created.status !== 201 || !created.data.profile)
+    throw new Error(`perfil novo: ${created.status} ${JSON.stringify(created.data)}`)
+  const profileId = created.data.profile.id
+  for (let attempt = 1; attempt <= 40; attempt++) {
+    const list = await api('GET', '/auth/profiles', undefined, token)
+    if (list.data.profiles?.find((p) => p.id === profileId)?.admissionState === 'ready') {
+      console.log(`✓ perfil novo "${name}" (${profileId}) admitido`)
+      return profileId
+    }
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+  }
+  throw new Error(`perfil novo ${profileId} não ficou ready`)
+}
+
 try {
+  const parent = creds.accounts.kidsParent
+  const childId = process.argv.includes('--new-child')
+    ? await newChild({ email: parent.email, password: parent.password })
+    : creds.child.profileId
   await page.goto(`${origin}/login`, { timeout: 300_000 })
   await post('/api/study/prepare', {})
-  const parent = creds.accounts.kidsParent
   await post('/api/auth/login', { email: parent.email, password: parent.password })
   const { sessionId } = await (await page.request.get(`${origin}/api/study/session`)).json()
   await post(
     '/api/study/grants',
     {
-      profileId: creds.child.profileId,
+      profileId: childId,
       label: 'Navegador QA local',
       durationDays: 30,
       mode: 'current',
     },
     { 'x-sz-session': sessionId },
   )
-  if (!(await post('/api/study/enter', { profileId: creds.child.profileId })).ok())
+  if (!(await post('/api/study/enter', { profileId: childId })).ok())
     throw new Error('não entrou no perfil da criança')
 
   await page.goto(`${origin}/estudio`, { timeout: 300_000 })
