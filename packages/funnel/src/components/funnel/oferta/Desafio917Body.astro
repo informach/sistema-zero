@@ -1,0 +1,384 @@
+---
+// Página do Desafio do Primeiro Jogo para 9 a 17 anos (proposta aprovada de 21/10/2026, Canvas
+// "Desafio do Primeiro Jogo · três páginas", quadro Desafio917). A copy mora em
+// `desafio-primeiro-jogo/oferta/pagina-9a17.ts`; veste a linguagem da página de 9 a 17 da Comunidade
+// (receitas em kids-oferta.css, layout `.c917` em comunidade-917.css) e as peças próprias do Desafio
+// em desafio-917.css. Pagamento único: o preço vem do catálogo pela rota, com o cupom já cotado.
+import '../../../styles/kids-oferta.css'
+import '../../../styles/comunidade-917.css'
+import '../../../styles/desafio-917.css'
+import { RELATOS } from '../../../funnels/comunidade-dos-criadores/oferta/relatos'
+import {
+  legendaRelatoDesafio,
+  PAGINA_DESAFIO_9A17 as P,
+  type RelatoDesafio,
+} from '../../../funnels/desafio-primeiro-jogo/oferta/pagina-9a17'
+import { precoDoDesafio, preencherPreco } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
+import PreCheckoutModal from '../../../islands/PreCheckoutModal'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { funnelLinkWithAttribution } from '../../../lib/lead-attribution'
+import { funnelOgImage } from '../../../lib/seo'
+import { getDeps } from '../../../server/deps'
+import type { OfferPageData } from '../../../server/offer-page'
+import Footer from '../../Footer.astro'
+import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+import DesafioIcone from './DesafioIcone.astro'
+
+type Props = OfferPageData['bodyProps']
+const { f, productName, priceReais, ofertaUrl, coupon } = Astro.props
+const preco = precoDoDesafio(priceReais, coupon)
+const fill = (texto: string) => preencherPreco(texto, preco)
+const img = (src: string) => `/img/${src}`
+const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
+const contaUrl = getDeps().env.KIDS_COMMUNITY_URL
+const relato = (r: RelatoDesafio) => ({
+  id: r.id,
+  fala: RELATOS[r.id].fala,
+  retrato: img(`comunidade-dos-criadores/${RELATOS[r.id].retrato}`),
+  legenda: legendaRelatoDesafio(r),
+})
+const andre = relato(P.fundadores.andre)
+const rafael = relato(P.fundadores.rafael)
+
+const CORES_HEROI = ['verde', 'amarelo', 'azul-claro']
+const CORES_ETAPAS = ['azul-claro', 'rosa', 'verde', 'amarelo']
+const ICONES_ETAPAS = ['setas', 'chave', 'farol', 'certificado'] as const
+const CORES_PASSOS = ['azul', 'roxo', 'rosa', 'amarelo']
+const ICONES_TREINA = ['planejar', 'porta', 'tentar', 'foco'] as const
+const CORES_TREINA = ['azul-claro', 'amarelo', 'verde', 'rosa']
+const ICONES_FAIXA = ['natacao', 'musica', 'lampada'] as const
+const ICONES_RESPONSAVEL = ['painel', 'mensagem', 'relogio', 'computador'] as const
+const CORES_DEPOIS = ['verde', 'amarelo', 'rosa']
+const CAMINHO = [
+  { icone: 'farol', cor: 'amarelo' },
+  { icone: 'play', cor: 'azul' },
+  { icone: 'lampada', cor: 'rosa' },
+] as const
+---
+
+<BaseLayout title={P.seoTitle} description={P.description} canonical={ofertaUrl} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} htmlClass="theme-kids">
+  <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={ofertaUrl} image={img(P.capa)} />
+  <link slot="head" rel="preload" as="image" href={img(P.hero.imagem.src)} fetchpriority="high" />
+  <div class="c917 d917">
+    <a class="c9-pular" href="#conteudo">{P.topo.pular}</a>
+    <header class="c9-topo">
+      <div class="c9-topo__barra">
+        <a class="c9-marca" href="#topo" aria-label={P.topo.logoLabel}>
+          <img src={img(P.topo.logo.src)} alt={P.topo.logo.alt} width={P.topo.logo.width} height={P.topo.logo.height} decoding="async" />
+        </a>
+        <nav class="c9-nav" aria-label={P.topo.navLabel}>
+          {P.topo.links.map((l) => <a class="c9-nav__link" href={l.href}>{l.label}</a>)}
+          <a class="c9-btn c9-btn--topo" href="#oferta" data-analytics-id="desafio-topo-oferta">{P.topo.cta}</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <section class="c9-sec c9-heroi" aria-labelledby="d9-titulo" data-analytics-id="desafio-hero">
+        <div class="c9-wrap c9-heroi__grade">
+          <div class="c9-heroi__texto">
+            <span class="c9-selo">{P.hero.selo}</span>
+            <h1 id="d9-titulo" class="c9-h1">{P.hero.titulo}<span class="c9-h1__destaque">{P.hero.destaque}</span></h1>
+            <p class="c9-heroi__lead">{P.hero.texto}</p>
+            <ul class="c9-checks">
+              {P.hero.beneficios.map((b, i) => (
+                <li>
+                  <span class:list={['c9-ladrilho', `c9-cor--${CORES_HEROI[i]}`]} aria-hidden="true"><DesafioIcone nome="check" tamanho={16} /></span>
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+            <div class="d9-acoes">
+              <a class="c9-btn c9-btn--grande" href="#oferta" data-analytics-id="desafio-hero-oferta">{fill(P.cta)}</a>
+              <a class="d9-link" href="#farol">{P.hero.linkSecundario}</a>
+            </div>
+            <p class="d9-condicoes">{P.condicoes}</p>
+          </div>
+          <div class="d9-heroi__visual">
+            <figure class="c9-heroi__tela d9-heroi__tela">
+              <img src={img(P.hero.imagem.src)} alt={P.hero.imagem.alt} width={P.hero.imagem.width} height={P.hero.imagem.height} loading="eager" decoding="async" fetchpriority="high" />
+              <figcaption>{P.hero.legenda}</figcaption>
+            </figure>
+            <span class="d9-faixa">{P.hero.faixa}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="c9-sec c9-sec--navy" aria-labelledby="d9-jeitos" data-analytics-id="desafio-jeitos">
+        <div class="c9-wrap c9-pilha c9-gap-24">
+          <div class="c9-cabeca c9-cabeca--820">
+            <h2 id="d9-jeitos" class="c9-h2">{P.jeitos.titulo}</h2>
+            <p class="c9-p">{P.jeitos.texto}</p>
+          </div>
+          <div class="d9-jeitos">
+            <div class="d9-jeito">
+              <svg class="d9-ilustra" role="img" aria-label={P.jeitos.so.alt} viewBox="0 0 320 200"><rect class="d9-f-cinza" x="10" y="20" width="170" height="118" rx="18"></rect><rect class="d9-f-cinza-escuro" x="24" y="34" width="142" height="90" rx="10"></rect><path class="d9-s-claro" d="M60 64 l20 8 M130 64 l-20 8" stroke-width="6" stroke-linecap="round"></path><circle class="d9-f-claro" cx="72" cy="82" r="7"></circle><circle class="d9-f-claro" cx="118" cy="82" r="7"></circle><path class="d9-s-claro" d="M76 112 Q95 100 114 112" stroke-width="6" fill="none" stroke-linecap="round"></path><path class="d9-f-claro" d="M146 104 l12 7 l-12 7 z"></path><rect class="d9-f-cinza-escuro" x="82" y="138" width="26" height="18"></rect><rect class="d9-f-cinza-escuro" x="60" y="154" width="70" height="10" rx="5"></rect><circle class="d9-f-pele" cx="254" cy="92" r="28"></circle><path class="d9-f-cabelo" d="M226 86 C 228 62 252 56 264 60 C 282 62 288 78 284 92 C 276 80 262 76 250 78 C 238 80 230 82 226 86 Z"></path><path class="d9-s-tinta" d="M242 96 h9 M258 96 h9 M246 110 h16" stroke-width="3.5" stroke-linecap="round"></path><rect class="d9-f-azul-claro" x="228" y="122" width="52" height="44" rx="14"></rect><rect class="d9-f-cinza" x="206" y="160" width="100" height="30" rx="12"></rect></svg>
+              <h3 class="d9-jeito__titulo">{P.jeitos.so.titulo}</h3>
+              <p>{P.jeitos.so.texto}</p>
+            </div>
+            <div class="d9-jeito d9-jeito--fazer">
+              <svg class="d9-ilustra" role="img" aria-label={P.jeitos.fazer.alt} viewBox="0 0 320 200"><rect class="d9-f-azul" x="10" y="20" width="170" height="118" rx="18"></rect><rect class="d9-f-tela" x="24" y="34" width="142" height="90" rx="10"></rect><circle class="d9-f-tinta" cx="72" cy="74" r="8"></circle><circle class="d9-f-tinta" cx="118" cy="74" r="8"></circle><circle class="d9-f-rosa" cx="54" cy="96" r="7"></circle><circle class="d9-f-rosa" cx="136" cy="96" r="7"></circle><path class="d9-s-tinta" d="M72 94 Q95 116 118 94" stroke-width="6" fill="none" stroke-linecap="round"></path><rect class="d9-f-azul" x="82" y="138" width="26" height="18"></rect><rect class="d9-f-azul" x="60" y="154" width="70" height="10" rx="5"></rect><path class="d9-f-amarelo d9-s-tinta" d="M254 0 a17 17 0 0 1 10 31 l0 7 l-20 0 l0 -7 a17 17 0 0 1 10 -31 z" stroke-width="2"></path><path class="d9-s-amarelo" d="M226 10 l-8 -5 M282 10 l8 -5 M222 26 h-9 M286 26 h9" stroke-width="3.5" stroke-linecap="round"></path><circle class="d9-f-pele" cx="254" cy="80" r="26"></circle><path class="d9-f-cabelo" d="M228 74 C 230 50 254 44 266 48 C 284 50 290 66 286 80 C 278 68 264 64 252 66 C 240 68 232 70 228 74 Z"></path><circle class="d9-f-tinta" cx="246" cy="82" r="3.5"></circle><circle class="d9-f-tinta" cx="262" cy="82" r="3.5"></circle><path class="d9-s-tinta" d="M244 94 Q254 104 264 94" stroke-width="3.5" fill="none" stroke-linecap="round"></path><rect class="d9-f-amarelo" x="232" y="108" width="44" height="50" rx="14"></rect><path class="d9-s-pele" d="M274 118 C 288 104 294 90 298 76" stroke-width="11" fill="none" stroke-linecap="round"></path><rect class="d9-f-azul" x="236" y="156" width="13" height="36" rx="6"></rect><rect class="d9-f-azul" x="258" y="156" width="13" height="36" rx="6"></rect></svg>
+              <h3 class="d9-jeito__titulo">{P.jeitos.fazer.titulo}</h3>
+              <p>{P.jeitos.fazer.texto}</p>
+            </div>
+          </div>
+          <p class="d9-frase">{P.jeitos.frase}</p>
+        </div>
+      </section>
+
+      <section id="farol" class="c9-sec c9-sec--branco" aria-labelledby="d9-farol" data-analytics-id="desafio-farol">
+        <div class="c9-wrap c9-pilha c9-gap-24">
+          <div class="c9-cabeca c9-cabeca--820">
+            <span class="c9-tag c9-cor--azul-claro">{P.farol.tag}</span>
+            <h2 id="d9-farol" class="c9-h2">{P.farol.titulo}</h2>
+          </div>
+          <div class="d9-trilha">
+            <div class="d9-trilha__linha" aria-hidden="true"></div>
+            <ol class="d9-trilha__paradas">
+              {P.farol.etapas.map((e, i) => (
+                <li class:list={['d9-parada', `c9-cor--${CORES_ETAPAS[i]}`, { 'd9-parada--fim': i === P.farol.etapas.length - 1 }]}>
+                  <span class="d9-parada__icone" aria-hidden="true"><DesafioIcone nome={ICONES_ETAPAS[i]!} tamanho={52} /></span>
+                  <span class="d9-parada__rotulo">{e.rotulo}</span>
+                  <h3 class="d9-parada__titulo">{e.titulo}</h3>
+                  <p class="d9-parada__texto">{e.texto}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div class="d9-blocos">
+            <img src={img(P.farol.blocos.imagem.src)} alt={P.farol.blocos.imagem.alt} width={P.farol.blocos.imagem.width} height={P.farol.blocos.imagem.height} loading="lazy" decoding="async" />
+            <div class="c9-pilha c9-gap-12">
+              <h3 class="c9-h3">{P.farol.blocos.titulo}</h3>
+              {P.farol.blocos.paragrafos.map((p) => <p class="c9-p">{p}</p>)}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="aula" class="c9-sec c9-sec--chao" aria-labelledby="d9-aula" data-analytics-id="desafio-aula">
+        <div class="c9-wrap c9-pilha c9-gap-24">
+          <div class="c9-cabeca c9-cabeca--820">
+            <span class="c9-tag c9-cor--verde">{P.aula.tag}</span>
+            <h2 id="d9-aula" class="c9-h2">{P.aula.titulo}</h2>
+          </div>
+          <div class="c9-grade c9-min-200 c9-grade--20 d9-passos">
+            {P.aula.passos.map((passo, i) => (
+              <article class:list={['c9-passo', `c9-cor--${CORES_PASSOS[i]}`]}>
+                <img src={img(passo.imagem.src)} alt={passo.imagem.alt} width={passo.imagem.width} height={passo.imagem.height} loading="lazy" decoding="async" />
+                <div class="c9-passo__texto">
+                  <h3 class="c9-passo__titulo">{passo.titulo}</h3>
+                  <p class="c9-passo__desc">{passo.texto}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <span class="c9-legenda">{P.aula.nota}</span>
+        </div>
+      </section>
+
+      <section class="c9-sec c9-sec--branco" aria-labelledby="d9-treina" data-analytics-id="desafio-treina">
+        <div class="c9-wrap c9-pilha c9-gap-24">
+          <div class="c9-cabeca c9-cabeca--820">
+            <span class="c9-tag c9-cor--roxo c9-tag--clara">{P.treina.tag}</span>
+            <h2 id="d9-treina" class="c9-h2">{P.treina.titulo}</h2>
+          </div>
+          <div class="d9-habilidades">
+            {P.treina.habilidades.map((h, i) => (
+              <article class:list={['d9-habilidade', `c9-cor--${CORES_TREINA[i]}`]}>
+                <span class="d9-habilidade__icone" aria-hidden="true"><DesafioIcone nome={ICONES_TREINA[i]!} tamanho={44} /></span>
+                <h3 class="d9-habilidade__titulo">{h.titulo}</h3>
+                <p class="d9-habilidade__texto">{h.texto}</p>
+              </article>
+            ))}
+          </div>
+          <div class="d9-faixa-navy">
+            <h3 class="c9-h3">{P.treina.faixa.titulo}</h3>
+            <ul class="d9-faixa-navy__itens">
+              {P.treina.faixa.itens.map((item, i) => (
+                <li>
+                  <span class="d9-faixa-navy__icone" aria-hidden="true"><DesafioIcone nome={ICONES_FAIXA[i]!} tamanho={40} /></span>
+                  <span><strong>{item.titulo}</strong>{item.texto}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="responsavel" class="c9-sec c9-sec--creme" aria-labelledby="d9-responsavel" data-analytics-id="desafio-responsavel">
+        <div class="c9-wrap c9-lado c9-lado--topo">
+          <div class="c9-pilha c9-gap-16 c9-b460">
+            <span class="c9-tag c9-cor--branco">{P.responsavel.tag}</span>
+            <h2 id="d9-responsavel" class="c9-h2">{P.responsavel.titulo}</h2>
+            <ul class="d9-lista">
+              {P.responsavel.itens.map((item, i) => (
+                <li><span class="d9-lista__icone" aria-hidden="true"><DesafioIcone nome={ICONES_RESPONSAVEL[i]!} tamanho={30} /></span><span>{item}</span></li>
+              ))}
+            </ul>
+          </div>
+          <div class="d9-telas c9-b480">
+            <figure class="c9-painel">
+              <img src={img(P.responsavel.painel.src)} alt={P.responsavel.painel.alt} width={P.responsavel.painel.width} height={P.responsavel.painel.height} loading="lazy" decoding="async" />
+            </figure>
+            <figure class="d9-caderno">
+              <img src={img(P.responsavel.caderno.src)} alt={P.responsavel.caderno.alt} width={P.responsavel.caderno.width} height={P.responsavel.caderno.height} loading="lazy" decoding="async" />
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="c9-sec c9-sec--branco" aria-labelledby="d9-fundadores" data-analytics-id="desafio-fundadores">
+        <div class="c9-wrap c9-pilha c9-gap-24">
+          <h2 id="d9-fundadores" class="c9-h2">{P.fundadores.titulo}</h2>
+          <div class="c9-lado c9-lado--topo">
+            <div class="c9-pilha c9-gap-16 c9-b480">
+              <figure class="c9-foto">
+                <img src={img(P.fundadores.imagem.src)} alt={P.fundadores.imagem.alt} width={P.fundadores.imagem.width} height={P.fundadores.imagem.height} loading="lazy" decoding="async" />
+              </figure>
+              <p class="c9-p">{P.fundadores.paragrafo}</p>
+              <figure class="c9-relato c9-relato--plano" data-relato={andre.id}>
+                <img src={andre.retrato} alt="" width="160" height="160" loading="lazy" decoding="async" />
+                <blockquote><p>"{andre.fala}"</p></blockquote>
+                <figcaption>{andre.legenda}</figcaption>
+              </figure>
+            </div>
+            <figure class="d9-destaque c9-b420" data-relato={rafael.id}>
+              <blockquote><p>{rafael.fala}</p></blockquote>
+              <figcaption>
+                <img src={rafael.retrato} alt="" width="160" height="160" loading="lazy" decoding="async" />
+                <span>{rafael.legenda}</span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section id="oferta" class="c9-sec c9-sec--azul" aria-labelledby="d9-oferta" data-analytics-id="desafio-oferta">
+        <div class="c9-wrap c9-wrap--planos c9-pilha c9-gap-26">
+          <div class="c9-pilha c9-gap-12 c9-cabeca--860">
+            <h2 id="d9-oferta" class="c9-h2 c9-h2--planos">{P.oferta.titulo}</h2>
+            {preco.aviso && <p class:list={['c9-cupom', { 'c9-cupom--alerta': preco.aviso.alerta }]} role={preco.aviso.alerta ? 'alert' : undefined}>{preco.aviso.texto}</p>}
+          </div>
+          <div class="c9-linha c9-gap-24 c9-linha--esticada">
+            <ul class="c9-inclui" aria-label={P.oferta.incluiLabel}>
+              {P.oferta.inclui.map((item) => (
+                <li><DesafioIcone nome="check" tamanho={22} /><span>{item}</span></li>
+              ))}
+            </ul>
+            <article class="c9-plano d9-plano">
+              <h3 class="c9-plano__nome">{P.oferta.selo}</h3>
+              <p class="c9-plano__preco">{preco.precoCheio && <s class="d9-cheio">{preco.precoCheio}</s>}{preco.preco}<span> {P.oferta.sufixo}</span></p>
+              <p class="c9-plano__texto">{fill(P.oferta.porDia)}</p>
+              <button type="button" class="c9-plano__btn d9-plano__btn" data-checkout-cta data-analytics-id="desafio-oferta-comprar">{fill(P.cta)}</button>
+              <p class="d9-plano__garantia"><DesafioIcone nome="escudo" tamanho={24} /><span>{P.oferta.garantia}</span></p>
+            </article>
+          </div>
+          <div class="c9-linha c9-gap-18 c9-linha--esticada">
+            <div class="c9-depois">
+              <h3 class="c9-depois__titulo">{P.oferta.depoisTitulo}</h3>
+              <ol>
+                {P.oferta.depois.map((passo, i) => (
+                  <li><span class:list={['c9-depois__num', `c9-cor--${CORES_DEPOIS[i]}`]} aria-hidden="true">{i + 1}</span><span>{passo}</span></li>
+                ))}
+              </ol>
+            </div>
+          </div>
+          <p class="d9-ja-tem">{P.oferta.jaTem} <a href={contaUrl} data-analytics-id="desafio-acesso-existente">{P.oferta.jaTemLink}</a></p>
+        </div>
+      </section>
+
+      <section class="c9-sec c9-sec--branco" aria-labelledby="d9-caminho" data-analytics-id="desafio-continuidade">
+        <div class="c9-wrap c9-pilha c9-gap-20">
+          <span class="c9-tag c9-cor--verde">{P.continuidade.tag}</span>
+          <h2 id="d9-caminho" class="c9-h2">{P.continuidade.titulo}</h2>
+          <ol class="d9-caminho">
+            {P.continuidade.passos.map((passo, i) => (
+              <li class:list={['d9-caminho__passo', `c9-cor--${CAMINHO[i]!.cor}`]}>
+                <span class="d9-caminho__icone" aria-hidden="true"><DesafioIcone nome={CAMINHO[i]!.icone} tamanho={40} /></span>
+                <strong>{passo.titulo}</strong>
+                <span>{passo.texto}</span>
+              </li>
+            ))}
+          </ol>
+          <p class="c9-p">{P.continuidade.texto} <a class="d9-link" href={link('/kids/comunidade-dos-criadores/oferta')} data-analytics-id="desafio-comunidade">{P.continuidade.link}</a></p>
+        </div>
+      </section>
+
+      <section id="duvidas" class="c9-sec c9-sec--chao" aria-labelledby="d9-duvidas" data-analytics-id="desafio-duvidas">
+        <div class="c9-wrap c9-wrap--estreito c9-pilha c9-gap-12">
+          <h2 id="d9-duvidas" class="c9-h2 c9-h2--menor c9-duvidas__titulo">{P.faqTitulo}</h2>
+          {P.faq.map((item) => (
+            <details class="c9-duvida">
+              <summary>{item.pergunta}</summary>
+              <p>{fill(item.resposta)}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section class="c9-fim" aria-labelledby="d9-fim" data-analytics-id="desafio-convite">
+        <div class="c9-wrap c9-fim__grade">
+          <div class="c9-pilha c9-gap-14 c9-b520">
+            <h2 id="d9-fim" class="c9-h2 c9-h2--fim">{P.fim.titulo}</h2>
+            <p class="d9-fim__texto">{fill(P.fim.texto)}</p>
+            <button type="button" class="c9-btn c9-btn--grande c9-btn--amarelo" data-checkout-cta data-analytics-id="desafio-convite-comprar">{P.fim.cta}</button>
+          </div>
+        </div>
+        <div class="c9-rodape">
+          <div class="c9-rodape__barra">
+            <span>{P.rodape.aviso}</span>
+            <span class="c9-rodape__links">{P.rodape.links.map((l) => <a href={l.href}>{l.label}</a>)}</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="kof-mobar c9-barra" data-mobar aria-hidden="true">
+      <span class="c9-barra__preco"><strong>{preco.preco}</strong><span>{P.barra.sufixo}</span></span>
+      <a class="c9-btn" href="#oferta" tabindex="-1">{P.barra.cta}</a>
+    </div>
+  </div>
+  <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />
+</BaseLayout>
+
+<script>
+  // Barra fixa do celular (só abaixo de 760px, pelo CSS): aparece depois da dobra e some enquanto a
+  // oferta ou o rodapé estão à vista. Sem JS ela nunca aparece (nasce escondida e aria-hidden).
+  const barra = document.querySelector<HTMLElement>('[data-mobar]')
+  const oferta = document.getElementById('oferta')
+  const rodape = document.querySelector('footer')
+  if (barra && oferta && 'IntersectionObserver' in window) {
+    const link = barra.querySelector('a')
+    let ofertaAVista = false
+    let rodapeAVista = false
+    let roladoAlemDaDobra = false
+    let ultimo: boolean | null = null
+    const aplicar = () => {
+      const mostra = roladoAlemDaDobra && !ofertaAVista && !rodapeAVista
+      if (mostra === ultimo) return
+      ultimo = mostra
+      barra.classList.toggle('is-visible', mostra)
+      barra.setAttribute('aria-hidden', mostra ? 'false' : 'true')
+      link?.setAttribute('tabindex', mostra ? '0' : '-1')
+    }
+    new IntersectionObserver(
+      ([e]) => {
+        ofertaAVista = Boolean(e?.isIntersecting)
+        aplicar()
+      },
+      { rootMargin: '0px 0px -40% 0px' },
+    ).observe(oferta)
+    if (rodape)
+      new IntersectionObserver(([e]) => {
+        rodapeAVista = Boolean(e?.isIntersecting)
+        aplicar()
+      }).observe(rodape)
+    const aoRolar = () => {
+      roladoAlemDaDobra = window.scrollY > window.innerHeight * 0.9
+      aplicar()
+    }
+    window.addEventListener('scroll', aoRolar, { passive: true })
+    aoRolar()
+  }
+</script>

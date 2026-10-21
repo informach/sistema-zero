@@ -2,7 +2,7 @@ import type { FunnelCheckoutIntro, FunnelCopy, FunnelLanding, FunnelObrigado } f
 
 export const DESAFIO_PRODUTO: FunnelCopy = { nome: 'Desafio do Primeiro Jogo', precoLabel: 'R$ 67' }
 export const DESAFIO_LANDING: FunnelLanding = {
-  badge: 'Para mães, pais e responsáveis · 9 a 14 anos',
+  badge: 'Para mães, pais e responsáveis · 9 a 17 anos',
   h1: 'Descubra por onde seu filho pode começar a criar jogos',
   subtitulo:
     'Conte o que você observa em casa e o que gostaria de experimentar com ele. Você recebe uma orientação para esse começo e conhece o Desafio do Primeiro Jogo.',

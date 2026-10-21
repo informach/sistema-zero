@@ -148,6 +148,7 @@ const app = spawn('node', ['dist/server/entry.mjs'], {
     KIDS_COMMUNITY_URL: 'https://kids.qa.local',
     FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES: 'comunidade-dos-criadores-mensal',
     FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES: 'comunidade-dos-criadores-adulto-mensal',
+    FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO: 'desafio-primeiro-jogo-adulto-30-dias',
     FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO: 'desafio-primeiro-jogo-30-dias',
     FUNNEL_OFFER_PRO_NO_COMANDO_DA_IA: 'no-comando-da-ia',
   },

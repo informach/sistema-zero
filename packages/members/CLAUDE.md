@@ -1459,6 +1459,11 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `fixed/months`; `subscription` sem política continua no caminho legado; sem nenhum dos
   três campos continua sendo vitalício. Renovar compra fixa = NOVO paymentId/matrícula,
   sem encurtar uma matrícula vitalícia ou com validade mais distante já existente.
+- **Desafio adulto (21/10/2026):** a oferta `desafio-primeiro-jogo-adulto-30-dias` segue a MESMA regra
+  abaixo com as chaves adultas (`MURAL_GIFT_ACCESS.adult`: item `adult-mural-dos-criadores`, visita
+  `…0005`); o público vem da OFERTA (`DESAFIO_30_DIAS_OFFERS` em `grant-entitlement.service.ts`), e a
+  oferta adulta com o Mural Kids não ganha visita nenhuma. O curso `desafio-primeiro-jogo-adulto` fica
+  FORA dos avisos `challenge-*` (`CHALLENGE_COURSE_REF`): eles falam com o responsável.
 - **Desafio de 30 dias + Mural visitante:** no grant pago da oferta resolvida
   `desafio-primeiro-jogo-30-dias`, com política comprada explícita `fixed/30/days` e item de Mural
   pleno, concede também uma matrícula permanente de visitante (`product_id` sintético

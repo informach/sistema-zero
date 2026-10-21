@@ -46,7 +46,7 @@ describe('snapshot imutável da oferta comprada', () => {
       chargedPriceCents: 6700,
       currency: 'BRL',
       guaranteeDays: 7,
-      termsVersion: 'desafio-2026-10-20',
+      termsVersion: 'desafio-2026-10-21',
     })
   })
 

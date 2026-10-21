@@ -40,7 +40,7 @@ describe('Desafio Farol: orientação e encaminhamento', () => {
   test('A não infere vontade de criar por gostar de jogar', () => {
     const r = result({ motivos: ['A'] })
     expect(r.intro.join(' ')).toContain('ainda não contou que tenha pedido')
-    expect(r.decision.offerPath).toEndWith('/tempo-de-tela')
+    expect(r.decision.offerPath).toEndWith('/oferta')
   })
   test('B com tentativa interrompida orienta retomada e ajuda', () => {
     const r = result({ experiencia: 'interrompida', interesses: ['quer_criar'] })
@@ -51,7 +51,7 @@ describe('Desafio Farol: orientação e encaminhamento', () => {
   test('D que prefere ao vivo pode avaliar o gravado sem ser bloqueado', () => {
     const r = result({ motivos: ['D'], formato: 'prefere_ao_vivo' })
     expect(r.decision.unmet).toEqual([])
-    expect(r.decision.offerPath).toEndWith('/iniciacao-tecnologica')
+    expect(r.decision.offerPath).toEndWith('/oferta')
     expect(r.bridge.join(' ')).toContain('espera')
   })
   test('C preservado ao considerar programação, com limite de arte explícito no resultado', () => {
@@ -120,10 +120,17 @@ describe('Desafio Farol: orientação e encaminhamento', () => {
     expect(r.decision.pending).toContain('nivel')
     expect(r.decision.next).toBe('conferir_condicoes')
   })
-  test.each(['menos_9', '15_mais'])('idade %s termina com orientação informativa', (idade) => {
+  test.each(['menos_9', '18_mais'])('idade %s termina com orientação informativa', (idade) => {
     const a = fixture({ idade })
     expect(activeDesafioSteps(a)).toHaveLength(1)
     expect(buildDesafioResult(a)).toBeNull()
+  })
+  test('15 a 17 segue no quiz e chega à mesma oferta (faixa de 9 a 17 desde 21/10/2026)', () => {
+    const a = fixture({ idade: '15_17' })
+    expect(activeDesafioSteps(a)).toHaveLength(8)
+    expect(buildDesafioResult(a)?.decision.offerPath).toEndWith(
+      '/kids/desafio-primeiro-jogo/oferta',
+    )
   })
   test('trocar motivos limpa prioridade; considerar iniciação limpa busca alternativa', () => {
     const a = applyDesafioAnswer(fixture({ motivos: ['A', 'D'], prioridade: 'A' }), 'motivos', [

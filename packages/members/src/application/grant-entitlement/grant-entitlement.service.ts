@@ -7,9 +7,8 @@ import type {
 } from '../../domain/entitlement/entitlement-snapshot'
 import {
   createMuralVisitorSnapshot,
-  MURAL_FULL_REF,
-  MURAL_VISITOR_PRODUCT_ID,
-  MURAL_VISITOR_REF,
+  MURAL_GIFT_ACCESS,
+  type MuralAudience,
 } from '../../domain/entitlement/mural-visitor'
 import type {
   CatalogGateway,
@@ -102,12 +101,8 @@ export class GrantEntitlementService {
       if (applied) granted += 1
     }
 
-    const visitorIdempotencyKey = permanentMuralVisitorIdempotencyKey(offer, cmd, accessPolicy)
-    if (
-      visitorIdempotencyKey &&
-      (await this.grantPermanentMuralVisitor(cmd, offer, visitorIdempotencyKey))
-    )
-      granted += 1
+    const visitor = permanentMuralVisitorGrant(offer, cmd, accessPolicy)
+    if (visitor && (await this.grantPermanentMuralVisitor(cmd, offer, visitor))) granted += 1
 
     this.deps.logger?.info('grant.done', {
       userId: cmd.userId,
@@ -157,16 +152,22 @@ export class GrantEntitlementService {
   private async grantPermanentMuralVisitor(
     cmd: GrantEntitlementCommand,
     offer: ResolvedOffer,
-    idempotencyKey: string,
+    { idempotencyKey, audience }: MuralVisitorGrant,
   ): Promise<boolean> {
-    const snapshot = createMuralVisitorSnapshot(offer.offerId, offer.offerSlug, cmd.grantedAt)
+    const access = MURAL_GIFT_ACCESS[audience]
+    const snapshot = createMuralVisitorSnapshot(
+      offer.offerId,
+      offer.offerSlug,
+      cmd.grantedAt,
+      audience,
+    )
     const entitlement = EntitlementAggregate.grant({
       id: this.deps.newId(),
       userId: cmd.userId,
-      productId: MURAL_VISITOR_PRODUCT_ID,
+      productId: access.visitorProductId,
       productKind: 'community',
       accessType: 'community',
-      courseRef: MURAL_VISITOR_REF,
+      courseRef: access.visitorRef,
       offerId: offer.offerId,
       snapshot,
       sourceKind: 'payment',
@@ -248,32 +249,53 @@ export class GrantEntitlementService {
   }
 }
 
-const DESAFIO_30_DIAS_OFFER_SLUG = 'desafio-primeiro-jogo-30-dias'
+/**
+ * Ofertas do Desafio de 30 dias que, depois do prazo, deixam a visita permanente ao Mural do
+ * público delas: a Kids e a adulta (21/10/2026, a mesma oferta com as chaves adultas).
+ */
+const DESAFIO_30_DIAS_OFFERS: ReadonlyMap<string, MuralAudience> = new Map([
+  ['desafio-primeiro-jogo-30-dias', 'kids'],
+  ['desafio-primeiro-jogo-adulto-30-dias', 'adult'],
+])
 
-function permanentMuralVisitorIdempotencyKey(
+interface MuralVisitorGrant {
+  idempotencyKey: string
+  audience: MuralAudience
+}
+
+function permanentMuralVisitorGrant(
   offer: ResolvedOffer,
   cmd: GrantEntitlementCommand,
   resolvedPolicy: PurchasedAccessPolicy,
-): string | null {
-  const hasFullMural = offer.items.some(
-    (item) =>
-      item.kind === 'community' &&
-      item.fulfillment?.accessType === 'community' &&
-      item.fulfillment.courseRef === MURAL_FULL_REF,
-  )
-  if (!hasFullMural) return null
+): MuralVisitorGrant | null {
+  const hasFullMural = (audience: MuralAudience) =>
+    offer.items.some(
+      (item) =>
+        item.kind === 'community' &&
+        item.fulfillment?.accessType === 'community' &&
+        item.fulfillment.courseRef === MURAL_GIFT_ACCESS[audience].fullRef,
+    )
 
-  if (resolvedPolicy.mode === 'billing_cycle' && cmd.subscription) {
-    return `subscription-visitor:${cmd.subscription.subscriptionId}:${MURAL_VISITOR_PRODUCT_ID}`
+  // A assinatura Kids (Mural Kids pleno) ganha a visita permanente; a adulta não (fora do escopo).
+  if (resolvedPolicy.mode === 'billing_cycle' && cmd.subscription && hasFullMural('kids')) {
+    return {
+      idempotencyKey: `subscription-visitor:${cmd.subscription.subscriptionId}:${MURAL_GIFT_ACCESS.kids.visitorProductId}`,
+      audience: 'kids',
+    }
   }
+  const audience = DESAFIO_30_DIAS_OFFERS.get(offer.offerSlug)
   if (
-    offer.offerSlug === DESAFIO_30_DIAS_OFFER_SLUG &&
+    audience &&
+    hasFullMural(audience) &&
     cmd.accessPolicy != null &&
     resolvedPolicy.mode === 'fixed' &&
     resolvedPolicy.durationValue === 30 &&
     resolvedPolicy.durationUnit === 'days'
   ) {
-    return `payment:${cmd.paymentId}:${MURAL_VISITOR_PRODUCT_ID}`
+    return {
+      idempotencyKey: `payment:${cmd.paymentId}:${MURAL_GIFT_ACCESS[audience].visitorProductId}`,
+      audience,
+    }
   }
   return null
 }

@@ -1,0 +1,466 @@
+/*
+ * desafio-adulto.css: as peças próprias da página de oferta do Desafio do Primeiro Jogo para adultos
+ * (`pro/desafio-primeiro-jogo`, quadro DesafioAdulto do Canvas de 21/10/2026). O layout, a
+ * tipografia, o botão, as dúvidas, o fechamento e a barra do celular vêm de comunidade-adulto.css
+ * (`.cda`); aqui ficam só as peças novas, prefixadas por `.cda` e nomeadas `da-*`.
+ *
+ * Cores só pelos tokens `--cda-*` de theme-arcade.css (transparências por `color-mix in oklab`).
+ * Itens coloridos recebem `.cor-<nome>`, que define `--cor` em comunidade-adulto.css.
+ */
+
+/* ── Estrutura ──────────────────────────────────────────────────────────────── */
+.cda .da-pilha {
+  display: flex;
+  flex-direction: column;
+  gap: 1.875rem;
+}
+.cda .da-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.875rem 1.375rem;
+  margin-top: 0.25rem;
+}
+.cda .da-link {
+  color: var(--cda-texto);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--cda-amarelo);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+.cda .da-link:hover {
+  color: var(--cda-amarelo);
+}
+
+/* ── Herói: a tela do jogo e a faixa dos 30 dias ────────────────────────────── */
+.cda .da-hero__visual {
+  flex: 1 1 27.5rem;
+  min-width: 0;
+  position: relative;
+  padding: 1.25rem 1.25rem 0 0;
+}
+.cda .da-tela {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.75rem;
+  background: var(--cda-fundo-2);
+  border: 3px solid var(--cda-linha-forte);
+  box-shadow: 10px 10px 0 var(--cda-rosa);
+}
+.cda .da-tela__barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding-inline: 0.125rem;
+  font-family: var(--cda-pixel);
+  font-size: 0.8125rem;
+  color: var(--cda-verde);
+}
+.cda .da-tela img {
+  width: 100%;
+}
+.cda .da-faixa {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.5rem 0.875rem;
+  background: var(--cda-verde);
+  color: var(--cda-fundo);
+  font-family: var(--cda-pixel);
+  font-size: 1.25rem;
+  line-height: 1.2;
+  border: 3px solid var(--cda-fundo);
+  box-shadow: 4px 4px 0 var(--cda-fundo);
+}
+
+/* ── Dois jeitos de usar a mesma tela ───────────────────────────────────────── */
+.cda .da-jeitos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(17.5rem, 100%), 1fr));
+  gap: 1.5rem;
+}
+.cda .da-jeito {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: var(--cda-fundo);
+  border: 2px solid var(--cda-linha-forte);
+  color: var(--cda-legenda);
+  text-align: center;
+}
+.cda .da-jeito--fazer {
+  border: 3px solid var(--cda-amarelo);
+  box-shadow: 6px 6px 0 var(--cda-rosa);
+  color: var(--cda-texto);
+}
+.cda .da-ilustra {
+  width: 100%;
+  max-width: 18.75rem;
+  height: auto;
+}
+.cda .da-jeito__titulo {
+  font-family: var(--cda-titulo);
+  font-weight: 800;
+  font-size: 1.625rem;
+  line-height: 1.15;
+}
+.cda .da-jeito--fazer .da-jeito__titulo {
+  color: var(--cda-amarelo);
+}
+.cda .da-frase {
+  align-self: flex-start;
+  padding: 0.75rem 1.125rem;
+  background: var(--cda-verde);
+  color: var(--cda-fundo);
+  font-family: var(--cda-pixel);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+/* Preenchimentos e traços das duas ilustrações (sem cor escrita no SVG). */
+.cda .da-f-linha-forte {
+  fill: var(--cda-linha-forte);
+}
+.cda .da-f-fundo {
+  fill: var(--cda-codigo);
+}
+.cda .da-f-cinza {
+  fill: color-mix(in oklab, var(--cda-legenda) 40%, var(--cda-codigo));
+}
+.cda .da-f-carta {
+  fill: var(--cda-fundo-2);
+}
+.cda .da-f-rosa {
+  fill: var(--cda-rosa);
+}
+.cda .da-f-dourado {
+  fill: var(--cda-dourado);
+}
+.cda .da-f-amarelo {
+  fill: var(--cda-amarelo);
+}
+.cda .da-f-texto {
+  fill: var(--cda-texto);
+}
+.cda .da-s-apoio {
+  stroke: var(--cda-legenda);
+}
+.cda .da-s-azul {
+  stroke: var(--cda-azul);
+}
+.cda .da-s-rosa {
+  stroke: var(--cda-rosa);
+}
+.cda .da-s-amarelo {
+  stroke: var(--cda-amarelo);
+}
+
+/* ── As fases do jogo ───────────────────────────────────────────────────────── */
+.cda .da-fases {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(14.375rem, 100%), 1fr));
+  gap: 1.125rem;
+}
+.cda .da-fase {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.375rem;
+  background: var(--cda-carta);
+  border: 2px solid var(--cda-linha-forte);
+}
+.cda .da-fase__icone {
+  display: flex;
+  color: var(--cor);
+}
+.cda .da-fase__titulo {
+  font-family: var(--cda-titulo);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+.cda .da-fase__texto {
+  color: var(--cda-texto-suave);
+}
+.cda .da-fase--fim {
+  background: var(--cda-amarelo);
+  border-color: var(--cda-amarelo);
+  color: var(--cda-fundo);
+}
+.cda .da-fase--fim .cda-rotulo,
+.cda .da-fase--fim .da-fase__icone,
+.cda .da-fase--fim .da-fase__texto {
+  color: var(--cda-fundo);
+}
+.cda .da-blocos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: var(--cda-fundo-2);
+  border: 2px solid var(--cda-linha-forte);
+}
+.cda .da-blocos img {
+  flex: 1 1 21.25rem;
+  min-width: 0;
+  max-width: 28.75rem;
+  background: var(--cda-branco);
+  border: 3px solid var(--cda-linha-forte);
+}
+.cda .da-blocos > .cda-cabeca {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+/* ── O ritmo da aula ────────────────────────────────────────────────────────── */
+.cda .da-passos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+  gap: 1.125rem;
+}
+.cda .da-passos > li {
+  display: flex;
+}
+.cda .da-passo {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--cda-fundo);
+  border: 2px solid var(--cda-linha-forte);
+}
+.cda .da-passo img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: left top;
+}
+.cda .da-passo figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.125rem;
+}
+.cda .da-passo figcaption strong {
+  font-family: var(--cda-titulo);
+  font-size: 1.3125rem;
+  line-height: 1.2;
+}
+.cda .da-passo figcaption span {
+  font-size: 1.0625rem;
+  color: var(--cda-texto-suave);
+}
+
+/* ── O que você exercita ────────────────────────────────────────────────────── */
+.cda .da-habilidades {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(14.375rem, 100%), 1fr));
+  gap: 1.125rem;
+}
+.cda .da-habilidade {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 1.375rem;
+  background: var(--cda-carta);
+  border: 2px solid var(--cda-linha-forte);
+}
+.cda .da-habilidade__icone {
+  display: flex;
+  color: var(--cor);
+}
+.cda .da-habilidade__titulo {
+  font-family: var(--cda-titulo);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+.cda .da-habilidade__texto {
+  color: var(--cda-texto-suave);
+}
+.cda .da-faixa-texto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.875rem 1.75rem;
+  padding: 1.375rem 1.625rem;
+  background: var(--cda-fundo-2);
+  border: 2px solid var(--cda-linha-forte);
+}
+.cda .da-faixa-texto strong {
+  flex: 1 1 17.5rem;
+  font-family: var(--cda-titulo);
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+.cda .da-faixa-texto span {
+  flex: 2 1 26.25rem;
+  color: var(--cda-texto-suave);
+}
+
+/* ── Para quem é ────────────────────────────────────────────────────────────── */
+.cda .da-quem {
+  flex: 1 1 26.25rem;
+  gap: 1.125rem;
+}
+.cda .da-perfis {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.cda .da-perfis li {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  background: var(--cda-fundo);
+  border: 2px solid var(--cda-linha-forte);
+}
+.cda .da-perfis .cda-rotulo {
+  flex: none;
+  color: var(--cor);
+}
+.cda .da-caderno {
+  flex: 1 1 26.25rem;
+  display: flex;
+  flex-direction: column;
+  background: var(--cda-fundo);
+  border: 2px solid var(--cda-linha-forte);
+  box-shadow: 8px 8px 0 var(--cda-azul);
+}
+.cda .da-caderno img {
+  width: 100%;
+  max-height: 26.25rem;
+  object-fit: cover;
+  object-position: top;
+  background: var(--cda-branco);
+}
+.cda .da-caderno figcaption {
+  padding: 1rem 1.25rem;
+}
+
+/* ── A oferta ───────────────────────────────────────────────────────────────── */
+.cda .da-ja-tem {
+  font-size: 1rem;
+  color: var(--cda-texto-apoio);
+}
+.cda .da-ja-tem a {
+  color: var(--cda-amarelo);
+  font-weight: 700;
+}
+.cda .da-ja-tem a:hover {
+  color: var(--cda-dourado);
+}
+.cda .da-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 35.375rem;
+  padding: 1.75rem;
+  background: var(--cda-carta);
+  border: 3px solid var(--cda-amarelo);
+  box-shadow: 8px 8px 0 var(--cda-rosa);
+}
+.cda .da-cartao__selo {
+  align-self: flex-start;
+  padding: 0.25rem 0.625rem;
+  background: var(--cda-amarelo);
+  color: var(--cda-fundo);
+  font-family: var(--cda-pixel);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.cda .da-cartao__preco {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  font-family: var(--cda-titulo);
+  font-weight: 800;
+  font-size: clamp(3rem, 6vw, 4rem);
+  line-height: 1;
+}
+.cda .da-cartao__preco span {
+  font-family: var(--cda-corpo);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--cda-texto-suave);
+}
+.cda .da-cheio {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--cda-legenda);
+}
+.cda .da-cartao__btn {
+  justify-content: center;
+  width: 100%;
+  font-family: inherit;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+.cda .da-cartao__garantia {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--cda-texto-suave);
+}
+.cda .da-cartao__garantia svg {
+  flex: none;
+  color: var(--cda-verde);
+}
+
+/* ── O caminho depois do Desafio ────────────────────────────────────────────── */
+.cda .da-caminho {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(13.75rem, 100%), 1fr));
+  gap: 0.75rem;
+}
+.cda .da-caminho__passo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: var(--cda-fundo);
+  border: 2px solid var(--cda-linha-forte);
+  text-align: center;
+}
+.cda .da-caminho__icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  background: var(--cor);
+  color: var(--cda-fundo);
+}
+.cda .da-caminho__passo strong {
+  font-family: var(--cda-titulo);
+  font-size: 1.375rem;
+  line-height: 1.15;
+}
+.cda .da-caminho__passo span:last-child {
+  font-size: 1.0625rem;
+  color: var(--cda-texto-suave);
+}
+
+@media (max-width: 760px) {
+  .cda .da-hero__visual {
+    padding: 1.5rem 0.75rem 0 0;
+  }
+  .cda .da-faixa {
+    font-size: 1rem;
+  }
+  .cda .da-cartao {
+    padding: 1.25rem;
+  }
+}

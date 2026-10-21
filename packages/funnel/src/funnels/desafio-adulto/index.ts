@@ -1,0 +1,55 @@
+// Funil adulto "Desafio do Primeiro Jogo" (`pro/desafio-primeiro-jogo`, 21/10/2026): a versão adulta
+// do mesmo curso (A Chave do Farol), com a mesma oferta do Kids (decisão da dona: mesmo preço,
+// mesmas condições). Página de oferta própria (DesafioAdultoBody, tema arcade) → `content.sales`
+// ausente de propósito; a /oferta despacha pelo `f.key`. Sem quiz nem resultado.
+//
+// Oferta no catálogo: env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` aponta
+// `desafio-primeiro-jogo-adulto-30-dias` (criada pelo seed do catálogo, curso
+// `desafio-primeiro-jogo-adulto`). Entra no `FUNNELS` DEPOIS da Comunidade adulta (a landing `/pro`
+// continua indo para o No Comando da IA) quando essa env existir no Railway: ver o comentário lá.
+
+import { TERMOS_DESAFIO_ADULTO } from '../../content/legal/termos-desafio-adulto'
+import type { FunnelDef } from '../registry'
+import {
+  DESAFIO_ADULTO_CHECKOUT,
+  DESAFIO_ADULTO_LANDING,
+  DESAFIO_ADULTO_OBRIGADO,
+  DESAFIO_ADULTO_PRODUTO,
+} from './content'
+import { PAGINA_DESAFIO_ADULTO } from './oferta/pagina'
+
+export const DESAFIO_ADULTO: FunnelDef = {
+  audience: 'pro',
+  produto: 'desafio-primeiro-jogo',
+  key: 'pro/desafio-primeiro-jogo',
+  basePath: '/pro/desafio-primeiro-jogo',
+  productName: 'Desafio do Primeiro Jogo',
+  // O mesmo nome da oferta no catálogo: é por ele que Compras separa o Desafio adulto do Kids.
+  chargeName: 'Desafio do Primeiro Jogo (adultos)',
+  productSku: 'desafio-primeiro-jogo-adulto',
+  imagesBase: '/img/desafio-primeiro-jogo',
+  checkoutImage: 'farol-capa.webp',
+  byline: 'Helena e Júlio · Sistema Zero',
+  seoTitle: PAGINA_DESAFIO_ADULTO.seoTitle,
+  seoDescription: PAGINA_DESAFIO_ADULTO.description,
+  // `.theme-arcade` no <html>: tokens `--cda-*` e mapeamento semântico em global.css.
+  theme: 'arcade',
+  lifetimeAccess: false,
+  // A mesma promessa rígida do Desafio Kids: página e cobrança falham fechadas se a env apontar
+  // para uma oferta com outra política.
+  offerContract: {
+    pricingMode: 'one_time',
+    accessMode: 'fixed',
+    accessDurationValue: 30,
+    accessDurationUnit: 'days',
+    guaranteeDays: 7,
+  },
+  steps: { quiz: false, resultado: false, upsell: false, downsell: false },
+  legal: { termos: TERMOS_DESAFIO_ADULTO, termsVersion: 'desafio-adulto-2026-10-21' },
+  content: {
+    copy: DESAFIO_ADULTO_PRODUTO,
+    landing: DESAFIO_ADULTO_LANDING,
+    obrigado: DESAFIO_ADULTO_OBRIGADO,
+    checkout: DESAFIO_ADULTO_CHECKOUT,
+  },
+}

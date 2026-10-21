@@ -3,7 +3,7 @@ import Footer from '../../../components/Footer.astro'
 import Header from '../../../components/Header.astro'
 import { EMPRESA } from '../../../content/legal'
 import { leadBelongsToFunnel } from '../../../funnels/lead-scope'
-import { getFunnel } from '../../../funnels/registry'
+import { getFunnel, isDesafioFunnel } from '../../../funnels/registry'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import {
   computeFixedAccessExpiry,
@@ -39,7 +39,7 @@ const accessEnd =
     ? computeFixedAccessExpiry(lead.paidAt, fixedAccess)
     : null
 const buyerEmail = paymentContext?.email ?? lead?.email ?? null
-const isTimedChallenge = f.key === 'kids/desafio-primeiro-jogo' && fixedAccess !== null
+const isTimedChallenge = isDesafioFunnel(f.key) && fixedAccess !== null
 
 // CTA p/ a área de membros (mesma base do link do e-mail de boas-vindas). Por
 // audiência: o funil kids leva ao app KIDS, não ao community adulto.
@@ -108,7 +108,7 @@ const confirmationTitle = approved
               <>{introObrigado} O seu acesso {acessoArtigo} <strong class="text-ink">{productName}</strong> está a caminho do seu e-mail.</>
             )
           ) : isTimedChallenge ? (
-            <>Os 30 dias ainda não começaram. Assim que o pagamento for aprovado, enviaremos o acesso e a data final para o e-mail da compra.</>
+            <>{`Os 30 dias ainda não começaram. Assim que o pagamento for aprovado, enviaremos o acesso ${f.audience === 'kids' ? 'e a data final ' : ''}para o e-mail da compra.`}</>
           ) : (
             <>Assim que o pagamento for aprovado, enviaremos as instruções de acesso para o e-mail da compra.</>
           )
@@ -132,7 +132,7 @@ const confirmationTitle = approved
             height="112"
             class:list={[
               'kids-thanks-product-image relative aspect-square w-24 -rotate-2 rounded-lg border border-line/60 shadow-xl sm:w-28',
-              f.key === 'kids/desafio-primeiro-jogo' ? 'object-contain bg-[#94d5f5]' : 'object-cover',
+              isDesafioFunnel(f.key) ? 'object-contain bg-[#94d5f5]' : 'object-cover',
             ]}
             decoding="async"
           />
