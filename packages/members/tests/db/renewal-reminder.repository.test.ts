@@ -219,6 +219,43 @@ describe.skipIf(!testDatabaseUrl)('DrizzleRenewalReminderRepository no Postgres 
     expect(rows).toHaveLength(0)
   })
 
+  test('Desafio adulto entra nos avisos fixos; só a chave-mestra adulta o encobre', async () => {
+    const accountId = randomUUID()
+    const fixedId = randomUUID()
+    const snapshot = JSON.stringify({
+      offerSlug: 'desafio-primeiro-jogo-adulto-30-dias',
+      name: 'Desafio do Primeiro Jogo (adultos)',
+      accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' },
+    })
+    const master = async (accessType: string) => {
+      await conn.sql`
+        insert into members.entitlements
+          (id, user_id, product_id, snapshot, status, source_kind, subscription_id, expires_at,
+           access_type, course_ref, granted_at)
+        values (${randomUUID()}, ${accountId}, ${randomUUID()}, '{}'::jsonb, 'active', 'manual', null,
+          '2027-05-30T00:00:00Z', ${accessType}, null, now())
+      `
+    }
+    await conn.sql`
+      insert into members.entitlements
+        (id, user_id, product_id, snapshot, status, source_kind, subscription_id, expires_at,
+         access_type, course_ref, granted_at)
+      values (${fixedId}, ${accountId}, ${randomUUID()}, ${snapshot}::jsonb, 'active', 'payment', null,
+        '2027-05-30T00:00:00Z', 'course', 'desafio-primeiro-jogo-adulto', '2027-04-30T00:00:00Z')
+    `
+    const repo = new DrizzleRenewalReminderRepository(conn.db)
+    const list = () =>
+      repo.listFixedAccessLifecycleEntitlements(new Date('2027-05-25T00:00:00Z'), 10)
+
+    expect(await list()).toEqual([
+      expect.objectContaining({ id: fixedId, courseRef: 'desafio-primeiro-jogo-adulto' }),
+    ])
+    await master('all_kids_courses')
+    expect((await list()).map((row) => row.id)).toEqual([fixedId])
+    await master('all_courses')
+    expect(await list()).toHaveLength(0)
+  })
+
   test('duas compras com o mesmo vencimento elegem uma representante em vez de se anularem', async () => {
     const accountId = randomUUID()
     const ids = [randomUUID(), randomUUID()]

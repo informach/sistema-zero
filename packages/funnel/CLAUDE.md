@@ -285,28 +285,35 @@ código; a copy Kids fala de "seu filho" e "ele" (a maioria dos alunos são meni
   `/oferta/criar-junto` (menor de 9 criando com um adulto, `DesafioMenor9Body` + `pagina-menor9.ts` +
   `desafio-menor9.css` sob `.cm9`). `DESAFIO_SUBPAGINAS`/`isDesafioSubpagina` em `offer.ts`;
   `DESAFIO_OFERTAS_ANTIGAS` dão 301. Relatos por id (`RELATOS_DESAFIO_9A17`, `RELATOS_DESAFIO_MENOR9`).
-- **Funil adulto** `pro/desafio-primeiro-jogo` (`src/funnels/desafio-adulto/`), PRONTO e ainda FORA do
-  `FUNNELS`: entra (depois da Comunidade adulta, para o `/pro` seguir no NCI) quando a env
-  `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` existir no Railway de staging E de produção (criada pelo
-  painel; esta sessão não tem acesso). Ativar = registrar no `FUNNELS`, declarar o nome em
-  `.railway/variables.ts`, pôr `/pro/desafio-primeiro-jogo/oferta` e `/termos` no sitemap e trocar o
-  teste "pronto e fora do registro" pelo da ordem. Até lá, as rotas dele dão 404 e o quiz Kids só
-  aponta a página adulta quando ela está registrada (`desafioAdultoPath`, resolvido pela página). `DesafioAdultoBody` + `oferta/pagina.ts` +
+- **Funil adulto** `pro/desafio-primeiro-jogo` (`src/funnels/desafio-adulto/`), registrado no `FUNNELS`
+  desde 21/10/2026, DEPOIS da Comunidade adulta (o `/pro` segue no NCI; a ordem é pinada por teste). A
+  env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` existe no Railway de staging e de produção (criada pela
+  dona) e está declarada em `.railway/variables.ts`; a oferta e o Termo estão no sitemap. O quiz Kids
+  aponta a página adulta a quem marca 18 ou mais (`desafioAdultoPath`, resolvido pela página).
+  `DesafioAdultoBody` + `oferta/pagina.ts` +
   `styles/desafio-adulto.css` sob `.cda` (tema arcade), sem quiz nem resultado, Termo próprio
   `termos-desafio-adulto.ts` (`desafio-adulto-2026-10-21`), `chargeName` "(adultos)". Oferta pela env
   `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` (`desafio-primeiro-jogo-adulto-30-dias`, criada pelo seed do
-  catálogo com o curso `desafio-primeiro-jogo-adulto` e o Mural adulto). As telas do curso são as do
-  Kids, com legenda dizendo isso; as imagens vêm de `/img/desafio-primeiro-jogo`.
+  catálogo com o curso `desafio-primeiro-jogo-adulto` e o Mural adulto). O jogo e os blocos são os
+  mesmos do Kids (o `projeto-final.szproject.json` e o `blocos.json` adultos são idênticos), por isso
+  vêm de `/img/desafio-primeiro-jogo` sem legenda de versão; a página do Caderno é a do PDF adulto
+  (`/img/desafio-adulto/farol-caderno.png`, página 18). Os 4 passos da aula ainda são telas do Kids, com
+  a nota dizendo isso, até haver capturas da área adulta (o curso adulto precisa estar publicado em
+  staging).
 - **Preço** só do catálogo: `oferta/preco.ts` (`precoDoDesafio` com o cupom já cotado, `preencherPreco`
   troca `{{preco}}` e `{{preco_dia}}`; o por dia é `precoPorDiaCents`, sempre acima da conta exata).
 - **Os dois Desafios nas etapas compartilhadas:** `isDesafioFunnel(key)` no registry (`checkout.astro`,
   `obrigado.astro`); o `PreCheckoutModal` reconhece por `funnel.endsWith('/desafio-primeiro-jogo')`
   (ilha não importa o registry) e só o Kids mostra o aviso dos dados do responsável. O e-mail de
-  boas-vindas com a data final (`challenge-access-approved`) segue Kids-only: o adulto recebe o
-  genérico `welcome`/`new-access`. No Members, o adulto ganha o Mural adulto visitante depois dos 30
-  dias, mas fica FORA dos avisos `challenge-*` (falam com o responsável) até ter os seus.
-- **Navegador:** `tests/browser/desafio-ofertas.ts` confere as páginas registradas (a adulta entra
-  sozinha quando o funil for registrado; antes disso, exige os 404).
+  boas-vindas com a data final tem duas versões: `challenge-access-approved` no Kids e, desde
+  21/10/2026, `challenge-access-approved-adult` no adulto (e-mail e WhatsApp; `nome`, `link`,
+  `expira_em`, `acao`; o link é o de sempre do adulto, `COMMUNITY_URL` com `/redefinir-senha?token=` ou
+  `/cursos`). Se o Messaging ainda responder 404 `TEMPLATE_NOT_FOUND` para a chave adulta, `sendOne`
+  reenvia com a chave genérica (`welcome`/`new-access`), a mesma Idempotency-Key e o mesmo link
+  (`fallbackKey`). No Members, o adulto ganha o Mural adulto visitante depois dos 30 dias e os avisos
+  de prazo e progresso nas versões `-adult` (ver o `CLAUDE.md` do Members).
+- **Navegador:** `tests/browser/desafio-ofertas.ts` confere as páginas registradas (as três, desde
+  o registro do adulto).
 - **Espelhos:** `bun scripts/espelho-copy-desafio.ts` →
   `docs/marketing/kids/desafio-primeiro-jogo/copy/pagina-{9-a-17,menor-9,adulto}.md`.
 - **Testes:** `desafio-offer-copy.test.ts` (rotas, despacho, 301, contrato igual, env, Light Copy,

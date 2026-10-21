@@ -106,28 +106,20 @@ describe('rotas e despacho', () => {
 })
 
 describe('o funil adulto tem a mesma oferta do Kids', () => {
-  // O funil adulto está pronto, mas só entra no registry quando a env
-  // `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` existir no Railway (registrado sem ela, o funil não sobe).
-  // Ao registrar: troque este teste pela ordem (depois da Comunidade adulta, `/pro` no NCI), declare
-  // o nome em `.railway/variables.ts` e ponha a oferta e o Termo no sitemap.
-  test('pronto e fora do registro até a env existir; o quiz só aponta a página registrada', () => {
-    expect(Object.keys(FUNNELS)).not.toContain(DESAFIO_ADULTO.key)
-    expect(getFunnel('pro', 'desafio-primeiro-jogo')).toBeNull()
+  test('registrado depois da Comunidade adulta; o quiz Kids aponta a página adulta', () => {
+    const keys = Object.keys(FUNNELS)
+    expect(keys.indexOf(DESAFIO_ADULTO.key)).toBeGreaterThan(keys.indexOf(COMUNIDADE_ADULTO.key))
     expect(Object.values(FUNNELS).find((f) => f.audience === 'pro')?.key).toBe(
       'pro/no-comando-da-ia',
     )
-    expect(ler('funnels', 'registry.ts')).toContain(
-      'quando a env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO`',
-    )
+    expect(getFunnel('pro', 'desafio-primeiro-jogo')).toBe(DESAFIO_ADULTO)
     const quiz = ler('pages', '[audience]', '[produto]', 'quiz.astro')
-    expect(quiz).toContain("const desafioAdulto = getFunnelByKey('pro/desafio-primeiro-jogo')")
     expect(quiz).toContain(
       'desafioAdultoPath={desafioAdulto ? `${desafioAdulto.basePath}/oferta` : undefined}',
     )
-    expect(readFileSync(join(ROOT, 'astro.config.mjs'), 'utf8')).not.toContain(
-      '/pro/desafio-primeiro-jogo/',
-    )
-    expect(COMUNIDADE_ADULTO.audience).toBe('pro')
+    const sitemap = readFileSync(join(ROOT, 'astro.config.mjs'), 'utf8')
+    expect(sitemap).toContain('`${site}/pro/desafio-primeiro-jogo/oferta`')
+    expect(sitemap).toContain('`${site}/pro/desafio-primeiro-jogo/termos`')
   })
 
   test('mesmo contrato, mesma política de acesso, tema arcade e Termo adulto', () => {
@@ -162,9 +154,12 @@ describe('o funil adulto tem a mesma oferta do Kids', () => {
     )
   })
 
-  test('a oferta virá da env FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO, já no exemplo', () => {
+  test('a oferta vem da env, declarada no Railway e no exemplo', () => {
     const env = offerEnvKey(DESAFIO_ADULTO.key)
     expect(env).toBe('FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO')
+    expect(readFileSync(join(ROOT, '..', '..', '.railway', 'variables.ts'), 'utf8')).toContain(
+      `'${env}'`,
+    )
     expect(readFileSync(join(ROOT, '.env.example'), 'utf8')).toContain(
       `${env}=desafio-primeiro-jogo-adulto-30-dias`,
     )

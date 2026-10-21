@@ -53,7 +53,7 @@ export const PAGINA_DESAFIO_ADULTO = {
         height: 960,
         alt: 'A Chave do Farol: o personagem na trilha, a chave dourada e o farol listrado na ilha',
       } satisfies ImagemDesafio,
-      legenda: 'O jogo que você vai montar. Tela da versão Kids do curso.',
+      legenda: 'O jogo que você vai montar.',
     },
     faixa: '30 DIAS',
   },
@@ -195,12 +195,12 @@ export const PAGINA_DESAFIO_ADULTO = {
     requisito: 'Para pessoas com 18 anos ou mais. Precisa de computador com mouse e teclado.',
     caderno: {
       imagem: {
-        src: 'desafio-primeiro-jogo/farol-caderno.png',
+        src: 'desafio-adulto/farol-caderno.png',
         width: 1588,
         height: 2246,
-        alt: 'Uma página do Caderno do Aluno da Chave do Farol, com os três testes do jogo inteiro',
+        alt: 'Uma página do Caderno do Aluno adulto da Chave do Farol, com os três testes do jogo inteiro',
       } satisfies ImagemDesafio,
-      legenda: 'O Caderno do Aluno explica cada teste, passo a passo. Página da versão Kids.',
+      legenda: 'O Caderno do Aluno explica cada teste, passo a passo.',
     },
   },
 

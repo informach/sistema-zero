@@ -1,10 +1,16 @@
 import { and, asc, eq, gt, inArray, isNull, sql } from 'drizzle-orm'
 import {
+  CHALLENGE_COURSE_REFS,
+  type ChallengeAudience,
+  challengeAudience,
+} from '../../../domain/entitlement/challenge-courses'
+import {
   CHALLENGE_BEHAVIOR_MESSAGE_KINDS,
   type ChallengeBehaviorMessageKind,
   type ChallengeLifecycleCandidate,
   type ChallengeLifecycleRepository,
 } from '../../../domain/ports/challenge-lifecycle-repository.port'
+import { CHALLENGE_MASTER_KEY_FOR_ROW } from './challenge-master-key'
 import type { Database } from './db'
 import {
   courses,
@@ -20,10 +26,6 @@ import {
   modules,
   studioSubmissions,
 } from './schema'
-
-// Só o Desafio Kids: os avisos `challenge-*` falam com o responsável (a criança, a Área dos pais).
-// O Desafio adulto (`desafio-primeiro-jogo-adulto`, 21/10/2026) fica de fora até ter os seus.
-const CHALLENGE_COURSE_REF = 'desafio-primeiro-jogo'
 
 type OwnerRow = { userId: string; accountId: string }
 
@@ -51,7 +53,7 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
           eq(entitlements.sourceKind, 'payment'),
           isNull(entitlements.subscriptionId),
           eq(entitlements.accessType, 'course'),
-          eq(entitlements.courseRef, CHALLENGE_COURSE_REF),
+          inArray(entitlements.courseRef, CHALLENGE_COURSE_REFS),
           sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'mode' = 'fixed'`,
           sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit' = 'days'`,
           gt(entitlements.expiresAt, now),
@@ -64,7 +66,7 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
                and (stronger.expires_at is null or stronger.expires_at > ${now.toISOString()}::timestamptz)
                and (
                  (stronger.access_type = 'course' and stronger.course_ref = ${entitlements.courseRef})
-                 or stronger.access_type = 'all_kids_courses'
+                 or stronger.access_type::text = ${CHALLENGE_MASTER_KEY_FOR_ROW}
                )
                and (
                  stronger.expires_at is null
@@ -73,7 +75,7 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
                    stronger.expires_at = ${entitlements.expiresAt}
                    and (
                      stronger.source_kind = 'subscription'
-                     or stronger.access_type = 'all_kids_courses'
+                     or stronger.access_type::text = ${CHALLENGE_MASTER_KEY_FOR_ROW}
                      or stronger.id < ${entitlements.id}
                    )
                  )
@@ -90,10 +92,32 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
     )
     if (candidates.length === 0) return []
 
+    // Cada curso do Desafio (Kids e adulto) tem as suas aulas: o progresso é calculado por curso.
+    const result: ChallengeLifecycleCandidate[] = []
+    for (const courseRef of CHALLENGE_COURSE_REFS) {
+      const audience = challengeAudience(courseRef)
+      const group = candidates.filter((candidate) => candidate.courseRef === courseRef)
+      if (!audience || group.length === 0) continue
+      result.push(...(await this.withProgress(group, courseRef, audience)))
+    }
+    return result
+  }
+
+  private async withProgress(
+    candidates: Array<{
+      entitlementId: string
+      accountId: string
+      grantedAt: Date
+      expiresAt: Date
+      courseRef: string
+    }>,
+    courseRef: string,
+    audience: ChallengeAudience,
+  ): Promise<ChallengeLifecycleCandidate[]> {
     const [course] = await this.db
       .select({ id: courses.id })
       .from(courses)
-      .where(and(eq(courses.slug, CHALLENGE_COURSE_REF), eq(courses.audience, 'kids')))
+      .where(and(eq(courses.slug, courseRef), eq(courses.audience, audience)))
       .limit(1)
     if (!course) return []
 
@@ -264,6 +288,7 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
 
     return candidates.map((candidate) => ({
       ...candidate,
+      audience,
       started: startedAccounts.has(candidate.accountId),
       dayOneComplete: dayOneAccounts.has(candidate.accountId),
       completed: completedAccounts.has(candidate.accountId),

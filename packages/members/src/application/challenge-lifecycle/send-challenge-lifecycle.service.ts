@@ -12,11 +12,14 @@ import type {
 } from '../../domain/ports/challenge-lifecycle-repository.port'
 import type { MessagingGateway } from '../../domain/ports/messaging-gateway.port'
 import { expiresOnKey } from '../../domain/ports/renewal-reminder-repository.port'
+import { accessEndedLink } from '../renewal-reminder/send-access-ended-messages.service'
 
 export interface ChallengeLifecycleOptions {
   batchLimit?: number
   kidsUrl: string
   funnelUrl: string
+  /** O app adulto (`COMMUNITY_URL`): sem ele, os avisos adultos que levam ao app não saem. */
+  adultUrl?: string
 }
 
 const DAY_MS = 86_400_000
@@ -30,7 +33,10 @@ const TEMPLATE_BY_KIND: Record<ChallengeBehaviorMessageKind, string> = {
   completed: 'challenge-completed',
 }
 
-/** Automação comportamental do Desafio, sempre dirigida ao responsável. */
+/**
+ * Automação comportamental do Desafio. No Kids fala com o responsável; no adulto (21/10/2026), com a
+ * própria pessoa, nos templates `-adult` com as mesmas variáveis.
+ */
 export class SendChallengeLifecycleService {
   constructor(
     private readonly lifecycle: ChallengeLifecycleRepository,
@@ -76,10 +82,22 @@ export class SendChallengeLifecycleService {
         continue
       }
 
-      const templateKey = TEMPLATE_BY_KIND[kind]
+      const adult = candidate.audience === 'adult'
+      const templateKey = adult ? `${TEMPLATE_BY_KIND[kind]}-adult` : TEMPLATE_BY_KIND[kind]
       const expiresOn = expiresOnKey(candidate.expiresAt)
-      const nome = identity.firstName || 'Responsável'
-      const link = linkFor(kind, candidate.courseRef, this.opts)
+      const nome = identity.firstName || (adult ? 'Aluno(a)' : 'Responsável')
+      const link = adult
+        ? adultLinkFor(kind, candidate.courseRef, this.opts)
+        : linkFor(kind, candidate.courseRef, this.opts)
+      if (!link) {
+        // Sem a URL do app adulto não há para onde levar; tenta de novo no próximo ciclo.
+        skipped++
+        this.logger.warn('challenge_lifecycle.adult_url_missing', {
+          entitlementId: candidate.entitlementId,
+          messageKind: kind,
+        })
+        continue
+      }
       try {
         await this.messaging.sendEmail({
           templateKey,
@@ -162,4 +180,16 @@ function linkFor(
   if (kind === 'completed')
     return `${opts.funnelUrl}/kids/comunidade-dos-criadores/oferta/continuar`
   return `${opts.kidsUrl}/cursos/${encodeURIComponent(courseRef)}`
+}
+
+/** Links do Desafio adulto: o app adulto, e a continuidade adulta do funil ao concluir. */
+function adultLinkFor(
+  kind: ChallengeBehaviorMessageKind,
+  courseRef: string,
+  opts: ChallengeLifecycleOptions,
+): string | null {
+  if (kind === 'completed') return accessEndedLink(opts.funnelUrl, 'adult', 'desafio-concluido')
+  if (!opts.adultUrl) return null
+  if (kind === 'not_activated') return `${opts.adultUrl}/esqueci-senha`
+  return `${opts.adultUrl}/cursos/${encodeURIComponent(courseRef)}`
 }

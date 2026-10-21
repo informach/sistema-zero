@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
+import { challengeAudience } from '../../domain/entitlement/challenge-courses'
 import type { AuthGateway } from '../../domain/ports/auth-gateway.port'
 import type { ChallengeAnalyticsGateway } from '../../domain/ports/challenge-analytics-gateway.port'
 import type { MessagingGateway } from '../../domain/ports/messaging-gateway.port'
@@ -8,6 +9,8 @@ import {
   expiresOnKey,
   type RenewalReminderRepository,
 } from '../../domain/ports/renewal-reminder-repository.port'
+
+import { accessEndedLink } from './send-access-ended-messages.service'
 
 export interface RenewalReminderOptions {
   /** Janela: lembra quando faltam ≤ N dias p/ o vencimento (default 7). */
@@ -18,6 +21,8 @@ export interface RenewalReminderOptions {
   funnelUrl: string
   /** URL pública do app Kids (Área dos pais nos avisos de vencimento do Desafio). */
   kidsUrl: string
+  /** O app adulto (`COMMUNITY_URL`): os avisos de prazo do Desafio adulto levam a ele. */
+  adultUrl?: string
 }
 
 const DEFAULT_BATCH_LIMIT = 200
@@ -175,21 +180,41 @@ export class SendRenewalRemindersService {
           continue
         }
 
-        const nome = identity.firstName || 'Responsável'
+        const adult = challengeAudience(first.courseRef) === 'adult'
+        const nome = identity.firstName || (adult ? 'Aluno(a)' : 'Responsável')
         const expired = first.messageKind === 'expired'
-        const templateKey = expired
+        const baseKey = expired
           ? 'challenge-expired'
           : first.messageKind === 'expiry_3d'
             ? 'challenge-expiry-3d'
             : 'challenge-expiry-7d'
-        // O aviso é do responsável. Faltando 7 dias ele mostra onde a criança parou (o
+        const templateKey = adult ? `${baseKey}-adult` : baseKey
+        // Kids: o aviso é do responsável. Faltando 7 dias ele mostra onde a criança parou (o
         // Acompanhamento); faltando 3, o acesso do computador (a Família, onde o aviso de
-        // vencimento pede renovar). A fase em si abre no perfil da criança.
-        const link = expired
-          ? `${this.opts.funnelUrl}/kids/comunidade-dos-criadores/oferta/continuar`
-          : first.messageKind === 'expiry_7d'
-            ? `${this.opts.kidsUrl}/pais/acompanhamento`
-            : `${this.opts.kidsUrl}/pais`
+        // vencimento pede renovar). A fase em si abre no perfil da criança. Adulto (21/10/2026):
+        // 7 dias leva ao Seu progresso, 3 dias ao curso e o fim à continuidade adulta.
+        const link = adult
+          ? expired
+            ? accessEndedLink(this.opts.funnelUrl, 'adult', 'desafio-encerrado')
+            : this.opts.adultUrl
+              ? first.messageKind === 'expiry_7d'
+                ? `${this.opts.adultUrl}/progresso`
+                : `${this.opts.adultUrl}/cursos/${encodeURIComponent(first.courseRef)}`
+              : null
+          : expired
+            ? `${this.opts.funnelUrl}/kids/comunidade-dos-criadores/oferta/continuar`
+            : first.messageKind === 'expiry_7d'
+              ? `${this.opts.kidsUrl}/pais/acompanhamento`
+              : `${this.opts.kidsUrl}/pais`
+        if (!link) {
+          // Sem a URL do app adulto não há para onde levar; tenta de novo no próximo ciclo.
+          skipped++
+          this.logger.warn('renewal_reminder.adult_url_missing', {
+            userId: first.userId,
+            messageKind: first.messageKind,
+          })
+          continue
+        }
 
         await this.messaging.sendEmail({
           templateKey,
