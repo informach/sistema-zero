@@ -137,3 +137,17 @@ da lista recebe `unknown`, linha `0` e código `unknown`. Mensagem, stack, texto
 invocação e caminhos completos não entram no recibo. Falhas secundárias do cleanup
 continuam separadas. Isso não muda ACK, prazos, orçamento ou autoridade de stop,
 nem identifica retroativamente a causa dos recibos R7/R8 anteriores.
+
+Na descoberta de descendants, uma linha CIM incompleta só pode ser ignorada se
+PID, nascimento e ParentId correspondem a um witness conhecido, os metadados
+ainda disponíveis não o contradizem, e o registro retido tem o mesmo PID e
+createdTicks (precisão CIM) com observação real `exited`. Se esse pai parcial tem
+qualquer filho no mesmo snapshot, permanece NEG, pois ignorar o pai também
+ocultaria esses filhos; não se infere ownership pela relação após seu encerramento.
+Sem essa prova, inclusive
+para processos novos, vivos ou desconhecidos, permanece NEG. O conversor geral
+continua estrito. O diagnóstico acrescenta somente fase `parent`/`child`, PID
+inteiro, identidade conhecida e indicadores de campos ausentes; outros dados da
+exceção não são persistidos. Sem novas consultas, retry, ACK ou autoridade de stop.
+Isso corrige o caso demonstrável de processo conhecido encerrado; não atribui
+retroativamente esse caso à linha incompleta observada no R9.

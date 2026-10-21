@@ -71,20 +71,57 @@ function Reconcile-RetainedOwnedProcesses($State,$Known,$Retained) {
  $State.cleanupConfirmed=$State.ownershipComplete -and -not $live.Count -and -not $unconfirmed.Count
 }
 
+function ConvertTo-OwnedTreeWitness($Row,$Known,$Retained,[ValidateSet('parent','child')][string]$Phase,[bool]$HasSnapshotChildren=$false) {
+ if(-not $Row){return $null}
+ $missingExecutable=-not $Row.ExecutablePath;$missingCommand=-not $Row.CommandLine
+ if(-not $missingExecutable -and -not $missingCommand){return ConvertTo-OwnedProcessWitness $Row}
+ # A dying CIM row may lose metadata. Only the already-retained SAME identity,
+ # proven exited, can be skipped. No lookup, retry or incomplete new ownership.
+ $processId=0;$knownIdentity=$false;$recordMatches=$false;$record=$null
+ $integerTypes=@('Byte','SByte','Int16','UInt16','Int32','UInt32','Int64','UInt64')
+ if($null -ne $Row.ProcessId -and [Type]::GetTypeCode($Row.ProcessId.GetType()).ToString() -cin $integerTypes -and $Row.ProcessId -gt 0 -and $Row.ProcessId -le [int]::MaxValue){$processId=[int]$Row.ProcessId}
+ try{
+  if($processId -gt 0 -and $Row.CreationDate -is [datetime] -and $null -ne $Row.ParentProcessId -and [Type]::GetTypeCode($Row.ParentProcessId.GetType()).ToString() -cin $integerTypes -and $Row.ParentProcessId -ge 0 -and $Row.ParentProcessId -le [int]::MaxValue){
+   $createdAt=$Row.CreationDate.ToUniversalTime().ToString('o');$key="$($processId):$createdAt"
+   if($Known.ContainsKey($key)){
+    $w=$Known[$key]
+    $knownIdentity=$w.processId -eq $processId -and $w.createdAt -ceq $createdAt -and $w.parentId -eq $Row.ParentProcessId -and ($missingExecutable -or $w.executable -eq $Row.ExecutablePath) -and ($missingCommand -or $w.cli -ceq $Row.CommandLine)
+    if($knownIdentity -and $null -ne $Retained){
+     $record=$Retained[$key];$ticks=([datetimeoffset]$w.createdAt).UtcTicks
+     $recordMatches=$null -ne $record -and $record.processId -eq $processId -and $record.createdTicks -is [long] -and ($record.createdTicks-($record.createdTicks%10)) -eq ($ticks-($ticks%10)) -and $record.process.Id -eq $processId
+    }
+   }
+  }
+ }catch{$recordMatches=$false}
+ $exitedParentWithChildren=$false
+ if($recordMatches -and (Retained-OwnedProcessObservation $record).state -ceq 'exited'){
+  if($Phase -ceq 'parent' -and $HasSnapshotChildren){$exitedParentWithChildren=$true}else{return $null}
+ }
+ # Skipping that parent would also skip children already present in this
+ # snapshot. Do not infer their lifetime/ownership through an exited identity.
+ $message=if($exitedParentWithChildren){'Exited partial parent has snapshot children; discovery unconfirmed.'}else{'Incomplete owned tree witness'}
+ $failure=[InvalidOperationException]::new($message)
+ $failure.Data['lessonTreePhase']=$Phase;$failure.Data['lessonTreeProcessId']=$processId;$failure.Data['lessonTreeKnownIdentity']=[bool]$knownIdentity
+ $failure.Data['lessonTreeMissingExecutable']=[bool]$missingExecutable;$failure.Data['lessonTreeMissingCommand']=[bool]$missingCommand
+ throw $failure
+}
+
 function Capture-OwnedTree($Root, $Known, $Retained=$null, $Snapshot=$null) {
  if($null -eq $Snapshot){$Snapshot=Get-OwnedProcessSnapshot}
  $queue=[Collections.Generic.List[object]]::new();foreach($w in @($Known.Values)){$queue.Add($w)}
  # One observation, visited breadth first; new grandchildren are handled in this
  # same pass. Never retain this snapshot across monitoring rounds.
  for($index=0;$index -lt $queue.Count;$index++) {
-  $parent=$queue[$index];$current=Process-Witness $parent.processId $Snapshot
+  $parent=$queue[$index];$children=$Snapshot.children[[int]$parent.processId]
+  $hasChildren=$null -ne $children -and @($children).Count -gt 0
+  $current=ConvertTo-OwnedTreeWitness $Snapshot.rows[[int]$parent.processId] $Known $Retained 'parent' $hasChildren
   if(-not(Same-Witness $parent $current)){
    $record=if($null -ne $Retained){$Retained["$($parent.processId):$($parent.createdAt)"]}else{$null}
    if(Retained-OwnedProcessAlive $record){throw 'Live retained parent has no matching CIM witness; descendant discovery unconfirmed.'}
    continue
   }
-  foreach($child in @($Snapshot.children[[int]$parent.processId])) {
-   $w=ConvertTo-OwnedProcessWitness $child
+  foreach($child in @($children)) {
+   $w=ConvertTo-OwnedTreeWitness $child $Known $Retained 'child'
    if($w -and [datetimeoffset]$w.createdAt -ge [datetimeoffset]$parent.createdAt) {
     $key="$($w.processId):$($w.createdAt)"
     if(-not $Known.ContainsKey($key)){
@@ -113,9 +150,15 @@ function Get-LessonMonitorFailureDiagnostic([Management.Automation.ErrorRecord]$
   'Own memory root handle unavailable'='memory-root-handle-unavailable'
   'Own memory descendant handle unavailable'='memory-descendant-handle-unavailable'
   'Completion identity mismatch'='completion-identity-mismatch'
+  'Incomplete owned tree witness'='tree-witness-incomplete'
+  'Exited partial parent has snapshot children; discovery unconfirmed.'='exited-parent-descendants-unconfirmed'
  }
  $code=if($leaf -cne 'unknown' -and $codes.ContainsKey($ErrorRecord.Exception.Message)){$codes[$ErrorRecord.Exception.Message]}else{'unknown'}
- return [pscustomobject]@{source=$leaf;line=$line;code=$code}
+ $witness=$null;$data=$ErrorRecord.Exception.Data
+ if($leaf -ceq 'python-lesson-browser-watch.ps1' -and $code -cin @('tree-witness-incomplete','exited-parent-descendants-unconfirmed') -and $data['lessonTreePhase'] -cin @('parent','child') -and $data['lessonTreeProcessId'] -is [int] -and $data['lessonTreeProcessId'] -ge 0 -and $data['lessonTreeKnownIdentity'] -is [bool] -and $data['lessonTreeMissingExecutable'] -is [bool] -and $data['lessonTreeMissingCommand'] -is [bool]){
+  $witness=[pscustomobject]@{phase=$data['lessonTreePhase'];processId=$data['lessonTreeProcessId'];knownIdentity=$data['lessonTreeKnownIdentity'];missingExecutable=$data['lessonTreeMissingExecutable'];missingCommand=$data['lessonTreeMissingCommand']}
+ }
+ return [pscustomobject]@{source=$leaf;line=$line;code=$code;witness=$witness}
 }
 
 function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetimeoffset]$SoftDeadline, [datetimeoffset]$HardDeadline, $PreparedCompactContext=$null) {
@@ -123,7 +166,7 @@ function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetim
  $retained=@{};$rootRecord=$null
  $stopRequested=$false;$complete=$null;$acknowledged=$false;$earlyExit=$false;$completionStableRounds=0
  $compactContext=$null;$compactNegative=$false
- $State|Add-Member -NotePropertyMembers @{hardDeadline=$HardDeadline.ToString('o');softDeadline=$SoftDeadline.ToString('o');maxSampledTreeWorkingSetMiB=0;maxSampledTreePrivateMiB=0;primaryFailure=$null;secondaryFailures=@();processExitCode=$null;scenarioExitCode=$null;liveOwned=@();completedAt=$null;retainedHandleCount=0;descendantHandlesReleased=$false;monitorFailureName=$null;monitorFailureSource=$null;monitorFailureLine=$null;monitorFailureCode=$null;ownershipComplete=$true;cleanupConfirmed=$false;provenExitedProcessIds=@();unconfirmedProcessIds=@();persistenceFallback=$null;compactMemoryObservation=$null;compactMemoryReasons=@()} -Force
+ $State|Add-Member -NotePropertyMembers @{hardDeadline=$HardDeadline.ToString('o');softDeadline=$SoftDeadline.ToString('o');maxSampledTreeWorkingSetMiB=0;maxSampledTreePrivateMiB=0;primaryFailure=$null;secondaryFailures=@();processExitCode=$null;scenarioExitCode=$null;liveOwned=@();completedAt=$null;retainedHandleCount=0;descendantHandlesReleased=$false;monitorFailureName=$null;monitorFailureSource=$null;monitorFailureLine=$null;monitorFailureCode=$null;monitorFailureWitness=$null;ownershipComplete=$true;cleanupConfirmed=$false;provenExitedProcessIds=@();unconfirmedProcessIds=@();persistenceFallback=$null;compactMemoryObservation=$null;compactMemoryReasons=@()} -Force
  try {
  $rootRecord=Retain-OwnedProcess $State.root $Process
  if(-not $rootRecord){throw 'Cannot retain the witnessed root process object'}
@@ -245,7 +288,7 @@ function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetim
  } catch {
   $originalMonitorError=$_
   $diagnostic=Get-LessonMonitorFailureDiagnostic $originalMonitorError
-  $State.monitorFailureSource=$diagnostic.source;$State.monitorFailureLine=$diagnostic.line;$State.monitorFailureCode=$diagnostic.code
+  $State.monitorFailureSource=$diagnostic.source;$State.monitorFailureLine=$diagnostic.line;$State.monitorFailureCode=$diagnostic.code;$State.monitorFailureWitness=$diagnostic.witness
   if($Job.compactMemory){$compactNegative=$true}
   $State.monitorFailureName=$originalMonitorError.Exception.GetType().Name
   if(-not $State.primaryFailure){$State.primaryFailure='owned-browser-monitor-failed'}
