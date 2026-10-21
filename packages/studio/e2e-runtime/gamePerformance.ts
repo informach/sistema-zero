@@ -47,20 +47,34 @@ export async function instrumentPresentation(page: Page) {
     target.__szLongTasks = []
     target.__szInputs = []
     const raf = window.requestAnimationFrame.bind(window)
+    let inAnimationFrame = false
     window.requestAnimationFrame = (callback) =>
       raf((time) => {
         const start = performance.now()
+        inAnimationFrame = true
         try {
           callback(time)
         } finally {
+          inAnimationFrame = false
           if (target.__szPaints!.length < 200_000)
             target.__szPaints!.push(performance.now() - start)
         }
       })
     let painted = false
+    let immediatePaintStart: number | undefined
     const clear = CanvasRenderingContext2D.prototype.clearRect
     CanvasRenderingContext2D.prototype.clearRect = function (...args) {
       painted = true
+      // A paint outside an animation frame (Tk-like update()) runs synchronously in the
+      // current task; the first microtask after it closes the paint slice.
+      if (!inAnimationFrame && immediatePaintStart === undefined) {
+        immediatePaintStart = performance.now()
+        queueMicrotask(() => {
+          if (target.__szPaints!.length < 200_000)
+            target.__szPaints!.push(performance.now() - immediatePaintStart!)
+          immediatePaintStart = undefined
+        })
+      }
       return clear.apply(this, args)
     }
     const observe = () =>

@@ -28,6 +28,7 @@ export default defineConfig({
     'python-space-arena-input.spec.ts',
     'python-space-arena-performance.spec.ts',
     'python-f3-performance.spec.ts',
+    'python-f2-performance.spec.ts',
   ],
   globalSetup: '../../experiments/studio-python-runtime/qualification/local_games_host.ts',
   timeout: 90_000,
