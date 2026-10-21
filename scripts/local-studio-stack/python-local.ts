@@ -31,11 +31,10 @@ export const RUNTIME_PERSIST = join(STACK_DIR, 'wrangler')
 
 const DEFAULT_DISTRIBUTION =
   'C:/Users/julio/projects/sistema-zero-studio-python/.cache/studio-python-runtime/distributions-transfer/a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a'
-/** Buckets locais dos apps: UGC (criações), privado (snapshots /jogar) e público (capas). */
+/** Buckets locais dos apps: UGC (criações) e privado (snapshots do /jogar). */
 const APP_BUCKETS = {
   LOCAL_UGC: 'sz-local-ugc',
   LOCAL_PRIVATE: 'sz-local-private',
-  LOCAL_PUBLIC: 'sz-local-public',
 }
 const DEFAULT_PLAN = join(
   ROOT,
@@ -184,8 +183,8 @@ if (import.meta.main) {
     R2_S3_ENDPOINT: `${RUNTIME_ORIGIN}/cdn-cgi/local/r2/s3`,
     R2_UGC_BUCKET: APP_BUCKETS.LOCAL_UGC,
     R2_PRIVATE_BUCKET: APP_BUCKETS.LOCAL_PRIVATE,
-    R2_BUCKET: APP_BUCKETS.LOCAL_PUBLIC,
-    R2_PUBLIC_URL: `${RUNTIME_ORIGIN}/cdn-cgi/local/r2/public/${APP_BUCKETS.LOCAL_PUBLIC}`,
+    // Sem R2_BUCKET/R2_PUBLIC_URL: a capa do Mural é opcional e o hub só aceita capa em
+    // https:// (o endpoint público local é http). Sem bucket público a capa fica de fora.
   }
   const studioEnv = {
     members: {
