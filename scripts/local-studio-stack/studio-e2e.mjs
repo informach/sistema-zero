@@ -20,6 +20,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import zlib from 'node:zlib'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const STACK_DIR = join(ROOT, '.cache', 'local-stack')
@@ -32,7 +33,8 @@ const outDir = join(STACK_DIR, 'browser', 'e2e')
 fs.mkdirSync(outDir, { recursive: true })
 const tag = `${app}-${key}-${lang}-${kind}`
 const mark = `QA${Date.now().toString(36).toUpperCase()}`
-const projectName = `QA ${lang} ${kind} ${mark}`
+// O nome e o resumo NÃO levam a MARCA: no /jogar ela só pode vir da execução do programa.
+const projectName = `QA ${lang} ${kind} ${Date.now().toString(36)}`
 const source =
   lang === 'python'
     ? `print("${mark}")\n`
@@ -79,6 +81,45 @@ async function session() {
     if (!enter.ok()) throw new Error(`entrar no perfil ${enter.status()}`)
   }
   return { context, page, errors }
+}
+
+/** PNG sólido 640x360 (capa enviada quando a foto automática não sai, como no Python). */
+function coverPng() {
+  const width = 640
+  const height = 360
+  const crc = (buf) => {
+    let c = ~0
+    for (const byte of buf) {
+      c ^= byte
+      for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1))
+    }
+    return ~c >>> 0
+  }
+  const chunk = (type, data) => {
+    const len = Buffer.alloc(4)
+    len.writeUInt32BE(data.length)
+    const body = Buffer.concat([Buffer.from(type), data])
+    const sum = Buffer.alloc(4)
+    sum.writeUInt32BE(crc(body))
+    return Buffer.concat([len, body, sum])
+  }
+  const header = Buffer.alloc(13)
+  header.writeUInt32BE(width, 0)
+  header.writeUInt32BE(height, 4)
+  header.set([8, 2, 0, 0, 0], 8)
+  const row = Buffer.concat([Buffer.from([0]), Buffer.alloc(width * 3, 0x55)])
+  const raw = Buffer.concat(Array.from({ length: height }, () => row))
+  const file = join(outDir, 'capa-qa.png')
+  fs.writeFileSync(
+    file,
+    Buffer.concat([
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      chunk('IHDR', header),
+      chunk('IDAT', zlib.deflateSync(raw)),
+      chunk('IEND', Buffer.alloc(0)),
+    ]),
+  )
+  return file
 }
 
 const shot = (page, name) => page.screenshot({ path: join(outDir, `${tag}-${name}.png`) })
@@ -231,6 +272,7 @@ async function reopen(page) {
   return editorText(page)
 }
 
+let lastPage = null
 try {
   const first = await session()
   const { page } = first
@@ -255,6 +297,8 @@ try {
   await name.fill(projectName)
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await page.waitForTimeout(8000)
+  await shot(page, '1b-criado')
+  lastPage = page
   await writeSource(page)
   step('fonteEscrita', (viaBlocks ? await blocksText(page) : await editorText(page)).includes(mark))
   step('edicao', viaBlocks ? 'blocos (colar)' : kind === 'classic' ? 'ponte' : 'código')
@@ -270,12 +314,31 @@ try {
   if (publish) {
     await page.getByRole('button', { name: 'Compartilhar', exact: true }).first().click()
     await page.waitForTimeout(3000)
+    fs.writeFileSync(
+      join(outDir, `${tag}-publicar-aria.txt`),
+      await page
+        .getByRole('dialog')
+        .first()
+        .ariaSnapshot()
+        .catch(() => ''),
+    )
+    const title = page.getByRole('textbox', { name: /^Título/ }).first()
+    if (await title.isVisible().catch(() => false)) await title.fill(projectName)
     const describe = page.getByRole('textbox', { name: /Resumo|Descrição/ }).first()
-    if (await describe.isVisible().catch(() => false)) await describe.fill(`Projeto ${mark}`)
+    if (await describe.isVisible().catch(() => false)) await describe.fill('Projeto de QA local')
     const cover = page.getByRole('button', { name: 'Gerar capa' }).first()
     if (await cover.isVisible().catch(() => false)) await cover.click()
     await page.waitForTimeout(4000)
-    await page.getByRole('button', { name: 'Publicar', exact: true }).first().click()
+    const publishButton = page.getByRole('button', { name: 'Publicar', exact: true }).first()
+    if (await publishButton.isDisabled().catch(() => false)) {
+      // Foto automática indisponível (ex.: programa Python sem tela): envia uma imagem.
+      const chooser = page.waitForEvent('filechooser', { timeout: 15_000 })
+      await page.getByRole('button', { name: 'Enviar uma imagem' }).first().click()
+      await (await chooser).setFiles(coverPng())
+      await page.waitForTimeout(4000)
+      step('capa', 'imagem enviada')
+    }
+    await publishButton.click()
     const play = page.locator('a[href^="/jogar/"]').first()
     const published = await play.waitFor({ timeout: 90_000 }).then(
       () => true,
@@ -316,6 +379,14 @@ try {
   await fresh.context.close()
 } catch (error) {
   step('erro', String(error?.message ?? error).slice(0, 400))
+  if (lastPage) {
+    await shot(lastPage, 'erro').catch(() => {})
+    const aria = await lastPage
+      .locator('body')
+      .ariaSnapshot()
+      .catch(() => '')
+    fs.writeFileSync(join(outDir, `${tag}-erro-aria.txt`), aria)
+  }
 } finally {
   await browser.close()
 }
