@@ -490,6 +490,10 @@ export function KitGallery({
   // nem mostra o seletor: staff com exemplos liberados continua só em JavaScript.
   const pythonOffered = Boolean(pythonCreation || pythonDiscovery)
   const programmingLanguage = pythonOffered ? selectedLanguage : 'javascript'
+  // Se a oferta voltar, a galeria recomeça em JavaScript, não na escolha antiga.
+  useEffect(() => {
+    if (!pythonOffered) setProgrammingLanguage('javascript')
+  }, [pythonOffered])
   const attempt = useRef<AbortController | null>(null)
   const lifetime = useMemo(
     () => ({ programmingLanguage, professional, signal: pythonCreation?.signal }),

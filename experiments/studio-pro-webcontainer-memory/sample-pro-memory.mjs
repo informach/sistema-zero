@@ -38,10 +38,18 @@ const mark = (name, extra) => {
     `[${((Date.now() - t0) / 1000).toFixed(1)}s] ${name}${extra ? ' ' + JSON.stringify(extra) : ''}`,
   )
 }
+// Registrado antes do goto: o harness emite "phase: booting" antes do DOMContentLoaded.
 page.on('console', (m) => {
   const text = m.text()
-  if (text.startsWith('[harness]')) mark(text.slice(10))
+  if (text.startsWith('[harness] phase:')) setPhase(text.slice(16).trim())
+  else if (text.startsWith('[harness]')) mark(text.slice(10))
 })
+// Um renderer travado não pode segurar o amostrador nem a limpeza do navegador.
+const withTimeout = (promise, ms) =>
+  Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+  ])
 page.on('requestfailed', (r) =>
   mark('requestfailed', { url: r.url().slice(0, 160), failure: r.failure()?.errorText }),
 )
@@ -73,7 +81,10 @@ const sampler = (async () => {
       }
       let heap = null
       try {
-        heap = await page.evaluate(() => performance.memory?.usedJSHeapSize ?? null)
+        heap = await withTimeout(
+          page.evaluate(() => performance.memory?.usedJSHeapSize ?? null),
+          2_000,
+        )
       } catch {}
       samples.push({
         t: Date.now() - t0,
@@ -114,7 +125,10 @@ try {
     ]
     const deadline = t0 + maxMs
     while (Date.now() < deadline) {
-      const body = await page.evaluate(() => document.body.innerText)
+      const body = await withTimeout(
+        page.evaluate(() => document.body.innerText),
+        5_000,
+      )
       for (const [p, text] of labels) if (body.includes(text)) setPhase(p)
       const frame = page
         .frames()
@@ -143,12 +157,8 @@ try {
       await new Promise((r) => setTimeout(r, 250))
     }
   } else {
-    // Harness mínimo: a página emite "[harness] <fase>" no console.
+    // Harness mínimo: as fases chegam pelo console (listener registrado acima).
     const deadline = t0 + maxMs
-    page.on('console', (m) => {
-      const t = m.text()
-      if (t.startsWith('[harness] phase:')) setPhase(t.slice(16).trim())
-    })
     while (Date.now() < deadline && !['ready', 'error'].includes(phase))
       await new Promise((r) => setTimeout(r, 250))
     outcome = phase === 'ready' ? 'ready' : phase === 'error' ? 'error' : 'timeout'
@@ -160,7 +170,7 @@ try {
   mark('exception', { message: String(e).slice(0, 300) })
 } finally {
   stop = true
-  await sampler
+  await withTimeout(sampler, 10_000).catch(() => mark('sampler-timeout'))
   await context.close().catch(() => {})
   await browser.close().catch(() => {})
 }

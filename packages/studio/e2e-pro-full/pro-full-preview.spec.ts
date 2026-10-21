@@ -22,7 +22,7 @@ async function replaceActiveFile(page: Page, content: string): Promise<void> {
   await page.keyboard.insertText(content)
 }
 
-test('Pro project runs, hot-updates, uses the real terminal and reopens with its source', async ({
+test('Pro project runs, reflects edits, uses the real terminal and reopens with its source', async ({
   page,
 }) => {
   test.setTimeout(600_000)
@@ -39,7 +39,15 @@ test('Pro project runs, hot-updates, uses the real terminal and reopens with its
   // Primeiro resultado visual: o main.js do template padrão (vanilla-js) troca o texto do #app.
   await waitForPreview(page, 'Editado em JavaScript ✨')
 
-  // Edição pelo teclado chega ao preview pelo dev-server em execução.
+  // Edição pelo teclado chega ao preview pelo dev-server em execução: o Estúdio não volta
+  // a instalar dependências nem a subir o Vite para mostrar a mudança.
+  await page.evaluate(() => {
+    const restarted = /Instalando dependências|Subindo o servidor de desenvolvimento/
+    new MutationObserver(() => {
+      if (restarted.test(document.body.innerText))
+        (globalThis as { __proRestarted?: boolean }).__proRestarted = true
+    }).observe(document.body, { subtree: true, childList: true, characterData: true })
+  })
   const marker = `Gravação ${Date.now()}`
   await page.getByRole('treeitem', { name: 'src/main.js', exact: true }).dblclick()
   await replaceActiveFile(
@@ -47,6 +55,9 @@ test('Pro project runs, hot-updates, uses the real terminal and reopens with its
     `const app = document.getElementById('app')\nif (app) app.textContent = '${marker}'\n`,
   )
   await waitForPreview(page, marker)
+  expect(
+    await page.evaluate(() => (globalThis as { __proRestarted?: boolean }).__proRestarted ?? false),
+  ).toBe(false)
 
   // Terminal real no mesmo WebContainer: npm executa e enxerga os arquivos do projeto.
   await page.getByRole('button', { name: 'Terminal', exact: true }).click()

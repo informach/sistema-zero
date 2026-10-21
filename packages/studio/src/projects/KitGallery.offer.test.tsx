@@ -25,7 +25,11 @@ test('losing the offer after choosing Python falls back to JavaScript', () => {
   )
   fireEvent.change(languageSelect() as HTMLSelectElement, { target: { value: 'python' } })
   expect((languageSelect() as HTMLSelectElement).value).toBe('python')
+  expect(screen.getByText(/Python Pro ainda não está disponível/)).toBeDefined()
   view.rerender(<KitGallery onOpenProject={() => {}} professional />)
   expect(languageSelect()).toBeNull()
   expect(screen.queryByText(/Python Pro ainda não está disponível/)).toBeNull()
+  // A oferta voltando não reativa a escolha antiga.
+  view.rerender(<KitGallery onOpenProject={() => {}} professional pythonDiscovery={discovery} />)
+  expect((languageSelect() as HTMLSelectElement).value).toBe('javascript')
 })

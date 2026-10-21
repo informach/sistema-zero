@@ -20,15 +20,15 @@ O amostrador lê, a cada 500 ms, o working set de cada `chrome.exe` (`tasklist`)
 
 | Cenário | Pico total | Maior processo (renderer) | Heap JS da página |
 | --- | ---: | ---: | ---: |
-| Harness, Vite 8.0.16 / Rolldown 1.0.3 | 2.360 e 2.447 MiB | ~1,4 GiB | — |
-| Harness, Vite 8.1.6 / Rolldown 1.1.5 | 2.386 e 2.355 MiB | ~1,4 GiB | — |
-| Estúdio (playground), Vite 8.1.6 | 2.686 e 2.618 MiB | ~1,4–1,5 GiB | 58 MiB |
+| Harness, Vite 8.0.16 / Rolldown 1.0.3 | 2.360 e 2.447 MiB | 1.386 e 1.457 MiB | — |
+| Harness, Vite 8.1.6 / Rolldown 1.1.5 | 2.386 e 2.355 MiB | 1.436 e 1.373 MiB | — |
+| Estúdio (playground), Vite 8.1.6 | 2.686 e 2.618 MiB | 1.548 e 1.430 MiB | 37–58 MiB |
 
-Conclusões:
+Conclusões, válidas para esta máquina (32 GB, Chrome 155 headless):
 
-1. A atualização de segurança do Vite não muda o consumo: as duas versões ficam na mesma faixa.
-2. A própria pilha WebContainer + npm + Vite precisa de cerca de 2,4 GiB nessa métrica; o Estúdio acrescenta uns 300 MiB. Um único renderer (o do WebContainer) passa de 1,4 GiB durante `npm install`/subida do Vite, enquanto o heap da página principal fica perto de 58 MiB, como no NEG hospedado.
-3. Os orçamentos de 1.024 e 2.048 MiB ficam abaixo do que essa pilha usa em qualquer versão. Os NEG continuam NEG, mas não indicam regressão do Estúdio, do Python ou do Vite 8.1.6: o limite estava abaixo da linha de base.
+1. A atualização de segurança do Vite não muda o consumo nesta medição: as duas versões ficam na mesma faixa.
+2. A própria pilha WebContainer + npm + Vite chega a cerca de 2,4 GiB nessa métrica; o Estúdio acrescenta ~200–300 MiB. Um único renderer, provavelmente o do WebContainer (o CDP informa só o papel `renderer`, não o frame), chega a ~1,35–1,5 GiB durante `npm install`/subida do Vite, enquanto o heap JS da página principal fica entre 37 e 58 MiB.
+3. Os orçamentos de 1.024 e 2.048 MiB ficam abaixo do que essa pilha usou aqui, nas duas versões. Os NEG hospedados continuam NEG. O ambiente hospedado é outro (lá o maior renderer chegou a ~1.019 MiB antes da interrupção), e não há medição de uma versão antiga do Estúdio; por isso este diagnóstico não descarta regressão, só mostra que a pilha base já passa desses orçamentos.
 4. A primeira tentativa local falhou no boot por download abortado da CDN do WebContainer (`WebAssembly compilation aborted`), e a repetição passou. Falha transitória de rede, não de memória.
 
 Orçamento funcional e meta de desempenho são decisões separadas; este diagnóstico não altera nenhum limite.
