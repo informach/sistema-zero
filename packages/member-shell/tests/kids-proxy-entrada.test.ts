@@ -125,6 +125,61 @@ describe('entrada do Kids pelo proxy', () => {
   })
 })
 
+describe('Estúdio da equipe no Kids', () => {
+  // O Estúdio (livre e Pro) é área de aprender: só abre num PERFIL. A conta, mesmo da equipe, é
+  // contexto de responsável (o Gateway nem deixa o contexto `parent` ler o Studio). A prévia da
+  // equipe acontece num perfil da própria conta — o mesmo que o Members já admite.
+  const studio = createMemberProxy({
+    kidsAccess: true,
+    cookies: { accessCookie: 'kids_access', refreshCookie: 'kids_refresh' },
+    protectedPrefixes: ['/estudio', '/pais'],
+    isRootProtected: true,
+  })
+  const accountSession = (role: string) =>
+    access({
+      role,
+      kids: { kind: 'parent', sessionId: crypto.randomUUID(), authenticatedAt: 1_800_000_000 },
+    })
+  const profileSession = (role: string) =>
+    access({
+      role,
+      kids: {
+        kind: 'student',
+        sessionId: crypto.randomUUID(),
+        deviceId: crypto.randomUUID(),
+        grantId: crypto.randomUUID(),
+      },
+      pfl: { accountId: crypto.randomUUID() },
+    })
+  const open = (path: string, token: string) =>
+    studio(
+      new NextRequest(`http://localhost${path}`, {
+        headers: { cookie: `kids_access=${token}; kids_refresh=r` },
+      }),
+    )
+
+  test('conta sem perfil, de cliente ou da equipe, vai para /pais', async () => {
+    for (const role of ['customer', 'staff', 'admin', 'superadmin'])
+      for (const path of ['/estudio', '/estudio/pro/01ABC'])
+        expect(location(await open(path, accountSession(role)))).toBe('/pais')
+  })
+
+  test('perfil (da equipe ou da criança) chega ao Estúdio e ao Pro; as regras ficam na página', async () => {
+    for (const role of ['customer', 'staff', 'admin'])
+      for (const path of ['/estudio', '/estudio/pro/01ABC']) {
+        const response = await open(path, profileSession(role))
+        expect(response.headers.get('location')).toBeNull()
+        expect(response.status).toBe(200)
+      }
+  })
+
+  test('a conta não usa as APIs do Estúdio, seja qual for o papel', () => {
+    const parent = { kind: 'parent', sessionId: 's', authenticatedAt: 1 } as const
+    for (const path of ['/api/studio/pro-runtime/dependencies', '/api/members/gamification/me'])
+      expect(kidsMayUseBff(parent, path, 'POST', 'conta')).toBe(false)
+  })
+})
+
 describe('regras puras do BFF Kids', () => {
   const parent = { kind: 'parent', sessionId: 's', authenticatedAt: 1 } as const
   const child = { kind: 'student', sessionId: 's', deviceId: 'd', grantId: 'g' } as const
