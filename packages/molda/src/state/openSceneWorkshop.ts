@@ -3,6 +3,7 @@ import { COPY } from '../core/copy'
 import { readMoldaDocumentForId } from '../core/documentReader'
 import { createModelAsset } from '../core/model'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
+import { rigidEmptyAnimations } from '../scene/rigidEmptyAnimations'
 import { promoteLegacyScene } from './promoteScene'
 import { readRecords } from './readRecords'
 import { createSceneEditorStore } from './sceneEditorStore'
@@ -37,5 +38,9 @@ export async function openSceneWorkshop(
   }
   options.signal?.throwIfAborted()
   if (read.status !== 'active') throw new Error(COPY.scene.openError)
-  return createSceneEditorStore(read.document, read.summary.revision, persistence)
+  return createSceneEditorStore(
+    rigidEmptyAnimations(read.document),
+    read.summary.revision,
+    persistence,
+  )
 }

@@ -28,13 +28,13 @@ export default defineConfig({
     {
       name: 'firefox',
       testMatch:
-        /(scene-workshop|simple-uv|pixel-cutouts|pixel-scale|pivot-visual|rig-builder|gallery-project-import|duplicate-selection|plane(?:-handles|-cutouts)?)\.spec\.ts/,
+        /(scene-workshop|scene-boolean|simple-uv|pixel-cutouts|pixel-scale|pivot-visual|rig-builder|gallery-project-import|duplicate-selection|plane(?:-handles|-cutouts)?)\.spec\.ts/,
       use: { ...devices['Desktop Firefox'] },
     },
     {
       name: 'webkit',
       testMatch:
-        /(scene-workshop|simple-uv|pixel-cutouts|gallery-project-import|duplicate-selection|plane(?:-handles)?)\.spec\.ts/,
+        /(scene-workshop|scene-boolean|simple-uv|pixel-cutouts|gallery-project-import|duplicate-selection|plane(?:-handles)?)\.spec\.ts/,
       use: { ...devices['Desktop Safari'], hasTouch: true },
     },
   ],

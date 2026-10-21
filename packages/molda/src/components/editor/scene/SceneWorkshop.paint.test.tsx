@@ -221,6 +221,28 @@ test('Modelar mostra a prévia booleana e confirma em um único desfazer', async
   }
 })
 
+test('a miniatura atualizada durante o cálculo não descarta a prévia booleana', async () => {
+  const { document, door, wall } = twoBoxes()
+  const offset = identityMatrix()
+  offset[12] = 1
+  const { editor, stage, view } = mount(transformSceneNodes(document, [wall], offset))
+  try {
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    act(() => {
+      stage.callbacks!.select(door, false)
+      stage.callbacks!.select(wall, true)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'União' }))
+    act(() => editor.getState().setThumb('updated-thumbnail'))
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirmar resultado' }))
+    expect(editor.getState().asset.thumb).toBe('updated-thumbnail')
+    expect(editor.getState().asset.nodes.some((node) => node.id === wall)).toBe(false)
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
 const swatch = (document: MoldaSceneDocument, index: number) =>
   screen.getByRole('button', {
     name: COPY.a11y.colorSwatch(index, resolvePaletteColors(document)[index]!),

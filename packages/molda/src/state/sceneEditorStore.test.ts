@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { COPY } from '../core/copy'
+import type { SceneAnimationClip } from '../scene/animation'
 import { renameSceneNode } from '../scene/commands'
+import { composeTransform } from '../scene/matrix'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
 import { makeModel } from '../testing/fixtures'
 import { nativeDatabase } from '../testing/nativeDatabase'
@@ -14,6 +16,76 @@ import {
 } from './storageKeys'
 
 describe('scene editor persistence boundary', () => {
+  test('opening upgrades compatible relative movements for rigid editing without writing until an edit', async () => {
+    const db = await nativeDatabase()
+    const persistence = createScenePersistence(db.store)
+    const base = migrateLegacyModel(makeModel()).document
+    const empty: SceneAnimationClip = {
+      id: 'empty',
+      name: 'Movimento vazio',
+      duration: 2,
+      fps: 24,
+      loop: false,
+      space: 'local-delta',
+      tracks: [],
+    }
+    const authored: SceneAnimationClip = {
+      ...empty,
+      id: 'authored',
+      tracks: [
+        {
+          nodeId: 'body',
+          channel: 'rotation',
+          keys: [{ time: 0, value: [0, 0, 0, 1], interpolation: 'linear' }],
+        },
+      ],
+    }
+    const source = {
+      ...base,
+      nodes: base.nodes.map((node) =>
+        node.id === 'body'
+          ? {
+              ...node,
+              transform: {
+                kind: 'affine' as const,
+                matrix: composeTransform({
+                  kind: 'trs',
+                  translation: [0, 1, 0],
+                  rotation: [0, 0, 0, 1],
+                  scale: [1, 3, 1],
+                }),
+              },
+            }
+          : node,
+      ),
+      animations: [empty, authored],
+    }
+    await persistence.save(source, null)
+    const before = await db.dump()
+    const editor = await openSceneWorkshop(db.store, source.id)
+    try {
+      expect(editor.getState().asset.animations?.map((clip) => clip.space)).toEqual([
+        'local',
+        'local',
+      ])
+      expect(
+        editor.getState().asset.nodes.find((node) => node.id === 'body')?.transform,
+      ).toMatchObject({
+        kind: 'trs',
+        scale: [1, 3, 1],
+      })
+      expect(await db.dump()).toEqual(before)
+      editor.getState().commit(renameSceneNode(editor.getState().asset, 'body', 'Renomeado'))
+      await editor.getState().flush()
+      const saved = await persistence.read(source.id)
+      expect(saved.status).toBe('active')
+      if (saved.status !== 'active') throw new Error('Missing stored scene')
+      expect(saved.document.animations?.map((clip) => clip.space)).toEqual(['local', 'local'])
+    } finally {
+      editor.getState().dispose()
+      db.close()
+    }
+  })
   test('an open editor cannot spend its revision token on another document with the same revision', async () => {
     const db = await nativeDatabase()
     const persistence = createScenePersistence(db.store)

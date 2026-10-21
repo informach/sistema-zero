@@ -28,12 +28,17 @@ test('união, interseção e diferença mostram prévia antes de alterar o proje
   })
   await page.getByRole('button', { name: 'Modelo Booleanos', exact: true }).click()
   await page.getByRole('button', { name: 'Escolher Base', exact: true }).click()
+  await expect(page.getByRole('region', { name: 'Combinar volumes' })).toContainText(
+    'Selecione mais uma peça com Shift',
+  )
   await page
     .getByRole('button', { name: 'Escolher Cortador', exact: true })
     .click({ modifiers: ['Shift'] })
   for (const operation of ['União', 'Interseção', 'Diferença']) {
     await page.getByRole('button', { name: operation, exact: true }).click()
-    await expect(page.getByRole('button', { name: 'Confirmar resultado' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Confirmar resultado' })).toBeVisible({
+      timeout: 15_000,
+    })
     await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
   }
   await page.getByRole('button', { name: 'Cancelar', exact: true }).click()

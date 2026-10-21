@@ -9,6 +9,7 @@ import { booleanSceneSolids, type SceneBooleanOperation } from '../../../scene/b
 import { deleteSceneNodes } from '../../../scene/commands'
 import { scenePalette } from '../../../scene/composite'
 import type { ModelSceneNode, MoldaSceneDocument } from '../../../scene/document'
+import { keepSceneThumb, sameSceneContent } from '../../../scene/documentContent'
 import { sceneToJson } from '../../../scene/documentJson'
 import { sceneMaterialImageBase } from '../../../scene/materialImages'
 import { transformPoint } from '../../../scene/matrix'
@@ -248,7 +249,8 @@ export function SceneWorkshop({
   currentBooleanSelection.current = selected
   const activeBoolean =
     mode === 'model' &&
-    booleanPreview?.source === document &&
+    booleanPreview &&
+    sameSceneContent(booleanPreview.source, document) &&
     selected.length === 2 &&
     selected[0] === booleanPreview.ids[0] &&
     selected[1] === booleanPreview.ids[1]
@@ -266,7 +268,7 @@ export function SceneWorkshop({
         const result = await booleanSceneSolids(document, selected, operation)
         if (
           request !== booleanRequest.current ||
-          editor.getState().asset !== document ||
+          !sameSceneContent(editor.getState().asset, document) ||
           currentBooleanSelection.current[0] !== selected[0] ||
           currentBooleanSelection.current[1] !== selected[1]
         )
@@ -281,7 +283,7 @@ export function SceneWorkshop({
       } catch (error) {
         if (
           request !== booleanRequest.current ||
-          editor.getState().asset !== document ||
+          !sameSceneContent(editor.getState().asset, document) ||
           currentBooleanSelection.current[0] !== selected[0] ||
           currentBooleanSelection.current[1] !== selected[1]
         )
@@ -298,7 +300,10 @@ export function SceneWorkshop({
     },
     confirm() {
       if (!activeBoolean) return
-      const result = run(() => activeBoolean.result, 'clear')
+      const result = run((source) => {
+        if (!sameSceneContent(source, activeBoolean.source)) return source
+        return keepSceneThumb(activeBoolean.result, source)
+      }, 'clear')
       if (result) workshop.select(activeBoolean.ids[0], false)
       setBooleanPreview(null)
     },

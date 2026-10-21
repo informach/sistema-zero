@@ -2452,7 +2452,7 @@ describe('scene workshop integration', () => {
       expect(document.activeElement).toBe(record)
       expect(screen.queryByRole('alert')?.textContent ?? null).toBeNull()
       expect(editor.getState().asset.animations?.[0]?.tracks[0]?.keys).toEqual([
-        { time: 0, value: [0, 0, 0], interpolation: 'smooth' },
+        { time: 0, value: [0, 1, 0], interpolation: 'smooth' },
         {
           time: 1.123456789123,
           value: [1.23456789123, -2.98765432123, 0],
