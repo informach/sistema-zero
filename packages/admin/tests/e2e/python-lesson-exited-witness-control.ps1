@@ -50,6 +50,16 @@ function Retain-OwnedProcess($Witness,$ExistingProcess){$script:retentionCalls++
 $f=Fixture 'child';$grandchild=Raw 102 101;$f.snapshot.rows[102]=$grandchild;$f.snapshot.children[101]=@($grandchild)
 Capture-OwnedTree $f.root $f.known $f.retained $f.snapshot
 Check ($f.known.ContainsKey("102:$($grandchild.CreationDate.ToUniversalTime().ToString('o'))") -and $script:retentionCalls -eq 1) 'complete parent still discovers and retains new child'
+foreach($phase in @('parent','child')){
+ $f=Fixture $phase;[void]$f.snapshot.rows.Remove(101);$f.snapshot.children[100]=@()
+ $errorRecord=$null;try{Capture-OwnedTree $f.root $f.known $f.retained $f.snapshot}catch{$errorRecord=$_}
+ Check ($null -eq $errorRecord) ($phase+' absent exited parent without children keeps existing behavior')
+ $grandchild=Raw 102 101;$f.snapshot.rows[102]=$grandchild;$f.snapshot.children[101]=@($grandchild)
+ $errorRecord=$null;try{Capture-OwnedTree $f.root $f.known $f.retained $f.snapshot}catch{$errorRecord=$_}
+ Check ($null -ne $errorRecord) ($phase+' absent exited parent with new child refuses omission')
+ $diagnostic=Get-LessonMonitorFailureDiagnostic $errorRecord
+ Check ($diagnostic.code -ceq 'exited-parent-descendants-unconfirmed' -and $diagnostic.witness.phase -ceq 'parent' -and $diagnostic.witness.processId -eq 101 -and $diagnostic.witness.knownIdentity -eq $false -and $diagnostic.witness.missingExecutable -eq $true -and $diagnostic.witness.missingCommand -eq $true) 'absent parent safe facts; no reconstructed identity'
+}
 $cases=@('alive','unknown','missing-handle','closed-handle','wrong-record-pid','wrong-process-object','wrong-record-birth','pid-reuse','wrong-parent','missing-parent','missing-birth','missing-pid','new-row','contradict-executable','contradict-command')
 foreach($phase in @('parent','child')){
  foreach($case in $cases){

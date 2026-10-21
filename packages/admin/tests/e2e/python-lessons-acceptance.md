@@ -141,7 +141,7 @@ nem identifica retroativamente a causa dos recibos R7/R8 anteriores.
 Na descoberta de descendants, uma linha CIM incompleta só pode ser ignorada se
 PID, nascimento e ParentId correspondem a um witness conhecido, os metadados
 ainda disponíveis não o contradizem, e o registro retido tem o mesmo PID e
-createdTicks (precisão CIM) com observação real `exited`. Se esse pai parcial tem
+createdTicks (precisão CIM) com observação real `exited`. Se esse pai parcial ou ausente tem
 qualquer filho no mesmo snapshot, permanece NEG, pois ignorar o pai também
 ocultaria esses filhos; não se infere ownership pela relação após seu encerramento.
 Sem essa prova, inclusive

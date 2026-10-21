@@ -99,7 +99,7 @@ function ConvertTo-OwnedTreeWitness($Row,$Known,$Retained,[ValidateSet('parent',
  }
  # Skipping that parent would also skip children already present in this
  # snapshot. Do not infer their lifetime/ownership through an exited identity.
- $message=if($exitedParentWithChildren){'Exited partial parent has snapshot children; discovery unconfirmed.'}else{'Incomplete owned tree witness'}
+ $message=if($exitedParentWithChildren){'Exited parent has snapshot children; discovery unconfirmed.'}else{'Incomplete owned tree witness'}
  $failure=[InvalidOperationException]::new($message)
  $failure.Data['lessonTreePhase']=$Phase;$failure.Data['lessonTreeProcessId']=$processId;$failure.Data['lessonTreeKnownIdentity']=[bool]$knownIdentity
  $failure.Data['lessonTreeMissingExecutable']=[bool]$missingExecutable;$failure.Data['lessonTreeMissingCommand']=[bool]$missingCommand
@@ -114,10 +114,20 @@ function Capture-OwnedTree($Root, $Known, $Retained=$null, $Snapshot=$null) {
  for($index=0;$index -lt $queue.Count;$index++) {
   $parent=$queue[$index];$children=$Snapshot.children[[int]$parent.processId]
   $hasChildren=$null -ne $children -and @($children).Count -gt 0
-  $current=ConvertTo-OwnedTreeWitness $Snapshot.rows[[int]$parent.processId] $Known $Retained 'parent' $hasChildren
+  $rawParent=$Snapshot.rows[[int]$parent.processId]
+  $current=ConvertTo-OwnedTreeWitness $rawParent $Known $Retained 'parent' $hasChildren
   if(-not(Same-Witness $parent $current)){
    $record=if($null -ne $Retained){$Retained["$($parent.processId):$($parent.createdAt)"]}else{$null}
    if(Retained-OwnedProcessAlive $record){throw 'Live retained parent has no matching CIM witness; descendant discovery unconfirmed.'}
+   if($null -eq $rawParent -and $hasChildren){
+    # An absent exited parent cannot justify skipping children already observed.
+    # A missing record is unknown, not an exit; both cases remain NEG.
+    $message=if($record){'Exited parent has snapshot children; discovery unconfirmed.'}else{'Incomplete owned tree witness'}
+    $failure=[InvalidOperationException]::new($message)
+    $failure.Data['lessonTreePhase']='parent';$failure.Data['lessonTreeProcessId']=[int]$parent.processId;$failure.Data['lessonTreeKnownIdentity']=$false
+    $failure.Data['lessonTreeMissingExecutable']=$true;$failure.Data['lessonTreeMissingCommand']=$true
+    throw $failure
+   }
    continue
   }
   foreach($child in @($children)) {
@@ -151,7 +161,7 @@ function Get-LessonMonitorFailureDiagnostic([Management.Automation.ErrorRecord]$
   'Own memory descendant handle unavailable'='memory-descendant-handle-unavailable'
   'Completion identity mismatch'='completion-identity-mismatch'
   'Incomplete owned tree witness'='tree-witness-incomplete'
-  'Exited partial parent has snapshot children; discovery unconfirmed.'='exited-parent-descendants-unconfirmed'
+  'Exited parent has snapshot children; discovery unconfirmed.'='exited-parent-descendants-unconfirmed'
  }
  $code=if($leaf -cne 'unknown' -and $codes.ContainsKey($ErrorRecord.Exception.Message)){$codes[$ErrorRecord.Exception.Message]}else{'unknown'}
  $witness=$null;$data=$ErrorRecord.Exception.Data
