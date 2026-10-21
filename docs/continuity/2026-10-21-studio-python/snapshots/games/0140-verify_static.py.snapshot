@@ -1,0 +1,31 @@
+"""AST/source comparison only; never import runner, Tk, audio or game."""
+import ast
+import difflib
+import hashlib
+import json
+from pathlib import Path
+
+here = Path(__file__).resolve().parent
+workspace = here.parents[3]
+relative = 'experiments/studio-python-runtime/qualification/space_arena_native.py'
+original = (workspace / relative).read_text(encoding='utf-8')
+candidate = (here / 'space_arena_native.py').read_text(encoding='utf-8')
+normalized = original.replace("RECEIPT_SHA = 'df6d6812ac511686e5dd32187b900cc68c9b565d5d49498e5d3265e9b137fcc0'", "RECEIPT_SHA = '9acc5ea7b0d1d4fc4f9239299df2062f39281a894d39a45dc8ba3238efa3d419'").replace("ENTRY_SHA = '9db951e68bd4ce10f3739368d806d2a8a15db3535d9d543f21ddd5f2bd2f38a5'", "ENTRY_SHA = 'd9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3'")
+dump = lambda source: ast.dump(ast.parse(source), include_attributes=False)
+assert dump(normalized) == dump(candidate)
+assert (here / 'space_arena_observer.py').read_bytes() == (workspace / 'experiments/studio-python-runtime/qualification/space_arena_observer.py').read_bytes()
+supervisor = (here / 'run_space_arena_native.mjs').read_text(encoding='utf-8')
+assert 'const childBudgetMs = scenario === \'Q08-bgm\' ? 160_000 : 40_000' in supervisor
+assert 'absoluteWindowEnd: windowEnd' in supervisor
+assert "assert(Date.parse(report.endedAt) <= deadlineUtc, 'Native child outlived the authorized window')" in supervisor
+assert 'q08 ? Math.min(childBudgetMs, deadlineUtc - Date.now()) : childBudgetMs' not in supervisor
+assert supervisor.count('if (q08) {') == 1  # Conditional Q08-only payload assertions remain conditional.
+patch = ''.join(difflib.unified_diff(original.splitlines(keepends=True), candidate.splitlines(keepends=True), fromfile='a/space_arena_native.py', tofile='b/space_arena_native.py'))
+old_supervisor = (workspace / 'experiments/studio-python-runtime/qualification/run_space_arena_native.mjs').read_text(encoding='utf-8')
+patch += ''.join(difflib.unified_diff(old_supervisor.splitlines(keepends=True), supervisor.splitlines(keepends=True), fromfile='a/run_space_arena_native.mjs', tofile='b/run_space_arena_native.mjs'))
+with (here / 'review-delta.patch').open('x', encoding='utf-8', newline='\n') as f:
+    f.write(patch)
+result = dict(state='NATIVE12-STATIC-PACKET-PASS-NOT-EXECUTED', runnerOnlyTwoActualPinsChanged=True, allRunnerAssertionsAndCleanupPreserved=True, observerByteIdentical=True, cooperative30AndChild40SecondsUnchanged=True, supervisorWindowGuardStrengthenedForEveryChild=True, patchSha256=hashlib.sha256(patch.encode()).hexdigest(), nativeExecution=False)
+with (here / 'static-verification.json').open('x', encoding='utf-8') as f:
+    json.dump(result, f, indent=2)
+print(json.dumps(result))

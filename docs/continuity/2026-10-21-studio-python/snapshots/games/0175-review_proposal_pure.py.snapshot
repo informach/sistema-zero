@@ -1,0 +1,42 @@
+"""Pure prospective Tcl oracle controls; the native v2 still uses original QPC>=3."""
+import copy
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+
+here = Path(__file__).resolve().parent
+spec = importlib.util.spec_from_file_location('separate_tcl_proposal', here / 'tcl_oracle_proposal.py')
+proposal = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(proposal)
+check = proposal.proposed_named_bye_clock_contract
+scheduled = dict(event='timer-scheduled', value=dict(callback='bye', delay=3000, scheduledClock=100.0),
+                 nativeClockPair=dict(qpcBeforeNs=1000000000, tclMicroseconds=10000000, qpcAfterNs=1000000100))
+fired = dict(event='timer-fired', value=dict(callback='bye', delay=3000, scheduledClock=100.0, elapsedSeconds=2.9973144),
+             nativeClockPair=dict(qpcBeforeNs=3997314400, tclMicroseconds=13000000, qpcAfterNs=3997314500))
+good = [scheduled, fired]
+assert check(good)['tclObserverIntervalUs'] == 3000000
+reset = copy.deepcopy(good)
+for event in reset:
+    event['value']['callback'] = 'reset_speed'
+assert check(good + reset)['tclObserverIntervalUs'] == 3000000
+bad = [good + [scheduled], good + [fired], reset]
+early = copy.deepcopy(good); early[1]['nativeClockPair']['tclMicroseconds'] -= 1; bad.append(early)
+mismatch = copy.deepcopy(good); mismatch[1]['value']['scheduledClock'] += 1; bad.append(mismatch)
+for elapsed in (-1, float('nan'), float('inf')):
+    invalid = copy.deepcopy(good); invalid[1]['value']['elapsedSeconds'] = elapsed; bad.append(invalid)
+reversed_pair = copy.deepcopy(good); reversed_pair[1]['nativeClockPair']['qpcAfterNs'] = 0; bad.append(reversed_pair)
+for events in bad:
+    try:
+        check(events)
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError('Invalid separate prospective clock contract accepted')
+runner = (here / 'pacman_native.py').read_text()
+assert "assert fired[0]['value']['elapsedSeconds'] >= 3" in runner
+assert 'tcl_oracle_proposal' not in runner and 'proposed_named_bye_clock_contract' not in runner
+sha = lambda value: hashlib.sha256(value).hexdigest()
+report = dict(state='SEPARATE-PROPOSAL-PURE-CONTROLS-PASS-NOT-ACTIVE-NOT-NATIVE', validControls=2, rejectedControls=len(bad), proposalSha256=sha((here / 'tcl_oracle_proposal.py').read_bytes()), originalNativeQpcAtLeast3AssertStillActive=True, nativeDoesNotImportProposal=True)
+(here / 'proposal-pure-review.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8', newline='\n')
+print(json.dumps(report))

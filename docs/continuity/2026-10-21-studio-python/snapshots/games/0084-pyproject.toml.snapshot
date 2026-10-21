@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools==84.2.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sistema-zero-audio"
+version = "1.0.0"
+requires-python = ">=3.14.2,<3.15"
+dependencies = ["miniaudio==1.71", "cffi==2.1.1", "pycparser==3.11"]
+
+[tool.setuptools]
+packages = ["sz_audio"]
+
+[tool.setuptools.package-data]
+sz_audio = ["_module.json", "__init__.pyi", "py.typed"]

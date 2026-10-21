@@ -1,0 +1,38 @@
+{
+  "startedAt": "2026-10-20T23:48:47.7159327Z",
+  "endedAt": "2026-10-20T23:50:08.4857297Z",
+  "allExitZero": true,
+  "semanticReviewPending": true,
+  "cases": [
+    {
+      "scenario": "Q03",
+      "exitCode": 0,
+      "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q03-r1",
+      "endedAt": "2026-10-20T23:49:03.9528221Z"
+    },
+    {
+      "scenario": "Q04",
+      "exitCode": 0,
+      "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q04-r1",
+      "endedAt": "2026-10-20T23:49:19.9535033Z"
+    },
+    {
+      "scenario": "Q05",
+      "exitCode": 0,
+      "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q05-r1",
+      "endedAt": "2026-10-20T23:49:36.0478684Z"
+    },
+    {
+      "scenario": "Q06",
+      "exitCode": 0,
+      "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q06-r1",
+      "endedAt": "2026-10-20T23:49:51.9750367Z"
+    },
+    {
+      "scenario": "Q07",
+      "exitCode": 0,
+      "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q07-r1",
+      "endedAt": "2026-10-20T23:50:08.4841745Z"
+    }
+  ]
+}

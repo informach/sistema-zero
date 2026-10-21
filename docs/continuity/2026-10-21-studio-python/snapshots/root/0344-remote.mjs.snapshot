@@ -1,0 +1,47 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {readFile} from 'node:fs/promises';
+const started=Date.now(), deadline=started+45000;
+let phase='context',connection=null,created=false,closed=false;
+const check=()=>assert(Date.now()<deadline);
+const emit=x=>console.log(JSON.stringify(x));
+try {
+ const e=process.env;
+ for(const [key,value] of Object.entries(SPEC.context)) assert.equal(e[key],value);
+ assert(/^[a-f0-9-]{36}$/.test(SPEC.actorId));
+ assert.equal(SPEC.email,`qa-pro-${SPEC.actorId}@example.invalid`);
+ assert.equal(SPEC.role,'staff');
+ phase='sources';
+ for(const p of SPEC.pins){check();assert.equal(createHash('sha256').update(await readFile('/app/'+p.path)).digest('hex'),p.sha256);}
+ const {createDbConnection}=await import('/app/packages/auth/src/infrastructure/persistence/drizzle/db.ts');
+ const {DrizzleUserRepository}=await import('/app/packages/auth/src/infrastructure/persistence/drizzle/user.repository.ts');
+ const {UserAggregate}=await import('/app/packages/auth/src/domain/user/user.aggregate.ts');
+ const {Email}=await import('/app/packages/auth/src/domain/value-objects/email.ts');
+ const {assertPasswordPolicy}=await import('/app/packages/auth/src/domain/value-objects/password-policy.ts');
+ const {createBunPasswordHasher}=await import('/app/packages/auth/src/infrastructure/security/bun-password-hasher.ts');
+ phase='absence';check();
+ connection=createDbConnection(e.DATABASE_URL,{max:1,connectTimeoutSeconds:5,statementTimeoutMs:5000,idleInTransactionTimeoutMs:5000});
+ const repo=new DrizzleUserRepository(connection.db);
+ assert.equal(await repo.findById(SPEC.actorId),null);check();
+ assert.equal(await repo.findByEmail(SPEC.email),null);check();
+ emit({kind:'ready',attemptId:SPEC.attemptId,actorId:SPEC.actorId,contextVerified:true,sourcePinsVerified:true,absenceVerified:true});
+ phase='secret-input';
+ const reader=Bun.stdin.stream().getReader();let bytes=0,chunks=[];let timer;
+ try {
+  const input=await Promise.race([(async()=>{while(true){const r=await reader.read();if(r.done)break;bytes+=r.value.length;assert(bytes<=512);chunks.push(r.value);}return Buffer.concat(chunks).toString('utf8');})(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('input-deadline')),10000)})]);
+  const value=JSON.parse(input);assert.deepEqual(Object.keys(value).sort(),['attemptId','password']);assert.equal(value.attemptId,SPEC.attemptId);
+  assert(typeof value.password==='string' && /^[a-f0-9]{64}$/.test(value.password));
+  assertPasswordPolicy(value.password,32);check();phase='hash';
+  const passwordHash=await createBunPasswordHasher().hash(value.password);value.password='';chunks=[];check();
+  const actor=UserAggregate.register({id:SPEC.actorId,email:Email.create(SPEC.email),passwordHash,firstName:'QA',lastName:'Pro isolado',role:'staff',status:'active',signupSource:'qa-staging-pro-owned',passwordSet:true});
+  phase='create';check();await repo.create(actor);created=true;
+  phase='readback';check();const observed=await repo.findById(SPEC.actorId);
+  assert(observed && observed.email===SPEC.email && observed.role==='staff' && observed.status==='active' && observed.isPasswordSet() && observed.signupSource==='qa-staging-pro-owned');check();
+ } finally {clearTimeout(timer);chunks=[];reader.releaseLock();}
+ phase='close';await connection.close();closed=true;check();
+ emit({kind:'terminal',ok:true,phase:'complete',attemptId:SPEC.attemptId,actorId:SPEC.actorId,created:true,role:'staff',active:true,passwordSet:true,dbClosed:true,emailOutbound:false,accountRetained:true});
+} catch {
+ if(connection&&!closed){try{await connection.close();closed=true;}catch{}}
+ emit({kind:'terminal',ok:false,phase,attemptId:SPEC.attemptId,actorId:SPEC.actorId,created,dbClosed:closed,emailOutbound:false,accountRetained:created,creationOutcome:created?'created':phase==='create'?'unknown':'not-created'});
+ process.exitCode=1;
+}

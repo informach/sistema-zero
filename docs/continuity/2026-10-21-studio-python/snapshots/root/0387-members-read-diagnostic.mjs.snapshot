@@ -1,0 +1,22 @@
+import {spawn} from 'node:child_process'
+import {writeFileSync} from 'node:fs'
+const cli='C:/Users/tocha/AppData/Roaming/npm/node_modules/@railway/cli/bin/railway.exe'
+const argv=['variable','list','--project','415d5a1c-5f75-432c-8445-b395d0977ce3','--environment','f634cff6-aafb-4804-8b69-172fad4e946e','--service','aa282801-ffba-477c-af6d-394b2f4f9af9','--json']
+const child=spawn(cli,argv,{cwd:process.cwd(),windowsHide:true,stdio:['ignore','pipe','pipe']})
+let stdout='',stderr='',overflow=false,error=false,expired=false,settled=false
+const timer=setTimeout(()=>{expired=true},30000)
+for(const [stream,name] of [[child.stdout,'stdout'],[child.stderr,'stderr']])stream.on('data',bytes=>{
+ if(overflow)return
+ if(Buffer.byteLength(stdout)+Buffer.byteLength(stderr)+bytes.length>8_000_000){overflow=true;stdout='';stderr='';return}
+ if(name==='stdout')stdout+=bytes;else stderr+=bytes
+})
+child.on('error',()=>{error=true})
+const [status,signal]=await new Promise(resolve=>child.on('close',(code,sig)=>{settled=true;resolve([code,sig])}))
+clearTimeout(timer)
+const text=(stdout+'\n'+stderr).toLowerCase()
+let parsed=false,object=false
+try{const value=JSON.parse(stdout);parsed=true;object=!!value&&typeof value==='object'&&!Array.isArray(value)}catch{}
+const result={kind:'private-CLI-read-diagnostic',pid:child.pid,status,signal,settled,expired,overflow,error,stdoutBytes:Buffer.byteLength(stdout),stderrBytes:Buffer.byteLength(stderr),parsed,object,markers:{unauthorized:/unauthorized|unauthenticated|not logged in|login required|token expired/.test(text),forbidden:/forbidden|permission denied|access denied/.test(text),network:/connection|network|dns|resolve host|timed out|timeout/.test(text),notFound:/not found|does not exist|could not find/.test(text),unknownArgument:/unexpected argument|unrecognized|unknown argument/.test(text),serviceReadDenied:/service.*access|access.*service/.test(text)},rawOutputPersisted:false,mutations:0}
+stdout='';stderr=''
+writeFileSync(new URL('./members-read-diagnostic.json',import.meta.url),JSON.stringify(result,null,2)+'\n',{flag:'wx'})
+console.log(JSON.stringify(result));if(status!==0||!parsed||!object||expired||overflow||error)process.exitCode=1

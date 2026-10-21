@@ -1,0 +1,1290 @@
+{
+  "state": "native-functional-passed",
+  "scenario": "Q02",
+  "python": "3.14.2 (tags/v3.14.2:df79316, Dec  5 2025, 17:18:21) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Scripts\\python.exe",
+  "runnerSha256": "e6cefcb36ad08d6c2130c2a4c2eb3e9b05aec76d2f6837c21e02e88f803d83c1",
+  "observerSha256": "7e5cf907ac894acb35a0b7fa044a8a53664efb2beb858ac4c69e1212cd3d890a",
+  "sourceReceiptSha256": "9acc5ea7b0d1d4fc4f9239299df2062f39281a894d39a45dc8ba3238efa3d419",
+  "observations": [
+    {
+      "kind": "installed",
+      "step": 0,
+      "sourceDeclaredSetup": [
+        1020,
+        620
+      ],
+      "pools": {
+        "enemies": 25,
+        "missiles": 30,
+        "stars": 20,
+        "powerups": 5
+      },
+      "particles": [
+        30,
+        20
+      ]
+    },
+    {
+      "kind": "authored-binding-invocation",
+      "step": 0,
+      "key": "s",
+      "release": false,
+      "player": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 90.0,
+        "da": 0.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      }
+    },
+    {
+      "kind": "authored-binding-invocation",
+      "step": 0,
+      "key": "Left",
+      "release": false,
+      "player": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 90.0,
+        "da": 10.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      }
+    },
+    {
+      "kind": "rendered-frame",
+      "step": 0,
+      "player": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 100.0,
+        "da": 10.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      },
+      "stampCount": 43,
+      "canvasItems": 104
+    },
+    {
+      "kind": "authored-binding-invocation",
+      "step": 0,
+      "key": "Left",
+      "release": true,
+      "player": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 100.0,
+        "da": 0.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      }
+    },
+    {
+      "kind": "rendered-frame",
+      "step": 1,
+      "player": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 100.0,
+        "da": 0.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      },
+      "stampCount": 43,
+      "canvasItems": 104
+    },
+    {
+      "kind": "authored-binding-invocation",
+      "step": 1,
+      "key": "Right",
+      "release": false,
+      "player": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 100.0,
+        "da": -10.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      }
+    },
+    {
+      "kind": "rendered-frame",
+      "step": 2,
+      "player": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 90.0,
+        "da": -10.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      },
+      "stampCount": 43,
+      "canvasItems": 104
+    },
+    {
+      "kind": "authored-binding-invocation",
+      "step": 2,
+      "key": "Right",
+      "release": true,
+      "player": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 90.0,
+        "da": 0.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      }
+    },
+    {
+      "kind": "authored-binding-invocation",
+      "step": 2,
+      "key": "Up",
+      "release": false,
+      "player": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 90.0,
+        "da": 0.0,
+        "thrust": 0.2,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      }
+    },
+    {
+      "kind": "rendered-frame",
+      "step": 3,
+      "player": {
+        "x": 1.2246467991473533e-17,
+        "y": 0.2,
+        "dx": 1.2246467991473533e-17,
+        "dy": 0.2,
+        "heading": 90.0,
+        "da": 0.0,
+        "thrust": 0.2,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      },
+      "stampCount": 63,
+      "canvasItems": 124
+    },
+    {
+      "kind": "authored-binding-invocation",
+      "step": 3,
+      "key": "Up",
+      "release": false,
+      "player": {
+        "x": 1.2246467991473533e-17,
+        "y": 0.2,
+        "dx": 1.2246467991473533e-17,
+        "dy": 0.2,
+        "heading": 90.0,
+        "da": 0.0,
+        "thrust": 0.4,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      }
+    },
+    {
+      "kind": "rendered-frame",
+      "step": 4,
+      "player": {
+        "x": 4.898587196589413e-17,
+        "y": 0.8,
+        "dx": 3.67394039744206e-17,
+        "dy": 0.6000000000000001,
+        "heading": 90.0,
+        "da": 0.0,
+        "thrust": 0.4,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      },
+      "stampCount": 63,
+      "canvasItems": 124
+    },
+    {
+      "kind": "authored-binding-invocation",
+      "step": 4,
+      "key": "Up",
+      "release": true,
+      "player": {
+        "x": 4.898587196589413e-17,
+        "y": 0.8,
+        "dx": 3.67394039744206e-17,
+        "dy": 0.6000000000000001,
+        "heading": 90.0,
+        "da": 0.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      }
+    },
+    {
+      "kind": "rendered-frame",
+      "step": 5,
+      "player": {
+        "x": 8.572527594031473e-17,
+        "y": 1.4000000000000001,
+        "dx": 3.67394039744206e-17,
+        "dy": 0.6000000000000001,
+        "heading": 90.0,
+        "da": 0.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      },
+      "stampCount": 63,
+      "canvasItems": 124
+    },
+    {
+      "kind": "authored-binding-invocation",
+      "step": 5,
+      "key": "space",
+      "release": false,
+      "player": {
+        "x": 8.572527594031473e-17,
+        "y": 1.4000000000000001,
+        "dx": -4.357787137379207e-05,
+        "dy": 0.43405302753987135,
+        "heading": 90.0,
+        "da": 0.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      }
+    },
+    {
+      "kind": "fire-witness",
+      "step": 5,
+      "missiles": [
+        {
+          "x": 8.572527594031473e-17,
+          "y": 1.4000000000000001,
+          "dx": 3.4290110376125893e-16,
+          "dy": 5.6,
+          "heading": 90.0,
+          "da": 0.0,
+          "thrust": 5.0,
+          "state": "active",
+          "fuel": 200.0,
+          "max_fuel": 200.0,
+          "damage": 5.0
+        },
+        {
+          "x": 8.572527594031473e-17,
+          "y": 1.4000000000000001,
+          "dx": -0.43577871373829113,
+          "dy": 5.524973490458727,
+          "heading": 95.0,
+          "da": 0.0,
+          "thrust": 5.0,
+          "state": "active",
+          "fuel": 200.0,
+          "max_fuel": 200.0,
+          "damage": 5.0
+        },
+        {
+          "x": 8.572527594031473e-17,
+          "y": 1.4000000000000001,
+          "dx": 0.44013650087567363,
+          "dy": 5.46972375555414,
+          "heading": 85.0,
+          "da": 0.0,
+          "thrust": 5.0,
+          "state": "active",
+          "fuel": 200.0,
+          "max_fuel": 200.0,
+          "damage": 5.0
+        }
+      ],
+      "player": {
+        "x": 8.572527594031473e-17,
+        "y": 1.4000000000000001,
+        "dx": -4.357787137379207e-05,
+        "dy": 0.43405302753987135,
+        "heading": 90.0,
+        "da": 0.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      }
+    },
+    {
+      "kind": "rendered-frame",
+      "step": 6,
+      "player": {
+        "x": -4.3577871373706344e-05,
+        "y": 1.8340530275398714,
+        "dx": -4.357787137379207e-05,
+        "dy": 0.43405302753987135,
+        "heading": 90.0,
+        "da": 0.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      },
+      "stampCount": 69,
+      "canvasItems": 130
+    },
+    {
+      "kind": "complete",
+      "step": 7,
+      "sounds": [
+        "thruster.wav",
+        "thruster.wav",
+        "missile_fire.wav"
+      ],
+      "clearWitnesses": [
+        {
+          "before": 3,
+          "after": 0,
+          "canvasItemsAfter": 4
+        },
+        {
+          "before": 43,
+          "after": 0,
+          "canvasItemsAfter": 4
+        },
+        {
+          "before": 43,
+          "after": 0,
+          "canvasItemsAfter": 4
+        },
+        {
+          "before": 43,
+          "after": 0,
+          "canvasItemsAfter": 4
+        },
+        {
+          "before": 63,
+          "after": 0,
+          "canvasItemsAfter": 4
+        },
+        {
+          "before": 63,
+          "after": 0,
+          "canvasItemsAfter": 4
+        },
+        {
+          "before": 63,
+          "after": 0,
+          "canvasItemsAfter": 4
+        },
+        {
+          "before": 69,
+          "after": 0,
+          "canvasItemsAfter": 4
+        }
+      ],
+      "methodWitnesses": [],
+      "radarWitnesses": [
+        {
+          "sprite": "Powerup",
+          "x": 340.1875,
+          "y": -179.78333333333333,
+          "shape": "powerup.gif",
+          "color": "blue"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 439.675,
+          "y": -214.28333333333333,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 428.4125,
+          "y": -136.61666666666667,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.775,
+          "y": -199.66666666666666,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.29375,
+          "y": -121.625,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.16875,
+          "y": -211.275,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 430.9125,
+          "y": -130.26666666666668,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.16875,
+          "y": -266.43333333333334,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 366.2625,
+          "y": -145.45,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 368.15625,
+          "y": -129.99166666666667,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 349.7625,
+          "y": -159.60833333333335,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 350.88125,
+          "y": -215.425,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 421.05625,
+          "y": -255.26666666666665,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 374.4125,
+          "y": -271.25,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 429.9125,
+          "y": -159.48333333333335,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Player",
+          "x": 400.0,
+          "y": -200.0,
+          "shape": "triangle",
+          "color": "white"
+        },
+        {
+          "sprite": "Powerup",
+          "x": 340.25,
+          "y": -179.56666666666666,
+          "shape": "powerup.gif",
+          "color": "blue"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 439.675,
+          "y": -214.28333333333333,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 428.45,
+          "y": -136.56666666666666,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.79625,
+          "y": -199.66166666666666,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.3375,
+          "y": -121.58333333333334,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.16875,
+          "y": -211.275,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 430.95,
+          "y": -130.20000000000002,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.2125,
+          "y": -266.3666666666667,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 366.275,
+          "y": -145.4,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 368.1875,
+          "y": -129.98333333333335,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 349.7625,
+          "y": -159.60833333333335,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 350.8875,
+          "y": -215.35,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 421.11625,
+          "y": -255.20499999999998,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 374.4125,
+          "y": -271.25,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 429.95375,
+          "y": -159.46166666666667,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Player",
+          "x": 400.0,
+          "y": -200.0,
+          "shape": "triangle",
+          "color": "white"
+        },
+        {
+          "sprite": "Powerup",
+          "x": 340.3125,
+          "y": -179.35,
+          "shape": "powerup.gif",
+          "color": "blue"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 439.675,
+          "y": -214.28333333333333,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 428.4875,
+          "y": -136.51666666666665,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.81375,
+          "y": -199.65166666666667,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.38125,
+          "y": -121.54166666666667,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.16875,
+          "y": -211.275,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 430.9875,
+          "y": -130.13333333333335,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.25625,
+          "y": -266.3,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 366.2875,
+          "y": -145.35,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 368.21875,
+          "y": -129.975,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 349.7625,
+          "y": -159.60833333333335,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 350.89375,
+          "y": -215.275,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 421.18,
+          "y": -255.14833333333334,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 374.4125,
+          "y": -271.25,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 429.99875000000003,
+          "y": -159.435,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Player",
+          "x": 400.0,
+          "y": -200.0,
+          "shape": "triangle",
+          "color": "white"
+        },
+        {
+          "sprite": "Powerup",
+          "x": 340.375,
+          "y": -179.16666666666669,
+          "shape": "powerup.gif",
+          "color": "blue"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 439.675,
+          "y": -214.31666666666666,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 428.525,
+          "y": -136.5,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.8275,
+          "y": -199.67,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.425,
+          "y": -121.53333333333333,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.16875,
+          "y": -211.30833333333334,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 431.025,
+          "y": -130.10000000000002,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.3,
+          "y": -266.26666666666665,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 366.3,
+          "y": -145.33333333333331,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 368.25,
+          "y": -130.0,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 349.7625,
+          "y": -159.64166666666665,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 350.9,
+          "y": -215.23333333333332,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 421.2475,
+          "y": -255.13,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 374.4125,
+          "y": -271.2833333333333,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 430.0475,
+          "y": -159.43666666666667,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Player",
+          "x": 400.0,
+          "y": -200.0,
+          "shape": "triangle",
+          "color": "white"
+        },
+        {
+          "sprite": "Powerup",
+          "x": 340.4375,
+          "y": -179.05,
+          "shape": "powerup.gif",
+          "color": "blue"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 439.675,
+          "y": -214.41666666666666,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 428.5625,
+          "y": -136.55,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.8375,
+          "y": -199.75,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.46875,
+          "y": -121.59166666666667,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.16875,
+          "y": -211.40833333333333,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 431.0625,
+          "y": -130.13333333333335,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.34375,
+          "y": -266.3,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 366.3125,
+          "y": -145.38333333333333,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 368.28125,
+          "y": -130.09166666666667,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 349.7625,
+          "y": -159.74166666666667,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 350.90625,
+          "y": -215.25833333333333,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 421.31875,
+          "y": -255.18333333333334,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 374.4125,
+          "y": -271.3833333333333,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 430.1,
+          "y": -159.5,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Player",
+          "x": 400.0,
+          "y": -200.0,
+          "shape": "triangle",
+          "color": "white"
+        },
+        {
+          "sprite": "Powerup",
+          "x": 340.5,
+          "y": -178.93333333333334,
+          "shape": "powerup.gif",
+          "color": "blue"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 439.675,
+          "y": -214.51666666666668,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 428.6,
+          "y": -136.6,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.84375,
+          "y": -199.825,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.5125,
+          "y": -121.65,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.16875,
+          "y": -211.50833333333333,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 431.1,
+          "y": -130.16666666666669,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.3875,
+          "y": -266.33333333333337,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 366.32500000000005,
+          "y": -145.43333333333334,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 368.3125,
+          "y": -130.18333333333334,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 349.7625,
+          "y": -159.84166666666667,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 350.9125,
+          "y": -215.28333333333333,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 421.39375,
+          "y": -255.24166666666667,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 374.4125,
+          "y": -271.48333333333335,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 430.15625,
+          "y": -159.55833333333334,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Player",
+          "x": 400.0,
+          "y": -200.0,
+          "shape": "triangle",
+          "color": "white"
+        },
+        {
+          "sprite": "Powerup",
+          "x": 340.56250544723395,
+          "y": -178.78900883792332,
+          "shape": "powerup.gif",
+          "color": "blue"
+        },
+        {
+          "sprite": "Missile",
+          "x": 400.00000544723395,
+          "y": -199.1390088379233,
+          "shape": "triangle",
+          "color": "yellow"
+        },
+        {
+          "sprite": "Missile",
+          "x": 399.94553310801666,
+          "y": -199.15151325618018,
+          "shape": "triangle",
+          "color": "yellow"
+        },
+        {
+          "sprite": "Missile",
+          "x": 400.05502250984335,
+          "y": -199.16072154533094,
+          "shape": "triangle",
+          "color": "yellow"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 439.6750054472339,
+          "y": -214.5890088379233,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 428.63750544723393,
+          "y": -136.62234217125663,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.84625544723394,
+          "y": -199.86734217125664,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.5562554472339,
+          "y": -121.68067550458998,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 351.16875544723393,
+          "y": -211.58067550458998,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 431.13750544723393,
+          "y": -130.17234217125667,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 417.4312554472339,
+          "y": -266.3390088379233,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 366.3375054472339,
+          "y": -145.45567550458998,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 368.34375544723395,
+          "y": -130.24734217125663,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 349.76250544723393,
+          "y": -159.91400883792332,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 350.91875544723393,
+          "y": -215.28067550458996,
+          "shape": "hunter.gif",
+          "color": "red"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 421.4725054472339,
+          "y": -255.27734217125663,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 374.4125054472339,
+          "y": -271.55567550459,
+          "shape": "mine.gif",
+          "color": "orange"
+        },
+        {
+          "sprite": "Enemy",
+          "x": 430.21625544723395,
+          "y": -159.5840088379233,
+          "shape": "surveillance.gif",
+          "color": "pink"
+        },
+        {
+          "sprite": "Player",
+          "x": 400.0,
+          "y": -200.0,
+          "shape": "triangle",
+          "color": "white"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "rootMapEvents": 0,
+  "rootDestroyEvents": 1,
+  "audioReleased": true,
+  "freshInstall": false,
+  "physicalKeyboard": false,
+  "seed": 2026,
+  "cooperativeBudgetSeconds": 30,
+  "limits": [
+    "Explicit fixtures and QA invocations of authored bindings",
+    "Bounded QA completion after original clear; not natural game exit",
+    "No browser, acoustic, raster, Pro, performance or complete-game acceptance"
+  ],
+  "ownedTemp": "C:\\Users\\tocha\\AppData\\Local\\Temp\\sz-space-functional-anbl5mpp",
+  "zipSha256": "14b95ac84cf7eefc9ff3bdcd6abc6c743c230dd52c0632eaf2c1a0659608a6c1",
+  "entrySha256": "d9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3",
+  "historicalBrowserDistribution": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a",
+  "installedAudio": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio",
+  "matchingModuleFiles": [
+    "__init__.py",
+    "__init__.pyi",
+    "_desktop.py",
+    "_mixer.py",
+    "_module.json",
+    "_wav.py",
+    "py.typed"
+  ],
+  "dependencies": {
+    "cffi": "2.1.1",
+    "miniaudio": "1.71",
+    "pycparser": "3.11"
+  },
+  "withdrawnBeforeSetup": true,
+  "fullGameReadyMs": 15572.447999962606,
+  "boundedFunctionalCompletion": true,
+  "functionalCompletionBoundary": "authored-timer-callback",
+  "audioBackend": "WASAPI",
+  "exportTreeUnchanged": true,
+  "ownedTempAbsent": true,
+  "elapsedMs": 15914.85429997556
+}

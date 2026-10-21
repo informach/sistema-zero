@@ -1,0 +1,39 @@
+import {cliEnvironment} from '../pro-legacy-staging-ui-owned-r5/oauth-session.mjs'
+import {execFileSync} from 'node:child_process'
+import {createHash} from 'node:crypto'
+import {readFile,writeFile} from 'node:fs/promises'
+import {StudioAuthoringCatalogSchema} from '../../../packages/core/src/studio/authoring-catalog'
+import {StudioRuntimeSelectionSchema} from '../../../packages/core/src/studio/project-environment'
+import {z} from 'zod'
+const cli='C:/Users/tocha/AppData/Roaming/npm/node_modules/@railway/cli/bin/railway.exe'
+const project='415d5a1c-5f75-432c-8445-b395d0977ce3',environment='f634cff6-aafb-4804-8b69-172fad4e946e',service='aa282801-ffba-477c-af6d-394b2f4f9af9'
+const hosts=z.array(z.strictObject({runtime:StudioRuntimeSelectionSchema,origin:z.string()})).max(1024)
+const safeOrigin=(value:string)=>{const u=new URL(value);if(u.protocol!=='https:'||u.origin!==value||u.username||u.password||u.search||u.hash)throw new Error('Public origin invalid');return value}
+const safeUrl=(value:string)=>{const u=new URL(value);if(u.protocol!=='https:'||u.username||u.password||u.search||u.hash)throw new Error('Public URL invalid');return value}
+let phase='cli-version'
+const publicPresence:Record<string,boolean>={}
+try {
+ const version=execFileSync(cli,['--version'],{encoding:'utf8',windowsHide:true,timeout:10000,stdio:['ignore','pipe','pipe']}).trim()
+ // Installed CLI 5.62.1 exposes list/set/delete only, no named-value getter.
+ // One service list is held privately in RAM; persist only schema-validated allowlisted public fields.
+ phase='cli-service-read'
+ const response=JSON.parse(execFileSync(cli,['api',"query StudioPythonPublicBaseline($projectId:String!,$environmentId:String!,$serviceId:String!){variables(projectId:$projectId,environmentId:$environmentId,serviceId:$serviceId,unrendered:false)}",'--variables',JSON.stringify({projectId:project,environmentId:environment,serviceId:service}),'--compact'],{env:cliEnvironment(process.env),encoding:'utf8',windowsHide:true,timeout:30000,maxBuffer:8_000_000,stdio:['ignore','pipe','pipe']}))
+ if(response.errors?.length)throw new Error('API query failed')
+ const values=response.data?.variables
+ if(!values||typeof values!=='object'||Array.isArray(values))throw new Error('API variables shape invalid')
+ const selected:Record<string,unknown>={}
+ const required=['STUDIO_AUTHORING_POLICY_JSON','STUDIO_RUNTIME_HOSTS_JSON']
+ phase='required-public-configuration'
+ for(const key of required){publicPresence[key]=Object.hasOwn(values,key);if(publicPresence[key]&&(typeof values[key]!=='string'||!values[key]))throw new Error('Present public variable invalid')}
+ phase='public-policy-schema'
+ selected.STUDIO_AUTHORING_POLICY_JSON=publicPresence.STUDIO_AUTHORING_POLICY_JSON?StudioAuthoringCatalogSchema.parse(JSON.parse(values.STUDIO_AUTHORING_POLICY_JSON)):null
+ phase='public-hosts-schema'
+ selected.STUDIO_RUNTIME_HOSTS_JSON=publicPresence.STUDIO_RUNTIME_HOSTS_JSON?hosts.parse(JSON.parse(values.STUDIO_RUNTIME_HOSTS_JSON)):null
+ for(const item of (selected.STUDIO_RUNTIME_HOSTS_JSON??[]) as z.infer<typeof hosts>)safeOrigin(item.origin)
+ for(const key of ['STUDIO_PYTHON_FRAME_ORIGINS'])if(values[key])selected[key]=z.array(z.string()).max(32).parse(JSON.parse(values[key])).map(safeOrigin)
+ for(const key of ['STUDIO_PYTHON_RUNTIME_URL','STUDIO_PYTHON_PREVIEW_ORIGIN'])if(values[key])selected[key]=safeUrl(values[key])
+ const receipt={state:'readonly-public-members-baseline',reader:'railway-api-variables-rendered',observedAt:new Date().toISOString(),project,environment,service,cliVersion:version,cliSha256:createHash('sha256').update(await readFile(cli)).digest('hex'),publicPresence,selected,rawVariablesPersisted:false,credentialValuesPersisted:false,limitation:'Official CLI api uses the documented nondeprecated Query.variables with unrendered:false after variable list returned Problem processing request. Only named public configuration is persisted; all other values remain private RAM. Null proves named absence in this service query, not absent Worker configuration or running-process configuration.'}
+ await writeFile(new URL('./railway-staging-members-api-baseline-r1.json',import.meta.url),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'})
+ console.log(JSON.stringify({state:receipt.state,cliVersion:version,selectedPublicKeys:Object.keys(selected),rawVariablesPersisted:false}))
+}catch{console.error(JSON.stringify({state:'readonly-public-baseline-unavailable',phase,publicPresence,rawOutputDiscarded:true}));process.exitCode=1}
+

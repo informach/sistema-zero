@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-20T23:46:49.783Z",
+  "scenario": "Q02",
+  "nativeReceiptSha256": "d343310c94c9737faffee5c67e469f3e59388416ebdbdfcb1d3525fa6817bdd3",
+  "supervisorSha256": "3dded21ff6db6083a5cfad1120f674941ca1e2b3a3558db3a56fa45a7f34a16b",
+  "passed": true,
+  "frames": 7,
+  "clears": 8,
+  "completeStep": 7,
+  "audioBackend": "WASAPI",
+  "elapsedMs": 15914.85429997556,
+  "rootMap": 0,
+  "rootDestroy": 1,
+  "signals": false,
+  "tempAbsent": true,
+  "limitedTo": "Declared rule fixture with official CPython/Tk and real WASAPI; no acoustic/OS keyboard/fullgame/FPS/fresh-install/Mural claim"
+}

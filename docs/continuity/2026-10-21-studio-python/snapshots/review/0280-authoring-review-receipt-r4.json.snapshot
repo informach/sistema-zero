@@ -1,0 +1,167 @@
+{
+  "version": 4,
+  "session": "01a15a53-f486-74c1-84be-d4c84b80049a",
+  "createdUTC": "2026-10-20T18:16:07.2584205Z",
+  "head": "44a27bde60c6ccc5cc8d68e75310f54d172deafe",
+  "previousReceipts": [
+    ".cache/authoring-review-receipt.json",
+    ".cache/authoring-review-receipt-r2.json",
+    ".cache/authoring-review-receipt-r3.json"
+  ],
+  "browser": {
+    "startedUTC": "2026-10-20T18:13:25.043Z",
+    "endedUTC": "2026-10-20T18:14:32.848Z",
+    "authorizedEndUTC": "2026-10-20T18:23:00Z",
+    "authorizedLatestStartUTC": "2026-10-20T18:17:00Z",
+    "freeGiBAtPreflight": 4.977729797363281,
+    "runnerPid": 40356,
+    "cli": {
+      "code": 0,
+      "signal": null,
+      "error": null,
+      "logsDrained": true
+    },
+    "stats": {
+      "startTime": "2026-10-20T18:13:25.811Z",
+      "duration": 67009.67,
+      "expected": 16,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "reportErrors": 0,
+    "engines": [
+      "chrome",
+      "msedge"
+    ],
+    "testsPerEngine": 8,
+    "workerCount": 1,
+    "retries": 0,
+    "globalLimitMs": 360000,
+    "sourceStable": true,
+    "distributionSha256": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a",
+    "origins": [
+      "http://127.0.0.1:5297",
+      "http://127.0.0.1:5298",
+      "http://127.0.0.1:61662"
+    ],
+    "released": true,
+    "cleanup": {
+      "at": "2026-10-20T18:15:07.8172468Z",
+      "runnerStillPresent": false,
+      "checkedIdentities": 29,
+      "ownedIdentitiesAlive": 0,
+      "ownedPortListeners": 0
+    },
+    "evidence": [
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\actual-origins.json",
+        "sha256": "f607bd440a668de6566a50bfb9ec2cc121b97f37b14eb9da099e8356c495173f"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\cleanup-identity-check.json",
+        "sha256": "c254b3c041c60c747acdb68c74e6001abbfe916e0ffa9f3c1f026d90bee8fb61"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\owned-runner.json",
+        "sha256": "c1e0320907a78d51f2220cd210288a8bcd0dbbe993c4001824e09359c81afb84"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\ownership-during.json",
+        "sha256": "5f744182e36a1bd486c40661b0002929b974d34e281bf2a53c2cc57d17174a97"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\ownership-edge.json",
+        "sha256": "aec31ead562a13e8d0b6ea51831d2bb5f745054b2c0ee867faa47c40f4d777c4"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\playwright-results.json",
+        "sha256": "a021a41bd6a0318589e5c14d1497ee7001e5d66d04b63d76823766b8db54d08d"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\playwright.config.mts",
+        "sha256": "08979de0376333b4a3a4c6c7d5bde469459d5ab68545a0cb50f9f2460bb76a63"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\preflight.json",
+        "sha256": "aa0ae31ccd162b377b6ef942bab472533d670ca50bdee4e2cd664f259a811172"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\receipt.json",
+        "sha256": "6a8bcbf3f8acc3f214a67696b4de38f8687079b6a66dcca800248030efc994cf"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\run.mjs",
+        "sha256": "6b958f0e91326c1d7139567951a9d2b02b4d96b2b996eda95c7cffb1d50c9346"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\stderr.log",
+        "sha256": "4dc5bdfac0d321a8fd4f06d284615ea64030b8d7d4159170ed8b8b13f37e02d5"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\stdout.log",
+        "sha256": "8c5f1f7ee16ede79d291637a8f95a711e21552c26c61cf217358a930391a9228"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\results\\.last-run.json",
+        "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\results\\bridge-workspace-Ponte-syn-b305b-d-executes-the-saved-Python-chrome\\python-ponte-initial.png",
+        "sha256": "bb4a0d1581268a2a1a1fac69f4dbd1a5329bc467d16b6a2551e5351eb41a181d"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\results\\bridge-workspace-Ponte-syn-b305b-d-executes-the-saved-Python-chrome\\python-ponte-wide.png",
+        "sha256": "f7f6ea4308086ce256abd7be8bf4b0dae455c1940659e6ae23867943cda7e59e"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\results\\bridge-workspace-Ponte-syn-b305b-d-executes-the-saved-Python-msedge\\python-ponte-initial.png",
+        "sha256": "bb4a0d1581268a2a1a1fac69f4dbd1a5329bc467d16b6a2551e5351eb41a181d"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\results\\bridge-workspace-Ponte-syn-b305b-d-executes-the-saved-Python-msedge\\python-ponte-wide.png",
+        "sha256": "f7f6ea4308086ce256abd7be8bf4b0dae455c1940659e6ae23867943cda7e59e"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\results\\extension-removal-Turtle-r-08cc4-efore-changing-the-document-chrome\\turtle-removed-source-preserved.png",
+        "sha256": "dd772e87236f83e7d6cd211041cb517d528e92da8ca31b183f2c12837c5115bd"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\results\\extension-removal-Turtle-r-08cc4-efore-changing-the-document-msedge\\turtle-removed-source-preserved.png",
+        "sha256": "6b5c6db92f3bd35b0982ed0431e100c5027c07f1a80778049b4ac5d05ad192d0"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\results\\extension-removal-Turtle-r-3103f-efore-changing-the-document-chrome\\turtle-removed-source-preserved.png",
+        "sha256": "7943c192bed33b5722481752f7155f0fc08d0bfb383d016860d25010dc0c154b"
+      },
+      {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\results\\extension-removal-Turtle-r-3103f-efore-changing-the-document-msedge\\turtle-removed-source-preserved.png",
+        "sha256": "7943c192bed33b5722481752f7155f0fc08d0bfb383d016860d25010dc0c154b"
+      }
+    ],
+    "independentReview": "Final receipt review requested, pending; cwd fix and safety operator source deltas reviewed"
+  },
+  "earlierNegative": {
+    "preserved": true,
+    "reason": "QA config relative webServer cwd failed to find editor script before tests",
+    "startedUTC": "2026-10-20T18:12:39.700Z",
+    "endedUTC": "2026-10-20T18:12:43.677Z",
+    "directory": ".cache/authoring-browser-r4",
+    "rootCauseFix": "r5 QA config explicitly sets packages/studio cwd for both webServer entries"
+  },
+  "scope": [
+    "Actual Blockly/Monaco/Ponte edit and saved Python execution",
+    "Python routing source preservation under curation/revocation",
+    "Classic/Pro Turtle static-import refusal with file:line then successful removal after source correction",
+    "Classic/Pro source rejection and undo/redo project quota consistency",
+    "JavaScript default radio remains selected at project creation"
+  ],
+  "limits": [
+    "Not a full JS execution suite; prior focused JS regression and coordinator CI evidence retain their original horizons",
+    "Not general dynamic import detection",
+    "Not full TSC, Docker, infra, performance, lessons/Admin/live or public gallery acceptance",
+    "New QA runtime origin/host belongs only to this execution; no borrowed host approval",
+    "Build warning about existing chunk sizes/dynamic imports observed, no tuning attempted",
+    "No production change, staging push/reset/rebase or Core/Runtime fingerprint delta in this window"
+  ]
+}

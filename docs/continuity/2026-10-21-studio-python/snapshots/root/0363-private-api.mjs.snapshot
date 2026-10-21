@@ -1,0 +1,152 @@
+// Private RAM only. No top-level CLI/network calls. Never serialize auth or API bodies.
+import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, resolve } from 'node:path';
+import { parseWranglerTokenJson } from '../r2-linux-remote-two-object-20261020-r3/contracts.mjs';
+
+const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+const secrets = new WeakMap();
+const wrapperSha256 = '780661a508810f3b65786895b1ca9aacbc4f55d329ae6b8c1e49ec8433569f77';
+const distSha256 = '0862f6f1616a99cf0b0c379ee762b36dd75761992f1c80b43ff1542a954de6bd';
+const nodeSha256 = 'ba93f9a70bd86fce3ebbb39ec758501458453467aa92a34a0a3602d1e3fc2b9c';
+export function resolveWranglerTools(root) {
+  const require = createRequire(resolve(root, 'packages/studio-runtime/package.json'));
+  const pkgPath = require.resolve('wrangler/package.json');
+  const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+  if (pkg.version !== '4.120.1') throw new Error('wrangler-version');
+  const wrapper = resolve(dirname(pkgPath), pkg.bin.wrangler);
+  const wrangler = resolve(dirname(pkgPath), 'wrangler-dist/cli.js');
+  if (sha(readFileSync(wrapper)) !== wrapperSha256 || sha(readFileSync(wrangler)) !== distSha256) throw new Error('wrangler-pin');
+  return { wrapper, wrapperSha256, wrangler, distSha256 };
+}
+export function closedAuthEnvironment(source, { home, temp }) {
+  const environment = {};
+  for (const key of ['SystemRoot', 'WINDIR', 'ComSpec', 'PATHEXT']) if (Object.hasOwn(source, key)) environment[key] = source[key];
+  Object.assign(environment, { TEMP: temp, TMP: temp, CI: 'true', NO_COLOR: '1', WRANGLER_WRITE_LOGS: 'false',
+    WRANGLER_SEND_METRICS: 'false', WRANGLER_LOG_SANITIZE: 'true' });
+  // Presence AND absence preserved. Never inject an XDG override hiding existing auth.
+  for (const key of ['HOME', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA', 'XDG_CONFIG_HOME']) {
+    if (Object.hasOwn(source, key)) {
+      if (typeof source[key] !== 'string') throw new Error('auth-locator-type');
+      environment[key] = source[key];
+    }
+  }
+  if (source.CLOUDFLARE_API_TOKEN) environment.CLOUDFLARE_API_TOKEN = source.CLOUDFLARE_API_TOKEN;
+  return environment;
+}
+// Exported only to exercise the RAM parser with public benign controls, not an auth bypass.
+export function authFromPrivateBytes(bytes) {
+  const parsed = parseWranglerTokenJson(bytes);
+  const auth = Object.freeze({ type: parsed.type });
+  secrets.set(auth, parsed.token);
+  return auth; // Opaque handle: JSON.stringify cannot reveal the credential.
+}
+export function releaseAuth(auth) { secrets.delete(auth); }
+export function authenticatedTailEnvironment(auth, environment) {
+  if (!secrets.has(auth)) throw new Error('tail-auth-released');
+  return { ...environment, CLOUDFLARE_API_TOKEN: secrets.get(auth) }; // Private process memory only.
+}
+export async function acquireWranglerAuth({ node, wrangler, config, emptyEnv, cwd, home, temp, sourceEnvironment }) {
+  if (sha(readFileSync(node)) !== nodeSha256 || sha(readFileSync(wrangler)) !== distSha256
+    || readFileSync(emptyEnv).byteLength !== 0) throw new Error('auth-tool-or-empty-env-pin');
+  const argv = [wrangler, 'auth', 'token', '--json', '--config', config, '--env-file', emptyEnv];
+  const child = spawn(node, argv, { cwd, env: closedAuthEnvironment(sourceEnvironment, { home, temp }),
+    windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  let bytes = 0, stderrBytes = 0, overflow = false, spawnFailed = false, settled = false, code = null, signal = null;
+  const chunks = [];
+  let captureClosed = false;
+  child.stdout.on('data', chunk => {
+    bytes += chunk.byteLength;
+    if (captureClosed) { chunk.fill(0); return; }
+    if (bytes + stderrBytes > 16 * 1024) { overflow = true; for (const held of chunks) held.fill(0); chunks.length = 0; }
+    else if (!overflow) chunks.push(chunk);
+    if (overflow) chunk.fill(0);
+  });
+  child.stderr.on('data', chunk => { stderrBytes += chunk.byteLength; if (bytes + stderrBytes > 16 * 1024) overflow = true; chunk.fill(0); });
+  child.on('error', () => { spawnFailed = true; });
+  const closed = new Promise(resolveClose => child.on('close', (c, s) => { settled = true; code = c; signal = s; resolveClose(); }));
+  let timer;
+  const expired = await Promise.race([closed.then(() => false), new Promise(resolveDeadline => { timer = setTimeout(() => resolveDeadline(true), 20_000); })]);
+  clearTimeout(timer);
+  // This finite short-lived CLI has no app resources/normal tail handler to interrupt. Never kill.
+  if (!settled) {
+    let grace;
+    await Promise.race([closed, new Promise(resolveGrace => { grace = setTimeout(resolveGrace, 2000); })]);
+    clearTimeout(grace);
+  }
+  const projection = { pid: child.pid ?? null, code, signal, expired, overflow, spawnFailed, settled,
+    retained: !settled, leaseHeld: !settled, stdoutBytes: bytes, stderrBytes, noSignalSent: true, rawOutputPersisted: false };
+  let auth = null, combinedBytes;
+  try {
+    if (!expired && !overflow && !spawnFailed && settled && code === 0 && signal === null) {
+      combinedBytes = Buffer.concat(chunks); auth = authFromPrivateBytes(combinedBytes);
+    }
+  } catch { projection.credentialRejected = true; }
+  finally { captureClosed = true; combinedBytes?.fill(0); for (const held of chunks) held.fill(0); chunks.length = 0; }
+  if (!settled) { child.unref(); child.stdout.unref?.(); child.stderr.unref?.(); }
+  return { auth, projection, closed }; // closed is retained only for exact direct-child reconciliation.
+}
+
+export class PrivateGetError extends Error {
+  constructor(projection) { super('private-worker-get-failed'); this.projection = projection; }
+}
+export function createWorkerReader({ auth, accountId, workerName, fetchImpl = globalThis.fetch }) {
+  if (!secrets.has(auth) || !/^[a-f0-9]{32}$/.test(accountId) || !/^[a-z0-9][a-z0-9-]{0,62}$/.test(workerName)) throw new Error('worker-reader-identity');
+  const base = `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`;
+  let calls = 0;
+  return { async get(resource, { maxBytes = 2 * 1024 * 1024, signal } = {}) {
+    if (!['', 'tails', 'content/v2', 'deployments', 'versions'].includes(resource)
+      && !/^versions\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(resource)) throw new Error('worker-reader-resource');
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < 1 || maxBytes > 2 * 1024 * 1024 || ++calls > 16 || !secrets.has(auth)) throw new Error('worker-reader-bound');
+    const controller = new AbortController();
+    const deadline = setTimeout(() => controller.abort(new Error('private-get-deadline')), 30000);
+    const combined = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal;
+    let response, reader, result, total = 0, consumed = false, failed = false, stage = 'fetch';
+    let cleanupFailed = false;
+    const chunks = [];
+    try {
+      combined.throwIfAborted();
+      response = await fetchImpl(`${base}${resource ? `/${resource}` : ''}`, { method: 'GET',
+        headers: { Authorization: `Bearer ${secrets.get(auth)}` }, redirect: 'error', cache: 'no-store', signal: combined });
+      stage = 'headers';
+      const headers = {};
+      for (const name of ['content-type', 'cf-entrypoint']) {
+        const value = response.headers.get(name);
+        if (value !== null) { if (value.length > 1024) throw null; headers[name] = value; }
+      }
+      const declared = response.headers.get('content-length');
+      if (declared !== null && (!/^\d+$/.test(declared) || Number(declared) > maxBytes)) throw null;
+      stage = 'body';
+      if (!response.body) throw null;
+      reader = response.body.getReader();
+      while (true) {
+        combined.throwIfAborted();
+        const { done, value } = await reader.read();
+        if (done) { consumed = true; break; }
+        if (!(value instanceof Uint8Array) || (total += value.byteLength) > maxBytes) { stage = 'body-cap'; throw null; }
+        chunks.push(value);
+      }
+      combined.throwIfAborted();
+      result = { status: response.status, headers, bytes: Buffer.concat(chunks, total),
+        projection: { status: response.status, bytes: total, bodyConsumed: true, rawOutputPersisted: false } };
+    } catch {
+      failed = true;
+    } finally {
+      clearTimeout(deadline);
+      // Native fetch is signal-cancelable. Unknown custom transports are not qualified here.
+      if (!consumed) {
+        try { if (reader) await reader.cancel(); else await response?.body?.cancel(); } catch { cleanupFailed = true; }
+      }
+      try { reader?.releaseLock(); } catch { cleanupFailed = true; }
+      if (failed) for (const chunk of chunks) chunk.fill(0);
+    }
+    if (failed || cleanupFailed) {
+      result?.bytes.fill(0);
+      throw new PrivateGetError({ stage, status: response?.status ?? null, timedOut: controller.signal.aborted,
+        aborted: combined.aborted, bodyConsumed: consumed, cleanupFailed, rawOutputPersisted: false });
+    }
+    return result;
+  } };
+}

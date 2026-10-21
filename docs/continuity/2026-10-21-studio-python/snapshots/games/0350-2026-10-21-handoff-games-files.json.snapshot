@@ -1,0 +1,1495 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-10-21T05:16:02.521147-03:00",
+  "state": "TRANSFER-HOLD-NO-EXECUTION",
+  "gamesHead": "9557e17bcafbe529d0079c8d941485b7f67061c4",
+  "branch": "feat/studio-python-games-acceptance",
+  "base": "0226839ac",
+  "selection": "Explicit whitelist. No logs/env/cookies/tokens/storageState copied. Files remain at origin. Verify-existing-environment is not a portable venv.",
+  "resourceCheck": {
+    "at": "2026-10-21T08:16:33.8099447Z",
+    "method": "Win32_Process Node/Python commandline contains exact Games worktree name; no process mutation",
+    "matchingGamesProcesses": [],
+    "count": 0,
+    "limitation": "Point-in-time scoped inventory, not other-front services or a future guarantee. No Games persistent process launched by handoff."
+  },
+  "fileCount": 246,
+  "files": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\docs\\plans\\2026-10-16-pacman-aceite.md",
+      "role": "git-tracked",
+      "bytes": 7960,
+      "sha256": "0b36ca2a42252b36f8fe3598ef1226c4574b9bde37d3faa85495221069bca75a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\docs\\plans\\2026-10-16-space-arena-aceite.md",
+      "role": "git-tracked",
+      "bytes": 7548,
+      "sha256": "d7bfc9e6e44e438404039b64fa181735ba670d668bbfef27e773743326385c05"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\docs\\plans\\2026-10-20-pacman-ending-timer-qualification.md",
+      "role": "git-tracked",
+      "bytes": 3734,
+      "sha256": "7f3e50ea9e43e327b27e131a1bd5bd90fb308b9934d31c150c054bfb132e7e9a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\docs\\plans\\2026-10-20-reference-games-functional-qualification.md",
+      "role": "git-tracked",
+      "bytes": 45626,
+      "sha256": "127d20c6afd8782d690080ce11d437cd6baec676bcd71bb7fbff9798e5a9a6ef"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-l0\\corpus\\pacman.json",
+      "role": "git-tracked",
+      "bytes": 4313,
+      "sha256": "689bbeced12887dd08a44765c0e49151be1cf78e273f910e7e380d9278b1609d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-l0\\corpus\\space-arena.json",
+      "role": "git-tracked",
+      "bytes": 6388,
+      "sha256": "a63eb90cdd276a3e71ac6b20a7d9d62450e334d54187b280f57ef39d32f0db33"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\gameVariants.ts",
+      "role": "git-tracked",
+      "bytes": 6033,
+      "sha256": "37f1c769827aaac2d71ac757022e20e2293ba199c47d1fc6c2ee79f629d14ea9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\current_games_host.test.ts",
+      "role": "git-tracked",
+      "bytes": 9276,
+      "sha256": "115ffa24830143b3e63612d1d072e1cfd065bdbb39fe1c1936620737dbf9d2e8"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\current_games_host.ts",
+      "role": "git-tracked",
+      "bytes": 5121,
+      "sha256": "85128c55f0b17334bbf6138f81de24f3122ce8d34f4c424cdf5ba650c5d3ef69"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\game_observations.test.ts",
+      "role": "git-tracked",
+      "bytes": 1557,
+      "sha256": "4e8e70358b4ee13840d825b1b80baa37b7a7456f1624c10f0c8813bb156208ad"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\game_observations.ts",
+      "role": "git-tracked",
+      "bytes": 494,
+      "sha256": "ffb2d1a29bfd24a9410cff533057e3e7b6bc1b5d1b258b90f5a3f47e20d141f5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman.test.ts",
+      "role": "git-tracked",
+      "bytes": 3061,
+      "sha256": "2227e83654b08957eca2fbe9caa734cfb1d59a040481d7b91e25326aaab636db"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman.ts",
+      "role": "git-tracked",
+      "bytes": 8220,
+      "sha256": "8d7320b4c865601c21392713b3bf28cb91fcdd19bdd2a9140698208aaecf836b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman_end_timer_test.py",
+      "role": "git-tracked",
+      "bytes": 3431,
+      "sha256": "a4b891f75c87664b65f11e714f9e23ac1950e9c2107ca1fcbbddf6e4b2cf5916"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman_functional_observer.py",
+      "role": "git-tracked",
+      "bytes": 10062,
+      "sha256": "fb56b424a7ea0a74d9cd6f5d085de282d4b55edcca27a8d3d12d400f19ab5a4e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman_native.py",
+      "role": "git-tracked",
+      "bytes": 13515,
+      "sha256": "d202778b1c450a03c5818d9dfbbe067ac443de22f305bd8e8d459dda24d925ac"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman_native_supervisor.test.mjs",
+      "role": "git-tracked",
+      "bytes": 2932,
+      "sha256": "291bd3e76721937d8660289a59d5f585fde7426c0a1edde5a844bb5de7d2d1d9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman_observer.py",
+      "role": "git-tracked",
+      "bytes": 5610,
+      "sha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\run_pacman_native.mjs",
+      "role": "git-tracked",
+      "bytes": 5109,
+      "sha256": "9801bb580627ecf7e34694fd459d2cfccbd808b744f6088124b5f04fd4a9a854"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\run_space_arena_native.mjs",
+      "role": "git-tracked",
+      "bytes": 5720,
+      "sha256": "8e374a898ea231dd5fadc65292bfa8bc2d327db565700256c772ae415e08906d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena.test.ts",
+      "role": "git-tracked",
+      "bytes": 4010,
+      "sha256": "f3a40c66a318fcb962108675768e161b0da1d9f4ed653c52059f76424b474395"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena.ts",
+      "role": "git-tracked",
+      "bytes": 5459,
+      "sha256": "57511a50e8f3c95b2acf0f3a8d5ea2836ec9e9299c5c3f0e017d87466d3255ad"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_browser.py",
+      "role": "git-tracked",
+      "bytes": 3808,
+      "sha256": "5a7fa5cf3107d0040121f00ddf3a0476262e63fa06e06348078dc4099d6f8f02"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_completion_test.py",
+      "role": "git-tracked",
+      "bytes": 3702,
+      "sha256": "d1cdf1eb53eba5519b6e6583dbcba60b7c8401a7bb09208c2ad12600d2e22548"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_input.py",
+      "role": "git-tracked",
+      "bytes": 4426,
+      "sha256": "3e81dd9cb985629c8340aadb584b386f1c0302ecbffb454b732c5da5da675fce"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_native.py",
+      "role": "git-tracked",
+      "bytes": 14168,
+      "sha256": "d290b86295fb03475c2db7ecaff8e9132665ad33eff4de70aaa15384abc5d329"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_observer.py",
+      "role": "git-tracked",
+      "bytes": 18618,
+      "sha256": "7e5cf907ac894acb35a0b7fa044a8a53664efb2beb858ac4c69e1212cd3d890a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_q08.py",
+      "role": "git-tracked",
+      "bytes": 6389,
+      "sha256": "8eb1871295d8496330ac23ad37d478af3ce2af6715a2347549f5ae136e3d8c12"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_q08_test.py",
+      "role": "git-tracked",
+      "bytes": 4069,
+      "sha256": "b009e8a98514212e0a7a96ba38824c3e2311a398f5b3dc994636642937c966be"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_supervisor.test.mjs",
+      "role": "git-tracked",
+      "bytes": 4054,
+      "sha256": "e807da85b4e3cfdf3fcdfef52850d09b64a2c3aeac16a6dcdbb9b8e7789dd040"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\e2e-runtime\\python-pacman-portable.spec.ts",
+      "role": "git-tracked",
+      "bytes": 12369,
+      "sha256": "fc1cd837710ae64db2d4ce0ef3537b5867e10931cefb2cdade0de089ffff0d5b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\e2e-runtime\\python-pacman-render.spec.ts",
+      "role": "git-tracked",
+      "bytes": 7212,
+      "sha256": "b7050f22244725d5dee892b89f1283e278547524c475996ce8011d3b33afe49c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\e2e-runtime\\python-space-arena-input.spec.ts",
+      "role": "git-tracked",
+      "bytes": 12126,
+      "sha256": "d087f8dd47c2c81ae0528ba03d6e9e408b3dbbd0c3e7282921d1e3f07987a383"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\e2e-runtime\\python-space-arena-portable.spec.ts",
+      "role": "git-tracked",
+      "bytes": 5492,
+      "sha256": "67dbf41bfca1d21ba049ea866304cdf60fab9856dadd211632471be4155b61fa"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\playwright.python-games-current.config.ts",
+      "role": "git-tracked",
+      "bytes": 1982,
+      "sha256": "fa62bc6e35ce47e8e12aa7031145d51f77b5193607465470d1f3354ac1fd8d32"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\playwright.python-games-render.config.ts",
+      "role": "git-tracked",
+      "bytes": 294,
+      "sha256": "02b8403e69a7a816133c3cdd74355342fef1a20b04483343d88e95cbad710ad6"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\LICENSE-pyodide.txt",
+      "role": "transfer-browser-distribution",
+      "bytes": 16725,
+      "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\LICENSE-python.txt",
+      "role": "transfer-browser-distribution",
+      "bytes": 13804,
+      "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\LICENSE-tk.txt",
+      "role": "transfer-browser-distribution",
+      "bytes": 2267,
+      "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\SOURCES.txt",
+      "role": "transfer-browser-distribution",
+      "bytes": 1503,
+      "sha256": "1974e400ea27dd7b752c27452cd9cd8e70d8a6cdc5d5d6432fe3abadb6676185"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\_http\\gzip\\00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz",
+      "role": "transfer-browser-distribution",
+      "bytes": 5810,
+      "sha256": "00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\_http\\gzip\\165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz",
+      "role": "transfer-browser-distribution",
+      "bytes": 1715,
+      "sha256": "165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\_http\\gzip\\2fe9b598bf2ddf9792d1ab5284e1351b917249a8710e692a56aeca47fae8f410.gz",
+      "role": "transfer-browser-distribution",
+      "bytes": 171621,
+      "sha256": "2fe9b598bf2ddf9792d1ab5284e1351b917249a8710e692a56aeca47fae8f410"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\_http\\gzip\\343725b6277253e03d0eae08e99dde7a8cbbb9b8ff0f865f76280adf9f3a2433.gz",
+      "role": "transfer-browser-distribution",
+      "bytes": 85217,
+      "sha256": "343725b6277253e03d0eae08e99dde7a8cbbb9b8ff0f865f76280adf9f3a2433"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\_http\\gzip\\37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz",
+      "role": "transfer-browser-distribution",
+      "bytes": 8013,
+      "sha256": "37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\_http\\gzip\\863a9528c4a36b691076e1b20973d37a15399a0bc1a21b6d231668e1666476dd.gz",
+      "role": "transfer-browser-distribution",
+      "bytes": 181623,
+      "sha256": "863a9528c4a36b691076e1b20973d37a15399a0bc1a21b6d231668e1666476dd"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\_http\\gzip\\86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f.gz",
+      "role": "transfer-browser-distribution",
+      "bytes": 1578,
+      "sha256": "86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\_http\\gzip\\89d76deb803e75926945afc8f6889a54040f6aff58dbf98761e4ac2de0b726e5.gz",
+      "role": "transfer-browser-distribution",
+      "bytes": 180914,
+      "sha256": "89d76deb803e75926945afc8f6889a54040f6aff58dbf98761e4ac2de0b726e5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\_http\\gzip\\9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz",
+      "role": "transfer-browser-distribution",
+      "bytes": 292028,
+      "sha256": "9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\_http\\gzip\\a5c51343bdbca79e88a3abbb32197c26d54cb67d05a4addd9d66ed5cb8862cc2.gz",
+      "role": "transfer-browser-distribution",
+      "bytes": 81170,
+      "sha256": "a5c51343bdbca79e88a3abbb32197c26d54cb67d05a4addd9d66ed5cb8862cc2"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\_http\\gzip\\ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz",
+      "role": "transfer-browser-distribution",
+      "bytes": 2331,
+      "sha256": "ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\_http\\gzip\\bcba1392d36142948301aac40a78c7f8c6c5e3913f38037cd18cd8c1e946e61b.gz",
+      "role": "transfer-browser-distribution",
+      "bytes": 6740,
+      "sha256": "bcba1392d36142948301aac40a78c7f8c6c5e3913f38037cd18cd8c1e946e61b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\analysis-frame.mjs",
+      "role": "transfer-browser-distribution",
+      "bytes": 5419,
+      "sha256": "0e5885fe8d76c7df6b75b83e53f91ca5c7ec5039b9106ef37e37e000bfcadc97"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\analysis-worker.mjs",
+      "role": "transfer-browser-distribution",
+      "bytes": 19988,
+      "sha256": "c5c23b7ff96ae2760cc453c55e00de61e0ba19d53ccb380c0c099c3d1531a6a7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\analysis.html",
+      "role": "transfer-browser-distribution",
+      "bytes": 151,
+      "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\boot-loader-derivation.json",
+      "role": "transfer-browser-distribution",
+      "bytes": 840,
+      "sha256": "a8463b59d61b4e0685403d855ed3f6b20e29cc85d57d3d88a51b4f2da7837466"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\boot-reader.mjs",
+      "role": "transfer-browser-distribution",
+      "bytes": 3782,
+      "sha256": "672b5b18280df2a34e439650f1ca9917e6f9a6c6bda63649c955ba62d50b8d02"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\distribution.json",
+      "role": "transfer-browser-distribution",
+      "bytes": 13940,
+      "sha256": "988df6ad0cd9417365ab3fb5252be73c0cc2950e891de9299de3089c85575d3d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\frame.html",
+      "role": "transfer-browser-distribution",
+      "bytes": 211,
+      "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\frame.mjs",
+      "role": "transfer-browser-distribution",
+      "bytes": 321105,
+      "sha256": "3cb2dadf0987192a3fa15d2ce1e0b35a15f2ebd1c8687cc993b6c64b868c9b44"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\http-compression-recipe.json",
+      "role": "transfer-browser-distribution",
+      "bytes": 134,
+      "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\inspect.mjs",
+      "role": "transfer-browser-distribution",
+      "bytes": 698465,
+      "sha256": "253e88ede2fc73f9396a94779b3e465d51ec920d2d530e4fa157d26e5c2c2502"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\playtest.mjs",
+      "role": "transfer-browser-distribution",
+      "bytes": 725790,
+      "sha256": "778dcf87c03a4ede2a53060d7fe01c503fcea26654cea4d7e3edf78de5ef2e69"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\pyodide-lock.json",
+      "role": "transfer-browser-distribution",
+      "bytes": 119077,
+      "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\pyodide.asm.mjs",
+      "role": "transfer-browser-distribution",
+      "bytes": 1530472,
+      "sha256": "eb71d9513398562cdcde73ec7bb03b4871f6cc21de69d42aa69884994e503e9b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\pyodide.asm.wasm",
+      "role": "transfer-browser-distribution",
+      "bytes": 9598218,
+      "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\pyodide.mjs",
+      "role": "transfer-browser-distribution",
+      "bytes": 21884,
+      "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\python-modules\\sz_audio\\1.0.0\\__init__.pyi",
+      "role": "transfer-browser-distribution",
+      "bytes": 469,
+      "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\python-modules\\sz_audio\\1.0.0\\descriptor.json",
+      "role": "transfer-browser-distribution",
+      "bytes": 2748,
+      "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\python_stdlib.zip",
+      "role": "transfer-browser-distribution",
+      "bytes": 7066273,
+      "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\standalone.mjs",
+      "role": "transfer-browser-distribution",
+      "bytes": 724266,
+      "sha256": "5ec7690ee22cc337a3473cb71bf5b1717da48b12326ca3bf31895864aaea623b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\turtle-protocol.mjs",
+      "role": "transfer-browser-distribution",
+      "bytes": 3466,
+      "sha256": "2ab82a77c9e1cc10f549899e1c4eadcf878d351cebf009e421a0aa878c5b0c57"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\turtle-renderer.mjs",
+      "role": "transfer-browser-distribution",
+      "bytes": 15872,
+      "sha256": "1df132c0822edc78070e21e77cadbb383d53bae0e977e7d175485fbc7482f1c5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\turtle\\_sz_turtle_backend.py",
+      "role": "transfer-browser-distribution",
+      "bytes": 18183,
+      "sha256": "666ae2dd739dfb31cbb9453ffe948ed88fcb2c74ef5ad978199c8339b5b4620a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\turtle\\_sz_turtle_colors.py",
+      "role": "transfer-browser-distribution",
+      "bytes": 25484,
+      "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\turtle\\_sz_turtle_limits.py",
+      "role": "transfer-browser-distribution",
+      "bytes": 435,
+      "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\turtle\\turtle.py",
+      "role": "transfer-browser-distribution",
+      "bytes": 117612,
+      "sha256": "63759ac09e0caaef0eb70e13f49e706d1752141d5351ec888e24b72667852a68"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\worker.mjs",
+      "role": "transfer-browser-distribution",
+      "bytes": 334092,
+      "sha256": "32623cf1bf24f241ae83c82ec261f15e66382220d904d873e22f473b2fcb2d28"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\tcl-clock-causal-control-r1\\native.json",
+      "role": "transfer-clock-evidence",
+      "bytes": 3788,
+      "sha256": "b837756a44d688a2f54534dcf21cd838ae8b845abc0be04a4f56256649035a23"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\tcl-clock-causal-control-r1\\owner.json",
+      "role": "transfer-clock-evidence",
+      "bytes": 568,
+      "sha256": "3b24589576592ddcc92da38f7d00456e1b6af05b88331f23efb6fbbb59adf8b2"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\tcl-clock-causal-control-r1\\supervisor.json",
+      "role": "transfer-clock-evidence",
+      "bytes": 797,
+      "sha256": "581cd124e6043e6175b5ce96b510b59ecdf5c920b2f2089e1f88369904fe3de4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-package-r1\\REFERENCIA.txt",
+      "role": "transfer-environment-recipe",
+      "bytes": 2253,
+      "sha256": "fa15304adaf0ef7c0cc4b014938cd066e5a528a2c32e85a2eb990df415475917"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-package-r1\\install.txt",
+      "role": "transfer-environment-recipe",
+      "bytes": 28,
+      "sha256": "b70c07932795ca3c354bc66c328c830f6a41aae4f0193529a820f6472013d09a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-package-r1\\pyproject.toml",
+      "role": "transfer-environment-recipe",
+      "bytes": 381,
+      "sha256": "1e251aaf430d1fbe02d4b0c077b6d96cf0340feabe891edd554a87370a17ebd4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman-canonical11-9557-r1\\inventory.json",
+      "role": "transfer-export",
+      "bytes": 4678,
+      "sha256": "be69c945a62b19ef5fa84d50abc98d09cbb6cdb59dea57e802a3be053b233e6b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman-canonical11-9557-r1\\receipt.json",
+      "role": "transfer-export",
+      "bytes": 11788,
+      "sha256": "4aff52e28081d67691c5fead0b8da1f59a0a87e83eb5d91a3c78b09a29debc09"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman-canonical11-9557-r1\\source.zip",
+      "role": "transfer-export",
+      "bytes": 449180,
+      "sha256": "8de6df6a881a579a6aed4918318cfb92ff249d99b361f924073cbfc9389f4ce9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\space-arena-canonical12-face-r1\\inventory.json",
+      "role": "transfer-export",
+      "bytes": 6187,
+      "sha256": "d70276fa5443b3617fcf44f4297503e6eb758f9ae3e8f7ac7f4a739c379224a5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\space-arena-canonical12-face-r1\\receipt.json",
+      "role": "transfer-export",
+      "bytes": 12849,
+      "sha256": "9acc5ea7b0d1d4fc4f9239299df2062f39281a894d39a45dc8ba3238efa3d419"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\space-arena-canonical12-face-r1\\source.zip",
+      "role": "transfer-export",
+      "bytes": 23243489,
+      "sha256": "14b95ac84cf7eefc9ff3bdcd6abc6c743c230dd52c0632eaf2c1a0659608a6c1"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q02-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1071,
+      "sha256": "422c104420d299246c8b87011613fdbecee59f61c61465a408d23aa48176a9e9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q02-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 32025,
+      "sha256": "d343310c94c9737faffee5c67e469f3e59388416ebdbdfcb1d3525fa6817bdd3"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q02-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1283,
+      "sha256": "3dded21ff6db6083a5cfad1120f674941ca1e2b3a3558db3a56fa45a7f34a16b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q03-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1072,
+      "sha256": "3514742e4e5816aa3d272aa4b3b9c1061a9d5942a46ee0db0bfe83bb7e54e01e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q03-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 22522,
+      "sha256": "a8c2d6b384778e3f55696cc6edadc30711af1081a43b8d16b0fb19101871d126"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q03-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1284,
+      "sha256": "50a349502f3c1076644f8c91f19ba42f954cef29ca29b6b62cf0eb6a2b826f00"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q04-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1071,
+      "sha256": "3aa5f150d7375072dd52fec426c96dfda7c693e9e63833c7acd512d3b57f3d4e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q04-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 7255,
+      "sha256": "02a3d5b7541b664dcaf9207213574bf884120a4500540102801b0ac77ab2de8c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q04-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1283,
+      "sha256": "f72c56b5540a5143c840ab94ba898a67d54e5074fb834e565d08fb860bd185fd"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q05-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1072,
+      "sha256": "d5e379b6c160fb5f0e25ae5975b2ca18471dc6249c31efff3659fbaf1ebd96a0"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q05-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 6494,
+      "sha256": "58fdeb3e161a94dbb1fe579683c7dec2745593fa9f0baf63e122c653b6219780"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q05-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1284,
+      "sha256": "7cfa1e47f635b9a572dd0e8e9471344e17b4522779979f0e334e8e2744d59235"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q06-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1072,
+      "sha256": "0b12212bbac7ca63af63eb0980d4e60d8fe4a90e67c81ec70fb7bfbcf1de12b8"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q06-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 9725,
+      "sha256": "134bcb7e4d099c158f01cbed82eee3b28f1f4c0ad54c18c78d2a92fc13524d45"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q06-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1284,
+      "sha256": "925f280ab5cae385bed4f1ac11ecc2f0a6fee734cb889cecde942e05d30a000c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q07-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1072,
+      "sha256": "99b9baedd8e686c9a9f713612740116ea48e533d7c252dcafa5cedb5c09c21be"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q07-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 18565,
+      "sha256": "1580b85d7782a0b868375a3d0bbacd0eea57c68e16393ef90b0a93e0a0a1519f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q07-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1284,
+      "sha256": "6e5490d7a798c8dd5d76f5dda897e754ba3eba5e332d65ce14ed14301c618c36"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-death-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1092,
+      "sha256": "3efcc621c73c7748a9f8b11618c32d09ad0b40da519a4a80e221d8ae9ec66028"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-death-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 22425,
+      "sha256": "399cb2dcaa6c0571920b12ba48cd708ddd22de3ca04a69ab9170c3a5d4e2aa77"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-death-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1304,
+      "sha256": "c13e8e62e04e4ff4e613985bacef97a456aeabd6bf9970e0f904efdf5104e0bd"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-defeat-near-end-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1120,
+      "sha256": "bed88bdbe5c2890b353fc5f18de7dd24cf9c4440c6de3aefebb3590b9d6ff45c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-defeat-near-end-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 27972,
+      "sha256": "479502a434ca9a59055aab22d5d54d65e5645537bb0debce3faaf068b40fea97"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-defeat-near-end-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1245,
+      "sha256": "d93e233b8a3915391d08dd9a84307bacaf7117ba84faa9d12ff89407f3af4a42"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-defeat-paired-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1119,
+      "sha256": "13a70456be0b523edb9dd4af88dccde317a0b22e43466fb9efbcdf2db830e5c9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-defeat-paired-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 28833,
+      "sha256": "71df7bed03744b94a250135002069d71d1e176fd71da7043feff08c4012fa937"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-defeat-paired-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1331,
+      "sha256": "036fcf8fe27ba1b6c3280b7b0c3a48c2a840d09708f0e10a33ff0d5be576b1b7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-observe-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1098,
+      "sha256": "76777173b93e5080f07d81262891bbf6121638d9d5c205e486c260321665d4d9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-observe-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 45993,
+      "sha256": "cbd062901a54415ad751a455714407deb6a91311d62c46e593fbf52103555662"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-observe-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1310,
+      "sha256": "51078f8c05020ece9b137c181a75b0ba0b5d0e4102559ad7800c346c40ee707e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-pellet-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1095,
+      "sha256": "c661d8d2b111b91d119ab6c089a190557860da147d5f5f7f02fa0737d344a18d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-pellet-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 24949,
+      "sha256": "d0f14c5237b322dce724c8b47c8c07561d43488eb8c75f1ab94271546bb26ee1"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-pellet-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1307,
+      "sha256": "3bc083a216766fb972eb047e13b5e5c4765ae47f0c870d6beaaa678e11381b70"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-power-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1092,
+      "sha256": "e0d8abdfc523271e0a8bea4defd635fc768bed2d8c6a108a0d20dc0d3c99aa80"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-power-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 49513,
+      "sha256": "9eb5018a8b8d22a758ffdd1f69fe61962c946599843249bd95403e0f0d96dbbf"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-power-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1304,
+      "sha256": "fde9e098f9f162a7eb6ed16c60bb6c4bad1782bee500d23d82a022bf86b24344"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-victory-near-end-r1\\owner.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1124,
+      "sha256": "1d8b56d51ef54117a48b8bc0c82b6fe2ce188ca1a94120d23d4837914220fe65"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-victory-near-end-r1\\result\\native.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 28130,
+      "sha256": "589a3752863d672851816f4a394ca1b751087e1b8b5ac5efe03815d711501f14"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-victory-near-end-r1\\supervisor.json",
+      "role": "transfer-native-evidence-including-negative",
+      "bytes": 1336,
+      "sha256": "0f622d4c56fd709858b5e786a6ecc133f852063b3db89424020fae6c2cab974d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\current-host-browser-package-r8\\future-scenarios.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 2799,
+      "sha256": "a1a3e8e938c7d8f47b2fb34126548fd139f98d3416c3a0281defcc67030f364c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\current-host-browser-package-r8\\source-freeze.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 9705,
+      "sha256": "b4f70d586a34f2b1db2ca6a485d7364daad409abd4e5b40daf0881316711df7a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\FIRST-Q02.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 3288,
+      "sha256": "81afb98d059e2851c810e301084e79edda49e1616820068ee7a09c039b683d69"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\first-q02.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 1861,
+      "sha256": "c3591cf932de008da800f79a8bc2cef9b069a7011bc6211c1bed0948940f3458"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\packet.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 8856,
+      "sha256": "150c7e193ff68b9674c64e54e1d870d0783adaefdd87a776589878d4ee955100"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\review-delta.patch",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 3049,
+      "sha256": "82fd6aab5d320093614d3c563d1e8ea75a66a6c9eced6a6e87b8e7904b398799"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\run_space_arena_native.mjs",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 5796,
+      "sha256": "cae7c8fd4c4db8f0622b4116b82c466e162170d5680eaeca428d04d3b25754e7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\space_arena_native.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 14168,
+      "sha256": "e6cefcb36ad08d6c2130c2a4c2eb3e9b05aec76d2f6837c21e02e88f803d83c1"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\space_arena_observer.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 18618,
+      "sha256": "7e5cf907ac894acb35a0b7fa044a8a53664efb2beb858ac4c69e1212cd3d890a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\static-verification.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 413,
+      "sha256": "c054f37fe4fd0d610d28e9be21172d563ddce5975f265b0a64de2882284d186c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\verify_static.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 2737,
+      "sha256": "e2a73ad11518eb37d5fccac326e3eecd08bdf7196f5f12b717f95c969f54f72d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-browser-functional-r1\\CONTRACT.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 6161,
+      "sha256": "a08e47272dc76c0ea4f427d518eeb5aae4c7d02fa08661f1dad4de5237b8ed0f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-browser-functional-r1\\SAMPLER-REFERENCE.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 1504,
+      "sha256": "f1a4b2a40fc7b1aa2fd248131fc18b4e547e29e290f7d4839b8704ed935e5207"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-browser-functional-r1\\functional-inputs.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 4609,
+      "sha256": "486ebd588cc1cdd7cb6f7166b23c5e1bdc1b4cf0306bb5ca30ec5a0116be17e1"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-browser-functional-r1\\prepare_inputs.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 4486,
+      "sha256": "0b9a8ad39948b52483ab45c039a8ea42e35ce3a91832d742a4cb5a1ccb2ceeb2"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-browser-root-functional-r1\\CONTRACT.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 2894,
+      "sha256": "faecc60c40548b960ddb6f62e49e923eeae35ee8620791e0b1356a54e7f03387"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-browser-root-functional-r1\\prepare_inputs.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 4659,
+      "sha256": "1c53c7947897a06edcf96b2989557604035d192b6d6d389f54fd8d262d75420e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-browser-root-functional-r1\\root-functional-inputs.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 3733,
+      "sha256": "33f3dcf586de866650ec61730c021e05df8670f1984b4930121f265dd89a65df"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-consolidated-r1\\HANDOFF.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 6540,
+      "sha256": "f164bf1f362c468209697d0ebcfb5fedd362c650e470ec7d71458d0aaec48c84"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-consolidated-r1\\consolidate.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 4396,
+      "sha256": "d42fcfc2271c3bca502bab7d3cff3de7097f9ac2cb53995e62fa17678d72bcdb"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-consolidated-r1\\receipt-index.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 15239,
+      "sha256": "7e6fd9f3b7d2c355e6379ef46087f117e8b7b689cf2f6906e0772f2b43fe012f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\REVIEW.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 8325,
+      "sha256": "12292cf0fd845b295f374403681c20630c0f4354fb9e97d7e3a46dabd5b9b2f7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\TIMER-DIAGNOSIS-r1.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 7950,
+      "sha256": "96f078e74bf2b20c4038837466935303b6d981a6d4c80c41c0055dbd0a9bb6b4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\export-pins.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 12082,
+      "sha256": "e7deb16fa1604d34012035783a8a407db89a53cc7b548094e4ffd5be8ef9a1f4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\export-preparation-negative-r1.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 539,
+      "sha256": "6d66c80cc0a43fccda173475203ab21923beace16a03656e0d0210aace0b2569"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\export-process.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 206,
+      "sha256": "7881abb16ccc88033a991f5d11dad1d746e5ac1290af29be1f9f5498c76c0723"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\packet.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 10423,
+      "sha256": "f27267e9c69b833980cd250ded3467442a37e52a81b6d1b47bcde11d214941af"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\pacman_native.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 16943,
+      "sha256": "3a5c977393bd4f8a48f6ee62fcfcdc6ab588c16095a7adb1ae6ac1e8a134c075"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\pacman_observer.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 5610,
+      "sha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\prepare_export.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 5681,
+      "sha256": "cbd46b65d2f78d324b5c7a98a98e5ae6a42203dc92e4ddf80dfda625fdea50f9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\prepare_native.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 11230,
+      "sha256": "69bb45b8e046f7076ba04542c08a1c5f9c483b41fa92cc1ccb50a92605af71db"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\produce.ts",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 11071,
+      "sha256": "b4824bfb72aca40f51f71fbed6815e361d51ff7ce3c1adff5480d2eb0fe8b565"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\pure-review-negative-r1.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 533,
+      "sha256": "35480d24edf6ae24543c1e619f8797335b7cf99bc6b9b3f3ca93dbc8e13c1095"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\pure-review.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 783,
+      "sha256": "1613f6ab1772b3470276205caab0608ea30ff67986c7f6a115e24482ceafd3d5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\review_pure.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 3857,
+      "sha256": "56fa3f77415a1fd31b665af053cf9101baf03129895b728072adca474aec5677"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-package-r1\\run_pacman_native.mjs",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 5948,
+      "sha256": "2888d0bfb8e5e642d27569e5bc32fdb51db825faac92e5ea9c65160a16894471"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\ACTUAL-RESULT-r1.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 3272,
+      "sha256": "a8055a558705da5eae2bd42628b183078a2eb869bd62424977dbb6203618a492"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\REVIEW.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 5801,
+      "sha256": "07bb2adc3a5ae9bfc00fcd0897410cd1558c67a6a4c842ccc43366f461968a2c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\execution-witness-r1.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 199,
+      "sha256": "f8e4ac4221f7c0e630224d38ef2de3eac4709f299dfa7ac2fb66d12797a0b9ef"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\instrumentation-only.patch",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 1730,
+      "sha256": "9d5191764e905f6c90eeda620a9f4987ce7543ec62aa804062464cc21b01620c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\packet.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 9850,
+      "sha256": "099f802cad4783cd422182710820730025fef6feda79e1e8824e4e20bdf0c241"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\pacman_native.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 17893,
+      "sha256": "4467095db76499c4e6f1d2a169283507b8f57a294b99f26556ca8adad60ca600"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\pacman_observer.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 5610,
+      "sha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\prepare.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 4605,
+      "sha256": "208d1e3167f9029c8b093ef42076dfbcece5c70069640a0e9064e92398db8d1e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\proposal-pure-review.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 304,
+      "sha256": "88c751a6c46bab161217f991a978bfb048f343b76d943d89069fcfc03b365837"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\review_proposal_pure.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 2526,
+      "sha256": "084626a9f060f0f4d41f24df04fb06509c093e748b44a388093fe2d991eda24f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\run_pacman_native.mjs",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 5948,
+      "sha256": "2888d0bfb8e5e642d27569e5bc32fdb51db825faac92e5ea9c65160a16894471"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\static-review.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 445,
+      "sha256": "070f85caf24c69c926a29362cde3545ec2ee26097209c6ad247bacc0cf014291"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\tcl_oracle_proposal.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 1595,
+      "sha256": "654028900be986f165e93d0020b546542505506f496a2498b3a6a83f8d3772eb"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-pacman-core-r1-payload-review-r1\\VERIFICATION.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 1156,
+      "sha256": "00a2f6bc3211d6723f3e4e46520739768b87bf41824da1a2bd10090add18e41e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-pacman-core-r1-payload-review-r1\\review.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 4084,
+      "sha256": "879f562d576a3c254dce8fb8e19537cfd983ad8ed708d585649e4b2842022797"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-pacman-core-r1-payload-review-r1\\review.ts",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 8775,
+      "sha256": "b69af745d35b382ef7284e34710d8981bc48bb221be8c91b91b88efa85ae5f45"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-r3-functional-payload-review-r1\\NEXT-BATCH.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 2715,
+      "sha256": "d7049a9393266623141c88810fe661b517ab9acba4c4ffe9cbc401bed90d1b0b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-r3-functional-payload-review-r1\\VERIFICATION.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 1418,
+      "sha256": "1152f5eaae60de483a6090c59fb08068c8d1b98bc639f9d605ab020dc47f4397"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-r3-functional-payload-review-r1\\review.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 31067,
+      "sha256": "31475d1873bd599bb2e348cad1dfb0b698ef3e3e8cc68135e0e672c6184a759d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-r3-functional-payload-review-r1\\review.ts",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 7935,
+      "sha256": "e2933e2abce87155b0ff55a7b8cda99109d95b05114707f011d3c0357c2a58d9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-space-input-eventloop-r1-review-r1\\VERIFICATION.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 2144,
+      "sha256": "35de68486d1e0fc5c07467b15aed5a47c448b6b2925849cf410cf04db3a35792"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-space-input-eventloop-r1-review-r1\\review.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 47265,
+      "sha256": "c92bcd42f7894c9f9ec1648101b8ec3e2cf9ae579d99a9bdde9e37a685954141"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-space-input-eventloop-r1-review-r1\\review.ts",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 8803,
+      "sha256": "e52d88572799ef0d82aed0886a4f13f886f7b7b870fff676fb9cafcdc497358a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-space-q03-q07-payload-review-r1\\NEXT-EXISTING-CASES.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 2764,
+      "sha256": "6be88113b4b8fb3af3b1ce7e8743916caab21ce0b31c6a769caabb236cc65345"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-space-q03-q07-payload-review-r1\\VERIFICATION.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 1198,
+      "sha256": "20faa861b412ffd7b949a9e6bc286eb03d42d3db8a4ec338b707bec97d63c48b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-space-q03-q07-payload-review-r1\\review.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 14435,
+      "sha256": "02c3d9f50f28e9f57e364a6e2e39ba9b01ff00e0828686230e91114ac0ca53c4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\root-space-q03-q07-payload-review-r1\\review.ts",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 12398,
+      "sha256": "b4dbf7eb9c054439a772da324772d913357041a4d22d185b57a9093a6376a3ae"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space-q08-package-r1\\PACKAGE.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 4368,
+      "sha256": "85d89117ecf5facaae2422ad578ac0cdd3409b604491351f3dd143dee67744d4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space-q08-package-r1\\VERIFICATION.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 1157,
+      "sha256": "b2138902d8dd02f16e95f85795b6b9ac7213b9ab2f149d47978bb86bd6266039"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space-q08-package-r1\\pins.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 3205,
+      "sha256": "366376edbc38af4d91e82f1b407d0c15c2c2b32dfdddfc3710374463e811f899"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space-q08-package-r1\\preflight-negative-r1.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 685,
+      "sha256": "62344e98fcaf44fc9b7e0695e4fd0a46fcf6e1a792107e324f185ad33fd79318"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space-q08-package-r1\\preflight.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 4036,
+      "sha256": "14a19ad4e9a6e6a0bec6bf0baf486a8f43c58ede4c83576409045619732ce9bf"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-native-q08-pause-package-r1\\PROPOSAL.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 7949,
+      "sha256": "0a2484dd5823ce0a1c40f8ef39cd34036b4b51fd1690230bbb979b35073a6140"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-native-q08-pause-package-r1\\packet.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 11080,
+      "sha256": "b6f60e6551dca748be2ee2cac3d3e09c3a5ad07592d8b429071c2c6164df9ac8"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-native-q08-pause-package-r1\\prepare.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 4902,
+      "sha256": "1cae67437f401058d55d85bdb2b69f0445d649ce64df48972da970d7420c8323"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-native-q08-pause-package-r1\\run_space_arena_native.mjs",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 5796,
+      "sha256": "cae7c8fd4c4db8f0622b4116b82c466e162170d5680eaeca428d04d3b25754e7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-native-q08-pause-package-r1\\space_arena_native.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 14168,
+      "sha256": "e6cefcb36ad08d6c2130c2a4c2eb3e9b05aec76d2f6837c21e02e88f803d83c1"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-native-q08-pause-package-r1\\space_arena_observer.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 18618,
+      "sha256": "7e5cf907ac894acb35a0b7fa044a8a53664efb2beb858ac4c69e1212cd3d890a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-native-q08-pause-package-r1\\space_arena_q08.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 6389,
+      "sha256": "8eb1871295d8496330ac23ad37d478af3ce2af6715a2347549f5ae136e3d8c12"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-q02-q04-browser-checker-r1\\ACTUAL-VERIFICATION.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 2134,
+      "sha256": "cd1f5389649182dc4d09ba90e372cedfcb5a25cfc2f2e719722f690ff51028f1"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-q02-q04-browser-checker-r1\\EXECUTION-PROVENANCE.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 1922,
+      "sha256": "6e704ca569b7f909fb5c168b70460cf1ae5429aab991d80981a3284b81455871"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-q02-q04-browser-checker-r1\\REVIEW.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 1986,
+      "sha256": "ebf1ed46a9ea3a9898832d5846092714d65b1ce0f3edaf11b813a37169abad65"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-q02-q04-browser-checker-r1\\actual-review.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 43114,
+      "sha256": "b26a6bfebe5f7bc981d762e5efc963a4eec7aed15c47299e0f8a5b9b0562f5b9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-q02-q04-browser-checker-r1\\check.ts",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 10436,
+      "sha256": "828e89118afbcb78eeee0d3b15d52b84a0c0863d22efb9f70ac68e043b23302e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-q05-q07-browser-checker-r1\\REVIEW.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 2068,
+      "sha256": "f40efb2b89acb4f8bb4e8cfa309639e8dc86e844d1d6bd3a9c69e8928bc7dd7b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-q05-q07-browser-checker-r1\\actual-review.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 14677,
+      "sha256": "701bcf8ff1eb8ac14b744f226c31d78a784bbb992681250fe5b5cd7e3009c160"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\space12-q05-q07-browser-checker-r1\\check.ts",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 10971,
+      "sha256": "8ffa6a1de89320872802c2ba95e22b1e02ca2b3cc10b513b901842e071cdb5d7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\tcl-clock-causal-control-r1\\ACTUAL-RESULT-r1.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 2900,
+      "sha256": "4fe8e1aa8a84658a21ee6178d237792a7935eaa3ba1ebda299714090dad74209"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\tcl-clock-causal-control-r1\\REVIEW.md",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 4003,
+      "sha256": "4ebdaff69651ff7f6dc8685942680336ee009f55dcc51aace5279b0f890154b5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\tcl-clock-causal-control-r1\\packet.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 5543,
+      "sha256": "3d46e99b80448903029c780ba5f63cfa891398d377de99e724272bd743e4a063"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\tcl-clock-causal-control-r1\\prepare.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 2725,
+      "sha256": "bb883df0b1ab89981584f45dcd103e2499ee066e541a243be964a854765c6ace"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\tcl-clock-causal-control-r1\\probe.py",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 7390,
+      "sha256": "25e6580b260ba6307347e03b3abe549b164111f5c8675ebbcf6b9089e38ff549"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\tcl-clock-causal-control-r1\\run.mjs",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 3386,
+      "sha256": "62ae3f738d7e6de94407eaedd48921b7bdc3a332fcc630a112c6cb1c67076ba5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\tcl-clock-causal-control-r1\\static-review.json",
+      "role": "transfer-qa-preparation-or-review",
+      "bytes": 379,
+      "sha256": "7137533eb4cee9bc879927ad437d114fab611d20f2a633542315b77df84e0e14"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\native12-q02-root-review-r1\\review.json",
+      "role": "transfer-root-semantic-review",
+      "bytes": 597,
+      "sha256": "b1c00f636b2ef89fa71f618daacce2fb225fa5a9c39ca07db0a88a3fb06e4434"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\native12-q03-q07-root-r1\\receipt.json",
+      "role": "transfer-root-semantic-review",
+      "bytes": 1376,
+      "sha256": "69c0be6c90eed10d122b7072d955728e43d6aca4d1b18237458796a079f145f4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\native12-q03-q07-root-r1\\semantic-review.json",
+      "role": "transfer-root-semantic-review",
+      "bytes": 4132,
+      "sha256": "a3b3c88743943621f4c7eb2ae271e23847d53447c9f77f6db64d9a0f48f6b817"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\_cffi_backend.cp314-win_amd64.pyd",
+      "role": "verify-existing-environment",
+      "bytes": 181248,
+      "sha256": "9e99b2184c60f21a88cafc374386ded3559e8694ed7cf111f2869e066d303334"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\_miniaudio.pyd",
+      "role": "verify-existing-environment",
+      "bytes": 601088,
+      "sha256": "4639e3ae31285aaf2a02cf4d237d4f237f9bf0bac91af723ee8e5195fbb4d43b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\cffi-2.1.1.dist-info\\METADATA",
+      "role": "verify-existing-environment",
+      "bytes": 2594,
+      "sha256": "67b6a7595df7ede2195016a05d285faa7d362a8f57c238984edb8bb674b5770d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\miniaudio-1.71.dist-info\\METADATA",
+      "role": "verify-existing-environment",
+      "bytes": 26453,
+      "sha256": "4c375f306c54fe64792ffc56fb2a2b5a6458d644149d268898393364cab56f1c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\miniaudio.py",
+      "role": "verify-existing-environment",
+      "bytes": 90613,
+      "sha256": "282bbe1d936a67b942597303a534e42fdfe407c245686dab5949f46027b59d7f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\pycparser-3.11.dist-info\\METADATA",
+      "role": "verify-existing-environment",
+      "bytes": 8238,
+      "sha256": "e3a74c846648bb55f4f907284b745e2003b87b96d9c9d17a8a50cf37804541c9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\__init__.py",
+      "role": "verify-existing-environment",
+      "bytes": 2832,
+      "sha256": "36d5a58ebb43004cfd10aac2708350f16ced161a2cb8062915e644f491a227ba"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\__init__.pyi",
+      "role": "verify-existing-environment",
+      "bytes": 469,
+      "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\_desktop.py",
+      "role": "verify-existing-environment",
+      "bytes": 6304,
+      "sha256": "df8f0d7b7baefdd18ba8979b8f6634d7deb6496355f6fb018a2de1d86b3f6b42"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\_mixer.py",
+      "role": "verify-existing-environment",
+      "bytes": 1833,
+      "sha256": "78b23124b0d05ad74b6aeb37d4ed5e5c986331f20d3f262374647ae4b2a600c4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\_module.json",
+      "role": "verify-existing-environment",
+      "bytes": 2748,
+      "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\_wav.py",
+      "role": "verify-existing-environment",
+      "bytes": 2613,
+      "sha256": "1dc17a15bc63439c8cbdb14af8227104a8034c56261c497c7692badb55ab6f87"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\py.typed",
+      "role": "verify-existing-environment",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Scripts\\python.exe",
+      "role": "verify-existing-environment",
+      "bytes": 255320,
+      "sha256": "e725f520cfbb2e4844fe0a9fc8949236f20b0d67e470d1232618b99504a0691a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\pyvenv.cfg",
+      "role": "verify-existing-environment",
+      "bytes": 462,
+      "sha256": "3f96d69d9c2271c487c6069a158ca6b9d3e2f696eda3016ce0c6af455fada55c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\node_modules\\.bun\\@playwright+test@1.60.0\\node_modules\\@playwright\\test\\cli.js",
+      "role": "verify-existing-environment",
+      "bytes": 707,
+      "sha256": "79e23e6a249176295b8490567daa7717448a75866d6ea6f6b296ff3d23305c69"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\bun-1.4.3-isolated\\extracted\\bun-windows-x64\\bun.exe",
+      "role": "verify-existing-environment",
+      "bytes": 96390232,
+      "sha256": "095db4abae203d42f29fdec26da4a882fcde6333cdd84e40c0c7828c0cf543f6"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\DLLs\\_tkinter.pyd",
+      "role": "verify-existing-environment",
+      "bytes": 69464,
+      "sha256": "f1d7eebfe85d0b3ef56e9db4d23fe3421de7ed77bfd8bea1df83a1ae96600fea"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\DLLs\\tcl86t.dll",
+      "role": "verify-existing-environment",
+      "bytes": 1842008,
+      "sha256": "2fd6035e9e26b90ee5cb5e6f22f9dbc2a3576c81a5da4c673e0d36a540c55c2a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\DLLs\\tk86t.dll",
+      "role": "verify-existing-environment",
+      "bytes": 1591640,
+      "sha256": "abcabe172f982a2969ef45dd2c79630c2dd84562b657e11dd97cf2bcfce095c7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\Lib\\tkinter\\__init__.py",
+      "role": "verify-existing-environment",
+      "bytes": 193096,
+      "sha256": "ee48b704fbc0066a2bbdd2492eb5a8164a0b7a5ebc06736bdc4c19a52a0260b4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\Lib\\turtle.py",
+      "role": "verify-existing-environment",
+      "bytes": 153810,
+      "sha256": "8ba9c0ad9ca5c546df1034709b74dac3f76a9799e97800f0e04aca6213ca8fc4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\python.exe",
+      "role": "verify-existing-environment",
+      "bytes": 106328,
+      "sha256": "fda7026477256845afab371e354c4d512896665f1761939cb5887d0a9dec257a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\node-v24.22.0\\node-v24.22.0-win-x64\\node.exe",
+      "role": "verify-existing-environment",
+      "bytes": 93882184,
+      "sha256": "ba93f9a70bd86fce3ebbb39ec758501458453467aa92a34a0a3602d1e3fc2b9c"
+    }
+  ]
+}

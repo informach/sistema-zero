@@ -1,0 +1,19 @@
+{
+  "noServices": true,
+  "noBrowser": true,
+  "actualHostVersion": "7.6.7",
+  "cases": [
+    {
+      "simulatedVersion": "7.4",
+      "stoppedBeforeAnyProcess": true,
+      "guardRefused": true
+    },
+    {
+      "simulatedVersion": "7.5",
+      "stoppedBeforeAnyProcess": true,
+      "guardRefused": false
+    }
+  ],
+  "noProcesses": true,
+  "state": "minimum-version-control-passed"
+}

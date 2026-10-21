@@ -1,0 +1,101 @@
+import { check, fail, project, environment, services, target, uuid } from './oauth-context.mjs'
+
+export const membersDeploymentId = 'b5c4b311-134c-4c6b-b070-d325b52ac17b'
+export const cliArgs = Object.freeze(['deployment', 'list', '--project', project, '--environment', environment, '--service', services.members, '--limit', '1', '--json'])
+export const cliBudgetMs = 45_000
+
+// No credentials in child env/argv. Official CLI owns config locking and OAuth rotation.
+export function cliEnvironment(source) {
+  const result = {}
+  const allowed = new Set(['PATH', 'SYSTEMROOT', 'WINDIR', 'TEMP', 'TMP', 'USERPROFILE', 'HOMEDRIVE', 'HOMEPATH', 'APPDATA', 'LOCALAPPDATA', 'PROGRAMDATA', 'PROGRAMFILES', 'PROGRAMFILES(X86)', 'COMSPEC'])
+  for (const [key, value] of Object.entries(source)) if (allowed.has(key.toUpperCase()) && typeof value === 'string') result[key] = value
+  return { ...result, CI: 'true', NO_COLOR: '1', RAILWAY_HTTP_TIMEOUT: '15' }
+}
+
+export function parseSession(config) {
+  check(typeof config?.user?.accessToken === 'string' && config.user.accessToken.length > 0 && config.user.accessToken.length <= 32768, 'oauth-not-present')
+  check(Number.isSafeInteger(config.user.tokenExpiresAt) && config.user.tokenExpiresAt > 0 && Number.isSafeInteger(config.user.tokenExpiresAt * 1000), 'oauth-expiry-invalid')
+  return { token: config.user.accessToken, expiresAt: config.user.tokenExpiresAt * 1000 }
+}
+
+export function validateCliResult(result) {
+  check(result.closed === true, 'oauth-cli-retained')
+  check(result.timedOut !== true, 'oauth-cli-timeout')
+  check(result.overflow !== true, 'oauth-cli-output-budget')
+  check(result.error !== true && result.code === 0 && result.signal === null, 'oauth-cli-failed')
+  let rows
+  try { rows = JSON.parse(result.stdout) } catch { fail('oauth-cli-response-shape') }
+  check(Array.isArray(rows) && rows.length === 1, 'oauth-cli-response-shape')
+  const row = rows[0]
+  check(uuid.test(row?.id ?? '') && row.id === membersDeploymentId && row.status === 'SUCCESS' && row.meta?.commitHash === target, 'oauth-cli-members-context-drift')
+}
+
+export function createSession({ read, cli, now, checkTime, record }) {
+  let qualified = false
+  return {
+    async ensure() {
+      checkTime()
+      let current = parseSession(read())
+      // Matches the CLI's is_token_expired: expires_at - 60 seconds. No heartbeat.
+      if (!qualified || now() >= current.expiresAt - 60_000) {
+        record({ phase: 'oauth-cli-read-start', reason: qualified ? 'expiry-buffer' : 'initial-context', membersDeploymentId })
+        const result = await cli()
+        record({ phase: 'oauth-cli-read-closed', closed: result.closed === true, timedOut: result.timedOut === true, overflow: result.overflow === true, exitCode: Number.isSafeInteger(result.code) ? result.code : null })
+        checkTime()
+        validateCliResult(result)
+        current = parseSession(read())
+        checkTime()
+        check(now() < current.expiresAt - 60_000, 'oauth-refresh-not-fresh')
+        qualified = true
+      }
+      checkTime()
+      return current.token
+    },
+    // Mutation cannot launch a refresh or replay. Refresh happens before origin observation.
+    forMutation() {
+      checkTime()
+      check(qualified, 'oauth-context-not-qualified')
+      const current = parseSession(read())
+      check(now() + 15_000 < current.expiresAt, 'oauth-mutation-expiry')
+      return current.token
+    },
+  }
+}
+
+// Direct executable, no shell/SSH/deploy. A timeout retains the live handle/PID; never kill.
+export function invokeCli({ spawn, executable, cwd, env, onStart, onClose, timeoutMs = cliBudgetMs }) {
+  return new Promise((resolve, reject) => {
+    let child
+    try { child = spawn(executable, cliArgs, { cwd, env: cliEnvironment(env), windowsHide: true, shell: false, stdio: ['ignore', 'pipe', 'pipe'] }) }
+    catch { fail('oauth-cli-spawn-failed') }
+    let done = false, error = false, overflow = false, total = 0, stdout = [], checkpointFailure
+    const finish = value => {
+      if (done) return
+      done = true; clearTimeout(timer)
+      if (checkpointFailure) reject(checkpointFailure)
+      else resolve(value)
+    }
+    const timer = setTimeout(() => {
+      child.unref(); child.stdout?.unref?.(); child.stderr?.unref?.()
+      stdout = []
+      finish({ closed: false, timedOut: true, overflow, error, code: null, signal: null, stdout: '', pid: child.pid ?? null })
+    }, timeoutMs)
+    child.on('error', () => { error = true })
+    child.stdout.on('data', bytes => {
+      total += bytes.length
+      if (total > 256 * 1024) { overflow = true; stdout = [] }
+      else if (!done && !overflow) stdout.push(bytes)
+    })
+    child.stderr.on('data', bytes => { total += bytes.length; if (total > 256 * 1024) { overflow = true; stdout = [] } })
+    child.once('close', (code, signal) => {
+      if (!done) {
+        try { onClose({ pid: child.pid ?? null, closed: true, exitCode: Number.isSafeInteger(code) ? code : null }) }
+        catch (failure) { checkpointFailure ??= failure }
+      }
+      finish({ closed: true, timedOut: false, overflow, error, code, signal, stdout: overflow ? '' : Buffer.concat(stdout).toString('utf8'), pid: child.pid ?? null })
+      stdout = []
+    })
+    try { onStart({ pid: child.pid ?? null, closed: false }) }
+    catch (failure) { checkpointFailure = failure }
+  })
+}

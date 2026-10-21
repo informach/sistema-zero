@@ -1,0 +1,598 @@
+{
+  "kind": "offline-owned-staff-legacy-pro-ui",
+  "schemaVersion": 1,
+  "rootHead": "01f7d35a87a70e006004f9fa992713b067f3ad7a",
+  "origin": "https://community-staging-66f2.up.railway.app",
+  "context": {
+    "RAILWAY_PROJECT_ID": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+    "RAILWAY_ENVIRONMENT_ID": "f634cff6-aafb-4804-8b69-172fad4e946e",
+    "RAILWAY_SERVICE_ID": "8c57d71d-3a8e-48f1-9627-63f1528b9a48",
+    "RAILWAY_DEPLOYMENT_ID": "fb235891-3fdc-4562-8db7-815543580ad1",
+    "RAILWAY_GIT_COMMIT_SHA": "8c0bb250dc7660869c247f799f126e99e0e93d9c"
+  },
+  "appDeployments": {
+    "community": "4172b78d-9f50-429d-820d-eaa106b105d2",
+    "members": "b5c4b311-134c-4c6b-b070-d325b52ac17b"
+  },
+  "serviceContexts": {
+    "auth": {
+      "serviceId": "8c57d71d-3a8e-48f1-9627-63f1528b9a48",
+      "deploymentId": "fb235891-3fdc-4562-8db7-815543580ad1",
+      "commitSha": "8c0bb250dc7660869c247f799f126e99e0e93d9c"
+    },
+    "members": {
+      "serviceId": "aa282801-ffba-477c-af6d-394b2f4f9af9",
+      "deploymentId": "b5c4b311-134c-4c6b-b070-d325b52ac17b",
+      "commitSha": "8c0bb250dc7660869c247f799f126e99e0e93d9c"
+    },
+    "community": {
+      "serviceId": "9df1b493-4cea-4b36-bec8-7299f054c17d",
+      "deploymentId": "4172b78d-9f50-429d-820d-eaa106b105d2",
+      "commitSha": "8c0bb250dc7660869c247f799f126e99e0e93d9c"
+    }
+  },
+  "cli": {
+    "path": "C:/Users/tocha/AppData/Roaming/npm/node_modules/@railway/cli/bin/railway.exe",
+    "sha256": "f9351033614c86882332a5c82e1856b21792b176ebf84a9417dfd1362c425177"
+  },
+  "expectedLockPath": ".cache/studio-python-l0/pro-legacy-hosted-9e33-r1/expected-package-lock.json",
+  "authPins": [
+    {
+      "path": "packages/auth/package.json",
+      "bytes": 1293,
+      "sha256": "dc2ed7b3925f20a8b8e3f08d6423aad11213c9aaf6d33f798bb3e025f4be8773"
+    },
+    {
+      "path": "packages/auth/Dockerfile",
+      "bytes": 775,
+      "sha256": "26259cdfb921cb1d0f7ee57c16dd9d3cc746cfbbd16a960ed0afb953e27801f7"
+    },
+    {
+      "path": "packages/core/package.json",
+      "bytes": 1738,
+      "sha256": "3fc14891655d74e1963b8fbbd97311863e274c990c190eb794044c63686f88aa"
+    },
+    {
+      "path": "bun.lock",
+      "bytes": 539814,
+      "sha256": "8a989c05e39bd7697878ee147575ff00dfa7830d6d0e96b3abbbdad14cb47dfd"
+    },
+    {
+      "path": "packages/auth/src/infrastructure/persistence/drizzle/db.ts",
+      "bytes": 1542,
+      "sha256": "9f6ccc552467ff9fadfffbcc749103a249838e15efd03c477030cf7817983fc2"
+    },
+    {
+      "path": "packages/auth/src/infrastructure/persistence/drizzle/schema.ts",
+      "bytes": 24434,
+      "sha256": "b71b3b5454a37156aad5b7cccabe7e2f48ec19e4ffa06dc05758345543f1da46"
+    },
+    {
+      "path": "packages/auth/src/infrastructure/persistence/drizzle/user.repository.ts",
+      "bytes": 9007,
+      "sha256": "414a3abe515584995130ab35a507c537f8c311665b8172ed6cbb6f53fba398c0"
+    },
+    {
+      "path": "packages/auth/src/infrastructure/security/bun-password-hasher.ts",
+      "bytes": 798,
+      "sha256": "9e1f8534db7695d6632cbc2570c65cc14ef4becb650bfab4d9d1311b788e7cb0"
+    },
+    {
+      "path": "packages/auth/src/domain/user/user.aggregate.ts",
+      "bytes": 9196,
+      "sha256": "e49e209a6af75b9fa3d7ba7a87c4bec962e8d0bb85e3877e9880a7a9bbe4742c"
+    },
+    {
+      "path": "packages/auth/src/domain/user/user.errors.ts",
+      "bytes": 2209,
+      "sha256": "e0f56235ea9f9e8d1cf0ab584e40d90fd364949c24fc1ed9cbf05166c4e916be"
+    },
+    {
+      "path": "packages/auth/src/domain/user/user.events.ts",
+      "bytes": 547,
+      "sha256": "0fab004ad8e50a6eaa25af167940c82159f9a2a41aa4209521bba88a1d1970a9"
+    },
+    {
+      "path": "packages/auth/src/domain/user/user.role.ts",
+      "bytes": 1124,
+      "sha256": "769f221e12f8470dc41a251bfec22ea801eb6d3891b935f99fc1385fe610b4de"
+    },
+    {
+      "path": "packages/auth/src/domain/user/user.status.ts",
+      "bytes": 681,
+      "sha256": "f2828c45e6469b6291b2e0dc368c56b09d02f39104a2d454e355decc393a3945"
+    },
+    {
+      "path": "packages/auth/src/domain/value-objects/email.ts",
+      "bytes": 807,
+      "sha256": "a4fd8981fd30fe858128e8d9545059d7467aee44e7627a06f88eec84ae8c35e3"
+    },
+    {
+      "path": "packages/auth/src/domain/value-objects/password-policy.ts",
+      "bytes": 914,
+      "sha256": "fb48abfb1c84610e01b00268efd588f3d74c1a45d2d5490a4c23e1059f819f31"
+    },
+    {
+      "path": "packages/auth/src/domain/shared/aggregate-root.ts",
+      "bytes": 671,
+      "sha256": "b07760330b5a14278b0bfeab46bc7dab68411720857579a41a743c310f07dec6"
+    },
+    {
+      "path": "packages/auth/src/domain/shared/entity.ts",
+      "bytes": 403,
+      "sha256": "986b782da5d4a5f003401cea0b8c252e3caaf8aeef42d4e20ed0181dc8d074aa"
+    },
+    {
+      "path": "packages/auth/src/domain/shared/domain-event.ts",
+      "bytes": 628,
+      "sha256": "c4b28e39216fbeb7a5d526106dd77ca89ac4ca1d7388d96d8c8b77f4d0ea9085"
+    },
+    {
+      "path": "packages/core/src/errors/index.ts",
+      "bytes": 32,
+      "sha256": "8de2165838e92da7fe8faa06664168ee1fc6ae2e979a63bf3de570ec89f11c90"
+    },
+    {
+      "path": "packages/core/src/errors/domain-errors.ts",
+      "bytes": 785,
+      "sha256": "c981a3ddd7d7f128ac66a9475109b089fd8304a009999e69b7d500bd139a39f7"
+    }
+  ],
+  "pins": [
+    {
+      "scope": "root",
+      "path": "packages/auth/package.json",
+      "bytes": 1293,
+      "sha256": "dc2ed7b3925f20a8b8e3f08d6423aad11213c9aaf6d33f798bb3e025f4be8773"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/Dockerfile",
+      "bytes": 775,
+      "sha256": "26259cdfb921cb1d0f7ee57c16dd9d3cc746cfbbd16a960ed0afb953e27801f7"
+    },
+    {
+      "scope": "root",
+      "path": "packages/core/package.json",
+      "bytes": 1738,
+      "sha256": "3fc14891655d74e1963b8fbbd97311863e274c990c190eb794044c63686f88aa"
+    },
+    {
+      "scope": "root",
+      "path": "bun.lock",
+      "bytes": 539814,
+      "sha256": "8a989c05e39bd7697878ee147575ff00dfa7830d6d0e96b3abbbdad14cb47dfd"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/infrastructure/persistence/drizzle/db.ts",
+      "bytes": 1542,
+      "sha256": "9f6ccc552467ff9fadfffbcc749103a249838e15efd03c477030cf7817983fc2"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/infrastructure/persistence/drizzle/schema.ts",
+      "bytes": 24434,
+      "sha256": "b71b3b5454a37156aad5b7cccabe7e2f48ec19e4ffa06dc05758345543f1da46"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/infrastructure/persistence/drizzle/user.repository.ts",
+      "bytes": 9007,
+      "sha256": "414a3abe515584995130ab35a507c537f8c311665b8172ed6cbb6f53fba398c0"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/infrastructure/security/bun-password-hasher.ts",
+      "bytes": 798,
+      "sha256": "9e1f8534db7695d6632cbc2570c65cc14ef4becb650bfab4d9d1311b788e7cb0"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/domain/user/user.aggregate.ts",
+      "bytes": 9196,
+      "sha256": "e49e209a6af75b9fa3d7ba7a87c4bec962e8d0bb85e3877e9880a7a9bbe4742c"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/domain/user/user.errors.ts",
+      "bytes": 2209,
+      "sha256": "e0f56235ea9f9e8d1cf0ab584e40d90fd364949c24fc1ed9cbf05166c4e916be"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/domain/user/user.events.ts",
+      "bytes": 547,
+      "sha256": "0fab004ad8e50a6eaa25af167940c82159f9a2a41aa4209521bba88a1d1970a9"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/domain/user/user.role.ts",
+      "bytes": 1124,
+      "sha256": "769f221e12f8470dc41a251bfec22ea801eb6d3891b935f99fc1385fe610b4de"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/domain/user/user.status.ts",
+      "bytes": 681,
+      "sha256": "f2828c45e6469b6291b2e0dc368c56b09d02f39104a2d454e355decc393a3945"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/domain/value-objects/email.ts",
+      "bytes": 807,
+      "sha256": "a4fd8981fd30fe858128e8d9545059d7467aee44e7627a06f88eec84ae8c35e3"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/domain/value-objects/password-policy.ts",
+      "bytes": 914,
+      "sha256": "fb48abfb1c84610e01b00268efd588f3d74c1a45d2d5490a4c23e1059f819f31"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/domain/shared/aggregate-root.ts",
+      "bytes": 671,
+      "sha256": "b07760330b5a14278b0bfeab46bc7dab68411720857579a41a743c310f07dec6"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/domain/shared/entity.ts",
+      "bytes": 403,
+      "sha256": "986b782da5d4a5f003401cea0b8c252e3caaf8aeef42d4e20ed0181dc8d074aa"
+    },
+    {
+      "scope": "root",
+      "path": "packages/auth/src/domain/shared/domain-event.ts",
+      "bytes": 628,
+      "sha256": "c4b28e39216fbeb7a5d526106dd77ca89ac4ca1d7388d96d8c8b77f4d0ea9085"
+    },
+    {
+      "scope": "root",
+      "path": "packages/core/src/errors/index.ts",
+      "bytes": 32,
+      "sha256": "8de2165838e92da7fe8faa06664168ee1fc6ae2e979a63bf3de570ec89f11c90"
+    },
+    {
+      "scope": "root",
+      "path": "packages/core/src/errors/domain-errors.ts",
+      "bytes": 785,
+      "sha256": "c981a3ddd7d7f128ac66a9475109b089fd8304a009999e69b7d500bd139a39f7"
+    },
+    {
+      "scope": "root",
+      "path": "packages/community/src/app/(auth)/login/login-form.tsx",
+      "bytes": 12480,
+      "sha256": "c18270f998396aba23230676435cd567bf899ec6cbecab006970b28151a98215"
+    },
+    {
+      "scope": "root",
+      "path": "packages/community/src/app/(app)/estudio/page.tsx",
+      "bytes": 2190,
+      "sha256": "788fac1301fda262bb7bde195e1f803a582632cddf0fe515229d380752a6e194"
+    },
+    {
+      "scope": "root",
+      "path": "packages/member-shell/src/components/creator/studio-full-client.tsx",
+      "bytes": 34782,
+      "sha256": "6fd382a6876d57dc3e86bc9c2b6436b22252fc08c6da37ed9173233be89bc38c"
+    },
+    {
+      "scope": "root",
+      "path": "packages/member-shell/src/components/creator/studio-pro-client.tsx",
+      "bytes": 11786,
+      "sha256": "cabecc0de6914c87438ca4b26cf89b63229a4f863333843dcd7c6b32e1aa49bf"
+    },
+    {
+      "scope": "root",
+      "path": "packages/member-shell/src/lib/studio-tier.ts",
+      "bytes": 4442,
+      "sha256": "6db1f0ac4e20e6e3d7a18804b4cf7dc7dfc9f534c72a3f282e30f7bd1c4a85cd"
+    },
+    {
+      "scope": "root",
+      "path": "packages/member-shell/src/lib/pro-toolchain.ts",
+      "bytes": 1430,
+      "sha256": "9ee18dbdf0c9c342fc6f67a2edbfda4439e148380f8932d917b77fe13b584dcd"
+    },
+    {
+      "scope": "root",
+      "path": "packages/member-shell/src/server/free-pro-toolchain.ts",
+      "bytes": 2995,
+      "sha256": "432842b811a9556e58de8bf56c4751d57d04f49ba42562ba52e4815a52678759"
+    },
+    {
+      "scope": "root",
+      "path": "packages/studio/src/projects/ProjectList.tsx",
+      "bytes": 38257,
+      "sha256": "0be3dbdcc9dc9990c6ff32583a53a51c91a75896e2bf0645dc53b0c44182ae0f"
+    },
+    {
+      "scope": "root",
+      "path": "packages/studio/src/components/projects/ProjectCard.tsx",
+      "bytes": 20197,
+      "sha256": "263cb3948403eb04b07e170f88d34a8dbf5523a753c7dea86e209c9f8a467660"
+    },
+    {
+      "scope": "root",
+      "path": "packages/studio/src/components/projects/ImportButton.tsx",
+      "bytes": 6807,
+      "sha256": "e3e61bcd80c3adc5ce9ab6c3901c0e79daf88eb9dc16cb13590c518b94cee7fc"
+    },
+    {
+      "scope": "root",
+      "path": "packages/studio/src/components/projects/NewProjectModal.tsx",
+      "bytes": 15782,
+      "sha256": "39a185c470d3b6dc333bbe74fc2af6ca02dbe23801b771059264ea26b196bd7e"
+    },
+    {
+      "scope": "root",
+      "path": "packages/studio/src/components/layout/Topbar.tsx",
+      "bytes": 25052,
+      "sha256": "0f8549d61df4d55433c4a0493a846c81df98ec80b3dfa4d7c0f75fab7fa301c6"
+    },
+    {
+      "scope": "root",
+      "path": "packages/studio/src/modes/pro/ProPreview.tsx",
+      "bytes": 24495,
+      "sha256": "05d02e7b09427196cb60f2bd367cfcd5fdc0fc6e3a5b54f7fe3199f7d3837b11"
+    },
+    {
+      "scope": "root",
+      "path": "packages/studio/src/core/proProject.ts",
+      "bytes": 3786,
+      "sha256": "ea31b700b89687cbb2670168d8ffcc0e52a358ce44c3d45cc9dc1374ed956c6e"
+    },
+    {
+      "scope": "root",
+      "path": "packages/studio/src/state/editableProjectValidation.ts",
+      "bytes": 2056,
+      "sha256": "7ee21ba541368dd59bb312d8db5849d5ba6c235eb5cc75da0fdc2e8367e9df2d"
+    },
+    {
+      "scope": "root",
+      "path": "packages/studio/src/export/sourceDownload.ts",
+      "bytes": 850,
+      "sha256": "fd8fe166b79de18d59f467aca464f0008928119b2c305dc1ae02a3706e567b03"
+    },
+    {
+      "scope": "root",
+      "path": "packages/studio/src/export/sourceExport.ts",
+      "bytes": 6028,
+      "sha256": "6535c1e0e6106daabac3237d6592dd750845685582ea8c9d0a6c72900fbc65bc"
+    },
+    {
+      "scope": "root",
+      "path": "packages/studio/src/export/fileMap.ts",
+      "bytes": 19550,
+      "sha256": "8445366dd4e661803e1611c65311e8d947581ffac681e4cf2ec0f84846b488aa"
+    },
+    {
+      "scope": "root",
+      "path": "packages/studio/src/core/proAssetPaths.ts",
+      "bytes": 746,
+      "sha256": "b0778094a961be59bba69eeafd0b7d1c0b2ca3bc7b0c648acf965592325d5a28"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/pro-legacy-hosted-9e33-r1/fixture.json",
+      "bytes": 1672,
+      "sha256": "5c6a0ed4b69967bfefdc3188abb575201351d66b0e84bdc750836fc20e197d50"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/pro-legacy-hosted-9e33-r1/expected-package-lock.json",
+      "bytes": 28589,
+      "sha256": "96dd72bfc06e84c213549e9e1a8bfba7f21addddf06fc2f73f21c4422156f665"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/pro-legacy-hosted-members-9e33-r5/legacy-package.json",
+      "bytes": 259,
+      "sha256": "cbbbde54531e8be4b0dfd96f73757f509d432bae0bab5e46abec70c448796dbf"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/staging-bootstrap-aggregate-r3/root-final-r1/all18-ready.json",
+      "bytes": 5142,
+      "sha256": "d4a64118343f9f27432e50d39c0fa6fd4e19e0447ae666a56cfe8797514e72f7"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/pro-legacy-staging-actor-discovery-r1/receipt-r4.json",
+      "bytes": 919,
+      "sha256": "e6df2310282cba361df43564aea6e1b55d118534cfdb0b839f7daebeec204f1a"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/pro-legacy-staging-ui-deploy-snapshot-r1/receipt.json",
+      "bytes": 6586,
+      "sha256": "a6f36550d1d4721885158f07a75cc869adebde7e5d9b89282a8b47eba753bc84"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/pro-legacy-staging-ui-owned-r1/plan.json",
+      "bytes": 16109,
+      "sha256": "cd8a4b4df406ec5d1dc81581140bcdd4fc04a4eb134f1b822e7e60529caf2e37"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/pro-legacy-staging-ui-owned-r1/preparation-receipt.json",
+      "bytes": 2183,
+      "sha256": "efccdf65865201e21bc04800b8b14518fe9163bb7ea630b5ff7bb783f53fa17f"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/pro-legacy-staging-ui-owned-r2/delta-receipt.json",
+      "bytes": 2865,
+      "sha256": "67c183ef88c3436cdb1ec3c173f623bab5ae121478de3c6fd387a701c6d9aa76"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/pro-legacy-staging-ui-owned-r2/ui-selector-receipt.json",
+      "bytes": 1734,
+      "sha256": "edd0c237de1fd9873598631dfc394d637a9ded0af1cb0ed8b4c86af1eef363b2"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/derive-pro-legacy-staging-ui-r3.mjs",
+      "bytes": 9774,
+      "sha256": "6c10f4e5d9303775a9a379450d645419982c5f16ad26da1e3e31bff85e995327"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/railway-backlog-face-r5/oauth-session.mjs",
+      "bytes": 5340,
+      "sha256": "c6f9728b9150c1a63c97cb44c24f89e06e3f4435d4079bcd2ca5f9e8dee222f2"
+    },
+    {
+      "scope": "qa",
+      "path": "remote.mjs",
+      "bytes": 3961,
+      "sha256": "72a6e6fa83f5d526a508fd0158f3a622ea43b359f8175b7edfdb81129e930361"
+    },
+    {
+      "scope": "qa",
+      "path": "run.mjs",
+      "bytes": 8709,
+      "sha256": "d537acd7c01eb5850f3ea76806c103176d2080a27df42d2deab6ca43e72cb73b"
+    },
+    {
+      "scope": "qa",
+      "path": "ui.mjs",
+      "bytes": 7033,
+      "sha256": "023e39e5f8681c2eefde2d14c46105f7e110995306daf918b614d7007cccf5dc"
+    },
+    {
+      "scope": "qa",
+      "path": "contract.mjs",
+      "bytes": 4017,
+      "sha256": "84985b74b44ca7f3fb2a141035e2625a0c233c50baa0af037241bd5a9555d8fd"
+    },
+    {
+      "scope": "qa",
+      "path": "prepare-fixture.ts",
+      "bytes": 1986,
+      "sha256": "6da53a49a35e1f2062ef40625140e2ee091be033e9d8bfcc07e3edcd83ae4fb3"
+    },
+    {
+      "scope": "qa",
+      "path": "prepare-plan.mjs",
+      "bytes": 6992,
+      "sha256": "4f42e23755ca192880c09b00a5f23f87f0ac558f2f2de06c80abe14dbe2bcec5"
+    },
+    {
+      "scope": "qa",
+      "path": "control.test.mjs",
+      "bytes": 4851,
+      "sha256": "55cff5040409c78f951536af043fe807e91274cd045e43461885237a833ff7c9"
+    },
+    {
+      "scope": "qa",
+      "path": "legacy.szproject.json",
+      "bytes": 2372,
+      "sha256": "a2ebacf4f985cede068ccf64580e1a0614eba124fd384af13d47bb8ab73d30e8"
+    },
+    {
+      "scope": "qa",
+      "path": "fixture-check.json",
+      "bytes": 998,
+      "sha256": "2e4e6a65c99197dee6f1b5b20b3fe0728ee79adead1fe50caa6ee2da4bc39cfc"
+    },
+    {
+      "scope": "qa",
+      "path": "README.md",
+      "bytes": 3236,
+      "sha256": "3ed4913eb658070e60d511427679add28368362534263e8fa82b502e6678da30"
+    },
+    {
+      "scope": "qa",
+      "path": "provider-context.mjs",
+      "bytes": 4452,
+      "sha256": "07115a951bf77dcffa0176fab8c14752aba3bb0e52be04ecfa878d65c8cae453"
+    },
+    {
+      "scope": "qa",
+      "path": "caller-bridge.mjs",
+      "bytes": 2028,
+      "sha256": "b70553a1172260ef3688985748093ad8cdf03d428a20689154db9a756edb1208"
+    },
+    {
+      "scope": "qa",
+      "path": "provider-context.test.mjs",
+      "bytes": 4948,
+      "sha256": "83a6493ca189f0d82f4c2e4ca4c0111a0dc3308d5b6116400b7bcb3b8bda5dc8"
+    },
+    {
+      "scope": "qa",
+      "path": "provider-projection-child.mjs",
+      "bytes": 2365,
+      "sha256": "a30ec2979c9c5cadd0650aa7ada88c3295b7406d3a7c96c728455b3bbb5d0356"
+    },
+    {
+      "scope": "qa",
+      "path": "oauth-session.mjs",
+      "bytes": 5345,
+      "sha256": "8de9c03692d3dd055328ed066d295669d925e8375982a443b08cd4486ab41907"
+    },
+    {
+      "scope": "qa",
+      "path": "oauth-context.mjs",
+      "bytes": 528,
+      "sha256": "9681e162beea8a57117dae73e2132faebfbc1c84a01b77d42e604d35a9d0af26"
+    },
+    {
+      "scope": "qa",
+      "path": "context-control.test.mjs",
+      "bytes": 2464,
+      "sha256": "244636d4f51cfc7e0f16a047b6ec2d3e43f4a48761fe77ff522bf4739dd35916"
+    },
+    {
+      "scope": "qa",
+      "path": "ADAPTER-INTERFACE.md",
+      "bytes": 3641,
+      "sha256": "9853a955c766415ea19185e245686045e7bf7b65b5178e67bf42aee2f851583b"
+    },
+    {
+      "scope": "qa",
+      "path": "derivation.json",
+      "bytes": 1168,
+      "sha256": "b4c31bd2afa5f6e9687eb2bba2a9179e1af68d797944d75e1e9c76ba6009dee1"
+    },
+    {
+      "scope": "root",
+      "path": ".cache/studio-python-l0/pro-webcontainer-profile-r1/profile.mjs",
+      "bytes": 7388,
+      "sha256": "916ac8959738480978e4ac8fc0c4e1fcaf5d2508a60ea838a306fa58f16ac5e1"
+    }
+  ],
+  "remoteLoaderBytes": 3609,
+  "maxLoaderBytes": 24576,
+  "bounds": {
+    "remoteMs": 45000,
+    "sshMs": 60000,
+    "uiMs": 180000,
+    "overallMs": 300000,
+    "stdoutBytes": 16384,
+    "stderrBytes": 16384,
+    "secretInputBytes": 512,
+    "downloadBytes": 1048576
+  },
+  "ownership": {
+    "adapter": "Root reviewed Node + Job hosted-only owner",
+    "browserMiB": 2048,
+    "osReserveMiB": 512,
+    "browserLaunchHere": false,
+    "standaloneExecute": false,
+    "accountRetained": true,
+    "jobIncludesAllDescendants": true,
+    "admissionMiB": 2560,
+    "resourceProfile": "hosted-functional-2048",
+    "functionalOnly": true,
+    "performanceQualified": false
+  },
+  "evidenceScope": "Offline preparation only. No account, login, provider request, browser, BFF or UI execution.",
+  "resourceProfile": "hosted-functional-2048",
+  "functionalOnly": true,
+  "performanceQualified": false
+}

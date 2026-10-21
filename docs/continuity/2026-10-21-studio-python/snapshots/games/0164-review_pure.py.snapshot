@@ -1,0 +1,61 @@
+"""Static/pure checks only. Child processes are Node admission refusals, never Python/Tk."""
+import ast
+import copy
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+here = Path(__file__).resolve().parent
+packet_bytes = (here / 'packet.json').read_bytes()
+packet = json.loads(packet_bytes)
+sha = lambda data: hashlib.sha256(data).hexdigest()
+for file in packet['files'] + packet['nativeEnvironmentPins'] + packet['installedAudioMatches'] + packet['artifactPins'] + packet['frozenSourcePins']:
+    assert sha(Path(file['path']).read_bytes()) == file['sha256']
+runner = ast.parse((here / 'pacman_native.py').read_text())
+baseline = ast.parse((here.parents[3] / 'experiments/studio-python-runtime/qualification/pacman_native.py').read_text())
+def outer_try(tree):
+    main = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'main')
+    return next(n for n in main.body if isinstance(n, ast.Try))
+assert ast.dump(ast.Module(body=outer_try(runner).finalbody, type_ignores=[])) == ast.dump(ast.Module(body=outer_try(baseline).finalbody, type_ignores=[]))
+selected = None
+for node in ast.walk(runner):
+    for field in ('body', 'orelse', 'finalbody'):
+        body = getattr(node, field, None)
+        if isinstance(body, list):
+            for i, item in enumerate(body):
+                if isinstance(item, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'bye_events' for t in item.targets):
+                    selected = body[i:i+2]
+assert selected and isinstance(selected[1], ast.If)
+code = compile(ast.fix_missing_locations(ast.Module(body=selected, type_ignores=[])), '<actual-native-ending-oracle>', 'exec')
+scheduled = dict(event='timer-scheduled', value=dict(callback='bye', delay=3000, scheduledClock=100.0))
+fired = dict(event='timer-fired', value=dict(callback='bye', delay=3000, scheduledClock=100.0, elapsedSeconds=3.001))
+closed = dict(event='natural-close', value={})
+valid = [scheduled, fired, closed]
+exec(code, dict(events=valid, endings=True))
+with_reset = valid + [dict(event='timer-scheduled', value=dict(callback='reset_speed', delay=3000, scheduledClock=101.0))]
+exec(code, dict(events=with_reset, endings=True))
+exec(code, dict(events=[], endings=False))
+bad = [valid + [scheduled], valid + [fired], [scheduled, closed], valid + [closed]]
+early = copy.deepcopy(valid); early[1]['value']['elapsedSeconds'] = 2.999; bad.append(early)
+mismatch = copy.deepcopy(valid); mismatch[1]['value']['scheduledClock'] += 1; bad.append(mismatch)
+for events in bad:
+    try:
+        exec(code, dict(events=events, endings=True))
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError('Invalid natural ending accepted')
+
+admissions = []
+case = packet['scenarios'][0]
+output = Path(packet['outputs'][case])
+assert not output.exists()
+for window in ('2000-01-01T00:00:00Z', '2026-02-30T03:00:00Z', '2026-10-21 04:00:00'):
+    result = subprocess.run([packet['node'], str(here / 'run_pacman_native.mjs'), packet['python'], packet['artifact'], str(output), case, window, sha(packet_bytes)], capture_output=True, text=True, timeout=10)
+    assert result.returncode == 1 and not output.exists()
+    assert any(s in result.stderr for s in ('Authorized window expired', 'Invalid UTC date', 'UTC ISO deadline required'))
+    admissions.append(dict(window=window, exitCode=result.returncode, outputAbsent=True, noPythonSpawn=True))
+proof = dict(state='PURE-STATIC-REVIEW-PASS-NOT-NATIVE-EXECUTION', nativePacketSha256=sha(packet_bytes), cleanupFinallyAstUnchanged=True, validOracleControls=3, rejectedInvalidEndingControls=len(bad), admissionRefusals=admissions, environmentPins=14, installedAudioPins=7, noGameTurtleAudioOrNativeInterpreterStarted=True)
+(here / 'pure-review.json').write_text(json.dumps(proof, indent=2) + '\n', encoding='utf-8', newline='\n')
+print(json.dumps(proof))

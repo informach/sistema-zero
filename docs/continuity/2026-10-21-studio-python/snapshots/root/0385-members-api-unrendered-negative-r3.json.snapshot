@@ -1,0 +1,9 @@
+{
+  "state": "readonly-public-baseline-unavailable",
+  "phase": "cli-service-read",
+  "cliExitStatus": 1,
+  "apiErrorCount": 1,
+  "genericProblem": true,
+  "publicPresence": {},
+  "rawOutputDiscarded": true
+}

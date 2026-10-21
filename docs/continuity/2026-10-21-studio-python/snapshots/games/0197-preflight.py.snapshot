@@ -1,0 +1,70 @@
+"""Read-only Q08 artifact/dependency/source checks. No Turtle or audio import."""
+from pathlib import Path
+import hashlib
+import importlib.metadata
+import io
+import json
+import sys
+import wave
+import zipfile
+from datetime import datetime, timezone
+
+root = Path('C:/Users/tocha/projects/sistema-zero-python-games')
+artifact = Path('C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/space-arena-canonical-r2')
+package = Path(__file__).resolve().parent
+digest = lambda data: hashlib.sha256(data).hexdigest()
+assert sys.flags.isolated and sys.dont_write_bytecode
+assert sys.version_info[:3] == (3, 14, 2)
+raw = (artifact / 'receipt.json').read_bytes()
+assert digest(raw) == 'df6d6812ac511686e5dd32187b900cc68c9b565d5d49498e5d3265e9b137fcc0'
+receipt = json.loads(raw)
+zip_bytes = (artifact / 'source.zip').read_bytes()
+assert digest(zip_bytes) == receipt['zip']['sha256'] == '55a893f0a982d37f2ca87b5af6f0f7614d93516722d3f9c880f3409d253609df'
+with zipfile.ZipFile(io.BytesIO(zip_bytes)) as archive:
+    assert len(archive.infolist()) == len(set(archive.namelist())) == len(receipt['inventory']) == 42
+    for item in receipt['inventory']:
+        data = archive.read(item['path'])
+        assert len(data) == item['bytes'] and digest(data) == item['sha256']
+    manifest = json.loads(archive.read('.sistemazero/export-manifest.json'))
+    installed = Path(sys.prefix) / 'Lib/site-packages/sz_audio'
+    module_files = {}
+    for item in manifest['portableAudio']['files']:
+        if '/sz_audio/' in item['path']:
+            relative = item['path'].split('/sz_audio/', 1)[1]
+            assert digest((installed / relative).read_bytes()) == item['sha256']
+            module_files[relative] = item['sha256']
+    assert len(module_files) == 7
+    descriptor = json.loads((installed / '_module.json').read_bytes())
+    # setuptools is a build declaration, not a runtime dependency of this
+    # installed wheel. Match the native runner instead of requiring a build tool.
+    declared_dependencies = descriptor['native']['dependencies']
+    dependencies = {key: value for key, value in declared_dependencies.items() if key != 'setuptools'}
+    assert {key: importlib.metadata.version(key) for key in dependencies} == dependencies
+    bgm = archive.read('bgm.wav')
+    assert digest(bgm) == 'fdccf404c0bed8bb43efaeee2cc5b6d74cd02ae9d10b5041ca3d135c530f62b2'
+    with wave.open(io.BytesIO(bgm), 'rb') as wav:
+        wave_info = dict(channels=wav.getnchannels(), sampleWidth=wav.getsampwidth(),
+                         sampleRate=wav.getframerate(), frames=wav.getnframes(),
+                         durationSeconds=wav.getnframes() / wav.getframerate())
+        assert wave_info['durationSeconds'] > 120
+sources = ['space_arena_native.py', 'space_arena_observer.py', 'space_arena_q08.py',
+           'space_arena_q08_test.py', 'run_space_arena_native.mjs', 'space_arena_supervisor.test.mjs']
+source_pins = {}
+for name in sources:
+    source = root / 'experiments/studio-python-runtime/qualification' / name
+    data = source.read_bytes()
+    if name.endswith('.py'):
+        compile(data, str(source), 'exec')
+    source_pins[str(source)] = digest(data)
+assert 'turtle' not in sys.modules and 'sz_audio' not in sys.modules
+pins = dict(state='source-artifact-preflight-passed-no-Tk', checkedAt=datetime.now(timezone.utc).isoformat(),
+            python=sys.version, interpreter=str(Path(sys.executable)),
+            interpreterSha256=digest(Path(sys.executable).read_bytes()),
+            pyvenvCfgSha256=digest((Path(sys.prefix) / 'pyvenv.cfg').read_bytes()),
+            artifact=str(artifact), receiptSha256=digest(raw), zipSha256=digest(zip_bytes),
+            files=42, moduleFiles=module_files, runtimeDependencies=dependencies,
+            declaredDependencies=declared_dependencies, bgm=wave_info,
+            sourcePins=source_pins, noTk=True, noAudioImport=True, nativeCasesExecuted=0)
+with (package / 'pins.json').open('x', encoding='utf-8') as output:
+    json.dump(pins, output, indent=2)
+print(json.dumps(pins))

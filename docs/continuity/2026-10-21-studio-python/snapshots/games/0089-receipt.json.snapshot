@@ -1,0 +1,369 @@
+{
+  "state": "canonical-source-export-prepared-no-game-execution",
+  "producer": {
+    "root": "C:\\Users\\tocha\\projects\\sistema-zero-python",
+    "rootHead": "face8acef32f1e924f1461557e82716ea7acc3dc",
+    "sourcePinsSha256": "e5133a76d5d9dafa8e1ac20426b3b7ef888794cfa34ba166a09ef089a93e9edc",
+    "producerSha256": "420ce63749a1e3a1c70188e36da5cc53e57e35f7e6a57a61c6ceb9d38f545356",
+    "sourceScope": "Explicit relevant export/corpus/Core/dependency files, not a claimed exhaustive transitive graph; absolute Root imports and Root cwd required."
+  },
+  "inputRelease": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\games-space12-q02-q04-r1\\release.json",
+    "sha256": "6b8bfd2c90d76549bb061cc10ab4055ae2a5ee5b31b9267b9a7e76665dd4d3f3"
+  },
+  "inputDistribution": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\distribution.json",
+    "fileSha256": "988df6ad0cd9417365ab3fb5252be73c0cc2950e891de9299de3089c85575d3d",
+    "canonicalSha256": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a"
+  },
+  "distribution": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a",
+  "runtime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "0123ab8fd02e3aff2d4383fb8e8f93304c337d4018ad1263c21e8d1eafd0fb0e"
+  },
+  "variant": "portable-audio-1.2.0",
+  "entrySha256": "d9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3",
+  "zip": {
+    "path": "source.zip",
+    "bytes": 23243489,
+    "sha256": "14b95ac84cf7eefc9ff3bdcd6abc6c743c230dd52c0632eaf2c1a0659608a6c1"
+  },
+  "inventoryFileSha256": "d70276fa5443b3617fcf44f4297503e6eb758f9ae3e8f7ac7f4a739c379224a5",
+  "inventory": [
+    {
+      "path": ".sistemazero/export-manifest.json",
+      "bytes": 11369,
+      "sha256": "0990a63119590cc517e93c8d87efb918a0005ff0a405ebf0edd7bb83e7361022"
+    },
+    {
+      "path": ".sistemazero/python-audio/install.txt",
+      "bytes": 28,
+      "sha256": "b70c07932795ca3c354bc66c328c830f6a41aae4f0193529a820f6472013d09a"
+    },
+    {
+      "path": ".sistemazero/python-audio/pyproject.toml",
+      "bytes": 381,
+      "sha256": "1e251aaf430d1fbe02d4b0c077b6d96cf0340feabe891edd554a87370a17ebd4"
+    },
+    {
+      "path": ".sistemazero/python-audio/REFERENCIA.txt",
+      "bytes": 2253,
+      "sha256": "fa15304adaf0ef7c0cc4b014938cd066e5a528a2c32e85a2eb990df415475917"
+    },
+    {
+      "path": ".sistemazero/python-audio/sz_audio/__init__.py",
+      "bytes": 2832,
+      "sha256": "36d5a58ebb43004cfd10aac2708350f16ced161a2cb8062915e644f491a227ba"
+    },
+    {
+      "path": ".sistemazero/python-audio/sz_audio/__init__.pyi",
+      "bytes": 469,
+      "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+    },
+    {
+      "path": ".sistemazero/python-audio/sz_audio/_desktop.py",
+      "bytes": 6304,
+      "sha256": "df8f0d7b7baefdd18ba8979b8f6634d7deb6496355f6fb018a2de1d86b3f6b42"
+    },
+    {
+      "path": ".sistemazero/python-audio/sz_audio/_mixer.py",
+      "bytes": 1833,
+      "sha256": "78b23124b0d05ad74b6aeb37d4ed5e5c986331f20d3f262374647ae4b2a600c4"
+    },
+    {
+      "path": ".sistemazero/python-audio/sz_audio/_module.json",
+      "bytes": 2748,
+      "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+    },
+    {
+      "path": ".sistemazero/python-audio/sz_audio/_wav.py",
+      "bytes": 2613,
+      "sha256": "1dc17a15bc63439c8cbdb14af8227104a8034c56261c497c7692badb55ab6f87"
+    },
+    {
+      "path": ".sistemazero/python-audio/sz_audio/py.typed",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "bgm.wav",
+      "bytes": 23472658,
+      "sha256": "fdccf404c0bed8bb43efaeee2cc5b6d74cd02ae9d10b5041ca3d135c530f62b2"
+    },
+    {
+      "path": "explosion.wav",
+      "bytes": 487248,
+      "sha256": "e2f6e630948943da62f319de07ad3bc5d476748c506524ec554671f1e66ce9e0"
+    },
+    {
+      "path": "hunter.gif",
+      "bytes": 146,
+      "sha256": "4f20d348ab693c812966ced4084ea16f2fba03b1a3bd8ceaa7061be5f5312e6a"
+    },
+    {
+      "path": "LEIA-ME-Sistema-Zero.txt",
+      "bytes": 2468,
+      "sha256": "1862e2f367d0c09437ff71c975d8dec22c827c37516bda7ecca5cf242dcf725b"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    {
+      "path": "mine.gif",
+      "bytes": 146,
+      "sha256": "343898928f1d211a453615532a19542ce9e9638bbd38e18a17e95e10a6398597"
+    },
+    {
+      "path": "missile_fire.wav",
+      "bytes": 402064,
+      "sha256": "58af2142682571a97a1ea00a9634b1c0bcc20318038fe71f9df0ceadb26ffab3"
+    },
+    {
+      "path": "powerup.gif",
+      "bytes": 137,
+      "sha256": "e2274d25b52872982636667a9bb9b67a451c76711745813b7e982fc4c2a40d74"
+    },
+    {
+      "path": "powerup.wav",
+      "bytes": 483884,
+      "sha256": "8e7d80abb40195b1b550722d62a846e2ac0826053d4547f7dce76dbde924168e"
+    },
+    {
+      "path": "pyproject.toml",
+      "bytes": 111,
+      "sha256": "30d098828abd1bdc53bcc390a4cd21e857ad8e5a02d885ec17ee61ee470204f7"
+    },
+    {
+      "path": "space_arena_1.py",
+      "bytes": 590,
+      "sha256": "38c6282fbe7607b6355843d15ee0a268f49fafef944942adbaae85551591cef7"
+    },
+    {
+      "path": "space_arena_10.py",
+      "bytes": 8926,
+      "sha256": "881e8c301120ba31349b323b762a9a4d2c797b7fd82aa835f088029ba6c38acb"
+    },
+    {
+      "path": "space_arena_11.py",
+      "bytes": 9957,
+      "sha256": "9a15d5944b21222a010f53e889f6e03fa3ab90275b62bbb6bfe58d83de52da5e"
+    },
+    {
+      "path": "space_arena_12.py",
+      "bytes": 10934,
+      "sha256": "82de139586951321788ae60c5424ce8c96a579672670594ec25b113e732bd147"
+    },
+    {
+      "path": "space_arena_13.py",
+      "bytes": 11518,
+      "sha256": "166f01b052f8ed76a1c04a5e08ce50d087ee57d007f1ddfd61b379bf7447b346"
+    },
+    {
+      "path": "space_arena_15.py",
+      "bytes": 18015,
+      "sha256": "c9cd9ef3f7429d40251634e25b0ba1e882b9e8121f77f7cb6c520e16154a8f0b"
+    },
+    {
+      "path": "space_arena_16.py",
+      "bytes": 19659,
+      "sha256": "48aab00034b7b706694c7b6fd97e43d87668c575ac302b4214d38d63ef5ebee9"
+    },
+    {
+      "path": "space_arena_17.py",
+      "bytes": 20797,
+      "sha256": "39ff5ef857fab38e9f10a1d493858eaf867924287fca8df862935e79b8252f5d"
+    },
+    {
+      "path": "space_arena_18.py",
+      "bytes": 22358,
+      "sha256": "13b3a6c452cfb5873d9c7ff7016f43b1f08fe28c9b9d8e05497e94f9a61cca3d"
+    },
+    {
+      "path": "space_arena_19.py",
+      "bytes": 25077,
+      "sha256": "d5bdd5e08ead50f7dd3eda4f3a10d20339c25b2d0e202f7138167d2fdb23fe0e"
+    },
+    {
+      "path": "space_arena_2.py",
+      "bytes": 1141,
+      "sha256": "e9d4f5207a6c0f128b45f528ded3856b808e6d55fad188c2ab77af67f6d9cf51"
+    },
+    {
+      "path": "space_arena_3.py",
+      "bytes": 1667,
+      "sha256": "cc538f6195f8dee9bb358ca9476ba214d6f94ceffb945ac335797c41e7512b67"
+    },
+    {
+      "path": "space_arena_4.py",
+      "bytes": 2337,
+      "sha256": "038bc006041e706b0701e48ace08eb9b13ef524076de6f03405e8e0f291bc0bd"
+    },
+    {
+      "path": "space_arena_5.py",
+      "bytes": 3104,
+      "sha256": "b603865eb55218bb0e038f657a2fbeb08fa8d3144becbadb576ed3c596096aae"
+    },
+    {
+      "path": "space_arena_6.py",
+      "bytes": 3888,
+      "sha256": "2385a998cc4a1a534082801ac057e6c3c870b1283abbac0ad798bb53f5d11b3f"
+    },
+    {
+      "path": "space_arena_7.py",
+      "bytes": 5074,
+      "sha256": "9adb822fb04f0b125644c8280187cdb3b5b7a6ea4408aaaeaa52f2b19d044724"
+    },
+    {
+      "path": "space_arena_8.py",
+      "bytes": 6870,
+      "sha256": "496a047584035781ba5d19b57e8d407bf6ecfbab946773e977554326006c1dd1"
+    },
+    {
+      "path": "space_arena_9.py",
+      "bytes": 8333,
+      "sha256": "53db76c0e2435ffd1320279c47c4c815ef3b5b44995ec363563869e06cc5f1b0"
+    },
+    {
+      "path": "space_arena.py",
+      "bytes": 33666,
+      "sha256": "d9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3"
+    },
+    {
+      "path": "surveillance.gif",
+      "bytes": 146,
+      "sha256": "404708f660a9d50ef19180b317f2cd5de7ee79f57c115e17002979f246cb1c3e"
+    },
+    {
+      "path": "thruster.wav",
+      "bytes": 125564,
+      "sha256": "bbc3ca306929ffb373ed84e1513d48afc851a0f31bf615b6c86ef58bc93d9eb3"
+    }
+  ],
+  "media": [
+    {
+      "path": "bgm.wav",
+      "bytes": 23472658,
+      "sha256": "fdccf404c0bed8bb43efaeee2cc5b6d74cd02ae9d10b5041ca3d135c530f62b2"
+    },
+    {
+      "path": "explosion.wav",
+      "bytes": 487248,
+      "sha256": "e2f6e630948943da62f319de07ad3bc5d476748c506524ec554671f1e66ce9e0"
+    },
+    {
+      "path": "hunter.gif",
+      "bytes": 146,
+      "sha256": "4f20d348ab693c812966ced4084ea16f2fba03b1a3bd8ceaa7061be5f5312e6a"
+    },
+    {
+      "path": "mine.gif",
+      "bytes": 146,
+      "sha256": "343898928f1d211a453615532a19542ce9e9638bbd38e18a17e95e10a6398597"
+    },
+    {
+      "path": "missile_fire.wav",
+      "bytes": 402064,
+      "sha256": "58af2142682571a97a1ea00a9634b1c0bcc20318038fe71f9df0ceadb26ffab3"
+    },
+    {
+      "path": "powerup.gif",
+      "bytes": 137,
+      "sha256": "e2274d25b52872982636667a9bb9b67a451c76711745813b7e982fc4c2a40d74"
+    },
+    {
+      "path": "powerup.wav",
+      "bytes": 483884,
+      "sha256": "8e7d80abb40195b1b550722d62a846e2ac0826053d4547f7dce76dbde924168e"
+    },
+    {
+      "path": "surveillance.gif",
+      "bytes": 146,
+      "sha256": "404708f660a9d50ef19180b317f2cd5de7ee79f57c115e17002979f246cb1c3e"
+    },
+    {
+      "path": "thruster.wav",
+      "bytes": 125564,
+      "sha256": "bbc3ca306929ffb373ed84e1513d48afc851a0f31bf615b6c86ef58bc93d9eb3"
+    }
+  ],
+  "portableAudio": {
+    "package": "sistema-zero-audio",
+    "importName": "sz_audio",
+    "version": "1.0.0",
+    "requirementsPath": ".sistemazero/python-audio/install.txt",
+    "referencePath": ".sistemazero/python-audio/REFERENCIA.txt",
+    "dependencies": {
+      "setuptools": "84.2.0",
+      "miniaudio": "1.71",
+      "cffi": "2.1.1",
+      "pycparser": "3.11"
+    },
+    "files": [
+      {
+        "path": ".sistemazero/python-audio/REFERENCIA.txt",
+        "bytes": 2253,
+        "sha256": "fa15304adaf0ef7c0cc4b014938cd066e5a528a2c32e85a2eb990df415475917"
+      },
+      {
+        "path": ".sistemazero/python-audio/install.txt",
+        "bytes": 28,
+        "sha256": "b70c07932795ca3c354bc66c328c830f6a41aae4f0193529a820f6472013d09a"
+      },
+      {
+        "path": ".sistemazero/python-audio/pyproject.toml",
+        "bytes": 381,
+        "sha256": "1e251aaf430d1fbe02d4b0c077b6d96cf0340feabe891edd554a87370a17ebd4"
+      },
+      {
+        "path": ".sistemazero/python-audio/sz_audio/__init__.py",
+        "bytes": 2832,
+        "sha256": "36d5a58ebb43004cfd10aac2708350f16ced161a2cb8062915e644f491a227ba"
+      },
+      {
+        "path": ".sistemazero/python-audio/sz_audio/__init__.pyi",
+        "bytes": 469,
+        "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+      },
+      {
+        "path": ".sistemazero/python-audio/sz_audio/_desktop.py",
+        "bytes": 6304,
+        "sha256": "df8f0d7b7baefdd18ba8979b8f6634d7deb6496355f6fb018a2de1d86b3f6b42"
+      },
+      {
+        "path": ".sistemazero/python-audio/sz_audio/_mixer.py",
+        "bytes": 1833,
+        "sha256": "78b23124b0d05ad74b6aeb37d4ed5e5c986331f20d3f262374647ae4b2a600c4"
+      },
+      {
+        "path": ".sistemazero/python-audio/sz_audio/_module.json",
+        "bytes": 2748,
+        "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+      },
+      {
+        "path": ".sistemazero/python-audio/sz_audio/_wav.py",
+        "bytes": 2613,
+        "sha256": "1dc17a15bc63439c8cbdb14af8227104a8034c56261c497c7692badb55ab6f87"
+      },
+      {
+        "path": ".sistemazero/python-audio/sz_audio/py.typed",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "filesSha256": "8a7a4d7f00c29a8a7b13393485bc50a8641363bc333f598b7be7c2e7a0b562d6",
+    "desktopExecution": "not-observed"
+  },
+  "warnings": [],
+  "elapsedMs": 1684,
+  "limits": [
+    "Actual source-export preparation only, never native/game/Tk/audio/dependency-install execution",
+    "Root FACE exporter/catalog/Core used by explicit absolute paths; no old Games Core equivalence assumed",
+    "Native runner entry/receipt pins remain unchanged until this actual artifact is separately reviewed",
+    "Browser1.2 Q02-Q07 proof is not native or full-game proof",
+    "External licensed QA corpus only; Power Up Ray noncommercial declaration and original asset bytes preserved",
+    "No live host/new bundle/catalog activation/hosted/Mural/FPS/performance acceptance"
+  ]
+}

@@ -1,0 +1,33 @@
+"""File hashes, AST compile and negative Node admission only; never starts probe."""
+import ast
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+here = Path(__file__).resolve().parent
+games = here.parents[3]
+sha = lambda value: hashlib.sha256(value).hexdigest()
+native = json.loads((here / '../pacman11-native-package-r1/packet.json').read_text())
+probe = here / 'probe.py'
+supervisor = here / 'run.mjs'
+compile(probe.read_bytes(), str(probe), 'exec')
+files = [dict(path=str(p), sha256=sha(p.read_bytes())) for p in (probe, supervisor)]
+observer_path = games / 'experiments/studio-python-runtime/qualification/pacman_observer.py'
+observer = dict(path=str(observer_path), sha256=sha(observer_path.read_bytes()))
+assert observer['sha256'] == '1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc'
+output = games / '.cache/studio-python-l0/tcl-clock-causal-control-r1'
+assert not output.exists()
+for item in native['nativeEnvironmentPins']:
+    assert sha(Path(item['path']).read_bytes()) == item['sha256']
+packet = dict(state='CAUSAL-CONTROL-PREPARED-NOT-EXECUTED-NOT-GAME-ACCEPTANCE', python=native['python'], node=dict(path=native['node'], sha256=native['nodeSha256']), probe=str(probe), files=files, observer=observer, nativeEnvironmentPins=native['nativeEnvironmentPins'], output=str(output), sourceGamesCommit='9557e17bcafbe529d0079c8d941485b7f67061c4', nominalMs=3000, samples=['tk-after','turtle-ontimer','actual-observer-timer-AST'], cooperativeMs=30000, externalMs=40000, targetSecondsEstimate=12, proposedWindowSeconds=60, noGameAudio=True, noOracleOrSourceChange=True)
+packet_bytes = (json.dumps(packet, indent=2) + '\n').encode()
+with (here / 'packet.json').open('xb') as stream:
+    stream.write(packet_bytes)
+result = subprocess.run([native['node'], '--check', str(supervisor)], capture_output=True, text=True, timeout=10)
+assert result.returncode == 0, result.stderr
+negative = subprocess.run([native['node'], str(supervisor), sha(packet_bytes), '2000-01-01T00:00:00.000Z'], capture_output=True, text=True, timeout=10)
+assert negative.returncode == 1 and 'At least40s remaining required' in negative.stderr and not output.exists()
+review = dict(state='STATIC-PREPARATION-PASS-NO-NATIVE-START', packetSha256=sha(packet_bytes), pythonCompilePassed=True, nodeSyntaxPassed=True, expiredWindowRefusedBeforeOutputOrPythonSpawn=True, nativeEnvironmentFiles=14, observerSha256=observer['sha256'])
+(here / 'static-review.json').write_text(json.dumps(review, indent=2) + '\n', encoding='utf-8', newline='\n')
+print(json.dumps(dict(packetSha256=sha(packet_bytes), scripts=files, staticReviewSha256=sha((here / 'static-review.json').read_bytes()), output=str(output), noNativeStart=True)))

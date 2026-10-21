@@ -1,0 +1,44 @@
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { readFile, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { resolveWranglerTools, closedAuthEnvironment } from '../python-operational-tail-absence-r1/private-api.mjs';
+assert.equal(process.versions.node, '24.22.0');
+const here = dirname(fileURLToPath(import.meta.url)), root = resolve(here, '../../..');
+const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+const canonicalBytes = await readFile(resolve(here, '../python-operational-staging-pilot-plan-r1/canonical-plan.json'));
+assert.equal(sha(canonicalBytes), '0b15194d63ae166e3d37bf8d9ee3eedbdf641964171c820e3c5fd5db22e3c4a0');
+const plan = JSON.parse(new TextDecoder('utf8', { fatal: true, ignoreBOM: true }).decode(canonicalBytes));
+const node = resolve(root, '.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe');
+const tools = resolveWranglerTools(root), empty = resolve(here, 'readonly-object-r2-empty.env');
+await writeFile(empty, '', { flag: 'wx' });
+const env = closedAuthEnvironment(process.env, { home: resolve(here, 'source-reader-home'), temp: resolve(here, 'source-reader-home/tmp') });
+env.CLOUDFLARE_ACCOUNT_ID = 'bcc0f2d44140e05b69152cba326132f8';
+const receipt = { state: 'readonly-staging-promoted-objects-incomplete', observedAt: new Date().toISOString(), objects: [],
+  mutationsPerformed: false, payloadRepeated: false, rawOutputPersisted: false, credentialValuesPersisted: false };
+let phase = 'pinned-keys';
+try {
+  assert.equal(plan.prefix, 'runtimes/7026b09b04a1222cfbc594d5ab3ec9de8649eece71c613c823a2c33d8c43ce5f/');
+  assert.equal(plan.markerSha256, '798c39e24fc7c2aa916692425aa419350d9a8060340f5962a73b485a14808bd7');
+  const expected = [
+    { key: `${plan.prefix}complete.json`, sha256: plan.markerSha256, bytes: null },
+    plan.workerCatalog,
+  ];
+  for (const item of expected) {
+    phase = 'readonly-object-get';
+    const body = execFileSync(node, [tools.wrapper, 'r2', 'object', 'get', `sistemazero-studio-artifacts-staging/${item.key}`,
+      '--remote', '--pipe', '--cwd', resolve(root, 'packages/studio-runtime'), '--env', 'staging', '--env-file', empty],
+    { cwd: root, env, timeout: 40000, maxBuffer: 2_000_000, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    if(item.bytes===null)assert(body.byteLength>0&&body.byteLength<=4096);else assert.equal(body.byteLength,item.bytes); assert.equal(sha(body),item.sha256);
+    receipt.objects.push({ key: item.key, bytes: body.byteLength, sha256: sha(body), matchesCanonical: true });
+  }
+  receipt.state = 'readonly-staging-promoted-objects-match';
+} catch (error) {
+  receipt.failure = { phase, kind: error instanceof Error ? error.name : typeof error, rawErrorDiscarded: true };
+  process.exitCode = 1;
+}
+await writeFile(resolve(here, 'staging-promoted-objects-r2-receipt.json'), `${JSON.stringify(receipt, null, 2)}\n`, { flag: 'wx' });
+console.log(JSON.stringify({ state: receipt.state, objects: receipt.objects.length, failure: receipt.failure ?? null }));
+

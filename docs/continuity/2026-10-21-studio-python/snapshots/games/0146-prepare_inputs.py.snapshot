@@ -1,0 +1,58 @@
+"""Read-only candidate Root functional pins. No executable host/Job/config is produced."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+from datetime import datetime, timezone
+
+here = Path(__file__).resolve().parent
+games = here.parents[3]
+root = Path('C:/Users/tocha/projects/sistema-zero-python')
+sha = lambda value: hashlib.sha256(value).hexdigest()
+root_head = subprocess.check_output(['git','-C',str(root),'rev-parse','HEAD'], text=True).strip()
+assert root_head == '8c0bb250dc7660869c247f799f126e99e0e93d9c'
+own_spec = (games / 'packages/studio/e2e-runtime/python-pacman-portable.spec.ts').read_text()
+root_spec = (root / 'packages/studio/e2e-runtime/python-pacman-portable.spec.ts').read_text()
+guard = """          const scheduled = scheduledBye[0]
+          const completed = firedBye[0]
+          if (!scheduled || !completed) throw new Error('Missing authored bye timer observation')
+          expect(completed.value.scheduledClock).toBe(scheduled.value.scheduledClock)
+          expect(completed.value.elapsedSeconds).toBeGreaterThanOrEqual(3)"""
+old = """          expect(firedBye[0]!.value.scheduledClock).toBe(scheduledBye[0]!.value.scheduledClock)
+          expect(firedBye[0]!.value.elapsedSeconds).toBeGreaterThanOrEqual(3)"""
+assert root_spec.count(guard) == 1
+assert root_spec.replace(guard, old) == own_spec
+relative = ['packages/studio/e2e-runtime/python-pacman-portable.spec.ts',
+            'experiments/studio-python-runtime/qualification/pacman.ts',
+            'experiments/studio-python-runtime/qualification/pacman_observer.py',
+            'experiments/studio-python-runtime/qualification/pacman_functional_observer.py',
+            'experiments/studio-python-runtime/qualification/game_observations.ts',
+            'experiments/studio-python-runtime/gameVariants.ts',
+            'experiments/studio-python-l0/corpus/pacman.json']
+files = [dict(path=str(root / path), bytes=(root / path).stat().st_size, sha256=sha((root / path).read_bytes())) for path in relative]
+for path in relative[1:]:
+    assert (root / path).read_bytes() == (games / path).read_bytes(), path
+assert files[0]['sha256'] == '587b398827ce89f38a3bf7e9e5ebdc30664eedf44b5ee033923a7c26e5cb26ab'
+freeze_path = here / '../current-host-browser-package-r8/source-freeze.json'
+assert sha(freeze_path.read_bytes()) == 'b4f70d586a34f2b1db2ca6a485d7364daad409abd4e5b40daf0881316711df7a'
+missing = [path for path in ['packages/studio/playwright.python-games-current.config.ts', 'experiments/studio-python-runtime/qualification/current_games_host.ts'] if not (root / path).exists()]
+data = dict(state='CANDIDATE-ROOT-FUNCTIONAL-INPUTS-ONLY-NOT-EXECUTION-FREEZE-OR-PACKET',
+            checkedAt=datetime.now(timezone.utc).isoformat(), rootCandidateCommit=root_head,
+            gamesHistoricalCommit='9557e17bcafbe529d0079c8d941485b7f67061c4',
+            rootSpecTypeGuardIsOnlyDifference=True, sixRootHelpersRecipesByteEqualGames=True,
+            rootFunctionalFiles=files, historicalR8=dict(path=str(freeze_path.resolve()), sha256=sha(freeze_path.read_bytes()), unchanged=True),
+            variant=dict(version='portable-audio-1.1.0', mainSha256='3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76', manifestSha256='689bbeced12887dd08a44765c0e49151be1cf78e273f910e7e380d9278b1609d'),
+            firstScenarios=['victory-near-end','defeat-near-end'],
+            grep='Pac-Man instrumented (victory-near-end|defeat-near-end) ',
+            targetSpec=str(root / relative[0]),
+            requiresExplicitRootSpecDiscovery=True,
+            missingRootQaEntries=missing,
+            executionStillRequires=['Reviewed/proven shared Windows Job kernel and supervision base',
+                                   'Root-targeting Playwright config and fresh real current-host admission; do not accidentally run old Games spec from historical config',
+                                   'Full current Root host/QA import closure and executable/runtime/provider/origin/parent/RAM/lifetime pins, new exclusive namespace/authority and explicit UTC window'],
+            noHostOverlaySupervisorConfigOrAdmissionCreated=True, noStart=True,
+            noProductFingerprintOracleSourceMutation=True, noStagingMergeOrPush=True)
+target = here / 'root-functional-inputs.json'
+with target.open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(data, stream, indent=2); stream.write('\n')
+print(json.dumps(dict(rootCandidate=root_head, rootSpecSha256=files[0]['sha256'], rootFunctionalInputsSha256=sha(target.read_bytes()), sixDependenciesByteEqualGames=True, originalR8Unchanged=True, missingRootQaEntries=missing, noStart=True)))

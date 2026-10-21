@@ -1,0 +1,27 @@
+--- r1/pacman_native.py
++++ paired/pacman_native.py
+@@ -155,6 +155,9 @@
+             finally:
+                 turtle._Root = official_root
+             root = screen.getcanvas().winfo_toplevel()
++            report['nativeClockInfo'] = dict(tclPatchlevel=root.tk.call('info', 'patchlevel'),
++                                             tkPatchlevel=root.tk.call('package', 'provide', 'Tk'),
++                                             monotonic=vars(time.get_clock_info('monotonic')))
+             assert root.state() == 'withdrawn' and report['withdrawnBeforeSetup']
+ 
+             def fail_callback(kind, value, tb):
+@@ -188,6 +191,14 @@
+                         line, self.pending = self.pending.split('\n', 1)
+                         if line.startswith(PREFIX):
+                             event = json.loads(line[len(PREFIX):])
++                            if event['event'] in ('timer-scheduled', 'timer-fired'):
++                                # Existing observer event only: no extra emit/timer/callback wrapper.
++                                qpc_before = time.monotonic_ns()
++                                tcl_us = int(root.tk.call('clock', 'microseconds'))
++                                qpc_after = time.monotonic_ns()
++                                event['nativeClockPair'] = dict(qpcBeforeNs=qpc_before,
++                                                               tclMicroseconds=tcl_us,
++                                                               qpcAfterNs=qpc_after)
+                             assert event['scenario'] == args.scenario
+                             report['events'].append(event)
+                             if event['event'] == 'after' and event['tick'] == wanted_tick:

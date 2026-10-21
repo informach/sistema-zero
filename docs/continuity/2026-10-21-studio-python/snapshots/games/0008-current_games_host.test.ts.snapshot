@@ -1,0 +1,231 @@
+import { expect, spyOn, test } from 'bun:test'
+import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
+import { isAbsolute, relative, resolve } from 'node:path'
+import { canonicalJson } from '../../../packages/core/src/creations/content-fingerprint'
+import { pythonDistributionFixture } from '../../../packages/studio-runtime/tests/python-distribution-fixture'
+import admit from './current_games_host'
+
+for (const failure of [
+  'expired',
+  'invalid-date',
+  'distribution-mismatch',
+  'source-changed',
+  'existing-output',
+] as const) {
+  test(`current-host admission refuses ${failure} before HTTP or browser`, async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), 'sz-games-admission-'))
+    const values = {
+      SZ_GAMES_CURRENT_URL: 'http://127.0.0.1:1',
+      SZ_GAMES_HOST_AUTHORITY: resolve(directory, 'authority.json'),
+      SZ_GAMES_SOURCE_FREEZE: resolve(directory, 'freeze.json'),
+      SZ_GAMES_OUTPUT: resolve(directory, 'output'),
+      SZ_GAMES_BUDGET_MS: '1000',
+      SZ_PACMAN_QA_DISTRIBUTION: 'a'.repeat(64),
+    }
+    const previous = Object.fromEntries(Object.keys(values).map((key) => [key, process.env[key]]))
+    Object.assign(process.env, values)
+    const network = spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      throw new Error('Unexpected network before refusal')
+    })
+    try {
+      const authority = {
+        state: 'current-host-authorized',
+        owner: 'test-only-no-host',
+        hostInstance: 'not-running',
+        baseURL: values.SZ_GAMES_CURRENT_URL,
+        windowEnd:
+          failure === 'expired'
+            ? '2000-01-01T00:00:00Z'
+            : failure === 'invalid-date'
+              ? '2999-02-30T00:00:00Z'
+              : new Date(Date.now() + 60_000).toISOString(),
+        distributionSha256: (failure === 'distribution-mismatch' ? 'b' : 'a').repeat(64),
+        releaseManifestSha256: 'a'.repeat(64),
+        providerHostSha256: 'a'.repeat(64),
+      }
+      await writeFile(values.SZ_GAMES_HOST_AUTHORITY, JSON.stringify(authority))
+      const source = resolve(directory, 'source.txt')
+      await writeFile(source, 'actual source bytes')
+      if (failure === 'existing-output') await mkdir(values.SZ_GAMES_OUTPUT)
+      await writeFile(
+        values.SZ_GAMES_SOURCE_FREEZE,
+        JSON.stringify({
+          files: [
+            {
+              path: source,
+              sha256:
+                failure === 'existing-output'
+                  ? createHash('sha256').update('actual source bytes').digest('hex')
+                  : '0'.repeat(64),
+            },
+          ],
+        }),
+      )
+      await expect(admit()).rejects.toThrow(
+        failure === 'expired'
+          ? 'fresh window'
+          : failure === 'invalid-date'
+            ? 'Invalid UTC calendar date'
+            : failure === 'existing-output'
+              ? 'EEXIST'
+              : failure === 'source-changed'
+                ? 'Source changed'
+                : undefined,
+      )
+      expect(network).not.toHaveBeenCalled()
+    } finally {
+      network.mockRestore()
+      for (const [key, value] of Object.entries(previous)) {
+        if (value === undefined) delete process.env[key]
+        else process.env[key] = value
+      }
+      const child = relative(tmpdir(), directory)
+      assert(
+        !isAbsolute(child) && !child.startsWith('..') && child.startsWith('sz-games-admission-'),
+      )
+      await rm(directory, { recursive: true })
+    }
+  })
+}
+
+test('real Playwright worker reimports admitted config and a later CLI preserves prior artifacts', async () => {
+  const directory = await mkdtemp(resolve(tmpdir(), 'sz-games-worker-'))
+  try {
+    const root = resolve(import.meta.dirname, '../../..')
+    const require = createRequire(resolve(root, 'packages/studio/package.json'))
+    const output = resolve(directory, 'output')
+    const fixture = await pythonDistributionFixture()
+    const sha = (bytes: string) => createHash('sha256').update(bytes).digest('hex')
+    const provider = 'export const fixtureOnly = true\n'
+    const runtime = {
+      profileId: fixture.deployment.release.profileId,
+      releaseId: fixture.deployment.release.releaseId,
+      manifestSha256: fixture.deployment.release.manifestSha256,
+    }
+    const configuration = { runtime }
+    const distributionSha256 = sha(canonicalJson(fixture.deployment.distribution))
+    const source = resolve(directory, 'source.txt')
+    await writeFile(source, 'source-only admission fixture')
+    const environment = {
+      ...process.env,
+      SZ_GAMES_CURRENT_URL: 'http://127.0.0.1:1',
+      SZ_GAMES_HOST_AUTHORITY: resolve(directory, 'authority.json'),
+      SZ_GAMES_SOURCE_FREEZE: resolve(directory, 'freeze.json'),
+      SZ_GAMES_OUTPUT: output,
+      SZ_GAMES_BUDGET_MS: '10000',
+      SZ_PACMAN_QA_DISTRIBUTION: distributionSha256,
+    }
+    delete environment.TEST_WORKER_INDEX
+    delete environment.TEST_PARALLEL_INDEX
+    await writeFile(
+      environment.SZ_GAMES_HOST_AUTHORITY,
+      JSON.stringify({
+        state: 'current-host-authorized',
+        owner: 'UNIT-FIXTURE-NO-HOST',
+        hostInstance: 'NO-HOST-OR-BROWSER',
+        baseURL: environment.SZ_GAMES_CURRENT_URL,
+        windowEnd: new Date(Date.now() + 120_000).toISOString(),
+        distributionSha256,
+        releaseManifestSha256: runtime.manifestSha256,
+        providerHostSha256: sha(provider),
+        configuration,
+      }),
+    )
+    await writeFile(
+      environment.SZ_GAMES_SOURCE_FREEZE,
+      JSON.stringify({
+        files: [
+          {
+            path: source,
+            sha256: sha('source-only admission fixture'),
+          },
+        ],
+      }),
+    )
+    await writeFile(
+      resolve(directory, 'transport.json'),
+      JSON.stringify({
+        '/distribution': {
+          hash: distributionSha256,
+          manifest: fixture.deployment.distribution,
+          release: fixture.deployment.release,
+          providerHostSha256: sha(provider),
+        },
+        '/configuration': configuration,
+        '/provider-host.mjs': provider,
+      }),
+    )
+    // Stub only HTTP identity transport. Actual admission, config, runner and
+    // worker process are used; the spec requests no browser or game fixture.
+    await writeFile(
+      resolve(directory, 'setup.ts'),
+      `
+import {readFile} from 'node:fs/promises'
+import admit from ${JSON.stringify(resolve(import.meta.dirname, 'current_games_host.ts'))}
+export default async function(){
+ const replies=JSON.parse(await readFile(${JSON.stringify(resolve(directory, 'transport.json'))},'utf8'))
+ const previous=globalThis.fetch
+ globalThis.fetch=async input=>{
+  const path=new URL(String(input)).pathname
+  if(!(path in replies))throw new Error('Unexpected identity request')
+  return path==='/provider-host.mjs'?new Response(replies[path]):Response.json(replies[path])
+ }
+ try{await admit()}finally{globalThis.fetch=previous}
+}
+`,
+    )
+    await writeFile(
+      resolve(directory, 'worker.spec.ts'),
+      `
+import {test,expect} from ${JSON.stringify(require.resolve('@playwright/test'))}
+test('worker config import after admission',()=>{
+ expect(process.env.TEST_WORKER_INDEX).toBe('0')
+})
+`,
+    )
+    await writeFile(
+      resolve(directory, 'playwright.config.ts'),
+      `
+import base from ${JSON.stringify(resolve(root, 'packages/studio/playwright.python-games-current.config.ts'))}
+export default {...base,testDir:${JSON.stringify(directory)},testMatch:'worker.spec.ts',
+ globalSetup:${JSON.stringify(resolve(directory, 'setup.ts'))}}
+`,
+    )
+    const run = () =>
+      spawnSync(
+        process.env.STUDIO_PYTHON_TEST_NODE ?? 'node',
+        [
+          require.resolve('@playwright/test/cli'),
+          'test',
+          '--config',
+          resolve(directory, 'playwright.config.ts'),
+        ],
+        { env: environment, encoding: 'utf8', windowsHide: true, timeout: 20_000 },
+      )
+    const first = run()
+    expect({ code: first.status, output: first.stdout + first.stderr }).toEqual({
+      code: 0,
+      output: expect.stringContaining('1 passed'),
+    })
+    const admission = await readFile(resolve(output, 'host-admission.json'), 'utf8')
+    const report = await readFile(resolve(output, 'report.json'), 'utf8')
+    const sentinel = resolve(output, 'artifacts', 'preserve-me.txt')
+    await mkdir(resolve(output, 'artifacts'), { recursive: true })
+    await writeFile(sentinel, 'old evidence must survive pre-setup cleanup')
+    const second = run()
+    expect(second.status).toBe(1)
+    expect(second.stdout + second.stderr).toContain('Do not overwrite an earlier browser attempt')
+    expect(await readFile(sentinel, 'utf8')).toBe('old evidence must survive pre-setup cleanup')
+    expect(await readFile(resolve(output, 'host-admission.json'), 'utf8')).toBe(admission)
+    expect(await readFile(resolve(output, 'report.json'), 'utf8')).toBe(report)
+  } finally {
+    const child = relative(tmpdir(), directory)
+    assert(!isAbsolute(child) && !child.startsWith('..') && child.startsWith('sz-games-worker-'))
+    await rm(directory, { recursive: true })
+  }
+}, 30_000)

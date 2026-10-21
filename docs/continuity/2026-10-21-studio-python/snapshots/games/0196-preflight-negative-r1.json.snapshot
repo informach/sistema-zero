@@ -1,0 +1,7 @@
+{
+  "state": "source-only-preflight-negative-preserved",
+  "nativeCasesExecuted": 0,
+  "error": "importlib.metadata.PackageNotFoundError: No package metadata was found for setuptools",
+  "diagnosis": "The new read-only package preflight incorrectly required the build-only setuptools declaration to be installed in the runtime venv. The existing native runner correctly verifies only runtime dependency versions. No Tk/audio/game was imported or executed.",
+  "correction": "Align the read-only preflight with the native runner, verify miniaudio/cffi/pycparser versions and retain the full declared build/runtime dependency map. Do not install a build tool into the frozen runtime."
+}

@@ -1,0 +1,25 @@
+"""SEPARATE PURE PROPOSAL. The native runner does not import or activate this file."""
+import math
+
+
+def proposed_named_bye_clock_contract(events):
+    scheduled = [e for e in events if e['event'] == 'timer-scheduled'
+                 and e['value']['callback'] == 'bye' and e['value']['delay'] == 3000]
+    fired = [e for e in events if e['event'] == 'timer-fired'
+             and e['value']['callback'] == 'bye' and e['value']['delay'] == 3000]
+    assert len(scheduled) == len(fired) == 1, 'Exactly one named bye scheduling/firing required'
+    before, after = scheduled[0], fired[0]
+    assert before['value']['scheduledClock'] == after['value']['scheduledClock'], 'Clock identity mismatch'
+    qpc_observer_elapsed = after['value']['elapsedSeconds']
+    assert math.isfinite(qpc_observer_elapsed) and qpc_observer_elapsed >= 0, 'Invalid QPC diagnostic'
+    start, end = before['nativeClockPair'], after['nativeClockPair']
+    for pair in (start, end):
+        assert all(isinstance(pair[key], int) for key in ('qpcBeforeNs','qpcAfterNs','tclMicroseconds'))
+        assert 0 <= pair['qpcBeforeNs'] <= pair['qpcAfterNs']
+    qpc_lower = end['qpcBeforeNs'] - start['qpcAfterNs']
+    qpc_upper = end['qpcAfterNs'] - start['qpcBeforeNs']
+    assert 0 <= qpc_lower <= qpc_upper
+    tcl_elapsed = end['tclMicroseconds'] - start['tclMicroseconds']
+    assert tcl_elapsed >= 3000000, 'Early Tcl-domain observer event interval'
+    return dict(tclObserverIntervalUs=tcl_elapsed, qpcObserverElapsedSeconds=qpc_observer_elapsed,
+                pairedQpcLowerNs=qpc_lower, pairedQpcUpperNs=qpc_upper)

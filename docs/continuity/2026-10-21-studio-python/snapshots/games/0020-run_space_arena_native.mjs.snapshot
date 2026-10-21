@@ -1,0 +1,152 @@
+/** One owned child and immutable, exclusive outputs. An external timeout is a failure. */
+import assert from 'node:assert/strict'
+import { spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { closeSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const [python, artifact, output, scenario, windowEnd] = process.argv.slice(2)
+const q08 = scenario === 'Q08-pause' || scenario === 'Q08-bgm'
+const childBudgetMs = scenario === 'Q08-bgm' ? 160_000 : 40_000
+let deadlineUtc
+assert(
+  python && artifact && output && (/^Q0[2-7]$/.test(scenario) || q08),
+  'Usage: node run_space_arena_native.mjs <python> <canonical-dir> <new-output-dir> <Q02..Q07|Q08-pause|Q08-bgm> [UTC-window-end-required-for-Q08]',
+)
+if (q08) {
+  assert(
+    typeof windowEnd === 'string' &&
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(windowEnd),
+    'Explicit UTC deadline required for Q08',
+  )
+  deadlineUtc = Date.parse(windowEnd)
+  assert(
+    Number.isFinite(deadlineUtc) &&
+      new Date(deadlineUtc).toISOString() === windowEnd.replace(/(?<=:\d{2})Z$/, '.000Z'),
+    'Invalid UTC date',
+  )
+  assert(
+    deadlineUtc - Date.now() >= childBudgetMs,
+    'Authorized window expired or too short for Q08 child',
+  )
+}
+const here = dirname(fileURLToPath(import.meta.url))
+const destination = resolve(output)
+mkdirSync(destination, { recursive: false })
+const digest = (value) => createHash('sha256').update(value).digest('hex')
+const script = resolve(here, 'space_arena_native.py')
+const argv = [
+  '-I',
+  '-B',
+  script,
+  '--artifact-dir',
+  resolve(artifact),
+  '--output',
+  resolve(destination, 'result'),
+  '--scenario',
+  scenario,
+]
+const report = {
+  state: 'running',
+  node: process.versions.node,
+  python: resolve(python),
+  argv,
+  scenario,
+  runnerSha256: digest(readFileSync(script)),
+  observerSha256: digest(readFileSync(resolve(here, 'space_arena_observer.py'))),
+  startedAt: new Date().toISOString(),
+  pid: null,
+  deadline: false,
+  signalAttempted: false,
+  childBudgetMs,
+  absoluteWindowEnd: q08 ? windowEnd : null,
+  ...(q08 ? { q08ObserverSha256: digest(readFileSync(resolve(here, 'space_arena_q08.py'))) } : {}),
+}
+const out = openSync(resolve(destination, 'stdout.log'), 'wx')
+const err = openSync(resolve(destination, 'stderr.log'), 'wx')
+if (q08)
+  assert(
+    deadlineUtc - Date.now() >= childBudgetMs,
+    'Authorized window became too short before Q08 spawn',
+  )
+const child = spawn(report.python, argv, {
+  cwd: here,
+  windowsHide: true,
+  stdio: ['ignore', out, err],
+})
+report.pid = child.pid ?? null
+writeFileSync(resolve(destination, 'owner.json'), `${JSON.stringify(report, null, 2)}\n`, {
+  flag: 'wx',
+})
+let spawnError
+child.once('error', (error) => {
+  spawnError = String(error)
+})
+const deadline = setTimeout(
+  () => {
+    report.deadline = true
+    report.signalAttempted = true
+    report.signalDelivered = child.kill() // Only the directly owned child handle.
+  },
+  q08 ? Math.min(childBudgetMs, deadlineUtc - Date.now()) : childBudgetMs,
+)
+const [exitCode, exitSignal] = await new Promise((done) =>
+  child.once('close', (code, signal) => done([code, signal])),
+)
+clearTimeout(deadline)
+closeSync(out)
+closeSync(err)
+Object.assign(report, {
+  exitCode,
+  exitSignal,
+  spawnError: spawnError ?? null,
+  endedAt: new Date().toISOString(),
+})
+report.state = 'failed-or-incomplete-preserved'
+try {
+  if (exitCode === 0 && !report.deadline && !report.signalAttempted && !spawnError) {
+    const bytes = readFileSync(resolve(destination, 'result/native.json'))
+    const result = JSON.parse(bytes)
+    assert.equal(result.state, 'native-functional-passed')
+    assert.equal(result.runnerSha256, report.runnerSha256)
+    assert.equal(result.observerSha256, report.observerSha256)
+    assert.equal(result.scenario, scenario)
+    assert.equal(result.rootMapEvents, 0)
+    assert.equal(result.rootDestroyEvents, 1)
+    assert.equal(result.audioReleased, true)
+    assert.equal(result.ownedTempAbsent, true)
+    assert.equal(result.exportTreeUnchanged, true)
+    assert.deepEqual(result.errors, [])
+    if (q08) {
+      assert.equal(result.q08ObserverSha256, report.q08ObserverSha256)
+      assert(Date.parse(report.endedAt) <= deadlineUtc, 'Q08 outlived the authorized window')
+      const pause = result.observations.filter((event) => event.kind === 'pause-proof')
+      const resume = result.observations.filter((event) => event.kind === 'resume-proof')
+      assert.equal(pause.length, 1)
+      assert.equal(resume.length, 1)
+      assert(pause[0].elapsedSeconds >= 1.2 && pause[0].pausedEventPumps > 0)
+      assert(resume[0].originalCalls.sprite > resume[0].previousCalls.sprite)
+      if (scenario === 'Q08-bgm') {
+        const replay = result.observations.filter((event) => event.kind === 'music-replay-proof')
+        assert.equal(replay.length, 1)
+        assert(replay[0].intervalSeconds >= 120)
+        assert.equal(replay[0].plays.length, 2)
+        assert(replay[0].plays[1].activeVoices >= 2 && replay[0].plays[1].activeVoices <= 16)
+      }
+    }
+    if (scenario === 'Q03') {
+      const lines = readFileSync(resolve(destination, 'stdout.log'), 'utf8').split(/\r?\n/)
+      assert.equal(lines.filter((line) => line === 'GAME OVER').length, 1)
+    }
+    report.nativeReceiptSha256 = digest(bytes)
+    report.state = 'native-functional-passed'
+  }
+} catch (error) {
+  report.receiptError = String(error)
+}
+writeFileSync(resolve(destination, 'supervisor.json'), `${JSON.stringify(report, null, 2)}\n`, {
+  flag: 'wx',
+})
+console.log(JSON.stringify(report))
+process.exitCode = report.state === 'native-functional-passed' ? 0 : 1

@@ -1,0 +1,522 @@
+{
+  "state": "READONLY-SEMANTIC-REVIEW-LIMITED-PASS",
+  "reviewedAt": "2026-10-20T22:06:38.176Z",
+  "sourceFreezeSha256": "07e9afafaf381aa65077b710654c21c0f51bee2909e8d1c3f5fc7a34abeca93d",
+  "unchangedPins": 28,
+  "reviews": [
+    {
+      "run": "games-space-q03-q05-r2",
+      "controllerStatePreserved": "PASS-PENDING-REVIEW",
+      "gamePayloadReview": "LIMITED-PASS",
+      "receiptSha256": "d5a78d1f202f75f075955b4cd82cba09232e5b5ecb89ea7f7cf025dcd0e14234",
+      "reportSha256": "1afd6ddd9a8bc23d5982bb6112d09600e90c1b5a9108ee3d49ce4e31c2cda9c6",
+      "admissionSha256": "4cf770be00fc451023f05a282a0e16211810cc0b3bdfe38e9e821f42641bcf20",
+      "authoritySha256": "f76dac0869c18892d9c5d5d132156be74654a0b59482b67634d6ad056f52eccb",
+      "startedAt": "2026-10-20T21:59:40.624Z",
+      "endedAt": "2026-10-20T22:00:44.223Z",
+      "elapsedMs": 63599,
+      "suiteMs": 55754.765,
+      "cleanup": {
+        "observedReleased": true,
+        "forced": false,
+        "ports": [
+          {
+            "port": 5297,
+            "free": true
+          },
+          {
+            "port": 56561,
+            "free": true
+          }
+        ],
+        "roots": [
+          {
+            "id": "host",
+            "pid": 40504,
+            "result": {
+              "id": "host",
+              "code": 0,
+              "signal": null,
+              "logsDrained": true,
+              "at": "2026-10-20T22:00:43.203Z"
+            }
+          },
+          {
+            "id": "playwright",
+            "pid": 8072,
+            "result": {
+              "id": "playwright",
+              "code": 0,
+              "signal": null,
+              "logsDrained": true,
+              "at": "2026-10-20T22:00:43.110Z"
+            }
+          }
+        ],
+        "sampler": {
+          "id": "sampler",
+          "code": 0,
+          "signal": null,
+          "logsDrained": true,
+          "at": "2026-10-20T22:00:43.556Z"
+        }
+      },
+      "peaks": {
+        "sampledOwnedRssBytes": 2304712704,
+        "sampledHostTreeRssBytes": 249806848,
+        "sampledBrowserTreeRssBytes": 1909743616,
+        "minimumObservedFreeBytes": 3312898048,
+        "privateBytesPeak": null
+      },
+      "cases": [
+        {
+          "scenario": "Q03",
+          "durationMs": 17979,
+          "frames": 9,
+          "stampClears": 9,
+          "radarWitnesses": 32,
+          "sounds": [
+            "explosion.wav",
+            "explosion.wav",
+            "explosion.wav",
+            "explosion.wav"
+          ],
+          "details": {
+            "walls": [
+              {
+                "kind": "wall-clamp",
+                "step": 0,
+                "clock": 15.1258,
+                "axis": "x",
+                "position": 790,
+                "player": {
+                  "x": 790,
+                  "y": 0,
+                  "dx": -2,
+                  "dy": 0,
+                  "heading": 90,
+                  "da": 0,
+                  "thrust": 0,
+                  "state": "active",
+                  "health": 40,
+                  "lives": 3,
+                  "score": 0
+                }
+              },
+              {
+                "kind": "wall-clamp",
+                "step": 1,
+                "clock": 15.1424,
+                "axis": "x",
+                "position": -790,
+                "player": {
+                  "x": -790,
+                  "y": 0,
+                  "dx": 2,
+                  "dy": 0,
+                  "heading": 90,
+                  "da": 0,
+                  "thrust": 0,
+                  "state": "active",
+                  "health": 40,
+                  "lives": 3,
+                  "score": 0
+                }
+              },
+              {
+                "kind": "wall-clamp",
+                "step": 2,
+                "clock": 15.16,
+                "axis": "y",
+                "position": 590,
+                "player": {
+                  "x": 0,
+                  "y": 590,
+                  "dx": 0,
+                  "dy": -2,
+                  "heading": 90,
+                  "da": 0,
+                  "thrust": 0,
+                  "state": "active",
+                  "health": 40,
+                  "lives": 3,
+                  "score": 0
+                }
+              },
+              {
+                "kind": "wall-clamp",
+                "step": 3,
+                "clock": 15.1756,
+                "axis": "y",
+                "position": -590,
+                "player": {
+                  "x": 0,
+                  "y": -590,
+                  "dx": 0,
+                  "dy": 2,
+                  "heading": 90,
+                  "da": 0,
+                  "thrust": 0,
+                  "state": "active",
+                  "health": 40,
+                  "lives": 3,
+                  "score": 0
+                }
+              }
+            ],
+            "distance18CounterexampleHealth": 40,
+            "damage": {
+              "kind": "damage",
+              "step": 5,
+              "clock": 15.2204,
+              "player": {
+                "x": 0,
+                "y": 0,
+                "dx": 0,
+                "dy": 0,
+                "heading": 90,
+                "da": 0,
+                "thrust": 0,
+                "state": "active",
+                "health": 27,
+                "lives": 3,
+                "score": 0
+              },
+              "enemy": {
+                "x": 17.5,
+                "y": 0,
+                "dx": 0,
+                "dy": 0,
+                "heading": 0,
+                "da": 0,
+                "thrust": 0,
+                "state": "inactive",
+                "health": -4,
+                "type": "hunter"
+              }
+            },
+            "beforeReset": {
+              "kind": "nonpositive-health-before-reset",
+              "step": 6,
+              "clock": 15.2602,
+              "player": {
+                "x": 0,
+                "y": 0,
+                "dx": 0,
+                "dy": 0,
+                "heading": 90,
+                "da": 0,
+                "thrust": 0,
+                "state": "active",
+                "health": -19,
+                "lives": 3,
+                "score": 0
+              }
+            },
+            "nearDefeat": {
+              "kind": "declared-near-defeat",
+              "step": 7,
+              "clock": 15.2901,
+              "player": {
+                "x": 0,
+                "y": 0,
+                "dx": 0,
+                "dy": 0,
+                "heading": 90,
+                "da": 0,
+                "thrust": 0,
+                "state": "active",
+                "health": 40,
+                "lives": 0,
+                "score": 0
+              },
+              "authorLoopStillPlaying": "playing"
+            }
+          }
+        },
+        {
+          "scenario": "Q04",
+          "durationMs": 17874,
+          "frames": 2,
+          "stampClears": 2,
+          "radarWitnesses": 4,
+          "sounds": [
+            "explosion.wav"
+          ],
+          "details": {
+            "kind": "missile-kill",
+            "step": 1,
+            "clock": 14.8605,
+            "enemy": {
+              "x": 100,
+              "y": 100,
+              "dx": 1,
+              "dy": -1,
+              "heading": 0,
+              "da": 0,
+              "thrust": 0,
+              "state": "inactive",
+              "health": 0,
+              "type": "hunter"
+            },
+            "missile": {
+              "x": 112.5,
+              "y": 100,
+              "dx": 3,
+              "dy": -3,
+              "heading": 0,
+              "da": 0,
+              "thrust": 5,
+              "state": "ready",
+              "fuel": 200,
+              "max_fuel": 200,
+              "damage": 5
+            },
+            "score": 10
+          }
+        },
+        {
+          "scenario": "Q05",
+          "durationMs": 17858,
+          "frames": 2,
+          "stampClears": 2,
+          "radarWitnesses": 2,
+          "sounds": [
+            "powerup.wav",
+            "explosion.wav",
+            "explosion.wav"
+          ],
+          "details": {
+            "pickup": {
+              "kind": "pickup-upgrade",
+              "step": 0,
+              "clock": 14.9514,
+              "missiles": 31,
+              "first": {
+                "x": 0,
+                "y": 0,
+                "dx": 0,
+                "dy": 0,
+                "heading": 0,
+                "da": 0,
+                "thrust": 5.25,
+                "state": "ready",
+                "fuel": 200,
+                "max_fuel": 220.00000000000003,
+                "damage": 5.5
+              }
+            },
+            "penalty": {
+              "kind": "missile-powerup-penalty",
+              "step": 1,
+              "clock": 15.0027,
+              "score": -50,
+              "sounds": [
+                "powerup.wav",
+                "explosion.wav",
+                "explosion.wav"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "run": "games-space-q06-q07-r1",
+      "controllerStatePreserved": "NEGATIVE",
+      "gamePayloadReview": "LIMITED-PASS",
+      "receiptSha256": "58152a6cbb82ca2930f2753c28221b2b270f5aa84920ce9a4f7c0146011c753b",
+      "reportSha256": "686bafa1831f972f0f918bd32427cb4e7683f03ac2e380c5939aeb45c92833b1",
+      "admissionSha256": "4ca51c9309026a2f682c11fced759814f34997df12d93c94b15890171d55c30b",
+      "authoritySha256": "633bfdb2cb29ec4ae94dfe2f5f6c49abfc1c6f8433e1f2e6b163dcdfa7c3857e",
+      "startedAt": "2026-10-20T22:02:43.480Z",
+      "endedAt": "2026-10-20T22:03:28.570Z",
+      "elapsedMs": 45090,
+      "suiteMs": 37725.132000000005,
+      "cleanup": {
+        "observedReleased": true,
+        "forced": false,
+        "ports": [
+          {
+            "port": 5297,
+            "free": true
+          },
+          {
+            "port": 64065,
+            "free": true
+          }
+        ],
+        "roots": [
+          {
+            "id": "host",
+            "pid": 41912,
+            "result": {
+              "id": "host",
+              "code": 0,
+              "signal": null,
+              "logsDrained": true,
+              "at": "2026-10-20T22:03:27.153Z"
+            }
+          },
+          {
+            "id": "playwright",
+            "pid": 29480,
+            "result": {
+              "id": "playwright",
+              "code": 0,
+              "signal": null,
+              "logsDrained": true,
+              "at": "2026-10-20T22:03:27.068Z"
+            }
+          }
+        ],
+        "sampler": {
+          "id": "sampler",
+          "code": 0,
+          "signal": null,
+          "logsDrained": true,
+          "at": "2026-10-20T22:03:27.906Z"
+        }
+      },
+      "peaks": {
+        "sampledOwnedRssBytes": 2317524992,
+        "sampledHostTreeRssBytes": 217464832,
+        "sampledBrowserTreeRssBytes": 1926840320,
+        "minimumObservedFreeBytes": 2989735936,
+        "privateBytesPeak": null
+      },
+      "cases": [
+        {
+          "scenario": "Q06",
+          "durationMs": 18177,
+          "frames": 1,
+          "stampClears": 1,
+          "radarWitnesses": 7,
+          "sounds": [],
+          "details": {
+            "kind": "ai-camera",
+            "step": 0,
+            "clock": 15.0487,
+            "enemies": [
+              {
+                "x": 60,
+                "y": 0,
+                "dx": -0.05,
+                "dy": -0.05,
+                "heading": 0,
+                "da": 0,
+                "thrust": 0,
+                "state": "active",
+                "health": 13,
+                "type": "hunter"
+              },
+              {
+                "x": 100,
+                "y": 0,
+                "dx": 0,
+                "dy": 0,
+                "heading": 0,
+                "da": 0,
+                "thrust": 0,
+                "state": "active",
+                "health": 30,
+                "type": "hunter"
+              },
+              {
+                "x": 60,
+                "y": 0,
+                "dx": 0,
+                "dy": 0,
+                "heading": 0,
+                "da": 0,
+                "thrust": 0,
+                "state": "active",
+                "health": 29,
+                "type": "hunter"
+              },
+              {
+                "x": 100,
+                "y": 0,
+                "dx": 0,
+                "dy": 0,
+                "heading": 0,
+                "da": 0,
+                "thrust": 0,
+                "state": "active",
+                "health": 28,
+                "type": "mine"
+              },
+              {
+                "x": 60,
+                "y": 0,
+                "dx": 0.03,
+                "dy": -0.03,
+                "heading": 0,
+                "da": 0,
+                "thrust": 0,
+                "state": "active",
+                "health": 28,
+                "type": "surveillance"
+              },
+              {
+                "x": 100,
+                "y": 0,
+                "dx": 0,
+                "dy": 0,
+                "heading": 0,
+                "da": 0,
+                "thrust": 0,
+                "state": "active",
+                "health": 29,
+                "type": "surveillance"
+              }
+            ],
+            "camera": {
+              "x": -70,
+              "y": -35,
+              "visible": false
+            }
+          }
+        },
+        {
+          "scenario": "Q07",
+          "durationMs": 17881,
+          "frames": 20,
+          "stampClears": 20,
+          "radarWitnesses": 20,
+          "sounds": [
+            "explosion.wav"
+          ],
+          "details": {
+            "activeParticles": [
+              50,
+              50,
+              50,
+              50,
+              50,
+              50,
+              50,
+              50,
+              50,
+              49,
+              43,
+              40,
+              35,
+              27,
+              19,
+              13,
+              11,
+              8,
+              5,
+              0
+            ],
+            "sourceAssertions": "All 50 original particles: position integration, damping .85, lifetimes/reset, inactive stability; no state injection per step"
+          }
+        }
+      ]
+    }
+  ],
+  "newGameExecution": false,
+  "rootMutation": false,
+  "limits": "Five declared instrumented fixtures only. Q06/Q07 controller remains NEGATIVE. No trusted DOM/OS input, raster/golden, audio heard, full game, performance/8GB or SDK image acceptance. Space Q03-Q05 r1 was prepared only and never executed."
+}

@@ -1,0 +1,11 @@
+# New immutable prospective Q05/Q06/Q07 artifact checker
+SHA8ffa6a1de89320872802c2ba95e22b1e02ca2b3cc10b513b901842e071cdb5d7. Source derived into NEWdirectory from828e common identity/cleanup checks, with onlynamespace/packet/scenarios/counts/rules changed. Old828e/JSONb26a/RootEEXISTlog preserved. Onlysyntaxtranspilechecked; noactualexecution/data/receiptSHAinvented.
+
+OWNER Root ONLY executes: check.ts <Root games-space12-q05-q07-r1/evidence> --plan-sha=<actualreviewed> --seal-sha=<actualreviewed>. Exactplanmustmatchownproposedbytes; seal suppliedfreshbyRoot. Games reviews existingJSON/log/payload, doesnotrerun. Outputactual-review.json exclusivewriteonce, existingfilemuststaypreserved.
+
+New1.2R7/d993+a8a6/0123/sourceobserverdriverSHAs,3actualorderedPASSresults/noskips/flaky/errors,exactframeindices andcomplete.step,clears3/2/21 fromframes2/1/20. Everyclearbeforepositive/afterzero/penitems1. Canonicalinstalledpools25/30/20/5+30/20.
+Q05allowslegit31stmissile, firstmaxfuel220/thrust5.25/damage5.5 within1e-9,currentfuel200/ready,score0→-50,powerup+2explosions. Pinnedobserverasserts ORIGINAL30IDsretained andallupgrades,míssile ready/fuelmaxafterpenalty (notallpoststatesseparatelyserialized).
+Q06exactAIpairsx60/100:hunter-.05,-.05vs0;mineconvertswithinonly;surveillance.03,-.03vs0;speedcaps3,camera-70,-35visiblefalse,QAkeys s/c/C,7radarwitnessesincludingPlayerwhite/Enemy,noaudio.
+Q07active50→0monotonicinexact20steps/frames;50particlepoolidentitieskept. Pinnedobserverassertsinitialcolors/offsets/10..20life,eachparticleposition/damping.85/deathreset/inactivestability;payloaddirectlyrecordsactivecounts. Oneexplosion. No physics/emitter/timer/audio replaced.
+AnyTraceback/failedstate/sourceerror/omission/sequencegap/partialJSON/retry/skip/flaky/forcetermination/unknowncleanup/busyportsfailswithnoPASSoutput. Keepnormalchild/samplerexit0/errorsnone/observedReleased/RAM/timeconstraints.
+Predictionsnotactualevidence. No native/FPS/cadence/fullgame/physicalinput/raster/hosted/Mural/JSimageclaim. No network/game/subprocessimports orRootwrites.

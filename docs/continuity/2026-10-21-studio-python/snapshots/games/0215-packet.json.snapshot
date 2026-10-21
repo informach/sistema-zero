@@ -1,0 +1,109 @@
+{
+  "state": "CAUSAL-CONTROL-PREPARED-NOT-EXECUTED-NOT-GAME-ACCEPTANCE",
+  "python": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Scripts\\python.exe",
+  "node": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\node-v24.22.0\\node-v24.22.0-win-x64\\node.exe",
+    "sha256": "ba93f9a70bd86fce3ebbb39ec758501458453467aa92a34a0a3602d1e3fc2b9c"
+  },
+  "probe": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\tcl-clock-causal-control-r1\\probe.py",
+  "files": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\tcl-clock-causal-control-r1\\probe.py",
+      "sha256": "25e6580b260ba6307347e03b3abe549b164111f5c8675ebbcf6b9089e38ff549"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\tcl-clock-causal-control-r1\\run.mjs",
+      "sha256": "62ae3f738d7e6de94407eaedd48921b7bdc3a332fcc630a112c6cb1c67076ba5"
+    }
+  ],
+  "observer": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman_observer.py",
+    "sha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc"
+  },
+  "nativeEnvironmentPins": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\pyvenv.cfg",
+      "bytes": 462,
+      "sha256": "3f96d69d9c2271c487c6069a158ca6b9d3e2f696eda3016ce0c6af455fada55c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Scripts\\python.exe",
+      "bytes": 255320,
+      "sha256": "e725f520cfbb2e4844fe0a9fc8949236f20b0d67e470d1232618b99504a0691a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\python.exe",
+      "bytes": 106328,
+      "sha256": "fda7026477256845afab371e354c4d512896665f1761939cb5887d0a9dec257a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\DLLs\\_tkinter.pyd",
+      "bytes": 69464,
+      "sha256": "f1d7eebfe85d0b3ef56e9db4d23fe3421de7ed77bfd8bea1df83a1ae96600fea"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\DLLs\\tcl86t.dll",
+      "bytes": 1842008,
+      "sha256": "2fd6035e9e26b90ee5cb5e6f22f9dbc2a3576c81a5da4c673e0d36a540c55c2a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\DLLs\\tk86t.dll",
+      "bytes": 1591640,
+      "sha256": "abcabe172f982a2969ef45dd2c79630c2dd84562b657e11dd97cf2bcfce095c7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\Lib\\turtle.py",
+      "bytes": 153810,
+      "sha256": "8ba9c0ad9ca5c546df1034709b74dac3f76a9799e97800f0e04aca6213ca8fc4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\Lib\\tkinter\\__init__.py",
+      "bytes": 193096,
+      "sha256": "ee48b704fbc0066a2bbdd2492eb5a8164a0b7a5ebc06736bdc4c19a52a0260b4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\_miniaudio.pyd",
+      "bytes": 601088,
+      "sha256": "4639e3ae31285aaf2a02cf4d237d4f237f9bf0bac91af723ee8e5195fbb4d43b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\_cffi_backend.cp314-win_amd64.pyd",
+      "bytes": 181248,
+      "sha256": "9e99b2184c60f21a88cafc374386ded3559e8694ed7cf111f2869e066d303334"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\miniaudio.py",
+      "bytes": 90613,
+      "sha256": "282bbe1d936a67b942597303a534e42fdfe407c245686dab5949f46027b59d7f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\miniaudio-1.71.dist-info\\METADATA",
+      "bytes": 26453,
+      "sha256": "4c375f306c54fe64792ffc56fb2a2b5a6458d644149d268898393364cab56f1c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\cffi-2.1.1.dist-info\\METADATA",
+      "bytes": 2594,
+      "sha256": "67b6a7595df7ede2195016a05d285faa7d362a8f57c238984edb8bb674b5770d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\pycparser-3.11.dist-info\\METADATA",
+      "bytes": 8238,
+      "sha256": "e3a74c846648bb55f4f907284b745e2003b87b96d9c9d17a8a50cf37804541c9"
+    }
+  ],
+  "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\tcl-clock-causal-control-r1",
+  "sourceGamesCommit": "9557e17bcafbe529d0079c8d941485b7f67061c4",
+  "nominalMs": 3000,
+  "samples": [
+    "tk-after",
+    "turtle-ontimer",
+    "actual-observer-timer-AST"
+  ],
+  "cooperativeMs": 30000,
+  "externalMs": 40000,
+  "targetSecondsEstimate": 12,
+  "proposedWindowSeconds": 60,
+  "noGameAudio": true,
+  "noOracleOrSourceChange": true
+}

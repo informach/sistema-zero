@@ -1,0 +1,77 @@
+--- a/space_arena_native.py
++++ b/space_arena_native.py
+@@ -23,8 +23,8 @@
+ import wave
+ 
+ HERE = Path(__file__).resolve().parent
+-RECEIPT_SHA = 'df6d6812ac511686e5dd32187b900cc68c9b565d5d49498e5d3265e9b137fcc0'
+-ENTRY_SHA = '9db951e68bd4ce10f3739368d806d2a8a15db3535d9d543f21ddd5f2bd2f38a5'
++RECEIPT_SHA = '9acc5ea7b0d1d4fc4f9239299df2062f39281a894d39a45dc8ba3238efa3d419'
++ENTRY_SHA = 'd9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3'
+ 
+ 
+ def sha(value):
+--- a/run_space_arena_native.mjs
++++ b/run_space_arena_native.mjs
+@@ -12,13 +12,13 @@
+ let deadlineUtc
+ assert(
+   python && artifact && output && (/^Q0[2-7]$/.test(scenario) || q08),
+-  'Usage: node run_space_arena_native.mjs <python> <canonical-dir> <new-output-dir> <Q02..Q07|Q08-pause|Q08-bgm> [UTC-window-end-required-for-Q08]',
++  'Usage: node run_space_arena_native.mjs <python> <canonical-dir> <new-output-dir> <Q02..Q07|Q08-pause|Q08-bgm> <UTC-window-end-required-for-every-child>',
+ )
+-if (q08) {
++{
+   assert(
+     typeof windowEnd === 'string' &&
+       /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(windowEnd),
+-    'Explicit UTC deadline required for Q08',
++    'Explicit UTC deadline required for every native child',
+   )
+   deadlineUtc = Date.parse(windowEnd)
+   assert(
+@@ -28,7 +28,7 @@
+   )
+   assert(
+     deadlineUtc - Date.now() >= childBudgetMs,
+-    'Authorized window expired or too short for Q08 child',
++    'Authorized window expired or too short for native child',
+   )
+ }
+ const here = dirname(fileURLToPath(import.meta.url))
+@@ -60,15 +60,14 @@
+   deadline: false,
+   signalAttempted: false,
+   childBudgetMs,
+-  absoluteWindowEnd: q08 ? windowEnd : null,
++  absoluteWindowEnd: windowEnd,
+   ...(q08 ? { q08ObserverSha256: digest(readFileSync(resolve(here, 'space_arena_q08.py'))) } : {}),
+ }
+ const out = openSync(resolve(destination, 'stdout.log'), 'wx')
+ const err = openSync(resolve(destination, 'stderr.log'), 'wx')
+-if (q08)
+-  assert(
++assert(
+     deadlineUtc - Date.now() >= childBudgetMs,
+-    'Authorized window became too short before Q08 spawn',
++    'Authorized window became too short before native spawn',
+   )
+ const child = spawn(report.python, argv, {
+   cwd: here,
+@@ -89,7 +88,7 @@
+     report.signalAttempted = true
+     report.signalDelivered = child.kill() // Only the directly owned child handle.
+   },
+-  q08 ? Math.min(childBudgetMs, deadlineUtc - Date.now()) : childBudgetMs,
++  Math.min(childBudgetMs, deadlineUtc - Date.now()),
+ )
+ const [exitCode, exitSignal] = await new Promise((done) =>
+   child.once('close', (code, signal) => done([code, signal])),
+@@ -118,6 +117,7 @@
+     assert.equal(result.ownedTempAbsent, true)
+     assert.equal(result.exportTreeUnchanged, true)
+     assert.deepEqual(result.errors, [])
++    assert(Date.parse(report.endedAt) <= deadlineUtc, 'Native child outlived the authorized window')
+     if (q08) {
+       assert.equal(result.q08ObserverSha256, report.q08ObserverSha256)
+       assert(Date.parse(report.endedAt) <= deadlineUtc, 'Q08 outlived the authorized window')

@@ -1,0 +1,110 @@
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { isAbsolute, resolve } from 'node:path'
+import { canonicalJson } from '../../../packages/core/src/creations/content-fingerprint'
+import { StudioPythonDistributionSchema } from '../../../packages/core/src/studio/python-runtime-distribution'
+import { StudioRuntimeReleaseSchema } from '../../../packages/core/src/studio/runtime-catalog'
+
+const sha = (bytes: string | Uint8Array) => createHash('sha256').update(bytes).digest('hex')
+function hash(value: unknown): asserts value is string {
+  assert(typeof value === 'string' && /^[a-f0-9]{64}$/.test(value), 'Expected SHA-256')
+}
+
+/** HTTP identity admission before Playwright launches any browser; no services. */
+export default async function admitCurrentGamesHost() {
+  const baseURL = process.env.SZ_GAMES_CURRENT_URL
+  const authorityPath = process.env.SZ_GAMES_HOST_AUTHORITY
+  const freezePath = process.env.SZ_GAMES_SOURCE_FREEZE
+  const output = process.env.SZ_GAMES_OUTPUT
+  assert(baseURL && authorityPath && freezePath && output)
+  assert(isAbsolute(output), 'Output directory must be absolute')
+  // One-time admission only: even an empty existing directory is a prior
+  // attempt. No recursive mkdir or check-then-create race, and no HTTP first.
+  await mkdir(output)
+  const authority = JSON.parse(await readFile(authorityPath, 'utf8'))
+  const freeze = JSON.parse(await readFile(freezePath, 'utf8'))
+  assert.equal(authority.baseURL, new URL(baseURL).origin)
+  assert.equal(authority.state, 'current-host-authorized')
+  assert(typeof authority.owner === 'string' && authority.owner.length > 0)
+  assert(typeof authority.hostInstance === 'string' && authority.hostInstance.length > 0)
+  assert(
+    typeof authority.windowEnd === 'string' &&
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(authority.windowEnd),
+  )
+  const deadline = Date.parse(authority.windowEnd)
+  assert(
+    Number.isFinite(deadline) &&
+      new Date(deadline).toISOString() === authority.windowEnd.replace(/(?<=:\d{2})Z$/, '.000Z'),
+    'Invalid UTC calendar date',
+  )
+  const budget = Number(process.env.SZ_GAMES_BUDGET_MS)
+  assert(Number.isSafeInteger(budget) && budget > 0)
+  assert(
+    Number.isFinite(deadline) && deadline - Date.now() >= budget,
+    'Full batch budget must fit the fresh window',
+  )
+  for (const key of ['distributionSha256', 'releaseManifestSha256', 'providerHostSha256'])
+    hash(authority[key])
+  assert.equal(process.env.SZ_PACMAN_QA_DISTRIBUTION, authority.distributionSha256)
+  assert(Array.isArray(freeze.files) && freeze.files.length > 0)
+  for (const file of freeze.files) {
+    assert(isAbsolute(file.path), 'Source freeze paths must be absolute')
+    hash(file.sha256)
+    assert.equal(sha(await readFile(file.path)), file.sha256, `Source changed: ${file.path}`)
+  }
+  const getResponse = async (path: string) => {
+    const response = await fetch(new URL(path, baseURL), {
+      signal: AbortSignal.timeout(10_000),
+      redirect: 'error',
+    })
+    assert(response.ok, `Current host unavailable: ${path}`)
+    return response
+  }
+  {
+    const get = async (path: string) => {
+      const response = await getResponse(path)
+      return response.json()
+    }
+    const distribution = await get('/distribution')
+    const configuration = await get('/configuration')
+    const manifest = StudioPythonDistributionSchema.parse(distribution.manifest)
+    const release = StudioRuntimeReleaseSchema.parse(distribution.release)
+    assert.equal(distribution.hash, authority.distributionSha256)
+    assert.equal(sha(canonicalJson(manifest)), authority.distributionSha256)
+    assert.equal(release.manifestSha256, authority.releaseManifestSha256)
+    assert.equal(sha(canonicalJson(release.manifest)), authority.releaseManifestSha256)
+    assert.equal(distribution.providerHostSha256, authority.providerHostSha256)
+    const provider = await getResponse('/provider-host.mjs')
+    assert.equal(sha(new Uint8Array(await provider.arrayBuffer())), authority.providerHostSha256)
+    assert.deepEqual(configuration, authority.configuration)
+    assert.deepEqual(configuration.runtime, {
+      profileId: release.profileId,
+      releaseId: release.releaseId,
+      manifestSha256: release.manifestSha256,
+    })
+    assert.deepEqual(
+      release.manifest.artifacts,
+      manifest.files.map(({ path, sha256 }) => ({ path, sha256 })),
+    )
+    // Exclusive namespace: preserve every prior attempt, including failed admission.
+    assert(deadline - Date.now() >= budget, 'Admission consumed the available window')
+    await writeFile(
+      resolve(output, 'host-admission.json'),
+      JSON.stringify(
+        {
+          state: 'http-and-source-admitted-no-browser-yet',
+          checkedAt: new Date().toISOString(),
+          authority,
+          authoritySha256: sha(await readFile(authorityPath)),
+          freezeSha256: sha(await readFile(freezePath)),
+          distribution,
+          configuration,
+        },
+        null,
+        2,
+      ),
+      { flag: 'wx' },
+    )
+  }
+}

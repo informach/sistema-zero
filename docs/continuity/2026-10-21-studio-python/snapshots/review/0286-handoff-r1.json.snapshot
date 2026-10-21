@@ -1,0 +1,70 @@
+{
+  "recordedUtc": "2026-10-21T00:28:27.8809788Z",
+  "worktree": "C:\\Users\\tocha\\projects\\sistema-zero-python-review",
+  "branch": "feat/studio-python-authoring-review",
+  "head": "360d21d4803d9b0fd75fe5440e57f54a167b54b8",
+  "helperCommit": "3454f0fa082adb7baac8f607b2719dd14006d1dc",
+  "activationCommit": "360d21d4803d9b0fd75fe5440e57f54a167b54b8",
+  "focusedTests": {
+    "assertions": 157,
+    "log": ".cache/authoring-selector-backlog-r1/green-focused-r1.log",
+    "fail": 0,
+    "pass": 70
+  },
+  "independentReview": "authoring_review read-only: run_id gap corrected; narrow deltas reviewed; backlog integration approved",
+  "productionBootstrapAbsent": true,
+  "committedCheckoutMissingBootstrapControl": "PASS exact expected refusal before GitHub adapter/provider access",
+  "statusClean": true,
+  "limitations": [
+    "synthetic receipts do not qualify production bootstrap",
+    "no push or Root/staging modifications",
+    "no provider actions browser build TSC",
+    "FACE service selection execution and release remain separate Root evidence"
+  ],
+  "pins": [
+    {
+      "path": "scripts/ci/staging-deploy-baseline.mjs",
+      "sha256": "58122c29461f8ed40f9608f015dac701e0fb0326a1be6eaf8f13428826f124ec"
+    },
+    {
+      "path": "scripts/ci/staging-deploy-baseline.test.ts",
+      "sha256": "9e59a2f99f4996f11f30e77863b8a95364bbc2c432306b67c2016d79100ac6d9"
+    },
+    {
+      "path": "scripts/ci/staging-deploy-transport.test.ts",
+      "sha256": "e884030ef30ee6e930edd6b876567da1c3ee5676547cf3890056fd3193ac2dba"
+    },
+    {
+      "path": "scripts/ci/staging-deploy-backlog.test.ts",
+      "sha256": "ecc48a21d4908ef92a8408fc5a90834f713b4821514d0d385bacf549a2ccd256"
+    },
+    {
+      "path": "scripts/ci/staging-deploy-workflow.test.ts",
+      "sha256": "4cffb3ee440af6614b62691268a17b83de1383fd38c7ba3617b64bd56c123bb0"
+    },
+    {
+      "path": ".github/staging-deploy-epoch-v1.json",
+      "sha256": "4c506f5d3a2367ee3b6e104f1a0dcab9a5d096f6758ac48cc48855a1b916baf1"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "a3006a2d1f8260a04ff577190f9684b64dec155b9caacd193ccee32a0d560732"
+    },
+    {
+      "path": "docs/runbooks/staging-deploy-baseline.md",
+      "sha256": "4939af63e0993a3ac827e9117c3417c8198a52d80d84e4dfd77ecf71ced42f8d"
+    },
+    {
+      "path": ".cache/authoring-selector-backlog-r1/causal-red.log",
+      "sha256": "9d10dce360070e5e721185cec73db69e09cdbfd80a78e24fd4356a3796a134e4"
+    },
+    {
+      "path": ".cache/authoring-selector-backlog-r1/review-identity-red.log",
+      "sha256": "907c4e10460ed6ccfb628ba1afed975bf334cc8d50cda886d067270056a513c1"
+    },
+    {
+      "path": ".cache/authoring-selector-backlog-r1/green-focused-r1.log",
+      "sha256": "02754f10b1304c13705984e5c8cbc0be0f6eecad3679d6f383d63f66e05976ad"
+    }
+  ]
+}

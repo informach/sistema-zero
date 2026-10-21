@@ -1,0 +1,58 @@
+"""Prepare current Root exporter + exact Games9557 recipe composition, no game execution."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+here = Path(__file__).resolve().parent
+games = here.parents[3]
+root = Path('C:/Users/tocha/projects/sistema-zero-python')
+sha = lambda data: hashlib.sha256(data).hexdigest()
+head = lambda path: subprocess.check_output(['git', '-C', str(path), 'rev-parse', 'HEAD'], text=True).strip()
+assert head(games) == '9557e17bcafbe529d0079c8d941485b7f67061c4'
+assert head(root) == '65b6960d7277b0efd76230589d12325588803e35'
+prior = here / '../native12-export-rootface-proposal-r1'
+old = json.loads((prior / 'source-pins.json').read_text())
+pins = dict(old)
+pins.update(state='CURRENT-ROOT-EXPORT-AND-GAMES9557-RECIPE-COMPOSITION-ONLY', rootHead=head(root), games=str(games), gamesHead=head(games), variantVersion='portable-audio-1.1.0', entrypointSha256='3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76', output=str(games / '.cache/studio-python-l0/pacman-canonical11-9557-r1'), rootSourceScope='Relevant current Root exporter/Core files and exact Games9557 recipe/corpus. Original Root corpus fixture is composed with Games main.py only; no Root mutation or old Games Core equivalence assertion.')
+assert not Path(pins['output']).exists(), 'Exact1.1 ZIP must not be recreated'
+files = []
+for item in old['sourceFiles']:
+    relative = item['path'].replace('corpus/space-arena.json', 'corpus/pacman.json')
+    path = root / relative
+    raw = path.read_bytes()
+    files.append(dict(path=relative, absolutePath=str(path), bytes=len(raw), sha256=sha(raw)))
+for relative in ('experiments/studio-python-runtime/gameVariants.ts', 'experiments/studio-python-l0/corpus/pacman.json'):
+    path = games / relative
+    raw = path.read_bytes()
+    files.append(dict(path='GAMES9557/' + relative, absolutePath=str(path), bytes=len(raw), sha256=sha(raw)))
+pins['sourceFiles'] = files
+for item, field in ((pins['release'], 'sha256'), (pins['distribution'], 'fileSha256')):
+    assert sha(Path(item['path']).read_bytes()) == item[field]
+historical = root / '.cache/studio-python-l0/pacman-native-r1'
+pins['historical'] = dict(receiptPath=str(historical / 'preparation.json'), receiptSha256='7fe7d1743365f3e201eee7c3c6e3bacc00c9642c0b17d100cb8251aa916ca85d', zipPath=str(historical / 'baseline/source.zip'), zipSha256='d67e8f1765ae4e6af46a0d5ef6da163d2da36e3fc8a85c62148fc764608ff98c', entrySha256='8bd915293088b0fa85a2313e046711d861f43c481aa691d88ba07402485819d8')
+for a, b in (('receiptPath','receiptSha256'),('zipPath','zipSha256')):
+    assert sha(Path(pins['historical'][a]).read_bytes()) == pins['historical'][b]
+producer = (prior / 'produce.ts').read_text()
+producer = producer.replace("'source-pins.json'", "'export-pins.json'")
+producer = producer.replace('const { gameFixtureProject }', "const { portableGameSource } = await import(pathToFileURL(resolve(pins.games, 'experiments/studio-python-runtime/gameVariants.ts')).href)\nconst { gameFixtureProject }")
+producer = producer.replace("const raw = await gameFixtureProject('spaceArenaPortable')", """const raw = await gameFixtureProject('pacmanOriginal')
+  const originalMain = raw.tree['main.py']; assert(originalMain?.kind === 'file')
+  const rootCorpus = JSON.parse(await readFile(resolve(root, 'experiments/studio-python-l0/corpus/pacman.json'), 'utf8'))
+  const ownCorpus = JSON.parse(await readFile(resolve(pins.games, 'experiments/studio-python-l0/corpus/pacman.json'), 'utf8'))
+  assert.deepEqual(rootCorpus.files, ownCorpus.files, 'Same exact19 corpus files required')
+  const variant = portableGameSource('pacman', originalMain.content)
+  assert.equal(variant.receipt.version, pins.variantVersion)
+  assert.equal(variant.receipt.qualification, 'not-qualified')
+  raw.tree['main.py'] = { kind: 'file', content: variant.content }
+  raw.id = 'pacmanPortable'; raw.name = 'Pac-Man portable1.1 exact9557 external QA, not qualified'""")
+producer = producer.replace('space_arena.py', 'main.py').replace("'_qa_space_observer.py'", "'_qa_pacman_observer.py'").replace("'qa_space_entry.py'", "'qa_entry.py'")
+producer = producer.replace("resolve(root, 'experiments/studio-python-l0/corpus/space-arena.json')", "resolve(pins.games, 'experiments/studio-python-l0/corpus/pacman.json')")
+producer = producer.replace("m.path.endsWith('.gif')).length, 4", "m.path.endsWith('.gif')).length, 9").replace("m.path.endsWith('.wav')).length, 5", "m.path.endsWith('.wav')).length, 3")
+producer = producer.replace('Root FACE exporter/catalog/Core used by explicit absolute paths; no old Games Core equivalence assumed', 'Current Root65b696 exporter/catalog/Core by absolute paths plus Games9557 recipe/main only; no Root mutation or old Games Core equivalence assumed')
+producer = producer.replace('Browser1.2 Q02-Q07 proof is not native or full-game proof', 'Prior Pac-Man1.0 proof does not qualify this1.1 export')
+producer = producer.replace('External licensed QA corpus only; Power Up Ray noncommercial declaration and original asset bytes preserved', 'External Pac-Man QA corpus only, original license/authorship and all media bytes preserved')
+producer = producer.replace('sourceScope: pins.rootSourceScope', 'sourceScope: pins.rootSourceScope, gamesHead: pins.gamesHead')
+(here / 'produce.ts').write_text(producer, encoding='utf-8', newline='\n')
+(here / 'export-pins.json').write_text(json.dumps(pins, indent=2) + '\n', encoding='utf-8', newline='\n')
+print(json.dumps(dict(state='EXPORT-PRODUCER-PREPARED', pinsSha256=sha((here / 'export-pins.json').read_bytes()), producerSha256=sha((here / 'produce.ts').read_bytes()), sourceFiles=len(files), output=pins['output'])))

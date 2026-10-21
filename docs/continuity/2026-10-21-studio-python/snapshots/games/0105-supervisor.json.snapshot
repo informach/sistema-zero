@@ -1,0 +1,30 @@
+{
+  "state": "native-functional-passed",
+  "node": "24.22.0",
+  "python": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Scripts\\python.exe",
+  "argv": [
+    "-I",
+    "-B",
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\space_arena_native.py",
+    "--artifact-dir",
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\space-arena-canonical12-face-r1",
+    "--output",
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-q06-r1\\result",
+    "--scenario",
+    "Q06"
+  ],
+  "scenario": "Q06",
+  "runnerSha256": "e6cefcb36ad08d6c2130c2a4c2eb3e9b05aec76d2f6837c21e02e88f803d83c1",
+  "observerSha256": "7e5cf907ac894acb35a0b7fa044a8a53664efb2beb858ac4c69e1212cd3d890a",
+  "startedAt": "2026-10-20T23:49:36.149Z",
+  "pid": 22812,
+  "deadline": false,
+  "signalAttempted": false,
+  "childBudgetMs": 40000,
+  "absoluteWindowEnd": "2026-10-20T23:55:00.000Z",
+  "exitCode": 0,
+  "exitSignal": null,
+  "spawnError": null,
+  "endedAt": "2026-10-20T23:49:51.963Z",
+  "nativeReceiptSha256": "134bcb7e4d099c158f01cbed82eee3b28f1f4c0ad54c18c78d2a92fc13524d45"
+}

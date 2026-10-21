@@ -1,0 +1,7 @@
+import {context,serviceContexts} from './contract.mjs';
+export const project=context.RAILWAY_PROJECT_ID,environment=context.RAILWAY_ENVIRONMENT_ID;
+export const services=Object.freeze({members:serviceContexts.members.serviceId});
+export const target=serviceContexts.members.commitSha;
+export const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+export function fail(reason){throw new Error('Readonly OAuth context refused: '+reason);}
+export function check(condition,reason){if(!condition)fail(reason);}

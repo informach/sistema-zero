@@ -1,0 +1,161 @@
+{
+  "state": "READONLY-PACMAN-CORE-LIMITED-PASS",
+  "at": "2026-10-20T22:07:49.037Z",
+  "receiptSha256": "258fbf5c61a1d8f5c088c03057dfa4e8e03294d4938b670e5978c52b329bca42",
+  "reportSha256": "b47dab60347210a5633aed1efe92595085c2a2ab4708518b8a56a1d100e51f53",
+  "authoritySha256": "0d1967d6e15caa0fc151585a8ff301374feb8a0d35d20fe9f6b3dae454c2e2d3",
+  "sourceFreezeSha256": "07e9afafaf381aa65077b710654c21c0f51bee2909e8d1c3f5fc7a34abeca93d",
+  "unchangedPins": 28,
+  "startedAt": "2026-10-20T22:05:27.134Z",
+  "endedAt": "2026-10-20T22:05:59.007Z",
+  "suiteMs": 24721.941,
+  "elapsedMs": 31873,
+  "cleanup": {
+    "observedReleased": true,
+    "forced": false,
+    "ports": [
+      {
+        "port": 5297,
+        "free": true
+      },
+      {
+        "port": 60869,
+        "free": true
+      }
+    ]
+  },
+  "peaks": {
+    "sampledOwnedRssBytes": 1691717632,
+    "sampledHostTreeRssBytes": 218836992,
+    "sampledBrowserTreeRssBytes": 1300086784,
+    "minimumObservedFreeBytes": 3639484416,
+    "privateBytesPeak": null
+  },
+  "reviews": [
+    {
+      "scenario": "observe",
+      "durationMs": 9309,
+      "snapshotStatus": "running",
+      "details": {
+        "noStateInjection": true,
+        "canvasKeyEvents": [
+          {
+            "event": "key",
+            "scenario": "observe",
+            "tick": 210,
+            "clock": 8.1185,
+            "value": {
+              "key": "Left",
+              "heading": 180,
+              "state": "move",
+              "position": [
+                0,
+                45
+              ]
+            }
+          },
+          {
+            "event": "key",
+            "scenario": "observe",
+            "tick": 213,
+            "clock": 8.2126,
+            "value": {
+              "key": "Up",
+              "heading": 90,
+              "state": "move",
+              "position": [
+                0,
+                45
+              ]
+            }
+          },
+          {
+            "event": "key",
+            "scenario": "observe",
+            "tick": 217,
+            "clock": 8.3302,
+            "value": {
+              "key": "Right",
+              "heading": 0,
+              "state": "move",
+              "position": [
+                -2.7554552980815444e-15,
+                60
+              ]
+            }
+          },
+          {
+            "event": "key",
+            "scenario": "observe",
+            "tick": 220,
+            "clock": 8.448,
+            "value": {
+              "key": "Down",
+              "heading": 270,
+              "state": "move",
+              "position": [
+                0,
+                60
+              ]
+            }
+          }
+        ],
+        "trustedFlagRecorded": false,
+        "scope": "Playwright canvas.press actual browser delivery; no isTrusted capture or physical-device claim"
+      }
+    },
+    {
+      "scenario": "pellet",
+      "durationMs": 1843,
+      "snapshotStatus": "running",
+      "details": {
+        "score": [
+          0,
+          2
+        ],
+        "pellets": [
+          355,
+          354
+        ],
+        "injection": "player.goto"
+      }
+    },
+    {
+      "scenario": "power",
+      "durationMs": 10705,
+      "snapshotStatus": "running",
+      "details": {
+        "score": [
+          0,
+          50
+        ],
+        "power": [
+          4,
+          3
+        ],
+        "speed": [
+          5,
+          8,
+          5
+        ],
+        "timer": {
+          "event": "timer-fired",
+          "scenario": "power",
+          "tick": 92,
+          "clock": 4.0019,
+          "value": {
+            "delay": 3000,
+            "callback": "reset_speed",
+            "scheduledClock": 0.9993,
+            "elapsedSeconds": 3.0026
+          }
+        },
+        "laterTick250Lives": 1,
+        "scope": "Later incidental lives/score changes preserved; no full-game claim"
+      }
+    }
+  ],
+  "newGameExecution": false,
+  "rootMutation": false,
+  "limits": "Three short scenarios, snapshots running before disposal. No natural game completion, physical device, raster/golden, audio heard, performance/8GB or SDK image acceptance."
+}

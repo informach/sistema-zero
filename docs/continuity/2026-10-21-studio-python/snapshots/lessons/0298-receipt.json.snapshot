@@ -1,0 +1,61 @@
+{
+  "timestamp": "2026-10-20T23:10:12.994834+00:00",
+  "ownHeadUnchanged": "b763fb6e1773a122188fe37fa044b142c9442f62",
+  "rootCandidate": "b641c62916fedc9b08c145fba979a7b60716a75f",
+  "rootIntegration13QaBytesMatchApprovedOwn": true,
+  "fullIntegratedPatchSha256": "0cd632bb551f900c02e721b253effff09427c2e860d634d920fb7fd8577e4edf",
+  "ownVsRootOnly": [
+    "experiments/studio-python-l0/corpus/space-arena.json",
+    "experiments/studio-python-runtime/gameVariants.ts"
+  ],
+  "packagesProductionMatches843": true,
+  "proposedHostChanges": 14,
+  "proposedAppChanges": 6,
+  "futureCompositionSha256": "49a1f0d71b8930f04114e711c3d7ba82fdeadcb41cea33462102e420b252078e",
+  "rootReportedEvidence": {
+    "executedBy": "Root, not this session",
+    "tests": 22,
+    "assertions": 136,
+    "files": 2,
+    "scope": "admission+fixture",
+    "biomeFiles": 7,
+    "psParserFiles": 5,
+    "psParserErrors": 0,
+    "diffCheck": 0
+  },
+  "ownPriorEvidence": {
+    "atHead": "9eda137dbd89bfbb3c00b15c5412e20b9886bf90",
+    "tests": 27,
+    "assertions": 166,
+    "scope": "producer+admission+cleanup; historical, not newly executed"
+  },
+  "historicalHashes": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-observation-r1\\future-composition.json",
+      "sha256": "ee647fbb73dcd1069264e0033c3ee7b443185f092243e6f21f5bf456fd7c769d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-integration-r4\\qa-lot.patch",
+      "sha256": "0cd632bb551f900c02e721b253effff09427c2e860d634d920fb7fd8577e4edf"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-observation-r1\\receipt.json",
+      "sha256": "534ae135a71783356f9125a673b2eb9c154f233482d98f713a23c6085c08933f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\studio-python-l0\\final-c9d-r1\\host-lessons-r4\\preparation.json",
+      "sha256": "adb34cfdecf0c97bfabe2aadf0156a2604c813a95ea575dc2fe00c22ce30e6ab"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\studio-python-l0\\lessons-admin-r4\\preparation.json",
+      "sha256": "1b1b7af3f6093d512e05c6a82d7c0a75724fd3b16997550d9109d8242de236c5"
+    }
+  ],
+  "noTestsRun": true,
+  "noMerge": true,
+  "noSourceWrite": true,
+  "noGamesWrite": true,
+  "noStart": true,
+  "noHeavy": true,
+  "workingTreeClean": true
+}

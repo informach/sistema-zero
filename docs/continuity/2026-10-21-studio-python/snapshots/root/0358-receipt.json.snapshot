@@ -1,0 +1,106 @@
+{
+  "state": "functional-promotion-replay-revocation-observed-with-subsequent-endpoint-absence",
+  "originalState": "failed-or-incomplete-preserved",
+  "originalReceiptUnmodified": true,
+  "originalCleanupQualified": false,
+  "originalFailure": {
+    "stage": "finalizer-worker-delete-or-absence-unknown",
+    "endpointStatus": 401,
+    "observedAtEnd": "2026-10-20T18:01:01.098Z"
+  },
+  "environment": "staging",
+  "accountId": "bcc0f2d44140e05b69152cba326132f8",
+  "bucket": "sistemazero-studio-artifacts-staging",
+  "identity": {
+    "canonicalPlanSha256": "1bd48fb4b8dca1f50da4dd2090f548bbb838f13adbcdbfc0c1d6ddad02aab180",
+    "artifactOperationalSha256": "29be5648d225f641eb4b714e2a16cba6925e69dc3041cb58b23cf113675392a7",
+    "distributionSha256": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a",
+    "runtime": {
+      "profileId": "python-browser",
+      "releaseId": "2026-10-20-audio-1",
+      "manifestSha256": "7026b09b04a1222cfbc594d5ab3ec9de8649eece71c613c823a2c33d8c43ce5f"
+    },
+    "workerCatalog": {
+      "bytes": 33105,
+      "key": "runtime-configs/2dc37fc221789ba23780d13754743470bbe687a703ac115ed14a2e12d9e79df4.json",
+      "sha256": "2dc37fc221789ba23780d13754743470bbe687a703ac115ed14a2e12d9e79df4"
+    },
+    "prefix": "runtimes/7026b09b04a1222cfbc594d5ab3ec9de8649eece71c613c823a2c33d8c43ce5f/",
+    "capabilities": [
+      "edit",
+      "export-source",
+      "execute",
+      "python-repl"
+    ]
+  },
+  "functional": {
+    "deniedControls": 2,
+    "positivePosts": 2,
+    "verifiedObjectsPerPositive": 43,
+    "filesPerPositive": 41,
+    "replayObserved": true,
+    "revokedKeyDenied": true,
+    "correlatedRequests": 5,
+    "correlationContract": "metadata-and-redacted-url-v1",
+    "rawUrlObserved": false,
+    "clientDigestExplicitlyHmacSigned": false,
+    "positiveReceiptNoncePersisted": false,
+    "applicationOrCatalogActivation": false
+  },
+  "resourceCleanup": {
+    "keyRevoked": true,
+    "exactTailDeleteAck": true,
+    "tailEmptyReadback": true,
+    "localSettled": true,
+    "localCloseCode": 1006,
+    "localWasClean": false,
+    "publicAbruptDisposeRequested": true,
+    "gracefulClaim": false,
+    "exactWorkerDeleteAck": true,
+    "namedWorker404": true,
+    "noRetainedLease": true,
+    "endpointAbsence": {
+      "initialStatus": 401,
+      "subsequentStatus": 404,
+      "subsequentAt": "2026-10-20T18:03:17.635Z",
+      "subsequentBodyCancelCompleted": true,
+      "distinctReadonlyObservation": true,
+      "originalNotReclassified": true
+    }
+  },
+  "limits": {
+    "peak128MiBMeasured": false,
+    "p95OrLatencyQualification": false,
+    "rawUrlAttestation": false,
+    "productionBucketPromoted": false,
+    "applicationDeploymentOrJourneyBarrierBypassed": false,
+    "noNewRemoteOperationsByAggregator": true
+  },
+  "sources": [
+    {
+      "path": ".cache/studio-python-l0/python-operational-hosted-run-r7/operation/receipt.json",
+      "bytes": 37851,
+      "sha256": "e22163500267437e562b6f3d7c2ffcb57f5c49b01244682bbefe38cad4ed696a"
+    },
+    {
+      "path": ".cache/studio-python-l0/python-operational-hosted-run-r7/endpoint-reconciliation-r1.json",
+      "bytes": 170,
+      "sha256": "468995c9c44d96d8fcbc6f1a01b7dbe80ef2be5b6617afe8b6b1427120f6dd8c"
+    },
+    {
+      "path": ".cache/studio-python-l0/python-operational-staging-pilot-plan-r1/canonical-plan.json",
+      "bytes": 85646,
+      "sha256": "0b15194d63ae166e3d37bf8d9ee3eedbdf641964171c820e3c5fd5db22e3c4a0"
+    },
+    {
+      "path": ".cache/studio-python-l0/python-operational-hosted-run-r7/execution-plan.json",
+      "bytes": 91788,
+      "sha256": "72be18ab897edf161155d1fb487a1ac6892c651c47334b41c6aa512c2d026362"
+    },
+    {
+      "path": ".cache/studio-python-l0/python-operational-staging-artifact-r2/r7/receipt.json",
+      "bytes": 1243,
+      "sha256": "0e8ec466d61d6a9670125c28a41b829b2c440da7f7257a62fb79d630a9b55c43"
+    }
+  ]
+}

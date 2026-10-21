@@ -1,0 +1,46 @@
+import {startProfile} from '../pro-webcontainer-profile-r1/profile.mjs';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {resolve} from 'node:path';
+import {origin,sha} from './contract.mjs';
+export async function runUI({browser,signal,email,password,project,fixtureCheck,expectedLockPath,root,receipt,checkTime}){
+ const require=createRequire(resolve(root,'packages/studio/package.json'));
+ const {unzipSync,strFromU8}=require('fflate');
+ const {expect}=createRequire(resolve(root,'packages/community-kids/package.json'))('@playwright/test');
+ const expectedLock=await readFile(expectedLockPath,'utf8');
+ const errors={console:0,page:0};let profiles=[],contexts=[],pending=new Set(),dependencies=[],dependencyFailures=0;
+ const create=async()=>{checkTime();const context=await browser.newContext({viewport:{width:1440,height:960},acceptDownloads:true});contexts.push(context);const page=await context.newPage();page.setDefaultTimeout(20000);page.on('console',m=>{if(m.type()==='error')errors.console++});page.on('pageerror',()=>errors.page++);return {context,page};};
+ const onAbort=()=>{for(const context of contexts)void context.close().catch(()=>{});};signal.addEventListener('abort',onAbort,{once:true});
+ const login=async(page)=>{checkTime();await page.goto(origin+'/login',{waitUntil:'domcontentloaded'});await page.getByLabel('E-mail',{exact:true}).fill(email);await page.getByLabel('Senha',{exact:true}).fill(password);await page.getByRole('button',{name:'Entrar',exact:true}).click();await page.waitForURL(u=>u.origin===origin&&!u.pathname.startsWith('/login'));checkTime();await page.goto(origin+'/estudio',{waitUntil:'domcontentloaded'});};
+ const inspect=async(page)=>{
+  await page.getByRole('button',{name:'Mais opções',exact:true}).click();const wait=page.waitForEvent('download');await page.getByRole('menuitem',{name:/Baixar o código/}).click();const download=await wait;
+  try{const stream=await download.createReadStream();assert(stream);let chunks=[],bytes=0;for await(const chunk of stream){bytes+=chunk.length;assert(bytes<=1048576);chunks.push(chunk);}const files=unzipSync(Buffer.concat(chunks));
+   for(const f of fixtureCheck.files){assert(files[f.path]);if(f.path!=='package.json')assert.equal(sha(files[f.path]),f.sha256);}
+   const actual=JSON.parse(strFromU8(files['package.json']));const before=JSON.parse(project.tree['package.json'].content);before.devDependencies.vite='8.1.6';assert.deepEqual(actual,before);
+   assert(files['package-lock.json']);assert.equal(sha(files['package-lock.json']),sha(expectedLock));
+   assert(files['public/studio-assets/manifest.json']);assert.deepEqual(JSON.parse(strFromU8(files['public/studio-assets/manifest.json'])),{version:1,assets:[]});
+   return {files:fixtureCheck.files.length,packageSha256:sha(files['package.json']),lockSha256:sha(files['package-lock.json']),sourcePreserved:true,assets:0};
+  }finally{await download.delete();}
+ };
+ try{
+  const first=await create();await login(first.page);
+  await first.page.getByRole('button',{name:'+ Novo projeto',exact:true}).click();const dialog=first.page.getByRole('dialog',{name:'Novo projeto',exact:true});await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('radio',{name:'Python',exact:true})).toHaveCount(0);await expect(dialog.getByText('Linguagem do projeto',{exact:true})).toHaveCount(0);await expect(dialog.getByText(/Consultando ambientes Python|Python ainda não está disponível/)).toHaveCount(0);await dialog.getByRole('button',{name:'Cancelar',exact:true}).click();receipt.ui.staffPythonSelectorHidden=true;
+  const handler=response=>{if(new URL(response.url()).origin!==origin||new URL(response.url()).pathname!=='/api/studio/pro-runtime/dependencies')return;const task=(async()=>{assert.equal(response.request().method(),'POST');assert.equal(response.request().headers()['x-studio-pro-operation'],'prepare-dependencies');assert.equal(response.status(),200);const length=response.headers()['content-length'];if(length)assert(Number(length)<=1000000);const text=await response.text();assert(Buffer.byteLength(text)<=1000000);const data=JSON.parse(text);assert.equal(typeof data.packageLock,'string');assert.equal(sha(data.packageLock),sha(expectedLock));dependencies.push({status:200,lockSha256:sha(data.packageLock)});})().catch(()=>{dependencyFailures++});pending.add(task);task.finally(()=>pending.delete(task));};
+  first.page.on('response',handler);
+  await first.page.getByLabel('Importar projeto',{exact:true}).setInputFiles({name:'legacy.szproject.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(project))});
+  await first.page.waitForURL(u=>u.origin===origin&&/^\/estudio\/pro\/[A-Za-z0-9_-]+$/.test(u.pathname));const id=first.page.url().split('/').at(-1);assert(id&&id!==project.id);receipt.ui.projectId=id;
+  profiles.push(await startProfile({browser,page:first.page,signal,onUpdate:value=>{receipt.ui.diagnostic=value;}}));
+  await expect.poll(()=>dependencies.length,{timeout:45000}).toBe(1);checkTime();
+  await first.page.getByRole('button',{name:'Mais opções',exact:true}).click();await first.page.getByRole('menuitem',{name:'Salvar',exact:true}).click();await expect(first.page.getByText('Salvo',{exact:true})).toBeVisible();
+  receipt.ui.firstExport=await inspect(first.page);await expect(first.page.locator('[role="status"][title="Guardado na sua conta"]')).toBeVisible({timeout:30000});
+  const frame=first.page.frameLocator('iframe[title="Pré-visualização (dev-server)"]');await expect(frame.locator('#app')).toHaveText('Editado em TypeScript ✨',{timeout:60000});receipt.ui.firstVisual=true;
+  first.page.off('response',handler);for(const result of await Promise.allSettled([...pending]))assert.equal(result.status,'fulfilled');for(const profile of profiles)await profile.stop();await first.context.close();contexts=contexts.filter(c=>c!==first.context);checkTime();
+  // Fresh storage context: the same owned project must return through the real cloud list.
+  const second=await create();await login(second.page);await second.page.getByRole('button',{name:`Abrir projeto ${project.name}`,exact:true}).click();await second.page.waitForURL(u=>u.origin===origin&&u.pathname===`/estudio/pro/${id}`);receipt.ui.reopenedSameId=true;
+  receipt.ui.secondExport=await inspect(second.page);assert.deepEqual(receipt.ui.secondExport,receipt.ui.firstExport);
+  await expect(second.page.frameLocator('iframe[title="Pré-visualização (dev-server)"]').locator('#app')).toHaveText('Editado em TypeScript ✨',{timeout:60000});receipt.ui.reopenedVisual=true;checkTime();
+  assert.equal(dependencyFailures,0);assert.deepEqual(errors,{console:0,page:0});receipt.ui.dependencies=dependencies;receipt.ui.errors=errors;receipt.ui.passed=true;
+ }finally{for(const profile of profiles)await profile.stop();signal.removeEventListener('abort',onAbort);receipt.ui.errors=errors;for(const context of contexts){await context.close();}receipt.ui.contextsClosed=true;}
+}

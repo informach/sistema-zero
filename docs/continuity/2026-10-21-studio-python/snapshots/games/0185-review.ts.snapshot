@@ -1,0 +1,101 @@
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { readFile, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { decodeGameObservations } from '../../../../experiments/studio-python-runtime/qualification/game_observations'
+
+// Parse original completed artifacts only; never connect to or execute a host.
+const evidence = 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/games-first3-host-r3/evidence'
+const sha = (value: string | Uint8Array) => createHash('sha256').update(value).digest('hex')
+const reportBytes = await readFile(resolve(evidence, 'browser/report.json'))
+assert.equal(sha(reportBytes), '44c24be1cdfa3d060dac45f4a503aa52f24464fd2935c521764f6c77f8acb88e')
+const report = JSON.parse(reportBytes.toString())
+const receiptBytes = await readFile(resolve(evidence, 'receipt.json'))
+assert.equal(sha(receiptBytes), 'b4344eaa1e4db1e833cac95b25892255e56e005998bb6a375eabdae55b0e9532')
+const receipt = JSON.parse(receiptBytes.toString())
+assert.equal(receipt.state, 'PASS-PENDING-REVIEW')
+assert.equal(receipt.forced, false)
+assert.equal(receipt.stable, true)
+assert.equal(receipt.observedReleased, true)
+assert(receipt.portsAfter.every((port: { free: boolean }) => port.free))
+const admission = JSON.parse(await readFile(resolve(evidence, 'browser/host-admission.json'), 'utf8'))
+assert.equal(admission.freezeSha256, '07e9afafaf381aa65077b710654c21c0f51bee2909e8d1c3f5fc7a34abeca93d')
+assert.equal(admission.distribution.hash, 'a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a')
+const release = '0123ab8fd02e3aff2d4383fb8e8f93304c337d4018ad1263c21e8d1eafd0fb0e'
+const cases: any[] = []
+function visit(suite: any) {
+  for (const spec of suite.specs ?? []) for (const test of spec.tests ?? []) {
+    assert.equal(test.projectName, 'chrome')
+    assert.equal(test.results.length, 1)
+    assert.equal(test.results[0].status, 'passed')
+    const result = test.results[0]
+    const attachments = Object.fromEntries(result.attachments.map((file: any) => [file.name, JSON.parse(Buffer.from(file.body, 'base64').toString('utf8'))]))
+    cases.push({ title: spec.title, duration: result.duration, attachments })
+  }
+  for (const child of suite.suites ?? []) visit(child)
+}
+visit(report)
+assert.equal(cases.length, 3)
+const reviews = []
+for (const [index, scenario] of ['geometry', 'ai', 'Q02'].entries()) {
+  const item = cases[index]
+  assert(item.title.includes(`instrumented ${scenario} preserves authored rules`))
+  const pacman = index < 2
+  const identity = item.attachments[pacman ? 'game-source-identity' : 'space-source-identity']
+  const state = item.attachments[pacman ? 'game-observations' : 'space-final-state']
+  assert.equal(state.status, 'completed')
+  const consoleEvents = state.events.filter((event: any) => event.type === 'console')
+  assert(consoleEvents.every((event: any) => event.omittedChars === 0 && event.omittedLines === 0))
+  assert(state.events.length < 2048)
+  assert(state.events.every((event: any, position: number) => event.sequence > 0 && (!position || event.sequence === state.events[position - 1].sequence + 1)))
+  const output = consoleEvents.map((event: any) => event.text).join('')
+  assert(output.endsWith('\n'), 'Completed observation must have no partial tail')
+  const observations: any[] = decodeGameObservations(output, pacman ? '__SZ_PACMAN_QA__' : '__SZ_SPACE_QA__')
+  if (pacman) {
+    assert.equal(identity.runtime.manifestSha256, release)
+    assert.equal(identity.distribution.hash, admission.distribution.hash)
+    assert.equal(identity.variant.portableSha256, '8bd915293088b0fa85a2313e046711d861f43c481aa691d88ba07402485819d8')
+    assert.equal(identity.corpus.length, 19)
+    assert.equal(identity.scenario.scenario, scenario)
+    const manifests = observations.filter(event => event.event === 'case-manifest')
+    const completed = observations.filter(event => event.event === 'functional-complete')
+    const passed = observations.filter(event => event.event === 'case-passed')
+    const expected = pacman && scenario === 'geometry' ? 32 : 10
+    assert.equal(manifests.length, 1)
+    assert.equal(completed.length, 1)
+    assert.equal(manifests[0].value.cases.length, expected)
+    assert.equal(completed[0].value.count, expected)
+    assert.equal(completed[0].value.closedByQA, true)
+    assert.equal(new Set(passed.map(event => event.value.name)).size, expected)
+    assert.deepEqual(passed.map(event => event.value.name), manifests[0].value.cases.map((entry: any) => entry.name))
+    for (const [position, event] of passed.entries()) {
+      const expectedCase = manifests[0].value.cases[position]
+      assert.equal(event.value.witnesses.filter((entry: any) => entry.method === expectedCase.method).length, 1)
+    }
+    reviews.push({ scenario, caseCount: expected, names: passed.map(event => event.value.name), methodWitnesses: passed.reduce((count, event) => count + event.value.witnesses.length, 0), observerSha256: identity.scenario.observerSha256, completedEvent: completed[0], sourceVariant: identity.variant.version, consoleOmissions: 0, scope: 'Real loop/algorithm witnesses with declared actor placement, QA bye; not a full played game/physical keyboard/raster' })
+  } else {
+    assert.equal(identity.baseline.runtime.manifestSha256, release)
+    assert.equal(identity.fixture.scenario, 'Q02')
+    assert.equal(identity.baseline.variant.entrypointSha256, '9db951e68bd4ce10f3739368d806d2a8a15db3535d9d543f21ddd5f2bd2f38a5')
+    const installed = observations.filter(event => event.kind === 'installed')
+    const complete = observations.filter(event => event.kind === 'complete')
+    const bindings = observations.filter(event => event.kind === 'authored-binding-invocation')
+    const frames = observations.filter(event => event.kind === 'rendered-frame')
+    const fire = observations.filter(event => event.kind === 'fire-witness')
+    assert.equal(installed.length, 1)
+    assert.equal(complete.length, 1)
+    assert.deepEqual(installed[0].pools, { enemies: 25, missiles: 30, stars: 20, powerups: 5 })
+    assert.deepEqual(installed[0].particles, [30, 20])
+    assert.deepEqual(bindings.map(event => [event.key, event.release]), [['s', false], ['Left', false], ['Left', true], ['Right', false], ['Right', true], ['Up', false], ['Up', false], ['Up', true], ['space', false]])
+    assert.deepEqual(bindings.filter(event => event.key === 'Up').map(event => event.player.thrust), [0.2, 0.4, 0])
+    assert.equal(fire.length, 1)
+    assert.equal(fire[0].missiles.length, 3)
+    assert.equal(frames.length, 7)
+    assert.deepEqual(complete[0].sounds, ['thruster.wav', 'thruster.wav', 'missile_fire.wav'])
+    assert(complete[0].clearWitnesses.length > 0 && complete[0].clearWitnesses.every((entry: any) => entry.before > 0 && entry.after === 0))
+    reviews.push({ scenario, installed: installed[0], frames: frames.length, bindings: bindings.map(event => ({ key: event.key, release: event.release, player: event.player })), fire: fire[0], complete: complete[0], consoleOmissions: 0, scope: 'Real loop and captured author callbacks, full pools/particle counts/stamp clears; not trusted DOM/OS input, Tk canvas/raster or full game' })
+  }
+}
+const result = { state: 'READONLY-r3-functional-payload-review-passed', at: new Date().toISOString(), receiptSha256: sha(receiptBytes), reportSha256: sha(reportBytes), sourceFreezeSha256: admission.freezeSha256, reviews, newExecution: false, rootMutation: false, gameScope: 'Three declared instrumented scenarios only; no complete-game/input/raster/audio-heard/performance/8GB/image9e33 qualification' }
+await writeFile(resolve(import.meta.dirname, 'review.json'), JSON.stringify(result, null, 2), { flag: 'wx' })
+console.log(JSON.stringify(reviews.map(item => ({ scenario: item.scenario, cases: item.caseCount, methodWitnesses: item.methodWitnesses, frames: item.frames, stampClears: item.complete?.clearWitnesses.length }))))

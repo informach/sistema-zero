@@ -1,0 +1,29 @@
+{
+  "kind": "offline-caller-inputs",
+  "rootHead": "01f7d35a87a70e006004f9fa992713b067f3ad7a",
+  "proofPlanSha256": "6f02482cf2fe52c29f9ea2584624b9d357e81610e027881ba1d2769f80ed2afc",
+  "leafPlanSha256": "12c255b11245539dcfde886b594230822624878e4e56fa2e1500fa77c80430e9",
+  "draftSha256": "92369a8076e4500164aea51fcf8c74724597a11857be993f9da28a124711f128",
+  "callerSha256": "c7f3b002a847009c7155c26cacb53d91d14a5c8a9e0981e2f100bab488dfee1f",
+  "pins": 207,
+  "proofDependenciesByteIdenticalAtRoot": 106,
+  "uiModules": [
+    {
+      "name": "fflate",
+      "entry": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\fflate@0.8.3\\node_modules\\fflate\\lib\\node.cjs",
+      "packagePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\fflate@0.8.3\\node_modules\\fflate\\package.json",
+      "version": "0.8.3"
+    },
+    {
+      "name": "@playwright/test",
+      "entry": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\@playwright+test@1.60.0\\node_modules\\@playwright\\test\\index.js",
+      "packagePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\@playwright+test@1.60.0\\node_modules\\@playwright\\test\\package.json",
+      "version": "1.60.0"
+    }
+  ],
+  "exportsVerified": true,
+  "processStarts": 0,
+  "providerCalls": 0,
+  "bindingCreated": false,
+  "operationalPlanCreated": false
+}

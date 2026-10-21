@@ -1,0 +1,141 @@
+// QA diagnostic only. Does not launch, pause, collect garbage or authorize work.
+const processTypes = new Set(['browser', 'renderer', 'GPU', 'utility', 'zygote', 'sandboxHelper'])
+const metricNames = new Set([
+  'JSHeapUsedSize', 'JSHeapTotalSize', 'Documents', 'Frames', 'Nodes',
+  'JSEventListeners', 'TaskDuration', 'ScriptDuration', 'LayoutDuration',
+])
+const phases = new Set(['booting', 'installing', 'starting', 'dev-preview-present', 'ambiguous', 'unknown'])
+const number = value => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER
+export function projectSample(processes, performance, heap, dom, startAt, endAt) {
+  const source = Array.isArray(processes?.processInfo) ? processes.processInfo : []
+  const projected = []
+  for (const row of source.slice(0, 128)) {
+    if (!Number.isSafeInteger(row?.id) || row.id < 1 || row.id > 0xffffffff || !number(row.cpuTime)) continue
+    projected.push({ pid: row.id, type: processTypes.has(row.type) ? row.type : 'unknown', cpuTimeSeconds: row.cpuTime })
+  }
+  const metrics = {}
+  for (const row of Array.isArray(performance?.metrics) ? performance.metrics.slice(0, 128) : []) {
+    if (metricNames.has(row?.name) && number(row.value)) metrics[row.name] = row.value
+  }
+  const heapBytes = {}
+  for (const key of ['usedSize', 'totalSize', 'embedderHeapUsedSize', 'backingStorageSize']) {
+    if (number(heap?.[key])) heapBytes[key] = heap[key]
+  }
+  return {
+    startedAt: new Date(startAt).toISOString(), completedAt: new Date(endAt).toISOString(),
+    durationMs: Math.max(0, endAt - startAt), processes: projected,
+    processesTruncated: source.length > 128, metrics, heapBytes,
+    phase: phases.has(dom?.phase) ? dom.phase : 'unknown',
+    rolldownDownloading: dom?.rolldownDownloading === true,
+    napiBindingTargetConflict: dom?.napiBindingTargetConflict === true,
+    invalidAtomicAccessIndex: dom?.invalidAtomicAccessIndex === true,
+  }
+}
+export function readDomPhase() {
+  const known = new Map([
+    ['Iniciando o ambiente (WebContainer)…', 'booting'],
+    ['Instalando dependências (npm install)…', 'installing'],
+    ['Subindo o servidor de desenvolvimento (Vite)…', 'starting'],
+  ])
+  const found = new Set()
+  // The real ProPreview overlay uses a plain <p>, not an ARIA status wrapper.
+  for (const element of [...document.querySelectorAll('p')].slice(0, 128)) {
+    const phase = known.get(element.textContent?.trim())
+    if (phase) found.add(phase)
+  }
+  let phase = found.size > 1 ? 'ambiguous' : found.size === 1 ? [...found][0] : 'unknown'
+  if (phase === 'unknown' && document.querySelector('iframe[title="Pré-visualização (dev-server)"]')) phase = 'dev-preview-present'
+  const flags = { rolldownDownloading: false, napiBindingTargetConflict: false, invalidAtomicAccessIndex: false }
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+  for (let i = 0; i < 4096; i++) {
+    const node = walker.nextNode(); if (!node) break
+    const text = (node.nodeValue ?? '').slice(0, 4096)
+    if (text.includes('[rolldown] Downloading')) flags.rolldownDownloading = true
+    if (text.includes('ERR_NAPI_BINDING_TARGET_CONFLICT')) flags.napiBindingTargetConflict = true
+    if (text.includes('Invalid atomic access index')) flags.invalidAtomicAccessIndex = true
+  }
+  return { phase, ...flags }
+}
+function bounded(promise, ms = 1000) {
+  let timer
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => { timer = setTimeout(() => reject(new Error()), ms) }),
+  ]).finally(() => clearTimeout(timer))
+}
+export async function startProfile({ browser, page, signal, onUpdate }) {
+  const samples = [], sessions = []
+  let failure = null, timer = null, active = null, stopping = false, stopPromise = null
+  let browserSession, pageSession, detached = false, limitReached = false, pendingCreates = 0
+  const startedAt = new Date().toISOString()
+  const fail = (phase, reason) => { failure ??= { phase, reason } }
+  const report = () => structuredClone({
+    version: 1, state: failure ? 'NEG-diagnostic' : stopping ? 'stopped' : 'active',
+    startedAt, samples, lastKnown: samples.at(-1) ?? null, failure,
+    limitReached, detachConfirmed: detached, rawDataPersisted: false,
+  })
+  // The sink is synchronous (Root's receipt assignment); no unowned async writer.
+  function publish() {
+    if (typeof onUpdate !== 'function') return
+    try {
+      const result = onUpdate(report())
+      if (result?.then) { Promise.resolve(result).catch(() => {}); fail('update', 'async-sink-not-supported') }
+    } catch { fail('update', 'sink-failed') }
+  }
+  async function ownSession(factory) {
+    pendingCreates++
+    return bounded(Promise.resolve().then(factory).then(async session => {
+      if (stopping) { try { await bounded(Promise.resolve().then(() => session.detach())) } catch { fail('detach', 'late-session-close-unconfirmed') }; return null }
+      sessions.push(session); return session
+    }).finally(() => { pendingCreates-- }))
+  }
+  async function stop() {
+    if (stopPromise) return stopPromise
+    stopping = true; clearTimeout(timer); signal?.removeEventListener('abort', abort)
+    stopPromise = (async () => {
+      // Each in-flight sample is bounded. Never wait for a browser after its
+      // owner closes it; an unavailable diagnostic remains explicit NEG.
+      try { await active } catch { fail('sample', 'request-failed') }
+      const outcomes = await Promise.all(sessions.map(async session => {
+        try { await bounded(Promise.resolve().then(() => session.detach())); return true }
+        catch { fail('detach', 'session-close-unconfirmed'); return false }
+      }))
+      detached = outcomes.every(Boolean) && pendingCreates === 0
+      if (pendingCreates) fail('detach', 'session-create-unconfirmed')
+      publish(); return report()
+    })().catch(() => { fail('stop', 'diagnostic-stop-failed'); publish(); return report() })
+    return stopPromise
+  }
+  const abort = () => { void stop() }
+  function tick() {
+    if (stopping) return
+    const startAt = Date.now()
+    active = (async () => {
+      try {
+        const [processes, performance, heap, phase] = await bounded(Promise.all([
+          browserSession.send('SystemInfo.getProcessInfo'),
+          pageSession.send('Performance.getMetrics'), pageSession.send('Runtime.getHeapUsage'),
+          page.evaluate(readDomPhase),
+        ]))
+        if (stopping) return
+        samples.push(projectSample(processes, performance, heap, phase, startAt, Date.now()))
+        publish()
+      } catch { fail('sample', stopping ? 'browser-unavailable-during-stop' : 'request-failed') }
+    })()
+    void active.then(() => {
+      if (samples.length >= 120) limitReached = true
+      if (failure || limitReached) { void stop(); return }
+      if (!stopping) timer = setTimeout(tick, Math.max(0, 500 - (Date.now() - startAt)))
+    })
+  }
+  signal?.addEventListener('abort', abort, { once: true })
+  try {
+    if (signal?.aborted) { fail('init', 'already-aborted'); await stop() }
+    else {
+      browserSession = await ownSession(() => browser.newBrowserCDPSession())
+      if (!stopping) pageSession = await ownSession(() => page.context().newCDPSession(page))
+      if (!stopping) { await bounded(pageSession.send('Performance.enable')); tick() }
+    }
+  } catch { fail('init', 'session-unavailable'); await stop() }
+  return { stop }
+}

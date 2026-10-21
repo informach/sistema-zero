@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict'
+import {spawn} from 'node:child_process'
+import {readFileSync,writeFileSync} from 'node:fs'
+import {createHash} from 'node:crypto'
+import {cliEnvironment} from '../pro-legacy-staging-ui-owned-r5/oauth-session.mjs'
+const cli='C:/Users/tocha/AppData/Roaming/npm/node_modules/@railway/cli/bin/railway.exe'
+assert.equal(createHash('sha256').update(readFileSync(cli)).digest('hex'),'f9351033614c86882332a5c82e1856b21792b176ebf84a9417dfd1362c425177')
+const environment='f634cff6-aafb-4804-8b69-172fad4e946e'
+const service='aa282801-ffba-477c-af6d-394b2f4f9af9'
+const keys=['STUDIO_AUTHORING_POLICY_JSON','STUDIO_RUNTIME_HOSTS_JSON']
+const query='query StudioPythonConfiguredNames($id:String!,$after:String){environment(id:$id){id variables(first:500,after:$after){edges{node{name serviceId isSealed}}pageInfo{hasNextPage endCursor}}}}'
+const receipt={kind:'staging-named-configuration-presence-only',startedAt:new Date().toISOString(),environment,service,selected:[],pages:[],complete:false,failure:null,mutations:0,valuesRequested:false,rawNamesPersisted:false,rawProviderOutputPersisted:false}
+let after=null
+try{
+ for(let page=0;page<4;page++){
+  const child=spawn(cli,['api',query,'--variables',JSON.stringify({id:environment,after}),'--compact'],{env:cliEnvironment(process.env),cwd:process.cwd(),windowsHide:true,stdio:['ignore','pipe','pipe']})
+  let stdout='',stderr='',overflow=false,error=false,expired=false
+  const timer=setTimeout(()=>{expired=true},30000)
+  for(const[stream,name]of [[child.stdout,'stdout'],[child.stderr,'stderr']])stream.on('data',bytes=>{if(overflow)return;if(Buffer.byteLength(stdout)+Buffer.byteLength(stderr)+bytes.length>2_000_000){overflow=true;stdout='';stderr='';return}if(name==='stdout')stdout+=bytes;else stderr+=bytes})
+  child.on('error',()=>{error=true})
+  const[code,signal]=await new Promise(resolve=>child.once('close',(c,s)=>resolve([c,s])))
+  clearTimeout(timer)
+  const record={pid:child.pid,closed:true,code,signal,overflow,error,expired,stdoutBytes:Buffer.byteLength(stdout),stderrBytes:Buffer.byteLength(stderr)};receipt.pages.push(record)
+  let body;try{body=JSON.parse(stdout)}catch{};stdout='';stderr=''
+  if(body?.errors?.length){receipt.failure={kind:'GraphQL-error',count:body.errors.length,genericProblem:body.errors.some(v=>v?.message==='Problem processing request')};break}
+  assert(code===0&&!signal&&!overflow&&!error&&!expired)
+  const result=body?.data?.environment;assert.equal(result?.id,environment)
+  const connection=result.variables;assert(Array.isArray(connection.edges)&&connection.edges.length<=500)
+  for(const{node}of connection.edges){
+   assert.equal(typeof node?.name,'string');assert(node.serviceId===null||typeof node.serviceId==='string');assert.equal(typeof node.isSealed,'boolean')
+   if(keys.includes(node.name)&&(node.serviceId===service||node.serviceId===null))receipt.selected.push({key:node.name,scope:node.serviceId===null?'shared':'members',sealed:node.isSealed})
+  }
+  const info=connection.pageInfo;assert.equal(typeof info?.hasNextPage,'boolean')
+  if(!info.hasNextPage){receipt.complete=true;break}
+  assert(typeof info.endCursor==='string'&&info.endCursor!==after);after=info.endCursor
+ }
+ assert(receipt.complete)
+ receipt.presence=Object.fromEntries(keys.map(key=>[key,receipt.selected.some(row=>row.key===key)]))
+}catch{receipt.failure??={kind:'metadata-query-or-contract-refused'}}
+receipt.completedAt=new Date().toISOString()
+writeFileSync(new URL('./railway-variable-names-only-receipt.json',import.meta.url),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'})
+console.log(JSON.stringify(receipt));if(!receipt.complete||receipt.failure)process.exitCode=1

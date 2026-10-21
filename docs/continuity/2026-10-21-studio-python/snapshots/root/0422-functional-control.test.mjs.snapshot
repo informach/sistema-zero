@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {assertFunctionalProfile,assertFunctionalReceipt}from'./functional-contract.mjs';
+const good={resourceProfile:'hosted-functional-2048',functionalOnly:true,performanceQualified:false,state:'PASS-hosted-js-pro-functional',jobBudgetMiB:2048,admissionMiB:2560,functionalPassed:true,normalCleanup:true,resourceReleaseConfirmed:true,operatorForceUsed:false,libraryForceObserved:false};
+test('explicit prospective functional profile and normal terminal receipt accepted',()=>{assertFunctionalProfile(good);assertFunctionalProfile(good,true);assertFunctionalReceipt(good);});
+test('strict1024 is not a functional2048 qualification',()=>{assert.throws(()=>assertFunctionalReceipt({...good,resourceProfile:'strict-browser-1024',state:'PASS-hosted-js-pro-owned',jobBudgetMiB:1024,admissionMiB:1536}));});
+test('missing, null, unknown profiles rejected',()=>{for(const resourceProfile of[undefined,null,'','other'])assert.throws(()=>assertFunctionalProfile({...good,resourceProfile}));});
+test('functional-only and no-performance claims are mandatory',()=>{for(const [field,values]of Object.entries({functionalOnly:[undefined,false,'true'],performanceQualified:[undefined,true,'false']}))for(const value of values)assert.throws(()=>assertFunctionalProfile({...good,[field]:value}));});
+test('old PASS, NEG or absent terminal state rejected',()=>{for(const state of['PASS-hosted-js-pro-owned','NEG',undefined])assert.throws(()=>assertFunctionalProfile({...good,state},true));});
+test('budget/admission mismatch does not inherit functional qualification',()=>{for(const [jobBudgetMiB,admissionMiB]of[[1024,2560],[2048,1536],[4096,2560],[undefined,undefined]])assert.throws(()=>assertFunctionalReceipt({...good,jobBudgetMiB,admissionMiB}));});
+test('functional, cleanup or force failure cannot pass',()=>{for(const field of['functionalPassed','normalCleanup','resourceReleaseConfirmed','operatorForceUsed','libraryForceObserved']){assert.throws(()=>assertFunctionalReceipt({...good,[field]:!good[field]}));assert.throws(()=>assertFunctionalReceipt({...good,[field]:undefined}));}});

@@ -1,0 +1,96 @@
+"""Cache-only proposal generation; reads source, never imports app/provider/browser code."""
+import difflib
+import hashlib
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+OWN = Path(__file__).resolve().parents[2]
+ROOT = OWN.parent / 'sistema-zero-python'
+OUT = Path(__file__).resolve().parent
+HORIZON = '5503f6a245d2f2434fc91289fba05bbf6f229f29'
+PRODUCER = 'packages/admin/tests/e2e/python-lesson-fixture.ts'
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+def put(name, value):
+    with (OUT / name).open('x', encoding='utf-8', newline='\n') as stream:
+        if isinstance(value, str):
+            stream.write(value)
+        else:
+            json.dump(value, stream, indent=2, ensure_ascii=False)
+            stream.write('\n')
+
+before = (ROOT / PRODUCER).read_text(encoding='utf-8')
+after = before
+def change(old, new, count=1):
+    global after
+    assert after.count(old) == count, (old, after.count(old))
+    after = after.replace(old, new)
+
+change("  modality: 'live' | 'recorded'\n  state:", "  modality: 'live' | 'recorded'\n  /** Public metadata from the Root-reviewed hosted binding, never credentials. */\n  hostedAdminOrigin?: string\n  audience?: 'adult' | 'kids'\n  variant?: 'hosted-js-pro'\n  state:")
+change("export function pythonAdminOrigin(value: string) {\n  assert.equal(value, 'http://localhost:43107', 'Use the reviewed exact Admin parent')", "export function pythonAdminOrigin(value: string, reviewedHostedOrigin?: string) {\n  if (reviewedHostedOrigin !== undefined) {\n    assert.equal(value, reviewedHostedOrigin, 'Exact Root-reviewed hosted Admin origin required')\n    const parsed = new URL(value)\n    assert.equal(parsed.protocol, 'https:')\n    assert.equal(parsed.origin, value)\n    return value\n  }\n  assert.equal(value, 'http://localhost:43107', 'Use the reviewed exact Admin parent')")
+change('  pythonAdminOrigin(origin)\n', '  pythonAdminOrigin(origin, fixture.hostedAdminOrigin)\n')
+change("  audience: z.literal('kids'),", "  audience: z.enum(['kids', 'adult']),")
+change('  assert.equal(course.id, fixture.courseId)', "  assert.equal(course.audience, fixture.audience ?? 'kids')\n  assert.equal(course.id, fixture.courseId)")
+change('`qa-python-${fixture.runId}`', "`qa-${fixture.variant === 'hosted-js-pro' ? 'js-pro' : 'python'}-${fixture.runId}`", 2)
+change('`QA Python ${fixture.modality} ${fixture.runId}`', "`QA ${fixture.variant === 'hosted-js-pro' ? 'JS Pro' : 'Python'} ${fixture.modality} ${fixture.runId}`")
+change("  modality: 'live' | 'recorded'\n  onStep:", "  modality: 'live' | 'recorded'\n  hosted?: { adminOrigin: string; audience: 'adult' | 'kids' }\n  onStep:")
+change('  pythonAdminOrigin(input.origin)\n  assert', '  pythonAdminOrigin(input.origin, input.hosted?.adminOrigin)\n  assert')
+change('    runId,\n    modality:', "    runId,\n    ...(input.hosted ? { hostedAdminOrigin: input.hosted.adminOrigin, audience: input.hosted.audience, variant: 'hosted-js-pro' as const } : {}),\n    modality:")
+change('`QA Python ${input.modality} ${runId}`', "`QA ${input.hosted ? 'JS Pro' : 'Python'} ${input.modality} ${runId}`")
+change('`qa-python-${runId}`', "`qa-${input.hosted ? 'js-pro' : 'python'}-${runId}`", 2)
+change("        audience: 'kids',", "        audience: input.hosted?.audience ?? 'kids',")
+change("{ title: 'Projeto Python', summary: null }", "{ title: input.hosted ? 'Projeto JS Pro' : 'Projeto Python', summary: null }")
+change("title: 'Minha execução Python'", "title: input.hosted ? 'Minha execução JS Pro' : 'Minha execução Python'")
+put('producer-https-audience.proposed.ts', after)
+put('producer-https-audience.proposed.diff', ''.join(difflib.unified_diff(before.splitlines(keepends=True), after.splitlines(keepends=True), fromfile='a/' + PRODUCER, tofile='b/' + PRODUCER)))
+
+paths = [PRODUCER,
+ 'packages/community-kids/tests/e2e/python-lesson-admin.ts',
+ 'packages/community-kids/tests/e2e/python-lesson-kids.ts',
+ 'packages/community-kids/tests/e2e/windows/python-lesson-native-browser-owner.ps1',
+ 'packages/community-kids/tests/e2e/windows/python-lesson-native-browser-worker.mjs',
+ 'packages/community-kids/tests/e2e/windows/python-lesson-windows-job.cs',
+ 'packages/auth/src/domain/user/user.aggregate.ts',
+ 'packages/auth/src/infrastructure/persistence/drizzle/user.repository.ts',
+ 'packages/auth/src/infrastructure/security/bun-password-hasher.ts',
+ 'packages/admin/src/server/local-admin-session.ts',
+ 'packages/admin/src/app/api/members/entitlements/route.ts',
+ 'packages/admin/src/components/admin/grant-access-dialog.tsx',
+ 'packages/members/src/interfaces/http/routes/admin.routes.ts',
+ 'packages/admin/src/app/api/studio/pro-runtime/build/route.ts',
+ 'packages/member-shell/src/routes/lesson-pro-runtime.ts',
+ 'packages/community/src/app/api/studio/pro-runtime/build/route.ts',
+ 'packages/member-shell/src/server/studio-pro-runtime.ts',
+ 'packages/member-shell/src/components/studio/studio-block.tsx',
+ 'packages/member-shell/src/components/studio/lesson-studio-draft.ts',
+ 'packages/member-shell/src/lib/lesson-draft-transport.ts',
+ 'packages/member-shell/src/lib/creations-cloud.ts',
+ 'packages/studio/src/studio/StudioLesson.tsx',
+ 'packages/studio/src/modes/pro/RemoteProPreview.tsx',
+ 'packages/studio/src/state/proToolchainUpdate.ts',
+ 'packages/studio/src/export/sourceExport.ts',
+ 'packages/studio/src/export/fileMap.ts',
+ 'packages/studio/src/export/zip.ts',
+ '.cache/studio-python-l0/pro-legacy-staging-ui-owned-r6/legacy.szproject.json',
+ '.cache/studio-python-l0/pro-legacy-staging-ui-owned-r6/fixture-check.json',
+ '.cache/studio-python-l0/pro-legacy-staging-ui-owned-r6/remote.mjs',
+ '.cache/studio-python-l0/pro-legacy-staging-ui-owned-r6/contract.mjs',
+ '.cache/studio-python-l0/pro-legacy-staging-ui-owned-r6/prepare-fixture.ts',
+ '.cache/studio-python-l0/pro-legacy-staging-ui-caller-r4/run.mjs',
+ '.cache/studio-python-l0/pro-legacy-staging-ui-caller-r4/functional-contract.mjs']
+pins = []
+for relative in paths:
+    path = ROOT / relative
+    data = path.read_bytes()
+    row = {'path': str(path), 'bytes': len(data), 'sha256': sha(data), 'kind': 'historical-cache-reference' if relative.startswith('.cache/') else 'source'}
+    if row['kind'] == 'source':
+        blob = subprocess.check_output(['git', 'show', HORIZON + ':' + relative], cwd=ROOT)
+        row['matchesSelectedGitHorizon'] = sha(blob) == row['sha256']
+    pins.append(row)
+put('pins.json', {'state': 'REVIEW-INPUTS-NOT-A-RUN-SEAL', 'rootSourceHorizon': HORIZON, 'ownHead': subprocess.check_output(['git','rev-parse','HEAD'],cwd=OWN,text=True).strip(), 'pins': pins, 'notIncluded': 'No credentials, env dumps, cookies, binding, provider payload, execution directory or active owner state. Runtime9e33/image26b/build52 are Root-reported only and require exact future provenance.'})
+put('preparation-receipt.json', {'timestamp': datetime.now(timezone.utc).isoformat(), 'sourceHorizon': HORIZON, 'onlyWrites': str(OUT), 'proposalDiffSha256': sha((OUT / 'producer-https-audience.proposed.diff').read_bytes()), 'pinsSha256': sha((OUT / 'pins.json').read_bytes()), 'pinCount': len(pins), 'sourceMatches': all(p.get('matchesSelectedGitHorizon',True) for p in pins), 'noExecution': True, 'noApi': True, 'noBrowser': True, 'noServices': True, 'noCredentialsReadOrCopied': True, 'noCompiler': True, 'noMerge': True, 'noPush': True, 'proposalNotAppliedOrTested': True})
+print(json.dumps({'pins':len(pins),'diffSha256':sha((OUT/'producer-https-audience.proposed.diff').read_bytes()),'sourceMatches':all(p.get('matchesSelectedGitHorizon',True)for p in pins)}))

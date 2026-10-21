@@ -1,0 +1,75 @@
+import assert from 'node:assert/strict';
+import {ChildProcess} from 'node:child_process';
+import {win32} from 'node:path';
+import {cliEnvironment,parseSession} from './oauth-session.mjs';
+const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
+const maxBridgeBytes=32768;
+function capability(env,identityPath,session,now){
+ let token=session.token;session.token='';let used=false,disposed=false;
+ const take=()=>{
+  assert(!used&&!disposed);assert(now()+60000<session.expiresAt);used=true;
+  const transport={identityPath,env:{...env,RAILWAY_API_TOKEN:token}};token='';return transport;
+ };
+ return Object.freeze({
+  takeSSHTransport:take,
+  async sendToChild(child,attemptId){
+   assert(child instanceof ChildProcess && child.pid && child.stdin);assert.match(attemptId,uuid);
+   const transport=take();
+   const body=JSON.stringify({version:1,attemptId,expiresAt:session.expiresAt,identityPath:transport.identityPath,env:transport.env})+'\n';
+   delete transport.env.RAILWAY_API_TOKEN;
+   assert(Buffer.byteLength(body)<=maxBridgeBytes);
+   await new Promise((resolve,reject)=>{
+    const failed=()=>reject(new Error('provider-pipe-write-failed'));
+    child.stdin.once('error',failed);
+    child.stdin.end(body,()=>{child.stdin.off('error',failed);resolve();});
+   });
+  },
+  dispose(){disposed=true;token='';}
+ });
+}
+
+// Called in the real operator BEFORE its isolated Node/browser is started.
+// The caller first runs the already-qualified official readonly CLI refresh
+// (invokeCli + validateCliResult), then reads config once in RAM. No config/key
+// file is copied, no credential source is discovered from the isolated home.
+export function captureRailwayProvider({sourceEnvironment,sourceHomeDirectory,oauthConfig,now=Date.now}){
+ const find=name=>Object.entries(sourceEnvironment).find(([key])=>key.toUpperCase()===name)?.[1];
+ assert(win32.isAbsolute(sourceHomeDirectory));
+ assert.equal(win32.normalize(sourceHomeDirectory).toLowerCase(),win32.normalize(find('USERPROFILE')).toLowerCase());
+ assert.equal(typeof find('PROGRAMDATA'),'string');assert(find('PROGRAMDATA').length>0);
+ const env=cliEnvironment(sourceEnvironment),session=parseSession(oauthConfig);
+ assert(now()+60000<session.expiresAt);
+ return capability(env,win32.join(sourceHomeDirectory,'.ssh','id_ed25519'),session,now);
+}
+
+// Dedicated private input from the owning caller, not argv/job.json/binding.
+// The final adapter must reserve/route this one bounded envelope; it must not
+// attach a second competing reader to the same stdin. No process.env mutation.
+export async function receiveRailwayProvider(readable,{attemptId,now=Date.now}){
+ assert.match(attemptId,uuid);let total=0,chunks=[];
+ const raw=await new Promise((resolve,reject)=>{
+  const cleanup=()=>{clearTimeout(timer);readable.off('data',data);readable.off('end',end);readable.off('error',error);};
+  const fail=()=>{cleanup();chunks=[];readable.pause();reject(new Error('provider-pipe-read-refused'));};
+  const data=chunk=>{total+=chunk.length;if(total>maxBridgeBytes){fail();return;}chunks.push(Buffer.from(chunk));};
+  const end=()=>{cleanup();resolve(Buffer.concat(chunks).toString('utf8'));chunks=[];};
+  const error=()=>fail();const timer=setTimeout(fail,10000);
+  readable.on('data',data);readable.once('end',end);readable.once('error',error);
+ });
+ try {
+ const value=JSON.parse(raw);
+ assert.deepEqual(Object.keys(value).sort(),['attemptId','env','expiresAt','identityPath','version']);
+ assert.equal(value.version,1);assert.equal(value.attemptId,attemptId);
+ assert(Number.isSafeInteger(value.expiresAt));assert(now()+60000<value.expiresAt);
+ assert(value.env && typeof value.env==='object'&&!Array.isArray(value.env));
+ assert(Object.values(value.env).every(v=>typeof v==='string'));
+ const env=cliEnvironment(value.env);
+ assert.deepEqual(Object.keys(value.env).sort(),[...Object.keys(env),'RAILWAY_API_TOKEN'].sort());
+ for(const [key,val] of Object.entries(env))assert.equal(value.env[key],val);
+ const profile=Object.entries(env).find(([key])=>key.toUpperCase()==='USERPROFILE')?.[1];
+ assert(win32.isAbsolute(profile));assert.equal(value.identityPath,win32.join(profile,'.ssh','id_ed25519'));
+ const session=parseSession({user:{accessToken:value.env.RAILWAY_API_TOKEN,tokenExpiresAt:value.expiresAt/1000}});
+ delete value.env.RAILWAY_API_TOKEN;
+ return capability(env,value.identityPath,session,now);
+ }catch{throw new Error('provider-envelope-refused');}
+}
+

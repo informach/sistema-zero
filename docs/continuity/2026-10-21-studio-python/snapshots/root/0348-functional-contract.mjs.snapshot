@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+
+export function assertFunctionalProfile(value,terminal=false){
+ assert.equal(value.resourceProfile,'hosted-functional-2048');
+ assert.equal(value.functionalOnly,true);
+ assert.equal(value.performanceQualified,false);
+ if(terminal)assert.equal(value.state,'PASS-hosted-js-pro-functional');
+}
+
+export function assertFunctionalReceipt(value){
+ assertFunctionalProfile(value,true);
+ assert.equal(value.jobBudgetMiB,2048);assert.equal(value.admissionMiB,2560);
+ for(const field of ['functionalPassed','normalCleanup','resourceReleaseConfirmed'])assert.equal(value[field],true);
+ for(const field of ['operatorForceUsed','libraryForceObserved'])assert.equal(value[field],false);
+}

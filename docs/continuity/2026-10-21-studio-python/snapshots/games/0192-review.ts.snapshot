@@ -1,0 +1,145 @@
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { readFile, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { decodeGameObservations } from '../../../../experiments/studio-python-runtime/qualification/game_observations'
+
+// Completed artifact parsing only. No network, game import, test, or subprocess.
+const root = 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0'
+const own = 'C:/Users/tocha/projects/sistema-zero-python-games'
+const sha = (value: string | Uint8Array) => createHash('sha256').update(value).digest('hex')
+const load = async (path: string) => { const bytes = await readFile(path); return { value: JSON.parse(bytes.toString()), sha256: sha(bytes) } }
+const freeze = await load(resolve(own, '.cache/studio-python-l0/games-functional-r1/current-host-browser-package-r5/source-freeze.json'))
+assert.equal(freeze.sha256, '07e9afafaf381aa65077b710654c21c0f51bee2909e8d1c3f5fc7a34abeca93d')
+assert.equal(freeze.value.files.length, 28)
+for (const file of freeze.value.files) assert.equal(sha(await readFile(file.path)), file.sha256)
+const observer = await readFile(resolve(own, 'experiments/studio-python-runtime/qualification/space_arena_observer.py'), 'utf8')
+const driver = await readFile(resolve(own, 'experiments/studio-python-runtime/qualification/space_arena_browser.py'), 'utf8')
+const batches = [
+  { run: 'games-space-q03-q05-r2', scenarios: ['Q03', 'Q04', 'Q05'], receipt: 'd5a78d1f202f75f075955b4cd82cba09232e5b5ecb89ea7f7cf025dcd0e14234', report: '1afd6ddd9a8bc23d5982bb6112d09600e90c1b5a9108ee3d49ce4e31c2cda9c6', controller: 'PASS-PENDING-REVIEW' },
+  { run: 'games-space-q06-q07-r1', scenarios: ['Q06', 'Q07'], receipt: '58152a6cbb82ca2930f2753c28221b2b270f5aa84920ce9a4f7c0146011c753b', report: '686bafa1831f972f0f918bd32427cb4e7683f03ac2e380c5939aeb45c92833b1', controller: 'NEGATIVE' },
+]
+const reviews: any[] = []
+for (const batch of batches) {
+  const evidence = resolve(root, batch.run, 'evidence')
+  const receipt = await load(resolve(evidence, 'receipt.json'))
+  const report = await load(resolve(evidence, 'browser/report.json'))
+  const admission = await load(resolve(evidence, 'browser/host-admission.json'))
+  const authority = await load(resolve(evidence, 'authority.json'))
+  const plan = await load(resolve(root, batch.run, 'plan.json'))
+  assert.equal(receipt.sha256, batch.receipt); assert.equal(report.sha256, batch.report)
+  const r = receipt.value
+  assert.equal(r.state, batch.controller)
+  for (const key of ['stable', 'hostNormal', 'observedReleased']) assert.equal(r[key], true)
+  for (const key of ['forced', 'cleanupUnknown']) assert.equal(r[key], false)
+  assert.equal(r.portsAfter.length, 2); assert(r.portsAfter.every((p: any) => p.free))
+  assert.equal(r.roots.length, 2)
+  for (const child of [...r.roots, { result: r.samplerResult }]) {
+    assert.equal(child.result.code, 0); assert.equal(child.result.signal, null); assert.equal(child.result.logsDrained, true)
+  }
+  assert.equal(r.elapsedMs, Date.parse(r.endedAt) - Date.parse(r.startedAt))
+  assert(r.elapsedMs <= plan.value.policy.totalMs)
+  assert(report.value.stats.duration <= plan.value.policy.suiteMs)
+  assert(Date.parse(r.endedAt) <= Date.parse(authority.value.windowEnd))
+  assert.equal(admission.value.authoritySha256, authority.sha256)
+  assert.equal(admission.value.freezeSha256, freeze.sha256)
+  assert.equal(admission.value.distribution.hash, 'a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a')
+  assert.equal(authority.value.releaseManifestSha256, '0123ab8fd02e3aff2d4383fb8e8f93304c337d4018ad1263c21e8d1eafd0fb0e')
+  assert.equal(r.peaks.privateBytesPeak, null)
+  assert(r.peaks.minimumObservedFreeBytes >= plan.value.policy.floorFreeMiB * 1024 ** 2)
+  const stats = report.value.stats
+  assert.deepEqual([stats.expected, stats.unexpected, stats.flaky, stats.skipped], [batch.scenarios.length, 0, 0, 0])
+  assert.equal(report.value.errors?.length ?? 0, 0)
+  if (batch.controller === 'NEGATIVE') {
+    assert.equal(r.tests, null)
+    assert.equal(r.errors.length, 1)
+    assert.match(r.stopped, /expected: 2/); assert.match(r.stopped, /expected: 3/)
+    const run = await readFile(resolve(root, batch.run, 'run.mjs'), 'utf8')
+    assert(run.includes('{expected:3,unexpected:0,flaky:0,skipped:0}'))
+  } else { assert.equal(r.stopped, null); assert.deepEqual(r.errors, []) }
+  const cases: any[] = []
+  function visit(suite: any) {
+    for (const spec of suite.specs ?? []) for (const test of spec.tests ?? []) {
+      assert.equal(test.status, 'expected'); assert.equal(test.projectName, 'chrome'); assert.equal(test.results.length, 1)
+      const result = test.results[0]; assert.equal(result.status, 'passed'); assert.equal(result.errors?.length ?? 0, 0)
+      const attachments = Object.fromEntries(result.attachments.map((a: any) => [a.name, JSON.parse(Buffer.from(a.body, 'base64').toString())]))
+      cases.push({ title: spec.title, durationMs: result.duration, attachments })
+    }
+    for (const child of suite.suites ?? []) visit(child)
+  }
+  visit(report.value)
+  assert.deepEqual(cases.map(c => c.title), plan.value.expectedTitles)
+  assert.equal(cases.length, batch.scenarios.length)
+  const reviewed = []
+  for (const [index, scenario] of batch.scenarios.entries()) {
+    const item = cases[index]
+    assert.equal(item.title, `portable Space Arena instrumented ${scenario} preserves authored rules`)
+    const identity = item.attachments['space-source-identity'], state = item.attachments['space-final-state']
+    assert.equal(identity.fixture.scenario, scenario)
+    assert.equal(identity.fixture.observerSha256, sha(observer))
+    assert.equal(identity.fixture.driverSha256, sha(driver.replace('CONFIG = {"scenario": "Q02", "seed": 2026}', `CONFIG = ${JSON.stringify({ scenario, seed: 2026 })}`)))
+    assert.equal(identity.baseline.runtime.manifestSha256, authority.value.releaseManifestSha256)
+    assert.equal(identity.baseline.variant.version, 'portable-audio-1.1.0')
+    assert.equal(identity.baseline.variant.entrypointSha256, '9db951e68bd4ce10f3739368d806d2a8a15db3535d9d543f21ddd5f2bd2f38a5')
+    assert.equal(identity.baseline.files.length, 29)
+    assert.equal(state.status, 'completed'); assert(state.events.length < 2048)
+    assert(state.events.every((e: any, i: number) => e.sequence > 0 && (!i || e.sequence === state.events[i - 1].sequence + 1)))
+    const consoleEvents = state.events.filter((e: any) => e.type === 'console')
+    assert(consoleEvents.every((e: any) => e.omittedChars === 0 && e.omittedLines === 0))
+    const output = consoleEvents.map((e: any) => e.text).join(''); assert(output.endsWith('\n'))
+    const observations: any[] = decodeGameObservations(output, '__SZ_SPACE_QA__')
+    const of = (kind: string) => observations.filter(e => e.kind === kind)
+    const one = (kind: string) => { assert.equal(of(kind).length, 1); return of(kind)[0] }
+    const installed = one('installed'), complete = one('complete'), frames = of('rendered-frame')
+    assert.deepEqual(installed.pools, { enemies: 25, missiles: 30, stars: 20, powerups: 5 })
+    assert.deepEqual(installed.particles, [30, 20])
+    assert.equal(frames.length, complete.clearWitnesses.length)
+    assert(complete.clearWitnesses.every((c: any) => c.before > 0 && c.after === 0))
+    let details: any
+    if (scenario === 'Q03') {
+      const walls = of('wall-clamp')
+      assert.deepEqual(walls.map(e => [e.axis, e.position]), [['x', 790], ['x', -790], ['y', 590], ['y', -590]])
+      assert.deepEqual(walls.map(e => e.player['d' + e.axis]), [-2, 2, -2, 2])
+      assert.equal(frames.find(e => e.step === 4).player.health, 40)
+      const damage = one('damage'), beforeReset = one('nonpositive-health-before-reset'), near = one('declared-near-defeat')
+      assert.equal(damage.player.health, 27); assert.equal(damage.player.lives, 3)
+      assert.equal(beforeReset.player.health, -19); assert.equal(beforeReset.player.lives, 3)
+      assert.equal(near.player.health, 40); assert.equal(near.player.lives, 0); assert.equal(near.player.heading, 90)
+      assert.deepEqual(['x', 'y', 'dx', 'dy', 'da'].map(k => near.player[k]), [0, 0, 0, 0, 0])
+      assert.equal(near.authorLoopStillPlaying, 'playing'); assert.equal(frames.length, 9); assert.equal(complete.methodWitnesses.length, 4)
+      details = { walls, distance18CounterexampleHealth: 40, damage, beforeReset, nearDefeat: near }
+    } else if (scenario === 'Q04') {
+      const kill = one('missile-kill')
+      assert.deepEqual([kill.enemy.health, kill.enemy.state, kill.enemy.dx, kill.enemy.dy, kill.score], [0, 'inactive', 1, -1, 10])
+      assert.deepEqual([kill.missile.state, kill.missile.fuel, kill.missile.max_fuel], ['ready', 200, 200])
+      assert.equal(frames.length, 2); assert.equal(frames[0].player.score, 0)
+      assert.deepEqual(complete.sounds, ['explosion.wav']); details = kill
+    } else if (scenario === 'Q05') {
+      const pickup = one('pickup-upgrade'), penalty = one('missile-powerup-penalty')
+      assert.equal(pickup.missiles, 31)
+      for (const [key, expected] of Object.entries({ thrust: 5.25, max_fuel: 220, damage: 5.5 })) assert(Math.abs(pickup.first[key] - expected) < 1e-9)
+      assert.equal(pickup.first.fuel, 200); assert.equal(penalty.score, -50)
+      assert.deepEqual(complete.sounds, ['powerup.wav', 'explosion.wav', 'explosion.wav'])
+      assert.equal(frames.length, 2); details = { pickup, penalty }
+    } else if (scenario === 'Q06') {
+      const ai = one('ai-camera')
+      assert.deepEqual(ai.enemies.map((e: any) => [e.x, e.dx, e.dy, e.type]), [[60, -.05, -.05, 'hunter'], [100, 0, 0, 'hunter'], [60, 0, 0, 'hunter'], [100, 0, 0, 'mine'], [60, .03, -.03, 'surveillance'], [100, 0, 0, 'surveillance']])
+      assert.deepEqual(ai.camera, { x: -70, y: -35, visible: false })
+      assert.deepEqual(of('authored-binding-invocation').map(e => e.key), ['s', 'c', 'C'])
+      assert(complete.radarWitnesses.some((e: any) => e.sprite === 'Player' && e.color === 'white'))
+      assert(complete.radarWitnesses.some((e: any) => e.sprite === 'Enemy'))
+      assert.equal(frames.length, 1); assert.deepEqual(complete.sounds, []); details = ai
+    } else {
+      const lifetime = of('particle-lifetime')
+      assert.equal(lifetime.length, 20); assert.equal(lifetime[0].active, 50); assert.equal(lifetime.at(-1).active, 0)
+      assert(lifetime.every((e, i) => e.step === i && e.active >= 0 && e.active <= (i ? lifetime[i - 1].active : 50)))
+      assert.equal(frames.length, 20); assert.deepEqual(complete.sounds, ['explosion.wav'])
+      details = { activeParticles: lifetime.map(e => e.active), sourceAssertions: 'All 50 original particles: position integration, damping .85, lifetimes/reset, inactive stability; no state injection per step' }
+    }
+    reviewed.push({ scenario, durationMs: item.durationMs, frames: frames.length, stampClears: complete.clearWitnesses.length, radarWitnesses: complete.radarWitnesses.length, sounds: complete.sounds, details })
+  }
+  reviews.push({ run: batch.run, controllerStatePreserved: r.state, gamePayloadReview: 'LIMITED-PASS', receiptSha256: receipt.sha256, reportSha256: report.sha256, admissionSha256: admission.sha256, authoritySha256: authority.sha256, startedAt: r.startedAt, endedAt: r.endedAt, elapsedMs: r.elapsedMs, suiteMs: stats.duration, cleanup: { observedReleased: r.observedReleased, forced: r.forced, ports: r.portsAfter, roots: r.roots.map((x: any) => ({ id: x.id, pid: x.pid, result: x.result })), sampler: r.samplerResult }, peaks: r.peaks, cases: reviewed })
+}
+const result = { state: 'READONLY-SEMANTIC-REVIEW-LIMITED-PASS', reviewedAt: new Date().toISOString(), sourceFreezeSha256: freeze.sha256, unchangedPins: 28, reviews, newGameExecution: false, rootMutation: false, limits: 'Five declared instrumented fixtures only. Q06/Q07 controller remains NEGATIVE. No trusted DOM/OS input, raster/golden, audio heard, full game, performance/8GB or SDK image acceptance. Space Q03-Q05 r1 was prepared only and never executed.' }
+await writeFile(resolve(import.meta.dirname, 'review.json'), JSON.stringify(result, null, 2), { flag: 'wx' })
+console.log(JSON.stringify(reviews.map(r => ({ run: r.run, controller: r.controllerStatePreserved, gameReview: r.gamePayloadReview, cases: r.cases.map((c: any) => ({ scenario: c.scenario, durationMs: c.durationMs, frames: c.frames, clears: c.stampClears })) }))))

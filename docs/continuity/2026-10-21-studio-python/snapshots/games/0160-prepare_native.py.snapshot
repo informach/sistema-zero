@@ -1,0 +1,133 @@
+"""Derive cache-only native packet from reviewed existing runner and six observers."""
+import ast
+import hashlib
+import io
+import json
+from pathlib import Path
+import zipfile
+
+here = Path(__file__).resolve().parent
+games = here.parents[3]
+root = Path('C:/Users/tocha/projects/sistema-zero-python')
+sha = lambda data: hashlib.sha256(data).hexdigest()
+artifact = games / '.cache/studio-python-l0/pacman-canonical11-9557-r1'
+receipt_bytes = (artifact / 'receipt.json').read_bytes()
+receipt = json.loads(receipt_bytes)
+assert sha(receipt_bytes) == '4aff52e28081d67691c5fead0b8da1f59a0a87e83eb5d91a3c78b09a29debc09'
+assert receipt['entrySha256'] == '3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76'
+assert receipt['variant'] == 'portable-audio-1.1.0'
+archive = (artifact / 'source.zip').read_bytes()
+assert sha(archive) == receipt['zip']['sha256'] == '8de6df6a881a579a6aed4918318cfb92ff249d99b361f924073cbfc9389f4ce9'
+with zipfile.ZipFile(io.BytesIO(archive)) as z:
+    assert len(z.infolist()) == len(set(z.namelist())) == len(receipt['inventory']) == 32
+    for item in receipt['inventory']:
+        data = z.read(item['path'])
+        assert len(data) == item['bytes'] and sha(data) == item['sha256']
+        if item['path'].endswith('.py'):
+            compile(data, item['path'], 'exec')
+    metadata = json.loads(z.read('.sistemazero/export-manifest.json'))
+
+source_dir = games / 'experiments/studio-python-runtime/qualification'
+runner = (source_dir / 'pacman_native.py').read_text()
+def replace_once(old, new):
+    global runner
+    assert runner.count(old) == 1, old[:80]
+    runner = runner.replace(old, new)
+replace_once("PREPARATION_SHA = '7fe7d1743365f3e201eee7c3c6e3bacc00c9642c0b17d100cb8251aa916ca85d'", "RECEIPT_SHA = '" + sha(receipt_bytes) + "'")
+runner = runner.replace('PREPARATION_SHA', 'RECEIPT_SHA').replace("'preparation.json'", "'receipt.json'").replace('preparationSha256=', 'sourceReceiptSha256=')
+replace_once("baseline = next(case for case in json.loads(raw)['cases'] if case['scenario'] == 'baseline')", 'baseline = json.loads(raw)')
+replace_once("(artifact / 'baseline/source.zip')", "(artifact / 'source.zip')")
+replace_once("baseline['zipSha256']", "baseline['zip']['sha256']")
+replace_once("ZIP_SHA = 'd67e8f1765ae4e6af46a0d5ef6da163d2da36e3fc8a85c62148fc764608ff98c'", "ZIP_SHA = '" + sha(archive) + "'")
+replace_once("MAIN_SHA = '8bd915293088b0fa85a2313e046711d861f43c481aa691d88ba07402485819d8'", "MAIN_SHA = '" + receipt['entrySha256'] + "'")
+replace_once("choices=('geometry', 'ai')", "choices=('observe', 'pellet', 'power', 'death', 'victory-near-end', 'defeat-near-end')")
+runner = runner.replace('pacman_functional_observer.py', 'pacman_observer.py').replace('"scenario": "geometry"', '"scenario": "observe"')
+runner = runner.replace('12000)  # Additional QA deadline', '30000)  # Additional QA deadline')
+replace_once('    roots = []', "    roots = []\n    lifecycle = dict(closedByQA=False, expectedTickObserved=False)\n    report['lifecycle'] = lifecycle")
+replace_once('            class ObservedOutput:', """            def close_by_qa():
+                lifecycle['closedByQA'] = True
+                screen.bye()
+
+            wanted_tick = 250 if args.scenario in ('observe', 'power') else 3
+            endings = args.scenario in ('victory-near-end', 'defeat-near-end')
+
+            class ObservedOutput:""")
+replace_once("                            if event['event'] == 'functional-complete':\n                                report['canvasItemsBeforeQABye'] = len(screen.getcanvas().find_all())", """                            if event['event'] == 'after' and event['tick'] == wanted_tick:
+                                lifecycle['expectedTickObserved'] = True
+                                report['canvasItemsAtWitness'] = len(screen.getcanvas().find_all())
+                                assert root.state() == 'withdrawn'
+                                if args.scenario == 'observe':
+                                    native = screen.getcanvas()._canvas
+                                    report['bindings'] = {key: bool(native.bind('<KeyPress-' + key + '>')) for key in ('Left', 'Up', 'Right', 'Down')}
+                                    assert all(report['bindings'].values())
+                                if not endings:
+                                    screen.ontimer(close_by_qa, 0)""")
+start = runner.index('            expected = 32 if')
+end = runner.index('            assert desktop._device is not None', start)
+classic = (root / '.cache/studio-python-l0/pacman-native-r1/run-native.py').read_text()
+rules = classic[classic.index('        snapshots = '):classic.index('        require(desktop._failure')]
+rules = '\n'.join('    ' + line if line else '' for line in rules.split('\n'))
+runner = runner[:start] + """            assert lifecycle['expectedTickObserved'] and not report['cooperativeDeadline'] and not report['errors']
+            assert report['rootMapEvents'] == 0 and report['rootDestroyEvents'] == 1
+            assert report['canvasItemsAtWitness'] > 100
+            assert lifecycle['closedByQA'] is (not endings)
+            events, scenario = report['events'], args.scenario
+""" + rules + """            bye_events = [e for e in events if e['event'] in ('timer-scheduled', 'timer-fired') and e['value'].get('callback') == 'bye' and e['value'].get('delay') == 3000]
+            if endings:
+                scheduled = [e for e in bye_events if e['event'] == 'timer-scheduled']
+                fired = [e for e in bye_events if e['event'] == 'timer-fired']
+                assert len(scheduled) == len(fired) == 1
+                assert fired[0]['value']['scheduledClock'] == scheduled[0]['value']['scheduledClock']
+                assert fired[0]['value']['elapsedSeconds'] >= 3
+                assert len([e for e in events if e['event'] == 'natural-close']) == 1
+            else:
+                assert not bye_events
+            report['completionMode'] = 'authored-natural-close' if endings else 'declared-QA-bounded-close'
+""" + runner[end:]
+replace_once("report.update(state='native-functional-passed', boundedFunctionalCompletion=True, passedCases=passed)", "report.update(state='native-functional-passed', boundedFunctionalCompletion=True, completedCriteria=['authored-rules', 'observed-closure', 'native-canvas', 'native-audio-device'])")
+runner = runner.replace("def digest(data):", "def require(value, message):\n    assert value, message\n\n\ndef digest(data):")
+runner = runner.replace('Declared geometry/AI placements and QA bye; not a full played game', 'Declared classic six scenarios; authored bye for endings, QA bounded close otherwise; not a full played game')
+(here / 'pacman_native.py').write_text(runner, encoding='utf-8', newline='\n')
+ast.parse(runner)
+observer = (source_dir / 'pacman_observer.py').read_bytes()
+(here / 'pacman_observer.py').write_bytes(observer)
+
+supervisor = (source_dir / 'run_pacman_native.mjs').read_text()
+supervisor = supervisor.replace('[python, artifact, output, scenario, windowEnd]', '[python, artifact, output, scenario, windowEnd, packetSha]')
+supervisor = supervisor.replace("['geometry', 'ai']", "['observe', 'pellet', 'power', 'death', 'victory-near-end', 'defeat-near-end']")
+supervisor = supervisor.replace('const childBudgetMs = 20_000', 'const childBudgetMs = 40_000').replace('pacman_functional_observer.py', 'pacman_observer.py')
+supervisor = supervisor.replace('      assert.equal(result.passedCases.length, scenario === \'geometry\' ? 32 : 10)', "      assert.equal(result.completedCriteria.length, 4)\n      assert.equal(result.completionMode, scenario.endsWith('near-end') ? 'authored-natural-close' : 'declared-QA-bounded-close')")
+needle = "// Recheck immediately before the only process creation; no resources are reserved while waiting."
+precheck = """const packetBytes = readFileSync(resolve(here, 'packet.json'))
+assert(/^[a-f0-9]{64}$/.test(packetSha ?? '') && sha(packetBytes) === packetSha, 'Explicit reviewed packet SHA required')
+const packet = JSON.parse(packetBytes)
+assert.equal(resolve(python), resolve(packet.python))
+assert.equal(resolve(artifact), resolve(packet.artifact))
+assert.equal(resolve(output), resolve(packet.outputs[scenario]), 'Only reviewed exclusive output permitted')
+for (const file of [...packet.files, ...packet.nativeEnvironmentPins, ...packet.installedAudioMatches, ...packet.artifactPins, ...packet.frozenSourcePins]) {
+  assert.equal(sha(readFileSync(file.path)), file.sha256, file.path)
+}
+"""
+assert supervisor.count(needle) == 1
+supervisor = supervisor.replace(needle, precheck + '\n' + needle)
+(here / 'run_pacman_native.mjs').write_text(supervisor, encoding='utf-8', newline='\n')
+
+old_packet = json.loads((here / '../native12-functional-package-r1/packet.json').read_text())
+env_key = next(k for k in old_packet if 'environment' in k.lower())
+environment = old_packet[env_key]
+assert len(environment) == 14
+matches = old_packet['installedAudioMatches']
+assert len(matches) == 7
+for item in environment + matches:
+    assert sha(Path(item['path']).read_bytes()) == item['sha256']
+    if 'archivePath' in item:
+        with zipfile.ZipFile(io.BytesIO(archive)) as z:
+            assert sha(z.read(item['archivePath'])) == item['sha256']
+scenarios = ['victory-near-end', 'defeat-near-end', 'pellet', 'power', 'death', 'observe']
+outputs = {case: str(games / ('.cache/studio-python-l0/pacman11-native-' + case + '-r1')) for case in scenarios}
+assert all(not Path(p).exists() for p in outputs.values())
+file_pin = lambda path: dict(path=str(path), sha256=sha(path.read_bytes()))
+frozen = [games / 'experiments/studio-python-runtime/gameVariants.ts', games / 'experiments/studio-python-l0/corpus/pacman.json', here / '../current-host-browser-package-r8/source-freeze.json']
+packet = dict(state='PROPOSED-NATIVE11-SIX-CASES-NOT-EXECUTED', artifact=str(artifact), python=old_packet['python'], node=old_packet['node'], nodeSha256='ba93f9a70bd86fce3ebbb39ec758501458453467aa92a34a0a3602d1e3fc2b9c', gamesCommit='9557e17bcafbe529d0079c8d941485b7f67061c4', producerRootCommit=receipt['producer']['rootHead'], entrySha256=receipt['entrySha256'], files=[file_pin(here / name) for name in ('pacman_native.py', 'pacman_observer.py', 'run_pacman_native.mjs')], nativeEnvironmentPins=environment, installedAudioMatches=matches, artifactPins=[file_pin(artifact / name) for name in ('source.zip', 'receipt.json', 'inventory.json')], frozenSourcePins=[file_pin(p) for p in frozen], scenarios=scenarios, outputs=outputs, cooperativeMs=30000, externalMs=40000, windowSecondsProposed=240, targetSecondsEstimate=60, stopFirstNegative=True, noRetries=True, noNativeOrGameExecution=True, cleanup='Exact owned Node/Python handles only; Tk Destroy1/audio shutdown/temp removed/export tree checked. External signal never counts as graceful completion. Preserve all output/logs and diagnose before a new attempt.')
+(here / 'packet.json').write_text(json.dumps(packet, indent=2) + '\n', encoding='utf-8', newline='\n')
+print(json.dumps(dict(state=packet['state'], packetSha256=sha((here / 'packet.json').read_bytes()), scripts=packet['files'], nativeEnvironmentPins=14, installedAudioMatches=7, inventory=32, noNativeExecution=True)))

@@ -1,0 +1,106 @@
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { readFile, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { decodeGameObservations } from '../../../../experiments/studio-python-runtime/qualification/game_observations'
+
+// Read completed artifacts only. Binary screenshot attachments are not JSON.
+const base = 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/games-pacman-core-r1'
+const sha = (b: string | Uint8Array) => createHash('sha256').update(b).digest('hex')
+const load = async (p: string) => { const b = await readFile(p); return { value: JSON.parse(b.toString()), sha256: sha(b) } }
+const receipt = await load(resolve(base, 'evidence/receipt.json'))
+const report = await load(resolve(base, 'evidence/browser/report.json'))
+const admission = await load(resolve(base, 'evidence/browser/host-admission.json'))
+const authority = await load(resolve(base, 'evidence/authority.json'))
+const plan = await load(resolve(base, 'plan.json'))
+assert.equal(receipt.sha256, '258fbf5c61a1d8f5c088c03057dfa4e8e03294d4938b670e5978c52b329bca42')
+assert.equal(report.sha256, 'b47dab60347210a5633aed1efe92595085c2a2ab4708518b8a56a1d100e51f53')
+const r = receipt.value
+assert.equal(r.state, 'PASS-PENDING-REVIEW'); assert.equal(r.stopped, null); assert.deepEqual(r.errors, [])
+for (const k of ['stable', 'hostNormal', 'observedReleased']) assert.equal(r[k], true)
+for (const k of ['forced', 'cleanupUnknown']) assert.equal(r[k], false)
+assert(r.portsAfter.length === 2 && r.portsAfter.every((p: any) => p.free))
+for (const child of [...r.roots, { result: r.samplerResult }]) {
+  assert.equal(child.result.code, 0); assert.equal(child.result.signal, null); assert.equal(child.result.logsDrained, true)
+}
+assert.equal(r.elapsedMs, Date.parse(r.endedAt) - Date.parse(r.startedAt))
+assert(r.elapsedMs <= plan.value.policy.totalMs)
+assert(report.value.stats.duration <= plan.value.policy.suiteMs)
+assert(Date.parse(r.endedAt) <= Date.parse(authority.value.windowEnd))
+assert.equal(admission.value.authoritySha256, authority.sha256)
+const freeze = await load(plan.value.sourceFreeze)
+assert.equal(freeze.sha256, '07e9afafaf381aa65077b710654c21c0f51bee2909e8d1c3f5fc7a34abeca93d')
+assert.equal(admission.value.freezeSha256, freeze.sha256)
+for (const file of freeze.value.files) assert.equal(sha(await readFile(file.path)), file.sha256)
+assert.equal(admission.value.distribution.hash, 'a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a')
+assert.equal(authority.value.releaseManifestSha256, '0123ab8fd02e3aff2d4383fb8e8f93304c337d4018ad1263c21e8d1eafd0fb0e')
+assert(r.peaks.minimumObservedFreeBytes >= plan.value.policy.floorFreeMiB * 1024 ** 2)
+assert.equal(r.peaks.privateBytesPeak, null)
+const stats = report.value.stats
+assert.deepEqual([stats.expected, stats.unexpected, stats.flaky, stats.skipped], [3, 0, 0, 0])
+assert.equal(report.value.errors?.length ?? 0, 0)
+const cases: any[] = []
+function visit(s: any) {
+  for (const spec of s.specs ?? []) for (const test of spec.tests ?? []) {
+    assert.equal(test.status, 'expected'); assert.equal(test.projectName, 'chrome'); assert.equal(test.results.length, 1)
+    const result = test.results[0]; assert.equal(result.status, 'passed'); assert.equal(result.errors?.length ?? 0, 0)
+    const attachments = Object.fromEntries(result.attachments.filter((a: any) => a.contentType === 'application/json').map((a: any) => [a.name, JSON.parse(Buffer.from(a.body, 'base64').toString())]))
+    cases.push({ title: spec.title, durationMs: result.duration, attachments })
+  }
+  for (const child of s.suites ?? []) visit(child)
+}
+visit(report.value)
+assert.deepEqual(cases.map(c => c.title), plan.value.expectedTitles)
+const observer = await readFile('experiments/studio-python-runtime/qualification/pacman_observer.py', 'utf8')
+const reviews = []
+for (const [index, scenario] of ['observe', 'pellet', 'power'].entries()) {
+  const item = cases[index], identity = item.attachments['game-source-identity'], state = item.attachments['game-observations']
+  assert.equal(item.title, `portable Pac-Man instrumented ${scenario} preserves authored rules`)
+  assert.equal(identity.scenario.scenario, scenario)
+  assert.equal(identity.scenario.observerSha256, sha(observer.replace('CONFIG = {"scenario": "observe", "seed": 2026}', `CONFIG = ${JSON.stringify({ scenario, seed: 2026 })}`)))
+  assert.equal(identity.runtime.manifestSha256, authority.value.releaseManifestSha256)
+  assert.equal(identity.distribution.hash, admission.value.distribution.hash)
+  assert.equal(identity.variant.portableSha256, '8bd915293088b0fa85a2313e046711d861f43c481aa691d88ba07402485819d8')
+  assert.equal(identity.corpus.length, 19)
+  assert.equal(state.status, 'running') // Snapshot precedes explicit probe disposal, not natural completion.
+  assert(state.events.length < 2048)
+  assert(state.events.every((e: any, i: number) => e.sequence > 0 && (!i || e.sequence === state.events[i - 1].sequence + 1)))
+  const ce = state.events.filter((e: any) => e.type === 'console')
+  assert(ce.every((e: any) => e.omittedChars === 0 && e.omittedLines === 0))
+  const text = ce.map((e: any) => e.text).join(''); assert(text.endsWith('\n'))
+  const observations: any[] = decodeGameObservations(text, '__SZ_PACMAN_QA__')
+  assert(observations.every(e => e.scenario === scenario))
+  const one = (event: string, tick?: number) => { const a = observations.filter(e => e.event === event && (tick === undefined || e.tick === tick)); assert.equal(a.length, 1); return a[0] }
+  const before = one('before', 1), after = one('after', 1)
+  assert.equal(before.value.player.lives, 3); assert.equal(after.value.enemies.length, 7)
+  let details: any
+  if (scenario === 'observe') {
+    assert.equal(observations.filter(e => e.event === 'injection').length, 0)
+    const keys = observations.filter(e => e.event === 'key')
+    assert.deepEqual(keys.map(e => [e.value.key, e.value.heading, e.value.state]), [['Left', 180, 'move'], ['Up', 90, 'move'], ['Right', 0, 'move'], ['Down', 270, 'move']])
+    assert(keys.every(e => e.tick > 200 && e.clock >= 2.5))
+    details = { noStateInjection: true, canvasKeyEvents: keys, trustedFlagRecorded: false, scope: 'Playwright canvas.press actual browser delivery; no isTrusted capture or physical-device claim' }
+  } else if (scenario === 'pellet') {
+    const injection = one('injection')
+    assert.equal(injection.value.operation, 'player.goto')
+    assert.equal(after.value.player.score - before.value.player.score, 2)
+    assert.equal(after.value.pellets, before.value.pellets - 1)
+    details = { score: [before.value.player.score, after.value.player.score], pellets: [before.value.pellets, after.value.pellets], injection: injection.value.operation }
+  } else {
+    one('injection')
+    assert.equal(after.value.player.score - before.value.player.score, 50)
+    assert.equal(after.value.power, before.value.power - 1)
+    assert.equal(after.value.player.speed, before.value.player.speed + 3)
+    assert.equal(after.value.timersScheduled['3000'], 1)
+    const fired = one('timer-fired'), reset = one('after', 250)
+    assert.deepEqual([fired.value.delay, fired.value.callback], [3000, 'reset_speed'])
+    assert(fired.value.elapsedSeconds >= 3)
+    assert(reset.clock - after.clock >= 3)
+    assert.equal(reset.value.player.speed, before.value.player.speed)
+    details = { score: [before.value.player.score, after.value.player.score], power: [before.value.power, after.value.power], speed: [before.value.player.speed, after.value.player.speed, reset.value.player.speed], timer: fired, laterTick250Lives: reset.value.player.lives, scope: 'Later incidental lives/score changes preserved; no full-game claim' }
+  }
+  reviews.push({ scenario, durationMs: item.durationMs, snapshotStatus: state.status, details })
+}
+const result = { state: 'READONLY-PACMAN-CORE-LIMITED-PASS', at: new Date().toISOString(), receiptSha256: receipt.sha256, reportSha256: report.sha256, authoritySha256: authority.sha256, sourceFreezeSha256: freeze.sha256, unchangedPins: freeze.value.files.length, startedAt: r.startedAt, endedAt: r.endedAt, suiteMs: stats.duration, elapsedMs: r.elapsedMs, cleanup: { observedReleased: r.observedReleased, forced: r.forced, ports: r.portsAfter }, peaks: r.peaks, reviews, newGameExecution: false, rootMutation: false, limits: 'Three short scenarios, snapshots running before disposal. No natural game completion, physical device, raster/golden, audio heard, performance/8GB or SDK image acceptance.' }
+await writeFile(resolve(import.meta.dirname, 'review.json'), JSON.stringify(result, null, 2), { flag: 'wx' })
+console.log(JSON.stringify(reviews.map(x => ({ scenario: x.scenario, durationMs: x.durationMs, snapshotStatus: x.snapshotStatus }))))

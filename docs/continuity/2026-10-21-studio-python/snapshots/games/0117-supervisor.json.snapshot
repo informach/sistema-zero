@@ -1,0 +1,31 @@
+{
+  "state": "native-functional-passed",
+  "node": "24.22.0",
+  "python": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Scripts\\python.exe",
+  "argv": [
+    "-I",
+    "-B",
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\pacman_native.py",
+    "--artifact-dir",
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman-canonical11-9557-r1",
+    "--output",
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-defeat-paired-r1\\result",
+    "--scenario",
+    "defeat-near-end"
+  ],
+  "scenario": "defeat-near-end",
+  "preflightOnly": false,
+  "absoluteWindowEnd": "2026-10-21T04:24:15.000Z",
+  "childBudgetMs": 40000,
+  "runnerSha256": "4467095db76499c4e6f1d2a169283507b8f57a294b99f26556ca8adad60ca600",
+  "observerSourceSha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc",
+  "startedAt": "2026-10-21T04:23:16.445Z",
+  "pid": 26360,
+  "deadline": false,
+  "signalAttempted": false,
+  "exitCode": 0,
+  "exitSignal": null,
+  "spawnError": null,
+  "endedAt": "2026-10-21T04:23:20.067Z",
+  "nativeReceiptSha256": "71df7bed03744b94a250135002069d71d1e176fd71da7043feff08c4012fa937"
+}

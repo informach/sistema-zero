@@ -1,0 +1,47 @@
+import assert from 'node:assert/strict'
+import {createHash} from 'node:crypto'
+import {readFile,writeFile} from 'node:fs/promises'
+import {canonicalJson} from '../../../packages/core/src/creations/content-fingerprint'
+import {studioRuntimeSubject} from '../../../packages/core/src/studio/runtime-subject'
+import {createStudioProjectDocument} from '../../../packages/studio/src/core/projectFactory'
+import {createBlankProjectSnapshot} from '../../../packages/studio/src/core/blankProject'
+import {assertBlockCoherent} from '../../../packages/members/src/application/content-admin/content-admin.service'
+import {createStudioAuthoringPolicy} from '../../../packages/members/src/domain/studio/authoring-policy'
+import {createStudioRuntimePolicy} from '../../../packages/members/src/domain/studio/runtime-policy'
+import {createStudioRuntimeHosts} from '../../../packages/members/src/domain/studio/runtime-hosts'
+const sha=(bytes:Uint8Array|string)=>createHash('sha256').update(bytes).digest('hex')
+const baseline=JSON.parse(await readFile(new URL('./cloudflare-staging-worker-public-baseline-r1.json',import.meta.url),'utf8'))
+const planBytes=await readFile(new URL('../python-operational-staging-pilot-plan-r1/canonical-plan.json',import.meta.url))
+assert.equal(sha(planBytes),'0b15194d63ae166e3d37bf8d9ee3eedbdf641964171c820e3c5fd5db22e3c4a0')
+const plan=JSON.parse(planBytes.toString('utf8'))
+assert.deepEqual(baseline.configuration,plan.input.baseline.worker)
+assert.deepEqual(plan.configuration.worker.deployments.slice(0,baseline.configuration.deployments.length),baseline.configuration.deployments)
+assert.equal(plan.configuration.worker.deployments.length,baseline.configuration.deployments.length+1)
+assert.deepEqual(plan.configuration.worker.parentOrigins,baseline.configuration.parentOrigins)
+assert.equal(sha(canonicalJson(plan.configuration.worker)),'2dc37fc221789ba23780d13754743470bbe687a703ac115ed14a2e12d9e79df4')
+const policy=await createStudioAuthoringPolicy(plan.configuration.members)
+const runtime=await createStudioRuntimePolicy(policy.describe(),createStudioRuntimeHosts(plan.configuration.members.catalog,plan.configuration.hosts))
+const results:unknown[]=[]
+const legacyPro=JSON.parse(await readFile(new URL('../pro-legacy-staging-ui-owned-r6/legacy.szproject.json',import.meta.url),'utf8'))
+for(const project of [createBlankProjectSnapshot('qa-js-policy-classic','QA JS padrão'),legacyPro]){
+ const before=JSON.stringify(project)
+ assert.equal(project.formatVersion,2)
+ assertBlockCoherent({kind:'studio',initialProject:project},policy)
+ assert.equal(JSON.stringify(project),before)
+ results.push({language:'javascript',kind:project.kind??'classic',formatVersion:2,sourcePreserved:true,authoringApproved:true})
+}
+const release=plan.deployment.release
+for(const kind of ['classic','pro'] as const){
+ const project=await createStudioProjectDocument({id:`qa-policy-python-${kind}`,name:'QA Python',programmingLanguage:'python',kind,now:1},{catalog:plan.configuration.members.catalog,runtime:{profileId:release.profileId,releaseId:release.releaseId,manifestSha256:release.manifestSha256},releaseStatus:'active'})
+ const before=JSON.stringify(project)
+ policy.assert(project,{pythonLevel:3})
+ const decision=runtime.authorize({project:studioRuntimeSubject(project),operation:'execute',curation:{pythonLevel:3},grantedCapabilities:['edit','execute','export-source','python-repl']})
+ assert(decision.capabilities.includes('execute'))
+ assert(!decision.capabilities.includes('publish'));assert(!decision.capabilities.includes('assist'))
+ assert.equal(new URL(decision.frame.url).origin,'https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev')
+ assert.equal(JSON.stringify(project),before)
+ results.push({language:'python',kind,formatVersion:3,sourcePreserved:true,authoringApproved:true,executeAuthorized:true,capabilities:decision.capabilities})
+}
+const receipt={kind:'actual-pilot-catalog-offline-policy-check',completedAt:new Date().toISOString(),state:'PASS-policy-only',results,oldDeploymentPreserved:true,parentOriginsPreserved:true,configurationSha256:plan.workerCatalog.sha256,mutations:0,networkCalls:0,interpreterExecuted:false,applicationActivation:false}
+await writeFile(new URL('./candidate-policy-receipt.json',import.meta.url),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'})
+console.log(JSON.stringify(receipt))

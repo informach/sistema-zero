@@ -1,0 +1,510 @@
+{
+  "planSha256": "f43d24df752e7fb37f290ec42e9dbc1d867a389c944d9964f943eba3ff273966",
+  "reference": {
+    "name": "Local\\SistemaZero-QA-a5c80029cccc42868c157725884eea8d",
+    "root": {
+      "ownershipKind": "windows-job",
+      "processId": 35408,
+      "creationFileTime": "134370415179969175",
+      "createdAt": "2026-10-21T07:31:57.9969175Z",
+      "executable": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\node-v24.22.0\\node-v24.22.0-win-x64\\node.exe",
+      "binarySha256": "ba93f9a70bd86fce3ebbb39ec758501458453467aa92a34a0a3602d1e3fc2b9c",
+      "argv": [
+        "--max-old-space-size=768",
+        "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-native-browser-worker.mjs",
+        "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-functional-profile-execution-r1\\native-owner\\job.json",
+        "3ccf5322244343d3b1aa4a2fc3561fa3"
+      ],
+      "argvSha256": "6a9821a8c6d4ecf680fca3f0b093a6013c8965782ecab5476e0e7790a4720505",
+      "cliSha256": "6a9821a8c6d4ecf680fca3f0b093a6013c8965782ecab5476e0e7790a4720505",
+      "jobName": "Local\\SistemaZero-QA-a5c80029cccc42868c157725884eea8d"
+    }
+  },
+  "functionalPassed": false,
+  "normalCleanup": true,
+  "diagnostics": {
+    "stdoutClosed": true,
+    "characters": 3469,
+    "unknown": false,
+    "overflow": false,
+    "stderrClosed": true,
+    "rawPersisted": false,
+    "counts": {
+      "browser-process-exit": 1,
+      "browser-process-created": 1,
+      "graceful-close-start": 1,
+      "other": 6,
+      "graceful-close-end": 1,
+      "launch-requested": 1
+    }
+  },
+  "known": [
+    {
+      "pid": 13928,
+      "creationFileTime": "134370415188028982"
+    },
+    {
+      "pid": 33048,
+      "creationFileTime": "134370415191242091"
+    },
+    {
+      "pid": 32400,
+      "creationFileTime": "134370415348793202"
+    },
+    {
+      "pid": 13236,
+      "creationFileTime": "134370415313751073"
+    },
+    {
+      "pid": 17004,
+      "creationFileTime": "134370415191343453"
+    },
+    {
+      "pid": 20852,
+      "creationFileTime": "134370415236747680"
+    },
+    {
+      "pid": 31908,
+      "creationFileTime": "134370415193038887"
+    },
+    {
+      "pid": 20204,
+      "creationFileTime": "134370415191793670"
+    },
+    {
+      "pid": 40772,
+      "creationFileTime": "134370415237207517"
+    },
+    {
+      "pid": 30444,
+      "creationFileTime": "134370415193206015"
+    },
+    {
+      "pid": 3280,
+      "creationFileTime": "134370415237207563"
+    },
+    {
+      "pid": 29136,
+      "creationFileTime": "134370415271848328"
+    },
+    {
+      "pid": 24748,
+      "creationFileTime": "134370415186763773"
+    },
+    {
+      "pid": 38336,
+      "creationFileTime": "134370415198539509"
+    },
+    {
+      "pid": 35408,
+      "creationFileTime": "134370415179969175"
+    },
+    {
+      "pid": 16716,
+      "creationFileTime": "134370415366854934"
+    },
+    {
+      "pid": 40368,
+      "creationFileTime": "134370415336886786"
+    },
+    {
+      "pid": 3256,
+      "creationFileTime": "134370415345149392"
+    },
+    {
+      "pid": 20596,
+      "creationFileTime": "134370415345684212"
+    }
+  ],
+  "primary": {
+    "type": "owner-failed",
+    "operation": "closed-owner-error",
+    "phase": "scenario",
+    "code": "browser-memory-budget",
+    "nativeCode": 0
+  },
+  "cleanupFailure": null,
+  "operatorForceUsed": false,
+  "attemptId": "bc320d6f-6333-4d9b-9a60-d8c171d7c082",
+  "state": "NEG",
+  "functionalOnly": true,
+  "playwrightInternalFallbackAttested": false,
+  "cleanup": {
+    "cleanupConfirmed": true,
+    "ownershipComplete": true,
+    "rootExitedConfirmed": true,
+    "knownExitedConfirmed": true,
+    "jobState": {
+      "Total": 21,
+      "Active": 0,
+      "Terminated": 0,
+      "Flags": 0,
+      "Ui": 0,
+      "Pids": [],
+      "BufferGrowths": 0
+    },
+    "jobHandleClosed": true,
+    "failureName": null
+  },
+  "admissionMiB": 2560,
+  "libraryForceObserved": false,
+  "memorySnapshots": {
+    "preclaim": {
+      "observedAt": "2026-10-21T07:31:58.0947314+00:00",
+      "elapsedMs": 486.6738,
+      "sampleDurationMs": 61.90949999999998,
+      "phase": "preclaim",
+      "freeMiB": 3297.671875,
+      "workingSetMiB": 44.91796875,
+      "privateCommitMiB": 19.52734375,
+      "rootWorkingSetMiB": 44.91796875,
+      "rootPrivateCommitMiB": 19.52734375,
+      "descendantWorkingSetMiB": 0.0,
+      "descendantPrivateCommitMiB": 0.0,
+      "ownershipComplete": true,
+      "rows": [
+        {
+          "creationFileTime": "134370415179969175",
+          "kind": "root-node",
+          "workingSetBytes": 47099904,
+          "privateCommitBytes": 20475904,
+          "processId": 35408
+        }
+      ],
+      "rowsTruncated": false
+    },
+    "lastPositive": {
+      "observedAt": "2026-10-21T07:32:20.6193719+00:00",
+      "elapsedMs": 23010.6436,
+      "sampleDurationMs": 12.671399999999267,
+      "phase": "scenario",
+      "freeMiB": 1766.96875,
+      "workingSetMiB": 2018.65234375,
+      "privateCommitMiB": 1774.50390625,
+      "rootWorkingSetMiB": 115.9609375,
+      "rootPrivateCommitMiB": 123.55859375,
+      "descendantWorkingSetMiB": 1902.69140625,
+      "descendantPrivateCommitMiB": 1650.9453125,
+      "ownershipComplete": true,
+      "rows": [
+        {
+          "creationFileTime": "134370415188028982",
+          "kind": "owned-descendant",
+          "workingSetBytes": 10043392,
+          "privateCommitBytes": 2572288,
+          "processId": 13928
+        },
+        {
+          "creationFileTime": "134370415191242091",
+          "kind": "owned-descendant",
+          "workingSetBytes": 103989248,
+          "privateCommitBytes": 136011776,
+          "processId": 33048
+        },
+        {
+          "creationFileTime": "134370415348793202",
+          "kind": "owned-descendant",
+          "workingSetBytes": 30498816,
+          "privateCommitBytes": 14790656,
+          "processId": 32400
+        },
+        {
+          "creationFileTime": "134370415313751073",
+          "kind": "owned-descendant",
+          "workingSetBytes": 110542848,
+          "privateCommitBytes": 74346496,
+          "processId": 13236
+        },
+        {
+          "creationFileTime": "134370415191343453",
+          "kind": "owned-descendant",
+          "workingSetBytes": 69853184,
+          "privateCommitBytes": 42696704,
+          "processId": 17004
+        },
+        {
+          "creationFileTime": "134370415236747680",
+          "kind": "owned-descendant",
+          "workingSetBytes": 86982656,
+          "privateCommitBytes": 45596672,
+          "processId": 20852
+        },
+        {
+          "creationFileTime": "134370415191793670",
+          "kind": "owned-descendant",
+          "workingSetBytes": 18616320,
+          "privateCommitBytes": 8015872,
+          "processId": 20204
+        },
+        {
+          "creationFileTime": "134370415271848328",
+          "kind": "owned-descendant",
+          "workingSetBytes": 318197760,
+          "privateCommitBytes": 254853120,
+          "processId": 29136
+        },
+        {
+          "creationFileTime": "134370415186763773",
+          "kind": "owned-descendant",
+          "workingSetBytes": 159084544,
+          "privateCommitBytes": 57372672,
+          "processId": 24748
+        },
+        {
+          "creationFileTime": "134370415179969175",
+          "kind": "root-node",
+          "workingSetBytes": 121593856,
+          "privateCommitBytes": 129560576,
+          "processId": 35408
+        },
+        {
+          "creationFileTime": "134370415366854934",
+          "kind": "owned-descendant",
+          "workingSetBytes": 20594688,
+          "privateCommitBytes": 8519680,
+          "processId": 16716
+        },
+        {
+          "creationFileTime": "134370415345149392",
+          "kind": "owned-descendant",
+          "workingSetBytes": 1021386752,
+          "privateCommitBytes": 1063026688,
+          "processId": 3256
+        },
+        {
+          "creationFileTime": "134370415345684212",
+          "kind": "owned-descendant",
+          "workingSetBytes": 45326336,
+          "privateCommitBytes": 23339008,
+          "processId": 20596
+        }
+      ],
+      "rowsTruncated": false
+    },
+    "firstNegative": {
+      "observedAt": "2026-10-21T07:32:21.1399066+00:00",
+      "elapsedMs": 23531.1766,
+      "sampleDurationMs": 14.822800000001735,
+      "phase": "scenario",
+      "freeMiB": 1735.7890625,
+      "workingSetMiB": 2062.03125,
+      "privateCommitMiB": 1818.90625,
+      "rootWorkingSetMiB": 115.98828125,
+      "rootPrivateCommitMiB": 123.5625,
+      "descendantWorkingSetMiB": 1946.04296875,
+      "descendantPrivateCommitMiB": 1695.34375,
+      "ownershipComplete": true,
+      "rows": [
+        {
+          "creationFileTime": "134370415188028982",
+          "kind": "owned-descendant",
+          "workingSetBytes": 10043392,
+          "privateCommitBytes": 2572288,
+          "processId": 13928
+        },
+        {
+          "creationFileTime": "134370415191242091",
+          "kind": "owned-descendant",
+          "workingSetBytes": 102277120,
+          "privateCommitBytes": 131223552,
+          "processId": 33048
+        },
+        {
+          "creationFileTime": "134370415348793202",
+          "kind": "owned-descendant",
+          "workingSetBytes": 30498816,
+          "privateCommitBytes": 14790656,
+          "processId": 32400
+        },
+        {
+          "creationFileTime": "134370415313751073",
+          "kind": "owned-descendant",
+          "workingSetBytes": 110555136,
+          "privateCommitBytes": 74350592,
+          "processId": 13236
+        },
+        {
+          "creationFileTime": "134370415191343453",
+          "kind": "owned-descendant",
+          "workingSetBytes": 69853184,
+          "privateCommitBytes": 42696704,
+          "processId": 17004
+        },
+        {
+          "creationFileTime": "134370415236747680",
+          "kind": "owned-descendant",
+          "workingSetBytes": 86982656,
+          "privateCommitBytes": 45596672,
+          "processId": 20852
+        },
+        {
+          "creationFileTime": "134370415191793670",
+          "kind": "owned-descendant",
+          "workingSetBytes": 18616320,
+          "privateCommitBytes": 8015872,
+          "processId": 20204
+        },
+        {
+          "creationFileTime": "134370415271848328",
+          "kind": "owned-descendant",
+          "workingSetBytes": 318353408,
+          "privateCommitBytes": 254984192,
+          "processId": 29136
+        },
+        {
+          "creationFileTime": "134370415186763773",
+          "kind": "owned-descendant",
+          "workingSetBytes": 159096832,
+          "privateCommitBytes": 57384960,
+          "processId": 24748
+        },
+        {
+          "creationFileTime": "134370415179969175",
+          "kind": "root-node",
+          "workingSetBytes": 121622528,
+          "privateCommitBytes": 129564672,
+          "processId": 35408
+        },
+        {
+          "creationFileTime": "134370415366854934",
+          "kind": "owned-descendant",
+          "workingSetBytes": 20594688,
+          "privateCommitBytes": 8519680,
+          "processId": 16716
+        },
+        {
+          "creationFileTime": "134370415345149392",
+          "kind": "owned-descendant",
+          "workingSetBytes": 1068376064,
+          "privateCommitBytes": 1114222592,
+          "processId": 3256
+        },
+        {
+          "creationFileTime": "134370415345684212",
+          "kind": "owned-descendant",
+          "workingSetBytes": 45326336,
+          "privateCommitBytes": 23339008,
+          "processId": 20596
+        }
+      ],
+      "rowsTruncated": false
+    },
+    "peak": {
+      "observedAt": "2026-10-21T07:32:21.1399066+00:00",
+      "elapsedMs": 23531.1766,
+      "sampleDurationMs": 14.822800000001735,
+      "phase": "scenario",
+      "freeMiB": 1735.7890625,
+      "workingSetMiB": 2062.03125,
+      "privateCommitMiB": 1818.90625,
+      "rootWorkingSetMiB": 115.98828125,
+      "rootPrivateCommitMiB": 123.5625,
+      "descendantWorkingSetMiB": 1946.04296875,
+      "descendantPrivateCommitMiB": 1695.34375,
+      "ownershipComplete": true,
+      "rows": [
+        {
+          "creationFileTime": "134370415188028982",
+          "kind": "owned-descendant",
+          "workingSetBytes": 10043392,
+          "privateCommitBytes": 2572288,
+          "processId": 13928
+        },
+        {
+          "creationFileTime": "134370415191242091",
+          "kind": "owned-descendant",
+          "workingSetBytes": 102277120,
+          "privateCommitBytes": 131223552,
+          "processId": 33048
+        },
+        {
+          "creationFileTime": "134370415348793202",
+          "kind": "owned-descendant",
+          "workingSetBytes": 30498816,
+          "privateCommitBytes": 14790656,
+          "processId": 32400
+        },
+        {
+          "creationFileTime": "134370415313751073",
+          "kind": "owned-descendant",
+          "workingSetBytes": 110555136,
+          "privateCommitBytes": 74350592,
+          "processId": 13236
+        },
+        {
+          "creationFileTime": "134370415191343453",
+          "kind": "owned-descendant",
+          "workingSetBytes": 69853184,
+          "privateCommitBytes": 42696704,
+          "processId": 17004
+        },
+        {
+          "creationFileTime": "134370415236747680",
+          "kind": "owned-descendant",
+          "workingSetBytes": 86982656,
+          "privateCommitBytes": 45596672,
+          "processId": 20852
+        },
+        {
+          "creationFileTime": "134370415191793670",
+          "kind": "owned-descendant",
+          "workingSetBytes": 18616320,
+          "privateCommitBytes": 8015872,
+          "processId": 20204
+        },
+        {
+          "creationFileTime": "134370415271848328",
+          "kind": "owned-descendant",
+          "workingSetBytes": 318353408,
+          "privateCommitBytes": 254984192,
+          "processId": 29136
+        },
+        {
+          "creationFileTime": "134370415186763773",
+          "kind": "owned-descendant",
+          "workingSetBytes": 159096832,
+          "privateCommitBytes": 57384960,
+          "processId": 24748
+        },
+        {
+          "creationFileTime": "134370415179969175",
+          "kind": "root-node",
+          "workingSetBytes": 121622528,
+          "privateCommitBytes": 129564672,
+          "processId": 35408
+        },
+        {
+          "creationFileTime": "134370415366854934",
+          "kind": "owned-descendant",
+          "workingSetBytes": 20594688,
+          "privateCommitBytes": 8519680,
+          "processId": 16716
+        },
+        {
+          "creationFileTime": "134370415345149392",
+          "kind": "owned-descendant",
+          "workingSetBytes": 1068376064,
+          "privateCommitBytes": 1114222592,
+          "processId": 3256
+        },
+        {
+          "creationFileTime": "134370415345684212",
+          "kind": "owned-descendant",
+          "workingSetBytes": 45326336,
+          "privateCommitBytes": 23339008,
+          "processId": 20596
+        }
+      ],
+      "rowsTruncated": false
+    }
+  },
+  "performanceQualified": false,
+  "completedAt": "2026-10-21T07:32:38.3762193+00:00",
+  "resourceReleaseConfirmed": true,
+  "jobBudgetMiB": 2048,
+  "version": 1,
+  "resourceProfile": "hosted-functional-2048",
+  "maxSampledWorkingSetMiB": 2062.03125,
+  "elapsedMs": 40768,
+  "startedAt": "2026-10-21T07:31:57.6087594+00:00"
+}

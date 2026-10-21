@@ -1,0 +1,49 @@
+{
+  "state": "offline-public-inputs-only",
+  "canonicalRawSha256": "0b15194d63ae166e3d37bf8d9ee3eedbdf641964171c820e3c5fd5db22e3c4a0",
+  "canonicalPlanSha256": "1bd48fb4b8dca1f50da4dd2090f548bbb838f13adbcdbfc0c1d6ddad02aab180",
+  "files": [
+    {
+      "path": "staging/members-authoring-policy.json",
+      "bytes": 16538,
+      "sha256": "7e28efba36b7968f7bb4521e76f55f11fd88cce977f59696c809911eeea4ad71"
+    },
+    {
+      "path": "staging/members-runtime-hosts.json",
+      "bytes": 239,
+      "sha256": "168d33cbc1ff4d26dbd658e150d52f4772f5b32e82c2aea1cb721ab11455affe"
+    },
+    {
+      "path": "staging/worker-bindings.json",
+      "bytes": 205,
+      "sha256": "82425f556af871412e95cb5b9bfcc47cecf80a53472aee8a8afb2dee162dbf85"
+    },
+    {
+      "path": "staging/frame-origins.json",
+      "bytes": 249,
+      "sha256": "57bfe722adcf8cfd195d628d2ab3adc3a50b08b07a907d66f370b37ffcef6c94"
+    }
+  ],
+  "distributionSha256": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a",
+  "release": {
+    "capabilities": [
+      "edit",
+      "export-source",
+      "execute",
+      "python-repl"
+    ],
+    "profileId": "python-browser",
+    "releaseId": "2026-10-20-audio-1"
+  },
+  "manifestSha256": "7026b09b04a1222cfbc594d5ab3ec9de8649eece71c613c823a2c33d8c43ce5f",
+  "configurationSha256": "2dc37fc221789ba23780d13754743470bbe687a703ac115ed14a2e12d9e79df4",
+  "workerConfigurationObjectAlreadyPromotedInStaging": true,
+  "pointerActivated": false,
+  "providerCalls": 0,
+  "productionInputGenerated": false,
+  "capabilityCompletionPending": [
+    "publish",
+    "assist"
+  ],
+  "historicalBaselineNotCAS": true
+}

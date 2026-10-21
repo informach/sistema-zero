@@ -1,0 +1,1164 @@
+{
+  "state": "native-functional-passed",
+  "scenario": "victory-near-end",
+  "python": "3.14.2 (tags/v3.14.2:df79316, Dec  5 2025, 17:18:21) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Scripts\\python.exe",
+  "runnerSha256": "3a5c977393bd4f8a48f6ee62fcfcdc6ab588c16095a7adb1ae6ac1e8a134c075",
+  "observerSourceSha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc",
+  "observerSha256": "118d69b3e90cbe5da9b5902419c885faf961ada2d0047400c366bc51ae0f62cf",
+  "seed": 2026,
+  "errors": [],
+  "events": [
+    {
+      "event": "configuration",
+      "scenario": "victory-near-end",
+      "tick": 0,
+      "clock": 379399.1253881,
+      "value": {
+        "scenario": "victory-near-end",
+        "seed": 2026
+      }
+    },
+    {
+      "event": "before",
+      "scenario": "victory-near-end",
+      "tick": 0,
+      "clock": 379399.2540696,
+      "value": {
+        "player": {
+          "position": [
+            -90.0,
+            195.0
+          ],
+          "heading": 0.0,
+          "state": "stop",
+          "shape": "pac.gif",
+          "speed": 5,
+          "score": 0,
+          "lives": 3,
+          "visible": true
+        },
+        "start": [
+          -90.0,
+          195.0
+        ],
+        "pellets": 356,
+        "power": 4,
+        "enemies": [
+          {
+            "position": [
+              270.0,
+              -105.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              450.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              450.0,
+              195.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "green_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              270.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              -420.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "pink_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              -150.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              -60.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          }
+        ],
+        "timersScheduled": {
+          "2500": 8
+        }
+      }
+    },
+    {
+      "event": "after",
+      "scenario": "victory-near-end",
+      "tick": 0,
+      "clock": 379399.2596068,
+      "value": {
+        "player": {
+          "position": [
+            -90.0,
+            195.0
+          ],
+          "heading": 0.0,
+          "state": "stop",
+          "shape": "pac.gif",
+          "speed": 5,
+          "score": 0,
+          "lives": 3,
+          "visible": true
+        },
+        "start": [
+          -90.0,
+          195.0
+        ],
+        "pellets": 355,
+        "power": 4,
+        "enemies": [
+          {
+            "position": [
+              270.0,
+              -105.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              450.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              450.0,
+              195.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "green_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              270.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              -420.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "pink_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              -150.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              -60.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          }
+        ],
+        "timersScheduled": {
+          "2500": 8,
+          "16": 1
+        }
+      }
+    },
+    {
+      "event": "before",
+      "scenario": "victory-near-end",
+      "tick": 1,
+      "clock": 379399.2803458,
+      "value": {
+        "player": {
+          "position": [
+            -90.0,
+            195.0
+          ],
+          "heading": 0.0,
+          "state": "stop",
+          "shape": "pac.gif",
+          "speed": 5,
+          "score": 0,
+          "lives": 3,
+          "visible": true
+        },
+        "start": [
+          -90.0,
+          195.0
+        ],
+        "pellets": 355,
+        "power": 4,
+        "enemies": [
+          {
+            "position": [
+              270.0,
+              -105.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              450.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              450.0,
+              195.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "green_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              270.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              -420.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "pink_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              -150.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          },
+          {
+            "position": [
+              -60.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": true
+          }
+        ],
+        "timersScheduled": {
+          "2500": 8,
+          "16": 1
+        }
+      }
+    },
+    {
+      "event": "injection",
+      "scenario": "victory-near-end",
+      "tick": 1,
+      "clock": 379399.2864225,
+      "value": {
+        "operation": "near-end collectables",
+        "remaining": [
+          -450.0,
+          -315.0
+        ]
+      }
+    },
+    {
+      "event": "timer-scheduled",
+      "scenario": "victory-near-end",
+      "tick": 1,
+      "clock": 379399.289078,
+      "value": {
+        "delay": 3000,
+        "callback": "bye",
+        "scheduledClock": 379399.2890753
+      }
+    },
+    {
+      "event": "after",
+      "scenario": "victory-near-end",
+      "tick": 1,
+      "clock": 379399.2893376,
+      "value": {
+        "player": {
+          "position": [
+            -450.0,
+            -315.0
+          ],
+          "heading": 0.0,
+          "state": "stop",
+          "shape": "pac.gif",
+          "speed": 5,
+          "score": 2,
+          "lives": 3,
+          "visible": true
+        },
+        "start": [
+          -90.0,
+          195.0
+        ],
+        "pellets": 0,
+        "power": 0,
+        "enemies": [
+          {
+            "position": [
+              270.0,
+              -105.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              195.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "green_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              270.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -420.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "pink_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -150.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -60.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          }
+        ],
+        "timersScheduled": {
+          "2500": 8,
+          "16": 2,
+          "3000": 1
+        }
+      }
+    },
+    {
+      "event": "before",
+      "scenario": "victory-near-end",
+      "tick": 2,
+      "clock": 379399.3107609,
+      "value": {
+        "player": {
+          "position": [
+            -450.0,
+            -315.0
+          ],
+          "heading": 0.0,
+          "state": "stop",
+          "shape": "pac.gif",
+          "speed": 5,
+          "score": 2,
+          "lives": 3,
+          "visible": true
+        },
+        "start": [
+          -90.0,
+          195.0
+        ],
+        "pellets": 0,
+        "power": 0,
+        "enemies": [
+          {
+            "position": [
+              270.0,
+              -105.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              195.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "green_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              270.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -420.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "pink_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -150.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -60.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          }
+        ],
+        "timersScheduled": {
+          "2500": 8,
+          "16": 2,
+          "3000": 1
+        }
+      }
+    },
+    {
+      "event": "after",
+      "scenario": "victory-near-end",
+      "tick": 2,
+      "clock": 379399.3126189,
+      "value": {
+        "player": {
+          "position": [
+            -450.0,
+            -315.0
+          ],
+          "heading": 0.0,
+          "state": "stop",
+          "shape": "pac.gif",
+          "speed": 5,
+          "score": 2,
+          "lives": 3,
+          "visible": true
+        },
+        "start": [
+          -90.0,
+          195.0
+        ],
+        "pellets": 0,
+        "power": 0,
+        "enemies": [
+          {
+            "position": [
+              270.0,
+              -105.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              195.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "green_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              270.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -420.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "pink_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -150.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -60.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          }
+        ],
+        "timersScheduled": {
+          "2500": 8,
+          "16": 3,
+          "3000": 1
+        }
+      }
+    },
+    {
+      "event": "before",
+      "scenario": "victory-near-end",
+      "tick": 3,
+      "clock": 379399.3424669,
+      "value": {
+        "player": {
+          "position": [
+            -450.0,
+            -315.0
+          ],
+          "heading": 0.0,
+          "state": "stop",
+          "shape": "pac.gif",
+          "speed": 5,
+          "score": 2,
+          "lives": 3,
+          "visible": true
+        },
+        "start": [
+          -90.0,
+          195.0
+        ],
+        "pellets": 0,
+        "power": 0,
+        "enemies": [
+          {
+            "position": [
+              270.0,
+              -105.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              195.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "green_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              270.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -420.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "pink_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -150.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -60.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          }
+        ],
+        "timersScheduled": {
+          "2500": 8,
+          "16": 3,
+          "3000": 1
+        }
+      }
+    },
+    {
+      "event": "after",
+      "scenario": "victory-near-end",
+      "tick": 3,
+      "clock": 379399.3449387,
+      "value": {
+        "player": {
+          "position": [
+            -450.0,
+            -315.0
+          ],
+          "heading": 0.0,
+          "state": "stop",
+          "shape": "pac.gif",
+          "speed": 5,
+          "score": 2,
+          "lives": 3,
+          "visible": true
+        },
+        "start": [
+          -90.0,
+          195.0
+        ],
+        "pellets": 0,
+        "power": 0,
+        "enemies": [
+          {
+            "position": [
+              270.0,
+              -105.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              195.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "green_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              270.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -420.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "pink_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -150.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -60.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          }
+        ],
+        "timersScheduled": {
+          "2500": 8,
+          "16": 4,
+          "3000": 1
+        }
+      }
+    },
+    {
+      "event": "before",
+      "scenario": "victory-near-end",
+      "tick": 10,
+      "clock": 379399.5642987,
+      "value": {
+        "player": {
+          "position": [
+            -450.0,
+            -315.0
+          ],
+          "heading": 0.0,
+          "state": "stop",
+          "shape": "pac.gif",
+          "speed": 5,
+          "score": 2,
+          "lives": 3,
+          "visible": true
+        },
+        "start": [
+          -90.0,
+          195.0
+        ],
+        "pellets": 0,
+        "power": 0,
+        "enemies": [
+          {
+            "position": [
+              270.0,
+              -105.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              195.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "green_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              270.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -420.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "pink_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -150.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -60.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          }
+        ],
+        "timersScheduled": {
+          "2500": 8,
+          "16": 10,
+          "3000": 1
+        }
+      }
+    },
+    {
+      "event": "after",
+      "scenario": "victory-near-end",
+      "tick": 10,
+      "clock": 379399.5673432,
+      "value": {
+        "player": {
+          "position": [
+            -450.0,
+            -315.0
+          ],
+          "heading": 0.0,
+          "state": "stop",
+          "shape": "pac.gif",
+          "speed": 5,
+          "score": 2,
+          "lives": 3,
+          "visible": true
+        },
+        "start": [
+          -90.0,
+          195.0
+        ],
+        "pellets": 0,
+        "power": 0,
+        "enemies": [
+          {
+            "position": [
+              270.0,
+              -105.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              450.0,
+              195.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "green_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              270.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -420.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "pink_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -150.0,
+              -375.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          },
+          {
+            "position": [
+              -60.0,
+              -255.0
+            ],
+            "heading": 0.0,
+            "state": "stop",
+            "shape": "red_enemy.gif",
+            "visible": false
+          }
+        ],
+        "timersScheduled": {
+          "2500": 8,
+          "16": 11,
+          "3000": 1
+        }
+      }
+    },
+    {
+      "event": "timer-fired",
+      "scenario": "victory-near-end",
+      "tick": 97,
+      "clock": 379402.2995872,
+      "value": {
+        "delay": 3000,
+        "callback": "bye",
+        "scheduledClock": 379399.2890753,
+        "elapsedSeconds": 3.0105070000281557
+      }
+    },
+    {
+      "event": "natural-close",
+      "scenario": "victory-near-end",
+      "tick": 97,
+      "clock": 379402.2997481,
+      "value": {
+        "timersScheduled": {
+          "2500": 8,
+          "16": 97,
+          "3000": 1
+        }
+      }
+    }
+  ],
+  "rootMapEvents": 0,
+  "rootDestroyEvents": 1,
+  "audioReleased": true,
+  "cooperativeDeadline": false,
+  "boundedFunctionalCompletion": true,
+  "preflightOnly": false,
+  "freshInstall": false,
+  "physicalKeyboard": false,
+  "limits": [
+    "External observer; exact canonical exported five game modules remain unchanged",
+    "Declared classic six scenarios; authored bye for endings, QA bounded close otherwise; not a full played game",
+    "No browser, physical input, raster, acoustic or performance acceptance"
+  ],
+  "lifecycle": {
+    "closedByQA": false,
+    "expectedTickObserved": true
+  },
+  "sourceReceiptSha256": "4aff52e28081d67691c5fead0b8da1f59a0a87e83eb5d91a3c78b09a29debc09",
+  "zipSha256": "8de6df6a881a579a6aed4918318cfb92ff249d99b361f924073cbfc9389f4ce9",
+  "mainSha256": "3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76",
+  "installedAudio": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio",
+  "matchingModuleFiles": [
+    "__init__.py",
+    "__init__.pyi",
+    "_desktop.py",
+    "_mixer.py",
+    "_module.json",
+    "_wav.py",
+    "py.typed"
+  ],
+  "dependencies": {
+    "cffi": "2.1.1",
+    "miniaudio": "1.71",
+    "pycparser": "3.11"
+  },
+  "ownedTemp": "C:\\Users\\tocha\\AppData\\Local\\Temp\\sz-pacman-functional-3v2240iy",
+  "withdrawnBeforeSetup": true,
+  "canvasItemsAtWitness": 478,
+  "completionMode": "authored-natural-close",
+  "audioBackend": "WASAPI",
+  "imports": {
+    "main": "C:\\Users\\tocha\\AppData\\Local\\Temp\\sz-pacman-functional-3v2240iy\\main.py",
+    "actors": "C:\\Users\\tocha\\AppData\\Local\\Temp\\sz-pacman-functional-3v2240iy\\actors.py",
+    "renderer": "C:\\Users\\tocha\\AppData\\Local\\Temp\\sz-pacman-functional-3v2240iy\\renderer.py",
+    "constants": "C:\\Users\\tocha\\AppData\\Local\\Temp\\sz-pacman-functional-3v2240iy\\constants.py",
+    "mazes": "C:\\Users\\tocha\\AppData\\Local\\Temp\\sz-pacman-functional-3v2240iy\\mazes.py"
+  },
+  "completedCriteria": [
+    "authored-rules",
+    "observed-closure",
+    "native-canvas",
+    "native-audio-device"
+  ],
+  "exportTreeUnchanged": true,
+  "ownedTempAbsent": true,
+  "elapsedMs": 3510.195799986832
+}

@@ -1,0 +1,30 @@
+{
+  "state": "PURE-STATIC-REVIEW-PASS-NOT-NATIVE-EXECUTION",
+  "nativePacketSha256": "f27267e9c69b833980cd250ded3467442a37e52a81b6d1b47bcde11d214941af",
+  "cleanupFinallyAstUnchanged": true,
+  "validOracleControls": 3,
+  "rejectedInvalidEndingControls": 6,
+  "admissionRefusals": [
+    {
+      "window": "2000-01-01T00:00:00Z",
+      "exitCode": 1,
+      "outputAbsent": true,
+      "noPythonSpawn": true
+    },
+    {
+      "window": "2026-02-30T03:00:00Z",
+      "exitCode": 1,
+      "outputAbsent": true,
+      "noPythonSpawn": true
+    },
+    {
+      "window": "2026-10-21 04:00:00",
+      "exitCode": 1,
+      "outputAbsent": true,
+      "noPythonSpawn": true
+    }
+  ],
+  "environmentPins": 14,
+  "installedAudioPins": 7,
+  "noGameTurtleAudioOrNativeInterpreterStarted": true
+}

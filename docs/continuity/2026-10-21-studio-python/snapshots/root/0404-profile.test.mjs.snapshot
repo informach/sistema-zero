@@ -1,0 +1,60 @@
+import assert from 'node:assert/strict'
+import {test} from 'node:test'
+import {setTimeout as delay} from 'node:timers/promises'
+import {projectSample,readDomPhase,startProfile} from './profile.mjs'
+
+test('closed projection rejects arbitrary fields, URLs, secret/type/metric names',()=>{
+ const secret='arbitrary-SECRET-url-https://example.invalid/private'
+ const value=projectSample({processInfo:[{id:101,type:'renderer',cpuTime:1.25,url:secret},{id:102,type:secret,cpuTime:0},{id:-1,type:'GPU',cpuTime:2}]},
+  {metrics:[{name:'JSHeapUsedSize',value:10},{name:secret,value:20},{name:'Nodes',value:Infinity}]},
+  {usedSize:12,totalSize:20,backingStorageSize:30,url:secret},
+  {phase:secret,rolldownDownloading:true,napiBindingTargetConflict:secret},0,20)
+ assert.equal(JSON.stringify(value).includes(secret),false)
+ assert.deepEqual(value.processes,[{pid:101,type:'renderer',cpuTimeSeconds:1.25},{pid:102,type:'unknown',cpuTimeSeconds:0}])
+ assert.deepEqual(value.metrics,{JSHeapUsedSize:10});assert.equal(value.phase,'unknown')
+ assert.equal(value.rolldownDownloading,true);assert.equal(value.napiBindingTargetConflict,false)
+ assert.equal(projectSample({processInfo:Array.from({length:129},(_,i)=>({id:i+1,type:'browser',cpuTime:0}))},{},{},{phase:'unknown'},0,1).processes.length,128)
+})
+test('actual DOM reader recognizes plain overlay p without role and returns enums/booleans only',()=>{
+ const savedDocument=globalThis.document,savedFilter=globalThis.NodeFilter
+ let lines=['private data [rolldown] Downloading and ERR_NAPI_BINDING_TARGET_CONFLICT','Invalid atomic access index']
+ globalThis.NodeFilter={SHOW_TEXT:4}
+ globalThis.document={body:{},querySelectorAll:selector=>selector==='p'?[{textContent:'Instalando dependências (npm install)…'}]:[],querySelector:()=>null,
+  createTreeWalker:()=>{let index=0;return {nextNode:()=>index<lines.length?{nodeValue:lines[index++]}:null}}}
+ try{assert.deepEqual(readDomPhase(),{phase:'installing',rolldownDownloading:true,napiBindingTargetConflict:true,invalidAtomicAccessIndex:true})
+  lines=['arbitrary private text'];globalThis.document.querySelectorAll=()=>[{textContent:'private non-phase'}]
+  assert.equal(readDomPhase().phase,'unknown');assert.equal(JSON.stringify(readDomPhase()).includes('private'),false)
+ }finally{globalThis.document=savedDocument;globalThis.NodeFilter=savedFilter}
+})
+function fixture(sendProcess){
+ const state={processCalls:0,detaches:0}
+ const browserSession={send:async()=>{state.processCalls++;return sendProcess()},detach:async()=>{state.detaches++}}
+ const pageSession={send:async method=>method==='Performance.getMetrics'?{metrics:[{name:'Nodes',value:10}]}:method==='Runtime.getHeapUsage'?{usedSize:1,totalSize:2,backingStorageSize:3}:{},detach:async()=>{state.detaches++}}
+ return {state,browser:{newBrowserCDPSession:async()=>browserSession},page:{context:()=>({newCDPSession:async()=>pageSession}),evaluate:async()=>({phase:'installing'})}}
+}
+test('serial sampling never overlaps a slow request; stop drains, detaches and is idempotent',async()=>{
+ let release,updated
+ const pending=new Promise(resolve=>{release=resolve}),firstSample=new Promise(resolve=>{updated=resolve})
+ const f=fixture(()=>pending)
+ const profile=await startProfile({...f,onUpdate:value=>{if(value.samples.length)updated()}})
+ await delay(550);assert.equal(f.state.processCalls,1)
+ release({processInfo:[{id:101,type:'renderer',cpuTime:1}]});await firstSample
+ const report=await profile.stop(),again=await profile.stop()
+ assert.equal(report.samples.length,1);assert.equal(report.detachConfirmed,true);assert.equal(report.failure,null)
+ assert.deepEqual(again,report);assert.equal(f.state.detaches,2);await delay(20);assert.equal(f.state.processCalls,1)
+})
+test('request failure preserves last known projection and never exposes raw errors',async()=>{
+ let terminal
+ const complete=new Promise(resolve=>{terminal=resolve})
+ const f=fixture(()=>{throw new Error('SECRET URL https://example.invalid/token')})
+ const profile=await startProfile({...f,onUpdate:value=>{if(value.state==='NEG-diagnostic')terminal()}})
+ await complete;const report=await profile.stop()
+ assert.equal(report.state,'NEG-diagnostic');assert.equal(report.failure.phase,'sample');assert.equal(report.detachConfirmed,true)
+ assert.equal(JSON.stringify(report).includes('SECRET'),false)
+})
+test('stop stays non-throwing when sink throws and page is already closed',async()=>{
+ const f=fixture(async()=>({processInfo:[]}));f.page.context=()=>({newCDPSession:async()=>({send:async()=>({}),detach:async()=>{throw new Error('private close error')}})})
+ const profile=await startProfile({...f,onUpdate:()=>{throw new Error('private sink error')}})
+ const report=await profile.stop();assert.equal(report.state,'NEG-diagnostic');assert.equal(report.detachConfirmed,false)
+ assert.equal(JSON.stringify(report).includes('private'),false)
+})

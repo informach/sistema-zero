@@ -1,0 +1,13 @@
+{
+  "kind": "offline-profiled-leaf",
+  "leafSha": "12c255b11245539dcfde886b594230822624878e4e56fa2e1500fa77c80430e9",
+  "pins": 71,
+  "derivation": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\derivation.json",
+    "bytes": 1168,
+    "sha256": "b4c31bd2afa5f6e9687eb2bba2a9179e1af68d797944d75e1e9c76ba6009dee1"
+  },
+  "providerCalls": 0,
+  "browserStarts": 0,
+  "quotaUnchanged": 2048
+}

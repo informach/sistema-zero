@@ -1,0 +1,515 @@
+{
+  "state": "readonly-active-worker-public-baseline",
+  "observedAt": "2026-10-21T07:44:09.275Z",
+  "account": "bcc0f2d44140e05b69152cba326132f8",
+  "name": "sistemazero-studio-runtime-staging",
+  "bucket": "sistemazero-studio-artifacts-staging",
+  "versionId": "26063240-4fc5-4598-a5da-004f3f5a23ab",
+  "deploymentId": "484eecc0-85b0-42ef-9c1e-46b751fd2877",
+  "activeConfigurationSha256": "40ce822aab07184da90bec7a0902296d4889c011740063be6c859bc5b60c57b2",
+  "configuration": {
+    "version": 1,
+    "parentOrigins": [
+      "https://admin-staging-f8fe.up.railway.app",
+      "https://community-staging-66f2.up.railway.app",
+      "https://community-kids-staging.up.railway.app"
+    ],
+    "deployments": [
+      {
+        "status": "active",
+        "deployment": {
+          "release": {
+            "profileId": "python-browser",
+            "releaseId": "2026-10-19-1",
+            "manifestSha256": "56204780388c78e8ecf978da984eca182ed4ac958e78c63a22ac286210ab7880",
+            "manifest": {
+              "manifestVersion": 1,
+              "profileId": "python-browser",
+              "releaseId": "2026-10-19-1",
+              "programmingLanguage": "python",
+              "kinds": [
+                "classic",
+                "pro"
+              ],
+              "modes": [
+                "blocks",
+                "bridge",
+                "code"
+              ],
+              "capabilities": [
+                "edit",
+                "execute",
+                "publish",
+                "export-source",
+                "python-repl",
+                "assist"
+              ],
+              "extensions": [
+                {
+                  "id": "python-turtle",
+                  "versions": [
+                    "1.0.0"
+                  ]
+                }
+              ],
+              "sourceTargets": [
+                "browser",
+                "desktop"
+              ],
+              "requiredBrowserFeatures": [
+                "wasm",
+                "worker",
+                "jspi",
+                "trusted-types"
+              ],
+              "artifacts": [
+                {
+                  "path": "LICENSE-pyodide.txt",
+                  "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5"
+                },
+                {
+                  "path": "LICENSE-python.txt",
+                  "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231"
+                },
+                {
+                  "path": "LICENSE-tk.txt",
+                  "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198"
+                },
+                {
+                  "path": "SOURCES.txt",
+                  "sha256": "847f9acb99a9d9b0d30b5450a526392724e39c2d752c1cbd62be7e438ca7ae2b"
+                },
+                {
+                  "path": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz",
+                  "sha256": "00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba"
+                },
+                {
+                  "path": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz",
+                  "sha256": "165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b"
+                },
+                {
+                  "path": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz",
+                  "sha256": "37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16"
+                },
+                {
+                  "path": "_http/gzip/6b0bbd12da1c7777b54a7eff9c31b33f32b2be0279ac97a6d903047fcc247765.gz",
+                  "sha256": "6b0bbd12da1c7777b54a7eff9c31b33f32b2be0279ac97a6d903047fcc247765"
+                },
+                {
+                  "path": "_http/gzip/993fe48114276143c68a4cf998d43e2560f508c043dc29d6242d9ceac46ddd09.gz",
+                  "sha256": "993fe48114276143c68a4cf998d43e2560f508c043dc29d6242d9ceac46ddd09"
+                },
+                {
+                  "path": "_http/gzip/9ede981060a4b579fe52a76cb757045a6605c1a10335820b7763963684d73d1d.gz",
+                  "sha256": "9ede981060a4b579fe52a76cb757045a6605c1a10335820b7763963684d73d1d"
+                },
+                {
+                  "path": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz",
+                  "sha256": "9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7"
+                },
+                {
+                  "path": "_http/gzip/a5f2fc8565b261cee6dcb398fbd626e8a3ea01546d4288590cfb1ca77d9f0df2.gz",
+                  "sha256": "a5f2fc8565b261cee6dcb398fbd626e8a3ea01546d4288590cfb1ca77d9f0df2"
+                },
+                {
+                  "path": "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz",
+                  "sha256": "ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5"
+                },
+                {
+                  "path": "_http/gzip/be6469f3763c14d9715c30461b8c5a5a4f405e22570f5aff9e9a2e965599ae98.gz",
+                  "sha256": "be6469f3763c14d9715c30461b8c5a5a4f405e22570f5aff9e9a2e965599ae98"
+                },
+                {
+                  "path": "_http/gzip/e6ef3c185bad29033c79762259fb9e515c0f588ee0b488b76ab43b4c4db35023.gz",
+                  "sha256": "e6ef3c185bad29033c79762259fb9e515c0f588ee0b488b76ab43b4c4db35023"
+                },
+                {
+                  "path": "_http/gzip/f63c19852b347926a19e3c551cf78a023d27b0343edea29fde1354cde451afdd.gz",
+                  "sha256": "f63c19852b347926a19e3c551cf78a023d27b0343edea29fde1354cde451afdd"
+                },
+                {
+                  "path": "analysis-frame.mjs",
+                  "sha256": "0e5885fe8d76c7df6b75b83e53f91ca5c7ec5039b9106ef37e37e000bfcadc97"
+                },
+                {
+                  "path": "analysis-worker.mjs",
+                  "sha256": "c5c23b7ff96ae2760cc453c55e00de61e0ba19d53ccb380c0c099c3d1531a6a7"
+                },
+                {
+                  "path": "analysis.html",
+                  "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c"
+                },
+                {
+                  "path": "boot-loader-derivation.json",
+                  "sha256": "a8463b59d61b4e0685403d855ed3f6b20e29cc85d57d3d88a51b4f2da7837466"
+                },
+                {
+                  "path": "boot-reader.mjs",
+                  "sha256": "672b5b18280df2a34e439650f1ca9917e6f9a6c6bda63649c955ba62d50b8d02"
+                },
+                {
+                  "path": "frame.html",
+                  "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe"
+                },
+                {
+                  "path": "frame.mjs",
+                  "sha256": "1c8a8a6b931577e098dcbbaae5423bfe02c8fb50a3a9251a904154d8d946de6d"
+                },
+                {
+                  "path": "http-compression-recipe.json",
+                  "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5"
+                },
+                {
+                  "path": "inspect.mjs",
+                  "sha256": "d5b366ee73e1601c182d06016ca702818e5ac37c41b81e54ab6334d09d437364"
+                },
+                {
+                  "path": "playtest.mjs",
+                  "sha256": "a386d77b6ca303d108a56cfde4188580b3e8dde4e6062d8ba38ba1578d4ff05e"
+                },
+                {
+                  "path": "pyodide-lock.json",
+                  "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010"
+                },
+                {
+                  "path": "pyodide.asm.mjs",
+                  "sha256": "eb71d9513398562cdcde73ec7bb03b4871f6cc21de69d42aa69884994e503e9b"
+                },
+                {
+                  "path": "pyodide.asm.wasm",
+                  "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6"
+                },
+                {
+                  "path": "pyodide.mjs",
+                  "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1"
+                },
+                {
+                  "path": "python_stdlib.zip",
+                  "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a"
+                },
+                {
+                  "path": "standalone.mjs",
+                  "sha256": "4c5a21c482b95fbe77efcbdfe73c787592573cd01c558abb3c18413b12a47b0a"
+                },
+                {
+                  "path": "turtle-protocol.mjs",
+                  "sha256": "620dac820045739923456bb8647f41635ef4c090ad93c6a6a8ac223743fdc605"
+                },
+                {
+                  "path": "turtle-renderer.mjs",
+                  "sha256": "2cebfa739e05badb9e8a379fc0771d446181f53cf36ee38647cf9eea8ae470e9"
+                },
+                {
+                  "path": "turtle/_sz_turtle_backend.py",
+                  "sha256": "666ae2dd739dfb31cbb9453ffe948ed88fcb2c74ef5ad978199c8339b5b4620a"
+                },
+                {
+                  "path": "turtle/_sz_turtle_colors.py",
+                  "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc"
+                },
+                {
+                  "path": "turtle/_sz_turtle_limits.py",
+                  "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862"
+                },
+                {
+                  "path": "turtle/turtle.py",
+                  "sha256": "63759ac09e0caaef0eb70e13f49e706d1752141d5351ec888e24b72667852a68"
+                },
+                {
+                  "path": "worker.mjs",
+                  "sha256": "2b3f0b7a1375c12c8da074936cc436815896af30cdb89c4cd50f6d8e1636371d"
+                }
+              ],
+              "python": {
+                "version": "3.14.2",
+                "packages": []
+              }
+            }
+          },
+          "distribution": {
+            "version": 1,
+            "pyodideVersion": "314.0.7",
+            "pythonVersion": "3.14.2",
+            "files": [
+              {
+                "path": "LICENSE-pyodide.txt",
+                "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+                "bytes": 16725
+              },
+              {
+                "path": "LICENSE-python.txt",
+                "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
+                "bytes": 13804
+              },
+              {
+                "path": "LICENSE-tk.txt",
+                "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198",
+                "bytes": 2267
+              },
+              {
+                "path": "SOURCES.txt",
+                "sha256": "847f9acb99a9d9b0d30b5450a526392724e39c2d752c1cbd62be7e438ca7ae2b",
+                "bytes": 1206
+              },
+              {
+                "path": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz",
+                "sha256": "00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba",
+                "bytes": 5810
+              },
+              {
+                "path": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz",
+                "sha256": "165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b",
+                "bytes": 1715
+              },
+              {
+                "path": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz",
+                "sha256": "37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16",
+                "bytes": 8013
+              },
+              {
+                "path": "_http/gzip/6b0bbd12da1c7777b54a7eff9c31b33f32b2be0279ac97a6d903047fcc247765.gz",
+                "sha256": "6b0bbd12da1c7777b54a7eff9c31b33f32b2be0279ac97a6d903047fcc247765",
+                "bytes": 6734
+              },
+              {
+                "path": "_http/gzip/993fe48114276143c68a4cf998d43e2560f508c043dc29d6242d9ceac46ddd09.gz",
+                "sha256": "993fe48114276143c68a4cf998d43e2560f508c043dc29d6242d9ceac46ddd09",
+                "bytes": 170289
+              },
+              {
+                "path": "_http/gzip/9ede981060a4b579fe52a76cb757045a6605c1a10335820b7763963684d73d1d.gz",
+                "sha256": "9ede981060a4b579fe52a76cb757045a6605c1a10335820b7763963684d73d1d",
+                "bytes": 176562
+              },
+              {
+                "path": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz",
+                "sha256": "9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7",
+                "bytes": 292028
+              },
+              {
+                "path": "_http/gzip/a5f2fc8565b261cee6dcb398fbd626e8a3ea01546d4288590cfb1ca77d9f0df2.gz",
+                "sha256": "a5f2fc8565b261cee6dcb398fbd626e8a3ea01546d4288590cfb1ca77d9f0df2",
+                "bytes": 81685
+              },
+              {
+                "path": "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz",
+                "sha256": "ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5",
+                "bytes": 2331
+              },
+              {
+                "path": "_http/gzip/be6469f3763c14d9715c30461b8c5a5a4f405e22570f5aff9e9a2e965599ae98.gz",
+                "sha256": "be6469f3763c14d9715c30461b8c5a5a4f405e22570f5aff9e9a2e965599ae98",
+                "bytes": 175234
+              },
+              {
+                "path": "_http/gzip/e6ef3c185bad29033c79762259fb9e515c0f588ee0b488b76ab43b4c4db35023.gz",
+                "sha256": "e6ef3c185bad29033c79762259fb9e515c0f588ee0b488b76ab43b4c4db35023",
+                "bytes": 78120
+              },
+              {
+                "path": "_http/gzip/f63c19852b347926a19e3c551cf78a023d27b0343edea29fde1354cde451afdd.gz",
+                "sha256": "f63c19852b347926a19e3c551cf78a023d27b0343edea29fde1354cde451afdd",
+                "bytes": 1555
+              },
+              {
+                "path": "analysis-frame.mjs",
+                "sha256": "0e5885fe8d76c7df6b75b83e53f91ca5c7ec5039b9106ef37e37e000bfcadc97",
+                "bytes": 5419
+              },
+              {
+                "path": "analysis-worker.mjs",
+                "sha256": "c5c23b7ff96ae2760cc453c55e00de61e0ba19d53ccb380c0c099c3d1531a6a7",
+                "bytes": 19988
+              },
+              {
+                "path": "analysis.html",
+                "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c",
+                "bytes": 151
+              },
+              {
+                "path": "boot-loader-derivation.json",
+                "sha256": "a8463b59d61b4e0685403d855ed3f6b20e29cc85d57d3d88a51b4f2da7837466",
+                "bytes": 840
+              },
+              {
+                "path": "boot-reader.mjs",
+                "sha256": "672b5b18280df2a34e439650f1ca9917e6f9a6c6bda63649c955ba62d50b8d02",
+                "bytes": 3782
+              },
+              {
+                "path": "frame.html",
+                "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe",
+                "bytes": 211
+              },
+              {
+                "path": "frame.mjs",
+                "sha256": "1c8a8a6b931577e098dcbbaae5423bfe02c8fb50a3a9251a904154d8d946de6d",
+                "bytes": 312069
+              },
+              {
+                "path": "http-compression-recipe.json",
+                "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5",
+                "bytes": 134
+              },
+              {
+                "path": "inspect.mjs",
+                "sha256": "d5b366ee73e1601c182d06016ca702818e5ac37c41b81e54ab6334d09d437364",
+                "bytes": 693030
+              },
+              {
+                "path": "playtest.mjs",
+                "sha256": "a386d77b6ca303d108a56cfde4188580b3e8dde4e6062d8ba38ba1578d4ff05e",
+                "bytes": 710771
+              },
+              {
+                "path": "pyodide-lock.json",
+                "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010",
+                "bytes": 119077
+              },
+              {
+                "path": "pyodide.asm.mjs",
+                "sha256": "eb71d9513398562cdcde73ec7bb03b4871f6cc21de69d42aa69884994e503e9b",
+                "bytes": 1530472
+              },
+              {
+                "path": "pyodide.asm.wasm",
+                "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6",
+                "bytes": 9598218
+              },
+              {
+                "path": "pyodide.mjs",
+                "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1",
+                "bytes": 21884
+              },
+              {
+                "path": "python_stdlib.zip",
+                "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a",
+                "bytes": 7066273
+              },
+              {
+                "path": "standalone.mjs",
+                "sha256": "4c5a21c482b95fbe77efcbdfe73c787592573cd01c558abb3c18413b12a47b0a",
+                "bytes": 707330
+              },
+              {
+                "path": "turtle-protocol.mjs",
+                "sha256": "620dac820045739923456bb8647f41635ef4c090ad93c6a6a8ac223743fdc605",
+                "bytes": 3425
+              },
+              {
+                "path": "turtle-renderer.mjs",
+                "sha256": "2cebfa739e05badb9e8a379fc0771d446181f53cf36ee38647cf9eea8ae470e9",
+                "bytes": 15868
+              },
+              {
+                "path": "turtle/_sz_turtle_backend.py",
+                "sha256": "666ae2dd739dfb31cbb9453ffe948ed88fcb2c74ef5ad978199c8339b5b4620a",
+                "bytes": 18183
+              },
+              {
+                "path": "turtle/_sz_turtle_colors.py",
+                "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc",
+                "bytes": 25484
+              },
+              {
+                "path": "turtle/_sz_turtle_limits.py",
+                "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862",
+                "bytes": 435
+              },
+              {
+                "path": "turtle/turtle.py",
+                "sha256": "63759ac09e0caaef0eb70e13f49e706d1752141d5351ec888e24b72667852a68",
+                "bytes": 117612
+              },
+              {
+                "path": "worker.mjs",
+                "sha256": "2b3f0b7a1375c12c8da074936cc436815896af30cdb89c4cd50f6d8e1636371d",
+                "bytes": 323176
+              }
+            ],
+            "httpRepresentations": [
+              {
+                "path": "analysis-frame.mjs",
+                "encoding": "gzip",
+                "artifactPath": "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz"
+              },
+              {
+                "path": "analysis-worker.mjs",
+                "encoding": "gzip",
+                "artifactPath": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz"
+              },
+              {
+                "path": "boot-reader.mjs",
+                "encoding": "gzip",
+                "artifactPath": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz"
+              },
+              {
+                "path": "frame.mjs",
+                "encoding": "gzip",
+                "artifactPath": "_http/gzip/e6ef3c185bad29033c79762259fb9e515c0f588ee0b488b76ab43b4c4db35023.gz"
+              },
+              {
+                "path": "inspect.mjs",
+                "encoding": "gzip",
+                "artifactPath": "_http/gzip/993fe48114276143c68a4cf998d43e2560f508c043dc29d6242d9ceac46ddd09.gz"
+              },
+              {
+                "path": "playtest.mjs",
+                "encoding": "gzip",
+                "artifactPath": "_http/gzip/9ede981060a4b579fe52a76cb757045a6605c1a10335820b7763963684d73d1d.gz"
+              },
+              {
+                "path": "pyodide.asm.mjs",
+                "encoding": "gzip",
+                "artifactPath": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz"
+              },
+              {
+                "path": "pyodide.mjs",
+                "encoding": "gzip",
+                "artifactPath": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz"
+              },
+              {
+                "path": "standalone.mjs",
+                "encoding": "gzip",
+                "artifactPath": "_http/gzip/be6469f3763c14d9715c30461b8c5a5a4f405e22570f5aff9e9a2e965599ae98.gz"
+              },
+              {
+                "path": "turtle-protocol.mjs",
+                "encoding": "gzip",
+                "artifactPath": "_http/gzip/f63c19852b347926a19e3c551cf78a023d27b0343edea29fde1354cde451afdd.gz"
+              },
+              {
+                "path": "turtle-renderer.mjs",
+                "encoding": "gzip",
+                "artifactPath": "_http/gzip/6b0bbd12da1c7777b54a7eff9c31b33f32b2be0279ac97a6d903047fcc247765.gz"
+              },
+              {
+                "path": "worker.mjs",
+                "encoding": "gzip",
+                "artifactPath": "_http/gzip/a5f2fc8565b261cee6dcb398fbd626e8a3ea01546d4288590cfb1ca77d9f0df2.gz"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "publicBindings": [
+    {
+      "name": "STUDIO_PYTHON_DISTRIBUTIONS_SHA256",
+      "type": "plain_text",
+      "text": "40ce822aab07184da90bec7a0902296d4889c011740063be6c859bc5b60c57b2"
+    },
+    {
+      "name": "STUDIO_PYTHON_PREVIEW_ORIGIN",
+      "type": "plain_text",
+      "text": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"
+    }
+  ],
+  "cliVersion": "4.120.1",
+  "cliSha256": "780661a508810f3b65786895b1ca9aacbc4f55d329ae6b8c1e49ec8433569f77",
+  "bracketStable": true,
+  "mutationsPerformed": false,
+  "rawProviderOutputPersisted": false,
+  "credentialValuesPersisted": false
+}
