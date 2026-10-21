@@ -6,6 +6,7 @@ if($Action -eq 'Plan'){Write-Output 'PREPARED ONLY. No credentials read, native 
 if($ExpectedPlanSha256 -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath $PlanPath).Hash.ToLowerInvariant() -cne $ExpectedPlanSha256){throw 'Exact owner plan required'}
 $plan=Get-Content -LiteralPath $PlanPath -Raw -Encoding utf8|ConvertFrom-Json
 if($plan.version -ne 1 -or $plan.kind -cne 'hosted-js-pro-node-job' -or $plan.attemptId -cnotmatch '^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$'){throw 'Closed hosted browser plan required'}
+$memoryProfile=Get-OwnedBrowserPlanMemoryProfile $plan
 foreach($pin in @($plan.pins)+@($plan.node,$plan.chrome,$plan.binding)){
  if(-not [IO.Path]::IsPathFullyQualified($pin.path) -or $pin.sha256 -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath $pin.path).Hash.ToLowerInvariant() -cne $pin.sha256 -or (Get-Item -LiteralPath $pin.path).Length -ne $pin.bytes){throw 'Pinned owner input changed'}
 }
@@ -28,7 +29,7 @@ function Sample-OwnedBrowser {
  $sample=Read-OwnedJobObservation $owner;$script:maxWS=[math]::Max($script:maxWS,$sample.workingSetMiB)
  Read-OwnedBrowserStreams $streams
  $free=[double](Get-CimInstance Win32_OperatingSystem -Property FreePhysicalMemory -ErrorAction Stop).FreePhysicalMemory/1024
- $positive=Test-OwnedBrowserBudget $sample.workingSetMiB $free
+ $positive=Test-OwnedBrowserBudget $sample.workingSetMiB $free $memoryProfile.resourceProfile
  $memorySnapshot=New-OwnedBrowserMemorySnapshot $sample $owner.root $free $sampleElapsed $sampleAt ($clock.Elapsed.TotalMilliseconds-$sampleElapsed) $phase
  Record-OwnedBrowserMemorySnapshot $memorySnapshots $memorySnapshot $positive
  if(-not $positive){throw 'browser-memory-budget'}
@@ -37,7 +38,7 @@ function Sample-OwnedBrowser {
 }
 try{
  $free=[double](Get-CimInstance Win32_OperatingSystem -Property FreePhysicalMemory -ErrorAction Stop).FreePhysicalMemory/1024
- if($free -lt 1536){throw 'browser-admission-refused'}
+ if($free -lt $memoryProfile.admissionMiB){throw 'browser-admission-refused'}
  # Read opaque private bytes before starting the gated Node. No decoding, JSON,
  # transcript or persistence. The final Node is the only envelope parser.
  $phase='provider-relay';$providerBytes=Read-OwnedProviderBytes ([Console]::OpenStandardInput())
@@ -115,8 +116,8 @@ try{
   try{$close=Close-OwnedJobContext $owner -RequireEmpty}catch{if(-not $cleanupFailure){$cleanupFailure=ConvertTo-OwnedBrowserFailure $_ 'close-context'}}
  }
  $normalCleanup=$null -ne $close -and $close.cleanupConfirmed -and -not $force -and -not $cleanupFailure -and -not $libraryForce -and $streams.closed.stdout -and $streams.closed.stderr -and -not $streams.unknown -and -not $streams.overflow
- $receipt=@{version=1;state=$(if(-not $primary -and $functional -and $normalCleanup){'PASS-hosted-js-pro-owned'}else{'NEG'});planSha256=$ExpectedPlanSha256;attemptId=$plan.attemptId;startedAt=$started.ToString('o');completedAt=[datetimeoffset]::UtcNow.ToString('o');elapsedMs=$clock.ElapsedMilliseconds;primary=$primary;cleanupFailure=$cleanupFailure;functionalPassed=$functional;normalCleanup=$normalCleanup;resourceReleaseConfirmed=($null -ne $close -and $close.cleanupConfirmed);cleanup=$close;operatorForceUsed=$force;libraryForceObserved=[bool]$libraryForce;playwrightInternalFallbackAttested=$false;maxSampledWorkingSetMiB=$maxWS;memorySnapshots=$memorySnapshots;reference=$(if($owner){@{root=$owner.root;name=$owner.job.Name}}else{$null});known=$(if($owner){@($owner.members.Values|ForEach-Object{@{pid=$_.Pid;creationFileTime=$_.CreationFileTime}})}else{@()});diagnostics=$(if($streams){@{counts=$streams.counts;characters=$streams.characters;unknown=$streams.unknown;overflow=$streams.overflow;stdoutClosed=$streams.closed.stdout;stderrClosed=$streams.closed.stderr;rawPersisted=$false}}else{$null})}
+ $receipt=@{version=1;state=$(if(-not $primary -and $functional -and $normalCleanup){$memoryProfile.passState}else{'NEG'});resourceProfile=$memoryProfile.resourceProfile;functionalOnly=$memoryProfile.functionalOnly;performanceQualified=$false;jobBudgetMiB=$memoryProfile.jobBudgetMiB;admissionMiB=$memoryProfile.admissionMiB;planSha256=$ExpectedPlanSha256;attemptId=$plan.attemptId;startedAt=$started.ToString('o');completedAt=[datetimeoffset]::UtcNow.ToString('o');elapsedMs=$clock.ElapsedMilliseconds;primary=$primary;cleanupFailure=$cleanupFailure;functionalPassed=$functional;normalCleanup=$normalCleanup;resourceReleaseConfirmed=($null -ne $close -and $close.cleanupConfirmed);cleanup=$close;operatorForceUsed=$force;libraryForceObserved=[bool]$libraryForce;playwrightInternalFallbackAttested=$false;maxSampledWorkingSetMiB=$maxWS;memorySnapshots=$memorySnapshots;reference=$(if($owner){@{root=$owner.root;name=$owner.job.Name}}else{$null});known=$(if($owner){@($owner.members.Values|ForEach-Object{@{pid=$_.Pid;creationFileTime=$_.CreationFileTime}})}else{@()});diagnostics=$(if($streams){@{counts=$streams.counts;characters=$streams.characters;unknown=$streams.unknown;overflow=$streams.overflow;stdoutClosed=$streams.closed.stdout;stderrClosed=$streams.closed.stderr;rawPersisted=$false}}else{$null})}
  Put 'receipt.json' $receipt
 }
-Write-Output ($receipt|Select-Object state,functionalPassed,normalCleanup,resourceReleaseConfirmed,operatorForceUsed,elapsedMs|ConvertTo-Json -Compress)
-if($receipt.state -cne 'PASS-hosted-js-pro-owned'){exit 1}
+Write-Output ($receipt|Select-Object state,resourceProfile,functionalOnly,performanceQualified,functionalPassed,normalCleanup,resourceReleaseConfirmed,operatorForceUsed,elapsedMs|ConvertTo-Json -Compress)
+if($receipt.state -cne $memoryProfile.passState){exit 1}

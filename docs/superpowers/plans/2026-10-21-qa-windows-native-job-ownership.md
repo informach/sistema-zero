@@ -203,3 +203,32 @@ line body, CLI, envelope or credential is persisted. The4096-character line
 classification check happens after ReadLineAsync; it is not a hard allocation cap.
 Playwright internals are not exhaustively attested by public marker observation.
 Admin/Kids/Next/base still use their prior code until the separate batch2b.
+
+
+## Explicit hosted functional profile (new QA scope)
+
+The default remains `strict-browser-1024`: Job sumWS<=1024MiB, admission1536MiB,
+OS free reserve512MiB and historical success state `PASS-hosted-js-pro-owned`.
+Absent resourceProfile means that strict default; unknown/null/empty names refuse
+before Start. The strict R2 and instrumented R3 actual NEG receipts stay NEG.
+
+Root authorized a separate explicit `hosted-functional-2048` profile after the
+R3 diagnosis: firstNEG Job WS1405.55MiB, rootNode109.82/descendants1295.73, versus
+last positive999.5MiB. This did not establish the cause of descendant consumption;
+it does not justify GC, excluding processes or subtracting shared memory.
+
+Only the existing hosted-only owner may select the new profile. Its pinned plan
+must explicitly set resourceProfile=`hosted-functional-2048`, functionalOnly=true
+and performanceQualified=false. It grants Job sumWS<=2048MiB and admissionTOTAL
+2560MiB=2048+512reserve. This is a new QA allocation, not an automatic reassignment
+of the local Next/browser pool. All Node/Chrome/GPU/CLI descendants still count.
+Heap768, sample500ms, soft330/drain355/reconcile360, sandbox, scenario criteria,
+ACK, native ownership and cleanup rules remain the same.
+
+Success is separately named `PASS-hosted-js-pro-functional`. Receipt and summary
+carry resourceProfile, functionalOnly=true and performanceQualified=false; the
+receipt also states jobBudgetMiB/admissionMiB. This may prove login/import/save/
+visual/reopen functionality but never qualifies strict1GiB execution, performance
+or final acceptance. The performance annex still owns incremental Python memory,
+latency and F6's30-cycle/stability requirements. No runtime/product/catalog or
+user quota changed, and no actual browser run is authorized by this document.

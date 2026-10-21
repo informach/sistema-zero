@@ -17,9 +17,27 @@ function Send-OwnedProviderBytes([IO.Stream]$OutputStream,[byte[]]$Bytes){
  try{[void]$OutputStream.WriteAsync($Bytes,0,$Bytes.Length,$cancellation.Token).WaitAsync($cancellation.Token).GetAwaiter().GetResult();[void]$OutputStream.FlushAsync($cancellation.Token).WaitAsync($cancellation.Token).GetAwaiter().GetResult()}
  finally{$OutputStream.Dispose();$cancellation.Dispose()}
 }
-function Test-OwnedBrowserBudget([double]$WorkingSetMiB,[double]$FreeMiB){
+function Resolve-OwnedBrowserMemoryProfile([string]$ResourceProfile='strict-browser-1024'){
+ switch -CaseSensitive($ResourceProfile){
+  'strict-browser-1024'{return [pscustomobject]@{resourceProfile=$ResourceProfile;jobBudgetMiB=1024;admissionMiB=1536;functionalOnly=$false;performanceQualified=$false;passState='PASS-hosted-js-pro-owned'}}
+  'hosted-functional-2048'{return [pscustomobject]@{resourceProfile=$ResourceProfile;jobBudgetMiB=2048;admissionMiB=2560;functionalOnly=$true;performanceQualified=$false;passState='PASS-hosted-js-pro-functional'}}
+  default{throw 'unknown-browser-resource-profile'}
+ }
+}
+function Get-OwnedBrowserPlanMemoryProfile($Plan){
+ $property=$Plan.PSObject.Properties['resourceProfile']
+ $profile=if($null -ne $property){Resolve-OwnedBrowserMemoryProfile $property.Value}else{Resolve-OwnedBrowserMemoryProfile}
+ if($profile.functionalOnly){
+  if($Plan.functionalOnly -isnot [bool] -or $Plan.functionalOnly -ne $true -or $Plan.performanceQualified -isnot [bool] -or $Plan.performanceQualified -ne $false){throw 'functional-browser-profile-metadata-required'}
+ }else{
+  foreach($key in @('functionalOnly','performanceQualified')){if($Plan.PSObject.Properties[$key] -and ($Plan.$key -isnot [bool] -or $Plan.$key -ne $false)){throw 'strict-browser-profile-metadata-conflict'}}
+ }
+ return $profile
+}
+function Test-OwnedBrowserBudget([double]$WorkingSetMiB,[double]$FreeMiB,[string]$ResourceProfile='strict-browser-1024'){
+ $profile=Resolve-OwnedBrowserMemoryProfile $ResourceProfile
  if([double]::IsNaN($WorkingSetMiB) -or [double]::IsInfinity($WorkingSetMiB) -or $WorkingSetMiB -lt 0 -or [double]::IsNaN($FreeMiB) -or [double]::IsInfinity($FreeMiB) -or $FreeMiB -lt 0){throw 'browser-memory-unknown'}
- return $WorkingSetMiB -le 1024 -and $FreeMiB -ge 512
+ return $WorkingSetMiB -le $profile.jobBudgetMiB -and $FreeMiB -ge 512
 }
 # Closed diagnostic projection of the SAME native reads used for admission.
 # PrivateUsage is committed private memory, not private working set/unique RAM.

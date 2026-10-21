@@ -82,4 +82,25 @@ $observation.observed=@(1..1025|ForEach-Object{@{processId=$_;creationFileTime='
 $observation.workingSetMiB=1025/1MB;$observation.privateMiB=2050/1MB
 $bounded=New-OwnedBrowserMemorySnapshot $observation $rootIdentity 2048 3000 $at 20 'scenario'
 Check ($bounded.rows.Count -eq 1024 -and $bounded.rowsTruncated)
+$strict=Get-OwnedBrowserPlanMemoryProfile ([pscustomobject]@{})
+Check ($strict.resourceProfile -ceq 'strict-browser-1024' -and $strict.jobBudgetMiB -eq 1024 -and $strict.admissionMiB -eq 1536 -and $strict.passState -ceq 'PASS-hosted-js-pro-owned')
+$functionalPlan=[pscustomobject]@{resourceProfile='hosted-functional-2048';functionalOnly=$true;performanceQualified=$false}
+$functional=Get-OwnedBrowserPlanMemoryProfile $functionalPlan
+Check ($functional.jobBudgetMiB -eq 2048 -and $functional.admissionMiB -eq 2560 -and $functional.functionalOnly -and -not $functional.performanceQualified -and $functional.passState -ceq 'PASS-hosted-js-pro-functional')
+Check (Test-OwnedBrowserBudget 2048 512 $functional.resourceProfile)
+Check (-not(Test-OwnedBrowserBudget 2048.01 512 $functional.resourceProfile))
+Check (-not(Test-OwnedBrowserBudget 2048 511.99 $functional.resourceProfile))
+# Recorded R3 aggregate remains strict NEG; this is a NEW functional profile,
+# not a retroactive qualification or subtraction of Node/GPU/CLI memory.
+Check (-not(Test-OwnedBrowserBudget 1405.5546875 2794.46484375))
+Check (Test-OwnedBrowserBudget 1405.5546875 2794.46484375 $functional.resourceProfile)
+foreach($unknown in @('2048','hosted-functional-4096','HOSTED-FUNCTIONAL-2048','',$null)){
+ Check (Refuses {Test-OwnedBrowserBudget 100 2048 $unknown})
+ Check (Refuses {Get-OwnedBrowserPlanMemoryProfile ([pscustomobject]@{resourceProfile=$unknown;functionalOnly=$true;performanceQualified=$false})})
+}
+Check (Refuses {Get-OwnedBrowserPlanMemoryProfile ([pscustomobject]@{resourceProfile='hosted-functional-2048'})})
+Check (Refuses {Get-OwnedBrowserPlanMemoryProfile ([pscustomobject]@{resourceProfile='hosted-functional-2048';functionalOnly=$false;performanceQualified=$false})})
+Check (Refuses {Get-OwnedBrowserPlanMemoryProfile ([pscustomobject]@{resourceProfile='hosted-functional-2048';functionalOnly=$true;performanceQualified=$true})})
+Check (Refuses {Get-OwnedBrowserPlanMemoryProfile ([pscustomobject]@{resourceProfile='strict-browser-1024';performanceQualified=$true})})
+Check (Refuses {Get-OwnedBrowserPlanMemoryProfile ([pscustomobject]@{resourceProfile='strict-browser-1024';functionalOnly=$true})})
 @{state='PASS-INERT-ONLY';controls=$count;nativeCalls=0;processStarts=0;providerCalls=0;browserStarts=0;rawMarkerPersisted=$false}|ConvertTo-Json
