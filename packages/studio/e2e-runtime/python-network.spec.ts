@@ -52,9 +52,21 @@ for (let sample = 0; sample < 30; sample++) {
       'pyodide.asm.wasm',
       'python_stdlib.zip',
     ])
-    const bootBytes = distribution.manifest.files
-      .filter((file: { path: string }) => bootPaths.has(file.path))
-      .reduce((sum: number, file: { bytes: number }) => sum + file.bytes, 0)
+    // Count each boot file as it is actually served: its declared gzip representation when
+    // the distribution has one, otherwise the file itself.
+    const files = new Map<string, { bytes: number }>(
+      distribution.manifest.files.map((file: { path: string; bytes: number }) => [file.path, file]),
+    )
+    const representations = new Map<string, string>(
+      (distribution.manifest.httpRepresentations ?? []).map(
+        (item: { path: string; artifactPath: string }) => [item.path, item.artifactPath],
+      ),
+    )
+    const bootBytes = [...bootPaths].reduce((sum, path) => {
+      const served = files.get(representations.get(path) ?? path)
+      expect(served, path).toBeDefined()
+      return sum + (served?.bytes ?? 0)
+    }, 0)
     expect(bootBytes).toBeGreaterThan(0)
     expect(bytes).toBeGreaterThanOrEqual(bootBytes)
     expect(elapsedMs).toBeGreaterThanOrEqual((bytes / 2_500_000) * 1000)
