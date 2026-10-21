@@ -21,6 +21,25 @@ function Test-OwnedBrowserBudget([double]$WorkingSetMiB,[double]$FreeMiB){
  if([double]::IsNaN($WorkingSetMiB) -or [double]::IsInfinity($WorkingSetMiB) -or $WorkingSetMiB -lt 0 -or [double]::IsNaN($FreeMiB) -or [double]::IsInfinity($FreeMiB) -or $FreeMiB -lt 0){throw 'browser-memory-unknown'}
  return $WorkingSetMiB -le 1024 -and $FreeMiB -ge 512
 }
+# Closed diagnostic projection of the SAME native reads used for admission.
+# PrivateUsage is committed private memory, not private working set/unique RAM.
+function New-OwnedBrowserMemorySnapshot($Observation,$Root,[double]$FreeMiB,[double]$ElapsedMs,[datetimeoffset]$ObservedAt,[double]$SampleDurationMs,[string]$Phase){
+ $rows=@();$rootWS=0.0;$rootCommit=0.0;$descendantWS=0.0;$descendantCommit=0.0;$truncated=$false
+ foreach($value in $Observation.observed){
+  if($value.exited){continue}
+  $isRoot=$value.processId -eq $Root.processId -and $value.creationFileTime -ceq $Root.creationFileTime
+  $ws=[double]$value.workingSetBytes;$commit=[double]$value.privateCommitBytes
+  if($isRoot){$rootWS+=$ws;$rootCommit+=$commit}else{$descendantWS+=$ws;$descendantCommit+=$commit}
+  if($rows.Count -lt 1024){$rows+=@{processId=[int]$value.processId;creationFileTime=[string]$value.creationFileTime;kind=$(if($isRoot){'root-node'}else{'owned-descendant'});workingSetBytes=$value.workingSetBytes;privateCommitBytes=$value.privateCommitBytes}}else{$truncated=$true}
+ }
+ $closedPhase=if($Phase -cin @('preclaim','scenario')){$Phase}else{'unknown'}
+ return [pscustomobject]@{observedAt=$ObservedAt.ToString('o');elapsedMs=$ElapsedMs;sampleDurationMs=$SampleDurationMs;phase=$closedPhase;freeMiB=$FreeMiB;workingSetMiB=$Observation.workingSetMiB;privateCommitMiB=$Observation.privateMiB;rootWorkingSetMiB=$rootWS/1MB;rootPrivateCommitMiB=$rootCommit/1MB;descendantWorkingSetMiB=$descendantWS/1MB;descendantPrivateCommitMiB=$descendantCommit/1MB;ownershipComplete=$Observation.ownershipComplete;rows=$rows;rowsTruncated=$truncated}
+}
+function Record-OwnedBrowserMemorySnapshot($Snapshots,$Value,[bool]$Positive){
+ if($Value.phase -ceq 'preclaim' -and $null -eq $Snapshots.preclaim){$Snapshots.preclaim=$Value}
+ if($Positive){if($null -eq $Snapshots.firstNegative){$Snapshots.lastPositive=$Value}}elseif($null -eq $Snapshots.firstNegative){$Snapshots.firstNegative=$Value}
+ if($null -eq $Snapshots.peak -or $Value.workingSetMiB -gt $Snapshots.peak.workingSetMiB){$Snapshots.peak=$Value}
+}
 function Test-OwnedBrowserCompletion($Value,[string]$Nonce,[int]$RootId){
  return $null -ne $Value -and $Value.nonce -ceq $Nonce -and $Value.pid -eq $RootId -and $Value.version -eq 1 -and $Value.state -cin @('PASS','NEG') -and $Value.browserClosed -is [bool] -and $Value.functionalPassed -is [bool] -and $Value.sshClosed -is [bool] -and ($Value.state -cne 'PASS' -or ($Value.browserClosed -and $Value.functionalPassed -and $Value.sshClosed))
 }

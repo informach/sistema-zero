@@ -85,7 +85,7 @@ function Read-OwnedJobObservation($Context){
    if($Context.members.ContainsKey($key)){$candidate.Dispose()}else{$Context.members[$key]=$candidate}
   }
   foreach($member in $Context.members.Values){
-   $value=$member.Read();$observed+=@{processId=[int]$value.Pid;creationFileTime=$value.CreationFileTime;exited=$value.Exited;exitCode=$value.ExitCode}
+   $value=$member.Read();$observed+=@{processId=[int]$value.Pid;creationFileTime=$value.CreationFileTime;exited=$value.Exited;exitCode=$value.ExitCode;workingSetBytes=$value.WorkingSetBytes;privateCommitBytes=$value.PrivateBytes}
    if($value.Exited){$exited+=[int]$value.Pid}else{
     if($null -eq $value.WorkingSetBytes -or $null -eq $value.PrivateBytes){throw 'Unknown live native memory'}
     $live+=[int]$value.Pid;$working+=[double]$value.WorkingSetBytes/1MB;$private+=[double]$value.PrivateBytes/1MB

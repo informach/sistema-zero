@@ -20,13 +20,18 @@ Initialize-OwnedJobNative $nativePin.sha256
 if(-not [IO.Path]::IsPathFullyQualified($plan.directory) -or (Test-Path -LiteralPath $plan.directory)){throw 'Fresh exclusive owner output required'}
 New-Item -ItemType Directory -Path $plan.directory -ErrorAction Stop|Out-Null
 $directory=$plan.directory;$nonce=[guid]::NewGuid().ToString('N');$owner=$null;$process=$null;$streams=$null;$providerBytes=$null;$primary=$null;$cleanupFailure=$null;$close=$null;$completion=$null;$maxWS=0.0;$force=$false;$phase='admission';$functional=$false;$clock=[Diagnostics.Stopwatch]::StartNew();$started=[datetimeoffset]::UtcNow
+$memorySnapshots=[pscustomobject]@{preclaim=$null;lastPositive=$null;firstNegative=$null;peak=$null}
 function Put([string]$Name,$Value){$path=Join-Path $directory $Name;$temporary=$path+'.pending';[IO.File]::WriteAllText($temporary,($Value|ConvertTo-Json -Depth 14),[Text.UTF8Encoding]::new($false));[IO.File]::Move($temporary,$path,$false)}
 function Stop-OwnedBrowser {if(-not(Test-Path -LiteralPath (Join-Path $directory 'stop.request'))){Put 'stop.request' @{nonce=$nonce}}}
 function Sample-OwnedBrowser {
+ $sampleAt=[datetimeoffset]::UtcNow;$sampleElapsed=$clock.Elapsed.TotalMilliseconds
  $sample=Read-OwnedJobObservation $owner;$script:maxWS=[math]::Max($script:maxWS,$sample.workingSetMiB)
  Read-OwnedBrowserStreams $streams
  $free=[double](Get-CimInstance Win32_OperatingSystem -Property FreePhysicalMemory -ErrorAction Stop).FreePhysicalMemory/1024
- if(-not(Test-OwnedBrowserBudget $sample.workingSetMiB $free)){throw 'browser-memory-budget'}
+ $positive=Test-OwnedBrowserBudget $sample.workingSetMiB $free
+ $memorySnapshot=New-OwnedBrowserMemorySnapshot $sample $owner.root $free $sampleElapsed $sampleAt ($clock.Elapsed.TotalMilliseconds-$sampleElapsed) $phase
+ Record-OwnedBrowserMemorySnapshot $memorySnapshots $memorySnapshot $positive
+ if(-not $positive){throw 'browser-memory-budget'}
  if($streams.unknown -or $streams.overflow){throw 'browser-streams-unknown'}
  return $sample
 }
@@ -110,7 +115,7 @@ try{
   try{$close=Close-OwnedJobContext $owner -RequireEmpty}catch{if(-not $cleanupFailure){$cleanupFailure=ConvertTo-OwnedBrowserFailure $_ 'close-context'}}
  }
  $normalCleanup=$null -ne $close -and $close.cleanupConfirmed -and -not $force -and -not $cleanupFailure -and -not $libraryForce -and $streams.closed.stdout -and $streams.closed.stderr -and -not $streams.unknown -and -not $streams.overflow
- $receipt=@{version=1;state=$(if(-not $primary -and $functional -and $normalCleanup){'PASS-hosted-js-pro-owned'}else{'NEG'});planSha256=$ExpectedPlanSha256;attemptId=$plan.attemptId;startedAt=$started.ToString('o');completedAt=[datetimeoffset]::UtcNow.ToString('o');elapsedMs=$clock.ElapsedMilliseconds;primary=$primary;cleanupFailure=$cleanupFailure;functionalPassed=$functional;normalCleanup=$normalCleanup;resourceReleaseConfirmed=($null -ne $close -and $close.cleanupConfirmed);cleanup=$close;operatorForceUsed=$force;libraryForceObserved=[bool]$libraryForce;playwrightInternalFallbackAttested=$false;maxSampledWorkingSetMiB=$maxWS;reference=$(if($owner){@{root=$owner.root;name=$owner.job.Name}}else{$null});known=$(if($owner){@($owner.members.Values|ForEach-Object{@{pid=$_.Pid;creationFileTime=$_.CreationFileTime}})}else{@()});diagnostics=$(if($streams){@{counts=$streams.counts;characters=$streams.characters;unknown=$streams.unknown;overflow=$streams.overflow;stdoutClosed=$streams.closed.stdout;stderrClosed=$streams.closed.stderr;rawPersisted=$false}}else{$null})}
+ $receipt=@{version=1;state=$(if(-not $primary -and $functional -and $normalCleanup){'PASS-hosted-js-pro-owned'}else{'NEG'});planSha256=$ExpectedPlanSha256;attemptId=$plan.attemptId;startedAt=$started.ToString('o');completedAt=[datetimeoffset]::UtcNow.ToString('o');elapsedMs=$clock.ElapsedMilliseconds;primary=$primary;cleanupFailure=$cleanupFailure;functionalPassed=$functional;normalCleanup=$normalCleanup;resourceReleaseConfirmed=($null -ne $close -and $close.cleanupConfirmed);cleanup=$close;operatorForceUsed=$force;libraryForceObserved=[bool]$libraryForce;playwrightInternalFallbackAttested=$false;maxSampledWorkingSetMiB=$maxWS;memorySnapshots=$memorySnapshots;reference=$(if($owner){@{root=$owner.root;name=$owner.job.Name}}else{$null});known=$(if($owner){@($owner.members.Values|ForEach-Object{@{pid=$_.Pid;creationFileTime=$_.CreationFileTime}})}else{@()});diagnostics=$(if($streams){@{counts=$streams.counts;characters=$streams.characters;unknown=$streams.unknown;overflow=$streams.overflow;stdoutClosed=$streams.closed.stdout;stderrClosed=$streams.closed.stderr;rawPersisted=$false}}else{$null})}
  Put 'receipt.json' $receipt
 }
 Write-Output ($receipt|Select-Object state,functionalPassed,normalCleanup,resourceReleaseConfirmed,operatorForceUsed,elapsedMs|ConvertTo-Json -Compress)

@@ -42,4 +42,44 @@ Check ((ConvertTo-OwnedChromeMarker 'secret-not-for-output <will force kill>') -
 Check ((ConvertTo-OwnedChromeMarker 'arbitrary-private-content') -ceq 'other')
 try{throw 'arbitrary-secret-marker'}catch{$failure=ConvertTo-OwnedBrowserFailure $_ 'inert';Check (($failure|ConvertTo-Json -Compress) -notmatch 'arbitrary-secret-marker')}
 try{throw 'browser-memory-budget'}catch{Check ((ConvertTo-OwnedBrowserFailure $_ 'scenario').code -ceq 'browser-memory-budget')}
+# Project already obtained native metrics; do not re-query a process or infer
+# unique physical RAM by subtracting private commit from working set.
+$rootIdentity=@{processId=101;creationFileTime='134370389358208947'}
+$observation=@{workingSetMiB=300;privateMiB=500;ownershipComplete=$true;observed=@(
+ @{processId=101;creationFileTime=$rootIdentity.creationFileTime;exited=$false;workingSetBytes=100MB;privateCommitBytes=200MB;secret='arbitrary-marker'},
+ @{processId=102;creationFileTime='134370389358208948';exited=$false;workingSetBytes=200MB;privateCommitBytes=300MB},
+ @{processId=103;creationFileTime='134370389358208949';exited=$true;workingSetBytes=$null;privateCommitBytes=$null}
+)}
+$at=[datetimeoffset]::Parse('2026-10-21T06:49:00.1234567Z')
+$sample=New-OwnedBrowserMemorySnapshot $observation $rootIdentity 2048 500 $at 20 'preclaim'
+Check ($sample.rows.Count -eq 2 -and $sample.rootWorkingSetMiB -eq 100 -and $sample.descendantWorkingSetMiB -eq 200)
+Check ($sample.privateCommitMiB -eq 500 -and $sample.rootPrivateCommitMiB -eq 200 -and $sample.descendantPrivateCommitMiB -eq 300)
+Check ($sample.rows[0].kind -ceq 'root-node' -and $sample.rows[1].kind -ceq 'owned-descendant')
+Check ($sample.observedAt -ceq $at.ToString('o') -and $sample.elapsedMs -eq 500 -and $sample.sampleDurationMs -eq 20)
+Check (($sample|ConvertTo-Json -Depth 8 -Compress) -notmatch 'arbitrary-marker|secret')
+$unknownPhase=New-OwnedBrowserMemorySnapshot $observation $rootIdentity 2048 500 $at 20 'arbitrary-marker'
+Check ($unknownPhase.phase -ceq 'unknown')
+$snapshots=[pscustomobject]@{preclaim=$null;lastPositive=$null;firstNegative=$null;peak=$null}
+Record-OwnedBrowserMemorySnapshot $snapshots $sample (Test-OwnedBrowserBudget $sample.workingSetMiB $sample.freeMiB)
+Check ($snapshots.preclaim -eq $sample -and $snapshots.peak -eq $sample -and $null -eq $snapshots.firstNegative)
+$observation.workingSetMiB=1024
+$observation.observed[1].workingSetBytes=924MB
+$positive=New-OwnedBrowserMemorySnapshot $observation $rootIdentity 2048 1000 $at 20 'scenario'
+Record-OwnedBrowserMemorySnapshot $snapshots $positive (Test-OwnedBrowserBudget $positive.workingSetMiB $positive.freeMiB)
+Check ($snapshots.lastPositive -eq $positive -and $snapshots.preclaim -eq $sample)
+$observation.workingSetMiB=1077.73046875
+$observation.observed[1].workingSetBytes=[ulong](977.73046875*1MB)
+$breach=New-OwnedBrowserMemorySnapshot $observation $rootIdentity 2048 1500 $at 20 'scenario'
+Record-OwnedBrowserMemorySnapshot $snapshots $breach (Test-OwnedBrowserBudget $breach.workingSetMiB $breach.freeMiB)
+Check ($snapshots.firstNegative -eq $breach -and $snapshots.peak -eq $breach -and $snapshots.lastPositive -eq $positive)
+$observation.workingSetMiB=1025
+$observation.observed[1].workingSetBytes=925MB
+$later=New-OwnedBrowserMemorySnapshot $observation $rootIdentity 2048 2000 $at 20 'scenario'
+Record-OwnedBrowserMemorySnapshot $snapshots $later (Test-OwnedBrowserBudget $later.workingSetMiB $later.freeMiB)
+Record-OwnedBrowserMemorySnapshot $snapshots $sample $true
+Check ($snapshots.firstNegative -eq $breach -and $snapshots.peak -eq $breach -and $snapshots.lastPositive -eq $positive)
+$observation.observed=@(1..1025|ForEach-Object{@{processId=$_;creationFileTime='134370389358208947';exited=$false;workingSetBytes=1;privateCommitBytes=2}})
+$observation.workingSetMiB=1025/1MB;$observation.privateMiB=2050/1MB
+$bounded=New-OwnedBrowserMemorySnapshot $observation $rootIdentity 2048 3000 $at 20 'scenario'
+Check ($bounded.rows.Count -eq 1024 -and $bounded.rowsTruncated)
 @{state='PASS-INERT-ONLY';controls=$count;nativeCalls=0;processStarts=0;providerCalls=0;browserStarts=0;rawMarkerPersisted=$false}|ConvertTo-Json
