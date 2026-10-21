@@ -1,0 +1,27 @@
+{
+  "generatedBy": "studio-runtime publications.ts recipe v1 (46318c9e7)",
+  "input": {
+    "operation": "promote-python",
+    "playId": "3f0c2a4e-8b1d-4c6a-9e2f-5a7b8c9d0e1f",
+    "owner": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "projectId": "python-game",
+    "requestId": "7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+    "expectedVersion": 0,
+    "parentOrigin": "https://kids.test",
+    "source": "{\"formatVersion\":3,\"programmingLanguage\":\"python\",\"kind\":\"classic\",\"runtime\":{\"profileId\":\"python-browser\",\"releaseId\":\"1.0.0\",\"manifestSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"},\"id\":\"python-game\",\"name\":\"Corrida Turtle v1\",\"createdAt\":100,\"updatedAt\":100,\"installedExtensions\":[{\"id\":\"python-turtle\",\"version\":\"1.0.0\",\"installedAt\":100}],\"python\":{\"entrypoint\":\"main.py\",\"dependencyLock\":{\"lockVersion\":1,\"target\":\"browser\",\"pythonVersion\":\"3.13.2\",\"runtimeManifestSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"requirementsSha256\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"packages\":[]}},\"ir\":null,\"blocksState\":null,\"mode\":\"bridge\",\"files\":{\"main.py\":\"import turtle\\nturtle.forward(100)\\n\"}}",
+    "approval": {
+      "kind": "python-browser",
+      "runtime": {
+        "profileId": "python-browser",
+        "releaseId": "1.0.0",
+        "manifestSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "snapshotSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    }
+  },
+  "objects": {
+    "publications/3f0c2a4e-8b1d-4c6a-9e2f-5a7b8c9d0e1f/state.json": "{\"publicationVersion\":2,\"programmingLanguage\":\"python\",\"kind\":\"classic\",\"runtime\":{\"profileId\":\"python-browser\",\"releaseId\":\"1.0.0\",\"manifestSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"},\"playId\":\"3f0c2a4e-8b1d-4c6a-9e2f-5a7b8c9d0e1f\",\"version\":1,\"activeRevision\":\"ed6d4d29a62147a6a3cf4abb294b969dc0fd59b49eef4d8bbd78c5d71ab4a33a\",\"disabled\":false,\"revisions\":[{\"id\":\"ed6d4d29a62147a6a3cf4abb294b969dc0fd59b49eef4d8bbd78c5d71ab4a33a\",\"requestId\":\"7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d\",\"sourceHash\":\"5173016fdd6d70fc8dad0732a7c40528ff32971c61c48da5400b4d94ea509087\",\"artifactHash\":\"1884bf39becf7b5e79a9674d83c5cfb0e3ee702326ec3129d2accaed0ad15b0b\",\"createdAt\":1760000000000,\"approval\":{\"kind\":\"python-browser\",\"runtime\":{\"profileId\":\"python-browser\",\"releaseId\":\"1.0.0\",\"manifestSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"},\"snapshotSha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"}}],\"owner\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"projectId\":\"python-game\",\"parentOrigin\":\"https://kids.test\",\"lastOperation\":{\"id\":\"7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d\",\"revision\":\"ed6d4d29a62147a6a3cf4abb294b969dc0fd59b49eef4d8bbd78c5d71ab4a33a\",\"disabled\":false}}",
+    "published/3f0c2a4e-8b1d-4c6a-9e2f-5a7b8c9d0e1f/ed6d4d29a62147a6a3cf4abb294b969dc0fd59b49eef4d8bbd78c5d71ab4a33a/manifest.json": "{\"version\":1,\"sourceHash\":\"5173016fdd6d70fc8dad0732a7c40528ff32971c61c48da5400b4d94ea509087\",\"approval\":{\"kind\":\"python-browser\",\"runtime\":{\"profileId\":\"python-browser\",\"releaseId\":\"1.0.0\",\"manifestSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"},\"snapshotSha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"}}",
+    "published/3f0c2a4e-8b1d-4c6a-9e2f-5a7b8c9d0e1f/ed6d4d29a62147a6a3cf4abb294b969dc0fd59b49eef4d8bbd78c5d71ab4a33a/source.json": "{\"formatVersion\":3,\"programmingLanguage\":\"python\",\"kind\":\"classic\",\"runtime\":{\"profileId\":\"python-browser\",\"releaseId\":\"1.0.0\",\"manifestSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"},\"id\":\"python-game\",\"name\":\"Corrida Turtle v1\",\"createdAt\":100,\"updatedAt\":100,\"installedExtensions\":[{\"id\":\"python-turtle\",\"version\":\"1.0.0\",\"installedAt\":100}],\"python\":{\"entrypoint\":\"main.py\",\"dependencyLock\":{\"lockVersion\":1,\"target\":\"browser\",\"pythonVersion\":\"3.13.2\",\"runtimeManifestSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"requirementsSha256\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"packages\":[]}},\"ir\":null,\"blocksState\":null,\"mode\":\"bridge\",\"files\":{\"main.py\":\"import turtle\\nturtle.forward(100)\\n\"}}"
+  }
+}
