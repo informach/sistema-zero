@@ -48,7 +48,7 @@
 
 **hero.tela.imagem.alt**: A Chave do Farol: o personagem na trilha, a chave dourada e o farol listrado na ilha
 
-**hero.tela.legenda**: O jogo que você vai montar. Tela da versão Kids do curso.
+**hero.tela.legenda**: O jogo que você vai montar.
 
 **hero.faixa**: 30 DIAS
 
@@ -178,9 +178,9 @@
 
 **quem.requisito**: Para pessoas com 18 anos ou mais. Precisa de computador com mouse e teclado.
 
-**quem.caderno.imagem.alt**: Uma página do Caderno do Aluno da Chave do Farol, com os três testes do jogo inteiro
+**quem.caderno.imagem.alt**: Uma página do Caderno do Aluno adulto da Chave do Farol, com os três testes do jogo inteiro
 
-**quem.caderno.legenda**: O Caderno do Aluno explica cada teste, passo a passo. Página da versão Kids.
+**quem.caderno.legenda**: O Caderno do Aluno explica cada teste, passo a passo.
 
 **fundadores.rotulo**: QUEM FEZ O JOGO
 

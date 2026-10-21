@@ -5,8 +5,8 @@
 //
 // Oferta no catálogo: env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` aponta
 // `desafio-primeiro-jogo-adulto-30-dias` (criada pelo seed do catálogo, curso
-// `desafio-primeiro-jogo-adulto`). Entra no `FUNNELS` DEPOIS da Comunidade adulta (a landing `/pro`
-// continua indo para o No Comando da IA) quando essa env existir no Railway: ver o comentário lá.
+// `desafio-primeiro-jogo-adulto`). Registrado DEPOIS da Comunidade adulta: a landing `/pro`
+// continua indo para o No Comando da IA.
 
 import { TERMOS_DESAFIO_ADULTO } from '../../content/legal/termos-desafio-adulto'
 import type { FunnelDef } from '../registry'

@@ -735,6 +735,204 @@ const seeds = [
       footerNote: 'Você recebeu este e-mail porque teve acesso ao Desafio do Primeiro Jogo.',
     }),
   },
+  // Desafio do Primeiro Jogo para ADULTOS (21/10/2026): a mesma régua do Kids, com as MESMAS
+  // variáveis de cada equivalente (contrato com o funil e o members; não renomear sem mudar os
+  // chamadores), falando com a própria pessoa. O funil envia `challenge-access-approved-adult`
+  // nos dois canais (sem `orientacao`: a orientação está no texto); o members envia os demais por
+  // e-mail. Light Copy: sem "!", travessão, pergunta de gancho ou emoji.
+  {
+    key: 'challenge-access-approved-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: acesso aprovado (e-mail)',
+    subject: '{{nome}}, o seu primeiro jogo pode começar',
+    variables: ['nome', 'link', 'expira_em', 'acao'],
+    body: emailLayout({
+      preheader: 'O acesso está liberado até {{expira_em}}.',
+      title: 'O seu primeiro jogo pode começar',
+      content: [
+        p(
+          'Olá, {{nome}}. O pagamento foi aprovado e o <strong>Desafio do Primeiro Jogo</strong> está liberado na sua conta. Você vai montar A Chave do Farol com blocos, em três fases, e publicar o jogo no Mural adulto.',
+        ),
+        p(
+          'O curso e o Mural completo ficam disponíveis até <strong>{{expira_em}}</strong>. Depois, o Mural continua aberto para ver e jogar. Não há renovação automática.',
+        ),
+        ctaButton('{{acao}}', '{{link}}'),
+        divider,
+        small(
+          'Abra a primeira aula num computador com mouse e teclado. Primeiro você joga a versão pronta e vê aonde vai chegar. Depois monta as regras, uma fase de cada vez, no seu ritmo dentro do prazo.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque comprou o Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-access-approved-adult',
+    channel: 'whatsapp' as const,
+    name: 'Desafio adulto: acesso aprovado (WhatsApp)',
+    variables: ['nome', 'link', 'expira_em', 'acao'],
+    body: [
+      'Olá, {{nome}}.',
+      '',
+      'O pagamento foi aprovado e o *Desafio do Primeiro Jogo* está liberado na sua conta. Você vai montar A Chave do Farol com blocos, em três fases.',
+      'Curso e Mural completo até *{{expira_em}}*. Depois, o Mural continua aberto para ver e jogar. Sem renovação automática.',
+      '',
+      '{{acao}}:',
+      '{{link}}',
+      '',
+      'Abra a primeira aula num computador com mouse e teclado. Primeiro você joga a versão pronta; depois monta as regras, uma fase de cada vez.',
+    ].join('\n'),
+  },
+  {
+    key: 'challenge-not-activated-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: conta ainda não ativada (e-mail)',
+    subject: '{{nome}}, falta criar a sua senha para começar o Desafio',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'O seu acesso já está contando. Crie a senha para aproveitar o prazo.',
+      title: 'O seu Desafio está esperando por você',
+      content: [
+        p('Olá, {{nome}}. O acesso já foi liberado, mas a senha da conta ainda não foi criada.'),
+        p(
+          'Os 30 dias começaram na aprovação do pagamento, então vale resolver agora. Use o botão abaixo, informe o e-mail da compra e siga as instruções para criar a senha.',
+        ),
+        ctaButton('Criar senha e entrar', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque comprou o Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-not-started-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: primeira aula ainda não aberta (e-mail)',
+    subject: '{{nome}}, a primeira aula do Desafio está esperando por você',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'A conta está pronta. Comece jogando a versão pronta da Chave do Farol.',
+      title: 'Hoje pode ser o começo do seu primeiro jogo',
+      content: [
+        p('Olá, {{nome}}. A conta está pronta, mas a primeira aula ainda não foi aberta.'),
+        p(
+          'Num computador com mouse e teclado, abra o curso e jogue a versão pronta da Chave do Farol. Depois vêm as três fases de montagem. Você pode pausar e continuar dentro do prazo, sem fazer tudo no mesmo dia.',
+        ),
+        ctaButton('Abrir a primeira aula', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem acesso ativo ao Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-day-one-complete-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: primeira fase concluída (e-mail)',
+    subject: 'A primeira fase do seu jogo está concluída',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'Continue do ponto em que parou, uma fase de cada vez.',
+      title: 'Primeira fase concluída',
+      content: [
+        p('Olá, {{nome}}. A primeira fase do Desafio aparece como concluída na sua conta.'),
+        p('Quando quiser, retome do mesmo ponto. Uma fase de cada vez basta.'),
+        ctaButton('Continuar o Desafio', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque há progresso no Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-expiry-7d-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: faltam 7 dias (e-mail)',
+    subject: 'Falta uma semana para o seu acesso ao Desafio terminar',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'O acesso vai até {{data}}. Continue de onde parou.',
+      title: 'Ainda dá tempo de avançar com calma',
+      content: [
+        p(
+          'Olá, {{nome}}. O seu acesso ao Desafio do Primeiro Jogo termina em <strong>{{data}}</strong>.',
+        ),
+        p(
+          'Falta uma semana. Em <strong>Seu progresso</strong>, você vê em que fase parou e segue para a próxima, sem recomeçar.',
+        ),
+        ctaButton('Ver o meu progresso', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque tem acesso temporário ao Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-expiry-3d-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: faltam 3 dias (e-mail)',
+    subject: 'Últimos 3 dias do seu acesso ao Desafio do Primeiro Jogo',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'O acesso termina em {{data}}. Conclua o próximo passo possível.',
+      title: 'Últimos dias para continuar o projeto',
+      content: [
+        p('Olá, {{nome}}. O seu acesso ao Desafio termina em <strong>{{data}}</strong>.'),
+        p(
+          'Se o jogo ainda não ficou pronto, retome agora e avance até a próxima fase possível. O projeto e o progresso continuam guardados na sua conta.',
+        ),
+        ctaButton('Continuar o Desafio', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque tem acesso temporário ao Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-completed-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: concluído (e-mail)',
+    subject: 'Você concluiu o Desafio do Primeiro Jogo',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'O seu jogo está pronto. Veja o caminho que vem depois.',
+      title: 'O seu primeiro jogo está pronto',
+      content: [
+        p(
+          'Olá, {{nome}}. O Desafio do Primeiro Jogo aparece como concluído na sua conta. Se o jogo já está publicado no Mural, mande o link para alguém jogar. Se ainda não publicou e o acesso está ativo, a aula de publicação mostra como fazer.',
+        ),
+        p(
+          'Se quiser continuar, a Comunidade dos Criadores reúne os próximos cursos, o Estúdio e o Mural na mesma conta. É uma contratação separada e opcional, e a conclusão do curso não encerra antes do prazo o acesso que você já comprou.',
+        ),
+        ctaButton('Ver o caminho depois do primeiro jogo', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque concluiu o Desafio do Primeiro Jogo na sua conta.',
+    }),
+  },
+  {
+    key: 'challenge-expired-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: acesso encerrado (e-mail)',
+    subject: 'O seu acesso ao Desafio terminou, {{nome}}',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'Os projetos e o progresso continuam guardados na sua conta.',
+      title: 'O período do Desafio terminou',
+      content: [
+        p(
+          'Olá, {{nome}}. O seu acesso ao Desafio do Primeiro Jogo terminou em <strong>{{data}}</strong>.',
+        ),
+        p(
+          'O Mural adulto continua aberto para ver e jogar, sem novas publicações, comentários ou reações. O link do jogo que você publicou continua funcionando enquanto a publicação estiver no ar. Os projetos e o progresso ficam guardados na sua conta.',
+        ),
+        p(
+          'Continuar como visitante não gera cobrança. Para retomar o curso e seguir com os próximos, veja os planos da Comunidade dos Criadores.',
+        ),
+        ctaButton('Ver como continuar na Comunidade', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque teve acesso ao Desafio do Primeiro Jogo.',
+    }),
+  },
   // Fim do acesso (20/10/2026), enviados pelo MEMBERS (consumer HMAC `members`, job do ciclo
   // de vencimentos, `send-access-ended-messages`). CONTRATO de variáveis com o members: NÃO
   // renomear sem mudar o chamador. `data` chega formatada (dd/mm/aaaa, calendário de São

@@ -18,14 +18,14 @@ As três páginas do Canvas "Desafio do Primeiro Jogo · três páginas" foram p
 | --- | --- |
 | `/kids/desafio-primeiro-jogo/oferta` | 9 a 17 anos (`Desafio917Body`) |
 | `/kids/desafio-primeiro-jogo/oferta/criar-junto` | menor de 9, criando com um adulto (`DesafioMenor9Body`) |
-| `/pro/desafio-primeiro-jogo/oferta` | adultos, tema arcade (`DesafioAdultoBody`, funil novo); entra no ar com a variável do Railway |
+| `/pro/desafio-primeiro-jogo/oferta` | adultos, tema arcade (`DesafioAdultoBody`, funil novo), registrado no mesmo dia depois que a variável foi criada no Railway |
 
 As antigas `/oferta/tempo-de-tela`, `/oferta/iniciacao-tecnologica` e `/oferta/primeiro-jogo` fazem 301 para `/oferta`, mantendo a query (atribuição e cupom).
 
 O quiz do Desafio virou `desafio-farol-v4`:
 - a pergunta de idade ganhou "15 a 17" e "18 ou mais";
 - todo resultado leva à mesma `/oferta`;
-- quem marca menos de 9 recebe o link da página "criar junto", e quem marca 18 ou mais recebe o da página adulta assim que ela estiver no ar.
+- quem marca menos de 9 recebe o link da página "criar junto", e quem marca 18 ou mais recebe o da página adulta.
 
 O quiz antigo continua legível pela regra de versão.
 
@@ -39,22 +39,36 @@ O Termo Kids subiu para `desafio-2026-10-21`. Ele passou a dizer que a criança 
   - o Mural adulto completo como item.
 - **Members:**
   - Depois dos 30 dias, quem comprou a oferta adulta fica com a visita permanente ao Mural adulto, como o Kids fica com a do Mural Kids.
-  - Os avisos `challenge-*` de prazo e progresso continuam só no Kids, porque falam com o responsável e com a Área dos pais.
-- **Funil:** quando o funil adulto for registrado, a env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` passa a ser obrigatória, porque sem ela o funil não sobe. Ela já está no `.env.example`.
+  - Os avisos de prazo e progresso têm versões adultas (`challenge-*-adult`), com os links do app adulto. Eles dependem da env `COMMUNITY_URL` no members.
+- **Funil:** a env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` é obrigatória, porque sem ela o funil não sobe. Ela está no `.env.example` e em `.railway/variables.ts`.
+
+## Segunda rodada, no mesmo dia: o adulto completo
+
+A dona criou as variáveis no Railway, em staging e em produção:
+
+| Serviço | Variável | Valor |
+| --- | --- | --- |
+| funnel | `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` | `desafio-primeiro-jogo-adulto-30-dias` |
+| members | `COMMUNITY_URL` | URL do app adulto (a mesma do funil) |
+
+Com elas:
+
+- **Página adulta ativada.** O funil `DESAFIO_ADULTO` foi registrado depois da Comunidade adulta. Os dois nomes estão em `.railway/variables.ts`, e a oferta e o Termo entraram no sitemap.
+- **E-mails do adulto.** São oito templates `-adult` no Messaging, com as mesmas variáveis do Kids, falando com a própria pessoa:
+  - o funil manda `challenge-access-approved-adult` (e-mail e WhatsApp), com a data final, e cai no `welcome`/`new-access` enquanto o seed não roda;
+  - o members manda os avisos de ativação, início, Dia 1, conclusão, 7 dias, 3 dias e fim;
+  - o "mais forte" de cada público é a chave-mestra dele, `all_courses` no adulto.
+- **Telas.**
+  - O jogo e os blocos são os mesmos do Kids, porque o projeto final e os blocos adultos são idênticos. Por isso as legendas perderam "versão Kids".
+  - A página do Caderno agora é a do PDF adulto (página 18, `/img/desafio-adulto/farol-caderno.png`).
 
 ## O que ainda falta
 
-- **Ativar a página adulta.** O funil adulto está pronto e testado, mas ainda não está registrado. Registrado sem a env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO`, o funil inteiro não sobe, e esta sessão não tem acesso ao Railway. A ordem é:
-  1. criar a variável no painel do Railway, em staging e em produção, com o valor `desafio-primeiro-jogo-adulto-30-dias`;
-  2. registrar `DESAFIO_ADULTO` no `FUNNELS`, depois da Comunidade adulta;
-  3. declarar o nome em `.railway/variables.ts`;
-  4. pôr a oferta e o Termo no sitemap;
-  5. trocar o teste "pronto e fora do registro" pelo teste da ordem.
-
-  Até lá, as rotas adultas dão 404, e a tela de idade do quiz Kids, para quem marca 18 ou mais, mostra a orientação genérica.
-- **Curso adulto:** o curso adulto precisa estar importado e publicado no ambiente.
-- **Comunicação do adulto:** o e-mail de boas-vindas com a data final e os avisos de prazo do adulto ainda não existem. Hoje o adulto recebe o boas-vindas genérico (`welcome`/`new-access`).
-- **Telas do curso:** a página adulta usa as telas do curso Kids, com legenda dizendo isso. Elas devem ser trocadas por capturas da área adulta quando houver.
+- **Curso adulto:** precisa estar importado e publicado no ambiente.
+- **Os 4 passos da aula:** ainda são telas do Kids, com a nota dizendo isso. A troca depende de duas coisas:
+  - o curso adulto publicado em staging;
+  - uma conta adulta de teste com os cookies exportados, para um script de captura no molde do `captura-telas-kids.ts`.
+- **Deploy:** o build do Railway estava fora do ar em 21/10/2026. O deploy de staging sai quando ele voltar. Antes de qualquer aviso adulto sair, o `templates:seed` do Messaging roda no deploy dele.
 
 ## Espelhos e testes
 
@@ -64,4 +78,6 @@ O Termo Kids subiu para `desafio-2026-10-21`. Ele passou a dizer que a criança 
   - `tests/unit/comunidade-offer-css.test.ts`;
   - `tests/unit/desafio-quiz.test.ts`;
   - o browser `tests/browser/desafio-farol.ts`;
-  - no Members, `tests/application/grant.test.ts`.
+  - no Members, `tests/application/grant.test.ts`, `tests/unit/challenge-lifecycle.test.ts`, `tests/unit/renewal-reminder.test.ts` e, com banco, `tests/db/challenge-lifecycle.repository.test.ts` e `tests/db/renewal-reminder.repository.test.ts`;
+  - no Messaging, `tests/challenge-adult-copy.test.ts`;
+  - no funil, `tests/unit/welcome-email.test.ts`.

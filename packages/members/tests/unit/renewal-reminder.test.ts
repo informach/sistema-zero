@@ -107,6 +107,7 @@ function service(
   messaging: { sendEmail(input: SendEmailInput): Promise<void> },
   batchLimit?: number,
   analytics?: ChallengeAnalyticsGateway,
+  adultUrl: string | null = 'https://comunidade.sistemazero.com.br',
 ) {
   return new SendRenewalRemindersService(
     repo,
@@ -119,6 +120,7 @@ function service(
       batchLimit,
       funnelUrl: 'https://sistemazero.com.br',
       kidsUrl: 'https://kids.sistemazero.com.br',
+      adultUrl: adultUrl ?? undefined,
     },
     analytics,
   )
@@ -338,5 +340,65 @@ describe('SendRenewalRemindersService', () => {
     expect(lifecycleSent.size).toBe(0)
     expect((await service(repo, auth, msg.gateway).runCycle()).sent).toBe(1)
     expect(msg.sent[0]?.idempotencyKey).toMatch(/^challenge-expiry-3d:[a-f0-9]{32}$/)
+  })
+
+  test('Desafio adulto: templates -adult, a própria pessoa e os links do app adulto', async () => {
+    const fixed = (messageKind: FixedAccessLifecycleEntitlement['messageKind']) => ({
+      ...row({
+        id: `adulto-${messageKind}`,
+        offerSlug: 'desafio-primeiro-jogo-adulto-30-dias',
+        expiresAt: new Date('2027-05-30T12:00:00Z'),
+      }),
+      courseRef: 'desafio-primeiro-jogo-adulto',
+      messageKind,
+    })
+    const { repo } = fakeRepo([], [fixed('expiry_7d'), fixed('expiry_3d'), fixed('expired')])
+    const auth = fakeAuth({
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: '', activated: true },
+    })
+    const msg = fakeMessaging()
+
+    expect((await service(repo, auth, msg.gateway).runCycle()).sent).toBe(3)
+    expect(msg.sent.map((email) => email.templateKey)).toEqual([
+      'challenge-expiry-7d-adult',
+      'challenge-expiry-3d-adult',
+      'challenge-expired-adult',
+    ])
+    expect(msg.sent[0]?.variables).toEqual({
+      nome: 'Aluno(a)',
+      data: '30/05/2027',
+      link: 'https://comunidade.sistemazero.com.br/progresso',
+    })
+    expect(msg.sent[1]?.variables?.link).toBe(
+      'https://comunidade.sistemazero.com.br/cursos/desafio-primeiro-jogo-adulto',
+    )
+    expect(msg.sent[2]?.variables?.link).toBe(
+      'https://sistemazero.com.br/pro/comunidade-dos-criadores/oferta/continuar?utm_source=email&utm_medium=email&utm_campaign=desafio-encerrado',
+    )
+  })
+
+  test('Desafio adulto sem a URL do app: o aviso de prazo espera, o do fim sai', async () => {
+    const fixed = (messageKind: FixedAccessLifecycleEntitlement['messageKind']) => ({
+      ...row({
+        id: `adulto-${messageKind}`,
+        offerSlug: 'desafio-primeiro-jogo-adulto-30-dias',
+        expiresAt: new Date('2027-05-30T12:00:00Z'),
+      }),
+      courseRef: 'desafio-primeiro-jogo-adulto',
+      messageKind,
+    })
+    const { repo, lifecycleSent } = fakeRepo([], [fixed('expiry_3d'), fixed('expired')])
+    const auth = fakeAuth({
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana', activated: true },
+    })
+    const msg = fakeMessaging()
+
+    expect(await service(repo, auth, msg.gateway, undefined, undefined, null).runCycle()).toEqual({
+      sent: 1,
+      skipped: 1,
+      failed: 0,
+    })
+    expect(msg.sent.map((email) => email.templateKey)).toEqual(['challenge-expired-adult'])
+    expect(lifecycleSent.size).toBe(1)
   })
 })

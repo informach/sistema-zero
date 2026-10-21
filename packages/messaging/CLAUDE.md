@@ -388,3 +388,17 @@ público do resgate; o Kids continua com as chaves de sempre.
   "uma pessoa que recebeu o presente", sem presumir família).
 - Testes: `tests/referral-copy.test.ts` e `tests/access-ended-copy.test.ts` conferem contrato,
   copy aprovada e Light Copy na fonte. Não rodar o seed contra um ambiente para conferir a copy.
+
+## Desafio do Primeiro Jogo para adultos (21/10/2026)
+
+Oito templates com o sufixo `-adult`, as MESMAS variáveis do equivalente Kids, falando com a própria
+pessoa (sem criança, responsável ou Área dos pais), pelo `templates:seed` do deploy:
+`challenge-access-approved-adult` (e-mail + WhatsApp; `nome`+`link`+`expira_em`+`acao`, sem a
+`orientacao` do Kids), enviado pelo FUNIL depois da compra; `challenge-not-activated-adult`,
+`challenge-not-started-adult`, `challenge-day-one-complete-adult` e `challenge-completed-adult`
+(`nome`+`link`), e `challenge-expiry-7d-adult`, `challenge-expiry-3d-adult` e `challenge-expired-adult`
+(`nome`+`data`+`link`), só e-mail, enviados pelo MEMBERS. O link chega pronto: app adulto
+(`/esqueci-senha`, `/cursos/desafio-primeiro-jogo-adulto`, `/progresso`) ou a continuidade adulta do funil
+com UTM. Enquanto o seed não roda, o funil cai em `welcome`/`new-access` (404 `TEMPLATE_NOT_FOUND`); o
+members não tem reserva e o envio falha e é tentado de novo no ciclo seguinte. Teste:
+`tests/challenge-adult-copy.test.ts` (contrato, canais, botões, segunda pessoa e Light Copy na fonte).
