@@ -56,6 +56,72 @@ function compact(role: 'admin' | 'kids' = 'admin') {
   }
 }
 
+function shared(role: 'admin' | 'kids' = 'admin') {
+  const prior = compact(role)
+  return {
+    ...prior,
+    version: 3,
+    profileId: 'lessons-desktop-shared-r1',
+    envelopes: {
+      browserMiB: 1024,
+      combinedTreeMiB: 2048,
+      retainedBaseGrowthMiB: 128,
+      hostReserveMiB: 512,
+      roundingMiB: 128,
+    },
+  }
+}
+
+test('shared v3 admits recorded R7 Next growth with the same whole budget and preserves v2', () => {
+  for (const role of ['admin', 'kids'] as const) {
+    const plan = shared(role)
+    plan.nextTree.workingSetMiB = 1040.31640625
+    const decision = evaluatePythonLessonAdmission(plan, observe(role, 1664))
+    expect(decision.requiredFreeMiB).toBe(1664)
+    expect(decision.admitted).toBe(true)
+    expect(evaluatePythonLessonAdmission(plan, observe(role, 1664 - 1 / 1024)).admitted).toBe(false)
+    expect(() =>
+      evaluatePythonLessonAdmission(
+        { ...compact(role), nextTree: plan.nextTree },
+        observe(role, 4000),
+      ),
+    ).toThrow('exceeded')
+    expect(evaluatePythonLessonAdmission(shared(role), observe(role, 2176)).requiredFreeMiB).toBe(
+      2176,
+    )
+  }
+})
+
+test('shared v3 reserves only the remaining combined allocation without double counting browser', () => {
+  const plan = shared()
+  plan.nextTree.workingSetMiB = 1280
+  expect(evaluatePythonLessonAdmission(plan, observe('admin', 1408)).requiredFreeMiB).toBe(1408)
+  plan.nextTree.workingSetMiB = 2048
+  expect(evaluatePythonLessonAdmission(plan, observe('admin', 640)).requiredFreeMiB).toBe(640)
+  plan.nextTree.workingSetMiB = 2048.001
+  expect(() => evaluatePythonLessonAdmission(plan, observe('admin', 4000))).toThrow('exceeded')
+})
+
+test('shared v3 rejects profile/version and envelope tampering, invalid numbers and stale authority', () => {
+  const original = shared()
+  for (const invalid of [
+    { ...original, version: 2 },
+    { ...original, profileId: 'lessons-desktop-compact-r2' },
+    { ...original, envelopes: { ...original.envelopes, combinedTreeMiB: 3072 } },
+    { ...original, envelopes: { ...original.envelopes, browserMiB: 1536 } },
+    { ...original, envelopes: { ...original.envelopes, nextTreeMiB: 1024 } },
+    { ...original, nextTree: { ...original.nextTree, heapMiB: 1024 } },
+    { ...original, nextTree: { ...original.nextTree, workingSetMiB: NaN } },
+    { ...original, nextTree: { ...original.nextTree, workingSetMiB: Infinity } },
+    { ...original, nextTree: { ...original.nextTree, workingSetMiB: -1 } },
+  ])
+    expect(() => evaluatePythonLessonAdmission(invalid, observe())).toThrow()
+  expect(() => evaluatePythonLessonAdmission(original, observe('kids'))).toThrow()
+  expect(() =>
+    evaluatePythonLessonAdmission(original, observe('admin', 4000, now + 10001)),
+  ).toThrow('fresh')
+})
+
 test('explicit compact v2 accounts remaining Next growth for either audience without changing v1', () => {
   for (const role of ['admin', 'kids'] as const) {
     const result = evaluatePythonLessonAdmission(compact(role), observe(role, 2176))

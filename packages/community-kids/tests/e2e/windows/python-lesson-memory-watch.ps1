@@ -18,15 +18,20 @@ function Get-LessonCompactBaseRoots($References) {
  if(@($roots|ForEach-Object{"$($_.processId):$($_.createdAt)"}|Select-Object -Unique).Count -ne $roots.Count){throw 'Duplicate retained-base root'}
  return $roots
 }
-function Test-LessonCompactSample($Observation) {
+function Test-LessonCompactSample($Observation,[string]$ProfileId='lessons-desktop-compact-r2') {
+ if($ProfileId -cnotin @('lessons-desktop-compact-r2','lessons-desktop-shared-r1')){throw 'Unknown QA memory profile'}
  $reasons=[Collections.Generic.List[string]]::new()
  foreach($key in @('freeMiB','nextMiB','browserMiB','baseGrowthMiB')){
   $value=$Observation.$key
+  if($ProfileId -ceq 'lessons-desktop-shared-r1' -and ($null -eq $value -or [Type]::GetTypeCode($value.GetType()).ToString() -cnotin @('Byte','SByte','Int16','UInt16','Int32','UInt32','Int64','UInt64','Single','Double','Decimal'))){$reasons.Add('unknown-'+$key);continue}
   if($null -eq $value -or $value -isnot [ValueType] -or [double]::IsNaN([double]$value) -or [double]::IsInfinity([double]$value) -or $value -lt 0){$reasons.Add('unknown-'+$key)}
  }
  if($Observation.ownershipComplete -ne $true){$reasons.Add('ownership-incomplete')}
+ if($ProfileId -ceq 'lessons-desktop-shared-r1' -and $reasons.Count){return [pscustomobject]@{negative=$true;reasons=@($reasons);forceAuthorized=$false}}
  if($Observation.freeMiB -lt 512){$reasons.Add('host-reserve-crossed')}
- if($Observation.nextMiB -gt 1024){$reasons.Add('next-tree-budget-exceeded')}
+ if($ProfileId -ceq 'lessons-desktop-shared-r1'){
+  if(-not $reasons.Count -and ($Observation.nextMiB+$Observation.browserMiB) -gt 2048){$reasons.Add('combined-tree-budget-exceeded')}
+ }elseif($Observation.nextMiB -gt 1024){$reasons.Add('next-tree-budget-exceeded')}
  if($Observation.browserMiB -gt 1024){$reasons.Add('browser-tree-budget-exceeded')}
  if($Observation.baseGrowthMiB -gt 128){$reasons.Add('retained-base-growth-exceeded')}
  return [pscustomobject]@{negative=$reasons.Count -gt 0;reasons=@($reasons);forceAuthorized=$false}
@@ -48,11 +53,12 @@ function Measure-LessonMemoryTree($Roots,$Known,$Retained,$Snapshot) {
  return $total
 }
 
-function New-LessonCompactMonitor($Next,[string]$NextStateFile,$BaseRoots) {
+function New-LessonCompactMonitor($Next,[string]$NextStateFile,$BaseRoots,[string]$ProfileId='lessons-desktop-compact-r2') {
+ if($ProfileId -cnotin @('lessons-desktop-compact-r2','lessons-desktop-shared-r1')){throw 'Unknown QA memory profile'}
  if(-not $BaseRoots -or @($BaseRoots).Count -gt 8){throw 'Reviewed retained-base roots required'}
  $directory=Split-Path (Owned-StatePath $NextStateFile)
  if($Next.stopRequest -cne (Join-Path $directory 'stop.request')){throw 'Next normal stop path differs from its own job'}
- $context=[pscustomobject]@{next=$Next;nextStateFile=$NextStateFile;baseRoots=@($BaseRoots);nextKnown=@{};nextRetained=@{};baseKnown=@{};baseRetained=@{};baselineBaseMiB=0.0;directory=$directory;lastSampleAt=[datetimeoffset]::MinValue;lastObservation=$null}
+ $context=[pscustomobject]@{profileId=$ProfileId;next=$Next;nextStateFile=$NextStateFile;baseRoots=@($BaseRoots);nextKnown=@{};nextRetained=@{};baseKnown=@{};baseRetained=@{};baselineBaseMiB=0.0;directory=$directory;lastSampleAt=[datetimeoffset]::MinValue;lastObservation=$null}
  try{
   $snapshot=Get-OwnedProcessSnapshot
   $context.baselineBaseMiB=Measure-LessonMemoryTree $context.baseRoots $context.baseKnown $context.baseRetained $snapshot
@@ -101,16 +107,16 @@ function Test-LessonCompactHandoff($Context) {
  $path=Join-Path $Context.directory 'compact-memory-handoff.json'
  if(-not(Test-Path -LiteralPath $path)){return $false}
  $handoff=Get-Content -LiteralPath $path -Raw|ConvertFrom-Json -DateKind String
- if($handoff.profileId -cne 'lessons-desktop-compact-r2' -or -not(Same-Witness $Context.next.root $handoff.nextRoot) -or -not(Same-Witness $handoff.browserRoot (Process-Witness $handoff.browserRoot.processId))){throw 'Compact memory handoff witness mismatch'}
+ if($handoff.profileId -cne $Context.profileId -or -not(Same-Witness $Context.next.root $handoff.nextRoot) -or -not(Same-Witness $handoff.browserRoot (Process-Witness $handoff.browserRoot.processId))){throw 'Compact memory handoff witness mismatch'}
  return $true
 }
 
 # Hook for the reviewed cache Next launcher: invoke immediately after durable Next
 # claim, keeping that launcher alive until the browser supervisor's first sample.
 # No extra monitor process is created. The fresh cache must call this hook explicitly.
-function Watch-LessonCompactNextWarmup($Next,[string]$NextStateFile,$BaseRoots,[datetimeoffset]$WindowEnd) {
+function Watch-LessonCompactNextWarmup($Next,[string]$NextStateFile,$BaseRoots,[datetimeoffset]$WindowEnd,[string]$ProfileId='lessons-desktop-compact-r2') {
  if(-not $Next.root.cli.Contains('--max-old-space-size=768')){throw 'Compact Next heap witness required'}
- $context=New-LessonCompactMonitor $Next $NextStateFile $BaseRoots
+ $context=New-LessonCompactMonitor $Next $NextStateFile $BaseRoots $ProfileId
  $statusPath=Join-Path $context.directory 'compact-memory.json'
  try{
   while([datetimeoffset]::UtcNow -lt $WindowEnd){
@@ -120,14 +126,14 @@ function Watch-LessonCompactNextWarmup($Next,[string]$NextStateFile,$BaseRoots,[
     if(Test-LessonCompactHandoff $context){return $true}
     try{
      $observation=Get-LessonCompactObservation $context 0
-     $decision=Test-LessonCompactSample $observation
-     Write-Durable @{profileId='lessons-desktop-compact-r2';nextRoot=$Next.root;baselineBaseMiB=$context.baselineBaseMiB;baseRoots=$context.baseRoots;observation=$observation;negative=$decision.negative;reasons=$decision.reasons;warmupActive=$true} $statusPath
+     $decision=Test-LessonCompactSample $observation $ProfileId
+     Write-Durable @{profileId=$ProfileId;nextRoot=$Next.root;baselineBaseMiB=$context.baselineBaseMiB;baseRoots=$context.baseRoots;observation=$observation;negative=$decision.negative;reasons=$decision.reasons;warmupActive=$true} $statusPath
      if($decision.negative){Request-LessonCompactNextStop $context;throw 'Compact Next warmup memory NEG'}
      return $false
     }catch{
      # Keep an explicit unknown/negative latch under the SAME lock before it can
      # be transferred. The own normal stop request also prevents a later claim.
-     try{Write-Durable @{profileId='lessons-desktop-compact-r2';nextRoot=$Next.root;negative=$true;reasons=@('warmup-negative-or-unknown');warmupActive=$true} $statusPath}
+     try{Write-Durable @{profileId=$ProfileId;nextRoot=$Next.root;negative=$true;reasons=@('warmup-negative-or-unknown');warmupActive=$true} $statusPath}
      finally{Request-LessonCompactNextStop $context}
      throw
     }

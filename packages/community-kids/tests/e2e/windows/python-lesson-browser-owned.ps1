@@ -20,7 +20,8 @@ $planPath=Join-Path $PSScriptRoot 'windows-plan.json'
 if((Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant() -cne $ExpectedPlanSha256){throw 'Reviewed bound plan SHA required'}
 $plan=Get-Content -LiteralPath $planPath -Raw|ConvertFrom-Json -DateKind String
 if($plan.state -ne 'bound-to-actual-new-host-canonical-policy'){throw 'Actual fresh host bind required'}
-$compactMemory=$plan.memoryProfileId -ceq 'lessons-desktop-compact-r2'
+$sharedMemory=$plan.memoryProfileId -ceq 'lessons-desktop-shared-r1'
+$compactMemory=$plan.memoryProfileId -cin @('lessons-desktop-compact-r2','lessons-desktop-shared-r1')
 if($plan.memoryProfileId -and -not $compactMemory){throw 'Unknown QA memory profile'}
 foreach($pin in $plan.hostPins){if((Get-FileHash -LiteralPath $pin.path -Algorithm SHA256).Hash.ToLowerInvariant() -cne $pin.sha256){throw 'Pinned input changed'}}
 $spec=$plan.roles.$Role
@@ -46,7 +47,7 @@ if($compactMemory){
  $statusPath=Join-Path (Split-Path $NextStateFile) 'compact-memory.json'
  $compactStatus=Get-Content -LiteralPath $statusPath -Raw|ConvertFrom-Json -DateKind String
  $age=([datetimeoffset]::UtcNow-[datetimeoffset]$compactStatus.observation.observedAt).TotalMilliseconds
- if($compactStatus.profileId -cne 'lessons-desktop-compact-r2' -or $compactStatus.negative -ne $false -or $compactStatus.warmupActive -ne $true -or $age -lt 0 -or $age -gt 2000 -or -not(Same-Witness $next.root $compactStatus.nextRoot)){throw 'Fresh owned compact Next warmup supervision required'}
+ if($compactStatus.profileId -cne $plan.memoryProfileId -or $compactStatus.negative -ne $false -or $compactStatus.warmupActive -ne $true -or $age -lt 0 -or $age -gt 2000 -or -not(Same-Witness $next.root $compactStatus.nextRoot)){throw 'Fresh owned compact Next warmup supervision required'}
 }
 foreach($oldState in @(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'windows-jobs') -Filter owned-process.json -Recurse -ErrorAction SilentlyContinue)) {
  $old=Get-Content -LiteralPath $oldState.FullName -Raw|ConvertFrom-Json -DateKind String
@@ -64,11 +65,11 @@ $nextWorking=0.0
 if($compactMemory){
  # Retain/measure the existing base BEFORE starting the adapter's 10s handshake.
  # The watcher still takes a fresh positive observation before publishing claim.
- $preparedCompactContext=New-LessonCompactMonitor $next $NextStateFile $compactStatus.baseRoots
+ $preparedCompactContext=New-LessonCompactMonitor $next $NextStateFile $compactStatus.baseRoots $plan.memoryProfileId
  if($compactStatus.baselineBaseMiB -isnot [ValueType] -or $compactStatus.baselineBaseMiB -lt 0 -or [double]::IsInfinity([double]$compactStatus.baselineBaseMiB) -or [double]::IsNaN([double]$compactStatus.baselineBaseMiB)){throw 'Invalid original retained-base observation'}
  $preparedCompactContext.baselineBaseMiB=[double]$compactStatus.baselineBaseMiB
  $prelaunchObservation=Get-LessonCompactObservation $preparedCompactContext 0
- if((Test-LessonCompactSample $prelaunchObservation).negative){Refuse-BrowserAdmission 'Compact composition negative before adapter start' $prelaunchObservation}
+ if((Test-LessonCompactSample $prelaunchObservation $plan.memoryProfileId).negative){Refuse-BrowserAdmission 'Compact composition negative before adapter start' $prelaunchObservation}
  $nextWorking=$prelaunchObservation.nextMiB
 }else{
  $snapshot=Get-OwnedProcessSnapshot;Capture-OwnedTree $next.root $known $null $snapshot
@@ -76,21 +77,23 @@ if($compactMemory){
 }
 $audience=if($Role -eq 'adminBrowser'){'admin'}else{'kids'}
 $browserMiB=if($compactMemory){1024}elseif($Role -eq 'adminBrowser'){1024}else{1536}
-$nextBudget=if($compactMemory){1024}else{2048};$baseGrowth=if($compactMemory){128}else{256};$rounding=if($compactMemory){128}else{256}
+$nextBudget=if($sharedMemory){2048}elseif($compactMemory){1024}else{2048};$baseGrowth=if($compactMemory){128}else{256};$rounding=if($compactMemory){128}else{256}
 if($nextWorking -gt $nextBudget){Refuse-BrowserAdmission 'Next exceeded the approved fixed attempt envelope' @{nextTreeWorkingSetMiB=$nextWorking;nextTreeBudgetMiB=$nextBudget}}
-$requiredFree=[math]::Ceiling(($browserMiB+[math]::Max(0,$nextBudget-$nextWorking)+$baseGrowth+512)/$rounding)*$rounding
+$remainingAllocation=if($sharedMemory){[math]::Max(0,2048-$nextWorking)}else{$browserMiB+[math]::Max(0,$nextBudget-$nextWorking)}
+$requiredFree=[math]::Ceiling(($remainingAllocation+$baseGrowth+512)/$rounding)*$rounding
 $freeMiB=if($compactMemory){$prelaunchObservation.freeMiB}else{[double](Get-CimInstance Win32_OperatingSystem -Property FreePhysicalMemory -ErrorAction Stop).FreePhysicalMemory/1024}
 if($freeMiB -lt $requiredFree){Refuse-BrowserAdmission 'Browser incremental preflight refused' @{nextTreeWorkingSetMiB=$nextWorking;observedFreeMiB=$freeMiB;requiredFreeMiB=$requiredFree}}
 $jobDir=Join-Path $PSScriptRoot ('windows-jobs/'+$Role+'-'+[guid]::NewGuid().ToString('N'));New-Item -ItemType Directory -Path $jobDir -ErrorAction Stop|Out-Null
 $admissionPath=Join-Path $jobDir 'admission.json'
 $admission=@{version=1;role=$audience;attemptId=[guid]::NewGuid().ToString();reviewedPlanSha256=$ExpectedPlanSha256;observedAt=[datetimeoffset]::UtcNow.ToString('o');nextTree=@{role=$expectedNext;processId=$next.root.processId;createdAt=$next.root.createdAt;executable=$next.root.executable;cliSha256=$next.root.cliSha256;workingSetMiB=$nextWorking};envelopes=@{browserMiB=$browserMiB;nextTreeMiB=2048;retainedBaseGrowthMiB=256;hostReserveMiB=512}}
 if($compactMemory){$admission.version=2;$admission.profileId='lessons-desktop-compact-r2';$admission.nextTree.heapMiB=768;$admission.envelopes.nextTreeMiB=1024;$admission.envelopes.retainedBaseGrowthMiB=128;$admission.envelopes.roundingMiB=128}
+if($sharedMemory){$admission.version=3;$admission.profileId='lessons-desktop-shared-r1';$admission.envelopes.Remove('nextTreeMiB');$admission.envelopes.combinedTreeMiB=2048}
 Write-Durable $admission $admissionPath -Exclusive
 $admissionSha=(Get-FileHash -LiteralPath $admissionPath -Algorithm SHA256).Hash.ToLowerInvariant()
 $homeDir=Join-Path $jobDir 'home';New-Item -ItemType Directory -Path $homeDir -ErrorAction Stop|Out-Null
 $StateFile=Join-Path $jobDir 'owned-process.json'
 $job=@{version=1;owner=$plan.owner;run=$plan.run;nonce=[guid]::NewGuid().ToString('N');role=$Role;cwd=$spec.cwd;entry=$spec.entry;entrySha256=$spec.entrySha256;entryExport=$spec.entryExport;argv=@($InputFile,(Join-Path $jobDir 'scenario'),$admissionPath,$admissionSha);stopRequest=(Join-Path $jobDir 'stop.request');signalReceipt=(Join-Path $jobDir 'signal.json');failureReceipt=(Join-Path $jobDir 'failure.json');claimFile=(Join-Path $jobDir 'owner.claim.json');claimReceipt=(Join-Path $jobDir 'claim-accepted.json');stateFile=$StateFile;envFile=$envPath;envSha256=$ExpectedEnvSha256;cleanPath=$plan.cleanPath;home=$homeDir;runComplete=(Join-Path $jobDir 'run-complete.json');completionAck=(Join-Path $jobDir 'completion-ack.json')}
-if($compactMemory){$job.compactMemory=@{next=$next;nextStateFile=$NextStateFile;baseRoots=$compactStatus.baseRoots;baselineBaseMiB=$compactStatus.baselineBaseMiB}}
+if($compactMemory){$job.compactMemory=@{profileId=$plan.memoryProfileId;next=$next;nextStateFile=$NextStateFile;baseRoots=$compactStatus.baseRoots;baselineBaseMiB=$compactStatus.baselineBaseMiB}}
 $jobPath=Join-Path $jobDir 'job.json';Write-Durable $job $jobPath -Exclusive
 $bootstrapEnv=@{NODE_OPTIONS='';BUN_OPTIONS='';NODE_PATH='';NODE_V8_COVERAGE='';NODE_USE_ENV_PROXY='';HTTP_PROXY='';HTTPS_PROXY='';ALL_PROXY='';HOME=$homeDir;USERPROFILE=$homeDir;PATH=$plan.cleanPath;NODE_ENV='test'}
 $credentialKeys=if($Role -eq 'adminBrowser'){@('STUDIO_LESSONS_QA_ADMIN_EMAIL','STUDIO_LESSONS_QA_ADMIN_PASSWORD')}else{@('STUDIO_LESSONS_QA_PARENT_EMAIL','STUDIO_LESSONS_QA_PARENT_PASSWORD','STUDIO_LESSONS_QA_LEARNER_ID')}

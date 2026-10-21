@@ -45,9 +45,23 @@ const CompactAdmissionSchema = LegacyAdmissionSchema.extend({
   }),
 }).strict()
 
+const SharedAdmissionSchema = LegacyAdmissionSchema.extend({
+  version: z.literal(3),
+  profileId: z.literal('lessons-desktop-shared-r1'),
+  nextTree: LegacyAdmissionSchema.shape.nextTree.extend({ heapMiB: z.literal(768) }).strict(),
+  envelopes: z.strictObject({
+    browserMiB: z.literal(1024),
+    combinedTreeMiB: z.literal(2048),
+    retainedBaseGrowthMiB: z.literal(128),
+    hostReserveMiB: z.literal(512),
+    roundingMiB: z.literal(128),
+  }),
+}).strict()
+
 export const PythonLessonAdmissionSchema = z.discriminatedUnion('version', [
   LegacyAdmissionSchema,
   CompactAdmissionSchema,
+  SharedAdmissionSchema,
 ])
 
 export function evaluatePythonLessonAdmission(
@@ -60,18 +74,25 @@ export function evaluatePythonLessonAdmission(
   if (plan.version === 1)
     assert.equal(plan.envelopes.browserMiB, plan.role === 'admin' ? 1024 : 1536)
   assert(
-    plan.nextTree.workingSetMiB <= plan.envelopes.nextTreeMiB,
+    plan.nextTree.workingSetMiB <=
+      (plan.version === 3 ? plan.envelopes.combinedTreeMiB : plan.envelopes.nextTreeMiB),
     'Next exceeded this attempt budget',
   )
   const ageMs = observation.nowMs - Date.parse(plan.observedAt)
   assert(ageMs >= 0 && ageMs <= 10_000, 'Admission observation must be fresh, not future dated')
   assert(Number.isFinite(observation.freeBytes) && observation.freeBytes >= 0)
-  const nextGrowthMiB = Math.max(0, plan.envelopes.nextTreeMiB - plan.nextTree.workingSetMiB)
-  const roundingMiB = plan.version === 2 ? plan.envelopes.roundingMiB : 256
+  const nextGrowthMiB =
+    plan.version === 3 ? 0 : Math.max(0, plan.envelopes.nextTreeMiB - plan.nextTree.workingSetMiB)
+  const remainingCombinedTreeMiB =
+    plan.version === 3
+      ? Math.max(0, plan.envelopes.combinedTreeMiB - plan.nextTree.workingSetMiB)
+      : 0
+  const remainingAllocationMiB =
+    plan.version === 3 ? remainingCombinedTreeMiB : plan.envelopes.browserMiB + nextGrowthMiB
+  const roundingMiB = plan.version === 1 ? 256 : plan.envelopes.roundingMiB
   const requiredFreeMiB =
     Math.ceil(
-      (plan.envelopes.browserMiB +
-        nextGrowthMiB +
+      (remainingAllocationMiB +
         plan.envelopes.retainedBaseGrowthMiB +
         plan.envelopes.hostReserveMiB) /
         roundingMiB,
@@ -81,6 +102,7 @@ export function evaluatePythonLessonAdmission(
     ...plan,
     evaluatedAt: new Date(observation.nowMs).toISOString(),
     nextGrowthMiB,
+    ...(plan.version === 3 ? { remainingCombinedTreeMiB } : {}),
     requiredFreeMiB,
     observedFreeMiB,
     admitted: observedFreeMiB >= requiredFreeMiB,

@@ -109,21 +109,22 @@ function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetim
  $retained["$($State.root.processId):$($State.root.createdAt)"]=$rootRecord
  if($Job.compactMemory){
   $inputMemory=$Job.compactMemory
-  $compactContext=if($null -ne $PreparedCompactContext){$PreparedCompactContext}else{New-LessonCompactMonitor $inputMemory.next $inputMemory.nextStateFile $inputMemory.baseRoots}
-  if($compactContext.nextStateFile -cne $inputMemory.nextStateFile -or -not(Same-Witness $compactContext.next.root $inputMemory.next.root)){throw 'Prepared compact context belongs to another Next'}
+  $memoryProfile=if($inputMemory.profileId){$inputMemory.profileId}else{'lessons-desktop-compact-r2'}
+  $compactContext=if($null -ne $PreparedCompactContext){$PreparedCompactContext}else{New-LessonCompactMonitor $inputMemory.next $inputMemory.nextStateFile $inputMemory.baseRoots $memoryProfile}
+  if($compactContext.profileId -cne $memoryProfile -or $compactContext.nextStateFile -cne $inputMemory.nextStateFile -or -not(Same-Witness $compactContext.next.root $inputMemory.next.root)){throw 'Prepared compact context belongs to another Next'}
   if($inputMemory.baselineBaseMiB -isnot [ValueType] -or $inputMemory.baselineBaseMiB -lt 0 -or [double]::IsInfinity([double]$inputMemory.baselineBaseMiB) -or [double]::IsNaN([double]$inputMemory.baselineBaseMiB)){throw 'Invalid original retained-base observation'}
   $compactContext.baselineBaseMiB=[double]$inputMemory.baselineBaseMiB
   $Process.Refresh();$observation=Get-LessonCompactObservation $compactContext ($Process.WorkingSet64/1MB)
-  $decision=Test-LessonCompactSample $observation
+  $decision=Test-LessonCompactSample $observation $compactContext.profileId
   if($decision.negative){throw 'Compact preclaim memory negative'}
   # Transfer supervision before importing the scenario. The file lock prevents a
   # warmup negative from stopping Next while this owner publishes the browser claim.
   Invoke-LessonCompactLock $compactContext.directory {
    if(Test-Path -LiteralPath $compactContext.next.stopRequest){throw 'Next already stopping normally'}
    $warmup=Get-Content -LiteralPath (Join-Path $compactContext.directory 'compact-memory.json') -Raw|ConvertFrom-Json -DateKind String
-   if($warmup.negative -ne $false){throw 'Compact warmup latched a negative observation'}
+   if($warmup.profileId -cne $compactContext.profileId -or $warmup.negative -ne $false){throw 'Compact warmup latched a negative observation'}
    if(-not(Retained-OwnedProcessAlive $rootRecord)){throw 'Browser adapter exited before supervision handoff'}
-   Write-Durable @{profileId='lessons-desktop-compact-r2';nextRoot=$compactContext.next.root;browserRoot=$State.root} (Join-Path $compactContext.directory 'compact-memory-handoff.json') -Exclusive
+   Write-Durable @{profileId=$compactContext.profileId;nextRoot=$compactContext.next.root;browserRoot=$State.root} (Join-Path $compactContext.directory 'compact-memory-handoff.json') -Exclusive
    [IO.File]::Move((Join-Path (Split-Path $StateFile) 'owner.claim.pending.json'),$Job.claimFile,$false)
   }
  }
@@ -132,7 +133,7 @@ function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetim
  while(-not(Test-Path -LiteralPath $Job.claimReceipt) -and (Retained-OwnedProcessAlive $rootRecord) -and [datetimeoffset]::UtcNow -lt $HardDeadline){
   if($compactContext -and ([datetimeoffset]::UtcNow-$compactContext.lastSampleAt).TotalMilliseconds -ge 500){
    $observation=Get-LessonCompactObservation $compactContext ($Process.WorkingSet64/1MB)
-   if((Test-LessonCompactSample $observation).negative){throw 'Compact claim-wait memory negative'}
+   if((Test-LessonCompactSample $observation $compactContext.profileId).negative){throw 'Compact claim-wait memory negative'}
   }
   Start-Sleep -Milliseconds 25
  }
@@ -157,7 +158,7 @@ function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetim
   $State.maxSampledTreePrivateMiB=[math]::Max($State.maxSampledTreePrivateMiB,[math]::Round($private,2))
   if($compactContext -and ([datetimeoffset]::UtcNow-$compactContext.lastSampleAt).TotalMilliseconds -ge 500){
    $observation=Get-LessonCompactObservation $compactContext $working $snapshot
-   $decision=Test-LessonCompactSample $observation
+   $decision=Test-LessonCompactSample $observation $compactContext.profileId
    $State.compactMemoryObservation=$observation;$State.compactMemoryReasons=$decision.reasons
    if($decision.negative -and -not $compactNegative){
     $compactNegative=$true
