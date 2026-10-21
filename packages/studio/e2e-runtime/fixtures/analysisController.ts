@@ -157,10 +157,10 @@ export async function createAnalysisControllerProbe() {
         await new Promise((resolve) => setTimeout(resolve, 20))
         workspace.clearUndo()
         const number = workspace.getAllBlocks(false).find((block) => block.type === 'sz_py_integer')
-        const field = number?.inputList
-          .flatMap((input) => input.fieldRow)
-          .find((field) => field.name)
-        if (!field) throw new Error('No integer field in parsed program')
+        // The user types into the editable literal. The first named field is the
+        // host-owned PYTHON_TITLE label, which is presentation and never source.
+        const field = number?.getField('NUMBER')
+        if (!field?.EDITABLE) throw new Error('No editable integer field in parsed program')
         field.setValue('4')
         let captured = pythonWorkspaceToVisual(
           workspace,
