@@ -37,7 +37,7 @@ try {
     }
   }
   const platform = Object.fromEntries(
-    ['SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'COMSPEC']
+    ['SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'COMSPEC', 'PROGRAMFILES', 'PROGRAMFILES(X86)']
       .filter((key) => process.env[key])
       .map((key) => [key, process.env[key]]),
   )

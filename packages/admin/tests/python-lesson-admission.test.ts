@@ -39,6 +39,54 @@ const observe = (role: 'admin' | 'kids' = 'admin', freeMiB = 2304, nowMs = now) 
   freeBytes: freeMiB * 1024 ** 2,
 })
 
+function compact(role: 'admin' | 'kids' = 'admin') {
+  const legacy = input(role)
+  return {
+    ...legacy,
+    version: 2,
+    profileId: 'lessons-desktop-compact-r2',
+    nextTree: { ...legacy.nextTree, workingSetMiB: 606.1953125, heapMiB: 768 },
+    envelopes: {
+      browserMiB: 1024,
+      nextTreeMiB: 1024,
+      retainedBaseGrowthMiB: 128,
+      hostReserveMiB: 512,
+      roundingMiB: 128,
+    },
+  }
+}
+
+test('explicit compact v2 accounts remaining Next growth for either audience without changing v1', () => {
+  for (const role of ['admin', 'kids'] as const) {
+    const result = evaluatePythonLessonAdmission(compact(role), observe(role, 2176))
+    expect(result.requiredFreeMiB).toBe(2176)
+    expect(result.admitted).toBe(true)
+    expect(
+      evaluatePythonLessonAdmission(compact(role), observe(role, 2176 - 1 / 1024)).admitted,
+    ).toBe(false)
+  }
+  expect(evaluatePythonLessonAdmission(input(), observe()).requiredFreeMiB).toBe(2304)
+})
+
+test('compact rejects tampered profile, heap, thresholds, unknown fields, wrong audience and stale observations', () => {
+  const original = compact()
+  for (const invalid of [
+    { ...original, profileId: 'custom' },
+    { ...original, profileId: 'lessons-desktop-compact-r1' },
+    { ...original, nextTree: { ...original.nextTree, heapMiB: 1024 } },
+    { ...original, nextTree: { ...original.nextTree, workingSetMiB: 1025 } },
+    { ...original, envelopes: { ...original.envelopes, browserMiB: 512 } },
+    { ...original, envelopes: { ...original.envelopes, hostReserveMiB: 256 } },
+    { ...original, bypass: true },
+    { ...input(), profileId: original.profileId },
+  ])
+    expect(() => evaluatePythonLessonAdmission(invalid, observe())).toThrow()
+  expect(() => evaluatePythonLessonAdmission(original, observe('kids'))).toThrow()
+  expect(() =>
+    evaluatePythonLessonAdmission(original, observe('admin', 4000, now + 10001)),
+  ).toThrow()
+})
+
 test('approved incremental budgets admit Admin at 2304 and Kids at 2816 MiB, not generic 4096', () => {
   const admin = evaluatePythonLessonAdmission(input(), observe())
   const kids = evaluatePythonLessonAdmission(input('kids'), observe('kids', 2816))

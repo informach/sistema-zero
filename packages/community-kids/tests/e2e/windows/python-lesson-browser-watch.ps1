@@ -1,4 +1,5 @@
 # Extends the existing witnessed operator protocol; no launch happens on import.
+. (Join-Path $PSScriptRoot 'python-lesson-memory-watch.ps1')
 function Retain-OwnedProcess($Witness, [Diagnostics.Process]$ExistingProcess=$null) {
  $candidate=$ExistingProcess;$ownsProcess=$null -eq $ExistingProcess;$retained=$false
  try {
@@ -70,20 +71,25 @@ function Reconcile-RetainedOwnedProcesses($State,$Known,$Retained) {
  $State.cleanupConfirmed=$State.ownershipComplete -and -not $live.Count -and -not $unconfirmed.Count
 }
 
-function Capture-OwnedTree($Root, $Known, $Retained=$null) {
- foreach($parent in @($Known.Values)) {
-  $current=Process-Witness $parent.processId
+function Capture-OwnedTree($Root, $Known, $Retained=$null, $Snapshot=$null) {
+ if($null -eq $Snapshot){$Snapshot=Get-OwnedProcessSnapshot}
+ $queue=[Collections.Generic.List[object]]::new();foreach($w in @($Known.Values)){$queue.Add($w)}
+ # One observation, visited breadth first; new grandchildren are handled in this
+ # same pass. Never retain this snapshot across monitoring rounds.
+ for($index=0;$index -lt $queue.Count;$index++) {
+  $parent=$queue[$index];$current=Process-Witness $parent.processId $Snapshot
   if(-not(Same-Witness $parent $current)){
    $record=if($null -ne $Retained){$Retained["$($parent.processId):$($parent.createdAt)"]}else{$null}
    if(Retained-OwnedProcessAlive $record){throw 'Live retained parent has no matching CIM witness; descendant discovery unconfirmed.'}
    continue
   }
-  foreach($child in @(Get-CimInstance Win32_Process -Filter "ParentProcessId=$($parent.processId)" -ErrorAction Stop)) {
-   $w=Process-Witness $child.ProcessId
+  foreach($child in @($Snapshot.children[[int]$parent.processId])) {
+   $w=ConvertTo-OwnedProcessWitness $child
    if($w -and [datetimeoffset]$w.createdAt -ge [datetimeoffset]$parent.createdAt) {
     $key="$($w.processId):$($w.createdAt)"
     if(-not $Known.ContainsKey($key)){
      $Known[$key]=$w
+     $queue.Add($w)
      if($null -ne $Retained){$record=Retain-OwnedProcess $w;if($record){$Retained[$key]=$record}}
     }
    }
@@ -91,21 +97,49 @@ function Capture-OwnedTree($Root, $Known, $Retained=$null) {
  }
 }
 
-function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetimeoffset]$SoftDeadline, [datetimeoffset]$HardDeadline) {
+function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetimeoffset]$SoftDeadline, [datetimeoffset]$HardDeadline, $PreparedCompactContext=$null) {
  $known=@{};$known["$($State.root.processId):$($State.root.createdAt)"]=$State.root
  $retained=@{};$rootRecord=$null
  $stopRequested=$false;$complete=$null;$acknowledged=$false;$earlyExit=$false;$completionStableRounds=0
- $State|Add-Member -NotePropertyMembers @{hardDeadline=$HardDeadline.ToString('o');softDeadline=$SoftDeadline.ToString('o');maxSampledTreeWorkingSetMiB=0;maxSampledTreePrivateMiB=0;primaryFailure=$null;secondaryFailures=@();processExitCode=$null;scenarioExitCode=$null;liveOwned=@();completedAt=$null;retainedHandleCount=0;descendantHandlesReleased=$false;monitorFailureName=$null;ownershipComplete=$true;cleanupConfirmed=$false;provenExitedProcessIds=@();unconfirmedProcessIds=@();persistenceFallback=$null} -Force
+ $compactContext=$null;$compactNegative=$false
+ $State|Add-Member -NotePropertyMembers @{hardDeadline=$HardDeadline.ToString('o');softDeadline=$SoftDeadline.ToString('o');maxSampledTreeWorkingSetMiB=0;maxSampledTreePrivateMiB=0;primaryFailure=$null;secondaryFailures=@();processExitCode=$null;scenarioExitCode=$null;liveOwned=@();completedAt=$null;retainedHandleCount=0;descendantHandlesReleased=$false;monitorFailureName=$null;ownershipComplete=$true;cleanupConfirmed=$false;provenExitedProcessIds=@();unconfirmedProcessIds=@();persistenceFallback=$null;compactMemoryObservation=$null;compactMemoryReasons=@()} -Force
  try {
  $rootRecord=Retain-OwnedProcess $State.root $Process
  if(-not $rootRecord){throw 'Cannot retain the witnessed root process object'}
  $retained["$($State.root.processId):$($State.root.createdAt)"]=$rootRecord
+ if($Job.compactMemory){
+  $inputMemory=$Job.compactMemory
+  $compactContext=if($null -ne $PreparedCompactContext){$PreparedCompactContext}else{New-LessonCompactMonitor $inputMemory.next $inputMemory.nextStateFile $inputMemory.baseRoots}
+  if($compactContext.nextStateFile -cne $inputMemory.nextStateFile -or -not(Same-Witness $compactContext.next.root $inputMemory.next.root)){throw 'Prepared compact context belongs to another Next'}
+  if($inputMemory.baselineBaseMiB -isnot [ValueType] -or $inputMemory.baselineBaseMiB -lt 0 -or [double]::IsInfinity([double]$inputMemory.baselineBaseMiB) -or [double]::IsNaN([double]$inputMemory.baselineBaseMiB)){throw 'Invalid original retained-base observation'}
+  $compactContext.baselineBaseMiB=[double]$inputMemory.baselineBaseMiB
+  $Process.Refresh();$observation=Get-LessonCompactObservation $compactContext ($Process.WorkingSet64/1MB)
+  $decision=Test-LessonCompactSample $observation
+  if($decision.negative){throw 'Compact preclaim memory negative'}
+  # Transfer supervision before importing the scenario. The file lock prevents a
+  # warmup negative from stopping Next while this owner publishes the browser claim.
+  Invoke-LessonCompactLock $compactContext.directory {
+   if(Test-Path -LiteralPath $compactContext.next.stopRequest){throw 'Next already stopping normally'}
+   $warmup=Get-Content -LiteralPath (Join-Path $compactContext.directory 'compact-memory.json') -Raw|ConvertFrom-Json -DateKind String
+   if($warmup.negative -ne $false){throw 'Compact warmup latched a negative observation'}
+   if(-not(Retained-OwnedProcessAlive $rootRecord)){throw 'Browser adapter exited before supervision handoff'}
+   Write-Durable @{profileId='lessons-desktop-compact-r2';nextRoot=$compactContext.next.root;browserRoot=$State.root} (Join-Path $compactContext.directory 'compact-memory-handoff.json') -Exclusive
+   [IO.File]::Move((Join-Path (Split-Path $StateFile) 'owner.claim.pending.json'),$Job.claimFile,$false)
+  }
+ }
  # The adapter verifies the original state SHA before accepting the claim.
  # Do not rewrite that state until it has durably acknowledged the claim.
- while(-not(Test-Path -LiteralPath $Job.claimReceipt) -and (Same-Witness $State.root (Process-Witness $State.root.processId)) -and [datetimeoffset]::UtcNow -lt $HardDeadline){Start-Sleep -Milliseconds 25}
+ while(-not(Test-Path -LiteralPath $Job.claimReceipt) -and (Retained-OwnedProcessAlive $rootRecord) -and [datetimeoffset]::UtcNow -lt $HardDeadline){
+  if($compactContext -and ([datetimeoffset]::UtcNow-$compactContext.lastSampleAt).TotalMilliseconds -ge 500){
+   $observation=Get-LessonCompactObservation $compactContext ($Process.WorkingSet64/1MB)
+   if((Test-LessonCompactSample $observation).negative){throw 'Compact claim-wait memory negative'}
+  }
+  Start-Sleep -Milliseconds 25
+ }
  while($true) {
   # Repeat discovery until every newly found parent has been visited this round.
-  do{$before=$known.Count;Capture-OwnedTree $State.root $known $retained}while($known.Count -gt $before)
+  $snapshot=Get-OwnedProcessSnapshot
+  Capture-OwnedTree $State.root $known $retained $snapshot
   $State.retainedHandleCount=$retained.Count
   $live=[Collections.Generic.List[object]]::new();$working=0.0;$private=0.0
   foreach($w in @($known.Values)) {
@@ -121,6 +155,17 @@ function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetim
   }
   $State.maxSampledTreeWorkingSetMiB=[math]::Max($State.maxSampledTreeWorkingSetMiB,[math]::Round($working,2))
   $State.maxSampledTreePrivateMiB=[math]::Max($State.maxSampledTreePrivateMiB,[math]::Round($private,2))
+  if($compactContext -and ([datetimeoffset]::UtcNow-$compactContext.lastSampleAt).TotalMilliseconds -ge 500){
+   $observation=Get-LessonCompactObservation $compactContext $working $snapshot
+   $decision=Test-LessonCompactSample $observation
+   $State.compactMemoryObservation=$observation;$State.compactMemoryReasons=$decision.reasons
+   if($decision.negative -and -not $compactNegative){
+    $compactNegative=$true
+    if(-not $State.primaryFailure){$State.primaryFailure='compact-memory-budget-negative'}
+    Request-LessonNormalStop $Job.stopRequest;$stopRequested=$true
+    $HardDeadline=[datetimeoffset]::MinValue.AddTicks([math]::Min($HardDeadline.Ticks,[datetimeoffset]::UtcNow.AddSeconds(30).Ticks))
+   }
+  }
   $State.observedTree=@($known.Values|ForEach-Object{[pscustomobject]@{processId=$_.processId;parentId=$_.parentId;createdAt=$_.createdAt;executable=$_.executable;cliSha256=$_.cliSha256}})
   $State.liveOwned=@($live|ForEach-Object{$_.processId})
   if(-not $complete -and (Test-Path -LiteralPath $Job.runComplete)) {
@@ -160,7 +205,7 @@ function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetim
    if(-not $State.primaryFailure){$State.primaryFailure='external-browser-hard-deadline'}
    # Only identities captured below this exact witnessed root are eligible.
    # Forced cleanup is always NEG, even if every process exits afterward.
-   foreach($w in @($live|Sort-Object createdAt -Descending)) {
+   foreach($w in @($live|Sort-Object createdAt -Descending|Where-Object{-not $Job.compactMemory})) {
     $record=$retained["$($w.processId):$($w.createdAt)"]
     try{if(Stop-RetainedOwnedProcess $record){$State.forced=$true}}
     catch{$State.ownershipComplete=$false;$State.secondaryFailures+=@{processId=$w.processId;name=$_.Exception.GetType().Name}}
@@ -176,14 +221,31 @@ function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetim
  $State.completedAt=[datetimeoffset]::UtcNow.ToString('o')
  $State.status=if(-not $State.ownershipComplete -or $State.unconfirmedProcessIds.Count){'NEG-owned-cleanup-unconfirmed'}elseif($State.liveOwned.Count){'NEG-live-owned-residuals'}elseif($earlyExit -or $State.forced -or $State.primaryFailure){'NEG-abrupt-or-deadline-cleanup'}elseif(-not $acknowledged -or $State.scenarioExitCode -ne 0 -or $State.processExitCode -ne 0){'NEG-scenario-or-exit'}else{'completed-owned-tree-exited'}
  } catch {
+  if($Job.compactMemory){$compactNegative=$true}
   $State.monitorFailureName=$_.Exception.GetType().Name
   if(-not $State.primaryFailure){$State.primaryFailure='owned-browser-monitor-failed'}
   $State.status='NEG-monitor-failure';$State.ownershipComplete=$false
   # Persist NEG before attempting cleanup. A broken state path must not bypass it.
   try{Save-OwnedMonitorResult $State $StateFile}catch{$State.secondaryFailures+=@{phase='failure-save';name=$_.Exception.GetType().Name}}
-  try{if(Retained-OwnedProcessAlive $rootRecord){if(-not(Test-Path -LiteralPath $Job.stopRequest)){Write-Durable @{requestedAt=[datetimeoffset]::UtcNow.ToString('o');reason='monitor-failure'} $Job.stopRequest -Exclusive}}}catch{$State.secondaryFailures+=@{phase='stop-request';name=$_.Exception.GetType().Name}}
+  try{
+   if($Job.compactMemory){Request-LessonNormalStop $Job.stopRequest}
+   elseif(Retained-OwnedProcessAlive $rootRecord){if(-not(Test-Path -LiteralPath $Job.stopRequest)){Write-Durable @{requestedAt=[datetimeoffset]::UtcNow.ToString('o');reason='monitor-failure'} $Job.stopRequest -Exclusive}}
+  }catch{$State.secondaryFailures+=@{phase='stop-request';name=$_.Exception.GetType().Name}}
   # Discovery may have failed, so act only on kernel objects already retained.
-  foreach($record in @($retained.Values|Sort-Object createdTicks -Descending)){
+  if($Job.compactMemory){
+   # No forced cleanup for the compact profile. The adapter owns normal browser
+   # shutdown; a residual root/child stays NEG and remains visible to the operator.
+   $until=[datetimeoffset]::UtcNow.AddSeconds(30)
+   do{
+    Start-Sleep -Milliseconds 100
+    $observations=@($retained.Values|ForEach-Object{Retained-OwnedProcessObservation $_})
+    # Unknown is not an exit. Stop draining and persist explicit uncertainty via
+    # Reconcile below instead of calling the throwing boolean helper in this catch.
+    if(@($observations|Where-Object state -eq 'unknown').Count){break}
+    $alive=@($observations|Where-Object state -eq 'alive')
+   }while($alive.Count -and [datetimeoffset]::UtcNow -lt $until)
+  }
+  foreach($record in @($retained.Values|Sort-Object createdTicks -Descending|Where-Object{-not $Job.compactMemory})){
    try{if(Stop-RetainedOwnedProcess $record){$State.forced=$true}}catch{$State.secondaryFailures+=@{phase='failure-cleanup';processId=$record.processId;name=$_.Exception.GetType().Name}}
   }
   Reconcile-RetainedOwnedProcesses $State $known $retained
@@ -192,6 +254,15 @@ function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetim
   $State.retainedHandleCount=$retained.Count
   $State.completedAt=[datetimeoffset]::UtcNow.ToString('o')
  } finally {
+  if($compactContext){
+   # Stop Next only AFTER every captured browser/runner identity is proven exited.
+   try{
+    $remaining=@($retained.Values|Where-Object{Retained-OwnedProcessAlive $_})
+    if(-not $remaining.Count -and $compactNegative){Request-LessonCompactNextStop $compactContext}
+    elseif($remaining.Count){$State.secondaryFailures+=@{phase='compact-next-stop';name='BrowserResidualsNextPreserved'}}
+   }catch{$State.secondaryFailures+=@{phase='compact-next-stop';name=$_.Exception.GetType().Name}}
+   Close-LessonCompactMonitor $compactContext
+  }
   foreach($record in $retained.Values){if($record.ownsProcess){$record.process.Dispose()}}
   $State.descendantHandlesReleased=$true
  }

@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises'
 import { freemem } from 'node:os'
 import { z } from 'zod'
 
-export const PythonLessonAdmissionSchema = z
+const LegacyAdmissionSchema = z
   .object({
     version: z.literal(1),
     role: z.enum(['admin', 'kids']),
@@ -32,6 +32,24 @@ export const PythonLessonAdmissionSchema = z
   })
   .strict()
 
+const CompactAdmissionSchema = LegacyAdmissionSchema.extend({
+  version: z.literal(2),
+  profileId: z.literal('lessons-desktop-compact-r2'),
+  nextTree: LegacyAdmissionSchema.shape.nextTree.extend({ heapMiB: z.literal(768) }).strict(),
+  envelopes: z.strictObject({
+    browserMiB: z.literal(1024),
+    nextTreeMiB: z.literal(1024),
+    retainedBaseGrowthMiB: z.literal(128),
+    hostReserveMiB: z.literal(512),
+    roundingMiB: z.literal(128),
+  }),
+}).strict()
+
+export const PythonLessonAdmissionSchema = z.discriminatedUnion('version', [
+  LegacyAdmissionSchema,
+  CompactAdmissionSchema,
+])
+
 export function evaluatePythonLessonAdmission(
   input: unknown,
   observation: { role: 'admin' | 'kids'; nowMs: number; freeBytes: number },
@@ -39,7 +57,8 @@ export function evaluatePythonLessonAdmission(
   const plan = PythonLessonAdmissionSchema.parse(input)
   assert.equal(plan.role, observation.role, 'Admission belongs to another audience')
   assert.equal(plan.nextTree.role, plan.role === 'admin' ? 'adminNext' : 'kidsNext')
-  assert.equal(plan.envelopes.browserMiB, plan.role === 'admin' ? 1024 : 1536)
+  if (plan.version === 1)
+    assert.equal(plan.envelopes.browserMiB, plan.role === 'admin' ? 1024 : 1536)
   assert(
     plan.nextTree.workingSetMiB <= plan.envelopes.nextTreeMiB,
     'Next exceeded this attempt budget',
@@ -48,14 +67,15 @@ export function evaluatePythonLessonAdmission(
   assert(ageMs >= 0 && ageMs <= 10_000, 'Admission observation must be fresh, not future dated')
   assert(Number.isFinite(observation.freeBytes) && observation.freeBytes >= 0)
   const nextGrowthMiB = Math.max(0, plan.envelopes.nextTreeMiB - plan.nextTree.workingSetMiB)
+  const roundingMiB = plan.version === 2 ? plan.envelopes.roundingMiB : 256
   const requiredFreeMiB =
     Math.ceil(
       (plan.envelopes.browserMiB +
         nextGrowthMiB +
         plan.envelopes.retainedBaseGrowthMiB +
         plan.envelopes.hostReserveMiB) /
-        256,
-    ) * 256
+        roundingMiB,
+    ) * roundingMiB
   const observedFreeMiB = observation.freeBytes / 1024 ** 2
   return {
     ...plan,
