@@ -18,7 +18,7 @@ existing Bun.build(target=node) for QA-only TS compilation, installed Chrome155,
 Playwright1.60. Bun remains the SUT services runtime.
 
 **Spec:** cache windows-job-integration-design-r1/DESIGN.md, refined by Root's
-actual phase1 PASS and Node+Job actual PASS (2026-10-21 05:44:42–44Z). Those prove
+actual phase1 PASS and Node+Job actual PASS (2026-10-21 05:44:42â€“44Z). Those prove
 only the OS/browser primitives, not the full lesson flow or a unique Bun cause.
 
 ## Constraints
@@ -77,7 +77,7 @@ only the OS/browser primitives, not the full lesson flow or a unique Bun cause.
   same native creator-before-claim and Stop uses QUERY/native proof plus existing
   listener checks. Explicit .cs/.ps1/source/Node artifact pins and pointer checks.
 - [ ] Root reviews and executes the one native named-query lifecycle proof in a
-  granted small window, then one existing Admin→Kids scenario. No implicit Start.
+  granted small window, then one existing Adminâ†’Kids scenario. No implicit Start.
 - [ ] Accept only real functional and cleanup evidence. A missing named job is
   never empty proof; a consumer must capture the still-live expected root or
   retain a previously validated context. No force result becomes normal PASS.
@@ -96,7 +96,7 @@ QUERY4 and exact collision183 refusal. Root renewed actual proof passed those
 NEG/cleanup-null remains unchanged. The next proof retains a QUERY anchor while
 closing the creator, opens/confirms a successor QUERY consumer, and only then
 closes the anchor; it never depends on name reopen after last-handle close.
-Root's actual overlapping-handoff proof passed7 checks at06:21:28.051�28.705Z:
+Root's actual overlapping-handoff proof passed7 checks at06:21:28.051–28.705Z:
 QUERY binding, Assign denied5, collision183, live successor before/after anchor
 close, normal fixture exit0 and final empty-job/handle cleanup. Receipt
 f25d211babcc897d2d0a8b839bbeea1e535ee00ed468b6083ba2a414cab4a402;
