@@ -2,7 +2,7 @@
 
 **seoTitle**: Criar junto, para crianças menores de 9 anos | Comunidade dos Criadores | Sistema Zero
 
-**description**: Os jogos dela, um depois do outro, feitos com você do lado. Ela decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.
+**description**: Os jogos do seu filho, um depois do outro, feitos com você do lado. Ele decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.
 
 **topo.pular**: Ir para o conteúdo
 
@@ -18,15 +18,15 @@
 
 **heroi.selo**: Para crianças menores de 9 anos, com um adulto ao lado
 
-**heroi.titulo**: Os jogos dela, um depois do outro, feitos com você do lado.
+**heroi.titulo**: Os jogos do seu filho, um depois do outro, feitos com você do lado.
 
 **heroi.enfase**: com você do lado.
 
-**heroi.texto**: Imagine a cara dela quando o personagem que ela escolheu aparece na tela e faz exatamente o que ela mandou. Ela decide, e você lê e ajuda com o mouse. Cada jogo pronto pode ir para os avós jogarem, por um link. Cada aula ensina peças novas, e os próximos jogos ficam maiores, até o jogo que ela inventar.
+**heroi.texto**: Imagine a cara dele quando o personagem que ele escolheu aparece na tela e faz exatamente o que ele mandou. Ele decide, e você lê e ajuda com o mouse. Cada jogo pronto pode ir para os avós jogarem, por um link. Cada aula ensina peças novas, e os próximos jogos ficam maiores, até o jogo que ele inventar.
 
-**heroi.beneficios[0]**: Tela junto com você, e não sozinha no tablet
+**heroi.beneficios[0]**: Tela junto com você, e não sozinho no tablet
 
-**heroi.beneficios[1]**: A ideia dela na tela, do jeito que ela inventou
+**heroi.beneficios[1]**: A ideia dele na tela, do jeito que ele inventou
 
 **heroi.beneficios[2]**: Um jogo depois do outro
 
@@ -42,45 +42,45 @@
 
 **heroi.zappy.alt**: 
 
-**problema.titulo**: Ela inventa cada brincadeira. E no tablet, só joga joguinho pronto
+**problema.titulo**: Ele inventa cada brincadeira. E no tablet, só joga joguinho pronto
 
-**problema.texto**: Ela inventa regra para o pega-pega, cria personagem, conta fase inteira que só existe na cabeça dela. Aí pega o tablet e fica no joguinho que outra pessoa fez. Você procura alguma coisa melhor e só acha curso para criança maior, que pede leitura, ou aplicativo de passar o tempo. E fica a dúvida de sentar junto para fazer o quê.
+**problema.texto**: Ele inventa regra para o pega-pega, cria personagem, conta fase inteira que só existe na cabeça dele. Aí pega o tablet e fica no joguinho que outra pessoa fez. Você procura alguma coisa melhor e só acha curso para criança maior, que pede leitura, ou aplicativo de passar o tempo. E fica a dúvida de sentar junto para fazer o quê.
 
-**problema.destaque**: Muitos cursos e aplicativos foram pensados para a criança usar sozinha, e nessa idade ela ainda precisa de alguém do lado. Aqui, esse alguém é você.
+**problema.destaque**: Muitos cursos e aplicativos foram pensados para a criança usar sozinha. Nessa idade, seu filho ainda precisa de alguém do lado. Aqui, esse alguém é você.
 
 **juntos.titulo**: Quando vocês sentam juntos para criar, a tela vira um tempo de vocês dois
 
-**juntos.texto**: Veja o que cada sessão traz para ela e para você.
+**juntos.texto**: Veja o que cada sessão traz para ele e para você.
 
 **juntos.cartas[0].titulo**: Um tempo de tela que vocês dividem
 
 **juntos.cartas[0].texto**: Lado a lado, conversando, rindo do teste que deu errado e comemorando quando funciona.
 
-**juntos.cartas[1].titulo**: Ela diz: fui eu que fiz
+**juntos.cartas[1].titulo**: Ele diz: fui eu que fiz
 
-**juntos.cartas[1].texto**: Quando o personagem que ela escolheu aparece na tela, a ideia vira coisa feita por ela.
+**juntos.cartas[1].texto**: Quando o personagem que ele escolheu aparece na tela, a ideia vira coisa feita por ele.
 
 **juntos.cartas[2].titulo**: Um jogo para mostrar à família
 
-**juntos.cartas[2].texto**: Ela esconde os bichinhos no jardim e chama você para achar. Depois, vocês mandam o link para os avós, os tios e os amigos.
+**juntos.cartas[2].texto**: Ele esconde os bichinhos no jardim e chama você para achar. Depois, vocês mandam o link para os avós, os tios e os amigos.
 
-**juntos.cartas[3].titulo**: Ela aprende sem perceber
+**juntos.cartas[3].titulo**: Ele aprende sem perceber
 
-**juntos.cartas[3].texto**: Se tocar, some. Se achar, conta mais um. Ela vê na tela o que cada escolha faz.
+**juntos.cartas[3].texto**: Se tocar, some. Se achar, conta mais um. Ele vê na tela o que cada escolha faz.
 
-**juntos.cartas[4].titulo**: Quando dá errado, ela tenta de novo
+**juntos.cartas[4].titulo**: Quando dá errado, ele tenta de novo
 
 **juntos.cartas[4].texto**: Errar vira parte da brincadeira: testa, vê o que aconteceu e tenta outra vez, em vez de desistir.
 
-**juntos.cartas[5].titulo**: Você entende como ela pensa
+**juntos.cartas[5].titulo**: Você entende como ele pensa
 
-**juntos.cartas[5].texto**: Ao explicar o que quer que o jogo faça, ela mostra o raciocínio dela, e você acompanha de perto.
+**juntos.cartas[5].texto**: Ao explicar o que quer que o jogo faça, ele mostra o raciocínio dele, e você acompanha de perto.
 
-**papeis.titulo**: E ela consegue, porque já entende regra de jogo melhor do que parece
+**papeis.titulo**: E ele consegue, porque já entende regra de jogo melhor do que parece
 
-**papeis.texto**: Pique-esconde, pega-pega, quem pisar na lava perde: as brincadeiras que ela inventa já têm regra, ponto e fim. Num jogo de computador é igual. O que ainda falta para ela fazer sozinha é a leitura e o mouse, e isso você empresta enquanto ela decide. É como aprender a falar antes de escrever: nessa fase, ela monta a lógica com blocos, quase sem digitar. Cada um fica com uma parte.
+**papeis.texto**: Pique-esconde, pega-pega, quem pisar na lava perde: as brincadeiras que ele inventa já têm regra, ponto e fim. Num jogo de computador é igual. O que ainda falta para ele fazer sozinho é a leitura e o mouse, e isso você empresta enquanto ele decide. É como aprender a falar antes de escrever: nessa fase, ele monta a lógica com blocos, quase sem digitar. Cada um fica com uma parte.
 
-**papeis.cartas[0].titulo**: Ela decide
+**papeis.cartas[0].titulo**: Ele decide
 
 **papeis.cartas[0].texto**: Quem se esconde, onde se esconde, o que acontece no toque e a mensagem do final.
 
@@ -100,7 +100,7 @@
 
 **sessao.passos[0].destaque**: Vocês assistem ao vídeo juntos.
 
-**sessao.passos[0].texto**: Se ela quiser ouvir a explicação do Zappy de novo, é só apertar Ouvir.
+**sessao.passos[0].texto**: Se ele quiser ouvir a explicação do Zappy de novo, é só apertar Ouvir.
 
 **sessao.passos[1].destaque**: Depois jogam a versão pronta
 
@@ -108,11 +108,11 @@
 
 **sessao.passos[2].destaque**: Então montam juntos:
 
-**sessao.passos[2].texto**: o esconderijo some com um toque e o jogo conta quem foi achado. Você lê o bloco, ela escolhe.
+**sessao.passos[2].texto**: o esconderijo some com um toque e o jogo conta quem foi achado. Você lê o bloco, ele escolhe.
 
 **sessao.passos[3].destaque**: Apertam para testar.
 
-**sessao.passos[3].texto**: Se não saiu como ela queria, descobrem juntos o porquê e testam de novo.
+**sessao.passos[3].texto**: Se não saiu como ele queria, descobrem juntos o porquê e testam de novo.
 
 **sessao.passos[4].destaque**: E guardam para amanhã.
 
@@ -136,15 +136,15 @@
 
 **sessao.garantia**: 7 dias de garantia. Cancele quando quiser, sem multa.
 
-**seuPapel.titulo**: O seu papel é mais simples do que parece: ler, perguntar e deixar a escolha com ela
+**seuPapel.titulo**: O seu papel é mais simples do que parece: ler, perguntar e deixar a escolha com ele
 
-**seuPapel.texto**: Jogar o que ela criou já é um jeito de participar, para qualquer adulto. E quatro cuidados ajudam a sessão a render.
+**seuPapel.texto**: Jogar o que ele criou já é um jeito de participar, para qualquer adulto. E quatro cuidados ajudam a sessão a render.
 
 **seuPapel.cuidados[0].titulo**: Pergunte antes de clicar
 
-**seuPapel.cuidados[0].texto**: Um "e agora, o que acontece?" deixa a próxima decisão com ela.
+**seuPapel.cuidados[0].texto**: Um "e agora, o que acontece?" deixa a próxima decisão com ele.
 
-**seuPapel.cuidados[1].titulo**: Siga a ideia dela
+**seuPapel.cuidados[1].titulo**: Siga a ideia dele
 
 **seuPapel.cuidados[1].texto**: Até a ideia mais estranha vira um teste divertido.
 
@@ -154,33 +154,33 @@
 
 **seuPapel.cuidados[3].titulo**: Comemore o teste
 
-**seuPapel.cuidados[3].texto**: Cada vez que ela aperta para testar, descobre alguma coisa nova.
+**seuPapel.cuidados[3].texto**: Cada vez que ele aperta para testar, descobre alguma coisa nova.
 
-**pecas.titulo**: Cada aula que vocês terminam deixa peças para o jogo que ela inventar
+**pecas.titulo**: Cada aula que vocês terminam deixa peças para o jogo que ele inventar
 
-**pecas.texto**: Ela não recebe todas as peças de uma vez. Recebe as que já sabe usar, uma aula de cada vez, e isso é de propósito: é assim que ela aprende de verdade, em vez de só apertar o que aparece.
+**pecas.texto**: Ele não recebe todas as peças de uma vez. Recebe as que já sabe usar, uma aula de cada vez, e isso é de propósito: é assim que ele aprende de verdade, em vez de só apertar o que aparece.
 
-**pecas.cartas[0].titulo**: Nas aulas, ela aprende com um jogo pronto
+**pecas.cartas[0].titulo**: Nas aulas, ele aprende com um jogo pronto
 
-**pecas.cartas[0].texto**: O jardim, o farol, a nave. Em cada um, ela escolhe personagem, cor e regra, e ganha as peças daquela aula: o toque que faz aparecer, a contagem, a chave que acende o farol.
+**pecas.cartas[0].texto**: O jardim, o farol, a nave. Em cada um, ele escolhe personagem, cor e regra, e ganha as peças daquela aula: o toque que faz aparecer, a contagem, a chave que acende o farol.
 
-**pecas.cartas[1].titulo**: Ao publicar A Chave do Farol, o Estúdio dela abre
+**pecas.cartas[1].titulo**: Ao publicar A Chave do Farol, o Estúdio dele abre
 
-**pecas.cartas[1].texto**: Depois de A Chave do Farol, vocês ganham um lugar para começar um jogo do zero, com as peças que ela já conhece. É aqui que a brincadeira que ela inventou vira jogo.
+**pecas.cartas[1].texto**: Depois de A Chave do Farol, vocês ganham um lugar para começar um jogo do zero, com as peças que ele já conhece. É aqui que a brincadeira que ele inventou vira jogo.
 
 **pecas.cartas[2].titulo**: Cada aula nova, uma peça nova
 
-**pecas.cartas[2].texto**: Quanto mais aulas, mais peças e jogos maiores. Ela nunca fica diante de um bloco que não entende, e o desenho dela vira personagem no Pinta.
+**pecas.cartas[2].texto**: Quanto mais aulas, mais peças e jogos maiores. Ele nunca fica diante de um bloco que não entende, e o desenho dele vira personagem no Pinta.
 
 **pecas.jornada.imagem.alt**: A Jornada do Criador na plataforma: Faísca libera o Estúdio nas aulas; Construtor libera o Estúdio livre e o Pinta
 
-**pecas.jornada.legenda.destaque**: Está escrito na tela dela.
+**pecas.jornada.legenda.destaque**: Está escrito na tela dele.
 
-**pecas.jornada.legenda.texto**: No posto Construtor, ela cria os seus jogos com as ferramentas dos cursos que terminou. Tela do perfil de teste da equipe.
+**pecas.jornada.legenda.texto**: No posto Construtor, ele cria os seus jogos com as ferramentas dos cursos que terminou. Tela do perfil de teste da equipe.
 
-**pecas.proximos.destaque**: Depois do jardim, vêm o farol, a nave, o jogo do jeito dela e o dino,
+**pecas.proximos.destaque**: Depois do jardim, vêm o farol, a nave, o jogo do jeito dele e o dino,
 
-**pecas.proximos.texto**: e cada um ensina peças novas para os próximos jogos dela:
+**pecas.proximos.texto**: e cada um ensina peças novas para os próximos jogos dele:
 
 **pecas.jogos[0].imagem.alt**: A Chave do Farol: a ilha, a chave e o farol
 
@@ -194,15 +194,15 @@
 
 **pecas.jogos[2].legenda**: Corre, Dino
 
-**pecas.continuidade.destaque**: E esse começo continua com ela quando crescer.
+**pecas.continuidade.destaque**: E esse começo continua com ele quando crescer.
 
-**pecas.continuidade.texto**: Quando começar a ler sozinha, passa a criar por conta própria no mesmo perfil, com os jogos e o progresso guardados. Mais adiante chegam o Pensa, o Molda para criar em 3D, a Ponte e o código. Se tiver um irmão mais velho, ele usa o segundo perfil.
+**pecas.continuidade.texto**: Quando começar a ler sozinho, passa a criar por conta própria no mesmo perfil, com os jogos e o progresso guardados. Mais adiante chegam o Pensa, o Molda para criar em 3D, a Ponte e o código. Se ele tiver um irmão mais velho, o irmão usa o segundo perfil.
 
 **pecas.fundadores.imagem.alt**: Helena e Júlio, fundadores, em casa
 
 **pecas.fundadores.texto**: Quem prepara as aulas são Helena e Júlio, pais do André e da Débora e formados em Sistemas de Informação. A Comunidade nasceu dos jogos que eles criaram com os filhos.
 
-**seguranca.titulo**: Você também vai querer saber onde ela está criando
+**seguranca.titulo**: Você também vai querer saber onde ele está criando
 
 **seguranca.texto**: Por isso, as regras são simples.
 
@@ -210,7 +210,7 @@
 
 **seguranca.regras[0].texto**: Só você pode ligar.
 
-**seguranca.regras[1].titulo**: O jogo público não mostra o nome dela
+**seguranca.regras[1].titulo**: O jogo público não mostra o nome dele
 
 **seguranca.regras[1].texto**: A página do jogo mostra só o jogo e o título.
 
@@ -226,7 +226,7 @@
 
 **planos.texto**: Os dois planos dão acesso a tudo. Vocês têm as aulas dos cursos publicados e dos que forem lançados, o Estúdio e as ferramentas que a Jornada vai abrindo. Têm também o Mural e o Clube com moderação, as dúvidas respondidas pela equipe nos Recados e a área do responsável. A diferença está só na forma de pagar.
 
-**planos.destaque**: Uma assinatura, dois perfis: ela cria junto com você hoje e sozinha quando crescer, e o irmão mais velho usa o outro perfil.
+**planos.destaque**: Uma assinatura, dois perfis: ele cria junto com você hoje e sozinho quando crescer, e o irmão mais velho usa o outro perfil.
 
 **planos.mensal.nome**: Mensal
 
@@ -256,7 +256,7 @@
 
 **planos.depois.titulo**: O que acontece depois de assinar
 
-**planos.depois.passos[0]**: Você cria o perfil dela na sua área, com nome e data de nascimento.
+**planos.depois.passos[0]**: Você cria o perfil dele na sua área, com nome e data de nascimento.
 
 **planos.depois.passos[1]**: Autoriza o computador que vocês vão usar.
 
@@ -270,15 +270,15 @@
 
 **duvidas.titulo**: Algumas dúvidas de quem quer criar junto
 
-**duvidas.itens[0].pergunta**: Ela ainda não lê. Dá certo?
+**duvidas.itens[0].pergunta**: Ele ainda não lê. Dá certo?
 
 **duvidas.itens[0].resposta**: Dá, com você lendo. O botão Ouvir lê as falas do Zappy, as perguntas e as instruções. Os blocos e os botões do Estúdio continuam em texto, e é aí que você entra.
 
-**duvidas.itens[1].pergunta**: Ela pode inventar o jogo dela, ou só faz o do curso?
+**duvidas.itens[1].pergunta**: Ele pode inventar o jogo dele, ou só faz o do curso?
 
-**duvidas.itens[1].resposta**: Os dois, nessa ordem. Nas aulas, ela cria dentro do jogo do curso: escolhe personagem, cor e regra. Depois de A Chave do Farol publicada, o Estúdio livre abre, e vocês montam o jogo que ela inventou com as peças que ela já conhece. Cada curso novo ensina peças novas, e os jogos dela ficam maiores.
+**duvidas.itens[1].resposta**: Os dois, nessa ordem. Nas aulas, ele cria dentro do jogo do curso: escolhe personagem, cor e regra. Depois de A Chave do Farol publicada, o Estúdio livre abre, e vocês montam o jogo que ele inventou com as peças que ele já conhece. Cada curso novo ensina peças novas, e os jogos dele ficam maiores.
 
-**duvidas.itens[2].pergunta**: E se ela perder o interesse?
+**duvidas.itens[2].pergunta**: E se ele perder o interesse?
 
 **duvidas.itens[2].resposta**: As sessões têm o tamanho que vocês quiserem, e dá para parar por semanas e voltar do mesmo ponto. Se não fizer mais sentido, você cancela na sua área, sem multa, e o acesso segue até o fim do período pago.
 
@@ -288,25 +288,25 @@
 
 **duvidas.itens[4].pergunta**: Funciona no tablet?
 
-**duvidas.itens[4].resposta**: Não. Precisa de computador com mouse e teclado, e pode ser o da família. Você conduz o mouse, e ela aponta na tela o que quer.
+**duvidas.itens[4].resposta**: Não. Precisa de computador com mouse e teclado, e pode ser o da família. Você conduz o mouse, e ele aponta na tela o que quer.
 
 **duvidas.itens[5].pergunta**: Vale assinar para uma criança tão pequena?
 
-**duvidas.itens[5].resposta**: A assinatura tem 2 perfis, então serve também para um irmão mais velho e continua com ela quando crescer. E vocês têm 7 dias para testar juntos.
+**duvidas.itens[5].resposta**: A assinatura tem 2 perfis, então serve também para um irmão mais velho e continua com ele quando crescer. E vocês têm 7 dias para testar juntos.
 
-**duvidas.itens[6].pergunta**: Ela tem 5 anos. É cedo?
+**duvidas.itens[6].pergunta**: Ele tem 5 anos. É cedo?
 
-**duvidas.itens[6].resposta**: Depende mais de ela gostar de inventar brincadeira do que da idade. Com você lendo e conduzindo, as sessões ficam curtas e cada uma termina com alguma coisa na tela. Os 7 dias servem para vocês testarem.
+**duvidas.itens[6].resposta**: Depende mais de ele gostar de inventar brincadeira do que da idade. Com você lendo e conduzindo, as sessões ficam curtas e cada uma termina com alguma coisa na tela. Os 7 dias servem para vocês testarem.
 
 **duvidas.itens[7].pergunta**: Tem app grátis para isso. Qual é a diferença?
 
-**duvidas.itens[7].resposta**: O ScratchJr é gratuito, roda no tablet e é uma boa porta de entrada para montar historinhas com blocos. Aqui, cada projeto é guiado, com aula em português e você no papel de ler e conduzir. Junto vêm o Estúdio e as ferramentas que vão abrindo, o Mural para mostrar o jogo à família e as dúvidas respondidas pela equipe nos Recados. E a conta continua com ela quando crescer, no mesmo perfil.
+**duvidas.itens[7].resposta**: O ScratchJr é gratuito, roda no tablet e é uma boa porta de entrada para montar historinhas com blocos. Aqui, cada projeto é guiado, com aula em português e você no papel de ler e conduzir. Junto vêm o Estúdio e as ferramentas que vão abrindo, o Mural para mostrar o jogo à família e as dúvidas respondidas pela equipe nos Recados. E a conta continua com ele quando crescer, no mesmo perfil.
 
 **duvidas.itens[8].pergunta**: Como cancelo?
 
 **duvidas.itens[8].resposta**: Na sua área, em Conta e depois em Minhas compras, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e os jogos publicados continuam no Mural.
 
-**fechamento.titulo**: A próxima brincadeira que ela inventar pode virar um jogo de vocês
+**fechamento.titulo**: A próxima brincadeira que ele inventar pode virar um jogo de vocês
 
 **fechamento.cta**: Ver os planos para criarmos juntos
 
