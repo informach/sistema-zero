@@ -576,7 +576,7 @@ function RuntimeBadge({
   runtime,
   className,
 }: {
-  runtime: ReturnType<typeof publicRuntimeLabel>
+  runtime: NonNullable<ReturnType<typeof publicRuntimeLabel>>
   className: string
 }) {
   return (

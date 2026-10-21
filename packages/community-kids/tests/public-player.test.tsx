@@ -252,11 +252,9 @@ describe('perfil publicado na página pública (R09)', () => {
       expect(fetcher).toHaveBeenCalledTimes(1)
     })
 
-  test('JavaScript Clássico continua identificado, sem identidade de runtime inventada', async () => {
+  test('JavaScript continua como era: sem selo de perfil nem identidade de runtime', async () => {
     fakeCelular()
     const view = await renderPlayer()
-    const badge = view.container.querySelector('[data-runtime-profile]')
-    expect(badge?.textContent).toBe('JavaScript Clássico')
-    expect(badge?.hasAttribute('title')).toBe(false)
+    expect(view.container.querySelector('[data-runtime-profile]')).toBeNull()
   })
 })
