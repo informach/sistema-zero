@@ -65,16 +65,12 @@ test('a newly authored turn keeps its pivot fixed between keys, and changing the
     })
     expect(changed.sample(time, false).worldMatrices).toEqual(pose.worldMatrices)
     const captured = captureSceneAnimationLocalPose(document, clip, id, time)
-    const base = composeTransform(document.nodes[0]!.transform)
-    const matrix = affineMultiply(
-      base,
-      composeTransform({
-        kind: 'trs',
-        translation: captured.translation,
-        rotation: captured.rotation,
-        scale: captured.scale,
-      }),
-    )
+    const matrix = composeTransform({
+      kind: 'trs',
+      translation: captured.translation,
+      rotation: captured.rotation,
+      scale: captured.scale,
+    })
     matrix.forEach((value, axis) => {
       expect(value).toBeCloseTo(pose.worldMatrices.get(id)![axis]!, 11)
     })

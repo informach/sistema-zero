@@ -14,6 +14,10 @@ import { SCENE_PAINT_COPY } from '../src/core/scenePaintCopy'
 import { addScenePrimitive } from '../src/scene/commands'
 import type { MoldaSceneDocument } from '../src/scene/document'
 import { sceneToJson } from '../src/scene/documentJson'
+import { composeTransform } from '../src/scene/matrix'
+import { readSceneDocument } from '../src/scene/readDocument'
+import { rigidEmptyAnimations, rigidSceneDocument } from '../src/scene/rigidEmptyAnimations'
+import { prepareSceneAnimation } from '../src/scene/sampleAnimation'
 import { readGlb } from '../src/testing/glbRead'
 import { animatedScene, sceneAnimationClip } from '../src/testing/sceneAnimation'
 import { makeSceneSkinFixture } from '../src/testing/sceneSkin'
@@ -420,10 +424,13 @@ test('a child can spin a resized cylinder wheel, record and export GLB to both d
   )
   const wheel = source.nodes.find((node) => node.name === 'roda')!
   wheel.transform = {
-    kind: 'trs',
-    translation: [0, 2, 0],
-    rotation: [0, 0, Math.SQRT1_2, Math.SQRT1_2],
-    scale: [2, 0.4, 1.8],
+    kind: 'affine',
+    matrix: composeTransform({
+      kind: 'trs',
+      translation: [0, 2, 0],
+      rotation: [0, 0, Math.SQRT1_2, Math.SQRT1_2],
+      scale: [2, 0.4, 1.8],
+    }),
   }
   wheel.pivot = [0, 0, 0]
   source.animations = [{ ...sceneAnimationClip(wheel.id), tracks: [] }]
@@ -444,17 +451,28 @@ test('a child can spin a resized cylinder wheel, record and export GLB to both d
   ).toHaveCount(0)
   await page.getByRole('button', { name: 'Marcar pose', exact: true }).click()
   const saved = await nativeProject(page)
-  expect(saved.nodes).toEqual(sceneToJson(source).nodes)
+  expect(saved.nodes).toEqual(sceneToJson(rigidSceneDocument(source)).nodes)
   expect(saved.geometries).toEqual(sceneToJson(source).geometries)
   expect(saved.images).toEqual(sceneToJson(source).images)
   const rotation = saved.animations[0].tracks.find(
     (track: { channel: string }) => track.channel === 'rotation',
   )
   expect(rotation.nodeId).toBe(wheel.id)
-  const expected = [0, Math.sin(Math.PI / 24), 0, Math.cos(Math.PI / 24)]
-  rotation.keys[0].value.forEach((value: number, axis: number) => {
-    expect(value).toBeCloseTo(expected[axis]!, 12)
-  })
+  expect(saved.animations[0].space).toBe('local')
+  const read = readSceneDocument(saved)
+  expect(read.status).toBe('valid')
+  if (read.status !== 'valid') throw new Error('Invalid recorded wheel')
+  const matrix = prepareSceneAnimation(read.document, saved.animations[0].id)
+    .sample(0, false)
+    .worldMatrices.get(wheel.id)!
+  for (let a = 0; a < 3; a++)
+    for (let b = a + 1; b < 3; b++) {
+      const dot = [0, 1, 2].reduce(
+        (sum, row) => sum + matrix[a * 4 + row]! * matrix[b * 4 + row]!,
+        0,
+      )
+      expect(dot).toBeCloseTo(0, 10)
+    }
   expect(rotation.keys[0].incomingPivot).toEqual([0, 0, 0])
   await page.getByText('Salvar e exportar', { exact: true }).click()
   await page.getByRole('button', { name: 'Exportar GLB', exact: true }).click()
@@ -476,7 +494,9 @@ test('a child can spin a resized cylinder wheel, record and export GLB to both d
   }
   await page.getByRole('button', { name: 'Voltar à oficina', exact: true }).click()
   await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
-  expect((await nativeProject(page)).animations).toEqual(sceneToJson(source).animations)
+  expect((await nativeProject(page)).animations).toEqual([
+    { ...sceneToJson(source).animations![0]!, space: 'local' },
+  ])
   expect(errors).toEqual([])
 })
 
@@ -636,7 +656,7 @@ test('pintura 2D e prévia 3D compartilham pixels, desfazer e reabertura; movime
   await page.getByRole('button', { name: 'Modelo pintura-e2e', exact: true }).click()
   const reopened = await nativeProject(page)
   expect(reopened.images).toEqual(painted.images)
-  expect(reopened.animations).toEqual(animated.animations)
+  expect(reopened.animations).toEqual(rigidEmptyAnimations(animated).animations)
   expect(errors).toEqual([])
 })
 

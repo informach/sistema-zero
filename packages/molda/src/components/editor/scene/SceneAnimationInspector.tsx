@@ -93,6 +93,15 @@ export function SceneAnimationInspector({
     )
   const locked = [...covered].some((id) => flags.get(id)?.locked)
   const compatible = clip.space !== 'local' || node?.transform.kind === 'trs'
+  const parent = node?.parentId ? index.scene.worldMatrices.get(node.parentId) : null
+  const parentScale = parent
+    ? [0, 1, 2].map((axis) =>
+        Math.hypot(parent[axis * 4]!, parent[axis * 4 + 1]!, parent[axis * 4 + 2]!),
+      )
+    : []
+  const inheritedDistortion =
+    parentScale.length > 0 &&
+    parentScale.some((length) => Math.abs(length - parentScale[0]!) > parentScale[0]! * 1e-8)
   const initial =
     node && compatible && !snapshot.playing
       ? sceneAnimationFormValue(node, clip, channel, snapshot.time)
@@ -104,6 +113,12 @@ export function SceneAnimationInspector({
   return (
     <section className="space-y-3 border-t border-mld-border pt-3" aria-label={copy.animationMode}>
       <SceneAnimationPoseCard workshop={workshop} />
+      {inheritedDistortion && !snapshot.playing && (
+        <p role="status" className="text-sm text-mld-warn">
+          O grupo acima tem tamanhos diferentes nos eixos. Girar esta peça pode deformá-la. Separe-a
+          do grupo antes de animar a rotação.
+        </p>
+      )}
       {create && (
         <Button
           className="w-full text-sm"

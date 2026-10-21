@@ -20,10 +20,12 @@ import {
   editSceneMesh,
   groupSceneNodes,
   setSceneNodeFlag,
+  transformSceneNodes,
 } from '../../../scene/commands'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { buildSceneGeometry } from '../../../scene/geometry'
 import type { ScenePaintContact, ScenePaintTarget } from '../../../scene/imagePaint'
+import { identityMatrix } from '../../../scene/matrix'
 import { migrateLegacyModel } from '../../../scene/migrateLegacy'
 import { sceneFaceViewTexel, scenePaintFaceView } from '../../../scene/paintFaceView'
 import { scenePaintFaceBounds } from '../../../scene/paintSurfaceBounds'
@@ -132,6 +134,7 @@ function mount(asset: MoldaSceneDocument, wrap: (node: ReactNode) => ReactNode =
   })
   const stage = {
     callbacks: null as SceneViewportCallbacks | null,
+    document: null as MoldaSceneDocument | null,
     target: null as ScenePaintTarget | null,
     mode: null as ScenePaintMode | null,
     mirror: false,
@@ -139,7 +142,10 @@ function mount(asset: MoldaSceneDocument, wrap: (node: ReactNode) => ReactNode =
   const factory: SceneViewportFactory = (_canvas, callbacks) => {
     stage.callbacks = callbacks
     const port: SceneViewportPort = {
-      setDocument: () => [],
+      setDocument: (next) => {
+        stage.document = next
+        return []
+      },
       setSelection: () => {},
       setIsolation: () => {},
       setView: () => {},
@@ -186,6 +192,56 @@ function mount(asset: MoldaSceneDocument, wrap: (node: ReactNode) => ReactNode =
     })
   return { editor, view, stage, tap, drag }
 }
+
+test('Modelar mostra a prévia booleana e confirma em um único desfazer', async () => {
+  const { document, door, wall } = twoBoxes()
+  const offset = identityMatrix()
+  offset[12] = 1
+  const moved = transformSceneNodes(document, [wall], offset)
+  const { editor, stage, view } = mount(moved)
+  try {
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    act(() => {
+      stage.callbacks!.select(door, false)
+      stage.callbacks!.select(wall, true)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Diferença' }))
+    expect(editor.getState().asset).toBe(moved)
+    await waitFor(() => expect(stage.document?.nodes.some((node) => node.id === wall)).toBe(false))
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+    await waitFor(() => expect(stage.document?.nodes.some((node) => node.id === wall)).toBe(true))
+    fireEvent.click(screen.getByRole('button', { name: 'Diferença' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirmar resultado' }))
+    expect(editor.getState().asset.nodes.some((node) => node.id === wall)).toBe(false)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(editor.getState().asset.nodes.some((node) => node.id === wall)).toBe(true)
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
+test('a miniatura atualizada durante o cálculo não descarta a prévia booleana', async () => {
+  const { document, door, wall } = twoBoxes()
+  const offset = identityMatrix()
+  offset[12] = 1
+  const { editor, stage, view } = mount(transformSceneNodes(document, [wall], offset))
+  try {
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    act(() => {
+      stage.callbacks!.select(door, false)
+      stage.callbacks!.select(wall, true)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'União' }))
+    act(() => editor.getState().setThumb('updated-thumbnail'))
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirmar resultado' }))
+    expect(editor.getState().asset.thumb).toBe('updated-thumbnail')
+    expect(editor.getState().asset.nodes.some((node) => node.id === wall)).toBe(false)
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
 
 const swatch = (document: MoldaSceneDocument, index: number) =>
   screen.getByRole('button', {

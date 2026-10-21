@@ -5,9 +5,11 @@ import { NATIVE_IMPORT_COPY } from '../../../core/nativeImportCopy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import { triggerDownload } from '../../../export/download'
 import { exportLoadedSceneForStudio, sameSceneStudioContent } from '../../../export/studioLibrary'
+import { booleanSceneSolids, type SceneBooleanOperation } from '../../../scene/booleanSolids'
 import { deleteSceneNodes } from '../../../scene/commands'
 import { scenePalette } from '../../../scene/composite'
 import type { ModelSceneNode, MoldaSceneDocument } from '../../../scene/document'
+import { keepSceneThumb, sameSceneContent } from '../../../scene/documentContent'
 import { sceneToJson } from '../../../scene/documentJson'
 import { sceneMaterialImageBase } from '../../../scene/materialImages'
 import { transformPoint } from '../../../scene/matrix'
@@ -15,6 +17,7 @@ import { hasScenePaintableInteriorGap } from '../../../scene/paintableInterior'
 import { sceneNodePivot, scenePivotRotation, setSceneAuthoringPivot } from '../../../scene/pivot'
 import { duplicateSceneNodesNearby } from '../../../scene/placement'
 import { SCENE_RIG_NORMALS } from '../../../scene/rigBuilder'
+import { SceneValidationError } from '../../../scene/validation'
 import { sceneVisibleMesh } from '../../../scene/visibleMesh'
 import type { EditorStore } from '../../../state/editorStore'
 import type { SceneRecoveryController } from '../../../state/sceneRecoveryController'
@@ -28,6 +31,7 @@ import { isTypingTarget } from '../../ui/interaction'
 import { DeferredModule } from '../DeferredEditor'
 import { WorkspaceInspector } from '../model/WorkspaceInspector'
 import { type ResyncToStudio, useStudioResync } from '../useStudioResync'
+import type { SceneBooleanPreview } from './SceneBooleanPanel'
 import { SceneCanvas, type SceneCanvasSlots } from './SceneCanvas'
 import { SceneComponentTools } from './SceneComponentTools'
 import type { SceneExitMode } from './SceneExitControl'
@@ -238,6 +242,77 @@ export function SceneWorkshop({
     else closeFaces()
   }
   const { document, selected, run } = workshop
+  const [booleanPreview, setBooleanPreview] = useState<SceneBooleanPreview | null>(null)
+  const [booleanBusy, setBooleanBusy] = useState(false)
+  const booleanRequest = useRef(0)
+  const currentBooleanSelection = useRef(selected)
+  currentBooleanSelection.current = selected
+  const activeBoolean =
+    mode === 'model' &&
+    booleanPreview &&
+    sameSceneContent(booleanPreview.source, document) &&
+    selected.length === 2 &&
+    selected[0] === booleanPreview.ids[0] &&
+    selected[1] === booleanPreview.ids[1]
+      ? booleanPreview
+      : null
+  const booleanTools = {
+    preview: activeBoolean,
+    busy: booleanBusy,
+    async prepare(operation: SceneBooleanOperation) {
+      if (selected.length !== 2) return
+      const request = ++booleanRequest.current
+      setBooleanBusy(true)
+      setBooleanPreview(null)
+      try {
+        const result = await booleanSceneSolids(document, selected, operation)
+        if (
+          request !== booleanRequest.current ||
+          !sameSceneContent(editor.getState().asset, document) ||
+          currentBooleanSelection.current[0] !== selected[0] ||
+          currentBooleanSelection.current[1] !== selected[1]
+        )
+          return
+        setBooleanPreview({
+          source: document,
+          result,
+          ids: [selected[0]!, selected[1]!],
+          operation,
+        })
+        workshop.setMessage(null)
+      } catch (error) {
+        if (
+          request !== booleanRequest.current ||
+          !sameSceneContent(editor.getState().asset, document) ||
+          currentBooleanSelection.current[0] !== selected[0] ||
+          currentBooleanSelection.current[1] !== selected[1]
+        )
+          return
+        setBooleanPreview(null)
+        workshop.setMessage(
+          error instanceof SceneValidationError
+            ? error.message
+            : 'Não foi possível combinar essas peças.',
+        )
+      } finally {
+        if (request === booleanRequest.current) setBooleanBusy(false)
+      }
+    },
+    confirm() {
+      if (!activeBoolean) return
+      const result = run((source) => {
+        if (!sameSceneContent(source, activeBoolean.source)) return source
+        return keepSceneThumb(activeBoolean.result, source)
+      }, 'clear')
+      if (result) workshop.select(activeBoolean.ids[0], false)
+      setBooleanPreview(null)
+    },
+    cancel() {
+      booleanRequest.current++
+      setBooleanBusy(false)
+      setBooleanPreview(null)
+    },
+  }
   // A face de perto redesenha quando a paleta ou a cor base mudam de verdade, não a cada render.
   const paintPalette = useMemo(() => scenePalette(document), [document])
   const paintData = workshop.paint.data
@@ -826,6 +901,7 @@ export function SceneWorkshop({
                   onHover={workshop.placing ? workshop.previewPlacement : undefined}
                   onSampleInk={workshop.paint.picker ? workshop.paint.sample : undefined}
                   document={
+                    activeBoolean?.result ??
                     workshop.rigDraft?.preview ??
                     workshop.placementPreview ??
                     workshop.modelGuides.document ??
@@ -833,13 +909,14 @@ export function SceneWorkshop({
                     workshop.components.operation.document ??
                     document
                   }
-                  selection={selected}
+                  selection={activeBoolean ? [activeBoolean.ids[0]] : selected}
                   isolation={workshop.isolation}
                   onSelect={workshop.select}
                   onSelectMany={workshop.selectMany}
                   factory={viewportFactory}
                   onThumb={(thumb) => {
                     if (
+                      !activeBoolean &&
                       !workshop.paintPreparationPending() &&
                       !workshop.rigDraft &&
                       !workshop.placing &&
@@ -853,13 +930,14 @@ export function SceneWorkshop({
                       ? workshop.animationPose.transformActions(selected)
                       : workshop.transform
                   }
-                  transformTools={workshop.components.transformTools}
+                  transformTools={activeBoolean ? [] : workshop.components.transformTools}
                   componentSelection={
                     workshop.rigDraft
                       ? null
                       : (workshop.components.operation.selection ?? workshop.components.selection)
                   }
                   facePreviewOpen={
+                    !!activeBoolean ||
                     !!workshop.rigDraft ||
                     workshop.area === 'uv' ||
                     editingKnife ||
@@ -1058,7 +1136,7 @@ export function SceneWorkshop({
                     </p>
                   </div>
                 ) : (
-                  <SceneNodeProperties workshop={workshop} />
+                  <SceneNodeProperties workshop={workshop} booleanTools={booleanTools} />
                 )}
               </SceneInspectorSections>
             )}

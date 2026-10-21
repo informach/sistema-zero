@@ -10,6 +10,7 @@ import { allocateSceneId, finishSceneCommand } from './commandContext'
 import type { MoldaSceneDocument } from './document'
 import { SCENE_LIMITS } from './limits'
 import type { Quaternion } from './matrix'
+import { rigidSceneDocument } from './rigidEmptyAnimations'
 import * as v from './validation'
 
 export type SceneAnimationKeyInput = { nodeId: string } & (
@@ -43,17 +44,29 @@ function requireOrderedTimes(clip: SceneAnimationClip) {
   }
 }
 
-export function createSceneAnimation(document: MoldaSceneDocument, name: string, nextId = newId) {
+export function createSceneAnimation(
+  document: MoldaSceneDocument,
+  name: string,
+  nextId = newId,
+  selectedIds: readonly string[] = [],
+) {
+  const source = rigidSceneDocument(document)
+  const selected = source.nodes.filter((node) => selectedIds.includes(node.id))
+  const space = (selected.length ? selected : source.nodes).some(
+    (node) => node.transform.kind === 'trs',
+  )
+    ? 'local'
+    : 'local-delta'
   const clip: SceneAnimationClip = {
-    id: allocateSceneId(document, nextId)(),
+    id: allocateSceneId(source, nextId)(),
     name: v.text(name.trim(), 'name', 48),
     duration: 2,
     fps: 24,
     loop: false,
-    space: 'local-delta',
+    space,
     tracks: [],
   }
-  return finishSceneCommand({ ...document, animations: [...(document.animations ?? []), clip] })
+  return finishSceneCommand({ ...source, animations: [...(source.animations ?? []), clip] })
 }
 
 export function renameSceneAnimation(document: MoldaSceneDocument, clipId: string, name: string) {
