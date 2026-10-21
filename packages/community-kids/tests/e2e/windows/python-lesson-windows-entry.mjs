@@ -1,6 +1,7 @@
 // Trusted QA lifetime adapter; does not intercept auth/runtime/provider behavior.
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 import { pathToFileURL } from 'node:url'
 
@@ -41,11 +42,20 @@ try {
       .filter((key) => process.env[key])
       .map((key) => [key, process.env[key]]),
   )
+  // Windows resolves known folders from USERPROFILE even with --user-data-dir.
+  // Its Local/Roaming directories must exist in this owned QA home; do not use
+  // the personal profile or relax Chrome's default-directory protection.
+  const localAppData = join(job.home, 'AppData', 'Local')
+  const roamingAppData = join(job.home, 'AppData', 'Roaming')
+  mkdirSync(localAppData, { recursive: true })
+  mkdirSync(roamingAppData, { recursive: true })
   for (const key of Object.keys(process.env)) delete process.env[key]
   Object.assign(process.env, platform, environment.env, ephemeral, {
     PATH: job.cleanPath,
     USERPROFILE: job.home,
     HOME: job.home,
+    LOCALAPPDATA: localAppData,
+    APPDATA: roamingAppData,
   })
 
   // No application import, child, listener, port or remote work before durable claim.
