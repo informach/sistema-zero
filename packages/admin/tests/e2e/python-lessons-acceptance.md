@@ -127,3 +127,13 @@ CIM query errors are terminating; only a successful query without a matching pro
 Retained process observations distinguish `alive`, proven `exited` and `unknown`. Observation errors, invalid handles or identity mismatches never count as an exit. Unknown observations prevent completion acknowledgement and produce NEG with incomplete ownership and unconfirmed cleanup; they are included in `unconfirmedProcessIds` during reconciliation. Stop still requires a fresh valid observation of the same retained object. The observation controls return scenario completion with an unreferenced live inert child, inject failures at each Process observation, and require no ACK or kill of that unknown object. A separate actual handle owned by the benign control reconciles its own child afterward, without qualifying monitor cleanup.
 
 The additional explicit admission v3 profile `lessons-desktop-shared-r1` shares2048MiB between Next and browser, retaining browser cap1024, heap768, base growth128, OS reserve512, rounding128 and whole admission2688. Browser admission is ceil128(max(0,2048-NextWS)+128+512), with no second browser allocation. Runtime checks the actual sum; warmup uses browser0. v1/v2 keep their original interpretation. New cache Next warmup must pass the plan profile as its fifth argument and enable this profile explicitly. Old R7 NEG receipts remain NEG; replay under v3 is policy evidence, not retroactive cleanup or UI qualification. No ACK drain, deadline or force changes.
+
+# Diagnóstico de exceções do monitor
+
+Uma exceção do supervisor mantém NEG e incerteza de ownership. Antes de qualquer
+cleanup, o ErrorRecord original fornece somente o nome de um dos três helpers
+permitidos, a linha inteira positiva e um código de throw conhecido. Origem fora
+da lista recebe `unknown`, linha `0` e código `unknown`. Mensagem, stack, texto da
+invocação e caminhos completos não entram no recibo. Falhas secundárias do cleanup
+continuam separadas. Isso não muda ACK, prazos, orçamento ou autoridade de stop,
+nem identifica retroativamente a causa dos recibos R7/R8 anteriores.

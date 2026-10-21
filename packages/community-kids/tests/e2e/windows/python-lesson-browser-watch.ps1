@@ -97,12 +97,33 @@ function Capture-OwnedTree($Root, $Known, $Retained=$null, $Snapshot=$null) {
  }
 }
 
+function Get-LessonMonitorFailureDiagnostic([Management.Automation.ErrorRecord]$ErrorRecord) {
+ # Closed diagnostic projection only. Never persist Message, stack, invocation
+ # text or full script paths, which may include private inputs.
+ $leaf=[IO.Path]::GetFileName([string]$ErrorRecord.InvocationInfo.ScriptName)
+ $allowed=@('python-lesson-process-ownership.ps1','python-lesson-browser-watch.ps1','python-lesson-memory-watch.ps1')
+ $line=$ErrorRecord.InvocationInfo.ScriptLineNumber
+ if($leaf -cnotin $allowed -or $line -isnot [int] -or $line -le 0){$leaf='unknown';$line=0}
+ $codes=@{
+  'No complete process witness; refuse ownership inference.'='process-witness-incomplete'
+  'Duplicate PID in process observation'='process-snapshot-duplicate-pid'
+  'Live retained parent has no matching CIM witness; descendant discovery unconfirmed.'='live-parent-witness-mismatch'
+  'Retained process observation is unknown; exit is not confirmed.'='retained-process-observation-unknown'
+  'Own memory root witness changed'='memory-root-witness-mismatch'
+  'Own memory root handle unavailable'='memory-root-handle-unavailable'
+  'Own memory descendant handle unavailable'='memory-descendant-handle-unavailable'
+  'Completion identity mismatch'='completion-identity-mismatch'
+ }
+ $code=if($leaf -cne 'unknown' -and $codes.ContainsKey($ErrorRecord.Exception.Message)){$codes[$ErrorRecord.Exception.Message]}else{'unknown'}
+ return [pscustomobject]@{source=$leaf;line=$line;code=$code}
+}
+
 function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetimeoffset]$SoftDeadline, [datetimeoffset]$HardDeadline, $PreparedCompactContext=$null) {
  $known=@{};$known["$($State.root.processId):$($State.root.createdAt)"]=$State.root
  $retained=@{};$rootRecord=$null
  $stopRequested=$false;$complete=$null;$acknowledged=$false;$earlyExit=$false;$completionStableRounds=0
  $compactContext=$null;$compactNegative=$false
- $State|Add-Member -NotePropertyMembers @{hardDeadline=$HardDeadline.ToString('o');softDeadline=$SoftDeadline.ToString('o');maxSampledTreeWorkingSetMiB=0;maxSampledTreePrivateMiB=0;primaryFailure=$null;secondaryFailures=@();processExitCode=$null;scenarioExitCode=$null;liveOwned=@();completedAt=$null;retainedHandleCount=0;descendantHandlesReleased=$false;monitorFailureName=$null;ownershipComplete=$true;cleanupConfirmed=$false;provenExitedProcessIds=@();unconfirmedProcessIds=@();persistenceFallback=$null;compactMemoryObservation=$null;compactMemoryReasons=@()} -Force
+ $State|Add-Member -NotePropertyMembers @{hardDeadline=$HardDeadline.ToString('o');softDeadline=$SoftDeadline.ToString('o');maxSampledTreeWorkingSetMiB=0;maxSampledTreePrivateMiB=0;primaryFailure=$null;secondaryFailures=@();processExitCode=$null;scenarioExitCode=$null;liveOwned=@();completedAt=$null;retainedHandleCount=0;descendantHandlesReleased=$false;monitorFailureName=$null;monitorFailureSource=$null;monitorFailureLine=$null;monitorFailureCode=$null;ownershipComplete=$true;cleanupConfirmed=$false;provenExitedProcessIds=@();unconfirmedProcessIds=@();persistenceFallback=$null;compactMemoryObservation=$null;compactMemoryReasons=@()} -Force
  try {
  $rootRecord=Retain-OwnedProcess $State.root $Process
  if(-not $rootRecord){throw 'Cannot retain the witnessed root process object'}
@@ -222,8 +243,11 @@ function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetim
  $State.completedAt=[datetimeoffset]::UtcNow.ToString('o')
  $State.status=if(-not $State.ownershipComplete -or $State.unconfirmedProcessIds.Count){'NEG-owned-cleanup-unconfirmed'}elseif($State.liveOwned.Count){'NEG-live-owned-residuals'}elseif($earlyExit -or $State.forced -or $State.primaryFailure){'NEG-abrupt-or-deadline-cleanup'}elseif(-not $acknowledged -or $State.scenarioExitCode -ne 0 -or $State.processExitCode -ne 0){'NEG-scenario-or-exit'}else{'completed-owned-tree-exited'}
  } catch {
+  $originalMonitorError=$_
+  $diagnostic=Get-LessonMonitorFailureDiagnostic $originalMonitorError
+  $State.monitorFailureSource=$diagnostic.source;$State.monitorFailureLine=$diagnostic.line;$State.monitorFailureCode=$diagnostic.code
   if($Job.compactMemory){$compactNegative=$true}
-  $State.monitorFailureName=$_.Exception.GetType().Name
+  $State.monitorFailureName=$originalMonitorError.Exception.GetType().Name
   if(-not $State.primaryFailure){$State.primaryFailure='owned-browser-monitor-failed'}
   $State.status='NEG-monitor-failure';$State.ownershipComplete=$false
   # Persist NEG before attempting cleanup. A broken state path must not bypass it.
