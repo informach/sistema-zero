@@ -9,6 +9,7 @@ import fs from 'node:fs'
 import {
   exe,
   isAlive,
+  isOurProcess,
   killTree,
   PG_DATA,
   pgEnv,
@@ -24,9 +25,15 @@ const names = args.filter((a) => !a.startsWith('-'))
 const state = readState()
 for (const [name, rec] of Object.entries(state.services)) {
   if (names.length && !names.includes(name)) continue
-  if (isAlive(rec.pid)) {
+  if (isOurProcess(rec)) {
     killTree(rec.pid)
     console.log(`■ ${name} parado (pid ${rec.pid})`)
+  } else if (isAlive(rec.pid)) {
+    // O PID existe mas não é o processo iniciado pelo up.ts (o Windows reutiliza PIDs) ou o
+    // registro é antigo, sem identidade: não encerra; só esquece o registro.
+    console.log(
+      `⚠ ${name}: o pid ${rec.pid} existe mas não confere com o processo iniciado (executável/início); não foi encerrado`,
+    )
   } else {
     console.log(`• ${name} já estava parado`)
   }

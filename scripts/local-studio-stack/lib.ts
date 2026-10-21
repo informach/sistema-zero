@@ -386,7 +386,16 @@ export function childEnv(extra: Record<string, string>): Record<string, string> 
 }
 
 // ---------------------------------------------------------------------------- processos
-export type StateRecord = { pid: number; port: number; logFile: string; startedAt: string }
+/** Identidade de um processo: quando o SO o criou e qual executável é. */
+export type ProcessIdentity = { createdMs: number; image: string }
+export type StateRecord = {
+  pid: number
+  port: number
+  logFile: string
+  startedAt: string
+  /** Gravada logo após o spawn; sem ela (ou se não conferir) o PID não é encerrado. */
+  identity?: ProcessIdentity
+}
 export type State = {
   postgres?: { port: number; dataDir: string }
   services: Record<string, StateRecord>
@@ -414,6 +423,90 @@ export function isAlive(pid: number | undefined): boolean {
   } catch (e) {
     return (e as NodeJS.ErrnoException).code === 'EPERM'
   }
+}
+
+/**
+ * Identidade atual do PID pelo próprio Windows (kernel32 via bun:ffi: GetProcessTimes +
+ * QueryFullProcessImageNameW), sem PowerShell/WMIC. Fora do Windows, `ps`. `null` = não existe
+ * ou não foi possível consultar.
+ */
+export function processIdentity(pid: number): ProcessIdentity | null {
+  if (!pid) return null
+  if (process.platform !== 'win32') {
+    const r = spawnSync('ps', ['-o', 'lstart=,comm=', '-p', String(pid)], { encoding: 'utf8' })
+    const line = r.status === 0 ? r.stdout.trim() : ''
+    const match = line.match(/^(\S+\s+\S+\s+\d+\s+[\d:]+\s+\d+)\s+(.+)$/)
+    return match ? { createdMs: Date.parse(match[1]), image: match[2] } : null
+  }
+  const k = kernel32()
+  const handle = k.OpenProcess(0x1000, false, pid) // PROCESS_QUERY_LIMITED_INFORMATION
+  if (!handle) return null
+  try {
+    const times = [0, 1, 2, 3].map(() => new Uint8Array(8))
+    if (
+      !k.GetProcessTimes(
+        handle,
+        ffiPtr(times[0]),
+        ffiPtr(times[1]),
+        ffiPtr(times[2]),
+        ffiPtr(times[3]),
+      )
+    )
+      return null
+    const filetime = new DataView(times[0].buffer).getBigUint64(0, true)
+    const name = new Uint16Array(1024)
+    const size = new Uint32Array([name.length])
+    if (!k.QueryFullProcessImageNameW(handle, 0, ffiPtr(name), ffiPtr(size))) return null
+    return {
+      // FILETIME (100 ns desde 1601) → ms Unix.
+      createdMs: Number((filetime - 116444736000000000n) / 10000n),
+      image: String.fromCharCode(...name.subarray(0, size[0])),
+    }
+  } finally {
+    k.CloseHandle(handle)
+  }
+}
+
+type Kernel32 = {
+  OpenProcess(access: number, inherit: boolean, pid: number): unknown
+  GetProcessTimes(h: unknown, a: unknown, b: unknown, c: unknown, d: unknown): boolean
+  QueryFullProcessImageNameW(h: unknown, flags: number, name: unknown, size: unknown): boolean
+  CloseHandle(h: unknown): boolean
+}
+let kernel: Kernel32 | null = null
+let ffiPtr: (view: ArrayBufferView) => unknown = () => 0
+function kernel32(): Kernel32 {
+  if (kernel) return kernel
+  const { dlopen, FFIType, ptr } = require('bun:ffi') as typeof import('bun:ffi')
+  ffiPtr = ptr as never
+  const lib = dlopen('kernel32.dll', {
+    OpenProcess: { args: [FFIType.u32, FFIType.bool, FFIType.u32], returns: FFIType.ptr },
+    GetProcessTimes: {
+      args: [FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr],
+      returns: FFIType.bool,
+    },
+    QueryFullProcessImageNameW: {
+      args: [FFIType.ptr, FFIType.u32, FFIType.ptr, FFIType.ptr],
+      returns: FFIType.bool,
+    },
+    CloseHandle: { args: [FFIType.ptr], returns: FFIType.bool },
+  })
+  kernel = lib.symbols as unknown as Kernel32
+  return kernel
+}
+
+/**
+ * O PID do registro ainda é o processo que NÓS iniciamos? Mesmo executável e criado no mesmo
+ * instante (tolerância de 2 s). Registro sem identidade nunca confere: o Windows reutiliza PIDs.
+ */
+export function isOurProcess(rec: StateRecord): boolean {
+  if (!rec.identity) return false
+  const now = processIdentity(rec.pid)
+  return (
+    now !== null &&
+    now.image.toLowerCase() === rec.identity.image.toLowerCase() &&
+    Math.abs(now.createdMs - rec.identity.createdMs) <= 2000
+  )
 }
 
 export function killTree(pid: number): void {
