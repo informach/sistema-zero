@@ -1,0 +1,70 @@
+{
+  "state": "offline-public-inputs-only",
+  "canonicalRawSha256": "f3d3ec36fa8843c42c4ec2e0579a7deb874a1e57fec7481882054815d6e1756d",
+  "canonicalPlanSha256": "88a4e71c0e8d3d33bbe667fae71f6e7be397e529b181d5b50a298292ac414ea2",
+  "inputRawSha256": "fdf60e99578541125357833f332258930f7aee78b909ee23d7be6acd9fc65cae",
+  "files": [
+    {
+      "path": "staging/members-authoring-policy.json",
+      "bytes": 16557,
+      "sha256": "cae3fe7c4c569b5917634f598138fd65db21263ff2173739e169dd37e68694c0"
+    },
+    {
+      "path": "staging/members-runtime-hosts.json",
+      "bytes": 239,
+      "sha256": "31e2d95a48d9d809929eed34b605c140e8a54bf20398d5d2666e459e102d2d13"
+    },
+    {
+      "path": "staging/worker-bindings.json",
+      "bytes": 205,
+      "sha256": "135cb4fc92175d2f1a2ee205214e8fc3ce2633f9fdb0502f6239a35064b411f2"
+    },
+    {
+      "path": "staging/frame-origins.json",
+      "bytes": 249,
+      "sha256": "57bfe722adcf8cfd195d628d2ab3adc3a50b08b07a907d66f370b37ffcef6c94"
+    },
+    {
+      "path": "staging/railway-write-plan.json",
+      "bytes": 2154,
+      "sha256": "9cb153c689b6d2c1670acab765083be3885a3a07d6fa8f341dff40c0542effc1"
+    }
+  ],
+  "distributionSha256": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a",
+  "release": {
+    "capabilities": [
+      "edit",
+      "export-source",
+      "execute",
+      "python-repl",
+      "publish",
+      "assist"
+    ],
+    "profileId": "python-browser",
+    "releaseId": "2026-10-21-audio-2"
+  },
+  "manifestSha256": "0c6c06c407713217571ebda57a78d92f102c1d0457a2965d64cd6f66c1e82fae",
+  "prefix": "runtimes/0c6c06c407713217571ebda57a78d92f102c1d0457a2965d64cd6f66c1e82fae/",
+  "markerSha256": "a202bcb89f56f77d70be5b94131207d0d12b87f98e992d40750cd063b5844228",
+  "configurationSha256": "0ff6de5d1ead4d8ec109c5990ba6730b2770cef657ebe5776d1142c4dd16843f",
+  "workerCatalogSha256": "2c3e47b8379789730ee1cb60173524d8594a391b97428c57bef65615555e430f",
+  "derivedFrom": {
+    "pilotInputSnapshot": "docs/continuity/2026-10-21-studio-python/snapshots/root/0375-input.json.snapshot",
+    "pilotReleaseId": "2026-10-20-audio-1",
+    "pilotManifestSha256": "7026b09b04a1222cfbc594d5ab3ec9de8649eece71c613c823a2c33d8c43ce5f",
+    "pilotManifestReproducedLocally": true,
+    "pilotProjectionsReproducedByteExact": true,
+    "changedFields": [
+      "release.releaseId",
+      "release.capabilities (+publish, +assist)",
+      "distribution.directory (local copy, same a8a6 bytes)"
+    ]
+  },
+  "pilotIdentityMutated": false,
+  "objectsUploaded": false,
+  "pointerActivated": false,
+  "providerCalls": 0,
+  "approvalGenerated": false,
+  "productionInputGenerated": false,
+  "historicalBaselineNotCAS": true
+}
