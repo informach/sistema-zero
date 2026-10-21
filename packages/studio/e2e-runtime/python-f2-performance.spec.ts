@@ -93,7 +93,10 @@ test('F2: 10,000 colored segments animate without long tasks or heavy paint slic
     expect(presentation.longTasks).toBe(0)
     expect(errors).toEqual([])
   } finally {
-    await page.getByRole('button', { name: 'Parar', exact: true }).click().catch(() => {})
+    await page
+      .getByRole('button', { name: 'Parar', exact: true })
+      .click()
+      .catch(() => {})
     await evaluate(cdp, "globalThis.providerProbe.dispose('audio')").catch(() => {})
     await cdp.detach().catch(() => {})
   }
