@@ -3,9 +3,12 @@
  * Prepara o Studio Python LOCAL a partir da distribuição aprovada (a8a6c625…), sem nada
  * hospedado:
  *
- *  1. Lê o plano canônico já gerado pelo promotor (snapshot versionado em
- *     docs/continuity/2026-10-21-studio-python/snapshots/root/0374-canonical-plan.json.snapshot):
+ *  1. Lê um plano canônico já gerado pelo promotor (offline, versionado no repo):
  *     `deployment` (release + distribuição) e `configuration.members` (a política de autoria).
+ *     Padrão: a candidata `python-browser/2026-10-21-audio-2` (mesma distribuição a8a6, com as
+ *     capacidades `publish` e `assist`, exigidas desde 896c3a1c3 para publicar e para o Zappy).
+ *     `--plan <arquivo>` escolhe outro (ex.: o piloto audio-1 em
+ *     docs/continuity/2026-10-21-studio-python/snapshots/root/0374-canonical-plan.json.snapshot).
  *  2. Gera a config do Worker @sistemazero/studio-runtime para `wrangler dev --local`
  *     (.cache/local-stack/studio-runtime/wrangler.jsonc): mesmos bindings R2/DO, SEM contêiner
  *     e SEM cron; origens de app = localhost.
@@ -15,7 +18,7 @@
  *  4. Escreve .cache/local-stack/studio-env.json, lido por lib.ts: política de autoria e hosts
  *     no Members, STUDIO_PYTHON_FRAME_ORIGINS nos três apps.
  *
- *   bun scripts/local-studio-stack/python-local.ts [--distribution <dir>]
+ *   bun scripts/local-studio-stack/python-local.ts [--distribution <dir>] [--plan <arquivo>]
  */
 import fs from 'node:fs'
 import { join } from 'node:path'
@@ -28,20 +31,23 @@ export const RUNTIME_PERSIST = join(STACK_DIR, 'wrangler')
 
 const DEFAULT_DISTRIBUTION =
   'C:/Users/julio/projects/sistema-zero-studio-python/.cache/studio-python-runtime/distributions-transfer/a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a'
-const PLAN = join(
+const DEFAULT_PLAN = join(
   ROOT,
-  'docs/continuity/2026-10-21-studio-python/snapshots/root/0374-canonical-plan.json.snapshot',
+  'docs/superpowers/plans/2026-10-21-python-audio-2-candidate/canonical-plan.json',
 )
+const option = (name: string) => {
+  const index = process.argv.indexOf(name)
+  return index > 0 ? process.argv[index + 1] : undefined
+}
 const APP_ORIGINS = [3005, 3007, 3008].flatMap((p) => [
   `http://localhost:${p}`,
   `http://127.0.0.1:${p}`,
 ])
 
 if (import.meta.main) {
-  const argIndex = process.argv.indexOf('--distribution')
-  const distribution = argIndex > 0 ? process.argv[argIndex + 1] : DEFAULT_DISTRIBUTION
+  const distribution = option('--distribution') ?? DEFAULT_DISTRIBUTION
   const secrets = ensureSecrets()
-  const text = fs.readFileSync(PLAN, 'utf8')
+  const text = fs.readFileSync(option('--plan') ?? DEFAULT_PLAN, 'utf8')
   const plan = JSON.parse(text.slice(text.indexOf('{')))
   const deployment = plan.deployment
   const runtime = {

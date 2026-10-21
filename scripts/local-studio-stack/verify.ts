@@ -10,7 +10,7 @@
  *   bun scripts/local-studio-stack/verify.ts
  */
 import fs from 'node:fs'
-import { CREDENTIALS_FILE } from './lib'
+import { CREDENTIALS_FILE, readStudioEnv } from './lib'
 
 const creds = JSON.parse(fs.readFileSync(CREDENTIALS_FILE, 'utf8'))
 type Acc = { email: string; password: string; role: string }
@@ -157,6 +157,7 @@ for (const key of ['superadmin', 'admin', 'staff', 'kidsParent']) {
   if (enter.status === 200) await studio(b, `${key}/perfil`)
 }
 
-const m = '7026b09b04a1222cfbc594d5ab3ec9de8649eece71c613c823a2c33d8c43ce5f'
+const hosts = JSON.parse(readStudioEnv().members?.STUDIO_RUNTIME_HOSTS_JSON ?? '[]')
+const m = hosts[0]?.runtime?.manifestSha256 ?? 'ausente'
 const frame = await fetch(`http://127.0.0.1:8791/v1/runtimes/${m}/frame.html`).catch(() => null)
 log(`runtime python local frame.html ${frame?.status ?? 'offline'}`)
