@@ -2,6 +2,8 @@
 
 Data do levantamento: 21/10/2026. Este é um relatório de continuidade, não um aceite de produção. As evidências citadas têm a data, o código e o ambiente de sua execução; precisam de nova conferência antes de qualquer implantação.
 
+**Retomada em outra máquina:** [mensagem para o agente e download remoto do pacote](../../continuity/2026-10-21-studio-python/RETOMAR.md). O ZIP complementar já está no GitHub, em rascunho de release; seu download remoto e SHA-256 foram conferidos. Não é necessário manter o computador de origem ligado.
+
 ## 1. Decisão e situação em linguagem direta
 
 Recomendo transferir a continuação para uma máquina com mais memória disponível. Neste computador de 16 GB, a consulta durante a preparação mostrou aproximadamente 1,7 GB livres. Isso limita principalmente navegador, compilação, Docker e testes simultâneos. A implementação não precisa começar novamente: a base Python, a conciliação do remoto, o seletor administrativo e a frente pedagógica já foram incorporados ao código em staging.

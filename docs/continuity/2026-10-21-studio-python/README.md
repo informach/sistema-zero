@@ -1,5 +1,8 @@
 # Continuidade versionada — Estúdio Python
 
+Para mudar de computador, comece por [RETOMAR.md](RETOMAR.md): contém a mensagem
+pronta para a nova sessão e o download remoto verificado do ZIP complementar.
+
 Este diretório preserva os planos, arquivos preparados para testes, fixtures,
 observadores e recibos selecionados das quatro worktrees em 21/10/2026.
 O estado do trabalho e a ordem de retomada estão no
