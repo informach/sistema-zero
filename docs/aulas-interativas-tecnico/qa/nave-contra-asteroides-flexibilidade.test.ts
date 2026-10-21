@@ -104,7 +104,7 @@ for (const [stage, section, id, type, axis, value] of [
   [7, 'vidas', 'coracoes', 'sz_g2d_draw_sprite_health', 'Y', -1_000_000],
   [1, 'montar-areas-e-tela', 'tela', 'sz_g2d_setup_stage', 'W', 960],
 ] as const) {
-  test(`${section}/${id}: conserva o mundo da aventura e recusa ${axis}=${value}`, () => {
+  test(`${section}/${id}: conserva o mundo do curso e recusa ${axis}=${value}`, () => {
     const project = structuredClone(stages[stage]!)
     setFixtureLiteral(fixtureBlock(project, type), axis, value)
     const check = aulasNave[stage - 1]!.sections.find((s) => s.key === section)?.checks?.find(

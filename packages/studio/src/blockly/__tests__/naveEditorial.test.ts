@@ -37,7 +37,7 @@ function manifest(day: number) {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../../../../docs/aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-dia-${day}.manifesto.json`,
+        `../../../../../docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-${day}.manifesto.json`,
       ),
       'utf8',
     ),

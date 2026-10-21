@@ -76,11 +76,11 @@ export default async function ProfilePage() {
   const levelHint =
     journey && !isKidsStaffPreview(journey) ? canonicalJourneyProgress(journey).hint : null
   // Gavetas conquistadas: a cara visível do currículo (cada curso concluído + publicado
-  // entrega os blocos que ensinou). Sem nenhuma, a seção some.
+  // entrega os blocos que ensinou). Sem nenhuma, a parte some.
   const drawers = drawersForBlocks(
     unlocksRes?.status === 200 ? (unlocksRes.body?.blocks ?? []) : [],
   )
-  // ⚠️ Duas coisas diferentes: TER o produto decide se a seção existe (produtos vendidos
+  // ⚠️ Duas coisas diferentes: TER o produto decide se a parte existe (produtos vendidos
   // à parte — não se mostra superfície de produto a quem não o comprou) e `freeStudio`
   // decide se o ATALHO aparece (Faísca com o produto ainda não abre o Estúdio livre).
   const ownsStudio =

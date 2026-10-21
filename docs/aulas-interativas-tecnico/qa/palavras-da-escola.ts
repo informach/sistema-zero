@@ -1,27 +1,6 @@
-/**
- * A régua única do vocabulário da aventura (Diretrizes Pedagógicas, seção 6, 06/10/2026).
- *
- * No que a criança vê ou ouve, curso é aventura, aula é fase, seção é parte, unidade é Mundo,
- * o Caderno do Aluno é o Mapa da Aventura e professor é a equipe (era "guia" até a noite de
- * 06/10/2026; ver `GUIA_PESSOA` abaixo). Por dentro (Admin, código, documentos da equipe) as
- * palavras da escola continuam valendo.
- *
- * Quem lê esta régua:
- * - `qa/vocabulario-crianca.test.ts`, no texto dos manifestos que vira tela;
- * - `validar-roteiros.py`, na narração e no Zappy dos roteiros. Ele lê ESTE arquivo e extrai o
- *   literal de `PALAVRAS_DA_ESCOLA`; por isso a regex fica num literal `/…/i` de uma linha só e
- *   usa só o que o `re` do Python também entende (sem `\p{…}`, sem flag `u`);
- * - `docs/como-fazer/validar.ts`, nos tutoriais do Como Fazer.
- *
- * "Caderno" segue proibido: a criança lê Mapa da Aventura. "Estudar" entra pelas formas do verbo
- * e de "estudo", e não por um prefixo, para não pegar "Estúdio" escrito sem acento ("estudio").
- * "Lição" entra. "Tarefa" não: no Pensa ela é o nome do cartão ("Concluir tarefa"), e no Corre,
- * Dino! é o objetivo do jogo que a descrição para o leitor de tela conta. A tarefa no sentido de
- * lição de casa fica para a leitura humana e para o guarda do Como Fazer, que a barra fora do
- * Pensa.
- */
+/** Contrato de linguagem comum: detecta os antigos rótulos de navegação, não palavras escolares. */
 export const PALAVRAS_DA_ESCOLA =
-  /\b(?:aulas?|cursos?|professor(?:a|as|es)?|alun[oa]s?|seç(?:ão|ões)|cadernos?|etapas?|unidades?|atividades?|entregas?|entreg(?:ar|ue|ues|ou)|estud(?:ar|ando|e|os?)|trabalhos?|devolutivas?|liç(?:ão|ões)|formatura|diplomas?|nota m[ií]nima)\b/i
+  /Concluir fase|(?:^|clique (?:em|na) )Próxima (?:fase|seção|etapa)|Mapa da Aventura|Caderno do Aluno|Enviar para o professor/i
 
 /** A mesma régua, para achar TODAS as ocorrências de um texto (`matchAll`). */
 export function palavrasDaEscola(texto: string): string[] {
@@ -73,8 +52,8 @@ const ADJETIVO_FEMININO = `${ORDEM_FEMININO}|novas?|mesmas?`
  * está colado ao nome. A borda é por letra (`\p{L}`), porque o `\b` do JavaScript não vê "à".
  */
 export const CONCORDANCIA_ERRADA = new RegExp(
-  String.raw`(?<!\p{L})(?:(?:${MASCULINO})\s+(?:(?:${ADJETIVO_MASCULINO})\s+)?|(?:${ORDEM_MASCULINO})\s+)(?:aventura|fase|parte)s?(?!\p{L})` +
-    String.raw`|(?<!\p{L})(?:(?:${FEMININO})\s+(?:(?:${ADJETIVO_FEMININO})\s+)?|(?:${ORDEM_FEMININO})\s+)Mundos?(?!\p{L})`,
+  String.raw`(?<!\p{L})(?:(?:${MASCULINO})\s+(?:(?:${ADJETIVO_MASCULINO})\s+)?|(?:${ORDEM_MASCULINO})\s+)(?:aventura|fase|parte|aula)s?(?!\p{L})` +
+    String.raw`|(?<!\p{L})(?:(?:${FEMININO})\s+(?:(?:${ADJETIVO_FEMININO})\s+)?|(?:${ORDEM_FEMININO})\s+)(?:Mundo|curso)s?(?!\p{L})`,
   'iu',
 )
 

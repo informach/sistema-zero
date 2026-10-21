@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-jogo-pronto",
+    "video-caderno",
+    "video-aparencia-e-regras",
+    "video-copias",
+    "video-exportar",
+    "video-importar",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-aparencia-e-regras-K1",
+      "clipe": "video-aparencia-e-regras",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "iguais. Na experiência, Tema do mesmo jogo troca a aparência, e a lista Regras do jogo mostra o que continua igual.",
+      "ancoraDepois": "Agora eu mudo uma regra. Eu clico em Regra: a tecla atira, e ela fica desligada. Na lista, essa regra fica apagada.",
+      "falaPrincipal": "E se eu mudar uma dessas regras?",
+      "falaPersonagem": "E se eu mudar uma dessas regras?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-copias-K1",
+      "clipe": "video-copias",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "e o mesmo jogo aparece no lado do Estúdio, também com a nave azul. Ou seja, o arquivo virou um projeto no Estúdio.",
+      "ancoraDepois": "Agora, em Cor da nave no Estúdio, eu escolho rosa. Olha só: a nave do Estúdio fica rosa, e a nave do jogo da aula",
+      "falaPrincipal": "Se eu mudar essa cópia, o outro jogo muda também?",
+      "falaPersonagem": "Se eu mudar essa cópia, o outro jogo muda também?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

@@ -64,7 +64,7 @@ export function useHostChrome({
     () => (view ? { tone: view.tone, icon: view.icon, label: view.label, text: view.text } : null),
     [view],
   )
-  // A seta volta para a página principal da seção (Criar, para as quatro ferramentas). O
+  // A seta volta para a página principal da parte (Criar, para as quatro ferramentas). O
   // `router` do App Router é estável, e a rota não muda entre a galeria e o editor (a troca
   // é estado de dentro da ferramenta), então o objeto só nasce de novo se a rota mudar.
   const section = useMemo(() => resolveBack(pathname), [pathname, resolveBack])

@@ -11,7 +11,7 @@ const progressoReal: SectionProgressView = {
 }
 
 describe('a barra do topo da aula', () => {
-  test('com o progresso do servidor, mede a CONCLUSÃO das seções', () => {
+  test('com o progresso do servidor, mede a CONCLUSÃO das partes', () => {
     const vista = vistaProgressoAula(progressoReal, { index: 0, total: 3 })
     expect(vista.medivel).toBe(true)
     expect(Math.round(vista.percent)).toBe(67)
@@ -36,7 +36,7 @@ describe('a barra do topo da aula', () => {
     expect(vista.texto).toBe('Parte 2 de 5')
   })
 
-  test('com uma seção só, mede as ATIVIDADES obrigatórias', () => {
+  test('com uma parte só, mede as ATIVIDADES obrigatórias', () => {
     // Toda aula legada é assim: a migration 0080 agrupou os blocos antigos numa
     // seção sem critérios. "Seção 1 de 1" ali encheria a barra dizendo que a
     // criança terminou o que ela nem começou.
@@ -46,17 +46,17 @@ describe('a barra do topo da aula', () => {
     ])
     expect(vista.percent).toBe(50)
     expect(vista.numero).toBe('1 de 2 passos')
-    expect(vista.texto).toBe('1 de 2 passos concluídos nesta fase')
+    expect(vista.texto).toBe('1 de 2 passos concluídos nesta aula')
   })
 
   test('uma atividade só concorda no singular', () => {
     const vista = vistaProgressoAula(undefined, { index: 0, total: 1 }, [{ complete: false }])
     expect(vista.numero).toBe('0 de 1 passo')
-    expect(vista.texto).toBe('0 de 1 passo concluído nesta fase')
+    expect(vista.texto).toBe('0 de 1 passo concluído nesta aula')
   })
 
   test('sem NADA a medir, não inventa número', () => {
-    // Uma seção só e nenhuma atividade obrigatória: o player desenha o espaçador.
+    // Uma parte só e nenhuma atividade obrigatória: o player desenha o espaçador.
     // Encher a barra ou cravar 100% seria mentir sobre o trabalho da criança.
     expect(vistaProgressoAula(undefined, { index: 0, total: 1 }, []).medivel).toBe(false)
     expect(vistaProgressoAula(undefined, null).medivel).toBe(false)

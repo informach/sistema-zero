@@ -204,18 +204,21 @@ jobs:
         working-directory: packages/community-kids
         run: bun run test:reachability
 
-      # Valida os 37 manifestos de cada versão, versionados junto dos roteiros em
-      # docs/aulas-interativas/kids/<curso> e docs/aulas-interativas/adulto/<curso>.
+      # Valida os 37 manifestos comuns, versionados junto dos roteiros em
+      # docs/aulas-interativas/<curso>.
       - name: Manifestos das aulas interativas
         run: |
           bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts
-          bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts --adulto
+
+
+      - name: Falas ElevenLabs atualizadas
+        run: bun docs/aulas-interativas-tecnico/qa/gerar-falas-elevenlabs.ts --check
 
       - name: Roteiros das aulas interativas
         run: python3 docs/aulas-interativas-tecnico/validar-roteiros.py
 
       # O `bun run --filter '*' test` só cobre packages/*: os testes dos cinco cursos e os guardas
-      # do vocabulário da aventura (docs/aulas-interativas-tecnico/qa) nunca rodavam aqui (06/10/2026).
+      # do vocabulário comum (docs/aulas-interativas-tecnico/qa) nunca rodavam aqui (06/10/2026).
       # Não precisam de banco nem de navegador: leem os manifestos e montam os projetos com o
       # Blockly do Studio sobre o happy-dom.
       - name: Testes dos cursos e guardas de vocabulário

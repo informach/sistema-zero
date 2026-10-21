@@ -38,7 +38,7 @@ export interface BadgeInfo {
 export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
   'first-lesson': {
     title: 'Primeiro passo',
-    description: 'Você concluiu a sua primeira fase!',
+    description: 'Você concluiu a sua primeira aula!',
     icon: Sparkles,
   },
   'first-showcase': {
@@ -82,18 +82,18 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
     icon: Flame,
   },
   'course-complete': {
-    title: 'Aventura completa',
-    description: 'Você terminou uma aventura inteirinha!',
+    title: 'Curso concluído',
+    description: 'Você terminou um curso!',
     icon: MapIcon,
   },
   'course-complete-2': {
-    title: 'Dupla de aventuras',
-    description: 'Duas aventuras completas!',
+    title: 'Dupla de cursos',
+    description: 'Você terminou dois cursos!',
     icon: Medal,
   },
   'course-complete-3': {
-    title: 'Trio de aventuras',
-    description: 'Três aventuras completas. Imparável!',
+    title: 'Trio de cursos',
+    description: 'Você terminou três cursos!',
     icon: Crown,
   },
   'quiz-perfect': {
@@ -194,7 +194,7 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
   'live-course-complete': {
     title: 'Oficina completa',
     description:
-      'Você terminou todas as fases de uma oficina ao vivo! Tem até troféu no seu quarto.',
+      'Você terminou todas as aulas de uma oficina ao vivo! Tem até troféu no seu quarto.',
     icon: Award,
   },
 }

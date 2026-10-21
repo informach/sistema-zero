@@ -39,7 +39,7 @@ export { canonicalJson, sha256Hex }
 
 /**
  * Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026; `lesson-*` = o
- * rascunho do Estúdio/Pinta dentro da fase, um item por bloco, 10/10/2026).
+ * rascunho do Estúdio/Pinta dentro da aula, um item por bloco, 10/10/2026).
  */
 export type CreationTool = 'studio' | 'pinta' | 'molda' | 'lesson-studio' | 'lesson-pinta'
 
@@ -58,7 +58,7 @@ export interface CloudSyncState {
 }
 
 /**
- * O estado de UM item (o selo de um bloco da fase): o que a fila sabe dele, sem misturar com os
+ * O estado de UM item (o selo de um bloco da aula): o que a fila sabe dele, sem misturar com os
  * outros itens da mesma ferramenta. `code` = o código da última falha (`CREATION_CLIENT_OUTDATED`:
  * esta página é mais antiga que o conteúdo; só uma página nova resolve).
  */
@@ -83,7 +83,7 @@ export interface CreationMeta {
    * Vai na reserva; base vencida = 409 `CREATION_STALE_BASE` (ver `onStale`).
    */
   baseRevision?: number
-  /** Impressão digital do conteúdo (rascunho da fase: o "envio em dia" a compara com o envio). */
+  /** Impressão digital do conteúdo (rascunho da aula: o "envio em dia" a compara com o envio). */
   fingerprint?: string | null
 }
 
@@ -100,7 +100,7 @@ export interface CloudCreationSummary {
   syncedAt: number
   /** ms desde a época; presente somente quando o item é uma lápide remota. */
   deletedAt?: number | null
-  /** Impressão digital do conteúdo da revisão corrente (rascunhos da fase). */
+  /** Impressão digital do conteúdo da revisão corrente (rascunhos da aula). */
   contentFingerprint?: string | null
 }
 

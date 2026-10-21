@@ -1,5 +1,5 @@
 /**
- * O rascunho do Estúdio da fase guardado na conta (10/10/2026): o que roda ANTES de o editor
+ * O rascunho do Estúdio da aula guardado na conta (10/10/2026): o que roda ANTES de o editor
  * montar (qual versão abrir, e guardar a outra) e o que sobe a cada salvamento.
  *
  * O Estúdio é carregado dinamicamente (Monaco e Blockly não rodam no SSR), então as funções do
@@ -116,7 +116,7 @@ export async function keepRemoteAsOther(
  * Decide e prepara o disco antes de o editor abrir. Depois disto, a ordem de sempre
  * (`resolveStudioLessonSeed`: o rascunho local primeiro) já abre a versão certa.
  *
- * Nunca impede a fase de abrir: qualquer falha aqui só deixa o rascunho local como está.
+ * Nunca impede a aula de abrir: qualquer falha aqui só deixa o rascunho local como está.
  */
 export async function prepareStudioLessonDraft(
   deps: StudioDraftDeps & {

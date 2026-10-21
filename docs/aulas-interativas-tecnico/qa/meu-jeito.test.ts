@@ -24,14 +24,14 @@ import {
 } from './gerar-meu-jeito'
 import { etapasMeuJeito, projetoMeuJeito } from './meu-jeito-etapas'
 import { courseProjects } from './meu-jeito-projetos-qa'
-import { GUIA_PESSOA } from './palavras-da-escola'
+import { GUIA_PESSOA, PALAVRAS_DA_ESCOLA } from './palavras-da-escola'
 
 const manifests = aulasMeuJeito.map((lesson) => {
   const m = JSON.parse(
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-${lesson.slug}.manifesto.json`,
+        `../../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-${lesson.slug}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -56,7 +56,7 @@ for (const [index, manifest] of manifests.entries())
     const script = readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-${manifest.lessonSlug}.roteiro.md`,
+        `../../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-${manifest.lessonSlug}.roteiro.md`,
       ),
       'utf8',
     )
@@ -69,14 +69,14 @@ for (const [index, manifest] of manifests.entries())
         expect(falasSecao(aulasMeuJeito[index]!.sections[i]!).join(' ')).toMatch(/confira|compare/i)
       }
     }
-    // As aplicações externas não usam a verificação da fase (antes Verificar esta etapa).
+    // As aplicações externas não usam a verificação da aula (antes Verificar esta parte).
     expect(script).not.toMatch(
       /Dia 5|Desafio do Primeiro Jogo|Verificar esta (?:etapa|parte)|Meu jogo novo/,
     )
     if (index === 7) {
-      expect(script).toContain('Publicado!') // A ferramenta externa usa sua própria confirmação.
+      expect(script).toContain('Seu jogo está no Mural!') // A ferramenta externa usa sua própria confirmação.
       expect(script).toContain('Abrir o jogo')
-      expect(script).not.toContain('Seu jogo está no Mural!') // Celebração do Estúdio embutido.
+      expect(script).not.toContain('Espere aparecer Publicado!') // O rótulo de confirmação agora é comum.
     }
   })
 
@@ -309,6 +309,22 @@ const SAIDA_DA_PARTE = ' Quando terminar, clique em Próxima parte.'
 const frases = (paragrafos: string[]) => paragrafos.join(' ').split(/(?<=[.!?:])\s+/)
 test('as experiências são demonstrações: conceito, Olha aqui, testes do narrador e a vez no fim', () => {
   const experiencias = aulasMeuJeito.flatMap((a) => a.sections.filter((s) => s.activity))
+  // As comparações têm apoio visual; a abertura da fala pode variar naturalmente.
+  const comparacoesComIlustracao = new Set([
+    'aparencia-e-regras',
+    'copias',
+    'bordas',
+    'espelho',
+    'luz',
+    'quadros',
+    'fantasma',
+    'preenchimento-contorno',
+    'camadas',
+    'mudanca-pequena',
+    'nomes',
+    'recorte',
+    'copia-publicada',
+  ])
   expect(experiencias).toHaveLength(14)
   for (const s of experiencias) {
     const fala = falasSecao(s)
@@ -323,7 +339,7 @@ test('as experiências são demonstrações: conceito, Olha aqui, testes do narr
     ).toEqual([])
     expect(fala.join(' '), s.key).not.toMatch(/Vou te mostrar|mexa e veja|—/i)
     // Toda comparação do dia a dia tem o meme ilustrado descrito na nota de tela, e só ela.
-    expect(Boolean(s.meme), s.key).toBe(/Sabe |É como /.test(fala.join(' ')))
+    expect(Boolean(s.meme), s.key).toBe(comparacoesComIlustracao.has(s.key))
     const tela = telaSecao(s)
     expect(tela, s.key).toContain('primeira pessoa')
     expect(tela, s.key).not.toMatch(/Deixar a execução|sem antecipar|não demonstrar/)
@@ -349,11 +365,11 @@ test('o jogo pronto apresenta o jogo, mostra um exemplo e só passa a vez no fim
   expect(fala.at(-1)).toMatch(/Quando terminar, clique em Próxima parte\.$/)
   expect(frases(fala.slice(0, -1)).filter((f) => ORDEM.test(f))).toEqual([])
 })
-// Vocabulário da aventura (Diretrizes, seção 6, 06/10/2026). O validador de roteiros e o teste
+// Vocabulário do curso (Diretrizes, seção 6, 06/10/2026). O validador de roteiros e o teste
 // `vocabulario-crianca` barram as palavras da escola na narração e nos manifestos; aqui a fonte
 // também não pode falar de tarefa escolar nem dizer o que é opcional como negação.
-const ESCOLA_E_TAREFA =
-  /\b(?:aulas?|cursos?|professor(?:a|as|es)?|alun[oa]s?|seç(?:ão|ões)|cadernos?|etapas?|unidades?|nota m[ií]nima|sala|atividades?|entregas?|entreg(?:ar|ue|ues|ou)|estud(?:ar|ando|e|os?)|trabalhos?|devolutivas?|liç(?:ão|ões)|formatura|diplomas?|tarefas?)\b/i
+const ESCOLA_E_TAREFA = PALAVRAS_DA_ESCOLA
+
 /**
  * "Guia" não é pessoa nem ferramenta na fala. O Fantasma do Pinta era "a guia" que mostrava o quadro
  * anterior, e "guia" também era quem recebia o projeto: com os dois sentidos, a criança procurava
@@ -385,7 +401,7 @@ const textos = (valor: unknown): string[] =>
       : valor && typeof valor === 'object'
         ? Object.values(valor).flatMap(textos)
         : []
-test('o que a criança vê e ouve fala de aventura, fase, parte e Mapa da Aventura', () => {
+test('o conteúdo visível usa curso, aula, parte e Passo a passo do projeto', () => {
   for (const lesson of aulasMeuJeito) {
     const visiveis = [
       lesson.title,
@@ -403,7 +419,7 @@ test('o que a criança vê e ouve fala de aventura, fase, parte e Mapa da Aventu
     ]
     for (const texto of visiveis) {
       expect(texto, lesson.slug).not.toMatch(ESCOLA_E_TAREFA)
-      expect(texto, lesson.slug).not.toMatch(/não precisa|Próxima seção|Concluir aula/i)
+      expect(texto, lesson.slug).not.toMatch(/não precisa|Próxima seção|Concluir fase/i)
       expect(texto, lesson.slug).not.toMatch(GUIA_QUE_NAO_E_PESSOA)
       expect(texto, lesson.slug).not.toMatch(GUIA_PESSOA)
       // O curso encaixa blocos dentro do Se jogando: "então" não faz papel de ligação na fala.
@@ -425,7 +441,7 @@ test('o que a criança vê e ouve fala de aventura, fase, parte e Mapa da Aventu
       'no campo Recado',
       `Enviar (${index === 4 ? 2 : 1})`,
       'Recebido!',
-      'Concluir fase.',
+      'Concluir aula.',
     ]) {
       const onde = envio.indexOf(rotulo, desde)
       expect(onde, `${lesson.slug}: ${rotulo}`).toBeGreaterThan(-1)
@@ -433,20 +449,20 @@ test('o que a criança vê e ouve fala de aventura, fase, parte e Mapa da Aventu
     }
   }
 })
-test('o Mapa da Aventura é apresentado à criança, com ler e baixar como convite', () => {
+test('o Passo a passo do projeto é apresentado à criança, com ler e baixar como convite', () => {
   const secao = aulasMeuJeito[0]!.sections.find((s) => s.materials)!
-  expect(secao.title).toBe('Seu Mapa da Aventura')
+  expect(secao.title).toBe('Seu passo a passo do projeto')
   const fala = falasSecao(secao)
-  expect(fala[0]?.startsWith('Olha aqui: este é o seu Mapa da Aventura!')).toBe(true)
+  expect(fala[0]?.startsWith('Olha, aqui está o Passo a passo do projeto.')).toBe(true)
   expect(fala).toContain(
-    'Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.',
+    'Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.',
   )
   expect(secao.bridge).toBe(
-    'Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.',
+    'Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.',
   )
   const material = conteudoBloco(manifests[0]!.blocks.find((b) => b.key === 'materiais-caderno'))
   expect(material?.kind === 'materials' ? material.title : undefined).toBe(
-    'Mapa da Aventura: O Jogo do Meu Jeito',
+    'Passo a passo do projeto: O Jogo do Meu Jeito',
   )
 })
 // Revisão de 06/10/2026 (Diretrizes, seção 6): as regras de fala que dá para conferir por máquina.
@@ -465,7 +481,7 @@ test('a ponte do Zappy convida e termina na ação real de saída', () => {
         expect(s.bridge, id).toMatch(/^Hora de enviar /)
         expect(s.bridge, id).toContain(`Escolher no ${tool}`)
         expect(s.bridge, id).toContain(`Enviar (${index === 4 ? 2 : 1})`)
-        expect(s.bridge, id).toMatch(/Quando aparecer Recebido!, clique em Concluir fase\.$/)
+        expect(s.bridge, id).toMatch(/Quando aparecer Recebido!, clique em Concluir aula\.$/)
       } else expect(s.bridge, id).toMatch(/clique em Próxima parte\.$/)
       // A aplicação diz quando sair: o salvamento da ferramenta, ou o arquivo baixado.
       if (s.externalTool && !s.final && s.key !== 'compartilhar' && s.key !== 'exportar')
@@ -495,7 +511,7 @@ test('a retomada é uma ponte curta: problema, lembrança e um anúncio colado a
         logoDepois ? 'Lembra da experiência da parte anterior? ' : 'Lembra da experiência da ',
       )
       expect(lembra, id).toBeGreaterThan(-1)
-      if (!logoDepois) expect(abertura, id).toMatch(/Lembra da experiência da [^?]+ desta fase\? /)
+      if (!logoDepois) expect(abertura, id).toMatch(/Lembra da experiência da [^?]+ desta aula\? /)
       expect(falasSecao(s).join(' '), id).not.toMatch(/Anterior/)
       // O problema vem antes da lembrança: "Tá vendo?" com o porquê na mesma frase.
       const teste = abertura.indexOf('Tá vendo?')
@@ -545,11 +561,11 @@ test('cada montagem diz o porquê de algum resultado, e o Mapa não manda pausar
     for (const s of lesson.sections) {
       if (s.kind !== 'application' && s.kind !== 'delivery') continue
       const id = `${lesson.slug}/${s.key}`
-      // Só a fala da seção: o fecho comum já tem um porquê e deixaria o teste vazio.
+      // Só a fala da parte: o fecho comum já tem um porquê e deixaria o teste vazio.
       expect((s.speech ?? []).join(' '), id).toMatch(/\b(?:porque|por isso|é que|ou seja)\b/)
       const mapa = falasSecao(s, 'mapa').join(' ')
       expect(mapa, id).not.toMatch(/Pause aqui|esta aba/)
-      expect(mapa, id).toMatch(/clique em (?:Próxima parte|Concluir fase)\./)
+      expect(mapa, id).toMatch(/clique em (?:Próxima parte|Concluir aula)\./)
     }
   // O PDF não tem vídeo para apontar: o Mapa sai sem "Olha aqui", "Olha só", "Repare" e "Tá vendo?".
   const chamado = /(?<!\p{L})(?:olha aqui|olha só|repare|tá vendo)(?!\p{L})/iu

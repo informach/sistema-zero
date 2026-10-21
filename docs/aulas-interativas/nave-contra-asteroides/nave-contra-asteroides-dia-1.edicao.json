@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-seta-e-velocidade",
+    "video-setas-e-rastro",
+    "video-limpeza",
+    "video-limite-da-tela",
+    "video-limite-da-nave",
+    "video-ordem-dos-desenhos",
+    "video-fundo-estrelado",
+    "video-teste-e-envio"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-seta-e-velocidade-K1",
+      "clipe": "video-seta-e-velocidade",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "do passo quando você anda: passo grande leva mais longe. A velocidade é o tamanho do passo da nave em cada quadro.",
+      "ancoraDepois": "Depois, eu clico em Recomeçar, escolho Velocidade 1 e avanço de novo. Agora o x vai de 208 para 209, depois 210. O",
+      "falaPrincipal": "E se a gente testar um passo menor?",
+      "falaPersonagem": "E se a gente testar um passo menor?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-setas-e-rastro-K1",
+      "clipe": "video-setas-e-rastro",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "Arraste e solte no começo de A cada quadro do jogo, logo acima de Desenhar o sprite, quando aparecer o encaixe.",
+      "ancoraDepois": "Repare: o nome do sprite já vem nave, por isso mantenha. Depois, troque a velocidade para 7, um passo maior do que os",
+      "falaPrincipal": "E qual velocidade eu uso?",
+      "falaPersonagem": "E qual velocidade eu uso?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-limpeza-K1",
+      "clipe": "video-limpeza",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "cada quadro, na primeira aula? Com a limpeza ligada, sobrava uma nave só. Agora a gente vai limpar a tela do seu jogo!",
+      "ancoraDepois": "Só o desenho anterior. A nave continua no jogo e vai ser desenhada de novo. A limpeza tem que acontecer no começo de",
+      "falaPrincipal": "Isso vai apagar a minha nave?",
+      "falaPersonagem": "Isso vai apagar a minha nave?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-limite-da-tela-K1",
+      "clipe": "video-limite-da-tela",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "e continua até sair inteira da tela, porque, sem limite, o jogo soma o passo em cada quadro, mesmo depois da borda.",
+      "ancoraDepois": "Vamos colocar um limite para ela ficar na tela. Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em",
+      "falaPrincipal": "E se a nave sair da tela?",
+      "falaPersonagem": "E se a nave sair da tela?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-limite-da-nave-K1",
+      "clipe": "video-limite-da-nave",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "dentro da tela. Arraste e solte entre Mover o sprite com as setas e Desenhar o sprite, quando aparecer o encaixe.",
+      "ancoraDepois": "Repare: o bloco chega com o nome heroi, que não é o da sua nave. Por isso, clique em heroi e escolha nave. Agora teste:",
+      "falaPrincipal": "Esse nome heroi é o da minha nave?",
+      "falaPersonagem": "Esse nome heroi é o da minha nave?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-fundo-estrelado-K1",
+      "clipe": "video-fundo-estrelado",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "A cada quadro do jogo, logo depois de Desenhar o sprite, quando aparecer o encaixe. A velocidade já vem em 1: mantenha.",
+      "ancoraDepois": "Olha só: as estrelas cobriram a nave! Isso acontece porque elas foram desenhadas depois da nave, igualzinho ao que você",
+      "falaPrincipal": "Ué, cadê a nave?",
+      "falaPersonagem": "Ué, cadê a nave?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

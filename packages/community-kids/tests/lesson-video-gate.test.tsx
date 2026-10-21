@@ -369,7 +369,7 @@ describe('o vídeo flutuante', () => {
   })
 
   test('numa seção com DUAS atividades, só a ampliada tem o interruptor', () => {
-    // O contexto do interruptor vale para a seção inteira: sem o `expanded` de cada atividade, a
+    // O contexto do interruptor vale para a parte inteira: sem o `expanded` de cada atividade, a
     // que ficou embaixo da tela ampliada ganhava um segundo botão escondido, e o foco do Minimizar
     // (que procura o botão pelo atributo) podia ir parar nele.
     const duas: LessonDetailView = {
@@ -447,7 +447,7 @@ describe('o vídeo flutuante', () => {
     expect(nome()).toBe('ver quase tudo')
   })
 
-  test('outro diálogo por cima (o "Enviar para o professor?"): o vídeo some e sai do Tab', async () => {
+  test('outro diálogo por cima (o "Enviar meu projeto?"): o vídeo some e sai do Tab', async () => {
     render(<Aula aula={aberta} />)
     fireEvent.click(screen.getByRole('button', { name: 'tocar' }))
     fireEvent.click(screen.getByRole('button', { name: 'Ampliar jogo' }))

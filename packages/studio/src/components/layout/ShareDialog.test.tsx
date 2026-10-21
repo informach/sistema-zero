@@ -117,7 +117,7 @@ describe('ShareDialog', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: 'Usar a capa da aventura' }))
     fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
-    await screen.findByText('Copiar link')
+    await screen.findByText('Copiar link de jogar')
     const loaded = await prepareEditableStudioProject(await loadProjectById(project.id, scope))
     if (!loaded) throw new Error('The published project was not persisted')
     expect(projectPublicationId(loaded)).toBe(playId)
@@ -189,7 +189,7 @@ describe('ShareDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
     await screen.findByText(/Disco indisponível/)
     fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
-    await screen.findByText('Copiar link')
+    await screen.findByText('Copiar link de jogar')
     expect(adapter.publish).toHaveBeenCalledTimes(1)
     expect(saves).toBe(2)
     expect(projectPublicationId(stores.project.getState().project!)).toBe(playId)
@@ -244,7 +244,7 @@ describe('ShareDialog', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
       await screen.findByText(/Resposta perdida/)
       fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
-      await screen.findByText('Copiar link')
+      await screen.findByText('Copiar link de jogar')
       const calls = (adapter.publish as ReturnType<typeof mock>).mock.calls
       expect(calls[0]?.[0].project.tree['src/main.ts'].content).toBe('saved code')
       expect(calls[0]?.[0].coverDataUrl).toBeNull()
@@ -278,7 +278,7 @@ describe('ShareDialog', () => {
     setProjectStorageNamespace('share-a')
     complete({ playUrl: '/jogar/late' })
     await new Promise((resolve) => setTimeout(resolve, 0))
-    expect(screen.queryByText('Copiar link')).toBeNull()
+    expect(screen.queryByText('Copiar link de jogar')).toBeNull()
   })
 
   it('não renderiza nada quando o adapter é null', () => {
@@ -339,11 +339,11 @@ describe('ShareDialog', () => {
       fireEvent.click(publicar())
       await waitFor(() => expect(onPublished).toHaveBeenCalledTimes(1))
       if (showPublishedScreen) {
-        await screen.findByText('Copiar link')
+        await screen.findByText('Copiar link de jogar')
         expect(onClose).not.toHaveBeenCalled()
       } else {
         expect(onClose).toHaveBeenCalledTimes(1)
-        expect(screen.queryByText('Copiar link')).toBeNull()
+        expect(screen.queryByText('Copiar link de jogar')).toBeNull()
       }
       cleanup()
     }

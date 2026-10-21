@@ -47,8 +47,8 @@
       "collection": "plataforma",
       "position": 0,
       "draft": {
-        "title": "Como abrir uma fase e trocar de parte",
-        "summary": "Encontre a trilha, abra sua aventura e siga as partes da fase.",
+        "title": "Como abrir uma aula e trocar de parte",
+        "summary": "Encontre a trilha, abra seu curso e siga as partes da aula.",
         "keywords": [
           "fase",
           "parte",
@@ -62,7 +62,7 @@
           "começar",
           "começar agora",
           "continuar",
-          "concluir fase",
+          "concluir aula",
           "objetivos",
           "cadeado",
           "aula",
@@ -87,31 +87,31 @@
           },
           {
             "id": "curso",
-            "title": "Abra a aventura",
-            "body": "Escolha uma aventura liberada e clique no botão do cartão: **Começar agora**, se for a primeira vez, ou **Continuar**, se você já começou. Na página da aventura, clique na fase disponível no caminho das fases.",
+            "title": "Abra o curso",
+            "body": "Escolha um curso liberada e clique no botão do cartão: **Começar agora**, se for a primeira vez, ou **Continuar**, se você já começou. Na página do curso, clique na aula disponível no caminho das aulas.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/curso-53942b66356e2de1.webp",
-            "imageAlt": "Trilha Construtor(a) com o botão Continuar da aventura Nave Contra Asteroides destacado."
+            "imageAlt": "Trilha Construtor(a) com o botão Continuar do curso Nave Contra Asteroides destacado."
           },
           {
             "id": "secoes",
-            "title": "Siga as partes da fase",
-            "body": "Cada fase é dividida em partes. Faça o que cada parte pede e clique em **Próxima parte**, ou clique em **Anterior** para voltar. Se houver só uma parte, faça o que ela pede.",
+            "title": "Siga as partes da aula",
+            "body": "Cada aula é dividida em partes. Faça o que cada parte pede e clique em **Próxima parte**, ou clique em **Anterior** para voltar. Se houver só uma parte, faça o que ela pede.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/secoes-24f90d62324ffdc7.webp",
-            "imageAlt": "Rodapé de uma fase com os botões Próxima parte e Anterior destacados."
+            "imageAlt": "Rodapé de uma aula com os botões Próxima parte e Anterior destacados."
           },
           {
             "id": "trancada",
             "title": "Confira o que falta",
             "body": "Se a próxima parte ou fase tiver um cadeado, termine o que vem antes. A faixa **Para seguir:**, acima dos botões, diz o que falta: o vídeo, o quiz, um material, os objetivos do Estúdio ou o envio do seu projeto.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/trancada-a66f2e3a36fa2632.webp",
-            "imageAlt": "Rodapé da fase com o aviso Para seguir, que diz o que falta fazer, e o botão Próxima parte ainda bloqueado."
+            "imageAlt": "Rodapé da aula com o aviso Para seguir, que diz o que falta fazer, e o botão Próxima parte ainda bloqueado."
           },
           {
             "id": "concluir",
-            "title": "Conclua a fase",
-            "body": "Na última parte, clique em **Concluir fase** quando terminar. Se aparecer um aviso, faça o que falta e tente de novo. Veja o que acontece depois em [Como concluir a fase](/como-fazer/plataforma-concluir-a-fase).",
+            "title": "Conclua a aula",
+            "body": "Na última parte, clique em **Concluir aula** quando terminar. Se aparecer um aviso, faça o que falta e tente de novo. Veja o que acontece depois em [Como concluir a aula](/como-fazer/plataforma-concluir-a-fase).",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/concluir-3af031274eadd2fa.webp",
-            "imageAlt": "Última parte de uma fase com o rodapé mostrando Anterior e o botão Concluir fase destacado."
+            "imageAlt": "Última parte de uma aula com o rodapé mostrando Anterior e o botão Concluir aula destacado."
           }
         ],
         "related": [
@@ -131,8 +131,8 @@
       "collection": "plataforma",
       "position": 1,
       "draft": {
-        "title": "Como continuar uma fase",
-        "summary": "Volte à sua aventura e retome a fase que estava fazendo.",
+        "title": "Como continuar uma aula",
+        "summary": "Volte à seu curso e retome a aula que estava fazendo.",
         "keywords": [
           "continuar",
           "parei",
@@ -154,28 +154,28 @@
           {
             "id": "perfil",
             "title": "Confira seu perfil",
-            "body": "Use o mesmo perfil de criança em que você começou a fase. Cada perfil tem seu próprio progresso e suas criações. Se pedir para entrar, escolha seu perfil e a fase abre de novo.",
+            "body": "Use o mesmo perfil de criança em que você começou a aula. Cada perfil tem seu próprio progresso e suas criações. Se pedir para entrar, escolha seu perfil e a aula abre de novo.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/perfil-80f41c65adc6c2d3.webp",
             "imageAlt": "Menu da esquerda com o nome e o avatar do perfil que está usando a plataforma destacados."
           },
           {
             "id": "jornada",
-            "title": "Encontre a aventura",
-            "body": "Clique em **Explorar**, escolha a trilha no mapa e depois clique em **Continuar** na aventura que você estava fazendo.",
+            "title": "Encontre o curso",
+            "body": "Clique em **Explorar**, escolha a trilha no mapa e depois clique em **Continuar** no curso que você estava fazendo.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/jornada-53942b66356e2de1.webp",
-            "imageAlt": "Trilha da Jornada com o botão Continuar destacado na aventura que estava sendo feita."
+            "imageAlt": "Trilha da Jornada com o botão Continuar destacado no curso que estava sendo feita."
           },
           {
             "id": "aula",
-            "title": "Abra a fase",
-            "body": "No caminho das fases, clique na fase que quer continuar. A plataforma tenta abrir a última parte que ficou guardada. Use **Anterior** ou **Próxima parte** se precisar.",
+            "title": "Abra a aula",
+            "body": "No caminho das aulas, clique na aula que quer continuar. A plataforma tenta abrir a última parte que ficou guardada. Use **Anterior** ou **Próxima parte** se precisar.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/aula-175c2090f3be0d7f.webp",
-            "imageAlt": "Caminho das fases da aventura com a fase em andamento destacada para continuar."
+            "imageAlt": "Caminho das aulas do curso com a aula em andamento destacada para continuar."
           },
           {
             "id": "trabalho",
             "title": "Continue seu projeto",
-            "body": "No Estúdio e no Pinta da fase, o que você faz fica guardado na sua conta. Com o aviso **Guardado na sua conta**, você pode continuar em outro aparelho. Veja [como continuar em outro aparelho](/como-fazer/plataforma-continuar-em-outro-aparelho).",
+            "body": "No Estúdio e no Pinta da aula, o que você faz fica guardado na sua conta. Com o aviso **Guardado na sua conta**, você pode continuar em outro aparelho. Veja [como continuar em outro aparelho](/como-fazer/plataforma-continuar-em-outro-aparelho).",
             "imageAlt": "Cartão Seu projeto no Estúdio, numa fase, com o aviso Guardado na sua conta destacado ao lado do título."
           }
         ],
@@ -210,14 +210,14 @@
             "title": "Procure Mostrar menu",
             "body": "Nas telas que escondem o menu da esquerda, clique na setinha da borda esquerda (**Mostrar menu**), quando ela aparecer. Para ter mais espaço na tela, clique de novo na setinha (**Esconder menu**).",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-mostrar-o-menu/menu-4648bf08de2f6722.webp",
-            "imageAlt": "Página da fase com o menu escondido e a setinha Mostrar menu destacada na borda esquerda."
+            "imageAlt": "Página da aula com o menu escondido e a setinha Mostrar menu destacada na borda esquerda."
           },
           {
             "id": "lista",
             "title": "Abra a lista de fases",
-            "body": "Dentro da fase, clique na setinha da borda direita (**Mostrar lista de fases**) e escolha uma fase liberada. Para fechar a lista, clique de novo na setinha (**Esconder lista de fases**).",
+            "body": "Dentro da aula, clique na setinha da borda direita (**Mostrar lista de fases**) e escolha uma aula liberada. Para fechar a lista, clique de novo na setinha (**Esconder lista de fases**).",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-mostrar-o-menu/lista-76d58e308202b26e.webp",
-            "imageAlt": "Página da fase com a setinha Mostrar lista de fases destacada na borda direita."
+            "imageAlt": "Página da aula com a setinha Mostrar lista de fases destacada na borda direita."
           },
           {
             "id": "editor",
@@ -229,9 +229,9 @@
           {
             "id": "ampliada",
             "title": "Saia da tela ampliada",
-            "body": "Se o que você está fazendo ocupa a tela toda, use **Reduzir** ou **Voltar à fase**, conforme o botão que aparece. No celular, volte à tela da plataforma para usar a barra de navegação.",
+            "body": "Se o que você está fazendo ocupa a tela toda, use **Reduzir** ou **Voltar à aula**, conforme o botão que aparece. No celular, volte à tela da plataforma para usar a barra de navegação.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-mostrar-o-menu/ampliada-2f5b0e8ea55f847c.webp",
-            "imageAlt": "Experiência ampliada ocupando a tela, com o botão Voltar à fase destacado."
+            "imageAlt": "Experiência ampliada ocupando a tela, com o botão Voltar à aula destacado."
           }
         ],
         "related": ["plataforma-ampliar-a-atividade"]
@@ -243,7 +243,7 @@
       "position": 3,
       "draft": {
         "title": "Como pedir ajuda à equipe",
-        "summary": "Envie sua dúvida sem sair da fase e acompanhe a resposta.",
+        "summary": "Envie sua dúvida sem sair da aula e acompanhe a resposta.",
         "keywords": [
           "equipe",
           "ajuda",
@@ -263,14 +263,14 @@
             "title": "Abra o pedido de ajuda",
             "body": "Embaixo da parte em que você está, clique em **Preciso de ajuda**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pedir-ajuda/abrir-8223954134b7fa21.webp",
-            "imageAlt": "Rodapé da fase com o botão Preciso de ajuda destacado."
+            "imageAlt": "Rodapé da aula com o botão Preciso de ajuda destacado."
           },
           {
             "id": "escrever",
             "title": "Conte onde ficou com dúvida",
-            "body": "Escreva o que tentou fazer e o que apareceu. Por exemplo: “Meu personagem não pula quando aperto a tecla”. A equipe recebe também o nome da aventura, da fase e da parte.",
+            "body": "Escreva o que tentou fazer e o que apareceu. Por exemplo: “Meu personagem não pula quando aperto a tecla”. A equipe recebe também o nome do curso, da aula e da parte.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pedir-ajuda/escrever-ed964d618b2e3d46.webp",
-            "imageAlt": "Caixa Em que ponto desta parte você ficou com dúvida? aberta embaixo da fase, com a dúvida escrita no campo destacado."
+            "imageAlt": "Caixa Em que ponto desta parte você ficou com dúvida? aberta embaixo da aula, com a dúvida escrita no campo destacado."
           },
           {
             "id": "enviar",
@@ -402,7 +402,7 @@
       "position": 6,
       "draft": {
         "title": "Como publicar seu jogo no Mural",
-        "summary": "Mostre o jogo da fase ou do Estúdio para outras pessoas jogarem.",
+        "summary": "Mostre o jogo da aula ou do Estúdio para outras pessoas jogarem.",
         "keywords": [
           "mural",
           "compartilhar",
@@ -419,7 +419,7 @@
           {
             "id": "preparar",
             "title": "Teste o jogo",
-            "body": "Abra o projeto no Estúdio e confira se ele funciona. Se estiver dentro de uma fase, primeiro [envie o seu projeto](/como-fazer/plataforma-enviar-atividade).",
+            "body": "Abra o projeto no Estúdio e confira se ele funciona. Se estiver dentro de uma aula, primeiro [envie o seu projeto](/como-fazer/plataforma-enviar-atividade).",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/preparar-89fc413ec44eea0f.webp",
             "imageAlt": "Estúdio da Fase 2 do Cadê Todo Mundo? com a Pré-visualização do jogo aberta e o botão Enviar de novo destacados."
           },
@@ -428,12 +428,12 @@
             "title": "Abra Compartilhar",
             "body": "Clique em **Compartilhar**, o botão com a setinha para cima no canto da barra do Estúdio, quando ele estiver disponível. Nas aventuras, ele fica disponível depois que você envia o seu projeto: no Cadê Todo Mundo?, o da Fase 2; na Chave do Farol, o da parte **Escolha onde fica a chave**. Abre a janela **Compartilhar no Mural dos Criadores**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/compartilhar-6782ce0fbfda4375.webp",
-            "imageAlt": "Barra do Estúdio na fase com o botão Compartilhar destacado, liberado depois do envio do projeto."
+            "imageAlt": "Barra do Estúdio na aula com o botão Compartilhar destacado, liberado depois do envio do projeto."
           },
           {
             "id": "texto",
             "title": "Confira o nome e o resumo",
-            "body": "Confira o **Resumo do projeto**. Dentro de uma aventura, como na Fase 2 do Cadê Todo Mundo? ou na última fase da Chave do Farol, o nome do jogo e o resumo já vêm prontos e podem ficar como estão. Nos outros projetos, confira também o **Título** e, se os textos estiverem vazios, escreva o nome do jogo e uma frase contando como jogar; quando aparecer **Escrever com ajuda do Zappy**, ele faz um rascunho do resumo para você mudar.",
+            "body": "Confira o **Resumo do projeto**. Dentro de um curso, como na Fase 2 do Cadê Todo Mundo? ou na última fase da Chave do Farol, o nome do jogo e o resumo já vêm prontos e podem ficar como estão. Nos outros projetos, confira também o **Título** e, se os textos estiverem vazios, escreva o nome do jogo e uma frase contando como jogar; quando aparecer **Escrever com ajuda do Zappy**, ele faz um rascunho do resumo para você mudar.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/texto-3d7b0008ed24ee47.webp",
             "imageAlt": "Janela Compartilhar no Mural dos Criadores com o Resumo do projeto já preenchido destacado."
           },
@@ -466,16 +466,16 @@
           {
             "id": "copia",
             "title": "Lembre da versão publicada",
-            "body": "O Mural guarda uma cópia daquele momento. Mudar o projeto no editor não muda essa cópia. Na fase, o jogo só pode ser compartilhado uma vez.",
+            "body": "O Mural guarda uma cópia daquele momento. Mudar o projeto no editor não muda essa cópia. Na aula, o jogo só pode ser compartilhado uma vez.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/copia-189f0c40cb7872ea.webp",
             "imageAlt": "Janela Compartilhar com o aviso de que a versão publicada no Mural é uma cópia separada do projeto destacado."
           },
           {
             "id": "opcional",
-            "title": "Conclua a fase",
-            "body": "Nas aventuras, publicar é a última parte da fase: no Cadê Todo Mundo?, na Fase 2; na Chave do Farol, em **Publique seu jogo**. Quando aparecer **Seu jogo está no Mural!**, clique em **Fechar** e depois em **Concluir fase**.",
+            "title": "Conclua a aula",
+            "body": "Nas aventuras, publicar é a última parte da aula: no Cadê Todo Mundo?, na Fase 2; na Chave do Farol, em **Publique seu jogo**. Quando aparecer **Seu jogo está no Mural!**, clique em **Fechar** e depois em **Concluir aula**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/opcional-af5fe807ac901d04.webp",
-            "imageAlt": "Comemoração Seu jogo está no Mural! com o botão Fechar destacado, antes de concluir a fase."
+            "imageAlt": "Comemoração Seu jogo está no Mural! com o botão Fechar destacado, antes de concluir a aula."
           }
         ],
         "related": [
@@ -527,21 +527,21 @@
           {
             "id": "proximas",
             "title": "Confira as Próximas aventuras",
-            "body": "Se aparecer **Próximas aventuras**, são aventuras de outra trilha que fazem parte do seu próximo passo. Em cima de cada cartão está o que fazer: **Termine esta aventura.** ou **Termine e publique o seu jogo no Mural.**"
+            "body": "Se aparecer **Próximas aventuras**, são aventuras de outra trilha que fazem parte do seu próximo passo. Em cima de cada cartão está o que fazer: **Termine este curso.** ou **Termine e publique o seu jogo no Mural.**"
           },
           {
             "id": "curso",
             "title": "Confira o que está liberado",
-            "body": "Uma aventura liberada mostra quantas fases você já fez e um botão para seguir, como **Começar agora** ou **Continuar**. Uma bloqueada mostra o que vem antes: **Comece por esta:** com o nome da aventura, **Em breve na sua jornada** ou um prêmio que abre quando você chega a um nível.",
+            "body": "Um curso liberada mostra quantas fases você já fez e um botão para seguir, como **Começar agora** ou **Continuar**. Uma bloqueada mostra o que vem antes: **Comece por esta:** com o nome do curso, **Em breve na sua jornada** ou um prêmio que abre quando você chega a um nível.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/curso-8ef7e13bdce50ee2.webp",
-            "imageAlt": "Trilha com uma aventura liberada mostrando as fases feitas e o botão Continuar, e uma aventura bloqueada com o recado de qual aventura fazer antes."
+            "imageAlt": "Trilha com um curso liberada mostrando as aulas feitas e o botão Continuar, e um curso bloqueada com o recado de qual aventura fazer antes."
           },
           {
             "id": "progresso",
-            "title": "Acompanhe suas fases",
-            "body": "Abra uma aventura liberada. No caminho das fases, as concluídas têm uma marca de confirmação e as bloqueadas têm cadeado. Volte ao mapa para escolher outra trilha.",
+            "title": "Acompanhe suas aulas",
+            "body": "Abra um curso liberada. No caminho das aulas, as concluídas têm uma marca de confirmação e as bloqueadas têm cadeado. Volte ao mapa para escolher outra trilha.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/progresso-f334fca10c987cd7.webp",
-            "imageAlt": "Caminho das fases da aventura com uma fase concluída, marcada com confirmação, e uma fase bloqueada com cadeado."
+            "imageAlt": "Caminho das aulas do curso com uma aula concluída, marcada com confirmação, e uma aula bloqueada com cadeado."
           }
         ],
         "related": ["plataforma-abrir-uma-aula", "plataforma-publicar-no-mural"]
@@ -576,27 +576,27 @@
             "title": "Ajuste a divisão da tela",
             "body": "Nas partes com o conteúdo de um lado e a área de criação do outro, arraste a divisão entre eles para mudar o espaço de cada lado.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ampliar-a-atividade/dividir-152d85bc409bdd75.webp",
-            "imageAlt": "Parte da fase com o conteúdo de um lado e a área de criação do outro, com a divisão do meio destacada para arrastar."
+            "imageAlt": "Parte da aula com o conteúdo de um lado e a área de criação do outro, com a divisão do meio destacada para arrastar."
           },
           {
             "id": "ampliar",
             "title": "Amplie o jogo ou a experiência",
-            "body": "Se aparecer **Ampliar experiência** ou **Ampliar jogo**, clique nele para ocupar mais espaço. Use **Voltar à fase** para ver o conteúdo junto novamente.",
+            "body": "Se aparecer **Ampliar experiência** ou **Ampliar jogo**, clique nele para ocupar mais espaço. Use **Voltar à aula** para ver o conteúdo junto novamente.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ampliar-a-atividade/ampliar-ee514ba14f1c6133.webp",
-            "imageAlt": "Experiência da fase com o botão Ampliar experiência destacado."
+            "imageAlt": "Experiência da aula com o botão Ampliar experiência destacado."
           },
           {
             "id": "editor",
-            "title": "Amplie o editor da fase",
-            "body": "O Estúdio e o Pinta dentro da fase também podem mostrar **Expandir**. Clique nele e use **Reduzir** para voltar.",
+            "title": "Amplie o editor da aula",
+            "body": "O Estúdio e o Pinta dentro da aula também podem mostrar **Expandir**. Clique nele e use **Reduzir** para voltar.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ampliar-a-atividade/editor-d35a19b7b5169c10.webp",
-            "imageAlt": "Estúdio dentro da fase com o botão Expandir destacado."
+            "imageAlt": "Estúdio dentro da aula com o botão Expandir destacado."
           },
           {
             "id": "video",
             "title": "Veja o vídeo com a tela ampliada",
             "body": "Com o jogo, a experiência ou o editor ampliado, o vídeo da parte fica escondido. Clique em **Vídeo** para ele aparecer num cantinho da tela. Clique de novo para esconder.",
-            "imageAlt": "Estúdio da fase ampliado, com o botão Vídeo destacado na barra de cima e o vídeo da parte num cantinho da tela."
+            "imageAlt": "Estúdio da aula ampliado, com o botão Vídeo destacado na barra de cima e o vídeo da parte num cantinho da tela."
           },
           {
             "id": "celular",
@@ -642,9 +642,9 @@
           {
             "id": "voltar",
             "title": "Volte ao que estava fazendo",
-            "body": "Se abriu a ajuda por um link da fase, clique em **Voltar para a fase**, quando esse botão aparecer, para continuar de onde parou.",
+            "body": "Se abriu a ajuda por um link da aula, clique em **Voltar para a aula**, quando esse botão aparecer, para continuar de onde parou.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/voltar-7b97e87f81795178.webp",
-            "imageAlt": "Tutorial aberto a partir de uma fase, com o botão Voltar para a fase destacado."
+            "imageAlt": "Tutorial aberto a partir de uma aula, com o botão Voltar para a aula destacado."
           }
         ],
         "related": ["plataforma-pedir-ajuda"]
@@ -656,7 +656,7 @@
       "position": 10,
       "draft": {
         "title": "Como escolher ou trocar seu perfil",
-        "summary": "Entre no seu perfil para encontrar suas aventuras e suas criações.",
+        "summary": "Entre no seu perfil para encontrar seus cursos e suas criações.",
         "keywords": ["perfil", "trocar", "criança", "irmão", "avatar"],
         "steps": [
           {
@@ -693,10 +693,10 @@
       "collection": "plataforma",
       "position": 11,
       "draft": {
-        "title": "Como abrir o Mapa da Aventura e os materiais",
-        "summary": "Leia o Mapa da Aventura na tela ou baixe os materiais quando precisar.",
+        "title": "Como abrir o Passo a passo do projeto e os materiais",
+        "summary": "Leia o Passo a passo do projeto na tela ou baixe os materiais quando precisar.",
         "keywords": [
-          "mapa da aventura",
+          "passo a passo do projeto",
           "mapa",
           "material",
           "arquivo",
@@ -715,26 +715,26 @@
           {
             "id": "encontrar",
             "title": "Procure os materiais",
-            "body": "Abra a fase e a parte que traz os materiais. Eles aparecem junto do conteúdo, no bloco com o selo **Consulte**.",
-            "imageAlt": "Parte da fase com o bloco Consulte destacado, mostrando o Mapa da Aventura para baixar."
+            "body": "Abra a aula e a parte que traz os materiais. Eles aparecem junto do conteúdo, no bloco com o selo **Consulte**.",
+            "imageAlt": "Parte da aula com o bloco Consulte destacado, mostrando o Passo a passo do projeto para baixar."
           },
           {
             "id": "livro",
-            "title": "Leia o Mapa da Aventura na tela",
+            "title": "Leia o Passo a passo do projeto na tela",
             "body": "Se o material aparecer como livro, use as setas de **Próxima página** e **Página anterior** para folhear.",
-            "imageAlt": "Mapa da Aventura aberto como livro, com a seta Próxima página destacada."
+            "imageAlt": "Passo a passo do projeto aberto como livro, com a seta Próxima página destacada."
           },
           {
             "id": "paginas",
             "title": "Escolha outra forma de leitura",
             "body": "Para ver uma página por vez, clique em **Ler por páginas**. Nesse modo, use **Anterior** e **Próxima**. Os botões **+** e **−** mudam o tamanho da página.",
-            "imageAlt": "Mapa da Aventura no modo Ler por páginas, com esse botão destacado e os controles de página logo abaixo."
+            "imageAlt": "Passo a passo do projeto no modo Ler por páginas, com esse botão destacado e os controles de página logo abaixo."
           },
           {
             "id": "baixar",
             "title": "Baixe o arquivo",
             "body": "Clique no nome do arquivo ou em **Baixar**. Espere o download e procure o arquivo na pasta de downloads do aparelho.",
-            "imageAlt": "Bloco Consulte com o arquivo do Mapa da Aventura e o botão Baixar destacado ao lado do nome."
+            "imageAlt": "Bloco Consulte com o arquivo do Passo a passo do projeto e o botão Baixar destacado ao lado do nome."
           },
           {
             "id": "obrigatorio",
@@ -744,13 +744,13 @@
           {
             "id": "link",
             "title": "Abra os links",
-            "body": "Clique no material que tem um link para abrir outra aba. Depois, volte à aba da fase para continuar. Se o download não começar, confira se o navegador abriu uma nova aba com o arquivo."
+            "body": "Clique no material que tem um link para abrir outra aba. Depois, volte à aba da aula para continuar. Se o download não começar, confira se o navegador abriu uma nova aba com o arquivo."
           },
           {
             "id": "opcional",
             "title": "Consulte quando precisar",
-            "body": "O Mapa da Aventura fica na parte **Seu Mapa da Aventura**, na primeira fase da aventura: volte a ela sempre que quiser rever um passo. Leia ali mesmo, na tela, ou baixe o mapa para guardar e consultar onde quiser. Para imprimir, peça ajuda a um responsável.",
-            "imageAlt": "Parte Seu Mapa da Aventura com o mapa destacado para consultar durante as fases."
+            "body": "O Passo a passo do projeto fica na parte **Seu Passo a passo do projeto**, na primeira fase do curso: volte a ela sempre que quiser rever um passo. Leia ali mesmo, na tela, ou baixe o mapa para guardar e consultar onde quiser. Para imprimir, peça ajuda a um responsável.",
+            "imageAlt": "Parte Seu Passo a passo do projeto com o mapa destacado para consultar durante as aulas."
           }
         ],
         "related": ["plataforma-abrir-uma-aula"]
@@ -761,7 +761,7 @@
       "collection": "plataforma",
       "position": 12,
       "draft": {
-        "title": "Como responder o quiz da fase",
+        "title": "Como responder o quiz da aula",
         "summary": "Responda às perguntas e confira o resultado antes de seguir.",
         "keywords": [
           "quiz",
@@ -805,8 +805,8 @@
           },
           {
             "id": "seguir",
-            "title": "Continue a fase",
-            "body": "Quando aparecer **Quiz concluído**, avance para a próxima parte. Se for a última, use **Concluir fase** depois de fazer o que mais a fase pedir.",
+            "title": "Continue a aula",
+            "body": "Quando aparecer **Quiz concluído**, avance para a próxima parte. Se for a última, use **Concluir aula** depois de fazer o que mais a aula pedir.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/seguir-c52b61a6959775c4.webp",
             "imageAlt": "Quiz aprovado com o aviso Quiz concluído destacado e o botão Próxima parte destacado no rodapé."
           }
@@ -823,8 +823,8 @@
       "collection": "plataforma",
       "position": 13,
       "draft": {
-        "title": "Como enviar um projeto feito na fase",
-        "summary": "Mande para a equipe o jogo ou o desenho que você fez na fase.",
+        "title": "Como enviar um projeto feito na aula",
+        "summary": "Mande para a equipe o jogo ou o desenho que você fez na aula.",
         "keywords": [
           "enviar",
           "equipe",
@@ -843,15 +843,15 @@
           {
             "id": "preparar",
             "title": "Confira seu projeto",
-            "body": "Na fase, termine o seu jogo no Estúdio ou o seu desenho no Pinta e teste antes de enviar. Se embaixo do Estúdio aparecer **Objetivos desta parte**, clique em **Verificar esta parte** para conferir o que a parte pede. Veja [como verificar os objetivos](/como-fazer/plataforma-verificar-objetivos).",
-            "imageAlt": "Estúdio da fase com o quadro Objetivos desta parte embaixo do projeto e o botão Verificar esta parte destacado."
+            "body": "Na aula, termine o seu jogo no Estúdio ou o seu desenho no Pinta e teste antes de enviar. Se embaixo do Estúdio aparecer **Objetivos desta parte**, clique em **Verificar esta parte** para conferir o que a parte pede. Veja [como verificar os objetivos](/como-fazer/plataforma-verificar-objetivos).",
+            "imageAlt": "Estúdio da aula com o quadro Objetivos desta parte embaixo do projeto e o botão Verificar esta parte destacado."
           },
           {
             "id": "abrir",
             "title": "Abra o envio",
             "body": "No alto do Estúdio, clique em **Enviar meu projeto**. No Pinta, clique em **Enviar meu desenho**. Uma janela pede sua confirmação.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-enviar-atividade/abrir-b681f22969a45ed5.webp",
-            "imageAlt": "Barra do Estúdio na fase com o botão Enviar meu projeto destacado."
+            "imageAlt": "Barra do Estúdio na aula com o botão Enviar meu projeto destacado."
           },
           {
             "id": "confirmar",
@@ -865,7 +865,7 @@
             "title": "Envie outra versão se precisar",
             "body": "No Estúdio, clique em **Enviar de novo** e confirme em **Reenviar**; no Pinta, clique em **Enviar de novo** e confirme em **Enviar**. A equipe recebe a versão nova no lugar da anterior. Se aparecer **Você mudou o projeto depois de enviar** ou **Você mudou o desenho depois de enviar**, envie de novo para a equipe ver a versão nova.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-enviar-atividade/nova-37286e49088b3c0b.webp",
-            "imageAlt": "Estúdio da fase com o botão Enviar de novo destacado, para mandar uma versão nova."
+            "imageAlt": "Estúdio da aula com o botão Enviar de novo destacado, para mandar uma versão nova."
           },
           {
             "id": "acompanhar",
@@ -908,7 +908,7 @@
             "id": "abrir",
             "title": "Encontre a parte que pede a criação",
             "body": "Na parte que pede a sua criação, clique em **Escolher no Pinta** ou **Escolher no Estúdio**, conforme a ferramenta.",
-            "imageAlt": "Parte da fase que pede a criação, com o botão Escolher no Estúdio destacado e o link Abrir meu Estúdio ao lado."
+            "imageAlt": "Parte da aula que pede a criação, com o botão Escolher no Estúdio destacado e o link Abrir meu Estúdio ao lado."
           },
           {
             "id": "escolher",
@@ -918,7 +918,7 @@
           {
             "id": "atualizar",
             "title": "Se a criação não aparecer",
-            "body": "Use **Abrir meu Pinta** ou **Abrir meu Estúdio** na fase. Guarde a criação na sua conta, volte à aba da fase e clique em **Atualizar galeria** na janela de escolha."
+            "body": "Use **Abrir meu Pinta** ou **Abrir meu Estúdio** na aula. Guarde a criação na sua conta, volte à aba da aula e clique em **Atualizar galeria** na janela de escolha."
           },
           {
             "id": "enviar",
@@ -930,7 +930,7 @@
             "id": "outra",
             "title": "Troque o envio se precisar",
             "body": "Use **Enviar outra versão**, escolha de novo a criação e clique em **Enviar (1)**.",
-            "imageAlt": "Parte da fase depois do envio, com o aviso Recebido! e o botão Enviar outra versão destacado."
+            "imageAlt": "Parte da aula depois do envio, com o aviso Recebido! e o botão Enviar outra versão destacado."
           }
         ],
         "related": ["plataforma-enviar-atividade", "plataforma-ler-recados"]
@@ -965,9 +965,9 @@
           {
             "id": "conversa",
             "title": "Escolha a conversa",
-            "body": "Abra o recado sobre a fase ou o projeto que quer conferir. Leia as mensagens da equipe.",
+            "body": "Abra o recado sobre a aula ou o projeto que quer conferir. Leia as mensagens da equipe.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/conversa-eaf032908abbc554.webp",
-            "imageAlt": "Página Recados da equipe com uma conversa sobre uma parte da fase destacada para abrir."
+            "imageAlt": "Página Recados da equipe com uma conversa sobre uma parte da aula destacada para abrir."
           },
           {
             "id": "responder",
@@ -979,7 +979,7 @@
           {
             "id": "aula",
             "title": "Continue seu projeto",
-            "body": "Na conversa, clique em **Voltar à parte** para abrir a parte da fase de que ela fala. Se mudou seu projeto e quer que a equipe veja, envie a nova versão.",
+            "body": "Na conversa, clique em **Voltar à parte** para abrir a parte da aula de que ela fala. Se mudou seu projeto e quer que a equipe veja, envie a nova versão.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/aula-c5c424cb3470a9c3.webp",
             "imageAlt": "Conversa com a equipe com o link Voltar à parte destacado, acima das mensagens."
           }
@@ -1032,7 +1032,7 @@
       "collection": "plataforma",
       "position": 17,
       "draft": {
-        "title": "Como pausar e rever o vídeo da fase",
+        "title": "Como pausar e rever o vídeo da aula",
         "summary": "Pare o vídeo para acompanhar um passo ou volte para ouvir de novo.",
         "keywords": ["pausar", "vídeo", "rever", "voltar vídeo", "ouvir de novo", "play", "aula"],
         "steps": [
@@ -1041,7 +1041,7 @@
             "title": "Mostre os controles do vídeo",
             "body": "Passe o mouse sobre o vídeo ou clique nele para ver os controles. O desenho dos botões pode mudar de um vídeo para outro.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pausar-e-rever-video/controles-32b29bcff71637d5.webp",
-            "imageAlt": "Vídeo da fase com a barra de controles destacada embaixo: reprodução, tempo, volume e tela cheia."
+            "imageAlt": "Vídeo da aula com a barra de controles destacada embaixo: reprodução, tempo, volume e tela cheia."
           },
           {
             "id": "pausar",
@@ -1073,7 +1073,7 @@
       "collection": "plataforma",
       "position": 18,
       "draft": {
-        "title": "Como jogar o exemplo pronto da fase",
+        "title": "Como jogar o exemplo pronto da aula",
         "summary": "Experimente o jogo pronto antes de construir o seu.",
         "keywords": [
           "jogo pronto",
@@ -1092,34 +1092,34 @@
             "title": "Jogue na própria fase",
             "body": "Na parte que traz o jogo pronto, assista ao vídeo e jogue ali mesmo, na área do jogo. No Cadê Todo Mundo?, toque nos esconderijos até encontrar os três personagens escondidos no jardim.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-exemplo-da-aula/jogar-2e7497b097f3d297.webp",
-            "imageAlt": "Parte da fase com o jogo pronto do jardim destacado para tocar e procurar os personagens."
+            "imageAlt": "Parte da aula com o jogo pronto do jardim destacado para tocar e procurar os personagens."
           },
           {
             "id": "video",
             "title": "Assista ao vídeo, se pedir",
             "body": "Se a área do jogo mostrar **Primeiro, assista ao vídeo**, clique em **Ver o vídeo** e assista até o fim. Quando aparecer **Pronto! Agora é a sua vez**, o jogo abre.",
-            "imageAlt": "Jogo pronto da fase coberto pelo aviso Primeiro, assista ao vídeo, com o botão Ver o vídeo destacado."
+            "imageAlt": "Jogo pronto da aula coberto pelo aviso Primeiro, assista ao vídeo, com o botão Ver o vídeo destacado."
           },
           {
             "id": "ampliar",
             "title": "Dê mais espaço ao jogo",
-            "body": "Se quiser, clique em **Ampliar jogo**. Use **Voltar à fase** para ver o conteúdo junto de novo.",
+            "body": "Se quiser, clique em **Ampliar jogo**. Use **Voltar à aula** para ver o conteúdo junto de novo.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-exemplo-da-aula/ampliar-f97180bf2104e08a.webp",
-            "imageAlt": "Jogo pronto da fase com o botão Ampliar jogo destacado."
+            "imageAlt": "Jogo pronto da aula com o botão Ampliar jogo destacado."
           },
           {
             "id": "recomecar",
             "title": "Comece outra partida",
             "body": "Clique em **Jogar de novo** para recomeçar o exemplo. Essa cópia serve para jogar e não altera o projeto que você está construindo.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-exemplo-da-aula/recomecar-ca90d4ccad0b696d.webp",
-            "imageAlt": "Jogo pronto da fase com o botão Jogar de novo destacado."
+            "imageAlt": "Jogo pronto da aula com o botão Jogar de novo destacado."
           },
           {
             "id": "avancar",
-            "title": "Continue a fase",
+            "title": "Continue a aula",
             "body": "Quando terminar o que a parte pede, clique em **Próxima parte**. No Cadê Todo Mundo?, encontre os três personagens e assista ao vídeo para avançar.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-exemplo-da-aula/avancar-47d1601f6e15cbe3.webp",
-            "imageAlt": "Rodapé da fase com o botão Próxima parte destacado."
+            "imageAlt": "Rodapé da aula com o botão Próxima parte destacado."
           }
         ],
         "related": [
@@ -1135,7 +1135,7 @@
       "position": 19,
       "draft": {
         "title": "Como pegar seu certificado",
-        "summary": "Baixe o certificado depois de concluir as fases da aventura.",
+        "summary": "Baixe o certificado depois de concluir as aulas do curso.",
         "keywords": [
           "certificado",
           "PDF",
@@ -1147,17 +1147,17 @@
         "steps": [
           {
             "id": "abrir",
-            "title": "Abra a fase do certificado",
-            "body": "Conclua as fases anteriores e abra a fase do certificado na aventura. Se aparecer um aviso de que faltam fases, volte ao caminho da aventura e termine o que falta.",
+            "title": "Abra a aula do certificado",
+            "body": "Conclua as aulas anteriores e abra a aula do certificado no curso. Se aparecer um aviso de que faltam fases, volte ao caminho do curso e termine o que falta.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/abrir-2a9e9f4c2b9d86f4.webp",
-            "imageAlt": "Caminho das fases da aventura Cadê Todo Mundo? com a fase Seu certificado destacada."
+            "imageAlt": "Caminho das aulas do curso Cadê Todo Mundo? com a aula Seu certificado destacada."
           },
           {
             "id": "pegar",
             "title": "Pegue seu certificado",
-            "body": "Na fase **Seu certificado**, abra a parte **Comemore sua criação**, assista ao vídeo e clique em **Pegar meu certificado**. Espere o PDF baixar antes de sair.",
+            "body": "Na aula **Seu certificado**, abra a parte **Comemore sua criação**, assista ao vídeo e clique em **Baixar meu certificado**. Espere o PDF baixar antes de sair.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/pegar-435987dad76a0691.webp",
-            "imageAlt": "Parte Comemore sua criação da fase do certificado, com a fala do Zappy e o cartão Certificado de Criador; o botão Pegar meu certificado está destacado."
+            "imageAlt": "Parte Comemore sua criação da aula do certificado, com a fala do Zappy e o cartão Certificado de Criador; o botão Baixar meu certificado está destacado."
           },
           {
             "id": "guardar",
@@ -1166,17 +1166,17 @@
           },
           {
             "id": "concluir",
-            "title": "Conclua a fase",
-            "body": "Depois que o certificado baixar, clique em **Concluir fase**, na mesma parte.",
+            "title": "Conclua a aula",
+            "body": "Depois que o certificado baixar, clique em **Concluir aula**, na mesma parte.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/concluir-6086600b2bea66c7.webp",
-            "imageAlt": "Parte Comemore sua criação, na fase Seu certificado, com o botão Concluir fase destacado no rodapé."
+            "imageAlt": "Parte Comemore sua criação, na aula Seu certificado, com o botão Concluir aula destacado no rodapé."
           },
           {
             "id": "novamente",
             "title": "Baixe outra vez se precisar",
-            "body": "Volte à mesma fase e clique em **Baixar certificado (PDF)**. Você recebe o mesmo certificado, sem precisar fazer a aventura de novo.",
+            "body": "Volte à mesma fase e clique em **Baixar certificado (PDF)**. Você recebe o mesmo certificado, sem precisar fazer o curso de novo.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/novamente-8c88cd435bfa2e6b.webp",
-            "imageAlt": "Bloco Certificado de Criador na fase Seu certificado, com o botão Baixar certificado (PDF) destacado."
+            "imageAlt": "Bloco Certificado de Criador na aula Seu certificado, com o botão Baixar certificado (PDF) destacado."
           }
         ],
         "related": ["plataforma-abrir-uma-aula", "plataforma-baixar-materiais"]
@@ -1224,7 +1224,7 @@
           {
             "id": "voltar",
             "title": "Volte pelo mesmo navegador",
-            "body": "O código vale por 10 minutos e funciona em um computador só. Depois disso, é só voltar neste mesmo computador e navegador e escolher seu perfil, até o prazo que o responsável escolheu terminar. Veja [como voltar às suas aventuras](/como-fazer/plataforma-voltar-ao-meu-perfil).",
+            "body": "O código vale por 10 minutos e funciona em um computador só. Depois disso, é só voltar neste mesmo computador e navegador e escolher seu perfil, até o prazo que o responsável escolheu terminar. Veja [como voltar às seus cursos](/como-fazer/plataforma-voltar-ao-meu-perfil).",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-entrar-com-codigo/voltar-0995e6987ddec050.webp",
             "imageAlt": "Na volta, no mesmo navegador, a tela Quem vai criar hoje? com o cartão da Leninha destacado, sem pedir código."
           }
@@ -1241,7 +1241,7 @@
       "collection": "plataforma",
       "position": 21,
       "draft": {
-        "title": "Como voltar às minhas aventuras",
+        "title": "Como voltar às meus cursos",
         "summary": "Entre de novo no seu perfil pelo computador que já está autorizado e continue de onde parou.",
         "keywords": [
           "voltar",
@@ -1264,7 +1264,7 @@
           {
             "id": "perfil",
             "title": "Escolha seu perfil",
-            "body": "Na tela **Quem vai criar hoje?**, confira se o nome e o avatar são os seus e clique no seu perfil. Se foi você quem entrou por último, seu cartão mostra **Último perfil usado**. Depois abra sua aventura e continue de onde parou.",
+            "body": "Na tela **Quem vai criar hoje?**, confira se o nome e o avatar são os seus e clique no seu perfil. Se foi você quem entrou por último, seu cartão mostra **Último perfil usado**. Depois abra seu curso e continue de onde parou.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-ao-meu-perfil/perfil-6e2a5f8c44e2b7a7.webp",
             "imageAlt": "Tela Quem vai criar hoje? com o selo Último perfil usado destacado no cartão da Leninha."
           },
@@ -1523,8 +1523,8 @@
           {
             "id": "encontrar",
             "title": "Encontre os objetivos",
-            "body": "Abra a parte da fase que tem o Estúdio. Embaixo do seu projeto fica o quadro **Objetivos desta parte**, com o que o seu jogo precisa fazer.",
-            "imageAlt": "Estúdio da fase com o quadro Objetivos desta parte embaixo do projeto, mostrando a lista de objetivos e o botão Verificar esta parte."
+            "body": "Abra a parte da aula que tem o Estúdio. Embaixo do seu projeto fica o quadro **Objetivos desta parte**, com o que o seu jogo precisa fazer.",
+            "imageAlt": "Estúdio da aula com o quadro Objetivos desta parte embaixo do projeto, mostrando a lista de objetivos e o botão Verificar esta parte."
           },
           {
             "id": "verificar",
@@ -1561,8 +1561,8 @@
           },
           {
             "id": "enviar",
-            "title": "Envie quando a fase pedir",
-            "body": "Verificar não envia o seu projeto para a equipe. Se a fase pedir, [envie o seu projeto](/como-fazer/plataforma-enviar-atividade) depois."
+            "title": "Envie quando a aula pedir",
+            "body": "Verificar não envia o seu projeto para a equipe. Se a aula pedir, [envie o seu projeto](/como-fazer/plataforma-enviar-atividade) depois."
           }
         ],
         "related": [
@@ -1577,15 +1577,15 @@
       "collection": "plataforma",
       "position": 26,
       "draft": {
-        "title": "Como concluir a fase e abrir o baú do Mundo",
-        "summary": "Termine a fase, veja o que você ganhou e abra o baú quando acabar todas as fases de um Mundo.",
+        "title": "Como concluir a aula e abrir o baú do Mundo",
+        "summary": "Termine a aula, veja o que você ganhou e abra o baú quando acabar todas as aulas de um Mundo.",
         "keywords": [
-          "concluir fase",
+          "concluir aula",
           "terminar",
           "terminei",
           "acabei",
-          "fase concluída",
-          "próxima fase",
+          "aula concluída",
+          "próxima aula",
           "xp",
           "moedas",
           "fogo",
@@ -1603,36 +1603,36 @@
           {
             "id": "falta",
             "title": "Confira o que falta",
-            "body": "Na última parte da fase, olhe a faixa acima dos botões. Se **Concluir fase** estiver apagado, a faixa **Para seguir:** diz o que ainda falta fazer."
+            "body": "Na última parte da aula, olhe a faixa acima dos botões. Se **Concluir aula** estiver apagado, a faixa **Para seguir:** diz o que ainda falta fazer."
           },
           {
             "id": "concluir",
-            "title": "Clique em Concluir fase",
-            "body": "Quando tudo estiver pronto, clique em **Concluir fase**, no canto de baixo. Depois, o botão vira **Fase concluída**.",
-            "imageAlt": "Última parte de uma fase com o rodapé mostrando Anterior e o botão Concluir fase destacado.",
+            "title": "Clique em Concluir aula",
+            "body": "Quando tudo estiver pronto, clique em **Concluir aula**, no canto de baixo. Depois, o botão vira **Aula concluída**.",
+            "imageAlt": "Última parte de uma aula com o rodapé mostrando Anterior e o botão Concluir aula destacado.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/concluir-3af031274eadd2fa.webp"
           },
           {
             "id": "festa",
             "title": "Veja o que você ganhou",
-            "body": "Aparece **Fase concluída!** com o XP e as moedas que você ganhou e o fogo com os dias da sua sequência. Seu progresso fica guardado.",
-            "imageAlt": "Janela Fase concluída! com o Zappy comemorando, o XP e as moedas ganhos e o botão Próxima fase."
+            "body": "Aparece **Aula concluída!** com o XP e as moedas que você ganhou e o fogo com os dias da sua sequência. Seu progresso fica guardado.",
+            "imageAlt": "Janela Aula concluída! com o Zappy comemorando, o XP e as moedas ganhos e o botão Próxima aula."
           },
           {
             "id": "seguir",
             "title": "Escolha para onde ir",
-            "body": "Clique em **Próxima fase** para continuar. Use **Voltar à aventura** para ver o caminho das fases, ou **Ficar nesta fase** para rever o que fez. Se aparecer **Conferir publicação do projeto**, falta [publicar seu jogo no Mural](/como-fazer/plataforma-publicar-no-mural)."
+            "body": "Clique em **Próxima aula** para continuar. Use **Voltar ao curso** para ver o caminho das aulas, ou **Ficar nesta aula** para rever o que fez. Se aparecer **Conferir publicação do projeto**, falta [publicar seu jogo no Mural](/como-fazer/plataforma-publicar-no-mural)."
           },
           {
             "id": "bau",
             "title": "Abra o baú do Mundo",
-            "body": "Quando você termina todas as fases de um Mundo, a festa avisa que tem um baú esperando. Volte à aventura e clique em **Abrir baú**, no caminho das fases, para ganhar XP.",
-            "imageAlt": "Caminho das fases da aventura com o baú do fim do Mundo e a legenda Abrir baú destacados."
+            "body": "Quando você termina todas as aulas de um Mundo, a festa avisa que tem um baú esperando. Volte à aventura e clique em **Abrir baú**, no caminho das aulas, para ganhar XP.",
+            "imageAlt": "Caminho das aulas do curso com o baú do fim do Mundo e a legenda Abrir baú destacados."
           },
           {
             "id": "fechado",
             "title": "Se o baú estiver fechado",
-            "body": "O **Baú do Mundo** só abre quando todas as fases daquele Mundo estão concluídas. Depois de aberto, ele mostra **Baú aberto!**"
+            "body": "O **Baú do Mundo** só abre quando todas as aulas daquele Mundo estão concluídas. Depois de aberto, ele mostra **Baú aberto!**"
           }
         ],
         "related": [
@@ -1649,8 +1649,8 @@
       "collection": "plataforma",
       "position": 27,
       "draft": {
-        "title": "Como ouvir o que o Zappy fala na fase",
-        "summary": "Clique em Ouvir para escutar as falas do Zappy, as perguntas do quiz e os avisos da fase.",
+        "title": "Como ouvir o que o Zappy fala na aula",
+        "summary": "Clique em Ouvir para escutar as falas do Zappy, as perguntas do quiz e os avisos da aula.",
         "keywords": [
           "ouvir",
           "zappy",
@@ -1672,7 +1672,7 @@
             "id": "ouvir",
             "title": "Clique em Ouvir",
             "body": "Nos balões **O Zappy fala** que têm o botão **Ouvir**, clique nele. O Zappy lê a fala em voz alta.",
-            "imageAlt": "Balão O Zappy fala numa parte da fase, com o botão Ouvir destacado."
+            "imageAlt": "Balão O Zappy fala numa parte da aula, com o botão Ouvir destacado."
           },
           {
             "id": "parar",
@@ -1708,8 +1708,8 @@
       "collection": "plataforma",
       "position": 28,
       "draft": {
-        "title": "Como continuar o projeto da fase em outro aparelho",
-        "summary": "O Estúdio e o Pinta da fase guardam o que você faz na sua conta. Veja como continuar em outro aparelho e achar a versão certa.",
+        "title": "Como continuar o projeto da aula em outro aparelho",
+        "summary": "O Estúdio e o Pinta da aula guardam o que você faz na sua conta. Veja como continuar em outro aparelho e achar a versão certa.",
         "keywords": [
           "outro computador",
           "outro aparelho",
@@ -1733,7 +1733,7 @@
           {
             "id": "selo",
             "title": "Confira se está guardado",
-            "body": "Depois que você mexe no Estúdio ou no Pinta da fase, aparece **Guardando na sua conta…** ao lado do título. Quando virar **Guardado na sua conta**, você pode continuar em outro aparelho.",
+            "body": "Depois que você mexe no Estúdio ou no Pinta da aula, aparece **Guardando na sua conta…** ao lado do título. Quando virar **Guardado na sua conta**, você pode continuar em outro aparelho.",
             "imageAlt": "Cartão Seu projeto no Estúdio, numa fase, com o aviso Guardado na sua conta destacado ao lado do título."
           },
           {
@@ -1825,7 +1825,7 @@
           {
             "id": "criar",
             "title": "Crie no seu projeto",
-            "body": "Embaixo da transmissão ficam as partes da fase e o **Seu projeto no Estúdio**, que fica guardado na sua conta. A próxima parte abre quando a turma chegar lá. No fim, clique em **Concluir fase**.",
+            "body": "Embaixo da transmissão ficam as partes da aula e o **Seu projeto no Estúdio**, que fica guardado na sua conta. A próxima parte abre quando a turma chegar lá. No fim, clique em **Concluir aula**.",
             "imageAlt": "Sala da oficina com a transmissão em cima e o bloco Seu projeto no Estúdio, com o aviso Guardado na sua conta destacado."
           },
           {
@@ -1925,7 +1925,7 @@
           {
             "id": "fazer",
             "title": "Cumpra a missão",
-            "body": "Faça o que a missão pede, como concluir uma fase ou publicar um jogo no Mural. O número ao lado, como 0/1, mostra quanto falta."
+            "body": "Faça o que a missão pede, como concluir uma aula ou publicar um jogo no Mural. O número ao lado, como 0/1, mostra quanto falta."
           },
           {
             "id": "resgatar",
@@ -1936,7 +1936,7 @@
           {
             "id": "saldo",
             "title": "Veja suas moedas",
-            "body": "No computador, as moedas aparecem no pé do menu da esquerda, embaixo do XP. Você também ganha moedas ao concluir fases, acertar quizzes e abrir o baú de um Mundo. Existe um limite de moedas por dia.",
+            "body": "No computador, as moedas aparecem no pé do menu da esquerda, embaixo do XP. Você também ganha moedas ao concluir aulas, acertar quizzes e abrir o baú de um Mundo. Existe um limite de moedas por dia.",
             "imageAlt": "Pé do menu da esquerda com o quadrinho de moedas destacado, embaixo da sequência e do XP."
           },
           {
@@ -1967,7 +1967,7 @@
           "enfeites",
           "troféu",
           "troféus",
-          "bichinho",
+          "personagem",
           "parede",
           "piso",
           "comprar",
@@ -2045,7 +2045,7 @@
             "title": "Encontre a aba na tela pequena",
             "body": "Quando o editor mostrar abas, clique em **Pré-visualização**. Para voltar à programação, clique em **Blocos** ou **Código**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-pre-visualizacao/pequena-f3c40de79ce122cc.webp",
-            "imageAlt": "Estúdio estreito dentro da fase, com as abas Blocos e Pré-visualização destacadas e o clique em Pré-visualização."
+            "imageAlt": "Estúdio estreito dentro da aula, com as abas Blocos e Pré-visualização destacadas e o clique em Pré-visualização."
           },
           {
             "id": "testar",
@@ -2126,7 +2126,7 @@
         "summary": "Adicione ao seu projeto os blocos da extensão Jogo 2D.",
         "keywords": [
           "extensão",
-          "bloquinhos",
+          "blocos",
           "pacote",
           "jogo 2d",
           "instalar",
@@ -2158,10 +2158,10 @@
           },
           {
             "id": "aula",
-            "title": "Se estiver dentro de uma fase",
-            "body": "Na fase, as extensões já vêm preparadas e esse menu pode não aparecer. Use os blocos que a fase já trouxe.",
+            "title": "Se estiver dentro de uma aula",
+            "body": "Na aula, as extensões já vêm preparadas e esse menu pode não aparecer. Use os blocos que a aula já trouxe.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-instalar-jogo-2d/aula-7ebad6eb71a8c766.webp",
-            "imageAlt": "Estúdio dentro da fase com a caixa de blocos destacada, já trazendo os blocos de Jogo 2D que a fase usa."
+            "imageAlt": "Estúdio dentro da aula com a caixa de blocos destacada, já trazendo os blocos de Jogo 2D que a aula usa."
           }
         ],
         "related": ["estudio-criar-um-projeto", "estudio-materiais-do-jogo"],
@@ -2214,9 +2214,9 @@
           },
           {
             "id": "aula",
-            "title": "Se for um projeto da fase",
-            "body": "Na fase, o Estúdio guarda o projeto na sua conta sozinho. Espere aparecer **Guardado na sua conta** ao lado de **Seu projeto no Estúdio**. Guardar não envia o projeto: para a equipe receber, use [Enviar meu projeto](/como-fazer/plataforma-enviar-atividade).",
-            "imageAlt": "Cartão Seu projeto no Estúdio dentro da fase, com o aviso Guardado na sua conta destacado ao lado do título."
+            "title": "Se for um projeto da aula",
+            "body": "Na aula, o Estúdio guarda o projeto na sua conta sozinho. Espere aparecer **Guardado na sua conta** ao lado de **Seu projeto no Estúdio**. Guardar não envia o projeto: para a equipe receber, use [Enviar meu projeto](/como-fazer/plataforma-enviar-atividade).",
+            "imageAlt": "Cartão Seu projeto no Estúdio dentro da aula, com o aviso Guardado na sua conta destacado ao lado do título."
           }
         ],
         "related": [
@@ -2265,7 +2265,7 @@
           {
             "id": "pinta",
             "title": "Traga um desenho seu",
-            "body": "No Estúdio completo, use **Trazer do Pinta**, encontre o desenho e clique em **Adicionar ao projeto**. No jogo de um plano do Pensa em equipe, **Trazer da equipe** mostra as artes que a sua equipe fez. Veja o [passo a passo do Pinta](/como-fazer/pinta-usar-no-estudio) para o caminho dentro das fases.",
+            "body": "No Estúdio completo, use **Trazer do Pinta**, encontre o desenho e clique em **Adicionar ao projeto**. No jogo de um plano do Pensa em equipe, **Trazer da equipe** mostra as artes que a sua equipe fez. Veja o [passo a passo do Pinta](/como-fazer/pinta-usar-no-estudio) para o caminho dentro das aulas.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-materiais-do-jogo/pinta-e0b064095315c7d8.webp",
             "imageAlt": "Janela Trazer do Pinta com os desenhos da galeria e o botão Adicionar ao projeto destacado."
           },
@@ -2350,7 +2350,7 @@
       "position": 6,
       "draft": {
         "title": "Como trazer o projeto que você enviou",
-        "summary": "Abra no Estúdio da fase a última versão que você enviou.",
+        "summary": "Abra no Estúdio da aula a última versão que você enviou.",
         "keywords": [
           "recuperar",
           "outro computador",
@@ -2364,24 +2364,24 @@
         "steps": [
           {
             "id": "aula",
-            "title": "Abra a fase certa",
-            "body": "Use o mesmo perfil, abra a fase em que enviou o jogo e vá à parte com o Estúdio. Essa opção só traz uma versão que você já enviou. Para só continuar o que fez em outro computador, veja [como continuar o projeto da fase](/como-fazer/plataforma-continuar-em-outro-aparelho).",
+            "title": "Abra a aula certa",
+            "body": "Use o mesmo perfil, abra a aula em que enviou o jogo e vá à parte com o Estúdio. Essa opção só traz uma versão que você já enviou. Para só continuar o que fez em outro computador, veja [como continuar o projeto da aula](/como-fazer/plataforma-continuar-em-outro-aparelho).",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/aula-250437101c2d806b.webp",
-            "imageAlt": "Parte da fase com o cartão Seu projeto no Estúdio destacado, onde fica o jogo que você enviou."
+            "imageAlt": "Parte da aula com o cartão Seu projeto no Estúdio destacado, onde fica o jogo que você enviou."
           },
           {
             "id": "copia",
             "title": "Guarde o que está aberto, se precisar",
             "body": "Trazer a versão enviada troca o projeto que está aberto pelo que você enviou. Para guardar as mudanças de agora, use antes **Mais opções** → **Levar o jogo** → **Baixar o projeto**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/copia-324084cd316a2b8a.webp",
-            "imageAlt": "Menu Mais opções do Estúdio da fase com Baixar o projeto destacado na parte Levar o jogo."
+            "imageAlt": "Menu Mais opções do Estúdio da aula com Baixar o projeto destacado na parte Levar o jogo."
           },
           {
             "id": "trazer",
             "title": "Escolha a versão enviada",
             "body": "Clique em **Mais opções** → **O meu jogo** → **Trazer o que eu enviei**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/trazer-c50be6df49c57648.webp",
-            "imageAlt": "Menu Mais opções do Estúdio da fase com Trazer o que eu enviei destacado na parte O meu jogo."
+            "imageAlt": "Menu Mais opções do Estúdio da aula com Trazer o que eu enviei destacado na parte O meu jogo."
           },
           {
             "id": "confirmar",
@@ -2395,7 +2395,7 @@
             "title": "Confira o jogo",
             "body": "Espere carregar e teste o jogo. Se não houver uma versão enviada ou aparecer uma falha, leia o aviso. Não envie um projeto vazio no lugar do que você já enviou.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/conferir-7d13e2e92b1857fb.webp",
-            "imageAlt": "Estúdio da fase com a pré-visualização do jogo trazido destacada para testar."
+            "imageAlt": "Estúdio da aula com a pré-visualização do jogo trazido destacada para testar."
           }
         ],
         "related": [
@@ -2443,7 +2443,7 @@
           {
             "id": "resposta",
             "title": "Use a resposta",
-            "body": "Quando a resposta mostrar o nome de um bloco, clique nele para o Estúdio mostrar onde ele fica. Se aparecer **Fase: …**, clique para abrir a fase que ensina isso. Se aparecer **Passo a passo**, clique para abrir o tutorial em outra aba.",
+            "body": "Quando a resposta mostrar o nome de um bloco, clique nele para o Estúdio mostrar onde ele fica. Se aparecer **Fase: …**, clique para abrir a aula que ensina isso. Se aparecer **Passo a passo**, clique para abrir o tutorial em outra aba.",
             "imageAlt": "Resposta do Zappy com o botão de um bloco destacado logo abaixo do texto."
           },
           {
@@ -2474,7 +2474,7 @@
           "buscar",
           "pesquisar",
           "achar",
-          "bloquinhos",
+          "blocos",
           "gaveta",
           "bagunça",
           "organizar",
@@ -2554,7 +2554,7 @@
           {
             "id": "marcar",
             "title": "Marque o desafio",
-            "body": "Marque a caixa **Participar do Desafio do mês** e clique em **Publicar**. A caixa aparece no Estúdio do menu **Criar**, não no Estúdio das fases.",
+            "body": "Marque a caixa **Participar do Desafio do mês** e clique em **Publicar**. A caixa aparece no Estúdio do menu **Criar**, não no Estúdio das aulas.",
             "imageAlt": "Janela Compartilhar no Mural dos Criadores com a caixa Participar do Desafio do mês marcada e destacada, acima do botão Publicar."
           },
           {
@@ -2577,8 +2577,8 @@
       "collection": "estudio",
       "position": 10,
       "draft": {
-        "title": "Como recomeçar o projeto da fase",
-        "summary": "Volte ao projeto inicial da fase quando quiser começar de novo.",
+        "title": "Como recomeçar o projeto da aula",
+        "summary": "Volte ao projeto inicial da aula quando quiser começar de novo.",
         "keywords": [
           "recomeçar",
           "começar de novo",
@@ -2594,13 +2594,13 @@
           {
             "id": "copia",
             "title": "Guarde uma cópia, se quiser",
-            "body": "Recomeçar troca o que você fez pelo projeto inicial da fase. Para guardar uma cópia antes, use **Mais opções** → **Levar o jogo** → **Baixar o projeto**."
+            "body": "Recomeçar troca o que você fez pelo projeto inicial da aula. Para guardar uma cópia antes, use **Mais opções** → **Levar o jogo** → **Baixar o projeto**."
           },
           {
             "id": "recomecar",
             "title": "Clique em Recomeçar",
             "body": "No alto do cartão **Seu projeto no Estúdio**, clique em **Recomeçar**.",
-            "imageAlt": "Cartão Seu projeto no Estúdio dentro da fase com o botão Recomeçar destacado."
+            "imageAlt": "Cartão Seu projeto no Estúdio dentro da aula com o botão Recomeçar destacado."
           },
           {
             "id": "confirmar",
@@ -2800,9 +2800,9 @@
           },
           {
             "id": "aula",
-            "title": "Se estiver no Estúdio de uma fase",
-            "body": "Na fase, a janela de materiais não mostra os desenhos do Pinta. No Pinta, abra o desenho, clique em **Baixar**, deixe o tamanho em **×1** e escolha **Quadro atual (PNG)** num personagem ou **Imagem (PNG)** num cenário. Depois volte à fase, abra **Mais opções** → **Imagens** e clique em **Enviar imagem**.",
-            "imageAlt": "Estúdio de uma fase com a janela Materiais do jogo aberta na aba Imagens e o botão Enviar imagem destacado."
+            "title": "Se estiver no Estúdio de uma aula",
+            "body": "Na aula, a janela de materiais não mostra os desenhos do Pinta. No Pinta, abra o desenho, clique em **Baixar**, deixe o tamanho em **×1** e escolha **Quadro atual (PNG)** num personagem ou **Imagem (PNG)** num cenário. Depois volte à aula, abra **Mais opções** → **Imagens** e clique em **Enviar imagem**.",
+            "imageAlt": "Estúdio de uma aula com a janela Materiais do jogo aberta na aba Imagens e o botão Enviar imagem destacado."
           },
           {
             "id": "bloco",

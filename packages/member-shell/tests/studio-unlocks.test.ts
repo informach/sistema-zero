@@ -109,7 +109,7 @@ describe('drawersForBlocks', () => {
     expect(drawersForBlocks(['sz_bloco_que_nao_existe'])).toEqual([])
   })
 
-  test('sem blocos, sem gavetas (a seção some no perfil)', () => {
+  test('sem blocos, sem gavetas (a parte some no perfil)', () => {
     expect(drawersForBlocks([])).toEqual([])
   })
 })

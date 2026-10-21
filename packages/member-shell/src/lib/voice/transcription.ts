@@ -20,7 +20,7 @@ export const SPOKEN_TEXT_MAX_CHARS = 1000
 
 /**
  * Teto MAIOR, só para quem pede explicitamente: a ideia de jogo do Pensa (caixa de 4.000, e ela
- * revisa antes de enviar). Recados, ajuda da fase e tutor ficam nos 1000 de sempre (full review de
+ * revisa antes de enviar). Recados, ajuda da aula e tutor ficam nos 1000 de sempre (full review de
  * 14/10/2026: o servidor tinha tirado o teto de TODOS os formulários para servir só o Pensa).
  */
 export const PENSA_SPOKEN_TEXT_MAX_CHARS = 4000
@@ -35,7 +35,7 @@ export function spokenTextMaxChars(requested: string | null | undefined): number
     : SPOKEN_TEXT_MAX_CHARS
 }
 
-/** Teto do contexto da fase mandado pelo navegador. */
+/** Teto do contexto da aula mandado pelo navegador. */
 export const SPOKEN_CONTEXT_MAX_CHARS = 200
 
 /**

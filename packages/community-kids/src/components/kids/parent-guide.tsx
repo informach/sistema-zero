@@ -120,7 +120,7 @@ export function GuideTargetItem({ children }: { children: React.ReactNode }) {
 /**
  * Modal de boas-vindas do primeiro acesso (molde do `ClubeCombinados`): Dialog do
  * ui (foco/Esc/trap grátis via useModalA11y) + Zappy + passos ilustrados.
- * GENÉRICO desde a fase 2 (o guia da criança reusa com copy própria); o link
+ * GENÉRICO desde a aula 2 (o guia da criança reusa com copy própria); o link
  * "Pular tutorial" só existe com `onSkip` — o guia da criança NÃO tem pular
  * (cada balão dela se dispensa sozinho ou pelo estado). Quem decide QUANDO
  * auto-abrir é o chamador (a visibilidade se resolve em efeito pós-mount, nunca

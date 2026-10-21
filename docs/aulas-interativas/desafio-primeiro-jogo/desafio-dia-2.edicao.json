@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-d2-contexto", "video-d2-recolher", "video-d2-guardar", "video-d2-programar"],
+  "intervencoes": [
+    {
+      "id": "video-d2-contexto-K1",
+      "clipe": "video-d2-contexto",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "regra da coleta responde a esse evento: ela tira a chave do chão e muda o aviso. Mas tá vendo? temChave continua falso.",
+      "ancoraDepois": "É que tirar a chave do chão não guarda essa informação. Olha aqui na regra: a linha Alterar temChave para verdadeiro",
+      "falaPrincipal": "Mas a chave sumiu. Por que ainda está falso?",
+      "falaPersonagem": "Mas a chave sumiu. Por que ainda está falso?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-d2-recolher-K2",
+      "clipe": "video-d2-recolher",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "e solte no espaço vazio ao lado de fazer. O bloco chega com o nome resposta: clique em resposta e escolha chave.",
+      "ancoraDepois": "Aqui, destruir só tira a chave desta partida. Quando você começa outra, ela volta. E repare que quem sai é a chave, não",
+      "falaPrincipal": "A chave some para sempre?",
+      "falaPersonagem": "A chave some para sempre?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-d2-guardar-K2",
+      "clipe": "video-d2-guardar",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "assim: no encontro com a chave, primeiro vem Destruir o sprite chave e, logo abaixo, Alterar temChave para verdadeiro.",
+      "ancoraDepois": "No jogo, você ainda não consegue ver temChave, porque quem vai usar essa informação é a porta do farol, no Dia 3. Por",
+      "falaPrincipal": "Como eu vejo se o jogo guardou a chave?",
+      "falaPersonagem": "Como eu vejo se o jogo guardou a chave?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

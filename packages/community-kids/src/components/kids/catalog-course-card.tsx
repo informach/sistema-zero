@@ -121,12 +121,12 @@ export function CatalogCourseCard({
       {linha ? (
         <p className="font-bold text-muted-foreground text-xs">
           {course.journeyRole === 'extra'
-            ? 'Aventura extra'
+            ? 'Curso extra'
             : course.careerSlot === 1
               ? 'Primeira da trilha'
               : typeof course.careerSlot === 'number'
-                ? 'Aventura da jornada'
-                : 'Aventura bônus'}
+                ? 'Curso da jornada'
+                : 'Curso bônus'}
         </p>
       ) : null}
       <h3
@@ -159,7 +159,7 @@ export function CatalogCourseCard({
         <span className="font-normal text-[11px]">Comece por esta:</span>
         <span className="flex items-center gap-1.5">
           <span className="line-clamp-1 flex-1 font-semibold text-sm">
-            {foundationTitle ?? 'A primeira aventura'}
+            {foundationTitle ?? 'O primeiro curso'}
           </span>
           <ArrowRight className="size-4 shrink-0" aria-hidden />
         </span>
@@ -193,7 +193,7 @@ export function CatalogCourseCard({
       <span className={cn(salesUrl || available ? 'sz-btn-gradient gap-2 px-5' : PILULA_APAGADA)}>
         {available ? (
           <>
-            <Play className="size-4" aria-hidden /> Acessar aventura
+            <Play className="size-4" aria-hidden /> Acessar curso
           </>
         ) : salesUrl ? (
           'Mostrar ao responsável'
@@ -241,7 +241,7 @@ function MyProgress({ mine }: { mine: MyCourseView }) {
     state === 'publish'
       ? 'Preparar publicação'
       : state === 'review'
-        ? 'Revisar aventura'
+        ? 'Revisar curso'
         : started
           ? 'Continuar'
           : 'Começar agora'
@@ -256,7 +256,7 @@ function MyProgress({ mine }: { mine: MyCourseView }) {
         <>
           <div className="flex items-center justify-between font-semibold text-muted-foreground text-xs">
             <span>
-              {progress.completedLessons} de {progress.totalLessons} fases
+              {progress.completedLessons} de {progress.totalLessons} aulas
             </span>
             <span
               className={cn(

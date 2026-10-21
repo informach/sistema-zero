@@ -17,7 +17,7 @@ import { familyLabel } from '@/lib/studio-family'
  * blocos é o que torna a recompensa legível — "ganhei 💥 Colisões" é uma conquista;
  * "ganhei 6 blocos" não é.
  *
- * Sem nenhuma ferramenta a seção some: quem ainda não conquistou nenhuma tem o Estúdio livre
+ * Sem nenhuma ferramenta a parte some: quem ainda não conquistou nenhuma tem o Estúdio livre
  * trancado (o recado de lá já explica), e prometer uma lista vazia só desanimaria.
  *
  * ⚠️⚠️ AGRUPADO POR FAMÍLIA, e não por acaso. A lista era uma fileira só de pílulas, e isso
@@ -31,7 +31,7 @@ import { familyLabel } from '@/lib/studio-family'
  *     indistinguíveis.
  *
  * O `<details>`/`<summary>` é NATIVO de propósito: dá teclado, leitor de tela e o estado
- * aberto/fechado sem uma linha de JS, então esta seção continua sendo Server Component.
+ * aberto/fechado sem uma linha de JS, então esta parte continua sendo Server Component.
  * Trocar por um acordeão em `'use client'` custaria hidratação por uma coisa que o HTML
  * já faz.
  *

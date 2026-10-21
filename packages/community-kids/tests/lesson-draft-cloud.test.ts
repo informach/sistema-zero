@@ -1,5 +1,5 @@
 /**
- * O rascunho do Estúdio e do Pinta DENTRO da fase, guardado na conta (10/10/2026): o canal que o
+ * O rascunho do Estúdio e do Pinta DENTRO da aula, guardado na conta (10/10/2026): o canal que o
  * bloco do member-shell usa. Um BFF + R2 de mentira com o que importa aqui: a reserva com a
  * impressão e a base, o commit, o tíquete com o relógio do servidor e a recusa por base vencida.
  */
@@ -127,7 +127,7 @@ const desenho = (letra: string) => ({
   marca: letra,
 })
 
-describe('o canal do rascunho da fase', () => {
+describe('o canal do rascunho da aula', () => {
   test('confirmar aguarda a cópia do conflito e o commit da nova versão', async () => {
     const s = servidor()
     const marks = createMemorySyncedMarks()

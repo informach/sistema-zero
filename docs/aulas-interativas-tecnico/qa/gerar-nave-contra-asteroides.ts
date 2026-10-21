@@ -1,5 +1,5 @@
 /** Uma fonte editorial gera proposta, roteiro e manifesto. Não importa nem publica aulas. */
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type {
   InteractiveBlock,
@@ -15,6 +15,7 @@ import {
   planoAvatar,
   roteiroComAvatar,
 } from './avatares-video'
+import { gravarArquivo } from './gravar-arquivo'
 import { etapasNave, ORDEM_NAVE, projetoNave } from './nave-contra-asteroides-etapas'
 
 export interface SecaoNave {
@@ -49,12 +50,12 @@ export interface AulaNave {
   legacyKeys: string[]
   previousRetireKeys: string[]
 }
-const DIR = resolve(import.meta.dir, '../../aulas-interativas/kids/nave-contra-asteroides')
+const DIR = resolve(import.meta.dir, '../../aulas-interativas/nave-contra-asteroides')
 export const aulasNave = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'nave-contra-asteroides.conteudo.json'), 'utf8'),
 ) as AulaNave[]
 const CURSO = 'nave-contra-asteroides'
-// Vocabulário da aventura (Diretrizes, seção 6, 06/10/2026): as falas citam os botões da fase
+// Vocabulário do curso (Diretrizes, seção 6, 06/10/2026): as falas citam os botões da aula
 // pelo nome exato. Por dentro, a equipe continua dizendo aula, seção e caderno.
 const checkExit =
   'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.'
@@ -64,10 +65,10 @@ const send =
 // do Mural oferece Copiar link de jogar antes de Fechar (ajuste do responsável em 06/10/2026).
 // O opcional vira convite, e as frases conversam em vez de virar lista (revisão de 06/10/2026).
 const publish =
-  'Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista! Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
+  'Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Depois de copiar o link, clique em Fechar.'
 
 /**
- * Onde a fala aparece: no vídeo (`video`) ou no Mapa da Aventura (`mapa`), que é lido e não
+ * Onde a fala aparece: no vídeo (`video`) ou no Passo a passo do projeto (`mapa`), que é lido e não
  * assistido. Mesmo modelo de `gerar-meu-jeito.ts` (revisão independente de 06/10/2026).
  */
 export type MeioDaFala = 'video' | 'mapa'
@@ -77,7 +78,7 @@ export function falasSecao(section: SecaoNave, meio: MeioDaFala = 'video'): stri
   if (section.checks?.length) {
     speech.push(
       // Depois da publicação, o fecho diz "Por último": a fala já termina em "Depois de copiar o link".
-      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir fase.` : 'Quando aparecer Projeto enviado!, clique em Concluir fase.'}` : 'Quando aparecer Objetivo cumprido!, clique em Próxima parte.'}`,
+      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir aula.` : 'Quando aparecer Projeto enviado!, clique em Concluir aula.'}` : 'Quando aparecer Objetivo cumprido!, clique em Próxima parte.'}`,
     )
   }
   return meio === 'video' ? speech : speech.map(semChamados)
@@ -157,7 +158,7 @@ export function gerarManifestoNave(lesson: AulaNave, index: number): LearningMan
     if (s.materials)
       add('caderno', {
         kind: 'materials',
-        title: 'Mapa da Aventura: Nave Contra Asteroides',
+        title: 'Passo a passo do projeto: Nave Contra Asteroides',
         bookPreview: true,
         items: [],
       })
@@ -216,25 +217,7 @@ export function gerarManifestoNave(lesson: AulaNave, index: number): LearningMan
   }
 }
 function roteiro(lesson: AulaNave, index: number) {
-  const lines = [
-    `# Roteiro de gravação · Nave Contra Asteroides · Aula ${index + 1}`,
-    '',
-    `**${lesson.title}**`,
-    '',
-    'Fonte: `qa/nave-contra-asteroides.conteudo.json`. Gerado por `qa/gerar-nave-contra-asteroides.ts`. Revise a fonte e regenere os três arquivos juntos.',
-    '',
-    `Entrada: ${lesson.entry} Saída: ${lesson.outcome}`,
-    '',
-    '**Verificação das partes (nota da equipe, não gravar):** mostrar a lista Objetivos desta parte e o resultado real de Verificar esta parte. Aguardar a resposta do servidor; corrigir os itens pendentes e verificar novamente. Se o projeto mudar depois da conferência, verificar de novo. Conservar os valores da montagem gravada; os critérios aceitam as alternativas previstas sem exigir cópia da aparência. Os testes narrados do jogo continuam necessários.',
-    '',
-    orientacaoAvatares(index),
-    '',
-    `${index === 0 ? 'Começar com o projeto vazio preparado para esta aula.' : 'Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo.'} Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.`,
-    '',
-    // Três vozes e conversa contínua (Diretrizes, seção 6, revisão de 06/10/2026).
-    'Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. A ponte do Zappy começa convidando ("Sua vez!", "Agora…!", "Hora de…!") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Tá vendo?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, a criança testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …").',
-    '',
-  ]
+  const lines = [`# Roteiro de produção · ${lesson.title}`, '', orientacaoAvatares(index), '']
   lesson.sections.forEach((s, i) => {
     lines.push(`## Seção ${i + 1}. ${s.title}`, '')
     if (s.videoKey) {
@@ -255,10 +238,10 @@ function roteiro(lesson: AulaNave, index: number) {
         '',
       )
     }
-    lines.push(`**Zappy na página (não gravar):** ${s.bridge}`, '')
+    lines.push(`**Recado na página (não gravar):** ${s.bridge}`, '')
     if (s.questions)
       lines.push(
-        'Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.',
+        'Sem vídeo ou ferramenta nesta parte. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.',
         '',
       )
   })
@@ -299,7 +282,7 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
       '',
       `**Blocos na página:** ${manifest.sections[i]!.blockKeys.join(' → ')}.`,
       '',
-      `**Zappy na página (não gravar):** ${s.bridge}`,
+      `**Recado na página (não gravar):** ${s.bridge}`,
       '',
     )
     if (s.avatar)
@@ -316,7 +299,7 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
       )
     if (s.materials)
       lines.push(
-        'Anexar somente `docs/aulas-interativas/kids/nave-contra-asteroides/mapa-da-aventura.pdf` ao bloco caderno, que aparece na tela como Mapa da Aventura: Nave Contra Asteroides. Ler aqui mesmo ou clicar em Baixar para guardar são convites e não entram na conclusão. A fala não diz que não precisa baixar ou imprimir: soa como uma ordem para não fazer.',
+        'Anexar somente `docs/aulas-interativas/nave-contra-asteroides/passo-a-passo-do-projeto.pdf` ao bloco caderno, que aparece na tela como Passo a passo do projeto: Nave Contra Asteroides. Ler aqui mesmo ou clicar em Baixar para guardar são convites e não entram na conclusão. A fala não diz que não precisa baixar ou imprimir: soa como uma ordem para não fazer.',
         '',
       )
     if (s.checks?.length)
@@ -329,12 +312,12 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
       )
     if (s.questions)
       lines.push(
-        '**Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.',
+        '**Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta parte.',
         '',
       )
     if (s.publish)
       lines.push(
-        'Publicação opcional após o envio: Compartilhar → resumo já preenchido, sem mexer → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir fase. Não bloquear a conclusão por publicação.',
+        'Publicação opcional após o envio: Compartilhar → resumo já preenchido, sem mexer → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir aula. Não bloquear a conclusão por publicação.',
         '',
       )
   })
@@ -368,10 +351,10 @@ if (import.meta.main) {
   for (const [i, lesson] of aulasNave.entries()) {
     const m = gerarManifestoNave(lesson, i)
     const path = resolve(DIR, `${CURSO}-${lesson.slug}`)
-    writeFileSync(`${path}.manifesto.json`, `${JSON.stringify(m, null, 2)}\n`)
+    gravarArquivo(`${path}.manifesto.json`, `${JSON.stringify(m, null, 2)}\n`)
     manifestos.push(`${path}.manifesto.json`)
-    writeFileSync(`${path}.roteiro.md`, roteiro(lesson, i))
-    writeFileSync(`${path}.md`, proposta(lesson, i, m))
+    gravarArquivo(`${path}.roteiro.md`, roteiro(lesson, i))
+    gravarArquivo(`${path}.md`, proposta(lesson, i, m))
   }
   // Mesmo formato que a CI confere (biome ci), como nos geradores do Cadê e do Farol.
   const formatado = Bun.spawnSync({

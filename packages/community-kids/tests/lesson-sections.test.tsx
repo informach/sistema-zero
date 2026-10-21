@@ -169,7 +169,7 @@ describe('aula por seções', () => {
         <LessonSections lesson={marcada} renderBlocks={() => <Editor />} />
       </LessonPlayerProvider>,
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima parte' }))
     expect(navigated).not.toContain('second')
     expect(confirming).toBe(false)
     expect(screen.getByTestId('editor').hasAttribute('inert')).toBe(true)
@@ -239,7 +239,7 @@ describe('aula por seções', () => {
         <LessonSections lesson={lesson} renderBlocks={() => <Editor />} />
       </LessonPlayerProvider>,
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima parte' }))
     await waitFor(() => expect(navigated).toContain('second'))
     expect(confirming).toBe(false)
   })
@@ -265,7 +265,7 @@ describe('aula por seções', () => {
     )
     expect(screen.queryByText('Índice da aula')).toBeNull()
     expect(screen.getByRole('button', { name: 'Concluir aula' })).toBeDefined()
-    expect(screen.queryByRole('button', { name: 'Próxima seção' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Próxima parte' })).toBeNull()
     expect(container.querySelector('.sz-lesson-immersive')).not.toBeNull()
     expect(container.querySelector('.sz-lesson-nav-inner span')?.textContent).toBe('Preparar')
     expect(container.querySelector('.sz-lesson-immersive')?.getAttribute('data-layout')).toBe(
@@ -348,7 +348,7 @@ describe('aula por seções', () => {
         ?.getAttribute('data-panel-id'),
     ).toBe('lesson-content')
     const project = container.querySelector('#lesson-block-project')
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima parte' }))
     expect(screen.getByRole('heading', { name: /Faça o quiz/ })).toBeTruthy()
     expect(screen.getByText('quiz')).toBeTruthy()
     expect(project?.isConnected).toBe(true)
@@ -397,7 +397,7 @@ describe('aula por seções', () => {
   const painelDe = (container: HTMLElement, id: string) =>
     container.querySelector(`#lesson-block-${id}`)?.closest('[data-panel-id]')
 
-  test('modo imersivo libera a largura inteira quando a seção tem conteúdo e ferramenta', () => {
+  test('modo imersivo libera a largura inteira quando a parte tem conteúdo e ferramenta', () => {
     const { container } = render(
       <LessonPlayerProvider value={player}>
         <LessonSections
@@ -471,7 +471,7 @@ describe('aula por seções', () => {
     )
     const editor = container.querySelector('#lesson-block-project')
     expect(editor).not.toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima parte' }))
     await screen.findByRole('heading', { name: 'Sua busca está completa' })
     expect(container.querySelector('#lesson-block-project')).toBe(editor)
     expect(editor?.parentElement?.style.display).not.toBe('none')
@@ -493,7 +493,12 @@ describe('aula por seções', () => {
       id: 'caderno',
       kind: 'materials',
       sortOrder: 1,
-      content: { kind: 'materials', title: 'Caderno do Aluno', bookPreview: true, items: [] },
+      content: {
+        kind: 'materials',
+        title: 'Passo a passo do projeto',
+        bookPreview: true,
+        items: [],
+      },
     }
     const { container } = renderSecaoUnica([fala, caderno], ['fala', 'caderno'])
     expect(painelDe(container, 'caderno')?.getAttribute('data-panel-id')).toBe('lesson-content')
@@ -504,12 +509,14 @@ describe('aula por seções', () => {
         ?.getAttribute('data-panel-id'),
     ).toBe('lesson-tool')
     expect(
-      screen.getByText('Vincule um PDF a este bloco de materiais para mostrar o caderno aqui.'),
+      screen.getByText(
+        'Vincule um PDF a este bloco de materiais para mostrar o Passo a passo do projeto aqui.',
+      ),
     ).toBeDefined()
     expect(screen.queryByRole('button', { name: 'Criar' })).toBeNull()
   })
 
-  test('a ENTREGA por galeria é conteúdo da seção, e não some da aula', () => {
+  test('a ENTREGA por galeria é conteúdo da parte, e não some da aula', () => {
     // ⚠️ Achado do full review (14/09/2026): o painel do conteúdo filtrava por KIND
     // (`!== 'studio' && !== 'pinta'`) e a lista da ferramenta descartava a galeria — então um
     // bloco de entrega colocado numa seção não aparecia em LUGAR NENHUM. A autoria permite
@@ -530,7 +537,7 @@ describe('aula por seções', () => {
     const { container } = renderSecaoUnica([cenaDeAula('cena')], ['cena'])
     const painel = painelDe(container, 'cena')
     expect(painel?.getAttribute('data-panel-id')).toBe('lesson-tool')
-    // ⚠️ Não dividir não pode virar sumiço: sem a ferramenta visível a seção ficaria VAZIA.
+    // ⚠️ Não dividir não pode virar sumiço: sem a ferramenta visível a parte ficaria VAZIA.
     expect(painel?.className.includes('hidden!')).toBe(false)
     expect(screen.queryByRole('button', { name: 'Criar' })).toBeNull()
   })
@@ -561,10 +568,10 @@ describe('aula por seções', () => {
       </LessonPlayerProvider>,
     )
     expect(screen.getByText('0 de 3 seções concluídas · 0%')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Próxima seção' }).hasAttribute('disabled')).toBe(
+    expect(screen.getByRole('button', { name: 'Próxima parte' }).hasAttribute('disabled')).toBe(
       true,
     )
-    fireEvent.click(screen.getByText('Índice da aula'))
+    fireEvent.click(screen.getByText('Partes da aula'))
     const future = screen.getByRole('button', { name: /Bloqueada Observar/ })
     expect(future.hasAttribute('disabled')).toBe(true)
     fireEvent.click(future)
@@ -573,9 +580,9 @@ describe('aula por seções', () => {
   // ⚠️ Os testes acima (e quase todo este arquivo) renderizam SEM a flag `kids`: eles
   // cobrem o layout do ADULTO, que mantém a barra. Os dois abaixo são o único lugar
   // que exercita o caminho do kids, onde a barra deixou de existir (13/09/2026).
-  test('no kids o índice mora no cabeçalho da seção, e "o que falta para concluir" sai de vez', () => {
+  test('no kids o índice mora no cabeçalho da parte, e "o que falta para concluir" sai de vez', () => {
     // A conta das pendências já aparecia em outros DOIS lugares: a barra do topo do kids
-    // (que recebe as mesmas `requirements`) e o próprio índice, que marca a seção com
+    // (que recebe as mesmas `requirements`) e o próprio índice, que marca a parte com
     // "Atividade pendente". O cartão a mais só empurrava o conteúdo para baixo.
     render(
       <LessonPlayerProvider value={player}>
@@ -588,7 +595,7 @@ describe('aula por seções', () => {
     )
     expect(screen.queryByText(/O que falta para concluir/)).toBeNull()
     const titulo = screen.getByRole('heading', { name: /Preparar/ })
-    const indice = screen.getByText('Índice da aula')
+    const indice = screen.getByText('Partes da aula')
     // O MESMO cartão: é o que a mudança promete, e é o `sz-lesson-section-head` que o
     // CSS do kids veste. Separá-los de novo devolveria o cartão extra sem ninguém ver.
     expect(indice.closest('header')).toBe(titulo.closest('header'))
@@ -596,7 +603,7 @@ describe('aula por seções', () => {
     // ordem do documento é a ordem visual — título à esquerda, índice à direita.
     expect(titulo.compareDocumentPosition(indice) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
-  test('no kids o índice continua navegando e travando as seções futuras', async () => {
+  test('no kids o índice continua navegando e travando as partes futuras', async () => {
     globalThis.fetch = Object.assign(async () => Response.json({ ok: true }), {
       preconnect: () => {},
     })
@@ -613,19 +620,19 @@ describe('aula por seções', () => {
     // ELA não provaria nada: a espera pelo título passaria sozinha, e um índice que
     // levasse à seção errada seguiria verde. O destino precisa ser OUTRA seção.
     expect(screen.getByRole('heading', { name: /Observar/ })).toBeTruthy()
-    const summary = screen.getByText('Índice da aula')
+    const summary = screen.getByText('Partes da aula')
     fireEvent.click(summary)
     expect(
       screen.getByRole('button', { name: /Bloqueada Melhorar/ }).hasAttribute('disabled'),
     ).toBe(true)
     fireEvent.click(screen.getByRole('button', { name: /Concluída Preparar/ }))
     await screen.findByRole('heading', { name: 'Preparar' })
-    // Navegar FECHA o menu: aberto, ele cobriria justamente o começo da seção nova.
+    // Navegar FECHA o menu: aberto, ele cobriria justamente o começo da parte nova.
     expect(summary.closest('details')?.open).toBe(false)
   })
-  test('no Kids, com o vocabulário da aventura, a fase fala parte e equipe', () => {
+  test('no Kids, com o vocabulário do curso, a aula fala parte e equipe', () => {
     // Os testes acima montam a aula SEM o provedor do Kids e leem o texto adulto. Este monta
-    // como a página da fase monta (`KidsLessonCopy` no layout), e é ele que garante que a
+    // como a página da aula monta (`KidsLessonCopy` no layout), e é ele que garante que a
     // troca de 06/10/2026 chega à tela: parte no lugar de seção e equipe no lugar de professor.
     render(
       <KidsLessonCopy>
@@ -638,14 +645,14 @@ describe('aula por seções', () => {
         </LessonPlayerProvider>
       </KidsLessonCopy>,
     )
-    expect(screen.getByText('Partes da fase')).toBeTruthy()
+    expect(screen.getByText('Partes da aula')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Próxima parte' })).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: /Preciso de ajuda/ }))
     expect(screen.getByRole('button', { name: 'Enviar para a equipe' })).toBeTruthy()
     for (const adulto of ['Índice da aula', 'Próxima seção', 'Enviar ao professor'])
       expect(screen.queryByText(adulto)).toBeNull()
   })
-  test('falha de navegação mantém a seção atual; a nova tentativa preserva o projeto', async () => {
+  test('falha de navegação mantém a parte atual; a nova tentativa preserva o projeto', async () => {
     let fail = true
     globalThis.fetch = Object.assign(
       async () =>
@@ -669,9 +676,9 @@ describe('aula por seções', () => {
       </LessonPlayerProvider>,
     )
     const input = screen.getByRole('textbox', { name: 'Meu projeto' })
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima parte' }))
     await screen.findByText(
-      'Não foi possível abrir esta seção. Suas respostas foram mantidas. Tente novamente.',
+      'Não foi possível abrir esta parte. Suas respostas foram mantidas. Tente novamente.',
     )
     expect(screen.getByRole('heading', { name: /Preparar/ })).toBeTruthy()
     expect(screen.getByText('1 de 3 seções concluídas · 33,3%')).toBeTruthy()
@@ -679,7 +686,7 @@ describe('aula por seções', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
     await screen.findByRole('heading', { name: 'Observar' })
     expect(input.isConnected).toBe(true)
-    expect(screen.getByRole('button', { name: 'Próxima seção' }).hasAttribute('disabled')).toBe(
+    expect(screen.getByRole('button', { name: 'Próxima parte' }).hasAttribute('disabled')).toBe(
       true,
     )
   })
@@ -690,7 +697,7 @@ describe('aula por seções', () => {
         renderBlocks={() => <input aria-label="Projeto de teste" />}
       />,
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima parte' }))
     const summary = screen.getByText('O que falta para concluir · 1')
     fireEvent.click(summary)
     fireEvent.click(screen.getByRole('button', { name: /Envie seu projeto/ }))
@@ -709,7 +716,7 @@ describe('aula por seções', () => {
       </LessonPlayerProvider>,
     )
     expect(screen.queryByText('Atividade obrigatória')).toBeNull()
-    expect(screen.getByRole('button', { name: 'Próxima seção' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Próxima parte' })).toBeTruthy()
   })
   test('descoberta incompleta na prévia mostra orientação e não registra tentativas', () => {
     render(
@@ -837,10 +844,10 @@ describe('aula por seções', () => {
     render(<LessonSections lesson={lesson} renderBlocks={() => <Project />} />)
     const input = screen.getByRole('textbox', { name: 'Nome do projeto' }) as HTMLInputElement
     fireEvent.change(input, { target: { value: 'Meu dinossauro' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima parte' }))
     expect(input.isConnected).toBe(true)
     expect(screen.queryByRole('textbox', { name: 'Nome do projeto' })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima parte' }))
     expect(screen.getByRole('textbox', { name: 'Nome do projeto' })).toBe(input)
     expect(input.value).toBe('Meu dinossauro')
   })
@@ -884,7 +891,7 @@ describe('aula por seções', () => {
   })
 
   test('Ver exemplo e Criar preservam a mesma instância e o trabalho em tela estreita', () => {
-    // ⚠️ A seção precisa de conteúdo dos DOIS lados para as abas existirem (14/09/2026):
+    // ⚠️ A parte precisa de conteúdo dos DOIS lados para as abas existirem (14/09/2026):
     // seção cujo único bloco é a ferramenta não divide mais, ela ocupa a largura toda — e
     // "Ver exemplo"/"Criar" sem exemplo nenhum à esquerda seria uma aba para o vazio.
     const comTexto: LessonDetailView = {
@@ -949,7 +956,7 @@ describe('aula por seções', () => {
     expect(avisos).toEqual([{ index: 0, total: 3, sectionId: 'first' }])
     const input = screen.getByRole('textbox', { name: 'Meu projeto' })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima parte' }))
     await screen.findByRole('heading', { name: 'Observar' })
     // ⚠️ O aviso mora num EFEITO, e efeito passivo roda DEPOIS do commit: o
     // heading novo já está no DOM enquanto a fila de efeitos ainda não andou.
@@ -982,7 +989,7 @@ describe('aula por seções', () => {
         <LessonSections lesson={lesson} renderBlocks={() => null} />
       </LessonPlayerProvider>,
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima parte' }))
     const aviso = await screen.findByRole('alert')
     expect(aviso.textContent).toContain('O perfil mudou. Abra a aula de novo.')
     expect(screen.queryByRole('button', { name: 'Tentar novamente' })).toBeNull()
@@ -1001,12 +1008,12 @@ describe('aula por seções', () => {
         <LessonSections lesson={lesson} renderBlocks={() => null} />
       </LessonPlayerProvider>,
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima parte' }))
     await waitFor(() => expect(inits.length).toBeGreaterThan(0))
     expect(inits.every((i) => i.keepalive === true)).toBe(true)
   })
 
-  test('retoma a seção salva e inclui seu contexto no pedido de ajuda', async () => {
+  test('retoma a parte salva e inclui seu contexto no pedido de ajuda', async () => {
     const requests: Array<{ url: string; body: unknown; viewer: string | null }> = []
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       requests.push({
@@ -1028,10 +1035,10 @@ describe('aula por seções', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Preciso de ajuda' }))
     expect(screen.getByRole('textbox').closest('form')?.classList.contains('mb-4')).toBe(false)
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Por que ele cai?' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Enviar ao professor' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar para a equipe' }))
     await screen.findByText('Pedido enviado. A resposta aparecerá nos seus recados.')
     expect(requests).toEqual([
-      // Abrir a aula REGISTRA a seção onde a criança entrou, e isso acontece na
+      // Abrir a aula REGISTRA a parte onde a criança entrou, e isso acontece na
       // MONTAGEM — por isso vem primeiro. A navegação só grava em transição, então
       // quem abre e fica na primeira seção nunca criava linha, e é o `updated_at`
       // dela que alimenta o "continuar de onde parou".
@@ -1094,10 +1101,10 @@ describe('aula por seções', () => {
 /**
  * ⭐ UM cabeçalho só (18/09/2026). O nome da aula era um `<h1>` do player e o da
  * seção um `<h2>` logo abaixo: duas linhas de título, cada uma com a sua margem, e
- * a seção — que é o que muda ao avançar — aparecendo por último. Agora é
+ * a parte — que é o que muda ao avançar — aparecendo por último. Agora é
  * "aula · seção" numa linha, com o índice ao lado.
  */
-describe('o cabeçalho da aula e da seção, numa linha só', () => {
+describe('o cabeçalho da aula e da parte, numa linha só', () => {
   test('com o título da aula o cabeçalho é o H1 da página e mostra os dois nomes', () => {
     render(
       <LessonPlayerProvider value={player}>
@@ -1112,7 +1119,7 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
   })
 
-  test('sem o título da aula (ensaio do admin) segue sendo H2, só com a seção', () => {
+  test('sem o título da aula (ensaio do admin) segue sendo H2, só com a parte', () => {
     // Lá o nome da aula já está em volta, no editor; repeti-lo aqui seria a mesma
     // duplicação que o lote foi tirar da página de aula.
     render(
@@ -1133,7 +1140,7 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
         <LessonSections lesson={lesson} lessonTitle="Meu jogo" renderBlocks={() => null} />
       </LessonPlayerProvider>,
     )
-    const indice = screen.getByText('Índice da aula')
+    const indice = screen.getByText('Partes da aula')
     const titulo = screen.getByRole('heading', { level: 1 })
     expect(indice.closest('header')).toBe(titulo.closest('header'))
     // A barra do adulto continua existindo, agora só com o que falta concluir.
@@ -1144,11 +1151,11 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
     expect(barra?.contains(indice)).toBe(false)
   })
 
-  test('a faixa "o que falta para seguir" mora no rodapé fixo, fala da seção ATUAL e só cai no fallback na última', async () => {
+  test('a faixa "o que falta para seguir" mora no rodapé fixo, fala da parte ATUAL e só cai no fallback na última', async () => {
     globalThis.fetch = Object.assign(async () => Response.json({ ok: true }), {
       preconnect: () => {},
     })
-    const AUTORIA = 'A verificação desta seção precisa ser configurada pelo professor.'
+    const AUTORIA = 'A verificação desta parte precisa ser configurada pelo professor.'
     const progresso: SectionProgressView = {
       revision: 'structure',
       completed: 0,
@@ -1193,26 +1200,26 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
       faixa()!.compareDocumentPosition(botoes!) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
     expect(faixa()?.className).toContain('max-w-7xl')
-    // A seção atual tem item próprio: é ele que aparece, com o prefixo; o fallback da aula, não.
+    // A parte atual tem item próprio: é ele que aparece, com o prefixo; o fallback da aula, não.
     expect(faixa()?.textContent).toContain('Para seguir:')
     expect(faixa()?.textContent).toContain('Veja o vídeo até o fim')
     expect(faixa()?.textContent).not.toContain('Termine as atividades desta aula')
     expect(faixa()?.querySelector('[data-kind="VIDEO_GATE_NOT_WATCHED"]')).not.toBeNull()
 
     // ⚠️⚠️ A segunda seção tem a mensagem de AUTORIA: com o player de verdade (fora do ensaio) o
-    // aluno lê "Esta seção ainda está sendo preparada" (no Kids, com o `KidsLessonCopy`, "Esta
+    // aluno lê "Esta parte ainda está sendo preparada" (no Kids, com o `KidsLessonCopy`, "Esta
     // parte…"), nunca "professor" (full review de 30/09: a troca só era guardada na unidade, não na
     // fiação). Este teste monta sem o vocabulário da criança, por isso a frase é a adulta.
-    fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Próxima parte/ }))
     await waitFor(() =>
       expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Observar'),
     )
-    expect(faixa()?.textContent).toContain('Esta seção ainda está sendo preparada')
+    expect(faixa()?.textContent).toContain('Esta parte ainda está sendo preparada')
     expect(faixa()?.textContent).not.toContain('professor')
     expect(faixa()?.textContent).not.toContain('Para seguir:')
 
     // A última, sem item próprio, mostra o fallback da aula (sem "Para seguir:", é um estado).
-    fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Próxima parte/ }))
     await waitFor(() => expect(faixa()).not.toBeNull())
     expect(faixa()?.textContent).toContain('Termine as atividades desta aula para concluir')
     expect(faixa()?.textContent).not.toContain('Para seguir:')
@@ -1254,7 +1261,7 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
     )
     const faixa = container.querySelector('.sz-lesson-nav-immersive .sz-lesson-status')
     expect(faixa).not.toBeNull()
-    expect(faixa?.textContent).toContain('Passe no quiz (nota mínima 70%)')
+    expect(faixa?.textContent).toContain('Passe no quiz (meta: 70% de acertos)')
     expect(faixa?.querySelector('[data-kind="QUIZ_GATE_NOT_PASSED"]')).not.toBeNull()
   })
 
@@ -1289,7 +1296,7 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
         />
       </LessonPlayerProvider>,
     )
-    fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Próxima parte/ }))
     await waitFor(() => {
       const heading = screen.getByRole('heading', { level: 1 })
       expect(heading.textContent).toContain('Observar')
@@ -1327,7 +1334,7 @@ describe('os players entregam o título da aula ao cabeçalho, e não renderizam
 
 describe('o cabeçalho aguenta o conteúdo real', () => {
   test('aula LEGADA não imprime o mesmo nome duas vezes', () => {
-    // `legacyLessonSections` usa o TÍTULO DA AULA como nome da seção quando a aula
+    // `legacyLessonSections` usa o TÍTULO DA AULA como nome da parte quando a aula
     // não tem seções — é o caso do certificado e das aulas "em breve". Sem a guarda,
     // o cabeçalho saía "Meu jogo · Meu jogo".
     render(
@@ -1378,10 +1385,10 @@ describe('o cabeçalho aguenta o conteúdo real', () => {
         <LessonSections lesson={lesson} kids lessonTitle="Meu jogo" renderBlocks={() => null} />
       </LessonPlayerProvider>,
     )
-    const rotulo = screen.getByText('Índice da aula')
+    const rotulo = screen.getByText('Partes da aula')
     expect(rotulo.className).toContain('sr-only')
     expect(rotulo.className).toContain('sm:not-sr-only')
-    expect(rotulo.closest('summary')?.getAttribute('aria-label')).toBe('Índice da aula')
+    expect(rotulo.closest('summary')?.getAttribute('aria-label')).toBe('Partes da aula')
   })
 })
 
@@ -1415,11 +1422,11 @@ describe('a fala da criança no pedido de ajuda (14/10/2026)', () => {
     await parar()
     const caixa = screen.getByRole('textbox') as HTMLTextAreaElement
     expect(caixa.value).toBe('meu personagem não pula')
-    // O contexto da transcrição é a fase e a parte em que a criança está.
+    // O contexto da transcrição é a aula e a parte em que a criança está.
     expect(
       decodeURIComponent(microfone.envios[0]?.headers.get('x-sz-voice-context') ?? ''),
     ).toContain(lesson.title)
-    fireEvent.click(screen.getByRole('button', { name: 'Enviar ao professor' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar para a equipe' }))
     await screen.findByText('Pedido enviado. A resposta aparecerá nos seus recados.')
     const ajuda = pedidos.filter((p) => p.url.endsWith('/section-help'))
     expect(ajuda.at(-1)?.body).toMatchObject({ body: 'meu personagem não pula', spoken: true })
@@ -1427,7 +1434,7 @@ describe('a fala da criança no pedido de ajuda (14/10/2026)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Preciso de ajuda' }))
     const nova = screen.getByRole('textbox') as HTMLTextAreaElement
     fireEvent.change(nova, { target: { value: 'escrevi sozinha' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Enviar ao professor' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar para a equipe' }))
     await waitFor(() =>
       expect(pedidos.filter((p) => p.url.endsWith('/section-help'))).toHaveLength(2),
     )

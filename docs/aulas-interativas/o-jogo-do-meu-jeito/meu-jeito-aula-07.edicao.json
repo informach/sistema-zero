@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-dois-relogios",
+    "video-folha-pedra",
+    "video-trocar-pedra",
+    "video-animar-pedra",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-dois-relogios-K1",
+      "clipe": "video-dois-relogios",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "1. Eu clico em Tempo para parar. Nasceu uma pedra a cada 20 quadros, e cada uma trocou de desenho 8 vezes por segundo.",
+      "ancoraDepois": "Agora eu mudo os dois relógios, cada um para um lado. Coloco A cada quantos quadros nasce uma pedra em 40, que é mais",
+      "falaPrincipal": "Dá para nascer menos pedra e o desenho trocar mais rápido?",
+      "falaPersonagem": "Dá para nascer menos pedra e o desenho trocar mais rápido?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-trocar-pedra-K1",
+      "clipe": "video-trocar-pedra",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "relógio. Agora comece a partida. Olha só: as suas imagens caem em lugares diferentes, porque o sorteio continua no x.",
+      "ancoraDepois": "Elas ainda aparecem com a folha inteira espremida, porque falta ligar a animação de cada pedra. Se no seu jogo não",
+      "falaPrincipal": "Por que a pedra ficou espremida?",
+      "falaPersonagem": "Por que a pedra ficou espremida?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

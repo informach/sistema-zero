@@ -95,7 +95,7 @@ test('canonical child UI never renders raw authoring or protocol diagnostics fro
   )
   expect(container.textContent).toContain('Construtor(a)')
   for (const message of messages) expect(container.textContent).not.toContain(message)
-  expect(container.textContent).not.toMatch(/\baula\b|\bcurso\b|\betapa\b/i)
+  expect(container.textContent).not.toMatch(/Concluir fase|Próxima seção|Mapa da Aventura/i)
 })
 
 test('canonical timeline: missing policy is explicit and never fabricates a Faísca learner', () => {
@@ -321,7 +321,7 @@ test('canonical hint: mixed course milestones name completion and publication se
   expect(canonicalJourneyProgress(view)).toMatchObject({
     kind: 'pending',
     remaining: 2,
-    hint: 'Faltam 2 aventuras para você virar Inventor(a). Termine 1 aventura e publique 1 jogo no Mural.',
+    hint: 'Faltam 2 cursos para você virar Inventor(a). Termine 1 curso e publique 1 jogo no Mural.',
   })
 })
 

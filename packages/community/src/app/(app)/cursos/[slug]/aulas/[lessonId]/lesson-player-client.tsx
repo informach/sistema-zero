@@ -184,7 +184,7 @@ export function LessonPlayer({
     </Button>
   )
   // Em TEXTO: vira um item da faixa "o que falta para seguir" do rodapé (`LessonSectionStatus`),
-  // só quando a seção não tem itens próprios (aula legada, equipe).
+  // só quando a parte não tem itens próprios (aula legada, equipe).
   const completionMessage = lesson.completed
     ? null
     : blockedByLearning

@@ -90,10 +90,10 @@ export default async function CatalogPage() {
         <KidsBand tone="creme">
           <div className="flex flex-col items-center text-center">
             <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">
-              Aventuras da Jornada do Criador
+              Cursos da Jornada do Criador
             </h1>
             <p className="mt-2.5 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
-              De Faísca a Lenda. Toque num nível para ver as aventuras da trilha dele!
+              De Faísca a Lenda. Toque num nível para ver os cursos da trilha dele!
             </p>
             {/* O amarelo é cor de fundo e não segue o tema; a tinta escura dá 8,73:1 nele. */}
             <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-(--sz-kids-amarelo) px-4 py-2 font-extrabold text-(--sz-kids-tinta) text-[0.9375rem]">
@@ -121,15 +121,15 @@ export default async function CatalogPage() {
             <section aria-labelledby="proximas-aventuras">
               <KidsSectionHeader
                 id="proximas-aventuras"
-                title="Próximas aventuras"
-                subtitle="Estas aventuras fazem parte do seu próximo passo."
+                title="Próximos cursos"
+                subtitle="Estes cursos fazem parte do seu próximo passo."
               />
               <ul className="grid gap-4">
                 {requiredOutsideTrail.map(({ course, milestone }) => (
                   <li key={course.courseId}>
                     <p className="mb-2 font-semibold text-sm">
                       {milestone === 'complete'
-                        ? 'Termine esta aventura.'
+                        ? 'Termine este curso.'
                         : 'Termine e publique o seu jogo no Mural.'}
                     </p>
                     <CatalogCourseCard
@@ -154,14 +154,14 @@ export default async function CatalogPage() {
             <section aria-labelledby="aventuras-da-trilha">
               <KidsSectionHeader
                 id="aventuras-da-trilha"
-                title={`Aventuras da trilha ${current.label}`}
-                subtitle="Toque numa aventura para abrir."
+                title={`Cursos da trilha ${current.label}`}
+                subtitle="Toque num curso para abrir."
                 actions={
                   trilha && trilha.total > 0 ? (
                     <span className="inline-flex h-10 items-center gap-2 rounded-full bg-card px-4 font-extrabold text-sm">
                       <Sparkles className="size-4 text-primary" aria-hidden />
                       {trilha.done} de {trilha.total}{' '}
-                      {trilha.total === 1 ? 'aventura pronta' : 'aventuras prontas'}
+                      {trilha.total === 1 ? 'curso pronto' : 'cursos prontos'}
                     </span>
                   ) : undefined
                 }
@@ -193,7 +193,7 @@ export default async function CatalogPage() {
   return (
     <>
       <KidsBand tone="creme">
-        <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">Prévia das aventuras</h1>
+        <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">Prévia dos cursos</h1>
         <p className="mt-2.5 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
           Visualização da equipe. Esta prévia não concede postos ou conquistas.
         </p>
@@ -202,9 +202,7 @@ export default async function CatalogPage() {
         {courses.length === 0 ? (
           <div className="kids-carta flex flex-col items-center gap-4 px-6 py-12 text-center">
             <KidsMascot expression="thinking" className="kid-float size-16" />
-            <p className="sz-display text-xl">
-              As aventuras estão a caminho! Volte daqui a pouquinho.
-            </p>
+            <p className="sz-display text-xl">Os cursos estão a caminho! Volte daqui a pouco.</p>
           </div>
         ) : (
           <CatalogGrid courses={courses} />

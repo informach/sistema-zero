@@ -41,7 +41,7 @@ export async function signCreationDownload(
     bytes: ticket.bytes,
     item: ticket.summary,
     parts,
-    // O relógio do servidor agora: corrige o do aparelho quando o rascunho da fase decide
+    // O relógio do servidor agora: corrige o do aparelho quando o rascunho da aula decide
     // qual versão é a mais nova (a da conta tem `syncedAt` do servidor).
     serverNow: new Date().toISOString(),
   }

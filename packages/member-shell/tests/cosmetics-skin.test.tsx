@@ -71,7 +71,7 @@ describe('pele adulta — o texto', () => {
   })
 
   test('o Kids segue com as frases de sempre', () => {
-    expect(TROPHY_HINT['trofeu-diploma']).toBe('Complete uma aventura inteirinha!')
+    expect(TROPHY_HINT['trofeu-diploma']).toBe('Conclua um curso!')
     expect(AVATAR_MESSAGES.kids).toEqual({
       notEnoughCoins: 'Você ainda não tem moedas suficientes!',
       buyRefused: 'Não consegui comprar.',

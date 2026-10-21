@@ -376,7 +376,7 @@ function LessonStudioBlockView({
   // `router.refresh()` da aula, mesmo sem mudar nada: nas dependências do efeito abaixo, toda
   // atualização (Verificar, vídeo a 90%, quiz, envio) re-semeava o editor, e o `StudioCore`
   // desmontava o Shell inteiro (blocos, código e prévia voltavam do zero; o relato foi "recarregou
-  // os bloquinhos"). Conteúdo novo DE VERDADE muda a revisão do bloco, e o player remonta pela `key`.
+  // os blocos"). Conteúdo novo DE VERDADE muda a revisão do bloco, e o player remonta pela `key`.
   const sementeRef = useRef({
     initialProject: content.initialProject,
     chain: content.chain,
@@ -665,7 +665,7 @@ function LessonStudioBlockView({
             (admission && !admission.bound && !admission.readOnly)
           )
             throw error
-          console.warn('[rascunho-da-fase] não deu para trazer a versão da conta', error)
+          console.warn('[rascunho-da-aula] não deu para trazer a versão da conta', error)
         }
       }
       const semente = sementeRef.current
@@ -771,7 +771,7 @@ function LessonStudioBlockView({
   // mas nada se move). Trava o scroll do body enquanto expandido (refcontada com o <Dialog>,
   // p/ fechar o "Enviar?" por cima não destravar cedo e a barra fantasma não voltar).
   useBodyScrollLock(expanded)
-  // O vídeo da seção sai de baixo do editor expandido (o flutuante da aula).
+  // O vídeo da parte sai de baixo do editor expandido (o flutuante da aula).
   useReportActivityExpanded(expanded)
 
   const submit = useCallback(async () => {
@@ -990,7 +990,7 @@ function LessonStudioBlockView({
       },
       // Publicou: TRAVA o compartilhar da aula (1 vez só, persistido local) e entrega os
       // links ao host. O kids abre a celebração e o ShareDialog fecha sozinho; o adulto não tem
-      // celebração, então o dialog mostra a própria tela com o link (Publicado!, Copiar link).
+      // celebração, então o dialog mostra a própria tela com o link (Seu jogo está no Mural!, Copiar link de jogar).
       onPublished: (result) => {
         setAlreadyShared(true)
         writeSharedFlag(projectId)
@@ -1041,7 +1041,7 @@ function LessonStudioBlockView({
 
   return (
     <div
-      // Só o avanço da fase para a edição (a comunidade adulta nunca chega aqui).
+      // Só o avanço da aula para a edição (a comunidade adulta nunca chega aqui).
       inert={savingDrafts || trazendoDaConta || undefined}
       aria-busy={savingDrafts || trazendoDaConta || undefined}
       className={cn(

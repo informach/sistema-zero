@@ -78,7 +78,7 @@ export function VoiceInputButton({
   transcriptMaxChars,
 }: {
   viewerId: string | null
-  /** Onde a criança está (título da fase · parte); ajuda a acertar o vocabulário. */
+  /** Onde a criança está (título da aula · parte); ajuda a acertar o vocabulário. */
   context?: string
   /** O texto atual da caixa: a fala entra somada a ele. */
   value: string
@@ -96,7 +96,7 @@ export function VoiceInputButton({
   /** O Pensa preserva a ideia inteira e pede para dividir antes de enviar. */
   preserveOverflow?: boolean
   /**
-   * Teto do texto que UMA fala pode trazer do servidor. Sem ele, 1000 (recados, ajuda da fase,
+   * Teto do texto que UMA fala pode trazer do servidor. Sem ele, 1000 (recados, ajuda da aula,
    * tutor). O Pensa passa `PENSA_SPOKEN_TEXT_MAX_CHARS` (4000), e é o único que pode.
    */
   transcriptMaxChars?: number

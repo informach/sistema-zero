@@ -1,0 +1,79 @@
+[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender a condição: uma pergunta que faz o jogo esperar a hora certa de agir.
+
+[interested, animated voice] Olha aqui: com Criar cacto fora de Se o estado do jogo é jogando, eu deixo o tempo passar na tela de início. Nascem cactos antes de alguém jogar. O relógio cria cactos sem perguntar nada.
+
+[curious] Mas a partida nem começou. Por que já tem cacto?
+
+[engaging, energetic, conversational voice] Vamos fazer os cactos esperarem a partida. Agora eu levo Criar cacto para dentro de Se o estado do jogo é jogando, e tudo recomeça do zero. Na tela de início, eu deixo passar três segundos. O relógio continua tocando, mas os nascimentos ficam em 0. A pergunta responde não, porque o estado ainda é inicio.
+
+[engaging, energetic, conversational voice] Quando eu clico em Toque para começar, a partida começa, e os cactos voltam a nascer: agora a resposta é sim. É como a porta de casa, que só abre com a chave certa. Aqui, a chave é o estado jogando. No seu jogo, você vai guardar o estado inicio e colocar as ações da corrida dentro de um Se jogando.
+
+[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Olhe a área do seu jogo. Tá vendo? A corrida começa sozinha, porque o jogo ainda não sabe em que momento está.
+
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Na tela de início, os cactos esperavam a partida. Agora a gente vai guardar o estado do seu jogo!
+
+[engaging, energetic, conversational voice] O estado começa junto com o jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar grupo de sprites. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no fim de Ao iniciar. Ele já chega com inicio: mantenha.
+
+[curious] O jogo já vai esperar para começar?
+
+[engaging, energetic, conversational voice] Ainda falta ligar as ações a esse estado. [confident, clear, unhurried voice] Confira se ficou assim: no fim de Ao iniciar, está Mudar o estado do jogo para inicio, e as regras de movimento e de criação dos cactos continuam nos mesmos lugares.
+
+[engaging, energetic, conversational voice] Agora olhe o jogo de novo. [confident, clear, unhurried voice] Repare: o Dino e os cactos continuam correndo, e está certo, porque o bloco só guarda o nome do momento, e nenhuma regra pergunta por ele ainda. Quem vai fazer essa pergunta é o bloco Se.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Olhe a área do seu jogo. Tá vendo? O Dino e os cactos continuam correndo, porque nenhuma regra pergunta pelo estado.
+
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Dentro do Se jogando, a ação esperou a partida. Agora a gente vai colocar as ações da partida num Se!
+
+[engaging, energetic, conversational voice] Antes de pegar cada peça, deixe à vista o lugar do encaixe. Se ele estiver fora da tela, é só arrastar um espaço vazio entre os blocos até ele aparecer.
+
+[interested, animated voice] Olha aqui: dentro de A cada quadro do jogo, as ações da partida começam em Aplicar a gravidade do mundo ao sprite e vão até o fim. São o controle, o desenho do Dino, o movimento e o desenho dos cactos e a regra que tira do grupo. Arraste o bloco da gravidade para um espaço livre, e a pilha inteira vem junto, porque os outros blocos estão encaixados embaixo dele. Não copie nada: só separe.
+
+[confident, clear, unhurried voice] Agora deixe à vista o espaço logo depois de Desenhar fundo de floresta, dentro do quadro. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço.
+
+[confident, clear, unhurried voice] Repare: o Se chega com a pergunta x > 0. Arraste essa pergunta para a lixeira, para o lugar dela ficar vazio. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ? e solte no lugar vazio da pergunta. No menu dele, escolha jogando.
+
+[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio do então, dentro do Se. Arraste a pilha que você separou, segurando pela gravidade, e solte nesse espaço. A limpeza e a floresta ficam fora do Se, antes dele, porque a floresta também passa na tela de início.
+
+[engaging, energetic, conversational voice] Agora olhe o jogo: com o estado em inicio, o Dino e os cactos deixam de aparecer, e só a floresta continua passando, porque as ações da partida esperam o estado jogando.
+
+[engaging, energetic, conversational voice] Para conferir se essas ações ainda funcionam, troque, por um momento, o estado em Ao iniciar para jogando. Teste um pulo e espere um cacto entrar.
+
+[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no então do Se jogando, a ordem é gravidade, controle, desenho do Dino, mover os cactos, desenhar os cactos e tirar do grupo quem saiu, e a limpeza e a floresta ficam antes do Se. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque é assim que o seu jogo tem que começar. O Dino e os cactos somem de novo, e só a floresta continua passando.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com Criar cacto dentro do Se, os cactos só nasciam durante a partida. Agora o relógio do seu jogo vai aprender a esperar também!
+
+[engaging, energetic, conversational voice] O relógio fica fora do quadro, por isso ainda cria cactos escondidos na tela de início. Deixe à vista o interior do relógio de 1.4 segundo e arraste No grupo criar obstáculo para um espaço livre, fora do relógio. Ele vai voltar para dentro daqui a pouco, mas, antes, o relógio precisa ganhar a pergunta.
+
+[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio dentro do relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.
+
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio da pergunta desse Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha jogando. Depois, deixe à vista o espaço vazio do então e arraste No grupo criar obstáculo de volta, para dentro dele.
+
+[engaging, energetic, conversational voice] Para testar, troque, por um momento, o estado em Ao iniciar para jogando. [interested, animated voice] Olha só: os cactos nascem como antes! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no relógio de 1.4 segundo, está o Se o estado do jogo é jogando, e No grupo criar obstáculo está no então desse Se. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque é assim que o seu jogo tem que começar. Só a floresta continua passando, e agora o seu jogo espera a partida, mesmo ainda sem uma tela de abertura desenhada.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora o seu jogo espera no estado inicio! Antes de enviar o seu projeto, confira os dois lugares que perguntam pelo estado jogando: o Se dentro do quadro e o Se dentro do relógio dos cactos.
+
+[engaging, energetic, conversational voice] Para testar a partida, troque, por um momento, o estado em Ao iniciar para jogando e confira o pulo, o som e a entrada dos cactos.
+
+[engaging, energetic, conversational voice] Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque é com ele que você vai enviar o jogo. [confident, clear, unhurried voice] Repare na floresta: ela continua passando no estado inicio, porque ficou fora do Se, e a tela de começo ainda não foi desenhada.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

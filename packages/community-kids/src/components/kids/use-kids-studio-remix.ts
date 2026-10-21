@@ -16,7 +16,7 @@ const enc = encodeURIComponent
 
 /** As ferramentas vêm das aventuras concluídas: o recado aponta para elas, nunca para um nível. */
 const REMIX_BLOCKED_MESSAGE =
-  'Esse jogo usa ferramentas que você ainda vai conquistar nas aventuras. 🚀'
+  'Esse jogo usa ferramentas que você ainda vai conquistar nos cursos. 🚀'
 
 /** Owns remix admission, retirement and persistence for the current Kids viewer. */
 export function useKidsStudioRemix({

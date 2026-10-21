@@ -202,7 +202,7 @@ function PlayLinkActions({
                 toque); o clique continua vivo e mostra o recado. */}
             <span className="sr-only">
               {' '}
-              (trancado: conclua mais aventuras para ter as ferramentas deste jogo)
+              (trancado: conclua mais cursos para ter as ferramentas deste jogo)
             </span>
           </button>
         ) : (

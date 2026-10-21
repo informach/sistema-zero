@@ -1100,9 +1100,8 @@ describe('⭐⭐ consertos do review do lote 2: a resposta e a gravação', () =
     await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), { timeout: 5000 })
     fireEvent.click(opcao('world', true))
     expect(await screen.findByRole('button', { name: 'Abrir de novo' })).toBeTruthy()
-    // A frase do core é a adulta (contrato com o members); a criança lê a do vocabulário dela.
-    expect(screen.getByText('Esta pergunta mudou. Abra a fase de novo.')).toBeTruthy()
-    expect(screen.queryByText(PERGUNTA_MUDOU)).toBeNull()
+    // O mesmo aviso orienta a reabertura da aula nos dois públicos.
+    expect(screen.getByText(PERGUNTA_MUDOU)).toBeTruthy()
   })
 
   test('⚠️ uma escolha ANTERIOR que responde depois não pinta a escolha nova de âmbar', async () => {

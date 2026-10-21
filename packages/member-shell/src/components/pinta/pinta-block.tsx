@@ -90,7 +90,7 @@ export function PintaBlockView({
   const player = useLessonPlayer()
   const { pinta, rascunho } = useLessonCopy()
   const lessonId = player?.lessonId ?? ''
-  // O rascunho guardado na CONTA (10/10/2026), como no Estúdio da fase: só com o app que fala
+  // O rascunho guardado na CONTA (10/10/2026), como no Estúdio da aula: só com o app que fala
   // com a nuvem (o Kids), com perfil e numa aula de verdade.
   const draftChannel = player?.lessonDrafts?.pinta
   const channel =
@@ -252,7 +252,7 @@ export function PintaBlockView({
             )
           if (daConta) setCurrentFingerprint(await pintaContentFingerprint(daConta))
         } catch (error) {
-          console.warn('[rascunho-da-fase] não deu para trazer o desenho da conta', error)
+          console.warn('[rascunho-da-aula] não deu para trazer o desenho da conta', error)
         }
       }
       const seed =
@@ -293,7 +293,7 @@ export function PintaBlockView({
   }, [blockId, expanded])
 
   useBodyScrollLock(expanded)
-  // O vídeo da seção sai de baixo do Pinta expandido (o flutuante da aula).
+  // O vídeo da parte sai de baixo do Pinta expandido (o flutuante da aula).
   useReportActivityExpanded(expanded)
 
   const submit = useCallback(async () => {
@@ -428,7 +428,7 @@ export function PintaBlockView({
 
   return (
     <div
-      // Só o avanço da fase para a edição (a comunidade adulta nunca chega aqui).
+      // Só o avanço da aula para a edição (a comunidade adulta nunca chega aqui).
       inert={savingDrafts || trazendoDaConta || undefined}
       aria-busy={savingDrafts || trazendoDaConta || undefined}
       className={cn(
@@ -495,7 +495,7 @@ export function PintaBlockView({
         className={cn(
           'isolate overflow-hidden rounded-lg border border-border bg-muted',
           // Um degrau abaixo do Estúdio, como sempre foi. Encolheu junto com ele
-          // (09/2026): com as seções, o ateliê mora numa coluna de metade da tela e
+          // (09/2026): com as partes, o ateliê mora numa coluna de metade da tela e
           // 832px de altura ali viravam um retângulo comprido. O piso do mobile é
           // 34rem — o mesmo que o app embarcado usa como mínimo utilizável.
           expanded || fillHeight ? 'min-h-0 flex-1' : 'h-[34rem] lg:h-[36rem]',

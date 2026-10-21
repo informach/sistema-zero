@@ -19,7 +19,7 @@ async function setup(number: 1 | 2) {
   const document: unknown = await Bun.file(
     resolve(
       import.meta.dir,
-      `../../../../docs/aulas-interativas/kids/corre-dino/corre-dino-aula-0${number}.manifesto.json`,
+      `../../../../docs/aulas-interativas/corre-dino/corre-dino-aula-0${number}.manifesto.json`,
     ),
   ).json()
   if (!isLearningManifest(document)) throw new Error('Manifesto inválido na fixture')

@@ -430,11 +430,11 @@ export const ptBR: Record<string, string> = {
   'share.step.title.label': 'Título',
   'share.step.review.heading': 'Confira antes de publicar',
   'share.publishing': 'Publicando…',
-  'share.success.heading': 'Publicado! 🎉',
+  'share.success.heading': 'Seu jogo está no Mural! 🎉',
   'share.success.body': 'Seu projeto já está no Mural dos Criadores.',
   'share.success.openMural': 'Ver no Mural',
   'share.success.openPlay': 'Abrir o jogo',
-  'share.success.copyLink': 'Copiar link',
+  'share.success.copyLink': 'Copiar link de jogar',
   'share.success.copied': 'Link copiado!',
   // Modal único de compartilhar (redesenho 06/2026).
   'share.intro':

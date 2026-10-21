@@ -41,12 +41,12 @@
       },
       {
         "key": "seu-caderno-do-aluno",
-        "title": "Seu Mapa da Aventura",
-        "bridge": "Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.",
-        "screen": "Mostrar a capa e uma página de montagem do Mapa da Aventura real deste curso (o PDF do caderno). No \"Olha aqui\", apontar o mapa. Ao falar em baixar, apontar o botão Baixar, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão nem os controles do leitor. Anexar o arquivo antes de publicar. No fim, apontar Próxima parte.",
+        "title": "Seu passo a passo do projeto",
+        "bridge": "Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.",
+        "screen": "Mostrar a capa e uma página de montagem do Passo a passo do projeto real deste curso (o PDF do caderno). No \"Olha aqui\", apontar o material. Ao falar em baixar, apontar o botão Baixar, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão nem os controles do leitor. Anexar o arquivo antes de publicar. No fim, apontar Próxima parte.",
         "speech": [
-          "Olha aqui: este é o seu Mapa da Aventura! Nele estão os passos para montar e testar o seu jogo, com os blocos que você vai usar e o lugar de cada um. Por isso, se você esquecer um encaixe ou um valor, é só voltar aqui e abrir o mapa.",
-          "Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.",
+          "Olha, aqui está o Passo a passo do projeto. Nele estão os passos para montar e testar o seu jogo, com os blocos que você vai usar e o lugar de cada um. Por isso, se você esquecer um encaixe ou um valor, é só voltar aqui e abrir o material.",
+          "Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.",
           "Agora clique em Próxima parte."
         ],
         "checks": [],
@@ -139,7 +139,7 @@
           "O fundo também já vem escuro, no quadradinho de cor do bloco. Se quiser, escolha outra cor escura.",
           "Agora olhe a prévia: a tela do jogo aparece lisa, porque ainda não tem nada desenhado nela.",
           "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar e Enquanto estiver rodando estão no espaço dos blocos, e dentro de Ao iniciar está Preparar o jogo em tela cheia, com largura 800 e altura 480. Depois de corrigir, teste de novo.",
-          "O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta fase."
+          "O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta aula."
         ],
         "checks": [
           {
@@ -162,7 +162,7 @@
           },
           {
             "id": "tela",
-            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado neste curso.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -176,21 +176,7 @@
         ],
         "final": false,
         "videoKey": "video-montar-areas-tela",
-        "kind": "practice",
-        "avatar": [
-          {
-            "after": "Agora deixe à vista outro lugar vazio, ao lado de Ao iniciar. Ainda em Áreas do projeto, pegue Enquanto estiver rodando e solte nesse lugar, com um pouco de distância entre as duas áreas.",
-            "speech": "A preparação fica separada do que acontece durante a partida!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Agora olhe a prévia: a tela do jogo aparece lisa, porque ainda não tem nada desenhado nela.",
-            "speech": "A tela está pronta para receber o jogo!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          }
-        ]
+        "kind": "practice"
       },
       {
         "key": "coordenadas",
@@ -254,7 +240,7 @@
         "speech": [
           "Esta é uma experiência para a gente entender a diferença entre criar a nave e mostrar a nave na tela do jogo.",
           "Olha aqui: eu clico em Criar a nave. Tá vendo? A nave aparece em Nos bastidores, mas a tela do jogo continua vazia. É que criar só prepara a nave: agora ela existe no jogo, mas ainda não foi desenhada.",
-          "É como numa apresentação de teatro para a família: você se arruma atrás da cortina, e ninguém te vê ainda. Quando você entra no palco, todo mundo vê. Aqui, os bastidores ficam atrás da cortina, e a tela do jogo é o palco.",
+          "É como numa apresentação de teatro: você se arruma atrás da cortina, e ninguém te vê ainda. Quando você entra no palco, todo mundo vê. Aqui, os bastidores ficam atrás da cortina, e a tela do jogo é o palco.",
           "Agora eu clico em Mostrar a nave na tela. Olha só: a mesma nave aparece na tela do jogo. Mostrar não cria outra nave: desenha a nave que já existia. No seu projeto, um bloco vai criar a nave, e outro vai desenhar a nave na tela.",
           "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
@@ -277,13 +263,7 @@
             "cenario": "nave"
           }
         },
-        "activityKey": "experiencia-criar-mostrar",
-        "avatar": {
-          "after": "e a tela do jogo é o palco.",
-          "speech": "Quero ver essa nave na tela!",
-          "beforeScreen": "Concluir a criação nos bastidores e a comparação com o teatro; manter a tela do jogo vazia.",
-          "afterScreen": "Clicar em Mostrar a nave na tela e comparar a mesma nave nos dois lugares."
-        }
+        "activityKey": "experiencia-criar-mostrar"
       },
       {
         "key": "criar-nave",
@@ -355,7 +335,7 @@
           },
           {
             "id": "tela",
-            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado neste curso.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -373,7 +353,7 @@
         "avatar": [
           {
             "after": "Agora abra Jogo 2D, depois Kits prontos e depois Espaço, e pegue o bloco Criar nave. Arraste e solte logo abaixo de Preparar o jogo em tela cheia, quando aparecer o encaixe.",
-            "speech": "Esse bloco tem um monte de campos!",
+            "speech": "Para que servem todos esses campos?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
             "afterScreen": "Depois da saída, apontar os campos do bloco Criar nave junto da resposta: nome, x e y, largura e altura. Manter os valores de fábrica até a professora pedir a troca de x e y.",
             "reply": "Cada campo diz uma coisa da nave: o nome, o lugar na tela e o tamanho."
@@ -386,9 +366,9 @@
         "kind": "exploration",
         "videoKey": "video-desenho-por-quadro",
         "bridge": "Sua vez! Compare desenhar só no começo, a cada quadro e com a limpeza ligada, avançando os quadros em cada teste. Quando terminar, clique em Próxima parte.",
-        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Desenhar a nave em Só no começo, clicar em Avançar 1 quadro e mostrar o x da faixa mudar de 10 para 54 com a imagem igual. Trocar para A cada quadro, avançar alguns quadros e mostrar o rastro de naves. Ligar Limpar a tela antes, avançar mais quadros e mostrar uma nave só, no lugar novo. Meme na comparação: na frase do desenho animado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy folheando um bloquinho com a nave desenhada um pouco mais à frente em cada folha, com a legenda \"1 quadro, 2 quadros, 3 quadros\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Desenhar a nave em Só no começo, clicar em Avançar 1 quadro e mostrar o x da faixa mudar de 10 para 54 com a imagem igual. Trocar para A cada quadro, avançar alguns quadros e mostrar o rastro de naves. Ligar Limpar a tela antes, avançar mais quadros e mostrar uma nave só, no lugar novo. Meme na comparação: na frase do desenho animado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy folheando um caderno com a nave desenhada um pouco mais à frente em cada folha, com a legenda \"1 quadro, 2 quadros, 3 quadros\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.",
         "speech": [
-          "Esta é uma experiência para a gente entender o quadro. Cada quadro é uma imagem do jogo, e o jogo mostra uma imagem depois da outra, bem rápido. É como um desenho animado: cada imagem é um pouquinho diferente da anterior e, passando rápido, parece que o personagem se mexe.",
+          "Esta é uma experiência para a gente entender o quadro. Cada quadro é uma imagem do jogo, e o jogo mostra uma imagem depois da outra, bem rápido. É como um desenho animado: cada imagem é um pouco diferente da anterior e, passando rápido, parece que o personagem se mexe.",
           "Olha aqui: Desenhar a nave está em Só no começo. Eu clico em Avançar 1 quadro, e, na faixa, o x da nave muda de 10 para 54. Mas tá vendo? A imagem continua igual. É que o jogo desenhou a nave só no começo, por isso a imagem não acompanhou o x.",
           "Agora eu troco para A cada quadro e avanço alguns quadros. Olha só: a nave aparece no lugar novo, mas as naves velhas continuam na tela e formam um rastro. Isso acontece porque o jogo desenha de novo, mas não apaga o que já estava lá.",
           "Por último, eu ligo Limpar a tela antes e avanço mais quadros. Agora aparece uma nave só, sempre no lugar novo, porque, em cada quadro, o jogo limpa a tela e desenha a nave onde ela está. No seu projeto, o desenho da nave vai ficar dentro de A cada quadro do jogo.",
@@ -420,7 +400,7 @@
         "avatar": [
           {
             "after": "Olha aqui: Desenhar a nave está em Só no começo. Eu clico em Avançar 1 quadro, e, na faixa, o x da nave muda de 10 para 54. Mas tá vendo? A imagem continua igual. É que o jogo desenhou a nave só no começo, por isso a imagem não acompanhou o x.",
-            "speech": "A nave já foi para outro lugar, e eu nem vi!",
+            "speech": "A nave mudou de lugar e o desenho ficou parado?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           },
@@ -435,11 +415,11 @@
       {
         "key": "motor-e-nave",
         "title": "Mostre a nave a cada quadro",
-        "bridge": "Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
+        "bridge": "Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Começar pela retomada, antes de qualquer bloco: no \"Tá vendo?\", mostrar a tela ainda lisa, sem a nave. Montar A cada quadro do jogo e Desenhar o sprite, escolhendo nave, com o destino à vista antes de abrir a paleta. Mostrar a nave aparecer e permanecer parada.",
         "speech": [
           "Olhe a tela do seu jogo. Tá vendo? A nave não aparece, porque ela foi criada, mas ainda não foi desenhada.",
-          "Lembra da experiência da parte anterior? Desenhada a cada quadro, a imagem da nave acompanhou o lugar dela. Agora a gente vai desenhar a nave do seu jogo!",
+          "Lembra da experiência da parte anterior? Quando o jogo desenhava a nave em cada quadro, o desenho acompanhava o movimento dela. Agora a gente vai desenhar a nave do seu jogo!",
           "O desenho vai dentro de uma repetição, que fica em Enquanto estiver rodando, a área das ações que continuam durante o jogo. Deixe à vista o espaço de dentro dessa área.",
           "Agora abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadro do jogo. Arraste para dentro de Enquanto estiver rodando e solte quando aparecer o encaixe. Esse bloco repete o que está dentro dele em cada quadro, enquanto o jogo continua.",
           "O desenho da nave vai dentro dessa repetição: deixe à vista o espaço de dentro de A cada quadro do jogo. No jogo, a nave é um sprite, que é um objeto do jogo que você pode programar. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro de A cada quadro do jogo.",
@@ -526,7 +506,7 @@
           },
           {
             "id": "tela",
-            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado neste curso.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -540,22 +520,7 @@
         ],
         "final": true,
         "videoKey": "video-motor-e-nave",
-        "kind": "delivery",
-        "avatar": [
-          {
-            "after": "Agora abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadro do jogo. Arraste para dentro de Enquanto estiver rodando e solte quando aparecer o encaixe. Esse bloco repete o que está dentro dele em cada quadro, enquanto o jogo continua.",
-            "speech": "Agora falta dizer o que ele vai desenhar!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "porque o seu jogo só desenha a nave e ainda não tem nada que a faça andar.",
-            "speech": "A minha nave apareceu!",
-            "beforeScreen": "Concluir o desenho e mostrar a nave parada perto da parte de baixo da tela.",
-            "afterScreen": "Manter a nave visível e apontar os blocos durante a conferência condicional; seguir para verificar e enviar.",
-            "reply": "E a sua, apareceu também?"
-          }
-        ]
+        "kind": "delivery"
       }
     ],
     "legacyKeys": [],
@@ -623,7 +588,7 @@
         },
         "avatar": {
           "after": "A velocidade é o tamanho do passo da nave em cada quadro.",
-          "speech": "Quero testar um passo menor.",
+          "speech": "E se a gente testar um passo menor?",
           "beforeScreen": "Mostrar os três avanços com velocidade 3 e deixar x em 217.",
           "afterScreen": "Recomeçar e testar velocidade 1, com os números e a nave à vista."
         }
@@ -678,12 +643,6 @@
             "speech": "E qual velocidade eu uso?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Olha só: a nave anda!",
-            "speech": "Foi! A nave andou!",
-            "beforeScreen": "Soltar a seta e deixar visíveis a nave e seu rastro, sem corrigir o rastro antes da explicação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       },
@@ -694,7 +653,7 @@
         "screen": "Começar pela retomada, antes de qualquer bloco: segurar uma seta e, no \"Tá vendo?\", manter o rastro à vista. Montar somente Limpar a tela antes do movimento, com o primeiro encaixe à vista antes de abrir a paleta, e repetir o mesmo teste. Ainda não há estrelas.",
         "speech": [
           "Clique no seu jogo e segure uma seta. Tá vendo? Fica um rastro de naves, porque nada apaga o desenho de antes.",
-          "Lembra da experiência do desenho a cada quadro, na primeira fase? Com a limpeza ligada, sobrava uma nave só. Agora a gente vai limpar a tela do seu jogo!",
+          "Lembra da experiência do desenho a cada quadro, na primeira aula? Com a limpeza ligada, sobrava uma nave só. Agora a gente vai limpar a tela do seu jogo!",
           "A limpeza tem que acontecer no começo de cada quadro, antes de tudo. Por isso, deixe à vista o primeiro encaixe de A cada quadro do jogo, logo acima do bloco de movimento.",
           "Agora abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, e pegue o bloco Limpar a tela. Arraste e solte no começo de A cada quadro do jogo, logo acima do movimento, quando aparecer o encaixe.",
           "Teste a mesma seta de novo. Olha só: agora aparece uma nave só, porque a tela é limpa antes de cada desenho! E Limpar apaga só o desenho, e não a nave que foi criada.",
@@ -732,7 +691,7 @@
         "bridge": "Sua vez! Rode sem o limite, depois recomece, ligue Manter dentro da tela e rode de novo. Quando terminar, clique em Próxima parte.",
         "screen": "Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Manter dentro da tela desligado, ligar Segurar a seta para a direita, clicar em Rodar e acompanhar a nave até sair inteira da tela. Clicar em Recomeçar, ligar Manter dentro da tela, clicar em Rodar e mostrar a nave parada inteira na borda, com x 416. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.",
         "speech": [
-          "Esta é a mesma experiência da primeira parte desta fase, agora para a gente entender o limite da tela.",
+          "Esta é a mesma experiência da primeira parte desta aula, agora para a gente entender o limite da tela.",
           "Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. Tá vendo? A nave anda, chega à borda e continua até sair inteira da tela, porque, sem limite, o jogo soma o passo em cada quadro, mesmo depois da borda.",
           "Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: a nave anda até a borda e para ali, inteira na tela, com o x em 416. É que, em cada quadro, depois de mover, o jogo confere a borda e segura a nave do lado de dentro. No seu jogo, Manter o sprite dentro da tela vai ficar logo depois do movimento.",
           "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
@@ -756,7 +715,7 @@
         },
         "avatar": {
           "after": "mesmo depois da borda.",
-          "speech": "Minha nave foi embora!",
+          "speech": "E se a nave sair da tela?",
           "beforeScreen": "Deixar a nave sair inteira da tela com a regra do limite desligada.",
           "afterScreen": "Recomeçar, ligar Manter dentro da tela e repetir o movimento até a borda.",
           "reply": "Vamos colocar um limite para ela ficar na tela."
@@ -824,12 +783,6 @@
           {
             "after": "Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela. Arraste e solte entre Mover o sprite com as setas e Desenhar o sprite, quando aparecer o encaixe.",
             "speech": "Esse nome heroi é o da minha nave?",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Agora teste: clique na área do jogo, segure a seta para a esquerda até chegar à borda e depois segure a seta para a direita até a outra borda. Olha só: a nave para nos dois lados e continua inteira na tela!",
-            "speech": "Parou bem na borda!",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
@@ -938,12 +891,6 @@
             "speech": "Ué, cadê a nave?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
             "afterScreen": "Depois da saída, apontar as estrelas por cima da nave junto do Olha só, antes de mover o bloco."
-          },
-          {
-            "after": "Solte qualquer peça que estiver segurando e deixe Limpar a tela à vista. Depois, arraste o bloco das estrelas e solte logo abaixo de Limpar a tela, antes do movimento. Agora a nave aparece de novo, na frente das estrelas, porque as estrelas passaram a ser desenhadas antes dela.",
-            "speech": "Voltou! Ela ficou na frente das estrelas!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       },
@@ -999,7 +946,7 @@
       {
         "key": "entrega",
         "title": "Teste e envie sua nave",
-        "bridge": "Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
+        "bridge": "Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Conferir a sequência e os testes, depois demonstrar a verificação e a confirmação de envio.",
         "speech": [
           "Agora teste a sua nave antes de enviar. Clique na área do jogo e leve a nave até cada borda: ela tem que parar inteira na tela e continuar na frente das estrelas, porque o limite e a ordem dos desenhos estão funcionando juntos.",
@@ -1008,7 +955,7 @@
         "checks": [
           {
             "id": "tela",
-            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado nesta aventura.",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado neste curso.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -1278,7 +1225,7 @@
         "bridge": "Sua vez! Compare Criar um tiro em Quando acontecer e em Enquanto estiver rodando. No primeiro teste, espere parar e só depois clique em Apertar a tecla. Quando terminar, clique em Próxima parte.",
         "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Criar um tiro em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado sem clicar em Apertar a tecla, mostrando a peça em 0 vezes. Clicar em Apertar a tecla e mostrar um tiro e a peça em 1 vez. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar 5 tiros no fim do teste. Meme na comparação: na frase da campainha, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy tocando a campainha de uma porta, com a legenda \"chegou, tocou\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.",
         "speech": [
-          "Esta é a mesma experiência da primeira fase, agora para a gente entender o evento: uma ação que espera uma tecla. Ela ganhou uma área nova, Quando acontecer.",
+          "Esta é a mesma experiência da primeira aula, agora para a gente entender o evento: uma ação que espera uma tecla. Ela ganhou uma área nova, Quando acontecer.",
           "Olha aqui: eu coloco Criar um tiro em Quando acontecer e clico em Começar o jogo. O jogo roda e o teste para, mas tá vendo? Nenhum tiro nasce, e a peça mostra 0 vezes. É que Quando acontecer espera um acontecimento, e ninguém clicou em Apertar a tecla.",
           "Agora eu clico em Apertar a tecla. Olha só: na mesma hora, nasce um tiro, e a peça mostra 1 vez, porque a tecla foi o acontecimento que a ação esperava. É como a campainha de casa: ela não toca sozinha, espera alguém chegar e tocar.",
           "Por último, eu levo Criar um tiro para Enquanto estiver rodando e clico em Começar o jogo. Nascem tiros sem parar, um em cada quadro, e o teste termina com 5 tiros, mesmo sem ninguém clicar em Apertar a tecla. Por isso, no seu jogo, Criar tiro vai ficar dentro de Quando acontecer, esperando a barra de espaço.",
@@ -1336,14 +1283,7 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-tres-areas",
-        "avatar": {
-          "after": "e ninguém clicou em Apertar a tecla.",
-          "speech": "Ah! Sem a tecla, o tiro não nasce!",
-          "beforeScreen": "Deixar o primeiro teste terminar sem tiros e apontar 0 vezes na peça.",
-          "afterScreen": "Clicar em Apertar a tecla depois da resposta e continuar a comparação com a repetição.",
-          "reply": "Isso mesmo."
-        }
+        "activityKey": "experiencia-tres-areas"
       },
       {
         "key": "escrito-e-lido",
@@ -1452,7 +1392,7 @@
         "screen": "Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, tocar na barra de espaço e, no \"Tá vendo?\", mostrar que nada acontece. Abrir cada caminho com o destino à vista antes. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades.",
         "speech": [
           "Clique no seu jogo e toque na barra de espaço. Tá vendo? Nada acontece, porque o jogo ainda não tem nada ligado a essa tecla.",
-          "Lembra das três experiências desta fase? O tiro esperava a tecla, nascia na nave e subia. Agora a gente vai montar esse disparo no seu jogo!",
+          "Lembra das três experiências desta aula? O tiro esperava a tecla, nascia na nave e subia. Agora a gente vai montar esse disparo no seu jogo!",
           "Como vão ser muitos tiros, eles ficam juntos num grupo, que é um conjunto de objetos que o jogo move e desenha de uma vez. O grupo é criado uma vez só, quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista, logo depois de Criar nave.",
           "Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. Repare: o nome chega como asteroides, mas este grupo é o dos tiros. Troque asteroides por tiros e clique fora do campo.",
           "Agora o disparo. Tocar numa tecla é um evento, que é algo que acontece no jogo, e os blocos que ficam dentro de um evento só funcionam quando ele acontece. Os eventos ficam numa área própria, Quando acontecer, que o seu projeto ainda não tem. Para criar essa área, deixe à vista um lugar vazio do espaço dos blocos. Se não tiver nenhum à vista, é só arrastar um espaço vazio entre os blocos até aparecer um. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse lugar.",
@@ -1623,26 +1563,8 @@
         "kind": "practice",
         "avatar": [
           {
-            "after": "Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. Repare: o nome chega como asteroides, mas este grupo é o dos tiros. Troque asteroides por tiros e clique fora do campo.",
-            "speech": "O grupo dos tiros está pronto!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Deixe à vista o espaço de dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe. No menu da tecla, escolha barra de espaço.",
-            "speech": "Vou poder atirar com a barra de espaço!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
             "after": "Agora o lugar de onde o tiro sai: o x vai ler a posição da nave. Deixe à vista o número do campo x do tiro. Abra Jogo 2D, depois Movimento e depois Posição e tamanho, pegue o bloco o centro x do sprite e solte em cima desse número. Ele toma o lugar do número. Escolha nave.",
             "speech": "E a altura de onde sai o tiro?",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Por último, o som. Deixe à vista o encaixe logo abaixo de Criar tiro, ainda dentro da tecla. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte logo abaixo de Criar tiro. No menu, escolha tiro grande.",
-            "speech": "O disparo também vai ter som!",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
@@ -1691,21 +1613,7 @@
         ],
         "final": false,
         "videoKey": "video-tiros-voam",
-        "kind": "practice",
-        "avatar": [
-          {
-            "after": "Agora abra Jogo 2D, depois Grupos e depois Movimento, e pegue o bloco Mover os sprites do grupo usando suas velocidades. Arraste e solte logo depois de Desenhar o sprite nave e escolha tiros. Esse bloco faz cada tiro andar com a velocidade que ele recebeu ao nascer, ou seja, vy -9, para cima.",
-            "speech": "Já tem movimento. Falta desenhar!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Olha só: o tiro sai da nave e sobe!",
-            "speech": "O tiro saiu da nave!",
-            "beforeScreen": "Esperar o tiro aparecer e subir, depois interromper os controles para a fala.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          }
-        ]
+        "kind": "practice"
       },
       {
         "key": "tiro-que-sai-da-tela",
@@ -1763,11 +1671,11 @@
       {
         "key": "faxina",
         "title": "Retire os tiros que saíram",
-        "bridge": "Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
+        "bridge": "Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Começar pela retomada: atirar algumas vezes e, no \"Tá vendo?\", mostrar os tiros sumindo pela borda de cima, sem prometer que o grupo foi limpo. Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador.",
         "speech": [
           "Clique no seu jogo e atire. Tá vendo? Os tiros somem porque saíram da tela, mas isso não mostra se saíram do grupo.",
-          "Lembra da experiência da parte anterior? Ligada, a regra tirava do grupo quem saía da tela. Agora a gente vai pôr essa regra no seu jogo!",
+          "Lembra da experiência da parte anterior? Com a regra ligada, quem saía da tela também saía do grupo. Agora a gente vai pôr essa regra no seu jogo!",
           "A limpeza acontece em todo quadro, depois que os tiros andam e antes de eles serem desenhados. Por isso, deixe à vista o espaço entre Mover os sprites do grupo tiros e Desenhar o grupo tiros, dentro de A cada quadro do jogo.",
           "Agora abra Jogo 2D, depois Grupos e depois Participação e limpeza, e pegue o bloco Tirar do grupo quem sair da tela. Arraste e solte entre Mover os sprites do grupo e Desenhar o grupo dos tiros, quando aparecer o encaixe.",
           "No grupo, escolha tiros. O bloco também tem o campo chamado, que já vem com sprite: não mexa nele e deixe vazio o espaço de dentro do bloco, porque aqui ele só precisa tirar os tiros do grupo.",
@@ -1974,12 +1882,6 @@
             "speech": "Qual grupo eu escolho aqui?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Confira se ficou assim: dentro de A cada quadro do jogo, a sequência dos tiros é Mover os sprites do grupo tiros, Tirar do grupo tiros quem sair da tela e Desenhar o grupo tiros, nessa ordem.",
-            "speech": "Vou conferir se os tiros continuam saindo da nave!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       }
@@ -2062,11 +1964,11 @@
         "kind": "exploration",
         "videoKey": "video-intervalo-das-pedras",
         "bridge": "Sua vez! Compare criar pedras em cada quadro, a cada 40 e a cada 20 quadros, olhando o nascimento e a queda. Quando terminar, clique em Próxima parte.",
-        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Criar asteroide em A cada quadro, clicar em Tempo, deixar passar cerca de um segundo e mostrar umas 30 pedras amontoadas. Levar a peça para a caixa A cada 40 quadros, deixar passar cerca de quatro segundos e mostrar as pedras nascendo separadas e a marca relógio 40: 180 em 60 quadros. Escolher 20 quadros, deixar passar mais três segundos e mostrar relógio 20: 180 em 60 quadros abaixo da primeira marca. A faixa mostra o intervalo em segundos (1,33 s); a fala usa quadros, como o bloco. Meme na comparação: na frase da fila do escorregador, mostrar por 2 a 3 segundos o meme ilustrado nosso, asteroides amontoados num escorregador e depois descendo um de cada vez, com o Zappy organizando a fila, com a legenda \"um de cada vez\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Criar asteroide em A cada quadro, clicar em Tempo, deixar passar cerca de um segundo e mostrar umas 30 pedras amontoadas. Levar a peça para a caixa A cada 40 quadros, deixar passar cerca de quatro segundos e mostrar as pedras nascendo separadas e a marca relógio 40: 180 em 60 quadros. Escolher 20 quadros, deixar passar mais três segundos e mostrar relógio 20: 180 em 60 quadros abaixo da primeira marca. A faixa mostra o intervalo em segundos (1,33 s); a fala usa quadros, como o bloco. Meme na comparação: na frase da fila de pessoas passando por uma porta, mostrar por 2 a 3 segundos o meme ilustrado nosso, asteroides amontoados numa porta e depois passando um de cada vez, com o Zappy organizando a fila, com a legenda \"um de cada vez\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.",
         "speech": [
           "Esta é uma experiência para a gente entender o intervalo: quanto tempo o jogo espera entre uma pedra e outra.",
           "Olha aqui: Criar asteroide está em A cada quadro. Eu clico em Tempo e deixo passar mais ou menos um segundo. Tá vendo? Nascem umas 30 pedras, uma em cada quadro, grudadas umas nas outras. Vira um amontoado, e ninguém conseguiria passar por ali.",
-          "É como a fila do escorregador: se todo mundo desce junto, vira um amontoado, mas, se cada um espera a sua vez, sobra espaço entre um e outro.",
+          "É como a fila de pessoas passando por uma porta: se todo mundo passa junto, vira um amontoado, mas, se cada um espera a sua vez, sobra espaço entre um e outro.",
           "Agora eu levo Criar asteroide para a caixa A cada 40 quadros, e tudo recomeça do zero. Deixo passar uns quatro segundos. Olha só: nasce uma pedra, depois outra, depois outra, com espaço entre elas, porque o relógio espera 40 quadros antes de criar a próxima.",
           "Por último, eu escolho 20 quadros e deixo passar mais três segundos. As pedras nascem mais perto umas das outras, mas repare: cada pedra desce o mesmo tanto, 180 em 60 quadros, igual antes. Ou seja, o intervalo muda quantas pedras nascem, e não a velocidade de cada uma. No seu jogo, o relógio vai criar uma pedra a cada 40 quadros.",
           "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
@@ -2180,12 +2082,6 @@
             "speech": "E quando vai nascer cada pedra?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "O número do intervalo chega em 30. Troque por 40, porque o seu jogo vai criar uma pedra a cada 40 quadros. Assim, A cada quadro do jogo continua cuidando de cada imagem da partida, e A cada 40 quadros espera esse intervalo para fazer o que estiver dentro dele.",
-            "speech": "Vai dar um tempinho entre uma pedra e outra!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       },
@@ -2231,7 +2127,7 @@
         "activityKey": "experiencia-sorteio",
         "avatar": {
           "after": "e o mesmo número pode sair de novo.",
-          "speech": "Mas a pedra está fora da tela!",
+          "speech": "Mas por que criar a pedra fora da tela?",
           "beforeScreen": "Fazer os sorteios e mostrar a pedra acima da borda, sem iniciar o tempo ainda.",
           "afterScreen": "Apontar a posição inicial e clicar em Tempo só quando a professora anunciar o gesto."
         }
@@ -2359,21 +2255,9 @@
         "kind": "practice",
         "avatar": [
           {
-            "after": "Agora o lugar onde a pedra nasce. Em vez de um número fixo no x, a pedra vai nascer num lugar sorteado, por isso deixe à vista o número do campo x do asteroide. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um x aleatório na tela e solte em cima desse número.",
-            "speech": "Agora não dá para esperar todas no mesmo lugar!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
             "after": "Agora as pedras precisam andar, sair do grupo quando passarem da tela e aparecer, em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo tiros. Abra Jogo 2D, depois Grupos e depois Movimento, pegue o bloco Mover os sprites do grupo usando suas velocidades e solte nesse lugar. O grupo já vem asteroides, e nos dois próximos blocos também: é só manter.",
             "speech": "E como tira as pedras que saem da tela?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Olha só: as pedras entram pela parte de cima e caem!",
-            "speech": "Lá vêm as pedras!",
-            "beforeScreen": "Esperar as pedras aparecerem; a criança sai antes do disparo que ainda atravessa a pedra.",
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
@@ -2381,11 +2265,11 @@
       {
         "key": "entrega",
         "title": "Teste e envie a sua chuva de pedras",
-        "bridge": "Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
+        "bridge": "Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Clicar na área do jogo e dar tempo para observar algumas pedras nascendo e caindo. Depois mover a nave e atirar, mostrando o tiro atravessando as pedras. Não trocar valores nesta parte. Não confundir quadros com segundos.",
         "speech": [
           "Agora teste o seu jogo inteiro. Clique na área do jogo e olhe as pedras: elas entram pela parte de cima, uma a cada 40 quadros, e caem sempre no mesmo ritmo, porque a velocidade de cada uma é vy 3.",
-          "Depois mova a nave e atire. As setas e os tiros precisam continuar funcionando como antes, agora com as pedras caindo. Por enquanto o tiro atravessa as pedras, e isso é esperado: o acerto vem na próxima fase."
+          "Depois mova a nave e atire. As setas e os tiros precisam continuar funcionando como antes, agora com as pedras caindo. Por enquanto o tiro atravessa as pedras, e isso é esperado: o acerto vem na próxima aula."
         ],
         "checks": [
           {
@@ -2565,7 +2449,7 @@
         "speech": [
           "Esta é uma experiência para a gente entender os apelidos: como escolher quem sai do jogo quando um tiro acerta uma pedra. Aqui há três tiros e três pedras, e só o tiro do meio vai encontrar uma pedra.",
           "Olha aqui: em O tiro que sai, eu escolho tiros, o grupo inteiro, e, em A pedra que sai, escolho asteroides, o grupo inteiro. Clico em Deixar a trombada acontecer. Tá vendo? Só um tiro encontrou uma pedra, mas sumiram todos: pedras no grupo e tiros no grupo foram para 0. É que o grupo inteiro quer dizer todos os objetos do grupo.",
-          "Na queimada, quando a bola acerta alguém, só essa pessoa sai, e o time inteiro continua jogando.",
+          "Na queimada, quando a bola acerta alguém, só essa pessoa sai, e o resto do time continua jogando.",
           "Agora eu clico em Voltar ao começo e escolho tiro, o apelido, e asteroide, o apelido. Clico em Deixar a trombada acontecer. Olha só: saem só o tiro e a pedra que se encontraram, e ficam 2 pedras e 2 tiros, porque o apelido aponta só para quem participou do encontro. Depois, eu clico em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo da tela: elas continuaram o caminho. No seu jogo, o acerto vai usar os apelidos tiro e asteroide.",
           "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
@@ -2602,7 +2486,7 @@
         "activityKey": "experiencia-trombada",
         "avatar": {
           "after": "o grupo inteiro quer dizer todos os objetos do grupo.",
-          "speech": "Sumiram todas! Eu só acertei uma.",
+          "speech": "Eu só acertei uma. Por que sumiram todas?",
           "beforeScreen": "Concluir a colisão com os grupos inteiros e deixar os dois contadores em zero.",
           "afterScreen": "Explicar a comparação com a queimada, voltar ao começo e escolher os apelidos antes de testar novamente."
         }
@@ -2733,19 +2617,6 @@
             "speech": "Como ele sabe qual tiro acertou qual pedra?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Deixe à vista o encaixe logo abaixo desse bloco. Na mesma categoria Participação e limpeza, pegue outro Tirar o sprite do grupo e solte nesse encaixe. Nesse segundo, o sprite já vem asteroide e o grupo já vem asteroides, que é o certo: mantenha os dois.",
-            "speech": "As outras pedras continuam vindo. Vou ter que acertar cada uma!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "aparece a explosão e os outros continuam!",
-            "speech": "Agora só saiu a pedra que eu acertei!",
-            "beforeScreen": "Concluir a montagem e o teste; deixar os outros tiros e pedras continuarem no jogo.",
-            "afterScreen": "Conferir a sequência completa para quem não obteve esse resultado e seguir a saída da parte.",
-            "reply": "Isso! O tiro que acertou também sai."
           }
         ]
       },
@@ -2801,7 +2672,7 @@
       {
         "key": "entrega",
         "title": "Confira os acertos e envie",
-        "bridge": "Hora de testar os acertos! Acerte pedras em lugares diferentes, confira se as outras continuam caindo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
+        "bridge": "Hora de testar os acertos! Acerte pedras em lugares diferentes, confira se as outras continuam caindo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Usar o projeto completo desta etapa. Testar sem pontos ou vidas, que ainda não foram construídos.",
         "speech": [
           "Agora teste os acertos do seu jogo. Mova a nave, atire e confira se cada tiro nasce nela. Depois, acerte pedras em lugares diferentes da tela.",
@@ -3222,11 +3093,11 @@
         "key": "caixa-de-pontos",
         "title": "Guarde e mostre um número",
         "bridge": "Sua vez! Mude pontos com o placar desligado, depois ligue Mostrar placar e compare. Quando terminar, clique em Próxima parte.",
-        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Mudar número guardado em pontos para 1 e voltar para 0. Com Mostrar placar desligado, clicar em Somar 1 em pontos duas vezes e mostrar o número guardado em 2, com a tela sem placar. Ligar Mostrar placar e mostrar Pontos: 2 na tela; somar 1 e mostrar os dois em 3. A comparação ajuda, mas não substitui os testes nos controles reais. Meme na comparação: na frase do bloquinho, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy anotando pontos: 2 num bloquinho, ao lado de um placar de estádio mostrando 2, com a legenda \"guardar · mostrar\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Mudar número guardado em pontos para 1 e voltar para 0. Com Mostrar placar desligado, clicar em Somar 1 em pontos duas vezes e mostrar o número guardado em 2, com a tela sem placar. Ligar Mostrar placar e mostrar Pontos: 2 na tela; somar 1 e mostrar os dois em 3. A comparação ajuda, mas não substitui os testes nos controles reais. Meme na comparação: na frase do caderno, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy anotando pontos: 2 num caderno, ao lado de um placar de estádio mostrando 2, com a legenda \"guardar · mostrar\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.",
         "speech": [
           "Esta é uma experiência para a gente entender a variável: o lugar onde o jogo guarda um número que pode mudar. Aqui, a variável se chama pontos.",
           "Olha aqui: eu mudo número guardado em pontos para 1 e depois volto para 0. Agora pontos existe e começa em 0, como no começo de uma partida. Com Mostrar placar desligado, eu clico em Somar 1 em pontos duas vezes. Tá vendo? O número guardado vai para 1 e depois para 2, mas a tela do jogo não mostra nada. Ou seja, o jogo guardou e mudou o número sem mostrar.",
-          "É como anotar os gols de um jogo num bloquinho: o número fica anotado, mesmo que ninguém esteja vendo. O placar do estádio só mostra o que já foi anotado.",
+          "É como anotar os gols de um jogo num caderno: o número fica anotado, mesmo que ninguém esteja vendo. O placar do estádio só mostra o que já foi anotado.",
           "Agora eu ligo Mostrar placar. Olha só: a tela mostra Pontos: 2, o mesmo número guardado. Clico em Somar 1 em pontos mais uma vez, e os dois vão para 3. Guardar, mudar e mostrar são três coisas diferentes. No seu jogo, a soma vai acontecer em cada acerto, e o placar vai mostrar o valor de pontos.",
           "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
@@ -3264,14 +3135,14 @@
         "avatar": {
           "after": "O placar do estádio só mostra o que já foi anotado.",
           "speech": "Como eu mostro os pontos que já estão guardados?",
-          "beforeScreen": "Somar dois pontos com o placar desligado e concluir a comparação com o bloquinho.",
+          "beforeScreen": "Somar dois pontos com o placar desligado e concluir a comparação com o caderno.",
           "afterScreen": "Ligar Mostrar placar e comparar o valor da tela com o valor guardado."
         }
       },
       {
         "key": "placar",
         "title": "Some um ponto a cada acerto",
-        "bridge": "Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir fase.",
+        "bridge": "Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir aula.",
         "screen": "Começar pela retomada: acertar uma pedra e, no \"Tá vendo?\", mostrar que nenhum placar aparece. Mostrar o contador inicial, um erro e dois acertos. O bloco de placar fica fora da colisão e depois dela.",
         "speech": [
           "Clique no seu jogo e acerte uma pedra. Tá vendo? Nenhum ponto aparece, porque o jogo ainda não conta os acertos.",
@@ -3283,7 +3154,7 @@
           "Agora o placar, que precisa aparecer em todo quadro, e não só no acerto. Por isso, ele fica fora da colisão: deixe à vista o encaixe logo depois do bloco inteiro da colisão, ainda dentro de A cada quadro do jogo.",
           "Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse encaixe. O texto já vem Pontos:, que é o que aparece antes do número: mantenha.",
           "O número do placar precisa ler o valor guardado em pontos. Deixe à vista o número do campo valor do placar. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima desse número e escolha pontos. Assim, o placar mostra o número que o jogo guardou, em vez de mostrar sempre o mesmo número.",
-          "O placar já vem em x 12, y 30 e tamanho 24: mantenha. Escolha a cor branca, para aparecer no fundo escuro. Esses números só posicionam e dimensionam o texto, e não mudam a pontuação.",
+          "O placar já vem em x 12, y 30 e tamanho 24: mantenha. Escolha a cor branca, para aparecer no fundo escuro. Esses números mudam o lugar e o tamanho do texto, sem mexer nos pontos.",
           "Agora teste: clique na área do jogo e deixe um tiro passar sem acertar. O placar tem que ficar igual, porque nenhum tiro acertou. Depois, acerte uma pedra. Olha só: Pontos vai para 1! E, se você acertar outra, o placar soma mais 1.",
           "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Criar variável pontos com valor 0. Dentro da colisão entre tiros e asteroides, depois de Tocar efeito explosão, está Somar 1 em variável pontos. E, logo depois da colisão, ainda dentro de A cada quadro do jogo, está Mostrar placar Pontos:, com o valor da variável pontos, em x 12, y 30 e tamanho 24. Depois de corrigir, teste de novo."
         ],
@@ -3401,24 +3272,6 @@
             "speech": "Onde eu coloco o bloco que soma?",
             "beforeScreen": "Concluir Criar variável pontos com valor 0 em Ao iniciar; soltar o mouse antes da entrada.",
             "afterScreen": "Localizar o fim da colisão, mostrar onde a soma entra e soltar Somar em variável nesse lugar. Depois, deixar à vista o encaixe logo depois da colisão, sem pegar o placar antes da próxima entrada."
-          },
-          {
-            "after": "Agora o placar, que precisa aparecer em todo quadro, e não só no acerto. Por isso, ele fica fora da colisão: deixe à vista o encaixe logo depois do bloco inteiro da colisão, ainda dentro de A cada quadro do jogo.",
-            "speech": "Mesmo sem acertar outra pedra, eu vou ver quantos pontos tenho!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "O número do placar precisa ler o valor guardado em pontos. Deixe à vista o número do campo valor do placar. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima desse número e escolha pontos. Assim, o placar mostra o número que o jogo guardou, em vez de mostrar sempre o mesmo número.",
-            "speech": "Se eu acertar mais uma pedra, o número muda junto!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Olha só: Pontos vai para 1!",
-            "speech": "Acertei e ganhei um ponto!",
-            "beforeScreen": "Manter o primeiro ponto visível, sem fazer outro disparo durante a fala.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       }
@@ -3458,8 +3311,8 @@
         "bridge": "Sua vez! Compare Dar três vidas à nave em Ao iniciar e em Enquanto estiver rodando, esperando cada teste parar e olhando os corações. Quando terminar, clique em Próxima parte.",
         "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Dar três vidas à nave em Ao iniciar, clicar em Começar o jogo e acompanhar os corações apagando até Vidas: 0 · Batidas: 3 e Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar os corações voltando para 3 no quadro depois de cada batida e Vidas: 2 no fim, porque a última batida cai no último quadro. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.",
         "speech": [
-          "Esta é a mesma experiência da primeira fase, agora para a gente entender onde as vidas da nave devem ser dadas. Aqui, uma pedra bate na nave de tempos em tempos.",
-          "Olha aqui: eu coloco Dar três vidas à nave em Ao iniciar e clico em Começar o jogo. A nave começa com 3 vidas, e cada batida apaga um coração. Tá vendo? No fim do teste, a tela mostra Vidas: 0 e Batidas: 3, porque as vidas foram dadas uma vez, no começo, e as batidas conseguiram tirar.",
+          "Esta é a mesma experiência da primeira aula, agora para a gente entender onde as vidas da nave devem ser dadas. Aqui, uma pedra bate na nave de tempos em tempos.",
+          "Olha aqui: eu coloco Dar três vidas à nave em Ao iniciar e clico em Começar o jogo. A nave começa com 3 vidas, e cada batida apaga um coração. Tá vendo? No fim do teste, a tela mostra Vidas: 0 e Batidas: 3, porque as vidas foram dadas uma vez, no começo, e cada batida tirou uma vida.",
           "Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo. Repare: a batida apaga um coração, mas, no quadro seguinte, as vidas voltam para 3. No fim do teste, aparece Vidas: 2, porque a última batida foi bem no último quadro. Ou seja, a peça devolve as vidas o tempo todo, e a nave nunca perderia. Por isso, no seu jogo, as vidas vão ser dadas em Ao iniciar.",
           "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
@@ -3513,7 +3366,7 @@
         },
         "activityKey": "experiencia-uma-vez",
         "avatar": {
-          "after": "as batidas conseguiram tirar.",
+          "after": "cada batida tirou uma vida.",
           "speech": "E se eu der as vidas o tempo todo?",
           "beforeScreen": "Concluir o teste em Ao iniciar com Vidas: 0 e Batidas: 3.",
           "afterScreen": "Levar a peça para Enquanto estiver rodando e mostrar o resultado real, inclusive Vidas: 2 no último quadro."
@@ -3526,7 +3379,7 @@
         "screen": "Começar pela retomada: no \"Tá vendo?\", mostrar a tela sem corações. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida.",
         "speech": [
           "Olhe a tela do seu jogo. Tá vendo? Não tem nenhum coração, porque a nave ainda não tem vidas.",
-          "Lembra da experiência da parte anterior? Dadas em Ao iniciar, as vidas caíam a cada batida e não voltavam. Agora a gente vai dar três vidas à nave do seu jogo!",
+          "Lembra da experiência da parte anterior? Com as vidas em Ao iniciar, cada batida tirava uma vida, sem devolver depois. Agora a gente vai dar três vidas à nave do seu jogo!",
           "As vidas são dadas uma vez, quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista, logo depois de Criar variável pontos.",
           "Agora abra Jogo 2D, depois Vida e placar e depois Vida, e pegue o bloco Dar ao sprite de vida. Arraste e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas.",
           "Agora os corações, que precisam ser desenhados em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo depois do placar. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Desenhar as vidas do sprite e solte nesse lugar.",
@@ -3615,7 +3468,7 @@
           "Esta é uma experiência para a gente entender a proteção depois de uma batida: um tempinho em que outra batida não tira vida. Aqui, as pedras batem nos quadros 1, 10 e 30.",
           "Olha aqui: eu escolho 0 quadros em Proteção em quadros e clico em Avançar até a próxima pedra três vezes. Tá vendo? Cada batida apaga um coração, e a nave fica sem vidas, porque, sem proteção, as três batidas tiram as três vidas.",
           "Eu clico em Voltar ao começo, escolho 45 quadros e repito as três batidas. A primeira tira uma vida, e a proteção começa com 45 quadros. Repare: na batida do quadro 10, ainda restam 36 quadros de proteção, e a vida não cai. Na do quadro 30, ainda restam 16. Ou seja, só a primeira batida tirou vida.",
-          "Por último, eu volto ao começo e escolho 15 quadros. A primeira batida tira uma vida, e, na batida do quadro 10, restam 6 quadros, por isso a vida não cai. Mas, no quadro 30, a proteção já acabou, e olha só: essa batida tira outra vida. A proteção é um respiro com prazo. No seu jogo, a batida vai dar 45 quadros de proteção.",
+          "Por último, eu volto ao começo e escolho 15 quadros. A primeira batida tira uma vida, e, na batida do quadro 10, restam 6 quadros, por isso a vida não cai. Mas, no quadro 30, a proteção já acabou, e olha só: essa batida tira outra vida. Durante esse intervalo, outra batida não tira vida. No seu jogo, a batida vai dar 45 quadros de proteção.",
           "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "checks": [],
@@ -3778,12 +3631,6 @@
             "speech": "Falta tirar a vida da nave, né?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Olha só: a pedra sai, a tela treme e um coração apaga!",
-            "speech": "Um coração apagou!",
-            "beforeScreen": "Esperar a batida e a tremida acabarem; manter os corações à vista.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       },
@@ -3839,7 +3686,7 @@
       {
         "key": "entrega",
         "title": "Teste os pontos e as vidas",
-        "bridge": "Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
+        "bridge": "Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Testar as duas colisões e inspecionar os encaixes, preservando os blocos anteriores.",
         "speech": [
           "Agora teste os pontos e as vidas do seu jogo. Faça um tiro errar: os pontos têm que ficar iguais. Depois, acerte uma pedra e confira se soma um ponto. Por último, deixe uma pedra bater na nave e confira se ela perde uma vida.",
@@ -4346,14 +4193,7 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-estado",
-        "avatar": {
-          "after": "todo mundo espera o sinal de largada, e ninguém sai correndo antes.",
-          "speech": "Agora as pedras estão esperando a partida!",
-          "beforeScreen": "Deixar passar quatro segundos na abertura, com a peça dentro do Se e o contador esperando.",
-          "afterScreen": "Começar por toque na experiência e distinguir esse começo pronto do Enter que será programado no projeto.",
-          "reply": "Isso. Vamos começar para ver o que muda."
-        }
+        "activityKey": "experiencia-estado"
       },
       {
         "key": "embrulhar",
@@ -4532,34 +4372,10 @@
         "kind": "practice",
         "avatar": [
           {
-            "after": "Não apague nem crie cópias, porque daqui a pouco essa sequência volta inteira para dentro do Se.",
-            "speech": "A sequência saiu inteira, sem apagar nada!",
-            "beforeScreen": "Parar com a sequência inteira solta fora de A cada quadro do jogo.",
-            "afterScreen": "Depois da saída, mostrar A cada quadro do jogo vazio."
-          },
-          {
-            "after": "Assim, o Se pergunta se a partida já começou.",
-            "speech": "Posso ficar na abertura sem perder uma vida!",
-            "beforeScreen": "Parar com jogando escolhido ao lado de Se.",
-            "afterScreen": "Depois da saída, devolver a sequência ao então junto da fala."
-          },
-          {
-            "after": "pegue outro o estado do jogo é, solte nesse lugar e deixe inicio no menu.",
-            "speech": "Quem chegar ao meu jogo vai ver essa tela primeiro!",
-            "beforeScreen": "Parar com inicio ao lado de senão se.",
-            "afterScreen": "Depois da saída, mostrar o espaço do então desse senão se."
-          },
-          {
             "after": "O fundo já vem escuro, e o texto aparece bem nele: é só manter.",
-            "speech": "E como o jogo começa nessa tela?",
+            "speech": "E como o jogo sabe que deve começar na abertura?",
             "beforeScreen": "Parar com Mostrar tela preenchido à vista.",
             "afterScreen": "Depois da saída, mostrar o fim de Ao iniciar."
-          },
-          {
-            "after": "Olha só: a abertura aparece!",
-            "speech": "A abertura apareceu!",
-            "beforeScreen": "Manter a abertura real à vista. A tecla Enter ainda não inicia a partida nesta parte.",
-            "afterScreen": "Depois da saída, seguir para a conferência dos blocos."
           }
         ]
       },
@@ -4747,12 +4563,6 @@
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           },
           {
-            "after": "Agora os tiros. Encontre o evento da barra de espaço, em Quando acontecer, e deixe à vista um espaço livre perto dele. Pegue a sequência pelo primeiro bloco, Criar tiro, e solte nesse espaço por enquanto. Tocar efeito vai junto, porque está encaixado logo abaixo.",
-            "speech": "Assim não vai ter barulho de tiro antes de começar!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
             "after": "porque o Se responde não enquanto o jogo está em inicio.",
             "speech": "E como eu confiro se as pedras também esperam?",
             "beforeScreen": "Concluir a montagem e o teste sem som na abertura, sem concluir nada pela ausência de pedras na imagem.",
@@ -4764,11 +4574,11 @@
       {
         "key": "enter",
         "title": "Use Enter para começar",
-        "bridge": "Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
+        "bridge": "Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Começar tocando em Enter com a abertura na tela e, no \"Tá vendo?\", mostrar que nada muda. Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda.",
         "speech": [
           "Primeiro, clique na área do jogo e toque em Enter. Tá vendo? A abertura continua na tela, porque o seu jogo ainda não sabe o que fazer quando alguém toca nessa tecla. Agora programe o Enter para começar a partida.",
-          "O Enter é uma tecla, ou seja, um evento, igual à barra de espaço. Por isso, ele vai em Quando acontecer, abaixo do evento inteiro da barra de espaço: deixe esse lugar à vista.",
+          "Tocar na tecla Enter é um evento, assim como tocar na barra de espaço. Por isso, ele vai em Quando acontecer, abaixo do evento inteiro da barra de espaço: deixe esse lugar à vista.",
           "Agora abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte abaixo do evento inteiro da barra de espaço, sem encaixar dentro dele. No menu da tecla, escolha Enter.",
           "O Enter só pode começar a partida quando o jogo está na abertura, por isso dentro desse evento vai um Se. Deixe à vista o espaço de dentro do evento Enter. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço. Arraste a pergunta x maior que 0 para a lixeira e deixe à vista o lugar vazio ao lado de Se.",
           "Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e deixe inicio no menu.",
@@ -5125,12 +4935,6 @@
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           },
           {
-            "after": "Deixe à vista o espaço do então desse Se. Na mesma categoria Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha jogando. Assim, o Enter começa a partida só quando o jogo está na abertura.",
-            "speech": "Vou testar o Enter!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
             "after": "Agora teste: clique na área do jogo e toque em Enter. Olha só: a abertura some e a partida começa! Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas.",
             "speech": "E se eu tocar em Enter no meio da partida?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
@@ -5370,12 +5174,6 @@
         "kind": "practice",
         "avatar": [
           {
-            "after": "O nome chega como PI: troque PI por alvo e o 0 do valor por 26.",
-            "speech": "Preciso fazer 26 pontos para ganhar!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
             "after": "No sinal, clique em > e escolha ≥, que quer dizer maior ou igual.",
             "speech": "E do outro lado vai a meta?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
@@ -5390,12 +5188,6 @@
           {
             "after": "solte dentro do então e escolha fim.",
             "speech": "E se as duas coisas acontecerem juntas?",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "e o Se as vidas do sprite nave acabaram?, que muda o estado para fim.",
-            "speech": "Agora dá para terminar ganhando ou perdendo!",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
@@ -5535,21 +5327,9 @@
         "kind": "practice",
         "avatar": [
           {
-            "after": "O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado desse senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha vitoria.",
-            "speech": "Agora falta desenhar a tela de vitória!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
             "after": "Agora os textos da vitória: no título, escreva Você ganhou!, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.",
             "speech": "E a tela de quando eu perder?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Olha só: aparece a tela Você perdeu!",
-            "speech": "Agora apareceu o fim da partida!",
-            "beforeScreen": "Esperar as vidas acabarem e manter a tela de derrota real visível.",
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
@@ -5609,7 +5389,7 @@
         "activityKey": "experiencia-reiniciar",
         "avatar": {
           "after": "Se ninguém arruma as peças, a partida nova já começa bagunçada.",
-          "speech": "Eu quero recomeçar com tudo arrumado!",
+          "speech": "Como faz para começar outra partida com tudo no lugar?",
           "beforeScreen": "Concluir o teste em que mudar o estado mantém as pedras antigas e terminar a comparação com o tabuleiro.",
           "afterScreen": "Trocar para Reiniciar o jogo e mostrar abertura e nova partida com a pista limpa."
         }
@@ -5685,20 +5465,8 @@
         "kind": "practice",
         "avatar": [
           {
-            "after": "Encontre o evento Enter em Quando acontecer. A condição dentro dele já começa a partida quando o estado é inicio, e esse pedaço fica como está. Na linha de baixo do Se que está dentro do evento Enter, clique uma vez no + que fica antes de senão se.",
-            "speech": "Primeiro, o Enter precisa saber se a partida acabou!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
             "after": "Deixe à vista o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço.",
             "speech": "E quando eu ganhar? Também quero jogar de novo!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Agora teste: perca uma partida e toque em Enter. Olha só: a abertura volta! Toque em Enter outra vez, porque é esse segundo Enter que começa a partida nova. Repare que o placar está em zero e os três corações voltaram, porque Reiniciar o jogo fez a preparação de novo.",
-            "speech": "As vidas voltaram e os pontos zeraram!",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
             "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
@@ -5776,7 +5544,7 @@
       {
         "key": "entrega",
         "title": "Teste o jogo completo e compartilhe",
-        "bridge": "Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir fase.",
+        "bridge": "Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula.",
         "screen": "Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, envio, confirmação e publicação opcional, com o resumo já preenchido, Seu jogo está no Mural!, Copiar link de jogar e Fechar. A comemoração nomeia o que a pessoa programou e o resultado no jogo; o preparo dos desenhos fica nas notas da equipe, sem ressalva na fala.",
         "speech": [
           "Agora teste o ciclo completo do seu jogo. Na abertura, clique na área do jogo e toque na barra de espaço. Repare: não sai som de tiro, porque criar tiros e criar asteroides ficam dentro de Se jogando. Confira também nos blocos se os dois estão lá.",
@@ -6551,21 +6319,7 @@
         "final": true,
         "videoKey": "video-ciclo-completo",
         "kind": "delivery",
-        "publish": true,
-        "avatar": [
-          {
-            "after": "Toque em Enter, mova a nave e atire. Depois, deixe as três vidas acabarem e confira a tela Você perdeu. Toque em Enter para voltar à abertura e mais uma vez para começar, e confira se a partida nova começa com zero pontos e três corações.",
-            "speech": "Agora quero tentar chegar na vitória!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
-          },
-          {
-            "after": "Seu jogo está no Mural! Que conquista!",
-            "speech": "Quero chamar alguém para jogar o meu!",
-            "beforeScreen": "Mostrar a confirmação Seu jogo está no Mural!, com Copiar link de jogar à vista, e manter a janela parada durante a fala.",
-            "afterScreen": "Depois da saída, clicar em Copiar link de jogar e em Fechar junto da fala, sem cobrir a confirmação."
-          }
-        ]
+        "publish": true
       }
     ],
     "legacyKeys": [

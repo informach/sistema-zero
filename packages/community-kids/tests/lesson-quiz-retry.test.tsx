@@ -40,13 +40,13 @@ test('author preview grades locally and retains the resolved question during a r
     render(<QuizBlockView blockId="quiz" content={content} quizState={null} />)
     fireEvent.click(screen.getByRole('radio', { name: 'Gravidade' }))
     fireEvent.click(screen.getByRole('radio', { name: 'Mudar o som' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Enviar quiz' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Responder' }))
     await waitFor(() =>
       expect(screen.getByRole('radio', { name: /Gravidade/ })).toHaveProperty('disabled', true),
     )
     expect(screen.getByRole('radio', { name: /Aumentar a área/ })).toHaveProperty('disabled', false)
     fireEvent.click(screen.getByRole('radio', { name: /Aumentar a área/ }))
-    fireEvent.click(screen.getByRole('button', { name: 'Enviar quiz' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Responder' }))
     await waitFor(() =>
       expect(screen.getByRole('radio', { name: /Aumentar a área/ })).toHaveProperty(
         'disabled',

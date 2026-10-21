@@ -17,7 +17,7 @@ const nunito = Nunito({ subsets: ['latin'], variable: '--font-nunito' })
 
 export const metadata: Metadata = {
   title: 'Sistema Zero Kids',
-  description: 'As aventuras de criação do Sistema Zero para crianças',
+  description: 'Os cursos de criação do Sistema Zero para crianças',
   // Favicons do PackLogo do kids (11/09/2026: o O com a estrela), gerados do favicon.svg
   // do pacote; o favicon.ico em src/app/ é o do próprio pacote. A logo é a `KidsLogo`.
   icons: {

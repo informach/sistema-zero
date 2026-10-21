@@ -12,7 +12,7 @@ import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids
 import { createEmptyProject } from '@sistemazero/studio/project'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import manifesto from '../../../../docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
+import manifesto from '../../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
 
 const source = manifesto.blocks.find((block) => block.key === 'jogo-pronto')
 if (

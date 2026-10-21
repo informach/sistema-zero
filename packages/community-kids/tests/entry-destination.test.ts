@@ -15,7 +15,7 @@ const student = {
 const parent = { kids: { kind: 'parent' as const, sessionId: SESSION, authenticatedAt: 1 } }
 
 describe('/login com sessão válida não pede a escolha de novo', () => {
-  test('a criança vai para a área dela, ou para a fase interna do link', () => {
+  test('a criança vai para a área dela, ou para a aula interna do link', () => {
     expect(entryRedirect(student, null)).toBe('/')
     expect(entryRedirect(student, '/cursos/cade/aulas/1')).toBe('/cursos/cade/aulas/1')
     // Destino externo, da API ou da área adulta não serve para a criança.

@@ -1,0 +1,55 @@
+[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o sorteio, que escolhe um valor na hora em que cada cacto nasce.
+
+[interested, animated voice] Olha aqui: quando eu clico em Sortear lugar (velocidade fica −5), sai um lugar na régua. Clico de novo, e sai outro. Eu continuo clicando, e alguns lugares saem de novo: a régua marca quantas vezes cada um saiu.
+
+[curious] Ué, pode sair o mesmo lugar outra vez?
+
+[engaging, energetic, conversational voice] Pode acontecer num sorteio. Todos ficam entre 500 e 560, depois da borda 480, fora da tela. O sorteio respeita os limites, e um lugar pode repetir.
+
+[engaging, energetic, conversational voice] Depois eu clico em Sortear velocidade (lugar fica 500) até sair um cacto -5 e um -6. Nas raias, o -6 chega mais longe em um segundo: ele é mais rápido. A conta é -5 menos o número sorteado: se sair 0, fica -5, e, se sair 1, fica -6.
+
+[engaging, energetic, conversational voice] É como tirar um papel de um saco e devolver: cada vez sai um, e o mesmo pode sair de novo. No seu jogo, você vai trocar o x 560 por um sorteio de 500 a 560.
+
+[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] No seu jogo, comece uma partida e olhe os cactos. Tá vendo? Eles chegam sempre com a mesma distância, porque todos nascem em x 560.
+
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Cada sorteio tirava um lugar de 500 a 560. Agora a gente vai sortear o lugar dos seus cactos!
+
+[confident, clear, unhurried voice] Deixe à vista o x 560 do bloco No grupo criar obstáculo, no então de Se jogando, dentro do relógio de 1.4 segundo. Depois, abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560 do campo x, para ele tomar o lugar do número.
+
+[curious] Quais números eu coloco no sorteio?
+
+[engaging, energetic, conversational voice] O sorteio chega com 1 e 6: troque o 1 por 500 e o 6 por 560. A tela termina em x 480, por isso todos esses lugares ficam além da borda direita, e o cacto continua entrando escondido. Mantenha o tamanho 44 e o vx -5 no bloco.
+
+[engaging, energetic, conversational voice] Agora comece e observe vários cactos entrarem. [confident, clear, unhurried voice] Repare: a distância entre eles muda um pouco, porque cada um sorteia o lugar quando nasce, e dois cactos podem até nascer no mesmo lugar. [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: o x do único No grupo criar obstáculo tem um número de 500 a 560, e o relógio continua em 1.4 segundo. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] No seu jogo, comece e olhe os cactos. Tá vendo? Todos andam no mesmo ritmo, porque todos têm vx -5.
+
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Nas raias, o cacto de -6 andou mais longe que o de -5. Agora a gente vai sortear a velocidade também!
+
+[confident, clear, unhurried voice] Deixe à vista o campo vx, com -5, no bloco que cria os cactos. Depois, abra Programação e depois Matemática, pegue o bloco da conta, que aparece como 0 + 0, e solte em cima desse número, para ele tomar o lugar do -5.
+
+[engaging, energetic, conversational voice] Na conta, troque o primeiro 0 por -5 e, no sinal, troque + por −, o sinal de menos. Depois, deixe à vista o 0 do lado direito. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0. Troque o 1 por 0 e o 6 por 1.
+
+[curious] Por que a conta usa menos?
+
+[engaging, energetic, conversational voice] Assim, se sair 0, a velocidade é -5, e, se sair 1, é -6, que anda mais para a esquerda em cada quadro. Não use o sinal de mais, porque, com ele, a conta daria -5 ou -4, e alguns cactos ficariam mais lentos.
+
+[engaging, energetic, conversational voice] Agora comece e compare vários cactos. [confident, clear, unhurried voice] Repare: alguns andam um pouco mais rápido, e cada um guarda a velocidade que recebeu ao nascer. [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no vx, está a conta -5 menos um número de 0 a 1, e o x continua com o sorteio de 500 a 560, no mesmo bloco, com tamanho 44 e o relógio em 1.4. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora a sua corrida varia o lugar e a velocidade dos cactos! Antes de enviar o seu projeto, jogue duas partidas, observe os cactos e confira o placar, a batida e o recomeço. Se dois cactos nascerem no mesmo lugar, tudo bem, porque um sorteio pode repetir o resultado.
+
+[confident, clear, unhurried voice] Confira o sorteio do x, de 500 a 560, e a conta -5 menos um número de 0 a 1. O tamanho e o relógio não mudaram.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

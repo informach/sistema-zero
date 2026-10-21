@@ -38,7 +38,7 @@ export function AvisoDoFarol({ texto }: { texto: string }) {
   )
 }
 
-/** As famílias de bloco do Estúdio, nas cores do Caderno do Aluno (evento, Jogo 2D, Programação). */
+/** As famílias de bloco do Estúdio, nas cores do Passo a passo do projeto (evento, Jogo 2D, Programação). */
 type BlocoDaRegra = 'evento' | 'jogo' | 'programa'
 
 export type PassoDaRegra = {

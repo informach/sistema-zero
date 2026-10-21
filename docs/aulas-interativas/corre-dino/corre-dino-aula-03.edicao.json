@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-gravidade-modelo",
+    "video-aplicar-gravidade",
+    "video-impulso-modelo",
+    "video-comando-de-pulo",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-gravidade-modelo-K1",
+      "clipe": "video-gravidade-modelo",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "sem parar: o número da altura só cresce. Nada puxa o Dino para baixo. A experiência para o tempo com ele lá no alto.",
+      "ancoraDepois": "Com o Dino no ar, eu ligo a Gravidade ao Dino. Ele ainda sobe um pouquinho, cada vez mais devagar, para e cai até o",
+      "falaPrincipal": "E agora? Como ele volta para o chão?",
+      "falaPersonagem": "E agora? Como ele volta para o chão?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-comando-de-pulo-K1",
+      "clipe": "video-comando-de-pulo",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "o mesmo bloco já cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.",
+      "ancoraDepois": "Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino",
+      "falaPrincipal": "Dá para pular de novo lá no alto?",
+      "falaPersonagem": "Dá para pular de novo lá no alto?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

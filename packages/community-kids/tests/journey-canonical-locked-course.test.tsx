@@ -48,9 +48,7 @@ test('canonical locked course: reward names the actual required post instead of 
   expect(rendered.container.textContent).toContain('Lenda')
   expect(rendered.container.textContent).not.toContain('fechar a trilha')
   expect(rendered.container.textContent).not.toContain('publique')
-  expect(screen.getByRole('link', { name: 'Ver minhas aventuras' }).getAttribute('href')).toBe(
-    '/cursos',
-  )
+  expect(screen.getByRole('link', { name: 'Ver meus cursos' }).getAttribute('href')).toBe('/cursos')
 })
 
 test('canonical locked course: complete-only foundation does not invent a Mural debt', () => {
@@ -74,7 +72,7 @@ test('canonical locked course: complete-only foundation does not invent a Mural 
   const rendered = render(<KidsLockedCourse {...lock} />)
   expect(rendered.container.textContent).not.toContain('publique')
   expect(rendered.container.textContent).not.toContain('Mural')
-  expect(screen.getByRole('link', { name: 'Ver minhas aventuras' })).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Ver meus cursos' })).toBeTruthy()
 })
 
 test('canonical locked course: missing reward identity remains explicit instead of becoming Faísca', () => {

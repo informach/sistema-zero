@@ -71,7 +71,7 @@ export function resolveLessonSplit({
   contentWidth: number
   /** Largura do handle medida no CSS do app (44px no kids, 24px no adulto). */
   handleWidth: number
-  /** A seção tem uma ferramenta (Estúdio ou Pinta) ativa. */
+  /** A parte tem uma ferramenta (Estúdio ou Pinta) ativa. */
   hasWorkspace: boolean
 }): LessonSplit {
   const arrastavel = hasWorkspace && contentWidth >= SPLIT_COMFORT_WIDTH_PX
@@ -91,7 +91,7 @@ export function resolveLessonSplit({
  */
 export type SplitBlock = { id: string; kind: string; content?: unknown; gallery?: boolean }
 
-/** O editor embarcado: Estúdio e Pinta. É o único que fica MONTADO entre as seções. */
+/** O editor embarcado: Estúdio e Pinta. É o único que fica MONTADO entre as partes. */
 export function ehEditorDeSecao(block: SplitBlock): boolean {
   return (block.kind === 'studio' || block.kind === 'pinta') && !block.gallery
 }
@@ -131,9 +131,9 @@ export function ehPreviaDeLivro(block: SplitBlock): boolean {
 }
 
 export type SecaoPartida = {
-  /** Blocos da coluna da esquerda, na ordem da seção. */
+  /** Blocos da coluna da esquerda, na ordem da parte. */
   contentIds: string[]
-  /** Blocos da coluna da direita, na ordem da seção. */
+  /** Blocos da coluna da direita, na ordem da parte. */
   toolIds: string[]
   /** Há o que dividir: conteúdo dos DOIS lados. */
   podeDividir: boolean
@@ -142,11 +142,11 @@ export type SecaoPartida = {
 }
 
 /**
- * Onde cada bloco ATIVO da seção mora, e se vale dividir a tela.
+ * Onde cada bloco ATIVO da parte mora, e se vale dividir a tela.
  *
  * ⚠️⚠️ `podeDividir` exige conteúdo dos DOIS lados, e isso é o pedido dela: "se forem o único
- * bloco da seção, têm que ocupar a largura toda". Antes a divisão só olhava se havia
- * ferramenta, então uma seção só com o Estúdio abria ao meio com metade da tela VAZIA — e uma
+ * bloco da parte, têm que ocupar a largura toda". Antes a divisão só olhava se havia
+ * ferramenta, então uma parte só com o Estúdio abria ao meio com metade da tela VAZIA — e uma
  * seção com `workspaceBlockId` e `blockIds: []` reservava 320px de piso para um painel que não
  * renderiza nada.
  */
@@ -154,7 +154,7 @@ export function partirSecao({
   blocks,
   extraContent = false,
 }: {
-  /** Blocos ATIVOS da seção, na ORDEM, já sem o material de apoio. */
+  /** Blocos ATIVOS da parte, na ORDEM, já sem o material de apoio. */
   blocks: SplitBlock[]
   /** A esquerda tem algo que não é bloco (ação da plataforma, atalho da ferramenta). */
   extraContent?: boolean

@@ -5,7 +5,7 @@ import { LessonDraftStatus } from '../src/components/lesson-draft-status'
 import { KIDS_LESSON_COPY } from '../src/lib/lesson-copy-kids'
 
 /**
- * A pílula do rascunho da fase (11/10/2026): com a versão da conta mais nova que a página, ela
+ * A pílula do rascunho da aula (11/10/2026): com a versão da conta mais nova que a página, ela
  * pede para atualizar e oferece o botão; nos outros estados, nenhum botão.
  */
 function pilula(props: Parameters<typeof LessonDraftStatus>[0]) {

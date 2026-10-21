@@ -24,8 +24,8 @@ const SECTIONS: readonly { id: string; label: string; icon: LucideIcon }[] = [
 
 /**
  * Os atalhos para cada seção do perfil: coluna fixa ao lado no computador, faixa que rola de lado no
- * celular. A seção à vista fica marcada (o link ganha `aria-current`). "Créditos e voz" e
- * "Embaixador" só aparecem quando a página monta a seção (`showAi`, `showAmbassador`).
+ * celular. A parte à vista fica marcada (o link ganha `aria-current`). "Créditos e voz" e
+ * "Embaixador" só aparecem quando a página monta a parte (`showAi`, `showAmbassador`).
  */
 export function ProfileNav({
   showAi,
@@ -46,7 +46,7 @@ export function ProfileNav({
     )
     if (!targets.length) return
     let frame = 0
-    // A seção ativa é a última cujo topo já passou de um terço da tela; no fim da página, a
+    // A parte ativa é a última cujo topo já passou de um terço da tela; no fim da página, a
     // última à vista (ela pode nunca chegar a esse terço).
     const update = () => {
       frame = 0

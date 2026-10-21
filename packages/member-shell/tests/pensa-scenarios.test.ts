@@ -177,7 +177,7 @@ test('a platform game covers its phases and final playtest in logical order', as
       'Crie a primeira fase',
       'Deixe o personagem pular',
       'Crie a segunda fase',
-      'Ligue a saída à próxima fase',
+      'Ligue a saída à próxima aula',
       'Recomece depois da queda',
       'Experimente as duas fases',
     ],

@@ -27,7 +27,7 @@ describe('prévia do caderno no material da aula', () => {
   test('um PDF no mesmo bloco disponibiliza os dois modos de leitura', () => {
     const html = show({
       kind: 'materials',
-      title: 'Caderno do Aluno',
+      title: 'Passo a passo do projeto',
       bookPreview: true,
       items: [
         {

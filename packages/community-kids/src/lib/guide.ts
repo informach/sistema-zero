@@ -6,7 +6,7 @@
  * parar no meio. "Pular tutorial" encerra o fluxo inteiro neste navegador; os
  * controles normais da tela continuam disponíveis sem se passarem por tutorial.
  *
- * Reuso planejado: a fase 2 (tour da criança na home) usa os MESMOS helpers de
+ * Reuso planejado: a aula 2 (tour da criança na home) usa os MESMOS helpers de
  * storage com chave por profileId; só o resolver muda.
  */
 
@@ -103,19 +103,19 @@ export function childWelcomeSteps(input: ChildWelcomeInput): readonly GuideWelco
     steps.push({
       id: 'start',
       emoji: '▶️',
-      text: 'Clique em "Começar" e a sua primeira fase abre na hora.',
+      text: 'Clique em "Começar" e a sua primeira aula abre na hora.',
     })
   }
   steps.push(
     {
       id: 'aulas',
       emoji: '🧭',
-      text: 'As suas aventuras ficam em Explorar. Assista, jogue, crie e conclua cada fase.',
+      text: 'Para encontrar os cursos, clique em Cursos. Assista, jogue, crie e conclua cada aula.',
     },
     {
       id: 'xp',
       emoji: '⚡',
-      text: 'Cada fase te dá XP e mantém o seu foguinho aceso mais um dia.',
+      text: 'Cada aula te dá XP e mantém o seu foguinho aceso mais um dia.',
     },
     {
       id: 'criar',
@@ -130,7 +130,7 @@ export function childWelcomeSteps(input: ChildWelcomeInput): readonly GuideWelco
     {
       id: 'jornada',
       emoji: '🗺️',
-      text: 'Terminou uma aventura e publicou o jogo? O mapa mostra o seu progresso na jornada.',
+      text: 'Terminou um curso e publicou o jogo? O mapa mostra o seu progresso na jornada.',
     },
     // A biblioteca de ajuda (26/09/2026): consulta, não onboarding. O guia só aponta a porta.
     {

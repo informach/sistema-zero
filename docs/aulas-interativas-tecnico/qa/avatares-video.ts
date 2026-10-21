@@ -1,8 +1,19 @@
-/** Participações editoriais no vídeo; não alteram a fala da página nem os passos do Mapa. */
+import {
+  contextoDeEdicao,
+  type IntervencaoKids,
+  type ParteFalado,
+  prepararFala,
+  renderizarClipe,
+  semTags,
+} from './roteiro-elevenlabs'
+
+/** Trechos transferíveis: a professora grava o master inteiro, inclusive a intervenção. */
 export interface ParticipacaoAvatar {
   /** Trecho literal e único da professora. A criança entra logo depois dele. */
   after: string
   speech: string
+  /** Preparação falada, somente quando a frase precisa ser citada como pensamento. */
+  leadIn?: string
   beforeScreen: string
   afterScreen: string
   /** Ponte curta da professora, exclusiva do vídeo, antes de retomar o texto existente. */
@@ -26,7 +37,7 @@ export function avatarDaAula(index: number): 'Debinha' | 'Dedé' {
 }
 
 export function orientacaoAvatares(index: number): string {
-  return `**Vozes e edição:** Professora conduz; ${avatarDaAula(index)} é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).`
+  return `**Produção:** a professora grava toda a fala principal. Na montagem kids, ${avatarDaAula(index)} substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).`
 }
 
 function dividirFala(section: SecaoComAvatar, speech: string[]) {
@@ -57,14 +68,7 @@ function dividirFala(section: SecaoComAvatar, speech: string[]) {
 }
 
 export function palavrasDoVideo(section: SecaoComAvatar, speech: string[]): number {
-  return [...speech, ...participacoes(section).flatMap((a) => [a.speech, a.reply ?? ''])]
-    .join(' ')
-    .trim()
-    .split(/\s+/).length
-}
-
-function turno(papel: string, tela: string, fala: string): string {
-  return `**Na tela:** ${tela}\n\n**${papel}:**\n\n> “${fala.replaceAll('\n\n', '\n>\n> ')}”\n`
+  return semTags(comporMaster(section, speech, 0).texto).split(/\s+/).length
 }
 
 export function roteiroComAvatar(
@@ -73,46 +77,62 @@ export function roteiroComAvatar(
   screen: string,
   index: number,
 ): string {
-  const { entradas, trechos } = dividirFala(section, speech)
-  if (!entradas.length) return turno('Professora', screen, trechos[0]!)
-  const nome = avatarDaAula(index)
-  const lines = [
-    `**Direção geral do clipe:** ${screen} Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.`,
-    '',
-    turno('Professora', entradas[0]!.beforeScreen, trechos[0]!),
-  ]
-  for (const [i, a] of entradas.entries()) {
-    lines.push(
-      `**ID de edição:** \`${section.videoKey}-avatar-${String(i + 1).padStart(2, '0')}\`.`,
-      '',
-      turno(
-        `${nome} (avatar)`,
-        `${nome} entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.`,
-        a.speech,
-      ),
-      turno(
-        'Professora',
-        `${nome} sai antes da resposta. ${a.afterScreen}${entradas[i + 1] ? ` ${entradas[i + 1]!.beforeScreen}` : ''}`,
-        `${a.reply ? `${a.reply} ` : ''}${trechos[i + 1]}`,
-      ),
-    )
-  }
-  return lines.join('\n')
+  const parte = comporMaster(section, speech, index)
+  const notas = participacoes(section).map(
+    (a, n) =>
+      `- \`${parte.intervencoes[n]?.id}\`: entrada — ${a.beforeScreen} Saída — ${a.afterScreen}`,
+  )
+  return (
+    renderizarClipe(parte, screen) +
+    (notas.length
+      ? `\n**Imagem nas substituições kids (não gravar):**\n\n${notas.join('\n')}\n`
+      : '')
+  )
 }
 
 /** Texto comum à proposta e ao plannedVideo, com âncora e fala completas. */
 export function planoAvatar(section: SecaoComAvatar, speech: string[], index: number): string {
+  const parte = comporMaster(section, speech, index)
+  return parte.intervencoes.length
+    ? `A professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\n${parte.intervencoes.map((i) => `${i.id}: ${i.personagem} substitui “${i.falaPrincipal}”. Antes: “${i.ancoraAntes}”. Depois: “${i.ancoraDepois}”.`).join('\n\n')}`
+    : 'Master integral da professora; sem substituição kids neste clipe.'
+}
+
+/** Integra as perguntas úteis ao discurso; reações vazias não viram obrigação de edição. */
+export function comporMaster(
+  section: SecaoComAvatar,
+  speech: string[],
+  index: number,
+): ParteFalado {
+  if (!section.videoKey) throw new Error(`${section.key}: exige vídeo`)
   const { entradas, trechos } = dividirFala(section, speech)
-  if (!entradas.length)
-    return 'Somente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.'
-  const nome = avatarDaAula(index)
-  const pontos = entradas
-    .map((a, i) => {
-      const proximoParagrafo = trechos[i + 1]!.split('\n\n')[0]!
-      const inicio = proximoParagrafo.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? proximoParagrafo
-      const retomada = `${a.reply ? `${a.reply} ` : ''}${inicio}`
-      return `ID ${section.videoKey}-avatar-${String(i + 1).padStart(2, '0')}. Professora até “${a.after}”. Antes: ${a.beforeScreen} ${nome}: “${a.speech}”. Retomada da professora: “${retomada}”. Depois: ${a.afterScreen}`
-    })
-    .join('\n\n')
-  return `${nome} entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\n${pontos}`
+  let texto = trechos[0] ?? ''
+  const marcadas: { id: string; frase: string; antes: string; depois: string }[] = []
+  for (const [n, a] of entradas.entries()) {
+    const retoma = `${a.reply ? `${a.reply} ` : ''}${trechos[n + 1] ?? ''}`.trim()
+    const frase = a.speech.trim()
+    // A preparação pertence à autoria. Perguntas diretas entram na conversa sem
+    // um cabeçalho automático; só pensamentos citados recebem a preparação escrita.
+    const antes = contextoDeEdicao(`${texto} ${a.leadIn ?? ''}`, 'antes')
+    const depois = retoma
+    texto += a.leadIn ? `\n\n${a.leadIn} “${frase}”\n\n${depois}` : `\n\n${frase}\n\n${depois}`
+    marcadas.push({ id: `${section.videoKey}-K${n + 1}`, frase, antes, depois })
+  }
+  const principal = semTags(texto)
+  const intervencoes: IntervencaoKids[] = marcadas.map((m) => {
+    const pos = principal.indexOf(m.frase, principal.indexOf(m.antes))
+    const ocorrencia = principal.slice(0, pos).split(m.frase).length
+    return {
+      id: m.id,
+      clipe: section.videoKey ?? section.key,
+      personagem: avatarDaAula(index),
+      falaPrincipal: m.frase,
+      falaPersonagem: m.frase,
+      ancoraAntes: m.antes,
+      ancoraDepois: contextoDeEdicao(m.depois, 'depois'),
+      ocorrencia,
+      tags: [m.frase.endsWith('?') ? '[curious]' : '[thoughtful]'],
+    }
+  })
+  return { clipe: section.videoKey, texto: prepararFala(texto), intervencoes }
 }

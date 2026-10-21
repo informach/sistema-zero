@@ -28,7 +28,7 @@ export function CourseCard({ course }: CourseCardProps) {
   const cta = publishing
     ? 'Preparar publicação'
     : done
-      ? 'Revisar aventura'
+      ? 'Revisar curso'
       : started
         ? 'Continuar'
         : 'Começar agora'
@@ -69,12 +69,12 @@ export function CourseCard({ course }: CourseCardProps) {
       <div className="flex flex-1 flex-col p-5">
         <p className="font-bold text-muted-foreground text-xs">
           {course.journeyRole === 'extra'
-            ? 'Aventura extra'
+            ? 'Curso extra'
             : course.careerSlot === 1
               ? 'Primeira da trilha'
               : typeof course.careerSlot === 'number'
-                ? 'Aventura da jornada'
-                : 'Aventura bônus'}
+                ? 'Curso da jornada'
+                : 'Curso bônus'}
         </p>
         <h3 className="sz-display mt-1.5 text-lg md:text-xl">{course.title}</h3>
         {course.subtitle ? (
@@ -88,7 +88,7 @@ export function CourseCard({ course }: CourseCardProps) {
           <CourseAccessExpiry expiresAt={course.access.expiresAt} className="mb-3" />
           <div className="flex items-center justify-between font-semibold text-muted-foreground text-xs">
             <span>
-              {progress.completedLessons} de {progress.totalLessons} fases
+              {progress.completedLessons} de {progress.totalLessons} aulas
             </span>
             <span
               className={cn(

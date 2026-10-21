@@ -10,7 +10,7 @@ import type { TierCompletion } from '../src/lib/journey-map'
 import type { StudentLevelSlug } from '../src/lib/types'
 
 /**
- * O contador do medalhão ("N de M aventuras prontas") e o card "Você está em dia".
+ * O contador do medalhão ("N de M cursos prontos") e o card "Você está em dia".
  *
  * ⚠️ As duas contas da tela são DIFERENTES de propósito e é aí que mora o risco: o
  * `journeyProgress` (que decide o card) só conhece as posições OBRIGATÓRIAS, enquanto o
@@ -58,7 +58,7 @@ describe('JourneyMap — contador e o card "em dia"', () => {
     const descriptionId = link.getAttribute('aria-describedby')
     expect(descriptionId).toBeTruthy()
     expect(document.getElementById(descriptionId ?? '')?.textContent).toContain(
-      '5 de 6 aventuras prontas',
+      '5 de 6 cursos prontos',
     )
   })
 

@@ -23,7 +23,7 @@ export function KidsPageHeader({
   className,
 }: {
   /**
-   * A setinha das páginas INTERNAS, que volta para a página principal da seção. Vem
+   * A setinha das páginas INTERNAS, que volta para a página principal da parte. Vem
    * de `backToSection` (`nav.ts`), nunca escrita à mão na página.
    */
   back?: { href: string; label: string } | null

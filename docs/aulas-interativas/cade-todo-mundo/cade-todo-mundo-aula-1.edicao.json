@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-a1-abertura", "video-a1-caderno", "video-a1-toque", "video-a1-programar"],
+  "intervencoes": [
+    {
+      "id": "video-a1-abertura-K1",
+      "clipe": "video-a1-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "quem estava atrás dele. Achei um! E repare no número Achados: ele mudou para 1, porque eu encontrei um personagem.",
+      "ancoraDepois": "Esses eu deixo para você descobrir. Ah, e tem mais uma coisa: no fim do curso tem uma surpresa esperando por você. Ela",
+      "falaPrincipal": "E os outros dois?",
+      "falaPersonagem": "E os outros dois?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-a1-toque-K1",
+      "clipe": "video-a1-toque",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "aparecer quem está escondido atrás dele. Mas, para o jogo ter essa reação, a gente precisa ligar a reação ao toque.",
+      "ancoraDepois": "Eu clico em Ligar a reação ao toque e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o",
+      "falaPrincipal": "E como faz essa ligação?",
+      "falaPersonagem": "E como faz essa ligação?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-a1-programar-K1",
+      "clipe": "video-a1-programar",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso com os esconderijos do seu jogo!",
+      "ancoraDepois": "Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui",
+      "falaPrincipal": "E como faz isso no jogo?",
+      "falaPersonagem": "E como faz isso no jogo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-a1-programar-K3",
+      "clipe": "video-a1-programar",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "o jogo ainda não conta quem você encontra. Depois, toque em outro esconderijo também. Talvez você esteja pensando:",
+      "ancoraDepois": "Se aconteceu com você, volte aos blocos e confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o",
+      "falaPrincipal": "No meu jogo ainda não funcionou.",
+      "falaPersonagem": "No meu jogo ainda não funcionou.",
+      "tags": ["[thoughtful]"]
+    }
+  ]
+}

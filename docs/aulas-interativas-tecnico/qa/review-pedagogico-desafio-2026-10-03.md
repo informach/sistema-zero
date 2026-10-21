@@ -7,7 +7,7 @@
 
 ## Parecer
 
-A sequência de cinco aulas e nove seções faz sentido para esta versão: conhecer a aventura, construir movimento, guardar a coleta, decidir pela chave e compartilhar a conquista. Não encontrei justificativa para acrescentar outra aula, um tour obrigatório ou uma cena genérica de variável.
+A sequência de cinco aulas e nove seções faz sentido para esta versão: conhecer o curso, construir movimento, guardar a coleta, decidir pela chave e compartilhar a conquista. Não encontrei justificativa para acrescentar outra aula, um tour obrigatório ou uma cena genérica de variável.
 
 Havia problemas concretos na verificação do projeto e lacunas nas explicações. As correções deste review estão nos materiais locais: propostas, roteiros, gerador, manifestos, inventário de blocos e caderno. A estrutura foi mantida; a ligação entre o que se explica, o que a criança monta e o que se verifica ficou mais precisa.
 
@@ -18,7 +18,7 @@ Isso é um parecer de autoria e consistência técnica. Ainda não comprova que 
 - [Briefing pedagógico](../BRIEFING.md), [especificação dos roteiros](../ESPEC-ROTEIRO.md) e skill `aula-roteiro`.
 - [Organização do curso](../modulos-desafio-primeiro-jogo.md), propostas, manifestos e roteiros das cinco aulas.
 - Modelo atual do Cadê Todo Mundo e orientações explícitas do usuário: contexto antes da tarefa; ajuda de interface no Como Fazer; caderno fiel às aulas, sem mapa adicional.
-- Código da paleta e valores iniciais dos blocos, progressão das seções, verificação do projeto, experiência `lighthouse-key`, materiais, publicação e certificado.
+- Código da paleta e valores iniciais dos blocos, progressão das partes, verificação do projeto, experiência `lighthouse-key`, materiais, publicação e certificado.
 - [Gerador dos manifestos](gerar-desafio-farol.ts), [projetos de partida e conclusão](desafio-farol-projeto.ts), testes e [gerador do caderno](../recursos/desafio-farol/gerar-materiais.py).
 
 Não foi necessária pesquisa externa para decidir se a autoria corresponde às diretrizes e ao funcionamento desta plataforma. As conclusões abaixo se apoiam nessas fontes locais, e não em uma alegação de eficácia pedagógica já medida.
@@ -80,8 +80,8 @@ Os testes finais orientam reiniciar a partida, ir ao farol sem chave, recolher a
 | Aula e seção | Função pedagógica e decisão | Evidência ou cuidado necessário |
 | --- | --- | --- |
 | Introdução: A Chave do Farol | Apresentar o jogo e o barco que precisa chegar antes do convite para jogar. Manter. | A versão pronta exige participação, não vitória; fica fora da cadeia do projeto construído pelo aluno. Não gravar a partida resolvida. |
-| Introdução: Seu Caderno do Aluno | Apresentar um apoio que acompanha a montagem. Manter curto e opcional. | Mostrar o PDF real, sem tour do leitor; não exigir download, impressão, preenchimento ou mapa adicional. |
-| Dia 1: montagem do movimento e das bordas | Construir controles, movimento e limite no próprio jogo. Manter uma seção. | Explicar sprite antes do uso; preservar velocidade inicial 3; testar as direções e bordas antes de verificar e enviar. |
+| Introdução: Seu passo a passo do projeto | Apresentar um apoio que acompanha a montagem. Manter curto e opcional. | Mostrar o PDF real, sem tour do leitor; não exigir download, impressão, preenchimento ou mapa adicional. |
+| Dia 1: montagem do movimento e das bordas | Construir controles, movimento e limite no próprio jogo. Manter uma parte. | Explicar sprite antes do uso; preservar velocidade inicial 3; testar as direções e bordas antes de verificar e enviar. |
 | Dia 2: Encostar ainda não é pegar | Tornar a falta de coleta observável. Manter como problema breve antes da ferramenta. | Mostrar a retomada real, sem simular defeito e sem antecipar a montagem completa. |
 | Dia 2: Guarde que a chave foi encontrada | Construir memória, encontro e resposta no mesmo contexto. Manter. | Declaração falsa, coleta, memória verdadeira e aviso; conceitos explicados no momento do uso. |
 | Dia 3: O que a porta precisa? | Comparar duas respostas para a mesma pergunta. Manter a experiência existente. | A cena exige testar a porta sem chave e com chave. Trocar o estado sozinho não conclui; não antecipar o resultado nem acrescentar pergunta redundante. |
@@ -106,7 +106,7 @@ Os resultados desta tabela pertencem à primeira revisão de 03/10. O complement
 | Testes de manifestos e projeto | **20 passaram, 0 falharam, 238 verificações.** Incluem o jogo executado, estrutura, continuidade e os projetos incorretos descritos acima. |
 | Reprodução antes das correções | Quatro casos de projeto incorreto eram aprovados; os testes os expuseram. O caso com mensagens próprias permaneceu válido. |
 | Validador dos manifestos | Cinco válidos; nenhuma cena ausente, reprovação ou aviso de convenção. |
-| Validador dos roteiros | Cinco roteiros, cobrindo nove vídeos, com tempo declarado. Ordem das seções e vídeos também conferida pelos testes. |
+| Validador dos roteiros | Cinco roteiros, cobrindo nove vídeos, com tempo declarado. Ordem das partes e vídeos também conferida pelos testes. |
 | Como Fazer | Lote de 42 tutoriais em cinco coleções válido. Os nove links usados pelo curso existem e são opcionais. |
 | Biome | Dois arquivos TypeScript alterados aprovados. |
 | Regeneração | Cinco manifestos e inventário regenerados sem alteração dos seis hashes. |
@@ -124,7 +124,7 @@ Comandos reproduzíveis estão na [organização do curso](../modulos-desafio-pr
 6. **Autonomia e autoria:** observar se o aluno retoma um encaixe pelo material, testa novamente após corrigir e reconhece quais regras montou. Publicar e conseguir abrir o próprio jogo são parte do ensaio, não prova de domínio de todos os conceitos.
 7. **Aplicação no admin:** reconciliar vídeos, anexos, seções aposentadas e progresso antes de aplicar os manifestos. Não substituir mídia existente cegamente por `plannedVideo`.
 
-Não houve importação no admin, gravação ou publicação nesta revisão. O [caderno atualizado](../../aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf) e as fontes locais estão prontos para a conferência editorial e a preparação dessas etapas.
+Não houve importação no admin, gravação ou publicação nesta revisão. O [caderno atualizado](../../aulas-interativas/desafio-primeiro-jogo/mapa-da-aventura.pdf) e as fontes locais estão prontos para a conferência editorial e a preparação dessas etapas.
 
 ## Complemento após a conferência do responsável
 

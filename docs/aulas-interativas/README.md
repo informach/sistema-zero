@@ -1,27 +1,24 @@
 # Aulas interativas
 
-Os cursos são os mesmos para crianças e adultos, em duas versões: `kids/` fala com a criança (aventura, fase, parte, Mapa da Aventura e Zappy) e `adulto/` fala com o adulto, com exemplos do dia a dia de quem trabalha e cuida da casa, e os nomes de botão da comunidade adulta. Cada pasta de curso reúne as aulas, os roteiros, os manifestos para importar, os blocos e o projeto final.
+Uma fonte editorial para as comunidades adulta e infantojuvenil. Cada pasta reúne aulas, manifestos, roteiros de produção, falas prontas para ElevenLabs v4 e o **Passo a passo do projeto**. A professora grava a fala integral; a edição kids pode substituir frases exatas por Dedé ou Debinha, conforme a tabela do roteiro.
 
-## Kids
+| Curso | Aulas | Materiais e roteiros | Passo a passo do projeto |
+| --- | --- | --- | --- |
+| Cadê Todo Mundo? | 3 | [Abrir](cade-todo-mundo/README.md) | [PDF](cade-todo-mundo/passo-a-passo-do-projeto.pdf) |
+| A Chave do Farol | 4 | [Abrir](desafio-primeiro-jogo/README.md) | [PDF](desafio-primeiro-jogo/passo-a-passo-do-projeto.pdf) |
+| Nave Contra Asteroides | 9 | [Abrir](nave-contra-asteroides/README.md) | [PDF](nave-contra-asteroides/passo-a-passo-do-projeto.pdf) |
+| Corre, Dino! | 13 | [Abrir](corre-dino/README.md) | [PDF](corre-dino/passo-a-passo-do-projeto.pdf) |
+| O Jogo do Meu Jeito | 8 | [Abrir](o-jogo-do-meu-jeito/README.md) | [PDF](o-jogo-do-meu-jeito/passo-a-passo-do-projeto.pdf) |
 
-| Curso | Aulas e materiais | Módulos | Blocos | Projeto final | Mapa da Aventura |
-| --- | --- | --- | --- | --- | --- |
-| Cadê Todo Mundo? | [Abrir pasta](kids/cade-todo-mundo/README.md) | [Ler](kids/cade-todo-mundo/modulos.md) | [JSON](kids/cade-todo-mundo/blocos.json) | [Importar no Estúdio](kids/cade-todo-mundo/projeto-final.szproject.json) | [PDF](kids/cade-todo-mundo/mapa-da-aventura.pdf) |
-| Desafio do Primeiro Jogo · A Chave do Farol | [Abrir pasta](kids/desafio-primeiro-jogo/README.md) | [Ler](kids/desafio-primeiro-jogo/modulos.md) | [JSON](kids/desafio-primeiro-jogo/blocos.json) | [Importar no Estúdio](kids/desafio-primeiro-jogo/projeto-final.szproject.json) | [PDF](kids/desafio-primeiro-jogo/mapa-da-aventura.pdf) |
-| Nave Contra Asteroides | [Abrir pasta](kids/nave-contra-asteroides/README.md) | [Ler](kids/nave-contra-asteroides/modulos.md) | [JSON](kids/nave-contra-asteroides/blocos.json) | [Importar no Estúdio](kids/nave-contra-asteroides/projeto-final.szproject.json) | [PDF](kids/nave-contra-asteroides/mapa-da-aventura.pdf) |
-| Corre, Dino! | [Abrir pasta](kids/corre-dino/README.md) | [Ler](kids/corre-dino/modulos.md) | [JSON](kids/corre-dino/blocos.json) | [Importar no Estúdio](kids/corre-dino/projeto-final.szproject.json) | [PDF](kids/corre-dino/mapa-da-aventura.pdf) |
-| O Jogo do Meu Jeito | [Abrir pasta](kids/o-jogo-do-meu-jeito/README.md) | [Ler](kids/o-jogo-do-meu-jeito/modulos.md) | [JSON](kids/o-jogo-do-meu-jeito/blocos.json) | [Importar no Estúdio](kids/o-jogo-do-meu-jeito/projeto-final.szproject.json) | [PDF](kids/o-jogo-do-meu-jeito/mapa-da-aventura.pdf) |
+Em cada aula:
 
-## Adulto
+- `.md`: proposta e orientações pedagógicas.
+- `.manifesto.json`: conteúdo para importar no Admin.
+- `.roteiro.md`: produção, notas de tela e substituições kids com personagem, frase exata e âncoras.
+- `.elevenlabs.txt`: professora, aula inteira, somente falas, tags e pausas. Selecione tudo e copie.
+- `.debinha.elevenlabs.txt` ou `.dede.elevenlabs.txt`: somente falas do personagem, quando houver intervenção.
+- `.edicao.json`: ordem dos clipes e índice de substituições, derivados do roteiro.
 
-Gerada a partir do Kids pelo `qa/adulto/gerar-adulto.ts`: não edite estes arquivos à mão, edite a tradução em [`qa/adulto/traducoes/`](../aulas-interativas-tecnico/qa/adulto/traducoes) e gere de novo ([Diretrizes da versão adulta](../aulas-interativas-tecnico/DIRETRIZES-ADULTO.md)). Cada curso adulto é outro curso no Admin, com público Adulto, o slug abaixo e as aulas com os mesmos `lessonSlug` do kids (o import confere o slug da aula). Ao importar, confira o curso de destino: a opção de vincular ao destino aberto aceita um manifesto do outro público sem avisar. Cada curso adulto tem o seu Caderno do Aluno (`caderno-do-aluno.pdf`): anexe esse PDF, nunca o Mapa da Aventura do Kids. Os vídeos adultos ainda não foram gravados.
+Os slugs dos cursos adultos continuam com `-adulto` no Admin; as aulas conservam seus `lessonSlug`. Na importação, confira o destino e use **Vincular ao destino aberto** para a mesma aula do curso correspondente. Preserve mídias publicadas: os manifestos locais contêm moldes de vídeo/material, não os anexos remotos. O PDF é o mesmo nos dois públicos; o vídeo kids pode ter a montagem com personagens.
 
-| Curso | Aulas e materiais | Módulos | Blocos | Projeto final | Slug no Admin |
-| --- | --- | --- | --- | --- | --- |
-| Cadê Todo Mundo? | [Abrir pasta](adulto/cade-todo-mundo/README.md) | [Ler](adulto/cade-todo-mundo/modulos.md) | [JSON](adulto/cade-todo-mundo/blocos.json) | [Importar no Estúdio](adulto/cade-todo-mundo/projeto-final.szproject.json) | `cade-todo-mundo-adulto` |
-| Desafio do Primeiro Jogo · A Chave do Farol | [Abrir pasta](adulto/desafio-primeiro-jogo/README.md) | [Ler](adulto/desafio-primeiro-jogo/modulos.md) | [JSON](adulto/desafio-primeiro-jogo/blocos.json) | [Importar no Estúdio](adulto/desafio-primeiro-jogo/projeto-final.szproject.json) | `desafio-primeiro-jogo-adulto` |
-| Nave Contra Asteroides | [Abrir pasta](adulto/nave-contra-asteroides/README.md) | [Ler](adulto/nave-contra-asteroides/modulos.md) | [JSON](adulto/nave-contra-asteroides/blocos.json) | [Importar no Estúdio](adulto/nave-contra-asteroides/projeto-final.szproject.json) | `nave-contra-asteroides-adulto` |
-| Corre, Dino! | [Abrir pasta](adulto/corre-dino/README.md) | [Ler](adulto/corre-dino/modulos.md) | [JSON](adulto/corre-dino/blocos.json) | [Importar no Estúdio](adulto/corre-dino/projeto-final.szproject.json) | `corre-dino-adulto` |
-| O Jogo do Meu Jeito | [Abrir pasta](adulto/o-jogo-do-meu-jeito/README.md) | [Ler](adulto/o-jogo-do-meu-jeito/modulos.md) | [JSON](adulto/o-jogo-do-meu-jeito/blocos.json) | [Importar no Estúdio](adulto/o-jogo-do-meu-jeito/projeto-final.szproject.json) | `o-jogo-do-meu-jeito-adulto` |
-
-As regras de autoria, fontes dos materiais, geradores, verificações e históricos estão em [Apoio técnico](../aulas-interativas-tecnico/README.md).
+Veja [apoio técnico](../aulas-interativas-tecnico/README.md), [contrato de voz](../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md) e [estado da implementação](../continuity/2026-10-21-unificacao-aulas-plataforma/README.md).

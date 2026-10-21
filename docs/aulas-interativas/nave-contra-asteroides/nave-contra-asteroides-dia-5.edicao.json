@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-finais",
+    "video-mostrar-telas",
+    "video-reiniciar",
+    "video-enter",
+    "video-ciclo-completo"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-finais-K1",
+      "clipe": "video-finais",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "No lado esquerdo, clique em x e escolha pontos. No sinal, clique em > e escolha ≥, que quer dizer maior ou igual.",
+      "ancoraDepois": "Agora o lado direito. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco",
+      "falaPrincipal": "E do outro lado vai a meta?",
+      "falaPersonagem": "E do outro lado vai a meta?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-finais-K2",
+      "clipe": "video-finais",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro desse então e escolha vitoria.",
+      "ancoraDepois": "Agora a derrota. Deixe à vista o encaixe logo abaixo do Se da vitória, ainda dentro de jogando. Abra Programação e",
+      "falaPrincipal": "Chegou na meta, ganhou! E se acabarem as vidas?",
+      "falaPersonagem": "Chegou na meta, ganhou! E se acabarem as vidas?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-finais-K3",
+      "clipe": "video-finais",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim.",
+      "ancoraDepois": "Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da",
+      "falaPrincipal": "E se as duas coisas acontecerem juntas?",
+      "falaPersonagem": "E se as duas coisas acontecerem juntas?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-mostrar-telas-K1",
+      "clipe": "video-mostrar-telas",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.",
+      "ancoraDepois": "Agora a derrota, do mesmo jeito. Clique de novo no + que fica antes de senão se. O ramo novo também chega com a",
+      "falaPrincipal": "E a tela de quando eu perder?",
+      "falaPersonagem": "E a tela de quando eu perder?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-reiniciar-K1",
+      "clipe": "video-reiniciar",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "jogar de novo, você volta todas as peças para a saída. Se ninguém arruma as peças, a partida nova já começa bagunçada.",
+      "ancoraDepois": "Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter. Olha só: a abertura volta, e a pista fica",
+      "falaPrincipal": "Como faz para começar outra partida com tudo no lugar?",
+      "falaPersonagem": "Como faz para começar outra partida com tudo no lugar?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-enter-K1",
+      "clipe": "video-enter",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço.",
+      "ancoraDepois": "Agora a vitória, do mesmo jeito. Clique de novo no + que fica antes de senão se. Arraste a pergunta x maior que 0 do",
+      "falaPrincipal": "E quando eu ganhar? Também quero jogar de novo!",
+      "falaPersonagem": "E quando eu ganhar? Também quero jogar de novo!",
+      "tags": ["[thoughtful]"]
+    }
+  ]
+}

@@ -223,7 +223,7 @@ export function journeyProgress(
       readyCount < requiredSlots.size
         ? null
         : remaining === 1
-          ? `Falta 1 aventura para você virar ${nextLabel}. Termine e publique o seu jogo no Mural!`
+          ? `Falta 1 curso para você virar ${nextLabel}. Termine e publique o seu jogo no Mural!`
           : `Faltam ${remaining} aventuras para você virar ${nextLabel}. Termine e publique os seus jogos no Mural!`
     return { kind: 'pending', tier, remaining, done, ready: readyCount, hint }
   }

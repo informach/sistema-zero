@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-guardar-mudar-mostrar",
+    "video-caixinha-dos-pontos",
+    "video-numero-na-tela",
+    "video-quando-o-placar-cresce",
+    "video-relogio-dos-pontos",
+    "video-frase-da-tela-de-fim",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-quando-o-placar-cresce-K1",
+      "clipe": "video-quando-o-placar-cresce",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Com Somar ponto em Solto, na tela de início, eu deixo passar um segundo, e o placar já sobe, antes de alguém jogar.",
+      "ancoraDepois": "Agora eu levo Somar ponto para o relógio de um segundo, dentro do Se que pergunta se o estado do jogo é jogando. Na",
+      "falaPrincipal": "Como faz para contar só durante a corrida?",
+      "falaPersonagem": "Como faz para contar só durante a corrida?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-relogio-dos-pontos-K1",
+      "clipe": "video-relogio-dos-pontos",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o intervalo para 1.",
+      "ancoraDepois": "Isso. Vamos colocar essa pergunta no relógio. Agora deixe à vista o espaço vazio dentro do novo relógio. Abra",
+      "falaPrincipal": "Mas só vale somar durante a partida, né?",
+      "falaPersonagem": "Mas só vale somar durante a partida, né?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-frase-da-tela-de-fim-K1",
+      "clipe": "video-frase-da-tela-de-fim",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "isso, vamos usar a mesma leitura do placar na frase da tela de fim, para mostrar quantos pontos você fez na partida.",
+      "ancoraDepois": "Vai mostrar os pontos daquela partida. Deixe à vista o subtítulo da tela de fim, no ramo fim, dentro do Se do quadro.",
+      "falaPrincipal": "Esse número vai mudar a cada partida?",
+      "falaPersonagem": "Esse número vai mudar a cada partida?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-frase-da-tela-de-fim-K2",
+      "clipe": "video-frase-da-tela-de-fim",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "de texto que mostra Olá e solte em cima do primeiro número. Apague Olá e escreva Você fez, com um espaço depois de fez.",
+      "ancoraDepois": "Vai, sim. Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em",
+      "falaPrincipal": "E o número dos pontos vai no meio?",
+      "falaPersonagem": "E o número dos pontos vai no meio?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

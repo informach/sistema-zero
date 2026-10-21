@@ -129,7 +129,7 @@ export function JourneyTimeline({
       <KidsSectionHeader
         id="minha-jornada"
         title="Minha jornada"
-        subtitle="Suas aventuras e conquistas formam a sua jornada de criação."
+        subtitle="Seus cursos e conquistas formam a sua jornada de criação."
       />
 
       <div className="kids-carta p-4 md:p-6">
@@ -227,7 +227,7 @@ export function JourneyTimeline({
                   </span>
                 </p>
                 <p className="mt-1 font-medium text-[0.8125rem] text-muted-foreground leading-snug">
-                  {formatLevelNames(beyond)}. Eles aparecem no seu mapa quando as aventuras ficarem
+                  {formatLevelNames(beyond)}. Eles aparecem no seu mapa quando os cursos ficarem
                   prontas!
                 </p>
               </div>
