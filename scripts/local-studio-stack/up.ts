@@ -14,11 +14,12 @@ import { join } from 'node:path'
 import {
   childEnv,
   ensureSecrets,
-  isAlive,
+  isOurProcess,
   LOG_DIR,
   PG_DATA,
   PG_PORT,
   probePort,
+  processIdentity,
   ROOT,
   readState,
   SERVICES,
@@ -46,7 +47,7 @@ async function startPostgres(): Promise<void> {
 async function startService(s: ServiceDef): Promise<boolean> {
   const state = readState()
   const rec = state.services[s.name]
-  if (rec && isAlive(rec.pid)) {
+  if (rec && isOurProcess(rec)) {
     console.log(`• ${s.name} já rodando (pid ${rec.pid})`)
     return false
   }
@@ -69,7 +70,10 @@ async function startService(s: ServiceDef): Promise<boolean> {
   fs.closeSync(fd)
   if (!child.pid) throw new Error(`${s.name}: spawn sem PID`)
   child.unref()
+  // Identidade gravada já no spawn: o down.ts só encerra o PID se ela ainda conferir.
+  const identity = processIdentity(child.pid) ?? undefined
   state.services[s.name] = {
+    identity,
     pid: child.pid,
     port: s.port,
     logFile,
@@ -93,7 +97,7 @@ async function waitHealthy(s: ServiceDef, timeoutMs: number): Promise<boolean> {
       /* ainda subindo */
     }
     const rec = readState().services[s.name]
-    if (rec && !isAlive(rec.pid)) return false
+    if (rec && !isOurProcess(rec)) return false
     await sleep(1000)
   }
   return false

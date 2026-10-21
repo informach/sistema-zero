@@ -9,8 +9,9 @@ import { spawnSync } from 'node:child_process'
  *     (scram-sha-256, só 127.0.0.1:55432) e cria o banco `sistemazero`. Sem serviço do Windows.
  *  3. Migrations de auth, catalog e members (migrate.ts) e o seed canônico do catálogo.
  *  4. Studio Python local (python-local.ts), se a distribuição aprovada estiver no disco.
- *  5. Sobe a pilha (up.ts), publica a jornada Kids inicial pelo bootstrap canônico do Members
- *     e cria as contas de QA (accounts.ts).
+ *  5. Sobe a pilha (up.ts), publica a jornada Kids inicial pelo bootstrap canônico do Members,
+ *     cria as contas de QA (accounts.ts), publica o currículo mínimo e leva o cliente adulto e a
+ *     criança ao Estúdio livre pelo progresso real (curriculum.ts, kids-first-course.mjs).
  *
  *   bun scripts/local-studio-stack/setup.ts [--no-start]
  */
@@ -116,11 +117,16 @@ async function startPostgresAndDb() {
 }
 
 function migrateAndSeed() {
-  for (const pkg of ['auth', 'catalog', 'members']) {
+  for (const pkg of ['auth', 'catalog', 'members', 'hub']) {
     run(process.execPath, [here('migrate.ts'), pkg], {
       env: childEnv({ DATABASE_URL: databaseUrl(secrets) }),
     })
   }
+  // Servidores da comunidade (Clube e Mural dos Criadores), idempotente por slug.
+  run(process.execPath, ['run', 'scripts/seed-community-spaces.ts'], {
+    cwd: join(ROOT, 'packages', 'hub'),
+    env: childEnv(serviceEnv('hub', secrets)),
+  })
   // Seed canônico do catálogo (idempotente por sku/slug): produtos e ofertas Kids e Adulto.
   run(process.execPath, ['run', 'scripts/seed.ts'], {
     cwd: join(ROOT, 'packages', 'catalog'),
@@ -173,5 +179,8 @@ if (!process.argv.includes('--no-start')) {
   run(process.execPath, [here('up.ts')])
   bootstrapKidsJourney()
   run(process.execPath, [here('accounts.ts')])
+  // Currículo mínimo pelas rotas do Admin + progresso real do cliente adulto e da criança.
+  run(process.execPath, [here('curriculum.ts'), 'all'])
+  run('node', [here('kids-first-course.mjs')])
 }
 console.log('\n✓ setup concluído. Verificar: bun scripts/local-studio-stack/verify.ts')

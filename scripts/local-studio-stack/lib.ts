@@ -38,6 +38,7 @@ export type ServiceName =
   | 'auth'
   | 'catalog'
   | 'members'
+  | 'hub'
   | 'gateway'
   | 'admin'
   | 'community'
@@ -61,8 +62,8 @@ export type ServiceDef = {
 
 const nextArgs = (port: number) => ['run', 'dev', '--', '-H', '127.0.0.1', '-p', String(port)]
 
-// Portas canônicas de scripts/dev.ts. Payments, messaging, fiscal, funnel, hub etc.
-// ficam DESLIGADOS: as rotas do gateway para eles respondem 502/503 localmente.
+// Portas canônicas de scripts/dev.ts. Payments, messaging, fiscal, funnel, referrals,
+// marketing e helpdesk ficam DESLIGADOS: as rotas do gateway para eles respondem 502/503.
 export const SERVICES: ServiceDef[] = [
   {
     name: 'auth',
@@ -84,6 +85,15 @@ export const SERVICES: ServiceDef[] = [
     name: 'members',
     dir: 'members',
     port: 3004,
+    args: ['run', 'src/index.ts'],
+    health: '/readyz',
+    kind: 'api',
+  },
+  // Fórum/Mural (Clube e Mural dos Criadores): a vitrine do Studio e o marco `showcase`.
+  {
+    name: 'hub',
+    dir: 'hub',
+    port: 3010,
     args: ['run', 'src/index.ts'],
     health: '/readyz',
     kind: 'api',
@@ -164,6 +174,9 @@ const SECRET_NAMES = [
   'METRICS_TOKEN',
   'FUNNEL_HMAC_SECRET',
   'FUNNEL_INTERNAL_TOKEN',
+  'HUB_INTERNAL_TOKEN',
+  'R2_LOCAL_ACCESS_KEY_ID',
+  'R2_LOCAL_SECRET_ACCESS_KEY',
   'STUDIO_PRO_RUNTIME_TOKEN',
   'STUDIO_PYTHON_RUNTIME_TOKEN',
   'STUDIO_PYTHON_LANGUAGE_TOKEN',
@@ -270,8 +283,23 @@ export function serviceEnv(name: ServiceName, s: Secrets): Record<string, string
       // S2S direto ao Auth (coorte de perfis da jornada Kids). Sem GATEWAY_URL +
       // MEMBERS_HMAC_SECRET os jobs de e-mail (report dos pais/renovação) ficam no-op.
       AUTH_BASE_URL: url(3002),
+      // Avisa o hub na concessão (invalida o micro-cache de acesso).
+      HUB_BASE_URL: url(3010),
       AUTH_INTERNAL_TOKEN: s.AUTH_INTERNAL_TOKEN,
       ...studio,
+    },
+    hub: {
+      NODE_ENV: 'development',
+      PORT: '3010',
+      HOST: '127.0.0.1',
+      DATABASE_URL: db,
+      MEMBERS_BASE_URL: url(3004),
+      MEMBERS_INTERNAL_TOKEN: s.MEMBERS_INTERNAL_TOKEN,
+      GATEWAY_HMAC_SECRET: s.GATEWAY_HMAC_SECRET,
+      INTERNAL_API_TOKEN: s.HUB_INTERNAL_TOKEN,
+      REQUIRE_ADMIN: 'true',
+      KIDS_BFF_BASE_URL: url(3008),
+      ADULT_BFF_BASE_URL: url(3007),
     },
     gateway: {
       NODE_ENV: 'development',
@@ -302,6 +330,7 @@ export function serviceEnv(name: ServiceName, s: Secrets): Record<string, string
       FUNNEL_HMAC_SECRET: s.FUNNEL_HMAC_SECRET,
       FUNNEL_INTERNAL_TOKEN: s.FUNNEL_INTERNAL_TOKEN,
       HUB_URL: url(3010),
+      HUB_INTERNAL_TOKEN: s.HUB_INTERNAL_TOKEN,
       MARKETING_URL: url(3011),
       REFERRALS_URL: url(3012),
       HELPDESK_URL: url(3013),
@@ -357,7 +386,16 @@ export function childEnv(extra: Record<string, string>): Record<string, string> 
 }
 
 // ---------------------------------------------------------------------------- processos
-export type StateRecord = { pid: number; port: number; logFile: string; startedAt: string }
+/** Identidade de um processo: quando o SO o criou e qual executável é. */
+export type ProcessIdentity = { createdMs: number; image: string }
+export type StateRecord = {
+  pid: number
+  port: number
+  logFile: string
+  startedAt: string
+  /** Gravada logo após o spawn; sem ela (ou se não conferir) o PID não é encerrado. */
+  identity?: ProcessIdentity
+}
 export type State = {
   postgres?: { port: number; dataDir: string }
   services: Record<string, StateRecord>
@@ -385,6 +423,90 @@ export function isAlive(pid: number | undefined): boolean {
   } catch (e) {
     return (e as NodeJS.ErrnoException).code === 'EPERM'
   }
+}
+
+/**
+ * Identidade atual do PID pelo próprio Windows (kernel32 via bun:ffi: GetProcessTimes +
+ * QueryFullProcessImageNameW), sem PowerShell/WMIC. Fora do Windows, `ps`. `null` = não existe
+ * ou não foi possível consultar.
+ */
+export function processIdentity(pid: number): ProcessIdentity | null {
+  if (!pid) return null
+  if (process.platform !== 'win32') {
+    const r = spawnSync('ps', ['-o', 'lstart=,comm=', '-p', String(pid)], { encoding: 'utf8' })
+    const line = r.status === 0 ? r.stdout.trim() : ''
+    const match = line.match(/^(\S+\s+\S+\s+\d+\s+[\d:]+\s+\d+)\s+(.+)$/)
+    return match ? { createdMs: Date.parse(match[1]), image: match[2] } : null
+  }
+  const k = kernel32()
+  const handle = k.OpenProcess(0x1000, false, pid) // PROCESS_QUERY_LIMITED_INFORMATION
+  if (!handle) return null
+  try {
+    const times = [0, 1, 2, 3].map(() => new Uint8Array(8))
+    if (
+      !k.GetProcessTimes(
+        handle,
+        ffiPtr(times[0]),
+        ffiPtr(times[1]),
+        ffiPtr(times[2]),
+        ffiPtr(times[3]),
+      )
+    )
+      return null
+    const filetime = new DataView(times[0].buffer).getBigUint64(0, true)
+    const name = new Uint16Array(1024)
+    const size = new Uint32Array([name.length])
+    if (!k.QueryFullProcessImageNameW(handle, 0, ffiPtr(name), ffiPtr(size))) return null
+    return {
+      // FILETIME (100 ns desde 1601) → ms Unix.
+      createdMs: Number((filetime - 116444736000000000n) / 10000n),
+      image: String.fromCharCode(...name.subarray(0, size[0])),
+    }
+  } finally {
+    k.CloseHandle(handle)
+  }
+}
+
+type Kernel32 = {
+  OpenProcess(access: number, inherit: boolean, pid: number): unknown
+  GetProcessTimes(h: unknown, a: unknown, b: unknown, c: unknown, d: unknown): boolean
+  QueryFullProcessImageNameW(h: unknown, flags: number, name: unknown, size: unknown): boolean
+  CloseHandle(h: unknown): boolean
+}
+let kernel: Kernel32 | null = null
+let ffiPtr: (view: ArrayBufferView) => unknown = () => 0
+function kernel32(): Kernel32 {
+  if (kernel) return kernel
+  const { dlopen, FFIType, ptr } = require('bun:ffi') as typeof import('bun:ffi')
+  ffiPtr = ptr as never
+  const lib = dlopen('kernel32.dll', {
+    OpenProcess: { args: [FFIType.u32, FFIType.bool, FFIType.u32], returns: FFIType.ptr },
+    GetProcessTimes: {
+      args: [FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr],
+      returns: FFIType.bool,
+    },
+    QueryFullProcessImageNameW: {
+      args: [FFIType.ptr, FFIType.u32, FFIType.ptr, FFIType.ptr],
+      returns: FFIType.bool,
+    },
+    CloseHandle: { args: [FFIType.ptr], returns: FFIType.bool },
+  })
+  kernel = lib.symbols as unknown as Kernel32
+  return kernel
+}
+
+/**
+ * O PID do registro ainda é o processo que NÓS iniciamos? Mesmo executável e criado no mesmo
+ * instante (tolerância de 2 s). Registro sem identidade nunca confere: o Windows reutiliza PIDs.
+ */
+export function isOurProcess(rec: StateRecord): boolean {
+  if (!rec.identity) return false
+  const now = processIdentity(rec.pid)
+  return (
+    now !== null &&
+    now.image.toLowerCase() === rec.identity.image.toLowerCase() &&
+    Math.abs(now.createdMs - rec.identity.createdMs) <= 2000
+  )
 }
 
 export function killTree(pid: number): void {
