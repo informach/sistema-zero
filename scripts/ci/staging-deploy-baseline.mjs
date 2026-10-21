@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process'
+import { randomUUID } from 'node:crypto'
 import { appendFileSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -9,8 +10,28 @@ const UUID = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i
 const EPOCH = '.github/staging-deploy-epoch-v1.json'
 // An exhausted bound is a refusal, never permission to truncate the baseline history.
 const MAX_PAGES = 20
-const fail = (message) => {
-  throw new Error(`staging baseline: ${message}`)
+const failureCodes = new Set([
+  'validation',
+  'github-unavailable',
+  'github-http',
+  'github-json',
+  'github-repository',
+  'github-page',
+  'github-pagination',
+])
+class StagingBaselineError extends Error {
+  constructor(message, code) {
+    super(`staging baseline: ${message}`)
+    this.code = code
+  }
+}
+export function baselineFailureCode(error) {
+  return error instanceof StagingBaselineError && failureCodes.has(error.code)
+    ? error.code
+    : 'unexpected'
+}
+const fail = (message, code = 'validation') => {
+  throw new StagingBaselineError(message, code)
 }
 const object = (value) => value !== null && typeof value === 'object' && !Array.isArray(value)
 const positive = (value) => Number.isSafeInteger(value) && value > 0
@@ -139,8 +160,9 @@ function runRecord(run) {
 async function call(label, fn, ...args) {
   try {
     return await fn(...args)
-  } catch {
-    fail(`GitHub API failed (${label})`)
+  } catch (error) {
+    if (error instanceof StagingBaselineError) throw error
+    fail(`GitHub API failed (${label})`, 'github-unavailable')
   }
 }
 
@@ -304,11 +326,12 @@ export async function resolveBefore(context, deps) {
 export function createGitHubApi(repository, token, fetchImpl = fetch) {
   if (!/^[\w.-]+\/[\w.-]+$/.test(repository) || typeof token !== 'string' || !token)
     fail('GitHub repository/read credential required')
-  const base = `https://api.github.com/repos/${repository}/actions/`
-  async function request(path, field, page) {
+  const repositoryUrl = `https://api.github.com/repos/${repository}`
+  const base = `${repositoryUrl}/actions/`
+  async function requestJson(url) {
     let response
     try {
-      response = await fetchImpl(base + path, {
+      response = await fetchImpl(url, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/vnd.github+json',
@@ -318,15 +341,36 @@ export function createGitHubApi(repository, token, fetchImpl = fetch) {
         signal: AbortSignal.timeout(15_000),
       })
     } catch {
-      fail('GitHub request unavailable')
+      fail('GitHub request unavailable', 'github-unavailable')
     }
-    if (!response.ok) fail(`GitHub request HTTP ${response.status}`)
+    if (!response.ok) fail(`GitHub request HTTP ${response.status}`, 'github-http')
     let data
     try {
       data = await response.json()
     } catch {
-      fail('GitHub response is not JSON')
+      fail('GitHub response is not JSON', 'github-json')
     }
+    return { data, response }
+  }
+  // GitHub's Link header canonicalizes /repos/owner/name to /repositories/id.
+  // Bind that ID to authenticated metadata for this exact repository once.
+  let repositoryIdentity
+  function canonicalBase() {
+    repositoryIdentity ??= requestJson(repositoryUrl).then(({ data }) => {
+      if (
+        !object(data) ||
+        !positive(data.id) ||
+        typeof data.full_name !== 'string' ||
+        data.full_name.toLowerCase() !== repository.toLowerCase()
+      )
+        fail('GitHub repository identity mismatch', 'github-repository')
+      return `https://api.github.com/repositories/${data.id}/actions/`
+    })
+    return repositoryIdentity
+  }
+  async function request(path, field, page) {
+    const canonical = await canonicalBase()
+    const { data, response } = await requestJson(base + path)
     if (!field) return data
     if (
       !object(data) ||
@@ -334,7 +378,7 @@ export function createGitHubApi(repository, token, fetchImpl = fetch) {
       !Number.isSafeInteger(data.total_count) ||
       data.total_count < data[field].length
     )
-      fail('GitHub page body malformed')
+      fail('GitHub page body malformed', 'github-page')
     const link = response.headers.get('link') ?? ''
     if (
       link &&
@@ -342,8 +386,9 @@ export function createGitHubApi(repository, token, fetchImpl = fetch) {
         link,
       )
     )
-      fail('GitHub pagination header malformed')
-    if ([...link.matchAll(/rel="next"/g)].length > 1) fail('GitHub pagination next link ambiguous')
+      fail('GitHub pagination header malformed', 'github-pagination')
+    if ([...link.matchAll(/rel="next"/g)].length > 1)
+      fail('GitHub pagination next link ambiguous', 'github-pagination')
     const next = /<([^>]+)>;\s*rel="next"/.exec(link)?.[1]
     let nextPage = null
     if (next) {
@@ -351,17 +396,28 @@ export function createGitHubApi(repository, token, fetchImpl = fetch) {
       try {
         url = new URL(next)
       } catch {
-        fail('GitHub pagination link malformed')
+        fail('GitHub pagination link malformed', 'github-pagination')
       }
       const originalUrl = new URL(base + path)
+      const canonicalUrl = new URL(canonical + path)
+      const expectedQuery = new URLSearchParams(originalUrl.searchParams)
+      expectedQuery.set('page', String(page + 1))
       if (
         url.origin !== originalUrl.origin ||
-        url.pathname !== originalUrl.pathname ||
-        !/^\d+$/.test(url.searchParams.get('page') ?? '')
+        (url.pathname !== originalUrl.pathname && url.pathname !== canonicalUrl.pathname) ||
+        url.username ||
+        url.password ||
+        url.hash ||
+        url.searchParams.size !== expectedQuery.size ||
+        [...expectedQuery].some(
+          ([key, value]) =>
+            url.searchParams.getAll(key).length !== 1 || url.searchParams.get(key) !== value,
+        )
       )
-        fail('GitHub pagination target invalid')
+        fail('GitHub pagination target invalid', 'github-pagination')
       nextPage = Number(url.searchParams.get('page'))
-      if (!positive(nextPage) || nextPage <= page) fail('GitHub pagination does not advance')
+      if (!positive(nextPage) || nextPage !== page + 1)
+        fail('GitHub pagination does not advance', 'github-pagination')
     }
     return {
       [field === 'workflow_runs' ? 'runs' : 'jobs']: data[field],
@@ -437,16 +493,21 @@ export async function runCli(env = process.env) {
     }
   }
   const result = await resolveBefore(context, dependencies)
-  const output = `selector=${JSON.stringify(result)}\n`
+  // Dispatch input may contain newlines: preserve it without injecting outputs.
+  let delimiter
+  do {
+    delimiter = `staging_before_${randomUUID()}`
+  } while (result.before.split(/\r?\n/).includes(delimiter))
+  const output = `selector=${JSON.stringify(result)}\nbefore<<${delimiter}\n${result.before}\n${delimiter}\n`
   if (!env.GITHUB_OUTPUT) fail('GitHub output destination required')
   appendFileSync(resolve(env.GITHUB_OUTPUT), output)
   console.log(`Staging selector baseline: ${result.source}; before=${result.before}`)
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  runCli().catch(() => {
+  runCli().catch((error) => {
     console.error(
-      'Staging baseline refused before provider access; check bootstrap, Git history and GitHub read metadata.',
+      `Staging baseline refused before provider access [${baselineFailureCode(error)}]; check bootstrap, Git history and GitHub read metadata.`,
     )
     process.exitCode = 1
   })

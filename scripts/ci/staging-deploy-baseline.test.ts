@@ -1,6 +1,8 @@
 import { expect, test } from 'bun:test'
 import {
+  baselineFailureCode,
   configuredServiceIds,
+  createGitHubApi,
   deriveActivationSha,
   resolveBefore,
 } from './staging-deploy-baseline.mjs'
@@ -121,6 +123,20 @@ test('dispatch preserves before contract, including empty input, without consult
     expect(await resolveBefore(ctx, f.deps)).toEqual({ before: beforeInput, source: 'dispatch' })
     expect(f.calls()).toBe(0)
   }
+})
+
+test('safe adapter failure category survives the baseline boundary without raw response details', async () => {
+  const f = fixture()
+  const api = createGitHubApi(
+    'example/project',
+    'synthetic-token',
+    async () => new Response(JSON.stringify({ id: 1, full_name: 'private-response-marker' })),
+  )
+  f.deps.getRun = api.getRun
+  const error = await resolveBefore(f.ctx, f.deps).catch((error) => error)
+  expect(baselineFailureCode(error)).toBe('github-repository')
+  expect(error.message).not.toContain('private-response-marker')
+  expect(error.message).not.toContain('synthetic-token')
 })
 
 test('verified bootstrap is used when no later eligible deployment exists', async () => {
