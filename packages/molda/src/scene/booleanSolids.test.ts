@@ -102,6 +102,32 @@ describe('booleanos sólidos', () => {
     expect(readSceneDocument(sceneToJson(result)).status).toBe('valid')
   })
 
+  test('diferença cria uma cavidade fechada quando o cortador está dentro da base', async () => {
+    const { document, base, tool, id } = pair()
+    const center = identityMatrix()
+    center[12] = -1
+    const centered = transformSceneNodes(document, [tool], center)
+    const shrink = identityMatrix()
+    shrink[0] = shrink[5] = shrink[10] = 0.5
+    const nested = transformSceneNodes(centered, [tool], shrink)
+    const result = await booleanSceneSolids(nested, [base, tool], 'difference', id)
+    expect(sceneMeshVolume(resultMesh(result, base))).toBeCloseTo(7, 3)
+    expect(readSceneDocument(sceneToJson(result)).status).toBe('valid')
+  })
+
+  test('união preserva duas regiões separadas e diferença mantém a base', async () => {
+    const { document, base, tool, id } = pair()
+    const away = identityMatrix()
+    away[12] = 5
+    const separated = transformSceneNodes(document, [tool], away)
+    const union = await booleanSceneSolids(separated, [base, tool], 'union', id)
+    expect(sceneMeshVolume(resultMesh(union, base))).toBeCloseTo(16, 3)
+    expect(readSceneDocument(sceneToJson(union)).status).toBe('valid')
+    const difference = await booleanSceneSolids(separated, [base, tool], 'difference', id)
+    expect(sceneMeshVolume(resultMesh(difference, base))).toBeCloseTo(8, 3)
+    expect(readSceneDocument(sceneToJson(difference)).status).toBe('valid')
+  })
+
   test('interseção sem volume recusa a confirmação', async () => {
     const { document, base, tool, id } = pair()
     const away = identityMatrix()
