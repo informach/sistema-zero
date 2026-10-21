@@ -1000,7 +1000,7 @@ describe('BFF das criações — respostas e sessão', () => {
   })
 })
 
-describe('BFF das criações — o rascunho da fase (10/10/2026)', () => {
+describe('BFF das criações — o rascunho da aula (10/10/2026)', () => {
   const BLOCO = '22222222-2222-4222-8222-222222222222'
   const daFase = (tool: string) => ({ params: Promise.resolve({ tool, itemId: BLOCO }) })
 
@@ -1084,7 +1084,7 @@ describe('BFF das criações — o rascunho da fase (10/10/2026)', () => {
         },
       },
     })
-    // O documento do R2 tem OUTRO id: o Estúdio da fase é recusado como o livre.
+    // O documento do R2 tem OUTRO id: o Estúdio da aula é recusado como o livre.
     const recusado = await routes.creationsCommit.POST(
       post({ revision: 1 }),
       daFase('lesson-studio'),

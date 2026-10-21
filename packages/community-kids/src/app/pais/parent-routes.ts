@@ -19,9 +19,9 @@ export const NEW_CHILD_HREF = '/pais/nova-crianca'
 export const PARENT_SUPPORT_HREF = '/pais/ajuda/atendimento'
 
 /**
- * A página da criança; `aba` abre direto no progresso. `aluno` é a fase do link que trouxe o
+ * A página da criança; `aba` abre direto no progresso. `aluno` é a aula do link que trouxe o
  * responsável (`/pais?aluno=`): ela viaja junto até a página da criança, senão "Ir para a área da
- * criança" depois de autorizar o aparelho abria a área da criança, e não a fase.
+ * criança" depois de autorizar o aparelho abria a área da criança, e não a aula.
  */
 export function childHref(profileId: string, aba?: 'progresso', aluno?: string): string {
   const params = new URLSearchParams()
@@ -31,12 +31,12 @@ export function childHref(profileId: string, aba?: 'progresso', aluno?: string):
   return `/pais/crianca/${encodeURIComponent(profileId)}${query ? `?${query}` : ''}`
 }
 
-/** A Família, levando a fase pendente de volta quando houver. */
+/** A Família, levando a aula pendente de volta quando houver. */
 export function familyHref(aluno?: string): string {
   return aluno ? `/pais?aluno=${encodeURIComponent(aluno)}` : '/pais'
 }
 
-/** Para onde vai o "Ir para a área da criança": a fase do link, depois da escolha do perfil. */
+/** Para onde vai o "Ir para a área da criança": a aula do link, depois da escolha do perfil. */
 export function studentEntryFor(aluno?: string): string {
   return aluno ? `/login/aluno?next=${encodeURIComponent(aluno)}` : '/perfis'
 }

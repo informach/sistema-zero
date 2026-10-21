@@ -214,10 +214,10 @@ export interface SectionProgressRecord {
 }
 
 /**
- * Por que a seção ainda não fechou, TIPADO (30/09/2026): o `kind` é o que escolhe o ícone e a cor
+ * Por que a parte ainda não fechou, TIPADO (30/09/2026): o `kind` é o que escolhe o ícone e a cor
  * na faixa "o que falta para seguir" do rodapé da aula. As razões de requisito vêm de
  * `lessonCompletionRequirements`; `platform-action`, `project-check` e `authoring` são as outras
- * três coisas que o members acrescenta; `locked` é a seção que espera a anterior; `lesson` é o
+ * três coisas que o members acrescenta; `locked` é a parte que espera a anterior; `lesson` é o
  * motivo do "Concluir aula" travado que o player conhece; `other` é um texto sem razão (fixtures).
  */
 export type SectionPendingKind =
@@ -553,7 +553,7 @@ export function sectionCompletionIssues(
         'Uma entrega pela galeria não é um espaço de trabalho incorporado. Coloque o bloco na seção de entrega.',
       )
     if (!isSectionCompletion(c)) {
-      add('Configure os critérios de conclusão desta seção.')
+      add('Configure os critérios de conclusão desta parte.')
       return issues
     }
     if (
@@ -565,7 +565,7 @@ export function sectionCompletionIssues(
       add(
         c.projectChecks?.length
           ? 'Objetivos extras não trancam a parte. Marque ao menos um objetivo como obrigatório ou escolha outro critério.'
-          : 'Esta seção precisa de uma checagem ou objetivo verificável.',
+          : 'Esta parte precisa de uma checagem ou objetivo verificável.',
       )
     if (
       blocks.some(
@@ -576,7 +576,7 @@ export function sectionCompletionIssues(
           !c.blockIds.includes(block.id),
       )
     )
-      add('Inclua a emissão do certificado como critério desta seção.')
+      add('Inclua a emissão do certificado como critério desta parte.')
     if (
       c.platformAction &&
       (c.blockIds.length ||
@@ -629,7 +629,7 @@ export function sectionCompletionIssues(
           add('Um arquivo obrigatório foi removido ou ainda não foi enviado.')
         }
       } else if (content.kind === 'ebook') {
-        if (s.intent !== 'material') add('Use a seção Material do curso para exigir abrir o livro.')
+        if (s.intent !== 'material') add('Use a parte Material do curso para exigir abrir o livro.')
       } else if (content.kind === 'quiz') {
         if (
           typeof content.passingScore !== 'number' ||
@@ -696,7 +696,7 @@ export function sectionCompletionIssues(
         ))
     )
       add(
-        'Em Material do curso, escolha o livro, os arquivos para baixar ou o vídeo desta seção. Separe quiz e entrega de projeto em outra seção.',
+        'Em Material do curso, escolha o livro, os arquivos para baixar ou o vídeo desta parte. Separe quiz e entrega de projeto em outra seção.',
       )
     if (
       c.projectChecks?.length &&
@@ -708,10 +708,10 @@ export function sectionCompletionIssues(
           !b.content.gallery,
       )
     )
-      add('A verificação de projeto precisa de um Estúdio incorporado nesta seção.')
+      add('A verificação de projeto precisa de um Estúdio incorporado nesta parte.')
     if (c.submissionUpToDate && !submissionUpToDateWorkspace(sections, blocks, s.id))
       add(
-        'O envio em dia precisa de um Estúdio ou Pinta incorporado nesta seção, já entregue numa seção de entrega anterior.',
+        'O envio em dia precisa de um Estúdio ou Pinta incorporado nesta parte, já entregue numa seção de entrega anterior.',
       )
     for (const b of blocks) {
       if (!s.blockIds.includes(b.id) || !record(b.content)) continue
@@ -827,11 +827,11 @@ export function sectionProgressView(
       }
     const status = available ? ('available' as const) : ('locked' as const)
     available = Boolean(options.freeOrder)
-    // ⚠️ Sem repetidos: `lessonCompletionRequirements` cria UM requisito por bloco, e uma seção com
+    // ⚠️ Sem repetidos: `lessonCompletionRequirements` cria UM requisito por bloco, e uma parte com
     // três descobertas obrigatórias virava três "Termine o experimento" (review do lote 2).
     const itens: SectionPendingItem[] =
       status === 'locked'
-        ? [{ kind: 'locked', text: 'Conclua a seção anterior' }]
+        ? [{ kind: 'locked', text: 'Conclua a parte anterior' }]
         : semRepetidos(
             (pending.get(s.id) ?? []).map((item) =>
               typeof item === 'string' ? { kind: 'other', text: item } : item,

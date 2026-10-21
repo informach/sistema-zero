@@ -99,6 +99,15 @@ const COMUNIDADE_ADULTO_SKU = 'comunidade-dos-criadores-adulto'
 const COMUNIDADE_ADULTO_OFFER_MENSAL_SLUG = 'comunidade-dos-criadores-adulto-mensal'
 const COMUNIDADE_ADULTO_OFFER_ANUAL_SLUG = 'comunidade-dos-criadores-adulto-anual'
 
+// Desafio do Primeiro Jogo ADULTO (21/10/2026) — a versão adulta do mesmo curso (A Chave do Farol),
+// vendida pelo funil `/pro/desafio-primeiro-jogo` (env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO`).
+// A MESMA oferta do Kids por decisão da dona: R$ 67, compra única, 30 dias de acesso, garantia de
+// 7 dias e cupom aceito. CURSO com courseRef `desafio-primeiro-jogo-adulto` (manifestos em
+// docs/aulas-interativas/desafio-primeiro-jogo) + o Mural ADULTO completo como item; depois
+// do prazo, o members concede o Mural adulto visitante. Não amplia nada no Kids.
+const DESAFIO_ADULTO_SKU = 'desafio-primeiro-jogo-adulto'
+const DESAFIO_ADULTO_OFFER_SLUG = 'desafio-primeiro-jogo-adulto-30-dias'
+
 const env = loadEnv()
 const logger = createLogger({ level: 'info', pretty: env.NODE_ENV !== 'production' })
 const connection = createDbConnection(env.DATABASE_URL, { max: env.DATABASE_POOL_MAX })
@@ -795,6 +804,62 @@ async function main(): Promise<void> {
         ctaLabel: 'Garantir 1 ano de criação',
         altOffer: { slug: COMUNIDADE_ADULTO_OFFER_MENSAL_SLUG, label: 'Prefiro começar no mensal' },
       },
+    })
+    logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
+  }
+
+  // ── Desafio do Primeiro Jogo (adultos): CURSO + Mural adulto ──────────────
+  let desafioAdulto = await products.findBySku(DESAFIO_ADULTO_SKU)
+  if (desafioAdulto) {
+    logger.info('seed.product_exists', { id: desafioAdulto.id, sku: desafioAdulto.sku })
+  } else {
+    const view = await createProduct.execute({
+      sku: DESAFIO_ADULTO_SKU,
+      slug: DESAFIO_ADULTO_SKU,
+      name: 'Desafio do Primeiro Jogo (adultos)',
+      kind: 'course',
+      status: 'active',
+      sellable: true,
+      description:
+        'A trilha guiada em que a pessoa adulta monta o seu primeiro jogo, A Chave do Farol, no Estúdio do Sistema Zero e publica no Mural adulto.',
+      fulfillment: {
+        accessType: 'course',
+        courseRef: DESAFIO_ADULTO_SKU,
+        release: { mode: 'immediate' },
+      },
+    })
+    logger.info('seed.product_created', { id: view.id, sku: view.sku })
+    desafioAdulto = await products.findById(view.id)
+  }
+  if (!desafioAdulto) throw new Error('Produto do Desafio adulto não encontrado após a criação')
+
+  const existingDesafioAdultoOffer = await offers.findBySlug(DESAFIO_ADULTO_OFFER_SLUG)
+  if (existingDesafioAdultoOffer) {
+    logger.info('seed.offer_exists', {
+      id: existingDesafioAdultoOffer.id,
+      slug: existingDesafioAdultoOffer.slug,
+    })
+  } else {
+    const view = await createOffer.execute({
+      productId: desafioAdulto.id,
+      code: 'desafio-adulto-30-dias',
+      slug: DESAFIO_ADULTO_OFFER_SLUG,
+      name: 'Desafio do Primeiro Jogo (adultos) · 30 dias',
+      priceCents: 6700,
+      currency: 'BRL',
+      pricingMode: 'one_time',
+      accessMode: 'fixed',
+      accessDurationValue: 30,
+      accessDurationUnit: 'days',
+      guaranteeDays: 7,
+      // Ativa: o funil só vende com a env apontando para ela (sem a env, o funil nem sobe).
+      status: 'active',
+      content: {
+        badge: 'Seu primeiro jogo',
+        ctaLabel: 'Quero fazer meu primeiro jogo',
+        allowsCoupon: true,
+      },
+      items: [{ productId: adultMuralId }],
     })
     logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
   }

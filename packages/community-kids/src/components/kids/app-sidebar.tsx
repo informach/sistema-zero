@@ -55,7 +55,7 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
  * ferramentas" do perfil): dá teclado e leitor de tela sem uma linha de JS. Aqui ele é
  * CONTROLADO, porque só um grupo fica aberto por vez e o aberto segue a página.
  *
- * ⚠️ O clique no nome ABRE em vez de navegar (decisão da dona): a página da seção é o
+ * ⚠️ O clique no nome ABRE em vez de navegar (decisão da dona): a página da parte é o
  * primeiro filho ("Minhas criações", "Nossa turma", "Meu perfil"). Foi o que devolveu o
  * atalho que as crianças perderam quando o menu virou cinco páginas-hub.
  */
@@ -93,7 +93,7 @@ export function NavGroup({
         className={cn(
           ITEM_BASE,
           'cursor-pointer list-none [&::-webkit-details-marker]:hidden',
-          // A seção que contém a página atual fica marcada, mas SEM a pílula cheia: a
+          // A parte que contém a página atual fica marcada, mas SEM a pílula cheia: a
           // pílula é do filho ativo, e duas coisas acesas disputariam a atenção.
           dentro ? 'text-white' : 'hover:bg-(--menu-vidro) hover:text-white',
         )}
@@ -145,7 +145,7 @@ export function NavGroup({
  * cima para baixo: o atalho dos Recados, os chips de sequência e XP, e o cartão do perfil,
  * que é o botão do menu da conta. `gamification` é best-effort (`null` esconde os chips).
  *
- * Desde 09/2026 as seções com destinos por dentro ABREM a lista em vez de navegar (ver
+ * Desde 09/2026 as partes com destinos por dentro ABREM a lista em vez de navegar (ver
  * `NavGroup`); as demais seguem links simples.
  *
  * Desde a paleta do Pen (11/09/2026) o menu é a ÂNCORA ESCURA da página (`--menu`, com o

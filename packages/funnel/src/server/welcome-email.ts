@@ -1,4 +1,5 @@
 import type { FunnelRepo, Lead } from '../db/repo'
+import { isDesafioFunnel } from '../funnels/registry'
 import {
   computeFixedAccessExpiry,
   fixedAccessFromSnapshot,
@@ -109,12 +110,23 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
       }
 
       const variables: Record<string, string> = { nome: firstName, link }
-      if (challengeAccess) {
+      // Reserva do Desafio adulto: a chave genérica do mesmo comprador (`welcome` com o link de
+      // senha, `new-access` com `/cursos`), se o Messaging ainda não tiver a chave nova.
+      let fallbackKey: string | undefined
+      if (challengeAccess && isKids) {
         templateKey = 'challenge-access-approved'
         keyPrefix = 'challenge-access-approved'
         variables.expira_em = challengeAccess.expiresAtLabel
         variables.acao = action
         variables.orientacao = guidance
+      } else if (challengeAccess) {
+        // Desafio adulto (21/10/2026): a orientação está no texto do template; o botão muda com o
+        // comprador.
+        fallbackKey = templateKey
+        templateKey = 'challenge-access-approved-adult'
+        keyPrefix = 'challenge-access-approved'
+        variables.expira_em = challengeAccess.expiresAtLabel
+        variables.acao = lead.buyerIsNew ? 'Criar senha e entrar' : 'Entrar e abrir o Desafio'
       }
 
       await sendOne(
@@ -127,6 +139,7 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
           variables,
         },
         `${keyPrefix}-${lead.id}`,
+        fallbackKey,
       )
 
       const phone = toWhatsAppPhone(lead.telefone)
@@ -141,6 +154,7 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
             variables,
           },
           `${keyPrefix}-wa-${lead.id}`,
+          fallbackKey,
         )
       }
     } catch (err) {
@@ -156,7 +170,9 @@ async function resolveChallengeAccess(
   repo: Pick<FunnelRepo, 'paymentContext'>,
   lead: Lead,
 ): Promise<{ expiresAtLabel: string } | null> {
-  if (lead.funnel !== 'kids/desafio-primeiro-jogo' || !lead.paymentId || !lead.paidAt) {
+  // Os dois Desafios: o Kids usa `challenge-access-approved` (Adicionar criança, Autorizar
+  // aparelho) e o adulto `challenge-access-approved-adult` (21/10/2026), ambos com a data final.
+  if (!isDesafioFunnel(lead.funnel) || !lead.paymentId || !lead.paidAt) {
     return null
   }
   const context = await repo.paymentContext(lead.paymentId)
@@ -194,10 +210,11 @@ async function sendOne(
   leadId: string,
   input: SendMessageInput,
   idempotencyKey: string,
+  fallbackKey?: string,
 ): Promise<void> {
   try {
     let res = await deps.gateway.sendMessage(input, idempotencyKey)
-    const legacy = LEGACY_TEMPLATE_KEYS[input.templateKey]
+    const legacy = LEGACY_TEMPLATE_KEYS[input.templateKey] ?? fallbackKey
     if (legacy && isTemplateNotFound(res)) {
       // A mesma Idempotency-Key serve: o Messaging recusa a chave ausente ANTES de gravar
       // a mensagem, então nada ficou registrado com ela.

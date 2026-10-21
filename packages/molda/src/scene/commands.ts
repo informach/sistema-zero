@@ -25,6 +25,7 @@ import { reparentPreservingWorld } from './graph'
 import { SCENE_MATERIAL_IMAGE_KEYS, sceneMaterialImageIds } from './materialImages'
 import {
   type AffineMatrix,
+  affineDeterminant,
   affineInverse,
   affineMultiply,
   composeTransform,
@@ -36,6 +37,7 @@ import { parametricMesh, sceneGeometryMesh } from './parametricGeometry'
 import { primitiveDetail, readPrimitiveDetail } from './primitiveDetail'
 import { resizeScenePaint } from './resizePaint'
 import { duplicateSceneSkinTargets } from './skinTargets'
+import { rigidSceneTransform } from './transformTrs'
 import { triangulateFace } from './triangulate'
 import { boolean, choice, number, requireScene, text, tuple } from './validation'
 
@@ -388,6 +390,15 @@ export function transformSceneNodes(
   editable(selected)
   if (!selected.roots.size || delta.every((value, i) => value === identityMatrix()[i]))
     return document
+  for (const clip of document.animations ?? [])
+    if (clip.space === 'local')
+      for (const track of clip.tracks)
+        requireScene(
+          !selected.covered.has(track.nodeId),
+          `animations.${clip.id}.${track.nodeId}`,
+          'Esse clipe usa a posição local original. Converta o movimento antes de mudar a organização ou o pivô.',
+        )
+  const reflection = affineDeterminant(delta) < 0
   const nodes = document.nodes.map((node): ModelSceneNode => {
     if (!selected.roots.has(node.id)) return node
     const world = selected.index.scene.worldMatrices.get(node.id)
@@ -401,10 +412,11 @@ export function transformSceneNodes(
       `nodes.${node.id}`,
       'O grupo tem uma escala que impede essa mudança.',
     )
-    return {
-      ...node,
-      transform: { kind: 'affine', matrix: affineMultiply(inverse, affineMultiply(delta, world)) },
+    const affine = {
+      kind: 'affine' as const,
+      matrix: affineMultiply(inverse, affineMultiply(delta, world)),
     }
+    return { ...node, transform: reflection ? affine : rigidSceneTransform(affine) }
   })
   return finish(resizeScenePaint(document, { ...document, nodes }))
 }

@@ -148,7 +148,7 @@ describe('a tranca da atividade', () => {
     expect(videoGateFor({ ...base, blocks: [semRevisao, cena] }).locked).toBe(false)
   })
 
-  test('vale o PRIMEIRO vídeo da seção', () => {
+  test('vale o PRIMEIRO vídeo da parte', () => {
     const segundo: GateBlock = { ...video, id: 'video-2', blockRevision: 'r9' }
     const gate = videoGateFor({ ...base, blocks: [video, segundo, cena] })
     expect(gate.videoBlockId).toBe('video')

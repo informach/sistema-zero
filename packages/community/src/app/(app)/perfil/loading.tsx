@@ -6,7 +6,7 @@ const NAV_KEYS = ['n1', 'n2', 'n3', 'n4', 'n5']
 
 /**
  * Esqueleto do "Meu perfil" (fallback de Suspense do Next): a faixa com o retrato, a coluna de
- * atalhos e os cartões das seções. `aria-busy` + sr-only.
+ * atalhos e os cartões das partes. `aria-busy` + sr-only.
  */
 export default function ProfileLoading() {
   return (

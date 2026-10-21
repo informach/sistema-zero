@@ -537,6 +537,7 @@ export async function createApplication(env: Env): Promise<Application> {
             batchLimit: env.RENEWAL_REMINDER_BATCH_LIMIT,
             funnelUrl: env.FUNNEL_URL,
             kidsUrl: env.KIDS_COMMUNITY_URL,
+            adultUrl: env.COMMUNITY_URL,
           },
           challengeAnalytics,
         )
@@ -548,7 +549,7 @@ export async function createApplication(env: Env): Promise<Application> {
     env.FUNNEL_URL &&
     env.KIDS_COMMUNITY_URL
       ? new SendChallengeLifecycleService(
-          new DrizzleChallengeLifecycleRepository(db),
+          new DrizzleChallengeLifecycleRepository(db, logger),
           authGateway,
           createGatewayMessagingClient({
             gatewayUrl: env.GATEWAY_URL,
@@ -561,6 +562,7 @@ export async function createApplication(env: Env): Promise<Application> {
             batchLimit: env.RENEWAL_REMINDER_BATCH_LIMIT,
             funnelUrl: env.FUNNEL_URL,
             kidsUrl: env.KIDS_COMMUNITY_URL,
+            adultUrl: env.COMMUNITY_URL,
           },
           challengeAnalytics,
         )

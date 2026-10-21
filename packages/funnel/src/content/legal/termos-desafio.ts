@@ -1,7 +1,8 @@
 // Termos de Uso do "Desafio do Primeiro Jogo" (compra única, 30 dias de acesso), extraídos de
 // `legal-kids.ts` (TERMOS_KIDS) sem as cláusulas da assinatura, que agora têm Termos próprios
 // (`termos-comunidade-kids.ts`). A compra e o aceite são SEMPRE feitos por um adulto
-// responsável; a criança é a aluna (a partir de 9 anos; a oferta comunica 9 a 14). Fundamentos:
+// responsável; a criança é a aluna (a oferta comunica 9 a 17 anos e, desde 21/10/2026, também
+// menores de 9 criando junto com o responsável). Fundamentos:
 // CDC (garantia de 7 dias; o consumidor é o adulto comprador), ECA, Lei nº 15.211/2025 e
 // Resolução CONANDA nº 163/2014 (comunicação dirigida aos pais).
 
@@ -13,7 +14,7 @@ const PRODUTO = 'Desafio do Primeiro Jogo'
 export const TERMOS_DESAFIO: LegalDoc = {
   titulo: 'Termos de Uso do Desafio do Primeiro Jogo',
   descricao: `Condições para a contratação e o uso do ${PRODUTO}, da ${EMPRESA.razaoSocial}. A compra e o aceite são feitos por um adulto responsável.`,
-  atualizadoEm: '20 de outubro de 2026',
+  atualizadoEm: '21 de outubro de 2026',
   secoes: [
     {
       titulo: '1. Das definições',
@@ -21,7 +22,7 @@ export const TERMOS_DESAFIO: LegalDoc = {
       bullets: [
         `Empresa: ${EMPRESA.razaoSocial}, inscrita no CNPJ sob o nº ${EMPRESA.cnpj}, titular deste site e responsável pelo Produto;`,
         'Responsável: a pessoa física maior de 18 anos que contrata o Produto e que declara ser pai, mãe ou responsável legal pela criança ou adolescente que irá utilizá-lo;',
-        'Aluno: a criança ou o adolescente, a partir de 9 anos, que utiliza o Produto sob a supervisão do Responsável;',
+        'Aluno: a criança ou o adolescente que utiliza o Produto sob a supervisão do Responsável. A criança menor de 9 anos usa o Produto junto com o Responsável, que lê as instruções e conduz o mouse;',
         `Desafio ou Produto: o ${PRODUTO}, uma trilha guiada de caráter educacional para a criança criar o seu primeiro jogo dentro do Estúdio, com acesso por prazo fixo pela área de membros da Empresa;`,
         'Mural: o Mural dos Criadores, espaço da plataforma em que os jogos publicados podem ser vistos e jogados;',
         'Área de membros: o ambiente on-line em que o Aluno acessa o conteúdo e cria os seus projetos, por meio da conta criada e gerida pelo Responsável.',

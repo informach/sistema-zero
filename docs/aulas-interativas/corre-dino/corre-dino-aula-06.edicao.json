@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-visivel-guardado", "video-faxina", "video-entrega"],
+  "intervencoes": [
+    {
+      "id": "video-visivel-guardado-K1",
+      "clipe": "video-visivel-guardado",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "mas nos bastidores continuam na prateleira Fora da tela, no grupo. Por isso o grupo tem mais cactos do que a tela.",
+      "ancoraDepois": "Não tira, não. Fora da tela, o cacto continua guardado no grupo. Para tirar, o jogo precisa de uma regra. Depois que",
+      "falaPrincipal": "Sair da tela não tira o cacto do grupo?",
+      "falaPersonagem": "Sair da tela não tira o cacto do grupo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-faxina-K1",
+      "clipe": "video-faxina",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai colocar a regra que tira esses cactos de lá!",
+      "ancoraDepois": "A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, deixe à vista o fim de",
+      "falaPrincipal": "Onde essa regra entra?",
+      "falaPersonagem": "Onde essa regra entra?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

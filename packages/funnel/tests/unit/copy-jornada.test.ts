@@ -26,6 +26,7 @@ const ALLOWLIST = [
   'content/legal/termos-desafio.ts',
   'content/legal/termos-comunidade-kids.ts',
   'content/legal/termos-comunidade-adulto.ts',
+  'content/legal/termos-desafio-adulto.ts',
 ]
 
 const EXTENSOES = ['.astro', '.ts', '.tsx', '.md', '.mdx']

@@ -274,6 +274,7 @@ const common: Record<string, string[]> = {
     'FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES',
     'FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO',
     'FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES',
+    'FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO',
     'FUNNEL_OFFER_PRO_NO_COMANDO_DA_IA',
     'FUNNEL_PUBLIC_URL',
     'GATEWAY_URL',
@@ -333,6 +334,8 @@ const common: Record<string, string[]> = {
     'AVATAR_PHOTO_URL_PREFIXES',
     'CATALOG_BASE_URL',
     'CATALOG_INTERNAL_TOKEN',
+    // URL do app adulto (21/10/2026): os links dos avisos do Desafio adulto.
+    'COMMUNITY_URL',
     'DATABASE_POOL_MAX',
     'DATABASE_URL',
     'FUNNEL_URL',

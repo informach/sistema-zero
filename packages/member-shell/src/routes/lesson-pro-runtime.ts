@@ -74,7 +74,7 @@ export function createLessonProRuntimeBuild(deps: {
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return response(
-          { error: { message: 'O projeto ficou grande demais para esta fase.' } },
+          { error: { message: 'O projeto ficou grande demais para esta aula.' } },
           413,
         )
       }
@@ -95,7 +95,7 @@ export function createLessonProRuntimeBuild(deps: {
     // livre antes de a jornada liberar o Estúdio Pro.
     const lesson = await owned(() => deps.getLesson(courseSlug, lessonId))
     if (lesson.status !== 200 || !lesson.body) {
-      return response({ error: { message: 'Esta fase não está liberada.' } }, 403)
+      return response({ error: { message: 'Esta aula não está liberada.' } }, 403)
     }
     const block = lesson.body.blocks.find((item) => item.id === blockId && item.kind === 'studio')
     if (!block) return response({ error: { message: 'Esta parte não está liberada.' } }, 403)
@@ -115,7 +115,7 @@ export function createLessonProRuntimeBuild(deps: {
       baseline.lessonId !== lessonId
     )
       return response(
-        { error: { message: 'Não foi possível conferir o ambiente desta fase.' } },
+        { error: { message: 'Não foi possível conferir o ambiente desta aula.' } },
         403,
       )
     const initial = readInitialProject(baseline.configuration)

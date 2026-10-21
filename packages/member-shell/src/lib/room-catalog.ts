@@ -102,13 +102,13 @@ export const TROPHY_SHELF_ITEM_ID = 'estante-trofeus'
  */
 export const TROPHY_HINT: Record<string, string> = {
   'trofeu-primeiro-jogo': 'Publique o seu primeiro jogo no Mural!',
-  'trofeu-diploma': 'Complete uma aventura inteirinha!',
+  'trofeu-diploma': 'Conclua um curso!',
   'trofeu-chama': 'Faça uma sequência de 30 dias!',
   'trofeu-medalha-mil': 'Acerte tudo em 10 quizzes!',
   'trofeu-foguete': 'Lance a Versão 1 de um plano no Pensa!',
   'trofeu-console': 'Alcance a meta em 3 projetos do Estúdio!',
   'trofeu-estrela-do-mural': 'Tenha um jogo seu jogado 100 vezes!',
-  'trofeu-oficina-completa': 'Complete todas as fases de uma oficina ao vivo!',
+  'trofeu-oficina-completa': 'Complete todas as aulas de uma oficina ao vivo!',
   'estante-trofeus': 'Ganhe o seu primeiro troféu e a estante vem junto!',
 }
 

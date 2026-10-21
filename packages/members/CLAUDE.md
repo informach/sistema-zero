@@ -1459,6 +1459,11 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `fixed/months`; `subscription` sem política continua no caminho legado; sem nenhum dos
   três campos continua sendo vitalício. Renovar compra fixa = NOVO paymentId/matrícula,
   sem encurtar uma matrícula vitalícia ou com validade mais distante já existente.
+- **Desafio adulto (21/10/2026):** a oferta `desafio-primeiro-jogo-adulto-30-dias` segue a MESMA regra
+  abaixo com as chaves adultas (`MURAL_GIFT_ACCESS.adult`: item `adult-mural-dos-criadores`, visita
+  `…0005`); o público vem da OFERTA (`DESAFIO_30_DIAS_OFFERS` em `grant-entitlement.service.ts`), e a
+  oferta adulta com o Mural Kids não ganha visita nenhuma. O curso `desafio-primeiro-jogo-adulto` entra
+  nos avisos do Desafio nas versões `-adult` (ver "Ciclo do Desafio de 30 dias").
 - **Desafio de 30 dias + Mural visitante:** no grant pago da oferta resolvida
   `desafio-primeiro-jogo-30-dias`, com política comprada explícita `fixed/30/days` e item de Mural
   pleno, concede também uma matrícula permanente de visitante (`product_id` sintético
@@ -1670,7 +1675,7 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `entitlement_lifecycle_messages_sent(entitlement_id, expires_on, message_kind)` permite avisos
   independentes de 7 dias, 3 dias, expiração, ativação e progresso. `fixed/days` usa templates
   `challenge-*`; `fixed/months` continua no lembrete anual e vitalício é ignorado. Outra matrícula
-  específica ou `all_kids_courses` que cubra o mesmo curso até pelo menos o fim do Desafio suprime
+  específica ou a chave-mestra do público (`all_kids_courses` no Kids, `all_courses` no adulto) que cubra o mesmo curso até pelo menos o fim do Desafio suprime
   os avisos de prazo. O serviço comportamental usa `AccountIdentity.activated` (booleano do Auth) e
   só atribui progresso a perfis ligados à conta por colunas `account_id` do próprio Members; uma
   relação ambígua é descartada. Envia: 24h sem ativar, 48h ativado sem começar, Dia 1 concluído e
@@ -1680,6 +1685,21 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   enviados em lote para `POST /api/internal/challenge-events`; falha de analytics é best-effort e
   nunca bloqueia acesso ou mensagem. O token deve ser o mesmo do Funnel e é opcional apenas quando
   a integração está deliberadamente desligada em desenvolvimento.
+  **Kids e adulto (21/10/2026):** `domain/entitlement/challenge-courses.ts` lista os dois cursos
+  (`CHALLENGE_COURSES`: `desafio-primeiro-jogo` → `kids`, `desafio-primeiro-jogo-adulto` → `adult`) e a
+  chave-mestra de cada público (`all_kids_courses` × `all_courses`); os dois repositórios filtram por
+  essa lista e escolhem a chave-mestra por linha com `CHALLENGE_MASTER_KEY_FOR_ROW`
+  (`drizzle/challenge-master-key.ts`), então `all_kids_courses` não encobre o curso adulto. O candidato
+  traz `audience`. No adulto, a chave é a mesma com o sufixo `-adult` (mesmas variáveis), o nome
+  reserva é `Aluno(a)` e os links são do app adulto (env opcional **`COMMUNITY_URL`**): não ativou →
+  `/esqueci-senha`; não começou, Dia 1 e 3 dias → `/cursos/desafio-primeiro-jogo-adulto`; 7 dias →
+  `/progresso`; concluiu e expirou → `accessEndedLink(funnelUrl, 'adult', 'desafio-concluido' |
+  'desafio-encerrado')` (continuidade adulta do funil, com UTM). Sem `COMMUNITY_URL`, os avisos que levam
+  ao app não saem nem são marcados (log `challenge_lifecycle.adult_url_missing` /
+  `renewal_reminder.adult_url_missing`, nova tentativa no ciclo seguinte; o de 7 dias se perde quando a
+  matrícula passa para a faixa dos 3 dias); os que levam ao funil saem. O lote do ciclo comportamental
+  não inclui quem já recebeu o aviso de conclusão, e um Desafio sem o curso importado no ambiente gera
+  `challenge_lifecycle.course_missing`.
 - **Retenção de `processed_webhooks` roda SOZINHA** (06/2026): `setInterval` no
   composition-root (`RETENTION_CLEANUP_INTERVAL_MS`, default 6h, + um ciclo ~15 s após o boot,
   antes dos avisos de fim do acesso) chama

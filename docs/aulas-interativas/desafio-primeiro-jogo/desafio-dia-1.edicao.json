@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-intro-farol",
+    "video-intro-caderno",
+    "video-d1-quadro",
+    "video-d1-andar",
+    "video-d1-limite",
+    "video-d1-borda"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-intro-farol-K1",
+      "clipe": "video-intro-farol",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "e sem a luz dele o barco não acha o caminho. Para acender o farol, o personagem precisa pegar a chave e levar até lá.",
+      "ancoraDepois": "Olha aqui: quando eu seguro a seta da tela para a direita, o personagem anda para a direita. E, no computador, também",
+      "falaPrincipal": "E como eu levo o personagem até a chave?",
+      "falaPersonagem": "E como eu levo o personagem até a chave?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-d1-quadro-K1",
+      "clipe": "video-d1-quadro",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "o bloco que move o personagem fica dentro de A cada quadro do jogo. Por isso, ele acontece de novo em todo quadro.",
+      "ancoraDepois": "Vamos ver. Quando eu clico em Rodar, os quadros passam bem rápido, e o personagem parece andar sozinho, como num",
+      "falaPrincipal": "E se eu clicar em Rodar?",
+      "falaPersonagem": "E se eu clicar em Rodar?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-d1-limite-K1",
+      "clipe": "video-d1-limite",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Tá vendo? O personagem chega na borda e continua andando até sair da tela, porque nada segura ele dentro da janela.",
+      "ancoraDepois": "Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: dessa vez ele para na borda",
+      "falaPrincipal": "Como eu faço ele parar na borda?",
+      "falaPersonagem": "Como eu faço ele parar na borda?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-d1-borda-K1",
+      "clipe": "video-d1-borda",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "parte anterior? Com Manter dentro da tela ligado, ele parava na borda. Agora a gente vai pôr esse limite no seu jogo!",
+      "ancoraDepois": "O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que ele precisa ser conferido",
+      "falaPrincipal": "E onde eu coloco esse limite?",
+      "falaPersonagem": "E onde eu coloco esse limite?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

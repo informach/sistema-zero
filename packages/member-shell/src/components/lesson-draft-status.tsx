@@ -14,7 +14,7 @@ const subscribeNothing = () => () => {}
 const notSaving = () => false
 
 /**
- * Registra o editor no coordenador da fase (salvar o que está na tela e dizer se bate com o
+ * Registra o editor no coordenador da aula (salvar o que está na tela e dizer se bate com o
  * envio) e devolve `true` enquanto um avanço ou a conclusão está salvando: a edição fica parada.
  */
 export function useLessonDraftEditor(
@@ -42,8 +42,8 @@ export function useLessonDraftEditor(
 }
 
 /**
- * A pílula do rascunho guardado na conta, no cabeçalho do bloco do Estúdio e do Pinta da fase
- * (10/10/2026). Mora no host e não dentro do editor: o editor da fase não tem barra para ela, e
+ * A pílula do rascunho guardado na conta, no cabeçalho do bloco do Estúdio e do Pinta da aula
+ * (10/10/2026). Mora no host e não dentro do editor: o editor da aula não tem barra para ela, e
  * aqui ela fica ao lado do título, onde a criança olha antes de sair.
  *
  * Só aparece com a nuvem ligada; antes da primeira subida ("idle") não diz nada. O recado de erro

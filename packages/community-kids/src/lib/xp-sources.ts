@@ -32,7 +32,7 @@ export interface XpSource {
 export function xpSources({ canPublish }: { canPublish: boolean }): XpSource[] {
   const v = XP_SOURCE_VALUES
   return [
-    { id: 'aula', xp: v.aula, label: 'Terminar uma fase' },
+    { id: 'aula', xp: v.aula, label: 'Terminar uma aula' },
     ...(canPublish
       ? [
           {
@@ -55,7 +55,7 @@ export function xpSources({ canPublish }: { canPublish: boolean }): XpSource[] {
       id: 'bau',
       xp: v.bau,
       label: 'Abrir o baú de um Mundo',
-      detail: 'Ele abre quando você termina todas as fases do Mundo.',
+      detail: 'Ele abre quando você termina todas as aulas do Mundo.',
     },
   ]
 }

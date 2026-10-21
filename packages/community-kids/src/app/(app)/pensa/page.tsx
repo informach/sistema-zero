@@ -56,7 +56,7 @@ export default async function PensaPage({
   if (!hasKidsCapability(journey, 'pensa') || !hasKidsCapability(journey, 'ai')) {
     return <ToolRouteRecado screen={KidsJourneyLockedPensa} />
   }
-  // Contar a ideia falando (14/10/2026): a MESMA régua da fase e dos Recados (criança, sem sessão
+  // Contar a ideia falando (14/10/2026): a MESMA régua da aula e dos Recados (criança, sem sessão
   // de suporte, fala ligada no servidor, escolha dos pais relida no PRÓPRIO perfil). Decisão dela:
   // sem interruptor à parte para o texto que vai ao Zappy — é a dúvida da criança sobre o jogo
   // ("meu personagem não pulou"), o mesmo tipo de texto que ela já escreve à mão.

@@ -22,7 +22,7 @@ function inspect(
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../../aulas-interativas/kids/desafio-primeiro-jogo/desafio-${day}.manifesto.json`,
+        `../../../aulas-interativas/desafio-primeiro-jogo/desafio-${day}.manifesto.json`,
       ),
       'utf8',
     ),

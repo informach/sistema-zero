@@ -36,6 +36,8 @@ const adultQuizPath = adulto?.steps.quiz ? `${adulto.basePath}/quiz` : undefined
 // Adulto, menos de 18: a saída leva ao quiz Kids (dos responsáveis).
 const kids = getFunnelByKey('kids/comunidade-dos-criadores')
 const kidsQuizPath = kids?.steps.quiz ? `${kids.basePath}/quiz` : undefined
+// Desafio Kids, 18 ou mais: a tela de idade aponta o Desafio adulto quando o funil está registrado.
+const desafioAdulto = getFunnelByKey('pro/desafio-primeiro-jogo')
 // Ao concluir: vai ao diagnóstico (se o funil tiver) ou direto à oferta.
 const donePath = f.steps.resultado ? `${f.basePath}/resultado` : `${f.basePath}/oferta`
 
@@ -50,7 +52,7 @@ const q1Images =
 
 {quiz.presentation === 'desafio' ? (
   <DesafioQuizLayout title={`${DESAFIO_QUIZ_ENTRY.title} | Sistema Zero`} description={DESAFIO_QUIZ_ENTRY.description} ogImage={new URL(`${f.imagesBase}/zappy-fala.webp`, Astro.site ?? Astro.url).toString()}>
-    <DesafioQuiz client:load funnel={f.key} basePath={f.basePath} imagesBase={f.imagesBase} quizDefinitionId={quizDefinitionId}/>
+    <DesafioQuiz client:load funnel={f.key} basePath={f.basePath} imagesBase={f.imagesBase} quizDefinitionId={quizDefinitionId} desafioAdultoPath={desafioAdulto ? `${desafioAdulto.basePath}/oferta` : undefined}/>
     <noscript><p class="wrap cq-panel">Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </DesafioQuizLayout>
 ) : quiz.presentation === 'comunidade' ? (

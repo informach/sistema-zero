@@ -11,6 +11,7 @@ import type { MoldaSceneDocument } from './document'
 import { SCENE_LIMITS } from './limits'
 import { quaternionFromEulerXYZ } from './matrix'
 import { readSceneAnimationClip } from './readAnimation'
+import { rigidSceneAnimationClip } from './rigidEmptyAnimations'
 import * as v from './validation'
 
 export interface SceneAnimationPresetOptions {
@@ -87,14 +88,17 @@ export function createSceneAnimationPreset(
   let unique = name
   for (let copy = 2; taken.has(unique); copy++)
     unique = `${name.slice(0, 48 - ` ${copy}`.length).trimEnd()} ${copy}`
-  const clip = readSceneAnimationClip({
-    id: allocateSceneId(document, nextId)(),
-    name: unique,
-    duration,
-    fps: 24,
-    loop: true,
-    space: 'local-delta',
-    tracks,
-  })
+  const clip = rigidSceneAnimationClip(
+    document,
+    readSceneAnimationClip({
+      id: allocateSceneId(document, nextId)(),
+      name: unique,
+      duration,
+      fps: 24,
+      loop: true,
+      space: 'local-delta',
+      tracks,
+    }),
+  )
   return finishSceneCommand({ ...document, animations: [...(document.animations ?? []), clip] })
 }

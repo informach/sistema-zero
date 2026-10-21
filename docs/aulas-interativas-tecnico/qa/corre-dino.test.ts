@@ -49,7 +49,7 @@ const primeiraDoPlural = (texto: string): string[] =>
   [...texto.matchAll(/(?<!\p{L})\p{L}+(?:amos|emos|imos)(?!\p{L})/giu)]
     .map((m) => m[0])
     .filter((palavra) => !NAO_E_NOS.has(palavra.toLowerCase()))
-/** "A gente fez", "a gente já colocou": a autoria do jogo é de quem faz a fase, na voz "você". */
+/** "A gente fez", "a gente já colocou": a autoria do jogo é de quem faz a aula, na voz "você". */
 const A_GENTE_FEZ = /\ba gente\s+(?:já\s+)?(?:fez|pôs|\p{L}+(?:ou|eu|iu))(?!\p{L})/iu
 /**
  * "Clique em" nos botões e "toque" no jogo, nunca "aperte" (Diretrizes, seção 6). O verbo só
@@ -67,7 +67,7 @@ const manifests = ORDEM_DINO.map((slug) => {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/kids/corre-dino/corre-dino-${slug}.manifesto.json`,
+        `../../aulas-interativas/corre-dino/corre-dino-${slug}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -185,16 +185,16 @@ test('a abertura é jogável e o caderno aparece uma vez, com consulta opcional'
     manifests.flatMap((m) => m.blocks).filter((b) => b.content?.kind === 'materials'),
   ).toHaveLength(1)
   expect(first.blocks.find((b) => b.key === 'caderno')?.content).toMatchObject({
-    title: 'Mapa da Aventura: Corre, Dino!',
+    title: 'Passo a passo do projeto: Corre, Dino!',
   })
 })
 
-// Vocabulário da aventura (Diretrizes, seção 6): a régua única do repo (`palavras-da-escola.ts`),
-// a mesma do validador de roteiros e de vocabulario-crianca.test.ts. Os passos do Mapa da Aventura
+// Vocabulário do curso (Diretrizes, seção 6): a régua única do repo (`palavras-da-escola.ts`),
+// a mesma do validador de roteiros e de vocabulario-crianca.test.ts. Os passos do Passo a passo do projeto
 // (`caderno`) viram PDF, fora desses guardas; por isso são conferidos aqui, junto com títulos,
 // Zappy, falas e critérios. Neste curso também sai "tarefa" (revisão de 06/10/2026): a régua
 // comum a deixa passar por causa do cartão do Pensa ("Concluir tarefa").
-test('a criança lê aventura: falas, Zappy e Mapa da Aventura sem palavras da escola', () => {
+test('linguagem comum nas falas, no Zappy e no Passo a passo do projeto', () => {
   for (const aula of aulasDino) {
     expect(aula.title).not.toMatch(PALAVRAS_DA_ESCOLA)
     for (const section of aula.sections)
@@ -214,11 +214,11 @@ test('a criança lê aventura: falas, Zappy e Mapa da Aventura sem palavras da e
   }
   // Diretrizes, seção 5: o mapa é apresentado à criança e as escolhas são convite.
   const mapa = aulasDino[0]!.sections[1]!
-  expect(mapa.title).toBe('Seu Mapa da Aventura')
+  expect(mapa.title).toBe('Seu passo a passo do projeto')
   const fala = falasSecao(mapa).join(' ')
-  expect(fala).toStartWith('Olha aqui: este é o seu Mapa da Aventura!')
+  expect(fala).toStartWith('Olha, aqui está o Passo a passo do projeto.')
   expect(fala).toContain(
-    'Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.',
+    'Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.',
   )
   expect(`${fala} ${mapa.bridge}`).not.toMatch(/não precisa/i)
 })
@@ -300,10 +300,10 @@ test('montagens seguem no imperativo e a publicação comemora com o link', () =
   expect(fala).toContain('O resumo do projeto já vem preenchido. Deixe como está.')
   expect(fala).not.toContain('título')
   expect(fala).toContain(
-    'Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar',
+    'Seu jogo está no Mural! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar',
   )
   expect(fala).toEndWith(
-    'Depois de copiar o link, clique em Fechar. Por último, clique em Concluir fase.',
+    'Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula.',
   )
 })
 
@@ -314,7 +314,7 @@ test('falas conversam: ponte com convite e saída, retomada no jogo e sem "entã
     for (const section of aula.sections) {
       const id = `${aula.slug}/${section.key}`
       const ponte = section.bridge
-      expect(ponte, id).toMatch(/(?:Próxima parte|Concluir fase)\.$/)
+      expect(ponte, id).toMatch(/(?:Próxima parte|Concluir aula)\.$/)
       for (const fala of [
         ponte,
         ...falasSecao(section),
@@ -398,7 +398,7 @@ test('retomadas curtas: o problema, a lembrança e um anúncio só', () => {
       expect(palavras(texto), id).toBeLessThanOrEqual(50)
     }
   expect(total).toBe(30)
-  // O lembrete de arrastar um espaço vazio fica só na primeira montagem e na fase 7, quando o
+  // O lembrete de arrastar um espaço vazio fica só na primeira montagem e na aula 7, quando o
   // projeto cresce; cada passo já diz "Deixe à vista…".
   const lembrete = aulasDino.flatMap((aula) =>
     aula.sections

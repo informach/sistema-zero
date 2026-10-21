@@ -7,7 +7,7 @@ export function KidsJourneyLockedPensa() {
       title="Pensa"
       heading="O Pensa abre num próximo posto da Jornada"
       intro="No Pensa você conta a ideia de um jogo e o Zappy ajuda a dividir em missões."
-      detail="Continue as aventuras e os desafios. Quando você chegar ao posto, o Zappy já espera a sua primeira ideia aqui."
+      detail="Continue os cursos e os desafios. Quando você chegar ao posto, o Zappy já espera a sua primeira ideia aqui."
     />
   )
 }

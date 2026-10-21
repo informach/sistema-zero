@@ -20,7 +20,7 @@ import { PasswordSection, PersonalDataSection } from './profile-client'
 export const dynamic = 'force-dynamic'
 
 /**
- * A seção já escreve o título; o seletor o empresta em vez de escrever a própria legenda. Dois
+ * A parte já escreve o título; o seletor o empresta em vez de escrever a própria legenda. Dois
  * títulos empilhados dizendo a mesma coisa é ruído na tela e anúncio repetido no leitor.
  */
 const TITULO_DA_COR = 'perfil-cor-do-tema'
@@ -65,7 +65,7 @@ export default async function ProfilePage() {
       : null
   const aiAvailable = progress?.body?.journey?.capabilities.includes('ai') === true
   const pensaUnlocked = progress?.body?.journey?.capabilities.includes('pensa') === true
-  // Ler o saldo não consome crédito; só vale a ida quando a seção aparece.
+  // Ler o saldo não consome crédito; só vale a ida quando a parte aparece.
   const credits = aiAvailable ? await shell.members.getAiCreditsReadonly().catch(() => null) : null
 
   // A cor vem do MESMO espelho que o layout raiz leu: é o que pinta a tela no primeiro quadro.

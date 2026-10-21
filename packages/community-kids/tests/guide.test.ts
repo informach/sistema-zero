@@ -174,7 +174,7 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
     expect(steps[0]).toEqual({
       id: 'start',
       emoji: '▶️',
-      text: 'Clique em "Começar" e a sua primeira fase abre na hora.',
+      text: 'Clique em "Começar" e a sua primeira aula abre na hora.',
     })
   })
 

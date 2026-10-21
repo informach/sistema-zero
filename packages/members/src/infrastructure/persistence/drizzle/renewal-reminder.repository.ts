@@ -1,4 +1,5 @@
-import { and, asc, eq, gte, isNull, lte, sql } from 'drizzle-orm'
+import { and, asc, eq, gte, inArray, isNull, lte, sql } from 'drizzle-orm'
+import { CHALLENGE_COURSE_REFS } from '../../../domain/entitlement/challenge-courses'
 import {
   ADULT_MURAL_FULL_REF,
   ADULT_MURAL_VISITOR_REF,
@@ -15,10 +16,9 @@ import {
   type GiftLifecycleKind,
   type RenewalReminderRepository,
 } from '../../../domain/ports/renewal-reminder-repository.port'
+import { CHALLENGE_MASTER_KEY_FOR_ROW } from './challenge-master-key'
 import type { Database } from './db'
 import { entitlementLifecycleMessagesSent, entitlements, renewalRemindersSent } from './schema'
-
-const CHALLENGE_COURSE_REF = 'desafio-primeiro-jogo'
 
 /**
  * Repositório do lembrete de renovação (Drizzle/Postgres). O filtro "ainda sem
@@ -171,7 +171,7 @@ export class DrizzleRenewalReminderRepository
           eq(entitlements.sourceKind, 'payment'),
           isNull(entitlements.subscriptionId),
           eq(entitlements.accessType, 'course'),
-          eq(entitlements.courseRef, CHALLENGE_COURSE_REF),
+          inArray(entitlements.courseRef, CHALLENGE_COURSE_REFS),
           sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'mode' = 'fixed'`,
           sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit' = 'days'`,
           lte(entitlements.expiresAt, sevenDaysFromNow),
@@ -195,7 +195,7 @@ export class DrizzleRenewalReminderRepository
                and (stronger.expires_at is null or stronger.expires_at > ${now.toISOString()}::timestamptz)
                and (
                  (stronger.access_type = 'course' and stronger.course_ref = ${entitlements.courseRef})
-                 or stronger.access_type = 'all_kids_courses'
+                 or stronger.access_type::text = ${CHALLENGE_MASTER_KEY_FOR_ROW}
                )
                and (
                  stronger.expires_at is null
@@ -204,7 +204,7 @@ export class DrizzleRenewalReminderRepository
                    stronger.expires_at = ${entitlements.expiresAt}
                    and (
                      stronger.source_kind = 'subscription'
-                     or stronger.access_type = 'all_kids_courses'
+                     or stronger.access_type::text = ${CHALLENGE_MASTER_KEY_FOR_ROW}
                      or stronger.id < ${entitlements.id}
                    )
                  )

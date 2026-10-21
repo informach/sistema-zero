@@ -41,7 +41,7 @@ export function KidsBand({
   children: ReactNode
   /** Só para o fundo da faixa (decoração, `overflow`). */
   className?: string
-  /** Para o container interno (espaçamento vertical da seção). */
+  /** Para o container interno (espaçamento vertical da parte). */
   innerClassName?: string
 }) {
   return (

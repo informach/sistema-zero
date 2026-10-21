@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 /**
  * A escolha de público é para quem ainda precisa ENTRAR. Uma sessão válida segue direto: a
- * criança para a área dela (ou a fase do link), o responsável para a área dos pais. Serviço
+ * criança para a área dela (ou a aula do link), o responsável para a área dos pais. Serviço
  * de sessão fora do ar não prende ninguém aqui: a escolha aparece.
  */
 export default async function LoginPage({
@@ -38,7 +38,7 @@ export default async function LoginPage({
           <Sparkles className="size-8 shrink-0 text-primary" aria-hidden="true" />
           <span>
             <strong className="sz-display block text-2xl">Eu sou criador(a)</strong>
-            <span className="text-sm">Entre para continuar suas aventuras.</span>
+            <span className="text-sm">Entre para continuar seus cursos.</span>
           </span>
         </Link>
         <Link

@@ -59,7 +59,7 @@ interface Props {
   ratingViewer: RatingViewer
   /** Página de vendas do curso (Compartilhar) — `null` oculta o botão. */
   shareUrl: string | null
-  /** O rascunho do Estúdio/Pinta da fase guardado na conta (10/10/2026). */
+  /** O rascunho do Estúdio/Pinta da aula guardado na conta (10/10/2026). */
   lessonDraftsEnabled?: boolean
   /** A criança pode falar em vez de escrever para a equipe (14/10/2026). */
   voiceInput?: boolean
@@ -266,7 +266,7 @@ export function LessonPlayer({
   const completionAction = lesson.completed ? (
     <span className="inline-flex items-center gap-2 font-extrabold text-[0.9375rem]">
       <CheckCircle2 className="size-5 text-(--success-foreground)" aria-hidden />
-      Fase concluída
+      Aula concluída
     </span>
   ) : (
     <button
@@ -276,23 +276,23 @@ export function LessonPlayer({
       className="sz-btn-gradient h-12 gap-2 px-7 text-base disabled:cursor-not-allowed disabled:opacity-55"
     >
       {completing ? <Spinner /> : <CheckCircle2 className="size-5" aria-hidden />}
-      Concluir fase
+      Concluir aula
     </button>
   )
   // Em TEXTO, na voz da criança: vira um item da faixa "o que falta para seguir" do rodapé
-  // (`LessonSectionStatus`), só quando a seção não tem itens próprios (aula legada, equipe).
+  // (`LessonSectionStatus`), só quando a parte não tem itens próprios (aula legada, equipe).
   const completionMessage = lesson.completed
     ? null
     : blockedByLearning
-      ? 'Termine as experiências desta fase para concluir'
+      ? 'Termine as experiências desta aula para concluir'
       : blockedByPinta
-        ? 'Envie o seu desenho para concluir a fase'
+        ? 'Envie o seu desenho para concluir a aula'
         : blockedByComingSoon
-          ? `Essa fase ainda está sendo preparada${nextLessonLocked ? '. Quando ela ficar pronta, você termina e as próximas abrem' : ''}`
+          ? `Essa aula ainda está sendo preparada${nextLessonLocked ? '. Quando ela ficar pronta, você termina e as próximas abrem' : ''}`
           : blockedByQuiz
-            ? 'Passe no quiz da fase para concluir'
+            ? 'Passe no quiz da aula para concluir'
             : blockedByStudioNotSubmitted
-              ? 'Envie o seu projeto para concluir a fase'
+              ? 'Envie o seu projeto para concluir a aula'
               : null
 
   return (
@@ -306,7 +306,7 @@ export function LessonPlayer({
             {/* "Voltar ao CURSO", não "à trilha": desde que a página do curso ganhou
                 a própria setinha (que vai à trilha do NÍVEL), a mesma palavra levaria
                 a dois lugares em telas seguidas. */}
-            <KidsBackButton href={courseHref} label={`Voltar à aventura ${course.title}`} />
+            <KidsBackButton href={courseHref} label={`Voltar ao curso ${course.title}`} />
             <KidsLessonProgress
               progress={lesson.sectionProgress}
               posicao={secao ?? posicaoInicial}
@@ -335,7 +335,7 @@ export function LessonPlayer({
         <button
           type="button"
           onClick={toggleOutline}
-          aria-label="Fechar lista de fases"
+          aria-label="Fechar lista de aulas"
           aria-hidden={outlineCollapsed}
           inert={outlineCollapsed}
           className={cn(
@@ -355,7 +355,7 @@ export function LessonPlayer({
           <button
             type="button"
             onClick={toggleOutline}
-            aria-label="Fechar lista de fases"
+            aria-label="Fechar lista de aulas"
             className="ml-auto flex size-11 items-center justify-center lg:hidden"
           >
             <X className="size-5" aria-hidden />
@@ -371,13 +371,13 @@ export function LessonPlayer({
                 viewer={ratingViewer}
               />
               <div className="mt-3.5 flex items-center justify-between font-semibold text-muted-foreground text-xs">
-                <span>Progresso da aventura</span>
+                <span>Progresso do curso</span>
                 <span className="font-extrabold">{course.progress.percent}%</span>
               </div>
               <div
                 className="sz-progress mt-1.5"
                 role="progressbar"
-                aria-label="Progresso da aventura"
+                aria-label="Progresso do curso"
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={course.progress.percent}

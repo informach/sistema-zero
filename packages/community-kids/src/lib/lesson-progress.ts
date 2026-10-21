@@ -32,7 +32,7 @@ const VAZIO: VistaProgressoAula = { percent: 0, numero: null, texto: '', medivel
  *    `sectionProgress` para conta de EQUIPE (`privileged`) nem para aula em que
  *    nenhuma seção tem critério de conclusão, e antes disso a barra sumia calada —
  *    com o esqueleto reservando o espaço dela, sobrava um vão no cartão do topo.
- * 3. Sem ele e com uma seção só (é o caso de TODA aula legada: a migration 0080
+ * 3. Sem ele e com uma parte só (é o caso de TODA aula legada: a migration 0080
  *    agrupou os blocos antigos numa seção sem critérios): as atividades
  *    obrigatórias, que é o que sobra de verdadeiro para medir ali.
  *
@@ -70,7 +70,7 @@ export function vistaProgressoAula(
   return {
     percent: (feitas / atividades.length) * 100,
     numero: rotulo,
-    texto: `${rotulo} ${uma ? 'concluído' : 'concluídos'} nesta fase`,
+    texto: `${rotulo} ${uma ? 'concluído' : 'concluídos'} nesta aula`,
     medivel: true,
   }
 }

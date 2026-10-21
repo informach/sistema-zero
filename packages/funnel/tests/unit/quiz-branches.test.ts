@@ -55,12 +55,13 @@ const RAMIFICADO: FunnelDef = {
 describe('quiz com ramos', () => {
   test('as definições do NCI e do Desafio não mudam com a infraestrutura de ramos', () => {
     // Fixadas em 20/10/2026: uma mudança aqui abriria uma versão nova do quiz para quem está
-    // respondendo agora (o 409 "O quiz mudou").
+    // respondendo agora (o 409 "O quiz mudou"). A do Desafio mudou DE PROPÓSITO em 21/10/2026
+    // (`desafio-farol-v4`: a faixa passou a 9 a 17, com "15 a 17" e "18 ou mais" na idade).
     expect(quizDefinition(NO_COMANDO_DA_IA)?.id).toBe(
       '641511fefceeb108ac29ae2c4eee0ccf599671ff6d977cf4c728cea7651add81',
     )
     expect(quizDefinition(DESAFIO_PRIMEIRO_JOGO)?.id).toBe(
-      'f8707bd3a7392066f1e5d6941eabe225178b09c92b7b694af068bc01795fac3d',
+      '79502d8fc0b02587f5030b21361a4085e66343f682d1f5e70c265b059336b551',
     )
   })
 

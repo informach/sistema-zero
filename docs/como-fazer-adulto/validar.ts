@@ -7,7 +7,7 @@
  * - slugs únicos, `related` e links `[..](/como-fazer/<slug>)` do corpo apontam para tutoriais do lote;
  * - exatamente 50 tutoriais em 8 coleções, cada coleção com pelo menos 3 tutoriais;
  * - de 3 a 6 passos por tutorial (régua editorial deste lote);
- * - o vocabulário ADULTO (ver `vocabularioAdulto` abaixo).
+ * - a linguagem comum (ver `vocabularioAdulto` abaixo).
  *
  * Sai com código 1 se algo reprovar. As sugestões do `helpEditorialWarnings` não bloqueiam.
  *
@@ -23,6 +23,7 @@ import {
   validateHelpCollection,
   validateHelpTutorial,
 } from '../../packages/core/src/help'
+import { PALAVRAS_DA_ESCOLA } from '../aulas-interativas-tecnico/qa/palavras-da-escola'
 
 /** Tamanho do lote combinado no plano da biblioteca adulta (mude aqui se o lote crescer). */
 const TOTAL_DE_TUTORIAIS = 50
@@ -53,7 +54,7 @@ const CHAVES_PASSO = new Set(['id', 'title', 'body', 'imageUrl', 'imageAlt'])
  * O vocabulário da comunidade adulta nos textos que a pessoa LÊ: título e descrição da coleção;
  * título, resumo, título e corpo de cada passo e texto alternativo da imagem. O público é de
  * adultos iniciantes (a régua de leitura é de 50 a 70 anos, sem nunca tratar a pessoa como idosa):
- * - nada do vocabulário do Kids (aventura, fase, missão, mascote);
+ * - nomes de navegação comuns, permitindo temas de aventura e fases reais de jogo;
  * - "Mostra" com maiúscula é o nome antigo do Mural dos Criadores (o verbo "mostra" passa);
  * - nada de tratamento que infantiliza ou envelhece (senhor, senhora, vovó, vovô, idoso);
  * - "criança": a ajuda adulta fala com o dono da conta.
@@ -69,10 +70,10 @@ function palavra(fonte: string, flags = 'giu'): RegExp {
 }
 
 const PALAVRAS_PROIBIDAS: ReadonlyArray<{ padrao: RegExp; motivo: string }> = [
-  { padrao: palavra('aventuras?'), motivo: 'vocabulário do Kids' },
-  { padrao: palavra('fases?'), motivo: 'vocabulário do Kids (adulto fala de aula e seção)' },
-  { padrao: palavra('miss(?:ão|ões)'), motivo: 'vocabulário do Kids' },
-  { padrao: palavra('mascotes?'), motivo: 'vocabulário do Kids' },
+  {
+    padrao: new RegExp(PALAVRAS_DA_ESCOLA.source, 'giu'),
+    motivo: 'rótulo anterior à linguagem comum',
+  },
   // Só com maiúscula: o verbo "mostra" ("a tela mostra") continua valendo.
   { padrao: palavra('Mostra', 'gu'), motivo: 'nome antigo: no adulto é "Mural"' },
   { padrao: palavra('senhor(?:a|es|as)?'), motivo: 'tratamento que envelhece: use "você"' },

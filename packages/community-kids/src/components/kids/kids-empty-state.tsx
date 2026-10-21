@@ -34,7 +34,7 @@ export function KidsEmptyState({
   icon: LucideIcon
   title: ReactNode
   /**
-   * `h2` quando o vazio É a seção (ele vem logo abaixo do h1 da página, sem um título de
+   * `h2` quando o vazio É a parte (ele vem logo abaixo do h1 da página, sem um título de
    * seção no meio): com o `h3` de sempre, a página pulava um nível para quem navega por
    * títulos (full review de 11/09/2026).
    */

@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-area-que-espera", "video-dedo-e-pulo", "video-som-no-pulo", "video-entrega"],
+  "intervencoes": [
+    {
+      "id": "video-dedo-e-pulo-K1",
+      "clipe": "video-dedo-e-pulo",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "que ele pousa, eu clico em Tocar para pular. O Dino pula, e nenhum som toca, porque esse pulo não veio da tecla Espaço.",
+      "ancoraDepois": "Vamos ligar o som ao pulo. Agora eu levo Tocar efeito para Quando o Dino pular e faço os mesmos testes. Duas vezes",
+      "falaPrincipal": "Como faz para o som tocar em todo pulo?",
+      "falaPersonagem": "Como faz para o som tocar em todo pulo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-som-no-pulo-K1",
+      "clipe": "video-som-no-pulo",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "toque não faz outro salto nem outro som, porque o som está ligado ao pulo, e não à tecla. Aí você pode me dizer:",
+      "ancoraDepois": "Se aconteceu aí, volte aos blocos. Confira se ficou assim: o projeto tem um único Tocar efeito, com pulo, e ele está",
+      "falaPrincipal": "No meu jogo, o segundo toque também fez som.",
+      "falaPersonagem": "No meu jogo, o segundo toque também fez som.",
+      "tags": ["[thoughtful]"]
+    }
+  ]
+}

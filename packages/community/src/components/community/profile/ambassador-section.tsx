@@ -22,8 +22,8 @@ const SUPPORT_HREF = '/ajuda#atendimento'
  * ⚠️ Regra da dona (20/10/2026): dentro da comunidade vale a identidade DESTE app (`sz-card`,
  * `sz-h3`, `sz-btn`/`sz-btn-outline`, texto apagado). A cara da oferta adulta fica no funil.
  *
- * A página lê a inscrição no servidor e só monta a seção quando o serviço responde (best effort:
- * fora do ar, a seção e o atalho somem) e a sessão é da própria conta: numa sessão de suporte a
+ * A página lê a inscrição no servidor e só monta a parte quando o serviço responde (best effort:
+ * fora do ar, a parte e o atalho somem) e a sessão é da própria conta: numa sessão de suporte a
  * seção não aparece, porque o `pageUrl` é a capability-URL que troca a chave Pix. O VALOR do bônus vem do serviço (`bonus.amountCents`) e
  * nunca fica cravado aqui.
  */

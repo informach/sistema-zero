@@ -66,7 +66,7 @@ Uma missão atribuída a outra pessoa não deve ser assumida pela criança que p
       reply.text,
       ...links.map(
         (item) =>
-          `[${item.kind === 'lesson' ? 'Veja esta fase' : 'Veja esta ajuda'}: ${item.title}](${item.href})`,
+          `[${item.kind === 'lesson' ? 'Veja esta aula' : 'Veja esta ajuda'}: ${item.title}](${item.href})`,
       ),
     ].join('\n\n'),
   }

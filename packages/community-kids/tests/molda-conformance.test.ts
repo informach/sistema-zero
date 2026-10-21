@@ -22,7 +22,7 @@ const MIGRATIONS = 'members/src/infrastructure/persistence/drizzle/migrations'
 
 describe('a tool `molda` no members (fonte)', () => {
   test('a lista só cresce no FIM (o enum do Postgres) e o Molda exige o produto `molda`', () => {
-    // `lesson-*` (10/10/2026): os rascunhos do Estúdio e do Pinta dentro da fase.
+    // `lesson-*` (10/10/2026): os rascunhos do Estúdio e do Pinta dentro da aula.
     expect(CREATION_TOOLS).toEqual(['studio', 'pinta', 'molda', 'lesson-studio', 'lesson-pinta'])
     expect(CREATION_ACCESS_REF.molda).toBe('molda')
     expect(Object.keys(emptyCountByTool())).toEqual([...CREATION_TOOLS])

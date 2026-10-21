@@ -1,18 +1,11 @@
-# Caderno do Aluno · Corre, Dino!
+# Passo a passo do projeto
 
-Os textos vêm da mesma fonte dos roteiros: `../../qa/corre-dino.conteudo.json`, com as instruções de verificação e envio de `../../qa/gerar-corre-dino.ts`. Para revisar conteúdo, alterar a fonte e regenerar os trios e o PDF.
-
-Para a criança, o caderno se chama **Mapa da Aventura** (Diretrizes, seção 6): capa, rodapé, índice e passos falam de fase e parte, com os botões novos (**Próxima parte**, **Verificar esta parte**, **Enviar meu projeto**, **Concluir fase**). A página de abertura oferece ler na fase ou baixar para guardar como convite.
-
-O caderno usa o CSS e as fontes Baloo 2/Nunito de Cadê Todo Mundo?, com passos numerados e esquemas de encaixe. Rótulos, opções e cores dos blocos vêm das definições reais do Estúdio; valores e estruturas vêm dos 13 programas originais. Os trechos anteriores omitidos nos esquemas ficam indicados. As instruções escritas conservam os caminhos, valores e testes completos. A capa é uma captura local do jogo original em execução.
+Material comum aos dois públicos, com instruções completas, exemplos e nomes de controles iguais aos da aula. Anexar uma vez na primeira aula; consulta e download opcionais.
 
 ```powershell
-python -X utf8 docs/aulas-interativas-tecnico/recursos/corre-dino/gerar-materiais.py
+python docs/aulas-interativas-tecnico/recursos/corre-dino/gerar-materiais.py
 ```
 
-Requer Bun, Python com Playwright e Chrome ou Edge instalado. HTML, captura, PDF temporário e relatório de limites ficam em `tmp/pdfs/corre-dino/`. Saída: [corre-dino-caderno.pdf](../../../aulas-interativas/kids/corre-dino/mapa-da-aventura.pdf).
-Com `--adulto`, o mesmo comando gera o Caderno do Aluno da versão adulta em [caderno-do-aluno.pdf](../../../aulas-interativas/adulto/corre-dino/caderno-do-aluno.pdf), com o texto de `qa/adulto/traducoes/corre-dino/_caderno.json` e as mesmas verificações (pasta temporária `tmp/pdfs/corre-dino-adulto/`). Quando o caderno kids muda, rode antes `bun docs/aulas-interativas-tecnico/recursos/corre-dino/gerar-caderno.ts --coletar` e escreva a versão adulta dos textos novos ([Diretrizes da versão adulta](../../DIRETRIZES-ADULTO.md#caderno-do-aluno)).
+O gerador usa as fontes editoriais e de projeto em `../../qa/`. Requer Bun, Python/Playwright e Chrome ou Edge. Não há versão adulta separada nem argumento `--adulto`.
 
-O gerador espera as fontes, mantém a abertura junto da primeira ação e o encerramento junto do último teste, e confere imagens, cores e limites antes de substituir o PDF. A revisão de 05/10/2026 produziu 52 páginas e 145 representações de blocos; a do vocabulário da aventura, em 06/10/2026, manteve os mesmos números. Na revisão das falas, também em 06/10/2026, o mapa passou a falar com a criança ("Este é o seu Mapa da Aventura!", "o seu jogo", "clique em Baixar" como convite) e os passos das montagens ganharam a retomada no próprio jogo e o porquê de cada resultado: o PDF ficou com 59 páginas e os mesmos 145 blocos. Depois da revisão independente do mesmo dia (rótulos reais, gravidade, toque na parte de cima), ficou com 58 páginas e 145 blocos; com as retomadas curtas e a conferência depois do teste, à noite, 56 páginas e os mesmos 145 blocos. A inspeção visual do PDF continua necessária depois de alterações no conteúdo ou nos esquemas.
-
-Anexar somente esse PDF à seção 2 da primeira aula. Consulta, download e impressão são opcionais. As perguntas dos quizzes ficam na plataforma; o caderno orienta a revisão sem adiantar o gabarito.
+Saída: [passo-a-passo-do-projeto.pdf](../../../aulas-interativas/corre-dino/passo-a-passo-do-projeto.pdf). Intermediários e relatórios ficam em `tmp/pdfs/corre-dino/`. O pipeline confere fontes, imagens, cores reais dos blocos e limites. Renderizar e revisar visualmente após mudar texto ou esquemas; testes não substituem a inspeção.

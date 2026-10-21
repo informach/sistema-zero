@@ -6,7 +6,7 @@ import { courseBadge } from '../src/lib/course-badge'
 import type { CatalogCourseView, MyCourseView } from '../src/lib/types'
 
 /**
- * O selo de estado do card — a outra metade do contador "N de M aventuras prontas".
+ * O selo de estado do card — a outra metade do contador "N de M cursos prontos".
  *
  * ⚠️⚠️ O caso que este arquivo existe para travar é o BÔNUS: ele NÃO deve o Mural, e um
  * selo "Publique no Mural" ali inventaria uma dívida inexistente — a mesma mentira que a
@@ -95,7 +95,7 @@ describe('selo no card da trilha', () => {
   })
 })
 
-describe('selo no card das "Aventuras da trilha" (com a barra ao vivo)', () => {
+describe('selo no card das "Cursos da trilha" (com a barra ao vivo)', () => {
   test('com o progresso na tela vale só o pendente, como na home', () => {
     // O marco é congelado e a barra é ao vivo: um curso que ganhou aula nova mostraria
     // "Pronta!" ao lado de uma barra em 90% (full review de 11/09/2026).
@@ -108,7 +108,7 @@ describe('selo no card das "Aventuras da trilha" (com a barra ao vivo)', () => {
       />,
     )
     expect(container.textContent).not.toContain('Pronta!')
-    expect(container.textContent).toContain('9 de 10 fases')
+    expect(container.textContent).toContain('9 de 10 aulas')
 
     // O que falta continua sendo dito, e sem o progresso o "Pronta!" volta (anti-vácuo).
     rerender(
@@ -140,6 +140,6 @@ describe('selo no card da home', () => {
 
     rerender(<CourseCard course={myCourse({ careerSlot: 2, milestones: PRONTO })} />)
     expect(container.textContent).not.toContain('Pronta!')
-    expect(container.textContent).toContain('Revisar aventura')
+    expect(container.textContent).toContain('Revisar curso')
   })
 })

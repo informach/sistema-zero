@@ -188,6 +188,53 @@ test('rotation rings keep their CSS radius across zoom, follow local parent axes
   }
 })
 
+test('rigid local animation keeps the ring circular and rotates a tall piece without shear', () => {
+  const f = setup()
+  try {
+    const rest = composeTransform({
+      kind: 'trs',
+      translation: [0, 0, 0],
+      rotation: [0, 0, 0, 1],
+      scale: [1, 3, 1],
+    })
+    f.gizmo.setTarget([0, 0, 0], sceneTransformFrame(rest, identityMatrix()))
+    f.gizmo.setSpace('local')
+    f.gizmo.setTool('rotate')
+    f.gizmo.draw()
+    const path = f.handle('Girar no eixo Z').querySelector('path')!.getAttribute('d')!
+    const coordinates = path.match(/[-\d.e+]+/g)!.map(Number)
+    const xs = coordinates.filter((_, index) => index % 2 === 0)
+    const ys = coordinates.filter((_, index) => index % 2 === 1)
+    const width = Math.max(...xs) - Math.min(...xs)
+    const height = Math.max(...ys) - Math.min(...ys)
+    expect(width / height).toBeCloseTo(1, 2)
+    f.pointer(
+      f.handle('Girar no eixo Z'),
+      'pointerdown',
+      500 + coordinates[0]!,
+      400 + coordinates[1]!,
+    )
+    f.pointer(
+      f.handle('Girar no eixo Z'),
+      'pointermove',
+      500 + coordinates[48]!,
+      400 + coordinates[49]!,
+    )
+    const actual = affineMultiply(f.previews.at(-1)!, rest)
+    const expected = composeTransform({
+      kind: 'trs',
+      translation: [0, 0, 0],
+      rotation: quaternionFromEulerXYZ([0, 0, 90]),
+      scale: [1, 3, 1],
+    })
+    expected.forEach((value, index) => {
+      expect(actual[index]).toBeCloseTo(value, 10)
+    })
+  } finally {
+    f.close()
+  }
+})
+
 test('size handles snap actual dimensions to whole units, keyboard steps work, and fractional precision uses tenths', () => {
   const f = setup()
   try {

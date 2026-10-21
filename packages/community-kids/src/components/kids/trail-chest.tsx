@@ -132,7 +132,7 @@ export function TrailChest({
       ? {
           role: 'img' as const,
           'aria-label': bloqueado
-            ? `Baú do Mundo ${unitNumber}, fechado. Ele abre quando você concluir todas as fases deste Mundo.`
+            ? `Baú do Mundo ${unitNumber}, fechado. Ele abre quando você concluir todas as aulas deste Mundo.`
             : `Baú do Mundo ${unitNumber}, aberto`,
         }
       : { role: 'group' as const }

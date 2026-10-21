@@ -19,6 +19,8 @@ interface Props {
   basePath: string
   imagesBase: string
   quizDefinitionId?: string
+  /** A oferta do Desafio adulto, quando o funil está registrado (a ilha não lê o registry). */
+  desafioAdultoPath?: string
 }
 interface Session {
   id: string
@@ -49,7 +51,13 @@ function Eyebrow({ icon, children }: { icon: string; children: string }) {
   )
 }
 
-export default function DesafioQuiz({ funnel, basePath, imagesBase, quizDefinitionId }: Props) {
+export default function DesafioQuiz({
+  funnel,
+  basePath,
+  imagesBase,
+  quizDefinitionId,
+  desafioAdultoPath,
+}: Props) {
   const [session, setSession] = useState<Session | null>(null)
   const [cursor, setCursor] = useState('intro')
   const [busy, setBusy] = useState(false)
@@ -193,7 +201,7 @@ export default function DesafioQuiz({ funnel, basePath, imagesBase, quizDefiniti
     return (
       <main id="quiz" className="wrap cq-intro" data-analytics-id="desafio-quiz-entrada">
         <div className="cq-intro-copy">
-          <Eyebrow icon="family_star">Para mães, pais e responsáveis · 9 a 14 anos</Eyebrow>
+          <Eyebrow icon="family_star">Para mães, pais e responsáveis · 9 a 17 anos</Eyebrow>
           <h1 className="kof-display">
             {ENTRY.titleStart}
             <em>{ENTRY.emphasis}</em>
@@ -302,17 +310,37 @@ export default function DesafioQuiz({ funnel, basePath, imagesBase, quizDefiniti
         <div className="cq-panel">
           <Eyebrow icon="cake">Sobre a faixa de idade</Eyebrow>
           <h1 ref={heading} tabIndex={-1} className="kof-display">
-            Esta orientação foi pensada para famílias com filhos de 9 a 14 anos.
+            Esta orientação foi pensada para famílias com filhos de 9 a 17 anos.
           </h1>
           <p>
             Os exemplos e as sugestões deste quiz foram preparados para essa faixa. A idade
             informada, sozinha, não diz o que seu filho consegue fazer.
           </p>
-          <p>
-            Para escolher uma atividade em outra fase, vale observar os interesses dele, a linguagem
-            da orientação e o apoio de que precisa. Este quiz não vai indicar um caminho específico
-            para essa idade.
-          </p>
+          {current.idade === 'menos_9' ? (
+            <p>
+              Para crianças menores de 9 anos, o Desafio é feito junto com um adulto, que lê e ajuda
+              com o mouse.{' '}
+              <a
+                className="kof-link kof-link--inline"
+                href={link('/kids/desafio-primeiro-jogo/oferta/criar-junto')}
+              >
+                Conhecer o Desafio para criar junto
+              </a>
+            </p>
+          ) : desafioAdultoPath ? (
+            <p>
+              Para quem tem 18 anos ou mais, existe o Desafio do Primeiro Jogo para adultos.{' '}
+              <a className="kof-link kof-link--inline" href={link(desafioAdultoPath)}>
+                Conhecer o Desafio para adultos
+              </a>
+            </p>
+          ) : (
+            <p>
+              Para escolher uma atividade em outra fase, vale observar os interesses dele, a
+              linguagem da orientação e o apoio de que precisa. Este quiz não vai indicar um caminho
+              específico para essa idade.
+            </p>
+          )}
           {errorView}
           <div className="cq-actions">
             <button className="cq-link" type="button" onClick={() => go('idade')}>

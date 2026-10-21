@@ -3,7 +3,7 @@ import { cn } from '@/lib/cn'
 
 /**
  * A pílula de contexto que abre toda página ("Sua oficina de criação",
- * "Comunidade · Recados do professor").
+ * "Comunidade · Recados da equipe").
  *
  * Ela existia como um `<p>` de texto azul solto, e era uma das coisas que faziam
  * a plataforma parecer mais séria que o funil. Agora é pílula cheia, em âmbar,

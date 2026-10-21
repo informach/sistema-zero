@@ -195,16 +195,16 @@ preço/perfil e `components/funnel/OfertaPage.astro` escolhe o body pela CHAVE d
 exclusão (funil sem body declarado lança): `content.sales` → `NoComandoOfertaBody`; Comunidade Kids →
 `Comunidade917Body` (`/oferta`), `ComunidadeMenor9Body` (`/oferta/criar-junto`) ou
 `ComunidadeContinuarBody` (`/oferta/continuar`); Comunidade adulta → `ComunidadeAdultoOfertaBody`
-ou `ComunidadeAdultoContinuarBody` (`/oferta/continuar`, prop `comunidadeAdultoPage`); Desafio →
-`DesafioOfertaBody`. `content.sales` (shape `SalesSections`) é
+ou `ComunidadeAdultoContinuarBody` (`/oferta/continuar`, prop `comunidadeAdultoPage`); Desafio Kids →
+`Desafio917Body` (`/oferta`) ou `DesafioMenor9Body` (`/oferta/criar-junto`, prop `desafioPage`);
+Desafio adulto → `DesafioAdultoBody` (ver "Desafio do Primeiro Jogo em três públicos"). `content.sales` (shape `SalesSections`) é
 **opcional** — funis com layout de vendas próprio (Desafio, Comunidade) trazem a cópia no próprio
 body e ficam sem `sales`. Cada body monta o seu PRÓPRIO `<BaseLayout>` (título/tema/JSON-LD/
 preload). `src/components/funnel/oferta/NoComandoOfertaBody.astro` = template padrão (16 seções a
-partir de `SALES`); `DesafioOfertaBody.astro` compartilha `kids-oferta.css` e
-`comunidade-oferta.css`, com complementos em `desafio-farol.css` sob `.df`, sem duplicar os
-valores dos tokens. Usa Material Symbols self-hosted; o layout `.cdc` mora em
+partir de `SALES`). O layout `.cdc` mora em
 `src/styles/comunidade-oferta.css` (sem o escopo do Astro; ver "Direção de arte das quatro páginas"),
-hoje vestido pelo Desafio e pelas páginas do presente e do embaixador. ⚠️ Astro escopa somando um
+hoje vestido pelo quiz e pelo resultado do Desafio (com `desafio-farol.css` sob `.df`) e pelas
+páginas do presente e do embaixador. ⚠️ Astro escopa somando um
 atributo por elo do seletor: um override tipo `.kid.verde .name` só vence a base `.kid .char .name`
 se incluir os MESMOS elos (`.kid.verde .char .name`). Os CTAs de compra levam `data-checkout-cta` →
 o `PreCheckoutModal` (mesma ilha do NCI) abre o checkout; opcionalmente levam também
@@ -223,7 +223,7 @@ por `billingIntervalMonths`, sem assumir qual é a principal da env). ⚠️ O f
 (`env.PRODUCT_PRICE_CENTS`) é o do NCI — body de outro funil com catálogo fora deve usar o SEU
 fallback (`COMUNIDADE_PRECO_FALLBACK`).
 
-**Funil kids "Desafio do Primeiro Jogo" (Farol, 03/10/2026):** 9–14 anos, computador,
+**Funil kids "Desafio do Primeiro Jogo" (Farol, 03/10/2026; 9 a 17 desde 21/10/2026):** computador,
 pagamento único, 30 dias de curso e Mural completo contados da aprovação; depois Mural visitante.
 R$ 67 é a referência editorial: preço/cupom vêm do catálogo e da cotação. O contrato exige
 `one_time/fixed/30/days`, garantia de sete dias. O funil público deve apontar para
@@ -231,7 +231,8 @@ R$ 67 é a referência editorial: preço/cupom vêm do catálogo e da cotação.
 vitalícios históricos e ao fluxo de bolsas. Não mudar direitos históricos para fazer a oferta passar.
 
 `src/funnels/desafio-primeiro-jogo/quiz/` contém perguntas, motor, definição e resultado.
-Versão `desafio-farol-v3` (tráfego frio, 03/10/2026): o quiz qualifica e aquece, e NENHUMA tela
+Versão `desafio-farol-v4` (21/10/2026: a idade ganhou "15 a 17" e "18 ou mais", a faixa é 9 a 17 e
+todo resultado leva à mesma `/oferta`; a v3, de tráfego frio, é de 03/10/2026): o quiz qualifica e aquece, e NENHUMA tela
 antes do resultado cita o Desafio, o Farol, preço, prazo ou oferta (decisão da dona; a entrada
 mora em `quiz/entry-copy.ts` e a régua é `tests/browser/desafio-quiz-frio.ts`). O Desafio aparece
 no resultado (`presentation`) como a primeira experiência na plataforma da Comunidade. A pergunta
@@ -246,9 +247,9 @@ C continua expressão visual, com limite de arte preparada explicado. O registry
 `DesafioQuiz.tsx` e `DesafioResultado.astro` usam a mesma composição Kids, rodapé institucional
 fora de `.cdc`, erros recuperáveis e convite copiável sem cadastro de contato.
 
-Ofertas: `/kids/desafio-primeiro-jogo/oferta` (primeiro jogo), `/oferta/tempo-de-tela` e
-`/oferta/iniciacao-tecnologica`. Mesma entrega/checkout, argumentos e ordem próprios em
-`offer.ts`/`offer-copy.ts`. O alias `/oferta/primeiro-jogo` redireciona ao padrão. As ofertas
+Ofertas: desde 21/10/2026, três páginas (ver "Desafio do Primeiro Jogo em três públicos"). As
+variantes por motivo (`/oferta/tempo-de-tela`, `/oferta/iniciacao-tecnologica` e o alias
+`/oferta/primeiro-jogo`) fazem 301 para `/oferta` com a query. As ofertas
 usam `no-store` e conferem o contrato antes de vender; indisponibilidade não recebe preço fictício.
 O quiz não mostra preço; o resultado continua informativo quando não consegue consultar o preço.
 
@@ -270,6 +271,55 @@ cai nos templates genéricos `kids-welcome`/`kids-new-access`, sem inventar uma 
 responsável… o perfil da criança você cria depois, na plataforma") e rotula os campos
 "… do responsável". Evita o pai preencher os dados da criança no pré-checkout (o perfil da
 criança nasce depois, na área kids).
+
+## Desafio do Primeiro Jogo em três públicos (21/10/2026)
+
+Implementação do Canvas "Desafio do Primeiro Jogo · três páginas", aprovado pela dona (registro em
+`docs/marketing/kids/desafio-primeiro-jogo/implementacao-2026-10-21.md`). Decisões: a faixa Kids é
+9 a 17; o adulto tem a MESMA oferta do Kids (R$ 67 de referência, pagamento único, 30 dias,
+garantia de 7, cupom aceito); os relatos do Rafael, da Débora e do André ficam, com a legenda do
+código; a copy Kids fala de "seu filho" e "ele" (a maioria dos alunos são meninos).
+
+- **Páginas Kids:** `/kids/desafio-primeiro-jogo/oferta` (9 a 17, `Desafio917Body` +
+  `oferta/pagina-9a17.ts` + `styles/desafio-917.css` sob `.c917`, vestindo `comunidade-917.css`) e
+  `/oferta/criar-junto` (menor de 9 criando com um adulto, `DesafioMenor9Body` + `pagina-menor9.ts` +
+  `desafio-menor9.css` sob `.cm9`). `DESAFIO_SUBPAGINAS`/`isDesafioSubpagina` em `offer.ts`;
+  `DESAFIO_OFERTAS_ANTIGAS` dão 301. Relatos por id (`RELATOS_DESAFIO_9A17`, `RELATOS_DESAFIO_MENOR9`).
+- **Funil adulto** `pro/desafio-primeiro-jogo` (`src/funnels/desafio-adulto/`), registrado no `FUNNELS`
+  desde 21/10/2026, DEPOIS da Comunidade adulta (o `/pro` segue no NCI; a ordem é pinada por teste). A
+  env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` existe no Railway de staging e de produção (criada pela
+  dona) e está declarada em `.railway/variables.ts`; a oferta e o Termo estão no sitemap. O quiz Kids
+  aponta a página adulta a quem marca 18 ou mais (`desafioAdultoPath`, resolvido pela página).
+  `DesafioAdultoBody` + `oferta/pagina.ts` +
+  `styles/desafio-adulto.css` sob `.cda` (tema arcade), sem quiz nem resultado, Termo próprio
+  `termos-desafio-adulto.ts` (`desafio-adulto-2026-10-21`), `chargeName` "(adultos)". Oferta pela env
+  `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` (`desafio-primeiro-jogo-adulto-30-dias`, criada pelo seed do
+  catálogo com o curso `desafio-primeiro-jogo-adulto` e o Mural adulto). O jogo e os blocos são os
+  mesmos do Kids (o `projeto-final.szproject.json` e o `blocos.json` adultos são idênticos), por isso
+  vêm de `/img/desafio-primeiro-jogo` sem legenda de versão; a página do Caderno é a do PDF adulto
+  (`/img/desafio-adulto/farol-caderno.png`, página 18). Os 4 passos da aula ainda são telas do Kids, com
+  a nota dizendo isso, até haver capturas da área adulta (o curso adulto precisa estar publicado em
+  staging).
+- **Preço** só do catálogo: `oferta/preco.ts` (`precoDoDesafio` com o cupom já cotado, `preencherPreco`
+  troca `{{preco}}` e `{{preco_dia}}`; o por dia é `precoPorDiaCents`, sempre acima da conta exata).
+- **Os dois Desafios nas etapas compartilhadas:** `isDesafioFunnel(key)` no registry (`checkout.astro`,
+  `obrigado.astro`); o `PreCheckoutModal` reconhece por `funnel.endsWith('/desafio-primeiro-jogo')`
+  (ilha não importa o registry) e só o Kids mostra o aviso dos dados do responsável. O e-mail de
+  boas-vindas com a data final tem duas versões: `challenge-access-approved` no Kids e, desde
+  21/10/2026, `challenge-access-approved-adult` no adulto (e-mail e WhatsApp; `nome`, `link`,
+  `expira_em`, `acao`; o link é o de sempre do adulto, `COMMUNITY_URL` com `/redefinir-senha?token=` ou
+  `/cursos`). Se o Messaging ainda responder 404 `TEMPLATE_NOT_FOUND` para a chave adulta, `sendOne`
+  reenvia com a chave genérica (`welcome`/`new-access`), a mesma Idempotency-Key e o mesmo link
+  (`fallbackKey`). No Members, o adulto ganha o Mural adulto visitante depois dos 30 dias e os avisos
+  de prazo e progresso nas versões `-adult` (ver o `CLAUDE.md` do Members).
+- **Navegador:** `tests/browser/desafio-ofertas.ts` confere as páginas registradas (as três, desde
+  o registro do adulto).
+- **Espelhos:** `bun scripts/espelho-copy-desafio.ts` →
+  `docs/marketing/kids/desafio-primeiro-jogo/copy/pagina-{9-a-17,menor-9,adulto}.md`.
+- **Testes:** `desafio-offer-copy.test.ts` (rotas, despacho, 301, contrato igual, env, Light Copy,
+  imagens, relatos, dois CTAs, preço, espelhos), `comunidade-offer-css.test.ts` (as três folhas só por
+  tokens), o browser `tests/browser/desafio-ofertas.ts` e, com banco, `tests/browser/desafio-farol.ts`
+  (o quiz).
 
 ## Comunidade dos Criadores em três públicos (20/10/2026)
 

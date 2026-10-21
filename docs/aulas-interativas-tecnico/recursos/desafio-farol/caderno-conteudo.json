@@ -1,9 +1,9 @@
 [
   {
     "id": "p1",
-    "kicker": "Mapa da Aventura",
+    "kicker": "Passo a passo do projeto",
     "title": "A Chave do Farol",
-    "subtitle": "Um barco precisa chegar à costa. Você vai programar as regras para a aventura acontecer.",
+    "subtitle": "Um barco precisa chegar à costa. Você vai programar as regras para o curso acontecer.",
     "items": [
       {
         "kind": "text",
@@ -12,13 +12,13 @@
       {
         "kind": "box",
         "title": "Use quando precisar",
-        "text": "Este é o seu Mapa da Aventura! Nele estão os caminhos dos blocos, os encaixes e os testes. Em cada encaixe, deixe primeiro à vista o lugar do bloco; depois pegue o bloco e arraste até lá. Se quiser, leia aqui na tela. E, se preferir, clique em <b>Baixar</b> para guardar e consultar onde quiser.",
+        "text": "Este é o seu Passo a passo do projeto! Nele estão os caminhos dos blocos, os encaixes e os testes. Em cada encaixe, deixe primeiro à vista o lugar do bloco; depois pegue o bloco e arraste até lá. Se quiser, leia aqui na tela. E, se preferir, clique em <b>Baixar</b> para guardar e consultar onde quiser.",
         "tone": "note"
       },
       {
         "kind": "step",
         "title": "Encontre seu passo",
-        "text": "No alto de cada página estão o dia e a parte, como na tela da fase.<br/><b>Dia 1 · O personagem ganha movimento:</b> o personagem anda e fica inteiro na tela, páginas {{pagina:andar-experiencia}} a {{pagina:p3}}.<br/><b>Dia 2 · A chave muda a aventura:</b> o jogo pega a chave, guarda que pegou e avisa, páginas {{pagina:memoria-experiencia}} a {{pagina:coleta-testes}}.<br/><b>Dia 3 · A luz do farol:</b> o farol confere a chave e acende, páginas {{pagina:porta-experiencia}} a {{pagina:p8}}.<br/><b>A surpresa do final:</b> escolhas e galerias, páginas {{pagina:personalizar}} a {{pagina:galeria-farois}}.<br/><b>Avisos, lugar da chave e envio:</b> páginas {{pagina:farol-mensagens}} a {{pagina:posicionar-chave}}.<br/><b>Publique no Mural:</b> página {{pagina:p9}}.<br/><b>As regras da sua aventura:</b> página {{pagina:revisao-final}}.<br/><b>Certificado e ajuda:</b> página {{pagina:p10}}."
+        "text": "No alto de cada página estão o dia e a parte, como na tela da aula.<br/><b>Dia 1 · O personagem ganha movimento:</b> o personagem anda e fica inteiro na tela, páginas {{pagina:andar-experiencia}} a {{pagina:p3}}.<br/><b>Dia 2 · A chave muda o curso:</b> o jogo pega a chave, guarda que pegou e avisa, páginas {{pagina:memoria-experiencia}} a {{pagina:coleta-testes}}.<br/><b>Dia 3 · A luz do farol:</b> o farol confere a chave e acende, páginas {{pagina:porta-experiencia}} a {{pagina:p8}}.<br/><b>A surpresa do final:</b> escolhas e galerias, páginas {{pagina:personalizar}} a {{pagina:galeria-farois}}.<br/><b>Avisos, lugar da chave e envio:</b> páginas {{pagina:farol-mensagens}} a {{pagina:posicionar-chave}}.<br/><b>Publique no Mural:</b> página {{pagina:p9}}.<br/><b>As regras do seu curso:</b> página {{pagina:revisao-final}}.<br/><b>Certificado e ajuda:</b> página {{pagina:p10}}."
       },
       {
         "kind": "box",
@@ -154,7 +154,7 @@
       },
       {
         "kind": "delivery",
-        "finish": "Concluir fase"
+        "finish": "Concluir aula"
       }
     ]
   },
@@ -287,7 +287,7 @@
       },
       {
         "kind": "delivery",
-        "finish": "Concluir fase"
+        "finish": "Concluir aula"
       }
     ]
   },
@@ -451,7 +451,7 @@
     "id": "personalizar",
     "kicker": "Dia 3 · Parte 4 · A surpresa do final",
     "title": "Deixe o jogo com a sua cara",
-    "subtitle": "A surpresa chegou: olha quantas versões essa aventura pode ter! Troque o que quiser: o que você gostou pode ficar como está. As opções estão nas páginas {{pagina:galeria-personagens}} a {{pagina:galeria-farois}}.",
+    "subtitle": "A surpresa chegou: olha quantas versões o seu jogo pode ter! Troque o que quiser: o que você gostou pode ficar como está. As opções estão nas páginas {{pagina:galeria-personagens}} a {{pagina:galeria-farois}}.",
     "items": [
       {
         "kind": "step",
@@ -489,7 +489,7 @@
   {
     "id": "galeria-personagens",
     "kicker": "Dia 3 · Parte 4 · A surpresa do final",
-    "title": "Quem vive a aventura?",
+    "title": "Quem vive o curso?",
     "subtitle": "Em Criar sprite personagem, escolha a imagem pelo nome que aparece aqui. Na lista do Estúdio, o mesmo nome fica embaixo de cada desenho.",
     "items": [
       {
@@ -661,7 +661,7 @@
       {
         "kind": "step",
         "title": "1. Abra Compartilhar",
-        "text": "Continue no mesmo Estúdio da fase. No alto do Estúdio, clique em <b>Compartilhar</b>. Ele pode aparecer só como uma setinha para cima. O resumo do projeto já vem preenchido. Deixe como está."
+        "text": "Continue no mesmo Estúdio da aula. No alto do Estúdio, clique em <b>Compartilhar</b>. Ele pode aparecer só como uma setinha para cima. O resumo do projeto já vem preenchido. Deixe como está."
       },
       {
         "kind": "step",
@@ -671,12 +671,12 @@
       {
         "kind": "step",
         "title": "3. Publique e comemore",
-        "text": "Clique em <b>Publicar</b> e comemore: <b>Seu jogo está no Mural!</b> Que conquista! Clique em <b>Copiar link de jogar</b> e mande o link para os seus amigos e a sua família. Se precisar, peça ajuda a um adulto. Depois clique em <b>Fechar</b> e em <b>Concluir fase</b>."
+        "text": "Clique em <b>Publicar</b> e comemore: <b>Seu jogo está no Mural!</b> Pronto! Clique em <b>Copiar link de jogar</b> e mande o link para os seus amigos e a sua família. Se precisar, peça ajuda a um adulto. Depois clique em <b>Fechar</b> e em <b>Concluir aula</b>."
       },
       {
         "kind": "box",
         "title": "Quer rever um passo?",
-        "text": "Na parte de publicação, clique no link <b>Como publicar seu jogo no Mural</b>. Ele leva ao Como fazer, a área de ajuda. Depois de consultar o passo a passo, clique em <b>Voltar para a fase</b> para continuar de onde estava.",
+        "text": "Na parte de publicação, clique no link <b>Como publicar seu jogo no Mural</b>. Ele leva ao Como fazer, a área de ajuda. Depois de consultar o passo a passo, clique em <b>Voltar para a aula</b> para continuar de onde estava.",
         "tone": "experience"
       },
       {
@@ -690,13 +690,13 @@
   {
     "id": "revisao-final",
     "kicker": "Seu certificado · Parte 1",
-    "title": "As regras da sua aventura",
+    "title": "As regras do seu curso",
     "subtitle": "Antes do certificado, confira o que faz as regras do seu jogo funcionarem.",
     "lit": true,
     "items": [
       {
         "kind": "activity",
-        "pill": "Na fase, antes do certificado",
+        "pill": "Na aula, antes do certificado",
         "text": "Aqui não tem vídeo: leia a fala do Zappy e responda às quatro perguntas sobre o seu jogo."
       },
       {
@@ -730,7 +730,7 @@
       {
         "kind": "box",
         "title": "Comemore sua criação",
-        "text": "Clique em <b>Pegar meu certificado</b>. Se você já pegou o certificado, clique em <b>Baixar certificado (PDF)</b>. Quando o certificado baixar, clique em <b>Concluir fase</b>.",
+        "text": "Clique em <b>Baixar meu certificado</b>. Se você já pegou o certificado, clique em <b>Baixar certificado (PDF)</b>. Quando o certificado baixar, clique em <b>Concluir aula</b>.",
         "tone": "test"
       },
       {
@@ -741,13 +741,13 @@
       {
         "kind": "box",
         "title": "Preciso de ajuda",
-        "text": "No rodapé da fase, clique em <b>Preciso de ajuda</b>. Conte o que tentou fazer e o que aconteceu. Por exemplo: <b>Estou no Dia 3. Peguei a chave, mas o farol continua apagado. Conferi o bloco temChave.</b><br/>Isso ajuda a equipe a entender em que ponto você está.",
+        "text": "No rodapé da aula, clique em <b>Preciso de ajuda</b>. Conte o que tentou fazer e o que aconteceu. Por exemplo: <b>Estou no Dia 3. Peguei a chave, mas o farol continua apagado. Conferi o bloco temChave.</b><br/>Isso ajuda a equipe a entender em que ponto você está.",
         "tone": "experience"
       },
       {
         "kind": "step",
         "title": "Para guardar e para enviar",
-        "text": "O Estúdio salva automaticamente enquanto você monta. <b>Guardado na sua conta</b> confirma que a cópia já está na sua conta.<br/><b>Verificar esta parte</b> confere os blocos pedidos.<br/><b>Enviar meu projeto</b>, confirmado em <b>Enviar</b>, manda o jogo para a equipe no fim da fase. Depois aparece <b>Projeto enviado!</b><br/>Se você mudar alguma coisa depois de enviar, clique em <b>Enviar de novo</b> e confirme em <b>Reenviar</b>: a equipe recebe a versão nova."
+        "text": "O Estúdio salva automaticamente enquanto você monta. <b>Guardado na sua conta</b> confirma que a cópia já está na sua conta.<br/><b>Verificar esta parte</b> confere os blocos pedidos.<br/><b>Enviar meu projeto</b>, confirmado em <b>Enviar</b>, manda o jogo para a equipe no fim da aula. Depois aparece <b>Projeto enviado!</b><br/>Se você mudar alguma coisa depois de enviar, clique em <b>Enviar de novo</b> e confirme em <b>Reenviar</b>: a equipe recebe a versão nova."
       }
     ]
   }

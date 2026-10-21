@@ -458,7 +458,7 @@ async function drawBrandedLayout(
   center((config.introLine || 'Certificamos que').trim(), helv, 14, 412, MUTED)
   const name = certificate.studentName
   center(name, serif, fitSize(serif, name, 40, innerW), 358, INK)
-  // ⚠️ A frase do curso JÁ diz o que foi concluído ("completou a aventura Cadê Todo Mundo?"). Até
+  // ⚠️ A frase do curso JÁ diz o que foi concluído ("completou o curso Cadê Todo Mundo?"). Até
   // 06/10/2026 ela vinha DEPOIS da linha genérica e do título, e o PDF dizia "concluiu" duas vezes
   // ("concluiu com êxito o curso / Cadê Todo Mundo? / concluiu Cadê Todo Mundo?"). Com frase, ela
   // ocupa o lugar dos dois; sem frase, vale a linha genérica com o título.

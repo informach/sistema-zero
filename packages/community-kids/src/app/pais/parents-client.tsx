@@ -85,7 +85,7 @@ export function ParentsClient({
   profileAllowance: ProfileAllowance
   /** Autorizações de cada criança lidas no servidor; `null` = a consulta falhou. */
   initialAccess?: Record<string, StudyGrantView[] | null>
-  /** A fase do link que trouxe o responsável: abre depois da troca para a criança. */
+  /** A aula do link que trouxe o responsável: abre depois da troca para a criança. */
   studentDestination?: string
   /** A fala da criança está ligada no servidor (14/10/2026): mostra a novidade e o passo. */
   voiceAvailable?: boolean

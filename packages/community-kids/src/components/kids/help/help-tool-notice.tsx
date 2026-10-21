@@ -34,7 +34,7 @@ export function HelpToolNotice({
         role={studioCurriculum === 'unavailable' ? 'status' : undefined}
       >
         {studioCurriculum === 'empty'
-          ? 'Você já conquistou o Estúdio. Os blocos para criar vêm das suas aventuras.'
+          ? 'Você já conquistou o Estúdio. Os blocos para criar vêm dos seus cursos.'
           : 'Você já conquistou o Estúdio. Não foi possível consultar seus blocos agora.'}{' '}
         Você pode ler este passo a passo mesmo assim.
       </p>

@@ -120,19 +120,71 @@ describe.skipIf(!testDatabaseUrl)('DrizzleChallengeLifecycleRepository no Postgr
       completed: false,
     })
   })
+  test('Desafio adulto: o candidato vem com o público, e só `all_courses` o encobre', async () => {
+    const accountId = randomUUID()
+    const entitlementId = randomUUID()
+    const kidsMasterId = randomUUID()
+    const adultMasterId = randomUUID()
+    createdIds.push(accountId, entitlementId, kidsMasterId, adultMasterId)
+    await ensureChallengeCourse(conn, 'desafio-primeiro-jogo-adulto', 'adult')
+    const snapshot = JSON.stringify({
+      offerSlug: 'desafio-primeiro-jogo-adulto-30-dias',
+      accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' },
+    })
+
+    const insert = async (id: string, accessType: string, courseRef: string | null) => {
+      await conn.sql`
+        insert into members.entitlements
+          (id, version, user_id, product_id, product_kind, access_type, course_ref, snapshot,
+           status, source_kind, source_id, granted_at, expires_at, idempotency_key, created_at, updated_at)
+        values (${id}, 0, ${accountId}, ${randomUUID()}, 'course', ${accessType}, ${courseRef},
+          ${snapshot}::jsonb, 'active', 'payment', ${randomUUID()},
+          '2026-09-16T12:00:00Z', '2026-10-16T12:00:00Z', ${`test:${id}`}, now(), now())
+      `
+    }
+    await insert(entitlementId, 'course', 'desafio-primeiro-jogo-adulto')
+
+    const repo = new DrizzleChallengeLifecycleRepository(conn.db)
+    const meus = async () =>
+      (await repo.listCandidates(new Date('2026-09-20T12:00:00Z'), 50)).filter(
+        (candidato) => candidato.entitlementId === entitlementId,
+      )
+
+    expect(await meus()).toEqual([
+      expect.objectContaining({ audience: 'adult', courseRef: 'desafio-primeiro-jogo-adulto' }),
+    ])
+
+    // Quem já recebeu o aviso de conclusão sai do lote (não ocupa a vaga das compras novas).
+    await conn.sql`
+      insert into members.entitlement_lifecycle_messages_sent (entitlement_id, expires_on, message_kind, sent_at)
+      values (${entitlementId}, '2026-10-16', 'completed', now())
+    `
+    expect(await meus()).toHaveLength(0)
+    await conn.sql`
+      delete from members.entitlement_lifecycle_messages_sent where entitlement_id = ${entitlementId}
+    `
+
+    // A chave do Kids não cobre o curso adulto; a assinatura adulta (mesmo vencimento) cobre.
+    await insert(kidsMasterId, 'all_kids_courses', null)
+    expect(await meus()).toHaveLength(1)
+    await insert(adultMasterId, 'all_courses', null)
+    expect(await meus()).toHaveLength(0)
+  })
 })
 
 async function ensureChallengeCourse(
   conn: DbConnection,
+  slug = 'desafio-primeiro-jogo',
+  audience: 'kids' | 'adult' = 'kids',
 ): Promise<{ courseId: string; lessonIds: string[] }> {
   let [course] = await conn.sql<{ id: string }[]>`
-    select id::text as id from members.courses where slug = 'desafio-primeiro-jogo' limit 1
+    select id::text as id from members.courses where slug = ${slug} limit 1
   `
   if (!course) {
     const id = randomUUID()
     await conn.sql`
       insert into members.courses (id, slug, title, status, audience, created_at, updated_at)
-      values (${id}, 'desafio-primeiro-jogo', 'Desafio do Primeiro Jogo', 'published', 'kids', now(), now())
+      values (${id}, ${slug}, 'Desafio do Primeiro Jogo', 'published', ${audience}, now(), now())
     `
     course = { id }
   }

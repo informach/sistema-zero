@@ -118,7 +118,7 @@ export function SceneConclusion({
     abertaEm.current = performance.now()
   }, [])
   // ⚠️ `PERGUNTA_MUDOU` é contrato com o members (a frase adulta que o core devolve): o player a
-  // reconhece por igualdade e desenha a do vocabulário do app ("Abra a fase de novo" no Kids).
+  // reconhece por igualdade e desenha a do vocabulário do app ("Abra a aula de novo" no Kids).
   const mudou = certa === false && feedback === PERGUNTA_MUDOU
   const { cena } = useLessonCopy()
   return (

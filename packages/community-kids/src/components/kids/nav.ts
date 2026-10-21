@@ -17,7 +17,7 @@ import {
   Users,
 } from 'lucide-react'
 
-/** Um destino DENTRO de uma seção, aberto pelo menu sem passar pela página-hub. */
+/** Um destino DENTRO de uma parte, aberto pelo menu sem passar pela página-hub. */
 export interface NavChild {
   href: string
   label: string
@@ -35,18 +35,18 @@ export interface NavItem {
   label: string
   icon: LucideIcon
   /**
-   * Os destinos da seção. Com filhos, o item do menu ABRE a lista em vez de navegar
+   * Os destinos da parte. Com filhos, o item do menu ABRE a lista em vez de navegar
    * (a página-hub vira o primeiro filho) — foi o pedido das crianças, que faziam
    * dois cliques e uma página no meio para ir do Estúdio ao Pinta.
    */
   children?: NavChild[]
   /**
-   * Rotas que VOLTAM para esta seção pela setinha, mas NÃO acendem o item no menu.
+   * Rotas que VOLTAM para esta parte pela setinha, mas NÃO acendem o item no menu.
    * É o caso dos Recados: eles ganharam destaque próprio no rodapé do menu, então
    * acender "Comunidade" junto deixaria duas coisas azuis ao mesmo tempo.
    */
   inner?: string[]
-  /** O texto da setinha que volta para esta seção, em 2ª pessoa. */
+  /** O texto da setinha que volta para esta parte, em 2ª pessoa. */
   backLabel: string
   desktopOnly?: boolean
 }
@@ -58,7 +58,7 @@ export const NAV_ITEMS: NavItem[] = [
   // criança FAZ ali, em par com o "Criar" logo abaixo (explorar o caminho das aventuras × criar
   // livre), e sem o chapéu de formatura, que lembrava a escola. A página continua sendo o mapa da
   // Jornada do Criador, e é assim que a trilha já chamava a volta.
-  { href: '/cursos', label: 'Explorar', icon: Compass, backLabel: 'Voltar ao mapa' },
+  { href: '/cursos', label: 'Cursos', icon: Compass, backLabel: 'Voltar aos cursos' },
   {
     href: '/oficinas',
     label: 'Oficinas',
@@ -133,7 +133,7 @@ export function navMatch(item: NavItem): string[] {
 }
 
 /**
- * Os destinos da seção que ESTA criança pode abrir. A régua de posse/capacidades é a mesma da
+ * Os destinos da parte que ESTA criança pode abrir. A régua de posse/capacidades é a mesma da
  * página de destino (`getCreativeTools`, resolvida no servidor): o menu não pode
  * oferecer uma porta trancada. `tools === null` (a consulta falhou) mostra TODOS — um
  * soluço de rede não encolhe o menu na cara dela.
@@ -142,7 +142,7 @@ export function visibleChildren(item: NavItem, tools: CreativeToolId[] | null): 
   const visiveis = (item.children ?? []).filter(
     (child) => !child.tool || tools === null || tools.includes(child.tool),
   )
-  // ⚠️ Sobrou só a página da seção? Então não há lista a abrir: o item volta a ser um
+  // ⚠️ Sobrou só a página da parte? Então não há lista a abrir: o item volta a ser um
   // LINK direto. Sem isto, a criança Faísca (que ainda não tem ferramenta nenhuma) abria
   // um accordion com um item só e pagava um clique a mais — e é justamente quem mais
   // precisa do caminho curto.
@@ -175,10 +175,10 @@ export function openGroupFor(pathname: string, escolhido: string | null): string
 }
 
 /**
- * Para onde a setinha de uma página INTERNA volta: a página principal da seção a que
+ * Para onde a setinha de uma página INTERNA volta: a página principal da parte a que
  * ela pertence (a do menu que fica acesa, ou a dona dela pelo `inner`). A régua é o
  * próprio mapa do menu, nunca uma lista paralela: uma rota nova que entra nos FILHOS
- * de uma seção ganha a volta certa sem ninguém lembrar de mais nada.
+ * de uma parte ganha a volta certa sem ninguém lembrar de mais nada.
  *
  * `null` na página principal (ali não há para onde voltar) e fora de qualquer seção. As
  * galerias das ferramentas usam a mesma régua pelo contrato `hostChrome.back`.

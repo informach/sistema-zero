@@ -15,7 +15,7 @@ import { buildApp, seedSampleCourse } from '../helpers'
  */
 const DIA_3 = resolve(
   import.meta.dir,
-  '../../../../docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.manifesto.json',
+  '../../../../docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.manifesto.json',
 )
 const ACESOS = ['farol-de-pedra-aceso', 'farol-aceso']
 

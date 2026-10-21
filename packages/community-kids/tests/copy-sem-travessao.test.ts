@@ -34,14 +34,14 @@ describe('copy do aluno: sem travessão', () => {
   })
 
   /**
-   * O que a criança lê nas fases mora no member-shell desde 06/10/2026: o vocabulário dela
+   * O que a criança lê nas aulas mora no member-shell desde 06/10/2026: o vocabulário dela
    * (`lib/lesson-copy-kids.ts`), os componentes das telas de aula e as frases das rotas que chegam
    * à tela. Lá a varredura é pelo PARSER (`literaisVisiveis`), porque o código compartilhado tem
    * travessão legítimo fora do texto de tela (o "—" de data ausente do `format.ts`, por exemplo, é
    * símbolo e não fica no alcance). O Estúdio e o core ficam de fora: são do adulto também, e o
    * texto de lá tem dono próprio.
    */
-  test('nem o texto do member-shell que aparece nas fases', () => {
+  test('nem o texto do member-shell que aparece nas aulas', () => {
     const pacotes = join(import.meta.dir, '..', '..')
     const fontes = [
       ...listarFontes(join(pacotes, 'member-shell', 'src', 'components')),

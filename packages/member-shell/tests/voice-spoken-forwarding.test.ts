@@ -37,7 +37,7 @@ function jsonReq(body: unknown): Request {
   })
 }
 
-describe('pedido de ajuda da fase', () => {
+describe('pedido de ajuda da aula', () => {
   function setup() {
     const calls: Array<{ path: string; opts: CallOpts }> = []
     const routes = createLearningRoutes({

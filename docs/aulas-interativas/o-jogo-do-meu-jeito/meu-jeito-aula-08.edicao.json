@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-copia-publicada",
+    "video-teste-completo",
+    "video-compartilhar",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-teste-completo-K1",
+      "clipe": "video-teste-completo",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "Enter para começar de novo. Confira se os pontos e as vidas recomeçam e se não sobraram pedras da partida anterior.",
+      "ancoraDepois": "Se alguma regra falhar, volte à aula em que ela funcionava e compare os blocos, sem trocar o projeto inteiro por outro.",
+      "falaPrincipal": "E se alguma coisa não funcionar?",
+      "falaPersonagem": "E se alguma coisa não funcionar?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-compartilhar-K1",
+      "clipe": "video-compartilhar",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "você criou. Clique em Abrir o jogo, e a versão publicada abre em outra aba. Teste uma partida e volte à aba do Estúdio.",
+      "ancoraDepois": "Depois clique em Copiar link de jogar. Olha só: o botão muda para Link copiado! Mande o link para a sua família e os",
+      "falaPrincipal": "E para mandar o jogo para alguém?",
+      "falaPersonagem": "E para mandar o jogo para alguém?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

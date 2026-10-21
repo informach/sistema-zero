@@ -131,6 +131,83 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     }
   })
 
+  test('Desafio adulto: confirmação própria com a data, o link do app adulto e sem orientação Kids', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const base = await registeredLead(repo, { challengeFixedDays: 30 })
+    const lead = { ...base, funnel: 'pro/desafio-primeiro-jogo' }
+
+    await makeSendWelcome({
+      gateway: gw.gateway,
+      communityUrl: COMMUNITY_URL,
+      kidsCommunityUrl: 'http://localhost:3008',
+      repo,
+    })(lead)
+
+    expect(gw.calls.messages).toHaveLength(2)
+    for (const message of gw.calls.messages) {
+      expect(message.input.templateKey).toBe('challenge-access-approved-adult')
+      expect(message.input.variables).toEqual({
+        nome: 'Ana',
+        link: `${COMMUNITY_URL}/redefinir-senha?token=fake-pw-token`,
+        expira_em: '16/10/2026, 12:30',
+        acao: 'Criar senha e entrar',
+      })
+      expect(message.idempotencyKey).toStartWith('challenge-access-approved')
+    }
+  })
+
+  test('Desafio adulto, comprador recorrente: entra pelos Cursos do app adulto', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const base = await registeredLead(repo, { challengeFixedDays: 30, isNew: false })
+    const lead = { ...base, funnel: 'pro/desafio-primeiro-jogo' }
+
+    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo })(lead)
+
+    expect(gw.calls.messages[0]?.input.templateKey).toBe('challenge-access-approved-adult')
+    expect(gw.calls.messages[0]?.input.variables?.link).toBe(`${COMMUNITY_URL}/cursos`)
+    expect(gw.calls.messages[0]?.input.variables?.acao).toBe('Entrar e abrir o Desafio')
+  })
+
+  test('Desafio adulto sem o template no Messaging cai na chave genérica do mesmo comprador', async () => {
+    for (const [isNew, generic] of [
+      [true, 'welcome'],
+      [false, 'new-access'],
+    ] as const) {
+      const { repo } = createFakeRepo()
+      const gw = createFakeGateway()
+      const sent: Array<{ templateKey: string; key: string; link?: string }> = []
+      const gateway = {
+        ...gw.gateway,
+        sendMessage: async (input: SendMessageInput, idempotencyKey: string) => {
+          sent.push({
+            templateKey: input.templateKey,
+            key: idempotencyKey,
+            link: input.variables?.link,
+          })
+          if (input.templateKey === 'challenge-access-approved-adult')
+            return { status: 404, body: { error: { code: 'TEMPLATE_NOT_FOUND', message: 'não' } } }
+          return { status: 202, body: { messageId: 'msg-1', status: 'QUEUED' } }
+        },
+      }
+      const base = await registeredLead(repo, { challengeFixedDays: 30, isNew })
+      await makeSendWelcome({ gateway, communityUrl: COMMUNITY_URL, repo })({
+        ...base,
+        funnel: 'pro/desafio-primeiro-jogo',
+      })
+      expect(sent.map((m) => m.templateKey)).toEqual([
+        'challenge-access-approved-adult',
+        generic,
+        'challenge-access-approved-adult',
+        generic,
+      ])
+      // A mesma chave de idempotência e o mesmo link (o token de senha não é reemitido).
+      expect(sent[1]?.key).toBe(sent[0]?.key)
+      expect(sent[1]?.link).toBe(sent[0]?.link)
+    }
+  })
+
   test('falha ao ler o snapshot não prende o claim: envia o welcome genérico', async () => {
     const { repo } = createFakeRepo()
     const gw = createFakeGateway()

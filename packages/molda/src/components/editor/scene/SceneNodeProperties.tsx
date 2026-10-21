@@ -178,6 +178,21 @@ export function SceneNodeProperties({
         </div>
       )}
       <SceneSurfaceStrip workshop={workshop} />
+      {selected.length === 1 &&
+        !workshop.components.selection &&
+        can('model.mesh') &&
+        booleanTools &&
+        primary?.kind === 'mesh' && (
+          <section
+            aria-label="Combinar volumes"
+            className="rounded-xl border border-mld-border bg-mld-surface p-3"
+          >
+            <h3 className="mld-kicker">Combinar volumes</h3>
+            <p className="mt-2 text-sm text-mld-muted">
+              Selecione mais uma peça com Shift para usar União, Interseção ou Diferença.
+            </p>
+          </section>
+        )}
       {selected.length === 2 &&
         !workshop.components.selection &&
         can('model.mesh') &&

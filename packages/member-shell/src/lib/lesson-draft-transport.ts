@@ -1,5 +1,5 @@
 /**
- * O rascunho do Estúdio e do Pinta DENTRO da fase, guardado na conta (10/10/2026). Implementa o
+ * O rascunho do Estúdio e do Pinta DENTRO da aula, guardado na conta (10/10/2026). Implementa o
  * contrato `LessonDraftCloud` do member-shell com o mesmo transporte das criações livres
  * (`createCreationsCloud`): reserva no BFF → PUT direto no R2 → commit, um item por BLOCO.
  *
@@ -160,7 +160,7 @@ function canal(
 }
 
 export interface KidsLessonDraftCloud extends LessonDraftCloud {
-  /** Sobe o pendente (com teto) e desliga as filas: troca de perfil ou saída da fase. */
+  /** Sobe o pendente (com teto) e desliga as filas: troca de perfil ou saída da aula. */
   dispose(): Promise<void>
 }
 
@@ -203,7 +203,7 @@ export function createLessonDraftCloud(options: {
 }
 
 /**
- * Uma nuvem por PERFIL e por aba, guardada fora do React: a fase pode trocar (nova página do
+ * Uma nuvem por PERFIL e por aba, guardada fora do React: a aula pode trocar (nova página do
  * player) e o StrictMode monta duas vezes, mas a fila, as marcas e o que está pendente são os
  * mesmos. Trocar de perfil é outra chave, e a fila do perfil anterior é descartada (ela só
  * receberia `VIEWER_MISMATCH` e continuaria ouvindo `pagehide`/`online` à toa).

@@ -135,7 +135,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
           </h1>
           <p className="mt-4 font-medium text-[1.0625rem] text-muted-foreground">
             {beyondHorizon
-              ? `As próximas aventuras da trilha de ${levelInfo(levelSlug).label} estão em preparação. As aventuras que você já abriu continuam disponíveis.`
+              ? `Os próximos cursos da trilha de ${levelInfo(levelSlug).label} estão em preparação. Os cursos que você já abriu continuam disponíveis.`
               : `Veja no mapa o que falta para abrir a trilha de ${levelInfo(levelSlug).label}. Suas conquistas continuam guardadas.`}
           </p>
           <Link href="/cursos" className="sz-btn-gradient mt-6 gap-2 px-6">
@@ -178,7 +178,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
         </div>
         {levelSlug === 'god' && child?.earned.level === 'god' ? (
           <p className="mt-4 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
-            Você chegou ao topo da jornada! Estas aventuras extras abriram para você.
+            Você chegou ao topo da jornada! Estes cursos extras abriram para você.
           </p>
         ) : null}
         {hint ? (
@@ -195,7 +195,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
           <section className="kids-carta flex flex-col items-center gap-4 px-6 py-14 text-center">
             <KidsMascot expression="thinking" className="kid-float size-16" />
             <p className="sz-display text-xl">
-              As aventuras desta trilha estão a caminho! Volte daqui a pouquinho.
+              Os cursos desta trilha estão a caminho! Volte daqui a pouco.
             </p>
             {/* Trilha vazia não pode virar beco: quem tem o Estúdio já pode criar o
               que quiser enquanto os cursos não chegam. */}
@@ -253,7 +253,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
               <div className="w-full shrink-0 md:w-60">
                 <p className="font-extrabold text-sm">
                   {trilha.done} de {trilha.total}{' '}
-                  {trilha.total === 1 ? 'aventura pronta' : 'aventuras prontas'}
+                  {trilha.total === 1 ? 'curso pronto' : 'cursos prontos'}
                 </p>
                 <div className="sz-progress mt-2.5" aria-hidden="true">
                   <span style={{ width: `${Math.round((trilha.done / trilha.total) * 100)}%` }} />

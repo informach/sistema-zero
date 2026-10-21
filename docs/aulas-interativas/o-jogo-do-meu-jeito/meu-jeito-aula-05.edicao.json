@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-camadas",
+    "video-chama",
+    "video-miolo-fogo",
+    "video-mudanca-pequena",
+    "video-quadro-pedra",
+    "video-girando",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-camadas-K1",
+      "clipe": "video-camadas",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "quase toda a pedra, e só um pedacinho da pedra aparece. Na lista Camadas, a chama está em cima, e a pedra está embaixo.",
+      "ancoraDepois": "Vamos trazer a pedra para a frente. Quando eu clico em Uma camada para a frente, na linha da pedra, olha só: a pedra",
+      "falaPrincipal": "Como faz para a pedra aparecer na frente da chama?",
+      "falaPersonagem": "Como faz para a pedra aparecer na frente da chama?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-chama-K1",
+      "clipe": "video-chama",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "espaço acima da pedra e termine clicando no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.",
+      "ancoraDepois": "Agora, com Selecionar, clique na chama. Tá vendo? A base da chama cobre um pedaço da pedra, porque a última forma",
+      "falaPrincipal": "E se a chama ficar na frente da pedra?",
+      "falaPersonagem": "E se a chama ficar na frente da pedra?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-miolo-fogo-K1",
+      "clipe": "video-miolo-fogo",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "as crateras ficam na frente, e o miolo claro aparece sobre a chama maior, porque ele está acima dela na lista Camadas.",
+      "ancoraDepois": "Para chegar a essa ordem, use Uma camada para trás ou Uma camada para a frente na forma selecionada, como você fez com",
+      "falaPrincipal": "Como eu trago o miolo claro para a frente?",
+      "falaPersonagem": "Como eu trago o miolo claro para a frente?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-mudanca-pequena-K1",
+      "clipe": "video-mudanca-pequena",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "É essa mudança pequena que faz a gente ver a bola girar. Na pedra, essa mudança pequena é O tanto que a cratera anda.",
+      "ancoraDepois": "Depois eu coloco O tanto que a pedra inteira anda em 10, e no quadro 2 a pedra toda muda de lugar. Tá vendo? Na Prévia,",
+      "falaPrincipal": "E se eu mover a pedra inteira?",
+      "falaPersonagem": "E se eu mover a pedra inteira?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-condicao",
+    "video-estado-inicio",
+    "video-embrulhar",
+    "video-relogio",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-condicao-K1",
+      "clipe": "video-condicao",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "deixo o tempo passar na tela de início. Nascem cactos antes de alguém jogar. O relógio cria cactos sem perguntar nada.",
+      "ancoraDepois": "Vamos fazer os cactos esperarem a partida. Agora eu levo Criar cacto para dentro de Se o estado do jogo é jogando, e",
+      "falaPrincipal": "Mas a partida nem começou. Por que já tem cacto?",
+      "falaPersonagem": "Mas a partida nem começou. Por que já tem cacto?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-estado-inicio-K1",
+      "clipe": "video-estado-inicio",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "e partida, pegue o bloco Mudar o estado do jogo para e solte no fim de Ao iniciar. Ele já chega com inicio: mantenha.",
+      "ancoraDepois": "Ainda falta ligar as ações a esse estado. Confira se ficou assim: no fim de Ao iniciar, está Mudar o estado do jogo",
+      "falaPrincipal": "O jogo já vai esperar para começar?",
+      "falaPersonagem": "O jogo já vai esperar para começar?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

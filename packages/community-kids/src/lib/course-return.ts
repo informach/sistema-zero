@@ -27,7 +27,7 @@ export interface CourseBackTarget {
   label: string
 }
 
-const MAPA: CourseBackTarget = { href: '/cursos', label: 'Voltar ao mapa' }
+const MAPA: CourseBackTarget = { href: '/cursos', label: 'Voltar aos cursos' }
 
 /** The canonical policy determines where a tier is shown; unknown state returns to the map. */
 export function trilhaHrefForCourse(

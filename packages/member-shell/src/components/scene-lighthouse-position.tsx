@@ -10,7 +10,7 @@ import { SceneButton } from './exploration-stage'
 import { Medida } from './scene-bench'
 import { SceneCanvas } from './scene-canvas'
 
-/** O nome que o Mapa da Aventura dá ao lugar, quando a chave está num dos três sugeridos. */
+/** O nome que o Passo a passo do projeto dá ao lugar, quando a chave está num dos três sugeridos. */
 function lugarSugerido(x: number, y: number): string {
   const lugar = FAROL_POSICOES_CHAVE.find((ponto) => ponto.x === x && ponto.y === y)
   return lugar ? `, ${lugar.nome}` : ''

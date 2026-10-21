@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-nomes",
+    "video-trazer-artes",
+    "video-recorte",
+    "video-trocar-nave",
+    "video-folha-nave",
+    "video-animar-nave",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-trazer-artes-K1",
+      "clipe": "video-trazer-artes",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.",
+      "ancoraDepois": "Agora clique na prévia e toque na tecla Enter para começar uma partida. Tá vendo? Os desenhos ainda são os antigos. As",
+      "falaPrincipal": "Já trouxe os desenhos. Eles já vão aparecer?",
+      "falaPersonagem": "Já trouxe os desenhos. Eles já vão aparecer?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-recorte-K1",
+      "clipe": "video-recorte",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "Depois escolho o Quadro 2, e aparece a nave com o fogo grande. São esses dois quadros que vão se revezar na animação.",
+      "ancoraDepois": "Agora eu mudo tamanho no jogo para 80. Repare: a nave do jogo fica maior, e o recorte continua 32 por 32. É que o",
+      "falaPrincipal": "Posso deixar a nave maior no jogo sem mudar o recorte?",
+      "falaPersonagem": "Posso deixar a nave maior no jogo sem mudar o recorte?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-trocar-nave-K1",
+      "clipe": "video-trocar-nave",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "54 e imagem nave. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.",
+      "ancoraDepois": "Agora clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco. Depois encaixe o novo criador",
+      "falaPrincipal": "O bloco novo já está preenchido. E o antigo?",
+      "falaPersonagem": "O bloco novo já está preenchido. E o antigo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-folha-nave-K1",
+      "clipe": "video-folha-nave",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali.",
+      "ancoraDepois": "No nome da folha, escreva folha-nave, um nome só dela, como na experiência da primeira parte desta aula. Na imagem,",
+      "falaPrincipal": "Que nome eu dou para essa folha?",
+      "falaPersonagem": "Que nome eu dou para essa folha?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-animar-nave-K1",
+      "clipe": "video-animar-nave",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "voando. Repare nos valores que chegam preenchidos: do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo.",
+      "ancoraDepois": "O Pinta mostra os desenhos como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1. Agora clique na prévia e",
+      "falaPrincipal": "No Pinta era um e dois. Por que aqui é zero e um?",
+      "falaPersonagem": "No Pinta era um e dois. Por que aqui é zero e um?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

@@ -110,7 +110,7 @@ describe('a voz do Zappy no quiz', () => {
       await waitFor(() => expect(audio.tocados).toEqual([url('question')]))
 
       fireEvent.click(screen.getByRole('radio', { name: /A cor/ }))
-      fireEvent.click(screen.getByRole('button', { name: 'Responder!' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Responder' }))
       fireEvent.click(
         await screen.findByRole('button', { name: 'Ouvir a explicação da pergunta 1' }),
       )

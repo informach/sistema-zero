@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-tecla-e-repeticao",
+    "video-escrito-e-lido",
+    "video-direcao-do-tiro",
+    "video-criar-tiro",
+    "video-tiros-voam",
+    "video-tiro-fora-da-tela",
+    "video-faxina"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-escrito-e-lido-K1",
+      "clipe": "video-escrito-e-lido",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "sem olhar o relógio: às vezes você acerta, mas quase sempre erra. Para acertar, é preciso olhar o relógio na hora.",
+      "ancoraDepois": "Agora eu troco para O centro x da nave e clico em Atirar. Olha só: o tiro nasce em 640, onde a nave está. Mudo a nave",
+      "falaPrincipal": "Como o tiro descobre onde a nave está agora?",
+      "falaPersonagem": "Como o tiro descobre onde a nave está agora?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-direcao-do-tiro-K1",
+      "clipe": "video-direcao-do-tiro",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "quadro, o jogo soma a velocidade ao y. Somar um número negativo diminui o y, e, na tela, y menor fica mais para cima.",
+      "ancoraDepois": "Agora eu troco velocidade para baixo para 9 e avanço outros quadros, e o y aumenta 9 em cada quadro: o tiro desce. O",
+      "falaPrincipal": "E se eu tirar o sinal de menos?",
+      "falaPersonagem": "E se eu tirar o sinal de menos?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-criar-tiro-K1",
+      "clipe": "video-criar-tiro",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "e tamanho, pegue o bloco o centro x do sprite e solte em cima desse número. Ele toma o lugar do número. Escolha nave.",
+      "ancoraDepois": "Faça o mesmo com o y: deixe à vista o número do campo y do tiro. Na mesma categoria Posição e tamanho, pegue o bloco a",
+      "falaPrincipal": "E a altura de onde sai o tiro?",
+      "falaPersonagem": "E a altura de onde sai o tiro?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-tiro-fora-da-tela-K1",
+      "clipe": "video-tiro-fora-da-tela",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "convidados de uma festa: se um convidado vai embora, o nome dele continua na lista. Só sai da lista se alguém riscar.",
+      "ancoraDepois": "Agora eu ligo Tirar do grupo quem sair da tela. Olha só: a prateleira fica vazia, aparece Removidos do grupo, e o",
+      "falaPrincipal": "Como eu tiro os que já foram embora?",
+      "falaPersonagem": "Como eu tiro os que já foram embora?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-faxina-K1",
+      "clipe": "video-faxina",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "sair da tela. Arraste e solte entre Mover os sprites do grupo e Desenhar o grupo dos tiros, quando aparecer o encaixe.",
+      "ancoraDepois": "No grupo, escolha tiros. O bloco também tem o campo chamado, que já vem com sprite: não mexa nele e deixe vazio o",
+      "falaPrincipal": "Qual grupo eu escolho aqui?",
+      "falaPersonagem": "Qual grupo eu escolho aqui?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

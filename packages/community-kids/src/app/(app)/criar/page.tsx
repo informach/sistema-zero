@@ -49,7 +49,7 @@ export default async function CriarPage() {
           subtitle={
             earned.length
               ? 'Retome seus projetos nas ferramentas abaixo. Tudo o que você aprende amplia sua oficina.'
-              : 'Comece criando dentro das fases. Sua oficina cresce junto com a Jornada do Criador.'
+              : 'Comece criando dentro das aulas. Sua oficina cresce junto com a Jornada do Criador.'
           }
         />
         <div className="mt-6">
@@ -57,7 +57,7 @@ export default async function CriarPage() {
             <ContinueHero courses={journey.courses} />
           ) : (
             <p role="status" className="kids-carta p-5 font-semibold">
-              Não conseguimos consultar suas aventuras agora. Tente atualizar esta página.
+              Não conseguimos consultar seus cursos agora. Tente atualizar esta página.
             </p>
           )}
         </div>
@@ -157,7 +157,7 @@ export default async function CriarPage() {
                       </p>
                       <p className="mt-2 font-bold text-sm">
                         {state === 'available' && studioCurriculum === 'empty'
-                          ? 'Ferramenta conquistada · os blocos para criar vêm das aventuras'
+                          ? 'Ferramenta conquistada · os blocos para criar vêm dos cursos'
                           : state === 'available' && studioCurriculum === 'unavailable'
                             ? 'Ferramenta conquistada · não foi possível consultar seus blocos agora'
                             : state === 'career-locked'

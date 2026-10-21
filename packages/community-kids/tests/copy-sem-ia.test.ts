@@ -34,9 +34,9 @@ const PERMITIDOS: readonly { arquivo: string; trecho: string; motivo: string }[]
   {
     arquivo: 'community-kids/src/app/pais/_components/ai-credits-card.tsx',
     trecho:
-      'A ajuda do Zappy no Estúdio e o Pensa são assistentes virtuais, feitos com inteligência artificial. As falas do Zappy nas fases são escritas pela nossa equipe, e nos Recados quem responde é a equipe.',
+      'A ajuda do Zappy no Estúdio e o Pensa são assistentes virtuais, feitos com inteligência artificial. As falas do Zappy nas aulas são escritas pela nossa equipe, e nos Recados quem responde é a equipe.',
     motivo:
-      'transparência aos pais: o que é assistente virtual e o que é da equipe (falas das fases, Recados)',
+      'transparência aos pais: o que é assistente virtual e o que é da equipe (falas das aulas, Recados)',
   },
   {
     arquivo: 'member-shell/src/components/customer-helpdesk-content.tsx',
@@ -93,7 +93,7 @@ describe('copy do Kids: o recurso tem nome, sem "IA" solta', () => {
     expect(achar('const b = <h2>Uso de IA do Estúdio</h2>')).toHaveLength(1)
     expect(achar('const c = "Feito com inteligência artificial."')).toHaveLength(1)
     expect(achar('// a IA do Estúdio\nconst d = 1')).toEqual([])
-    expect(achar('const e = "Ele ia para a fase seguinte, sem IAra"')).toEqual([])
+    expect(achar('const e = "Ele ia para a aula seguinte, sem IAra"')).toEqual([])
     expect(achar("console.log('IA indisponível')")).toEqual([])
   })
 })

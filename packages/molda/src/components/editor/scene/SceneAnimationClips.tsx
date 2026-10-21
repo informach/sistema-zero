@@ -60,7 +60,12 @@ export function SceneAnimationClips({
                 while (current.animations?.some((clip) => clip.name === `Movimento ${number}`))
                   number++
                 const next = run((document) =>
-                  createSceneAnimation(document, `Movimento ${number}`),
+                  createSceneAnimation(
+                    document,
+                    `Movimento ${number}`,
+                    undefined,
+                    workshop.selected,
+                  ),
                 )
                 if (next) choose(next.animations!.at(-1)!.id)
               })

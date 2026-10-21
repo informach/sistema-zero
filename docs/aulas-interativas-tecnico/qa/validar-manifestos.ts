@@ -1,7 +1,7 @@
 /**
  * Valida os manifestos do redesenho didático contra o validador REAL do core.
- * Uso: bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts [--adulto] [filtro]
- * Com `--adulto`, valida os manifestos da versão adulta (docs/aulas-interativas/adulto).
+ * Uso: bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts [filtro]
+ * A fonte é única para os dois destinos de publicação.
  */
 import { readFileSync } from 'node:fs'
 import {
@@ -14,7 +14,7 @@ import {
   isSectionCompletion,
   submissionUpToDateWorkspace,
 } from '../../../packages/core/src/learning/section-progression'
-import { caminhoAula, listarArquivosAulas, PASTA_CURSOS, PASTA_CURSOS_ADULTO } from './caminhos'
+import { caminhoAula, listarArquivosAulas, PASTA_CURSOS } from './caminhos'
 import { CURSOS_DIRETRIZES_ATUAIS, problemasPedagogicos } from './diretrizes-pedagogicas'
 import { MANIFESTOS_NOVO_MODELO } from './novo-modelo'
 
@@ -32,8 +32,9 @@ function cenasAusentes(m: Record<string, unknown>): string[] {
   return [...faltando].sort()
 }
 
-const adulto = process.argv.includes('--adulto')
-const DIR = adulto ? PASTA_CURSOS_ADULTO : PASTA_CURSOS
+if (process.argv.includes('--adulto'))
+  throw new Error('A fonte dos cursos é única. Execute sem --adulto.')
+const DIR = PASTA_CURSOS
 
 const filtro = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? ''
 const arquivos = listarArquivosAulas(DIR)
@@ -146,7 +147,7 @@ function diagnosticar(m: Record<string, unknown>): string[] {
   if (orfaos.length)
     p.push(`blocos declarados e não colocados em nenhuma seção: ${orfaos.join(', ')}`)
   if (fantasmas.length) p.push(`blockKeys sem bloco correspondente: ${fantasmas.join(', ')}`)
-  if (repetidos.length) p.push(`blocos colocados em mais de uma seção: ${repetidos.join(', ')}`)
+  if (repetidos.length) p.push(`blocos colocados em mais de uma parte: ${repetidos.join(', ')}`)
   if (new Set(bk).size !== bk.length) p.push('chaves de bloco repetidas')
   const sk = sections.map((s) => String(s.key))
   if (new Set(sk).size !== sk.length) p.push('chaves de seção repetidas')
@@ -183,15 +184,15 @@ function diagnosticar(m: Record<string, unknown>): string[] {
         p.push('retireBlockKeys tem chave repetida')
     }
   }
-  // Um bloco de materiais por fase (decisão da dona, 07/10/2026): o Mapa da Aventura, os links do
-  // Como fazer e o que mais a fase oferecer para consultar ficam juntos, sob o selo "Consulte".
+  // Um bloco de materiais por fase (decisão da dona, 07/10/2026): o Passo a passo do projeto, os links do
+  // Como fazer e o que mais a aula oferecer para consultar ficam juntos, sob o selo "Consulte".
   if (Array.isArray(m.blocks)) {
     const materiais = (m.blocks as Array<Record<string, unknown>>).filter(
       (b) => (b.content as Record<string, unknown> | undefined)?.kind === 'materials',
     )
     if (materiais.length > 1)
       p.push(
-        `a fase tem ${materiais.length} blocos de materiais (${materiais.map((b) => b.key).join(', ')}); junte tudo num bloco só`,
+        `a aula tem ${materiais.length} blocos de materiais (${materiais.map((b) => b.key).join(', ')}); junte tudo num bloco só`,
       )
   }
   return p
@@ -233,7 +234,7 @@ function diagnosticarNovoModelo(
     const posicao = (block: { key: string } | undefined) =>
       block ? blockKeys.indexOf(block.key) : -1
     // O fechamento pode mostrar o MESMO Estúdio só para o compartilhamento opcional.
-    // A prática precisa ter sido comprovada antes; não exigir nova entrega nesta seção.
+    // A prática precisa ter sido comprovada antes; não exigir nova entrega nesta parte.
     const fechamentoComProjetoJaEntregue =
       section.intent === 'closing' &&
       section.workspaceKey &&

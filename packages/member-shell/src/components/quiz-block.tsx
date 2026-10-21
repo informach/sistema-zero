@@ -317,7 +317,7 @@ function QuizSession({ blockId, content, quizState }: Props) {
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={submit} disabled={!allAnswered || submitting} className="self-start">
             {submitting ? <Spinner /> : null}
-            {submitting ? 'Enviando respostas...' : 'Enviar quiz'}
+            {submitting ? 'Enviando respostas...' : 'Responder'}
           </Button>
           {lastScore !== null && result === null ? (
             <p className="text-sm text-muted-foreground">

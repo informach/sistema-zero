@@ -1,5 +1,7 @@
 # Especificação do manifesto importável
 
+> Direção vigente: fonte e linguagem comuns aos dois públicos; consulte [diretrizes](DIRETRIZES-PEDAGOGICAS.md) e [voz](DIRETRIZES-VOZ-ELEVENLABS.md). Os termos técnicos de schema não são rótulos de tela.
+
 > Contrato para gerar o `manifesto.json` de cada aula redesenhada. O formato é o mesmo dos
 > manifestos v5 do `sistema-zero`, lido direto do validador real em
 > `packages/core/src/learning/index.ts` (`isLearningManifest`) em 20/09/2026.
@@ -171,7 +173,7 @@ Um item `file` precisa do
 `attachmentId` de um arquivo realmente anexado à aula. O manifesto não contém bytes nem URL privada.
 No Dia 1 do Desafio e na primeira aula de Corre, Dino! e O Jogo do Meu Jeito, os blocos dos
 cadernos já são criados com `items: []`. Os PDFs precisam ser enviados e vinculados no admin;
-o PDF vigente do Farol está em `docs/aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf`. Gravar os vídeos de apresentação
+o PDF vigente do Farol está em `docs/aulas-interativas/desafio-primeiro-jogo/passo-a-passo-do-projeto.pdf`. Gravar os vídeos de apresentação
 depois de anexar os arquivos reais. O material atual do Desafio é somente o Caderno do Aluno;
 o antigo Mapa dos Pais não integra essa versão.
 

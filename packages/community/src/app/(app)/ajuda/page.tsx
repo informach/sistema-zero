@@ -140,7 +140,7 @@ export default async function AjudaPage() {
             <Link href="/recados" prefetch={false} className="sz-link">
               Recados
             </Link>
-            , com a aula e a seção já identificadas.
+            , com a aula e a parte já identificadas.
           </p>
         </div>
 

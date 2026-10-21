@@ -22,7 +22,7 @@ function montar(aberto: boolean, onToggle: (open: boolean) => void) {
 
 describe('grupo do menu', () => {
   test('o clique no nome avisa que abriu, em vez de navegar', () => {
-    // Decisão da dona: o nome do grupo ABRE; a página da seção é o primeiro filho.
+    // Decisão da dona: o nome do grupo ABRE; a página da parte é o primeiro filho.
     const avisos: boolean[] = []
     montar(false, (open) => avisos.push(open))
     expect(screen.getByText('Criar').closest('a')).toBeNull()

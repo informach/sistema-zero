@@ -19,7 +19,7 @@ const SHOWN = 3
  * Os jogos mais novos do Mural adulto (o canal `parede` do Mural, na ordem Novidades), com o
  * mesmo cuidado do BFF do fórum: o nome do autor só aparece quando o perfil é público AGORA (a
  * identidade é relida no members e falha fechada), e o id cru de terceiros nunca chega à página.
- * Best-effort: sem canal, sem jogo ou com o hub fora, a seção não aparece.
+ * Best-effort: sem canal, sem jogo ou com o hub fora, a parte não aparece.
  */
 async function loadShowcase(viewerId: string | null): Promise<HubThreadView[]> {
   try {

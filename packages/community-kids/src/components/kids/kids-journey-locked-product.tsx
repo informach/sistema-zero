@@ -32,7 +32,7 @@ export function KidsJourneyLockedProduct({
       <p>{intro}</p>
       <p className="text-[0.9375rem]">
         {detail ??
-          'Continue sua jornada para liberar esta ferramenta. No mapa você pode ver suas próximas aventuras e conquistas.'}
+          'Continue sua jornada para liberar esta ferramenta. No mapa você pode ver suos próximos cursos e conquistas.'}
       </p>
     </KidsRecado>
   )

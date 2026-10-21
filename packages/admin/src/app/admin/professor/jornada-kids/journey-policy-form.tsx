@@ -96,7 +96,7 @@ export function KidsJourneyPolicyForm({
         </Field>
         <p className="text-sm text-muted-foreground">
           A pausa mantém a política e as conquistas. Não concede novos postos ou ferramentas;
-          concluir a primeira aventura ainda pode abrir outras aulas da mesma etapa.
+          concluir o primeiro curso ainda pode abrir outras aulas da mesma etapa.
         </p>
       </Card>
       <section aria-labelledby="kids-posts-title" className="space-y-4">

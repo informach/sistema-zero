@@ -17,7 +17,7 @@ describe('KidsPageHeader', () => {
     expect(titulo.className.split(' ')).toContain('[overflow-wrap:anywhere]')
   })
 
-  it('a seta só aparece com destino, e leva o nome da seção', () => {
+  it('a seta só aparece com destino, e leva o nome da parte', () => {
     const { rerender } = render(<KidsPageHeader title="Recados" />)
     expect(screen.queryByRole('link')).toBeNull()
     rerender(

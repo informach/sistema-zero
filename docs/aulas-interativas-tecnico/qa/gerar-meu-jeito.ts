@@ -1,5 +1,5 @@
 /** Gera os três documentos de cada aula; não importa nem publica conteúdo. */
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type {
   InteractiveBlock,
@@ -13,6 +13,7 @@ import {
   planoAvatar,
   roteiroComAvatar,
 } from './avatares-video'
+import { gravarArquivo } from './gravar-arquivo'
 import { ORDEM_MEU_JEITO, projetoMeuJeito } from './meu-jeito-etapas'
 
 type Content = Extract<LearningManifest['blocks'][number], { content: unknown }>['content']
@@ -53,7 +54,7 @@ export const aulasMeuJeito = JSON.parse(
 /**
  * Onde a fala aparece. No vídeo (`video`), o fecho das aplicações manda pausar; no Mapa da
  * Aventura (`mapa`), que é lido e não assistido, ele começa direto pela ação e manda voltar "à aba
- * da fase", porque o PDF não tem "esta aba".
+ * da aula", porque o PDF não tem "esta aba".
  */
 export type MeioDaFala = 'video' | 'mapa'
 /**
@@ -63,7 +64,7 @@ export type MeioDaFala = 'video' | 'mapa'
  * este fecho dizer como sair, sem repetir "aguarde Salvo" duas vezes.
  */
 function fechoDaAplicacao(s: SecaoMeuJeito, meio: MeioDaFala): string | undefined {
-  const volte = meio === 'video' ? 'volte a esta aba' : 'volte à aba da fase'
+  const volte = meio === 'video' ? 'volte a esta aba' : 'volte à aba da aula'
   if (s.key === 'compartilhar')
     // Publicar é opcional e não tem uma conferência anterior para comparar (revisão de 06/10/2026).
     return `${meio === 'video' ? 'Pause aqui se você escolheu publicar.' : 'Se você escolheu publicar, faça esses passos no Estúdio.'} Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois de clicar em Fechar, ${volte} e clique em Próxima parte.`
@@ -80,7 +81,7 @@ function fechoDaAplicacao(s: SecaoMeuJeito, meio: MeioDaFala): string | undefine
   return `${meio === 'video' ? `Pause aqui e faça esta parte no seu ${criacao}.` : `Faça esta parte no seu ${criacao}.`} Se o ${ferramenta} ainda não estiver aberto, clique em Abrir meu ${ferramenta}. Depois compare o seu ${criacao} com ${conferencia} e espere aparecer ${salvo}, porque é assim que o seu ${criacao} fica guardado para a próxima parte. Quando aparecer, ${volte} e clique em Próxima parte.`
 }
 /**
- * A fala completa da seção. As frases fixas falam o vocabulário da aventura (Diretrizes, seção 6,
+ * A fala completa da parte. As frases fixas falam o vocabulário do curso (Diretrizes, seção 6,
  * 06/10/2026): a criança ouve fase e parte, e os botões pelo nome novo (Próxima parte).
  */
 export function falasSecao(s: SecaoMeuJeito, meio: MeioDaFala = 'video'): string[] {
@@ -107,7 +108,7 @@ export function semChamados(paragrafo: string): string {
 }
 /**
  * A aplicação que vem logo depois de uma experiência começa pela retomada dela (Diretrizes, seção
- * 2); a que aplica uma experiência mais atrás nomeia a parte ("…da primeira parte desta fase?").
+ * 2); a que aplica uma experiência mais atrás nomeia a parte ("…da primeira parte desta aula?").
  */
 const comecaPelaRetomada = (s: SecaoMeuJeito) =>
   // Primeiro o problema, depois a lembrança (06/10/2026, à noite): o teste pode vir antes do "Lembra".
@@ -179,10 +180,10 @@ export function gerarManifestoMeuJeito(lesson: AulaMeuJeito): LearningManifest {
         true,
       )
     if (s.materials)
-      // A chave continua `materiais-caderno`; para a criança, o caderno é o Mapa da Aventura.
+      // A chave continua `materiais-caderno`; para a criança, o caderno é o Passo a passo do projeto.
       add('materiais-caderno', {
         kind: 'materials',
-        title: 'Mapa da Aventura: O Jogo do Meu Jeito',
+        title: 'Passo a passo do projeto: O Jogo do Meu Jeito',
         bookPreview: true,
         items: [],
       })
@@ -214,26 +215,7 @@ export function gerarManifestoMeuJeito(lesson: AulaMeuJeito): LearningManifest {
   }
 }
 function roteiro(lesson: AulaMeuJeito, index: number) {
-  const lines = [
-    `# Roteiro de gravação · O Jogo do Meu Jeito · Aula ${index + 1}`,
-    '',
-    `**${lesson.title}**`,
-    '',
-    'Fonte: `qa/meu-jeito.conteudo.json`. Gerado por `qa/gerar-meu-jeito.ts`. Revise a fonte e regenere proposta, roteiro e manifesto juntos.',
-    '',
-    `Entrada: ${lesson.entry} Saída: ${lesson.outcome}`,
-    '',
-    orientacaoAvatares(index),
-    '',
-    'Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.',
-    '',
-    'Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.',
-    '',
-    'Toda fala é uma conversa contínua com quem está fazendo a fase (Diretrizes, seção 6, revisão de 06/10/2026). Três vozes: "você" para o que é da pessoa e para as ações, "a gente" para pensar junto e convidar, "eu" só quando o narrador demonstra. As frases se ligam umas às outras ("por isso", "mas", "é que", "agora que", "ou seja"; sem "então", que é o nome de uma parte do bloco Se), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"), um chamado por momento importante. A aplicação que vem logo depois de uma experiência começa pela retomada, uma ponte de até umas 50 palavras: primeiro o problema no trabalho da pessoa, quando há o que testar ("Tá vendo?" com o porquê), depois a lembrança ("Lembra da experiência da parte anterior?", com o resultado numa frase) e um anúncio só, colado ao primeiro passo. Depois do teste da montagem, a conferência vem uma vez, como caminho da correção ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …"). A ponte do Zappy começa convidando ("Sua vez!" depois de uma demonstração; "Agora…!" ou "Hora de…!" antes de uma aplicação) e termina na ação real de saída.',
-    '',
-    'Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos títulos, a criança ouve e lê fase, parte e Mapa da Aventura, e os botões pelo nome novo (Próxima parte, Concluir fase, Enviar (1), Recebido!). Quem recebe o envio e responde os recados é a equipe. Aula, seção e caderno ficam só nas notas da equipe.',
-    '',
-  ]
+  const lines = [`# Roteiro de produção · ${lesson.title}`, '', orientacaoAvatares(index), '']
   lesson.sections.forEach((s, i) => {
     lines.push(`## Seção ${i + 1}. ${s.title}`, '')
     if (s.videoKey) {
@@ -252,7 +234,7 @@ function roteiro(lesson: AulaMeuJeito, index: number) {
         '',
       )
     }
-    lines.push(`**Zappy na página (não gravar):** ${s.bridge}`, '')
+    lines.push(`**Recado na página (não gravar):** ${s.bridge}`, '')
     if (s.questions)
       lines.push(
         'Sem vídeo nem ferramenta. O quiz vem imediatamente depois do Zappy. Correção com explicação, tentativas ilimitadas e sem espera.',
@@ -306,7 +288,7 @@ function proposta(lesson: AulaMeuJeito, index: number, m: LearningManifest) {
       )
     if (s.externalTool)
       lines.push(
-        `**Aplicação no ${s.externalTool === 'pinta' ? 'Pinta' : 'Estúdio'}:** ${comecaPelaRetomada(s) ? 'o roteiro começa pela retomada de uma experiência desta aula e ' : 'o roteiro '}inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. ${s.final ? 'Conclusão exige vídeo e recebimento da entrega pela galeria.' : 'Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.'}`,
+        `**Aplicação no ${s.externalTool === 'pinta' ? 'Pinta' : 'Estúdio'}:** ${comecaPelaRetomada(s) ? 'o roteiro começa pela retomada de uma experiência desta aula e ' : 'o roteiro '}inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. ${s.final ? 'Conclusão exige vídeo e recebimento da entrega pela galeria.' : 'Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.'}`,
         '',
       )
     if (s.play)
@@ -316,7 +298,7 @@ function proposta(lesson: AulaMeuJeito, index: number, m: LearningManifest) {
       )
     if (s.materials)
       lines.push(
-        'Anexar `docs/aulas-interativas/kids/o-jogo-do-meu-jeito/mapa-da-aventura.pdf`, que a criança conhece como Mapa da Aventura, a `materiais-caderno`. Ler, baixar e imprimir são opcionais e não entram na conclusão; a fala oferece ler aqui ou baixar como convite.',
+        'Anexar `docs/aulas-interativas/o-jogo-do-meu-jeito/passo-a-passo-do-projeto.pdf`, que a criança conhece como Passo a passo do projeto, a `materiais-caderno`. Ler, baixar e imprimir são opcionais e não entram na conclusão; a fala oferece ler aqui ou baixar como convite.',
         '',
       )
     if (s.questions)
@@ -345,12 +327,12 @@ if (import.meta.main) {
     const manifest = gerarManifestoMeuJeito(lesson)
     const path = resolve(
       import.meta.dir,
-      `../../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-${lesson.slug}`,
+      `../../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-${lesson.slug}`,
     )
-    writeFileSync(`${path}.manifesto.json`, `${JSON.stringify(manifest, null, 2)}\n`)
+    gravarArquivo(`${path}.manifesto.json`, `${JSON.stringify(manifest, null, 2)}\n`)
     manifestos.push(`${path}.manifesto.json`)
-    writeFileSync(`${path}.roteiro.md`, roteiro(lesson, index))
-    writeFileSync(`${path}.md`, proposta(lesson, index, manifest))
+    gravarArquivo(`${path}.roteiro.md`, roteiro(lesson, index))
+    gravarArquivo(`${path}.md`, proposta(lesson, index, manifest))
   }
   // Mesmo formato que a CI confere (biome ci), como nos geradores do Cadê e do Farol.
   const formatado = Bun.spawnSync({

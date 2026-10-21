@@ -124,14 +124,14 @@ function mountLesson({ last = false, publication = false, failed = false } = {})
 
 async function complete() {
   await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: 'Concluir fase' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Concluir aula' }))
   })
 }
 
 test.each([
-  { label: 'Próxima fase', href: '/cursos/jogo/aulas/segunda', last: false, publication: false },
-  { label: 'Voltar à aventura', href: '/cursos/jogo', last: false, publication: false },
-  { label: 'Voltar à aventura', href: '/cursos/jogo', last: true, publication: false },
+  { label: 'Próxima aula', href: '/cursos/jogo/aulas/segunda', last: false, publication: false },
+  { label: 'Voltar ao curso', href: '/cursos/jogo', last: false, publication: false },
+  { label: 'Voltar ao curso', href: '/cursos/jogo', last: true, publication: false },
   {
     label: 'Conferir publicação do projeto',
     href: '/cursos/jogo#publicar',
@@ -146,7 +146,7 @@ test.each([
 }) => {
   const { refresh, navigate } = mountLesson({ last, publication })
   await complete()
-  expect(screen.getByRole('dialog', { name: 'Fase concluída' })).toBeTruthy()
+  expect(screen.getByRole('dialog', { name: 'Aula concluída' })).toBeTruthy()
   expect(refresh).not.toHaveBeenCalled()
   expect(screen.getByRole('link', { name: label }).getAttribute('href')).toBe(href)
   // O App Router substitui a página e preserva o layout. Não usamos push+refresh na página
@@ -158,11 +158,11 @@ test.each([
   expect(refresh).toHaveBeenCalledTimes(1)
 })
 
-test('ficar na fase fecha a celebração e atualiza uma vez, sem nova atualização ao sair depois', async () => {
+test('ficar na aula fecha a celebração e atualiza uma vez, sem nova atualização ao sair depois', async () => {
   const { refresh, navigate } = mountLesson()
   await complete()
-  fireEvent.click(screen.getByRole('button', { name: 'Ficar nesta fase' }))
-  expect(screen.queryByRole('dialog', { name: 'Fase concluída' })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Ficar nesta aula' }))
+  expect(screen.queryByRole('dialog', { name: 'Aula concluída' })).toBeNull()
   await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1))
   navigate('/cursos/jogo')
   await act(async () => {})
@@ -173,7 +173,7 @@ test('fechar e navegar imediatamente não cancela a atualização ao desmontar a
   const { refresh, navigate } = mountLesson()
   await complete()
   act(() => {
-    fireEvent.click(screen.getByRole('button', { name: 'Ficar nesta fase' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ficar nesta aula' }))
     navigate('/cursos/jogo')
   })
   await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1))
@@ -184,7 +184,7 @@ test('a celebração aberta não dispara atualização nem quando a mesma rota r
   await complete()
   navigate(lessonPath)
   await act(async () => {})
-  expect(screen.getByRole('dialog', { name: 'Fase concluída' })).toBeTruthy()
+  expect(screen.getByRole('dialog', { name: 'Aula concluída' })).toBeTruthy()
   expect(refresh).not.toHaveBeenCalled()
 })
 
@@ -198,7 +198,7 @@ test('sair sem concluir não atualiza o layout', async () => {
 test('conclusão recusada não deixa atualização pendente', async () => {
   const { refresh, navigate } = mountLesson({ failed: true })
   await complete()
-  expect(screen.queryByRole('dialog', { name: 'Fase concluída' })).toBeNull()
+  expect(screen.queryByRole('dialog', { name: 'Aula concluída' })).toBeNull()
   navigate('/cursos/jogo')
   await act(async () => {})
   expect(refresh).not.toHaveBeenCalled()

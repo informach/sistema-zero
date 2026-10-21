@@ -13,13 +13,13 @@ export const VIDEO_GATE_DONE_MS = 8000
 
 /**
  * "Assistir ao vídeo antes da atividade" (03/10/2026): a atividade da direita trancada, com um
- * aviso por cima, até a criança ver o vídeo da seção uma vez. Decisão da dona, a partir de uma
+ * aviso por cima, até a criança ver o vídeo da parte uma vez. Decisão da dona, a partir de uma
  * criança testando o Cadê Todo Mundo?: ela quis fazer junto já na primeira vez e se perdeu. Desde
  * 06/10/2026 a tranca vale só para o jogo pronto e a experiência, onde o vídeo é uma demonstração
  * que explica: primeiro ela entende, depois é a vez dela. No Estúdio e no Pinta ela monta junto.
  *
  * ⚠️ O invólucro existe SEMPRE (com a tranca desligada ele só passa os filhos): ele embrulha os
- * editores da aula, que ficam montados entre as seções, e trocar a árvore os remontaria.
+ * editores da aula, que ficam montados entre as partes, e trocar a árvore os remontaria.
  *
  * Só ganchos e utilitárias sóbrias (invariante 8): o kids veste `sz-lesson-video-gate*` no
  * `globals.css` dele, e o adulto sob `.sz-aula-adulto`.

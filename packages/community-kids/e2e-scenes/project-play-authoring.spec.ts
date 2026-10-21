@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import manifesto from '../../../docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json' with {
+import manifesto from '../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json' with {
   type: 'json',
 }
 

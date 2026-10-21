@@ -5,7 +5,7 @@ import { useLessonCopy } from './lesson-copy-context'
 
 /**
  * O caminho de um recado de ajuda de volta à seção em que a dúvida nasceu. O rótulo vem do
- * vocabulário do app (`LessonCopy`): no Kids a seção é "parte".
+ * vocabulário do app (`LessonCopy`): no Kids a parte é "parte".
  */
 export function TeacherLessonLink({ thread }: { thread: TeacherThreadView | null }) {
   const copy = useLessonCopy()

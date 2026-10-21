@@ -30,7 +30,7 @@ export function SceneWorkspace({
     // O vídeo flutuante da aula entra no Tab da tela ampliada.
     companions: true,
   })
-  // O vídeo da seção sai de baixo da experiência ampliada (o flutuante da aula).
+  // O vídeo da parte sai de baixo da experiência ampliada (o flutuante da aula).
   useReportActivityExpanded(expanded)
 
   return (

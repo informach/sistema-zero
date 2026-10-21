@@ -40,9 +40,9 @@ export default defineConfig({
         `${site}/pro/no-comando-da-ia/oferta`,
         `${site}/pro/comunidade-dos-criadores/oferta`,
         `${site}/pro/comunidade-dos-criadores/oferta/continuar`,
+        `${site}/pro/desafio-primeiro-jogo/oferta`,
         `${site}/kids/desafio-primeiro-jogo/oferta`,
-        `${site}/kids/desafio-primeiro-jogo/oferta/tempo-de-tela`,
-        `${site}/kids/desafio-primeiro-jogo/oferta/iniciacao-tecnologica`,
+        `${site}/kids/desafio-primeiro-jogo/oferta/criar-junto`,
         `${site}/kids/comunidade-dos-criadores/oferta`,
         `${site}/kids/comunidade-dos-criadores/oferta/criar-junto`,
         `${site}/kids/comunidade-dos-criadores/oferta/continuar`,
@@ -54,6 +54,7 @@ export default defineConfig({
         `${site}/kids/desafio-primeiro-jogo/termos`,
         `${site}/kids/comunidade-dos-criadores/termos`,
         `${site}/pro/comunidade-dos-criadores/termos`,
+        `${site}/pro/desafio-primeiro-jogo/termos`,
       ],
       // Mantém no sitemap só as páginas indexáveis (exclui as noindex/privadas).
       filter: (page) =>

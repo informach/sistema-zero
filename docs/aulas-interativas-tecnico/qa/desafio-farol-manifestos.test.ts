@@ -30,7 +30,7 @@ function manifesto(name: string): LearningManifest {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/kids/desafio-primeiro-jogo/desafio-${name}.manifesto.json`,
+        `../../aulas-interativas/desafio-primeiro-jogo/desafio-${name}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -107,7 +107,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
   test('as três montagens oferecem somente Programação e Jogo 2D', () => {
     const { blocks } = JSON.parse(
       readFileSync(
-        resolve(import.meta.dir, '../../aulas-interativas/kids/desafio-primeiro-jogo/blocos.json'),
+        resolve(import.meta.dir, '../../aulas-interativas/desafio-primeiro-jogo/blocos.json'),
         'utf8',
       ),
     ) as { blocks: string[] }
@@ -402,7 +402,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     expect(m.sections.map((s) => s.key)).toEqual(['revisao-final', 'certificado'])
     expect(m.sections[1]?.completion?.blockIds).toEqual(['video-certificado-farol', 'certificado'])
     expect(m.blocks.find((block) => block.key === 'certificado')?.content?.kind).toBe('certificate')
-    // Vocabulário da aventura (06/10/2026): a criança recebe um certificado de criador.
+    // Vocabulário do curso (06/10/2026): a criança recebe um certificado de criador.
     expect(m.blocks.find((block) => block.key === 'certificado')?.content).toMatchObject({
       title: 'Certificado de Criador',
       coursePhrase: 'completou o Desafio do Primeiro Jogo',
@@ -528,19 +528,19 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       ).toBe(true)
   })
 
-  test('cada roteiro cobre as seções e gravações do manifesto na mesma ordem', () => {
+  test('cada roteiro cobre as partes e gravações do manifesto na mesma ordem', () => {
     for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
       const m = manifesto(name)
       const script = readFileSync(
         resolve(
           import.meta.dir,
-          `../../aulas-interativas/kids/desafio-primeiro-jogo/desafio-${name}.roteiro.md`,
+          `../../aulas-interativas/desafio-primeiro-jogo/desafio-${name}.roteiro.md`,
         ),
         'utf8',
       )
-      const sectionTitles = [...script.matchAll(/^## Seção \d+\. (.+)$/gm)].map((match) => match[1])
+      const sectionTitles = [...script.matchAll(/^## Parte \d+\. (.+)$/gm)].map((match) => match[1])
       expect(sectionTitles, name).toEqual(m.sections.map((section) => section.title))
-      const videoKeys = [...script.matchAll(/^### Vídeo `([^`]+)`/gm)].map((match) => match[1])
+      const videoKeys = [...script.matchAll(/^\*\*Clipe:\*\* `([^`]+)`/gm)].map((match) => match[1])
       expect(videoKeys, name).toEqual(
         m.blocks.filter((block) => 'plannedVideo' in block).map((block) => block.key),
       )

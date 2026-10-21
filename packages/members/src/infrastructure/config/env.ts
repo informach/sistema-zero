@@ -218,6 +218,9 @@ const EnvSchema = z
     PARENT_REPORT_BATCH_LIMIT: z.coerce.number().int().positive().default(200),
     // URL pública do app kids (CTA "Ver na plataforma" do e-mail → /perfis).
     KIDS_COMMUNITY_URL: z.string().url().optional(),
+    // URL pública do app adulto (21/10/2026): links dos avisos do Desafio adulto. Ausente, os
+    // avisos adultos que levam ao app esperam (os que levam ao funil saem).
+    COMMUNITY_URL: z.string().url().optional(),
     // ── Lembrete de RENOVAÇÃO (anual à vista) ───────────────────────────────
     // Janela (dias antes do vencimento) + ciclo do job + teto por ciclo.
     RENEWAL_REMINDER_DAYS_BEFORE: z.coerce.number().int().min(1).max(60).default(7),

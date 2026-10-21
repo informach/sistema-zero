@@ -28,7 +28,7 @@ export function LiveCreationList({ membershipHref }: { membershipHref: string })
     )
       .then((data) => setCreations(data.workspaces))
       .catch(() => {
-        /* Sem a lista agora: a seção simplesmente não aparece nesta visita. */
+        /* Sem a lista agora: a parte simplesmente não aparece nesta visita. */
       })
     return () => controller.abort()
   }, [])

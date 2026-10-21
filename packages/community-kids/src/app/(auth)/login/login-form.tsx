@@ -49,7 +49,7 @@ export function LoginForm() {
     // load garante que o servidor veja a sessão nova; `replace` tira o /login do
     // histórico (voltar não retorna ao form).
     notifySessionChange()
-    // O `next` interno do link (área dos pais, ou a fase que a criança vai abrir depois) é
+    // O `next` interno do link (área dos pais, ou a aula que a criança vai abrir depois) é
     // conferido em `parentLoginDestination`; o resto cai na área dos pais.
     window.location.replace(parentLoginDestination(window.location.search))
   }

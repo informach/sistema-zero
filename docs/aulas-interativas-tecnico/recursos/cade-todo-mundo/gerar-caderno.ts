@@ -1,9 +1,4 @@
-/**
- * Gera o PDF do caderno a partir do HTML no visual do caderno de referência. Para a criança, ele é o
- * Mapa da Aventura. Com `--adulto`, o mesmo template sai como Caderno do Aluno, com o texto de
- * `_caderno.json` e sem o Zappy (ver `../caderno-adulto.ts`); `--coletar` atualiza essa lista de
- * textos. O template não muda: os outros cursos leem o CSS dele.
- */
+/** Material único dos dois públicos, com a mesma fonte e os mesmos blocos das aulas. */
 import { spawnSync } from 'node:child_process'
 import {
   copyFileSync,
@@ -34,26 +29,20 @@ import { VALUE_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/val
 import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensions/game-2d/blocks'
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
-import { criarTradutor, traduzirHtml } from '../caderno-adulto'
 
-const tradutor = criarTradutor('cade-todo-mundo')
 const scriptDir = import.meta.dir
 const root = resolve(scriptDir, '../../../..')
-const output = tradutor.saida
+const output = resolve(root, 'docs/aulas-interativas/cade-todo-mundo/passo-a-passo-do-projeto.pdf')
 const templatePath = resolve(scriptDir, 'caderno-do-aluno.template.html')
-const zappyPath = resolve(root, 'packages/community-kids/public/zappy/happy.webp')
-
 const fontFaces = [
   `@font-face { font-family: Nunito; src: url(data:font/woff2;base64,${nunito.base64}) format('woff2'); font-style: normal; font-weight: 400 800; }`,
   `@font-face { font-family: 'Baloo 2'; src: url(data:font/woff2;base64,${baloo.base64}) format('woff2'); font-style: normal; font-weight: 400 800; }`,
 ].join('\n')
-
 const item = (name: JardimSpriteName, centroX: number) => {
   const asset = JARDIM_ASSETS[name]
   const { x, y } = jardimSpriteRect(name, centroX)
   return `<svg x="${x}" y="${y}" width="${asset.width}" height="${asset.height}" viewBox="${asset.viewBox}">${asset.body}</svg>`
 }
-
 function scene(revealed: boolean) {
   const characters = JARDIM_PARES.map(({ personagem, centroX }) => item(personagem, centroX)).join(
     '',
@@ -64,7 +53,6 @@ function scene(revealed: boolean) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">${JARDIM_ASSETS.jardim.body}${characters}${hiding}</svg>`
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
 }
-
 function gallery(names: readonly JardimSpriteName[]) {
   return names
     .map((name) => {
@@ -73,7 +61,6 @@ function gallery(names: readonly JardimSpriteName[]) {
     })
     .join('')
 }
-
 const blockColors = new Map(
   [...FRAME_BLOCKS, ...JS_BLOCKS, ...VALUE_BLOCKS, ...gameTwoDBlocks].map((b) => [
     b.type,
@@ -82,22 +69,15 @@ const blockColors = new Map(
 )
 const usedColors: Record<string, string> = {}
 const template = readFileSync(templatePath, 'utf8')
-// O adulto não tem mascote: a capa sai sem o Zappy (antes de traduzir, para o alt dele não entrar).
-const semZappy = tradutor.adulto
-  ? template.replace(/\s*<img class="zappy" src="\{\{ZAPPY\}\}"[^>]*>/, '')
-  : template
-if (tradutor.adulto && semZappy.includes('{{ZAPPY}}')) throw new Error('O Zappy da capa não saiu.')
-// O texto passa por `t()` antes de entrarem as imagens, para os data URLs não passarem pela tradução.
-const texto = tradutor.adulto ? traduzirHtml(semZappy, tradutor.t) : semZappy
-if (tradutor.concluir()) process.exit(0)
-const html = texto
+// O material comum usa a capa do jogo.
+const semZappy = template.replace(/\s*<img class="zappy" src="\{\{ZAPPY\}\}"[^>]*>/, '')
+if (semZappy.includes('{{ZAPPY}}')) throw new Error('O Zappy da capa não saiu.')
+const html = semZappy
   .replace('/* {{FONT_FACES}} */', fontFaces)
   .replaceAll('{{SCENE_HIDDEN}}', scene(false))
   .replaceAll('{{SCENE_REVEALED}}', scene(true))
   .replace('<!--BICHOS-->', gallery(JARDIM_BICHOS))
   .replace('<!--ESCONDERIJOS-->', gallery(JARDIM_ESCONDERIJOS))
-  .replace('{{ZAPPY}}', `data:image/webp;base64,${readFileSync(zappyPath).toString('base64')}`)
-
 const coloredHtml = html.replace(/data-block-type="([^"]+)"/g, (attribute, type: string) => {
   const colour = blockColors.get(type)
   if (typeof colour !== 'string' || !/^#[0-9a-f]{6}$/i.test(colour))
@@ -105,24 +85,21 @@ const coloredHtml = html.replace(/data-block-type="([^"]+)"/g, (attribute, type:
   usedColors[type] = colour
   return `${attribute} style="background-color:${colour}"`
 })
-const previewDir = resolve(root, `tmp/pdfs/cade-todo-mundo${tradutor.adulto ? '-adulto' : ''}`)
+const previewDir = resolve(root, `tmp/pdfs/cade-todo-mundo`)
 mkdirSync(previewDir, { recursive: true })
 writeFileSync(join(previewDir, 'caderno.html'), coloredHtml)
 writeFileSync(join(previewDir, 'cores-estudio.json'), JSON.stringify(usedColors, null, 2))
 if (process.argv.includes('--html-only')) process.exit(0)
-
 const browser = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
 ].find(existsSync)
-
-if (!browser) throw new Error('Chrome ou Edge não encontrado para gerar o Caderno do Aluno.')
-
+if (!browser)
+  throw new Error('Chrome ou Edge não encontrado para gerar o Passo a passo do projeto.')
 const temporary = mkdtempSync(join(tmpdir(), 'sistema-zero-caderno-'))
 const htmlPath = join(temporary, 'caderno.html')
 const temporaryPdf = join(temporary, 'caderno.pdf')
 const browserProfile = join(temporary, 'chrome-profile')
-
 try {
   if (html.includes('{{')) throw new Error('O template do caderno tem campos sem preencher.')
   writeFileSync(htmlPath, coloredHtml)
@@ -141,7 +118,6 @@ try {
     ],
     { encoding: 'utf8', timeout: 60000 },
   )
-
   if (
     result.error ||
     result.status !== 0 ||
