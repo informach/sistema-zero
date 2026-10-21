@@ -36,6 +36,7 @@ import {
   run,
   STACK_DIR,
   serviceEnv,
+  startPostgresServer,
 } from './lib'
 
 const here = (name: string) => join(import.meta.dir, name)
@@ -100,9 +101,7 @@ function initDataDir() {
 
 async function startPostgresAndDb() {
   if (!(await probePort(PG_PORT))) {
-    run(exe('pg_ctl'), ['-D', PG_DATA, '-l', join(STACK_DIR, 'pg.log'), '-w', 'start'], {
-      env: pgEnv(secrets),
-    })
+    startPostgresServer(secrets)
   }
   const exists = spawnSync(
     exe('psql'),

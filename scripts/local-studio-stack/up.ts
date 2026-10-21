@@ -14,21 +14,18 @@ import { join } from 'node:path'
 import {
   childEnv,
   ensureSecrets,
-  exe,
   isAlive,
   LOG_DIR,
   PG_DATA,
   PG_PORT,
-  pgEnv,
   probePort,
   ROOT,
   readState,
-  run,
   SERVICES,
   type ServiceDef,
-  STACK_DIR,
   serviceEnv,
   sleep,
+  startPostgresServer,
   writeState,
 } from './lib'
 
@@ -43,9 +40,7 @@ async function startPostgres(): Promise<void> {
     console.log(`✓ Postgres já respondendo em 127.0.0.1:${PG_PORT}`)
     return
   }
-  run(exe('pg_ctl'), ['-D', PG_DATA, '-l', join(STACK_DIR, 'pg.log'), '-w', 'start'], {
-    env: pgEnv(secrets),
-  })
+  startPostgresServer(secrets)
 }
 
 async function startService(s: ServiceDef): Promise<boolean> {

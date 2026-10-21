@@ -443,3 +443,24 @@ export function pgEnv(s: Secrets): Record<string, string> {
     PGUSER: 'postgres',
   })
 }
+
+/**
+ * `pg_ctl start` com stdio DESCONECTADO: o postgres.exe herda os handles do pg_ctl, e um
+ * stdout herdado (ex.: `up.ts | tail`) deixaria o pipe do shell aberto até o banco parar.
+ * O log do servidor vai para .cache/local-stack/pg.log.
+ */
+export function startPostgresServer(s: Secrets): void {
+  const r = spawnSync(
+    exe('pg_ctl'),
+    ['-D', PG_DATA, '-l', join(STACK_DIR, 'pg.log'), '-w', 'start'],
+    {
+      cwd: ROOT,
+      env: pgEnv(s),
+      stdio: 'ignore',
+      windowsHide: true,
+    },
+  )
+  if (r.status !== 0)
+    throw new Error(`pg_ctl start falhou (status ${r.status}); veja ${join(STACK_DIR, 'pg.log')}`)
+  console.log(`✓ Postgres iniciado em ${PG_HOST}:${PG_PORT}`)
+}
