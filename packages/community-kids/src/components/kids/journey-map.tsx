@@ -119,7 +119,7 @@ function UpToDate({ studioOwned }: { studioOwned: boolean }) {
       </span>
       <p className="sz-display mt-4 text-xl md:text-2xl">Você está em dia!</p>
       <p className="mt-2 font-medium text-[0.9375rem] text-muted-foreground">
-        Você já fez tudo que está pronto por aqui. Novas aventuras estão sendo criadas!
+        Você já fez tudo que está pronto por aqui. Novos cursos estão sendo criados!
       </p>
       {studioOwned ? (
         <Link href="/estudio" className="sz-btn-gradient mt-5 px-6">
@@ -327,12 +327,12 @@ function JourneyNode({
         ) : null}
         {/* Marcos do degrau: a criança vê o passo a passo se mexer a cada curso publicado,
             em vez de esperar 8 cursos pelo próximo posto. O contador conta só o que EXISTE.
-            ⭐ Aparece TAMBÉM nos postos já vencidos: é assim que uma aventura publicada num
+            ⭐ Aparece TAMBÉM nos postos já vencidos: é assim que um curso publicada num
             degrau antigo se anuncia ("8 de 9"). Sem isso ela ficaria invisível, porque a
             criança já passou dali e o medalhão só mostrava o ✓. */}
         {state === 'locked' && canOpen ? (
           <span className="text-[11px] text-muted-foreground">
-            Aventuras liberadas · posto por conquistar
+            Cursos liberados · posto por conquistar
           </span>
         ) : null}
         {completion && completion.total > 0 && canOpen ? (
@@ -342,7 +342,7 @@ function JourneyNode({
           >
             <ProgressDots done={completion.done} total={completion.total} color={info.colorVar} />
             {completion.done} de {completion.total}{' '}
-            {completion.total === 1 ? 'aventura pronta' : 'aventuras prontas'}
+            {completion.total === 1 ? 'curso pronto' : 'cursos prontos'}
             {state === 'done' && completion.done < completion.total ? (
               <span className="rounded-full bg-card px-2 py-0.5 text-foreground">
                 {completion.total - completion.done} para explorar · conquista mantida

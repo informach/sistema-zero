@@ -182,8 +182,8 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
  * ⚠️ O DESENHO vem do `MaterialsBlockView` do member-shell (um só, para os dois apps) e quem
  * o veste é o `globals.css` daqui, pelos ganchos `sz-lesson-materials*`. Aqui só entra o chip,
  * como em todo bloco do kids. O chip é **"Consulte"** desde 07/10/2026 (decisão da dona): UM nome
- * que serve para tudo o que o bloco junta (o Mapa da Aventura para baixar, um link do Como fazer,
- * um vídeo de apoio, um recado). "Baixe" (06/10) mentia quando o item era um link, e cada fase tem
+ * que serve para tudo o que o bloco junta (o Passo a passo do projeto para baixar, um link do Como fazer,
+ * um vídeo de apoio, um recado). "Baixe" (06/10) mentia quando o item era um link, e cada aula tem
  * UM bloco de materiais só, que mistura os tipos.
  */
 function Materials({
@@ -222,7 +222,7 @@ function ComingSoon({ content }: { content: ComingSoonBlock }) {
         <KidsMascot expression="sleeping" className="size-20" />
         {/* O título precisa ser verdade mesmo quando a autora escreve o recado dela
             ("essa aula chega em setembro") — por isso não promete "quase pronta". */}
-        <p className="sz-display text-lg">Essa fase ainda está sendo preparada</p>
+        <p className="sz-display text-lg">Essa aula ainda está sendo preparada</p>
         {/* Numa aula "em breve" este parágrafo é o CONTEÚDO INTEIRO da aula — não pode
             ficar tipografado como legenda secundária (`text-sm text-muted-foreground`). */}
         <p className="max-w-md text-base text-foreground">
@@ -282,7 +282,7 @@ function StudioBlockKids({
 // ── rich_text: markdown SIMPLES renderizado de forma controlada (sem HTML cru) ─
 function RichText({ content }: { content: RichTextBlock }) {
   // Um link para o "Como fazer" escrito no texto da aula leva o caminho DESTA aula de volta
-  // (`?voltar=`), para o tutorial oferecer "Voltar para a fase". Fora de aula, sem `voltar`.
+  // (`?voltar=`), para o tutorial oferecer "Voltar para a aula". Fora de aula, sem `voltar`.
   const pathname = usePathname()
   const markdown = content.markdown ?? ''
   if (!markdown) return null

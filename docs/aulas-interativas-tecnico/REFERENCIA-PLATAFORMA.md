@@ -1,5 +1,7 @@
 # Referência da plataforma, medida no código
 
+> Direção vigente: fonte e linguagem comuns aos dois públicos; consulte [diretrizes](DIRETRIZES-PEDAGOGICAS.md) e [voz](DIRETRIZES-VOZ-ELEVENLABS.md). Os termos técnicos de schema não são rótulos de tela.
+
 > Onde cada coisa está na plataforma **hoje**, lido direto do `sistema-zero` em 20/09/2026 e
 > conferido de novo em 06/10/2026, com o vocabulário da aventura (Diretrizes Pedagógicas, seção 6).
 > Serve a todos os cursos. Toda fala de aula que nomeia um menu, uma tela ou um botão confere aqui.
@@ -206,7 +208,7 @@ regra de conclusão muda**, e que a seção de dois lados continua usando a áre
 e as regras atuais. A regra das duas colunas do `ESPEC-MANIFESTO.md` segue valendo sem emenda.
 
 O que mudou em volta: a aula ganhou um rodapé fixo com **Anterior**, **Preciso de ajuda** e **Próxima
-parte**, e na última parte o avanço dá lugar a **Concluir fase** (na comunidade adulta, **Próxima
+parte**, e na última parte o avanço dá lugar a **Concluir aula** (na comunidade adulta, **Próxima
 seção** e **Concluir aula**). Título da aula, título da seção e índice saíram do corpo; no alto
 fica **Parte N de M**. Fala que mande "rola até embaixo e clica em continuar" merece conferência.
 
@@ -221,7 +223,7 @@ seção; na tela, aventura, fase e parte (Diretrizes Pedagógicas, seção 6).
 
 | Onde | Rótulo |
 |---|---|
-| Rodapé da fase | **Anterior** · **Preciso de ajuda** · **Próxima parte**; na última parte, **Concluir fase** |
+| Rodapé da fase | **Anterior** · **Preciso de ajuda** · **Próxima parte**; na última parte, **Concluir aula** |
 | Comemoração da fase | **Fase concluída!** · **Próxima fase** · **Voltar à aventura** |
 | Objetivos do projeto no Estúdio da fase | **Objetivos desta parte** · **Verificar esta parte** · **Objetivo cumprido!** |
 | Cartão do Estúdio da fase | **Seu projeto no Estúdio** · **Enviar meu projeto**, confirmado em **Enviar** (janela **Enviar o seu projeto?**, campo **Recado (opcional)**) · **Enviar de novo**, confirmado em **Reenviar** · depois do envio, **Projeto enviado!** e, quando a equipe confere, **A equipe já viu o seu projeto.** |
@@ -230,8 +232,8 @@ seção; na tela, aventura, fase e parte (Diretrizes Pedagógicas, seção 6).
 | Pedido de ajuda | **Preciso de ajuda** · **Enviar para a equipe** · **Ver conversa** |
 | Recados | **Recados da equipe** (no sino, **1 recado novo da equipe**; autor **Equipe**; sem título próprio, **Conversa com a equipe**) · **Voltar à parte: …** (`teacher-lesson-link.tsx`) |
 | Ampliação | **Ampliar jogo** ou **Ampliar experiência** · **Voltar à fase** |
-| Certificado | **Pegar meu certificado** · **Baixar certificado (PDF)** |
-| Material | selo **Baixe**; o título do caderno vem do manifesto: **Mapa da Aventura: …** |
+| Certificado | **Baixar meu certificado** · **Baixar certificado (PDF)** |
+| Material | selo **Baixe**; o título do caderno vem do manifesto: **Passo a passo do projeto: …** |
 
 Quem recebe os envios e responde os recados é **a equipe** desde a noite de 06/10/2026 (era "guia"),
 e o botão de envio diz o que a criança envia. Fora da fase, a missão de envio diz **Envie um projeto**

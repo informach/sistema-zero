@@ -15,7 +15,7 @@ import { type ReactNode, useEffect } from 'react'
  * A atualização da aula sem derrubar a atividade (11/10/2026). Relato dela: com o Estúdio
  * AMPLIADO, "Verificar esta parte" recarregou a página inteira (build novo no servidor: o
  * `router.refresh()` do Next 16 vira recarregamento) e, numa segunda vez, "recarregou os
- * bloquinhos" (o refresh re-semeava o editor). O que este arquivo trava:
+ * blocos" (o refresh re-semeava o editor). O que este arquivo trava:
  * 1. o agendador junta os pedidos e ESPERA a atividade ampliada fechar;
  * 2. o "Verificar" só atualiza quando o objetivo passou;
  * 3. a semente do Estúdio não depende do conteúdo que chega novo a cada refresh;
@@ -137,7 +137,7 @@ describe('"Verificar esta parte"', () => {
 })
 
 describe('as travas no código', () => {
-  test('a semente do Estúdio da fase não depende do conteúdo que chega novo a cada refresh', () => {
+  test('a semente do Estúdio da aula não depende do conteúdo que chega novo a cada refresh', () => {
     const fonte = ler('member-shell/src/components/studio/studio-block.tsx')
     // As dependências do efeito de semente (o único com `seedLoadAttempt` na lista).
     const deps = fonte.match(/\}, \[([^\]]*seedLoadAttempt[^\]]*)\]\)/)?.[1]

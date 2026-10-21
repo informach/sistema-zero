@@ -23,7 +23,7 @@ function nodeAria(node: TrailNode): string {
     node.state === 'done'
       ? 'concluída'
       : node.state === 'current'
-        ? 'fase atual'
+        ? 'aula atual'
         : node.state === 'locked'
           ? // Descritivo, não imperativo: a aula anterior pode estar "em breve" (não
             // concluível), e mandar concluí-la seria pedir o impossível. Sem travessão,
@@ -60,9 +60,9 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
     return (
       <section className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-10 text-center">
         <KidsMascot expression="sleeping" className="size-20" />
-        <h2 className="mt-4 sz-display text-xl">As fases estão sendo preparadas</h2>
+        <h2 className="mt-4 sz-display text-xl">As aulas estão sendo preparadas</h2>
         <p className="mt-2 text-muted-foreground">
-          Esta aventura ainda não tem fases prontas para você. Volte daqui a pouco para ver as
+          Este curso ainda não tem aulas prontas para você. Volte daqui a pouco para ver as
           novidades!
         </p>
       </section>
@@ -86,7 +86,7 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
               <div className="flex items-end justify-between gap-3">
                 <h2 className="sz-display text-lg md:text-xl">{unit.module.title}</h2>
                 <span className="sz-display whitespace-nowrap text-sm">
-                  {doneCount}/{unit.module.lessons.length} fases
+                  {doneCount}/{unit.module.lessons.length} aulas
                 </span>
               </div>
               {unit.module.summary ? <p className="mt-1 text-sm">{unit.module.summary}</p> : null}

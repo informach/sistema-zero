@@ -15,16 +15,16 @@ export function KidsLockedLesson({ courseSlug }: { courseSlug: string }) {
       // Copy DESCRITIVA, não uma ordem: quando a aula anterior tem o bloco "em breve"
       // ela ainda não pode ser concluída, e um "conclua a aula anterior" mandaria a
       // criança fazer algo impossível — que lê como "eu fiz alguma coisa errada".
-      chip="Uma fase de cada vez"
+      chip="Uma aula de cada vez"
       chipIcon={Lock}
-      title="Fase trancada"
+      title="Aula trancada"
       actions={
         <Link href={`/cursos/${encodeURIComponent(courseSlug)}`} className="sz-btn-gradient">
-          Voltar à aventura
+          Voltar ao curso
         </Link>
       }
     >
-      <p>Esta fase abre quando a anterior for concluída. 🚀 Dá uma olhadinha nela!</p>
+      <p>Esta aula abre quando você concluir a anterior. Confira o que falta nela.</p>
     </KidsRecado>
   )
 }

@@ -51,7 +51,7 @@ describe('regras puras da fala', () => {
     expect(audioFormatFromBytes(WEBM.subarray(0, 8))).toBeNull()
   })
 
-  test('o contexto da fase perde controle e marcação, e acima de 200 é cortado por caractere', () => {
+  test('o contexto da aula perde controle e marcação, e acima de 200 é cortado por caractere', () => {
     expect(sanitizeSpokenContext('Fase 2\n<script> · Parte {1}')).toBe('Fase 2 script · Parte 1')
     const longo = sanitizeSpokenContext('🎮'.repeat(250))
     expect(Array.from(longo)).toHaveLength(200)
@@ -91,7 +91,7 @@ describe('regras puras da fala', () => {
     expect(isHallucinatedTranscript('A Samara organizou os blocos e o personagem não pula')).toBe(
       false,
     )
-    expect(isHallucinatedTranscript('minha amiga Tamara organizou a fase')).toBe(false)
+    expect(isHallucinatedTranscript('minha amiga Tamara organizou a aula')).toBe(false)
     expect(isHallucinatedTranscript('a câmara orgânica do jogo')).toBe(false)
   })
 
@@ -444,7 +444,7 @@ async function codigo(res: Response): Promise<string> {
 }
 
 describe('POST /api/voice/transcribe', () => {
-  test('a criança com a fala ligada recebe só o texto, com o contexto da fase decodificado', async () => {
+  test('a criança com a fala ligada recebe só o texto, com o contexto da aula decodificado', async () => {
     const { routes, recebidos } = montar()
     const res = await routes.voiceTranscribe.POST(
       pedido(gravacao(), { 'x-sz-voice-context': encodeURIComponent('O Farol 🌊 · Andar') }),

@@ -10,7 +10,7 @@ import { leaveStudy, studyErrorMessage } from '@/lib/study-access-client'
 /**
  * A troca SEGURA do responsável para a criança: encerra a sessão adulta no servidor e só então
  * abre a escolha de perfis. Um link para `/perfis` deixava a sessão dos pais aberta no aparelho
- * que vai para a mão da criança. `destination` é a entrada do aluno (com o `next` de uma fase,
+ * que vai para a mão da criança. `destination` é a entrada do aluno (com o `next` de uma aula,
  * quando o responsável chegou por um link dela).
  */
 export function StudentAreaButton({

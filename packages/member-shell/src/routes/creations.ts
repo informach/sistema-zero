@@ -56,11 +56,11 @@ const PartHash = z.string().regex(/^[a-f0-9]{64}$/)
 
 /**
  * Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026; `lesson-*` = o
- * rascunho do Estúdio/Pinta dentro da fase, um item por bloco, 10/10/2026).
+ * rascunho do Estúdio/Pinta dentro da aula, um item por bloco, 10/10/2026).
  */
 const Tool = z.enum(['studio', 'pinta', 'molda', 'lesson-studio', 'lesson-pinta'])
 type ToolName = z.infer<typeof Tool>
-/** O documento é um projeto do Estúdio (conferido no commit): o livre e o da fase. */
+/** O documento é um projeto do Estúdio (conferido no commit): o livre e o da aula. */
 const isStudioFormat = (tool: ToolName) => tool === 'studio' || tool === 'lesson-studio'
 /** Charset seguro: vira segmento da chave no R2 (nunca `/`, `:`, `..`). */
 const ItemId = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/)

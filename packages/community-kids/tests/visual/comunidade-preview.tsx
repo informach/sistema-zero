@@ -182,7 +182,7 @@ function JourneyScreen() {
     <CaptureShell screen="career">
       <PageFrame>
         <div className="text-center">
-          <h1 className="sz-display text-[2.35rem]">Aventuras da Jornada do Criador</h1>
+          <h1 className="sz-display text-[2.35rem]">Cursos da Jornada do Criador</h1>
           <p className="mt-2 font-medium text-muted-foreground">
             De Faísca a Lenda. Cada aventura concluída abre um novo passo.
           </p>

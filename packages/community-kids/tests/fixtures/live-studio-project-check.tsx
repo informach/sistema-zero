@@ -79,7 +79,7 @@ test('o Estúdio ao vivo verifica o projeto do editor e atualiza o progresso da 
       createElement(SectionProjectCheck, { blockId: block, handleRef: { current: null } }),
     ),
   )
-  expect(Boolean(screen.queryByRole('button', { name: 'Verificar esta etapa' }))).toBe(true)
+  expect(Boolean(screen.queryByRole('button', { name: 'Verificar esta parte' }))).toBe(true)
   cleanup()
   // The live replacement must consume the same criterion and verify its current project.
   render(
@@ -101,10 +101,10 @@ test('o Estúdio ao vivo verifica o projeto do editor e atualiza o progresso da 
   )
   await waitFor(() => expect(Boolean(screen.queryByRole('button', { name: 'Guardar' }))).toBe(true))
   await waitFor(() =>
-    expect(Boolean(screen.queryByRole('button', { name: 'Verificar esta etapa' }))).toBe(true),
+    expect(Boolean(screen.queryByRole('button', { name: 'Verificar esta parte' }))).toBe(true),
   )
   expect(Boolean(screen.queryByText(/Usar repetição/))).toBe(true)
-  fireEvent.click(screen.getByRole('button', { name: 'Verificar esta etapa' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Verificar esta parte' }))
   await waitFor(() => expect(refreshed).toBe(true))
   expect(checked).toEqual({
     revision: 'revision',

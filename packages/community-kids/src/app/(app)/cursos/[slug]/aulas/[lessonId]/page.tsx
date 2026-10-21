@@ -66,7 +66,7 @@ export default async function LessonPage({
       nextLessonHref={nextLessonHref}
       viewerWatermark={session?.id ? `Perfil ${session.id.slice(0, 8)}` : null}
       viewerId={session?.id ?? null}
-      // O rascunho da fase guardado na conta: desligado pelo interruptor de emergência e na
+      // O rascunho da aula guardado na conta: desligado pelo interruptor de emergência e na
       // sessão de suporte só leitura (o BFF recusaria as escritas de qualquer jeito).
       lessonDraftsEnabled={
         getEnv().LESSON_DRAFTS_ENABLED && session?.act?.mode !== 'readonly' && Boolean(session?.id)

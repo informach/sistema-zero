@@ -204,7 +204,7 @@ describe('os cartões da conta', () => {
     expect(screen.getByRole('heading', { name: 'Quem responde à criança' })).toBeTruthy()
     expect(screen.getByText(AI_DISCLOSURE)).toBeTruthy()
     expect(AI_DISCLOSURE).toContain('assistentes virtuais')
-    expect(AI_DISCLOSURE).toContain('As falas do Zappy nas fases são escritas pela nossa equipe')
+    expect(AI_DISCLOSURE).toContain('As falas do Zappy nas aulas são escritas pela nossa equipe')
     const conta = readFileSync(
       join(import.meta.dir, '..', 'src', 'app', 'pais', 'conta', 'account-client.tsx'),
       'utf8',

@@ -7,7 +7,7 @@ import { JourneyTimeline } from '../src/components/kids/journey-timeline'
 import type { GamificationMeView } from '../src/lib/types'
 
 /**
- * As seções do Meu perfil no desenho das telas-modelo (11/09/2026). O que se prova aqui é o
+ * As partes do Meu perfil no desenho das telas-modelo (11/09/2026). O que se prova aqui é o
  * que o desenho promete à criança: onde ela está, qual é o próximo passo, e quais
  * conquistas já são dela.
  */

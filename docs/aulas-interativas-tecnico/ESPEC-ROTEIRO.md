@@ -1,8 +1,6 @@
 # Especificação do roteiro de gravação
 
-Direção revisada em 27/09/2026 depois do teste de Cadê Todo Mundo? com duas crianças e atualizada em 06/10/2026 (experiência e jogo pronto como demonstração, publicação com comemoração, falas que chamam a atenção de quem faz a aula, o opcional como convite e o vocabulário da aventura nos rótulos e nas falas de exemplo).
-Esta especificação é da equipe: aqui "curso", "aula", "seção" e "caderno" continuam como nomes internos. O que a criança vê ou ouve usa o vocabulário da aventura (Diretrizes, seção 6): os botões e as falas de exemplo abaixo já estão assim.
-As [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md) são a referência única das regras. Esta especificação fornece exemplos e formato de execução para a gravação. Roteiros e moldes antigos não prevalecem sobre as Diretrizes.
+Formato comum desde 21/10/2026. Leia as [diretrizes pedagógicas](DIRETRIZES-PEDAGOGICAS.md) e o [contrato ElevenLabs v4](DIRETRIZES-VOZ-ELEVENLABS.md). A professora grava uma versão contínua para os dois públicos; a edição kids troca somente frases explicitamente marcadas.
 
 ## 1. A abertura situa a tarefa e convida à ação
 
@@ -13,7 +11,7 @@ o jogo, seu estado atual ou a necessidade; depois dizer o que fazer.
 - Apresentação (jogo pronto, demonstração com UM exemplo): dizer qual jogo será construído e a situação; mostrar na primeira pessoa um exemplo ("Olha aqui: quando eu toco num esconderijo, aparece quem estava atrás"), sem resolver a partida; só no fim passar a vez ("Agora é a sua vez: jogue até encontrar os três personagens").
 - Experiência (demonstração na primeira pessoa, como numa conversa): "Esta é uma experiência para a gente entender como funciona a ação e a reação. Olha aqui: quando eu toco no arbusto, nada acontece. Tá vendo? É que o jogo ainda não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele… Agora é a sua vez: faça esses mesmos testes na experiência."
 - Construção depois de uma experiência: lembrar o que ela mostrou, testar no próprio jogo o que ainda falta e dizer o que será montado. "Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados. Agora a gente vai fazer o seu jogo contar do mesmo jeito! Primeiro, toque num esconderijo do seu jogo. Tá vendo? O personagem aparece, mas Achados continua em zero, porque o jogo ainda não sabe que precisa contar. Então a gente vai ensinar o jogo a somar um em Achados toda vez que um esconderijo for tocado." Sem mandar clicar em Anterior.
-- Material (o caderno, que a criança conhece como Mapa da Aventura): "Olha aqui: este é o seu Mapa da Aventura! Nele estão os passos para montar o seu jogo, com os blocos que você vai usar e o lugar de cada um. Então, se você esquecer algum passo, é só voltar aqui e abrir o mapa. Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser." (fala atual de `aulas/cade-todo-mundo-aula-1.roteiro.md`). Não dizer "não precisa baixar nem imprimir": a criança entende como uma ordem para não baixar.
+- Material (o caderno, que a criança conhece como Passo a passo do projeto): "Olha aqui: este é o seu Passo a passo do projeto! Nele estão os passos para montar o seu jogo, com os blocos que você vai usar e o lugar de cada um. Então, se você esquecer algum passo, é só voltar aqui e abrir o mapa. Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser." (fala atual de `aulas/cade-todo-mundo-aula-1.roteiro.md`). Não dizer "não precisa baixar nem imprimir": a criança entende como uma ordem para não baixar.
 - Encerramento: nomear o resultado e dar a próxima ação.
 
 Não começar por uma lista do que será aprendido, a importância do conceito ou uma promessa da
@@ -53,7 +51,7 @@ REFERENCIA-BLOCOS-JOGO-2D.json é apoio, não substitui o código. O menu de nom
 projeto; pedir o nome certo, sem inventar uma posição fixa. Se o campo já está correto, dizer para
 mantê-lo. Bloco de valor substitui o valor já encaixado, não ocupa um buraco imaginário.
 
-**Aplicação ao Farol, 06/10/2026:** a personalização ensina o campo exato de cada imagem: sprites em Ao iniciar, cenário em Desenhar o cenário dentro de A cada quadro do jogo e farol aceso em então. As notas de tela e o Mapa da Aventura conservam os nomes canônicos com hífens; a narração pode pronunciá-los naturalmente. Nome de imagem não substitui nome de sprite. Os pares de faróis precisam corresponder, e cada tipo conserva dimensões e contato. Antes de mudar x/y da chave, demonstrar separadamente os eixos na experiência de posição. A escolha de velocidade foi retirada; a montagem mantém 3.
+**Aplicação ao Farol, 06/10/2026:** a personalização ensina o campo exato de cada imagem: sprites em Ao iniciar, cenário em Desenhar o cenário dentro de A cada quadro do jogo e farol aceso em então. As notas de tela e o Passo a passo do projeto conservam os nomes canônicos com hífens; a narração pode pronunciá-los naturalmente. Nome de imagem não substitui nome de sprite. Os pares de faróis precisam corresponder, e cada tipo conserva dimensões e contato. Antes de mudar x/y da chave, demonstrar separadamente os eixos na experiência de posição. A escolha de velocidade foi retirada; a montagem mantém 3.
 
 ## 3. O que vai para o Como Fazer
 
@@ -119,7 +117,7 @@ questionários ou mudar as experiências só para encurtar a fala.
 
 ## 5. Falar com quem está fazendo
 
-- Usar "você", verbos simples e frases que soem naturais em voz alta. Toda fala conversa com quem faz a aula, como alguém ao lado dela: "o seu Mapa da Aventura", "o seu jogo", "Sua vez!". Nada de frase impessoal que só descreve.
+- Usar "você", verbos simples e frases que soem naturais em voz alta. Toda fala conversa com quem faz a aula, como alguém ao lado dela: "o seu Passo a passo do projeto", "o seu jogo", "Sua vez!". Nada de frase impessoal que só descreve.
 - Três vozes (Diretrizes, seção 6): "você" para o que é da pessoa, o que ela faz e o que ela conquista, com as ações no imperativo; "a gente" e "vamos" para pensar junto e convidar; "eu" só quando o narrador demonstra. Evitar o "nós" de sala de aula ("Hoje nós vamos aprender…") e dizer "o seu jogo", não "o nosso jogo".
 - A fala é uma conversa contínua, não uma lista de frases soltas: cada frase se liga à anterior ("então", "por isso", "mas", "é que", "agora que"; num curso com o bloco Se, "por isso" ou "ou seja" no lugar de "então", que é o nome de uma parte do bloco), todo resultado vem com o porquê ("Tá vendo? Não acontece nada, porque o toque ainda não tem nenhuma reação ligada a ele") e a explicação diz o que é cada coisa no próprio jogo ("O toque é a ação, e a reação que a gente quer é o esconderijo ficar invisível"). Evitar sequências curtas e secas como "Nada acontece. O toque ainda não tem uma reação. Vamos ligar uma." (Diretrizes, seção 6).
 - O preparo do cenário, dos personagens e das regras iniciais fica nas notas da equipe. Na fala e no caderno, comemorar a ação da criança e o resultado, sem ressalvas sobre o que veio pronto. Só citar um elemento existente quando orienta a ação, explicando seu papel ("Olha aqui: nessa área já tem o bloco… É ele que percebe quando alguém toca num esconderijo"). Ver Diretrizes, seção 3, ajuste de 10/10/2026.
@@ -146,87 +144,30 @@ mandar recarregar a página como passo genérico. Um reinício necessário ao te
 controle real e ser conferido antes da gravação.
 
 A ação de saída precisa corresponder à seção: **Próxima parte** entre as partes da fase,
-**Concluir fase** na última parte. Se há envio, incluir **Enviar meu projeto** (no Pinta da fase,
-**Enviar meu desenho**) e a confirmação **Enviar**; na galeria, **Enviar (1)** e **Recebido!**. Se há certificado, nomear **Pegar meu certificado**. Tours, estados alternativos e
+**Concluir aula** na última parte. Se há envio, incluir **Enviar meu projeto** (no Pinta da fase,
+**Enviar meu desenho**) e a confirmação **Enviar**; na galeria, **Enviar (1)** e **Recebido!**. Se há certificado, nomear **Baixar meu certificado**. Tours, estados alternativos e
 solução de problemas desses fluxos ficam na biblioteca de ajuda.
 
 Encerrar a narração na ação de saída da seção atual. Não acrescentar uma instrução para a
-próxima seção ou aula depois de Próxima parte ou Concluir fase. O comando Pegar meu certificado
+próxima seção ou aula depois de Próxima parte ou Concluir aula. O comando Baixar meu certificado
 pertence à seção do certificado. Na publicação pelo Estúdio da aula, esperar **Seu jogo está no
 Mural!**, comemorar, copiar com **Copiar link de jogar**, usar **Fechar** e só então orientar
-**Concluir fase**. Pelo Estúdio completo, esperar **Publicado! 🎉**, usar **Copiar link** e depois
+**Concluir aula**. Pelo Estúdio completo, esperar **Publicado! 🎉**, usar **Copiar link** e depois
 **Fechar**.
 
 ## 7. Formato para gravação
 
-Cada aula tem proposta, manifesto e roteiro na pasta aulas/. A proposta explica as escolhas
-para quem prepara a aula; o manifesto define o conteúdo importável; o roteiro contém a fala
-literal. Os três precisam concordar. Se houver gerador do manifesto, atualizar também o gerador.
+Cada `{slug}.roteiro.md` é o roteiro de produção. Os cabeçalhos `## Parte N. Título` acompanham as partes do manifesto. Cada vídeo tem **Clipe:** com a chave literal, **Na tela:** com uma nota curta, e **Fala para ElevenLabs:** com um bloco de texto cercado por três crases. Esse bloco contém apenas a fala integral da professora, com tags de áudio e pausas.
 
-Registrar também a **ponte do Zappy na página (não gravar)** depois de cada vídeo. Ela liga
-o vídeo à tarefa seguinte e deve coincidir com o diálogo do manifesto. Zappy não tem fala dentro
-do vídeo: sua presença no meme ou na interface é visual. O recurso Ouvir da página continua
-independente da gravação. Nas seções de contexto ou consulta, encaminhar a continuação sem
-inventar uma atividade obrigatória.
+Após o bloco, quando houver substituição kids, a tabela registra ID, personagem, ocorrência, âncora anterior, frase exata substituída, âncora posterior e tags. Notas e recados da página ficam fora do bloco de fala. Uma parte sem vídeo não ganha locução.
 
-No início do roteiro, registrar quem conduz, qual avatar participa e o estado da produção
-(planejado, gravação informada ou edição conferida). Usar **Professora:** ou **Professor:** para
-a condução e **Debinha (avatar):** ou **Dedé (avatar):** para a criança. Manter a mesma criança nas
-partes de uma aula e alternar na próxima; não é obrigatório ter participação em cada vídeo.
-O rótulo **Narração:** continua aceito nos roteiros antigos com uma só voz, mas não deve misturar
-falantes. As escolhas de linguagem “você”, “a gente” e “eu” valem para a conversa; não são nomes
-dos personagens.
+O exportador reúne todos os clipes em `{slug}.elevenlabs.txt`, com `[long pause]` entre partes, e produz TXT separado para cada personagem presente e `{slug}.edicao.json`. Copie o TXT integral para o ElevenLabs. Não copie a tabela ou as notas de produção. Confira o limite do modelo escolhido sem descartar falas.
 
-Separar sempre a nota de produção da fala, com uma linha em branco:
+Toda frase tem direção aplicável, com tags antes dos segmentos; mudanças de intenção e palavras que precisem de destaque recebem ajustes locais. Não taguear cada palavra mecanicamente. Não usar SSML `<break>`. A pausa longa tem alvo de aproximadamente três segundos para corte, conferidos na edição: a tag não garante duração.
 
-```markdown
-**Na tela:** mostrar o jogo pronto. No "Olha aqui", tocar em UM esconderijo só; não revelar os outros.
+O master conserva a pergunta ou pensamento que será substituído. A edição kids silencia somente a frase correspondente da professora e coloca a mesma fala do personagem. A retomada precisa funcionar naturalmente nos dois cortes. Os IDs e âncoras vêm da fonte, não de tempos inventados.
 
-**Professora:**
-
-> “Você vai construir um jogo chamado Cadê Todo Mundo. Esta é a versão pronta, para você ver como
-> o jogo funciona antes de montar o seu. Olha aqui: quando eu toco num esconderijo, ele some e
-> aparece quem estava atrás. E o número de Achados mudou para 1, porque eu encontrei um personagem.”
-
-**Na tela:** Debinha entra sem cobrir os dois esconderijos que faltam. Não revelar quem está atrás deles.
-
-**Debinha (avatar):**
-
-> “E os outros dois?”
-
-**Na tela:** Debinha sai antes da resposta. Manter os dois esconderijos fechados.
-
-**Professora:**
-
-> “Esses eu deixo para você descobrir.”
-```
-
-Cada nota de tela tem sua fala correspondente, com o nome de quem fala. Um vídeo pode conter
-vários pares; marcar a entrada do avatar antes da fala dele e a saída antes da retomada da
-professora. Não sobrepor vozes, cobrir controles ou antecipar o gesto que responde à pergunta.
-Distribuir as entradas pelos trechos longos, depois de concluir cada gesto. Na fala de
-entendimento, trazer um exemplo ou uma consequência da ideia; não apenas repetir a professora.
-Uma reação breve pode comemorar o teste. Quando houver “Funcionou?”, a resposta “Agora sim!”
-vem depois da pergunta. Usar a quantidade que a conversa pede, sem cota por vídeo.
-Instruções para quem grava não são falas da aula. Não usar o campo plannedVideo do manifesto
-como substituto do roteiro completo.
-
-Quando os vídeos já estiverem gravados, registrar as âncoras literais de edição, preservando a
-fala existente. Uma pergunta transferida para o avatar sai da fala da professora. Não presumir
-edição ou publicação concluída pelo fato de o roteiro estar atualizado. Os exemplos para próximas
-aulas e as inserções confirmadas ficam em [Avatares nos vídeos](AVATARES-NOS-VIDEOS.md).
-
-Registrar também as seções sem vídeo: no quiz, escrever **Zappy na página (não gravar)** e a fala literal antes das perguntas, sem notas de cena ou narração de um vídeo inexistente.
-
-Manter os títulos de seção iguais aos do manifesto. Cadê Todo Mundo? usa um cabeçalho
-"## 1. Título" por vídeo e "## Comemore sua criação" no certificado. Os demais cursos mantêm os
-cabeçalhos "## Seção N. Título" e "### Clipe `chave`" exigidos pelo validador.
-
-Estimar o tempo pela fala em voz alta, incluindo os gestos, sem acrescentar teoria para atingir
-uma duração mínima. A demonstração do jogo pronto pode durar 30 a 40 segundos; uma montagem precisa de tempo
-para cada encaixe. Incluir as participações dos avatares na medição final e identificar os alvos
-anteriores quando a inserção for feita depois da gravação. Não acelerar a demonstração para caber
-numa duração arbitrária.
+Estimar o tempo pela fala sem tags, incluindo os gestos. Não acelerar demonstrações nem adicionar teoria para atingir uma duração mínima. Validar a pronúncia e o ritmo na voz selecionada antes da produção em lote.
 
 A tela da gravação precisa ser a tela que a criança vai ver. Lições da gravação do Cadê
 (10 e 11/10/2026), para registrar no cabeçalho de produção de cada roteiro:
@@ -240,7 +181,7 @@ A tela da gravação precisa ser a tela que a criança vai ver. Lições da grav
   **Reenviar**, e o **Recomeçar** do Estúdio não apaga o envio: para repetir a tomada, usar outro
   perfil de ensaio. O mesmo vale para publicar no Mural, que trava o **Compartilhar** naquele
   navegador;
-- quando a fala diz que o Estúdio guarda o jogo sozinho, mostrar o selo **Guardado na sua conta**
+- quando a fala diz que o Estúdio guarda o jogo sozinho, mostrar o selo **Salvo na sua conta**
   só depois de ele aparecer de verdade, sem simular na edição;
 - numa parte sem Estúdio, dizer de onde vem a imagem do jogo, ou gravar só a cena da própria
   parte.
@@ -262,7 +203,7 @@ correto. A liberdade de cor e detalhes continua livre.
 - A experiência permite observar, sem esconder ações obrigatórias?
 - A fala corresponde ao projeto, aos controles e aos critérios de conclusão reais?
 - As notas de tela e narrações estão pareadas e a leitura soa natural?
-- Quem fala está identificado? A entrada do avatar contribui para a conversa e a professora responde antes de seguir? Zappy está separado como fala da página?
+- O master funciona sozinho? A substituição kids conserva a frase exata e a continuidade, sem voz dupla? Zappy está separado como fala da página?
 - Quando um bloco chega com um nome de outro jogo, a fala diz a palavra da tela e onde clicar?
 - O estado da conta de gravação (sem progresso nas experiências, sem envio na fase, aba aberta depois do deploy) bate com o que a criança vai ver?
 - Proposta, gerador, manifesto, roteiro e falas do Zappy concordam?

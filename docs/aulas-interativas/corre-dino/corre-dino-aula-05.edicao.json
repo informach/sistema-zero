@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-espaco-e-tempo",
+    "video-grupo-e-relogio",
+    "video-numero-negativo",
+    "video-criar-cactos",
+    "video-mover-e-desenhar",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-espaco-e-tempo-K1",
+      "clipe": "video-espaco-e-tempo",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Nascem uns 30 cactos, um em cada quadro, colados uns nos outros. Eles formam uma parede, e o Dino não teria como pular.",
+      "ancoraDepois": "Agora eu levo Criar cacto para o relógio e escolho 1,4 s. Tudo recomeça do zero. Eu deixo passar uns três segundos, e",
+      "falaPrincipal": "Como eu deixo um espaço entre eles?",
+      "falaPersonagem": "Como eu deixo um espaço entre eles?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-grupo-e-relogio-K1",
+      "clipe": "video-grupo-e-relogio",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.",
+      "ancoraDepois": "Agora vem o relógio. Ele fica em Enquanto estiver rodando, mas fora de A cada quadro do jogo, porque não pode criar um",
+      "falaPrincipal": "E como eu faço aparecer um cacto de cada vez?",
+      "falaPersonagem": "E como eu faço aparecer um cacto de cada vez?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-numero-negativo-K1",
+      "clipe": "video-numero-negativo",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "1 quadro. O x do cacto vai de 60 para 65: ele andou 5 para a direita. Em cada quadro, o jogo soma a velocidade ao x.",
+      "ancoraDepois": "Quando eu troco a velocidade para o lado por -5 e avanço, o x diminui 5 em cada quadro, e o cacto vai para a esquerda.",
+      "falaPrincipal": "E se eu quiser que o cacto vá para o outro lado?",
+      "falaPersonagem": "E se eu quiser que o cacto vá para o outro lado?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-mover-e-desenhar-K1",
+      "clipe": "video-mover-e-desenhar",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.",
+      "ancoraDepois": "A batida ainda não foi programada. Agora pule um deles para testar o controle. Funcionou? Clique em Verificar esta",
+      "falaPrincipal": "O cacto passou pelo Dino. Por que a partida não terminou?",
+      "falaPersonagem": "O cacto passou pelo Dino. Por que a partida não terminou?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

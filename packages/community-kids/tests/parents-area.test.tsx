@@ -251,7 +251,7 @@ describe('a Família', () => {
     expect(screen.getByText('Vencido')).toBeTruthy()
   })
 
-  test('a fase do link que trouxe o responsável segue até a página da criança', () => {
+  test('a aula do link que trouxe o responsável segue até a página da criança', () => {
     install()
     render(
       <ParentsClient
@@ -367,7 +367,7 @@ describe('a página da criança', () => {
     expect(acesso.getAttribute('aria-selected')).toBe('true')
   })
 
-  test('com a fase do link, a volta à Família a leva junto', () => {
+  test('com a aula do link, a volta à Família a leva junto', () => {
     install()
     render(
       <ChildClient

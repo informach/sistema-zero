@@ -39,7 +39,7 @@ export interface HostChromeStatus {
 
 /**
  * A seta das GALERIAS de volta à seção-mãe (Criar), pedido dela de 11/09/2026: toda página
- * interna volta para a principal da seção. Só a galeria desenha; o editor e o bloco de aula
+ * interna volta para a principal da parte. Só a galeria desenha; o editor e o bloco de aula
  * ignoram o campo (lá a seta já volta para a galeria). O destino sai do `backToSection` do
  * menu (`nav.ts`), nunca de uma lista paralela. Na ferramenta ela é o QUADRADO com a seta, ao
  * início das barras das telas-modelo: o nome existe só para o leitor.

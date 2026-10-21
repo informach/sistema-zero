@@ -14,7 +14,7 @@ describe('Meu Jeito authored manifests through the HTTP import boundary', () => 
     const document: unknown = await Bun.file(
       resolve(
         import.meta.dir,
-        '../../../../docs/aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-02.manifesto.json',
+        '../../../../docs/aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-02.manifesto.json',
       ),
     ).json()
     if (!isLearningManifest(document)) throw new Error('Manifesto inválido')
@@ -59,7 +59,7 @@ describe('Meu Jeito authored manifests through the HTTP import boundary', () => 
       const document: unknown = await Bun.file(
         resolve(
           import.meta.dir,
-          `../../../../docs/aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-${slug}.manifesto.json`,
+          `../../../../docs/aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-${slug}.manifesto.json`,
         ),
       ).json()
       if (!isLearningManifest(document)) throw new Error('Invalid manifest')

@@ -6,7 +6,7 @@ import type { SessionUserWithAvatar } from '../src/lib/types'
 /**
  * O "Sair deste aparelho?" vai ao `<body>` por portal (10/10/2026). Montado dentro do menu, o
  * diálogo herdava o empilhamento da barra lateral (ou da de cima) e ficava POR BAIXO do rodapé
- * fixo da aula: a criança via os botões da fase por cima da pergunta.
+ * fixo da aula: a criança via os botões da aula por cima da pergunta.
  */
 
 const aluno: SessionUserWithAvatar = {

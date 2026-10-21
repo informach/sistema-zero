@@ -64,7 +64,7 @@ test('canonical required courses: the real catalog page offers an explicit pendi
     .getAllByRole('link')
     .find((link) => link.getAttribute('href') === `/cursos/${bonus.courseSlug}`)
   expect(Boolean(courseLink)).toBe(true)
-  expect(screen.getByText(/Termine esta aventura/)).toBeTruthy()
+  expect(screen.getByText(/Termine este curso/)).toBeTruthy()
   expect(screen.queryAllByText(/Publique.*Mural/).length).toBe(0)
 })
 
@@ -101,14 +101,14 @@ test('canonical required courses: pause retains the learner but offers no promot
   journey = { ...journey, mode: 'paused' }
   render(await CatalogPage())
   expect(screen.getByText(/Suas conquistas estão guardadas/)).toBeTruthy()
-  expect(screen.queryByRole('region', { name: 'Próximas aventuras' })).toBeNull()
+  expect(screen.queryByRole('region', { name: 'Próximos cursos' })).toBeNull()
 })
 
 test('canonical required courses: staff preview offers no child promotion or earned rank', async () => {
   staff = true
   render(await CatalogPage())
-  expect(screen.getByRole('heading', { name: 'Prévia das aventuras' })).toBeTruthy()
-  expect(screen.queryByRole('region', { name: 'Próximas aventuras' })).toBeNull()
+  expect(screen.getByRole('heading', { name: 'Prévia dos cursos' })).toBeTruthy()
+  expect(screen.queryByRole('region', { name: 'Próximos cursos' })).toBeNull()
   expect(screen.queryByText(/Você é /)).toBeNull()
 })
 
@@ -140,6 +140,6 @@ test('canonical required courses: absent evaluated identity never substitutes a 
       .resolvedCourseId,
   ).toBeNull()
   render(await CatalogPage())
-  expect(screen.queryByRole('region', { name: 'Próximas aventuras' })).toBeNull()
+  expect(screen.queryByRole('region', { name: 'Próximos cursos' })).toBeNull()
   expect(screen.queryByText(bonus.title)).toBeNull()
 })

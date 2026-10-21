@@ -60,7 +60,7 @@ export default async function CoursePage({
         </div>
       </KidsBand>
 
-      {/* A régua saiu: quem separa as seções agora é a troca de FAIXA. */}
+      {/* A régua saiu: quem separa as partes agora é a troca de FAIXA. */}
       {pendingPublication && (deliveryState === 'pending' || deliveryState === 'delivered') ? (
         <KidsBand tone="amarelo">
           <PublicationStatus state={deliveryState} />
@@ -69,7 +69,7 @@ export default async function CoursePage({
         <KidsBand tone="amarelo">
           <section id="publicar" className="kids-carta scroll-mt-20 p-6 md:p-7">
             <p className="font-extrabold text-primary text-xs uppercase tracking-[0.12em]">
-              Fases concluídas · publicação pendente
+              Aulas concluídas · publicação pendente
             </p>
             <h2 className="sz-display mt-2 text-xl md:text-[1.625rem]">
               Seu projeto também faz parte da conquista
@@ -81,8 +81,8 @@ export default async function CoursePage({
               </p>
             ) : null}
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Abra a fase do projeto, confira a versão que você criou e use Compartilhar no Estúdio.
-              Depois que a publicação for confirmada, esta aventura contará na sua jornada.
+              Abra a aula do projeto, confira a versão que você criou e use Compartilhar no Estúdio.
+              Depois que a publicação for confirmada, este curso contará na sua jornada.
             </p>
             {course.showcaseLessonId ? (
               <Link
@@ -93,7 +93,7 @@ export default async function CoursePage({
               </Link>
             ) : (
               <p className="mt-3 text-sm text-muted-foreground">
-                A fase de publicação não está disponível agora. O que você concluiu continua
+                A aula de publicação não está disponível agora. O que você concluiu continua
                 guardado.
                 <Link href="/recados" className="ml-1 font-bold text-primary underline">
                   Falar com a equipe

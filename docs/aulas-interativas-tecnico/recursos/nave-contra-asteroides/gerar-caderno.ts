@@ -1,9 +1,4 @@
-/**
- * Caderno derivado da mesma fonte das aulas; CSS e fontes do Cadê Todo Mundo. Para a criança, ele
- * é o Mapa da Aventura, com fases e partes (Diretrizes, seção 6, 06/10/2026).
- * Com `--adulto`, o mesmo caderno sai como Caderno do Aluno, com o texto de `_caderno.json`
- * (ver `../caderno-adulto.ts`); `--coletar` atualiza essa lista de textos.
- */
+/** Material único dos dois públicos, com a mesma fonte e os mesmos blocos das aulas. */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { FRAME_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/frames'
@@ -15,13 +10,9 @@ import { FONTE as nunito } from '../../../../packages/studio/src/official-extens
 import { renderProjectToPreviewDocAsync } from '../../../../packages/studio/src/preview/renderProject'
 import { aulasNave, falasSecao } from '../../qa/gerar-nave-contra-asteroides'
 import { projetoNave } from '../../qa/nave-contra-asteroides-etapas'
-import { criarTradutor } from '../caderno-adulto'
-
-const tradutor = criarTradutor('nave-contra-asteroides')
-const t = tradutor.t
 
 const root = resolve(import.meta.dir, '../../../..')
-const out = resolve(root, `tmp/pdfs/nave-contra-asteroides${tradutor.adulto ? '-adulto' : ''}`)
+const out = resolve(root, `tmp/pdfs/nave-contra-asteroides`)
 mkdirSync(out, { recursive: true })
 const reference = readFileSync(
   resolve(import.meta.dir, '../cade-todo-mundo/caderno-do-aluno.template.html'),
@@ -57,7 +48,7 @@ function block(type: string, label: string, children = '') {
   const color = blockColor(type)
   return `<div class="block" data-block-type="${type}" style="background-color:${color}">${label}${children ? `<div class="event-body">${children}</div>` : ''}</div>`
 }
-const former = `<div class="former">${escapeHtml(t('Blocos que você já montou nas fases anteriores'))}</div>`
+const former = `<div class="former">${escapeHtml('Blocos que você já montou nas aulas anteriores')}</div>`
 const frame = (body: string) =>
   block(
     'sz_frame_loops',
@@ -148,7 +139,7 @@ const diagrams = [
       former +
         block(
           'sz_g2d_on_group_overlap',
-          t('Na colisão entre tiros e asteroides'),
+          'Na colisão entre tiros e asteroides',
           former +
             block('sz_js_var_increment', `Somar ${field('1')} em variável ${field('pontos')}`),
         ) +
@@ -192,13 +183,13 @@ const diagrams = [
   ) +
     block(
       'sz_frame_loops',
-      t('No intervalo que já existe'),
+      'No intervalo que já existe',
       block(
         'sz_g2d_every_frames',
         `A cada ${field('40')} quadros`,
         condition(
           'jogando',
-          block('sz_g2d_spawn_asteroid', t('Criar o asteroide com os valores da fase 4')),
+          block('sz_g2d_spawn_asteroid', 'Criar o asteroide com os valores da aula 4'),
         ),
       ),
     ) +
@@ -210,7 +201,7 @@ const diagrams = [
         'Quando apertar barra de espaço',
         condition(
           'jogando',
-          block('sz_g2d_spawn_bullet', t('Criar o tiro com os valores da fase 3')) +
+          block('sz_g2d_spawn_bullet', 'Criar o tiro com os valores da aula 3') +
             block('sz_g2d_play_fx', 'Tocar efeito tiro grande'),
         ),
       ),
@@ -238,15 +229,14 @@ const diagrams = [
       ),
     ),
 ]
-
 const chapters = aulasNave.map((lesson, i) => {
   const chunks: string[] = []
   for (const section of lesson.sections) {
     if (section.materials) continue
-    const heading = `<h3 class="section-head">${escapeHtml(t(section.title))}</h3>`
+    const heading = `<h3 class="section-head">${escapeHtml(section.title)}</h3>`
     if (section.questions) {
       chunks.push(
-        `${heading}<div class="note">${escapeHtml(t(section.bridge))} ${escapeHtml(t('Você responde as perguntas na própria fase.'))}</div>`,
+        `${heading}<div class="note">${escapeHtml(section.bridge)} ${escapeHtml('Você responde as perguntas na própria fase.')}</div>`,
       )
       continue
     }
@@ -260,7 +250,7 @@ const chapters = aulasNave.map((lesson, i) => {
         : section.play
           ? [section.bridge]
           : falasSecao(section, 'mapa')
-    ).map((paragraph) => t(paragraph))
+    ).map((paragraph) => paragraph)
     speech.forEach((paragraph, p) => {
       chunks.push(
         `${p === 0 ? heading : ''}<div class="step"><span class="number">${p + 1}</span><p>${escapeHtml(paragraph)}</p></div>`,
@@ -268,42 +258,35 @@ const chapters = aulasNave.map((lesson, i) => {
     })
   }
   return {
-    title: t(lesson.title),
-    label: t(`Fase ${i + 1}`),
+    title: lesson.title,
+    label: `Aula ${i + 1}`,
     chunks,
-    diagram: `<div class="blocks">${diagrams[i]}</div><p class="small">${escapeHtml(t('Confira se os blocos do seu jogo ficaram assim. As cores são as mesmas do Estúdio, e os passos desta fase trazem os caminhos, os valores e os testes completos.'))}</p>`,
+    diagram: `<div class="blocks">${diagrams[i]}</div><p class="small">${escapeHtml('Confira se os blocos do seu jogo ficaram assim. As cores são as mesmas do Estúdio, e os passos desta aula trazem os caminhos, os valores e os testes completos.')}</p>`,
   }
 })
 const data = JSON.stringify(chapters).replaceAll('<', '\u003c')
 // O que a página monta no navegador também passa por `t()`: vai pronto para o script.
 const ui = {
-  titulo: t('Nave Contra Asteroides · Mapa da Aventura'),
-  selo: t('Mapa da Aventura'),
-  capa: t('Os passos para você construir, testar e recomeçar o seu jogo.'),
-  capaFim: t('Da primeira nave à partida completa.'),
-  alt: t('O jogo Nave Contra Asteroides em funcionamento'),
-  continuacao: t('continuação'),
-  rodape: t('Nave Contra Asteroides | Mapa da Aventura'),
-  percurso: t('Seu percurso'),
-  percursoTitulo: t('Uma parte do jogo por fase'),
-  abertura: t(
-    'Este é o seu Mapa da Aventura! Consulte quando precisar de um passo, um valor ou um teste: você pode ler aqui na fase ou baixar para guardar.',
-  ),
-  nota: t(
-    'Em cada fase, você programa uma parte nova do seu jogo. Para isso, continue no projeto que você enviou na fase anterior.',
-  ),
-  confira: t('Confira os encaixes'),
-  confiraRotulo: t('confira os encaixes'),
+  titulo: 'Nave Contra Asteroides · Passo a passo do projeto',
+  selo: 'Passo a passo do projeto',
+  capa: 'Os passos para você construir, testar e recomeçar o seu jogo.',
+  capaFim: 'Da primeira nave à partida completa.',
+  alt: 'O jogo Nave Contra Asteroides em funcionamento',
+  continuacao: 'continuação',
+  rodape: 'Nave Contra Asteroides | Passo a passo do projeto',
+  percurso: 'Seu percurso',
+  percursoTitulo: 'Uma parte do jogo por fase',
+  abertura:
+    'Este é o seu Passo a passo do projeto! Consulte quando precisar de um passo, um valor ou um teste: você pode ler aqui na aula ou baixar para guardar.',
+  nota: 'Em cada aula, você programa uma parte nova do seu jogo. Para isso, continue no projeto que você enviou na aula anterior.',
+  confira: 'Confira os encaixes',
+  confiraRotulo: 'confira os encaixes',
 }
 const textoUi = JSON.stringify(ui).replaceAll('<', '\u003c')
-if (tradutor.concluir()) process.exit(0)
 // O adulto não tem mascote: a capa sai sem o Zappy.
-const zappy = tradutor.adulto
-  ? ''
-  : `<img class="zappy" src="data:image/webp;base64,${readFileSync(resolve(root, 'packages/community-kids/public/zappy/happy.webp')).toString('base64')}" alt="Zappy">`
 const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${escapeHtml(ui.titulo)}</title><style>${css}
 .content{padding-top:4mm}.content>.entry{margin-bottom:4mm}.content .section-head{margin-top:2mm}.content .step{font-size:11pt}.content .blocks{margin:0;display:grid;gap:10px}.former{font:700 10pt Nunito;color:#585a7a;padding:7px;background:#f2f3fa;border-radius:6px}.branch{font:800 10pt Nunito;color:#1f2042;padding:6px}.field{white-space:normal}.value-block{display:inline-block;border-radius:12px;padding:3px 8px;color:#fff;font-weight:800;line-height:1.6}.value-block .field{padding:1px 5px;font-size:inherit}.cover-art{height:48%;background:#07162e;display:flex;align-items:center}.cover-art img{width:100%;height:auto!important;object-fit:contain!important}.cover h1{font-size:38pt}.cover .cover-bottom{margin-top:10mm}.lesson-title{font-size:24pt;margin-top:3mm}.index{display:grid;gap:12px;margin-top:6mm}.index p{font-size:11pt}.diagram-page .content .block{font-size:9.5pt}.diagram-page .event-body{gap:5px;padding:6px;margin-top:6px}
-</style></head><body><section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="jogo.png" alt="${escapeHtml(ui.alt)}"></div><div class="cover-copy"><span class="badge">${escapeHtml(ui.selo)}</span><h1>Nave Contra<br><em>Asteroides</em></h1><p>${escapeHtml(ui.capa)}</p><div class="cover-bottom">${escapeHtml(ui.capaFim)}</div></div>${zappy}</section>
+</style></head><body><section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="jogo.png" alt="${escapeHtml(ui.alt)}"></div><div class="cover-copy"><span class="badge">${escapeHtml(ui.selo)}</span><h1>Nave Contra<br><em>Asteroides</em></h1><p>${escapeHtml(ui.capa)}</p><div class="cover-bottom">${escapeHtml(ui.capaFim)}</div></div></section>
 <script>const chapters=${data};const ui=${textoUi};const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 function page(chapter, more=false, diagram=false){const p=document.createElement('section');p.className='page'+(diagram?' diagram-page':'');p.dataset.id=chapter.label; p.innerHTML='<div class="inner"><div class="kicker">'+esc(chapter.label)+(more?' · '+esc(ui.continuacao):'')+'</div><h2 class="lesson-title">'+esc(chapter.title)+'</h2><div class="content"></div></div><div class="page-no"><span class="brand">'+esc(ui.rodape)+'</span><span class="count"></span></div>';document.body.append(p);return p;}
 async function layout(){await document.fonts.ready;const index=page({label:ui.percurso,title:ui.percursoTitulo});const content=index.querySelector('.content');content.innerHTML='<p class="lead">'+esc(ui.abertura)+'</p><div class="index">'+chapters.map(c=>'<p><strong>'+esc(c.label)+'.</strong> '+esc(c.title)+'</p>').join('')+'</div><div class="note" style="margin-top:6mm">'+esc(ui.nota)+'</div>';
@@ -316,6 +299,4 @@ writeFileSync(resolve(out, 'caderno.html'), html)
 writeFileSync(resolve(out, 'cores-estudio.json'), JSON.stringify(colors, null, 2))
 const project = projetoNave(9)
 writeFileSync(resolve(out, 'jogo.html'), await renderProjectToPreviewDocAsync(project))
-console.log(
-  `Caderno e jogo de referência preparados em tmp/pdfs/nave-contra-asteroides${tradutor.adulto ? '-adulto' : ''}.`,
-)
+console.log(`Caderno e jogo de referência preparados em tmp/pdfs/nave-contra-asteroides.`)

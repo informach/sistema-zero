@@ -15,7 +15,7 @@ import { useLessonPlayer } from './lesson-player-context'
 /**
  * **Materiais complementares** — o bloco que substituiu os "materiais de apoio".
  *
- * Ele é um bloco de aula como outro qualquer: a autora o põe no ponto que quiser da seção
+ * Ele é um bloco de aula como outro qualquer: a autora o põe no ponto que quiser da parte
  * (inclusive embaixo do vídeo, na coluna de conteúdo) e a ordem dos itens é a que ela montou.
  * O antigo `<details>` "Materiais de apoio" ficava em posição FIXA no pé de toda seção, fora da
  * ordem dela — era exatamente isso que precisava morrer.

@@ -33,7 +33,7 @@ const manifests = ORDEM_NAVE.map((slug) => {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/kids/nave-contra-asteroides/nave-contra-asteroides-${slug}.manifesto.json`,
+        `../../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-${slug}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -188,7 +188,7 @@ test('experiências e jogo pronto: o narrador demonstra e só no fim passa a vez
 const falasDosAvatares = (s: SecaoNave): string[] =>
   participacoes(s).flatMap((a) => [a.speech, ...(a.reply ? [a.reply] : [])])
 
-test('falas para a criança: sem o nome interno da seção e com a publicação comemorada', () => {
+test('falas para a criança: sem o nome interno da parte e com a publicação comemorada', () => {
   const falas = aulasNave.flatMap((a) =>
     a.sections.flatMap((s) => [s.bridge, ...falasSecao(s), ...falasDosAvatares(s)]),
   )
@@ -197,13 +197,13 @@ test('falas para a criança: sem o nome interno da seção e com a publicação 
   expect(publicacao).toHaveLength(1)
   const fala = falasSecao(publicacao[0]!).join(' ')
   expect(fala).toContain('O resumo do projeto já vem preenchido. Deixe como está.')
-  expect(fala).toContain('Seu jogo está no Mural! Que conquista!')
+  expect(fala).toContain('Seu jogo está no Mural!')
   expect(fala).toContain('Clique em Copiar link de jogar')
-  expect(fala).toMatch(/clique em Fechar\. Por último, clique em Concluir fase\.$/)
+  expect(fala).toMatch(/clique em Fechar\. Por último, clique em Concluir aula\.$/)
   expect(fala).not.toContain('Confira o título')
 })
 
-test('falas para a criança: botões da fase pelo nome novo e o Mapa como convite (06/10/2026)', () => {
+test('falas para a criança: botões da aula pelo nome novo e o Mapa como convite (06/10/2026)', () => {
   const verificacao =
     'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.'
   for (const aula of aulasNave)
@@ -221,24 +221,24 @@ test('falas para a criança: botões da fase pelo nome novo e o Mapa como convit
         )
         expect(fim, id).toEndWith(
           s.publish
-            ? 'Por último, clique em Concluir fase.'
-            : 'Quando aparecer Projeto enviado!, clique em Concluir fase.',
+            ? 'Por último, clique em Concluir aula.'
+            : 'Quando aparecer Projeto enviado!, clique em Concluir aula.',
         )
       }
     }
   const mapa = aulasNave[0]!.sections.find((s) => s.materials)!
   const falaDoMapa = [mapa.bridge, ...(mapa.speech ?? [])].join(' ')
-  expect(mapa.title).toBe('Seu Mapa da Aventura')
-  expect(mapa.speech?.[0]).toStartWith('Olha aqui: este é o seu Mapa da Aventura!')
+  expect(mapa.title).toBe('Seu passo a passo do projeto')
+  expect(mapa.speech?.[0]).toStartWith('Olha, aqui está o Passo a passo do projeto.')
   expect(falaDoMapa).toContain(
-    'Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.',
+    'Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.',
   )
   expect(falaDoMapa).not.toMatch(/não precisa/i)
 })
 
 // Régua de 06/10/2026 (Diretrizes, seção 6): pontes que convidam e terminam na saída, retomadas
 // que testam no próprio jogo e conversa sem "então" de ligação, porque o Se tem o encaixe então.
-const SAIDA = /(?:clique em Próxima parte|clique em Concluir fase)\.$/
+const SAIDA = /(?:clique em Próxima parte|clique em Concluir aula)\.$/
 const CONVITE = /^(?:Sua vez!|Agora\b[^.!?]*!|Hora d[eo]\b[^.!?]*!)/
 // Efeito invisível no jogo: a retomada só lembra a experiência, sem inventar teste.
 const RETOMADA_SEM_TESTE = new Set(['primeira-nave/criar-nave'])
@@ -248,8 +248,8 @@ test('pontes do Zappy: convidam e terminam na ação de saída (06/10/2026)', ()
     for (const s of aula.sections) {
       const id = `${aula.slug}/${s.key}`
       expect(s.bridge, id).toMatch(SAIDA)
-      // O Mapa repete a ponte aprovada no Cadê e no Farol: "Este é o seu Mapa da Aventura!".
-      if (s.materials) expect(s.bridge, id).toStartWith('Este é o seu Mapa da Aventura!')
+      // O Mapa repete a ponte aprovada no Cadê e no Farol: "Este é o seu Passo a passo do projeto!".
+      if (s.materials) expect(s.bridge, id).toStartWith('Este é o seu Passo a passo do projeto!')
       else expect(s.bridge, id).toMatch(CONVITE)
       if (s.activity?.activity.type === 'experimentation' || s.play)
         expect(s.bridge, id).toStartWith('Sua vez!')
@@ -372,7 +372,7 @@ test('conversa: sem "então" de ligação, sem "aperte" e sem troque e volte na 
   const chuva = aulasNave.find((a) => a.slug === 'chuva-de-asteroides')!.sections.at(-1)!
   expect(chuva.title).toBe('Teste e envie a sua chuva de pedras')
   expect(falasSecao(chuva).join(' ')).not.toMatch(/\b80\b/)
-  // Achado B4: "parte" agora é a seção; o pedaço do evento Enter que fica não se chama parte.
+  // Achado B4: "parte" agora é a parte; o pedaço do evento Enter que fica não se chama parte.
   const enter = aulasNave.find((a) => a.slug === 'dia-5')!.sections.find((s) => s.key === 'enter')!
   expect(enter.speech?.join(' ')).toContain('e esse pedaço fica como está.')
   expect(enter.speech?.join(' ')).not.toContain('Vamos manter essa parte')

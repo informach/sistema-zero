@@ -217,7 +217,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
           </div>
         ) : (
           <button type="button" onClick={retry} className="sz-btn-gradient h-11 self-start px-6">
-            Tentar de novo!
+            Tentar de novo
           </button>
         )}
       </div>
@@ -259,7 +259,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
         <div>
           <h3 className="sz-display text-2xl">Hora do desafio!</h3>
           <p className="mt-1 text-muted-foreground text-sm">
-            Mostre o que você aprendeu nesta fase.
+            Mostre o que você aprendeu nesta aula.
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2">
@@ -453,7 +453,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
           className="sz-btn-gradient h-11 px-7 disabled:pointer-events-none disabled:opacity-50"
         >
           {submitting ? <Spinner /> : null}
-          {isLast ? 'Responder!' : 'Próxima'}
+          {isLast ? 'Responder' : 'Próxima pergunta'}
         </button>
       </div>
     </div>

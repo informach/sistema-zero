@@ -1197,7 +1197,7 @@ export function SceneActivityView({
   /**
    * O MOMENTO da atividade, na placa do começo da faixa (console v2, 30/09/2026): "Seu palpite"
    * enquanto ela arrisca, "Sua vez" com a cena aberta, "Você descobriu" depois que a cena fecha.
-   * ⚠️ O nome da cena só volta à placa quando o `<h3>` está `sr-only` (o título da seção já o
+   * ⚠️ O nome da cena só volta à placa quando o `<h3>` está `sr-only` (o título da parte já o
    * disse): ali a placa é a única vez em que o nome aparece na tela.
    */
   // A faixa não é montada no palpite (desde 21/09), então o momento é só estes dois.
@@ -1305,7 +1305,7 @@ export function SceneActivityView({
             Experimente
           </p>
           {/* ⚠️ O título CONTINUA existindo (é o nome acessível da `<section>`); quando o
-              cabeçalho da seção já disse a mesma frase, ele vira `sr-only`. */}
+              cabeçalho da parte já disse a mesma frase, ele vira `sr-only`. */}
           <h3
             id={`${id}-title`}
             className={`sz-display text-xl font-bold sm:text-2xl${tituloJaDito(content.title, secao) ? ' sz-scene-title-repeated sr-only' : ''}`}

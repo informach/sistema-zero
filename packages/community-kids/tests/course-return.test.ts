@@ -91,7 +91,10 @@ describe('destino da volta na página do curso', () => {
   })
 
   it('curso sem degrau cai no mapa', () => {
-    expect(resolveCourseBack(undefined, {})).toEqual({ href: '/cursos', label: 'Voltar ao mapa' })
+    expect(resolveCourseBack(undefined, {})).toEqual({
+      href: '/cursos',
+      label: 'Voltar aos cursos',
+    })
   })
 })
 
@@ -108,6 +111,6 @@ it('policy changes move the breadcrumb with the real course group; unavailable p
   expect(canonicalTrilhaHrefForCourse(course, changed)).toBe('/cursos/trilha/god')
   expect(canonicalResolveCourseBack(undefined, course, null)).toEqual({
     href: '/cursos',
-    label: 'Voltar ao mapa',
+    label: 'Voltar aos cursos',
   })
 })

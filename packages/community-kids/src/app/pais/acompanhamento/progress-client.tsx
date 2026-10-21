@@ -37,11 +37,10 @@ export function ProgressClient({
         title="Acompanhamento"
         text="O que cada criança descobriu e criou. Uma boa conversa começa pedindo que ela mostre como fez."
       />
-      {/* A ponte entre os dois vocabulários (06/10/2026): aqui os pais leem curso, aula e
-          professor; na área da criança as mesmas coisas se chamam aventura, fase e equipe. */}
+      {/* Mesmos nomes nas áreas da família e de quem faz as aulas. */}
       <p className="-mt-6 text-muted-foreground text-sm">
-        Na área da criança, cada curso aparece como uma aventura, cada aula como uma fase e o
-        professor como a equipe.
+        As duas áreas usam os mesmos nomes: curso, aula e parte. Nos Recados, quem responde é a
+        equipe.
       </p>
       {profiles.length === 0 ? (
         <section className="kids-carta flex flex-col items-start gap-3 p-6">

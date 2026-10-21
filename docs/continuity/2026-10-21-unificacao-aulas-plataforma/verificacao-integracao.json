@@ -1,0 +1,127 @@
+{
+  "baseIntegrada": "8583a6e6724f7bc42542cf1300b59fae27496e3b",
+  "resultados": [
+    {
+      "verificacao": "qa",
+      "comando": ["test", "docs/aulas-interativas-tecnico/qa"],
+      "diretorio": ".",
+      "saida": 0,
+      "resumo": "\n 311 pass\n 0 fail\n 44318 expect() calls\nRan 311 tests across 21 files. [5.98s]"
+    },
+    {
+      "verificacao": "manifestos",
+      "comando": ["docs/aulas-interativas-tecnico/qa/validar-manifestos.ts"],
+      "diretorio": ".",
+      "saida": 0
+    },
+    {
+      "verificacao": "roteiros",
+      "comando": ["-X", "utf8", "docs/aulas-interativas-tecnico/validar-roteiros.py"],
+      "diretorio": ".",
+      "saida": 0
+    },
+    {
+      "verificacao": "falas",
+      "comando": ["docs/aulas-interativas-tecnico/qa/gerar-falas-elevenlabs.ts", "--check"],
+      "diretorio": ".",
+      "saida": 0
+    },
+    {
+      "verificacao": "ajuda-kids",
+      "comando": ["docs/como-fazer/validar.ts"],
+      "diretorio": ".",
+      "saida": 0
+    },
+    {
+      "verificacao": "ajuda-adulto",
+      "comando": ["docs/como-fazer-adulto/validar.ts"],
+      "diretorio": ".",
+      "saida": 0
+    },
+    {
+      "verificacao": "adulto",
+      "comando": ["test", "tests"],
+      "diretorio": "packages\\community",
+      "saida": 0,
+      "resumo": "\n 91 pass\n 0 fail\n 426 expect() calls\nRan 91 tests across 13 files. [2.33s]"
+    },
+    {
+      "verificacao": "admin",
+      "comando": [
+        "test",
+        "tests/lesson-manifest-import.test.ts",
+        "tests/lesson-manifest-export.test.ts",
+        "tests/learning-import-sync.test.ts",
+        "tests/lesson-block-import.test.ts"
+      ],
+      "diretorio": "packages\\admin",
+      "saida": 0,
+      "resumo": "\n 16 pass\n 0 fail\n 51 expect() calls\nRan 16 tests across 4 files. [1.87s]"
+    },
+    {
+      "verificacao": "copy-prompts",
+      "comando": ["test", "tests/lesson-copy-comum.test.ts", "tests/adult-prompts.test.ts"],
+      "diretorio": "packages\\member-shell",
+      "saida": 0,
+      "resumo": "\n 4 pass\n 0 fail\n 22 expect() calls\nRan 4 tests across 2 files. [51.00ms]"
+    },
+    {
+      "verificacao": "compartilhar",
+      "comando": ["test", "src/components/layout/ShareDialog.test.tsx"],
+      "diretorio": "packages\\studio",
+      "saida": 0,
+      "resumo": "\n 12 pass\n 0 fail\n 62 expect() calls\nRan 12 tests across 1 file. [1.86s]"
+    },
+    {
+      "verificacao": "kids",
+      "comando": ["test", "tests"],
+      "diretorio": "packages\\community-kids",
+      "saida": 0,
+      "resumo": "\n 1596 pass\n 0 fail\n 9101 expect() calls\nRan 1596 tests across 198 files. [139.39s]"
+    },
+    {
+      "verificacao": "community-types",
+      "comando": ["run", "typecheck"],
+      "diretorio": "packages\\community",
+      "saida": 0
+    },
+    {
+      "verificacao": "kids-types",
+      "comando": ["run", "typecheck"],
+      "diretorio": "packages\\community-kids",
+      "saida": 0
+    },
+    {
+      "verificacao": "admin-types",
+      "comando": ["run", "typecheck"],
+      "diretorio": "packages\\admin",
+      "saida": 0
+    },
+    {
+      "verificacao": "preservacao",
+      "comando": ["-X", "utf8", ".tmp/auditar-preservacao-final.py"],
+      "diretorio": ".",
+      "saida": 0
+    },
+    {
+      "verificacao": "biome",
+      "comando": ["-X", "utf8", ".tmp/format-unificacao.py"],
+      "diretorio": ".",
+      "saida": 0
+    },
+    {
+      "verificacao": "diff",
+      "comando": ["git", "diff", "--check"],
+      "diretorio": ".",
+      "saida": 0
+    }
+  ],
+  "falaCadePreservada": true,
+  "aprovado": true,
+  "ciGeral": {
+    "comando": ["bun", "x", "biome", "ci", ".", "--diagnostic-level=error"],
+    "saida": 0,
+    "arquivos": 10818
+  },
+  "exportadorFinal": "Índices JSON formatados com Biome antes de comparar/gravar; 37 aulas passaram no --check e 311 testes editoriais passaram após o ajuste."
+}

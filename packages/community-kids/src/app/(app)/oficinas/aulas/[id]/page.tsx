@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
  */
 export default async function LiveLessonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  // A sala e a fase já no primeiro quadro (sem "Abrindo…" pulando para a aula).
+  // A sala e a aula já no primeiro quadro (sem "Abrindo…" pulando para a aula).
   const [session, profileRes, initial] = await Promise.all([
     getSession(),
     shell.auth.getMyProfileReadonly(),

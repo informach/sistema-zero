@@ -1,5 +1,5 @@
 /**
- * O rascunho do Pinta da fase guardado na conta (10/10/2026). Molde do `lesson-studio-draft.ts`,
+ * O rascunho do Pinta da aula guardado na conta (10/10/2026). Molde do `lesson-studio-draft.ts`,
  * com a forma do Pinta: o rascunho É o armazenamento do bloco (um banco por bloco + perfil), e o
  * desenho de lá abre porque o `<PintaLesson>` acha o `initialAsset` pelo id dentro dele.
  *

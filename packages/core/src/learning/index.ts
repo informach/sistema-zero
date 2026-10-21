@@ -1166,6 +1166,7 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
   }
   return true
 }
+export * from './manifest-destination'
 export * from './platform-action'
 
 import { isManifestQuiz, type ManifestQuiz } from './manifest-quiz'

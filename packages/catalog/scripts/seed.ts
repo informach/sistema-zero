@@ -103,7 +103,7 @@ const COMUNIDADE_ADULTO_OFFER_ANUAL_SLUG = 'comunidade-dos-criadores-adulto-anua
 // vendida pelo funil `/pro/desafio-primeiro-jogo` (env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO`).
 // A MESMA oferta do Kids por decisão da dona: R$ 67, compra única, 30 dias de acesso, garantia de
 // 7 dias e cupom aceito. CURSO com courseRef `desafio-primeiro-jogo-adulto` (manifestos em
-// docs/aulas-interativas/adulto/desafio-primeiro-jogo) + o Mural ADULTO completo como item; depois
+// docs/aulas-interativas/desafio-primeiro-jogo) + o Mural ADULTO completo como item; depois
 // do prazo, o members concede o Mural adulto visitante. Não amplia nada no Kids.
 const DESAFIO_ADULTO_SKU = 'desafio-primeiro-jogo-adulto'
 const DESAFIO_ADULTO_OFFER_SLUG = 'desafio-primeiro-jogo-adulto-30-dias'

@@ -38,7 +38,7 @@ function isSlotCourse(course: CourseBadgeInput): boolean {
   return typeof course.careerSlot === 'number'
 }
 
-/** A aventura conta como PRONTA? É a régua mista, num curso só. */
+/** O curso conta como PRONTA? É a régua mista, num curso só. */
 export function courseIsDone(course: CourseBadgeInput): boolean {
   return journeyCourseQualified(course)
 }

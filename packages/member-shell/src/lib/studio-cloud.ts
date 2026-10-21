@@ -217,7 +217,7 @@ export async function buildStudioCloudSnapshot(
 /**
  * Resolve o que desceu num `Project` completo: manifesto → monta `program + assets` (as partes
  * que este aparelho já tem, `localAssets`, não são baixadas; as outras descem com o hash
- * conferido); blob antigo (o `Project` inteiro) passa direto. Exportada para o rascunho da fase
+ * conferido); blob antigo (o `Project` inteiro) passa direto. Exportada para o rascunho da aula
  * (`lesson-draft-cloud.ts`), que monta o projeto do mesmo jeito.
  */
 export async function resolveStudioCloudDocument(

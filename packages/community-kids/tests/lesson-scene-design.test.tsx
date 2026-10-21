@@ -807,7 +807,7 @@ describe('a previsão antes de mexer', () => {
 describe('as cinco cenas de desenho e a das vidas', () => {
   /**
    * O lote 4 da proposta. O Jogo do Meu Jeito não tinha UMA cena nativa: as cinco de desenho
-   * são as seções de demonstração dele que hoje esperam vídeo. A das vidas é o dia 4 do
+   * são as partes de demonstração dele que hoje esperam vídeo. A das vidas é o dia 4 do
    * Desafio, onde ponto e vida mudam por motivos diferentes.
    */
   function montar(scene: SceneId) {
@@ -1084,7 +1084,7 @@ describe('as cinco cenas de desenho e a das vidas', () => {
   })
 })
 
-describe('⚠️⚠️ a seção conta ao bloco o que ela já disse', () => {
+describe('⚠️⚠️ a parte conta ao bloco o que ela já disse', () => {
   const bloco = (scene: SceneId): InteractiveBlock => ({
     kind: 'interactive',
     title: SCENE_MODELS[scene].title,
@@ -1105,15 +1105,15 @@ describe('⚠️⚠️ a seção conta ao bloco o que ela já disse', () => {
     return c
   }
 
-  test('⚠️ o título não aparece DUAS vezes quando a seção já disse o mesmo', async () => {
-    // A Aula 1 do Corre Dino mostrava a mesma pergunta no cabeçalho da seção e no cartão da
+  test('⚠️ o título não aparece DUAS vezes quando a parte já disse o mesmo', async () => {
+    // A Aula 1 do Corre Dino mostrava a mesma pergunta no cabeçalho da parte e no cartão da
     // cena, a 130px de distância.
     const c = montar('world', { titulo: SCENE_MODELS.world.title, temDialogo: false })
     const titulo = await screen.findByRole('heading', { name: c.title })
     expect(titulo.className).toContain('sr-only')
     cleanup()
 
-    // ⚠️ E ele CONTINUA existindo: é o nome acessível da seção da cena.
+    // ⚠️ E ele CONTINUA existindo: é o nome acessível da parte da cena.
     montar('world', { titulo: 'Outro assunto', temDialogo: false })
     const proprio = await screen.findByRole('heading', { name: c.title })
     expect(proprio.className).not.toContain('sr-only')

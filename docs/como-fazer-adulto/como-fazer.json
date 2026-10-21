@@ -72,7 +72,7 @@
       "position": 0,
       "draft": {
         "title": "Como continuar o seu curso de onde parou",
-        "summary": "No Início, use o botão de continuar e volte para a aula e a seção em que você parou.",
+        "summary": "No Início, use o botão de continuar e volte para a aula e a parte em que você parou.",
         "keywords": [
           "continuar",
           "onde parei",
@@ -261,7 +261,7 @@
           {
             "id": "voltar",
             "title": "Volte para a aula",
-            "body": "Quando a conversa nasceu de uma dúvida numa aula, clique em **Voltar à seção** para abrir a seção de que ela fala."
+            "body": "Quando a conversa nasceu de uma dúvida numa aula, clique em **Voltar à seção** para abrir a parte de que ela fala."
           },
           {
             "id": "inicio",
@@ -375,7 +375,7 @@
       "position": 0,
       "draft": {
         "title": "Como abrir uma aula e passar de seção",
-        "summary": "Abra a aula pela página do curso e use Próxima seção e Anterior, no pé da aula.",
+        "summary": "Abra a aula pela página do curso e use Próxima parte e Anterior, no pé da aula.",
         "keywords": [
           "aula",
           "seção",
@@ -405,12 +405,12 @@
           {
             "id": "secoes",
             "title": "Passe de seção",
-            "body": "Cada aula tem seções, e o alto da aula mostra em qual você está, por exemplo “Seção 2 de 5”. No pé da aula, clique em **Próxima seção** para avançar e em **Anterior** para voltar."
+            "body": "Cada aula tem seções, e o alto da aula mostra em qual você está, por exemplo “Seção 2 de 5”. No pé da aula, clique em **Próxima parte** para avançar e em **Anterior** para voltar."
           },
           {
             "id": "falta",
             "title": "Veja o que falta",
-            "body": "Se **Próxima seção** estiver apagado, leia a faixa ao lado: depois de **Para seguir:** aparece o que ainda falta. Quando aparecer **Tudo pronto nesta seção. Pode seguir!**, avance."
+            "body": "Se **Próxima parte** estiver apagado, leia a faixa ao lado: depois de **Para seguir:** aparece o que ainda falta. Quando aparecer **Tudo pronto nesta parte. Pode seguir!**, avance."
           },
           {
             "id": "sair",
@@ -427,7 +427,7 @@
       "position": 1,
       "draft": {
         "title": "Como usar o Índice da aula",
-        "summary": "Veja as seções da aula, as que você já concluiu e as que ainda faltam, e vá direto para uma delas.",
+        "summary": "Veja as partes da aula, as que você já concluiu e as que ainda faltam, e vá direto para uma delas.",
         "keywords": [
           "índice",
           "sumário",
@@ -450,12 +450,12 @@
           {
             "id": "ler",
             "title": "Leia a lista",
-            "body": "As seções concluídas mostram um sinal de visto. **Atividade pendente** avisa que ainda falta fazer algo ali, e **Abre após concluir a anterior** marca as seções ainda fechadas."
+            "body": "As partes concluídas mostram um sinal de visto. **Atividade pendente** avisa que ainda falta fazer algo ali, e **Abre após concluir a anterior** marca as partes ainda fechadas."
           },
           {
             "id": "ir",
-            "title": "Vá para uma seção",
-            "body": "Clique no nome de uma seção liberada para abri-la."
+            "title": "Vá para uma parte",
+            "body": "Clique no nome de uma parte liberada para abri-la."
           },
           {
             "id": "aulas",
@@ -541,7 +541,7 @@
           {
             "id": "encontrar",
             "title": "Encontre os materiais",
-            "body": "Abra a aula e a seção que traz os arquivos. Na página do curso, o quadro **Materiais de apoio** mostra quais aulas têm arquivos."
+            "body": "Abra a aula e a parte que traz os arquivos. Na página do curso, o quadro **Materiais de apoio** mostra quais aulas têm arquivos."
           },
           {
             "id": "baixar",
@@ -643,12 +643,12 @@
           {
             "id": "escrever",
             "title": "Conte onde travou",
-            "body": "Em **Em que ponto desta seção você ficou com dúvida?**, escreva o que tentou fazer e o que apareceu na tela. A conversa fica ligada a esta seção da aula."
+            "body": "Em **Em que ponto desta parte você ficou com dúvida?**, escreva o que tentou fazer e o que apareceu na tela. A conversa fica ligada a esta parte da aula."
           },
           {
             "id": "enviar",
             "title": "Envie",
-            "body": "Clique em **Enviar ao professor**. Aparece o aviso de que o pedido foi enviado e de que a resposta chega nos seus recados."
+            "body": "Clique em **Enviar para a equipe**. Aparece o aviso de que o pedido foi enviado e de que a resposta chega nos seus recados."
           },
           {
             "id": "acompanhar",
@@ -712,7 +712,7 @@
       "position": 7,
       "draft": {
         "title": "Como emitir o seu certificado",
-        "summary": "Na aula do certificado, clique em Emitir meu certificado e guarde o PDF.",
+        "summary": "Na aula do certificado, clique em Baixar meu certificado e guarde o PDF.",
         "keywords": [
           "certificado",
           "diploma",
@@ -733,7 +733,7 @@
           {
             "id": "emitir",
             "title": "Emita o certificado",
-            "body": "Clique em **Emitir meu certificado**. O certificado em PDF é baixado para o seu computador."
+            "body": "Clique em **Baixar meu certificado**. O certificado em PDF é baixado para o seu computador."
           },
           {
             "id": "guardar",
@@ -821,7 +821,7 @@
           {
             "id": "encontrar",
             "title": "Encontre a atividade",
-            "body": "Nas seções com programação, o Estúdio aparece no quadro **Atividade no Estúdio**, com os blocos e o jogo."
+            "body": "Nas partes com programação, o Estúdio aparece no quadro **Atividade no Estúdio**, com os blocos e o jogo."
           },
           {
             "id": "expandir",
@@ -1021,23 +1021,23 @@
           },
           {
             "id": "botao",
-            "title": "Clique em Enviar para o professor",
-            "body": "O botão **Enviar para o professor** fica no alto da **Atividade no Estúdio**, dentro da aula."
+            "title": "Clique em Enviar meu projeto",
+            "body": "O botão **Enviar meu projeto** fica no alto da **Atividade no Estúdio**, dentro da aula."
           },
           {
             "id": "recado",
             "title": "Escreva um recado, se quiser, e envie",
-            "body": "Na janela **Enviar ao professor?**, use o campo **Recado para o professor** (opcional) para contar o que você fez ou onde travou. Depois clique em **Enviar**."
+            "body": "Na janela **Enviar para a equipe?**, use o campo **Recado** (opcional) para contar o que você fez ou onde travou. Depois clique em **Enviar**."
           },
           {
             "id": "resposta",
             "title": "Acompanhe a resposta",
-            "body": "Aparece **Projeto enviado ao professor em** e a data. Quando a equipe conferir, a aula mostra **O professor já conferiu sua entrega.**, e o retorno chega nos **Recados**."
+            "body": "Aparece **Projeto enviado! em** e a data. Quando a equipe conferir, a aula mostra **O professor já conferiu sua entrega.**, e o retorno chega nos **Recados**."
           },
           {
             "id": "reenviar",
             "title": "Mudou o projeto? Envie de novo",
-            "body": "O botão passa a se chamar **Reenviar ao professor**. A equipe recebe a versão nova."
+            "body": "O botão passa a se chamar **Enviar de novo**. A equipe recebe a versão nova."
           }
         ],
         "related": [
@@ -2378,7 +2378,7 @@
           "enfeites",
           "plantas",
           "ambiente",
-          "bichinho"
+          "personagem"
         ],
         "steps": [
           {
@@ -2435,7 +2435,7 @@
           {
             "id": "abrir",
             "title": "Abra IA e voz",
-            "body": "Abra **Meu perfil** e clique em **IA e voz**. Essa seção aparece quando a ajuda da IA está liberada na sua jornada. Na página **Criar**, o link **Quanto resta da ajuda da IA** leva ao mesmo lugar."
+            "body": "Abra **Meu perfil** e clique em **IA e voz**. Essa parte aparece quando a ajuda da IA está liberada na sua jornada. Na página **Criar**, o link **Quanto resta da ajuda da IA** leva ao mesmo lugar."
           },
           {
             "id": "ler",

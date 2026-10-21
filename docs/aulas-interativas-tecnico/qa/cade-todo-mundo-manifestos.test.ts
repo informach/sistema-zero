@@ -27,7 +27,7 @@ function manifesto(name: string): LearningManifest {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-${name}.manifesto.json`,
+        `../../aulas-interativas/cade-todo-mundo/cade-todo-mundo-${name}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -123,7 +123,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
       caderno && 'content' in caderno && caderno.content.kind === 'materials'
         ? caderno.content.title
         : undefined,
-    ).toBe('Mapa da Aventura: Cadê Todo Mundo?')
+    ).toBe('Passo a passo do projeto: Cadê Todo Mundo?')
     const experience = m.blocks.find((block) => block.key === 'experiencia-toque')
     expect(experience?.content?.kind).toBe('interactive')
     if (experience?.content?.kind === 'interactive') {
@@ -251,7 +251,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
     ).toBe('jardim')
   })
 
-  test('as seções com vídeo têm ponte; a revisão tem somente Zappy e quiz', () => {
+  test('as partes com vídeo têm ponte; a revisão tem somente Zappy e quiz', () => {
     for (const name of ['aula-1', 'aula-2', 'certificado']) {
       const m = manifesto(name)
       const byId = new Map(m.blocks.map((b) => [b.key, b]))
@@ -283,12 +283,12 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
   })
 
   test('o certificado fala de aventura e de criador', () => {
-    // Vocabulário da aventura (06/10/2026).
+    // Vocabulário do curso (06/10/2026).
     const certificado = manifesto('certificado').blocks.find((b) => b.key === 'certificado')
     expect(certificado?.content).toMatchObject({
       kind: 'certificate',
       title: 'Certificado de Criador',
-      coursePhrase: 'completou a aventura Cadê Todo Mundo?',
+      coursePhrase: 'completou o curso Cadê Todo Mundo?',
     })
   })
 
@@ -348,7 +348,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
   test('inventário de blocos corresponde ao jogo completo', () => {
     const { blocks } = JSON.parse(
       readFileSync(
-        resolve(import.meta.dir, '../../aulas-interativas/kids/cade-todo-mundo/blocos.json'),
+        resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo/blocos.json'),
         'utf8',
       ),
     ) as { blocks: string[] }
@@ -377,7 +377,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
   test('o Estúdio das duas aulas mostra somente os blocos do curso', () => {
     const { blocks } = JSON.parse(
       readFileSync(
-        resolve(import.meta.dir, '../../aulas-interativas/kids/cade-todo-mundo/blocos.json'),
+        resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo/blocos.json'),
         'utf8',
       ),
     ) as { blocks: string[] }

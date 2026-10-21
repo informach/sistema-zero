@@ -618,7 +618,7 @@ export function createStudioZappyRoutes(deps: {
           return complete(
             {
               id: crypto.randomUUID(),
-              text: `Não consegui consultar as fases agora. ${studioTutorContextHint(context.kind)} Tente novamente.`,
+              text: `Não consegui consultar as aulas agora. ${studioTutorContextHint(context.kind)} Tente novamente.`,
               scope: 'needs-context',
               blockReferences: [],
               createdAt: new Date().toISOString(),

@@ -5,7 +5,7 @@ import { backToSection, isNavActive, NAV_ITEMS, navMatch } from '../src/componen
  * A setinha de voltar das páginas internas (pedido dela, 11/09/2026): cada uma volta para a
  * página principal da SEÇÃO a que pertence, lida do próprio mapa do menu. Esta é a tabela
  * que ela descreveu, rota a rota, mais as regras que morderiam em silêncio: a página
- * principal não tem seta (voltaria para ela mesma) e um prefixo parecido não é a seção.
+ * principal não tem seta (voltaria para ela mesma) e um prefixo parecido não é a parte.
  */
 describe('backToSection', () => {
   const casos: Array<[string, string, string]> = [
@@ -22,8 +22,8 @@ describe('backToSection', () => {
     ['/molda', '/criar', 'Voltar para Criar'],
     ['/quarto', '/perfil', 'Voltar ao Meu espaço'],
     ['/meu-avatar', '/perfil', 'Voltar ao Meu espaço'],
-    ['/cursos/trilha/faisca', '/cursos', 'Voltar ao mapa'],
-    ['/cursos/desafio-do-primeiro-jogo', '/cursos', 'Voltar ao mapa'],
+    ['/cursos/trilha/faisca', '/cursos', 'Voltar aos cursos'],
+    ['/cursos/desafio-do-primeiro-jogo', '/cursos', 'Voltar aos cursos'],
     // O "Como fazer" fica FORA das cinco seções (atalho no rodapé), mas a volta é pelo mapa.
     ['/como-fazer/pinta-camada', '/como-fazer', 'Voltar ao Como fazer'],
     ['/como-fazer/colecao/pinta', '/como-fazer', 'Voltar ao Como fazer'],
@@ -37,7 +37,7 @@ describe('backToSection', () => {
     for (const item of NAV_ITEMS) expect(backToSection(item.href)).toBeNull()
   })
 
-  it('um prefixo parecido não é a seção (/pintando não é o Pinta)', () => {
+  it('um prefixo parecido não é a parte (/pintando não é o Pinta)', () => {
     expect(backToSection('/pintando')).toBeNull()
     expect(backToSection('/recadosx')).toBeNull()
   })
@@ -45,7 +45,7 @@ describe('backToSection', () => {
   it('toda seção com página interna devolve a própria frase de voltar', () => {
     // O Início não tem páginas internas (a raiz só casa exata), então fica de fora.
     const secoes = NAV_ITEMS.filter((item) => item.href !== '/')
-    expect(secoes.length).toBe(5) // Explorar, Oficinas, Criar, Comunidade, Meu espaço
+    expect(secoes.length).toBe(5) // Cursos, Oficinas, Criar, Comunidade, Meu espaço
     for (const item of secoes) {
       expect(backToSection(`${item.href}/interna`)).toEqual({
         href: item.href,

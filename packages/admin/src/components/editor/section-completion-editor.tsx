@@ -297,7 +297,7 @@ export function SectionCompletionEditor({
   ) => onChange({ ...value, projectChecks: checks.map((c) => (c.id === id ? change(c) : c)) })
   return (
     <fieldset className="space-y-3 rounded-xl border border-border p-4">
-      <legend className="px-2 font-medium">Para liberar a próxima seção</legend>
+      <legend className="px-2 font-medium">Para liberar a próxima parte</legend>
       <p className="font-medium">O que o aluno precisa demonstrar para continuar?</p>
       <p className="text-sm text-muted-foreground">
         Marque exatamente o que precisa acontecer nesta seção. Se escolher vídeo e arquivos, o aluno

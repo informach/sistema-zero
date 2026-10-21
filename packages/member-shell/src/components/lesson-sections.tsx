@@ -72,7 +72,7 @@ import { LIVE_SECTION_COPY } from './live/live-section-copy'
 import { VoiceInputButton } from './voice-input/voice-input-button'
 
 /**
- * A ligação entre os vídeos da seção e o `LessonSectionsContent` (vídeo flutuante e aviso "assista
+ * A ligação entre os vídeos da parte e o `LessonSectionsContent` (vídeo flutuante e aviso "assista
  * primeiro"). Interna: o `BlockScope` amarra o id do bloco e entrega aos players o
  * `onVideoPlayingChange`/`registerVideoControls` do `LessonPlayerContext`.
  */
@@ -384,11 +384,11 @@ function LessonSectionsContent({
   renderBlocks: (blocks: LessonBlockView[]) => ReactNode
   kids?: boolean
   /**
-   * O título da AULA. Presente, o cabeçalho da seção vira o `<h1>` da página e
+   * O título da AULA. Presente, o cabeçalho da parte vira o `<h1>` da página e
    * identifica "aula · seção" para o leitor de tela. No player imersivo ele
    * fica visualmente oculto; no ensaio mantém o título e o índice visíveis.
    * Ausente (ensaio e pré-visualização do admin, onde o título já está em volta),
-   * o cabeçalho segue sendo o `<h2>` só com o nome da seção.
+   * o cabeçalho segue sendo o `<h2>` só com o nome da parte.
    */
   lessonTitle?: string
   onSectionChange?: (posicao: { index: number; total: number; sectionId: string }) => void
@@ -533,7 +533,7 @@ function LessonSectionsContent({
   const { container, width: contentWidth, handleWidth } = useLessonContentWidth()
   const [toolMode, setToolMode] = useState<'example' | 'create'>('example')
   const registrouAbertura = useRef(false)
-  // Abrir a aula REGISTRA a seção em que a criança entrou. A navegação só grava em
+  // Abrir a aula REGISTRA a parte em que a criança entrou. A navegação só grava em
   // TRANSIÇÃO, então quem abre e fica na primeira seção nunca criava linha — e é o
   // `updated_at` dela que alimenta o "continuar de onde parou" do card do curso.
   // Silencioso de propósito: isto é telemetria de retomada, e falhar aqui não pode
@@ -553,7 +553,7 @@ function LessonSectionsContent({
   // A barra do topo mora FORA daqui (no player de cada app) e o índice é estado
   // DAQUI, que muda no CLIENTE ao avançar de seção — o `learningProgress.sectionId`
   // do servidor só se mexe num refresh, então a barra congelaria na seção de entrada.
-  // ⚠️ O índice é DERIVADO (ele muda também quando a seção escolhida vem `locked` e
+  // ⚠️ O índice é DERIVADO (ele muda também quando a parte escolhida vem `locked` e
   // quando o servidor devolve um `sectionProgress` novo), por isso o aviso mora num
   // efeito e não dentro do `navigate()`, que perderia esses dois caminhos.
   // ⚠️ O callback vai num REF: quem passar uma função INLINE trocaria a identidade a
@@ -608,7 +608,7 @@ function LessonSectionsContent({
     const timer = setTimeout(() => setAvisoDaTurma(null), 6000)
     return () => clearTimeout(timer)
   }, [avisoDaTurma])
-  // ⭐⭐ O VÍDEO FLUTUANTE (03/10/2026). Com uma atividade ampliada, o vídeo da seção sai de
+  // ⭐⭐ O VÍDEO FLUTUANTE (03/10/2026). Com uma atividade ampliada, o vídeo da parte sai de
   // baixo dela: tocando, flutua por cima; parado, fica escondido, e o interruptor "Vídeo" da
   // barra da atividade o liga (`LessonVideoToggleContext`). Os players avisam "tocando/parado"
   // e entregam o play pelo `LessonVideoBusContext`.
@@ -616,7 +616,7 @@ function LessonSectionsContent({
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null)
   const videoControls = useRef(new Map<string, LessonVideoControls>())
   const [floatChoice, setFloatChoice] = useState<VideoFloatMode>(null)
-  // O PRIMEIRO vídeo da seção COM player é o que acompanha a atividade (`isPlayableVideo`, a
+  // O PRIMEIRO vídeo da parte COM player é o que acompanha a atividade (`isPlayableVideo`, a
   // mesma régua da tranca).
   const floatVideoId =
     section?.blockIds.find((id) => lesson.blocks.some((b) => b.id === id && isPlayableVideo(b))) ??
@@ -636,7 +636,7 @@ function LessonSectionsContent({
   // ⚠️ DERIVADO no render (full review de 03/10/2026): fechar a tela ampliada devolve o vídeo e
   // esconde o painel do conteúdo no MESMO render, sem um quadro de layout trocado embaixo da
   // devolução do foco. Sem player (prévia e ensaio do admin) nada flutua.
-  // A sala ao vivo tem a TRANSMISSÃO no lugar do vídeo da seção: é ela que flutua (abaixo).
+  // A sala ao vivo tem a TRANSMISSÃO no lugar do vídeo da parte: é ela que flutua (abaixo).
   const hasStage = stage !== undefined && stage !== null
   const floatMode: VideoFloatMode =
     player && anyExpanded && floatVideoId && !hasStage ? floatChoice : null
@@ -727,16 +727,16 @@ function LessonSectionsContent({
     content: b.content,
     gallery: isGalleryBlock(b.content),
   })
-  // ⚠️ Os EDITORES são da aula inteira, não da seção: eles ficam montados o tempo todo (ver o
+  // ⚠️ Os EDITORES são da aula inteira, não da parte: eles ficam montados o tempo todo (ver o
   // comentário no `Panel` da direita). As CENAS não entram aqui de propósito — cada uma tem
   // controlador próprio, rascunho em IndexedDB e uma batida de gravação de 1s, e mantê-las
-  // vivas fora da seção pagaria esse custo pela aula inteira.
+  // vivas fora da parte pagaria esse custo pela aula inteira.
   const editores = lesson.blocks.filter((b) => ehEditorDeSecao(paraSplit(b)))
   const activeIds = new Set([
     ...section.blockIds,
     ...(section.workspaceBlockId ? [section.workspaceBlockId] : []),
   ])
-  // A ordem de iteração de um Set é a de INSERÇÃO, então os blocos saem na ordem da seção.
+  // A ordem de iteração de um Set é a de INSERÇÃO, então os blocos saem na ordem da parte.
   const ativos = [...activeIds]
     .map((id) => blockById.get(id))
     .filter((b): b is LessonBlockView => b !== undefined)
@@ -745,7 +745,7 @@ function LessonSectionsContent({
   // encolhe. A divisória só é interativa onde ela APARECE — ver o comentário no handle.
   const partida = partirSecao({
     blocks: ativos.map(paraSplit),
-    // A ação da plataforma e o atalho da ferramenta moram no painel da ESQUERDA: uma seção
+    // A ação da plataforma e o atalho da ferramenta moram no painel da ESQUERDA: uma parte
     // com eles tem conteúdo dos dois lados mesmo sem um bloco de texto. A transmissão também.
     extraContent: Boolean(section.completion?.platformAction || section.externalTool || hasStage),
   })
@@ -763,7 +763,7 @@ function LessonSectionsContent({
     hasWorkspace: podeDividir,
   })
   // As abas são a saída honesta para uma coluna estreita com um EDITOR — "o exemplo" contra
-  // "a minha criação". Uma seção cuja direita é só cena não tem esse par: a cena É a aula, e
+  // "a minha criação". Uma parte cuja direita é só cena não tem esse par: a cena É a aula, e
   // numa coluna estreita ela simplesmente empilha.
   const mostraAbas = podeDividir && !arrastavel && temEditor
   const editorIds = new Set(editores.map((b) => b.id))
@@ -965,7 +965,7 @@ function LessonSectionsContent({
           título, e medido nos 392 pares reais de aula × seção isso custava 5,3
           linhas de cabeçalho num celular de 390px; sem ele (e sem o cartão) são
           3,2. O nome acessível não muda: quem lê a tela continua ouvindo o
-          `copy.secoes.indice` ("Índice da aula" no adulto, "Partes da fase" no Kids). */}
+          `copy.secoes.indice` ("Índice da aula" no adulto, "Partes da aula" no Kids). */}
       <summary
         aria-label={copy.secoes.indice}
         className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
@@ -1116,7 +1116,7 @@ function LessonSectionsContent({
       </Button>
     ) : null
   /**
-   * A faixa do rodapé: os itens tipados da seção ATUAL (`pendingItems`, do members), o estado
+   * A faixa do rodapé: os itens tipados da parte ATUAL (`pendingItems`, do members), o estado
    * "pronto" quando ela fechou e, sem itens (aula legada, conta de equipe), a razão de o "Concluir
    * aula" estar travado que o player passa em `completionMessage`. No ensaio (`preview`) as
    * mensagens de autoria saem inteiras.
@@ -1330,9 +1330,9 @@ function LessonSectionsContent({
                   )}
                 >
                   {lessonTitle && lessonTitle !== section.title ? (
-                    // A aula é o contexto e a seção é a novidade: ela é que puxa o olho.
+                    // A aula é o contexto e a parte é a novidade: ela é que puxa o olho.
                     // ⚠️ `lessonTitle !== section.title` não é zelo: numa aula LEGADA o
-                    // nome da seção É o título da aula (`legacyLessonSections`), e o
+                    // nome da parte É o título da aula (`legacyLessonSections`), e o
                     // cabeçalho saía "Certificado do curso · Certificado do curso" —
                     // justamente nas aulas de certificado e nas "em breve".
                     <span className="font-normal text-muted-foreground text-lg sm:text-xl">
@@ -1404,7 +1404,7 @@ function LessonSectionsContent({
                 // primeiro layout já difere e cai no autosave). Ou seja: o padrão anterior
                 // está no localStorage de todo mundo que abriu uma aula. Mudou o padrão?
                 // Suba a versão, senão o valor novo é letra morta. Os painéis nascem 50/50
-                // desde a `v4` (eram 30/70, e a seção com vídeo abria com o vídeo espremido).
+                // desde a `v4` (eram 30/70, e a parte com vídeo abria com o vídeo espremido).
                 autoSaveId={player?.viewerId ? `${SPLIT_LAYOUT_KEY}:${player.viewerId}` : null}
                 className={cn(
                   // A lib injeta `display:flex; height:100%; overflow:hidden` INLINE. A página
@@ -1525,7 +1525,7 @@ function LessonSectionsContent({
                   tabIndex={arrastavel ? 0 : -1}
                   // `role="separator"` focável precisa de NOME: a lib põe `aria-controls` e
                   // `aria-valuemin/max/now` por JS, mas nenhum rótulo (o leitor dizia só
-                  // "separador, 50"). A seção pode ter Estúdio OU Pinta, então o texto não
+                  // "separador, 50"). A parte pode ter Estúdio OU Pinta, então o texto não
                   // nomeia a ferramenta.
                   aria-label={
                     kids
@@ -1565,7 +1565,7 @@ function LessonSectionsContent({
                   className={cn(
                     // Fora do flex (empilhado) o `gap-6` do grid antigo não existe mais.
                     'overflow-visible!',
-                    // ⚠️ `toolIds.length > 0` e não `podeDividir`: a seção cujo ÚNICO bloco é a
+                    // ⚠️ `toolIds.length > 0` e não `podeDividir`: a parte cujo ÚNICO bloco é a
                     // ferramenta não divide, e nem por isso ela pode sumir — ela ocupa a largura
                     // toda (o `PanelGroup` vira `block!` quando não arrasta).
                     toolIds.length > 0 && (arrastavel || !mostraAbas || toolMode === 'create')
@@ -1583,9 +1583,9 @@ function LessonSectionsContent({
                     sectionId={section.id}
                     onWatch={watchVideo}
                   >
-                    {/* ⚠️⚠️ Os editores são da AULA, não da seção (por decisão explícita lá em
+                    {/* ⚠️⚠️ Os editores são da AULA, não da parte (por decisão explícita lá em
                   cima: remontar o Blockly é caro e re-semeia o rascunho). Quem fica montado
-                  atravessando as seções não pode herdar o título nem o "já tem Zappy" da seção
+                  atravessando as partes não pode herdar o título nem o "já tem Zappy" da parte
                   em que a criança está agora — o contexto aqui é o VAZIO, e o bloco desenha
                   como sempre. */}
                     <LessonSectionProvider value={null}>
@@ -1598,9 +1598,9 @@ function LessonSectionsContent({
                         </div>
                       ))}
                     </LessonSectionProvider>
-                    {/* A cena monta e desmonta com a seção — ao contrário do editor, ela é barata de
+                    {/* A cena monta e desmonta com a parte — ao contrário do editor, ela é barata de
                 montar e cara de manter viva (controlador, rascunho local e gravação de 1s).
-                ⚠️ EMPILHADO (coluna estreita) a bancada cai para o FIM da seção, como sempre foi
+                ⚠️ EMPILHADO (coluna estreita) a bancada cai para o FIM da parte, como sempre foi
                 com o Estúdio: trocar a cena de painel conforme a largura a REMONTARIA, e como a
                 medição começa em zero isso aconteceria na abertura de toda aula larga. A ordem
                 autoral sobrevive porque o padrão de autoria já põe a cena por último ("vídeo

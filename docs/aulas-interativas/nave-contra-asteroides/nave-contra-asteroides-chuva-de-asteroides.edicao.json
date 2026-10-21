@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-intervalo-das-pedras",
+    "video-grupo-e-relogio",
+    "video-posicao-sorteada",
+    "video-asteroide",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-intervalo-das-pedras-K1",
+      "clipe": "video-intervalo-das-pedras",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "pedra, depois outra, depois outra, com espaço entre elas, porque o relógio espera 40 quadros antes de criar a próxima.",
+      "ancoraDepois": "Vamos comparar. Por último, eu escolho 20 quadros e deixo passar mais três segundos. As pedras nascem mais perto umas",
+      "falaPrincipal": "Se eu diminuir a espera, a pedra cai mais rápido?",
+      "falaPersonagem": "Se eu diminuir a espera, a pedra cai mais rápido?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-grupo-e-relogio-K1",
+      "clipe": "video-grupo-e-relogio",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "e solte no fim de Ao iniciar. Repare: o nome já vem asteroides, que é o nome certo para este grupo, por isso mantenha.",
+      "ancoraDepois": "Agora o relógio. Ele fica fora de A cada quadro do jogo, porque não é para criar uma pedra em todo quadro, e sim de",
+      "falaPrincipal": "E quando vai nascer cada pedra?",
+      "falaPersonagem": "E quando vai nascer cada pedra?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-posicao-sorteada-K1",
+      "clipe": "video-posicao-sorteada",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "entre x 90 e x 390. É como jogar um dado: você não sabe qual número vai sair, e o mesmo número pode sair de novo.",
+      "ancoraDepois": "A pedra fica acima da borda de cima, do lado de fora da tela. Eu clico em Tempo, e olha só: ela desce e entra caindo",
+      "falaPrincipal": "Mas por que criar a pedra fora da tela?",
+      "falaPersonagem": "Mas por que criar a pedra fora da tela?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-asteroide-K1",
+      "clipe": "video-asteroide",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "usando suas velocidades e solte nesse lugar. O grupo já vem asteroides, e nos dois próximos blocos também: é só manter.",
+      "ancoraDepois": "Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois Grupos e depois Participação e",
+      "falaPrincipal": "E como tira as pedras que saem da tela?",
+      "falaPersonagem": "E como tira as pedras que saem da tela?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

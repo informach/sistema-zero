@@ -16,7 +16,7 @@ const CAPABILITY_REWARD_INFO: Record<KidsCreatorCapability, JourneyRewardInfo> =
   studio: {
     title: 'Estúdio livre',
     description:
-      'Crie com os blocos conquistados nas aventuras, quando o Estúdio estiver incluído na sua conta.',
+      'Crie com os blocos conquistados nos cursos, quando o Estúdio estiver incluído na sua conta.',
   },
   pinta: {
     title: 'Pinta',
@@ -86,14 +86,14 @@ export function journeyRewardInfo(
   )
   if (!earnedNode && view.mode === 'paused')
     return {
-      title: 'Próximas aventuras',
-      description: 'As próximas aventuras estão em preparação.',
+      title: 'Próximos cursos',
+      description: 'Os próximos cursos estão em preparação.',
     }
   if (capabilities.length) return capabilityRewardInfo(capabilities)
   if (slug === 'noob')
     return {
-      title: 'O Estúdio nas fases',
-      description: 'Você cria dentro das fases, com as peças de cada aventura.',
+      title: 'O Estúdio nas aulas',
+      description: 'Você cria dentro das aulas, com as peças de cada curso.',
     }
   return {
     title: 'Um posto novo no mapa',

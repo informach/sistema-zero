@@ -6,7 +6,7 @@ import {
   type LearningResult,
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
-import manifest from '../../../docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
+import manifest from '../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
 
 // Este teste cobre o host e o contrato de mensagens. A execução do canvas é
 // verificada no navegador real; o DOM de teste não executa scripts do iframe.

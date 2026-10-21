@@ -1,5 +1,7 @@
 # Briefing para analisar e preparar um curso
 
+> Direção vigente: fonte e linguagem comuns aos dois públicos; consulte [diretrizes](DIRETRIZES-PEDAGOGICAS.md) e [voz](DIRETRIZES-VOZ-ELEVENLABS.md). Os termos técnicos de schema não são rótulos de tela.
+
 > **Comece pelas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md).** Esse é o ponto único de consulta das regras e decisões para todos os cursos. Leia-o inteiro antes de analisar uma aula. O briefing organiza o trabalho; não mantém uma segunda versão das regras.
 
 ## 1. O que levantar antes de escrever

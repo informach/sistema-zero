@@ -45,7 +45,7 @@ export function lessonCompletionRequirements(input: {
   learningProgress?: LessonLearningProgress
   completed: boolean
   sectionProgress?: SectionProgressView
-  /** Vídeos selecionados como critério da seção. */
+  /** Vídeos selecionados como critério da parte. */
   videoBlockIds?: string[]
   materialBlockIds?: string[]
   materialItems?: { blockId: string; itemIds: string[] }[]

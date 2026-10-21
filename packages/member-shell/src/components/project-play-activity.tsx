@@ -146,7 +146,7 @@ export function ProjectPlayActivityView({
     if (!expanded || !workspace.current) return
     // O iframe tem navegação de teclado própria. Inert impede que o Tab saia
     // dele e alcance controles da aula que ficaram escondidos sob o modo ampliado.
-    // O lugar do vídeo da seção fica de fora: é ele que flutua por cima do jogo.
+    // O lugar do vídeo da parte fica de fora: é ele que flutua por cima do jogo.
     return inertOutside(workspace.current, `[${LESSON_FLOAT_ROOT_ATTR}]`)
   }, [expanded, workspace])
 

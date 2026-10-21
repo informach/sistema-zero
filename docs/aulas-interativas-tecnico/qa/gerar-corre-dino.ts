@@ -1,5 +1,5 @@
 /** Uma fonte editorial gera proposta, roteiro e manifesto. Não importa nem publica aulas. */
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type {
   InteractiveBlock,
@@ -16,6 +16,7 @@ import {
   roteiroComAvatar,
 } from './avatares-video'
 import { etapasDino, ORDEM_DINO, projetoDino } from './corre-dino-etapas'
+import { gravarArquivo } from './gravar-arquivo'
 
 export interface SecaoDino {
   avatar?: ParticipacaoAvatar | ParticipacaoAvatar[]
@@ -27,7 +28,7 @@ export interface SecaoDino {
   meme?: string
   speech?: string[]
   /**
-   * Os passos que o Caderno do Aluno imprime, no imperativo. Existe onde o vídeo é demonstração
+   * Os passos que o Passo a passo do projeto imprime, no imperativo. Existe onde o vídeo é demonstração
    * na primeira pessoa (experiências e jogo pronto), que não serve como passo para a criança.
    */
   caderno?: string[]
@@ -56,19 +57,19 @@ export interface AulaDino {
   legacyKeys: string[]
   previousRetireKeys: string[]
 }
-const DIR = resolve(import.meta.dir, '../../aulas-interativas/kids/corre-dino')
+const DIR = resolve(import.meta.dir, '../../aulas-interativas/corre-dino')
 export const aulasDino = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'corre-dino.conteudo.json'), 'utf8'),
 ) as AulaDino[]
 const CURSO = 'corre-dino'
-// Fórmulas fixas do vocabulário da aventura (Diretrizes, seção 6): verificação, envio e saída.
+// Fórmulas fixas do vocabulário do curso (Diretrizes, seção 6): verificação, envio e saída.
 const checkExit =
   'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.'
 const send =
   'Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.'
 // Na aula, o Compartilhar não mostra o campo Título e traz o resumo do manifesto (showcase).
 const publish =
-  'Quando o envio terminar, se quiser mostrar o seu jogo no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
+  'Quando o envio terminar, se quiser mostrar o seu jogo no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Depois de copiar o link, clique em Fechar.'
 /** O fim de todo vídeo de experiência: só aqui a vez passa para quem faz a aula. */
 export const SUA_VEZ =
   'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.'
@@ -94,7 +95,7 @@ export function falasSecao(section: SecaoDino): string[] {
   if (ehExperiencia(section)) speech.push(SUA_VEZ)
   if (section.checks?.length) {
     speech.push(
-      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir fase.` : 'Quando aparecer Projeto enviado!, clique em Concluir fase.'}` : 'Quando aparecer Objetivo cumprido!, clique em Próxima parte.'}`,
+      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir aula.` : 'Quando aparecer Projeto enviado!, clique em Concluir aula.'}` : 'Quando aparecer Objetivo cumprido!, clique em Próxima parte.'}`,
     )
   }
   return speech
@@ -160,7 +161,7 @@ export function gerarManifestoDino(lesson: AulaDino, index: number): LearningMan
     if (s.materials)
       add('caderno', {
         kind: 'materials',
-        title: 'Mapa da Aventura: Corre, Dino!',
+        title: 'Passo a passo do projeto: Corre, Dino!',
         bookPreview: true,
         items: [],
       })
@@ -219,24 +220,7 @@ export function gerarManifestoDino(lesson: AulaDino, index: number): LearningMan
   }
 }
 function roteiro(lesson: AulaDino, index: number) {
-  const lines = [
-    `# Roteiro de gravação · Corre, Dino! · Aula ${index + 1}`,
-    '',
-    `**${lesson.title}**`,
-    '',
-    'Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos.',
-    '',
-    `Entrada: ${lesson.entry} Saída: ${lesson.outcome}`,
-    '',
-    '**Verificação das partes (nota da equipe, não gravar):** mostrar a lista Objetivos desta parte e o resultado real de Verificar esta parte. Aguardar a resposta do servidor; corrigir os itens pendentes e verificar novamente. Se o projeto mudar depois da conferência, verificar de novo. Conservar os valores da montagem gravada; os critérios aceitam as alternativas previstas sem exigir cópia da aparência. Os testes narrados do jogo continuam necessários.',
-    '',
-    orientacaoAvatares(index),
-    '',
-    `${index === 0 ? 'Começar com o projeto vazio preparado para esta aula.' : 'Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo.'} Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.`,
-    '',
-    'Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "agora que", "ou seja"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" é o encaixe do bloco Se e não serve de palavra de ligação. A montagem que aplica uma experiência começa pela retomada no próprio jogo, e a ponte do Zappy convida e termina na ação de saída (Diretrizes, seção 6, revisão de 06/10/2026).',
-    '',
-  ]
+  const lines = [`# Roteiro de produção · ${lesson.title}`, '', orientacaoAvatares(index), '']
   lesson.sections.forEach((s, i) => {
     lines.push(`## Seção ${i + 1}. ${s.title}`, '')
     if (s.videoKey) {
@@ -251,16 +235,16 @@ function roteiro(lesson: AulaDino, index: number) {
         roteiroComAvatar(
           s,
           speech,
-          `${telaSecao(s)} ${s.checks?.length ? `Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado${s.final ? ' (Enviar meu projeto, Enviar, Projeto enviado! e Concluir fase)' : ' (Próxima parte)'}.` : ''}${s.publish ? ' Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar.' : ''}`.trimEnd(),
+          `${telaSecao(s)} ${s.checks?.length ? `Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado${s.final ? ' (Enviar meu projeto, Enviar, Projeto enviado! e Concluir aula)' : ' (Próxima parte)'}.` : ''}${s.publish ? ' Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar.' : ''}`.trimEnd(),
           index,
         ),
         '',
       )
     }
-    lines.push(`**Zappy na página (não gravar):** ${s.bridge}`, '')
+    lines.push(`**Recado na página (não gravar):** ${s.bridge}`, '')
     if (s.questions)
       lines.push(
-        'Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.',
+        'Sem vídeo ou ferramenta nesta parte. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.',
         '',
       )
   })
@@ -301,7 +285,7 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
       '',
       `**Blocos na página:** ${manifest.sections[i]!.blockKeys.join(' → ')}.`,
       '',
-      `**Zappy na página (não gravar):** ${s.bridge}`,
+      `**Recado na página (não gravar):** ${s.bridge}`,
       '',
     )
     if (s.avatar)
@@ -318,7 +302,7 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
       )
     if (s.materials)
       lines.push(
-        'Anexar somente `docs/aulas-interativas/kids/corre-dino/mapa-da-aventura.pdf` ao bloco caderno. Ler, baixar e imprimir são opcionais; não entram na conclusão.',
+        'Anexar somente `docs/aulas-interativas/corre-dino/passo-a-passo-do-projeto.pdf` ao bloco caderno. Ler, baixar e imprimir são opcionais; não entram na conclusão.',
         '',
       )
     if (s.checks?.length)
@@ -331,12 +315,12 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
       )
     if (s.questions)
       lines.push(
-        '**Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.',
+        '**Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta parte.',
         '',
       )
     if (s.publish)
       lines.push(
-        'Publicação opcional após o envio: Compartilhar → resumo já preenchido → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir fase. Não bloquear a conclusão por publicação.',
+        'Publicação opcional após o envio: Compartilhar → resumo já preenchido → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir aula. Não bloquear a conclusão por publicação.',
         '',
       )
   })
@@ -370,10 +354,10 @@ if (import.meta.main) {
   for (const [i, lesson] of aulasDino.entries()) {
     const m = gerarManifestoDino(lesson, i)
     const path = resolve(DIR, `${CURSO}-${lesson.slug}`)
-    writeFileSync(`${path}.manifesto.json`, `${JSON.stringify(m, null, 2)}\n`)
+    gravarArquivo(`${path}.manifesto.json`, `${JSON.stringify(m, null, 2)}\n`)
     manifestos.push(`${path}.manifesto.json`)
-    writeFileSync(`${path}.roteiro.md`, roteiro(lesson, i))
-    writeFileSync(`${path}.md`, proposta(lesson, i, m))
+    gravarArquivo(`${path}.roteiro.md`, roteiro(lesson, i))
+    gravarArquivo(`${path}.md`, proposta(lesson, i, m))
   }
   // Mesmo formato que a CI confere (biome ci), como nos geradores do Cadê e do Farol.
   const formatado = Bun.spawnSync({

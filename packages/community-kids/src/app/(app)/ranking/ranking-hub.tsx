@@ -221,7 +221,7 @@ function GeneralRanking({
         icon={Sparkles}
         titleAs="h2"
         title="O placar está só começando!"
-        description="Conclua uma fase ou passe num quiz para ganhar XP e aparecer aqui junto com os outros criadores."
+        description="Conclua uma aula ou passe num quiz para ganhar XP e aparecer aqui junto com os outros criadores."
       />
     )
   }
@@ -433,7 +433,7 @@ function Unavailable({ message, onRetry }: { message: string; onRetry: () => voi
     <KidsEmptyState
       tone="pausa"
       icon={Trophy}
-      // O recado É a seção da faixa (vem logo abaixo do h1 da página).
+      // O recado É a parte da faixa (vem logo abaixo do h1 da página).
       titleAs="h2"
       title="Placar em pausa"
       description={`${message} Tente novamente em instantes.`}
@@ -455,7 +455,7 @@ function HowToClimb({ canPublish }: { canPublish: boolean }) {
       <KidsSectionHeader
         id="como-subir-no-placar"
         title="XP é o que move o placar"
-        subtitle="Cada fase concluída, quiz acertado e jogo publicado no Mural soma. Continue criando e a sua posição sobe sozinha."
+        subtitle="Cada aula concluída, quiz acertado e jogo publicado no Mural soma. Continue criando e a sua posição sobe sozinha."
         actions={
           <Link
             href="/cursos"

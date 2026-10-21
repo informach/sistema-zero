@@ -141,7 +141,7 @@ export function useVoiceRecorder({
   onText,
 }: {
   viewerId: string | null
-  /** Onde a criança está (título da fase · parte), para o modelo acertar o vocabulário. */
+  /** Onde a criança está (título da aula · parte), para o modelo acertar o vocabulário. */
   context?: string
   /**
    * Teto do texto que o servidor devolve. Só o Pensa pede mais que o padrão (`4000`); qualquer
@@ -272,7 +272,7 @@ export function useVoiceRecorder({
   )
 
   const stop = useCallback(() => halt(true), [halt])
-  /** Parou sem a criança pedir (outro som da fase, saiu da tela): descarta e DIZ por quê. */
+  /** Parou sem a criança pedir (outro som da aula, saiu da tela): descarta e DIZ por quê. */
   const interrupt = useCallback(() => {
     const s = session.current
     if (!s || s.done) return
@@ -397,7 +397,7 @@ export function useVoiceRecorder({
       })
   }, [finish, halt, release])
 
-  // Outra mídia da fase tomou o foco (o vídeo, o "Ouvir"): para e descarta.
+  // Outra mídia da aula tomou o foco (o vídeo, o "Ouvir"): para e descarta.
   useEffect(() => registerLessonMedia(owner.current, interrupt), [interrupt])
 
   // Aba escondida, saída da página e desmontagem: para e descarta, e solta o microfone.

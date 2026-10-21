@@ -104,8 +104,8 @@ export const EnvSchema = z
     // (decisão dela, 14/10/2026). No Railway as duas são REFERÊNCIAS às do serviço admin.
     ELEVENLABS_API_KEY: z.string().optional(),
     ELEVENLABS_VOICE_ID: z.string().optional(),
-    // Interruptor de emergência do rascunho da fase guardado na conta (10/10/2026). Desligado,
-    // o Estúdio e o Pinta da fase voltam a guardar só no navegador; o "envio em dia" deixa passar.
+    // Interruptor de emergência do rascunho da aula guardado na conta (10/10/2026). Desligado,
+    // o Estúdio e o Pinta da aula voltam a guardar só no navegador; o "envio em dia" deixa passar.
     LESSON_DRAFTS_ENABLED: z
       .enum(['true', 'false'])
       .default('true')

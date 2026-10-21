@@ -8,7 +8,7 @@ import { cn } from '@/lib/cn'
 /**
  * As peças de desenho da área dos pais (11/10/2026): o mesmo idioma das telas da criança
  * (cartão branco de 24px, Baloo nos títulos, a cor de ação), num registro mais calmo. Toda
- * página da área usa estas peças, para os títulos, as seções e os selos terem UMA cara só.
+ * página da área usa estas peças, para os títulos, as partes e os selos terem UMA cara só.
  */
 
 // As classes dos botões moram num módulo sem `'use client'` (ver o porquê lá); o reexport serve

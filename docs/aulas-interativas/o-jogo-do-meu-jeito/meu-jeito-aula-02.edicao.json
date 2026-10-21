@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-bordas",
+    "video-nova-nave",
+    "video-espelho",
+    "video-contorno",
+    "video-cores",
+    "video-luz",
+    "video-volume",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-nova-nave-K1",
+      "clipe": "video-nova-nave",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Depois clique em Começar a desenhar.",
+      "ancoraDepois": "Confira o nome nave e a grade quadrada. O nome precisa ser nave, porque é por esse nome que você vai encontrar o",
+      "falaPrincipal": "E por que o nome tem que ser nave?",
+      "falaPersonagem": "E por que o nome tem que ser nave?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-espelho-K1",
+      "clipe": "video-espelho",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "A mancha aparece dos dois lados da dobra. O Espelho lado a lado faz isso com cada traço, e a dobra é a linha do meio.",
+      "ancoraDepois": "Depois eu desligo esse espelho, ligo só o Espelho de cima e de baixo e clico em Pintar a ponta. Tá vendo? Agora a cópia",
+      "falaPrincipal": "E esse espelho de cima e de baixo?",
+      "falaPersonagem": "E esse espelho de cima e de baixo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-cores-K1",
+      "clipe": "video-cores",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "Agora pinte o corpo da sua nave.",
+      "ancoraDepois": "Pode ser roxa, sim. Escolha uma cor, pegue Balde de tinta e clique dentro do contorno. Olha só: a cor enche o corpo até",
+      "falaPrincipal": "Posso escolher outra cor, como roxo?",
+      "falaPersonagem": "Posso escolher outra cor, como roxo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-luz-K1",
+      "clipe": "video-luz",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "para ela, vai ver um lado mais claro, virado para o sol, e outro mais escuro. É isso que A sombra e a luz desenha.",
+      "ancoraDepois": "Agora eu ligo de novo e mudo O sol para a direita. Repare: o azul mais claro passa para a direita, e o mais escuro vai",
+      "falaPrincipal": "E se a luz vier do outro lado?",
+      "falaPersonagem": "E se a luz vier do outro lado?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

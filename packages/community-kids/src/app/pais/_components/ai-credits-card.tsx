@@ -8,10 +8,10 @@ import { useEffect, useState } from 'react'
 /**
  * O aviso de transparência aos pais: o ÚNICO lugar do Kids que diz "inteligência artificial" (o
  * guarda `tests/copy-sem-ia.test.ts` só aceita este trecho). Separa o que é automático (a ajuda do
- * Zappy no Estúdio e o Pensa) do que é da equipe (as falas do Zappy nas fases e os Recados).
+ * Zappy no Estúdio e o Pensa) do que é da equipe (as falas do Zappy nas aulas e os Recados).
  */
 export const AI_DISCLOSURE =
-  'A ajuda do Zappy no Estúdio e o Pensa são assistentes virtuais, feitos com inteligência artificial. As falas do Zappy nas fases são escritas pela nossa equipe, e nos Recados quem responde é a equipe.'
+  'A ajuda do Zappy no Estúdio e o Pensa são assistentes virtuais, feitos com inteligência artificial. As falas do Zappy nas aulas são escritas pela nossa equipe, e nos Recados quem responde é a equipe.'
 
 /**
  * O aviso SEMPRE aparece na Conta, fora do cartão de créditos: o cartão some quando a consulta
@@ -33,7 +33,7 @@ export function AiTransparencyNotice() {
  * e para a equipe, que não tem teto. A descrição automática do Mural e o "Construir" do Pro gastam
  * do mesmo total (`server/openrouter.ts` e `server/studio-builder.ts` do member-shell).
  */
-/** O que gasta crédito, inteiro e verdadeiro (as falas do Zappy nas fases não gastam). */
+/** O que gasta crédito, inteiro e verdadeiro (as falas do Zappy nas aulas não gastam). */
 export const CREDIT_USES =
   'Cada pergunta ao Zappy no Estúdio ou pedido ao Pensa usa um crédito. A descrição automática ao publicar no Mural também usa, assim como construir com o Zappy no modo Pro.'
 

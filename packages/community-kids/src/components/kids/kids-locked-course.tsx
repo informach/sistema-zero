@@ -45,14 +45,14 @@ export function KidsLockedCourse({
       chipIcon={tierReward ? Gift : Lock}
       title={
         tierReward
-          ? 'Esta aventura é um prêmio!'
+          ? 'Este curso é um prêmio!'
           : foundationFirst
-            ? 'Tem uma aventura antes desta'
-            : 'Esta aventura abre mais pra frente'
+            ? 'Tem um curso antes deste'
+            : 'Este curso abre mais pra frente'
       }
       actions={
         <Link href="/cursos" className="sz-btn-gradient">
-          <BookOpen className="size-4" aria-hidden /> Ver minhas aventuras
+          <BookOpen className="size-4" aria-hidden /> Ver meus cursos
         </Link>
       }
     >
@@ -61,13 +61,13 @@ export function KidsLockedCourse({
             precisa saber o que fazer, não como a gente organiza o catálogo. */}
         {tierReward
           ? post
-            ? `Esta aventura abre no posto ${post}. Veja as próximas aventuras na sua jornada.`
+            ? `Este curso abre no posto ${post}. Veja os próximos cursos na sua jornada.`
             : 'O posto necessário está indisponível no momento. Veja sua jornada e tente novamente.'
           : foundationFirst
-            ? 'Tem uma aventura que vem antes desta. Na lista de aventuras, veja qual é e o que falta para continuar.'
+            ? 'Tem um curso que vem antes deste. Na lista de cursos, veja qual é e o que falta para continuar.'
             : post
-              ? `Esta aventura abre no posto ${post}. Veja as próximas aventuras na sua jornada.`
-              : 'Esta aventura abre mais adiante. Veja os próximos passos na sua jornada.'}
+              ? `Este curso abre no posto ${post}. Veja os próximos cursos na sua jornada.`
+              : 'Este curso abre mais adiante. Veja os próximos passos na sua jornada.'}
       </p>
     </KidsRecado>
   )

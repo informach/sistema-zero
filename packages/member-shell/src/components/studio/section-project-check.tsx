@@ -32,7 +32,7 @@ export type ProjectChangeSubscriber = (
 /**
  * Os OBJETIVOS da parte, embaixo do Estúdio (18/10/2026). Um botão só ("Verificar esta parte"),
  * a lista dos obrigatórios e, separada, a dos extras. Quem confere é o servidor: a criança manda
- * o projeto e recebe o resultado de cada objetivo, que fica guardado e volta ao reabrir a fase.
+ * o projeto e recebe o resultado de cada objetivo, que fica guardado e volta ao reabrir a aula.
  */
 export function SectionProjectCheck({
   blockId,

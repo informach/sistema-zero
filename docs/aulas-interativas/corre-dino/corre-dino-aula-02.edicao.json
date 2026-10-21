@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-quadros",
+    "video-motor-e-dino",
+    "video-limpeza",
+    "video-camadas",
+    "video-ordem-certa",
+    "video-retirar-borda",
+    "video-descricao",
+    "video-descrever-jogo",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-limpeza-K1",
+      "clipe": "video-limpeza",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "no seu jogo, olhe a sombra do Dino. Tá vendo? Ela vai ficando escura, porque cada desenho novo cai em cima do velho.",
+      "ancoraDepois": "É isso que a gente vai resolver. Lembra da experiência da primeira parte desta aula? Com Limpar a tela antes, ficava um",
+      "falaPrincipal": "E como tira essa sombra escura?",
+      "falaPersonagem": "E como tira essa sombra escura?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-camadas-K1",
+      "clipe": "video-camadas",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "o Dino primeiro e a floresta depois. Só um pedacinho do Dino aparece, porque a floresta foi desenhada por cima dele.",
+      "ancoraDepois": "Quando eu coloco o Dino depois da Floresta, ele aparece inteiro, sem nada na frente. Ninguém foi apagado: só a ordem",
+      "falaPrincipal": "Como eu trago o Dino para a frente?",
+      "falaPersonagem": "Como eu trago o Dino para a frente?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-ordem-certa-K1",
+      "clipe": "video-ordem-certa",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino.",
+      "ancoraDepois": "Dá, sim. Repare: o bloco chega com velocidade 4. Troque por 5, porque esse número diz quanto o fundo anda em cada",
+      "falaPrincipal": "A floresta já está andando! Dá para ela andar mais rápido?",
+      "falaPersonagem": "A floresta já está andando! Dá para ela andar mais rápido?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-descricao-K1",
+      "clipe": "video-descricao",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "vazio. O leitor diz só: Tela do jogo. Imagem. O programa não vê o desenho, por isso não tem como contar o que acontece.",
+      "ancoraDepois": "Pode. Vamos colocar a descrição para o leitor de tela. Agora eu escrevo Corra com o dino e pule os cactos apertando",
+      "falaPrincipal": "E se a gente escrever como se joga?",
+      "falaPersonagem": "E se a gente escrever como se joga?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-descrever-jogo-K1",
+      "clipe": "video-descrever-jogo",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço.",
+      "ancoraDepois": "Ela fica guardada para o leitor de tela ler em voz alta. No texto, apague a frase que veio no bloco e escreva esta,",
+      "falaPrincipal": "Essa frase vai ficar escrita no jogo?",
+      "falaPersonagem": "Essa frase vai ficar escrita no jogo?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

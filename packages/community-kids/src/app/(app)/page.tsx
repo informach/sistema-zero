@@ -157,7 +157,7 @@ export default async function HomePage() {
           <section className="kids-carta mt-6 p-6 md:p-7">
             <h2 className="sz-display text-xl md:text-[1.625rem]">Espaço para sua próxima ideia</h2>
             <p className="mt-2 font-medium text-[0.9375rem] text-muted-foreground">
-              Explore as ferramentas liberadas na sua oficina ou revisite um projeto das aventuras.
+              Explore as ferramentas liberadas na sua oficina ou revisite um projeto dos cursos.
             </p>
             <Link href="/criar" prefetch={false} className="sz-btn-gradient mt-4 px-6">
               Abrir minha oficina
@@ -193,7 +193,7 @@ export default async function HomePage() {
         <section aria-labelledby="meus-cursos">
           <KidsSectionHeader
             id="meus-cursos"
-            title="Minhas aventuras"
+            title="Meus cursos"
             actions={
               <Link
                 href="/cursos"
@@ -207,14 +207,14 @@ export default async function HomePage() {
           {courses.length === 0 ? (
             <KidsEmptyState
               icon={BookOpen}
-              title="Nenhuma aventura liberada ainda"
+              title="Nenhum curso liberado ainda"
               description="Assim que sua compra for confirmada, seu acesso aparece aqui."
             />
           ) : unlocked.length === 0 ? (
             // Defensivo (tudo travado pela jornada): aponta o mapa em vez de sumir.
             <KidsEmptyState
               icon={MapIcon}
-              title="Suas próximas aventuras estão no mapa!"
+              title="Suos próximos cursos estão no mapa!"
               description="Abra o Mapa da Jornada para ver o que vem pela frente."
               action={
                 <Link href="/cursos" prefetch={false} className="sz-btn-gradient px-6">

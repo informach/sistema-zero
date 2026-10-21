@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-vidas-no-comeco",
+    "video-vidas",
+    "video-protecao",
+    "video-batida-e-coracoes",
+    "video-fecho"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-vidas-no-comeco-K1",
+      "clipe": "video-vidas-no-comeco",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "a tela mostra Vidas: 0 e Batidas: 3, porque as vidas foram dadas uma vez, no começo, e cada batida tirou uma vida.",
+      "ancoraDepois": "Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo. Repare: a batida apaga um coração,",
+      "falaPrincipal": "E se eu der as vidas o tempo todo?",
+      "falaPersonagem": "E se eu der as vidas o tempo todo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-vidas-K1",
+      "clipe": "video-vidas",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas.",
+      "ancoraDepois": "Agora os corações, que precisam ser desenhados em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo",
+      "falaPrincipal": "E como eu vejo quantas vidas tenho?",
+      "falaPersonagem": "E como eu vejo quantas vidas tenho?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-protecao-K1",
+      "clipe": "video-protecao",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "36 quadros de proteção, e a vida não cai. Na do quadro 30, ainda restam 16. Ou seja, só a primeira batida tirou vida.",
+      "ancoraDepois": "Por último, eu volto ao começo e escolho 15 quadros. A primeira batida tira uma vida, e, na batida do quadro 10, restam",
+      "falaPrincipal": "E quando esse tempinho de proteção acabar?",
+      "falaPersonagem": "E quando esse tempinho de proteção acabar?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-batida-e-coracoes-K1",
+      "clipe": "video-batida-e-coracoes",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "o bloco Para cada sprite do grupo que colidir com o sprite. Arraste e solte entre o placar e o desenho dos corações.",
+      "ancoraDepois": "Repare: o bloco já chega com o grupo asteroides, o sprite nave e, na linha de baixo, chamar o sprite de inimigo.",
+      "falaPrincipal": "Qual pedra o jogo vai tirar?",
+      "falaPersonagem": "Qual pedra o jogo vai tirar?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-batida-e-coracoes-K2",
+      "clipe": "video-batida-e-coracoes",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão.",
+      "ancoraDepois": "Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco",
+      "falaPrincipal": "Falta tirar a vida da nave, né?",
+      "falaPersonagem": "Falta tirar a vida da nave, né?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

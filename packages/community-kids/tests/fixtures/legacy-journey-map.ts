@@ -140,7 +140,7 @@ export interface TierCompletion {
 }
 
 /**
- * O contador "N de M aventuras prontas" do medalhão.
+ * O contador "N de M cursos prontos" do medalhão.
  *
  * ⭐ Conta TODOS os cursos que a trilha MOSTRA — extras e bônus incluídos —, e não só as posições
  * obrigatórias. É o que faz um curso novo publicado num degrau JÁ CONCLUÍDO aparecer: o

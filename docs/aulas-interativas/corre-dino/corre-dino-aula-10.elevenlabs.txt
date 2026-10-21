@@ -1,0 +1,57 @@
+[engaging, energetic, conversational voice] Esta é a mesma experiência da aula anterior, agora para a gente entender o tamanho da área que decide a batida.
+
+[interested, animated voice] Olha aqui: com a área do Dino em 100%, eu aproximo o cacto até aparecer BATEU! Os desenhos ainda nem se encostaram: a área pega um pedaço vazio em volta do desenho.
+
+[curious] Dá para diminuir só essa área?
+
+[engaging, energetic, conversational voice] Sem mudar a distância, eu diminuo Tamanho da área do Dino para 80%. O BATEU some. O Dino continua do mesmo tamanho; só a área ficou menor.
+
+[engaging, energetic, conversational voice] Agora eu aproximo o cacto até encostar no desenho do Dino. Com 80%, aparece BATEU, e os desenhos também se encostam. Essa batida parece justa. Por último, eu diminuo a área para 40%. Os desenhos se tocam, mas o jogo não marca a batida: a área ficou pequena demais. No seu jogo, você vai mostrar o contorno da área e deixar a área do Dino em 80%.
+
+[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Deixe um cacto chegar perto do Dino. Tá vendo? Não dá para saber onde a área começa, porque ela é invisível.
+
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a área em 100%, a batida vinha antes de os desenhos se encostarem. Agora a gente vai mostrar essa área!
+
+[engaging, energetic, conversational voice] O contorno precisa ser desenhado depois do Dino, para aparecer por cima dele. Por isso, deixe à vista o lugar logo depois de Desenhar o sprite dino, no então de Se jogando, dentro do quadro. Depois, abra Jogo 2D, depois Colisões e depois Área de contato, pegue o bloco Mostrar a caixa de colisão do sprite e solte logo depois do desenho do Dino. Escolha dino.
+
+[engaging, energetic, conversational voice] Agora comece a partida. [interested, animated voice] Olha só: aparece um contorno em volta do Dino, que só mostra a área e não muda a batida! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no então de Se jogando, logo depois de Desenhar o sprite dino, está Mostrar a caixa de colisão do sprite, com dino. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] No seu jogo, comece a partida e olhe o contorno. Tá vendo? Ele é maior que o desenho do Dino, porque a área ainda está inteira.
+
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com 80%, a batida ficou justa. Agora a gente vai ajustar a área do seu Dino!
+
+[engaging, energetic, conversational voice] A área é escolhida uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar. Depois, abra Jogo 2D, depois Colisões e depois Área de contato, pegue o bloco Usar área de colisão, que chega com 80 % do tamanho, e solte no fim de Ao iniciar. No sprite, escolha dino e deixe a porcentagem em 80.
+
+[engaging, energetic, conversational voice] Agora comece a partida e olhe o contorno: ele ficou menor, mas o Dino continua do mesmo tamanho, 64, porque só a área da batida mudou! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Usar área de colisão está no fim de Ao iniciar, com dino e 80, e o tamanho do Dino continua 64. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Deixe um cacto chegar e compare a batida com a do teste anterior. Se quiser, teste 70 e 85 nesse campo e compare. Você pode escolher um valor entre 70 e 85, e, no exemplo, fica 80. Não mude o tamanho do desenho para tentar ajustar a área, porque isso encolheria o Dino.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[confident, clear, unhurried voice] Repare: agora que a área da batida está ajustada, o contorno não faz mais falta. Ele serviu para você enxergar a área enquanto ajustava. Por isso, retire só o contorno e deixe a regra que escolhe a porcentagem.
+
+[curious] Como eu tiro só o contorno?
+
+[confident, clear, unhurried voice] Deixe à vista o bloco Mostrar a caixa de colisão do sprite, no então de Se jogando. Se você puxar esse bloco, os blocos de baixo saem junto, porque estão encaixados nele. Por isso, primeiro arraste o bloco que vem logo abaixo do contorno para um espaço livre, levando o resto da sequência. Depois, arraste o contorno para a lixeira e encaixe a sequência de volta, logo abaixo do desenho do Dino.
+
+[engaging, energetic, conversational voice] Agora comece outra partida. [interested, animated voice] Olha só: o contorno desaparece, e a batida continua usando a área menor! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: em Ao iniciar, continua o bloco Usar área de colisão, com dino e a porcentagem escolhida, e o contorno não está mais no quadro. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora o seu jogo usa uma área ajustada para a batida! Antes de enviar o seu projeto, comece uma partida, pule e deixe uma batida acontecer, para conferir a tela de fim e o recomeço.
+
+[confident, clear, unhurried voice] Confira o tamanho 64 no Dino e, no bloco de área, a porcentagem que você escolheu, entre 70 e 85. O contorno de teste tem que estar fora do jogo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

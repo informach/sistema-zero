@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-regua-negativos",
+    "video-o-que-o-freio-segura",
+    "video-numero-que-manda",
+    "video-relogio-da-dificuldade",
+    "video-acelerador-e-freio",
+    "video-descricao-completa",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-regua-negativos-K1",
+      "clipe": "video-regua-negativos",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Somar um número negativo deixa o valor menor. No seu jogo, velocidade mais para a esquerda é cacto mais rápido.",
+      "ancoraDepois": "Eu clico em Voltar ao começo e escolho o sinal maior que, o símbolo >. Com o marcador em -5, a pergunta -5 > -9",
+      "falaPrincipal": "Qual é maior: menos cinco ou menos nove?",
+      "falaPersonagem": "Qual é maior: menos cinco ou menos nove?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-o-que-o-freio-segura-K1",
+      "clipe": "video-o-que-o-freio-segura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "a responder não. Os cactos que já nasceram não trocam de número: cada um guarda a velocidade que recebeu ao nascer.",
+      "ancoraDepois": "Com a base parada em -9, eu continuo clicando até nascer um cacto com -10. A base é -9, mas o sorteio tirou mais 1. A",
+      "falaPrincipal": "Com a base em menos nove, pode nascer um cacto mais rápido?",
+      "falaPersonagem": "Com a base em menos nove, pode nascer um cacto mais rápido?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-acelerador-e-freio-K1",
+      "clipe": "video-acelerador-e-freio",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "e depois Valores, pegue o bloco valor da variável, solte em cima do x, do lado esquerdo, e escolha velocidade.",
+      "ancoraDepois": "O sinal já chega como >, maior que: mantenha. No lado direito, troque o 0 por -9. Assim, a pergunta fica: velocidade",
+      "falaPrincipal": "Até onde a velocidade pode mudar?",
+      "falaPersonagem": "Até onde a velocidade pode mudar?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

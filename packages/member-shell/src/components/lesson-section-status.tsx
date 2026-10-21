@@ -35,7 +35,7 @@ import { useLessonCopy } from './lesson-copy-context'
  * `kind` que escolhe o ícone e a cor. As strings `pending` continuam existindo por compatibilidade
  * (ajuda ao professor, recados), mas a faixa não as lê.
  *
- * ⚠️⚠️ Mensagem de AUTORIA ("Configure os critérios de conclusão desta seção.") é para o professor,
+ * ⚠️⚠️ Mensagem de AUTORIA ("Configure os critérios de conclusão desta parte.") é para o professor,
  * não para a criança: fora do ensaio do admin ela vira "Esta parte ainda está sendo preparada".
  *
  * Só ganchos e utilitárias sóbrias aqui (invariante 8 do CLAUDE.md): o kids veste pelos ganchos
@@ -44,7 +44,7 @@ import { useLessonCopy } from './lesson-copy-context'
  */
 
 const ICONE: Record<SectionPendingKind, typeof Check> = {
-  // A seção como um todo (o motivo do "Concluir aula" quando uma seção não fechou).
+  // A parte como um todo (o motivo do "Concluir aula" quando uma parte não fechou).
   SECTION_GATE_INCOMPLETE: Flag,
   VIDEO_GATE_NOT_WATCHED: Clapperboard,
   LEARNING_GATE_INCOMPLETE: FlaskConical,
@@ -128,10 +128,10 @@ export function LessonSectionStatus({
 }: {
   /** O que falta na seção ATUAL, tipado pelo members. */
   items: readonly SectionPendingItem[]
-  /** A seção atual já está concluída. */
+  /** A parte atual já está concluída. */
   completed: boolean
   /**
-   * O que o player diz quando não há itens da seção (aula legada, conta de equipe): a razão de o
+   * O que o player diz quando não há itens da parte (aula legada, conta de equipe): a razão de o
    * "Concluir aula" estar travado, em TEXTO. `null` = nada a dizer.
    */
   fallback?: ReactNode

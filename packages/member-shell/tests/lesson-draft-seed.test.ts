@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { type DraftSeedInput, decideLessonDraftSeed } from '../src/lib/lesson-draft-seed'
 
 /**
- * Qual versão o Estúdio/Pinta da fase abre (10/10/2026): a decisão dela foi "abre a mais nova,
+ * Qual versão o Estúdio/Pinta da aula abre (10/10/2026): a decisão dela foi "abre a mais nova,
  * a outra fica guardada". Os relógios: local no aparelho (corrigido por `skewMs`), conta e envio
  * no servidor.
  */

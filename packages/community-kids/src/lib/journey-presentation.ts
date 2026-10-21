@@ -53,7 +53,7 @@ export function canonicalJourneyProgress(view: KidsJourneyView): CanonicalJourne
   if (view.mode === 'paused')
     return {
       kind: 'paused',
-      hint: 'Suas conquistas estão guardadas. As próximas aventuras estão em preparação.',
+      hint: 'Suas conquistas estão guardadas. Os próximos cursos estão em preparação.',
     }
   const advance = view.advances.find((step) => step.level === view.nextLevel)
   const pending = advance?.requirements.filter((item) => item.state === 'pending') ?? []
@@ -61,7 +61,7 @@ export function canonicalJourneyProgress(view: KidsJourneyView): CanonicalJourne
   if (pending.length === 0)
     return {
       kind: 'up-to-date',
-      hint: 'Você já fez tudo que está pronto. Novas aventuras estão sendo criadas!',
+      hint: 'Você já fez tudo que está pronto. Novos cursos estão sendo criados!',
     }
   const groups = requirementGroups(advance?.requirements ?? [])
   const pendingGroups = groups.filter((group) => group.some((item) => item.state === 'pending'))
@@ -73,18 +73,18 @@ export function canonicalJourneyProgress(view: KidsJourneyView): CanonicalJourne
   const showcase = remaining - complete
   const prefix =
     remaining === 1
-      ? `Falta 1 aventura para você virar ${levelInfo(view.nextLevel).label}.`
-      : `Faltam ${remaining} aventuras para você virar ${levelInfo(view.nextLevel).label}.`
+      ? `Falta 1 curso para você virar ${levelInfo(view.nextLevel).label}.`
+      : `Faltam ${remaining} cursos para você virar ${levelInfo(view.nextLevel).label}.`
   const action =
     showcase === 0
       ? remaining === 1
-        ? 'Termine a aventura!'
-        : 'Termine as aventuras!'
+        ? 'Termine o curso!'
+        : 'Termine os cursos!'
       : complete === 0
         ? remaining === 1
           ? 'Termine e publique o seu jogo no Mural!'
           : 'Termine e publique os seus jogos no Mural!'
-        : `Termine ${complete === 1 ? '1 aventura' : `${complete} aventuras`} e publique ${showcase === 1 ? '1 jogo' : `${showcase} jogos`} no Mural.`
+        : `Termine ${complete === 1 ? '1 curso' : `${complete} cursos`} e publique ${showcase === 1 ? '1 jogo' : `${showcase} jogos`} no Mural.`
   return {
     kind: 'pending',
     remaining,

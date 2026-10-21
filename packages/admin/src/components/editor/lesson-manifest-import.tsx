@@ -1,12 +1,14 @@
 'use client'
 
 import {
+  cursoEditorialComum,
   hasLegacyStudioManifestSolution,
   isLearningManifest,
   LEARNING_IMPORT_BODY_MAX_BYTES,
   LEARNING_MANIFEST_SOURCE_MAX_BYTES,
   type LessonSection,
   learningImportBodyBytes,
+  manifestoParaDestino,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { Textarea } from '@sistemazero/ui/textarea'
@@ -264,7 +266,14 @@ export function LessonManifestImport({
             disabled={busy || !source.trim()}
             onClick={() => {
               try {
-                change(JSON.stringify({ ...parse(), courseSlug, lessonSlug }, null, 2))
+                const origem = parse()
+                const vinculado = cursoEditorialComum(origem.courseSlug)
+                  ? manifestoParaDestino(origem, { courseSlug, lessonSlug })
+                  : { ...origem, courseSlug, lessonSlug }
+                change(JSON.stringify(vinculado, null, 2))
+                setNotice(
+                  `Arquivo vinculado a ${courseSlug} / ${lessonSlug}. Confira a prévia antes de aplicar; mídias já publicadas permanecem no modo de preservação.`,
+                )
               } catch (e) {
                 setError((e as Error).message)
               }

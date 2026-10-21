@@ -55,7 +55,7 @@ export function isVoiceInputConfigured(): boolean {
 export interface TranscribeInput {
   audio: Uint8Array
   format: SpokenAudioFormat
-  /** Onde a criança está (título da fase e da parte), já limpo. */
+  /** Onde a criança está (título da aula e da parte), já limpo. */
   context?: string
   /** O teto do texto (`spokenTextMaxChars`); sem ele, os 1000 de sempre. */
   maxChars?: number

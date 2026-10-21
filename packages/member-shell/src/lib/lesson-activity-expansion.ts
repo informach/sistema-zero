@@ -6,7 +6,7 @@ import { useEffect, useRef, useSyncExternalStore } from 'react'
  * "Alguma atividade da aula está AMPLIADA agora?" (03/10/2026).
  *
  * Quatro peças ampliam por conta própria — a cena (`scene-workspace`), o jogo pronto
- * (`project-play-activity`), o Estúdio e o Pinta —, cada uma com o seu estado. O vídeo da seção
+ * (`project-play-activity`), o Estúdio e o Pinta —, cada uma com o seu estado. O vídeo da parte
  * precisa saber de QUALQUER uma delas para virar o vídeo flutuante, e por isso elas avisam aqui
  * em vez de alguém subir quatro estados até a aula.
  *

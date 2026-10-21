@@ -1,33 +1,46 @@
 # Apoio técnico das aulas interativas
 
-Fontes de autoria, regras, geradores, verificações e histórico dos cinco cursos. Os arquivos de uso diário estão em [Aulas interativas](../aulas-interativas/README.md): `kids/` tem a versão das crianças e `adulto/` a dos adultos.
+As 37 aulas dos cinco cursos têm uma única fonte editorial em [Aulas interativas](../aulas-interativas/README.md). Não há geração separada por público.
 
-- [Diretrizes pedagógicas](DIRETRIZES-PEDAGOGICAS.md): regras de autoria e revisão.
-- [Diretrizes da versão adulta](DIRETRIZES-ADULTO.md): público, tom, analogias, nomes da plataforma adulta e como gerar.
-- [Briefing](BRIEFING.md), [especificação de roteiro](ESPEC-ROTEIRO.md) e [especificação de manifesto](ESPEC-MANIFESTO.md).
-- [Referência da plataforma](REFERENCIA-PLATAFORMA.md) e [referência dos blocos](REFERENCIA-BLOCOS-JOGO-2D.json).
-- `qa/`: fontes editoriais, projetos de referência, geradores e testes.
-- `recursos/`: fontes editáveis e geradores dos Mapas da Aventura.
-- `cenas/`: especificações e relatórios das experiências.
-- `qa/adulto/`: gerador da versão adulta e o texto adulto de cada aula (`traducoes/`).
-- `modulos-*.md`: histórico completo de decisões e implantação de cada curso. As fichas resumidas ficam em `../aulas-interativas/kids/<curso>/modulos.md`.
-- [Histórico da organização anterior](historico-organizacao.md).
+- [Diretrizes pedagógicas](DIRETRIZES-PEDAGOGICAS.md): clareza, instrução completa e linguagem comum.
+- [Voz ElevenLabs v4](DIRETRIZES-VOZ-ELEVENLABS.md), [formato do roteiro](ESPEC-ROTEIRO.md) e [Dedé/Debinha](AVATARES-NOS-VIDEOS.md).
+- [Briefing](BRIEFING.md), [manifesto](ESPEC-MANIFESTO.md), [plataforma](REFERENCIA-PLATAFORMA.md) e [blocos](REFERENCIA-BLOCOS-JOGO-2D.json).
+- `qa/`: fontes editoriais, geradores, exportadores e testes.
+- `recursos/`: fontes e geradores do Passo a passo do projeto.
+- `cenas/`: especificações das experiências. `modulos-*.md` e relatórios datados preservam decisões históricas; os índices atuais estão nas pastas dos cursos.
+- [Decisões da unificação](../plans/2026-10-21-unificacao-aulas-plataforma-design.md) e [continuidade](../continuity/2026-10-21-unificacao-aulas-plataforma/README.md).
 
 ## Gerar e verificar
 
-Execute da raiz do repositório:
+Execute da raiz do repositório. Cadê e Farol têm roteiro de produção como fonte da fala. Nave, Dino e Meu Jeito usam `qa/*.conteudo.json`; edite a fonte e regenere, sem corrigir só a saída.
 
 ```powershell
+bun docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts
+bun docs/aulas-interativas-tecnico/qa/gerar-desafio-farol.ts
+bun docs/aulas-interativas-tecnico/qa/gerar-nave-contra-asteroides.ts
+bun docs/aulas-interativas-tecnico/qa/gerar-corre-dino.ts
+bun docs/aulas-interativas-tecnico/qa/gerar-meu-jeito.ts
+bun docs/aulas-interativas-tecnico/qa/gerar-falas-elevenlabs.ts
+bun docs/aulas-interativas-tecnico/qa/gerar-falas-elevenlabs.ts --check
 bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts
 python -X utf8 docs/aulas-interativas-tecnico/validar-roteiros.py
 bun test docs/aulas-interativas-tecnico/qa
-bun docs/aulas-interativas-tecnico/qa/exportar-projetos-finais.ts
-bun docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts --preparar
-bun docs/aulas-interativas-tecnico/qa/adulto/gerar-adulto.ts
+bun docs/como-fazer/validar.ts
+bun docs/como-fazer-adulto/validar.ts
 ```
 
-Os geradores `qa/gerar-*.ts` gravam as aulas diretamente na pasta kids de cada curso. Depois de mudar o kids, rode o gerador adulto com `--preparar`: os trechos alterados voltam como pendentes em `qa/adulto/traducoes/` e precisam de nova versão adulta antes de gerar `adulto/`. O teste `qa/adulto/versao-adulta.test.ts` falha enquanto a versão adulta estiver atrasada. Os geradores de materiais em `recursos/` gravam `mapa-da-aventura.pdf` nessa mesma pasta. Arquivos intermediários e capturas continuam em `tmp/` ou `output/artes/`.
+O exportador `qa/exportar-projetos-finais.ts` atualiza `blocos.json` e `projeto-final.szproject.json` quando o projeto muda. Uma revisão de linguagem preserva esses projetos e os critérios de conclusão.
 
-O exportador dos projetos finais usa a última etapa de cada jogo e atualiza `projeto-final.szproject.json` e `blocos.json`. A lista de blocos inclui os tipos usados durante a montagem, mesmo quando uma peça é retirada antes do jogo final. O projeto de O Jogo do Meu Jeito usa as artes de demonstração.
+## Material comum
 
-Ao criar um novo curso, registre seu prefixo em `qa/caminhos.ts`. Os validadores e testes que percorrem todas as aulas usam esse catálogo; os nomes e identificadores dos 37 trios existentes foram preservados na organização por curso.
+```powershell
+bun docs/aulas-interativas-tecnico/recursos/cade-todo-mundo/gerar-caderno.ts
+python docs/aulas-interativas-tecnico/recursos/desafio-farol/gerar-materiais.py
+python docs/aulas-interativas-tecnico/recursos/nave-contra-asteroides/gerar-materiais.py
+python docs/aulas-interativas-tecnico/recursos/corre-dino/gerar-materiais.py
+python docs/aulas-interativas-tecnico/recursos/meu-jeito/gerar-materiais.py
+```
+
+As saídas são `docs/aulas-interativas/<curso>/passo-a-passo-do-projeto.pdf`. Requerem Bun, Python/Playwright e Chrome ou Edge. Os pipelines verificam fontes, imagens, cores e limites; revise visualmente os PDFs renderizados após mudanças. Não use os antigos argumentos `--adulto` ou o fluxo de traduções por trecho.
+
+Importar é uma etapa separada: confira curso/aula de destino e preserve anexos existentes. O adaptador comum só altera `courseSlug` entre o curso canônico e seu correspondente adulto, mantendo aula, blocos, partes e critérios. A geração local não publica vídeos nem gera áudio pago.

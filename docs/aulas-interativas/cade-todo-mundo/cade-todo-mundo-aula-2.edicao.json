@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-a2-retomada",
+    "video-a2-variavel",
+    "video-a2-contagem",
+    "video-a2-personalizar",
+    "video-a2-fecho"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-a2-retomada-K1",
+      "clipe": "video-a2-retomada",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "aqui o jardim, do jeito que ficou na Aula 1: quando eu toco num esconderijo, ele fica invisível e o personagem aparece.",
+      "ancoraDepois": "É que o jogo ainda não conta quem você encontra. Então, agora a gente vai fazer esse número contar cada personagem",
+      "falaPrincipal": "Ué, por que o número ficou no zero?",
+      "falaPersonagem": "Ué, por que o número ficou no zero?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-a2-variavel-K1",
+      "clipe": "video-a2-variavel",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "vai para 1, porque eu encontrei um personagem e o jogo somou um. Se eu toco em outro, ele soma de novo, e agora é 2.",
+      "ancoraDepois": "Vamos ver. Olha aqui: eu toco num espaço vazio. Tá vendo? O número não muda. Isso acontece porque a regra que soma está",
+      "falaPrincipal": "E se eu tocar num espaço vazio do jardim?",
+      "falaPersonagem": "E se eu tocar num espaço vazio do jardim?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-a2-contagem-K1",
+      "clipe": "video-a2-contagem",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "grupo esconderijos. Repare que dentro dele já está o bloco da Aula 1, Deixar o sprite escolhido com 0% de visibilidade.",
+      "ancoraDepois": "Ele vai entrar logo abaixo do bloco de visibilidade, dentro de Quando clicar ou tocar. Então deixe esse lugar à vista.",
+      "falaPrincipal": "E onde entra o bloco que conta?",
+      "falaPersonagem": "E onde entra o bloco que conta?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-a2-contagem-K3",
+      "clipe": "video-a2-contagem",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.",
+      "ancoraDepois": "Vamos ver. Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe",
+      "falaPrincipal": "E se eu tocar no mesmo lugar de novo?",
+      "falaPersonagem": "E se eu tocar no mesmo lugar de novo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-a2-fecho-K1",
+      "clipe": "video-a2-fecho",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "terminar. Seu jogo está no Mural! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.",
+      "ancoraDepois": "Clique em Copiar link de jogar e mande esse link para a sua família e os seus amigos. Quem receber pode jogar direto,",
+      "falaPrincipal": "E para mostrar o jogo para alguém?",
+      "falaPersonagem": "E para mostrar o jogo para alguém?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

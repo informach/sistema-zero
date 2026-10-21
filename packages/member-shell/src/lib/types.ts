@@ -638,7 +638,7 @@ export interface OwnPintaSubmissionView {
 }
 
 // ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta (18/08/2026) ──
-/** `lesson-*` = o rascunho do Estúdio/Pinta DENTRO da fase (um item por bloco, 10/10/2026). */
+/** `lesson-*` = o rascunho do Estúdio/Pinta DENTRO da aula (um item por bloco, 10/10/2026). */
 export type CreationToolView = 'studio' | 'pinta' | 'molda' | 'lesson-studio' | 'lesson-pinta'
 
 /** Uma linha do índice `GET /members/creations/:tool` (sem o blob). */
@@ -657,7 +657,7 @@ export interface CreationSummaryView {
   syncedAt: string
   /** ISO presente apenas para uma lápide de exclusão. */
   deletedAt?: string | null
-  /** Impressão digital do conteúdo da revisão corrente (rascunhos da fase). */
+  /** Impressão digital do conteúdo da revisão corrente (rascunhos da aula). */
   contentFingerprint?: string | null
 }
 

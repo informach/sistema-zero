@@ -53,7 +53,7 @@ export function ChildClient({
   initialTab: ChildTab
   /** O acesso da família já estava preparado ao abrir (o guia registra a primeira vez). */
   familyReady: boolean | null
-  /** A fase do link que trouxe o responsável (`?aluno=`): abre depois da troca para a criança. */
+  /** A aula do link que trouxe o responsável (`?aluno=`): abre depois da troca para a criança. */
   studentDestination?: string
 }) {
   const [tab, setTab] = useState<ChildTab>(initialTab)

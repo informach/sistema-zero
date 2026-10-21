@@ -1170,7 +1170,7 @@ function LessonEditorSession({
       return
     }
     if (attForm.zappyStudentNotebook && !isPdfAttachment(attForm)) {
-      toast.error('O Caderno do aluno para o Zappy precisa ser um PDF.')
+      toast.error('O Passo a passo do projeto para o Zappy precisa ser um PDF.')
       return
     }
     const current = session.getSnapshot().draft
@@ -2194,8 +2194,8 @@ function LessonEditorSession({
                       />
                     </Field>
                     <p className="text-xs text-muted-foreground">
-                      Para usar o texto deste PDF nas respostas do Zappy, marque “Caderno do aluno
-                      para o Zappy” em Arquivos da aula.
+                      Para usar o texto deste PDF nas respostas do Zappy, marque “Passo a passo do
+                      projeto para o Zappy” em Arquivos da aula.
                     </p>
                     <Field
                       label="Título"
@@ -2956,7 +2956,7 @@ function LessonEditorSession({
                   className="mt-0.5 size-4 accent-primary"
                 />
                 <span>
-                  <strong className="block">Caderno do aluno para o Zappy</strong>
+                  <strong className="block">Passo a passo do projeto para o Zappy</strong>
                   <span className="text-muted-foreground">
                     Autoriza o Zappy a usar o texto deste PDF nas respostas. Não obriga o aluno a
                     baixá-lo.

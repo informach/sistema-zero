@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-d3-condicao",
+    "video-d3-sem-chave",
+    "video-d3-decisao",
+    "video-d3-personalizar",
+    "video-d3-farol-mensagens",
+    "video-d3-posicao",
+    "video-d3-posicionar-chave",
+    "video-d3-fecho"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-d3-condicao-K1",
+      "clipe": "video-d3-condicao",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "escolhe o senão: fica fechada e avisa que falta a chave. É como a porta da sua casa: ela só abre se você tiver a chave.",
+      "ancoraDepois": "Vamos ver. Agora eu clico em Levar a chave e em Testar a porta de novo. Olha só: agora temChave está verdadeiro, a",
+      "falaPrincipal": "E se eu trouxer a chave agora?",
+      "falaPersonagem": "E se eu trouxer a chave agora?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-d3-sem-chave-K2",
+      "clipe": "video-d3-sem-chave",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "a pergunta já é essa. Pronto: agora, quando o personagem encostar no farol, o jogo confere se temChave é verdadeiro.",
+      "ancoraDepois": "Esse aviso vai no espaço do senão. O senão guarda a resposta para quando temChave é falso, ou seja, para quando o",
+      "falaPrincipal": "E onde eu escrevo que falta a chave?",
+      "falaPersonagem": "E onde eu escrevo que falta a chave?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-d3-decisao-K2",
+      "clipe": "video-d3-decisao",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "heroi e escolha farol. Depois clique no segundo e escolha a imagem farol listrado aceso. Se não achar, role a lista.",
+      "ancoraDepois": "Vai, sim! É para isso que serve o último bloco: o aviso. Ele vai logo abaixo da troca de imagem, ainda dentro do então.",
+      "falaPrincipal": "E quem está jogando vai saber que deu certo?",
+      "falaPersonagem": "E quem está jogando vai saber que deu certo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-d3-decisao-K3",
+      "clipe": "video-d3-decisao",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "até a porta do farol, lá na base da torre. Olha só: a luz acende, o aviso muda, e o barco já chegou perto do farol!",
+      "ancoraDepois": "Clique em Atualizar de novo. Repare que a chave volta para o chão, porque começou uma partida nova. Vá direto até a",
+      "falaPrincipal": "Acendeu! E se eu quiser jogar de novo?",
+      "falaPersonagem": "Acendeu! E se eu quiser jogar de novo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-d3-posicao-K1",
+      "clipe": "video-d3-posicao",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "ela estava. O x escolhe o lugar na horizontal: um número menor leva para a esquerda, e um maior leva para a direita.",
+      "ancoraDepois": "A gente muda o y. Agora eu deixo o x em 160 e mudo só Posição vertical y: ele está em 53, e eu escrevo 250 do mesmo",
+      "falaPrincipal": "E para subir ou descer?",
+      "falaPersonagem": "E para subir ou descer?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-d3-posicionar-chave-K1",
+      "clipe": "video-d3-posicionar-chave",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "perto da trilha, com x 211 e y 53; na parte de baixo, com x 160 e y 250; ou perto da ponte, com x 280 e y 160.",
+      "ancoraDepois": "Você pode escolher um deles ou experimentar outro. Eu vou colocar na parte de baixo. No campo x do bloco, troque o",
+      "falaPrincipal": "Preciso escolher um desses três lugares?",
+      "falaPersonagem": "Preciso escolher um desses três lugares?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

@@ -37,11 +37,11 @@ interface Viewer {
   viewerWatermark: string | null
   lessonDraftsEnabled: boolean
   voiceInput: boolean
-  /** A fase lida pela página no servidor (o primeiro quadro já com a fase). */
+  /** A aula lida pela página no servidor (o primeiro quadro já com a aula). */
   initialLesson?: LessonDetailView | null
 }
 
-/** A sala da criança: a sala ao vivo do member-shell com a fase do encontro no slot da aula. */
+/** A sala da criança: a sala ao vivo do member-shell com a aula do encontro no slot da aula. */
 export function LiveRoomClient({
   sessionId,
   initialRoom,
@@ -51,7 +51,7 @@ export function LiveRoomClient({
   voiceInput,
   initialLesson,
 }: { sessionId: string; initialRoom?: LiveRoomView | null } & Viewer) {
-  // Estável: a sala memoriza a fase pelo slot, e um `renderLesson` novo a refaria inteira.
+  // Estável: a sala memoriza a aula pelo slot, e um `renderLesson` novo a refaria inteira.
   const renderLesson = useCallback(
     (slot: LiveLessonSlotProps) => (
       <KidsLiveLesson
@@ -67,7 +67,7 @@ export function LiveRoomClient({
 }
 
 /**
- * A fase do encontro com o player de aula do Kids (o mesmo contexto da página de fase): a
+ * A aula do encontro com o player de aula do Kids (o mesmo contexto da página de fase): a
  * transmissão no lugar do vídeo, as partes conduzidas e o Estúdio no projeto ao vivo.
  */
 function KidsLiveLesson({ slot, viewer }: { slot: LiveLessonSlotProps; viewer: Viewer }) {
@@ -83,7 +83,7 @@ function KidsLiveLesson({ slot, viewer }: { slot: LiveLessonSlotProps; viewer: V
         {error}
       </p>
     )
-  if (!lesson) return <LiveLessonSkeleton stage={slot.stage} label="Abrindo a fase…" />
+  if (!lesson) return <LiveLessonSkeleton stage={slot.stage} label="Abrindo a aula…" />
   return (
     <KidsLiveLessonPlayer
       key={`${viewer.viewerId}:${lesson.id}`}
@@ -110,7 +110,7 @@ function KidsLiveLessonPlayer({
   onSectionChange(posicao: { sectionId: string }): void
 }) {
   const { viewerId, viewerWatermark, voiceInput, lessonDraftsEnabled } = viewer
-  // Junta os pedidos e espera a atividade ampliada fechar; aqui atualizar é RELER a fase.
+  // Junta os pedidos e espera a atividade ampliada fechar; aqui atualizar é RELER a aula.
   const refreshLesson = useLessonRefresh(reload)
   const learning = useLessonLearning(lesson, viewerId)
   const lessonDrafts = useMemo(
@@ -127,7 +127,7 @@ function KidsLiveLessonPlayer({
   const completeBlocked = requirements.some((r) => !r.complete)
   const [completing, setCompleting] = useState(false)
   const completedRef = useRef(lesson.completed)
-  // A mesma régua do gravado: XP, foguinho e missões contam pela conclusão da fase.
+  // A mesma régua do gravado: XP, foguinho e missões contam pela conclusão da aula.
   const complete = useCallback(async () => {
     if (completedRef.current) return
     setCompleting(true)
@@ -138,7 +138,7 @@ function KidsLiveLessonPlayer({
       )
       completedRef.current = true
       const xp = res.gamification?.xpAwarded ?? 0
-      toast.success(xp > 0 ? `Fase concluída! +${xp} XP` : 'Fase concluída!')
+      toast.success(xp > 0 ? `Aula concluída! +${xp} XP` : 'Aula concluída!')
       refreshLesson()
     } catch (cause) {
       toast.error(conclusaoRecusada(cause))
@@ -195,7 +195,7 @@ function KidsLiveLessonPlayer({
   const completionAction = lesson.completed ? (
     <span className="inline-flex items-center gap-2 font-extrabold text-[0.9375rem]">
       <CheckCircle2 className="size-5 text-(--success-foreground)" aria-hidden />
-      Fase concluída
+      Aula concluída
     </span>
   ) : (
     <button
@@ -205,7 +205,7 @@ function KidsLiveLessonPlayer({
       className="sz-btn-gradient h-12 gap-2 px-7 text-base disabled:cursor-not-allowed disabled:opacity-55"
     >
       {completing ? <Spinner /> : <CheckCircle2 className="size-5" aria-hidden />}
-      Concluir fase
+      Concluir aula
     </button>
   )
   return (
@@ -219,7 +219,7 @@ function KidsLiveLessonPlayer({
         sectionControl={slot.sectionControl}
         completionAction={completionAction}
         completionMessage={
-          completeBlocked && !lesson.completed ? 'Termine o que esta fase pede para concluir' : null
+          completeBlocked && !lesson.completed ? 'Termine o que esta aula pede para concluir' : null
         }
         onSectionChange={onSectionChange}
         renderBlocks={(blocks) => <KidsLessonBlocks blocks={blocks} />}

@@ -47,7 +47,7 @@ test('canonical progress: slot and explicit references to one course retain both
   const progress = canonicalJourneyProgress(journey)
   if (progress.kind !== 'pending') throw new Error('Expected pending canonical progress')
   expect(progress.remaining).toBe(1)
-  expect(progress.hint).toContain('Falta 1 aventura')
+  expect(progress.hint).toContain('Falta 1 curso')
   expect(progress.hint).toContain('publique')
   expect(journey.missing).toHaveLength(2)
 })

@@ -1,10 +1,7 @@
 import { readdirSync } from 'node:fs'
 import { basename, resolve } from 'node:path'
 
-export const PASTA_CURSOS = resolve(import.meta.dir, '../../aulas-interativas/kids')
-/** A versão adulta dos mesmos cursos, gerada por `adulto/gerar-adulto.ts`. */
-export const PASTA_CURSOS_ADULTO = resolve(import.meta.dir, '../../aulas-interativas/adulto')
-
+export const PASTA_CURSOS = resolve(import.meta.dir, '../../aulas-interativas')
 export const CURSOS_POR_PREFIXO = {
   'cade-todo-mundo': 'cade-todo-mundo',
   desafio: 'desafio-primeiro-jogo',

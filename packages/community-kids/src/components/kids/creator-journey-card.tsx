@@ -83,7 +83,7 @@ export function CreatorJourneyCard({
     ? 'Fogo de hoje garantido. Continue assim!'
     : streak.current > 0
       ? 'Crie ou aprenda algo hoje para manter o fogo aceso!'
-      : 'Conclua uma fase hoje para acender o fogo!'
+      : 'Conclua uma aula hoje para acender o fogo!'
   // Apagado = o traço azul; aceso = o laranja da marca, cheio (a régua do menu).
   const flameClass = streak.activeToday
     ? 'fill-current text-(--sz-kids-laranja-texto)'
@@ -125,7 +125,7 @@ export function CreatorJourneyCard({
           </p>
         ) : (
           <p className="mt-1.5 text-muted-foreground text-[0.8125rem]">
-            Sua jornada começa nas aventuras.
+            Sua jornada começa nos cursos.
           </p>
         )}
         <p className="mt-2.5 flex items-center gap-2 font-medium text-[0.8125rem] text-muted-foreground">

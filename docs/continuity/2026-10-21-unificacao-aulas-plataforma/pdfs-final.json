@@ -1,0 +1,37 @@
+[
+  {
+    "curso": "cade-todo-mundo",
+    "paginas": 7,
+    "foraDosLimites": [],
+    "rotulosAntigos": [],
+    "sha256": "48c41cab18cf8f8460c00f63a748d3bfef6fab4f82cc5242585a3aba1ec4e88a"
+  },
+  {
+    "curso": "corre-dino",
+    "paginas": 56,
+    "foraDosLimites": [],
+    "rotulosAntigos": [],
+    "sha256": "e358198c3ba8008199839acfd6e8a7442a7c5e0f3071578e09ababc4d3bfddc2"
+  },
+  {
+    "curso": "desafio-primeiro-jogo",
+    "paginas": 29,
+    "foraDosLimites": [],
+    "rotulosAntigos": [],
+    "sha256": "75de1067cf4f3a89a8e933b50a23f4b9cb5e5e7db6831f7e49f409251205c60a"
+  },
+  {
+    "curso": "nave-contra-asteroides",
+    "paginas": 39,
+    "foraDosLimites": [],
+    "rotulosAntigos": [],
+    "sha256": "97413191f72ae86a39aedc88966f85efd1995f440c9373e423dad4809792e718"
+  },
+  {
+    "curso": "o-jogo-do-meu-jeito",
+    "paginas": 33,
+    "foraDosLimites": [],
+    "rotulosAntigos": [],
+    "sha256": "1577bd8fc1f0aebd2719c4d0553665ca9b318fe1f76dedb0678163690c4ceb24"
+  }
+]
