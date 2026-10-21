@@ -1,14 +1,15 @@
 #!/usr/bin/env bun
 /**
- * Prepara o Studio Python LOCAL a partir da distribuição da candidata (542cc502…), sem nada
+ * Prepara o Studio Python LOCAL a partir da distribuição da candidata (65c9bffd…), sem nada
  * hospedado:
  *
  *  1. Lê um plano canônico já gerado pelo promotor (offline, versionado no repo):
  *     `deployment` (release + distribuição) e `configuration.members` (a política de autoria).
- *     Padrão: a candidata `python-browser/2026-10-21-audio-2` (distribuição 542cc502…, com o
- *     runtime Turtle de f81fd9ae2 e as capacidades `publish` e `assist`, exigidas desde 896c3a1c3
- *     para publicar e para o Zappy). A distribuição padrão é a cópia em DISTRIBUTIONS_DIR com o SHA que o
- *     próprio plano fixou (`input.distribution.sha256`); `--distribution <dir>` a substitui.
+ *     Padrão: a candidata `python-browser/2026-10-21-audio-2` (distribuição 65c9bffd…, com o
+ *     runtime Turtle de f81fd9ae2 e e1c5fb092 e as capacidades `publish` e `assist`, exigidas
+ *     desde 896c3a1c3 para publicar e para o Zappy). A distribuição padrão é a cópia em
+ *     DISTRIBUTIONS_DIR com o SHA que o próprio plano fixou (`input.distribution.sha256`);
+ *     `--distribution <dir>` a substitui.
  *     `--plan <arquivo>` escolhe outro (ex.: o piloto audio-1 em
  *     docs/continuity/2026-10-21-studio-python/snapshots/root/0374-canonical-plan.json.snapshot).
  *  2. Gera a config do Worker @sistemazero/studio-runtime para `wrangler dev --local`
@@ -31,7 +32,7 @@ export const RUNTIME_ORIGIN = `http://127.0.0.1:${RUNTIME_PORT}`
 export const RUNTIME_DIR = join(STACK_DIR, 'studio-runtime')
 export const RUNTIME_PERSIST = join(STACK_DIR, 'wrangler')
 
-/** Cópias verificadas das distribuições (a8a6c625… do piloto, 542cc502… da audio-2), por SHA. */
+/** Cópias verificadas das distribuições (a8a6c625… do piloto, 65c9bffd… da audio-2), por SHA. */
 const DISTRIBUTIONS_DIR =
   'C:/Users/julio/projects/sistema-zero-studio-python/.cache/studio-python-runtime/distributions-transfer'
 /** Buckets locais dos apps: UGC (criações) e privado (snapshots do /jogar). */

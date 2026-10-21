@@ -1,23 +1,23 @@
 {
   "state": "offline-public-inputs-only",
-  "canonicalRawSha256": "7c730344a5e6441c1f21246ea54e99eab187104e1201233981bb89655b4ea9a7",
-  "canonicalPlanSha256": "deb6a0028178ba96e8f4660da740d7a292ccb6fc0c5236aba84599398f369ee1",
-  "inputRawSha256": "82720fbb6b40d9b068557899caf2a72323550e1b218c8d359d0df574a60c035a",
+  "canonicalRawSha256": "c9aad664d0ca3fbc7f55b7fe9e62b4107abb7591a91b4c7a4ee06afc9233963e",
+  "canonicalPlanSha256": "019dfa8e49583f337136f499f77380151b5b2bc6193d9ec07fc8bed4bf15e195",
+  "inputRawSha256": "07a04949e3635ba1ebfe2ae1d6c175ff50e922e7a5e30dd00e38520c77789b3d",
   "files": [
     {
       "path": "staging/members-authoring-policy.json",
       "bytes": 16557,
-      "sha256": "92814ac5c6dfdf0de50f7e54ab19469855604fbeff4d9395128e7524f03e8188"
+      "sha256": "dc56fbd9ac5a7c3a0d1decd44d022ae8ab567456bd7c3e447d7716ca027a3362"
     },
     {
       "path": "staging/members-runtime-hosts.json",
       "bytes": 239,
-      "sha256": "8363d08bd0a056171e7384ebfa2d00294e73f28b5add5b6ebdf96bbaad90493f"
+      "sha256": "70e71cb3bdeafc39eaebe6b4224b03fd55fe27a34b3dabfbe76a6b637d443963"
     },
     {
       "path": "staging/worker-bindings.json",
       "bytes": 205,
-      "sha256": "353ff4d22cfea7d56e6fa7714e7f0442a0bbb3699c586b4cf3f0eddecb917604"
+      "sha256": "e6820bb9458d98f0f8c6efb54d8c1c1e77f868d0e69ac045ff7e9a2975852674"
     },
     {
       "path": "staging/frame-origins.json",
@@ -27,13 +27,23 @@
     {
       "path": "staging/railway-write-plan.json",
       "bytes": 2154,
-      "sha256": "70b89019602d50c9d2d1bfafd2c2c0354459987bd6f8d5fc2088a8b8638fdf74"
+      "sha256": "f5df07685456824f215d5fff2a57f1b6df630fedd7c9134c3d5dae053796b7fc"
     }
   ],
-  "distributionSha256": "542cc5022b3ee51b1ae6ead777b91dbf06319402b6c008e1a3c47f927b66aadf",
+  "distributionSha256": "65c9bffd3e97d71e22bbaaf2f2dd29fbf10ee80759ad56423c0e3e4b82af022c",
+  "distributionBuild": {
+    "builder": "packages/studio/scripts/build-python-runtime.ts",
+    "bun": "1.3.11",
+    "sourceCommit": "e1c5fb092",
+    "builtBy": "coordinator",
+    "rebuiltHere": false
+  },
   "distributionChangesFromPilot": {
     "pilotDistributionSha256": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a",
-    "sourceCommit": "f81fd9ae2",
+    "sourceCommits": [
+      "f81fd9ae2",
+      "e1c5fb092"
+    ],
     "changed": [
       "turtle-renderer.mjs",
       "turtle/_sz_turtle_backend.py"
@@ -41,10 +51,22 @@
     "replacedGzipRepresentation": {
       "path": "turtle-renderer.mjs",
       "removed": "_http/gzip/bcba1392d36142948301aac40a78c7f8c6c5e3913f38037cd18cd8c1e946e61b.gz",
-      "added": "_http/gzip/ee3431436db5ec9da8aacb5f07f3b0914e9ef46d42f51dd810b43277738bc756.gz"
+      "added": "_http/gzip/17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4.gz"
     },
     "unchangedFiles": 38,
     "files": 41
+  },
+  "distributionChangesFromPreviousCandidate": {
+    "previousDistributionSha256": "542cc5022b3ee51b1ae6ead777b91dbf06319402b6c008e1a3c47f927b66aadf",
+    "changed": [
+      "turtle-renderer.mjs"
+    ],
+    "replacedGzipRepresentation": {
+      "path": "turtle-renderer.mjs",
+      "removed": "_http/gzip/ee3431436db5ec9da8aacb5f07f3b0914e9ef46d42f51dd810b43277738bc756.gz",
+      "added": "_http/gzip/17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4.gz"
+    },
+    "unchangedFiles": 39
   },
   "release": {
     "profileId": "python-browser",
@@ -58,29 +80,38 @@
       "assist"
     ]
   },
-  "manifestSha256": "8f876d00e1dab31dde6aa57548b9e897e9e26be0137d5c90c93360e793518515",
-  "prefix": "runtimes/8f876d00e1dab31dde6aa57548b9e897e9e26be0137d5c90c93360e793518515/",
-  "markerSha256": "204dba07a1d8c406f70e211de8421f5319fa97e399a8264b1683f2806616a862",
-  "configurationSha256": "996f6020c484024e0746b719cc04d50d4d36f1ba48ee800d2816d6856d1ba2a8",
-  "workerCatalogSha256": "57823cd1953292ec510c53b1bce427036b870d80606733fca2ce1f0fe702a6ab",
+  "manifestSha256": "1c9112c4cb533481abc5b8bc47a2a60e5b012b4a2e084317e52f2bad9dd01d36",
+  "prefix": "runtimes/1c9112c4cb533481abc5b8bc47a2a60e5b012b4a2e084317e52f2bad9dd01d36/",
+  "markerSha256": "443145f915e45f62d339d528404a85604c36176f58a4f6a5f2da6a5808ac6cfe",
+  "configurationSha256": "359e3df7098c57c39304955407748a0935673a48cd87286d359572106561be81",
+  "workerCatalogSha256": "2cfcc37ba55206de777b111fa9f89e53e94884f3d9bfa843387c970845dcc4aa",
   "derivedFrom": {
     "pilotInputSnapshot": "docs/continuity/2026-10-21-studio-python/snapshots/root/0375-input.json.snapshot",
     "pilotReleaseId": "2026-10-20-audio-1",
     "pilotManifestSha256": "7026b09b04a1222cfbc594d5ab3ec9de8649eece71c613c823a2c33d8c43ce5f",
     "pilotManifestReproducedLocally": true,
     "pilotWorkerCatalogReproducedLocally": "2dc37fc221789ba23780d13754743470bbe687a703ac115ed14a2e12d9e79df4",
+    "pilotMarkerReproducedLocally": "798c39e24fc7c2aa916692425aa419350d9a8060340f5962a73b485a14808bd7",
     "changedFields": [
       "release.releaseId",
       "release.capabilities (+publish, +assist)",
-      "distribution (542cc502…)"
+      "distribution (65c9bffd…)"
     ]
   },
-  "supersedesUnpromotedCandidate": {
-    "distributionSha256": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a",
-    "manifestSha256": "0c6c06c407713217571ebda57a78d92f102c1d0457a2965d64cd6f66c1e82fae",
-    "planSha256": "88a4e71c0e8d3d33bbe667fae71f6e7be397e529b181d5b50a298292ac414ea2",
-    "promoted": false
-  },
+  "supersedesUnpromotedCandidates": [
+    {
+      "distributionSha256": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a",
+      "manifestSha256": "0c6c06c407713217571ebda57a78d92f102c1d0457a2965d64cd6f66c1e82fae",
+      "planSha256": "88a4e71c0e8d3d33bbe667fae71f6e7be397e529b181d5b50a298292ac414ea2",
+      "promoted": false
+    },
+    {
+      "distributionSha256": "542cc5022b3ee51b1ae6ead777b91dbf06319402b6c008e1a3c47f927b66aadf",
+      "manifestSha256": "8f876d00e1dab31dde6aa57548b9e897e9e26be0137d5c90c93360e793518515",
+      "planSha256": "deb6a0028178ba96e8f4660da740d7a292ccb6fc0c5236aba84599398f369ee1",
+      "promoted": false
+    }
+  ],
   "pilotIdentityMutated": false,
   "objectsUploaded": false,
   "pointerActivated": false,

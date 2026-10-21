@@ -55,9 +55,9 @@ no-op.
    (`hub/scripts/seed-community-spaces.ts`).
 4. Roda `python-local.ts`, que parte da candidata **`python-browser/2026-10-21-audio-2`**
    (`docs/superpowers/plans/2026-10-21-python-audio-2-candidate/canonical-plan.json`). Usa a
-   distribuição `542cc502…` (runtime Turtle de `f81fd9ae2`), com as capacidades `publish` e
-   `assist`, que o Members exige desde 896c3a1c3. A cópia local da distribuição é escolhida
-   pelo SHA fixado no plano, em
+   distribuição `65c9bffd…` (runtime Turtle de `f81fd9ae2` e `e1c5fb092`), com as
+   capacidades `publish` e `assist`, que o Members exige desde 896c3a1c3. A cópia local da
+   distribuição é escolhida pelo SHA fixado no plano, em
    `sistema-zero-studio-python/.cache/studio-python-runtime/distributions-transfer/`. O script
    grava a distribuição e a config do runtime no R2 local com os helpers do próprio Worker e
    escreve o `studio-env.json`:
