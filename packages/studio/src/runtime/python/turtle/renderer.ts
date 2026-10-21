@@ -15,6 +15,10 @@ import { canvasTurtleFont, layoutTurtleText } from './text'
 
 // Below one 60 Hz frame, so a steady 60 Hz program never waits a whole frame for its paint.
 const IMMEDIATE_PAINT_AFTER_MS = 12
+// Items unchanged for this many paints join the retained layer, in runs of at least this size.
+const RETAIN_AFTER_PAINTS = 2
+const RETAIN_MIN_ITEMS = 64
+const OPAQUE_COLOR = /^#[0-9a-f]{6}$/i
 const KEY_NAMES: Record<string, string> = {
   ArrowLeft: 'Left',
   ArrowRight: 'Right',
@@ -36,6 +40,8 @@ interface SceneItem extends TurtlePatch {
   font?: TurtleFont
   bindings: Set<string>
   layout?: ReturnType<typeof layoutTurtleText>
+  /** Paints completed before this item last changed its look or its place in the order. */
+  changedAt: number
 }
 export interface TurtleRenderer {
   readonly readyForActivityControls: boolean
@@ -75,6 +81,12 @@ export function createTurtleRenderer(
   let capturing = false
   let raf: number | undefined
   let lastPaintAt: number | undefined
+  // The retained layer holds the background and the scene's first items as pixels, so a long
+  // drawing repaints only what still changes. A composite over an opaque background is exact;
+  // any change to a retained item, its order, the background or the size drops the layer.
+  let layer: { ctx: CanvasRenderingContext2D; items: Set<number> } | undefined
+  let layerSurface: HTMLCanvasElement | undefined
+  let lastId: number | undefined
   let presentationTimer: ReturnType<typeof setTimeout> | undefined
   let pendingPresent: { resolve(): void; reject(error: Error): void } | undefined
   let drag: { item: number; button: number } | undefined
@@ -134,6 +146,21 @@ export function createTurtleRenderer(
       pendingWait = { resolve, reject }
       if (timeoutMs !== null) waitTimer = setTimeout(() => wake(), timeoutMs)
     })
+  }
+  function changes(current: SceneItem, patch: TurtlePatch) {
+    for (const [key, value] of Object.entries(patch) as [keyof TurtlePatch, unknown][]) {
+      if (key !== 'points') {
+        if (current[key] !== value) return true
+        continue
+      }
+      const before = current.points
+      const after = value as TurtlePoint[]
+      if (!before || before.length !== after.length) return true
+      for (let index = 0; index < after.length; index++)
+        if (before[index]![0] !== after[index]![0] || before[index]![1] !== after[index]![1])
+          return true
+    }
+    return false
   }
   function path(points: TurtlePoint[], close: boolean) {
     const result = new Path2D()
@@ -256,55 +283,97 @@ export function createTurtleRenderer(
     container.append(canvas)
     return ctx
   }
+  function draw(ctx: CanvasRenderingContext2D, item: SceneItem) {
+    if (item.kind === 'line' || item.kind === 'polygon') {
+      if (!item.points?.length) return
+      const shape = path(item.points, item.kind === 'polygon')
+      if (item.kind === 'polygon' && item.fill) {
+        ctx.fillStyle = item.fill
+        ctx.fill(shape)
+      }
+      const stroke = item.kind === 'line' ? item.fill : item.outline
+      if (stroke && (item.width ?? 1) > 0) {
+        ctx.strokeStyle = stroke
+        ctx.lineWidth = item.width ?? 1
+        ctx.stroke(shape)
+      }
+    } else if (item.kind === 'image' && item.image) {
+      const image = images.get(item.image)
+      if (image)
+        ctx.drawImage(image, (item.x ?? 0) - image.width / 2, (item.y ?? 0) - image.height / 2)
+    } else if (item.kind === 'text' && item.fill) {
+      const layout = measure(item)
+      ctx.font = canvasTurtleFont(item.font!)
+      ctx.fillStyle = item.fill
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'alphabetic'
+      const styles = item.font![2].split(/\s+/)
+      for (const [index, line] of layout.lines.entries()) {
+        const baseline = layout.top + layout.ascent + index * layout.lineHeight
+        for (const chunk of line.chunks)
+          ctx.fillText(chunk.text, layout.left + chunk.left, baseline)
+        const thickness = Math.max(1, layout.size / 16)
+        if (styles.includes('underline'))
+          ctx.fillRect(layout.left, baseline + layout.descent / 2, line.width, thickness)
+        if (styles.includes('overstrike'))
+          ctx.fillRect(layout.left, baseline - layout.ascent / 3, line.width, thickness)
+      }
+    }
+  }
+  function sceneSpace(ctx: CanvasRenderingContext2D) {
+    ctx.translate(width / 2, height / 2)
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+  }
+  /** Extends the retained layer with the next items that stayed unchanged; returns its size. */
+  function retain() {
+    if (!OPAQUE_COLOR.test(background)) {
+      layer = undefined
+      return 0
+    }
+    const retained = layer?.items.size ?? 0
+    const stable: [number, SceneItem][] = []
+    let index = 0
+    for (const entry of scene) {
+      if (index++ < retained) continue
+      if (entry[1].changedAt > frameSequence - RETAIN_AFTER_PAINTS) break
+      stable.push(entry)
+    }
+    if (stable.length < RETAIN_MIN_ITEMS) return retained
+    if (!layer) {
+      layerSurface ??= document.createElement('canvas')
+      layerSurface.width = width
+      layerSurface.height = height
+      const ctx = layerSurface.getContext('2d')
+      if (!ctx) return 0
+      ctx.fillStyle = background
+      ctx.fillRect(0, 0, width, height)
+      sceneSpace(ctx)
+      layer = { ctx, items: new Set() }
+    }
+    for (const [id, item] of stable) {
+      draw(layer.ctx, item)
+      layer.items.add(id)
+    }
+    return layer.items.size
+  }
+  function dropLayer(id?: number) {
+    if (id === undefined || layer?.items.has(id)) layer = undefined
+  }
   function paint() {
     if (!dirty || closed) return
     const ctx = ensureCanvas()
     ctx.setTransform(1, 0, 0, 1, 0, 0)
     ctx.clearRect(0, 0, width, height)
-    if (background) {
+    const retained = retain()
+    if (retained) ctx.drawImage(layerSurface!, 0, 0)
+    else if (background) {
       ctx.fillStyle = background
       ctx.fillRect(0, 0, width, height)
     }
-    ctx.translate(width / 2, height / 2)
-    ctx.lineCap = 'round'
-    ctx.lineJoin = 'round'
-    for (const item of scene.values()) {
-      if (item.kind === 'line' || item.kind === 'polygon') {
-        if (!item.points?.length) continue
-        const shape = path(item.points, item.kind === 'polygon')
-        if (item.kind === 'polygon' && item.fill) {
-          ctx.fillStyle = item.fill
-          ctx.fill(shape)
-        }
-        const stroke = item.kind === 'line' ? item.fill : item.outline
-        if (stroke && (item.width ?? 1) > 0) {
-          ctx.strokeStyle = stroke
-          ctx.lineWidth = item.width ?? 1
-          ctx.stroke(shape)
-        }
-      } else if (item.kind === 'image' && item.image) {
-        const image = images.get(item.image)
-        if (image)
-          ctx.drawImage(image, (item.x ?? 0) - image.width / 2, (item.y ?? 0) - image.height / 2)
-      } else if (item.kind === 'text' && item.fill) {
-        const layout = measure(item)
-        ctx.font = canvasTurtleFont(item.font!)
-        ctx.fillStyle = item.fill
-        ctx.textAlign = 'left'
-        ctx.textBaseline = 'alphabetic'
-        const styles = item.font![2].split(/\s+/)
-        for (const [index, line] of layout.lines.entries()) {
-          const baseline = layout.top + layout.ascent + index * layout.lineHeight
-          for (const chunk of line.chunks)
-            ctx.fillText(chunk.text, layout.left + chunk.left, baseline)
-          const thickness = Math.max(1, layout.size / 16)
-          if (styles.includes('underline'))
-            ctx.fillRect(layout.left, baseline + layout.descent / 2, line.width, thickness)
-          if (styles.includes('overstrike'))
-            ctx.fillRect(layout.left, baseline - layout.ascent / 3, line.width, thickness)
-        }
-      }
-    }
+    sceneSpace(ctx)
+    let index = 0
+    for (const item of scene.values()) if (index++ >= retained) draw(ctx, item)
     dirty = false
     frameSequence++
     presentedWidth = width
@@ -358,6 +427,8 @@ export function createTurtleRenderer(
     pointCount -= previous?.points?.length ?? 0
     textChars -= previous?.text?.length ?? 0
     scene.delete(id)
+    if (lastId === id) lastId = undefined
+    dropLayer(id)
     if (drag?.item === id) drag = undefined
   }
   function apply(operation: Exclude<TurtleOperation, { op: 'image' }>) {
@@ -382,7 +453,8 @@ export function createTurtleRenderer(
           textChars += data.text.length
           if (textChars > 1_000_000) throw new Error('Limite de texto Turtle atingido.')
         }
-        scene.set(id, { ...data, bindings: new Set() })
+        scene.set(id, { ...data, bindings: new Set(), changedAt: frameSequence })
+        lastId = id
         break
       }
       case 'patch': {
@@ -396,8 +468,12 @@ export function createTurtleRenderer(
         if (operation.image && !images.has(operation.image))
           throw new Error('Imagem Turtle não carregada.')
         const { op: _op, id: _id, ...patch } = operation
+        // Turtle redraws every turtle on update(); an identical patch changes nothing.
+        if (!changes(current, patch)) break
         Object.assign(current, patch)
         current.layout = undefined
+        current.changedAt = frameSequence
+        dropLayer(operation.id)
         break
       }
       case 'delete':
@@ -405,16 +481,26 @@ export function createTurtleRenderer(
           scene.clear()
           pointCount = textChars = 0
           drag = undefined
+          lastId = undefined
+          dropLayer()
         } else remove(operation.id)
         break
       case 'raise': {
         const value = item(operation.id)
+        lastId ??= [...scene.keys()].at(-1)
+        if (operation.id === lastId) break
         scene.delete(operation.id)
         scene.set(operation.id, value)
+        value.changedAt = frameSequence
+        lastId = operation.id
+        dropLayer(operation.id)
         break
       }
       case 'lower': {
         const value = item(operation.id)
+        value.changedAt = frameSequence
+        if (lastId === operation.id) lastId = undefined
+        dropLayer()
         const rest = [...scene].filter(([id]) => id !== operation.id)
         scene.clear()
         scene.set(operation.id, value)
@@ -422,12 +508,14 @@ export function createTurtleRenderer(
         break
       }
       case 'background':
+        if (operation.color !== background) dropLayer()
         background = operation.color
         break
       case 'size':
         width = operation.width
         height = operation.height
         presentedWidth = presentedHeight = 0
+        dropLayer()
         if (canvas) {
           canvas.width = width
           canvas.height = height
@@ -461,6 +549,7 @@ export function createTurtleRenderer(
     for (const image of images.values()) image.close()
     images.clear()
     scene.clear()
+    layer = lastId = undefined
     inputs.length = 0
     imagePixels = pointCount = textChars = 0
     presentedWidth = presentedHeight = 0
@@ -676,6 +765,7 @@ export function createTurtleRenderer(
       for (const image of images.values()) image.close()
       images.clear()
       scene.clear()
+      layer = layerSurface = lastId = undefined
       inputs.length = 0
       canvas?.remove()
       canvas = undefined
