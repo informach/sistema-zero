@@ -103,7 +103,53 @@ async function editorText(page) {
 }
 
 /** Coloca o código: Ponte nos clássicos (aba do script), o editor do arquivo principal no Pro. */
+/**
+ * Sem o modo Ponte (cliente no começo da jornada só tem Blocos), a fonte entra pelos BLOCOS: o
+ * mesmo "Colar blocos" do menu do workspace, a partir da área de transferência durável do Studio
+ * (`sz:block-clipboard`, o caminho dos e2e do próprio Studio). Um título HTML com a MARCA dentro
+ * da área Estrutura, ambos blocos do nível iniciante-2d.
+ */
+let viaBlocks = false
+async function pasteMarkBlock(page) {
+  const block = {
+    type: 'sz_frame_structure',
+    inputs: { CHILDREN: { block: { type: 'sz_html_h1', fields: { TEXT: mark } } } },
+  }
+  await page.evaluate(
+    (payload) => localStorage.setItem('sz:block-clipboard', payload),
+    JSON.stringify({ version: 1, block, requiredExtensions: [], copiedAt: Date.now() }),
+  )
+  const paste = page.getByText('Colar blocos', { exact: true })
+  const box = await page.locator('.blocklyMainBackground').first().boundingBox()
+  for (let attempt = 0; attempt < 10 && !(await paste.isVisible().catch(() => false)); attempt++) {
+    await page.mouse.click(box.x + box.width - 40 - attempt * 20, box.y + box.height - 40, {
+      button: 'right',
+    })
+    await page.waitForTimeout(500)
+  }
+  await paste.click()
+  await page.waitForTimeout(2000)
+}
+
+async function blocksText(page) {
+  return (
+    (await page
+      .locator('.blocklyWorkspace')
+      .first()
+      .textContent()
+      .catch(() => '')) ?? ''
+  )
+}
+
 async function writeSource(page) {
+  if (kind === 'classic' && lang === 'js') {
+    const bridge = page.getByRole('button', { name: 'Ponte', exact: true }).first()
+    if (!(await bridge.isVisible().catch(() => false))) {
+      viaBlocks = true
+      await pasteMarkBlock(page)
+      return
+    }
+  }
   if (kind === 'classic') {
     await page.getByRole('button', { name: 'Ponte', exact: true }).first().click()
     await page.waitForTimeout(2000)
@@ -181,6 +227,7 @@ async function reopen(page) {
         .catch(() => {})
     await page.waitForTimeout(1500)
   }
+  if (viaBlocks) return blocksText(page)
   return editorText(page)
 }
 
@@ -199,13 +246,18 @@ try {
     if (!(await python.count())) throw new Error('opção Python ausente para esta conta')
     await python.check()
   }
-  await page.getByRole('radio', { name: kind === 'pro' ? /^Pro/ : /^Clássico/ }).check()
+  // Cliente no começo da jornada não escolhe tipo (só Clássico): sem os rádios, sem Pro.
+  const kindRadio = page.getByRole('radio', { name: kind === 'pro' ? /^Pro/ : /^Clássico/ })
+  step('opcaoPro', (await page.getByRole('radio', { name: /^Pro/ }).count()) > 0)
+  if (await kindRadio.count()) await kindRadio.check()
+  else if (kind === 'pro') throw new Error('tipo Pro indisponível para esta conta')
   const name = page.getByRole('textbox', { name: 'Nome do projeto' })
   await name.fill(projectName)
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await page.waitForTimeout(8000)
   await writeSource(page)
-  step('fonteEscrita', (await editorText(page)).includes(mark))
+  step('fonteEscrita', (viaBlocks ? await blocksText(page) : await editorText(page)).includes(mark))
+  step('edicao', viaBlocks ? 'blocos (colar)' : kind === 'classic' ? 'ponte' : 'código')
   step('execucao', await run(page))
   await shot(page, '2-execucao')
   step('nuvem', await cloudSaved(page))
