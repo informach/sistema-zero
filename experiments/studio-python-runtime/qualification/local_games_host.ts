@@ -8,11 +8,14 @@ import { resolve } from 'node:path'
 export default async function localGamesHost() {
   const baseURL = process.env.SZ_GAMES_LOCAL_URL
   const output = process.env.PYTHON_PROBE_OUTPUT_DIR
-  const distribution = process.env.PYTHON_PROBE_DISTRIBUTION_SHA256
+  const distribution = process.env.PYTHON_PROBE_DISTRIBUTION_SHA256 ?? null
   assert(baseURL && output, 'Local games host and output directory required')
+  // A prebuilt distribution must be the one the pinned Pac-Man qualification expects. Without
+  // one, the server builds from the current sources (diagnosis of unreleased runtime changes);
+  // the pinned Pac-Man spec then refuses on its own pin, by design.
   assert(
-    distribution && distribution === process.env.SZ_PACMAN_QA_DISTRIBUTION,
-    'Games run against one explicit prebuilt distribution',
+    distribution === null || distribution === process.env.SZ_PACMAN_QA_DISTRIBUTION,
+    'A prebuilt distribution must match the pinned Pac-Man qualification',
   )
   const response = await fetch(new URL('/configuration', baseURL))
   assert(response.ok, 'Local games host is not ready')
