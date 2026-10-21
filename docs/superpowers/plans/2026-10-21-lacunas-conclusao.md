@@ -65,10 +65,11 @@ Todas as provas são locais nesta máquina. A pilha local (`scripts/local-studio
 | Frio com rede de referência (20 Mbps / 80 ms) | p95 7,8 s, contra 12 s (60/60) |
 | Parar ≤ 250 ms; liberação ≤ 3 s; 30 ciclos | Conferido nas suítes que passaram |
 | F3 entrada ≤ 100 ms; pintura ≤ 8 ms; sem tarefa > 50 ms | p95 de 49 ms; 0,1 ms; nenhuma tarefa longa |
-| **F3 intervalo de frame p95 ≤ 33 ms** | **33,4 ms, em aberto.** Loops de 60 Hz pedem 17 ms por tick (`ceil`) e o despertar no navegador soma ~1,8 ms. Melhorias já feitas: pintura imediata, encoder único e uma ida e volta a menos. Space Arena subiu de 46 para 52 FPS (nativo: 33–36) |
+| **F3 intervalo de frame p95 ≤ 33 ms** | **33,3 ms (Chrome e Edge), decisão pendente do usuário.** O loop compensado pede ~17 ms por tick, pouco mais que um quadro de 60 Hz (16,7 ms). Quando perde um vsync, o intervalo apresentado é exatamente dois quadros (33,3 ms), e 0–1 de 3.245 intervalos passam de dois quadros. O limite literal de 33 ms fica abaixo de dois quadros e só é cumprido se 95% dos quadros forem únicos. A spec mantém o limite literal até a decisão. Melhorias já feitas: pintura imediata, encoder único e uma ida e volta a menos. Space Arena subiu de 46 para 52–53 FPS (nativo: 33–36) |
 | Pro completo (memória) | ~2,4 GiB da pilha WebContainer/Vite; não depende do Python |
 | F10 | Python sem Turtle não baixa renderer nem módulos gráficos (`python-bootstrap`) |
-| F2, F4 (diagnóstico/completion), F7, F8 completo, F9 ciclos, 128 MiB do isolate, memória incremental | A medir. F4 precisa do Pyright (DK/RW); F7 precisa do RW; 128 MiB precisa do CF |
+| F2 arte com 10.000 segmentos, 8 cores, animação a cada 100 segmentos | Com a camada retida (`e1c5fb092`), pintura p95 de 0,4 ms (Chrome) e 0,3 ms (Edge), máximo de 0,5 ms; antes eram 3,6 ms e 5,4 ms. Nenhuma tarefa acima de 50 ms; todos os segmentos mantidos. O desenho passo a passo termina com os mesmos pixels de uma pintura completa (`python-turtle-retained-layer`) |
+| F4 (diagnóstico/completion), F7, F8 completo, F9 ciclos, 128 MiB do isolate, memória incremental | A medir. F4 precisa do Pyright (DK/RW); F7 precisa do RW; 128 MiB precisa do CF |
 
 ## Releases
 
