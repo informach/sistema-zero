@@ -68,4 +68,9 @@ preparador é aditivo e mantém as duas.
 5. Gates: publicar Python (livre, aula, oficina) e jogar anonimamente; Zappy Python; negativos
    com uma release sem `publish`/`assist`; controles JS Classic/Pro inalterados.
 
+**Ordem e reversão.**
+- O Worker do runtime (`studio-runtime`) que grava a receita de publicação v2 (merge `eb9069254`) sobe com `wrangler deploy` atômico, nunca em implantação gradual (`wrangler versions`).
+- Depois que existir uma revisão Python publicada em v2, não se faz rollback do Worker para uma versão anterior a esse merge: o leitor antigo só aceita v1 e devolveria 409 para essas publicações.
+- Members e BFFs sobem juntos, antes de ativar esta release. Um BFF antigo recusa a decisão `live-publication` com `publish`.
+
 Produção continua fora de escopo: baseline e plano próprios, sem reaproveitar este SHA.
