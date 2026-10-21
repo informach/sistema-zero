@@ -1,12 +1,14 @@
 #!/usr/bin/env bun
 /**
- * Prepara o Studio Python LOCAL a partir da distribuição aprovada (a8a6c625…), sem nada
+ * Prepara o Studio Python LOCAL a partir da distribuição da candidata (542cc502…), sem nada
  * hospedado:
  *
  *  1. Lê um plano canônico já gerado pelo promotor (offline, versionado no repo):
  *     `deployment` (release + distribuição) e `configuration.members` (a política de autoria).
- *     Padrão: a candidata `python-browser/2026-10-21-audio-2` (mesma distribuição a8a6, com as
- *     capacidades `publish` e `assist`, exigidas desde 896c3a1c3 para publicar e para o Zappy).
+ *     Padrão: a candidata `python-browser/2026-10-21-audio-2` (distribuição 542cc502…, com o
+ *     runtime Turtle de f81fd9ae2 e as capacidades `publish` e `assist`, exigidas desde 896c3a1c3
+ *     para publicar e para o Zappy). A distribuição padrão é a cópia em DISTRIBUTIONS_DIR com o SHA que o
+ *     próprio plano fixou (`input.distribution.sha256`); `--distribution <dir>` a substitui.
  *     `--plan <arquivo>` escolhe outro (ex.: o piloto audio-1 em
  *     docs/continuity/2026-10-21-studio-python/snapshots/root/0374-canonical-plan.json.snapshot).
  *  2. Gera a config do Worker @sistemazero/studio-runtime para `wrangler dev --local`
@@ -29,8 +31,9 @@ export const RUNTIME_ORIGIN = `http://127.0.0.1:${RUNTIME_PORT}`
 export const RUNTIME_DIR = join(STACK_DIR, 'studio-runtime')
 export const RUNTIME_PERSIST = join(STACK_DIR, 'wrangler')
 
-const DEFAULT_DISTRIBUTION =
-  'C:/Users/julio/projects/sistema-zero-studio-python/.cache/studio-python-runtime/distributions-transfer/a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a'
+/** Cópias verificadas das distribuições (a8a6c625… do piloto, 542cc502… da audio-2), por SHA. */
+const DISTRIBUTIONS_DIR =
+  'C:/Users/julio/projects/sistema-zero-studio-python/.cache/studio-python-runtime/distributions-transfer'
 /** Buckets locais dos apps: UGC (criações) e privado (snapshots do /jogar). */
 const APP_BUCKETS = {
   LOCAL_UGC: 'sz-local-ugc',
@@ -50,10 +53,12 @@ const APP_ORIGINS = [3005, 3007, 3008].flatMap((p) => [
 ])
 
 if (import.meta.main) {
-  const distribution = option('--distribution') ?? DEFAULT_DISTRIBUTION
   const secrets = ensureSecrets()
   const text = fs.readFileSync(option('--plan') ?? DEFAULT_PLAN, 'utf8')
   const plan = JSON.parse(text.slice(text.indexOf('{')))
+  // A mesma distribuição que o plano fixou; cada arquivo ainda é conferido ao gravar no R2.
+  const distribution =
+    option('--distribution') ?? join(DISTRIBUTIONS_DIR, plan.input.distribution.sha256)
   const deployment = plan.deployment
   const runtime = {
     profileId: deployment.release.profileId ?? plan.configuration.hosts[0].runtime.profileId,

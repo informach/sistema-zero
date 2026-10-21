@@ -54,10 +54,13 @@ no-op.
 3. Roda os seeds canônicos: catálogo (`catalog/scripts/seed.ts`) e servidores Kids do hub
    (`hub/scripts/seed-community-spaces.ts`).
 4. Roda `python-local.ts`, que parte da candidata **`python-browser/2026-10-21-audio-2`**
-   (`docs/superpowers/plans/2026-10-21-python-audio-2-candidate/canonical-plan.json`). É a mesma
-   distribuição `a8a6c625…`, com as capacidades `publish` e `assist`, que o Members exige desde
-   896c3a1c3. O script grava a distribuição e a config do runtime no R2 local com os helpers do
-   próprio Worker e escreve o `studio-env.json`:
+   (`docs/superpowers/plans/2026-10-21-python-audio-2-candidate/canonical-plan.json`). Usa a
+   distribuição `542cc502…` (runtime Turtle de `f81fd9ae2`), com as capacidades `publish` e
+   `assist`, que o Members exige desde 896c3a1c3. A cópia local da distribuição é escolhida
+   pelo SHA fixado no plano, em
+   `sistema-zero-studio-python/.cache/studio-python-runtime/distributions-transfer/`. O script
+   grava a distribuição e a config do runtime no R2 local com os helpers do próprio Worker e
+   escreve o `studio-env.json`:
    - Members: `STUDIO_AUTHORING_POLICY_JSON` e `STUDIO_RUNTIME_HOSTS_JSON` (origem `http://127.0.0.1:8791`).
    - Adulto e Kids: `STUDIO_PYTHON_FRAME_ORIGINS`, `STUDIO_PRO_RUNTIME_URL/TOKEN` (o Worker, para
      publicar e resolver projetos Python) e `R2_*` com `R2_S3_ENDPOINT=http://127.0.0.1:8791/cdn-cgi/local/r2/s3`.

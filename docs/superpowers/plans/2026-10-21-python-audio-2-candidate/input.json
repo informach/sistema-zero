@@ -503,8 +503,8 @@
     }
   },
   "distribution": {
-    "directory": "C:/Users/julio/projects/sistema-zero-studio-python/.cache/studio-python-runtime/distributions-transfer/a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a",
-    "sha256": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a"
+    "directory": "C:/Users/julio/projects/sistema-zero-studio-python/.cache/studio-python-runtime/distributions-transfer/542cc5022b3ee51b1ae6ead777b91dbf06319402b6c008e1a3c47f927b66aadf",
+    "sha256": "542cc5022b3ee51b1ae6ead777b91dbf06319402b6c008e1a3c47f927b66aadf"
   },
   "environment": "staging",
   "release": {
