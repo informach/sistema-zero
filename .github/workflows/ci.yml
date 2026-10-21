@@ -534,6 +534,9 @@ jobs:
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.ref == 'refs/heads/staging' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     # 50min: o members espera ficar pronto ANTES de disparar admin, community-kids e community (ver
     # DEPOIS_DO_MEMBERS), e cada espera tem teto próprio de 20min.
     timeout-minutes: 50
@@ -548,7 +551,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 0 # diff do range do push (multi-commit)
+          fetch-depth: 0 # ancestralidade e diff desde a última onda bem-sucedida
+
+      - name: Resolver baseline verificado antes de acessar provedores
+        id: staging-baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/ci/staging-deploy-baseline.mjs
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -585,7 +594,7 @@ jobs:
 
       - name: Calcular serviços afetados e deployar
         env:
-          BEFORE: ${{ github.event.inputs.before_sha || github.event.before }}
+          BEFORE: ${{ fromJSON(steps.staging-baseline.outputs.selector).before }}
           FORCED: ${{ github.event.inputs.services }}
           RAILWAY_SSH_PRIVATE_KEY: ${{ secrets.RAILWAY_SSH_PRIVATE_KEY }}
           RAILWAY_SSH_KNOWN_HOSTS: ${{ secrets.RAILWAY_SSH_KNOWN_HOSTS }}
